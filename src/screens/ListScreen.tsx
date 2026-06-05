@@ -8,13 +8,14 @@ import {
   StyleSheet,
   StatusBar,
   ActivityIndicator,
-  Alert,
   Image,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
 import { fetchListItems, setItemInCart, type ListItemRow } from '../api/lists';
 import ProgressBar from '../components/ProgressBar';
 import ProductDetailModal from '../components/ProductDetailModal';
@@ -23,6 +24,7 @@ const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 
 export default function ListScreen() {
   const { activeCart } = useCart();
+  const toast = useToast();
   const listId = activeCart?.listId;
 
   const [items, setItems] = useState<ListItemRow[]>([]);
@@ -45,12 +47,13 @@ export default function ListScreen() {
     const target = items.find((i) => i.id === id);
     if (!target) return;
     const next = !target.inCart;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, inCart: next } : it)));
     try {
       await setItemInCart(id, next);
     } catch {
       setItems((prev) => prev.map((it) => (it.id === id ? { ...it, inCart: !next } : it)));
-      Alert.alert('Error', 'No se pudo actualizar el artículo.');
+      toast.show('No se pudo actualizar el artículo.', 'error');
     }
   };
 
@@ -216,7 +219,10 @@ export default function ListScreen() {
               <Text style={styles.doneBarText}>¡Lista completada!</Text>
               <TouchableOpacity
                 style={styles.doneBarBtn}
-                onPress={() => Alert.alert('Lista', '¡Compra finalizada!')}
+                onPress={() => {
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                  toast.show('¡Compra finalizada! 🎉');
+                }}
               >
                 <Text style={styles.doneBarBtnText}>Finalizar</Text>
               </TouchableOpacity>

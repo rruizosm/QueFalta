@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import {
   fetchCategoryDetail,
@@ -23,6 +24,7 @@ import {
 } from '../api/mercadona';
 import { CatalogStackParamList } from '../types';
 import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductDetailModal from '../components/ProductDetailModal';
 
@@ -40,6 +42,7 @@ export default function ProductsScreen() {
   } = route.params;
 
   const { activeCart, addToActiveCart } = useCart();
+  const toast = useToast();
 
   const [products, setProducts] = useState<MercadonaProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,11 +86,14 @@ export default function ProductsScreen() {
     if (items.length === 0) return;
     setAdding(true);
     try {
+      const count = items.reduce((a, b) => a + b.quantity, 0);
       await addToActiveCart(items);
       setQuantities({});
-      Alert.alert('Añadido', `Productos añadidos a "${activeCart.groupName}".`);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show(`${count} ${count === 1 ? 'artículo añadido' : 'artículos añadidos'} a ${activeCart.groupName}`);
     } catch {
-      Alert.alert('Error', 'No se pudieron añadir los productos.');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      toast.show('No se pudieron añadir los productos.', 'error');
     } finally {
       setAdding(false);
     }

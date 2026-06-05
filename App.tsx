@@ -13,6 +13,7 @@ import Navigation from './src/navigation';
 import { AuthProvider } from './src/context/AuthContext';
 import { ProfileProvider } from './src/context/ProfileContext';
 import { CartProvider } from './src/context/CartContext';
+import { ToastProvider } from './src/context/ToastContext';
 import { configureNotificationHandler } from './src/lib/notifications';
 
 SplashScreen.preventAutoHideAsync();
@@ -37,7 +38,9 @@ export default function App() {
       <AuthProvider>
         <ProfileProvider>
           <CartProvider>
-            <Navigation />
+            <ToastProvider>
+              <Navigation />
+            </ToastProvider>
           </CartProvider>
         </ProfileProvider>
       </AuthProvider>

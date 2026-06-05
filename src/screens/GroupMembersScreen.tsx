@@ -1,14 +1,14 @@
 import { useCallback, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, StatusBar, ActivityIndicator, Alert,
+  StyleSheet, StatusBar, ActivityIndicator, Alert, Modal, Pressable,
 } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
-import { GroupsStackParamList } from '../types';
+import { GroupsStackParamList, type GroupMember } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
@@ -27,6 +27,7 @@ export default function GroupMembersScreen() {
   const [group, setGroup] = useState<GroupSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [actionMember, setActionMember] = useState<GroupMember | null>(null);
 
   const load = useCallback(() => {
     fetchGroupDetail(groupId)
@@ -40,65 +41,34 @@ export default function GroupMembersScreen() {
   const adminId = group?.ownerId ?? null;
   const isAdmin = !!adminId && adminId === userId;
 
-  const openMemberActions = (memberId: string, memberName: string) => {
-    Alert.alert(memberName, undefined, [
-      { text: 'Hacer administrador', onPress: () => handleTransfer(memberId, memberName) },
-      { text: 'Eliminar del grupo', style: 'destructive', onPress: () => handleRemove(memberId, memberName) },
-      { text: 'Cancelar', style: 'cancel' },
-    ]);
+  const doTransfer = async (member: GroupMember) => {
+    setActionMember(null);
+    setBusyId(member.id);
+    try {
+      await transferGroupAdmin(groupId, member.id);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show(`${member.name} es ahora el administrador`);
+      load();
+    } catch {
+      toast.show('No se pudo transferir la administración.', 'error');
+    } finally {
+      setBusyId(null);
+    }
   };
 
-  const handleTransfer = (memberId: string, memberName: string) => {
-    Alert.alert(
-      'Transferir administración',
-      `${memberName} pasará a ser el administrador y tú serás un miembro normal. ¿Continuar?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Transferir',
-          onPress: async () => {
-            setBusyId(memberId);
-            try {
-              await transferGroupAdmin(groupId, memberId);
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              toast.show(`${memberName} es ahora el administrador`);
-              load();
-            } catch {
-              toast.show('No se pudo transferir la administración.', 'error');
-            } finally {
-              setBusyId(null);
-            }
-          },
-        },
-      ],
-    );
-  };
-
-  const handleRemove = (memberId: string, memberName: string) => {
-    Alert.alert(
-      'Eliminar miembro',
-      `¿Seguro que quieres eliminar a ${memberName} del grupo?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            setBusyId(memberId);
-            try {
-              await removeGroupMember(groupId, memberId);
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              toast.show(`${memberName} eliminado del grupo`);
-              load();
-            } catch {
-              toast.show('No se pudo eliminar al miembro.', 'error');
-            } finally {
-              setBusyId(null);
-            }
-          },
-        },
-      ],
-    );
+  const doRemove = async (member: GroupMember) => {
+    setActionMember(null);
+    setBusyId(member.id);
+    try {
+      await removeGroupMember(groupId, member.id);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show(`${member.name} eliminado del grupo`);
+      load();
+    } catch {
+      toast.show('No se pudo eliminar al miembro.', 'error');
+    } finally {
+      setBusyId(null);
+    }
   };
 
   const handleLeave = () => {
@@ -179,7 +149,7 @@ export default function GroupMembersScreen() {
                     busyId === m.id ? (
                       <ActivityIndicator size="small" color={colors.inkSoft} />
                     ) : (
-                      <TouchableOpacity onPress={() => openMemberActions(m.id, m.name)} hitSlop={8} style={styles.removeBtn}>
+                      <TouchableOpacity onPress={() => setActionMember(m)} hitSlop={8} style={styles.removeBtn}>
                         <Ionicons name="ellipsis-horizontal" size={20} color={colors.inkSoft} />
                       </TouchableOpacity>
                     )
@@ -212,6 +182,54 @@ export default function GroupMembersScreen() {
           )}
         </ScrollView>
       )}
+
+      {/* Member action sheet (app-styled, replaces native Alert menu) */}
+      <Modal
+        visible={!!actionMember}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setActionMember(null)}
+      >
+        <View style={styles.sheetRoot}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setActionMember(null)} />
+          {actionMember && (
+            <View style={styles.sheet}>
+              <View style={styles.sheetHeader}>
+                <View style={[styles.sheetAvatar, { backgroundColor: actionMember.color }]}>
+                  <Text style={styles.sheetAvatarText}>{actionMember.initials}</Text>
+                </View>
+                <Text style={styles.sheetTitle} numberOfLines={1}>{actionMember.name}</Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.sheetAction}
+                activeOpacity={0.7}
+                onPress={() => doTransfer(actionMember)}
+              >
+                <Ionicons name="star-outline" size={20} color={colors.accent} />
+                <Text style={styles.sheetActionText}>Hacer administrador</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.sheetAction}
+                activeOpacity={0.7}
+                onPress={() => doRemove(actionMember)}
+              >
+                <Ionicons name="person-remove-outline" size={20} color="#d6452b" />
+                <Text style={[styles.sheetActionText, { color: '#d6452b' }]}>Eliminar del grupo</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.sheetCancel}
+                activeOpacity={0.7}
+                onPress={() => setActionMember(null)}
+              >
+                <Text style={styles.sheetCancelText}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -273,4 +291,31 @@ const styles = StyleSheet.create({
 
   centerBox: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   emptyText: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft },
+
+  // ── Action sheet ──────────────────────────────────────────────
+  sheetRoot: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.45)' },
+  sheet: {
+    backgroundColor: colors.paper,
+    borderTopWidth: 1, borderTopColor: colors.border,
+    paddingBottom: 30,
+  },
+  sheetHeader: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 18, paddingVertical: 16,
+    borderBottomWidth: 1, borderBottomColor: colors.border,
+  },
+  sheetAvatar: {
+    width: 40, height: 40, borderRadius: 20,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  sheetAvatarText: { fontSize: 15, fontFamily: fonts.bold, color: colors.white },
+  sheetTitle: { flex: 1, fontSize: 16, fontFamily: fonts.bold, color: colors.ink },
+  sheetAction: {
+    flexDirection: 'row', alignItems: 'center', gap: 13,
+    paddingHorizontal: 18, paddingVertical: 16,
+    borderBottomWidth: 1, borderBottomColor: colors.border,
+  },
+  sheetActionText: { fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
+  sheetCancel: { alignItems: 'center', paddingVertical: 16, marginTop: 4 },
+  sheetCancelText: { fontSize: 15, fontFamily: fonts.bold, color: colors.inkSoft },
 });

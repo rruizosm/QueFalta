@@ -104,7 +104,7 @@ export default function GroupsScreen() {
           <View style={styles.cardHeader}>
             <View style={styles.cardTitleRow}>
               <Text style={styles.cardName}>{item.name}</Text>
-              {item.createdBy === userId && (
+              {item.ownerId === userId && (
                 <View style={styles.ownerBadge}>
                   <Text style={styles.ownerBadgeText}>Tuyo</Text>
                 </View>

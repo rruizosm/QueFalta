@@ -48,6 +48,7 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - Edge Function `delete-account` desplegada.
 - (Futuro Fase 2) tabla `push_tokens`.
 - **`group_members` INSERT policy** `with check (user_id = auth.uid())` — IMPRESCINDIBLE para que las invitaciones por enlace funcionen (si falta, `joinGroup` da 42501 y el grupo no carga). Está en `supabase/policies/group_join.sql`.
+- **Modelo de admin de grupo** (`supabase/policies/groups_owner.sql`): `groups.created_by` = creador (inmutable), `groups.owner_id` = admin actual (cambia al transferir). Incluye `is_group_admin(gid)` (SECURITY DEFINER, evita recursión), la policy UPDATE de groups (admin) y la DELETE de group_members (abandonar/expulsar). El admin se calcula con `owner_id`, NO con `created_by`.
 - Hay SQL previo en `supabase/` (RLS, policies de groups/group_members/shopping_lists/list_items).
 
 ## Estado / pendientes

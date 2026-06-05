@@ -7,7 +7,10 @@ const WEB_BASE_URL = 'https://quefalta.es';
 export interface GroupSummary {
   id: string;
   name: string;
+  /** Who created the group (immutable). */
   createdBy: string | null;
+  /** Current admin/owner (changes on transfer). */
+  ownerId: string | null;
   createdAt: string;
   members: GroupMember[];
 }
@@ -28,7 +31,7 @@ export interface GroupItem {
 export async function fetchMyGroups(): Promise<GroupSummary[]> {
   const { data, error } = await supabase
     .from('groups')
-    .select('id, name, created_by, created_at, group_members(profiles(id, name, initials, color))')
+    .select('id, name, created_by, owner_id, created_at, group_members(profiles(id, name, initials, color))')
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -37,6 +40,7 @@ export async function fetchMyGroups(): Promise<GroupSummary[]> {
     id: g.id,
     name: g.name,
     createdBy: g.created_by,
+    ownerId: g.owner_id ?? null,
     createdAt: g.created_at,
     members: (g.group_members ?? [])
       .map((m: any) => m.profiles)
@@ -48,7 +52,7 @@ export async function fetchMyGroups(): Promise<GroupSummary[]> {
 export async function createGroup(name: string, userId: string): Promise<string> {
   const { data, error } = await supabase
     .from('groups')
-    .insert({ name: name.trim(), created_by: userId })
+    .insert({ name: name.trim(), created_by: userId, owner_id: userId })
     .select('id')
     .single();
 
@@ -67,7 +71,7 @@ export async function createGroup(name: string, userId: string): Promise<string>
 export async function fetchGroupDetail(groupId: string): Promise<GroupSummary> {
   const { data, error } = await supabase
     .from('groups')
-    .select('id, name, created_by, created_at, group_members(profiles(id, name, initials, color))')
+    .select('id, name, created_by, owner_id, created_at, group_members(profiles(id, name, initials, color))')
     .eq('id', groupId)
     .single();
 
@@ -77,6 +81,7 @@ export async function fetchGroupDetail(groupId: string): Promise<GroupSummary> {
     id: data.id,
     name: data.name,
     createdBy: data.created_by,
+    ownerId: (data as any).owner_id ?? null,
     createdAt: data.created_at,
     members: ((data as any).group_members ?? [])
       .map((m: any) => m.profiles)
@@ -127,11 +132,12 @@ export async function joinGroup(groupId: string, userId: string): Promise<boolea
   return true;
 }
 
-/** Transfers group admin to another member (sets groups.created_by). Admin only (RLS). */
+/** Transfers group admin to another member (sets groups.owner_id). Admin only (RLS).
+ *  created_by stays as the original creator. */
 export async function transferGroupAdmin(groupId: string, newAdminId: string): Promise<void> {
   const { error } = await supabase
     .from('groups')
-    .update({ created_by: newAdminId })
+    .update({ owner_id: newAdminId })
     .eq('id', groupId);
 
   if (error) throw error;

@@ -37,7 +37,7 @@ export default function GroupMembersScreen() {
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  const adminId = group?.createdBy ?? null;
+  const adminId = group?.ownerId ?? null;
   const isAdmin = !!adminId && adminId === userId;
 
   const openMemberActions = (memberId: string, memberName: string) => {

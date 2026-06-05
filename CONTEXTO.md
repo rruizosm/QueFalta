@@ -47,6 +47,7 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - `list_items`: columna `image_url text`.
 - Edge Function `delete-account` desplegada.
 - (Futuro Fase 2) tabla `push_tokens`.
+- **`group_members` INSERT policy** `with check (user_id = auth.uid())` — IMPRESCINDIBLE para que las invitaciones por enlace funcionen (si falta, `joinGroup` da 42501 y el grupo no carga). Está en `supabase/policies/group_join.sql`.
 - Hay SQL previo en `supabase/` (RLS, policies de groups/group_members/shopping_lists/list_items).
 
 ## Estado / pendientes

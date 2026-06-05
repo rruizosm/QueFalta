@@ -7,10 +7,12 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
+import { useToast } from '../context/ToastContext';
 import { updateProfile, uploadAvatar, isUsernameAvailable } from '../api/profile';
 
 const USERNAME_RE = /^[a-z0-9_.]{3,20}$/;
@@ -19,6 +21,7 @@ export default function EditProfileScreen() {
   const navigation = useNavigation<any>();
   const { session } = useAuth();
   const { profile, applyProfile } = useProfile();
+  const toast = useToast();
   const userId = session?.user.id ?? '';
   const email  = session?.user.email ?? '';
 
@@ -91,13 +94,13 @@ export default function EditProfileScreen() {
     const trimmedName = name.trim();
     const trimmedUsername = username.trim().toLowerCase();
 
-    if (!trimmedName) { Alert.alert('Error', 'El nombre no puede estar vacío.'); return; }
+    if (!trimmedName) { toast.show('El nombre no puede estar vacío.', 'error'); return; }
     if (trimmedUsername && !USERNAME_RE.test(trimmedUsername)) {
-      Alert.alert('Error', 'El nombre de usuario debe tener 3–20 caracteres (letras, números, _ ó .)');
+      toast.show('El usuario debe tener 3–20 caracteres (letras, números, _ ó .)', 'error');
       return;
     }
     if (usernameState === 'taken') {
-      Alert.alert('Error', 'Ese nombre de usuario ya está en uso.');
+      toast.show('Ese nombre de usuario ya está en uso.', 'error');
       return;
     }
 
@@ -124,10 +127,13 @@ export default function EditProfileScreen() {
         avatarUrl: finalAvatarUrl,
       });
 
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show('Perfil actualizado');
       navigation.goBack();
     } catch (e: any) {
       const isDuplicate = e?.message?.includes('unique') || e?.code === '23505';
-      Alert.alert('Error', isDuplicate ? 'Ese nombre de usuario ya está en uso.' : 'No se pudo guardar el perfil.');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      toast.show(isDuplicate ? 'Ese nombre de usuario ya está en uso.' : 'No se pudo guardar el perfil.', 'error');
     } finally {
       setSaving(false);
       setUploading(false);

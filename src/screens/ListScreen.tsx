@@ -10,6 +10,9 @@ import {
   ActivityIndicator,
   Image,
   RefreshControl,
+  LayoutAnimation,
+  Platform,
+  UIManager,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,6 +25,11 @@ import ProgressBar from '../components/ProgressBar';
 import ProductDetailModal from '../components/ProductDetailModal';
 
 const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
+
+// LayoutAnimation necesita habilitarse explícitamente en Android.
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 export default function ListScreen() {
   const { activeCart } = useCart();
@@ -56,6 +64,7 @@ export default function ListScreen() {
     if (!target) return;
     const next = !target.inCart;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, inCart: next } : it)));
     try {
       await setItemInCart(id, next);

@@ -107,8 +107,9 @@ export async function fetchGroupItems(groupId: string): Promise<GroupItem[]> {
   }));
 }
 
-/** Adds the current user to a group (used by invite links). Idempotent. */
-export async function joinGroup(groupId: string, userId: string): Promise<void> {
+/** Adds the current user to a group (used by invite links). Idempotent.
+ *  Returns true if the user was newly added, false if already a member. */
+export async function joinGroup(groupId: string, userId: string): Promise<boolean> {
   const { data: existing } = await supabase
     .from('group_members')
     .select('id')
@@ -116,13 +117,14 @@ export async function joinGroup(groupId: string, userId: string): Promise<void> 
     .eq('user_id', userId)
     .maybeSingle();
 
-  if (existing) return;
+  if (existing) return false;
 
   const { error } = await supabase
     .from('group_members')
     .insert({ group_id: groupId, user_id: userId });
 
   if (error) throw error;
+  return true;
 }
 
 /** Shareable https link (Universal Link) that lets another user join the group. */

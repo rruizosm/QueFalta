@@ -16,9 +16,11 @@ import {
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
 import { fetchMyGroups, createGroup, type GroupSummary } from '../api/groups';
 import MemberAvatars from '../components/MemberAvatars';
 import HardShadow from '../components/HardShadow';
@@ -28,6 +30,7 @@ export default function GroupsScreen() {
   const { session } = useAuth();
   const userId = session?.user.id;
   const { isActive, activateCart, deactivateCart, busy } = useCart();
+  const toast = useToast();
   const [activatingId, setActivatingId] = useState<string | null>(null);
 
   const [groups, setGroups] = useState<GroupSummary[]>([]);
@@ -57,10 +60,13 @@ export default function GroupsScreen() {
   }, [load]);
 
   const handleToggleActive = async (group: GroupSummary) => {
+    const wasActive = isActive(group.id);
     setActivatingId(group.id);
     try {
-      if (isActive(group.id)) await deactivateCart();
+      if (wasActive) await deactivateCart();
       else await activateCart(group.id, group.name);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      toast.show(wasActive ? 'Carrito desactivado' : `Carrito activo: ${group.name}`);
     } finally {
       setActivatingId(null);
     }
@@ -68,15 +74,19 @@ export default function GroupsScreen() {
 
   const handleCreate = async () => {
     if (!newName.trim() || !userId) return;
+    const name = newName.trim();
     setCreating(true);
     try {
-      await createGroup(newName, userId);
+      await createGroup(name, userId);
       setNewName('');
       setModalVisible(false);
       setLoading(true);
       load();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show(`Grupo "${name}" creado`);
     } catch {
       setError(true);
+      toast.show('No se pudo crear el grupo.', 'error');
     } finally {
       setCreating(false);
     }

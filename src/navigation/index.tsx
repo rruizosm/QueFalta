@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
+import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import {
@@ -13,6 +14,7 @@ import {
   GroupsStackParamList,
 } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { joinGroup } from '../api/groups';
 
 import HomeScreen       from '../screens/HomeScreen';
@@ -75,6 +77,7 @@ function GroupsNavigator() {
 
 export default function Navigation() {
   const { session, loading } = useAuth();
+  const { show: showToast } = useToast();
   const userId = session?.user.id;
 
   useEffect(() => {
@@ -84,7 +87,13 @@ export default function Navigation() {
       if (!url) return;
       const groupId = parseInviteUrl(url);
       if (!groupId) return;
-      try { await joinGroup(groupId, userId); } catch { /* already a member */ }
+      try {
+        const joined = await joinGroup(groupId, userId);
+        if (joined) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          showToast('¡Te has unido al grupo! 🎉');
+        }
+      } catch { /* already a member or RLS */ }
       if (navigationRef.isReady()) {
         (navigationRef.navigate as any)('Groups', {
           screen: 'GroupDetail',

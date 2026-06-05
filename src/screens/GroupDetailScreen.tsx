@@ -47,7 +47,7 @@ export default function GroupDetailScreen() {
     setError(false);
     Promise.all([fetchGroupDetail(groupId), fetchGroupItems(groupId)])
       .then(([g, its]) => { setGroup(g); setItems(its); })
-      .catch(() => setError(true))
+      .catch((e: any) => { console.log('[group] load error →', e?.code, e?.message ?? e); setError(true); })
       .finally(() => setLoading(false));
   }, [groupId]);
 

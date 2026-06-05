@@ -83,8 +83,10 @@ export default function Navigation() {
     const handleUrl = async (url: string | null) => {
       if (!url) return;
       const groupId = parseInviteUrl(url);
+      console.log('[invite] url →', url, '| groupId →', groupId, '| userId →', userId);
       if (!groupId) return;
-      try { await joinGroup(groupId, userId); } catch { /* already a member */ }
+      try { await joinGroup(groupId, userId); }
+      catch (e: any) { console.log('[invite] joinGroup error →', e?.code, e?.message ?? e); }
       if (navigationRef.isReady()) {
         (navigationRef.navigate as any)('Groups', {
           screen: 'GroupDetail',

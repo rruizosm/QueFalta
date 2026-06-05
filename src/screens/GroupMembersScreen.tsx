@@ -13,7 +13,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { fetchGroupDetail, removeGroupMember, transferGroupAdmin, type GroupSummary } from '../api/groups';
-import HardShadow from '../components/HardShadow';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 type MembersRouteProp = RouteProp<GroupsStackParamList, 'GroupMembers'>;
 
@@ -221,37 +221,15 @@ export default function GroupMembersScreen() {
         </View>
       </Modal>
 
-      {/* Leave-group confirm (app-styled, replaces native Alert) */}
-      <Modal
+      <ConfirmDialog
         visible={leaveVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setLeaveVisible(false)}
-      >
-        <View style={styles.confirmOverlay}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={() => setLeaveVisible(false)} />
-          <HardShadow style={styles.confirmCard}>
-            <Text style={styles.confirmTitle}>Abandonar grupo</Text>
-            <Text style={styles.confirmText}>
-              ¿Seguro que quieres abandonar “{group?.name ?? ''}”? Dejarás de ver su lista compartida.
-            </Text>
-            <View style={styles.confirmActions}>
-              <TouchableOpacity
-                style={[styles.confirmBtn, styles.confirmBtnCancel]}
-                onPress={() => setLeaveVisible(false)}
-              >
-                <Text style={styles.confirmBtnCancelText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.confirmBtn, styles.confirmBtnDanger]}
-                onPress={confirmLeave}
-              >
-                <Text style={styles.confirmBtnDangerText}>Abandonar</Text>
-              </TouchableOpacity>
-            </View>
-          </HardShadow>
-        </View>
-      </Modal>
+        title="Abandonar grupo"
+        message={`¿Seguro que quieres abandonar “${group?.name ?? ''}”? Dejarás de ver su lista compartida.`}
+        confirmLabel="Abandonar"
+        destructive
+        onConfirm={confirmLeave}
+        onCancel={() => setLeaveVisible(false)}
+      />
     </View>
   );
 }
@@ -340,19 +318,4 @@ const styles = StyleSheet.create({
   sheetActionText: { fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
   sheetCancel: { alignItems: 'center', paddingVertical: 16, marginTop: 4 },
   sheetCancelText: { fontSize: 15, fontFamily: fonts.bold, color: colors.inkSoft },
-
-  // ── Confirm dialog ────────────────────────────────────────────
-  confirmOverlay: {
-    flex: 1, alignItems: 'center', justifyContent: 'center',
-    paddingHorizontal: 28, backgroundColor: 'rgba(0,0,0,0.45)',
-  },
-  confirmCard: { width: '100%', padding: 22, gap: 12 },
-  confirmTitle: { fontSize: 19, fontFamily: fonts.bold, color: colors.ink },
-  confirmText: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, lineHeight: 20 },
-  confirmActions: { flexDirection: 'row', gap: 10, marginTop: 4 },
-  confirmBtn: { flex: 1, paddingVertical: 13, alignItems: 'center', justifyContent: 'center' },
-  confirmBtnCancel: { borderWidth: 1, borderColor: colors.border },
-  confirmBtnCancelText: { fontSize: 14, fontFamily: fonts.semibold, color: colors.inkSoft },
-  confirmBtnDanger: { backgroundColor: '#d6452b' },
-  confirmBtnDangerText: { fontSize: 14, fontFamily: fonts.bold, color: colors.white },
 });

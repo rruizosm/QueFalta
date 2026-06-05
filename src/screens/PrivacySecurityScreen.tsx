@@ -9,9 +9,11 @@ import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
+import { useToast } from '../context/ToastContext';
 import { updateProfile } from '../api/profile';
 import { deleteAccount } from '../api/account';
 import ProfileRow from '../components/ProfileRow';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const PRIVACY_POLICY_URL = 'https://quefalta.es/privacidad';
 
@@ -19,10 +21,13 @@ export default function PrivacySecurityScreen() {
   const navigation = useNavigation<any>();
   const { signOut } = useAuth();
   const { profile, applyProfile } = useProfile();
+  const toast = useToast();
 
   const [discoverable, setDiscoverable] = useState(profile?.discoverable ?? true);
   const [savingDiscoverable, setSavingDiscoverable] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [signOutAllVisible, setSignOutAllVisible] = useState(false);
+  const [deleteVisible, setDeleteVisible] = useState(false);
 
   const handleToggleDiscoverable = async (value: boolean) => {
     if (!profile) return;
@@ -33,50 +38,25 @@ export default function PrivacySecurityScreen() {
       applyProfile({ discoverable: value });
     } catch {
       setDiscoverable(!value); // revertir si falla
-      Alert.alert('Error', 'No se pudo guardar la preferencia.');
+      toast.show('No se pudo guardar la preferencia.', 'error');
     } finally {
       setSavingDiscoverable(false);
     }
   };
 
-  const handleSignOutEverywhere = () => {
-    Alert.alert(
-      'Cerrar sesión en todos los dispositivos',
-      'Se cerrará tu sesión en este y en cualquier otro dispositivo donde hayas iniciado sesión.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Cerrar en todos', style: 'destructive', onPress: () => signOut('global') },
-      ],
-    );
-  };
-
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      'Eliminar cuenta',
-      'Esta acción es permanente. Se borrarán tu perfil y tus datos, y no podrás recuperarlos. ¿Quieres continuar?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: confirmDeleteAccount,
-        },
-      ],
-    );
-  };
-
   const confirmDeleteAccount = async () => {
+    setDeleteVisible(false);
     setDeleting(true);
     try {
       await deleteAccount();
       // Al borrarse el usuario, AuthContext detecta el cierre de sesión y vuelve al login.
     } catch (e: any) {
       setDeleting(false);
-      Alert.alert(
-        'No se pudo eliminar',
+      toast.show(
         e?.message?.includes('Function not found') || e?.message?.includes('404')
-          ? 'La función de borrado aún no está desplegada en el servidor.'
-          : 'Ocurrió un error al eliminar la cuenta. Inténtalo de nuevo.',
+          ? 'La función de borrado aún no está desplegada.'
+          : 'No se pudo eliminar la cuenta. Inténtalo de nuevo.',
+        'error',
       );
     }
   };
@@ -118,7 +98,7 @@ export default function PrivacySecurityScreen() {
           <ProfileRow
             icon="phone-portrait-outline"
             label="Cerrar sesión en todos los dispositivos"
-            onPress={handleSignOutEverywhere}
+            onPress={() => setSignOutAllVisible(true)}
             last
           />
         </View>
@@ -146,7 +126,7 @@ export default function PrivacySecurityScreen() {
         <Text style={[styles.sectionLabel, { color: '#d6452b' }]}>Zona de peligro</Text>
         <TouchableOpacity
           style={styles.deleteBtn}
-          onPress={handleDeleteAccount}
+          onPress={() => setDeleteVisible(true)}
           disabled={deleting}
         >
           {deleting ? (
@@ -163,6 +143,26 @@ export default function PrivacySecurityScreen() {
         </Text>
 
       </ScrollView>
+
+      <ConfirmDialog
+        visible={signOutAllVisible}
+        title="Cerrar sesión en todos los dispositivos"
+        message="Se cerrará tu sesión en este y en cualquier otro dispositivo donde hayas iniciado sesión."
+        confirmLabel="Cerrar en todos"
+        destructive
+        onConfirm={() => { setSignOutAllVisible(false); signOut('global'); }}
+        onCancel={() => setSignOutAllVisible(false)}
+      />
+
+      <ConfirmDialog
+        visible={deleteVisible}
+        title="Eliminar cuenta"
+        message="Esta acción es permanente. Se borrarán tu perfil y tus datos, y no podrás recuperarlos."
+        confirmLabel="Eliminar"
+        destructive
+        onConfirm={confirmDeleteAccount}
+        onCancel={() => setDeleteVisible(false)}
+      />
     </View>
   );
 }

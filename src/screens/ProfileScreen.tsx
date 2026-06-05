@@ -16,6 +16,7 @@ import {
 } from '../lib/notifications';
 import HardShadow from '../components/HardShadow';
 import ProfileRow from '../components/ProfileRow';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function ProfileScreen() {
   const navigation = useNavigation<any>();
@@ -25,6 +26,7 @@ export default function ProfileScreen() {
   const email = session?.user.email ?? '';
 
   const [notifications, setNotifications] = useState(false);
+  const [signOutVisible, setSignOutVisible] = useState(false);
 
   // Reflect the saved preference (and revoked OS permission) on mount.
   useEffect(() => {
@@ -59,16 +61,7 @@ export default function ProfileScreen() {
     await sendTestNotification();
   };
 
-  const handleSignOut = () => {
-    Alert.alert(
-      'Cerrar sesión',
-      '¿Seguro que quieres cerrar sesión?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Cerrar sesión', style: 'destructive', onPress: () => signOut() },
-      ],
-    );
-  };
+  const handleSignOut = () => setSignOutVisible(true);
 
   const initials  = profile?.initials ?? '??';
   const avatarBg  = profile?.color   ?? colors.accent;
@@ -193,6 +186,16 @@ export default function ProfileScreen() {
 
         </ScrollView>
       )}
+
+      <ConfirmDialog
+        visible={signOutVisible}
+        title="Cerrar sesión"
+        message="¿Seguro que quieres cerrar sesión?"
+        confirmLabel="Cerrar sesión"
+        destructive
+        onConfirm={() => { setSignOutVisible(false); signOut(); }}
+        onCancel={() => setSignOutVisible(false)}
+      />
     </View>
   );
 }

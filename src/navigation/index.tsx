@@ -28,6 +28,7 @@ import ProductsScreen   from '../screens/ProductsScreen';
 import ListScreen       from '../screens/ListScreen';
 import GroupsScreen     from '../screens/GroupsScreen';
 import GroupDetailScreen from '../screens/GroupDetailScreen';
+import GroupMembersScreen from '../screens/GroupMembersScreen';
 import LoginScreen      from '../screens/LoginScreen';
 
 const Tab          = createBottomTabNavigator<RootTabParamList>();
@@ -69,8 +70,9 @@ function CatalogNavigator() {
 function GroupsNavigator() {
   return (
     <GroupsStack.Navigator screenOptions={{ headerShown: false }}>
-      <GroupsStack.Screen name="GroupsHome"  component={GroupsScreen} />
-      <GroupsStack.Screen name="GroupDetail" component={GroupDetailScreen} />
+      <GroupsStack.Screen name="GroupsHome"   component={GroupsScreen} />
+      <GroupsStack.Screen name="GroupDetail"  component={GroupDetailScreen} />
+      <GroupsStack.Screen name="GroupMembers" component={GroupMembersScreen} />
     </GroupsStack.Navigator>
   );
 }

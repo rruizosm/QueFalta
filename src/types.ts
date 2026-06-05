@@ -203,4 +203,5 @@ export type CatalogStackParamList = {
 export type GroupsStackParamList = {
   GroupsHome: undefined;
   GroupDetail: { groupId: string };
+  GroupMembers: { groupId: string };
 };

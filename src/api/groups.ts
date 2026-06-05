@@ -127,6 +127,18 @@ export async function joinGroup(groupId: string, userId: string): Promise<boolea
   return true;
 }
 
+/** Removes a member from a group. Used for both "leave" (self) and admin removal.
+ *  RLS decides who is allowed: the member themselves, or the group admin. */
+export async function removeGroupMember(groupId: string, memberId: string): Promise<void> {
+  const { error } = await supabase
+    .from('group_members')
+    .delete()
+    .eq('group_id', groupId)
+    .eq('user_id', memberId);
+
+  if (error) throw error;
+}
+
 /** Shareable https link (Universal Link) that lets another user join the group. */
 export function getInviteLink(groupId: string): string {
   return `${WEB_BASE_URL}/join/${groupId}`;

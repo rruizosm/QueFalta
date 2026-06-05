@@ -190,8 +190,18 @@ export default function GroupDetailScreen() {
       >
 
         {/* Members */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Miembros ({group.members.length})</Text>
+        <TouchableOpacity
+          style={styles.section}
+          activeOpacity={0.7}
+          onPress={() => navigation.navigate('GroupMembers', { groupId })}
+        >
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Miembros ({group.members.length})</Text>
+            <View style={styles.manageHint}>
+              <Text style={styles.manageHintText}>Gestionar</Text>
+              <Ionicons name="chevron-forward" size={15} color={colors.accent} />
+            </View>
+          </View>
           {group.members.length > 0 && (
             <MemberAvatars members={group.members} maxVisible={6} size={32} />
           )}
@@ -205,7 +215,7 @@ export default function GroupDetailScreen() {
               <Text style={styles.memberName}> +{group.members.length - 4} más</Text>
             )}
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Cesta del grupo */}
         <View style={styles.section}>
@@ -329,6 +339,8 @@ const styles = StyleSheet.create({
   },
   membersNames: { flexDirection: 'row', flexWrap: 'wrap' },
   memberName: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft },
+  manageHint: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  manageHintText: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.accent },
 
   progressWrap: { gap: 6 },
   progressSub: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'right' },

@@ -39,3 +39,9 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# design handoff (referencias de diseño, no necesarias para el build)
+LaCompra/
+
+# Supabase CLI cache local
+supabase/.temp/

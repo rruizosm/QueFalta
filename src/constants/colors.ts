@@ -1,0 +1,21 @@
+export const colors = {
+  accent:           '#df4b2e',
+  accentLight:      'rgba(223,75,46,0.12)',
+  accentMid:        'rgba(223,75,46,0.30)',
+  ink:              '#2b2521',
+  inkSoft:          '#8a7f73',
+  inkFaint:         '#c2b8a9',
+  paper:            '#fbf6ee',
+  white:            '#ffffff',
+  surfaceAlt:       '#f6efe3',
+  photoPlaceholder: '#f6efe3',
+  border:           '#ece2d3',
+  ok:               '#3f8f4f',
+  // Category colors (warm-shifted)
+  red:    '#df4b2e',
+  orange: '#d98324',
+  blue:   '#2f6cb5',
+  yellow: '#c98a1e',
+  purple: '#7a4fb5',
+  teal:   '#1f8a8f',
+} as const;

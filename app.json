@@ -1,13 +1,20 @@
 {
   "expo": {
-    "name": "MercaAppMobile",
-    "slug": "MercaAppMobile",
+    "name": "QuéFalta",
+    "slug": "quefalta",
     "version": "1.0.0",
+    "sdkVersion": "54.0.0",
+    "scheme": "quefalta",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.quefalta.app",
+      "associatedDomains": ["applinks:quefalta.es"],
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -20,6 +27,7 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "owner": "rruizosma"
   }
 }

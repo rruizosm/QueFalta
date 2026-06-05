@@ -1,0 +1,86 @@
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Platform } from 'react-native';
+import { Session } from '@supabase/supabase-js';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
+import { supabase } from '../lib/supabase';
+
+WebBrowser.maybeCompleteAuthSession();
+
+interface AuthContextValue {
+  session: Session | null;
+  loading: boolean;
+  signInWithGoogle: () => Promise<void>;
+  /** scope 'global' cierra la sesión en TODOS los dispositivos. */
+  signOut: (scope?: 'global' | 'local' | 'others') => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextValue>({
+  session: null,
+  loading: true,
+  signInWithGoogle: async () => {},
+  signOut: async () => {},
+});
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signInWithGoogle = async () => {
+    if (Platform.OS === 'web') {
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin },
+      });
+      return;
+    }
+
+    const redirectTo = Linking.createURL('auth/callback');
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo,
+        skipBrowserRedirect: true,
+      },
+    });
+
+    if (error || !data.url) return;
+
+    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+
+    if (result.type === 'success') {
+      // exchangeCodeForSession espera SOLO el `code`, no la URL completa.
+      const { queryParams } = Linking.parse(result.url);
+      const code = typeof queryParams?.code === 'string' ? queryParams.code : null;
+      if (code) await supabase.auth.exchangeCodeForSession(code);
+    }
+  };
+
+  const signOut = async (scope?: 'global' | 'local' | 'others') => {
+    await supabase.auth.signOut(scope ? { scope } : undefined);
+  };
+
+  return (
+    <AuthContext.Provider value={{ session, loading, signInWithGoogle, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth(): AuthContextValue {
+  return useContext(AuthContext);
+}

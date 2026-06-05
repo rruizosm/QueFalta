@@ -11,7 +11,9 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.quefalta.app",
-      "associatedDomains": ["applinks:quefalta.es"],
+      "associatedDomains": [
+        "applinks:quefalta.es"
+      ],
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -28,6 +30,11 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "owner": "rruizosma"
+    "owner": "rruizosma",
+    "extra": {
+      "eas": {
+        "projectId": "cdae19f5-47a5-4a4c-9f94-2befcada0885"
+      }
+    }
   }
 }

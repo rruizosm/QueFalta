@@ -9,6 +9,7 @@ import {
   StatusBar,
   ActivityIndicator,
   Image,
+  RefreshControl,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,18 +31,25 @@ export default function ListScreen() {
   const [items, setItems] = useState<ListItemRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [detailProductId, setDetailProductId] = useState<string | null>(null);
 
   const load = useCallback(() => {
-    if (!listId) { setItems([]); setLoading(false); return; }
+    if (!listId) { setItems([]); setLoading(false); return Promise.resolve(); }
     setError(false);
-    fetchListItems(listId)
+    return fetchListItems(listId)
       .then(setItems)
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [listId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
 
   const toggle = async (id: string) => {
     const target = items.find((i) => i.id === id);
@@ -202,6 +210,9 @@ export default function ListScreen() {
             contentContainerStyle={styles.list}
             showsVerticalScrollIndicator={false}
             stickySectionHeadersEnabled={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} colors={[colors.accent]} />
+            }
           />
 
           {/* Total bar */}

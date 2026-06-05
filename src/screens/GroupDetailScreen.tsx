@@ -11,6 +11,7 @@ import {
   Share,
   Platform,
   Image,
+  RefreshControl,
 } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -42,16 +43,23 @@ export default function GroupDetailScreen() {
   const [error, setError] = useState(false);
   const [cartExpanded, setCartExpanded] = useState(false);
   const [detailProductId, setDetailProductId] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(() => {
     setError(false);
-    Promise.all([fetchGroupDetail(groupId), fetchGroupItems(groupId)])
+    return Promise.all([fetchGroupDetail(groupId), fetchGroupItems(groupId)])
       .then(([g, its]) => { setGroup(g); setItems(its); })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [groupId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
 
   const handleShare = async () => {
     const link = getInviteLink(groupId);
@@ -173,7 +181,13 @@ export default function GroupDetailScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scroll}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} colors={[colors.accent]} />
+        }
+      >
 
         {/* Members */}
         <View style={styles.section}>

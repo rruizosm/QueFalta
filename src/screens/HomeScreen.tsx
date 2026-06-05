@@ -9,6 +9,7 @@ import {
   StatusBar,
   ActivityIndicator,
   Image,
+  RefreshControl,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,25 +31,34 @@ export default function HomeScreen() {
   const [groupsLoading, setGroupsLoading] = useState(true);
   const [cartItems, setCartItems] = useState<GroupItem[]>([]);
   const [cartLoading, setCartLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchMyGroups()
-        .then(setGroups)
-        .catch(() => setGroups([]))
-        .finally(() => setGroupsLoading(false));
+  const load = useCallback(() => {
+    const groupsP = fetchMyGroups()
+      .then(setGroups)
+      .catch(() => setGroups([]))
+      .finally(() => setGroupsLoading(false));
 
-      if (activeCart) {
-        setCartLoading(true);
-        fetchGroupItems(activeCart.groupId)
-          .then(setCartItems)
-          .catch(() => setCartItems([]))
-          .finally(() => setCartLoading(false));
-      } else {
-        setCartItems([]);
-      }
-    }, [activeCart])
-  );
+    let cartP: Promise<unknown> = Promise.resolve();
+    if (activeCart) {
+      setCartLoading(true);
+      cartP = fetchGroupItems(activeCart.groupId)
+        .then(setCartItems)
+        .catch(() => setCartItems([]))
+        .finally(() => setCartLoading(false));
+    } else {
+      setCartItems([]);
+    }
+    return Promise.all([groupsP, cartP]);
+  }, [activeCart]);
+
+  useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
 
   const doneItems = cartItems.filter((i) => i.inCart).length;
   const totalItems = cartItems.length;
@@ -66,7 +76,13 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scroll}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} colors={[colors.accent]} />
+        }
+      >
 
         {/* Header */}
         <View style={styles.header}>

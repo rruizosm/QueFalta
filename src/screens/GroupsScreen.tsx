@@ -12,6 +12,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  RefreshControl,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -37,15 +38,23 @@ export default function GroupsScreen() {
   const [newName, setNewName] = useState('');
   const [creating, setCreating] = useState(false);
 
+  const [refreshing, setRefreshing] = useState(false);
+
   const load = useCallback(() => {
     setError(false);
-    fetchMyGroups()
+    return fetchMyGroups()
       .then(setGroups)
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
 
   const handleToggleActive = async (group: GroupSummary) => {
     setActivatingId(group.id);
@@ -172,6 +181,9 @@ export default function GroupsScreen() {
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           ItemSeparatorComponent={() => <View style={{ height: 14 }} />}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} colors={[colors.accent]} />
+          }
         />
       )}
 

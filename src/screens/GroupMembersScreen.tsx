@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, StatusBar, ActivityIndicator, Alert, Modal, Pressable,
+  StyleSheet, StatusBar, ActivityIndicator, Modal, Pressable,
 } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +13,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { fetchGroupDetail, removeGroupMember, transferGroupAdmin, type GroupSummary } from '../api/groups';
+import HardShadow from '../components/HardShadow';
 
 type MembersRouteProp = RouteProp<GroupsStackParamList, 'GroupMembers'>;
 
@@ -28,6 +29,7 @@ export default function GroupMembersScreen() {
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [actionMember, setActionMember] = useState<GroupMember | null>(null);
+  const [leaveVisible, setLeaveVisible] = useState(false);
 
   const load = useCallback(() => {
     fetchGroupDetail(groupId)
@@ -71,31 +73,19 @@ export default function GroupMembersScreen() {
     }
   };
 
-  const handleLeave = () => {
-    Alert.alert(
-      'Abandonar grupo',
-      `¿Seguro que quieres abandonar "${group?.name ?? ''}"? Dejarás de ver su lista compartida.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Abandonar',
-          style: 'destructive',
-          onPress: async () => {
-            setBusyId(userId);
-            try {
-              await removeGroupMember(groupId, userId);
-              if (activeCart?.groupId === groupId) await deactivateCart();
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              toast.show('Has abandonado el grupo');
-              navigation.navigate('GroupsHome');
-            } catch {
-              toast.show('No se pudo abandonar el grupo.', 'error');
-              setBusyId(null);
-            }
-          },
-        },
-      ],
-    );
+  const confirmLeave = async () => {
+    setLeaveVisible(false);
+    setBusyId(userId);
+    try {
+      await removeGroupMember(groupId, userId);
+      if (activeCart?.groupId === groupId) await deactivateCart();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show('Has abandonado el grupo');
+      navigation.navigate('GroupsHome');
+    } catch {
+      toast.show('No se pudo abandonar el grupo.', 'error');
+      setBusyId(null);
+    }
   };
 
   return (
@@ -167,7 +157,7 @@ export default function GroupMembersScreen() {
           ) : (
             <TouchableOpacity
               style={styles.leaveBtn}
-              onPress={handleLeave}
+              onPress={() => setLeaveVisible(true)}
               disabled={busyId === userId}
             >
               {busyId === userId ? (
@@ -228,6 +218,38 @@ export default function GroupMembersScreen() {
               </TouchableOpacity>
             </View>
           )}
+        </View>
+      </Modal>
+
+      {/* Leave-group confirm (app-styled, replaces native Alert) */}
+      <Modal
+        visible={leaveVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setLeaveVisible(false)}
+      >
+        <View style={styles.confirmOverlay}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setLeaveVisible(false)} />
+          <HardShadow style={styles.confirmCard}>
+            <Text style={styles.confirmTitle}>Abandonar grupo</Text>
+            <Text style={styles.confirmText}>
+              ¿Seguro que quieres abandonar “{group?.name ?? ''}”? Dejarás de ver su lista compartida.
+            </Text>
+            <View style={styles.confirmActions}>
+              <TouchableOpacity
+                style={[styles.confirmBtn, styles.confirmBtnCancel]}
+                onPress={() => setLeaveVisible(false)}
+              >
+                <Text style={styles.confirmBtnCancelText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.confirmBtn, styles.confirmBtnDanger]}
+                onPress={confirmLeave}
+              >
+                <Text style={styles.confirmBtnDangerText}>Abandonar</Text>
+              </TouchableOpacity>
+            </View>
+          </HardShadow>
         </View>
       </Modal>
     </View>
@@ -318,4 +340,19 @@ const styles = StyleSheet.create({
   sheetActionText: { fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
   sheetCancel: { alignItems: 'center', paddingVertical: 16, marginTop: 4 },
   sheetCancelText: { fontSize: 15, fontFamily: fonts.bold, color: colors.inkSoft },
+
+  // ── Confirm dialog ────────────────────────────────────────────
+  confirmOverlay: {
+    flex: 1, alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: 28, backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  confirmCard: { width: '100%', padding: 22, gap: 12 },
+  confirmTitle: { fontSize: 19, fontFamily: fonts.bold, color: colors.ink },
+  confirmText: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, lineHeight: 20 },
+  confirmActions: { flexDirection: 'row', gap: 10, marginTop: 4 },
+  confirmBtn: { flex: 1, paddingVertical: 13, alignItems: 'center', justifyContent: 'center' },
+  confirmBtnCancel: { borderWidth: 1, borderColor: colors.border },
+  confirmBtnCancelText: { fontSize: 14, fontFamily: fonts.semibold, color: colors.inkSoft },
+  confirmBtnDanger: { backgroundColor: '#d6452b' },
+  confirmBtnDangerText: { fontSize: 14, fontFamily: fonts.bold, color: colors.white },
 });

@@ -127,6 +127,16 @@ export async function joinGroup(groupId: string, userId: string): Promise<boolea
   return true;
 }
 
+/** Transfers group admin to another member (sets groups.created_by). Admin only (RLS). */
+export async function transferGroupAdmin(groupId: string, newAdminId: string): Promise<void> {
+  const { error } = await supabase
+    .from('groups')
+    .update({ created_by: newAdminId })
+    .eq('id', groupId);
+
+  if (error) throw error;
+}
+
 /** Removes a member from a group. Used for both "leave" (self) and admin removal.
  *  RLS decides who is allowed: the member themselves, or the group admin. */
 export async function removeGroupMember(groupId: string, memberId: string): Promise<void> {

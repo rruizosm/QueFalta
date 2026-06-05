@@ -12,7 +12,7 @@ import { GroupsStackParamList } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
-import { fetchGroupDetail, removeGroupMember, type GroupSummary } from '../api/groups';
+import { fetchGroupDetail, removeGroupMember, transferGroupAdmin, type GroupSummary } from '../api/groups';
 
 type MembersRouteProp = RouteProp<GroupsStackParamList, 'GroupMembers'>;
 
@@ -39,6 +39,40 @@ export default function GroupMembersScreen() {
 
   const adminId = group?.createdBy ?? null;
   const isAdmin = !!adminId && adminId === userId;
+
+  const openMemberActions = (memberId: string, memberName: string) => {
+    Alert.alert(memberName, undefined, [
+      { text: 'Hacer administrador', onPress: () => handleTransfer(memberId, memberName) },
+      { text: 'Eliminar del grupo', style: 'destructive', onPress: () => handleRemove(memberId, memberName) },
+      { text: 'Cancelar', style: 'cancel' },
+    ]);
+  };
+
+  const handleTransfer = (memberId: string, memberName: string) => {
+    Alert.alert(
+      'Transferir administración',
+      `${memberName} pasará a ser el administrador y tú serás un miembro normal. ¿Continuar?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Transferir',
+          onPress: async () => {
+            setBusyId(memberId);
+            try {
+              await transferGroupAdmin(groupId, memberId);
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              toast.show(`${memberName} es ahora el administrador`);
+              load();
+            } catch {
+              toast.show('No se pudo transferir la administración.', 'error');
+            } finally {
+              setBusyId(null);
+            }
+          },
+        },
+      ],
+    );
+  };
 
   const handleRemove = (memberId: string, memberName: string) => {
     Alert.alert(
@@ -145,8 +179,8 @@ export default function GroupMembersScreen() {
                     busyId === m.id ? (
                       <ActivityIndicator size="small" color={colors.inkSoft} />
                     ) : (
-                      <TouchableOpacity onPress={() => handleRemove(m.id, m.name)} hitSlop={8} style={styles.removeBtn}>
-                        <Ionicons name="person-remove-outline" size={19} color="#d6452b" />
+                      <TouchableOpacity onPress={() => openMemberActions(m.id, m.name)} hitSlop={8} style={styles.removeBtn}>
+                        <Ionicons name="ellipsis-horizontal" size={20} color={colors.inkSoft} />
                       </TouchableOpacity>
                     )
                   )}
@@ -221,7 +255,7 @@ const styles = StyleSheet.create({
   removeBtn: {
     width: 34, height: 34,
     alignItems: 'center', justifyContent: 'center',
-    backgroundColor: 'rgba(214,69,43,0.08)',
+    backgroundColor: colors.surfaceAlt,
   },
 
   adminNote: {

@@ -3,6 +3,7 @@ import { fonts } from '../constants/typography';
 import {
   View,
   Text,
+  Image,
   FlatList,
   TouchableOpacity,
   TextInput,
@@ -66,8 +67,16 @@ function getMeta(name: string) {
   return CATEGORY_META[name] ?? { emoji: '🛒', color: colors.inkSoft };
 }
 
+const STORES = [
+  { key: 'mercadona', name: 'Mercadona',     icon: require('../../assets/stores/mercadona.png') },
+  { key: 'esclat',    name: 'BonpreuEsclat', icon: require('../../assets/stores/bonpreuesclat.png') },
+] as const;
+
+type StoreKey = (typeof STORES)[number]['key'];
+
 export default function CatalogScreen() {
   const navigation = useNavigation<any>();
+  const [store, setStore] = useState<StoreKey>('mercadona');
   const [tab, setTab] = useState<'categorias' | 'productos'>('categorias');
 
   const [categories, setCategories] = useState<N1Category[]>([]);
@@ -150,22 +159,37 @@ export default function CatalogScreen() {
         <Text style={styles.title}>Catálogo</Text>
       </View>
 
-      {/* Tab switcher */}
-      <View style={styles.tabs}>
-        {(['categorias', 'productos'] as const).map((t) => (
+      {/* Store switcher */}
+      <View style={styles.stores}>
+        {STORES.map((s) => (
           <TouchableOpacity
-            key={t}
-            style={[styles.tab, tab === t && styles.tabActive]}
-            onPress={() => setTab(t)}
+            key={s.key}
+            style={[styles.storeBtn, store === s.key && styles.storeBtnActive]}
+            onPress={() => setStore(s.key)}
+            activeOpacity={0.8}
           >
-            <Text style={[styles.tabText, tab === t && styles.tabTextActive]}>
-              {t === 'categorias' ? 'Categorías' : 'Productos'}
+            <Image source={s.icon} style={styles.storeIcon} resizeMode="contain" />
+            <Text style={[styles.storeText, store === s.key && styles.storeTextActive]}>
+              {s.name}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {tab === 'categorias' ? (
+      {store === 'esclat' ? (
+        <View style={styles.comingSoon}>
+          <Image
+            source={require('../../assets/stores/bonpreuesclat.png')}
+            style={styles.comingSoonImage}
+            resizeMode="contain"
+          />
+          <Text style={styles.comingSoonTitle}>BonpreuEsclat — Próximamente</Text>
+          <Text style={styles.comingSoonText}>
+            Estamos trabajando para traerte el catálogo de BonpreuEsclat. De momento puedes
+            comprar con el catálogo de Mercadona.
+          </Text>
+        </View>
+      ) : tab === 'categorias' ? (
         <>
           <View style={styles.searchBar}>
             <Ionicons name="search-outline" size={18} color={colors.inkSoft} />
@@ -259,6 +283,38 @@ const styles = StyleSheet.create({
   headerArea: { paddingHorizontal: 16, paddingTop: 56, paddingBottom: 10 },
   title: {
     fontSize: 28, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3,
+  },
+
+  // ── Store switcher ────────────────────────────────────────────
+  stores: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginBottom: 10,
+    gap: 8,
+  },
+  storeBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 11,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  storeBtnActive: { borderColor: colors.accent, backgroundColor: colors.accentLight },
+  storeIcon: { width: 20, height: 20 },
+  storeText: { fontSize: 13, fontFamily: fonts.semibold, color: colors.inkSoft },
+  storeTextActive: { color: colors.accent },
+
+  // ── Coming soon (Esclat) ──────────────────────────────────────
+  comingSoon: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 32 },
+  comingSoonImage: { width: 64, height: 64 },
+  comingSoonTitle: { fontSize: 18, fontFamily: fonts.bold, color: colors.ink },
+  comingSoonText: {
+    fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft,
+    textAlign: 'center', lineHeight: 20,
   },
 
   // ── Tab switcher ──────────────────────────────────────────────

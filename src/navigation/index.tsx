@@ -23,6 +23,7 @@ import EditProfileScreen from '../screens/EditProfileScreen';
 import PrivacySecurityScreen from '../screens/PrivacySecurityScreen';
 import DefaultGroupScreen from '../screens/DefaultGroupScreen';
 import HistoryScreen from '../screens/HistoryScreen';
+import FriendsScreen from '../screens/FriendsScreen';
 import CatalogScreen    from '../screens/CatalogScreen';
 import SubCategoryScreen from '../screens/SubCategoryScreen';
 import ProductsScreen   from '../screens/ProductsScreen';
@@ -56,6 +57,7 @@ function HomeNavigator() {
       <HomeStack.Screen name="PrivacySecurity" component={PrivacySecurityScreen} />
       <HomeStack.Screen name="DefaultGroup" component={DefaultGroupScreen} />
       <HomeStack.Screen name="History" component={HistoryScreen} />
+      <HomeStack.Screen name="Friends" component={FriendsScreen} />
     </HomeStack.Navigator>
   );
 }

@@ -182,6 +182,7 @@ export type HomeStackParamList = {
   PrivacySecurity: undefined;
   DefaultGroup: undefined;
   History: undefined;
+  Friends: undefined;
 };
 
 export type CatalogStackParamList = {

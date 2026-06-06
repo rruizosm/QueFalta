@@ -157,12 +157,12 @@ export default function ProfileScreen() {
           </View>
 
           {/* GRUPOS */}
-          <Text style={styles.sectionLabel}>Grupos</Text>
+          <Text style={styles.sectionLabel}>Social</Text>
           <View style={styles.section}>
             <ProfileRow
-              icon="person-add-outline"
-              label="Invitar amigos"
-              onPress={() => {}}
+              icon="people-circle-outline"
+              label="Amigos"
+              onPress={() => navigation.navigate('Friends')}
               last
             />
           </View>

@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity,
+  View, Text, ScrollView, TouchableOpacity, Image,
   StyleSheet, StatusBar, ActivityIndicator, RefreshControl,
+  LayoutAnimation, Platform, UIManager,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +12,11 @@ import { fonts } from '../constants/typography';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { fetchPurchases, fetchPurchaseItems, type Purchase } from '../api/purchases';
+import type { NewListItem } from '../api/lists';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -23,6 +29,9 @@ export default function HistoryScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [repeatingId, setRepeatingId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [itemsCache, setItemsCache] = useState<Record<string, NewListItem[]>>({});
+  const [itemsLoadingId, setItemsLoadingId] = useState<string | null>(null);
 
   const load = useCallback(() => {
     return fetchPurchases()
@@ -39,11 +48,29 @@ export default function HistoryScreen() {
     setRefreshing(false);
   }, [load]);
 
+  const toggleExpand = async (p: Purchase) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    if (expandedId === p.id) { setExpandedId(null); return; }
+    setExpandedId(p.id);
+    if (!itemsCache[p.id]) {
+      setItemsLoadingId(p.id);
+      try {
+        const items = await fetchPurchaseItems(p.id);
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setItemsCache((c) => ({ ...c, [p.id]: items }));
+      } catch {
+        toast.show('No se pudo cargar el detalle.', 'error');
+      } finally {
+        setItemsLoadingId(null);
+      }
+    }
+  };
+
   const handleRepeat = async (p: Purchase) => {
     if (repeatingId) return;
     setRepeatingId(p.id);
     try {
-      const items = await fetchPurchaseItems(p.id);
+      const items = itemsCache[p.id] ?? await fetchPurchaseItems(p.id);
       if (items.length === 0) {
         toast.show('Esta compra no tiene detalle de productos.', 'error');
         return;
@@ -116,31 +143,83 @@ export default function HistoryScreen() {
                 <Text style={styles.monthTotal}>{formatEuro(m.total)}</Text>
               </View>
               <View style={styles.section}>
-                {m.items.map((p, i) => (
-                  <View key={p.id} style={[styles.row, i < m.items.length - 1 && styles.rowBorder]}>
-                    <View style={styles.rowIcon}>
-                      <Ionicons name="cart-outline" size={18} color={colors.accent} />
+                {m.items.map((p, i) => {
+                  const expanded = expandedId === p.id;
+                  const prods = itemsCache[p.id];
+                  const showBorder = i < m.items.length - 1 || expanded;
+                  return (
+                    <View key={p.id}>
+                      <TouchableOpacity
+                        style={[styles.row, showBorder && styles.rowBorder]}
+                        activeOpacity={0.7}
+                        onPress={() => toggleExpand(p)}
+                      >
+                        <View style={styles.rowIcon}>
+                          <Ionicons name="cart-outline" size={18} color={colors.accent} />
+                        </View>
+                        <View style={styles.rowInfo}>
+                          <Text style={styles.rowName} numberOfLines={1}>{p.groupName ?? 'Grupo'}</Text>
+                          <Text style={styles.rowMeta}>
+                            {cap(new Date(p.completedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }))}
+                            {' · '}{p.itemCount} {p.itemCount === 1 ? 'artículo' : 'artículos'}
+                          </Text>
+                        </View>
+                        <Text style={styles.rowTotal}>{formatEuro(p.total)}</Text>
+                        <Ionicons
+                          name={expanded ? 'chevron-up' : 'chevron-down'}
+                          size={16}
+                          color={colors.inkFaint}
+                        />
+                      </TouchableOpacity>
+
+                      {expanded && (
+                        <View style={[styles.expanded, showBorder && styles.rowBorder]}>
+                          {itemsLoadingId === p.id ? (
+                            <ActivityIndicator size="small" color={colors.accent} style={{ paddingVertical: 16 }} />
+                          ) : prods && prods.length > 0 ? (
+                            <>
+                              {prods.map((it, idx) => (
+                                <View key={idx} style={styles.prodRow}>
+                                  {it.imageUrl ? (
+                                    <Image source={{ uri: it.imageUrl }} style={styles.prodThumb} resizeMode="contain" />
+                                  ) : (
+                                    <View style={styles.prodThumb}>
+                                      <Text style={{ fontSize: 15 }}>{it.categoryEmoji ?? '🛒'}</Text>
+                                    </View>
+                                  )}
+                                  <View style={styles.prodInfo}>
+                                    <Text style={styles.prodName} numberOfLines={1}>{it.productName}</Text>
+                                    <Text style={styles.prodQty}>{it.quantity} {it.unit ?? 'ud'}</Text>
+                                  </View>
+                                  {it.unitPrice != null && (
+                                    <Text style={styles.prodPrice}>{formatEuro(it.unitPrice * it.quantity)}</Text>
+                                  )}
+                                </View>
+                              ))}
+                              <TouchableOpacity
+                                style={styles.repeatBtn}
+                                onPress={() => handleRepeat(p)}
+                                disabled={!!repeatingId}
+                                activeOpacity={0.85}
+                              >
+                                {repeatingId === p.id ? (
+                                  <ActivityIndicator size="small" color={colors.white} />
+                                ) : (
+                                  <>
+                                    <Ionicons name="refresh" size={16} color={colors.white} />
+                                    <Text style={styles.repeatText}>Repetir compra</Text>
+                                  </>
+                                )}
+                              </TouchableOpacity>
+                            </>
+                          ) : (
+                            <Text style={styles.noDetail}>Esta compra no tiene detalle de productos.</Text>
+                          )}
+                        </View>
+                      )}
                     </View>
-                    <View style={styles.rowInfo}>
-                      <Text style={styles.rowName} numberOfLines={1}>{p.groupName ?? 'Grupo'}</Text>
-                      <Text style={styles.rowMeta}>
-                        {cap(new Date(p.completedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }))}
-                        {' · '}{p.itemCount} {p.itemCount === 1 ? 'artículo' : 'artículos'}
-                      </Text>
-                    </View>
-                    <Text style={styles.rowTotal}>{formatEuro(p.total)}</Text>
-                    <TouchableOpacity
-                      style={styles.repeatBtn}
-                      onPress={() => handleRepeat(p)}
-                      disabled={!!repeatingId}
-                      hitSlop={6}
-                    >
-                      {repeatingId === p.id
-                        ? <ActivityIndicator size="small" color={colors.accent} />
-                        : <Ionicons name="refresh" size={18} color={colors.accent} />}
-                    </TouchableOpacity>
-                  </View>
-                ))}
+                  );
+                })}
               </View>
             </View>
           ))}
@@ -191,11 +270,29 @@ const styles = StyleSheet.create({
   rowName: { fontSize: 14, fontFamily: fonts.semibold, color: colors.ink },
   rowMeta: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
   rowTotal: { fontSize: 14, fontFamily: fonts.bold, color: colors.ink },
-  repeatBtn: {
-    width: 34, height: 34,
-    backgroundColor: colors.accentLight,
+
+  // ── Expanded product list ─────────────────────────────────────
+  expanded: { paddingVertical: 6 },
+  prodRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 11,
+    paddingVertical: 8,
+  },
+  prodThumb: {
+    width: 32, height: 32, borderRadius: 5,
+    backgroundColor: colors.surfaceAlt,
     alignItems: 'center', justifyContent: 'center',
   },
+  prodInfo: { flex: 1, minWidth: 0 },
+  prodName: { fontSize: 13, fontFamily: fonts.semibold, color: colors.ink },
+  prodQty: { fontSize: 11, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
+  prodPrice: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.accent },
+  noDetail: { fontSize: 13, fontFamily: fonts.medium, color: colors.inkSoft, paddingVertical: 12 },
+  repeatBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
+    backgroundColor: colors.accent,
+    paddingVertical: 11, marginTop: 8, marginBottom: 4,
+  },
+  repeatText: { fontSize: 13.5, fontFamily: fonts.bold, color: colors.white },
 
   centerBox: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40, gap: 10 },
   emptyTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink, textAlign: 'center' },

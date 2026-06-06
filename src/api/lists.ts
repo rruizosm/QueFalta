@@ -50,13 +50,15 @@ export interface ListItemRow {
   unitPrice: number | null;
   imageUrl: string | null;
   mercadonaProductId: string | null;
+  /** User id of the member responsible for bringing this item (or null). */
+  assignedTo: string | null;
 }
 
 /** All items of a single shopping list, oldest first. */
 export async function fetchListItems(listId: string): Promise<ListItemRow[]> {
   const { data, error } = await supabase
     .from('list_items')
-    .select('id, product_name, quantity, unit, in_cart, category_emoji, unit_price, image_url, mercadona_product_id')
+    .select('id, product_name, quantity, unit, in_cart, category_emoji, unit_price, image_url, mercadona_product_id, assigned_to')
     .eq('list_id', listId)
     .order('created_at', { ascending: true });
 
@@ -72,6 +74,7 @@ export async function fetchListItems(listId: string): Promise<ListItemRow[]> {
     unitPrice: it.unit_price != null ? Number(it.unit_price) : null,
     imageUrl: it.image_url ?? null,
     mercadonaProductId: it.mercadona_product_id ?? null,
+    assignedTo: it.assigned_to ?? null,
   }));
 }
 
@@ -80,6 +83,16 @@ export async function setItemInCart(itemId: string, inCart: boolean): Promise<vo
   const { error } = await supabase
     .from('list_items')
     .update({ in_cart: inCart })
+    .eq('id', itemId);
+
+  if (error) throw error;
+}
+
+/** Assigns a list item to a group member (or clears it with null). */
+export async function assignListItem(itemId: string, assignedTo: string | null): Promise<void> {
+  const { error } = await supabase
+    .from('list_items')
+    .update({ assigned_to: assignedTo })
     .eq('id', itemId);
 
   if (error) throw error;

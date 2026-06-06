@@ -132,6 +132,17 @@ export async function joinGroup(groupId: string, userId: string): Promise<boolea
   return true;
 }
 
+/** Just the member profiles of a group (lighter than fetchGroupDetail). */
+export async function fetchGroupMembers(groupId: string): Promise<GroupMember[]> {
+  const { data, error } = await supabase
+    .from('group_members')
+    .select('profiles(id, name, initials, color)')
+    .eq('group_id', groupId);
+
+  if (error) throw error;
+  return (data ?? []).map((m: any) => m.profiles).filter(Boolean) as GroupMember[];
+}
+
 /** Transfers group admin to another member (sets groups.owner_id). Admin only (RLS).
  *  created_by stays as the original creator. */
 export async function transferGroupAdmin(groupId: string, newAdminId: string): Promise<void> {

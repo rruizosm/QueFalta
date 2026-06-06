@@ -43,3 +43,15 @@ using (
   user_id = auth.uid()
   or public.is_group_admin(group_id)
 );
+
+-- 5. Alinear las policies base de `groups` (eran created_by) al modelo owner.
+--    Evita "grupos fantasma": grupos que creaste pero ya no administras ni eres
+--    miembro (p. ej. tras transferir admin y abandonar) seguían apareciendo por
+--    `created_by`. Estas ALTER asumen los nombres de policy del esquema base.
+alter policy "groups: ver si eres miembro" on public.groups
+  using (owner_id = auth.uid() or public.is_group_member(id));
+
+drop policy if exists "groups: editar si eres creador" on public.groups;
+
+alter policy "groups: eliminar si eres creador" on public.groups
+  using (owner_id = auth.uid());

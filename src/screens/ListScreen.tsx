@@ -4,6 +4,7 @@ import {
   View,
   Text,
   SectionList,
+  ScrollView,
   TouchableOpacity,
   StyleSheet,
   StatusBar,
@@ -13,6 +14,8 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,7 +23,9 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
-import { fetchListItems, setItemInCart, type ListItemRow } from '../api/lists';
+import { fetchListItems, setItemInCart, assignListItem, type ListItemRow } from '../api/lists';
+import { fetchGroupMembers } from '../api/groups';
+import type { GroupMember } from '../types';
 import ProgressBar from '../components/ProgressBar';
 import ProductDetailModal from '../components/ProductDetailModal';
 
@@ -35,21 +40,25 @@ export default function ListScreen() {
   const { activeCart } = useCart();
   const toast = useToast();
   const listId = activeCart?.listId;
+  const groupId = activeCart?.groupId;
 
   const [items, setItems] = useState<ListItemRow[]>([]);
+  const [members, setMembers] = useState<GroupMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [detailProductId, setDetailProductId] = useState<string | null>(null);
+  const [assignItem, setAssignItem] = useState<ListItemRow | null>(null);
 
   const load = useCallback(() => {
     if (!listId) { setItems([]); setLoading(false); return Promise.resolve(); }
     setError(false);
-    return fetchListItems(listId)
-      .then(setItems)
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
-  }, [listId]);
+    const itemsP = fetchListItems(listId).then(setItems).catch(() => setError(true));
+    const membersP = groupId
+      ? fetchGroupMembers(groupId).then(setMembers).catch(() => {})
+      : Promise.resolve();
+    return Promise.all([itemsP, membersP]).finally(() => setLoading(false));
+  }, [listId, groupId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
@@ -58,6 +67,19 @@ export default function ListScreen() {
     await load();
     setRefreshing(false);
   }, [load]);
+
+  const doAssign = async (item: ListItemRow, memberId: string | null) => {
+    setAssignItem(null);
+    const prev = item.assignedTo;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setItems((list) => list.map((it) => (it.id === item.id ? { ...it, assignedTo: memberId } : it)));
+    try {
+      await assignListItem(item.id, memberId);
+    } catch {
+      setItems((list) => list.map((it) => (it.id === item.id ? { ...it, assignedTo: prev } : it)));
+      toast.show('No se pudo asignar el artículo.', 'error');
+    }
+  };
 
   const toggle = async (id: string) => {
     const target = items.find((i) => i.id === id);
@@ -118,6 +140,30 @@ export default function ListScreen() {
         </Text>
         <Text style={styles.itemUnit}>{item.quantity} {item.unit}</Text>
       </View>
+
+      {/* Assignee */}
+      {(() => {
+        const assignee = item.assignedTo ? members.find((m) => m.id === item.assignedTo) : null;
+        return (
+          <TouchableOpacity
+            style={styles.assignBtn}
+            activeOpacity={0.7}
+            hitSlop={6}
+            onPress={() => setAssignItem(item)}
+          >
+            {assignee ? (
+              <View style={[styles.assignAvatar, { backgroundColor: assignee.color }]}>
+                <Text style={styles.assignAvatarText}>{assignee.initials}</Text>
+              </View>
+            ) : (
+              <View style={styles.assignEmpty}>
+                <Ionicons name="person-add-outline" size={15} color={colors.inkFaint} />
+              </View>
+            )}
+          </TouchableOpacity>
+        );
+      })()}
+
       {item.inCart ? (
         <View style={styles.inCartBadge}>
           <Text style={styles.inCartBadgeText}>En cesta</Text>
@@ -255,6 +301,52 @@ export default function ListScreen() {
         productId={detailProductId}
         onClose={() => setDetailProductId(null)}
       />
+
+      {/* Assign-to-member sheet */}
+      <Modal
+        visible={!!assignItem}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setAssignItem(null)}
+      >
+        <View style={styles.sheetRoot}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setAssignItem(null)} />
+          {assignItem && (
+            <View style={styles.sheet}>
+              <Text style={styles.sheetTitle} numberOfLines={1}>¿Quién trae {assignItem.productName}?</Text>
+
+              <ScrollView style={styles.sheetList} showsVerticalScrollIndicator={false}>
+                {members.map((m) => {
+                  const selected = assignItem.assignedTo === m.id;
+                  return (
+                    <TouchableOpacity
+                      key={m.id}
+                      style={styles.sheetRow}
+                      activeOpacity={0.7}
+                      onPress={() => doAssign(assignItem, m.id)}
+                    >
+                      <View style={[styles.sheetAvatar, { backgroundColor: m.color }]}>
+                        <Text style={styles.sheetAvatarText}>{m.initials}</Text>
+                      </View>
+                      <Text style={styles.sheetRowText} numberOfLines={1}>{m.name}</Text>
+                      {selected && <Ionicons name="checkmark" size={20} color={colors.accent} />}
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+
+              <TouchableOpacity
+                style={styles.sheetClear}
+                activeOpacity={0.7}
+                onPress={() => doAssign(assignItem, null)}
+              >
+                <Ionicons name="close-circle-outline" size={18} color={colors.inkSoft} />
+                <Text style={styles.sheetClearText}>Sin asignar</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -314,6 +406,45 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 3,
   },
   inCartBadgeText: { fontSize: 10, fontFamily: fonts.bold, color: colors.white },
+
+  // ── Assignee ──────────────────────────────────────────────────
+  assignBtn: { padding: 2 },
+  assignAvatar: {
+    width: 28, height: 28, borderRadius: 14,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  assignAvatarText: { fontSize: 11, fontFamily: fonts.bold, color: colors.white },
+  assignEmpty: {
+    width: 28, height: 28, borderRadius: 14,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: colors.border, borderStyle: 'dashed',
+  },
+
+  // ── Assign sheet ──────────────────────────────────────────────
+  sheetRoot: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.45)' },
+  sheet: {
+    backgroundColor: colors.paper,
+    borderTopWidth: 1, borderTopColor: colors.border,
+    paddingTop: 18, paddingBottom: 30,
+  },
+  sheetTitle: { fontSize: 16, fontFamily: fonts.bold, color: colors.ink, paddingHorizontal: 18, marginBottom: 6 },
+  sheetList: { maxHeight: 320 },
+  sheetRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 18, paddingVertical: 12,
+    borderBottomWidth: 1, borderBottomColor: colors.border,
+  },
+  sheetAvatar: {
+    width: 38, height: 38, borderRadius: 19,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  sheetAvatarText: { fontSize: 14, fontFamily: fonts.bold, color: colors.white },
+  sheetRowText: { flex: 1, fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
+  sheetClear: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    paddingVertical: 15, marginTop: 6,
+  },
+  sheetClearText: { fontSize: 14, fontFamily: fonts.bold, color: colors.inkSoft },
 
   // ── Total bar ─────────────────────────────────────────────────
   totalBar: {

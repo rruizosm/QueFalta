@@ -90,7 +90,16 @@ export default function ListScreen() {
     if (!activeCart || finishing || items.length === 0) return;
     setFinishing(true);
     try {
-      await recordPurchase(activeCart.groupId, totalCost, items.length, userId);
+      const snapshot = items.map((it) => ({
+        productName: it.productName,
+        quantity: it.quantity,
+        unit: it.unit,
+        categoryEmoji: it.categoryEmoji,
+        mercadonaProductId: it.mercadonaProductId,
+        unitPrice: it.unitPrice,
+        imageUrl: it.imageUrl,
+      }));
+      await recordPurchase(activeCart.groupId, totalCost, snapshot, userId);
       await clearListItems(activeCart.listId);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show('¡Compra finalizada! 🎉');

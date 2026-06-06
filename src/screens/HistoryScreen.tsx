@@ -5,18 +5,24 @@ import {
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
-import { fetchPurchases, type Purchase } from '../api/purchases';
+import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
+import { fetchPurchases, fetchPurchaseItems, type Purchase } from '../api/purchases';
 
 const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function HistoryScreen() {
   const navigation = useNavigation<any>();
+  const { loadItemsIntoGroupCart } = useCart();
+  const toast = useToast();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [repeatingId, setRepeatingId] = useState<string | null>(null);
 
   const load = useCallback(() => {
     return fetchPurchases()
@@ -32,6 +38,26 @@ export default function HistoryScreen() {
     await load();
     setRefreshing(false);
   }, [load]);
+
+  const handleRepeat = async (p: Purchase) => {
+    if (repeatingId) return;
+    setRepeatingId(p.id);
+    try {
+      const items = await fetchPurchaseItems(p.id);
+      if (items.length === 0) {
+        toast.show('Esta compra no tiene detalle de productos.', 'error');
+        return;
+      }
+      await loadItemsIntoGroupCart(p.groupId, p.groupName ?? 'Grupo', items);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show(`${items.length} productos cargados en ${p.groupName ?? 'el grupo'}`);
+      navigation.navigate('List');
+    } catch {
+      toast.show('No se pudo repetir la compra.', 'error');
+    } finally {
+      setRepeatingId(null);
+    }
+  };
 
   // Group purchases by month (newest first; purchases already sorted desc).
   const months = useMemo(() => {
@@ -103,6 +129,16 @@ export default function HistoryScreen() {
                       </Text>
                     </View>
                     <Text style={styles.rowTotal}>{formatEuro(p.total)}</Text>
+                    <TouchableOpacity
+                      style={styles.repeatBtn}
+                      onPress={() => handleRepeat(p)}
+                      disabled={!!repeatingId}
+                      hitSlop={6}
+                    >
+                      {repeatingId === p.id
+                        ? <ActivityIndicator size="small" color={colors.accent} />
+                        : <Ionicons name="refresh" size={18} color={colors.accent} />}
+                    </TouchableOpacity>
                   </View>
                 ))}
               </View>
@@ -155,6 +191,11 @@ const styles = StyleSheet.create({
   rowName: { fontSize: 14, fontFamily: fonts.semibold, color: colors.ink },
   rowMeta: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
   rowTotal: { fontSize: 14, fontFamily: fonts.bold, color: colors.ink },
+  repeatBtn: {
+    width: 34, height: 34,
+    backgroundColor: colors.accentLight,
+    alignItems: 'center', justifyContent: 'center',
+  },
 
   centerBox: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40, gap: 10 },
   emptyTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink, textAlign: 'center' },

@@ -25,6 +25,8 @@ interface CartContextValue {
   deactivateCart: () => Promise<void>;
   /** Adds items to the active cart. Throws if no cart is active. */
   addToActiveCart: (items: NewListItem[]) => Promise<void>;
+  /** Activates a group's cart and loads the given items into it (e.g. "repeat purchase"). */
+  loadItemsIntoGroupCart: (groupId: string, groupName: string, items: NewListItem[]) => Promise<void>;
   isActive: (groupId: string) => boolean;
   busy: boolean;
   /** Grupo por defecto: su carrito se auto-activa al abrir si no hay otro activo. */
@@ -38,6 +40,7 @@ const CartContext = createContext<CartContextValue>({
   activateCart: async () => {},
   deactivateCart: async () => {},
   addToActiveCart: async () => {},
+  loadItemsIntoGroupCart: async () => {},
   isActive: () => false,
   busy: false,
   defaultGroup: null,
@@ -116,12 +119,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     await addItemsToList(activeCart.listId, items, userId);
   };
 
+  const loadItemsIntoGroupCart = async (groupId: string, groupName: string, items: NewListItem[]) => {
+    if (!userId) return;
+    setBusy(true);
+    try {
+      const listId = await getOrCreateGroupList(groupId, groupName, userId);
+      const next = { groupId, groupName, listId };
+      setActiveCart(next);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      await addItemsToList(listId, items, userId);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const isActive = (groupId: string) => activeCart?.groupId === groupId;
 
   return (
     <CartContext.Provider
       value={{
-        activeCart, activateCart, deactivateCart, addToActiveCart, isActive, busy,
+        activeCart, activateCart, deactivateCart, addToActiveCart, loadItemsIntoGroupCart, isActive, busy,
         defaultGroup, setDefaultGroup, clearDefaultGroup,
       }}
     >

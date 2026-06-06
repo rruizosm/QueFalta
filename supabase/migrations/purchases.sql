@@ -37,3 +37,38 @@ using (
     where sl.id = list_items.list_id and public.is_group_member(sl.group_id)
   )
 );
+
+-- Detalle de productos de cada compra archivada (para "repetir compra").
+create table if not exists public.purchase_items (
+  id                   uuid primary key default gen_random_uuid(),
+  purchase_id          uuid references public.purchases(id) on delete cascade,
+  product_name         text not null,
+  quantity             numeric not null default 1,
+  unit                 text,
+  category_emoji       text,
+  mercadona_product_id text,
+  unit_price           numeric,
+  image_url            text
+);
+
+alter table public.purchase_items enable row level security;
+
+drop policy if exists "purchase_items select: group members" on public.purchase_items;
+create policy "purchase_items select: group members"
+on public.purchase_items for select to authenticated
+using (
+  exists (
+    select 1 from public.purchases p
+    where p.id = purchase_items.purchase_id and public.is_group_member(p.group_id)
+  )
+);
+
+drop policy if exists "purchase_items insert: group members" on public.purchase_items;
+create policy "purchase_items insert: group members"
+on public.purchase_items for insert to authenticated
+with check (
+  exists (
+    select 1 from public.purchases p
+    where p.id = purchase_items.purchase_id and public.is_group_member(p.group_id)
+  )
+);

@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import type { NewListItem } from './lists';
 
 export interface Purchase {
   id: string;
@@ -9,20 +10,54 @@ export interface Purchase {
   completedAt: string;
 }
 
-/** Archives a completed shopping trip. */
+/** Archives a completed shopping trip, with its item detail (for "repeat"). */
 export async function recordPurchase(
   groupId: string,
   total: number,
-  itemCount: number,
+  items: NewListItem[],
   userId: string,
 ): Promise<void> {
-  const { error } = await supabase.from('purchases').insert({
-    group_id: groupId,
-    total,
-    item_count: itemCount,
-    completed_by: userId,
-  });
+  const { data, error } = await supabase
+    .from('purchases')
+    .insert({ group_id: groupId, total, item_count: items.length, completed_by: userId })
+    .select('id')
+    .single();
   if (error) throw error;
+
+  if (items.length > 0) {
+    const rows = items.map((it) => ({
+      purchase_id: data.id,
+      product_name: it.productName,
+      quantity: it.quantity,
+      unit: it.unit ?? 'ud',
+      category_emoji: it.categoryEmoji ?? null,
+      mercadona_product_id: it.mercadonaProductId ?? null,
+      unit_price: it.unitPrice ?? null,
+      image_url: it.imageUrl ?? null,
+    }));
+    const { error: itemsError } = await supabase.from('purchase_items').insert(rows);
+    if (itemsError) throw itemsError;
+  }
+}
+
+/** The products of an archived purchase, shaped for re-adding to a cart. */
+export async function fetchPurchaseItems(purchaseId: string): Promise<NewListItem[]> {
+  const { data, error } = await supabase
+    .from('purchase_items')
+    .select('product_name, quantity, unit, category_emoji, mercadona_product_id, unit_price, image_url')
+    .eq('purchase_id', purchaseId);
+
+  if (error) throw error;
+
+  return (data ?? []).map((it: any) => ({
+    productName: it.product_name,
+    quantity: Number(it.quantity),
+    unit: it.unit ?? 'ud',
+    categoryEmoji: it.category_emoji ?? null,
+    mercadonaProductId: it.mercadona_product_id ?? null,
+    unitPrice: it.unit_price != null ? Number(it.unit_price) : null,
+    imageUrl: it.image_url ?? null,
+  }));
 }
 
 /** All purchases of the user's groups, newest first (RLS limits to member groups). */

@@ -30,6 +30,7 @@ import ListScreen       from '../screens/ListScreen';
 import GroupsScreen     from '../screens/GroupsScreen';
 import GroupDetailScreen from '../screens/GroupDetailScreen';
 import GroupMembersScreen from '../screens/GroupMembersScreen';
+import AddMemberScreen from '../screens/AddMemberScreen';
 import LoginScreen      from '../screens/LoginScreen';
 
 const Tab          = createBottomTabNavigator<RootTabParamList>();
@@ -75,6 +76,7 @@ function GroupsNavigator() {
       <GroupsStack.Screen name="GroupsHome"   component={GroupsScreen} />
       <GroupsStack.Screen name="GroupDetail"  component={GroupDetailScreen} />
       <GroupsStack.Screen name="GroupMembers" component={GroupMembersScreen} />
+      <GroupsStack.Screen name="AddMember"   component={AddMemberScreen} />
     </GroupsStack.Navigator>
   );
 }

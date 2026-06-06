@@ -114,6 +114,17 @@ export default function GroupMembersScreen() {
             {group.members.length} {group.members.length === 1 ? 'miembro' : 'miembros'}
           </Text>
 
+          {isAdmin && (
+            <TouchableOpacity
+              style={styles.addBtn}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate('AddMember', { groupId })}
+            >
+              <Ionicons name="person-add-outline" size={18} color={colors.accent} />
+              <Text style={styles.addBtnText}>Añadir miembro</Text>
+            </TouchableOpacity>
+          )}
+
           <View style={styles.section}>
             {group.members.map((m, i) => {
               const isMemberAdmin = m.id === adminId;
@@ -252,7 +263,13 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 16, paddingBottom: 40 },
 
   groupName: { fontSize: 22, fontFamily: fonts.bold, color: colors.ink, marginTop: 6, letterSpacing: -0.4 },
-  countLabel: { fontSize: 13, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2, marginBottom: 16 },
+  countLabel: { fontSize: 13, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2, marginBottom: 14 },
+  addBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    paddingVertical: 12, marginBottom: 14,
+    borderWidth: 1, borderColor: colors.accent,
+  },
+  addBtnText: { fontSize: 14, fontFamily: fonts.bold, color: colors.accent },
 
   section: {
     backgroundColor: colors.white,

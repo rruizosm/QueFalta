@@ -132,6 +132,52 @@ export async function joinGroup(groupId: string, userId: string): Promise<boolea
   return true;
 }
 
+export interface SearchedUser {
+  id: string;
+  name: string;
+  username: string | null;
+  initials: string;
+  color: string;
+}
+
+/** Searches discoverable users by @username prefix (for adding to a group). */
+export async function searchUsersByUsername(query: string): Promise<SearchedUser[]> {
+  const q = query.trim().toLowerCase().replace(/^@/, '');
+  if (q.length < 2) return [];
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, name, username, initials, color')
+    .eq('discoverable', true)
+    .ilike('username', `${q}%`)
+    .limit(15);
+
+  if (error) throw error;
+  return (data ?? []).map((p: any) => ({
+    id: p.id,
+    name: p.name,
+    username: p.username ?? null,
+    initials: p.initials,
+    color: p.color,
+  }));
+}
+
+/** Admin adds another user to the group. Idempotent. */
+export async function addMemberToGroup(groupId: string, userId: string): Promise<void> {
+  const { data: existing } = await supabase
+    .from('group_members')
+    .select('id')
+    .eq('group_id', groupId)
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (existing) return;
+
+  const { error } = await supabase
+    .from('group_members')
+    .insert({ group_id: groupId, user_id: userId });
+  if (error) throw error;
+}
+
 /** Just the member profiles of a group (lighter than fetchGroupDetail). */
 export async function fetchGroupMembers(groupId: string): Promise<GroupMember[]> {
   const { data, error } = await supabase

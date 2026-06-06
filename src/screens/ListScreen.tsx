@@ -21,10 +21,12 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
+import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
-import { fetchListItems, setItemInCart, assignListItem, type ListItemRow } from '../api/lists';
+import { fetchListItems, setItemInCart, assignListItem, clearListItems, type ListItemRow } from '../api/lists';
 import { fetchGroupMembers } from '../api/groups';
+import { recordPurchase } from '../api/purchases';
 import type { GroupMember } from '../types';
 import ProgressBar from '../components/ProgressBar';
 import ProductDetailModal from '../components/ProductDetailModal';
@@ -37,8 +39,10 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 export default function ListScreen() {
+  const { session } = useAuth();
   const { activeCart } = useCart();
   const toast = useToast();
+  const userId = session?.user.id ?? '';
   const listId = activeCart?.listId;
   const groupId = activeCart?.groupId;
 
@@ -49,6 +53,7 @@ export default function ListScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [detailProductId, setDetailProductId] = useState<string | null>(null);
   const [assignItem, setAssignItem] = useState<ListItemRow | null>(null);
+  const [finishing, setFinishing] = useState(false);
 
   const load = useCallback(() => {
     if (!listId) { setItems([]); setLoading(false); return Promise.resolve(); }
@@ -78,6 +83,22 @@ export default function ListScreen() {
     } catch {
       setItems((list) => list.map((it) => (it.id === item.id ? { ...it, assignedTo: prev } : it)));
       toast.show('No se pudo asignar el artículo.', 'error');
+    }
+  };
+
+  const handleFinish = async () => {
+    if (!activeCart || finishing) return;
+    setFinishing(true);
+    try {
+      await recordPurchase(activeCart.groupId, totalCost, items.length, userId);
+      await clearListItems(activeCart.listId);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show('¡Compra finalizada! 🎉');
+      setItems([]);
+    } catch {
+      toast.show('No se pudo finalizar la compra.', 'error');
+    } finally {
+      setFinishing(false);
     }
   };
 
@@ -285,12 +306,12 @@ export default function ListScreen() {
               <Text style={styles.doneBarText}>¡Lista completada!</Text>
               <TouchableOpacity
                 style={styles.doneBarBtn}
-                onPress={() => {
-                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                  toast.show('¡Compra finalizada! 🎉');
-                }}
+                onPress={handleFinish}
+                disabled={finishing}
               >
-                <Text style={styles.doneBarBtnText}>Finalizar</Text>
+                {finishing
+                  ? <ActivityIndicator size="small" color={colors.accent} />
+                  : <Text style={styles.doneBarBtnText}>Finalizar</Text>}
               </TouchableOpacity>
             </View>
           )}

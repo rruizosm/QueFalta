@@ -181,6 +181,7 @@ export type HomeStackParamList = {
   EditProfile: undefined;
   PrivacySecurity: undefined;
   DefaultGroup: undefined;
+  History: undefined;
 };
 
 export type CatalogStackParamList = {

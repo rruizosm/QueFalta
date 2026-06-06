@@ -98,6 +98,12 @@ export async function assignListItem(itemId: string, assignedTo: string | null):
   if (error) throw error;
 }
 
+/** Removes all items from a list (used when finishing a shopping trip). */
+export async function clearListItems(listId: string): Promise<void> {
+  const { error } = await supabase.from('list_items').delete().eq('list_id', listId);
+  if (error) throw error;
+}
+
 /** Inserts one or more items into a shopping list. */
 export async function addItemsToList(
   listId: string,

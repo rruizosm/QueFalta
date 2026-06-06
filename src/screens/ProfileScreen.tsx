@@ -127,6 +127,11 @@ export default function ProfileScreen() {
               onSwitchChange={handleToggleNotifications}
             />
             <ProfileRow
+              icon="receipt-outline"
+              label="Historial de compra"
+              onPress={() => navigation.navigate('History')}
+            />
+            <ProfileRow
               icon="shield-checkmark-outline"
               label="Privacidad y seguridad"
               onPress={() => navigation.navigate('PrivacySecurity')}

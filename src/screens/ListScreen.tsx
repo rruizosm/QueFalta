@@ -87,7 +87,7 @@ export default function ListScreen() {
   };
 
   const handleFinish = async () => {
-    if (!activeCart || finishing) return;
+    if (!activeCart || finishing || items.length === 0) return;
     setFinishing(true);
     try {
       await recordPurchase(activeCart.groupId, totalCost, items.length, userId);

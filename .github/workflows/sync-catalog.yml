@@ -1,0 +1,25 @@
+name: Sync Mercadona catalog
+
+on:
+  schedule:
+    - cron: '0 5 * * *'   # 05:00 UTC (~07:00 hora peninsular) cada día
+  workflow_dispatch: {}    # botón "Run workflow" para lanzarlo a mano / probar
+
+# Evita solapamientos si una ejecución tarda más de lo normal.
+concurrency:
+  group: sync-catalog
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/sync-catalog.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}

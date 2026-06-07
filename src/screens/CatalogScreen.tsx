@@ -17,12 +17,11 @@ import { colors } from '../constants/colors';
 import { getMeta } from '../constants/categoryMeta';
 import {
   fetchCategories,
-  fetchCategoryDetail,
-  flattenProducts,
   formatPrice,
   type N1Category,
   type MercadonaProduct,
 } from '../api/mercadona';
+import { searchProducts } from '../api/catalog';
 import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../context/ToastContext';
 import ActionSheet from '../components/ActionSheet';
@@ -50,9 +49,8 @@ export default function CatalogScreen() {
   const [catSearch, setCatSearch] = useState('');
 
   const [prodSearch, setProdSearch] = useState('');
-  const [allProducts, setAllProducts] = useState<MercadonaProduct[]>([]);
+  const [prodResults, setProdResults] = useState<MercadonaProduct[]>([]);
   const [prodLoading, setProdLoading] = useState(false);
-  const [prodLoaded, setProdLoaded] = useState(false);
   const [prodError, setProdError] = useState(false);
 
   useEffect(() => {
@@ -62,21 +60,29 @@ export default function CatalogScreen() {
       .finally(() => setCatLoading(false));
   }, []);
 
+  // Búsqueda de productos server-side (espejo en Supabase), con debounce.
+  // Antes esto barría ~100 subcategorías de Mercadona por usuario; ahora es 1 query.
   useEffect(() => {
-    if (tab !== 'productos' || prodLoaded || prodLoading || categories.length === 0) return;
+    const q = prodSearch.trim();
+    if (q.length < 2) {
+      setProdResults([]);
+      setProdError(false);
+      setProdLoading(false);
+      return;
+    }
     setProdLoading(true);
-    const n2Ids = categories.flatMap((cat) => cat.categories.map((sub) => sub.id));
-    Promise.all(n2Ids.map((id) => fetchCategoryDetail(id).then(flattenProducts)))
-      .then((results) => { setAllProducts(results.flat()); setProdLoaded(true); })
-      .catch(() => setProdError(true))
-      .finally(() => setProdLoading(false));
-  }, [tab, categories]);
+    setProdError(false);
+    const handle = setTimeout(() => {
+      searchProducts(q)
+        .then(setProdResults)
+        .catch(() => setProdError(true))
+        .finally(() => setProdLoading(false));
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [prodSearch]);
 
   const filteredCats = categories.filter((c) =>
     c.name.toLowerCase().includes(catSearch.toLowerCase())
-  );
-  const filteredProducts = allProducts.filter((p) =>
-    p.display_name.toLowerCase().includes(prodSearch.toLowerCase())
   );
 
   const goToSubcategories = (cat: N1Category) => {
@@ -175,87 +181,116 @@ export default function CatalogScreen() {
             comprar con el catálogo de Mercadona.
           </Text>
         </View>
-      ) : tab === 'categorias' ? (
-        <>
-          <View style={styles.searchBar}>
-            <Ionicons name="search-outline" size={18} color={colors.inkSoft} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Buscar categorías..."
-              placeholderTextColor={colors.inkFaint}
-              value={catSearch}
-              onChangeText={setCatSearch}
-              returnKeyType="search"
-            />
-            {catSearch.length > 0 && (
-              <TouchableOpacity onPress={() => setCatSearch('')}>
-                <Ionicons name="close-circle" size={18} color={colors.inkFaint} />
-              </TouchableOpacity>
-            )}
-          </View>
-          {catLoading ? (
-            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
-          ) : catError ? (
-            <View style={styles.centerBox}>
-              <Text style={styles.errorText}>No se pudo cargar el catálogo.</Text>
-              <TouchableOpacity onPress={() => {
-                setCatError(false); setCatLoading(true);
-                fetchCategories().then(setCategories).catch(() => setCatError(true)).finally(() => setCatLoading(false));
-              }}>
-                <Text style={styles.retryText}>Reintentar</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <FlatList
-              data={filteredCats}
-              keyExtractor={(item) => String(item.id)}
-              renderItem={renderCategory}
-              contentContainerStyle={styles.list}
-              showsVerticalScrollIndicator={false}
-              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-            />
-          )}
-        </>
       ) : (
         <>
-          <View style={styles.searchBar}>
-            <Ionicons name="search-outline" size={18} color={colors.inkSoft} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Buscar productos..."
-              placeholderTextColor={colors.inkFaint}
-              value={prodSearch}
-              onChangeText={setProdSearch}
-              returnKeyType="search"
-              autoFocus
-            />
-            {prodSearch.length > 0 && (
-              <TouchableOpacity onPress={() => setProdSearch('')}>
-                <Ionicons name="close-circle" size={18} color={colors.inkFaint} />
-              </TouchableOpacity>
-            )}
-          </View>
-          {prodLoading ? (
-            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
-          ) : prodError ? (
-            <View style={styles.centerBox}>
-              <Text style={styles.errorText}>Error al buscar productos.</Text>
-            </View>
-          ) : filteredProducts.length === 0 ? (
-            <View style={styles.centerBox}>
-              <Text style={styles.errorText}>
-                {prodSearch.trim() ? 'Sin resultados.' : 'Cargando productos...'}
+          {/* Tab switcher */}
+          <View style={styles.tabs}>
+            <TouchableOpacity
+              style={[styles.tab, tab === 'categorias' && styles.tabActive]}
+              onPress={() => setTab('categorias')}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.tabText, tab === 'categorias' && styles.tabTextActive]}>
+                Categorías
               </Text>
-            </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.tab, tab === 'productos' && styles.tabActive]}
+              onPress={() => setTab('productos')}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.tabText, tab === 'productos' && styles.tabTextActive]}>
+                Productos
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {tab === 'categorias' ? (
+            <>
+              <View style={styles.searchBar}>
+                <Ionicons name="search-outline" size={18} color={colors.inkSoft} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Buscar categorías..."
+                  placeholderTextColor={colors.inkFaint}
+                  value={catSearch}
+                  onChangeText={setCatSearch}
+                  returnKeyType="search"
+                />
+                {catSearch.length > 0 && (
+                  <TouchableOpacity onPress={() => setCatSearch('')}>
+                    <Ionicons name="close-circle" size={18} color={colors.inkFaint} />
+                  </TouchableOpacity>
+                )}
+              </View>
+              {catLoading ? (
+                <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+              ) : catError ? (
+                <View style={styles.centerBox}>
+                  <Text style={styles.errorText}>No se pudo cargar el catálogo.</Text>
+                  <TouchableOpacity onPress={() => {
+                    setCatError(false); setCatLoading(true);
+                    fetchCategories().then(setCategories).catch(() => setCatError(true)).finally(() => setCatLoading(false));
+                  }}>
+                    <Text style={styles.retryText}>Reintentar</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <FlatList
+                  data={filteredCats}
+                  keyExtractor={(item) => String(item.id)}
+                  renderItem={renderCategory}
+                  contentContainerStyle={styles.list}
+                  showsVerticalScrollIndicator={false}
+                  ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+                />
+              )}
+            </>
           ) : (
-            <FlatList
-              data={filteredProducts}
-              keyExtractor={(item) => item.id}
-              renderItem={renderProduct}
-              contentContainerStyle={styles.list}
-              showsVerticalScrollIndicator={false}
-              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-            />
+            <>
+              <View style={styles.searchBar}>
+                <Ionicons name="search-outline" size={18} color={colors.inkSoft} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Buscar productos..."
+                  placeholderTextColor={colors.inkFaint}
+                  value={prodSearch}
+                  onChangeText={setProdSearch}
+                  returnKeyType="search"
+                  autoFocus
+                />
+                {prodSearch.length > 0 && (
+                  <TouchableOpacity onPress={() => setProdSearch('')}>
+                    <Ionicons name="close-circle" size={18} color={colors.inkFaint} />
+                  </TouchableOpacity>
+                )}
+              </View>
+              {prodSearch.trim().length < 2 ? (
+                <View style={styles.centerBox}>
+                  <Text style={styles.errorText}>Escribe al menos 2 letras para buscar.</Text>
+                </View>
+              ) : prodLoading ? (
+                <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+              ) : prodError ? (
+                <View style={styles.centerBox}>
+                  <Text style={styles.errorText}>Error al buscar productos.</Text>
+                </View>
+              ) : prodResults.length === 0 ? (
+                <View style={styles.centerBox}>
+                  <Text style={styles.errorText}>Sin resultados.</Text>
+                </View>
+              ) : (
+                <FlatList
+                  data={prodResults}
+                  keyExtractor={(item) => item.id}
+                  renderItem={renderProduct}
+                  contentContainerStyle={styles.list}
+                  showsVerticalScrollIndicator={false}
+                  ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+                  keyboardShouldPersistTaps="handled"
+                />
+              )}
+            </>
           )}
         </>
       )}

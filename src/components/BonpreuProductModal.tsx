@@ -1,10 +1,15 @@
+import { useEffect, useState } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, Image, StyleSheet, StatusBar,
+  View, Text, ScrollView, TouchableOpacity, Image, StyleSheet, StatusBar, ActivityIndicator, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import type { BonpreuProduct } from '../api/catalog';
+import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
+import QuantityStepper from '../components/QuantityStepper';
 
 interface Props {
   /** Producto a mostrar (ya cargado de bonpreu_products). null = oculto. */
@@ -15,8 +20,41 @@ interface Props {
 /** Detalle de un producto de BonpreuEsclat. Pinta los datos ya cargados en la
  *  búsqueda (no hay fetch: la API de Bonpreu va por el espejo en Supabase). */
 export default function BonpreuProductModal({ product, onClose }: Props) {
+  const { activeCart, addToActiveCart } = useCart();
+  const toast = useToast();
+  const [qty, setQty] = useState(1);
+  const [adding, setAdding] = useState(false);
+
+  useEffect(() => { setQty(1); }, [product?.id]);
+
   if (!product) return null;
   const price = product.unitPrice != null ? `${product.unitPrice.toFixed(2).replace('.', ',')} €` : null;
+
+  const handleAdd = async () => {
+    if (!activeCart) {
+      Alert.alert('Sin carrito activo', 'Activa el carrito de un grupo en la pestaña Grupos antes de añadir productos.');
+      return;
+    }
+    setAdding(true);
+    try {
+      await addToActiveCart([{
+        productName: product.displayName,
+        quantity: qty,
+        unit: 'ud',
+        unitPrice: product.unitPrice,
+        imageUrl: product.thumbnail,
+        mercadonaProductId: null,
+      }]);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show(`${qty} ${qty === 1 ? 'artículo añadido' : 'artículos añadidos'} a ${activeCart.groupName}`);
+      onClose();
+    } catch {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      toast.show('No se pudo añadir el producto.', 'error');
+    } finally {
+      setAdding(false);
+    }
+  };
 
   return (
     <View style={styles.overlay}>
@@ -57,6 +95,26 @@ export default function BonpreuProductModal({ product, onClose }: Props) {
 
         <Text style={styles.note}>Producto de BonpreuEsclat</Text>
       </ScrollView>
+
+      {/* Pie: cantidad + añadir a la cesta */}
+      <View style={styles.footer}>
+        <QuantityStepper
+          value={qty}
+          min={1}
+          onIncrement={() => setQty((q) => q + 1)}
+          onDecrement={() => setQty((q) => Math.max(1, q - 1))}
+        />
+        <TouchableOpacity style={styles.addBtn} onPress={handleAdd} disabled={adding} activeOpacity={0.85}>
+          {adding ? (
+            <ActivityIndicator size="small" color={colors.white} />
+          ) : (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Ionicons name="cart-outline" size={16} color={colors.white} />
+              <Text style={styles.addBtnText}>Añadir a la cesta</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -77,7 +135,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink },
 
-  scroll: { paddingHorizontal: 16, paddingBottom: 48 },
+  scroll: { paddingHorizontal: 16, paddingBottom: 24 },
   photo: {
     width: '100%', height: 260, backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border, marginBottom: 16,
@@ -99,4 +157,16 @@ const styles = StyleSheet.create({
   },
   sectionText: { fontSize: 13.5, fontFamily: fonts.medium, color: colors.ink, lineHeight: 20 },
   note: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkFaint, marginTop: 24 },
+
+  footer: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 16, paddingTop: 12, paddingBottom: 28,
+    borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.paper,
+  },
+  addBtn: {
+    flex: 1, backgroundColor: colors.accent,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    paddingVertical: 14,
+  },
+  addBtnText: { color: colors.white, fontFamily: fonts.bold, fontSize: 14 },
 });

@@ -52,9 +52,6 @@ export interface PriceInstructions {
   size_format: string;
   reference_price: string;
   reference_format: string;
-  is_new?: boolean;
-  price_decreased?: boolean;
-  previous_unit_price?: string | null;
 }
 
 /** Full product detail from GET /api/products/{id}/. Fields are defensive (optional). */

@@ -59,6 +59,19 @@ export async function fetchSuggestedProducts(limit = 8): Promise<MercadonaProduc
   return flattenProducts(detail).slice(0, limit);
 }
 
+/**
+ * Novedades reales de Mercadona. Usa el endpoint dedicado (el campo
+ * price_instructions.is_new viene siempre false, no sirve para detectarlas).
+ */
+export async function fetchNewArrivals(): Promise<MercadonaProduct[]> {
+  console.log('[mercadona] fetchNewArrivals →', `${BASE}/home/new-arrivals/`);
+  const res = await fetch(`${BASE}/home/new-arrivals/`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data: { items?: MercadonaProduct[] } = await res.json();
+  console.log('[mercadona] fetchNewArrivals ←', data.items?.length ?? 0, 'productos');
+  return (data.items ?? []).filter((p) => p.published);
+}
+
 /** Returns a price string like "1,15 €" */
 export function formatPrice(product: MercadonaProduct): string {
   const price = parseFloat(product.price_instructions.unit_price);

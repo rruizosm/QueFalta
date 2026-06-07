@@ -21,11 +21,12 @@ import {
   type N1Category,
   type MercadonaProduct,
 } from '../api/mercadona';
-import { searchProducts } from '../api/catalog';
+import { searchProducts, searchBonpreuProducts, type BonpreuProduct } from '../api/catalog';
 import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../context/ToastContext';
 import ActionSheet from '../components/ActionSheet';
 import ProductDetailModal from '../components/ProductDetailModal';
+import BonpreuProductModal from '../components/BonpreuProductModal';
 
 const STORES = [
   { key: 'mercadona', name: 'Mercadona',     icon: require('../../assets/stores/mercadona.png') },
@@ -48,10 +49,18 @@ export default function CatalogScreen() {
   const [catError, setCatError] = useState(false);
   const [catSearch, setCatSearch] = useState('');
 
+  // Búsqueda de productos Mercadona (espejo)
   const [prodSearch, setProdSearch] = useState('');
   const [prodResults, setProdResults] = useState<MercadonaProduct[]>([]);
   const [prodLoading, setProdLoading] = useState(false);
   const [prodError, setProdError] = useState(false);
+
+  // Búsqueda de productos BonpreuEsclat (espejo)
+  const [bpSearch, setBpSearch] = useState('');
+  const [bpResults, setBpResults] = useState<BonpreuProduct[]>([]);
+  const [bpLoading, setBpLoading] = useState(false);
+  const [bpError, setBpError] = useState(false);
+  const [bpDetail, setBpDetail] = useState<BonpreuProduct | null>(null);
 
   useEffect(() => {
     fetchCategories()
@@ -60,26 +69,27 @@ export default function CatalogScreen() {
       .finally(() => setCatLoading(false));
   }, []);
 
-  // Búsqueda de productos server-side (espejo en Supabase), con debounce.
-  // Antes esto barría ~100 subcategorías de Mercadona por usuario; ahora es 1 query.
+  // Mercadona: búsqueda server-side con debounce (antes barría ~100 subcategorías).
   useEffect(() => {
     const q = prodSearch.trim();
-    if (q.length < 2) {
-      setProdResults([]);
-      setProdError(false);
-      setProdLoading(false);
-      return;
-    }
-    setProdLoading(true);
-    setProdError(false);
+    if (q.length < 2) { setProdResults([]); setProdError(false); setProdLoading(false); return; }
+    setProdLoading(true); setProdError(false);
     const handle = setTimeout(() => {
-      searchProducts(q)
-        .then(setProdResults)
-        .catch(() => setProdError(true))
-        .finally(() => setProdLoading(false));
+      searchProducts(q).then(setProdResults).catch(() => setProdError(true)).finally(() => setProdLoading(false));
     }, 300);
     return () => clearTimeout(handle);
   }, [prodSearch]);
+
+  // BonpreuEsclat: búsqueda server-side con debounce.
+  useEffect(() => {
+    const q = bpSearch.trim();
+    if (q.length < 2) { setBpResults([]); setBpError(false); setBpLoading(false); return; }
+    setBpLoading(true); setBpError(false);
+    const handle = setTimeout(() => {
+      searchBonpreuProducts(q).then(setBpResults).catch(() => setBpError(true)).finally(() => setBpLoading(false));
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [bpSearch]);
 
   const filteredCats = categories.filter((c) =>
     c.name.toLowerCase().includes(catSearch.toLowerCase())
@@ -143,6 +153,55 @@ export default function CatalogScreen() {
     </TouchableOpacity>
   );
 
+  const renderBpProduct = ({ item }: { item: BonpreuProduct }) => (
+    <TouchableOpacity style={styles.productRow} activeOpacity={0.7} onPress={() => setBpDetail(item)}>
+      {item.thumbnail ? (
+        <Image source={{ uri: item.thumbnail }} style={styles.bpThumb} resizeMode="contain" />
+      ) : (
+        <View style={[styles.bpThumb, styles.bpThumbEmpty]}>
+          <Ionicons name="image-outline" size={18} color={colors.inkFaint} />
+        </View>
+      )}
+      <View style={styles.productInfo}>
+        <Text style={styles.productName} numberOfLines={2}>{item.displayName}</Text>
+        <Text style={styles.productSub}>{item.priceFormat ?? item.packaging ?? ''}</Text>
+      </View>
+      <Text style={styles.productPrice}>
+        {item.unitPrice != null ? `${item.unitPrice.toFixed(2).replace('.', ',')} €` : ''}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  // Estados de un listado de búsqueda de productos (compartido).
+  const renderSearchStates = (search: string, loading: boolean, error: boolean, empty: boolean, list: React.ReactNode) => {
+    if (search.trim().length < 2)
+      return <View style={styles.centerBox}><Text style={styles.errorText}>Escribe al menos 2 letras para buscar.</Text></View>;
+    if (loading) return <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />;
+    if (error) return <View style={styles.centerBox}><Text style={styles.errorText}>Error al buscar productos.</Text></View>;
+    if (empty) return <View style={styles.centerBox}><Text style={styles.errorText}>Sin resultados.</Text></View>;
+    return list;
+  };
+
+  const searchBar = (placeholder: string, value: string, onChange: (s: string) => void) => (
+    <View style={styles.searchBar}>
+      <Ionicons name="search-outline" size={18} color={colors.inkSoft} />
+      <TextInput
+        style={styles.searchInput}
+        placeholder={placeholder}
+        placeholderTextColor={colors.inkFaint}
+        value={value}
+        onChangeText={onChange}
+        returnKeyType="search"
+        autoFocus
+      />
+      {value.length > 0 && (
+        <TouchableOpacity onPress={() => onChange('')}>
+          <Ionicons name="close-circle" size={18} color={colors.inkFaint} />
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
@@ -168,129 +227,100 @@ export default function CatalogScreen() {
         ))}
       </View>
 
-      {store === 'esclat' ? (
+      {/* Tab switcher */}
+      <View style={styles.tabs}>
+        <TouchableOpacity
+          style={[styles.tab, tab === 'categorias' && styles.tabActive]}
+          onPress={() => setTab('categorias')}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.tabText, tab === 'categorias' && styles.tabTextActive]}>Categorías</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, tab === 'productos' && styles.tabActive]}
+          onPress={() => setTab('productos')}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.tabText, tab === 'productos' && styles.tabTextActive]}>Productos</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* ── Mercadona ───────────────────────────────────────────── */}
+      {store === 'mercadona' && tab === 'categorias' && (
+        <>
+          {searchBar('Buscar categorías...', catSearch, setCatSearch)}
+          {catLoading ? (
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+          ) : catError ? (
+            <View style={styles.centerBox}>
+              <Text style={styles.errorText}>No se pudo cargar el catálogo.</Text>
+              <TouchableOpacity onPress={() => {
+                setCatError(false); setCatLoading(true);
+                fetchCategories().then(setCategories).catch(() => setCatError(true)).finally(() => setCatLoading(false));
+              }}>
+                <Text style={styles.retryText}>Reintentar</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={filteredCats}
+              keyExtractor={(item) => String(item.id)}
+              renderItem={renderCategory}
+              contentContainerStyle={styles.list}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            />
+          )}
+        </>
+      )}
+
+      {store === 'mercadona' && tab === 'productos' && (
+        <>
+          {searchBar('Buscar productos...', prodSearch, setProdSearch)}
+          {renderSearchStates(
+            prodSearch, prodLoading, prodError, prodResults.length === 0,
+            <FlatList
+              data={prodResults}
+              keyExtractor={(item) => item.id}
+              renderItem={renderProduct}
+              contentContainerStyle={styles.list}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+              keyboardShouldPersistTaps="handled"
+            />,
+          )}
+        </>
+      )}
+
+      {/* ── BonpreuEsclat ───────────────────────────────────────── */}
+      {store === 'esclat' && tab === 'categorias' && (
         <View style={styles.comingSoon}>
           <Image
             source={require('../../assets/stores/bonpreuesclat.png')}
             style={styles.comingSoonImage}
             resizeMode="contain"
           />
-          <Text style={styles.comingSoonTitle}>BonpreuEsclat — Próximamente</Text>
+          <Text style={styles.comingSoonTitle}>Categorías — próximamente</Text>
           <Text style={styles.comingSoonText}>
-            Estamos trabajando para traerte el catálogo de BonpreuEsclat. De momento puedes
-            comprar con el catálogo de Mercadona.
+            Por ahora puedes buscar productos de BonpreuEsclat en la pestaña «Productos».
           </Text>
         </View>
-      ) : (
-        <>
-          {/* Tab switcher */}
-          <View style={styles.tabs}>
-            <TouchableOpacity
-              style={[styles.tab, tab === 'categorias' && styles.tabActive]}
-              onPress={() => setTab('categorias')}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.tabText, tab === 'categorias' && styles.tabTextActive]}>
-                Categorías
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.tab, tab === 'productos' && styles.tabActive]}
-              onPress={() => setTab('productos')}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.tabText, tab === 'productos' && styles.tabTextActive]}>
-                Productos
-              </Text>
-            </TouchableOpacity>
-          </View>
+      )}
 
-          {tab === 'categorias' ? (
-            <>
-              <View style={styles.searchBar}>
-                <Ionicons name="search-outline" size={18} color={colors.inkSoft} />
-                <TextInput
-                  style={styles.searchInput}
-                  placeholder="Buscar categorías..."
-                  placeholderTextColor={colors.inkFaint}
-                  value={catSearch}
-                  onChangeText={setCatSearch}
-                  returnKeyType="search"
-                />
-                {catSearch.length > 0 && (
-                  <TouchableOpacity onPress={() => setCatSearch('')}>
-                    <Ionicons name="close-circle" size={18} color={colors.inkFaint} />
-                  </TouchableOpacity>
-                )}
-              </View>
-              {catLoading ? (
-                <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
-              ) : catError ? (
-                <View style={styles.centerBox}>
-                  <Text style={styles.errorText}>No se pudo cargar el catálogo.</Text>
-                  <TouchableOpacity onPress={() => {
-                    setCatError(false); setCatLoading(true);
-                    fetchCategories().then(setCategories).catch(() => setCatError(true)).finally(() => setCatLoading(false));
-                  }}>
-                    <Text style={styles.retryText}>Reintentar</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <FlatList
-                  data={filteredCats}
-                  keyExtractor={(item) => String(item.id)}
-                  renderItem={renderCategory}
-                  contentContainerStyle={styles.list}
-                  showsVerticalScrollIndicator={false}
-                  ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-                />
-              )}
-            </>
-          ) : (
-            <>
-              <View style={styles.searchBar}>
-                <Ionicons name="search-outline" size={18} color={colors.inkSoft} />
-                <TextInput
-                  style={styles.searchInput}
-                  placeholder="Buscar productos..."
-                  placeholderTextColor={colors.inkFaint}
-                  value={prodSearch}
-                  onChangeText={setProdSearch}
-                  returnKeyType="search"
-                  autoFocus
-                />
-                {prodSearch.length > 0 && (
-                  <TouchableOpacity onPress={() => setProdSearch('')}>
-                    <Ionicons name="close-circle" size={18} color={colors.inkFaint} />
-                  </TouchableOpacity>
-                )}
-              </View>
-              {prodSearch.trim().length < 2 ? (
-                <View style={styles.centerBox}>
-                  <Text style={styles.errorText}>Escribe al menos 2 letras para buscar.</Text>
-                </View>
-              ) : prodLoading ? (
-                <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
-              ) : prodError ? (
-                <View style={styles.centerBox}>
-                  <Text style={styles.errorText}>Error al buscar productos.</Text>
-                </View>
-              ) : prodResults.length === 0 ? (
-                <View style={styles.centerBox}>
-                  <Text style={styles.errorText}>Sin resultados.</Text>
-                </View>
-              ) : (
-                <FlatList
-                  data={prodResults}
-                  keyExtractor={(item) => item.id}
-                  renderItem={renderProduct}
-                  contentContainerStyle={styles.list}
-                  showsVerticalScrollIndicator={false}
-                  ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-                  keyboardShouldPersistTaps="handled"
-                />
-              )}
-            </>
+      {store === 'esclat' && tab === 'productos' && (
+        <>
+          {searchBar('Buscar productos...', bpSearch, setBpSearch)}
+          {renderSearchStates(
+            bpSearch, bpLoading, bpError, bpResults.length === 0,
+            <FlatList
+              data={bpResults}
+              keyExtractor={(item) => item.id}
+              renderItem={renderBpProduct}
+              contentContainerStyle={styles.list}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+              keyboardShouldPersistTaps="handled"
+            />,
           )}
         </>
       )}
@@ -312,6 +342,7 @@ export default function CatalogScreen() {
       )}
 
       <ProductDetailModal productId={detailProductId} onClose={() => setDetailProductId(null)} />
+      <BonpreuProductModal product={bpDetail} onClose={() => setBpDetail(null)} />
     </View>
   );
 }
@@ -347,7 +378,7 @@ const styles = StyleSheet.create({
   storeText: { fontSize: 13, fontFamily: fonts.semibold, color: colors.inkSoft },
   storeTextActive: { color: colors.accent },
 
-  // ── Coming soon (Esclat) ──────────────────────────────────────
+  // ── Coming soon (Esclat categorías) ───────────────────────────
   comingSoon: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 32 },
   comingSoonImage: { width: 64, height: 64 },
   comingSoonTitle: { fontSize: 18, fontFamily: fonts.bold, color: colors.ink },
@@ -417,6 +448,8 @@ const styles = StyleSheet.create({
   productSub: { fontSize: 11, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
   productPrice: { fontSize: 13, fontFamily: fonts.bold, color: colors.accent },
   favStar: { marginRight: 4 },
+  bpThumb: { width: 42, height: 42, backgroundColor: colors.white },
+  bpThumbEmpty: { alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border },
 
   // ── States ────────────────────────────────────────────────────
   centerBox: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },

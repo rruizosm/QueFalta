@@ -8,6 +8,8 @@ import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { fetchProduct } from '../api/mercadona';
 import type { MercadonaProductDetail } from '../types';
+import { useFavorites } from '../context/FavoritesContext';
+import { useToast } from '../context/ToastContext';
 
 interface Props {
   /** Mercadona product id to show. When null, the modal is hidden. */
@@ -38,6 +40,8 @@ const clean = (text?: string | null): string | null => {
 };
 
 export default function ProductDetailModal({ productId, onClose }: Props) {
+  const { isProductFavorite, toggleProductFavorite } = useFavorites();
+  const toast = useToast();
   const [product, setProduct] = useState<MercadonaProductDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -77,6 +81,25 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
   const origin = product?.origin ?? d?.origin ?? null;
   const suppliers = d?.suppliers?.map((s) => s.name).filter(Boolean).join(', ') || null;
 
+  const fav = product ? isProductFavorite(product.id) : false;
+
+  const handleToggleFav = async () => {
+    if (!product) return;
+    try {
+      const added = await toggleProductFavorite({
+        refId: product.id,
+        name: product.display_name,
+        imageUrl: photo ?? product.thumbnail ?? null,
+        price: product.price_instructions?.unit_price ?? null,
+      });
+      toast.show(
+        added ? `${product.display_name} en favoritos` : `${product.display_name} quitado de favoritos`,
+      );
+    } catch {
+      toast.show('No se pudo actualizar el favorito.', 'error');
+    }
+  };
+
   if (productId == null) return null;
 
   return (
@@ -89,7 +112,13 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
             <Ionicons name="close" size={24} color={colors.ink} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Producto</Text>
-          <View style={{ width: 38 }} />
+          {product ? (
+            <TouchableOpacity onPress={handleToggleFav} style={styles.favBtn} activeOpacity={0.7}>
+              <Ionicons name={fav ? 'star' : 'star-outline'} size={22} color={colors.accent} />
+            </TouchableOpacity>
+          ) : (
+            <View style={{ width: 38 }} />
+          )}
         </View>
 
         {loading ? (
@@ -168,6 +197,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: colors.border,
+  },
+  favBtn: {
+    width: 38, height: 38,
+    backgroundColor: colors.white,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: colors.accent,
   },
   headerTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink },
 

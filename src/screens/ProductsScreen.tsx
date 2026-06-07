@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { Swipeable } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import {
@@ -25,6 +26,7 @@ import {
 import { CatalogStackParamList } from '../types';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+import { useFavorites } from '../context/FavoritesContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductDetailModal from '../components/ProductDetailModal';
 
@@ -43,6 +45,7 @@ export default function ProductsScreen() {
 
   const { activeCart, addToActiveCart } = useCart();
   const toast = useToast();
+  const { products: favProductsList, isProductFavorite, toggleProductFavorite } = useFavorites();
 
   const [products, setProducts] = useState<MercadonaProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,34 +102,71 @@ export default function ProductsScreen() {
     }
   };
 
+  const handleSwipeFav = async (p: MercadonaProduct) => {
+    try {
+      const added = await toggleProductFavorite({
+        refId: p.id,
+        name: p.display_name,
+        imageUrl: p.thumbnail ?? null,
+        price: p.price_instructions.unit_price,
+      });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show(added ? 'Producto añadido a favoritos' : 'Producto eliminado de favoritos');
+    } catch {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      toast.show('No se pudo actualizar el favorito.', 'error');
+    }
+  };
+
+  const renderFavAction = () => (
+    <View style={styles.swipeAction}>
+      <Ionicons name="star" size={22} color={colors.white} />
+    </View>
+  );
+
   const renderItem = ({ item }: { item: MercadonaProduct }) => {
     const qty = quantities[item.id] ?? 0;
     const active = qty > 0;
+    const fav = isProductFavorite(item.id);
     return (
-      <View style={[styles.row, active && styles.rowActive]}>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => setDetailProductId(item.id)}>
-          {item.thumbnail ? (
-            <Image source={{ uri: item.thumbnail }} style={styles.thumb} resizeMode="contain" />
-          ) : (
-            <View style={[styles.thumb, styles.thumbPlaceholder]}>
-              <Text style={{ fontSize: 22 }}>{emoji}</Text>
+      <Swipeable
+        friction={1}
+        leftThreshold={48}
+        overshootFriction={8}
+        renderLeftActions={renderFavAction}
+        onSwipeableOpen={(direction, swipeable) => {
+          if (direction === 'left') {
+            handleSwipeFav(item);
+            swipeable.close();
+          }
+        }}
+      >
+        <View style={[styles.row, active && styles.rowActive]}>
+          {fav && <View style={styles.favBar} />}
+          <TouchableOpacity activeOpacity={0.7} onPress={() => setDetailProductId(item.id)}>
+            {item.thumbnail ? (
+              <Image source={{ uri: item.thumbnail }} style={styles.thumb} resizeMode="contain" />
+            ) : (
+              <View style={[styles.thumb, styles.thumbPlaceholder]}>
+                <Text style={{ fontSize: 22 }}>{emoji}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <View style={styles.info}>
+            <Text style={styles.name} numberOfLines={2}>{item.display_name}</Text>
+            <View style={styles.meta}>
+              <Text style={styles.size}>{formatSize(item)}</Text>
+              <Text style={styles.dot}>·</Text>
+              <Text style={styles.price}>{formatPrice(item)}</Text>
             </View>
-          )}
-        </TouchableOpacity>
-        <View style={styles.info}>
-          <Text style={styles.name} numberOfLines={2}>{item.display_name}</Text>
-          <View style={styles.meta}>
-            <Text style={styles.size}>{formatSize(item)}</Text>
-            <Text style={styles.dot}>·</Text>
-            <Text style={styles.price}>{formatPrice(item)}</Text>
           </View>
+          <QuantityStepper
+            value={qty}
+            onIncrement={() => increment(item.id)}
+            onDecrement={() => decrement(item.id)}
+          />
         </View>
-        <QuantityStepper
-          value={qty}
-          onIncrement={() => increment(item.id)}
-          onDecrement={() => decrement(item.id)}
-        />
-      </View>
+      </Swipeable>
     );
   };
 
@@ -154,8 +194,10 @@ export default function ProductsScreen() {
           data={products}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
+          extraData={favProductsList}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
+          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
           ListEmptyComponent={
             <View style={styles.empty}>
               <Text style={styles.emptyText}>No hay productos disponibles</Text>
@@ -218,13 +260,25 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: colors.white,
-    padding: 11, marginBottom: 8,
+    padding: 11,
     borderWidth: 1, borderColor: colors.border,
     gap: 12,
   },
   rowActive: {
     backgroundColor: colors.accentLight,
     borderColor: colors.accentMid,
+  },
+  // Barra naranja persistente a la izquierda cuando el producto es favorito.
+  favBar: {
+    position: 'absolute', left: 0, top: 0, bottom: 0,
+    width: 5, backgroundColor: colors.accent,
+  },
+  // Panel naranja que se revela al deslizar a la derecha (flexible: sin tope brusco).
+  swipeAction: {
+    flex: 1,
+    backgroundColor: colors.accent,
+    alignItems: 'flex-start', justifyContent: 'center',
+    paddingLeft: 26,
   },
   thumb: { width: 50, height: 50, flex: 0 },
   thumbPlaceholder: {

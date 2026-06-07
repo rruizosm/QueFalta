@@ -14,6 +14,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
+import { getMeta } from '../constants/categoryMeta';
 import {
   fetchCategories,
   fetchCategoryDetail,
@@ -22,50 +23,10 @@ import {
   type N1Category,
   type MercadonaProduct,
 } from '../api/mercadona';
-
-const CATEGORY_META: Record<string, { emoji: string; color: string }> = {
-  'Fruta y verdura':                { emoji: '🥦', color: colors.accent },
-  'Aperitivos':                     { emoji: '🥨', color: colors.yellow },
-  'Lácteos y huevos':               { emoji: '🥛', color: colors.blue },
-  'Panadería':                      { emoji: '🍞', color: colors.orange },
-  'Carne':                          { emoji: '🥩', color: colors.red },
-  'Pescado y marisco':              { emoji: '🐟', color: colors.teal },
-  'Agua y refrescos':               { emoji: '💧', color: colors.teal },
-  'Congelados':                     { emoji: '🧊', color: colors.blue },
-  'Limpieza y hogar':               { emoji: '🧹', color: colors.purple },
-  'Bodega':                         { emoji: '🍷', color: colors.purple },
-  'Cuidado personal':               { emoji: '🧴', color: colors.blue },
-  'Mascotas':                       { emoji: '🐾', color: colors.orange },
-  'Aceite, especias y salsas':      { emoji: '🫙', color: colors.purple },
-  'Conservas y encurtidos':         { emoji: '🥫', color: colors.orange },
-  'Conservas, caldos y cremas':     { emoji: '🥫', color: colors.orange },
-  'Cuidado del cabello':            { emoji: '💇', color: colors.purple },
-  'Cuidado facial y corporal':      { emoji: '🧴', color: colors.blue },
-  'Fitoterapia y parafarmacia':     { emoji: '🌿', color: colors.accent },
-  'Cacao, café e infusiones':       { emoji: '☕', color: colors.orange },
-  'Charcutería y quesos':           { emoji: '🧀', color: colors.yellow },
-  'Huevos, leche y mantequilla':    { emoji: '🥛', color: colors.blue },
-  'Maquillaje':                     { emoji: '💄', color: colors.red },
-  'Marisco y pescado':              { emoji: '🦐', color: colors.teal },
-  'Panadería y pastelería':         { emoji: '🥐', color: colors.orange },
-  'Pizzas y platos preparados':     { emoji: '🍕', color: colors.red },
-  'Postres y yogures':              { emoji: '🍮', color: colors.yellow },
-  'Pasta, arroz y legumbres':       { emoji: '🍝', color: colors.orange },
-  'Arroz, legumbres y pasta':       { emoji: '🍚', color: colors.orange },
-  'Cereales y galletas':            { emoji: '🥣', color: colors.yellow },
-  'Café, cacao e infusiones':       { emoji: '☕', color: colors.orange },
-  'Dulces y chocolates':            { emoji: '🍫', color: colors.purple },
-  'Azúcar, caramelos y chocolate':  { emoji: '🍬', color: colors.purple },
-  'Zumos':                          { emoji: '🍊', color: colors.yellow },
-  'Alimentación infantil':          { emoji: '🍼', color: colors.teal },
-  'Bebé':                           { emoji: '👶', color: colors.teal },
-  'Dietética y nutrición':          { emoji: '💪', color: colors.accent },
-  'Internacional':                  { emoji: '🌍', color: colors.teal },
-};
-
-function getMeta(name: string) {
-  return CATEGORY_META[name] ?? { emoji: '🛒', color: colors.inkSoft };
-}
+import { useFavorites } from '../context/FavoritesContext';
+import { useToast } from '../context/ToastContext';
+import ActionSheet from '../components/ActionSheet';
+import ProductDetailModal from '../components/ProductDetailModal';
 
 const STORES = [
   { key: 'mercadona', name: 'Mercadona',     icon: require('../../assets/stores/mercadona.png') },
@@ -76,6 +37,10 @@ type StoreKey = (typeof STORES)[number]['key'];
 
 export default function CatalogScreen() {
   const navigation = useNavigation<any>();
+  const { isCategoryFavorite, toggleCategoryFavorite } = useFavorites();
+  const toast = useToast();
+  const [sheetCat, setSheetCat] = useState<N1Category | null>(null);
+  const [detailProductId, setDetailProductId] = useState<string | null>(null);
   const [store, setStore] = useState<StoreKey>('mercadona');
   const [tab, setTab] = useState<'categorias' | 'productos'>('categorias');
 
@@ -114,41 +79,62 @@ export default function CatalogScreen() {
     p.display_name.toLowerCase().includes(prodSearch.toLowerCase())
   );
 
+  const goToSubcategories = (cat: N1Category) => {
+    setSheetCat(null);
+    const { emoji, color } = getMeta(cat.name);
+    navigation.navigate('SubCategory', {
+      categoryName: cat.name,
+      emoji,
+      color,
+      subcategories: cat.categories,
+    });
+  };
+
+  const handleToggleCategory = async (cat: N1Category) => {
+    setSheetCat(null);
+    const { emoji, color } = getMeta(cat.name);
+    try {
+      const added = await toggleCategoryFavorite({ refId: String(cat.id), name: cat.name, emoji, color });
+      toast.show(added ? `${cat.name} en favoritos` : `${cat.name} quitada de favoritos`);
+    } catch {
+      toast.show('No se pudo actualizar el favorito.', 'error');
+    }
+  };
+
   const renderCategory = ({ item }: { item: N1Category }) => {
     const { emoji, color } = getMeta(item.name);
+    const fav = isCategoryFavorite(String(item.id));
     return (
-      <TouchableOpacity
-        style={styles.row}
-        onPress={() =>
-          navigation.navigate('SubCategory', {
-            categoryName: item.name,
-            emoji,
-            color,
-            subcategories: item.categories,
-          })
-        }
-        activeOpacity={0.8}
-      >
-        <View style={[styles.thumbnail, { backgroundColor: color + '1e' }]}>
-          <Text style={styles.thumbnailEmoji}>{emoji}</Text>
-        </View>
-        <View style={styles.rowContent}>
-          <Text style={styles.rowName}>{item.name}</Text>
-          <Text style={styles.rowSub}>{item.categories.length} subcategorías</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={17} color={colors.inkFaint} />
-      </TouchableOpacity>
+      <View style={styles.row}>
+        <TouchableOpacity
+          style={styles.rowBody}
+          onPress={() => goToSubcategories(item)}
+          activeOpacity={0.8}
+        >
+          <View style={[styles.thumbnail, { backgroundColor: color + '1e' }]}>
+            <Text style={styles.thumbnailEmoji}>{emoji}</Text>
+          </View>
+          <View style={styles.rowContent}>
+            <Text style={styles.rowName}>{item.name}</Text>
+            <Text style={styles.rowSub}>{item.categories.length} subcategorías</Text>
+          </View>
+        </TouchableOpacity>
+        {fav && <Ionicons name="star" size={15} color={colors.accent} style={styles.favStar} />}
+        <TouchableOpacity onPress={() => setSheetCat(item)} hitSlop={8} style={styles.moreBtn} activeOpacity={0.7}>
+          <Ionicons name="ellipsis-horizontal" size={18} color={colors.inkSoft} />
+        </TouchableOpacity>
+      </View>
     );
   };
 
   const renderProduct = ({ item }: { item: MercadonaProduct }) => (
-    <View style={styles.productRow}>
+    <TouchableOpacity style={styles.productRow} activeOpacity={0.7} onPress={() => setDetailProductId(item.id)}>
       <View style={styles.productInfo}>
         <Text style={styles.productName}>{item.display_name}</Text>
         <Text style={styles.productSub}>{item.packaging}</Text>
       </View>
       <Text style={styles.productPrice}>{formatPrice(item as any)}</Text>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -168,7 +154,7 @@ export default function CatalogScreen() {
             onPress={() => setStore(s.key)}
             activeOpacity={0.8}
           >
-            <Image source={s.icon} style={styles.storeIcon} resizeMode="contain" />
+            <Image source={s.icon} style={styles.storeIcon} resizeMode="cover" />
             <Text style={[styles.storeText, store === s.key && styles.storeTextActive]}>
               {s.name}
             </Text>
@@ -273,6 +259,24 @@ export default function CatalogScreen() {
           )}
         </>
       )}
+
+      {sheetCat && (
+        <ActionSheet
+          visible
+          onClose={() => setSheetCat(null)}
+          leading={{ type: 'emoji', ...getMeta(sheetCat.name) }}
+          title={sheetCat.name}
+          subtitle={`${sheetCat.categories.length} subcategorías`}
+          actions={[
+            { icon: 'list-outline', label: 'Ver subcategorías', onPress: () => goToSubcategories(sheetCat) },
+            isCategoryFavorite(String(sheetCat.id))
+              ? { icon: 'star', label: 'Quitar de favoritos', tint: colors.accent, onPress: () => handleToggleCategory(sheetCat) }
+              : { icon: 'star-outline', label: 'Marcar como favorita', tint: colors.accent, onPress: () => handleToggleCategory(sheetCat) },
+          ]}
+        />
+      )}
+
+      <ProductDetailModal productId={detailProductId} onClose={() => setDetailProductId(null)} />
     </View>
   );
 }
@@ -355,6 +359,8 @@ const styles = StyleSheet.create({
     padding: 11, gap: 12,
     borderWidth: 1, borderColor: colors.border,
   },
+  rowBody: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  moreBtn: { padding: 2 },
   thumbnail: {
     width: 42, height: 42,
     alignItems: 'center', justifyContent: 'center',
@@ -375,6 +381,7 @@ const styles = StyleSheet.create({
   productName: { fontSize: 13, fontFamily: fonts.semibold, color: colors.ink },
   productSub: { fontSize: 11, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
   productPrice: { fontSize: 13, fontFamily: fonts.bold, color: colors.accent },
+  favStar: { marginRight: 4 },
 
   // ── States ────────────────────────────────────────────────────
   centerBox: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },

@@ -46,6 +46,19 @@ export function flattenProducts(detail: N2CategoryDetail): MercadonaProduct[] {
   return detail.categories.flatMap(g => g.products.filter(p => p.published));
 }
 
+/**
+ * Productos sugeridos para el inicio cuando aún no hay favoritos.
+ * Coge la primera subcategoría de "Fruta y verdura" (id 1) y devuelve los primeros.
+ */
+export async function fetchSuggestedProducts(limit = 8): Promise<MercadonaProduct[]> {
+  const cats = await fetchCategories();
+  const preferred = cats.find((c) => c.id === 1) ?? cats[0];
+  const subId = preferred?.categories?.[0]?.id;
+  if (!subId) return [];
+  const detail = await fetchCategoryDetail(subId);
+  return flattenProducts(detail).slice(0, limit);
+}
+
 /** Returns a price string like "1,15 €" */
 export function formatPrice(product: MercadonaProduct): string {
   const price = parseFloat(product.price_instructions.unit_price);

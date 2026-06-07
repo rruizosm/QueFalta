@@ -169,6 +169,25 @@ export interface Group {
   activity: ActivityEntry[];
 }
 
+// ─── Favoritos ────────────────────────────────────────────────────────────────
+
+export interface FavoriteCategory {
+  /** id de la categoría N1 de Mercadona como string */
+  refId: string;
+  name: string;
+  emoji: string;
+  color: string;
+}
+
+export interface FavoriteProduct {
+  /** id de producto de Mercadona */
+  refId: string;
+  name: string;
+  imageUrl?: string | null;
+  /** unit_price tal cual lo da la API (snapshot) */
+  price?: string | null;
+}
+
 // ─── Navigation param types ───────────────────────────────────────────────────
 
 export type RootTabParamList = {

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
@@ -14,10 +14,19 @@ import {
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
-import { CATEGORIES } from '../constants/data';
+import { getMeta, DEFAULT_HOME_CATEGORY_IDS } from '../constants/categoryMeta';
 import { useCart } from '../context/CartContext';
 import { useProfile } from '../context/ProfileContext';
+import { useFavorites } from '../context/FavoritesContext';
 import { fetchMyGroups, fetchGroupItems, type GroupSummary, type GroupItem } from '../api/groups';
+import {
+  fetchCategories,
+  fetchSuggestedProducts,
+  type N1Category,
+  type MercadonaProduct,
+} from '../api/mercadona';
+import type { FavoriteProduct } from '../types';
+import ProductDetailModal from '../components/ProductDetailModal';
 import ProgressBar from '../components/ProgressBar';
 import MemberAvatars from '../components/MemberAvatars';
 import HardShadow from '../components/HardShadow';
@@ -26,12 +35,21 @@ export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const { activeCart } = useCart();
   const { profile } = useProfile();
+  const {
+    categories: favCategories,
+    products: favProducts,
+    isCategoryFavorite,
+  } = useFavorites();
 
   const [groups, setGroups] = useState<GroupSummary[]>([]);
   const [groupsLoading, setGroupsLoading] = useState(true);
   const [cartItems, setCartItems] = useState<GroupItem[]>([]);
   const [cartLoading, setCartLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [liveCategories, setLiveCategories] = useState<N1Category[]>([]);
+  const [suggested, setSuggested] = useState<MercadonaProduct[]>([]);
+  const [detailProductId, setDetailProductId] = useState<string | null>(null);
 
   const load = useCallback(() => {
     const groupsP = fetchMyGroups()
@@ -54,6 +72,12 @@ export default function HomeScreen() {
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
+  // Categorías reales de Mercadona + productos sugeridos (una vez).
+  useEffect(() => {
+    fetchCategories().then(setLiveCategories).catch(() => {});
+    fetchSuggestedProducts(8).then(setSuggested).catch(() => {});
+  }, []);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await load();
@@ -71,6 +95,45 @@ export default function HomeScreen() {
         params: { groupId: activeCart.groupId },
       });
     }
+  };
+
+  // Chips del catálogo: favoritas (resueltas contra las live) o las 6 por defecto.
+  const chipCats = useMemo<N1Category[]>(() => {
+    if (liveCategories.length === 0) return [];
+    const favResolved = favCategories
+      .map((f) => liveCategories.find((c) => String(c.id) === f.refId))
+      .filter((c): c is N1Category => !!c);
+    if (favResolved.length > 0) return favResolved;
+    return DEFAULT_HOME_CATEGORY_IDS
+      .map((id) => liveCategories.find((c) => c.id === id))
+      .filter((c): c is N1Category => !!c);
+  }, [liveCategories, favCategories]);
+
+  const suggestedItems = useMemo<FavoriteProduct[]>(
+    () =>
+      suggested.map((p) => ({
+        refId: p.id,
+        name: p.display_name,
+        imageUrl: p.thumbnail ?? null,
+        price: p.price_instructions.unit_price,
+      })),
+    [suggested],
+  );
+  const productItems = favProducts.length > 0 ? favProducts : suggestedItems;
+
+  const fmtPrice = (price?: string | null) =>
+    price ? `${parseFloat(price).toFixed(2).replace('.', ',')} €` : '';
+
+  const goToSubcategories = (cat: N1Category) => {
+    const { emoji, color } = getMeta(cat.name);
+    navigation.navigate('Catalog', {
+      screen: 'SubCategory',
+      params: { categoryName: cat.name, emoji, color, subcategories: cat.categories },
+    });
+  };
+
+  const openProductDetail = (item: FavoriteProduct) => {
+    setDetailProductId(item.refId);
   };
 
   return (
@@ -177,29 +240,72 @@ export default function HomeScreen() {
             <Text style={styles.seeAll}>Ver todo</Text>
           </TouchableOpacity>
         </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoriesRow}
-        >
-          {CATEGORIES.slice(0, 6).map((cat) => (
-            <TouchableOpacity
-              key={cat.id}
-              style={[styles.categoryChip, { backgroundColor: cat.color + '1e' }]}
-              onPress={() =>
-                navigation.navigate('Catalog', {
-                  screen: 'SubCategory',
-                  params: { categoryId: cat.id, categoryName: cat.name },
-                })
-              }
-            >
-              <Text style={styles.categoryEmoji}>{cat.emoji}</Text>
-              <Text style={[styles.categoryChipName, { color: cat.color }]} numberOfLines={1}>
-                {cat.name.split(' ')[0]}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        {chipCats.length === 0 ? (
+          <ActivityIndicator color={colors.accent} style={{ marginVertical: 16 }} />
+        ) : (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoriesRow}
+          >
+            {chipCats.map((cat) => {
+              const { emoji, color } = getMeta(cat.name);
+              const fav = isCategoryFavorite(String(cat.id));
+              return (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={[styles.categoryChip, { backgroundColor: color + '1e' }]}
+                  onPress={() => goToSubcategories(cat)}
+                  activeOpacity={0.8}
+                >
+                  {fav && <Ionicons name="star" size={11} color={color} style={styles.chipStar} />}
+                  <Text style={styles.categoryEmoji}>{emoji}</Text>
+                  <Text style={[styles.categoryChipName, { color }]} numberOfLines={1}>
+                    {cat.name.split(' ')[0]}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        )}
+
+        {/* Productos */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>
+            {favProducts.length > 0 ? 'Tus productos' : 'Productos sugeridos'}
+          </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Catalog')}>
+            <Text style={styles.seeAll}>Ver todo</Text>
+          </TouchableOpacity>
+        </View>
+        {productItems.length === 0 ? (
+          <ActivityIndicator color={colors.accent} style={{ marginVertical: 16 }} />
+        ) : (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.productsRow}
+          >
+            {productItems.map((item) => (
+              <TouchableOpacity
+                key={item.refId}
+                style={styles.productCard}
+                activeOpacity={0.85}
+                onPress={() => openProductDetail(item)}
+              >
+                {item.imageUrl ? (
+                  <Image source={{ uri: item.imageUrl }} style={styles.productCardImg} resizeMode="contain" />
+                ) : (
+                  <View style={[styles.productCardImg, styles.productCardImgPlaceholder]}>
+                    <Text style={{ fontSize: 26 }}>🛒</Text>
+                  </View>
+                )}
+                <Text style={styles.productCardName} numberOfLines={2}>{item.name}</Text>
+                <Text style={styles.productCardPrice}>{fmtPrice(item.price)}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
 
         {/* Mis grupos */}
         <View style={styles.sectionHeader}>
@@ -239,6 +345,8 @@ export default function HomeScreen() {
           ))
         )}
       </ScrollView>
+
+      <ProductDetailModal productId={detailProductId} onClose={() => setDetailProductId(null)} />
     </View>
   );
 }
@@ -323,6 +431,26 @@ const styles = StyleSheet.create({
   },
   categoryEmoji: { fontSize: 22 },
   categoryChipName: { fontSize: 11, fontFamily: fonts.semibold },
+  chipStar: { position: 'absolute', top: 4, right: 4 },
+
+  // ── Products ──────────────────────────────────────────────────
+  productsRow: { gap: 10, paddingBottom: 20 },
+  productCard: {
+    width: 116,
+    backgroundColor: colors.white,
+    borderWidth: 1, borderColor: colors.border,
+    padding: 10,
+  },
+  productCardImg: { width: '100%', height: 76 },
+  productCardImgPlaceholder: {
+    backgroundColor: colors.surfaceAlt,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  productCardName: {
+    fontSize: 11.5, fontFamily: fonts.semibold, color: colors.ink,
+    marginTop: 8, lineHeight: 15, minHeight: 30,
+  },
+  productCardPrice: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.accent, marginTop: 4 },
 
   // ── Groups ────────────────────────────────────────────────────
   noGroups: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, marginBottom: 16 },

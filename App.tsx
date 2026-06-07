@@ -13,6 +13,7 @@ import Navigation from './src/navigation';
 import { AuthProvider } from './src/context/AuthContext';
 import { ProfileProvider } from './src/context/ProfileContext';
 import { CartProvider } from './src/context/CartContext';
+import { FavoritesProvider } from './src/context/FavoritesContext';
 import { ToastProvider } from './src/context/ToastContext';
 import { configureNotificationHandler } from './src/lib/notifications';
 
@@ -38,9 +39,11 @@ export default function App() {
       <AuthProvider>
         <ProfileProvider>
           <CartProvider>
-            <ToastProvider>
-              <Navigation />
-            </ToastProvider>
+            <FavoritesProvider>
+              <ToastProvider>
+                <Navigation />
+              </ToastProvider>
+            </FavoritesProvider>
           </CartProvider>
         </ProfileProvider>
       </AuthProvider>

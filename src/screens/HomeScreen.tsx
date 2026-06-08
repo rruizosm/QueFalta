@@ -26,7 +26,9 @@ import {
   type MercadonaProduct,
 } from '../api/mercadona';
 import type { FavoriteProduct } from '../types';
+import { retailerOf, type BonpreuProduct } from '../api/catalog';
 import ProductDetailModal from '../components/ProductDetailModal';
+import BonpreuProductModal from '../components/BonpreuProductModal';
 import ProgressBar from '../components/ProgressBar';
 import MemberAvatars from '../components/MemberAvatars';
 import HardShadow from '../components/HardShadow';
@@ -50,6 +52,7 @@ export default function HomeScreen() {
   const [liveCategories, setLiveCategories] = useState<N1Category[]>([]);
   const [suggested, setSuggested] = useState<MercadonaProduct[]>([]);
   const [detailProductId, setDetailProductId] = useState<string | null>(null);
+  const [bpDetail, setBpDetail] = useState<BonpreuProduct | null>(null);
 
   const load = useCallback(() => {
     const groupsP = fetchMyGroups()
@@ -133,7 +136,20 @@ export default function HomeScreen() {
   };
 
   const openProductDetail = (item: FavoriteProduct) => {
-    setDetailProductId(item.refId);
+    if (retailerOf(item.refId) === 'esclat') {
+      setBpDetail({
+        id: item.refId,
+        displayName: item.name,
+        brand: null,
+        packaging: null,
+        thumbnail: item.imageUrl ?? null,
+        unitPrice: item.price != null ? parseFloat(item.price) : null,
+        priceFormat: null,
+        categoryName: null,
+      });
+    } else {
+      setDetailProductId(item.refId);
+    }
   };
 
   return (
@@ -347,6 +363,7 @@ export default function HomeScreen() {
       </ScrollView>
 
       <ProductDetailModal productId={detailProductId} onClose={() => setDetailProductId(null)} />
+      <BonpreuProductModal product={bpDetail} onClose={() => setBpDetail(null)} />
     </View>
   );
 }

@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, Image,
-  StyleSheet, StatusBar, ActivityIndicator,
+  StyleSheet, StatusBar, ActivityIndicator, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { fetchProduct } from '../api/mercadona';
 import type { MercadonaProductDetail } from '../types';
 import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../context/ToastContext';
+import { useCart } from '../context/CartContext';
+import QuantityStepper from './QuantityStepper';
 
 interface Props {
   /** Mercadona product id to show. When null, the modal is hidden. */
@@ -41,16 +44,20 @@ const clean = (text?: string | null): string | null => {
 
 export default function ProductDetailModal({ productId, onClose }: Props) {
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
+  const { activeCart, addToActiveCart } = useCart();
   const toast = useToast();
   const [product, setProduct] = useState<MercadonaProductDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [qty, setQty] = useState(1);
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     if (!productId) { setProduct(null); return; }
     setLoading(true);
     setError(false);
     setProduct(null);
+    setQty(1);
     let cancelled = false;
     fetchProduct(productId)
       .then((p) => { if (!cancelled) setProduct(p); })
@@ -100,6 +107,33 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
     }
   };
 
+  const handleAdd = async () => {
+    if (!product) return;
+    if (!activeCart) {
+      Alert.alert('Sin carrito activo', 'Activa el carrito de un grupo en la pestaña Grupos antes de añadir productos.');
+      return;
+    }
+    setAdding(true);
+    try {
+      await addToActiveCart([{
+        productName: product.display_name,
+        quantity: qty,
+        unit: 'ud',
+        unitPrice: pi?.unit_price != null ? parseFloat(pi.unit_price) : null,
+        imageUrl: photo ?? product.thumbnail ?? null,
+        mercadonaProductId: product.id,
+      }]);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show(`${qty} ${qty === 1 ? 'artículo añadido' : 'artículos añadidos'} a ${activeCart.groupName}`);
+      onClose();
+    } catch {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      toast.show('No se pudo añadir el producto.', 'error');
+    } finally {
+      setAdding(false);
+    }
+  };
+
   if (productId == null) return null;
 
   return (
@@ -129,7 +163,8 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
             <Text style={styles.errorText}>No se pudo cargar la información del producto.</Text>
           </View>
         ) : (
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+          <>
+          <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
             {/* Photo */}
             {photo ? (
               <Image source={{ uri: photo }} style={styles.photo} resizeMode="contain" />
@@ -166,6 +201,26 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
               <Text style={styles.ean}>EAN: {product.ean}</Text>
             ) : null}
           </ScrollView>
+
+          <View style={styles.footer}>
+            <QuantityStepper
+              value={qty}
+              min={1}
+              onIncrement={() => setQty((q) => q + 1)}
+              onDecrement={() => setQty((q) => Math.max(1, q - 1))}
+            />
+            <TouchableOpacity style={styles.addBtn} onPress={handleAdd} disabled={adding} activeOpacity={0.85}>
+              {adding ? (
+                <ActivityIndicator size="small" color={colors.white} />
+              ) : (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Ionicons name="cart-outline" size={16} color={colors.white} />
+                  <Text style={styles.addBtnText}>Añadir a la cesta</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+          </>
         )}
     </View>
   );
@@ -235,4 +290,16 @@ const styles = StyleSheet.create({
 
   centerBox: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, paddingHorizontal: 40 },
   errorText: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'center' },
+
+  footer: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 16, paddingTop: 12, paddingBottom: 28,
+    borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.paper,
+  },
+  addBtn: {
+    flex: 1, backgroundColor: colors.accent,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    paddingVertical: 14,
+  },
+  addBtnText: { color: colors.white, fontFamily: fonts.bold, fontSize: 14 },
 });

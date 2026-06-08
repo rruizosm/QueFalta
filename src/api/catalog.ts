@@ -21,6 +21,12 @@ export async function searchProducts(query: string, limit = 50): Promise<Mercado
   return (data ?? []).map((r: any) => r.raw as MercadonaProduct);
 }
 
+/** Deduce la tienda a partir del id de producto: Bonpreu usa uuids; Mercadona,
+ *  ids numéricos. Sirve para abrir el detalle correcto (p.ej. desde favoritos). */
+export function retailerOf(id: string): 'mercadona' | 'esclat' {
+  return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-/.test(id) ? 'esclat' : 'mercadona';
+}
+
 // ─── BonpreuEsclat (tabla bonpreu_products, espejo aparte) ───────────────────
 // Forma normalizada para la UI (la del producto de Bonpreu difiere de Mercadona).
 export interface BonpreuProduct {

@@ -9,6 +9,7 @@ import { fonts } from '../constants/typography';
 import type { BonpreuProduct } from '../api/catalog';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+import { useFavorites } from '../context/FavoritesContext';
 import QuantityStepper from '../components/QuantityStepper';
 
 interface Props {
@@ -21,6 +22,7 @@ interface Props {
  *  búsqueda (no hay fetch: la API de Bonpreu va por el espejo en Supabase). */
 export default function BonpreuProductModal({ product, onClose }: Props) {
   const { activeCart, addToActiveCart } = useCart();
+  const { isProductFavorite, toggleProductFavorite } = useFavorites();
   const toast = useToast();
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
@@ -29,6 +31,21 @@ export default function BonpreuProductModal({ product, onClose }: Props) {
 
   if (!product) return null;
   const price = product.unitPrice != null ? `${product.unitPrice.toFixed(2).replace('.', ',')} €` : null;
+  const fav = isProductFavorite(product.id);
+
+  const handleToggleFav = async () => {
+    try {
+      const added = await toggleProductFavorite({
+        refId: product.id,
+        name: product.displayName,
+        imageUrl: product.thumbnail,
+        price: product.unitPrice != null ? String(product.unitPrice) : null,
+      });
+      toast.show(added ? `${product.displayName} en favoritos` : `${product.displayName} quitado de favoritos`);
+    } catch {
+      toast.show('No se pudo actualizar el favorito.', 'error');
+    }
+  };
 
   const handleAdd = async () => {
     if (!activeCart) {
@@ -65,7 +82,9 @@ export default function BonpreuProductModal({ product, onClose }: Props) {
           <Ionicons name="close" size={24} color={colors.ink} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Producto</Text>
-        <View style={{ width: 38 }} />
+        <TouchableOpacity onPress={handleToggleFav} style={styles.favBtn} activeOpacity={0.7}>
+          <Ionicons name={fav ? 'star' : 'star-outline'} size={22} color={colors.accent} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
@@ -132,6 +151,11 @@ const styles = StyleSheet.create({
     width: 38, height: 38, backgroundColor: colors.white,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: colors.border,
+  },
+  favBtn: {
+    width: 38, height: 38, backgroundColor: colors.white,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: colors.accent,
   },
   headerTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink },
 

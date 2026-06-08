@@ -210,7 +210,9 @@ export type CatalogStackParamList = {
     categoryName: string;
     emoji?: string;
     color?: string;
-    subcategories: N2CategoryBrief[];
+    /** Subcategorías N2. Mercadona usa ids numéricos; Bonpreu, uuids string. */
+    subcategories: { id: string | number; name: string }[];
+    retailer?: 'mercadona' | 'esclat';
   };
   Products: {
     subcategoryId: number;
@@ -218,6 +220,12 @@ export type CatalogStackParamList = {
     categoryName: string;
     emoji?: string;
     color?: string;
+  };
+  /** Productos de una subcategoría de BonpreuEsclat (lee del espejo). */
+  BonpreuProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentName?: string;
   };
 };
 

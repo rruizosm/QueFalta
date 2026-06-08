@@ -44,7 +44,9 @@ const priceText = (p) => {
 };
 const imageUrl = (p) => p?.image?.src || (Array.isArray(p?.images) && (p.images[0]?.src || p.images[0]?.url)) || null;
 
-function normalize(p, cat) {
+// Detalles de un producto (independientes de la categoría). La pertenencia a
+// categorías se calcula aparte (membership) leyendo los IDs del SSR de cada página.
+function normalize(p) {
   return {
     id: p.productId,
     retailer_product_id: p.retailerProductId ?? null,
@@ -52,8 +54,6 @@ function normalize(p, cat) {
     brand: p.brand ?? null,
     packaging: p.packSizeDescription ?? null,
     thumbnail: imageUrl(p),
-    category_id: cat.id,
-    category_name: cat.name,
     unit_price: priceAmount(p),
     price_format: priceText(p),
     available: p.available !== false,
@@ -102,8 +102,12 @@ async function fetchCategoryTree() {
   return { catRows, n2s };
 }
 
-// ── Procesar una categoría: scroll capturando respuestas de los PUT ──────────
-async function processCategory(page, cat, products) {
+// ── Procesar una categoría ───────────────────────────────────────────────────
+// 1) Lee del SSR TODOS los productId de esta categoría → pertenencia completa
+//    (independiente de qué pestaña capture los detalles).
+// 2) Hace scroll capturando los PUT para hidratar detalles (deduplicados global).
+// `membership`: Map<productId, Set<categoryId>>.
+async function processCategory(page, cat, products, membership) {
   const localIds = new Set();
   const onResp = async (resp) => {
     const req = resp.request();
@@ -113,7 +117,7 @@ async function processCategory(page, cat, products) {
         for (const p of d.products || []) {
           if (!p?.productId) continue;
           localIds.add(p.productId);
-          if (!products.has(p.productId)) products.set(p.productId, normalize(p, cat));
+          if (!products.has(p.productId)) products.set(p.productId, normalize(p));
         }
       } catch {}
     }
@@ -121,13 +125,30 @@ async function processCategory(page, cat, products) {
   page.on('response', onResp);
   try {
     await page.goto(`${HOME}/categories/${cat.id}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-    const total = await page.evaluate(() => {
-      try { return window.__INITIAL_STATE__.data.products.catalogue.data.totalProducts || 0; } catch { return 0; }
+    const { total, ids } = await page.evaluate(() => {
+      try {
+        const c = window.__INITIAL_STATE__.data.products.catalogue.data;
+        const o = [];
+        // productGroups[].products[] son los productId como STRING (no objetos).
+        for (const g of c.productGroups || []) for (const p of g.products || []) {
+          const id = typeof p === 'string' ? p : (p?.productId || p?.id);
+          if (id) o.push(id);
+        }
+        return { total: c.totalProducts || 0, ids: [...new Set(o)] };
+      } catch { return { total: 0, ids: [] }; }
     });
+    // Pertenencia: todos los productos que esta categoría lista en su SSR.
+    for (const id of ids) {
+      let set = membership.get(id);
+      if (!set) membership.set(id, (set = new Set()));
+      set.add(cat.id);
+    }
+    // Hidratar detalles vía scroll (hasta cubrir el total o estabilizarse).
+    const target = total ? Math.min(total, ids.length || total) : 0;
     let last = -1, stable = 0;
-    for (let i = 0; i < 80 && stable < 2 && (!total || localIds.size < total); i++) {
+    for (let i = 0; i < 120 && stable < 4 && (!target || localIds.size < target); i++) {
       await page.mouse.wheel(0, 14000);
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(350);
       if (localIds.size === last) stable++; else { stable = 0; last = localIds.size; }
     }
   } finally {
@@ -141,8 +162,10 @@ async function main() {
   const cats = n2s.slice(0, MAX_CATEGORIES);
   console.log(`[bonpreu] ${catRows.length} categorías, ${n2s.length} N2 con productos (proceso ${cats.length})`);
 
+  const catName = new Map(n2s.map((c) => [c.id, c.name]));
   const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || undefined, headless: true });
-  const products = new Map();
+  const products = new Map();      // productId → detalles
+  const membership = new Map();    // productId → Set<categoryId>
   try {
     const ctx = await browser.newContext({ locale: 'ca-ES' });
 
@@ -159,7 +182,7 @@ async function main() {
       for (;;) {
         const cat = queue.shift();
         if (!cat) break;
-        try { await processCategory(pg, cat, products); }
+        try { await processCategory(pg, cat, products, membership); }
         catch (e) { console.warn(`[bonpreu] ${cat.name} falló: ${e.message}`); }
         if (++done % 10 === 0) console.log(`[bonpreu] ${done}/${cats.length} categorías · ${products.size} productos`);
       }
@@ -168,12 +191,30 @@ async function main() {
     await browser.close();
   }
 
-  const rows = [...products.values()].filter((r) => r.display_name);
+  // Adjuntar a cada producto sus categorías reales (las que lo listan en su SSR).
+  const rows = [];
+  for (const [id, det] of products) {
+    if (!det.display_name) continue;
+    const mem = [...(membership.get(id) ?? [])];
+    rows.push({
+      ...det,
+      category_ids: mem,
+      category_id: mem[0] ?? null,
+      category_name: mem[0] ? catName.get(mem[0]) ?? null : null,
+    });
+  }
   console.log(`[bonpreu] ${rows.length} productos únicos`);
 
   if (DRY_RUN) {
-    for (const r of rows.slice(0, 8)) console.log(`  ${r.display_name} | ${r.brand ?? '-'} | ${r.unit_price ?? '?'} € | ${r.price_format ?? '-'} | ${r.thumbnail ? 'img' : 'NO-img'} | new=${r.is_new}`);
-    console.log('nulos →', { sin_precio: rows.filter((r) => r.unit_price == null).length, sin_img: rows.filter((r) => !r.thumbnail).length });
+    const perCat = new Map();
+    for (const r of rows) for (const c of r.category_ids) perCat.set(c, (perCat.get(c) ?? 0) + 1);
+    console.log('productos por categoría (las procesadas):');
+    for (const c of cats) console.log(`  ${c.name}: ${perCat.get(c.id) ?? 0}`);
+    console.log('nulos →', {
+      sin_precio: rows.filter((r) => r.unit_price == null).length,
+      sin_img: rows.filter((r) => !r.thumbnail).length,
+      sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
+    });
     return;
   }
   if (rows.length === 0) throw new Error('0 productos (¿WAF/navegador?)');

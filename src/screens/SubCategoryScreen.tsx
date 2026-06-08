@@ -11,31 +11,42 @@ import {
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
-import { CatalogStackParamList, N2CategoryBrief } from '../types';
+import { CatalogStackParamList } from '../types';
 import { getSubcategoryEmoji } from '../constants/subcategoryEmojis';
 
 type SubCategoryRouteProp = RouteProp<CatalogStackParamList, 'SubCategory'>;
+type Subcat = { id: string | number; name: string };
 
 export default function SubCategoryScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<SubCategoryRouteProp>();
-  const { categoryName, emoji = '🛒', color = colors.accent, subcategories } = route.params;
+  const { categoryName, emoji = '🛒', color = colors.accent, subcategories = [], retailer = 'mercadona' } = route.params;
 
-  const renderItem = ({ item }: { item: N2CategoryBrief }) => {
+  const openSubcategory = (item: Subcat) => {
+    if (retailer === 'esclat') {
+      navigation.navigate('BonpreuProducts', {
+        categoryId: String(item.id),
+        categoryName: item.name,
+        parentName: categoryName,
+      });
+    } else {
+      navigation.navigate('Products', {
+        subcategoryId: Number(item.id),
+        subcategoryName: item.name,
+        categoryName,
+        emoji: getSubcategoryEmoji(item.name, emoji),
+        color,
+      });
+    }
+  };
+
+  const renderItem = ({ item }: { item: Subcat }) => {
     const itemEmoji = getSubcategoryEmoji(item.name, emoji);
     return (
       <TouchableOpacity
         style={styles.row}
         activeOpacity={0.8}
-        onPress={() =>
-          navigation.navigate('Products', {
-            subcategoryId: item.id,
-            subcategoryName: item.name,
-            categoryName,
-            emoji: itemEmoji,
-            color,
-          })
-        }
+        onPress={() => openSubcategory(item)}
       >
         <View style={[styles.thumbnail, { backgroundColor: color + '1e' }]}>
           <Text style={styles.thumbnailEmoji}>{itemEmoji}</Text>

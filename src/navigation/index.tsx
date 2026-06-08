@@ -27,6 +27,7 @@ import FriendsScreen from '../screens/FriendsScreen';
 import CatalogScreen    from '../screens/CatalogScreen';
 import SubCategoryScreen from '../screens/SubCategoryScreen';
 import ProductsScreen   from '../screens/ProductsScreen';
+import BonpreuProductsScreen from '../screens/BonpreuProductsScreen';
 import ListScreen       from '../screens/ListScreen';
 import GroupsScreen     from '../screens/GroupsScreen';
 import GroupDetailScreen from '../screens/GroupDetailScreen';
@@ -68,6 +69,7 @@ function CatalogNavigator() {
       <CatalogStack.Screen name="CatalogHome" component={CatalogScreen} />
       <CatalogStack.Screen name="SubCategory" component={SubCategoryScreen} />
       <CatalogStack.Screen name="Products"    component={ProductsScreen} />
+      <CatalogStack.Screen name="BonpreuProducts" component={BonpreuProductsScreen} />
     </CatalogStack.Navigator>
   );
 }

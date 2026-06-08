@@ -21,7 +21,10 @@ import {
   type N1Category,
   type MercadonaProduct,
 } from '../api/mercadona';
-import { searchProducts, searchBonpreuProducts, type BonpreuProduct } from '../api/catalog';
+import {
+  searchProducts, searchBonpreuProducts, fetchBonpreuCategoryTree,
+  type BonpreuProduct, type BonpreuCategory,
+} from '../api/catalog';
 import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../context/ToastContext';
 import ActionSheet from '../components/ActionSheet';
@@ -62,12 +65,27 @@ export default function CatalogScreen() {
   const [bpError, setBpError] = useState(false);
   const [bpDetail, setBpDetail] = useState<BonpreuProduct | null>(null);
 
+  // Categorías BonpreuEsclat (espejo)
+  const [bpCats, setBpCats] = useState<BonpreuCategory[]>([]);
+  const [bpCatsLoading, setBpCatsLoading] = useState(false);
+  const [bpCatsError, setBpCatsError] = useState(false);
+
   useEffect(() => {
     fetchCategories()
       .then(setCategories)
       .catch(() => setCatError(true))
       .finally(() => setCatLoading(false));
   }, []);
+
+  // Carga perezosa de categorías Bonpreu la primera vez que se entra a esa tienda.
+  useEffect(() => {
+    if (store !== 'esclat' || bpCats.length > 0 || bpCatsLoading) return;
+    setBpCatsLoading(true); setBpCatsError(false);
+    fetchBonpreuCategoryTree()
+      .then(setBpCats)
+      .catch(() => setBpCatsError(true))
+      .finally(() => setBpCatsLoading(false));
+  }, [store]);
 
   // Mercadona: búsqueda server-side con debounce (antes barría ~100 subcategorías).
   useEffect(() => {
@@ -103,6 +121,17 @@ export default function CatalogScreen() {
       emoji,
       color,
       subcategories: cat.categories,
+    });
+  };
+
+  const goToBonpreuSubcategories = (cat: BonpreuCategory) => {
+    const { emoji, color } = getMeta(cat.name);
+    navigation.navigate('SubCategory', {
+      categoryName: cat.name,
+      emoji,
+      color,
+      subcategories: cat.children,
+      retailer: 'esclat',
     });
   };
 
@@ -171,6 +200,22 @@ export default function CatalogScreen() {
       </Text>
     </TouchableOpacity>
   );
+
+  const renderBpCategory = ({ item }: { item: BonpreuCategory }) => {
+    const { emoji, color } = getMeta(item.name);
+    return (
+      <TouchableOpacity style={styles.row} activeOpacity={0.8} onPress={() => goToBonpreuSubcategories(item)}>
+        <View style={[styles.thumbnail, { backgroundColor: color + '1e' }]}>
+          <Text style={styles.thumbnailEmoji}>{emoji}</Text>
+        </View>
+        <View style={styles.rowContent}>
+          <Text style={styles.rowName}>{item.name}</Text>
+          <Text style={styles.rowSub}>{item.children.length} subcategorías</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={17} color={colors.inkFaint} />
+      </TouchableOpacity>
+    );
+  };
 
   // Estados de un listado de búsqueda de productos (compartido).
   const renderSearchStates = (search: string, loading: boolean, error: boolean, empty: boolean, list: React.ReactNode) => {
@@ -294,17 +339,28 @@ export default function CatalogScreen() {
 
       {/* ── BonpreuEsclat ───────────────────────────────────────── */}
       {store === 'esclat' && tab === 'categorias' && (
-        <View style={styles.comingSoon}>
-          <Image
-            source={require('../../assets/stores/bonpreuesclat.png')}
-            style={styles.comingSoonImage}
-            resizeMode="contain"
+        bpCatsLoading ? (
+          <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+        ) : bpCatsError ? (
+          <View style={styles.centerBox}>
+            <Text style={styles.errorText}>No se pudo cargar el catálogo de BonpreuEsclat.</Text>
+            <TouchableOpacity onPress={() => {
+              setBpCatsError(false); setBpCatsLoading(true);
+              fetchBonpreuCategoryTree().then(setBpCats).catch(() => setBpCatsError(true)).finally(() => setBpCatsLoading(false));
+            }}>
+              <Text style={styles.retryText}>Reintentar</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <FlatList
+            data={bpCats}
+            keyExtractor={(item) => item.id}
+            renderItem={renderBpCategory}
+            contentContainerStyle={styles.list}
+            showsVerticalScrollIndicator={false}
+            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
           />
-          <Text style={styles.comingSoonTitle}>Categorías — próximamente</Text>
-          <Text style={styles.comingSoonText}>
-            Por ahora puedes buscar productos de BonpreuEsclat en la pestaña «Productos».
-          </Text>
-        </View>
+        )
       )}
 
       {store === 'esclat' && tab === 'productos' && (

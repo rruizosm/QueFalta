@@ -25,8 +25,9 @@ create table if not exists public.bonpreu_products (
   brand               text,
   packaging           text,               -- packSizeDescription
   thumbnail           text,               -- url de imagen
-  category_id         text,               -- categoría N2 bajo la que se sincronizó
+  category_id         text,               -- categoría "primaria" (1ª de category_ids)
   category_name       text,
+  category_ids        text[] not null default '{}',  -- TODAS las categorías que listan el producto
   unit_price          numeric,            -- price.current.amount
   price_format        text,               -- texto tipo "1,50 €/kg"
   available           boolean not null default true,
@@ -36,8 +37,15 @@ create table if not exists public.bonpreu_products (
   synced_at           timestamptz not null default now()
 );
 
+-- Para despliegues donde la tabla ya existía sin la columna.
+alter table public.bonpreu_products
+  add column if not exists category_ids text[] not null default '{}';
+
 create index if not exists bonpreu_products_category_idx
   on public.bonpreu_products (category_id);
+-- Navegación por categoría: contención de array (category_ids @> '{id}').
+create index if not exists bonpreu_products_category_ids_idx
+  on public.bonpreu_products using gin (category_ids);
 create index if not exists bonpreu_products_name_trgm_idx
   on public.bonpreu_products using gin (display_name gin_trgm_ops);
 

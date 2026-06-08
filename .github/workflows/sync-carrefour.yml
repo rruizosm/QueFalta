@@ -1,0 +1,29 @@
+name: Sync Carrefour catalog
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # 06:00 UTC (tras Mercadona 05:00 y Bonpreu 05:30) cada día
+  workflow_dispatch: {}    # botón "Run workflow" para lanzarlo a mano / probar
+
+# Evita solapamientos si una ejecución tarda más de lo normal.
+concurrency:
+  group: sync-carrefour
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # Sin Playwright: las páginas de categoría cargan por HTTP plano. El script
+      # descarga con curl (preinstalado en ubuntu) porque Cloudflare da 403 esporádico
+      # al fingerprint TLS del fetch de Node.
+      - run: node scripts/sync-carrefour.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          CONCURRENCY: '6'

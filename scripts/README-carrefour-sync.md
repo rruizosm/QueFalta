@@ -37,17 +37,17 @@ Debe terminar con `[carrefour] OK` y poblar ~16.000 productos. El log queda en
 
 ## 4. Programarlo 1×/día
 
-Pega esto en PowerShell (crea la tarea "QueFalta - Sync Carrefour", diaria a las 08:00):
+Pega esto en PowerShell (crea la tarea "QueFalta - Sync Carrefour", diaria a las 09:00):
 
 ```powershell
 $ps1 = "C:\Users\ruben\OneDrive\Escritorio\MercaApp\MercaAppMobile\scripts\run-carrefour-sync.ps1"
 $action   = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$ps1`""
-$trigger  = New-ScheduledTaskTrigger -Daily -At 8:00am
+$trigger  = New-ScheduledTaskTrigger -Daily -At 9:00am
 $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 40)
 Register-ScheduledTask -TaskName 'QueFalta - Sync Carrefour' -Action $action -Trigger $trigger -Settings $settings -Description 'Sincroniza el catalogo de Carrefour a Supabase' -Force
 ```
 
-- **`-StartWhenAvailable`**: si el PC estaba apagado a las 08:00, la tarea corre
+- **`-StartWhenAvailable`**: si el PC estaba apagado a las 09:00, la tarea corre
   en cuanto se encienda.
 - Corre **solo cuando tu usuario ha iniciado sesión** (no guarda contraseña). Si
   quieres que corra aunque no estés logueado, en el Programador de tareas marca

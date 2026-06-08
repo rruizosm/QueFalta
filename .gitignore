@@ -33,6 +33,9 @@ yarn-error.*
 # local env files
 .env*.local
 
+# logs del sync de Carrefour (tarea programada local)
+scripts/logs/
+
 # typescript
 *.tsbuildinfo
 

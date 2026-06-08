@@ -28,6 +28,7 @@ import MemberAvatars from '../components/MemberAvatars';
 import ProgressBar from '../components/ProgressBar';
 import ProductDetailModal from '../components/ProductDetailModal';
 import { STORE_META, groupByStore } from '../constants/stores';
+import { mergeCartItems, type MergedCartItem } from '../api/lists';
 
 type GroupDetailRouteProp = RouteProp<GroupsStackParamList, 'GroupDetail'>;
 
@@ -79,19 +80,20 @@ export default function GroupDetailScreen() {
     try { await Share.share({ message }); } catch { /* user cancelled */ }
   };
 
-  const totalCost = items
+  const merged = mergeCartItems(items);
+  const totalCost = merged
     .filter((i) => i.unitPrice != null)
     .reduce((sum, i) => sum + i.unitPrice! * i.quantity, 0);
-  const hasPrices = items.some((i) => i.unitPrice != null);
+  const hasPrices = merged.some((i) => i.unitPrice != null);
 
-  const doneItems = items.filter((i) => i.inCart).length;
-  const progress = items.length > 0 ? doneItems / items.length : 0;
+  const doneItems = merged.filter((i) => i.inCart).length;
+  const progress = merged.length > 0 ? doneItems / merged.length : 0;
 
-  const renderCartItem = (item: GroupItem, big = false) => {
+  const renderCartItem = (item: MergedCartItem, big = false) => {
     const lineTotal = item.unitPrice != null ? item.unitPrice * item.quantity : null;
     return (
       <View
-        key={item.id}
+        key={item.ids[0]}
         style={[styles.listItem, item.inCart && styles.listItemDone]}
       >
         <View style={[styles.checkbox, item.inCart && styles.checkboxChecked]}>
@@ -137,9 +139,9 @@ export default function GroupDetailScreen() {
     );
   };
 
-  // Lista de la cesta agrupada por supermercado (pendiente primero por tienda).
+  // Lista de la cesta: fusiona duplicados y agrupa por supermercado.
   const renderCartList = (its: GroupItem[], big = false) =>
-    groupByStore(its).map((g) => {
+    groupByStore(mergeCartItems(its)).map((g) => {
       const meta = STORE_META[g.store];
       const inCart = g.data.filter((i) => i.inCart).length;
       const data = [...g.data].sort((a, b) => Number(a.inCart) - Number(b.inCart));
@@ -259,7 +261,7 @@ export default function GroupDetailScreen() {
             <View style={styles.progressWrap}>
               <ProgressBar progress={progress} height={6} />
               <Text style={styles.progressSub}>
-                {doneItems}/{items.length} · {Math.round(progress * 100)}% completado
+                {doneItems}/{merged.length} · {Math.round(progress * 100)}% completado
               </Text>
             </View>
           )}
@@ -295,7 +297,7 @@ export default function GroupDetailScreen() {
             <View style={styles.modalProgress}>
               <ProgressBar progress={progress} height={6} />
               <Text style={styles.progressSub}>
-                {doneItems}/{items.length} · {Math.round(progress * 100)}% completado
+                {doneItems}/{merged.length} · {Math.round(progress * 100)}% completado
               </Text>
             </View>
           )}

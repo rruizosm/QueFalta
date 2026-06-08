@@ -24,7 +24,7 @@ import { colors } from '../constants/colors';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
-import { fetchListItems, setItemInCart, assignListItem, clearListItems, type ListItemRow } from '../api/lists';
+import { fetchListItems, setItemInCart, assignListItem, clearListItems, mergeCartItems, type ListItemRow, type MergedCartItem } from '../api/lists';
 import { fetchGroupMembers } from '../api/groups';
 import { recordPurchase } from '../api/purchases';
 import type { GroupMember } from '../types';
@@ -54,7 +54,7 @@ export default function ListScreen() {
   const [error, setError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [detailProductId, setDetailProductId] = useState<string | null>(null);
-  const [assignItem, setAssignItem] = useState<ListItemRow | null>(null);
+  const [assignItem, setAssignItem] = useState<MergedCartItem | null>(null);
   const [finishing, setFinishing] = useState(false);
 
   const load = useCallback(() => {
@@ -75,15 +75,16 @@ export default function ListScreen() {
     setRefreshing(false);
   }, [load]);
 
-  const doAssign = async (item: ListItemRow, memberId: string | null) => {
+  const doAssign = async (item: MergedCartItem, memberId: string | null) => {
     setAssignItem(null);
-    const prev = item.assignedTo;
+    const ids = new Set(item.ids);
+    const prev = new Map(items.filter((it) => ids.has(it.id)).map((it) => [it.id, it.assignedTo]));
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setItems((list) => list.map((it) => (it.id === item.id ? { ...it, assignedTo: memberId } : it)));
+    setItems((list) => list.map((it) => (ids.has(it.id) ? { ...it, assignedTo: memberId } : it)));
     try {
-      await assignListItem(item.id, memberId);
+      await Promise.all(item.ids.map((id) => assignListItem(id, memberId)));
     } catch {
-      setItems((list) => list.map((it) => (it.id === item.id ? { ...it, assignedTo: prev } : it)));
+      setItems((list) => list.map((it) => (ids.has(it.id) ? { ...it, assignedTo: prev.get(it.id) ?? null } : it)));
       toast.show('No se pudo asignar el artículo.', 'error');
     }
   };
@@ -92,7 +93,7 @@ export default function ListScreen() {
     if (!activeCart || finishing || items.length === 0) return;
     setFinishing(true);
     try {
-      const snapshot = items.map((it) => ({
+      const snapshot = merged.map((it) => ({
         productName: it.productName,
         quantity: it.quantity,
         unit: it.unit,
@@ -113,39 +114,42 @@ export default function ListScreen() {
     }
   };
 
-  const toggle = async (id: string) => {
-    const target = items.find((i) => i.id === id);
-    if (!target) return;
-    const next = !target.inCart;
+  const toggle = async (item: MergedCartItem) => {
+    const next = !item.inCart;
+    const ids = new Set(item.ids);
+    const prevState = new Map(items.filter((it) => ids.has(it.id)).map((it) => [it.id, it.inCart]));
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setItems((prev) => prev.map((it) => (it.id === id ? { ...it, inCart: next } : it)));
+    setItems((prev) => prev.map((it) => (ids.has(it.id) ? { ...it, inCart: next } : it)));
     try {
-      await setItemInCart(id, next);
+      await Promise.all(item.ids.map((id) => setItemInCart(id, next)));
     } catch {
-      setItems((prev) => prev.map((it) => (it.id === id ? { ...it, inCart: !next } : it)));
+      setItems((prev) => prev.map((it) => (ids.has(it.id) ? { ...it, inCart: prevState.get(it.id) ?? it.inCart } : it)));
       toast.show('No se pudo actualizar el artículo.', 'error');
     }
   };
 
-  const doneItems = items.filter((i) => i.inCart).length;
-  const progress = items.length > 0 ? doneItems / items.length : 0;
-  const totalCost = items
+  // Fusiona duplicados del mismo producto sumando unidades.
+  const merged = mergeCartItems(items);
+
+  const doneItems = merged.filter((i) => i.inCart).length;
+  const progress = merged.length > 0 ? doneItems / merged.length : 0;
+  const totalCost = merged
     .filter((i) => i.unitPrice != null)
     .reduce((sum, i) => sum + i.unitPrice! * i.quantity, 0);
-  const hasPrices = items.some((i) => i.unitPrice != null);
+  const hasPrices = merged.some((i) => i.unitPrice != null);
 
   // Agrupado por supermercado; dentro de cada tienda, lo pendiente primero.
-  const sections = groupByStore(items).map((g) => ({
+  const sections = groupByStore(merged).map((g) => ({
     key: g.store,
     store: g.store,
     data: [...g.data].sort((a, b) => Number(a.inCart) - Number(b.inCart)),
   }));
 
-  const renderItem = ({ item }: { item: ListItemRow }) => (
+  const renderItem = ({ item }: { item: MergedCartItem }) => (
     <TouchableOpacity
       style={[styles.itemRow, item.inCart && styles.itemRowDone]}
-      onPress={() => toggle(item.id)}
+      onPress={() => toggle(item)}
       activeOpacity={0.75}
     >
       <View style={[styles.checkbox, item.inCart && styles.checkboxChecked]}>
@@ -260,7 +264,7 @@ export default function ListScreen() {
         <View style={{ flex: 1 }}>
           <Text style={styles.title} numberOfLines={1}>{activeCart.groupName}</Text>
           <Text style={styles.subtitle}>
-            {doneItems} de {items.length} artículos recogidos
+            {doneItems} de {merged.length} artículos recogidos
           </Text>
         </View>
       </View>
@@ -284,7 +288,7 @@ export default function ListScreen() {
           {/* List */}
           <SectionList
             sections={sections}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item.ids[0]}
             renderItem={renderItem}
             renderSectionHeader={({ section }) => {
               const meta = STORE_META[section.store];
@@ -318,7 +322,7 @@ export default function ListScreen() {
           )}
 
           {/* Done bar — covers total bar when complete */}
-          {doneItems === items.length && items.length > 0 && (
+          {doneItems === merged.length && merged.length > 0 && (
             <View style={styles.doneBar}>
               <Text style={styles.doneBarEmoji}>🎉</Text>
               <Text style={styles.doneBarText}>¡Lista completada!</Text>

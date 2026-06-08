@@ -78,6 +78,62 @@ export async function fetchListItems(listId: string): Promise<ListItemRow[]> {
   }));
 }
 
+/** Un artículo de la cesta tras fusionar duplicados del mismo producto. */
+export interface MergedCartItem {
+  /** Ids de las filas list_items subyacentes (para togglear/asignar todas). */
+  ids: string[];
+  productName: string;
+  quantity: number;
+  unit: string;
+  inCart: boolean;
+  unitPrice: number | null;
+  imageUrl: string | null;
+  categoryEmoji: string | null;
+  mercadonaProductId: string | null;
+  assignedTo: string | null;
+}
+
+type MergeInput = {
+  id: string; productName: string; quantity: number; unit: string; inCart: boolean;
+  unitPrice: number | null; imageUrl: string | null; categoryEmoji: string | null;
+  mercadonaProductId: string | null; assignedTo?: string | null;
+};
+
+/**
+ * Fusiona filas del mismo producto sumando unidades. Identidad: id de Mercadona
+ * si existe; si no (Bonpreu/manual), nombre + imagen. Conserva el orden de
+ * primera aparición. inCart = todas en cesta; assignedTo solo si coinciden todas.
+ */
+export function mergeCartItems(items: MergeInput[]): MergedCartItem[] {
+  const map = new Map<string, MergedCartItem>();
+  for (const it of items) {
+    const key = it.mercadonaProductId
+      ? `m:${it.mercadonaProductId}`
+      : `n:${it.productName}|${it.imageUrl ?? ''}`;
+    const ex = map.get(key);
+    if (ex) {
+      ex.ids.push(it.id);
+      ex.quantity += it.quantity;
+      ex.inCart = ex.inCart && it.inCart;
+      if (ex.assignedTo !== (it.assignedTo ?? null)) ex.assignedTo = null;
+    } else {
+      map.set(key, {
+        ids: [it.id],
+        productName: it.productName,
+        quantity: it.quantity,
+        unit: it.unit,
+        inCart: it.inCart,
+        unitPrice: it.unitPrice,
+        imageUrl: it.imageUrl,
+        categoryEmoji: it.categoryEmoji,
+        mercadonaProductId: it.mercadonaProductId,
+        assignedTo: it.assignedTo ?? null,
+      });
+    }
+  }
+  return [...map.values()];
+}
+
 /** Marks a single item as in the cart (or not). */
 export async function setItemInCart(itemId: string, inCart: boolean): Promise<void> {
   const { error } = await supabase

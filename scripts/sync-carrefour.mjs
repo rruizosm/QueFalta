@@ -49,18 +49,33 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 // Descarga una página de categoría con curl. Reintenta ante bloqueos transitorios
 // (Cloudflare puede colar un 403/challenge esporádico). Una página buena pesa
 // cientos de KB y contiene "product_id"/"firstLevelCategories".
+// Cabeceras de navegador real: ayudan a pasar el scoring de bots de Cloudflare.
+const BROWSER_HEADERS = [
+  '-H', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+  '-H', 'Accept-Language: es-ES,es;q=0.9',
+  '-H', 'Upgrade-Insecure-Requests: 1',
+  '-H', 'Sec-Fetch-Dest: document',
+  '-H', 'Sec-Fetch-Mode: navigate',
+  '-H', 'Sec-Fetch-Site: none',
+  '-H', 'Sec-Fetch-User: ?1',
+];
+
 async function fetchHtml(path, { tries = 5 } = {}) {
   // Algunas urls del SSR vienen absolutas (https://…) y otras relativas (/supermercado/…).
   const url = path.startsWith('http') ? path : `${HOME}${path}`;
   // -L: ?offset=0 hace 302 a la URL canónica (offset 0 es el default); offset>0 se respeta.
-  const args = ['-sSL', '--compressed', '--max-time', '30', '-A', UA, '-H', 'Accept-Language: es-ES,es;q=0.9', url];
+  // -w añade el código HTTP al final del stdout para diagnóstico.
+  const args = ['-sSL', '--compressed', '--max-time', '30', '-A', UA, ...BROWSER_HEADERS, '-w', '\n__HTTP__%{http_code}', url];
   for (let t = 0; t < tries; t++) {
     try {
       const { stdout } = await execFileP('curl', args, { maxBuffer: 32 * 1024 * 1024 });
-      if (stdout.includes('"product_id"') || stdout.includes('firstLevelCategories')) return stdout;
-      console.warn(`[carrefour] respuesta inesperada en ${path} (intento ${t + 1})`);
+      const mi = stdout.lastIndexOf('\n__HTTP__');
+      const status = mi >= 0 ? stdout.slice(mi + 9).trim() : '?';
+      const html = mi >= 0 ? stdout.slice(0, mi) : stdout;
+      if (html.includes('"product_id"') || html.includes('firstLevelCategories')) return html;
+      if (t === tries - 1) console.warn(`[carrefour] ${path}: HTTP ${status}, ${html.length}b · ${html.replace(/\s+/g, ' ').trim().slice(0, 200)}`);
     } catch (e) {
-      console.warn(`[carrefour] curl ${path} falló: ${e.message} (intento ${t + 1})`);
+      console.warn(`[carrefour] curl ${path} falló: ${e.message.split('\n')[0]} (intento ${t + 1})`);
     }
     await sleep(800 * (t + 1));
   }

@@ -31,27 +31,14 @@ import type { GroupMember } from '../types';
 import ProgressBar from '../components/ProgressBar';
 import ProductDetailModal from '../components/ProductDetailModal';
 
+import { STORE_META, groupByStore } from '../constants/stores';
+
 const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 
 // LayoutAnimation necesita habilitarse explícitamente en Android.
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
-
-// Tienda de cada artículo, deducida de los datos (sin columna en BD):
-// id de Mercadona, o el dominio de la imagen. Los manuales caen en "otros".
-type Store = 'mercadona' | 'esclat' | 'otros';
-const STORE_ORDER: Store[] = ['mercadona', 'esclat', 'otros'];
-const STORE_META: Record<Store, { name: string; icon: any }> = {
-  mercadona: { name: 'Mercadona', icon: require('../../assets/stores/mercadona.png') },
-  esclat: { name: 'BonpreuEsclat', icon: require('../../assets/stores/bonpreuesclat.png') },
-  otros: { name: 'Otros', icon: null },
-};
-const itemStore = (it: ListItemRow): Store => {
-  if (it.imageUrl?.includes('bonpreuesclat')) return 'esclat';
-  if (it.mercadonaProductId || it.imageUrl?.includes('mercadona')) return 'mercadona';
-  return 'otros';
-};
 
 export default function ListScreen() {
   const { session } = useAuth();
@@ -149,15 +136,11 @@ export default function ListScreen() {
   const hasPrices = items.some((i) => i.unitPrice != null);
 
   // Agrupado por supermercado; dentro de cada tienda, lo pendiente primero.
-  const sections = STORE_ORDER
-    .map((store) => ({
-      key: store,
-      store,
-      data: items
-        .filter((it) => itemStore(it) === store)
-        .sort((a, b) => Number(a.inCart) - Number(b.inCart)),
-    }))
-    .filter((s) => s.data.length > 0);
+  const sections = groupByStore(items).map((g) => ({
+    key: g.store,
+    store: g.store,
+    data: [...g.data].sort((a, b) => Number(a.inCart) - Number(b.inCart)),
+  }));
 
   const renderItem = ({ item }: { item: ListItemRow }) => (
     <TouchableOpacity

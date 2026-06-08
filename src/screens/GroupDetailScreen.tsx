@@ -27,6 +27,7 @@ import {
 import MemberAvatars from '../components/MemberAvatars';
 import ProgressBar from '../components/ProgressBar';
 import ProductDetailModal from '../components/ProductDetailModal';
+import { STORE_META, groupByStore } from '../constants/stores';
 
 type GroupDetailRouteProp = RouteProp<GroupsStackParamList, 'GroupDetail'>;
 
@@ -136,6 +137,28 @@ export default function GroupDetailScreen() {
     );
   };
 
+  // Lista de la cesta agrupada por supermercado (pendiente primero por tienda).
+  const renderCartList = (its: GroupItem[], big = false) =>
+    groupByStore(its).map((g) => {
+      const meta = STORE_META[g.store];
+      const inCart = g.data.filter((i) => i.inCart).length;
+      const data = [...g.data].sort((a, b) => Number(a.inCart) - Number(b.inCart));
+      return (
+        <View key={g.store}>
+          <View style={styles.storeHeader}>
+            {meta.icon ? (
+              <Image source={meta.icon} style={styles.storeHeaderIcon} resizeMode="cover" />
+            ) : (
+              <Ionicons name="pricetag-outline" size={13} color={colors.inkSoft} />
+            )}
+            <Text style={styles.storeHeaderText}>{meta.name}</Text>
+            <Text style={styles.storeHeaderCount}>{inCart}/{g.data.length}</Text>
+          </View>
+          {data.map((item) => renderCartItem(item, big))}
+        </View>
+      );
+    });
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -244,7 +267,7 @@ export default function GroupDetailScreen() {
           {items.length === 0 ? (
             <Text style={styles.emptyCart}>La cesta del grupo está vacía.</Text>
           ) : (
-            items.map((item) => renderCartItem(item))
+            renderCartList(items)
           )}
         </View>
 
@@ -281,7 +304,7 @@ export default function GroupDetailScreen() {
             contentContainerStyle={styles.modalScroll}
             showsVerticalScrollIndicator={false}
           >
-            {items.map((item) => renderCartItem(item, true))}
+            {renderCartList(items, true)}
           </ScrollView>
 
           {hasPrices && (
@@ -346,6 +369,15 @@ const styles = StyleSheet.create({
   progressSub: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'right' },
 
   emptyCart: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, paddingVertical: 6 },
+
+  // ── Store sub-header dentro de la cesta ───────────────────────
+  storeHeader: {
+    flexDirection: 'row', alignItems: 'center', gap: 7,
+    marginTop: 8, marginBottom: 2,
+  },
+  storeHeaderIcon: { width: 16, height: 16 },
+  storeHeaderText: { fontSize: 12, fontFamily: fonts.bold, color: colors.ink, flex: 1 },
+  storeHeaderCount: { fontSize: 11, fontFamily: fonts.bold, color: colors.inkSoft },
 
   // ── Cart rows ─────────────────────────────────────────────────
   listItem: {

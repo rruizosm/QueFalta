@@ -38,6 +38,21 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+// Tienda de cada artículo, deducida de los datos (sin columna en BD):
+// id de Mercadona, o el dominio de la imagen. Los manuales caen en "otros".
+type Store = 'mercadona' | 'esclat' | 'otros';
+const STORE_ORDER: Store[] = ['mercadona', 'esclat', 'otros'];
+const STORE_META: Record<Store, { name: string; icon: any }> = {
+  mercadona: { name: 'Mercadona', icon: require('../../assets/stores/mercadona.png') },
+  esclat: { name: 'BonpreuEsclat', icon: require('../../assets/stores/bonpreuesclat.png') },
+  otros: { name: 'Otros', icon: null },
+};
+const itemStore = (it: ListItemRow): Store => {
+  if (it.imageUrl?.includes('bonpreuesclat')) return 'esclat';
+  if (it.mercadonaProductId || it.imageUrl?.includes('mercadona')) return 'mercadona';
+  return 'otros';
+};
+
 export default function ListScreen() {
   const { session } = useAuth();
   const { activeCart } = useCart();
@@ -133,12 +148,16 @@ export default function ListScreen() {
     .reduce((sum, i) => sum + i.unitPrice! * i.quantity, 0);
   const hasPrices = items.some((i) => i.unitPrice != null);
 
-  const pending = items.filter((i) => !i.inCart);
-  const done = items.filter((i) => i.inCart);
-  const sections = [
-    { key: 'pending', title: `Por recoger (${pending.length})`, data: pending },
-    { key: 'done',    title: `En la cesta (${done.length})`,    data: done },
-  ].filter((s) => s.data.length > 0);
+  // Agrupado por supermercado; dentro de cada tienda, lo pendiente primero.
+  const sections = STORE_ORDER
+    .map((store) => ({
+      key: store,
+      store,
+      data: items
+        .filter((it) => itemStore(it) === store)
+        .sort((a, b) => Number(a.inCart) - Number(b.inCart)),
+    }))
+    .filter((s) => s.data.length > 0);
 
   const renderItem = ({ item }: { item: ListItemRow }) => (
     <TouchableOpacity
@@ -284,14 +303,21 @@ export default function ListScreen() {
             sections={sections}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
-            renderSectionHeader={({ section }) => (
-              <Text style={[
-                styles.sectionHeader,
-                section.key === 'done' && pending.length > 0 ? { marginTop: 14 } : null,
-              ]}>
-                {section.title}
-              </Text>
-            )}
+            renderSectionHeader={({ section }) => {
+              const meta = STORE_META[section.store];
+              const inCart = section.data.filter((it) => it.inCart).length;
+              return (
+                <View style={[styles.storeHeader, section.store !== sections[0].store && { marginTop: 18 }]}>
+                  {meta.icon ? (
+                    <Image source={meta.icon} style={styles.storeHeaderIcon} resizeMode="cover" />
+                  ) : (
+                    <Ionicons name="pricetag-outline" size={14} color={colors.inkSoft} />
+                  )}
+                  <Text style={styles.storeHeaderText}>{meta.name}</Text>
+                  <Text style={styles.storeHeaderCount}>{inCart}/{section.data.length}</Text>
+                </View>
+              );
+            }}
             contentContainerStyle={styles.list}
             showsVerticalScrollIndicator={false}
             stickySectionHeadersEnabled={false}
@@ -400,6 +426,14 @@ const styles = StyleSheet.create({
     fontSize: 10.5, fontFamily: fonts.bold, color: colors.inkSoft,
     textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 8,
   },
+
+  // ── Store section header ──────────────────────────────────────
+  storeHeader: {
+    flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8,
+  },
+  storeHeaderIcon: { width: 18, height: 18 },
+  storeHeaderText: { fontSize: 13, fontFamily: fonts.bold, color: colors.ink, flex: 1 },
+  storeHeaderCount: { fontSize: 11.5, fontFamily: fonts.bold, color: colors.inkSoft },
 
   // ── Item rows ─────────────────────────────────────────────────
   itemRow: {

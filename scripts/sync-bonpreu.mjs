@@ -103,10 +103,10 @@ async function fetchCategoryTree() {
 }
 
 // ── Procesar una categoría ───────────────────────────────────────────────────
-// 1) Lee del SSR TODOS los productId de esta categoría → pertenencia completa
-//    (independiente de qué pestaña capture los detalles).
-// 2) Hace scroll capturando los PUT para hidratar detalles (deduplicados global).
-// `membership`: Map<productId, Set<categoryId>>.
+// Hace scroll capturando las respuestas de los PUT (hidratación). Los productos
+// que la página hidrata SON los de esta categoría → `localIds` = pertenencia.
+// No depende de window.__INITIAL_STATE__ (en CI/headless no está disponible al
+// evaluar; la SPA ya lo consumió). `membership`: Map<productId, Set<categoryId>>.
 async function processCategory(page, cat, products, membership) {
   const localIds = new Set();
   const onResp = async (resp) => {
@@ -125,34 +125,20 @@ async function processCategory(page, cat, products, membership) {
   page.on('response', onResp);
   try {
     await page.goto(`${HOME}/categories/${cat.id}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-    const { total, ids } = await page.evaluate(() => {
-      try {
-        const c = window.__INITIAL_STATE__.data.products.catalogue.data;
-        const o = [];
-        // productGroups[].products[] son los productId como STRING (no objetos).
-        for (const g of c.productGroups || []) for (const p of g.products || []) {
-          const id = typeof p === 'string' ? p : (p?.productId || p?.id);
-          if (id) o.push(id);
-        }
-        return { total: c.totalProducts || 0, ids: [...new Set(o)] };
-      } catch { return { total: 0, ids: [] }; }
-    });
-    // Pertenencia: todos los productos que esta categoría lista en su SSR.
-    for (const id of ids) {
-      let set = membership.get(id);
-      if (!set) membership.set(id, (set = new Set()));
-      set.add(cat.id);
-    }
-    // Hidratar detalles vía scroll (hasta cubrir el total o estabilizarse).
-    const target = total ? Math.min(total, ids.length || total) : 0;
     let last = -1, stable = 0;
-    for (let i = 0; i < 120 && stable < 4 && (!target || localIds.size < target); i++) {
+    for (let i = 0; i < 120 && stable < 4; i++) {
       await page.mouse.wheel(0, 14000);
       await page.waitForTimeout(350);
       if (localIds.size === last) stable++; else { stable = 0; last = localIds.size; }
     }
   } finally {
     page.off('response', onResp);
+  }
+  // Pertenencia: los productos hidratados por esta categoría son sus productos.
+  for (const id of localIds) {
+    let set = membership.get(id);
+    if (!set) membership.set(id, (set = new Set()));
+    set.add(cat.id);
   }
 }
 

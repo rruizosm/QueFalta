@@ -30,6 +30,10 @@ if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
 
 const HOME = 'https://www.compraonline.bonpreuesclat.cat';
 const CATS_API = `${HOME}/api/webproductpagews/v1/categories`;
+// La web es catalana por defecto. El idioma se fija con la cookie `language`
+// (NO con Accept-Language ni con el dominio, que los ignoran); con `es-ES` tanto
+// la API de categorías como la hidratación de productos devuelven castellano.
+const LANG = process.env.BONPREU_LANG || 'es-ES';
 const runStart = new Date().toISOString();
 const chunk = (a, n) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 
@@ -88,7 +92,7 @@ async function markStale(table) {
 
 // ── Categorías (sin WAF) ─────────────────────────────────────────────────────
 async function fetchCategoryTree() {
-  const res = await fetch(CATS_API, { headers: { Accept: 'application/json', 'Accept-Language': 'ca-ES,ca;q=0.9' } });
+  const res = await fetch(CATS_API, { headers: { Accept: 'application/json', Cookie: `language=${LANG}` } });
   if (!res.ok) throw new Error(`categories ${res.status}`);
   const n1s = await res.json();
   const catRows = [], n2s = [];
@@ -153,7 +157,9 @@ async function main() {
   const products = new Map();      // productId → detalles
   const membership = new Map();    // productId → Set<categoryId>
   try {
-    const ctx = await browser.newContext({ locale: 'ca-ES' });
+    const ctx = await browser.newContext({ locale: LANG });
+    // Fija el idioma del catálogo (los PUT /v6/products hidratan en este idioma).
+    await ctx.addCookies([{ name: 'language', value: LANG, domain: new URL(HOME).hostname, path: '/' }]);
 
     // Calentar el WAF en una pestaña (token compartido por el contexto).
     const warm = await ctx.newPage();

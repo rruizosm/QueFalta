@@ -1,0 +1,27 @@
+name: Sync bonArea catalog
+
+on:
+  schedule:
+    - cron: '0 6 * * *'    # 06:00 UTC (tras Bonpreu), cada día
+  workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
+
+concurrency:
+  group: sync-bonarea
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # bonÀrea NO tiene Cloudflare ni WAF: API JSON plana. Solo curl (ya en el runner) + node.
+      - run: node scripts/sync-bonarea.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          LOCALE: es
+          CONCURRENCY: '6'

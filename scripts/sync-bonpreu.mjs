@@ -16,6 +16,7 @@
 //      DRY_RUN=1           (no escribe en Supabase; imprime resumen)
 //      MAX_CATEGORIES=N    (limita nº de categorías, para pruebas)
 import { chromium } from 'playwright-core';
+import { canonicalPricePerUnit } from './lib/price.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -51,6 +52,8 @@ const imageUrl = (p) => p?.image?.src || (Array.isArray(p?.images) && (p.images[
 // Detalles de un producto (independientes de la categoría). La pertenencia a
 // categorías se calcula aparte (membership) leyendo los IDs del SSR de cada página.
 function normalize(p) {
+  // €/unidad canónico: Bonpreu da unitPrice.price.amount + unitPrice.unit ("litre"…).
+  const ppu = canonicalPricePerUnit(p?.unitPrice?.price?.amount, p?.unitPrice?.unit);
   return {
     id: p.productId,
     retailer_product_id: p.retailerProductId ?? null,
@@ -60,6 +63,8 @@ function normalize(p) {
     thumbnail: imageUrl(p),
     unit_price: priceAmount(p),
     price_format: priceText(p),
+    price_per_unit: ppu?.value ?? null,
+    price_per_unit_unit: ppu?.unit ?? null,
     available: p.available !== false,
     is_new: !!p.isNew,
     published: true,
@@ -204,6 +209,7 @@ async function main() {
     for (const c of cats) console.log(`  ${c.name}: ${perCat.get(c.id) ?? 0}`);
     console.log('nulos →', {
       sin_precio: rows.filter((r) => r.unit_price == null).length,
+      sin_ppu: rows.filter((r) => r.price_per_unit == null).length,
       sin_img: rows.filter((r) => !r.thumbnail).length,
       sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
     });

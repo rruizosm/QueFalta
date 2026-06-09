@@ -24,6 +24,7 @@
 //      MAX_CATEGORIES=N    (limita nº de N2, para pruebas)
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { canonicalPricePerUnit } from './lib/price.mjs';
 const execFileP = promisify(execFile);
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -146,6 +147,8 @@ const eurNum = (s) => {
 };
 
 function normalize(p) {
+  // €/unidad canónico: Carrefour da price_per_unit ("1,11 €", el valor) + measure_unit ("l").
+  const ppu = canonicalPricePerUnit(p.price_per_unit, p.measure_unit);
   return {
     id: String(p.product_id),
     retailer_product_id: p.sku_id ?? null,
@@ -154,6 +157,8 @@ function normalize(p) {
     ean13: p.ean13 ?? null,
     unit_price: eurNum(p.price ?? p.app_price),
     price_format: p.price ?? p.app_price ?? null,
+    price_per_unit: ppu?.value ?? null,
+    price_per_unit_unit: ppu?.unit ?? null,
     available: p.units_in_stock == null ? true : Number(p.units_in_stock) > 0,
     published: true,
     raw: p,
@@ -267,6 +272,7 @@ async function main() {
     for (const c of cats) console.log(`  ${c.name}: ${counts.get(c.id) ?? 0}`);
     console.log('nulos →', {
       sin_precio: rows.filter((r) => r.unit_price == null).length,
+      sin_ppu: rows.filter((r) => r.price_per_unit == null).length,
       sin_img: rows.filter((r) => !r.thumbnail).length,
       sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
     });

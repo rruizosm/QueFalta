@@ -31,11 +31,13 @@
 //      CONCURRENCY=5       (hojas procesadas en paralelo)
 //      DRY_RUN=1           (no escribe en Supabase; imprime resumen)
 //      MAX_CATEGORIES=N    (limita nº de hojas, para pruebas)
+//      KEEP_N1=csv|all     (categorías N1 a incluir; por defecto solo comida y bebida)
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { canonicalPricePerUnit } from './lib/price.mjs';
 const execFileP = promisify(execFile);
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -44,6 +46,16 @@ const DRY_RUN = process.env.DRY_RUN === '1';
 const LOCALE = (process.env.LOCALE || 'es').toLowerCase();
 const CONCURRENCY = Number(process.env.CONCURRENCY || 5);
 const MAX_CATEGORIES = process.env.MAX_CATEGORIES ? Number(process.env.MAX_CATEGORIES) : Infinity;
+
+// Categorías raíz (N1) a incluir (whitelist). Por defecto solo comida y bebida:
+// 13*300=Alimentació, 13*310=Cuinats, 13*320=Begudes. bonÀrea trae además bazar
+// (Drogueria, Higiene, Perfumeria, Mascotes, Llar i jardí, Electrodomèstics, Roba,
+// Informàtica, Joguines, Bricolatge, Automoció, Material ramader) que no interesa en
+// una app de la compra → no se descarga. KEEP_N1='all' para todas, o CSV de ids.
+const KEEP_N1_ENV = (process.env.KEEP_N1 ?? '13*300,13*310,13*320').trim();
+const KEEP_N1 = KEEP_N1_ENV.toLowerCase() === 'all'
+  ? null
+  : new Set(KEEP_N1_ENV.split(',').map((s) => s.trim()).filter(Boolean));
 
 if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
   console.error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE (o usa DRY_RUN=1)');
@@ -146,6 +158,8 @@ function normalize(a) {
   const img = Array.isArray(a.image) && a.image[0] ? `${IMG_BASE}/${a.image[0]}` : null;
   const price = typeof a.priceToPay === 'number' ? a.priceToPay : null;
   const unit = (a.euroUnit || '').trim(); // "€/u." | "€/kg" …
+  // €/unidad canónico: a.unitPrice ("1,17 €/l") da el valor; a.euroUnit, la base.
+  const ppu = canonicalPricePerUnit(a.unitPrice, a.euroUnit);
   return {
     id: String(a.identifier),
     retailer_product_id: String(a.identifier),
@@ -154,6 +168,8 @@ function normalize(a) {
     ean13: null,
     unit_price: price,
     price_format: price != null ? `${eurStr(price)} ${unit}`.trim() : (a.unitPrice ?? null),
+    price_per_unit: ppu?.value ?? null,
+    price_per_unit_unit: ppu?.unit ?? null,
     available: a.itsOnStock !== false && a.isValid !== false,
     published: true,
     raw: a,
@@ -184,22 +200,20 @@ async function markStale(table) {
 }
 
 // ── Procesar una hoja: pedir sus productos ───────────────────────────────────
-async function processLeaf(leaf, products, membership, counts) {
+async function processLeaf(leaf, products, membership) {
   const resp = await shoppingBody(leaf.id);
   const arts = Array.isArray(resp.articles) ? resp.articles : [];
-  let n = 0;
   for (const a of arts) {
     if (!a.identifier) continue;
     const id = String(a.identifier);
     if (!products.has(id)) {
       const norm = normalize(a);
-      if (norm.display_name) { products.set(id, norm); n++; }
-    } else n++;
+      if (norm.display_name) products.set(id, norm);
+    }
     let set = membership.get(id);
     if (!set) membership.set(id, (set = new Set()));
     set.add(leaf.id);
   }
-  counts.set(leaf.id, n);
 }
 
 async function main() {
@@ -207,15 +221,16 @@ async function main() {
 
   const ref = await bootstrapReference();
   const root = await shoppingBody(ref);
+  const topLevel = (root.nivells || []).filter((n) => !KEEP_N1 || KEEP_N1.has(n.identifier));
+  console.log(`[bonarea] N1 incluidas: ${topLevel.map((n) => n.descripcio).join(', ') || '(ninguna)'}`);
   const catRows = [], leaves = [];
-  walkTree(root.nivells, null, catRows, leaves);
+  walkTree(topLevel, null, catRows, leaves);
   const todo = leaves.slice(0, MAX_CATEGORIES);
   console.log(`[bonarea] ${catRows.length} categorías · ${leaves.length} hojas (proceso ${todo.length})`);
 
   const catName = new Map(catRows.map((c) => [c.id, c.name]));
   const products = new Map();   // identifier → producto normalizado
   const membership = new Map(); // identifier → Set<idNivell hoja>
-  const counts = new Map();     // idNivell hoja → nº productos
 
   const queue = [...todo];
   let done = 0;
@@ -223,27 +238,48 @@ async function main() {
     for (;;) {
       const leaf = queue.shift();
       if (!leaf) break;
-      try { await processLeaf(leaf, products, membership, counts); }
+      try { await processLeaf(leaf, products, membership); }
       catch (e) { console.warn(`[bonarea] hoja ${leaf.name} (${leaf.id}) falló: ${e.message}`); }
       if (++done % 25 === 0) console.log(`[bonarea] ${done}/${todo.length} hojas · ${products.size} productos`);
       await sleep(80);
     }
   }));
 
-  // Adjuntar a cada producto sus categorías (hojas que lo listan).
+  // category_ids = hoja + TODOS sus ancestros. La app muestra un árbol de 2 niveles
+  // (N1→N2, como Bonpreu/Carrefour) y consulta productos por el id de la N2; al incluir
+  // los ancestros, un producto de "…*010*010*010" también responde a la N2 "…*010" y a
+  // la N1 "13*300". product_count se cuenta por categoría sobre esa pertenencia expandida.
+  const parentOf = new Map(catRows.map((c) => [c.id, c.parent_id]));
+  const ancestorsOf = (leafId) => {
+    const chain = [];
+    for (let cur = leafId; cur; cur = parentOf.get(cur) ?? null) chain.push(cur);
+    return chain;
+  };
+  const catCount = new Map();
   const rows = [];
   for (const [id, det] of products) {
-    const mem = [...(membership.get(id) ?? [])];
-    rows.push({ ...det, category_ids: mem, category_id: mem[0] ?? null, category_name: mem[0] ? catName.get(mem[0]) ?? null : null });
+    const leavesOf = [...(membership.get(id) ?? [])];
+    const expanded = new Set();
+    for (const leaf of leavesOf) for (const a of ancestorsOf(leaf)) expanded.add(a);
+    const primary = leavesOf[0] ?? null; // la hoja más específica como categoría "primaria"
+    rows.push({
+      ...det,
+      category_ids: [...expanded],
+      category_id: primary,
+      category_name: primary ? catName.get(primary) ?? null : null,
+    });
+    for (const c of expanded) catCount.set(c, (catCount.get(c) ?? 0) + 1);
   }
-  for (const c of catRows) if (counts.has(c.id)) c.product_count = counts.get(c.id);
+  for (const c of catRows) c.product_count = catCount.get(c.id) ?? 0;
   console.log(`[bonarea] ${rows.length} productos únicos`);
 
   if (DRY_RUN) {
     console.log('muestra (5):');
     for (const r of rows.slice(0, 5)) console.log(`  ${r.id}  ${r.display_name}  ${r.price_format}  ${r.thumbnail ? '🖼' : '—'}`);
+    if (rows[0]) console.log('category_ids[0] (hoja + ancestros):', rows[0].category_ids.join(', '));
     console.log('nulos →', {
       sin_precio: rows.filter((r) => r.unit_price == null).length,
+      sin_ppu: rows.filter((r) => r.price_per_unit == null).length,
       sin_img: rows.filter((r) => !r.thumbnail).length,
       sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
     });

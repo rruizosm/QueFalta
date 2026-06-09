@@ -9,6 +9,8 @@
 //
 // Probar en local:  SUPABASE_URL=... SUPABASE_SERVICE_ROLE=... node scripts/sync-catalog.mjs
 
+import { canonicalPricePerUnit } from './lib/price.mjs';
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
 const WH = process.env.MERCADONA_WH || 'mad1';
@@ -97,6 +99,8 @@ async function main() {
         for (const p of group.products ?? []) {
           if (!p.published) continue;
           const pi = p.price_instructions ?? {};
+          // €/unidad canónico: Mercadona da reference_price (€/medida) + reference_format.
+          const ppu = canonicalPricePerUnit(pi.reference_price, pi.reference_format);
           products.set(p.id, {
             id: String(p.id),
             display_name: p.display_name,
@@ -106,6 +110,8 @@ async function main() {
             category_id: sub.id,
             category_name: sub.name,
             unit_price: pi.unit_price != null ? Number(pi.unit_price) : null,
+            price_per_unit: ppu?.value ?? null,
+            price_per_unit_unit: ppu?.unit ?? null,
             published: true,
             raw: p,
             synced_at: runStart,

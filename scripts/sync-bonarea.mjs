@@ -157,9 +157,13 @@ const eurStr = (n) => (typeof n === 'number' ? n.toFixed(2).replace('.', ',') : 
 function normalize(a) {
   const img = Array.isArray(a.image) && a.image[0] ? `${IMG_BASE}/${a.image[0]}` : null;
   const price = typeof a.priceToPay === 'number' ? a.priceToPay : null;
-  const unit = (a.euroUnit || '').trim(); // "€/u." | "€/kg" …
-  // €/unidad canónico: a.unitPrice ("1,17 €/l") da el valor; a.euroUnit, la base.
-  const ppu = canonicalPricePerUnit(a.unitPrice, a.euroUnit);
+  const unit = (a.euroUnit || '').trim(); // unidad del PRECIO DE VENTA: "€/u." | "€/kg" …
+  // €/unidad canónico para comparar entre supers. La base real va en el sufijo de
+  // a.unitPrice ("0,96 €/l" → "l"), NO en a.euroUnit: para un brik de 1 L (o un pollo
+  // que se vende "por pieza") euroUnit dice "€/u." aunque unitPrice sea "€/kg"/"€/l".
+  // unitPrice es el precio por unidad de MEDIDA regulado → la base honesta.
+  const ppuBase = typeof a.unitPrice === 'string' ? a.unitPrice.split('/').pop() : null;
+  const ppu = canonicalPricePerUnit(a.unitPrice, ppuBase);
   return {
     id: String(a.identifier),
     retailer_product_id: String(a.identifier),

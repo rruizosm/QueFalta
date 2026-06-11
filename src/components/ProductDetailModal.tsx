@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, Image,
+  View, Text, ScrollView, TouchableOpacity,
   StyleSheet, StatusBar, ActivityIndicator, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,7 +12,10 @@ import type { MercadonaProductDetail } from '../types';
 import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../context/ToastContext';
 import { useCart } from '../context/CartContext';
+import { useThemedStyles } from '../context/ThemeContext';
 import QuantityStepper from './QuantityStepper';
+import ProductImage from './ProductImage';
+import SimilarProductsSection from './SimilarProductsSection';
 
 interface Props {
   /** Mercadona product id to show. When null, the modal is hidden. */
@@ -43,6 +46,7 @@ const clean = (text?: string | null): string | null => {
 };
 
 export default function ProductDetailModal({ productId, onClose }: Props) {
+  const styles = useThemedStyles(themedStyles);
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
   const { activeCart, addToActiveCart } = useCart();
   const toast = useToast();
@@ -167,7 +171,7 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
           <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
             {/* Photo */}
             {photo ? (
-              <Image source={{ uri: photo }} style={styles.photo} resizeMode="contain" />
+              <ProductImage uri={photo} style={styles.photo} />
             ) : (
               <View style={[styles.photo, styles.photoPlaceholder]}>
                 <Ionicons name="image-outline" size={48} color={colors.inkFaint} />
@@ -185,12 +189,13 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
             </View>
             {refPrice ? <Text style={styles.refPrice}>{refPrice}</Text> : null}
 
+            {/* Comparativa: más barato en otros súper */}
+            <SimilarProductsSection productName={product.display_name} excludeStore="mercadona" />
+
             {/* Details */}
             <Section title="Descripción" text={d?.description} />
             <Section title="Información" text={d?.counter_info} />
             <Section title="Ingredientes" text={product.nutrition_information?.ingredients} />
-            <Section title="Alérgenos" text={product.nutrition_information?.allergens} />
-            <Section title="Modo de empleo" text={d?.usage_instructions} />
             <Section title="Conservación" text={d?.storage_instructions} />
             <Section title="Origen" text={origin} />
             <Section title="Proveedor" text={suppliers} />
@@ -227,6 +232,7 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
 }
 
 function Section({ title, text }: { title: string; text?: string | null }) {
+  const styles = useThemedStyles(themedStyles);
   const value = clean(text);
   if (!value) return null;
   return (
@@ -237,7 +243,7 @@ function Section({ title, text }: { title: string; text?: string | null }) {
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   overlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: colors.paper, zIndex: 100,

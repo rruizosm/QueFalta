@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator, Image, Alert,
+  View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator, Alert, Dimensions,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,12 +13,23 @@ import { fetchBonpreuProductsByCategory, type BonpreuProduct } from '../api/cata
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useFavorites } from '../context/FavoritesContext';
+import { useThemedStyles } from '../context/ThemeContext';
 import QuantityStepper from '../components/QuantityStepper';
+import ProductImage from '../components/ProductImage';
+import ViewModeToggle, { type ViewMode } from '../components/ViewModeToggle';
+import ProductGridCard from '../components/ProductGridCard';
 import BonpreuProductModal from '../components/BonpreuProductModal';
 
 type BonpreuProductsRouteProp = RouteProp<CatalogStackParamList, 'BonpreuProducts'>;
 
+// Cuadrícula: 3 por fila (idéntica a Mercadona). El ancho de tarjeta se fija aquí
+// para que la última fila no se estire al tener menos de 3 productos.
+const GRID_COLS = 3;
+const GRID_GAP = 8;
+const CARD_W = (Dimensions.get('window').width - 32 - GRID_GAP * (GRID_COLS - 1)) / GRID_COLS;
+
 export default function BonpreuProductsScreen() {
+  const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
   const { categoryId, categoryName, parentName } = useRoute<BonpreuProductsRouteProp>().params;
 
@@ -32,6 +43,7 @@ export default function BonpreuProductsScreen() {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [adding, setAdding] = useState(false);
   const [detail, setDetail] = useState<BonpreuProduct | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   useEffect(() => {
     setLoading(true);
@@ -99,6 +111,16 @@ export default function BonpreuProductsScreen() {
     </View>
   );
 
+  const renderGridItem = ({ item }: { item: BonpreuProduct }) => (
+    <ProductGridCard
+      width={CARD_W}
+      uri={item.thumbnail}
+      name={item.displayName}
+      price={item.unitPrice != null ? `${item.unitPrice.toFixed(2).replace('.', ',')} €` : ''}
+      onPress={() => setDetail(item)}
+    />
+  );
+
   const renderItem = ({ item }: { item: BonpreuProduct }) => {
     const qty = quantities[item.id] ?? 0;
     const active = qty > 0;
@@ -120,7 +142,7 @@ export default function BonpreuProductsScreen() {
           {fav && <View style={styles.favBar} />}
           <TouchableOpacity activeOpacity={0.7} onPress={() => setDetail(item)}>
             {item.thumbnail ? (
-              <Image source={{ uri: item.thumbnail }} style={styles.thumb} resizeMode="contain" />
+              <ProductImage uri={item.thumbnail} style={styles.thumb} />
             ) : (
               <View style={[styles.thumb, styles.thumbPlaceholder]}>
                 <Ionicons name="image-outline" size={22} color={colors.inkFaint} />
@@ -164,6 +186,7 @@ export default function BonpreuProductsScreen() {
             {categoryName}
           </Text>
         </View>
+        <ViewModeToggle value={viewMode} onChange={setViewMode} />
       </View>
 
       {loading ? (
@@ -172,8 +195,25 @@ export default function BonpreuProductsScreen() {
         <View style={styles.center}>
           <Text style={styles.emptyText}>No se pudieron cargar los productos.</Text>
         </View>
+      ) : viewMode === 'grid' ? (
+        <FlatList
+          key="grid"
+          data={products}
+          keyExtractor={(item) => item.id}
+          numColumns={GRID_COLS}
+          renderItem={renderGridItem}
+          columnWrapperStyle={styles.gridRow}
+          contentContainerStyle={styles.gridContent}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.center}>
+              <Text style={styles.emptyText}>No hay productos en esta categoría.</Text>
+            </View>
+          }
+        />
       ) : (
         <FlatList
+          key="list"
           data={products}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
@@ -217,7 +257,7 @@ export default function BonpreuProductsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
   headerArea: {
@@ -233,6 +273,9 @@ const styles = StyleSheet.create({
   breadcrumb: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
 
   list: { paddingHorizontal: 16, paddingBottom: 110, paddingTop: 4 },
+
+  gridRow: { gap: GRID_GAP },
+  gridContent: { paddingHorizontal: 16, paddingBottom: 110, paddingTop: 4, gap: GRID_GAP },
 
   row: {
     flexDirection: 'row', alignItems: 'center',

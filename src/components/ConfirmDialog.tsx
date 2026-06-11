@@ -5,6 +5,7 @@
 import { Modal, View, Text, TouchableOpacity, Pressable, StyleSheet } from 'react-native';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
+import { useThemedStyles } from '../context/ThemeContext';
 import HardShadow from './HardShadow';
 
 interface Props {
@@ -29,6 +30,7 @@ export default function ConfirmDialog({
   onConfirm,
   onCancel,
 }: Props) {
+  const styles = useThemedStyles(themedStyles);
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={styles.overlay}>
@@ -54,7 +56,7 @@ export default function ConfirmDialog({
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   overlay: {
     flex: 1, alignItems: 'center', justifyContent: 'center',
     paddingHorizontal: 28, backgroundColor: 'rgba(0,0,0,0.45)',

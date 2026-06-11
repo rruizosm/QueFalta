@@ -24,12 +24,14 @@ import { colors } from '../constants/colors';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+import { useThemedStyles } from '../context/ThemeContext';
 import { fetchListItems, setItemInCart, assignListItem, clearListItems, mergeCartItems, type ListItemRow, type MergedCartItem } from '../api/lists';
 import { fetchGroupMembers } from '../api/groups';
 import { recordPurchase } from '../api/purchases';
 import type { GroupMember } from '../types';
 import ProgressBar from '../components/ProgressBar';
 import ProductDetailModal from '../components/ProductDetailModal';
+import UserAvatar from '../components/UserAvatar';
 
 import { STORE_META, groupByStore } from '../constants/stores';
 
@@ -41,6 +43,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 export default function ListScreen() {
+  const styles = useThemedStyles(themedStyles);
   const { session } = useAuth();
   const { activeCart } = useCart();
   const toast = useToast();
@@ -188,9 +191,7 @@ export default function ListScreen() {
             onPress={() => setAssignItem(item)}
           >
             {assignee ? (
-              <View style={[styles.assignAvatar, { backgroundColor: assignee.color }]}>
-                <Text style={styles.assignAvatarText}>{assignee.initials}</Text>
-              </View>
+              <UserAvatar avatarUrl={assignee.avatarUrl} initials={assignee.initials} color={assignee.color} size={28} />
             ) : (
               <View style={styles.assignEmpty}>
                 <Ionicons name="person-add-outline" size={15} color={colors.inkFaint} />
@@ -368,9 +369,7 @@ export default function ListScreen() {
                       activeOpacity={0.7}
                       onPress={() => doAssign(assignItem, m.id)}
                     >
-                      <View style={[styles.sheetAvatar, { backgroundColor: m.color }]}>
-                        <Text style={styles.sheetAvatarText}>{m.initials}</Text>
-                      </View>
+                      <UserAvatar avatarUrl={m.avatarUrl} initials={m.initials} color={m.color} size={38} />
                       <Text style={styles.sheetRowText} numberOfLines={1}>{m.name}</Text>
                       {selected && <Ionicons name="checkmark" size={20} color={colors.accent} />}
                     </TouchableOpacity>
@@ -394,7 +393,7 @@ export default function ListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
   header: {

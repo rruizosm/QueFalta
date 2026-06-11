@@ -10,6 +10,7 @@ import {
 } from '@expo-google-fonts/space-grotesk';
 import * as SplashScreen from 'expo-splash-screen';
 import Navigation from './src/navigation';
+import { ThemeProvider } from './src/context/ThemeContext';
 import { AuthProvider } from './src/context/AuthContext';
 import { ProfileProvider } from './src/context/ProfileContext';
 import { CartProvider } from './src/context/CartContext';
@@ -35,19 +36,23 @@ export default function App() {
   if (!fontsLoaded) return null;
 
   const inner = (
-    <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayout}>
-      <AuthProvider>
-        <ProfileProvider>
-          <CartProvider>
-            <FavoritesProvider>
-              <ToastProvider>
-                <Navigation />
-              </ToastProvider>
-            </FavoritesProvider>
-          </CartProvider>
-        </ProfileProvider>
-      </AuthProvider>
-    </GestureHandlerRootView>
+    // ThemeProvider primero: retiene el render (splash visible) hasta aplicar
+    // el color guardado, para que los StyleSheet se creen ya con ese accent.
+    <ThemeProvider>
+      <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayout}>
+        <AuthProvider>
+          <ProfileProvider>
+            <CartProvider>
+              <FavoritesProvider>
+                <ToastProvider>
+                  <Navigation />
+                </ToastProvider>
+              </FavoritesProvider>
+            </CartProvider>
+          </ProfileProvider>
+        </AuthProvider>
+      </GestureHandlerRootView>
+    </ThemeProvider>
   );
 
   if (Platform.OS !== 'web') return inner;

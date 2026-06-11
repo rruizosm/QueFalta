@@ -18,6 +18,7 @@ import { getMeta, DEFAULT_HOME_CATEGORY_IDS } from '../constants/categoryMeta';
 import { useCart } from '../context/CartContext';
 import { useProfile } from '../context/ProfileContext';
 import { useFavorites } from '../context/FavoritesContext';
+import { useThemedStyles } from '../context/ThemeContext';
 import { fetchMyGroups, fetchGroupItems, type GroupSummary, type GroupItem } from '../api/groups';
 import {
   fetchCategories,
@@ -34,6 +35,7 @@ import MemberAvatars from '../components/MemberAvatars';
 import HardShadow from '../components/HardShadow';
 
 export default function HomeScreen() {
+  const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
   const { activeCart } = useCart();
   const { profile } = useProfile();
@@ -368,7 +370,7 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
   scroll: { padding: 16, paddingTop: 56, paddingBottom: 32 },
 

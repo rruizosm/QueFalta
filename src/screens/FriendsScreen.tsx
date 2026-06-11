@@ -10,21 +10,20 @@ import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useThemedStyles } from '../context/ThemeContext';
 import { searchUsersByUsername, type SearchedUser } from '../api/groups';
 import {
   fetchFriends, fetchIncomingRequests, fetchOutgoingRequests,
   sendFriendRequest, acceptFriendRequest, removeFriendship, type FriendProfile,
 } from '../api/friends';
+import UserAvatar from '../components/UserAvatar';
 
-function Avatar({ color, initials }: { color: string; initials: string }) {
-  return (
-    <View style={[styles.avatar, { backgroundColor: color }]}>
-      <Text style={styles.avatarText}>{initials}</Text>
-    </View>
-  );
+function Avatar({ color, initials, avatarUrl }: { color: string; initials: string; avatarUrl?: string | null }) {
+  return <UserAvatar avatarUrl={avatarUrl} initials={initials} color={color} size={42} />;
 }
 
 export default function FriendsScreen() {
+  const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
   const { session } = useAuth();
   const toast = useToast();
@@ -131,7 +130,7 @@ export default function FriendsScreen() {
                 const incomingFid = incomingById.get(u.id);
                 return (
                   <View key={u.id} style={styles.row}>
-                    <Avatar color={u.color} initials={u.initials} />
+                    <Avatar color={u.color} initials={u.initials} avatarUrl={u.avatarUrl} />
                     <View style={styles.info}>
                       <Text style={styles.name} numberOfLines={1}>{u.name}</Text>
                       {u.username ? <Text style={styles.username}>@{u.username}</Text> : null}
@@ -163,7 +162,7 @@ export default function FriendsScreen() {
                   <Text style={styles.sectionLabel}>Solicitudes ({incoming.length})</Text>
                   {incoming.map((f) => (
                     <View key={f.friendshipId} style={styles.row}>
-                      <Avatar color={f.color} initials={f.initials} />
+                      <Avatar color={f.color} initials={f.initials} avatarUrl={f.avatarUrl} />
                       <View style={styles.info}>
                         <Text style={styles.name} numberOfLines={1}>{f.name}</Text>
                         {f.username ? <Text style={styles.username}>@{f.username}</Text> : null}
@@ -193,7 +192,7 @@ export default function FriendsScreen() {
               ) : (
                 friends.map((f) => (
                   <View key={f.friendshipId} style={styles.row}>
-                    <Avatar color={f.color} initials={f.initials} />
+                    <Avatar color={f.color} initials={f.initials} avatarUrl={f.avatarUrl} />
                     <View style={styles.info}>
                       <Text style={styles.name} numberOfLines={1}>{f.name}</Text>
                       {f.username ? <Text style={styles.username}>@{f.username}</Text> : null}
@@ -217,7 +216,7 @@ export default function FriendsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
   header: {
     flexDirection: 'row', alignItems: 'center',

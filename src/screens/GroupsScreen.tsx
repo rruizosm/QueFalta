@@ -8,10 +8,6 @@ import {
   StyleSheet,
   StatusBar,
   ActivityIndicator,
-  Modal,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
   RefreshControl,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -20,16 +16,23 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
+import { useThemedStyles } from '../context/ThemeContext';
+import { FREE_LIMITS, limitsApply } from '../constants/limits';
 import { fetchMyGroups, createGroup, type GroupSummary } from '../api/groups';
 import MemberAvatars from '../components/MemberAvatars';
 import HardShadow from '../components/HardShadow';
+import NameInputSheet from '../components/NameInputSheet';
+import PaywallModal from '../components/PaywallModal';
 
 export default function GroupsScreen() {
+  const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
   const { session } = useAuth();
   const userId = session?.user.id;
   const { isActive, activateCart, deactivateCart, busy } = useCart();
+  const { isPremium } = useProfile();
   const toast = useToast();
   const [activatingId, setActivatingId] = useState<string | null>(null);
 
@@ -38,8 +41,8 @@ export default function GroupsScreen() {
   const [error, setError] = useState(false);
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [newName, setNewName] = useState('');
   const [creating, setCreating] = useState(false);
+  const [paywallVisible, setPaywallVisible] = useState(false);
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -72,21 +75,38 @@ export default function GroupsScreen() {
     }
   };
 
-  const handleCreate = async () => {
-    if (!newName.trim() || !userId) return;
-    const name = newName.trim();
+  // Gate free (Fase 2 MONETIZACION.md): solo cuentan los grupos CREADOS por el
+  // usuario (createdBy, igual que el trigger del servidor); ser miembro de
+  // grupos ajenos no cuenta y unirse por invitación es siempre ilimitado.
+  const handleNewGroup = () => {
+    const createdCount = groups.filter((g) => g.createdBy === userId).length;
+    if (limitsApply(isPremium) && createdCount >= FREE_LIMITS.maxCreatedGroups) {
+      setPaywallVisible(true);
+      return;
+    }
+    setModalVisible(true);
+  };
+
+  const handleCreate = async (name: string) => {
+    if (!userId) return;
     setCreating(true);
     try {
       await createGroup(name, userId);
-      setNewName('');
       setModalVisible(false);
       setLoading(true);
       load();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show(`Grupo "${name}" creado`);
-    } catch {
-      setError(true);
-      toast.show('No se pudo crear el grupo.', 'error');
+    } catch (e: any) {
+      // Trigger groups_enforce_limit (paywall_gates.sql): el estado local iba
+      // por detrás del servidor → paywall en vez de error genérico.
+      if (typeof e?.message === 'string' && e.message.includes('free_group_limit')) {
+        setModalVisible(false);
+        setPaywallVisible(true);
+      } else {
+        setError(true);
+        toast.show('No se pudo crear el grupo.', 'error');
+      }
     } finally {
       setCreating(false);
     }
@@ -154,7 +174,7 @@ export default function GroupsScreen() {
 
       <View style={styles.header}>
         <Text style={styles.title}>Grupos</Text>
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
+        <TouchableOpacity onPress={handleNewGroup}>
           <HardShadow style={{ backgroundColor: colors.accent, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 8 }}>
             <Ionicons name="add" size={18} color={colors.white} />
             <Text style={styles.newBtnText}>Nuevo</Text>
@@ -176,7 +196,7 @@ export default function GroupsScreen() {
           <Ionicons name="people-outline" size={48} color={colors.inkFaint} />
           <Text style={styles.emptyTitle}>Aún no tienes grupos</Text>
           <Text style={styles.emptyText}>Crea uno para compartir listas de la compra.</Text>
-          <TouchableOpacity onPress={() => setModalVisible(true)}>
+          <TouchableOpacity onPress={handleNewGroup}>
             <HardShadow style={{ backgroundColor: colors.accent, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 16, paddingVertical: 11, marginTop: 8 }}>
               <Ionicons name="add" size={18} color={colors.white} />
               <Text style={styles.newBtnText}>Crear grupo</Text>
@@ -197,56 +217,27 @@ export default function GroupsScreen() {
         />
       )}
 
-      {/* Create group modal */}
-      <Modal
+      {/* Create group — bottom sheet */}
+      <NameInputSheet
         visible={modalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.modalOverlay}
-        >
-          <HardShadow style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Nuevo grupo</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Nombre del grupo"
-              placeholderTextColor={colors.inkFaint}
-              value={newName}
-              onChangeText={setNewName}
-              autoFocus
-              maxLength={50}
-              returnKeyType="done"
-              onSubmitEditing={handleCreate}
-            />
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={[styles.modalBtn, styles.modalBtnCancel]}
-                onPress={() => { setModalVisible(false); setNewName(''); }}
-                disabled={creating}
-              >
-                <Text style={styles.modalBtnCancelText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalBtn, styles.modalBtnConfirm, (!newName.trim() || creating) && styles.modalBtnDisabled]}
-                onPress={handleCreate}
-                disabled={!newName.trim() || creating}
-              >
-                {creating
-                  ? <ActivityIndicator size="small" color={colors.white} />
-                  : <Text style={styles.modalBtnConfirmText}>Crear</Text>}
-              </TouchableOpacity>
-            </View>
-          </HardShadow>
-        </KeyboardAvoidingView>
-      </Modal>
+        title="Nuevo grupo"
+        subtitle="Lista y carrito compartidos con tu gente"
+        submitLabel="Crear grupo"
+        busy={creating}
+        onSubmit={handleCreate}
+        onClose={() => setModalVisible(false)}
+      />
+
+      <PaywallModal
+        visible={paywallVisible}
+        onClose={() => setPaywallVisible(false)}
+        subtitle={`El plan gratuito incluye ${FREE_LIMITS.maxCreatedGroups === 1 ? '1 grupo creado' : `${FREE_LIMITS.maxCreatedGroups} grupos creados`}; únete a los que quieras`}
+      />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
   header: {
@@ -285,28 +276,4 @@ const styles = StyleSheet.create({
   emptyTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink },
   emptyText: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'center' },
   retryText: { fontSize: 14, fontFamily: fonts.bold, color: colors.accent },
-
-  // ── Modal ─────────────────────────────────────────────────────
-  modalOverlay: {
-    flex: 1, backgroundColor: 'rgba(0,0,0,0.45)',
-    alignItems: 'center', justifyContent: 'center',
-    paddingHorizontal: 28,
-  },
-  modalCard: { width: '100%', padding: 22, gap: 14 },
-  modalTitle: { fontSize: 19, fontFamily: fonts.bold, color: colors.ink },
-  modalInput: {
-    borderWidth: 1, borderColor: colors.border,
-    paddingHorizontal: 14, paddingVertical: 12,
-    fontSize: 15, fontFamily: fonts.medium, color: colors.ink,
-  },
-  modalActions: { flexDirection: 'row', gap: 10 },
-  modalBtn: {
-    flex: 1, paddingVertical: 13,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  modalBtnCancel: { borderWidth: 1, borderColor: colors.border },
-  modalBtnCancelText: { fontSize: 14, fontFamily: fonts.semibold, color: colors.inkSoft },
-  modalBtnConfirm: { backgroundColor: colors.accent },
-  modalBtnConfirmText: { fontSize: 14, fontFamily: fonts.bold, color: colors.white },
-  modalBtnDisabled: { opacity: 0.45 },
 });

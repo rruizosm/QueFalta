@@ -29,7 +29,7 @@ create table if not exists public.bonarea_products (
   ean13               text,               -- la API no expone EAN → null
   category_id         text,               -- categoría "primaria" (1ª de category_ids)
   category_name       text,
-  category_ids        text[] not null default '{}',  -- TODAS las hojas que listan el producto
+  category_ids        text[] not null default '{}',  -- hoja(s) que listan el producto + TODOS sus ancestros (permite navegar por cualquier nivel)
   unit_price          numeric,            -- priceToPay (precio numérico, p.ej. 4.08)
   price_format        text,               -- texto mostrado ("4,08 €/u.")
   available           boolean not null default true,  -- itsOnStock

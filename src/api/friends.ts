@@ -7,9 +7,20 @@ export interface FriendProfile {
   username: string | null;
   initials: string;
   color: string;
+  avatarUrl: string | null;
 }
 
-const COLS = 'id, name, username, initials, color';
+const COLS = 'id, name, username, initials, color, avatar_url';
+
+/** Fila cruda de profiles → FriendProfile (sin friendshipId). */
+const toProfile = (p: any) => ({
+  id: p.id,
+  name: p.name,
+  username: p.username ?? null,
+  initials: p.initials,
+  color: p.color,
+  avatarUrl: p.avatar_url ?? null,
+});
 
 export async function sendFriendRequest(addresseeId: string, requesterId: string): Promise<void> {
   const { error } = await supabase
@@ -42,7 +53,7 @@ export async function fetchFriends(userId: string): Promise<FriendProfile[]> {
   return (data ?? [])
     .map((f: any) => {
       const other = f.requester_id === userId ? f.addressee : f.requester;
-      return other ? { friendshipId: f.id, ...other } : null;
+      return other ? { friendshipId: f.id, ...toProfile(other) } : null;
     })
     .filter(Boolean) as FriendProfile[];
 }
@@ -56,8 +67,20 @@ export async function fetchIncomingRequests(userId: string): Promise<FriendProfi
     .eq('addressee_id', userId);
   if (error) throw error;
   return (data ?? [])
-    .map((f: any) => (f.requester ? { friendshipId: f.id, ...f.requester } : null))
+    .map((f: any) => (f.requester ? { friendshipId: f.id, ...toProfile(f.requester) } : null))
     .filter(Boolean) as FriendProfile[];
+}
+
+/** Nº de solicitudes pendientes recibidas (para el badge de Perfil → Social).
+ *  head:true → solo el count, sin traer filas. */
+export async function fetchIncomingRequestCount(userId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from('friendships')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'pending')
+    .eq('addressee_id', userId);
+  if (error) throw error;
+  return count ?? 0;
 }
 
 /** Pending requests I've sent. */
@@ -69,6 +92,6 @@ export async function fetchOutgoingRequests(userId: string): Promise<FriendProfi
     .eq('requester_id', userId);
   if (error) throw error;
   return (data ?? [])
-    .map((f: any) => (f.addressee ? { friendshipId: f.id, ...f.addressee } : null))
+    .map((f: any) => (f.addressee ? { friendshipId: f.id, ...toProfile(f.addressee) } : null))
     .filter(Boolean) as FriendProfile[];
 }

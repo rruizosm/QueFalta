@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, Image, StyleSheet, StatusBar, ActivityIndicator, Alert,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -10,7 +10,10 @@ import type { BonpreuProduct } from '../api/catalog';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useFavorites } from '../context/FavoritesContext';
+import { useThemedStyles } from '../context/ThemeContext';
 import QuantityStepper from '../components/QuantityStepper';
+import ProductImage from '../components/ProductImage';
+import SimilarProductsSection from '../components/SimilarProductsSection';
 
 interface Props {
   /** Producto a mostrar (ya cargado de bonpreu_products). null = oculto. */
@@ -21,6 +24,7 @@ interface Props {
 /** Detalle de un producto de BonpreuEsclat. Pinta los datos ya cargados en la
  *  búsqueda (no hay fetch: la API de Bonpreu va por el espejo en Supabase). */
 export default function BonpreuProductModal({ product, onClose }: Props) {
+  const styles = useThemedStyles(themedStyles);
   const { activeCart, addToActiveCart } = useCart();
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
   const toast = useToast();
@@ -89,7 +93,7 @@ export default function BonpreuProductModal({ product, onClose }: Props) {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {product.thumbnail ? (
-          <Image source={{ uri: product.thumbnail }} style={styles.photo} resizeMode="contain" />
+          <ProductImage uri={product.thumbnail} style={styles.photo} />
         ) : (
           <View style={[styles.photo, styles.photoPlaceholder]}>
             <Ionicons name="image-outline" size={48} color={colors.inkFaint} />
@@ -104,6 +108,9 @@ export default function BonpreuProductModal({ product, onClose }: Props) {
           {product.packaging ? <Text style={styles.size}>{product.packaging}</Text> : null}
         </View>
         {product.priceFormat ? <Text style={styles.refPrice}>{product.priceFormat}</Text> : null}
+
+        {/* Comparativa: más barato en otros súper */}
+        <SimilarProductsSection productName={product.displayName} excludeStore="esclat" />
 
         {product.categoryName ? (
           <View style={styles.section}>
@@ -138,7 +145,7 @@ export default function BonpreuProductModal({ product, onClose }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   overlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: colors.paper, zIndex: 100,

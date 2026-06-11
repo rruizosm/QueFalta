@@ -11,12 +11,15 @@ import { fonts } from '../constants/typography';
 import { GroupsStackParamList } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useThemedStyles } from '../context/ThemeContext';
 import { addMemberToGroup, fetchGroupMembers } from '../api/groups';
 import { fetchFriends, type FriendProfile } from '../api/friends';
+import UserAvatar from '../components/UserAvatar';
 
 type AddMemberRouteProp = RouteProp<GroupsStackParamList, 'AddMember'>;
 
 export default function AddMemberScreen() {
+  const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
   const { groupId } = useRoute<AddMemberRouteProp>().params;
   const { session } = useAuth();
@@ -106,9 +109,7 @@ export default function AddMemberScreen() {
               const isMember = memberIds.has(f.id) || addedIds.includes(f.id);
               return (
                 <View key={f.id} style={styles.row}>
-                  <View style={[styles.avatar, { backgroundColor: f.color }]}>
-                    <Text style={styles.avatarText}>{f.initials}</Text>
-                  </View>
+                  <UserAvatar avatarUrl={f.avatarUrl} initials={f.initials} color={f.color} size={42} />
                   <View style={styles.info}>
                     <Text style={styles.name} numberOfLines={1}>{f.name}</Text>
                     {f.username ? <Text style={styles.username}>@{f.username}</Text> : null}
@@ -135,7 +136,7 @@ export default function AddMemberScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
   header: {
     flexDirection: 'row', alignItems: 'center',

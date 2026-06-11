@@ -11,6 +11,9 @@ import { useAuth } from './AuthContext';
 interface ProfileContextValue {
   profile: UserProfile | null;
   loading: boolean;
+  /** Suscripción QuéFalta Plus activa (premium_until en el futuro).
+   *  Los gates deben combinarlo con limitsApply() de constants/limits.ts. */
+  isPremium: boolean;
   /** Re-fetch from the server. */
   refresh: () => Promise<void>;
   /** Patch the cached profile locally (e.g. right after saving). */
@@ -20,6 +23,7 @@ interface ProfileContextValue {
 const ProfileContext = createContext<ProfileContextValue>({
   profile: null,
   loading: true,
+  isPremium: false,
   refresh: async () => {},
   applyProfile: () => {},
 });
@@ -58,8 +62,13 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     setProfile((prev) => (prev ? { ...prev, ...patch } : prev));
   }, []);
 
+  // Se recalcula en cada render; suficiente, porque expira con horas de margen
+  // y cualquier compra/restore refresca el perfil entero.
+  const isPremium =
+    !!profile?.premiumUntil && new Date(profile.premiumUntil).getTime() > Date.now();
+
   return (
-    <ProfileContext.Provider value={{ profile, loading, refresh, applyProfile }}>
+    <ProfileContext.Provider value={{ profile, loading, isPremium, refresh, applyProfile }}>
       {children}
     </ProfileContext.Provider>
   );

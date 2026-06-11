@@ -43,6 +43,7 @@ export interface GroupMember {
   name: string;
   initials: string;
   color: string;
+  avatarUrl?: string | null;
 }
 
 export interface ActivityEntry {

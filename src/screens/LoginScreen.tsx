@@ -10,9 +10,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useAuth } from '../context/AuthContext';
+import { useThemedStyles } from '../context/ThemeContext';
 import HardShadow from '../components/HardShadow';
 
 export default function LoginScreen() {
+  const styles = useThemedStyles(themedStyles);
   const { signInWithGoogle } = useAuth();
   const [loading, setLoading] = useState(false);
 
@@ -67,7 +69,7 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.paper,

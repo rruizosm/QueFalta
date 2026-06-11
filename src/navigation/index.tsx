@@ -14,6 +14,7 @@ import {
   GroupsStackParamList,
 } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { joinGroup } from '../api/groups';
 
@@ -22,12 +23,16 @@ import ProfileScreen    from '../screens/ProfileScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import PrivacySecurityScreen from '../screens/PrivacySecurityScreen';
 import DefaultGroupScreen from '../screens/DefaultGroupScreen';
+import CatalogStoresScreen from '../screens/CatalogStoresScreen';
+import AppearanceScreen from '../screens/AppearanceScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 import FriendsScreen from '../screens/FriendsScreen';
 import CatalogScreen    from '../screens/CatalogScreen';
 import SubCategoryScreen from '../screens/SubCategoryScreen';
 import ProductsScreen   from '../screens/ProductsScreen';
 import BonpreuProductsScreen from '../screens/BonpreuProductsScreen';
+import CarrefourProductsScreen from '../screens/CarrefourProductsScreen';
+import BonareaProductsScreen from '../screens/BonareaProductsScreen';
 import ListScreen       from '../screens/ListScreen';
 import GroupsScreen     from '../screens/GroupsScreen';
 import GroupDetailScreen from '../screens/GroupDetailScreen';
@@ -57,6 +62,8 @@ function HomeNavigator() {
       <HomeStack.Screen name="EditProfile" component={EditProfileScreen} />
       <HomeStack.Screen name="PrivacySecurity" component={PrivacySecurityScreen} />
       <HomeStack.Screen name="DefaultGroup" component={DefaultGroupScreen} />
+      <HomeStack.Screen name="CatalogStores" component={CatalogStoresScreen} />
+      <HomeStack.Screen name="Appearance" component={AppearanceScreen} />
       <HomeStack.Screen name="History" component={HistoryScreen} />
       <HomeStack.Screen name="Friends" component={FriendsScreen} />
     </HomeStack.Navigator>
@@ -70,6 +77,8 @@ function CatalogNavigator() {
       <CatalogStack.Screen name="SubCategory" component={SubCategoryScreen} />
       <CatalogStack.Screen name="Products"    component={ProductsScreen} />
       <CatalogStack.Screen name="BonpreuProducts" component={BonpreuProductsScreen} />
+      <CatalogStack.Screen name="CarrefourProducts" component={CarrefourProductsScreen} />
+      <CatalogStack.Screen name="BonareaProducts" component={BonareaProductsScreen} />
     </CatalogStack.Navigator>
   );
 }
@@ -87,6 +96,8 @@ function GroupsNavigator() {
 
 export default function Navigation() {
   const { session, loading } = useAuth();
+  // Suscribe al tema: re-evalúa screenOptions (tabBarActiveTintColor) al cambiar el accent.
+  useTheme();
   const { show: showToast } = useToast();
   const userId = session?.user.id;
 

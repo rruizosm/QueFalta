@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
+import { useThemedStyles } from '../context/ThemeContext';
 
 interface Props {
   value: number;
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function QuantityStepper({ value, onIncrement, onDecrement, min = 0 }: Props) {
+  const styles = useThemedStyles(themedStyles);
   const atMin = value <= min;
   return (
     <View style={styles.container}>
@@ -34,7 +36,7 @@ export default function QuantityStepper({ value, onIncrement, onDecrement, min =
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',

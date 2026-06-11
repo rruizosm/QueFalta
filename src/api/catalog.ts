@@ -6,6 +6,7 @@
 // MercadonaProduct completo.
 import { supabase } from '../lib/supabase';
 import type { MercadonaProduct } from '../types';
+import type { CatalogStore } from '../constants/stores';
 
 /** Búsqueda por nombre en TODO el catálogo (server-side). */
 export async function searchProducts(query: string, limit = 50): Promise<MercadonaProduct[]> {
@@ -67,6 +68,17 @@ export async function searchBonpreuProducts(query: string, limit = 50): Promise<
   return (data ?? []).map(mapBonpreu);
 }
 
+/** Un producto de Bonpreu por id (p.ej. para abrir el detalle desde la comparativa). */
+export async function fetchBonpreuProduct(id: string): Promise<BonpreuProduct | null> {
+  const { data, error } = await supabase
+    .from('bonpreu_products')
+    .select(BONPREU_COLS)
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapBonpreu(data) : null;
+}
+
 /** Una categoría N1 de Bonpreu con sus subcategorías (N2) que tienen productos. */
 export interface BonpreuCategory {
   id: string;
@@ -107,4 +119,227 @@ export async function fetchBonpreuProductsByCategory(categoryId: string, limit =
     .limit(limit);
   if (error) throw error;
   return (data ?? []).map(mapBonpreu);
+}
+
+// ─── Carrefour (tabla carrefour_products, espejo aparte) ─────────────────────
+// Mismo modelo que Bonpreu (espejo + category_ids). El sync corre en local
+// (scripts/sync-carrefour.mjs vía tarea programada) porque Cloudflare bloquea CI.
+export interface CarrefourProduct {
+  id: string;
+  displayName: string;
+  thumbnail: string | null;
+  unitPrice: number | null;     // precio numérico (15.4)
+  priceFormat: string | null;   // precio mostrado tal cual ("15,40 €")
+  pricePerUnit: string | null;  // precio por unidad de medida ("192,50 €"), de raw
+  categoryName: string | null;
+}
+
+const mapCarrefour = (r: any): CarrefourProduct => ({
+  id: r.id,
+  displayName: r.display_name,
+  thumbnail: r.thumbnail ?? null,
+  unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
+  priceFormat: r.price_format ?? null,
+  pricePerUnit: r.price_per_unit ?? null,
+  categoryName: r.category_name ?? null,
+});
+
+// price_per_unit no es columna: se saca del jsonb `raw` con un alias de PostgREST.
+const CARREFOUR_COLS =
+  'id, display_name, thumbnail, unit_price, price_format, category_name, price_per_unit:raw->>price_per_unit';
+
+/** Búsqueda por nombre en el catálogo de Carrefour (server-side). */
+export async function searchCarrefourProducts(query: string, limit = 50): Promise<CarrefourProduct[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const { data, error } = await supabase
+    .from('carrefour_products')
+    .select(CARREFOUR_COLS)
+    .eq('published', true)
+    .ilike('display_name', `%${q}%`)
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapCarrefour);
+}
+
+/** Un producto de Carrefour por id (p.ej. para abrir el detalle desde la comparativa). */
+export async function fetchCarrefourProduct(id: string): Promise<CarrefourProduct | null> {
+  const { data, error } = await supabase
+    .from('carrefour_products')
+    .select(CARREFOUR_COLS)
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapCarrefour(data) : null;
+}
+
+/** Una categoría N1 de Carrefour con sus subcategorías (N2) con productos. */
+export interface CarrefourCategory {
+  id: string;
+  name: string;
+  children: { id: string; name: string }[];
+}
+
+/** Árbol de categorías de Carrefour (N1 → N2) desde el espejo. */
+export async function fetchCarrefourCategoryTree(): Promise<CarrefourCategory[]> {
+  const { data, error } = await supabase
+    .from('carrefour_categories')
+    .select('id, name, parent_id, product_count')
+    .eq('published', true)
+    .order('name');
+  if (error) throw error;
+  const rows = data ?? [];
+  return rows
+    .filter((r: any) => r.parent_id == null)
+    .map((n1: any) => ({
+      id: n1.id,
+      name: n1.name,
+      children: rows
+        .filter((c: any) => c.parent_id === n1.id && (c.product_count ?? 0) > 0)
+        .map((c: any) => ({ id: c.id, name: c.name })),
+    }))
+    .filter((n1) => n1.children.length > 0);
+}
+
+/** Productos de una subcategoría (N2) de Carrefour, vía category_ids. */
+export async function fetchCarrefourProductsByCategory(categoryId: string, limit = 400): Promise<CarrefourProduct[]> {
+  const { data, error } = await supabase
+    .from('carrefour_products')
+    .select(CARREFOUR_COLS)
+    .eq('published', true)
+    .contains('category_ids', [categoryId])
+    .order('display_name')
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapCarrefour);
+}
+
+// ─── bonÀrea (tabla bonarea_products, espejo aparte) ─────────────────────────
+// Mismo modelo que Bonpreu/Carrefour (espejo + category_ids). Lo puebla
+// scripts/sync-bonarea.mjs (GitHub Action) desde la API JSON propia de bonÀrea.
+// El árbol real tiene 4 niveles; aquí se navega como 2 (N1→N2), y category_ids
+// incluye los ancestros para que una N2 devuelva los productos de todo su subárbol.
+export interface BonareaProduct {
+  id: string;                  // identifier con asterisco ("13*5304"), lo que pide el carrito
+  displayName: string;
+  thumbnail: string | null;
+  unitPrice: number | null;    // precio numérico (4.08)
+  priceFormat: string | null;  // precio mostrado ("4,08 €/u.")
+  pricePerUnit: string | null; // precio por medida ("6,39 €/kg"), de raw.unitPrice
+  categoryName: string | null;
+}
+
+const mapBonarea = (r: any): BonareaProduct => ({
+  id: r.id,
+  displayName: r.display_name,
+  thumbnail: r.thumbnail ?? null,
+  unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
+  priceFormat: r.price_format ?? null,
+  pricePerUnit: r.price_per_unit ?? null,
+  categoryName: r.category_name ?? null,
+});
+
+// price_per_unit no es columna: se saca del jsonb `raw` (campo unitPrice) con un alias.
+const BONAREA_COLS =
+  'id, display_name, thumbnail, unit_price, price_format, category_name, price_per_unit:raw->>unitPrice';
+
+/** Búsqueda por nombre en el catálogo de bonÀrea (server-side). */
+export async function searchBonareaProducts(query: string, limit = 50): Promise<BonareaProduct[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const { data, error } = await supabase
+    .from('bonarea_products')
+    .select(BONAREA_COLS)
+    .eq('published', true)
+    .ilike('display_name', `%${q}%`)
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapBonarea);
+}
+
+/** Un producto de bonÀrea por id (p.ej. para abrir el detalle desde la comparativa). */
+export async function fetchBonareaProduct(id: string): Promise<BonareaProduct | null> {
+  const { data, error } = await supabase
+    .from('bonarea_products')
+    .select(BONAREA_COLS)
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapBonarea(data) : null;
+}
+
+/** Una categoría N1 de bonÀrea con sus subcategorías (N2) con productos. */
+export interface BonareaCategory {
+  id: string;
+  name: string;
+  children: { id: string; name: string }[];
+}
+
+/** Árbol de categorías de bonÀrea (N1 → N2) desde el espejo. */
+export async function fetchBonareaCategoryTree(): Promise<BonareaCategory[]> {
+  const { data, error } = await supabase
+    .from('bonarea_categories')
+    .select('id, name, parent_id, product_count')
+    .eq('published', true)
+    .order('name');
+  if (error) throw error;
+  const rows = data ?? [];
+  return rows
+    .filter((r: any) => r.parent_id == null)
+    .map((n1: any) => ({
+      id: n1.id,
+      name: n1.name,
+      children: rows
+        .filter((c: any) => c.parent_id === n1.id && (c.product_count ?? 0) > 0)
+        .map((c: any) => ({ id: c.id, name: c.name })),
+    }))
+    .filter((n1) => n1.children.length > 0);
+}
+
+/** Productos de una subcategoría (N2) de bonÀrea, vía category_ids (incluye ancestros). */
+export async function fetchBonareaProductsByCategory(categoryId: string, limit = 600): Promise<BonareaProduct[]> {
+  const { data, error } = await supabase
+    .from('bonarea_products')
+    .select(BONAREA_COLS)
+    .eq('published', true)
+    .contains('category_ids', [categoryId])
+    .order('display_name')
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapBonarea);
+}
+
+// ─── Comparativa: producto similar más barato entre supers (RPC similar_products) ─
+export interface SimilarProduct {
+  store: CatalogStore;
+  /** null en filas bloqueadas (teaser del plan free). */
+  id: string | null;
+  displayName: string | null;
+  thumbnail: string | null;
+  priceTotal: number | null;      // precio del envase
+  pricePerUnit: number | null;    // € por unidad canónica
+  pricePerUnitUnit: 'l' | 'kg' | 'ud' | null;
+  /** Teaser free (paywall activo): existe más barato en `store`, sin detalle. */
+  locked: boolean;
+}
+
+/** El equivalente MÁS BARATO por €/unidad en cada tienda de `stores` (1 por tienda).
+ *  Excluye la tienda del propio producto pasándola fuera de `stores`. */
+export async function fetchSimilarProducts(
+  name: string,
+  stores: CatalogStore[],
+): Promise<SimilarProduct[]> {
+  if (!name?.trim() || stores.length === 0) return [];
+  const { data, error } = await supabase.rpc('similar_products', { p_name: name, p_stores: stores });
+  if (error) throw error;
+  return (data ?? []).map((r: any) => ({
+    store: r.store,
+    id: r.id ?? null,
+    displayName: r.display_name ?? null,
+    thumbnail: r.thumbnail ?? null,
+    priceTotal: r.price_total != null ? Number(r.price_total) : null,
+    pricePerUnit: r.price_per_unit != null ? Number(r.price_per_unit) : null,
+    pricePerUnitUnit: r.price_per_unit_unit ?? null,
+    locked: !!r.locked, // tolera el RPC viejo sin la columna (→ false)
+  }));
 }

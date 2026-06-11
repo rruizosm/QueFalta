@@ -10,6 +10,8 @@ interface Props {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
   value?: string;
+  /** Contador pendiente (p.ej. solicitudes de amistad). 0/undefined = sin badge. */
+  badge?: number;
   onPress?: () => void;
   right?: RightVariant;
   switchValue?: boolean;
@@ -19,7 +21,7 @@ interface Props {
 }
 
 export default function ProfileRow({
-  icon, label, value, onPress,
+  icon, label, value, badge, onPress,
   right = 'chevron', switchValue, onSwitchChange,
   danger = false, last = false,
 }: Props) {
@@ -34,6 +36,11 @@ export default function ProfileRow({
       </View>
       <Text style={[styles.label, { color: labelColor }]}>{label}</Text>
       {value ? <Text style={styles.value}>{value}</Text> : null}
+      {badge ? (
+        <View style={[styles.badge, { backgroundColor: colors.accent }]}>
+          <Text style={styles.badgeText}>{badge > 99 ? '99+' : badge}</Text>
+        </View>
+      ) : null}
       {right === 'switch' ? (
         <Switch
           value={switchValue ?? false}
@@ -75,4 +82,10 @@ const styles = StyleSheet.create({
   value: {
     fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft,
   },
+  badge: {
+    minWidth: 20, height: 20, borderRadius: 10,
+    paddingHorizontal: 6,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  badgeText: { fontSize: 11, fontFamily: fonts.bold, color: colors.white },
 });

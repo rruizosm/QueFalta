@@ -24,6 +24,7 @@ import {
   type GroupSummary,
   type GroupItem,
 } from '../api/groups';
+import { useThemedStyles } from '../context/ThemeContext';
 import MemberAvatars from '../components/MemberAvatars';
 import ProgressBar from '../components/ProgressBar';
 import ProductDetailModal from '../components/ProductDetailModal';
@@ -35,6 +36,7 @@ type GroupDetailRouteProp = RouteProp<GroupsStackParamList, 'GroupDetail'>;
 const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 
 export default function GroupDetailScreen() {
+  const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
   const route = useRoute<GroupDetailRouteProp>();
   const { groupId } = route.params;
@@ -326,7 +328,7 @@ export default function GroupDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
   // ── Header ────────────────────────────────────────────────────

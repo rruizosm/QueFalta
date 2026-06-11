@@ -4,6 +4,18 @@ import type { GroupMember } from '../types';
 /** Base pública de la web (Universal Links). Ver quefalta-web/. */
 const WEB_BASE_URL = 'https://quefalta.es';
 
+/** Columnas de perfil que necesita cualquier avatar de miembro. */
+const MEMBER_COLS = 'id, name, initials, color, avatar_url';
+
+/** Fila cruda de profiles → GroupMember (avatar_url → avatarUrl). */
+const toMember = (p: any): GroupMember => ({
+  id: p.id,
+  name: p.name,
+  initials: p.initials,
+  color: p.color,
+  avatarUrl: p.avatar_url ?? null,
+});
+
 export interface GroupSummary {
   id: string;
   name: string;
@@ -31,7 +43,7 @@ export interface GroupItem {
 export async function fetchMyGroups(): Promise<GroupSummary[]> {
   const { data, error } = await supabase
     .from('groups')
-    .select('id, name, created_by, owner_id, created_at, group_members(profiles(id, name, initials, color))')
+    .select(`id, name, created_by, owner_id, created_at, group_members(profiles(${MEMBER_COLS}))`)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -44,7 +56,8 @@ export async function fetchMyGroups(): Promise<GroupSummary[]> {
     createdAt: g.created_at,
     members: (g.group_members ?? [])
       .map((m: any) => m.profiles)
-      .filter(Boolean) as GroupMember[],
+      .filter(Boolean)
+      .map(toMember),
   }));
 }
 
@@ -71,7 +84,7 @@ export async function createGroup(name: string, userId: string): Promise<string>
 export async function fetchGroupDetail(groupId: string): Promise<GroupSummary> {
   const { data, error } = await supabase
     .from('groups')
-    .select('id, name, created_by, owner_id, created_at, group_members(profiles(id, name, initials, color))')
+    .select(`id, name, created_by, owner_id, created_at, group_members(profiles(${MEMBER_COLS}))`)
     .eq('id', groupId)
     .single();
 
@@ -85,7 +98,8 @@ export async function fetchGroupDetail(groupId: string): Promise<GroupSummary> {
     createdAt: data.created_at,
     members: ((data as any).group_members ?? [])
       .map((m: any) => m.profiles)
-      .filter(Boolean) as GroupMember[],
+      .filter(Boolean)
+      .map(toMember),
   };
 }
 
@@ -138,6 +152,7 @@ export interface SearchedUser {
   username: string | null;
   initials: string;
   color: string;
+  avatarUrl: string | null;
 }
 
 /** Searches discoverable users by @username prefix (for adding to a group). */
@@ -147,7 +162,7 @@ export async function searchUsersByUsername(query: string): Promise<SearchedUser
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, name, username, initials, color')
+    .select('id, name, username, initials, color, avatar_url')
     .eq('discoverable', true)
     .ilike('username', `${q}%`)
     .limit(15);
@@ -159,6 +174,7 @@ export async function searchUsersByUsername(query: string): Promise<SearchedUser
     username: p.username ?? null,
     initials: p.initials,
     color: p.color,
+    avatarUrl: p.avatar_url ?? null,
   }));
 }
 
@@ -182,11 +198,21 @@ export async function addMemberToGroup(groupId: string, userId: string): Promise
 export async function fetchGroupMembers(groupId: string): Promise<GroupMember[]> {
   const { data, error } = await supabase
     .from('group_members')
-    .select('profiles(id, name, initials, color)')
+    .select(`profiles(${MEMBER_COLS})`)
     .eq('group_id', groupId);
 
   if (error) throw error;
-  return (data ?? []).map((m: any) => m.profiles).filter(Boolean) as GroupMember[];
+  return (data ?? []).map((m: any) => m.profiles).filter(Boolean).map(toMember);
+}
+
+/** Renombra el grupo. Solo el admin (la policy UPDATE de groups exige owner_id). */
+export async function renameGroup(groupId: string, name: string): Promise<void> {
+  const { error } = await supabase
+    .from('groups')
+    .update({ name: name.trim() })
+    .eq('id', groupId);
+
+  if (error) throw error;
 }
 
 /** Transfers group admin to another member (sets groups.owner_id). Admin only (RLS).
@@ -195,6 +221,17 @@ export async function transferGroupAdmin(groupId: string, newAdminId: string): P
   const { error } = await supabase
     .from('groups')
     .update({ owner_id: newAdminId })
+    .eq('id', groupId);
+
+  if (error) throw error;
+}
+
+/** Borra el grupo entero (solo el admin, por RLS). Los FK con ON DELETE CASCADE
+ *  (group_delete_cascade.sql) arrastran miembros, listas, ítems y compras. */
+export async function deleteGroup(groupId: string): Promise<void> {
+  const { error } = await supabase
+    .from('groups')
+    .delete()
     .eq('id', groupId);
 
   if (error) throw error;

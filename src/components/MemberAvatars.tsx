@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { GroupMember } from '../types';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
+import UserAvatar from './UserAvatar';
 
 interface Props {
   members: GroupMember[];
@@ -17,22 +18,20 @@ export default function MemberAvatars({ members, maxVisible = 4, size = 32 }: Pr
   return (
     <View style={[styles.container, { height: size }]}>
       {visible.map((member, index) => (
-        <View
+        <UserAvatar
           key={member.id}
+          avatarUrl={member.avatarUrl}
+          initials={member.initials}
+          color={member.color}
+          size={size}
           style={[
             styles.avatar,
             {
-              width: size,
-              height: size,
-              borderRadius: size / 2,
-              backgroundColor: member.color,
               marginLeft: index === 0 ? 0 : -(size * 0.3),
               zIndex: visible.length - index,
             },
           ]}
-        >
-          <Text style={[styles.initials, { fontSize: size * 0.35 }]}>{member.initials}</Text>
-        </View>
+        />
       ))}
       {overflow > 0 && (
         <View
@@ -64,11 +63,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: colors.white,
-  },
-  initials: {
-    color: colors.white,
-    fontWeight: '700',
-    fontFamily: fonts.bold,
   },
   overflow: {
     backgroundColor: colors.surfaceAlt,

@@ -13,11 +13,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { CatalogStackParamList } from '../types';
 import { getSubcategoryEmoji } from '../constants/subcategoryEmojis';
+import { useTheme } from '../context/ThemeContext';
 
 type SubCategoryRouteProp = RouteProp<CatalogStackParamList, 'SubCategory'>;
 type Subcat = { id: string | number; name: string };
 
 export default function SubCategoryScreen() {
+  // Suscripción al tema: el color por defecto (colors.accent) se refresca si
+  // cambia el accent mientras la pantalla sigue montada en otra pestaña.
+  useTheme();
   const navigation = useNavigation<any>();
   const route = useRoute<SubCategoryRouteProp>();
   const { categoryName, emoji = '🛒', color = colors.accent, subcategories = [], retailer = 'mercadona' } = route.params;
@@ -25,6 +29,18 @@ export default function SubCategoryScreen() {
   const openSubcategory = (item: Subcat) => {
     if (retailer === 'esclat') {
       navigation.navigate('BonpreuProducts', {
+        categoryId: String(item.id),
+        categoryName: item.name,
+        parentName: categoryName,
+      });
+    } else if (retailer === 'carrefour') {
+      navigation.navigate('CarrefourProducts', {
+        categoryId: String(item.id),
+        categoryName: item.name,
+        parentName: categoryName,
+      });
+    } else if (retailer === 'bonarea') {
+      navigation.navigate('BonareaProducts', {
         categoryId: String(item.id),
         categoryName: item.name,
         parentName: categoryName,

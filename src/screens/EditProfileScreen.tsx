@@ -13,11 +13,13 @@ import { fonts } from '../constants/typography';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
+import { useThemedStyles } from '../context/ThemeContext';
 import { updateProfile, uploadAvatar, isUsernameAvailable } from '../api/profile';
 
 const USERNAME_RE = /^[a-z0-9_.]{3,20}$/;
 
 export default function EditProfileScreen() {
+  const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
   const { session } = useAuth();
   const { profile, applyProfile } = useProfile();
@@ -289,7 +291,7 @@ export default function EditProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
   // ── Header ────────────────────────────────────────────────────

@@ -142,6 +142,7 @@ export interface GroupMember {
   name: string;
   initials: string;
   color: string;
+  avatarUrl?: string | null;
 }
 
 export interface ActivityEntry {
@@ -200,6 +201,8 @@ export type HomeStackParamList = {
   EditProfile: undefined;
   PrivacySecurity: undefined;
   DefaultGroup: undefined;
+  CatalogStores: undefined;
+  Appearance: undefined;
   History: undefined;
   Friends: undefined;
 };
@@ -210,9 +213,9 @@ export type CatalogStackParamList = {
     categoryName: string;
     emoji?: string;
     color?: string;
-    /** Subcategorías N2. Mercadona usa ids numéricos; Bonpreu, uuids string. */
+    /** Subcategorías N2. Mercadona usa ids numéricos; Bonpreu/Carrefour/bonÀrea, ids string. */
     subcategories: { id: string | number; name: string }[];
-    retailer?: 'mercadona' | 'esclat';
+    retailer?: 'mercadona' | 'esclat' | 'carrefour' | 'bonarea';
   };
   Products: {
     subcategoryId: number;
@@ -223,6 +226,18 @@ export type CatalogStackParamList = {
   };
   /** Productos de una subcategoría de BonpreuEsclat (lee del espejo). */
   BonpreuProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentName?: string;
+  };
+  /** Productos de una subcategoría de Carrefour (lee del espejo). */
+  CarrefourProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentName?: string;
+  };
+  /** Productos de una subcategoría de bonÀrea (lee del espejo). */
+  BonareaProducts: {
     categoryId: string;
     categoryName: string;
     parentName?: string;

@@ -4,6 +4,7 @@ import { Session } from '@supabase/supabase-js';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { supabase } from '../lib/supabase';
+import { configurePurchases, logOutPurchases } from '../lib/purchases';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -39,6 +40,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  // RevenueCat: liga el appUserID al uid de Supabase (el webhook escribe
+  // premium_until por ese id). No-op en Expo Go o sin API key (lib/purchases).
+  useEffect(() => {
+    if (session?.user.id) configurePurchases(session.user.id);
+  }, [session?.user.id]);
+
   const signInWithGoogle = async () => {
     if (Platform.OS === 'web') {
       await supabase.auth.signInWithOAuth({
@@ -71,6 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async (scope?: 'global' | 'local' | 'others') => {
+    await logOutPurchases();
     await supabase.auth.signOut(scope ? { scope } : undefined);
   };
 

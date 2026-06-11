@@ -12,16 +12,20 @@ import { GroupsStackParamList, type GroupMember } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
-import { fetchGroupDetail, removeGroupMember, transferGroupAdmin, type GroupSummary } from '../api/groups';
+import { useThemedStyles } from '../context/ThemeContext';
+import { deleteGroup, fetchGroupDetail, removeGroupMember, renameGroup, transferGroupAdmin, type GroupSummary } from '../api/groups';
 import ConfirmDialog from '../components/ConfirmDialog';
+import UserAvatar from '../components/UserAvatar';
+import NameInputSheet from '../components/NameInputSheet';
 
 type MembersRouteProp = RouteProp<GroupsStackParamList, 'GroupMembers'>;
 
 export default function GroupMembersScreen() {
+  const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
   const { groupId } = useRoute<MembersRouteProp>().params;
   const { session } = useAuth();
-  const { activeCart, deactivateCart } = useCart();
+  const { activeCart, activateCart, deactivateCart, defaultGroup, setDefaultGroup, clearDefaultGroup } = useCart();
   const toast = useToast();
   const userId = session?.user.id ?? '';
 
@@ -30,6 +34,10 @@ export default function GroupMembersScreen() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [actionMember, setActionMember] = useState<GroupMember | null>(null);
   const [leaveVisible, setLeaveVisible] = useState(false);
+  const [deleteVisible, setDeleteVisible] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [renameVisible, setRenameVisible] = useState(false);
+  const [renaming, setRenaming] = useState(false);
 
   const load = useCallback(() => {
     fetchGroupDetail(groupId)
@@ -73,6 +81,43 @@ export default function GroupMembersScreen() {
     }
   };
 
+  const confirmRename = async (name: string) => {
+    if (!group) return;
+    if (name === group.name) { setRenameVisible(false); return; }
+    setRenaming(true);
+    try {
+      await renameGroup(groupId, name);
+      setGroup({ ...group, name });
+      // Refrescar el nombre cacheado en carrito activo / grupo por defecto.
+      if (activeCart?.groupId === groupId) await activateCart(groupId, name);
+      if (defaultGroup?.groupId === groupId) await setDefaultGroup(groupId, name);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show('Grupo renombrado');
+      setRenameVisible(false);
+    } catch {
+      toast.show('No se pudo renombrar el grupo.', 'error');
+    } finally {
+      setRenaming(false);
+    }
+  };
+
+  const confirmDelete = async () => {
+    setDeleteVisible(false);
+    setDeleting(true);
+    try {
+      await deleteGroup(groupId);
+      // Limpiar referencias locales al grupo borrado.
+      if (activeCart?.groupId === groupId) await deactivateCart();
+      if (defaultGroup?.groupId === groupId) await clearDefaultGroup();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show('Grupo eliminado');
+      navigation.navigate('GroupsHome');
+    } catch {
+      toast.show('No se pudo eliminar el grupo.', 'error');
+      setDeleting(false);
+    }
+  };
+
   const confirmLeave = async () => {
     setLeaveVisible(false);
     setBusyId(userId);
@@ -109,7 +154,14 @@ export default function GroupMembersScreen() {
         </View>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-          <Text style={styles.groupName} numberOfLines={1}>{group.name}</Text>
+          <View style={styles.groupNameRow}>
+            <Text style={styles.groupName} numberOfLines={1}>{group.name}</Text>
+            {isAdmin && (
+              <TouchableOpacity onPress={() => setRenameVisible(true)} hitSlop={8} style={styles.renameBtn}>
+                <Ionicons name="create-outline" size={18} color={colors.accent} />
+              </TouchableOpacity>
+            )}
+          </View>
           <Text style={styles.countLabel}>
             {group.members.length} {group.members.length === 1 ? 'miembro' : 'miembros'}
           </Text>
@@ -132,9 +184,7 @@ export default function GroupMembersScreen() {
               const canRemove = isAdmin && !isMemberAdmin;
               return (
                 <View key={m.id} style={[styles.row, i < group.members.length - 1 && styles.rowBorder]}>
-                  <View style={[styles.avatar, { backgroundColor: m.color }]}>
-                    <Text style={styles.avatarText}>{m.initials}</Text>
-                  </View>
+                  <UserAvatar avatarUrl={m.avatarUrl} initials={m.initials} color={m.color} size={42} />
                   <View style={styles.memberInfo}>
                     <Text style={styles.memberName} numberOfLines={1}>
                       {m.name}{isMe ? ' (tú)' : ''}
@@ -162,9 +212,25 @@ export default function GroupMembersScreen() {
 
           {/* Leave / admin note */}
           {isAdmin ? (
-            <Text style={styles.adminNote}>
-              Eres el administrador del grupo. Para salir, primero deberías transferir la administración o eliminar el grupo.
-            </Text>
+            <>
+              <Text style={styles.adminNote}>
+                Eres el administrador del grupo. Para salir, primero deberías transferir la administración o eliminar el grupo.
+              </Text>
+              <TouchableOpacity
+                style={styles.leaveBtn}
+                onPress={() => setDeleteVisible(true)}
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <ActivityIndicator size="small" color="#d6452b" />
+                ) : (
+                  <>
+                    <Ionicons name="trash-outline" size={18} color="#d6452b" />
+                    <Text style={styles.leaveText}>Eliminar grupo</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </>
           ) : (
             <TouchableOpacity
               style={styles.leaveBtn}
@@ -196,9 +262,7 @@ export default function GroupMembersScreen() {
           {actionMember && (
             <View style={styles.sheet}>
               <View style={styles.sheetHeader}>
-                <View style={[styles.sheetAvatar, { backgroundColor: actionMember.color }]}>
-                  <Text style={styles.sheetAvatarText}>{actionMember.initials}</Text>
-                </View>
+                <UserAvatar avatarUrl={actionMember.avatarUrl} initials={actionMember.initials} color={actionMember.color} size={40} />
                 <Text style={styles.sheetTitle} numberOfLines={1}>{actionMember.name}</Text>
               </View>
 
@@ -241,11 +305,35 @@ export default function GroupMembersScreen() {
         onConfirm={confirmLeave}
         onCancel={() => setLeaveVisible(false)}
       />
+
+      {/* Rename — bottom sheet (mismo patrón que "Nuevo grupo" en GroupsScreen) */}
+      <NameInputSheet
+        visible={renameVisible}
+        title="Renombrar grupo"
+        subtitle="Todos los miembros verán el nuevo nombre"
+        icon="pencil"
+        initialValue={group?.name ?? ''}
+        submitLabel="Guardar"
+        submitIcon="checkmark"
+        busy={renaming}
+        onSubmit={confirmRename}
+        onClose={() => setRenameVisible(false)}
+      />
+
+      <ConfirmDialog
+        visible={deleteVisible}
+        title="Eliminar grupo"
+        message={`¿Seguro que quieres eliminar “${group?.name ?? ''}”? Se borrarán su lista compartida y su historial para todos los miembros. Esta acción no se puede deshacer.`}
+        confirmLabel="Eliminar"
+        destructive
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteVisible(false)}
+      />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
   header: {
@@ -262,7 +350,13 @@ const styles = StyleSheet.create({
 
   scroll: { paddingHorizontal: 16, paddingBottom: 40 },
 
-  groupName: { fontSize: 22, fontFamily: fonts.bold, color: colors.ink, marginTop: 6, letterSpacing: -0.4 },
+  groupNameRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 6 },
+  groupName: { flexShrink: 1, fontSize: 22, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4 },
+  renameBtn: {
+    width: 30, height: 30,
+    backgroundColor: colors.accentLight,
+    alignItems: 'center', justifyContent: 'center',
+  },
   countLabel: { fontSize: 13, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2, marginBottom: 14 },
   addBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,

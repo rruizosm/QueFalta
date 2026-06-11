@@ -10,8 +10,12 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useCart } from '../context/CartContext';
+import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
+import { useThemedStyles } from '../context/ThemeContext';
+import { FREE_LIMITS, limitsApply } from '../constants/limits';
 import { fetchPurchases, fetchPurchaseItems, type Purchase } from '../api/purchases';
+import PaywallModal from '../components/PaywallModal';
 import type { NewListItem } from '../api/lists';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -22,8 +26,10 @@ const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function HistoryScreen() {
+  const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
   const { loadItemsIntoGroupCart } = useCart();
+  const { isPremium } = useProfile();
   const toast = useToast();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,6 +38,16 @@ export default function HistoryScreen() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [itemsCache, setItemsCache] = useState<Record<string, NewListItem[]>>({});
   const [itemsLoadingId, setItemsLoadingId] = useState<string | null>(null);
+  const [paywallVisible, setPaywallVisible] = useState(false);
+
+  // Gate free (Fase 2 MONETIZACION.md): ver el historial es libre, pero solo se
+  // pueden REPETIR las N compras más recientes (vienen ordenadas desc).
+  const repeatableIds = useMemo(
+    () => new Set(purchases.slice(0, FREE_LIMITS.maxRepeatableHistory).map((p) => p.id)),
+    [purchases],
+  );
+  const isRepeatLocked = (p: Purchase) =>
+    limitsApply(isPremium) && !repeatableIds.has(p.id);
 
   const load = useCallback(() => {
     return fetchPurchases()
@@ -196,21 +212,32 @@ export default function HistoryScreen() {
                                   )}
                                 </View>
                               ))}
-                              <TouchableOpacity
-                                style={styles.repeatBtn}
-                                onPress={() => handleRepeat(p)}
-                                disabled={!!repeatingId}
-                                activeOpacity={0.85}
-                              >
-                                {repeatingId === p.id ? (
-                                  <ActivityIndicator size="small" color={colors.white} />
-                                ) : (
-                                  <>
-                                    <Ionicons name="refresh" size={16} color={colors.white} />
-                                    <Text style={styles.repeatText}>Repetir compra</Text>
-                                  </>
-                                )}
-                              </TouchableOpacity>
+                              {isRepeatLocked(p) ? (
+                                <TouchableOpacity
+                                  style={styles.repeatBtnLocked}
+                                  onPress={() => setPaywallVisible(true)}
+                                  activeOpacity={0.85}
+                                >
+                                  <Ionicons name="lock-closed" size={15} color={colors.accent} />
+                                  <Text style={styles.repeatLockedText}>Repetir con Plus</Text>
+                                </TouchableOpacity>
+                              ) : (
+                                <TouchableOpacity
+                                  style={styles.repeatBtn}
+                                  onPress={() => handleRepeat(p)}
+                                  disabled={!!repeatingId}
+                                  activeOpacity={0.85}
+                                >
+                                  {repeatingId === p.id ? (
+                                    <ActivityIndicator size="small" color={colors.white} />
+                                  ) : (
+                                    <>
+                                      <Ionicons name="refresh" size={16} color={colors.white} />
+                                      <Text style={styles.repeatText}>Repetir compra</Text>
+                                    </>
+                                  )}
+                                </TouchableOpacity>
+                              )}
                             </>
                           ) : (
                             <Text style={styles.noDetail}>Esta compra no tiene detalle de productos.</Text>
@@ -225,11 +252,17 @@ export default function HistoryScreen() {
           ))}
         </ScrollView>
       )}
+
+      <PaywallModal
+        visible={paywallVisible}
+        onClose={() => setPaywallVisible(false)}
+        subtitle={`En el plan gratuito puedes repetir tus ${FREE_LIMITS.maxRepeatableHistory} compras más recientes`}
+      />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
   header: {
@@ -293,6 +326,13 @@ const styles = StyleSheet.create({
     paddingVertical: 11, marginTop: 8, marginBottom: 4,
   },
   repeatText: { fontSize: 13.5, fontFamily: fonts.bold, color: colors.white },
+  repeatBtnLocked: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
+    backgroundColor: colors.accentLight,
+    borderWidth: 1, borderColor: colors.accent,
+    paddingVertical: 11, marginTop: 8, marginBottom: 4,
+  },
+  repeatLockedText: { fontSize: 13.5, fontFamily: fonts.bold, color: colors.accent },
 
   centerBox: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40, gap: 10 },
   emptyTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink, textAlign: 'center' },

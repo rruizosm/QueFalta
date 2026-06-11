@@ -59,6 +59,7 @@ Debe terminar con `[bonarea] OK`. El log queda en `scripts/logs/bonarea-sync-<fe
 | `CONCURRENCY` | `5` | hojas en paralelo |
 | `DRY_RUN` | — | `1` = no escribe, imprime resumen |
 | `MAX_CATEGORIES` | ∞ | limita nº de hojas (pruebas) |
+| `KEEP_N1` | `13*300,13*310,13*320` | categorías raíz a incluir (whitelist). Por defecto **solo comida y bebida** (Alimentació, Cuinats, Begudes); `all` = todas; CSV de ids para otra selección |
 
 ## 4. Programarlo 1×/día (Tarea Programada de Windows)
 

@@ -28,10 +28,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
+    // Si el refresh token guardado ya no existe (p. ej. tras un signOut global
+    // desde otro dispositivo), getSession puede fallar con "Refresh Token Not
+    // Found": purga la sesión local en silencio y sigue al login.
+    supabase.auth
+      .getSession()
+      .then(({ data: { session }, error }) => {
+        if (error) {
+          supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+          setSession(null);
+        } else {
+          setSession(session);
+        }
+      })
+      .catch(() => {
+        supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+        setSession(null);
+      })
+      .finally(() => setLoading(false));
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);

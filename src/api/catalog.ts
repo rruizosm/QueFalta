@@ -309,6 +309,207 @@ export async function fetchBonareaProductsByCategory(categoryId: string, limit =
   return (data ?? []).map(mapBonarea);
 }
 
+// ─── Consum (tabla consum_products, espejo aparte) ───────────────────────────
+// Mismo modelo que Bonpreu/Carrefour/bonÀrea (espejo + category_ids). Lo puebla
+// scripts/sync-consum.mjs (GitHub Action) desde la API REST abierta de Consum.
+// Único súper con EAN y marca estructurados; price_per_unit es columna real
+// (no viene de raw) porque la API da centUnitAmount + unitPriceUnitType.
+export interface ConsumProduct {
+  id: string;                  // `code` público ("1669"), el de la URL del producto
+  displayName: string;
+  brand: string | null;
+  packaging: string | null;    // formato del envase ("250 Gr"), derivado de description
+  thumbnail: string | null;
+  unitPrice: number | null;    // precio del envase (1.15); con oferta, el de oferta
+  priceFormat: string | null;  // precio mostrado ("1,15 €")
+  pricePerUnit: string | null; // etiqueta €/unidad canónica ("4,60 €/kg")
+  categoryName: string | null;
+}
+
+// Etiqueta legible del €/unidad a partir de las columnas canónicas (l/kg/ud).
+const ppuLabel = (value: any, unit: any): string | null => {
+  if (value == null || !unit) return null;
+  const label = unit === 'l' ? 'L' : unit === 'kg' ? 'kg' : 'ud';
+  return `${Number(value).toFixed(2).replace('.', ',')} €/${label}`;
+};
+
+const mapConsum = (r: any): ConsumProduct => ({
+  id: r.id,
+  displayName: r.display_name,
+  brand: r.brand ?? null,
+  packaging: r.packaging ?? null,
+  thumbnail: r.thumbnail ?? null,
+  unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
+  priceFormat: r.price_format ?? null,
+  pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
+  categoryName: r.category_name ?? null,
+});
+
+const CONSUM_COLS =
+  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+
+/** Búsqueda por nombre en el catálogo de Consum (server-side). */
+export async function searchConsumProducts(query: string, limit = 50): Promise<ConsumProduct[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const { data, error } = await supabase
+    .from('consum_products')
+    .select(CONSUM_COLS)
+    .eq('published', true)
+    .ilike('display_name', `%${q}%`)
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapConsum);
+}
+
+/** Un producto de Consum por id (p.ej. para abrir el detalle desde la comparativa). */
+export async function fetchConsumProduct(id: string): Promise<ConsumProduct | null> {
+  const { data, error } = await supabase
+    .from('consum_products')
+    .select(CONSUM_COLS)
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapConsum(data) : null;
+}
+
+/** Una categoría N1 de Consum con sus subcategorías (N2) con productos. */
+export interface ConsumCategory {
+  id: string;
+  name: string;
+  children: { id: string; name: string }[];
+}
+
+/** Árbol de categorías de Consum (N1 → N2) desde el espejo. El árbol real tiene
+ *  4 niveles; category_ids incluye ancestros, así que la N2 cubre su subárbol. */
+export async function fetchConsumCategoryTree(): Promise<ConsumCategory[]> {
+  const { data, error } = await supabase
+    .from('consum_categories')
+    .select('id, name, parent_id, product_count')
+    .eq('published', true)
+    .order('name');
+  if (error) throw error;
+  const rows = data ?? [];
+  return rows
+    .filter((r: any) => r.parent_id == null)
+    .map((n1: any) => ({
+      id: n1.id,
+      name: n1.name,
+      children: rows
+        .filter((c: any) => c.parent_id === n1.id && (c.product_count ?? 0) > 0)
+        .map((c: any) => ({ id: c.id, name: c.name })),
+    }))
+    .filter((n1) => n1.children.length > 0);
+}
+
+/** Productos de una subcategoría (N2) de Consum, vía category_ids (incluye ancestros). */
+export async function fetchConsumProductsByCategory(categoryId: string, limit = 600): Promise<ConsumProduct[]> {
+  const { data, error } = await supabase
+    .from('consum_products')
+    .select(CONSUM_COLS)
+    .eq('published', true)
+    .contains('category_ids', [categoryId])
+    .order('display_name')
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapConsum);
+}
+
+// ─── Dia (tabla dia_products, espejo aparte) ─────────────────────────────────
+// Mismo modelo que Consum (espejo + category_ids + ppu en columnas reales). Lo
+// puebla scripts/sync-dia.mjs (GitHub Action) desde el SSR de dia.es (JSON
+// vike_pageContext embebido). El árbol es de 2 niveles exactos (N1→N2).
+export interface DiaProduct {
+  id: string;                  // object_id ("72170"), el de la URL del producto (/p/72170)
+  displayName: string;         // incluye marca y formato ("... Dia 600 g")
+  brand: string | null;
+  thumbnail: string | null;
+  unitPrice: number | null;    // precio con promo aplicada si la hay
+  priceFormat: string | null;  // precio mostrado ("5,89 €")
+  pricePerUnit: string | null; // etiqueta €/unidad canónica ("9,82 €/kg")
+  categoryName: string | null;
+}
+
+const mapDia = (r: any): DiaProduct => ({
+  id: r.id,
+  displayName: r.display_name,
+  brand: r.brand ?? null,
+  thumbnail: r.thumbnail ?? null,
+  unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
+  priceFormat: r.price_format ?? null,
+  pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
+  categoryName: r.category_name ?? null,
+});
+
+const DIA_COLS =
+  'id, display_name, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+
+/** Búsqueda por nombre en el catálogo de Dia (server-side). */
+export async function searchDiaProducts(query: string, limit = 50): Promise<DiaProduct[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const { data, error } = await supabase
+    .from('dia_products')
+    .select(DIA_COLS)
+    .eq('published', true)
+    .ilike('display_name', `%${q}%`)
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapDia);
+}
+
+/** Un producto de Dia por id (p.ej. para abrir el detalle desde la comparativa). */
+export async function fetchDiaProduct(id: string): Promise<DiaProduct | null> {
+  const { data, error } = await supabase
+    .from('dia_products')
+    .select(DIA_COLS)
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapDia(data) : null;
+}
+
+/** Una categoría N1 de Dia con sus subcategorías (N2) con productos. */
+export interface DiaCategory {
+  id: string;
+  name: string;
+  children: { id: string; name: string }[];
+}
+
+/** Árbol de categorías de Dia (N1 → N2) desde el espejo. */
+export async function fetchDiaCategoryTree(): Promise<DiaCategory[]> {
+  const { data, error } = await supabase
+    .from('dia_categories')
+    .select('id, name, parent_id, product_count')
+    .eq('published', true)
+    .order('name');
+  if (error) throw error;
+  const rows = data ?? [];
+  return rows
+    .filter((r: any) => r.parent_id == null)
+    .map((n1: any) => ({
+      id: n1.id,
+      name: n1.name,
+      children: rows
+        .filter((c: any) => c.parent_id === n1.id && (c.product_count ?? 0) > 0)
+        .map((c: any) => ({ id: c.id, name: c.name })),
+    }))
+    .filter((n1) => n1.children.length > 0);
+}
+
+/** Productos de una subcategoría (N2) de Dia, vía category_ids. */
+export async function fetchDiaProductsByCategory(categoryId: string, limit = 600): Promise<DiaProduct[]> {
+  const { data, error } = await supabase
+    .from('dia_products')
+    .select(DIA_COLS)
+    .eq('published', true)
+    .contains('category_ids', [categoryId])
+    .order('display_name')
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapDia);
+}
+
 // ─── Comparativa: producto similar más barato entre supers (RPC similar_products) ─
 export interface SimilarProduct {
   store: CatalogStore;

@@ -32,6 +32,7 @@ const UNIT_RULES = [
   [/^(g|gr|gramos?|grams?)$/,                     1000, 'kg'],
   [/^(kg|kilos?|kilogramos?|kilograms?|kilogramme)$/, 1, 'kg'],
   [/^(ud|uds|u|unidad(es)?|unit(s)?|each|pieza|pza|pe[çc]a|cada)$/, 1, 'ud'],
+  [/^(docena|dozen)$/, 1 / 12, 'ud'],   // huevos de Dia: €/docena → €/ud
 ];
 
 export function canonicalPricePerUnit(amount, rawUnit) {

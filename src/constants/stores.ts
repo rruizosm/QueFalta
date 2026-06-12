@@ -2,7 +2,7 @@
 // Fuente ÚNICA del switcher del catálogo, de la preferencia de perfil
 // "Supermercados" y del agrupado de Lista/Cesta por tienda (de aquí salen los
 // nombres e iconos). Para añadir una tienda: súmala aquí, al tipo y a storeOfItem.
-export type CatalogStore = 'mercadona' | 'esclat' | 'carrefour' | 'bonarea';
+export type CatalogStore = 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia';
 
 /** Metadatos (nombre + icono) en orden de aparición. */
 export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | null }[] = [
@@ -10,6 +10,8 @@ export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | n
   { key: 'esclat',    name: 'BonpreuEsclat', icon: require('../../assets/stores/bonpreuesclat.png') },
   { key: 'carrefour', name: 'Carrefour',     icon: require('../../assets/stores/carrefour.png') },
   { key: 'bonarea',   name: 'bonÀrea',       icon: require('../../assets/stores/bonarea.png') },
+  { key: 'consum',    name: 'Consum',        icon: require('../../assets/stores/consum.png') },
+  { key: 'dia',       name: 'Dia',           icon: require('../../assets/stores/dia.png') },
 ];
 
 /** Orden canónico de las claves (para normalizar/ordenar selecciones). */
@@ -30,13 +32,16 @@ export const STORE_META: Record<Store, { name: string; icon: any }> = {
 type StoreClue = { imageUrl?: string | null; mercadonaProductId?: string | null };
 
 // Dominio de la miniatura guardada en list_items: bonpreuesclat.cat, mercadona.es,
-// carrefour.es, bonarea.com. Mercadona también se reconoce por su id de producto.
+// carrefour.es, bonarea.com, cdn-consum.aktiosdigitalservices.com, dia.es.
+// Mercadona también se reconoce por su id de producto.
 export function storeOfItem(it: StoreClue): Store {
   const url = it.imageUrl ?? '';
   if (url.includes('bonpreuesclat')) return 'esclat';
   if (it.mercadonaProductId || url.includes('mercadona')) return 'mercadona';
   if (url.includes('carrefour')) return 'carrefour';
   if (url.includes('bonarea')) return 'bonarea';
+  if (url.includes('consum')) return 'consum';
+  if (url.includes('dia.es')) return 'dia';
   return 'otros';
 }
 

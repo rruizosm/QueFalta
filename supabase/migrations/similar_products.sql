@@ -33,7 +33,7 @@ returns text language sql immutable as $$
           regexp_replace(
             regexp_replace(
               regexp_replace(lower(coalesce(p, '')), '\([^)]*\)', ' ', 'g'),
-              '\y(hacendado|bonpreu|bon[àa]rea|carrefour|deliplus|aliada|bosque\s+verde)\y',
+              '\y(hacendado|bonpreu|bon[àa]rea|carrefour|consum|selecci[oó]n\s+de\s+dia|dia\s+l[áa]ctea|dia\s+mari\s+marinera|dia|deliplus|aliada|bosque\s+verde)\y',
               ' ', 'g'
             ),
             '\y\d+([.,]\d+)?\s*(kg|g|gr|ml|cl|l|ud|uds|u|pack|x)\y',
@@ -109,6 +109,20 @@ language sql stable as $$
     from public.bonarea_products n cross join q
     where 'bonarea' = any (p_stores) and n.published
       and public.catalog_has_all_words(lower(n.display_name), q.needle)
+    union all
+    select 'consum', s.id, s.display_name, s.thumbnail,
+           s.unit_price, s.price_per_unit, s.price_per_unit_unit,
+           similarity(q.needle, lower(s.display_name))
+    from public.consum_products s cross join q
+    where 'consum' = any (p_stores) and s.published
+      and public.catalog_has_all_words(lower(s.display_name), q.needle)
+    union all
+    select 'dia', d.id, d.display_name, d.thumbnail,
+           d.unit_price, d.price_per_unit, d.price_per_unit_unit,
+           similarity(q.needle, lower(d.display_name))
+    from public.dia_products d cross join q
+    where 'dia' = any (p_stores) and d.published
+      and public.catalog_has_all_words(lower(d.display_name), q.needle)
   ),
   ranked as (
     select *, min(price_per_unit) over (partition by store) as min_ppu

@@ -45,6 +45,18 @@ export default function SubCategoryScreen() {
         categoryName: item.name,
         parentName: categoryName,
       });
+    } else if (retailer === 'consum') {
+      navigation.navigate('ConsumProducts', {
+        categoryId: String(item.id),
+        categoryName: item.name,
+        parentName: categoryName,
+      });
+    } else if (retailer === 'dia') {
+      navigation.navigate('DiaProducts', {
+        categoryId: String(item.id),
+        categoryName: item.name,
+        parentName: categoryName,
+      });
     } else {
       navigation.navigate('Products', {
         subcategoryId: Number(item.id),

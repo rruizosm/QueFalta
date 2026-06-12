@@ -1,0 +1,26 @@
+name: Sync Dia catalog
+
+on:
+  schedule:
+    - cron: '0 7 * * *'    # 07:00 UTC (tras Consum), cada día
+  workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
+
+concurrency:
+  group: sync-dia
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # dia.es NO tiene Cloudflare: SSR abierto (vike_pageContext JSON). Solo fetch de node.
+      - run: node scripts/sync-dia.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          CONCURRENCY: '6'

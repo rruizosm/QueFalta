@@ -1,0 +1,26 @@
+name: Sync Consum catalog
+
+on:
+  schedule:
+    - cron: '30 6 * * *'   # 06:30 UTC (tras bonÀrea), cada día
+  workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
+
+concurrency:
+  group: sync-consum
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # Consum NO tiene Cloudflare ni WAF: API REST JSON abierta. Solo fetch de node.
+      - run: node scripts/sync-consum.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          CONCURRENCY: '6'

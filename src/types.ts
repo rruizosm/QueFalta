@@ -213,9 +213,9 @@ export type CatalogStackParamList = {
     categoryName: string;
     emoji?: string;
     color?: string;
-    /** Subcategorías N2. Mercadona usa ids numéricos; Bonpreu/Carrefour/bonÀrea, ids string. */
+    /** Subcategorías N2. Mercadona usa ids numéricos; Bonpreu/Carrefour/bonÀrea/Consum/Dia, ids string. */
     subcategories: { id: string | number; name: string }[];
-    retailer?: 'mercadona' | 'esclat' | 'carrefour' | 'bonarea';
+    retailer?: 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia';
   };
   Products: {
     subcategoryId: number;
@@ -238,6 +238,18 @@ export type CatalogStackParamList = {
   };
   /** Productos de una subcategoría de bonÀrea (lee del espejo). */
   BonareaProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentName?: string;
+  };
+  /** Productos de una subcategoría de Consum (lee del espejo). */
+  ConsumProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentName?: string;
+  };
+  /** Productos de una subcategoría de Dia (lee del espejo). */
+  DiaProducts: {
     categoryId: string;
     categoryName: string;
     parentName?: string;

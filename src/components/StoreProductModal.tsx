@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Modal, View, ActivityIndicator, StyleSheet } from 'react-native';
 import { colors } from '../constants/colors';
 import {
-  fetchBonpreuProduct, fetchCarrefourProduct, fetchBonareaProduct,
-  type BonpreuProduct, type CarrefourProduct, type BonareaProduct,
+  fetchBonpreuProduct, fetchCarrefourProduct, fetchBonareaProduct, fetchConsumProduct, fetchDiaProduct,
+  type BonpreuProduct, type CarrefourProduct, type BonareaProduct, type ConsumProduct, type DiaProduct,
 } from '../api/catalog';
 import type { CatalogStore } from '../constants/stores';
 import { useToast } from '../context/ToastContext';
@@ -27,7 +27,7 @@ interface Props {
  *  espejos se carga el producto por id y se pinta su modal correspondiente. */
 export default function StoreProductModal({ target, onClose }: Props) {
   const toast = useToast();
-  const [mirror, setMirror] = useState<BonpreuProduct | CarrefourProduct | BonareaProduct | null>(null);
+  const [mirror, setMirror] = useState<BonpreuProduct | CarrefourProduct | BonareaProduct | ConsumProduct | DiaProduct | null>(null);
 
   useEffect(() => {
     setMirror(null);
@@ -36,6 +36,8 @@ export default function StoreProductModal({ target, onClose }: Props) {
     const fetcher =
       target.store === 'esclat' ? fetchBonpreuProduct
       : target.store === 'carrefour' ? fetchCarrefourProduct
+      : target.store === 'consum' ? fetchConsumProduct
+      : target.store === 'dia' ? fetchDiaProduct
       : fetchBonareaProduct;
     fetcher(target.id)
       .then((p) => {
@@ -69,6 +71,12 @@ export default function StoreProductModal({ target, onClose }: Props) {
   } else if (target.store === 'carrefour') {
     const CarrefourProductModal = require('./CarrefourProductModal').default;
     content = <CarrefourProductModal product={mirror} onClose={onClose} />;
+  } else if (target.store === 'consum') {
+    const ConsumProductModal = require('./ConsumProductModal').default;
+    content = <ConsumProductModal product={mirror} onClose={onClose} />;
+  } else if (target.store === 'dia') {
+    const DiaProductModal = require('./DiaProductModal').default;
+    content = <DiaProductModal product={mirror} onClose={onClose} />;
   } else {
     const BonareaProductModal = require('./BonareaProductModal').default;
     content = <BonareaProductModal product={mirror} onClose={onClose} />;

@@ -173,17 +173,28 @@ async function main() {
     .filter((c) => c?.id && !SKIP_N1.has(c.id));
   if (n1s.length === 0) throw new Error('no encuentro el árbol de categorías en el header');
 
-  const catRows = [], n2s = [];
+  // OJO con los duplicados (el upsert revienta con "cannot affect row a second
+  // time" si un id va dos veces): cada N1 trae un hijo "Ver todo" con el MISMO id
+  // que el padre, y una N2 puede colgar de varios N1 (p.ej. en "Verano"). Se
+  // deduplica por id quedándose la primera aparición, pero el id del N1 SÍ entra
+  // en la lista de recorrido (su página lista todo el N1: cubre productos que no
+  // salen en ninguna N2 concreta).
+  const catRows = [], crawl = [], seen = new Set();
   for (const n1 of n1s) {
-    catRows.push({ id: n1.id, name: (n1.name || '').trim(), parent_id: null, url: n1.link || null, product_count: null, published: true, synced_at: runStart });
+    if (!seen.has(n1.id)) {
+      seen.add(n1.id);
+      catRows.push({ id: n1.id, name: (n1.name || '').trim(), parent_id: null, url: n1.link || null, product_count: null, published: true, synced_at: runStart });
+      if (n1.link) crawl.push({ id: n1.id, name: (n1.name || '').trim(), url: n1.link });
+    }
     for (const n2 of n1.children ?? []) {
-      if (!n2?.id || !n2.link) continue;
+      if (!n2?.id || !n2.link || seen.has(n2.id)) continue;
+      seen.add(n2.id);
       catRows.push({ id: n2.id, name: (n2.name || '').trim(), parent_id: n1.id, url: n2.link, product_count: null, published: true, synced_at: runStart });
-      n2s.push({ id: n2.id, name: (n2.name || '').trim(), url: n2.link, parent: n1.id });
+      crawl.push({ id: n2.id, name: (n2.name || '').trim(), url: n2.link });
     }
   }
-  const todo = n2s.slice(0, MAX_CATEGORIES);
-  console.log(`[dia] ${n1s.length} N1 · ${n2s.length} N2 (proceso ${todo.length})`);
+  const todo = crawl.slice(0, MAX_CATEGORIES);
+  console.log(`[dia] ${n1s.length} N1 · ${catRows.length} categorías únicas · ${crawl.length} a recorrer (proceso ${todo.length})`);
 
   const catName = new Map(catRows.map((c) => [c.id, c.name]));
   const parentOf = new Map(catRows.map((c) => [c.id, c.parent_id]));

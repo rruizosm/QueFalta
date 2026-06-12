@@ -123,6 +123,8 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
         productName: product.display_name,
         quantity: qty,
         unit: 'ud',
+        // La 1ª categoría del detalle es la N1 de Mercadona → zona de la lista.
+        categoryName: product.categories?.[0]?.name ?? null,
         unitPrice: pi?.unit_price != null ? parseFloat(pi.unit_price) : null,
         imageUrl: photo ?? product.thumbnail ?? null,
         mercadonaProductId: product.id,

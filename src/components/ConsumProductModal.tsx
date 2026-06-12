@@ -47,6 +47,7 @@ export default function ConsumProductModal({ product, onClose }: Props) {
         productName: product.displayName,
         quantity: qty,
         unit: 'ud',
+        categoryName: product.categoryName,
         unitPrice: product.unitPrice,
         imageUrl: product.thumbnail,
         mercadonaProductId: null,

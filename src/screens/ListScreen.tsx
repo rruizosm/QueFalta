@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
@@ -16,7 +16,7 @@ import {
   UIManager,
   Modal,
   Pressable,
-  Alert,
+  Animated,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -35,6 +35,7 @@ import ProductDetailModal from '../components/ProductDetailModal';
 import UserAvatar from '../components/UserAvatar';
 
 import { STORE_META, groupByStore } from '../constants/stores';
+import { groupByZone, sortZoneItems } from '../constants/zones';
 
 const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 
@@ -102,6 +103,7 @@ export default function ListScreen() {
         quantity: it.quantity,
         unit: it.unit,
         categoryEmoji: it.categoryEmoji,
+        categoryName: it.categoryName,
         mercadonaProductId: it.mercadonaProductId,
         unitPrice: it.unitPrice,
         imageUrl: it.imageUrl,
@@ -118,28 +120,18 @@ export default function ListScreen() {
     }
   };
 
-  const confirmRemove = (item: MergedCartItem) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert(
-      'Eliminar artículo',
-      `¿Quitar ${item.productName} de la lista?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Eliminar', style: 'destructive', onPress: () => doRemove(item) },
-      ],
-    );
-  };
-
-  const doRemove = async (item: MergedCartItem) => {
+  const doRemove = async (item: MergedCartItem): Promise<boolean> => {
     const ids = new Set(item.ids);
     const prev = items;
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setItems((list) => list.filter((it) => !ids.has(it.id)));
     try {
       await deleteListItems(item.ids);
+      return true;
     } catch {
       setItems(prev);
       toast.show('No se pudo eliminar el artículo.', 'error');
+      return false;
     }
   };
 
@@ -168,74 +160,31 @@ export default function ListScreen() {
     .reduce((sum, i) => sum + i.unitPrice! * i.quantity, 0);
   const hasPrices = merged.some((i) => i.unitPrice != null);
 
-  // Agrupado por supermercado; dentro de cada tienda, lo pendiente primero.
-  const sections = groupByStore(merged).map((g) => ({
-    key: g.store,
-    store: g.store,
-    data: [...g.data].sort((a, b) => Number(a.inCart) - Number(b.inCart)),
-  }));
+  // Agrupado Tienda → Zona del súper (pasillo); dentro de cada zona, pendientes
+  // primero y alfabético. Cada par tienda×zona es una sección del SectionList;
+  // la cabecera de tienda solo se pinta en la primera zona de esa tienda.
+  const sections = groupByStore(merged).flatMap((g) => {
+    const storeInCart = g.data.filter((it) => it.inCart).length;
+    return groupByZone(g.data).map((z, zi) => ({
+      key: `${g.store}:${z.zone.key}`,
+      store: g.store,
+      zone: z.zone,
+      firstOfStore: zi === 0,
+      storeCount: g.data.length,
+      storeInCart,
+      data: sortZoneItems(z.data),
+    }));
+  });
 
   const renderItem = ({ item }: { item: MergedCartItem }) => (
-    <TouchableOpacity
-      style={[styles.itemRow, item.inCart && styles.itemRowDone]}
-      onPress={() => toggle(item)}
-      onLongPress={() => confirmRemove(item)}
-      activeOpacity={0.75}
-    >
-      <View style={[styles.checkbox, item.inCart && styles.checkboxChecked]}>
-        {item.inCart && <Ionicons name="checkmark" size={13} color={colors.white} />}
-      </View>
-      {(item.imageUrl || item.categoryEmoji) ? (
-        <TouchableOpacity
-          activeOpacity={0.7}
-          disabled={!item.mercadonaProductId}
-          onPress={() => item.mercadonaProductId && setDetailProductId(item.mercadonaProductId)}
-        >
-          {item.imageUrl ? (
-            <Image source={{ uri: item.imageUrl }} style={styles.itemThumb} resizeMode="contain" />
-          ) : (
-            <View style={styles.itemThumbPlaceholder}>
-              <Text style={styles.itemEmoji}>{item.categoryEmoji}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      ) : null}
-      <View style={styles.itemContent}>
-        <Text style={[styles.itemName, item.inCart && styles.itemNameDone]}>
-          {item.productName}
-        </Text>
-        <Text style={styles.itemUnit}>{item.quantity} {item.unit}</Text>
-      </View>
-
-      {/* Assignee */}
-      {(() => {
-        const assignee = item.assignedTo ? members.find((m) => m.id === item.assignedTo) : null;
-        return (
-          <TouchableOpacity
-            style={styles.assignBtn}
-            activeOpacity={0.7}
-            hitSlop={6}
-            onPress={() => setAssignItem(item)}
-          >
-            {assignee ? (
-              <UserAvatar avatarUrl={assignee.avatarUrl} initials={assignee.initials} color={assignee.color} size={28} />
-            ) : (
-              <View style={styles.assignEmpty}>
-                <Ionicons name="person-add-outline" size={15} color={colors.inkFaint} />
-              </View>
-            )}
-          </TouchableOpacity>
-        );
-      })()}
-
-      {item.inCart ? (
-        <View style={styles.inCartBadge}>
-          <Text style={styles.inCartBadgeText}>En cesta</Text>
-        </View>
-      ) : item.unitPrice != null ? (
-        <Text style={styles.itemPrice}>{formatEuro(item.unitPrice * item.quantity)}</Text>
-      ) : null}
-    </TouchableOpacity>
+    <CartItemRow
+      item={item}
+      members={members}
+      onToggle={toggle}
+      onOpenDetail={setDetailProductId}
+      onAssign={setAssignItem}
+      onRemove={doRemove}
+    />
   );
 
   // ── No active cart ────────────────────────────────────────────
@@ -311,7 +260,7 @@ export default function ListScreen() {
           <View style={styles.progressArea}>
             <ProgressBar progress={progress} height={8} />
             <View style={styles.progressRow}>
-              <Text style={styles.progressHint}>Mantén pulsado un artículo para eliminarlo</Text>
+              <Text style={styles.progressHint}>Toca la papelera dos veces para eliminar un artículo</Text>
               <Text style={styles.progressLabel}>{Math.round(progress * 100)}% completado</Text>
             </View>
           </View>
@@ -323,16 +272,25 @@ export default function ListScreen() {
             renderItem={renderItem}
             renderSectionHeader={({ section }) => {
               const meta = STORE_META[section.store];
-              const inCart = section.data.filter((it) => it.inCart).length;
+              const zoneInCart = section.data.filter((it) => it.inCart).length;
               return (
-                <View style={[styles.storeHeader, section.store !== sections[0].store && { marginTop: 18 }]}>
-                  {meta.icon ? (
-                    <Image source={meta.icon} style={styles.storeHeaderIcon} resizeMode="cover" />
-                  ) : (
-                    <Ionicons name="pricetag-outline" size={14} color={colors.inkSoft} />
+                <View>
+                  {section.firstOfStore && (
+                    <View style={[styles.storeHeader, section.key !== sections[0].key && { marginTop: 18 }]}>
+                      {meta.icon ? (
+                        <Image source={meta.icon} style={styles.storeHeaderIcon} resizeMode="cover" />
+                      ) : (
+                        <Ionicons name="pricetag-outline" size={14} color={colors.inkSoft} />
+                      )}
+                      <Text style={styles.storeHeaderText}>{meta.name}</Text>
+                      <Text style={styles.storeHeaderCount}>{section.storeInCart}/{section.storeCount}</Text>
+                    </View>
                   )}
-                  <Text style={styles.storeHeaderText}>{meta.name}</Text>
-                  <Text style={styles.storeHeaderCount}>{inCart}/{section.data.length}</Text>
+                  <View style={styles.zoneHeader}>
+                    <Text style={styles.zoneHeaderEmoji}>{section.zone.emoji}</Text>
+                    <Text style={styles.zoneHeaderText}>{section.zone.label}</Text>
+                    <Text style={styles.zoneHeaderCount}>{zoneInCart}/{section.data.length}</Text>
+                  </View>
                 </View>
               );
             }}
@@ -423,6 +381,128 @@ export default function ListScreen() {
   );
 }
 
+// Fila del carrito. Tres zonas táctiles independientes: el checkbox marca
+// "En cesta", la zona central (foto + nombre) abre el detalle del producto y
+// la papelera elimina en dos toques — el primero la "arma" (se vuelve roja,
+// se desarma sola a los 3 s) y el segundo tacha el artículo, lo desvanece y
+// entonces borra. Si el borrado en servidor falla, la fila reaparece.
+function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove }: {
+  item: MergedCartItem;
+  members: GroupMember[];
+  onToggle: (item: MergedCartItem) => void;
+  onOpenDetail: (productId: string) => void;
+  onAssign: (item: MergedCartItem) => void;
+  onRemove: (item: MergedCartItem) => Promise<boolean>;
+}) {
+  const styles = useThemedStyles(themedStyles);
+  const [armed, setArmed] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const opacity = useRef(new Animated.Value(1)).current;
+  const disarmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (disarmTimer.current) clearTimeout(disarmTimer.current);
+  }, []);
+
+  const handleDeletePress = () => {
+    if (removing) return;
+    if (!armed) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      setArmed(true);
+      disarmTimer.current = setTimeout(() => setArmed(false), 3000);
+      return;
+    }
+    if (disarmTimer.current) clearTimeout(disarmTimer.current);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setRemoving(true);
+    // El delay deja ver el tachado un instante antes de desvanecer.
+    Animated.timing(opacity, { toValue: 0, duration: 350, delay: 150, useNativeDriver: true })
+      .start(async () => {
+        const ok = await onRemove(item);
+        if (!ok) {
+          opacity.setValue(1);
+          setRemoving(false);
+          setArmed(false);
+        }
+      });
+  };
+
+  const assignee = item.assignedTo ? members.find((m) => m.id === item.assignedTo) : null;
+
+  return (
+    <Animated.View style={[styles.itemRow, item.inCart && styles.itemRowDone, { opacity }]}>
+      <TouchableOpacity
+        hitSlop={10}
+        disabled={removing}
+        onPress={() => onToggle(item)}
+      >
+        <View style={[styles.checkbox, item.inCart && styles.checkboxChecked]}>
+          {item.inCart && <Ionicons name="checkmark" size={13} color={colors.white} />}
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.itemBody}
+        activeOpacity={0.7}
+        disabled={removing || !item.mercadonaProductId}
+        onPress={() => item.mercadonaProductId && onOpenDetail(item.mercadonaProductId)}
+      >
+        {item.imageUrl ? (
+          <Image source={{ uri: item.imageUrl }} style={styles.itemThumb} resizeMode="contain" />
+        ) : item.categoryEmoji ? (
+          <View style={styles.itemThumbPlaceholder}>
+            <Text style={styles.itemEmoji}>{item.categoryEmoji}</Text>
+          </View>
+        ) : null}
+        <View style={styles.itemContent}>
+          <Text style={[styles.itemName, (item.inCart || removing) && styles.itemNameDone]}>
+            {item.productName}
+          </Text>
+          <Text style={styles.itemUnit}>{item.quantity} {item.unit}</Text>
+        </View>
+      </TouchableOpacity>
+
+      {/* Assignee */}
+      <TouchableOpacity
+        style={styles.assignBtn}
+        activeOpacity={0.7}
+        hitSlop={6}
+        disabled={removing}
+        onPress={() => onAssign(item)}
+      >
+        {assignee ? (
+          <UserAvatar avatarUrl={assignee.avatarUrl} initials={assignee.initials} color={assignee.color} size={28} />
+        ) : (
+          <View style={styles.assignEmpty}>
+            <Ionicons name="person-add-outline" size={15} color={colors.inkFaint} />
+          </View>
+        )}
+      </TouchableOpacity>
+
+      {item.inCart ? (
+        <View style={styles.inCartBadge}>
+          <Text style={styles.inCartBadgeText}>En cesta</Text>
+        </View>
+      ) : item.unitPrice != null ? (
+        <Text style={styles.itemPrice}>{formatEuro(item.unitPrice * item.quantity)}</Text>
+      ) : null}
+
+      <TouchableOpacity
+        style={[styles.deleteBtn, armed && styles.deleteBtnArmed]}
+        hitSlop={6}
+        disabled={removing}
+        onPress={handleDeletePress}
+      >
+        <Ionicons
+          name={armed ? 'trash' : 'trash-outline'}
+          size={13}
+          color={armed ? colors.white : colors.inkFaint}
+        />
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
+
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
@@ -453,6 +533,18 @@ const themedStyles = () => StyleSheet.create({
   storeHeaderText: { fontSize: 13, fontFamily: fonts.bold, color: colors.ink, flex: 1 },
   storeHeaderCount: { fontSize: 11.5, fontFamily: fonts.bold, color: colors.inkSoft },
 
+  // ── Zone sub-header (pasillo dentro de la tienda) ─────────────
+  zoneHeader: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    marginTop: 2, marginBottom: 7, paddingLeft: 2,
+  },
+  zoneHeaderEmoji: { fontSize: 12 },
+  zoneHeaderText: {
+    flex: 1, fontSize: 10.5, fontFamily: fonts.bold, color: colors.inkSoft,
+    textTransform: 'uppercase', letterSpacing: 1.2,
+  },
+  zoneHeaderCount: { fontSize: 10.5, fontFamily: fonts.semibold, color: colors.inkFaint },
+
   // ── Item rows ─────────────────────────────────────────────────
   itemRow: {
     flexDirection: 'row', alignItems: 'center',
@@ -478,6 +570,7 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   itemEmoji: { fontSize: 19 },
+  itemBody: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 11 },
   itemContent: { flex: 1 },
   itemName: { fontSize: 13.5, fontFamily: fonts.semibold, color: colors.ink },
   itemNameDone: { color: colors.inkSoft, textDecorationLine: 'line-through' },
@@ -488,6 +581,12 @@ const themedStyles = () => StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 3,
   },
   inCartBadgeText: { fontSize: 10, fontFamily: fonts.bold, color: colors.white },
+  deleteBtn: {
+    width: 24, height: 24,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: colors.border,
+  },
+  deleteBtnArmed: { backgroundColor: colors.red, borderColor: colors.red },
 
   // ── Assignee ──────────────────────────────────────────────────
   assignBtn: { padding: 2 },

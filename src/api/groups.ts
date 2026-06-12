@@ -34,6 +34,7 @@ export interface GroupItem {
   unit: string;
   inCart: boolean;
   categoryEmoji: string | null;
+  categoryName: string | null;
   unitPrice: number | null;
   imageUrl: string | null;
   mercadonaProductId: string | null;
@@ -107,7 +108,7 @@ export async function fetchGroupDetail(groupId: string): Promise<GroupSummary> {
 export async function fetchGroupItems(groupId: string): Promise<GroupItem[]> {
   const { data, error } = await supabase
     .from('list_items')
-    .select('id, product_name, quantity, unit, in_cart, category_emoji, unit_price, image_url, mercadona_product_id, shopping_lists!inner(group_id)')
+    .select('id, product_name, quantity, unit, in_cart, category_emoji, category_name, unit_price, image_url, mercadona_product_id, shopping_lists!inner(group_id)')
     .eq('shopping_lists.group_id', groupId)
     .order('created_at', { ascending: true });
 
@@ -120,6 +121,7 @@ export async function fetchGroupItems(groupId: string): Promise<GroupItem[]> {
     unit: it.unit,
     inCart: it.in_cart,
     categoryEmoji: it.category_emoji,
+    categoryName: it.category_name ?? null,
     unitPrice: it.unit_price != null ? Number(it.unit_price) : null,
     imageUrl: it.image_url ?? null,
     mercadonaProductId: it.mercadona_product_id ?? null,

@@ -94,6 +94,7 @@ export default function ProductsScreen() {
         quantity: quantities[p.id],
         unit: 'ud',
         categoryEmoji: emoji,
+        categoryName,
         mercadonaProductId: p.id,
         unitPrice: parseFloat(p.price_instructions.unit_price),
         imageUrl: p.thumbnail ?? null,

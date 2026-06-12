@@ -5,6 +5,9 @@ export interface NewListItem {
   quantity: number;
   unit?: string;
   categoryEmoji?: string | null;
+  /** Categoría del retailer al añadir (N1 si se navegó; hoja si vino de búsqueda).
+   *  La lista la mapea a una zona canónica (constants/zones.ts). null → "Otros". */
+  categoryName?: string | null;
   mercadonaProductId?: string | null;
   unitPrice?: number | null;
   imageUrl?: string | null;
@@ -47,6 +50,7 @@ export interface ListItemRow {
   unit: string;
   inCart: boolean;
   categoryEmoji: string | null;
+  categoryName: string | null;
   unitPrice: number | null;
   imageUrl: string | null;
   mercadonaProductId: string | null;
@@ -58,7 +62,7 @@ export interface ListItemRow {
 export async function fetchListItems(listId: string): Promise<ListItemRow[]> {
   const { data, error } = await supabase
     .from('list_items')
-    .select('id, product_name, quantity, unit, in_cart, category_emoji, unit_price, image_url, mercadona_product_id, assigned_to')
+    .select('id, product_name, quantity, unit, in_cart, category_emoji, category_name, unit_price, image_url, mercadona_product_id, assigned_to')
     .eq('list_id', listId)
     .order('created_at', { ascending: true });
 
@@ -71,6 +75,7 @@ export async function fetchListItems(listId: string): Promise<ListItemRow[]> {
     unit: it.unit,
     inCart: it.in_cart,
     categoryEmoji: it.category_emoji,
+    categoryName: it.category_name ?? null,
     unitPrice: it.unit_price != null ? Number(it.unit_price) : null,
     imageUrl: it.image_url ?? null,
     mercadonaProductId: it.mercadona_product_id ?? null,
@@ -89,6 +94,7 @@ export interface MergedCartItem {
   unitPrice: number | null;
   imageUrl: string | null;
   categoryEmoji: string | null;
+  categoryName: string | null;
   mercadonaProductId: string | null;
   assignedTo: string | null;
 }
@@ -96,7 +102,7 @@ export interface MergedCartItem {
 type MergeInput = {
   id: string; productName: string; quantity: number; unit: string; inCart: boolean;
   unitPrice: number | null; imageUrl: string | null; categoryEmoji: string | null;
-  mercadonaProductId: string | null; assignedTo?: string | null;
+  mercadonaProductId: string | null; assignedTo?: string | null; categoryName?: string | null;
 };
 
 /**
@@ -116,6 +122,7 @@ export function mergeCartItems(items: MergeInput[]): MergedCartItem[] {
       ex.quantity += it.quantity;
       ex.inCart = ex.inCart && it.inCart;
       if (ex.assignedTo !== (it.assignedTo ?? null)) ex.assignedTo = null;
+      if (!ex.categoryName && it.categoryName) ex.categoryName = it.categoryName;
     } else {
       map.set(key, {
         ids: [it.id],
@@ -126,6 +133,7 @@ export function mergeCartItems(items: MergeInput[]): MergedCartItem[] {
         unitPrice: it.unitPrice,
         imageUrl: it.imageUrl,
         categoryEmoji: it.categoryEmoji,
+        categoryName: it.categoryName ?? null,
         mercadonaProductId: it.mercadonaProductId,
         assignedTo: it.assignedTo ?? null,
       });
@@ -181,6 +189,7 @@ export async function addItemsToList(
     quantity: it.quantity,
     unit: it.unit ?? 'ud',
     category_emoji: it.categoryEmoji ?? null,
+    category_name: it.categoryName ?? null,
     mercadona_product_id: it.mercadonaProductId ?? null,
     unit_price: it.unitPrice ?? null,
     image_url: it.imageUrl ?? null,

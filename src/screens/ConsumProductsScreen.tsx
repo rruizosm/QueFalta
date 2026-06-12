@@ -66,6 +66,7 @@ export default function ConsumProductsScreen() {
         productName: p.displayName,
         quantity: quantities[p.id],
         unit: 'ud',
+        categoryName: parentName ?? categoryName,
         mercadonaProductId: null,
         unitPrice: p.unitPrice,
         imageUrl: p.thumbnail,

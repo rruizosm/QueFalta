@@ -29,6 +29,7 @@ import MemberAvatars from '../components/MemberAvatars';
 import ProgressBar from '../components/ProgressBar';
 import ProductDetailModal from '../components/ProductDetailModal';
 import { STORE_META, groupByStore } from '../constants/stores';
+import { groupByZone, sortZoneItems } from '../constants/zones';
 import { mergeCartItems, type MergedCartItem } from '../api/lists';
 
 type GroupDetailRouteProp = RouteProp<GroupsStackParamList, 'GroupDetail'>;
@@ -141,12 +142,12 @@ export default function GroupDetailScreen() {
     );
   };
 
-  // Lista de la cesta: fusiona duplicados y agrupa por supermercado.
+  // Lista de la cesta: fusiona duplicados y agrupa Tienda → Zona del súper
+  // (pasillo); dentro de cada zona, pendientes primero y alfabético.
   const renderCartList = (its: GroupItem[], big = false) =>
     groupByStore(mergeCartItems(its)).map((g) => {
       const meta = STORE_META[g.store];
       const inCart = g.data.filter((i) => i.inCart).length;
-      const data = [...g.data].sort((a, b) => Number(a.inCart) - Number(b.inCart));
       return (
         <View key={g.store}>
           <View style={styles.storeHeader}>
@@ -158,7 +159,15 @@ export default function GroupDetailScreen() {
             <Text style={styles.storeHeaderText}>{meta.name}</Text>
             <Text style={styles.storeHeaderCount}>{inCart}/{g.data.length}</Text>
           </View>
-          {data.map((item) => renderCartItem(item, big))}
+          {groupByZone(g.data).map((z) => (
+            <View key={z.zone.key}>
+              <View style={styles.zoneHeader}>
+                <Text style={styles.zoneHeaderEmoji}>{z.zone.emoji}</Text>
+                <Text style={styles.zoneHeaderText}>{z.zone.label}</Text>
+              </View>
+              {sortZoneItems(z.data).map((item) => renderCartItem(item, big))}
+            </View>
+          ))}
         </View>
       );
     });
@@ -382,6 +391,15 @@ const themedStyles = () => StyleSheet.create({
   storeHeaderIcon: { width: 16, height: 16 },
   storeHeaderText: { fontSize: 12, fontFamily: fonts.bold, color: colors.ink, flex: 1 },
   storeHeaderCount: { fontSize: 11, fontFamily: fonts.bold, color: colors.inkSoft },
+  zoneHeader: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    marginTop: 6, marginBottom: 4, paddingLeft: 2,
+  },
+  zoneHeaderEmoji: { fontSize: 11 },
+  zoneHeaderText: {
+    flex: 1, fontSize: 10, fontFamily: fonts.bold, color: colors.inkSoft,
+    textTransform: 'uppercase', letterSpacing: 1.1,
+  },
 
   // ── Cart rows ─────────────────────────────────────────────────
   listItem: {

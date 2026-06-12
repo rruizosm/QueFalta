@@ -62,6 +62,7 @@ export default function BonpreuProductModal({ product, onClose }: Props) {
         productName: product.displayName,
         quantity: qty,
         unit: 'ud',
+        categoryName: product.categoryName,
         unitPrice: product.unitPrice,
         imageUrl: product.thumbnail,
         mercadonaProductId: null,

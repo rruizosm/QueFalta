@@ -154,6 +154,13 @@ export async function assignListItem(itemId: string, assignedTo: string | null):
   if (error) throw error;
 }
 
+/** Deletes specific list rows (a merged cart item can span several). */
+export async function deleteListItems(itemIds: string[]): Promise<void> {
+  if (itemIds.length === 0) return;
+  const { error } = await supabase.from('list_items').delete().in('id', itemIds);
+  if (error) throw error;
+}
+
 /** Removes all items from a list (used when finishing a shopping trip). */
 export async function clearListItems(listId: string): Promise<void> {
   const { error } = await supabase.from('list_items').delete().eq('list_id', listId);

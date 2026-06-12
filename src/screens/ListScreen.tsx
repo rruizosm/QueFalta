@@ -16,6 +16,7 @@ import {
   UIManager,
   Modal,
   Pressable,
+  Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,7 +26,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
-import { fetchListItems, setItemInCart, assignListItem, clearListItems, mergeCartItems, type ListItemRow, type MergedCartItem } from '../api/lists';
+import { fetchListItems, setItemInCart, assignListItem, clearListItems, deleteListItems, mergeCartItems, type ListItemRow, type MergedCartItem } from '../api/lists';
 import { fetchGroupMembers } from '../api/groups';
 import { recordPurchase } from '../api/purchases';
 import type { GroupMember } from '../types';
@@ -117,6 +118,31 @@ export default function ListScreen() {
     }
   };
 
+  const confirmRemove = (item: MergedCartItem) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Alert.alert(
+      'Eliminar artículo',
+      `¿Quitar ${item.productName} de la lista?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Eliminar', style: 'destructive', onPress: () => doRemove(item) },
+      ],
+    );
+  };
+
+  const doRemove = async (item: MergedCartItem) => {
+    const ids = new Set(item.ids);
+    const prev = items;
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setItems((list) => list.filter((it) => !ids.has(it.id)));
+    try {
+      await deleteListItems(item.ids);
+    } catch {
+      setItems(prev);
+      toast.show('No se pudo eliminar el artículo.', 'error');
+    }
+  };
+
   const toggle = async (item: MergedCartItem) => {
     const next = !item.inCart;
     const ids = new Set(item.ids);
@@ -153,6 +179,7 @@ export default function ListScreen() {
     <TouchableOpacity
       style={[styles.itemRow, item.inCart && styles.itemRowDone]}
       onPress={() => toggle(item)}
+      onLongPress={() => confirmRemove(item)}
       activeOpacity={0.75}
     >
       <View style={[styles.checkbox, item.inCart && styles.checkboxChecked]}>
@@ -283,7 +310,10 @@ export default function ListScreen() {
           {/* Progress */}
           <View style={styles.progressArea}>
             <ProgressBar progress={progress} height={8} />
-            <Text style={styles.progressLabel}>{Math.round(progress * 100)}% completado</Text>
+            <View style={styles.progressRow}>
+              <Text style={styles.progressHint}>Mantén pulsado un artículo para eliminarlo</Text>
+              <Text style={styles.progressLabel}>{Math.round(progress * 100)}% completado</Text>
+            </View>
           </View>
 
           {/* List */}
@@ -404,6 +434,8 @@ const themedStyles = () => StyleSheet.create({
   subtitle: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
 
   progressArea: { paddingHorizontal: 16, marginBottom: 4, gap: 6 },
+  progressRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  progressHint: { flex: 1, fontSize: 10.5, fontFamily: fonts.medium, color: colors.inkFaint },
   progressLabel: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'right' },
 
   list: { paddingHorizontal: 16, paddingBottom: 140, paddingTop: 8 },

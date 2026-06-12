@@ -58,6 +58,7 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - **Catálogo Dia** (`supabase/migrations/dia_catalog.sql`): tablas `dia_products`/`dia_categories`. Tras ejecutarla, lanzar el sync (workflow `sync-dia.yml` o `scripts/run-dia-sync.ps1`). Ver `scripts/README-dia-sync.md`.
 - Tras las dos anteriores, **re-ejecutar `similar_products.sql`** (ya incluye los brazos de consum y dia, y sus marcas blancas en la limpieza del needle).
 - **Lista por zonas** (`supabase/migrations/list_items_category.sql`): columna `category_name` en `list_items` Y en `purchase_items` (para que "repetir compra" conserve las zonas). Sin ella, añadir a la cesta falla (el insert incluye la columna).
+- **Fix precios Bonpreu** (`supabase/migrations/fix_bonpreu_prices.sql`): UPDATE one-off que repara `unit_price` desde el raw (~50% del catálogo guardaba el €/kg de referencia como precio del envase). El sync ya está corregido; ejecutar el SQL para arreglar lo existente sin esperar al re-scrapeo.
 - Hay SQL previo en `supabase/` (RLS, policies de groups/group_members/shopping_lists/list_items).
 
 ## Estado / pendientes

@@ -174,12 +174,15 @@ export default function GroupsScreen() {
 
       <View style={styles.header}>
         <Text style={styles.title}>Grupos</Text>
-        <TouchableOpacity onPress={handleNewGroup}>
-          <HardShadow style={{ backgroundColor: colors.accent, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 8 }}>
-            <Ionicons name="add" size={18} color={colors.white} />
-            <Text style={styles.newBtnText}>Nuevo</Text>
-          </HardShadow>
-        </TouchableOpacity>
+        {/* Sin grupos, el CTA es el del estado vacío: no se duplica aquí. */}
+        {groups.length > 0 && (
+          <TouchableOpacity onPress={handleNewGroup}>
+            <HardShadow style={{ backgroundColor: colors.accent, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 8 }}>
+              <Ionicons name="add" size={18} color={colors.white} />
+              <Text style={styles.newBtnText}>Nuevo</Text>
+            </HardShadow>
+          </TouchableOpacity>
+        )}
       </View>
 
       {loading ? (

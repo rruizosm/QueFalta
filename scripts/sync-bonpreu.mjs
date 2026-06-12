@@ -40,7 +40,14 @@ const chunk = (a, n) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) =
 
 // ── Normalización (forma de producto de Bonpreu) ─────────────────────────────
 const num = (v) => { const n = typeof v === 'string' ? parseFloat(v) : v; return Number.isFinite(n) ? n : null; };
-const priceAmount = (p) => num(p?.price?.current?.amount) ?? num(p?.unitPrice?.price?.amount);
+// Precio del ENVASE. El JSON de Bonpreu trae el precio en dos formas según el
+// producto: price.current.amount o price.amount (plano; en la práctica el 100%
+// de las filas observadas usan la plana). OJO: NO caer a unitPrice.price.amount
+// — ese es el €/kg|€/L de referencia, no lo que cuesta el envase; ese fallback
+// guardó durante meses 14,88 € en un café de 0,4 kg que vale 5,95 € (~50% del
+// catálogo mal, todo envase ≠ 1 unidad de medida). Reparado con
+// supabase/migrations/fix_bonpreu_prices.sql sobre el raw ya almacenado.
+const priceAmount = (p) => num(p?.price?.current?.amount) ?? num(p?.price?.amount);
 const priceText = (p) => {
   const u = p?.unitPrice;
   if (!u?.price?.amount) return null;

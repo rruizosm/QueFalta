@@ -196,9 +196,9 @@ export default function HomeScreen() {
                   <View style={styles.cartIconBox}>
                     <Ionicons name="cart-outline" size={22} color={colors.white} />
                   </View>
-                  <View>
+                  <View style={styles.cartTitleCol}>
                     <Text style={styles.cartEyebrow}>CARRITO ACTIVO</Text>
-                    <Text style={styles.cartName}>{activeCart.groupName}</Text>
+                    <Text style={styles.cartName} numberOfLines={1}>{activeCart.groupName}</Text>
                   </View>
                 </View>
                 <Text style={styles.cartFraction}>{doneItems}/{totalItems}</Text>
@@ -397,9 +397,10 @@ const themedStyles = () => StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'flex-start', gap: 12, marginBottom: 0,
   },
-  cartTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 11 },
+  cartTitleRow: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 11 },
+  cartTitleCol: { flex: 1, minWidth: 0 },
   cartIconBox: {
-    width: 40, height: 40,
+    width: 40, height: 40, flexShrink: 0,
     backgroundColor: 'rgba(255,255,255,0.22)',
     alignItems: 'center', justifyContent: 'center',
   },
@@ -408,7 +409,7 @@ const themedStyles = () => StyleSheet.create({
     textTransform: 'uppercase', letterSpacing: 1.4,
   },
   cartName: { fontSize: 19, fontFamily: fonts.bold, color: colors.white, marginTop: 2 },
-  cartFraction: { fontSize: 26, fontFamily: fonts.bold, color: colors.white },
+  cartFraction: { fontSize: 26, fontFamily: fonts.bold, color: colors.white, flexShrink: 0 },
   cartBottom: {
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'center', marginTop: 14,

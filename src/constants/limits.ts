@@ -1,15 +1,25 @@
-// ─── Monetización "QuéFalta Plus" (modelo freemium) ──────────────────────────
-// Fuente ÚNICA del interruptor del paywall y de los límites del plan gratuito.
-// Mientras PAYWALL_ENABLED sea false la app se comporta como siempre (sin
-// límites). Los gates (Fase 2) NO comprueban isPremium directamente: usan
-// limitsApply(isPremium) para que el flag apague todo de golpe.
-// Plan completo por fases: MONETIZACION.md.
+// ─── Interruptores de funciones (monetización + comparador) ──────────────────
+// Fuente ÚNICA de los kill-switches de "QuéFalta Plus" (paywall) y del comparador
+// de precios. AMBOS están DESACTIVADOS a propósito (decisión de producto: se
+// retoman más adelante con nuevas mejoras). Re-activar = volver a poner el flag
+// en true; NO se ha borrado nada de código.
+//
+// - Paywall: mientras PAYWALL_ENABLED sea false la app se comporta como siempre
+//   (sin límites ni hoja de venta). Los gates NO comprueban isPremium directo:
+//   usan limitsApply(isPremium) para que el flag apague todo de golpe. Su gemelo
+//   en servidor es paywall_enabled() (paywall_on.sql); deben estar igual.
+// - Comparador: mientras PRICE_COMPARISON_ENABLED sea false, SimilarProductsSection
+//   no consulta ni pinta nada en ningún modal de producto.
+// Plan completo por fases: MONETIZACION.md · COMPARATIVA.md.
 
-/** Interruptor global del modelo freemium — ENCENDIDO (Fase 4: se lanza con el
- *  modelo puesto desde el día 1). Su gemelo en servidor es paywall_enabled()
- *  (paywall_on.sql); deben estar igual. ⚠️ Antes de repartir un build a testers,
- *  regalarles Plus (supabase/ops/grant_plus_testers.sql) para no limitarles. */
-export const PAYWALL_ENABLED = true;
+/** Kill-switch global del modelo freemium "QuéFalta Plus". DESACTIVADO: la app
+ *  no aplica límites ni muestra paywall. Para relanzarlo: poner true (y alinear
+ *  paywall_enabled() en servidor + regalar Plus a testers antes de repartir). */
+export const PAYWALL_ENABLED = false;
+
+/** Kill-switch del comparador "Más barato en otros súper". DESACTIVADO: el
+ *  comparador no se consulta ni se muestra. Para relanzarlo: poner true. */
+export const PRICE_COMPARISON_ENABLED = false;
 
 /** Límites del plan gratuito (premium = sin límites). */
 export const FREE_LIMITS = {

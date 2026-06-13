@@ -5,6 +5,7 @@ import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { fetchSimilarProducts, type SimilarProduct } from '../api/catalog';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
+import { PRICE_COMPARISON_ENABLED } from '../constants/limits';
 import { useProfile } from '../context/ProfileContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import StoreProductModal, { type ProductRef } from './StoreProductModal';
@@ -37,7 +38,8 @@ export default function SimilarProductsSection({ productName, excludeStore }: Pr
 
   useEffect(() => {
     setTarget(null);
-    if (!productName) { setSimilars([]); setLoading(false); return; }
+    // Comparador desactivado (PRICE_COMPARISON_ENABLED=false): ni consulta ni pinta.
+    if (!PRICE_COMPARISON_ENABLED || !productName) { setSimilars([]); setLoading(false); return; }
     const enabled = profile?.catalogStores ?? CATALOG_STORE_KEYS;
     const targets = enabled.filter((s) => s !== excludeStore);
     if (targets.length === 0) { setSimilars([]); setLoading(false); return; }

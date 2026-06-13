@@ -156,4 +156,14 @@ Fase 0 (✅ validado, decisión: más barato €/unidad)
   (cartón/brik/botella/lata…) y los paréntesis ("(Mantener refrigerado)") rompen
   el filtro todas-las-palabras. `catalog_clean_name` ya los quita en la migración
   actualizada — **re-ejecutar `similar_products.sql`**.
-- ⬜ Fases 3–4: sin empezar.
+- 🔧 **Recall del filtro de familia (pendiente de re-ejecutar en SQL Editor):** el AND
+  de "todas las palabras" dejaba huecos entre cadenas (la marca blanca nombra el
+  mismo producto distinto en cada súper): p.ej. "salsa original ligeresa" no casaba
+  con "salsa fina ligeresa" ni con "mayonesa sabor original ligeresa". Se sustituye
+  `catalog_has_all_words` por `catalog_family_match` (permite que falte 1 palabra
+  del núcleo; needles de 2 palabras siguen exigiendo las 2). Sin migración de datos:
+  es solo lógica de query. **Re-ejecutar `similar_products.sql`.** Si aparecen
+  falsos positivos, el siguiente dial es Fase 3 (embeddings).
+- ⬜ Fases 3–4: sin empezar. Fase 3 (match semántico por embeddings + pgvector +
+  tabla `product_matches` precomputada en el sync) es la solución de fondo para la
+  variación de nombre entre cadenas; el filtro léxico de arriba es el puente.

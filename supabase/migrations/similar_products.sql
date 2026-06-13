@@ -4,7 +4,8 @@
 --
 -- Pipeline (validado en el spike, ahora sobre datos reales):
 --   1. needle = catalog_clean_name(nombre)         (quita marca y tamaño)
---   2. FAMILIA = catalog_has_all_words(nombre, needle)  (todas las palabras del núcleo)
+--   2. FAMILIA = catalog_family_match(nombre, needle)  (núcleo del needle: puede
+--      faltar 1 palabra; needles de 2 palabras exigen las 2 — ver la función)
 --   3. orden por price_per_unit (columna canónica de Fase 1a), con GUARD de empate:
 --      dentro del 5% del más barato → gana el de menor precio total (envase pequeño).
 --
@@ -59,6 +60,34 @@ returns boolean language sql immutable as $$
   where length(w) >= 3;
 $$;
 
+-- FAMILIA (recall mejorado): exigir TODAS las palabras (catalog_has_all_words) era
+-- demasiado estricto entre cadenas — la marca blanca nombra el mismo producto
+-- distinto en cada súper. Ej.: needle "salsa original ligeresa" NO casaba con
+-- "salsa fina ligeresa" (falta "original") ni con "mayonesa sabor original
+-- ligeresa" (falta "salsa"), siendo la misma familia. Ahora se permite que falte
+-- como mucho 1 palabra del núcleo:
+--   needle de 1 palabra  → exige esa palabra
+--   needle de 2 palabras → exige las 2 (NO relajar: "leche entera" ≠ "leche desnatada")
+--   needle de N≥3        → exige N-1 (mínimo 2)
+-- Sube el recall sin abrir la mano del todo; el orden por €/unidad + similarity
+-- sigue eligiendo el mejor candidato. Si aparecen falsos positivos, el siguiente
+-- dial es un suelo de similarity o el match semántico por embeddings (Fase 3).
+create or replace function public.catalog_family_match(p_name text, p_needle text)
+returns boolean language sql immutable as $$
+  with words as (
+    select w
+    from unnest(string_to_array(coalesce(p_needle, ''), ' ')) as w
+    where length(w) >= 3
+  ),
+  c as (
+    select count(*) as total,
+           count(*) filter (where p_name like '%' || w || '%') as present
+    from words
+  )
+  select total > 0 and present >= least(total, greatest(2, total - 1))
+  from c;
+$$;
+
 -- La columna `locked` cambia el tipo de retorno: hay que dropear antes de crear.
 drop function if exists public.similar_products(text, text[]);
 
@@ -87,42 +116,42 @@ language sql stable as $$
            similarity(q.needle, lower(m.display_name)) as sim
     from public.mercadona_products m cross join q
     where 'mercadona' = any (p_stores) and m.published
-      and public.catalog_has_all_words(lower(m.display_name), q.needle)
+      and public.catalog_family_match(lower(m.display_name), q.needle)
     union all
     select 'esclat', b.id, b.display_name, b.thumbnail,
            b.unit_price, b.price_per_unit, b.price_per_unit_unit,
            similarity(q.needle, lower(b.display_name))
     from public.bonpreu_products b cross join q
     where 'esclat' = any (p_stores) and b.published
-      and public.catalog_has_all_words(lower(b.display_name), q.needle)
+      and public.catalog_family_match(lower(b.display_name), q.needle)
     union all
     select 'carrefour', c.id, c.display_name, c.thumbnail,
            c.unit_price, c.price_per_unit, c.price_per_unit_unit,
            similarity(q.needle, lower(c.display_name))
     from public.carrefour_products c cross join q
     where 'carrefour' = any (p_stores) and c.published
-      and public.catalog_has_all_words(lower(c.display_name), q.needle)
+      and public.catalog_family_match(lower(c.display_name), q.needle)
     union all
     select 'bonarea', n.id, n.display_name, n.thumbnail,
            n.unit_price, n.price_per_unit, n.price_per_unit_unit,
            similarity(q.needle, lower(n.display_name))
     from public.bonarea_products n cross join q
     where 'bonarea' = any (p_stores) and n.published
-      and public.catalog_has_all_words(lower(n.display_name), q.needle)
+      and public.catalog_family_match(lower(n.display_name), q.needle)
     union all
     select 'consum', s.id, s.display_name, s.thumbnail,
            s.unit_price, s.price_per_unit, s.price_per_unit_unit,
            similarity(q.needle, lower(s.display_name))
     from public.consum_products s cross join q
     where 'consum' = any (p_stores) and s.published
-      and public.catalog_has_all_words(lower(s.display_name), q.needle)
+      and public.catalog_family_match(lower(s.display_name), q.needle)
     union all
     select 'dia', d.id, d.display_name, d.thumbnail,
            d.unit_price, d.price_per_unit, d.price_per_unit_unit,
            similarity(q.needle, lower(d.display_name))
     from public.dia_products d cross join q
     where 'dia' = any (p_stores) and d.published
-      and public.catalog_has_all_words(lower(d.display_name), q.needle)
+      and public.catalog_family_match(lower(d.display_name), q.needle)
   ),
   ranked as (
     select *, min(price_per_unit) over (partition by store) as min_ppu

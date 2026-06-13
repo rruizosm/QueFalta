@@ -25,7 +25,8 @@
         "backgroundImage": "./assets/icon.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.quefalta.app"
     },
     "web": {
       "favicon": "./assets/icon.png"

@@ -7,6 +7,7 @@ import { colors } from '../constants/colors';
 import { fetchCategoryDetail, flattenProducts, type MercadonaProduct } from '../api/mercadona';
 import { CatalogStackParamList } from '../types';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import { mercadonaToUI } from '../lib/productAdapters';
 import StoreProductList from '../components/StoreProductList';
 import ActiveCartBanner from '../components/ActiveCartBanner';
@@ -15,6 +16,7 @@ type ProductsRouteProp = RouteProp<CatalogStackParamList, 'Products'>;
 
 export default function ProductsScreen() {
   const styles = useThemedStyles(themedStyles);
+  const { lang } = useTranslation();
   const navigation = useNavigation<any>();
   const route = useRoute<ProductsRouteProp>();
   const { subcategoryId, subcategoryName, categoryName, emoji = '🛒' } = route.params;
@@ -30,7 +32,7 @@ export default function ProductsScreen() {
       .then((detail) => setProducts(flattenProducts(detail)))
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [subcategoryId]);
+  }, [subcategoryId, lang]);
 
   const uiProducts = useMemo(
     () => products.map((p) => mercadonaToUI(p, categoryName)),

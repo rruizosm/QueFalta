@@ -17,7 +17,7 @@ type RouteProps = RouteProp<CatalogStackParamList, 'BonareaProducts'>;
 
 export default function BonareaProductsScreen() {
   const styles = useThemedStyles(themedStyles);
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const navigation = useNavigation<any>();
   const { categoryId, categoryName, parentName } = useRoute<RouteProps>().params;
 
@@ -32,7 +32,7 @@ export default function BonareaProductsScreen() {
       .then(setProducts)
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [categoryId]);
+  }, [categoryId, lang]);
 
   const uiProducts = useMemo(() => products.map(bonareaToUI), [products]);
 

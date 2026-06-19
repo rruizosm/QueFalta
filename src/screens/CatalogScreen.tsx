@@ -85,7 +85,7 @@ async function loadBrowsePage(store: CatalogStore, cursor: BrowseCursor | null):
 export default function CatalogScreen() {
   const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const { isCategoryFavorite, toggleCategoryFavorite } = useFavorites();
   const toast = useToast();
   const { notify: tourNotify, stepId: tourStepId, setStoreMenuOpen: tourSetStoreMenuOpen } = useGuidedTour();
@@ -213,7 +213,7 @@ export default function CatalogScreen() {
       .catch(() => { if (!cancelled) setBrowseError(true); })
       .finally(() => { if (!cancelled) setBrowseLoading(false); });
     return () => { cancelled = true; };
-  }, [store, browseMode]);
+  }, [store, browseMode, lang]);
 
   // Siguiente página keyset al llegar al final de la lista.
   const loadMoreBrowse = () => {
@@ -227,13 +227,15 @@ export default function CatalogScreen() {
   };
 
   useEffect(() => {
+    setCatLoading(true); setCatError(false);
     fetchCategories()
       .then(setCategories)
       .catch(() => setCatError(true))
       .finally(() => setCatLoading(false));
-  }, []);
+  }, [lang]);
 
   // Carga perezosa de categorías Bonpreu la primera vez que se entra a esa tienda.
+  useEffect(() => { setBpCats([]); }, [lang]);
   useEffect(() => {
     if (store !== 'esclat' || bpCats.length > 0 || bpCatsLoading) return;
     setBpCatsLoading(true); setBpCatsError(false);
@@ -241,7 +243,7 @@ export default function CatalogScreen() {
       .then(setBpCats)
       .catch(() => setBpCatsError(true))
       .finally(() => setBpCatsLoading(false));
-  }, [store]);
+  }, [store, lang]);
 
   // Mercadona: búsqueda server-side con debounce (antes barría ~100 subcategorías).
   useEffect(() => {
@@ -252,7 +254,7 @@ export default function CatalogScreen() {
       searchProducts(q).then(setProdResults).catch(() => setProdError(true)).finally(() => setProdLoading(false));
     }, 300);
     return () => clearTimeout(handle);
-  }, [prodSearch]);
+  }, [prodSearch, lang]);
 
   // BonpreuEsclat: búsqueda server-side con debounce.
   useEffect(() => {
@@ -263,7 +265,7 @@ export default function CatalogScreen() {
       searchBonpreuProducts(q).then(setBpResults).catch(() => setBpError(true)).finally(() => setBpLoading(false));
     }, 300);
     return () => clearTimeout(handle);
-  }, [bpSearch]);
+  }, [bpSearch, lang]);
 
   // Carga perezosa de categorías Carrefour la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -287,6 +289,7 @@ export default function CatalogScreen() {
   }, [cfSearch]);
 
   // Carga perezosa de categorías bonÀrea la primera vez que se entra a esa tienda.
+  useEffect(() => { setBaCats([]); }, [lang]);
   useEffect(() => {
     if (store !== 'bonarea' || baCats.length > 0 || baCatsLoading) return;
     setBaCatsLoading(true); setBaCatsError(false);
@@ -294,7 +297,7 @@ export default function CatalogScreen() {
       .then(setBaCats)
       .catch(() => setBaCatsError(true))
       .finally(() => setBaCatsLoading(false));
-  }, [store]);
+  }, [store, lang]);
 
   // bonÀrea: búsqueda server-side con debounce.
   useEffect(() => {
@@ -305,7 +308,7 @@ export default function CatalogScreen() {
       searchBonareaProducts(q).then(setBaResults).catch(() => setBaError(true)).finally(() => setBaLoading(false));
     }, 300);
     return () => clearTimeout(handle);
-  }, [baSearch]);
+  }, [baSearch, lang]);
 
   // Carga perezosa de categorías Consum la primera vez que se entra a esa tienda.
   useEffect(() => {

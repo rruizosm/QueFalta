@@ -1,18 +1,16 @@
 /**
  * GuidedTourContext — la "demo" interactiva de la app: un tutorial GUIADO POR
  * ACCIONES REALES (no tooltips pasivos). Cada paso resalta un elemento y solo
- * avanza cuando el usuario hace la acción correcta:
+ * avanza cuando el usuario hace la acción correcta. Recortado al *core loop*
+ * (comprar en grupo); los extras (favoritos) se descubren solos:
  *
- *   1. Activa un carrito (Grupos)      → activeCart deja de ser null
+ *   1. Prepara un carrito (Grupos)     → activeCart deja de ser null
+ *                                        (crea grupo si no tiene + Activar carrito)
  *   2. Abre el Catálogo                → pestaña Catalog enfocada
  *   3. Selecciona un supermercado      → notify('storeSelect')
  *   4. Entra en una categoría          → ruta SubCategory
- *   5. Abre una subcategoría           → ruta Products/<súper>
- *   6. Pulsa + en un producto          → notify('qtyPicked')
- *   7. Pulsa "Añadir"                  → notify('cartAdd')
- *   8. Guarda un favorito              → sube el contador de favoritos
- *   9. Revísalo en Favoritos           → ruta Favorites (desde Inicio)
- *  10. Revísalo en Mi lista            → pestaña List
+ *   5. Abre una subcategoría y añade   → notify('cartAdd')
+ *   6. Revísalo en Mi lista            → pestaña List
  *
  * NO bloquea la app: el overlay atenúa con un "agujero" sobre el objetivo pero
  * deja pasar los toques (pointerEvents). Solo la burbuja captura toques.
@@ -57,7 +55,7 @@ const PRODUCT_ROUTES = [
 
 type AnchorKey =
   | 'storeSelector' | 'tabBar' | 'firstCategory' | 'firstSubcategory'
-  | 'productStepper' | 'addButton';
+  | 'productStepper' | 'addButton' | 'createGroup';
 type TourEvent = 'storeSelect' | 'qtyPicked' | 'cartAdd';
 
 type Await =
@@ -78,8 +76,15 @@ interface Step {
   bubble: BubblePos;
 }
 
+// Recortado a 6 pasos (antes 10): fuera los dos de favoritos; "abre
+// subcategoría" + "pulsa +" + "Añadir" se fusionan en un único paso 'add' que
+// espera el evento final `cartAdd`. Los emisores/anclas sobrantes (qtyPicked,
+// firstSubcategory, addButton) quedan inertes: no pasa nada si nadie los espera.
 const STEPS: Step[] = [
-  { id: 'cart', icon: 'cart', tabIndex: TAB.Groups, bubble: 'bottomAboveTabs', await: 'cartActive',
+  // anchorKey 'createGroup' solo existe cuando el usuario NO tiene grupos (la
+  // pantalla de Grupos monta el CTA del estado vacío): el spotlight pasa del tab
+  // al botón "crear grupo". Con grupos, no se registra → se ilumina el tab.
+  { id: 'cart', icon: 'cart', tabIndex: TAB.Groups, anchorKey: 'createGroup', bubble: 'bottomAboveTabs', await: 'cartActive',
     titleKey: 'tour.cartTitle', textKey: 'tour.cartText' },
   { id: 'catalog', icon: 'grid', tabIndex: TAB.Catalog, bubble: 'bottomAboveTabs', await: 'tabCatalog',
     titleKey: 'tour.catalogTitle', textKey: 'tour.catalogText' },
@@ -87,16 +92,8 @@ const STEPS: Step[] = [
     titleKey: 'tour.storeTitle', textKey: 'tour.storeText' },
   { id: 'category', icon: 'albums', anchorKey: 'firstCategory', bubble: 'bottom', await: 'route:SubCategory',
     titleKey: 'tour.categoryTitle', textKey: 'tour.categoryText' },
-  { id: 'subcategory', icon: 'chevron-forward', anchorKey: 'firstSubcategory', bubble: 'bottom', await: 'route:Products',
-    titleKey: 'tour.subcategoryTitle', textKey: 'tour.subcategoryText' },
-  { id: 'add', icon: 'add-circle', anchorKey: 'productStepper', bubble: 'bottom', await: 'event:qtyPicked',
+  { id: 'add', icon: 'add-circle', anchorKey: 'productStepper', bubble: 'bottom', await: 'event:cartAdd',
     titleKey: 'tour.addTitle', textKey: 'tour.addText' },
-  { id: 'addConfirm', icon: 'cart', anchorKey: 'addButton', bubble: 'top', await: 'event:cartAdd',
-    titleKey: 'tour.addConfirmTitle', textKey: 'tour.addConfirmText' },
-  { id: 'favorite', icon: 'star', bubble: 'top', await: 'favorite',
-    titleKey: 'tour.favoriteTitle', textKey: 'tour.favoriteText' },
-  { id: 'favorites', icon: 'star', bubble: 'top', await: 'route:Favorites',
-    titleKey: 'tour.favoritesTitle', textKey: 'tour.favoritesText' },
   { id: 'list', icon: 'list', tabIndex: TAB.List, bubble: 'bottomAboveTabs', await: 'tabList',
     titleKey: 'tour.listTitle', textKey: 'tour.listText' },
 ];
@@ -107,6 +104,9 @@ interface GuidedTourValue {
   startTour: () => void;
   notify: (ev: TourEvent) => void;
   registerAnchor: (key: AnchorKey, rect: Rect) => void;
+  /** Quita un ancla (la usa `useTourAnchor({clearOnUnmount})` al desmontarse el
+   *  elemento) para que el spotlight no apunte a una posición obsoleta. */
+  unregisterAnchor: (key: AnchorKey) => void;
   /** id del paso activo (o null) — para que una pantalla resalte un elemento
    *  propio (p.ej. el primer súper del desplegable, que vive en un Modal). */
   stepId: string | null;
@@ -120,6 +120,7 @@ const GuidedTourContext = createContext<GuidedTourValue>({
   startTour: () => {},
   notify: () => {},
   registerAnchor: () => {},
+  unregisterAnchor: () => {},
   stepId: null,
   setStoreMenuOpen: () => {},
 });
@@ -136,6 +137,7 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
   const seenKey = session?.user.id ? `${SEEN_KEY}:${session.user.id}` : SEEN_KEY;
 
   const [active, setActive] = useState(false);
+  const [invite, setInvite] = useState(false);
   const [index, setIndex] = useState(0);
   const [anchors, setAnchors] = useState<Partial<Record<AnchorKey, Rect>>>({});
   const [nav, setNav] = useState<{ tab?: string; route?: string }>({});
@@ -169,10 +171,20 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
   }, [finishTour]);
 
   const startTour = useCallback(() => {
+    setInvite(false);
     setIndex(0);
     if (STEPS[0].await === 'favorite') favBaselineRef.current = favCountRef.current;
     setActive(true);
   }, []);
+
+  // El aviso ("¿Te enseño cómo funciona?") es la 1ª vez OPT-IN: ya no se
+  // auto-lanza el tour. Aceptar arranca; "Ahora no" sella el flag para no
+  // insistir (siempre queda disponible en Perfil → Ver tutorial).
+  const declineInvite = useCallback(() => {
+    setInvite(false);
+    AsyncStorage.setItem(seenKey, '1').catch(() => {});
+    toast.show(t('tour.inviteDismissed'));
+  }, [seenKey, toast, t]);
 
   const notify = useCallback((ev: TourEvent) => {
     if (!activeRef.current) return;
@@ -189,17 +201,27 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
     });
   }, []);
 
-  // Auto-arranque la primera vez (tras el onboarding), por usuario.
+  const unregisterAnchor = useCallback((key: AnchorKey) => {
+    setAnchors((prev) => {
+      if (!(key in prev)) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }, []);
+
+  // 1ª vez (tras el onboarding), por usuario: ofrecemos el tour con un aviso
+  // OPT-IN en vez de auto-lanzarlo (el alta ya es largo; no encadenar más).
   useEffect(() => {
     if (autoChecked.current) return;
     autoChecked.current = true;
     let timer: ReturnType<typeof setTimeout>;
     AsyncStorage.getItem(seenKey).then((seen) => {
       if (seen) return;
-      timer = setTimeout(() => startTour(), 900);
+      timer = setTimeout(() => setInvite(true), 900);
     });
     return () => clearTimeout(timer);
-  }, [seenKey, startTour]);
+  }, [seenKey]);
 
   // Observa la navegación SOLO mientras el tour está activo.
   useEffect(() => {
@@ -253,8 +275,8 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
   const stepId = step?.id ?? null;
 
   const value = useMemo(
-    () => ({ startTour, notify, registerAnchor, stepId, setStoreMenuOpen }),
-    [startTour, notify, registerAnchor, stepId],
+    () => ({ startTour, notify, registerAnchor, unregisterAnchor, stepId, setStoreMenuOpen }),
+    [startTour, notify, registerAnchor, unregisterAnchor, stepId],
   );
 
   // Geometría del objetivo a resaltar. La barra de pestañas se MIDE (ancla
@@ -342,6 +364,26 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
           </View>
         </View>
       )}
+
+      {/* Aviso OPT-IN (1ª vez): tarjeta centrada con backdrop que SÍ bloquea —
+          es una decisión sí/no, no un paso guiado. */}
+      {invite && !active && (
+        <View style={styles.inviteBackdrop} pointerEvents="auto">
+          <View style={styles.inviteCard}>
+            <View style={styles.inviteIcon}>
+              <Ionicons name="sparkles" size={26} color={colors.accent} />
+            </View>
+            <Text style={styles.inviteTitle}>{t('tour.inviteTitle')}</Text>
+            <Text style={styles.inviteText}>{t('tour.inviteText')}</Text>
+            <TouchableOpacity style={styles.inviteStart} onPress={startTour} activeOpacity={0.85}>
+              <Text style={styles.inviteStartText}>{t('tour.inviteStart')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={declineInvite} hitSlop={8} style={styles.inviteLater}>
+              <Text style={styles.inviteLaterText}>{t('tour.inviteLater')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </GuidedTourContext.Provider>
   );
 }
@@ -351,9 +393,13 @@ export function useGuidedTour(): GuidedTourValue {
 }
 
 /** Registra un elemento como objetivo resaltable del tour. Ata `ref` y
- *  `onLayout` al View que quieras resaltar (mide su posición en pantalla). */
-export function useTourAnchor(key: AnchorKey) {
-  const { registerAnchor } = useGuidedTour();
+ *  `onLayout` al View que quieras resaltar (mide su posición en pantalla).
+ *  `clearOnUnmount`: quita el ancla al desmontarse el elemento — para anclas
+ *  condicionales (p.ej. el CTA "crear grupo" del estado vacío) que no deben
+ *  dejar un spotlight obsoleto cuando desaparecen. */
+export function useTourAnchor(key: AnchorKey, opts?: { clearOnUnmount?: boolean }) {
+  const { registerAnchor, unregisterAnchor } = useGuidedTour();
+  const clearOnUnmount = opts?.clearOnUnmount ?? false;
   // `any` para poder atar el ref tanto a un View como a un TouchableOpacity.
   const ref = useRef<any>(null);
   const onLayout = useCallback(() => {
@@ -367,6 +413,10 @@ export function useTourAnchor(key: AnchorKey) {
       } catch { /* ignore */ }
     });
   }, [key, registerAnchor]);
+  useEffect(() => {
+    if (!clearOnUnmount) return;
+    return () => unregisterAnchor(key);
+  }, [key, clearOnUnmount, unregisterAnchor]);
   return { ref, onLayout };
 }
 
@@ -403,4 +453,37 @@ const themedStyles = () => StyleSheet.create({
   dotOn: { backgroundColor: colors.accent, width: 16 },
   dotDone: { backgroundColor: colors.accentMid },
   stepCount: { fontSize: 11, fontFamily: fonts.bold, color: colors.inkSoft, letterSpacing: 0.4 },
+
+  // ── Aviso OPT-IN (1ª vez) ─────────────────────────────────────
+  inviteBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    alignItems: 'center', justifyContent: 'center', padding: 28,
+  },
+  inviteCard: {
+    width: '100%', maxWidth: 380,
+    backgroundColor: colors.white,
+    borderWidth: 1, borderColor: colors.border,
+    padding: 24, alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.22, shadowRadius: 18, elevation: 10,
+  },
+  inviteIcon: {
+    width: 56, height: 56,
+    backgroundColor: colors.accentLight,
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 14,
+  },
+  inviteTitle: { fontSize: 19, fontFamily: fonts.bold, color: colors.ink, textAlign: 'center' },
+  inviteText: {
+    fontSize: 14, lineHeight: 20, fontFamily: fonts.medium, color: colors.inkSoft,
+    textAlign: 'center', marginTop: 8,
+  },
+  inviteStart: {
+    alignSelf: 'stretch', backgroundColor: colors.accent,
+    paddingVertical: 13, alignItems: 'center', marginTop: 22,
+  },
+  inviteStartText: { fontSize: 15, fontFamily: fonts.bold, color: colors.white },
+  inviteLater: { paddingVertical: 10, marginTop: 4 },
+  inviteLaterText: { fontSize: 13.5, fontFamily: fonts.semibold, color: colors.inkSoft },
 });

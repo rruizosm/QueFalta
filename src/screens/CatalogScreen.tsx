@@ -463,6 +463,7 @@ export default function CatalogScreen() {
         query, searchLoading, searchError, searchItems.length === 0,
         <StoreProductList
           products={searchItems}
+          searchQuery={query}
           hideToolbar viewMode={prodViewMode} onViewModeChange={setProdViewMode}
         />,
       );

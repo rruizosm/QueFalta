@@ -14,7 +14,7 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useGuidedTour, useTourAnchor } from '../context/GuidedTourContext';
 import type { UIProduct } from '../lib/productAdapters';
-import { sortByName } from '../lib/sort';
+import { sortByName, sortByRelevance } from '../lib/sort';
 import QuantityStepper from './QuantityStepper';
 import ProductImage from './ProductImage';
 import ViewModeToggle, { type ViewMode } from './ViewModeToggle';
@@ -43,6 +43,11 @@ interface Props {
   /** Muestra un buscador por texto en la barra superior que filtra la lista
    *  localmente por nombre (insensible a acentos). Para vistas de subcategoría. */
   searchable?: boolean;
+  /** Texto de búsqueda EXTERNO (catálogo): el padre busca en el servidor y pasa
+   *  aquí la consulta para que los resultados (ya filtrados) se ordenen por
+   *  RELEVANCIA respecto a ella en vez de alfabéticamente. La búsqueda interna
+   *  (`searchable`) usa su propio texto. Sin consulta, el orden es alfabético. */
+  searchQuery?: string;
   /** Oculta el toolbar interno (buscador + toggle). Úsalo cuando el padre ya
    *  renderiza su propia fila de búsqueda/cambio de vista (p. ej. el catálogo,
    *  cuya barra de búsqueda consulta al servidor y debe vivir fuera). */
@@ -67,7 +72,7 @@ interface Props {
 export default function StoreProductList({
   products, loading = false, error = false,
   emptyText, errorText,
-  emoji, searchable = false,
+  emoji, searchable = false, searchQuery,
   hideToolbar = false, viewMode: viewModeProp, onViewModeChange,
   pageSize, onEndReached, loadingMore = false,
 }: Props) {
@@ -97,6 +102,8 @@ export default function StoreProductList({
   // pinta: las cantidades y el contador del carrito siguen sobre `products` para
   // no perder selecciones cuando la búsqueda oculta filas.
   const shown = useMemo(() => {
+    // Filtro local SOLO del buscador interno (subcategorías/favoritos); el catálogo
+    // ya filtra en el servidor, así que ahí `query` está vacío y no recorta nada.
     const words = stripAccents(query).trim().split(/\s+/).filter((w) => w.length >= 2);
     const filtered = words.length === 0
       ? products
@@ -104,9 +111,14 @@ export default function StoreProductList({
           const name = stripAccents(p.name);
           return words.every((w) => name.includes(w));
         });
-    // Orden alfabético por nombre (ya localizado) según el idioma activo.
-    return sortByName(filtered, (p) => p.name);
-  }, [products, query]);
+    // Con una consulta activa (la interna del buscador o la externa del catálogo)
+    // se ordena por RELEVANCIA —exacto › empieza por › palabra entera › posición—;
+    // sin texto (navegación/subcategoría) se mantiene el alfabético de siempre.
+    const rankQuery = (searchQuery ?? query).trim();
+    return rankQuery.length >= 2
+      ? sortByRelevance(filtered, (p) => p.name, rankQuery)
+      : sortByName(filtered, (p) => p.name);
+  }, [products, query, searchQuery]);
 
   // Ventana local (paginación de favoritos): se pinta solo lo revelado y crece
   // de `pageSize` en `pageSize` al hacer scroll. Sin `pageSize`, se pinta todo
@@ -115,7 +127,7 @@ export default function StoreProductList({
   const [visibleCount, setVisibleCount] = useState(pageSize ?? Infinity);
   useEffect(() => {
     if (pageSize != null) setVisibleCount(pageSize);
-  }, [pageSize, query, products]);
+  }, [pageSize, query, searchQuery, products]);
   const visible = pageSize != null ? shown.slice(0, visibleCount) : shown;
 
   const handleEndReached = () => {

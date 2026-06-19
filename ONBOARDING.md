@@ -37,16 +37,20 @@ Los obligatorios bloquean el avance; los opcionales se pueden omitir.
 
 ## Demo — tour INTERACTIVO guiado por acciones (`src/context/GuidedTourContext.tsx`)
 No son tooltips pasivos: cada paso resalta un elemento y **solo avanza cuando el
-usuario hace la acción real**. Secuencia (9 pasos):
-1. Activa un carrito (Grupos) → `activeCart != null`
+usuario hace la acción real**. Recortado al *core loop* — 6 pasos (antes 10):
+1. Prepara un carrito (Grupos) → `activeCart != null`. Si el usuario **no tiene
+   grupo** (lo omitió en el alta), el texto le pide crearlo primero y luego
+   "Activar carrito" (el paso espera `cartActive`, no bloquea con "Saltar").
 2. Abre el Catálogo → pestaña Catalog enfocada
-3. Abre el selector de súper → `notify('storeMenu')` desde CatalogScreen
+3. Elige un supermercado → `notify('storeSelect')` desde CatalogScreen
 4. Entra en una categoría → ruta `SubCategory`
-5. Abre una subcategoría → ruta `Products`/`<súper>Products`
-6. Añade tu primer producto → `notify('cartAdd')` desde StoreProductList
-7. Guarda un favorito (swipe) → sube el contador de `FavoritesContext`
-8. Revísalo en Favoritos → pestaña Favorites
-9. Revísalo en Mi lista → pestaña List
+5. Abre una subcategoría y añade un producto → `notify('cartAdd')` desde
+   StoreProductList (fusiona los antiguos pasos subcategoría + `+` + "Añadir")
+6. Revísalo en Mi lista → pestaña List
+
+> Los pasos de favoritos (swipe + revisión) se quitaron: son secundarios y el
+> usuario los descubre solo. Sus emisores/anclas (`qtyPicked`, `firstSubcategory`,
+> `addButton`) siguen en el código pero quedan inertes (ningún paso los espera).
 
 - **No bloquea** (decisión de producto "guiado, no bloqueante"): overlay con
   "agujero" atenuado sobre el objetivo, todo `pointerEvents="none"` salvo la
@@ -57,11 +61,17 @@ usuario hace la acción real**. Secuencia (9 pasos):
   coincidir con `navigation/index.tsx`); selector de súper por `useTourAnchor`.
 - **Robustez:** el paso del selector se da por hecho si el usuario solo tiene 1
   súper o se adelanta a una categoría. "Saltar" en cada paso para no atrapar.
-- **Arranca solo** la 1ª vez (tras el onboarding) si no hay flag
-  `@guidedtour_seen_v1:<userId>` (por usuario, en AsyncStorage, no en BD).
+  El paso 1 ilumina el CTA "crear grupo" del estado vacío cuando el usuario no
+  tiene grupos (ancla `createGroup` en `GroupsScreen`, `clearOnUnmount`: se monta
+  con el botón y se limpia al crear el grupo).
+- **Opt-in la 1ª vez** (no auto-lanza): tras el onboarding, si no hay flag
+  `@guidedtour_seen_v1:<userId>`, se muestra un AVISO ("¿Te enseño cómo
+  funciona?") con "Empezar" / "Ahora no". "Ahora no" sella el flag (no insiste).
+  Flag por usuario, en AsyncStorage, no en BD.
 - Re-lanzable desde **Perfil → "Ver tutorial"** (`startTour()`).
-- **Instrumentación añadida:** `CatalogScreen` (ancla `storeSelector` +
-  `notify('storeMenu')`), `StoreProductList` (`notify('cartAdd')`).
+- **Instrumentación:** `CatalogScreen` (ancla `storeSelector` +
+  `notify('storeSelect')`), `StoreProductList` (`notify('cartAdd')`),
+  `GroupsScreen` (ancla `createGroup`).
 
 ## Recuperar conversión de los opcionales
 `src/components/ProfileChecklistCard.tsx` — tarjeta "Completa tu perfil" en el

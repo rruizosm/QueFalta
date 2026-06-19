@@ -26,6 +26,26 @@ import MemberAvatars from '../components/MemberAvatars';
 import HardShadow from '../components/HardShadow';
 import NameInputSheet from '../components/NameInputSheet';
 import PaywallModal from '../components/PaywallModal';
+import { useTourAnchor } from '../context/GuidedTourContext';
+
+// CTA "crear grupo" del estado vacío, con el ancla del tour (paso 1). Es un
+// componente propio para que el ancla se monte/desmonte CON el botón: al crear
+// el primer grupo el estado vacío desaparece y `clearOnUnmount` limpia el foco.
+function EmptyCreateGroupButton({ label, onPress }: { label: string; onPress: () => void }) {
+  const anchor = useTourAnchor('createGroup', { clearOnUnmount: true });
+  // El ancla va en un View envolvente (patrón del resto de anclas del tour:
+  // measureInWindow fiable sobre View, no sobre TouchableOpacity).
+  return (
+    <View ref={anchor.ref} onLayout={anchor.onLayout} style={{ marginTop: 8 }}>
+      <TouchableOpacity onPress={onPress}>
+        <HardShadow style={{ backgroundColor: colors.accent, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 16, paddingVertical: 11 }}>
+          <Ionicons name="add" size={18} color={colors.white} />
+          <Text style={{ color: colors.white, fontFamily: fonts.bold, fontSize: 13 }}>{label}</Text>
+        </HardShadow>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
 export default function GroupsScreen() {
   const styles = useThemedStyles(themedStyles);
@@ -201,12 +221,10 @@ export default function GroupsScreen() {
           <Ionicons name="people-outline" size={48} color={colors.inkFaint} />
           <Text style={styles.emptyTitle}>{t('group.emptyTitle')}</Text>
           <Text style={styles.emptyText}>{t('group.emptyText')}</Text>
-          <TouchableOpacity onPress={handleNewGroup}>
-            <HardShadow style={{ backgroundColor: colors.accent, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 16, paddingVertical: 11, marginTop: 8 }}>
-              <Ionicons name="add" size={18} color={colors.white} />
-              <Text style={styles.newBtnText}>{t('group.createCta')}</Text>
-            </HardShadow>
-          </TouchableOpacity>
+          {/* Componente propio para que el ancla del tour (spotlight sobre este
+              CTA) se monte/desmonte CON el estado vacío: al crear el grupo
+              desaparece y el ancla se limpia sola (clearOnUnmount). */}
+          <EmptyCreateGroupButton label={t('group.createCta')} onPress={handleNewGroup} />
         </View>
       ) : (
         <FlatList

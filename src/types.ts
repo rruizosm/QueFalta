@@ -1,3 +1,5 @@
+import type { CatalogStore } from './constants/stores';
+
 // ─── Mercadona API types ──────────────────────────────────────────────────────
 
 export interface CategoriesResponse {
@@ -170,7 +172,9 @@ export interface Group {
 // ─── Favoritos ────────────────────────────────────────────────────────────────
 
 export interface FavoriteCategory {
-  /** id de la categoría N1 de Mercadona como string */
+  /** Súper al que pertenece la categoría (parte de la identidad del favorito). */
+  store: CatalogStore;
+  /** id de la categoría (N1 de Mercadona o id del espejo) como string */
   refId: string;
   name: string;
   emoji: string;
@@ -178,7 +182,9 @@ export interface FavoriteCategory {
 }
 
 export interface FavoriteProduct {
-  /** id de producto de Mercadona */
+  /** Súper al que pertenece el producto (parte de la identidad del favorito). */
+  store: CatalogStore;
+  /** id de producto en su súper */
   refId: string;
   name: string;
   imageUrl?: string | null;
@@ -197,12 +203,13 @@ export type RootTabParamList = {
 
 export type HomeStackParamList = {
   HomeMain: undefined;
+  Favorites: undefined;
   Profile: undefined;
   EditProfile: undefined;
   PrivacySecurity: undefined;
-  DefaultGroup: undefined;
   CatalogStores: undefined;
   Appearance: undefined;
+  Language: undefined;
   History: undefined;
   Friends: undefined;
 };
@@ -261,4 +268,17 @@ export type GroupsStackParamList = {
   GroupDetail: { groupId: string };
   GroupMembers: { groupId: string };
   AddMember: { groupId: string };
+};
+
+/** Asistente de bienvenida (primera vez). Se muestra cuando hay sesión pero el
+ *  perfil aún no tiene onboarded_at. Pasos obligatorios (Username, Stores) y
+ *  opcionales (Avatar, Friends, Group). Ver src/screens/onboarding/. */
+export type OnboardingStackParamList = {
+  Welcome: undefined;
+  Username: undefined;
+  Stores: undefined;
+  Avatar: undefined;
+  Friends: undefined;
+  Group: undefined;
+  Done: undefined;
 };

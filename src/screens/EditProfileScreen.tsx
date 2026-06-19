@@ -14,12 +14,14 @@ import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import { updateProfile, uploadAvatar, isUsernameAvailable } from '../api/profile';
 
 const USERNAME_RE = /^[a-z0-9_.]{3,20}$/;
 
 export default function EditProfileScreen() {
   const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { session } = useAuth();
   const { profile, applyProfile } = useProfile();
@@ -61,7 +63,7 @@ export default function EditProfileScreen() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       try {
-        const free = await isUsernameAvailable(raw, userId);
+        const free = await isUsernameAvailable(raw);
         setUsernameState(free ? 'ok' : 'taken');
       } catch {
         setUsernameState('idle');
@@ -73,7 +75,7 @@ export default function EditProfileScreen() {
   const handlePickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permiso necesario', 'Necesitamos acceso a tu galería para cambiar la foto.');
+      Alert.alert(t('profile.notifPermTitle'), t('editProfile.galleryPerm'));
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -96,13 +98,13 @@ export default function EditProfileScreen() {
     const trimmedName = name.trim();
     const trimmedUsername = username.trim().toLowerCase();
 
-    if (!trimmedName) { toast.show('El nombre no puede estar vacío.', 'error'); return; }
+    if (!trimmedName) { toast.show(t('editProfile.nameEmpty'), 'error'); return; }
     if (trimmedUsername && !USERNAME_RE.test(trimmedUsername)) {
-      toast.show('El usuario debe tener 3–20 caracteres (letras, números, _ ó .)', 'error');
+      toast.show(t('editProfile.usernameRule'), 'error');
       return;
     }
     if (usernameState === 'taken') {
-      toast.show('Ese nombre de usuario ya está en uso.', 'error');
+      toast.show(t('editProfile.usernameTaken'), 'error');
       return;
     }
 
@@ -130,12 +132,12 @@ export default function EditProfileScreen() {
       });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show('Perfil actualizado');
+      toast.show(t('editProfile.saved'));
       navigation.goBack();
     } catch (e: any) {
       const isDuplicate = e?.message?.includes('unique') || e?.code === '23505';
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      toast.show(isDuplicate ? 'Ese nombre de usuario ya está en uso.' : 'No se pudo guardar el perfil.', 'error');
+      toast.show(isDuplicate ? t('editProfile.usernameTaken') : t('editProfile.saveError'), 'error');
     } finally {
       setSaving(false);
       setUploading(false);
@@ -147,10 +149,10 @@ export default function EditProfileScreen() {
   const initials      = profile?.initials ?? '??';
 
   const usernameHelper = () => {
-    if (usernameState === 'invalid') return { text: 'Solo letras minúsculas, números, _ ó . · 3–20 chars', ok: false };
-    if (usernameState === 'taken')   return { text: 'No disponible', ok: false };
-    if (usernameState === 'ok')      return { text: 'Libre', ok: true };
-    return { text: 'Tu @ es único. Así te encuentran y te añaden a los grupos.', ok: false };
+    if (usernameState === 'invalid') return { text: t('editProfile.usernameInvalid'), ok: false };
+    if (usernameState === 'taken')   return { text: t('editProfile.unavailable'), ok: false };
+    if (usernameState === 'ok')      return { text: t('editProfile.available'), ok: true };
+    return { text: t('editProfile.usernameHint'), ok: false };
   };
   const helper = usernameHelper();
 
@@ -160,18 +162,18 @@ export default function EditProfileScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+        <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
         {/* Custom header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={8}>
-            <Text style={styles.headerCancel}>Cancelar</Text>
+            <Text style={styles.headerCancel}>{t('common.cancel')}</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Editar perfil</Text>
+          <Text style={styles.headerTitle}>{t('editProfile.title')}</Text>
           <TouchableOpacity onPress={handleSave} disabled={saving} hitSlop={8}>
             {saving
               ? <ActivityIndicator size="small" color={colors.accent} />
-              : <Text style={styles.headerSave}>Guardar</Text>}
+              : <Text style={styles.headerSave}>{t('common.save')}</Text>}
           </TouchableOpacity>
         </View>
 
@@ -198,25 +200,25 @@ export default function EditProfileScreen() {
             </View>
             <View style={styles.photoActions}>
               <TouchableOpacity onPress={handlePickImage}>
-                <Text style={styles.photoActionPrimary}>Cambiar foto</Text>
+                <Text style={styles.photoActionPrimary}>{t('editProfile.changePhoto')}</Text>
               </TouchableOpacity>
               <View style={styles.photoSep} />
               <TouchableOpacity onPress={handleRemoveAvatar} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                 <Ionicons name="trash-outline" size={13} color={colors.inkSoft} />
-                <Text style={styles.photoActionSecondary}>Quitar</Text>
+                <Text style={styles.photoActionSecondary}>{t('editProfile.remove')}</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Nombre */}
           <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>Nombre</Text>
+            <Text style={styles.fieldLabel}>{t('editProfile.nameLabel')}</Text>
             <View style={styles.inputBox}>
               <TextInput
                 style={styles.input}
                 value={name}
                 onChangeText={setName}
-                placeholder="Tu nombre"
+                placeholder={t('editProfile.namePlaceholder')}
                 placeholderTextColor={colors.inkFaint}
                 maxLength={50}
               />
@@ -225,14 +227,14 @@ export default function EditProfileScreen() {
 
           {/* @usuario */}
           <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>Nombre de usuario</Text>
+            <Text style={styles.fieldLabel}>{t('editProfile.usernameLabel')}</Text>
             <View style={styles.inputBox}>
               <Text style={styles.atPrefix}>@</Text>
               <TextInput
                 style={[styles.input, { flex: 1 }]}
                 value={username}
-                onChangeText={(t) => setUsername(t.toLowerCase())}
-                placeholder="tuusuario"
+                onChangeText={(v) => setUsername(v.toLowerCase())}
+                placeholder={t('editProfile.usernamePlaceholder')}
                 placeholderTextColor={colors.inkFaint}
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -244,11 +246,11 @@ export default function EditProfileScreen() {
               {usernameState === 'ok' && (
                 <View style={styles.usernameOk}>
                   <Ionicons name="checkmark" size={13} color={colors.ok} />
-                  <Text style={styles.usernameOkText}>Libre</Text>
+                  <Text style={styles.usernameOkText}>{t('editProfile.available')}</Text>
                 </View>
               )}
               {usernameState === 'taken' && (
-                <Text style={styles.usernameTaken}>No disponible</Text>
+                <Text style={styles.usernameTaken}>{t('editProfile.unavailable')}</Text>
               )}
             </View>
             <Text style={[styles.helper, helper.ok && styles.helperOk]}>
@@ -259,14 +261,14 @@ export default function EditProfileScreen() {
 
           {/* Correo (read-only) */}
           <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>Correo</Text>
+            <Text style={styles.fieldLabel}>{t('editProfile.emailLabel')}</Text>
             <View style={[styles.inputBox, styles.inputBoxReadonly]}>
               <Text style={styles.inputReadonly} numberOfLines={1}>{email}</Text>
               <Ionicons name="lock-closed-outline" size={15} color={colors.inkFaint} />
             </View>
             <Text style={styles.helper}>
               <Text style={{ color: '#4285F4', fontFamily: fonts.bold }}>G</Text>
-              {'  '}Conectado con Google · no editable
+              {'  '}{t('editProfile.googleConnected')}
             </Text>
           </View>
 
@@ -281,7 +283,7 @@ export default function EditProfileScreen() {
               : (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <Ionicons name="checkmark" size={17} color={colors.white} />
-                  <Text style={styles.saveBtnText}>Guardar cambios</Text>
+                  <Text style={styles.saveBtnText}>{t('editProfile.saveChanges')}</Text>
                 </View>
               )}
           </TouchableOpacity>

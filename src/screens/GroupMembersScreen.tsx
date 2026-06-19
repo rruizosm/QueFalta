@@ -13,6 +13,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import { deleteGroup, fetchGroupDetail, removeGroupMember, renameGroup, transferGroupAdmin, type GroupSummary } from '../api/groups';
 import ConfirmDialog from '../components/ConfirmDialog';
 import UserAvatar from '../components/UserAvatar';
@@ -22,10 +23,11 @@ type MembersRouteProp = RouteProp<GroupsStackParamList, 'GroupMembers'>;
 
 export default function GroupMembersScreen() {
   const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { groupId } = useRoute<MembersRouteProp>().params;
   const { session } = useAuth();
-  const { activeCart, activateCart, deactivateCart, defaultGroup, setDefaultGroup, clearDefaultGroup } = useCart();
+  const { activeCart, activateCart, deactivateCart } = useCart();
   const toast = useToast();
   const userId = session?.user.id ?? '';
 
@@ -57,10 +59,10 @@ export default function GroupMembersScreen() {
     try {
       await transferGroupAdmin(groupId, member.id);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show(`${member.name} es ahora el administrador`);
+      toast.show(t('group.transferred', { name: member.name }));
       load();
     } catch {
-      toast.show('No se pudo transferir la administración.', 'error');
+      toast.show(t('group.transferError'), 'error');
     } finally {
       setBusyId(null);
     }
@@ -72,10 +74,10 @@ export default function GroupMembersScreen() {
     try {
       await removeGroupMember(groupId, member.id);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show(`${member.name} eliminado del grupo`);
+      toast.show(t('group.removed', { name: member.name }));
       load();
     } catch {
-      toast.show('No se pudo eliminar al miembro.', 'error');
+      toast.show(t('group.removeError'), 'error');
     } finally {
       setBusyId(null);
     }
@@ -88,14 +90,13 @@ export default function GroupMembersScreen() {
     try {
       await renameGroup(groupId, name);
       setGroup({ ...group, name });
-      // Refrescar el nombre cacheado en carrito activo / grupo por defecto.
+      // Refrescar el nombre cacheado en el carrito activo.
       if (activeCart?.groupId === groupId) await activateCart(groupId, name);
-      if (defaultGroup?.groupId === groupId) await setDefaultGroup(groupId, name);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show('Grupo renombrado');
+      toast.show(t('group.renamed'));
       setRenameVisible(false);
     } catch {
-      toast.show('No se pudo renombrar el grupo.', 'error');
+      toast.show(t('group.renameError'), 'error');
     } finally {
       setRenaming(false);
     }
@@ -108,12 +109,11 @@ export default function GroupMembersScreen() {
       await deleteGroup(groupId);
       // Limpiar referencias locales al grupo borrado.
       if (activeCart?.groupId === groupId) await deactivateCart();
-      if (defaultGroup?.groupId === groupId) await clearDefaultGroup();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show('Grupo eliminado');
+      toast.show(t('group.deleted'));
       navigation.navigate('GroupsHome');
     } catch {
-      toast.show('No se pudo eliminar el grupo.', 'error');
+      toast.show(t('group.deleteError'), 'error');
       setDeleting(false);
     }
   };
@@ -125,24 +125,24 @@ export default function GroupMembersScreen() {
       await removeGroupMember(groupId, userId);
       if (activeCart?.groupId === groupId) await deactivateCart();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show('Has abandonado el grupo');
+      toast.show(t('group.left'));
       navigation.navigate('GroupsHome');
     } catch {
-      toast.show('No se pudo abandonar el grupo.', 'error');
+      toast.show(t('group.leaveError'), 'error');
       setBusyId(null);
     }
   };
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
-        <Text style={styles.title}>Miembros</Text>
+        <Text style={styles.title}>{t('group.membersHeader')}</Text>
         <View style={{ width: 38 }} />
       </View>
 
@@ -150,7 +150,7 @@ export default function GroupMembersScreen() {
         <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 60 }} />
       ) : !group ? (
         <View style={styles.centerBox}>
-          <Text style={styles.emptyText}>No se pudo cargar el grupo.</Text>
+          <Text style={styles.emptyText}>{t('group.detailLoadError')}</Text>
         </View>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
@@ -163,7 +163,7 @@ export default function GroupMembersScreen() {
             )}
           </View>
           <Text style={styles.countLabel}>
-            {group.members.length} {group.members.length === 1 ? 'miembro' : 'miembros'}
+            {group.members.length} {group.members.length === 1 ? t('group.member') : t('group.members')}
           </Text>
 
           {isAdmin && (
@@ -173,7 +173,7 @@ export default function GroupMembersScreen() {
               onPress={() => navigation.navigate('AddMember', { groupId })}
             >
               <Ionicons name="person-add-outline" size={18} color={colors.accent} />
-              <Text style={styles.addBtnText}>Añadir miembro</Text>
+              <Text style={styles.addBtnText}>{t('group.addMember')}</Text>
             </TouchableOpacity>
           )}
 
@@ -187,12 +187,12 @@ export default function GroupMembersScreen() {
                   <UserAvatar avatarUrl={m.avatarUrl} initials={m.initials} color={m.color} size={42} />
                   <View style={styles.memberInfo}>
                     <Text style={styles.memberName} numberOfLines={1}>
-                      {m.name}{isMe ? ' (tú)' : ''}
+                      {m.name}{isMe ? t('group.meSuffix') : ''}
                     </Text>
                     {isMemberAdmin && (
                       <View style={styles.adminBadge}>
                         <Ionicons name="star" size={10} color={colors.accent} />
-                        <Text style={styles.adminBadgeText}>Administrador</Text>
+                        <Text style={styles.adminBadgeText}>{t('group.adminBadge')}</Text>
                       </View>
                     )}
                   </View>
@@ -213,9 +213,7 @@ export default function GroupMembersScreen() {
           {/* Leave / admin note */}
           {isAdmin ? (
             <>
-              <Text style={styles.adminNote}>
-                Eres el administrador del grupo. Para salir, primero deberías transferir la administración o eliminar el grupo.
-              </Text>
+              <Text style={styles.adminNote}>{t('group.adminNote')}</Text>
               <TouchableOpacity
                 style={styles.leaveBtn}
                 onPress={() => setDeleteVisible(true)}
@@ -226,7 +224,7 @@ export default function GroupMembersScreen() {
                 ) : (
                   <>
                     <Ionicons name="trash-outline" size={18} color="#d6452b" />
-                    <Text style={styles.leaveText}>Eliminar grupo</Text>
+                    <Text style={styles.leaveText}>{t('group.deleteGroup')}</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -242,7 +240,7 @@ export default function GroupMembersScreen() {
               ) : (
                 <>
                   <Ionicons name="exit-outline" size={18} color="#d6452b" />
-                  <Text style={styles.leaveText}>Abandonar grupo</Text>
+                  <Text style={styles.leaveText}>{t('group.leaveGroup')}</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -272,7 +270,7 @@ export default function GroupMembersScreen() {
                 onPress={() => doTransfer(actionMember)}
               >
                 <Ionicons name="star-outline" size={20} color={colors.accent} />
-                <Text style={styles.sheetActionText}>Hacer administrador</Text>
+                <Text style={styles.sheetActionText}>{t('group.makeAdmin')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -281,7 +279,7 @@ export default function GroupMembersScreen() {
                 onPress={() => doRemove(actionMember)}
               >
                 <Ionicons name="person-remove-outline" size={20} color="#d6452b" />
-                <Text style={[styles.sheetActionText, { color: '#d6452b' }]}>Eliminar del grupo</Text>
+                <Text style={[styles.sheetActionText, { color: '#d6452b' }]}>{t('group.removeFromGroup')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -289,7 +287,7 @@ export default function GroupMembersScreen() {
                 activeOpacity={0.7}
                 onPress={() => setActionMember(null)}
               >
-                <Text style={styles.sheetCancelText}>Cancelar</Text>
+                <Text style={styles.sheetCancelText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -298,9 +296,9 @@ export default function GroupMembersScreen() {
 
       <ConfirmDialog
         visible={leaveVisible}
-        title="Abandonar grupo"
-        message={`¿Seguro que quieres abandonar “${group?.name ?? ''}”? Dejarás de ver su lista compartida.`}
-        confirmLabel="Abandonar"
+        title={t('group.leaveTitle')}
+        message={t('group.leaveMessage', { name: group?.name ?? '' })}
+        confirmLabel={t('group.leaveConfirm')}
         destructive
         onConfirm={confirmLeave}
         onCancel={() => setLeaveVisible(false)}
@@ -309,11 +307,11 @@ export default function GroupMembersScreen() {
       {/* Rename — bottom sheet (mismo patrón que "Nuevo grupo" en GroupsScreen) */}
       <NameInputSheet
         visible={renameVisible}
-        title="Renombrar grupo"
-        subtitle="Todos los miembros verán el nuevo nombre"
+        title={t('group.renameTitle')}
+        subtitle={t('group.renameSubtitle')}
         icon="pencil"
         initialValue={group?.name ?? ''}
-        submitLabel="Guardar"
+        submitLabel={t('common.save')}
         submitIcon="checkmark"
         busy={renaming}
         onSubmit={confirmRename}
@@ -322,9 +320,9 @@ export default function GroupMembersScreen() {
 
       <ConfirmDialog
         visible={deleteVisible}
-        title="Eliminar grupo"
-        message={`¿Seguro que quieres eliminar “${group?.name ?? ''}”? Se borrarán su lista compartida y su historial para todos los miembros. Esta acción no se puede deshacer.`}
-        confirmLabel="Eliminar"
+        title={t('group.deleteTitle')}
+        message={t('group.deleteMessage', { name: group?.name ?? '' })}
+        confirmLabel={t('group.deleteConfirm')}
         destructive
         onConfirm={confirmDelete}
         onCancel={() => setDeleteVisible(false)}

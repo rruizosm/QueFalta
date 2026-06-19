@@ -12,6 +12,7 @@ import { GroupsStackParamList } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import { addMemberToGroup, fetchGroupMembers } from '../api/groups';
 import { fetchFriends, type FriendProfile } from '../api/friends';
 import UserAvatar from '../components/UserAvatar';
@@ -20,6 +21,7 @@ type AddMemberRouteProp = RouteProp<GroupsStackParamList, 'AddMember'>;
 
 export default function AddMemberScreen() {
   const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { groupId } = useRoute<AddMemberRouteProp>().params;
   const { session } = useAuth();
@@ -57,9 +59,9 @@ export default function AddMemberScreen() {
       await addMemberToGroup(groupId, f.id);
       setAddedIds((ids) => [...ids, f.id]);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show(`${f.name} añadido al grupo`);
+      toast.show(t('group.added', { name: f.name }));
     } catch {
-      toast.show('No se pudo añadir al usuario.', 'error');
+      toast.show(t('group.addError'), 'error');
     } finally {
       setAddingId(null);
     }
@@ -67,13 +69,13 @@ export default function AddMemberScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
-        <Text style={styles.title}>Añadir miembro</Text>
+        <Text style={styles.title}>{t('group.addMember')}</Text>
         <View style={{ width: 38 }} />
       </View>
 
@@ -83,7 +85,7 @@ export default function AddMemberScreen() {
           style={styles.input}
           value={query}
           onChangeText={setQuery}
-          placeholder="filtrar entre tus amigos"
+          placeholder={t('group.searchFriends')}
           placeholderTextColor={colors.inkFaint}
           autoCapitalize="none"
           autoCorrect={false}
@@ -95,15 +97,13 @@ export default function AddMemberScreen() {
       ) : friends.length === 0 ? (
         <View style={styles.centerBox}>
           <Ionicons name="people-outline" size={48} color={colors.inkFaint} />
-          <Text style={styles.emptyTitle}>No tienes amigos todavía</Text>
-          <Text style={styles.emptyText}>
-            Añade amigos desde Perfil → Amigos y aquí podrás invitarlos al grupo.
-          </Text>
+          <Text style={styles.emptyTitle}>{t('group.noFriendsTitle')}</Text>
+          <Text style={styles.emptyText}>{t('group.noFriendsText')}</Text>
         </View>
       ) : (
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
           {filtered.length === 0 ? (
-            <Text style={styles.empty}>Ningún amigo coincide.</Text>
+            <Text style={styles.empty}>{t('group.noFriendMatch')}</Text>
           ) : (
             filtered.map((f) => {
               const isMember = memberIds.has(f.id) || addedIds.includes(f.id);
@@ -117,13 +117,13 @@ export default function AddMemberScreen() {
                   {isMember ? (
                     <View style={styles.addedBadge}>
                       <Ionicons name="checkmark" size={15} color={colors.ok} />
-                      <Text style={styles.addedText}>En el grupo</Text>
+                      <Text style={styles.addedText}>{t('group.inGroup')}</Text>
                     </View>
                   ) : (
                     <TouchableOpacity style={styles.addBtn} onPress={() => handleAdd(f)} disabled={addingId === f.id}>
                       {addingId === f.id
                         ? <ActivityIndicator size="small" color={colors.white} />
-                        : <Text style={styles.addBtnText}>Añadir</Text>}
+                        : <Text style={styles.addBtnText}>{t('group.add')}</Text>}
                     </TouchableOpacity>
                   )}
                 </View>

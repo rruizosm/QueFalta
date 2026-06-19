@@ -11,14 +11,16 @@ import {
   removeFavorite,
 } from '../api/favorites';
 import type { FavoriteCategory, FavoriteProduct } from '../types';
+import type { CatalogStore } from '../constants/stores';
 import { useAuth } from './AuthContext';
 
 interface FavoritesContextValue {
   categories: FavoriteCategory[];
   products: FavoriteProduct[];
   loading: boolean;
-  isCategoryFavorite: (refId: string) => boolean;
-  isProductFavorite: (refId: string) => boolean;
+  // La identidad de un favorito es (store, refId): los ids se solapan entre súpers.
+  isCategoryFavorite: (store: CatalogStore, refId: string) => boolean;
+  isProductFavorite: (store: CatalogStore, refId: string) => boolean;
   /** Devuelve true si quedó marcada como favorita, false si se quitó. Lanza si falla. */
   toggleCategoryFavorite: (cat: FavoriteCategory) => Promise<boolean>;
   toggleProductFavorite: (prod: FavoriteProduct) => Promise<boolean>;
@@ -62,31 +64,30 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
   }, [userId]);
 
   const isCategoryFavorite = useCallback(
-    (refId: string) => categories.some((c) => c.refId === refId),
+    (store: CatalogStore, refId: string) =>
+      categories.some((c) => c.store === store && c.refId === refId),
     [categories],
   );
   const isProductFavorite = useCallback(
-    (refId: string) => products.some((p) => p.refId === refId),
+    (store: CatalogStore, refId: string) =>
+      products.some((p) => p.store === store && p.refId === refId),
     [products],
   );
 
   const toggleCategoryFavorite = useCallback(
     async (cat: FavoriteCategory): Promise<boolean> => {
       if (!userId) throw new Error('No hay sesión');
-      const exists = categories.some((c) => c.refId === cat.refId);
+      const same = (c: FavoriteCategory) => c.store === cat.store && c.refId === cat.refId;
+      const exists = categories.some(same);
       // update optimista
-      setCategories((prev) =>
-        exists ? prev.filter((c) => c.refId !== cat.refId) : [cat, ...prev],
-      );
+      setCategories((prev) => (exists ? prev.filter((c) => !same(c)) : [cat, ...prev]));
       try {
-        if (exists) await removeFavorite(userId, 'category', cat.refId);
+        if (exists) await removeFavorite(userId, 'category', cat.store, cat.refId);
         else await addCategoryFavorite(userId, cat);
         return !exists;
       } catch (e) {
         // rollback
-        setCategories((prev) =>
-          exists ? [cat, ...prev] : prev.filter((c) => c.refId !== cat.refId),
-        );
+        setCategories((prev) => (exists ? [cat, ...prev] : prev.filter((c) => !same(c))));
         throw e;
       }
     },
@@ -96,18 +97,15 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
   const toggleProductFavorite = useCallback(
     async (prod: FavoriteProduct): Promise<boolean> => {
       if (!userId) throw new Error('No hay sesión');
-      const exists = products.some((p) => p.refId === prod.refId);
-      setProducts((prev) =>
-        exists ? prev.filter((p) => p.refId !== prod.refId) : [prod, ...prev],
-      );
+      const same = (p: FavoriteProduct) => p.store === prod.store && p.refId === prod.refId;
+      const exists = products.some(same);
+      setProducts((prev) => (exists ? prev.filter((p) => !same(p)) : [prod, ...prev]));
       try {
-        if (exists) await removeFavorite(userId, 'product', prod.refId);
+        if (exists) await removeFavorite(userId, 'product', prod.store, prod.refId);
         else await addProductFavorite(userId, prod);
         return !exists;
       } catch (e) {
-        setProducts((prev) =>
-          exists ? [prod, ...prev] : prev.filter((p) => p.refId !== prod.refId),
-        );
+        setProducts((prev) => (exists ? [prod, ...prev] : prev.filter((p) => !same(p))));
         throw e;
       }
     },

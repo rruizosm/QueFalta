@@ -10,6 +10,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
+import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -35,6 +37,8 @@ interface Props {
 }
 
 export default function ActionSheet({ visible, onClose, title, subtitle, leading, actions }: Props) {
+  const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.sheetRoot}>
@@ -74,7 +78,7 @@ export default function ActionSheet({ visible, onClose, title, subtitle, leading
           ))}
 
           <TouchableOpacity style={styles.sheetCancel} activeOpacity={0.7} onPress={onClose}>
-            <Text style={styles.sheetCancelText}>Cancelar</Text>
+            <Text style={styles.sheetCancelText}>{t('common.cancel')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -82,7 +86,7 @@ export default function ActionSheet({ visible, onClose, title, subtitle, leading
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   sheetRoot: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.45)' },
   sheet: {
     backgroundColor: colors.paper,

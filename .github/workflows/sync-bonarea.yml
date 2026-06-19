@@ -23,5 +23,5 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
-          LOCALE: es
+          LOCALE: es   # idioma PRIMARIO; el sync añade una 2ª pasada en català (display_name_ca)
           CONCURRENCY: '6'

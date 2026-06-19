@@ -95,6 +95,17 @@ function walkTree(nodes, parentId, catRows, seen) {
 // ── Normalización de un producto ─────────────────────────────────────────────
 const eurStr = (n) => (typeof n === 'number' ? n.toFixed(2).replace('.', ',') : null);
 
+// La foto buena está en p.media[] (archivos con sufijo _NNN, p.ej. 1669_001.jpg),
+// NO en productData.imageURL: ese campo apunta a /CODE.jpg (sin sufijo), que el CDN
+// devuelve 404 → era la causa de "los productos de Consum no tienen imagen".
+// Todas las entradas de media son type 'P' (foto de producto); la de menor `order`
+// es la principal. Fallback a imageURL solo por si algún producto no trae media.
+function pickThumbnail(p) {
+  const media = (Array.isArray(p.media) ? p.media : []).filter((m) => m?.url);
+  media.sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+  return media[0]?.url ?? p.productData?.imageURL ?? null;
+}
+
 function normalize(p) {
   const pd = p.productData ?? {};
   // Precio que paga el cliente: OFFER_PRICE si hay oferta activa, si no PRICE.
@@ -118,7 +129,7 @@ function normalize(p) {
     display_name: name,
     brand: (pd.brand?.name || '').trim() || null,
     packaging,
-    thumbnail: pd.imageURL || null,
+    thumbnail: pickThumbnail(p),
     ean13: p.ean || null,
     unit_price: price,
     price_format: price != null ? `${eurStr(price)} €` : null,

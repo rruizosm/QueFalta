@@ -7,6 +7,8 @@ import {
 } from '../api/catalog';
 import type { CatalogStore } from '../constants/stores';
 import { useToast } from '../context/ToastContext';
+import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 
 /** Referencia a un producto de cualquier súper (lo que devuelve la comparativa). */
 export interface ProductRef {
@@ -26,7 +28,9 @@ interface Props {
  *  Mercadona delega en ProductDetailModal (que ya hace su propio fetch); para los
  *  espejos se carga el producto por id y se pinta su modal correspondiente. */
 export default function StoreProductModal({ target, onClose }: Props) {
+  const styles = useThemedStyles(themedStyles);
   const toast = useToast();
+  const { t } = useTranslation();
   const [mirror, setMirror] = useState<BonpreuProduct | CarrefourProduct | BonareaProduct | ConsumProduct | DiaProduct | null>(null);
 
   useEffect(() => {
@@ -43,10 +47,10 @@ export default function StoreProductModal({ target, onClose }: Props) {
       .then((p) => {
         if (cancelled) return;
         if (p) setMirror(p);
-        else { toast.show('No se pudo cargar el producto.', 'error'); onClose(); }
+        else { toast.show(t('product.loadError'), 'error'); onClose(); }
       })
       .catch(() => {
-        if (!cancelled) { toast.show('No se pudo cargar el producto.', 'error'); onClose(); }
+        if (!cancelled) { toast.show(t('product.loadError'), 'error'); onClose(); }
       });
     return () => { cancelled = true; };
   }, [target?.store, target?.id]);
@@ -83,14 +87,28 @@ export default function StoreProductModal({ target, onClose }: Props) {
   }
 
   return (
-    <Modal visible animationType="slide" onRequestClose={onClose}>
-      {/* Los modales son overlays absolute-fill: necesitan un contenedor flex:1. */}
-      <View style={styles.host}>{content}</View>
+    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
+      {/* La hoja NO cubre toda la pantalla: empieza bajo el banner del carrito
+          activo, que sigue visible arriba (lo pinta la pantalla de debajo
+          —subcategoría/catálogo/favoritos— que queda en superposición detrás).
+          Los modales internos son overlays absolute-fill → rellenan la hoja. */}
+      <View style={styles.sheet}>{content}</View>
     </Modal>
   );
 }
 
-const styles = StyleSheet.create({
-  host: { flex: 1, backgroundColor: colors.paper },
+// Alto reservado arriba para el banner del carrito activo (ActiveCartBanner con
+// topInset): la hoja arranca justo debajo de él. Si cambia el banner, ajustar.
+const SHEET_TOP = 100;
+
+const themedStyles = () => StyleSheet.create({
+  sheet: {
+    position: 'absolute',
+    top: SHEET_TOP, left: 0, right: 0, bottom: 0,
+    backgroundColor: colors.paper,
+    borderTopWidth: 1, borderTopColor: colors.border,
+    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 8,
+    shadowOffset: { width: 0, height: -2 }, elevation: 12,
+  },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });

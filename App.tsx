@@ -1,4 +1,3 @@
-import { useCallback } from 'react';
 import { Platform, View, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
@@ -10,6 +9,7 @@ import {
 } from '@expo-google-fonts/space-grotesk';
 import * as SplashScreen from 'expo-splash-screen';
 import Navigation from './src/navigation';
+import { LanguageProvider } from './src/context/LanguageContext';
 import { ThemeProvider } from './src/context/ThemeContext';
 import { AuthProvider } from './src/context/AuthContext';
 import { ProfileProvider } from './src/context/ProfileContext';
@@ -19,6 +19,9 @@ import { ToastProvider } from './src/context/ToastContext';
 import { configureNotificationHandler } from './src/lib/notifications';
 
 SplashScreen.preventAutoHideAsync();
+// El splash nativo entrega el relevo al BootLoader con un fundido suave (lo
+// oculta BootLoader en su primer layout, no aquí).
+SplashScreen.setOptions({ duration: 280, fade: true });
 configureNotificationHandler();
 
 export default function App() {
@@ -29,30 +32,29 @@ export default function App() {
     SpaceGrotesk_700Bold,
   });
 
-  const onLayout = useCallback(async () => {
-    if (fontsLoaded) await SplashScreen.hideAsync();
-  }, [fontsLoaded]);
-
   if (!fontsLoaded) return null;
 
   const inner = (
-    // ThemeProvider primero: retiene el render (splash visible) hasta aplicar
-    // el color guardado, para que los StyleSheet se creen ya con ese accent.
-    <ThemeProvider>
-      <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayout}>
-        <AuthProvider>
-          <ProfileProvider>
-            <CartProvider>
-              <FavoritesProvider>
-                <ToastProvider>
-                  <Navigation />
-                </ToastProvider>
-              </FavoritesProvider>
-            </CartProvider>
-          </ProfileProvider>
-        </AuthProvider>
-      </GestureHandlerRootView>
-    </ThemeProvider>
+    // LanguageProvider y ThemeProvider primero: retienen el render (splash
+    // visible) hasta aplicar idioma y color guardados, para que los textos y los
+    // StyleSheet se creen ya con la preferencia correcta (sin flash).
+    <LanguageProvider>
+      <ThemeProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <AuthProvider>
+            <ProfileProvider>
+              <CartProvider>
+                <FavoritesProvider>
+                  <ToastProvider>
+                    <Navigation />
+                  </ToastProvider>
+                </FavoritesProvider>
+              </CartProvider>
+            </ProfileProvider>
+          </AuthProvider>
+        </GestureHandlerRootView>
+      </ThemeProvider>
+    </LanguageProvider>
   );
 
   if (Platform.OS !== 'web') return inner;

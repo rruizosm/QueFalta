@@ -1,18 +1,34 @@
--- Añadir miembros buscando por @usuario.
+-- Añadir miembros a un grupo buscando por @usuario.
 --
--- 1. Perfiles "visibles" (discoverable = true) se pueden buscar/ver por cualquier
---    usuario autenticado (es justo el sentido del toggle "Visible para otros").
---    Aditiva a las policies existentes (ver tu propio perfil, co-miembros…).
--- 2. El administrador del grupo (owner) puede añadir a otros miembros.
+-- El admin (owner) puede añadir a otros usuarios, PERO solo si el destinatario
+-- es `discoverable = true` (igual que la búsqueda de la UI, que solo devuelve
+-- perfiles visibles). Esto evita que un admin malicioso añada a alguien por su
+-- UUID sin consentimiento — lo que, además, expondría el perfil de la víctima a
+-- todos los miembros del grupo vía la policy "profiles select: co-member".
+-- El alta por ENLACE de invitación es independiente (policy "Users can join
+-- groups via invite", with check user_id = auth.uid()) y no exige discoverable.
+--
+-- NOTA: la policy de lectura de perfiles discoverable se movió a
+-- policies/profiles_visibility.sql (fuente de verdad única de SELECT en profiles).
 --
 -- Ejecutar en: Supabase → SQL Editor.
 
-drop policy if exists "profiles select: discoverable" on public.profiles;
-create policy "profiles select: discoverable"
-on public.profiles for select to authenticated
-using (discoverable = true);
+-- Helper SECURITY DEFINER: ¿es `uid` un perfil que se deja encontrar?
+-- Bypassa RLS para no depender de qué ve el llamante.
+create or replace function public.is_discoverable(uid uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select coalesce((select discoverable from public.profiles where id = uid), false);
+$$;
 
 drop policy if exists "group_members insert: admin adds" on public.group_members;
 create policy "group_members insert: admin adds"
 on public.group_members for insert to authenticated
-with check (public.is_group_admin(group_id));
+with check (
+  public.is_group_admin(group_id)
+  and public.is_discoverable(user_id)
+);

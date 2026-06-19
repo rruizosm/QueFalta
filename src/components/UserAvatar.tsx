@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, type StyleProp, type ViewStyle } from 'react-na
 import { Image } from 'expo-image';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
+import { useThemedStyles } from '../context/ThemeContext';
 
 /**
  * Avatar de usuario: muestra su foto de perfil si la tiene y, si no, las
@@ -22,6 +23,7 @@ export default function UserAvatar({
   size: number;
   style?: StyleProp<ViewStyle>;
 }) {
+  const styles = useThemedStyles(themedStyles);
   const base = { width: size, height: size, borderRadius: size / 2 };
   if (avatarUrl) {
     return (
@@ -42,7 +44,7 @@ export default function UserAvatar({
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   fallback: { alignItems: 'center', justifyContent: 'center' },
   initials: { color: colors.white, fontFamily: fonts.bold },
 });

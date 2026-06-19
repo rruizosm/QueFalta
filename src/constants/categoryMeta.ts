@@ -50,8 +50,35 @@ export const CATEGORY_META: Record<string, { emoji: string; color: string }> = {
  * sus nombres están en CATEGORY_META (match exacto, que tiene prioridad).
  */
 const CATEGORY_KEYWORD_RULES: [string, { emoji: string; color: string }][] = [
+  // ── Dia / Consum: N1 cuyo nombre no coincide con el de Mercadona ──
+  // Van primero (términos específicos) para que ganen a las reglas generales
+  // de abajo y no se queden con el carrito 🛒 por defecto.
+  ['verdura',         { emoji: '🥦', get color() { return colors.accent; } }],
+  ['frutas',          { emoji: '🍎', get color() { return colors.accent; } }],
+  ['carne',           { emoji: '🥩', color: colors.red }],
+  ['pescado',         { emoji: '🐟', color: colors.teal }],
+  ['aperitivo',       { emoji: '🥨', color: colors.yellow }],
+  ['aceites',         { emoji: '🫙', color: colors.purple }],
+  ['arroz',           { emoji: '🍚', color: colors.orange }],
+  ['bollería',        { emoji: '🥐', color: colors.orange }],
+  ['galletas',        { emoji: '🍪', color: colors.yellow }],
+  ['chocolate',       { emoji: '🍫', color: colors.purple }],
+  ['yogur',           { emoji: '🍮', color: colors.yellow }],
+  ['zumo',            { emoji: '🍊', color: colors.yellow }],
+  ['platos preparados',{ emoji: '🍱', color: colors.red }],
+  ['horno',           { emoji: '🥖', color: colors.orange }],
+  ['infantil',        { emoji: '👶', color: colors.teal }],
+  ['sin gluten',      { emoji: '🌾', color: colors.orange }],
+  ['ecológico',       { emoji: '🌿', get color() { return colors.accent; } }],
+  ['verano',          { emoji: '☀️', color: colors.yellow }],
+  ['bazar',           { emoji: '🛍️', color: colors.inkSoft }],
   // ── Alimentación / frescos ────────────────────────────────────
   ['lácteo',          { emoji: '🥛', color: colors.blue }],
+  // 'aigua'/'refresc' ANTES que 'frescos': "refrescos" contiene "frescos" como
+  // subcadena, así que sin esto "Aigua i refrescos" (i "...refrescos" de otros
+  // súpers) se quedaba con el 🥦 de la regla "frescos".
+  ['aigua',           { emoji: '💧', color: colors.teal }],
+  ['refresc',         { emoji: '🥤', color: colors.teal }],
   ['frescos',         { emoji: '🥦', get color() { return colors.accent; } }],
   ['congelado',       { emoji: '🧊', color: colors.blue }],
   ['cocinado',        { emoji: '🍲', color: colors.red }],
@@ -97,6 +124,51 @@ const CATEGORY_KEYWORD_RULES: [string, { emoji: string; color: string }][] = [
   // ── Comercial / transversal ───────────────────────────────────
   ['oferta',          { emoji: '🏷️', color: colors.red }],
   ['novedad',         { emoji: '✨', color: colors.yellow }],
+
+  // ── CATALÀ (Mercadona con lang=ca + Bonpreu/bonÀrea, nativos) ──
+  // Se evalúan DESPUÉS de las reglas en castellano (que para nombres en
+  // castellano ya casan), así que aquí solo van términos catalanes distintivos
+  // (≥4 letras o con acento) para no falsear nombres en castellano. Específico
+  // → general dentro del bloque.
+  ['fruita',          { emoji: '🍎', get color() { return colors.accent; } }],
+  ['carn',            { emoji: '🥩', color: colors.red }],
+  ['xarcuteria',      { emoji: '🧀', color: colors.yellow }],
+  ['formatge',        { emoji: '🧀', color: colors.yellow }],
+  ['marisc',          { emoji: '🦐', color: colors.teal }],
+  ['peix',            { emoji: '🐟', color: colors.teal }],
+  ['llet',            { emoji: '🥛', color: colors.blue }],
+  ['cabell',          { emoji: '💇', color: colors.purple }],
+  ['cura',            { emoji: '🧴', color: colors.blue }],
+  ['maquilla',        { emoji: '💄', color: colors.red }],
+  ['parafarm',        { emoji: '💊', color: colors.teal }],
+  ['nadó',            { emoji: '👶', color: colors.teal }],
+  ['fleca',           { emoji: '🥐', color: colors.orange }],
+  ['pastisser',       { emoji: '🥐', color: colors.orange }],
+  ['cervesa',         { emoji: '🍺', color: colors.yellow }],
+  ['celler',          { emoji: '🍷', color: colors.purple }],
+  ['beguda',          { emoji: '🥤', color: colors.teal }],
+  ['congelat',        { emoji: '🧊', color: colors.blue }],
+  ['neteja',          { emoji: '🧹', color: colors.purple }],
+  ['arròs',           { emoji: '🍚', color: colors.orange }],
+  ['llegum',          { emoji: '🫘', color: colors.orange }],
+  ['espècies',        { emoji: '🫙', color: colors.purple }],
+  ['salses',          { emoji: '🫙', color: colors.purple }],
+  ['conserv',         { emoji: '🥫', color: colors.orange }],
+  ['brou',            { emoji: '🥫', color: colors.orange }],
+  ['sucre',           { emoji: '🍬', color: colors.purple }],
+  ['xocolata',        { emoji: '🍫', color: colors.purple }],
+  ['pizz',            { emoji: '🍕', color: colors.red }],
+  ['cereal',          { emoji: '🥣', color: colors.yellow }],
+  ['galet',           { emoji: '🍪', color: colors.yellow }],
+  ['iogurt',          { emoji: '🍮', color: colors.yellow }],
+  ['postres',         { emoji: '🍮', color: colors.yellow }],
+  ['cafè',            { emoji: '☕', color: colors.orange }],
+  ['cacau',           { emoji: '☕', color: colors.orange }],
+  ['infusi',          { emoji: '☕', color: colors.orange }],
+  ['sucs',            { emoji: '🍊', color: colors.yellow }],
+  ['aperitiu',        { emoji: '🥨', color: colors.yellow }],
+  ['nutrició',        { emoji: '💪', get color() { return colors.accent; } }],
+  ['llar',            { emoji: '🏠', color: colors.orange }],
 ];
 
 export function getMeta(name: string) {

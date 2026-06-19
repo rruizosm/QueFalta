@@ -1,66 +1,134 @@
 /**
- * ThemeContext — color principal (accent) elegido por el usuario.
+ * ThemeContext — dos ejes de tema elegidos por el usuario en Apariencia:
+ *   - modo claro/oscuro (`themeMode`: 'light' | 'dark' | 'system')
+ *   - color principal (`accentKey`)
  *
- * Carga la preferencia de AsyncStorage ANTES de renderizar la app (devuelve
- * null mientras tanto, con la splash aún visible) para que todos los
- * StyleSheet se creen ya con el color correcto y no haya flash naranja.
+ * Carga ambas preferencias de AsyncStorage ANTES de renderizar la app (devuelve
+ * null mientras tanto, con la splash aún visible) para que todos los StyleSheet
+ * se creen ya con el tema correcto y no haya flash.
  *
- * `useThemedStyles(fábrica)` es el puente para los StyleSheet que usan
- * colors.accent*: suscribe al componente al tema y recrea los estilos al
- * cambiar el color (un StyleSheet.create estático se evaluaría una sola vez).
+ * `useThemedStyles(fábrica)` es el puente para los StyleSheet que dependen del
+ * tema: suscribe al componente y recrea los estilos al cambiar modo o color
+ * (un StyleSheet.create estático se evaluaría una sola vez).
  */
 import React, {
-  createContext, useCallback, useContext, useEffect, useMemo, useState,
+  createContext, useCallback, useContext, useEffect, useMemo, useRef, useState,
 } from 'react';
+import { Appearance } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   ACCENT_OPTIONS, AccentKey, DEFAULT_ACCENT, applyAccent,
+  THEME_OPTIONS, ThemeMode, ColorScheme, DEFAULT_THEME_MODE, applyTheme,
 } from '../constants/colors';
 
-const STORAGE_KEY = '@accent_color';
+const ACCENT_KEY = '@accent_color';
+const THEME_KEY  = '@theme_mode';
 
 interface ThemeContextValue {
   accentKey: AccentKey;
   setAccentKey: (key: AccentKey) => void;
+  themeMode: ThemeMode;
+  setThemeMode: (mode: ThemeMode) => void;
+  /** Esquema realmente aplicado ('light' | 'dark'), ya resuelto el 'system'. */
+  scheme: ColorScheme;
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
   accentKey: DEFAULT_ACCENT,
   setAccentKey: () => {},
+  themeMode: DEFAULT_THEME_MODE,
+  setThemeMode: () => {},
+  scheme: 'light',
 });
 
 function isAccentKey(value: string | null): value is AccentKey {
   return ACCENT_OPTIONS.some((o) => o.key === value);
 }
 
+function isThemeMode(value: string | null): value is ThemeMode {
+  return THEME_OPTIONS.some((o) => o.key === value);
+}
+
+/** Resuelve el esquema efectivo a partir del modo y el ajuste del sistema. */
+function resolveScheme(mode: ThemeMode, system: ColorScheme): ColorScheme {
+  return mode === 'system' ? system : mode;
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [accentKey, setKey] = useState<AccentKey | null>(null);
+  const [themeMode, setMode] = useState<ThemeMode | null>(null);
+  const [systemScheme, setSystemScheme] = useState<ColorScheme>(
+    () => (Appearance.getColorScheme() === 'dark' ? 'dark' : 'light'),
+  );
 
+  // Carga las preferencias guardadas antes del primer render.
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((raw) => {
-        const key = isAccentKey(raw) ? raw : DEFAULT_ACCENT;
+    Promise.all([
+      AsyncStorage.getItem(ACCENT_KEY),
+      AsyncStorage.getItem(THEME_KEY),
+    ])
+      .then(([rawAccent, rawMode]) => {
+        const key = isAccentKey(rawAccent) ? rawAccent : DEFAULT_ACCENT;
+        const mode = isThemeMode(rawMode) ? rawMode : DEFAULT_THEME_MODE;
         applyAccent(key);
+        applyTheme(resolveScheme(mode, systemScheme));
         setKey(key);
+        setMode(mode);
       })
       .catch(() => {
         applyAccent(DEFAULT_ACCENT);
+        applyTheme(resolveScheme(DEFAULT_THEME_MODE, systemScheme));
         setKey(DEFAULT_ACCENT);
+        setMode(DEFAULT_THEME_MODE);
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Ref con el modo vigente para que el listener del sistema (closure estable)
+  // sepa si debe re-aplicar la paleta.
+  const modeRef = useRef<ThemeMode>(themeMode ?? DEFAULT_THEME_MODE);
+  modeRef.current = themeMode ?? DEFAULT_THEME_MODE;
+
+  // Sigue los cambios de tema del sistema (relevante en modo 'system').
+  useEffect(() => {
+    const sub = Appearance.addChangeListener(({ colorScheme }) => {
+      const sys: ColorScheme = colorScheme === 'dark' ? 'dark' : 'light';
+      // Muta la paleta ANTES del setState para que useThemedStyles recree los
+      // estilos ya con el esquema nuevo en el mismo render (igual que el accent).
+      if (modeRef.current === 'system') applyTheme(sys);
+      setSystemScheme(sys);
+    });
+    return () => sub.remove();
+  }, []);
+
+  const scheme: ColorScheme = resolveScheme(themeMode ?? DEFAULT_THEME_MODE, systemScheme);
 
   const setAccentKey = useCallback((key: AccentKey) => {
     applyAccent(key);
     setKey(key);
-    AsyncStorage.setItem(STORAGE_KEY, key).catch(() => {});
+    AsyncStorage.setItem(ACCENT_KEY, key).catch(() => {});
+  }, []);
+
+  const setThemeMode = useCallback((mode: ThemeMode) => {
+    // Aplica la paleta de inmediato (antes del re-render) para evitar un frame
+    // con el tema anterior.
+    applyTheme(resolveScheme(mode, Appearance.getColorScheme() === 'dark' ? 'dark' : 'light'));
+    setMode(mode);
+    AsyncStorage.setItem(THEME_KEY, mode).catch(() => {});
   }, []);
 
   const value = useMemo(
-    () => ({ accentKey: accentKey ?? DEFAULT_ACCENT, setAccentKey }),
-    [accentKey, setAccentKey],
+    () => ({
+      accentKey: accentKey ?? DEFAULT_ACCENT,
+      setAccentKey,
+      themeMode: themeMode ?? DEFAULT_THEME_MODE,
+      setThemeMode,
+      scheme,
+    }),
+    [accentKey, setAccentKey, themeMode, setThemeMode, scheme],
   );
 
-  if (accentKey === null) return null;
+  if (accentKey === null || themeMode === null) return null;
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
@@ -69,9 +137,9 @@ export function useTheme(): ThemeContextValue {
   return useContext(ThemeContext);
 }
 
-/** Recrea estilos dependientes del accent al cambiar el tema. */
+/** Recrea estilos dependientes del tema (modo o color) al cambiar. */
 export function useThemedStyles<T>(factory: () => T): T {
-  const { accentKey } = useTheme();
+  const { accentKey, scheme } = useTheme();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(factory, [accentKey]);
+  return useMemo(factory, [accentKey, scheme]);
 }

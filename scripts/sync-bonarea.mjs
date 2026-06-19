@@ -43,7 +43,13 @@ const execFileP = promisify(execFile);
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
 const DRY_RUN = process.env.DRY_RUN === '1';
-const LOCALE = (process.env.LOCALE || 'es').toLowerCase();
+// La app es bilingüe (como Mercadona): guardamos los DOS idiomas y la app elige
+// según el idioma activo. La ruta del endpoint fija el idioma: `/es/shop` (primario,
+// castellano → display_name/name) y `/ca/shop` (2ª pasada → display_name_ca/name_ca).
+// Los ids de categoría/producto son estables entre idiomas → se casan por id. El
+// catálogo se recorre DOS veces (es y ca); bonÀrea es rápido (curl), ~2× tiempo.
+const PRIMARY = (process.env.LOCALE || 'es').toLowerCase();
+const CA = 'ca';
 const CONCURRENCY = Number(process.env.CONCURRENCY || 5);
 const MAX_CATEGORIES = process.env.MAX_CATEGORIES ? Number(process.env.MAX_CATEGORIES) : Infinity;
 
@@ -63,7 +69,7 @@ if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
 }
 
 const HOME = 'https://www.bonarea-online.com';
-const SHOP = `${HOME}/${LOCALE}/shop`;
+const shopUrl = (locale) => `${HOME}/${locale}/shop`;
 const IMG_BASE = 'https://images.bonarea.com';
 const runStart = new Date().toISOString();
 const JAR = join(mkdtempSync(join(tmpdir(), 'bonarea-')), 'cookies.txt');
@@ -89,13 +95,13 @@ async function curlGet(url, { tries = 4 } = {}) {
 
 // POST form-urlencoded a ShoppingBody → JSON. `reference` puede llevar '*', que curl
 // envía tal cual con --data-urlencode (sin que el shell lo expanda: execFile no usa shell).
-async function shoppingBody(reference, { tries = 4 } = {}) {
+async function shoppingBody(reference, locale = PRIMARY, { tries = 4 } = {}) {
   const args = [
     '-sS', '--compressed', '--max-time', '30', '-A', UA, '-c', JAR, '-b', JAR,
     '-H', 'X-Requested-With: XMLHttpRequest',
     '-H', 'Accept: application/json, text/javascript, */*; q=0.01',
     '--data-urlencode', `reference=${reference}`,
-    `${SHOP}/ShoppingBody`,
+    `${shopUrl(locale)}/ShoppingBody`,
   ];
   for (let t = 0; t < tries; t++) {
     try {
@@ -129,8 +135,8 @@ function jsonArrayAfter(html, varName) {
   return null;
 }
 
-async function bootstrapReference() {
-  const html = await curlGet(SHOP);
+async function bootstrapReference(locale = PRIMARY) {
+  const html = await curlGet(shopUrl(locale));
   const gs = jsonArrayAfter(html, 'groupsShopping');
   const ref = gs?.[0]?.children?.[0]?.idNivell || gs?.[0]?.idNivell;
   if (!ref) throw new Error('no encuentro groupsShopping en /shop para arrancar');
@@ -204,8 +210,8 @@ async function markStale(table) {
 }
 
 // ── Procesar una hoja: pedir sus productos ───────────────────────────────────
-async function processLeaf(leaf, products, membership) {
-  const resp = await shoppingBody(leaf.id);
+async function processLeaf(leaf, products, membership, locale = PRIMARY) {
+  const resp = await shoppingBody(leaf.id, locale);
   const arts = Array.isArray(resp.articles) ? resp.articles : [];
   for (const a of arts) {
     if (!a.identifier) continue;
@@ -221,7 +227,7 @@ async function processLeaf(leaf, products, membership) {
 }
 
 async function main() {
-  console.log(`[bonarea] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} locale=${LOCALE} conc=${CONCURRENCY}`);
+  console.log(`[bonarea] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} locale=${PRIMARY}(+${CA}) conc=${CONCURRENCY}`);
 
   const ref = await bootstrapReference();
   const root = await shoppingBody(ref);
@@ -249,6 +255,40 @@ async function main() {
     }
   }));
 
+  // 2ª pasada (catalán): nombres de categoría (name_ca) y producto (display_name_ca),
+  // casados por id (estable entre idiomas). El árbol completo viene en una respuesta
+  // ShoppingBody; los productos se recorren por las MISMAS hojas que el primario.
+  let catNameCa = new Map(), prodNameCa = new Map();
+  if (!DRY_RUN) {
+    console.log(`[bonarea] 2ª pasada en /${CA}/ (nombres en català)…`);
+    try {
+      const refCa = await bootstrapReference(CA);
+      const rootCa = await shoppingBody(refCa, CA);
+      (function walk(nivells) {
+        for (const n of nivells || []) {
+          if (n.identifier) catNameCa.set(n.identifier, (n.descripcio || '').trim());
+          if (Array.isArray(n.children)) walk(n.children);
+        }
+      })(rootCa.nivells || []);
+      const prodsCa = new Map(), memCa = new Map();
+      const queueCa = [...todo];
+      let doneCa = 0;
+      await Promise.all(Array.from({ length: CONCURRENCY }, async () => {
+        for (;;) {
+          const leaf = queueCa.shift();
+          if (!leaf) break;
+          try { await processLeaf(leaf, prodsCa, memCa, CA); }
+          catch (e) { console.warn(`[bonarea:ca] hoja ${leaf.name} (${leaf.id}) falló: ${e.message}`); }
+          if (++doneCa % 25 === 0) console.log(`[bonarea:ca] ${doneCa}/${todo.length} hojas · ${prodsCa.size} productos`);
+          await sleep(80);
+        }
+      }));
+      prodNameCa = new Map([...prodsCa].map(([id, p]) => [id, p.display_name]).filter(([, n]) => n));
+      console.log(`[bonarea] ${catNameCa.size} cat + ${prodNameCa.size} prod en català`);
+    } catch (e) { console.warn(`[bonarea] 2ª pasada ${CA} falló: ${e.message}`); }
+  }
+  for (const c of catRows) c.name_ca = catNameCa.get(c.id) ?? null;
+
   // category_ids = hoja + TODOS sus ancestros. La app muestra un árbol de 2 niveles
   // (N1→N2, como Bonpreu/Carrefour) y consulta productos por el id de la N2; al incluir
   // los ancestros, un producto de "…*010*010*010" también responde a la N2 "…*010" y a
@@ -268,6 +308,7 @@ async function main() {
     const primary = leavesOf[0] ?? null; // la hoja más específica como categoría "primaria"
     rows.push({
       ...det,
+      display_name_ca: prodNameCa.get(id) ?? null,
       category_ids: [...expanded],
       category_id: primary,
       category_name: primary ? catName.get(primary) ?? null : null,

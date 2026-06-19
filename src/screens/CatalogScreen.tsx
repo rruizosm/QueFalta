@@ -10,6 +10,9 @@ import {
   StyleSheet,
   StatusBar,
   ActivityIndicator,
+  Modal,
+  Pressable,
+  type LayoutRectangle,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,7 +20,6 @@ import { colors } from '../constants/colors';
 import { getMeta } from '../constants/categoryMeta';
 import {
   fetchCategories,
-  formatPrice,
   type N1Category,
   type MercadonaProduct,
 } from '../api/mercadona';
@@ -27,52 +29,93 @@ import {
   searchBonareaProducts, fetchBonareaCategoryTree,
   searchConsumProducts, fetchConsumCategoryTree,
   searchDiaProducts, fetchDiaCategoryTree,
+  browseProducts, browseBonpreuProducts, browseCarrefourProducts,
+  browseBonareaProducts, browseConsumProducts, browseDiaProducts,
   type BonpreuProduct, type BonpreuCategory,
   type CarrefourProduct, type CarrefourCategory,
   type BonareaProduct, type BonareaCategory,
   type ConsumProduct, type ConsumCategory,
   type DiaProduct, type DiaCategory,
+  type BrowseCursor, type BrowsePage,
 } from '../api/catalog';
 import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../context/ToastContext';
 import { useProfile } from '../context/ProfileContext';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
+import { useGuidedTour, useTourAnchor } from '../context/GuidedTourContext';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
+import {
+  mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI,
+  type UIProduct,
+} from '../lib/productAdapters';
+import { sortByName } from '../lib/sort';
 import ActionSheet from '../components/ActionSheet';
-import ProductImage from '../components/ProductImage';
-import ProductDetailModal from '../components/ProductDetailModal';
-import BonpreuProductModal from '../components/BonpreuProductModal';
-import CarrefourProductModal from '../components/CarrefourProductModal';
-import BonareaProductModal from '../components/BonareaProductModal';
-import ConsumProductModal from '../components/ConsumProductModal';
-import DiaProductModal from '../components/DiaProductModal';
+import StoreProductList from '../components/StoreProductList';
+import ViewModeToggle, { type ViewMode } from '../components/ViewModeToggle';
+import ActiveCartBanner from '../components/ActiveCartBanner';
 
 // Las tiendas y sus metadatos viven en constants/stores.ts (fuente única
 // compartida con la preferencia de perfil "Supermercados").
 type StoreKey = CatalogStore;
 
-/** Parte un array en grupos de tamaño n (rejilla de tiendas en filas de 2). */
-function chunk<T>(arr: T[], size: number): T[][] {
-  const out: T[][] = [];
-  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
-  return out;
+/** Datos mínimos para pintar una fila de categoría de cualquier súper + su ⋯. */
+interface CatRow {
+  store: CatalogStore;
+  refId: string;
+  name: string;
+  subcount: number;
+  onOpen: () => void;
+}
+
+/** Carga una página de navegación del catálogo del súper activo y la normaliza a
+ *  UIProduct (cada súper tiene su browse + adaptador). El cursor lo gestiona el
+ *  llamante; aquí solo se traduce store → (browse, adapter). */
+async function loadBrowsePage(store: CatalogStore, cursor: BrowseCursor | null): Promise<BrowsePage<UIProduct>> {
+  switch (store) {
+    case 'mercadona': { const { items, nextCursor } = await browseProducts(cursor); return { items: items.map((p) => mercadonaToUI(p)), nextCursor }; }
+    case 'esclat':    { const { items, nextCursor } = await browseBonpreuProducts(cursor); return { items: items.map(bonpreuToUI), nextCursor }; }
+    case 'carrefour': { const { items, nextCursor } = await browseCarrefourProducts(cursor); return { items: items.map(carrefourToUI), nextCursor }; }
+    case 'bonarea':   { const { items, nextCursor } = await browseBonareaProducts(cursor); return { items: items.map(bonareaToUI), nextCursor }; }
+    case 'consum':    { const { items, nextCursor } = await browseConsumProducts(cursor); return { items: items.map(consumToUI), nextCursor }; }
+    case 'dia':       { const { items, nextCursor } = await browseDiaProducts(cursor); return { items: items.map(diaToUI), nextCursor }; }
+  }
 }
 
 export default function CatalogScreen() {
   const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
+  const { t } = useTranslation();
   const { isCategoryFavorite, toggleCategoryFavorite } = useFavorites();
   const toast = useToast();
-  const [sheetCat, setSheetCat] = useState<N1Category | null>(null);
-  const [detailProductId, setDetailProductId] = useState<string | null>(null);
+  const { notify: tourNotify, stepId: tourStepId, setStoreMenuOpen: tourSetStoreMenuOpen } = useGuidedTour();
+  const storeAnchor = useTourAnchor('storeSelector');
+  const firstCatAnchor = useTourAnchor('firstCategory');
+  const [sheetCat, setSheetCat] = useState<CatRow | null>(null);
   const [store, setStore] = useState<StoreKey>('mercadona');
-  const [tab, setTab] = useState<'categorias' | 'productos'>('categorias');
+  const [tab, setTab] = useState<'categorias' | 'productos'>('productos');
+  // Vista lista/cuadrícula compartida por los listados de búsqueda de productos
+  // (la controla la fila de búsqueda, no el toolbar interno de StoreProductList).
+  const [prodViewMode, setProdViewMode] = useState<ViewMode>('list');
+
+  // Selector de tienda colapsado: solo se ve la activa; al tocar se despliega
+  // un menú con el resto. `selectorBox` guarda su posición para anclar el menú.
+  const [storeMenuOpen, setStoreMenuOpen] = useState(false);
+  const [selectorBox, setSelectorBox] = useState<LayoutRectangle | null>(null);
+  // Alto del primer ítem del menú (para el "spotlight" del tutorial sobre él).
+  const [firstStoreItemH, setFirstStoreItemH] = useState(0);
+
+  // Mantén al tour informado de si el desplegable está abierto: así oscurece
+  // todo (selector incluido) y deja que el Modal ilumine solo el primer súper.
+  useEffect(() => { tourSetStoreMenuOpen(storeMenuOpen); }, [storeMenuOpen, tourSetStoreMenuOpen]);
+  useEffect(() => () => tourSetStoreMenuOpen(false), [tourSetStoreMenuOpen]);
 
   // Solo se muestran los supermercados elegidos en el perfil. Sin preferencia
   // (usuario antiguo / perfil aún cargando) → todos.
   const { profile } = useProfile();
   const enabledStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
   const visibleStores = CATALOG_STORES.filter((s) => enabledStores.includes(s.key));
+  const activeStore = CATALOG_STORES.find((s) => s.key === store) ?? visibleStores[0];
 
   // Si la tienda activa deja de estar permitida, salta a la primera visible.
   useEffect(() => {
@@ -97,7 +140,6 @@ export default function CatalogScreen() {
   const [bpResults, setBpResults] = useState<BonpreuProduct[]>([]);
   const [bpLoading, setBpLoading] = useState(false);
   const [bpError, setBpError] = useState(false);
-  const [bpDetail, setBpDetail] = useState<BonpreuProduct | null>(null);
 
   // Categorías BonpreuEsclat (espejo)
   const [bpCats, setBpCats] = useState<BonpreuCategory[]>([]);
@@ -109,7 +151,6 @@ export default function CatalogScreen() {
   const [cfResults, setCfResults] = useState<CarrefourProduct[]>([]);
   const [cfLoading, setCfLoading] = useState(false);
   const [cfError, setCfError] = useState(false);
-  const [cfDetail, setCfDetail] = useState<CarrefourProduct | null>(null);
 
   // Categorías Carrefour (espejo)
   const [cfCats, setCfCats] = useState<CarrefourCategory[]>([]);
@@ -121,7 +162,6 @@ export default function CatalogScreen() {
   const [baResults, setBaResults] = useState<BonareaProduct[]>([]);
   const [baLoading, setBaLoading] = useState(false);
   const [baError, setBaError] = useState(false);
-  const [baDetail, setBaDetail] = useState<BonareaProduct | null>(null);
 
   // Categorías bonÀrea (espejo)
   const [baCats, setBaCats] = useState<BonareaCategory[]>([]);
@@ -133,7 +173,6 @@ export default function CatalogScreen() {
   const [csResults, setCsResults] = useState<ConsumProduct[]>([]);
   const [csLoading, setCsLoading] = useState(false);
   const [csError, setCsError] = useState(false);
-  const [csDetail, setCsDetail] = useState<ConsumProduct | null>(null);
 
   // Categorías Consum (espejo)
   const [csCats, setCsCats] = useState<ConsumCategory[]>([]);
@@ -145,12 +184,47 @@ export default function CatalogScreen() {
   const [ddResults, setDdResults] = useState<DiaProduct[]>([]);
   const [ddLoading, setDdLoading] = useState(false);
   const [ddError, setDdError] = useState(false);
-  const [ddDetail, setDdDetail] = useState<DiaProduct | null>(null);
 
   // Categorías Dia (espejo)
   const [ddCats, setDdCats] = useState<DiaCategory[]>([]);
   const [ddCatsLoading, setDdCatsLoading] = useState(false);
   const [ddCatsError, setDdCatsError] = useState(false);
+
+  // Navegación de productos (pestaña "Productos" sin texto): listado alfabético
+  // del catálogo del súper activo, paginado por keyset. Estado ÚNICO compartido
+  // por los 6 súpers porque solo se ve uno a la vez (igual que `catSearch`).
+  const [browse, setBrowse] = useState<UIProduct[]>([]);
+  const [browseCursor, setBrowseCursor] = useState<BrowseCursor | null>(null);
+  const [browseLoading, setBrowseLoading] = useState(false); // página inicial
+  const [browseMore, setBrowseMore] = useState(false);       // páginas siguientes
+  const [browseError, setBrowseError] = useState(false);
+  // Texto de búsqueda del súper activo: con <2 letras estamos en modo navegación.
+  const prodQuery = { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch }[store];
+  const browseMode = tab === 'productos' && prodQuery.trim().length < 2;
+
+  // Carga la página 1 al entrar a navegación (cambio de súper, limpiar la
+  // búsqueda o abrir la pestaña Productos sin texto).
+  useEffect(() => {
+    if (!browseMode) return;
+    let cancelled = false;
+    setBrowse([]); setBrowseCursor(null); setBrowseError(false); setBrowseMore(false); setBrowseLoading(true);
+    loadBrowsePage(store, null)
+      .then(({ items, nextCursor }) => { if (!cancelled) { setBrowse(items); setBrowseCursor(nextCursor); } })
+      .catch(() => { if (!cancelled) setBrowseError(true); })
+      .finally(() => { if (!cancelled) setBrowseLoading(false); });
+    return () => { cancelled = true; };
+  }, [store, browseMode]);
+
+  // Siguiente página keyset al llegar al final de la lista.
+  const loadMoreBrowse = () => {
+    if (browseLoading || browseMore || browseCursor == null) return;
+    const cursor = browseCursor;
+    setBrowseMore(true);
+    loadBrowsePage(store, cursor)
+      .then(({ items, nextCursor }) => { setBrowse((prev) => [...prev, ...items]); setBrowseCursor(nextCursor); })
+      .catch(() => { /* conserva lo ya cargado */ })
+      .finally(() => setBrowseMore(false));
+  };
 
   useEffect(() => {
     fetchCategories()
@@ -275,12 +349,17 @@ export default function CatalogScreen() {
     return () => clearTimeout(handle);
   }, [ddSearch]);
 
-  const filteredCats = categories.filter((c) =>
-    c.name.toLowerCase().includes(catSearch.toLowerCase())
-  );
+  // Filtro de categorías por texto (cliente). Compartido por los 6 súpers: en la
+  // pestaña de categorías solo se ve un súper a la vez, así que un único `catSearch` basta.
+  const matchesCatSearch = (name: string) =>
+    name.toLowerCase().includes(catSearch.trim().toLowerCase());
+
+  // Categorías que pasan el filtro, ordenadas alfabéticamente según el idioma
+  // activo (los nombres ya vienen localizados de la API/espejo de cada súper).
+  const sortedCats = <T extends { name: string }>(arr: T[]): T[] =>
+    sortByName(arr.filter((c) => matchesCatSearch(c.name)), (c) => c.name);
 
   const goToSubcategories = (cat: N1Category) => {
-    setSheetCat(null);
     const { emoji, color } = getMeta(cat.name);
     navigation.navigate('SubCategory', {
       categoryName: cat.name,
@@ -290,299 +369,111 @@ export default function CatalogScreen() {
     });
   };
 
-  const goToBonpreuSubcategories = (cat: BonpreuCategory) => {
+  const goToMirrorSubcategories = (
+    retailer: Exclude<CatalogStore, 'mercadona'>,
+    cat: { name: string; children: { id: string; name: string }[] },
+  ) => {
     const { emoji, color } = getMeta(cat.name);
     navigation.navigate('SubCategory', {
       categoryName: cat.name,
       emoji,
       color,
       subcategories: cat.children,
-      retailer: 'esclat',
+      retailer,
     });
   };
 
-  const goToCarrefourSubcategories = (cat: CarrefourCategory) => {
-    const { emoji, color } = getMeta(cat.name);
-    navigation.navigate('SubCategory', {
-      categoryName: cat.name,
-      emoji,
-      color,
-      subcategories: cat.children,
-      retailer: 'carrefour',
-    });
-  };
-
-  const goToBonareaSubcategories = (cat: BonareaCategory) => {
-    const { emoji, color } = getMeta(cat.name);
-    navigation.navigate('SubCategory', {
-      categoryName: cat.name,
-      emoji,
-      color,
-      subcategories: cat.children,
-      retailer: 'bonarea',
-    });
-  };
-
-  const goToConsumSubcategories = (cat: ConsumCategory) => {
-    const { emoji, color } = getMeta(cat.name);
-    navigation.navigate('SubCategory', {
-      categoryName: cat.name,
-      emoji,
-      color,
-      subcategories: cat.children,
-      retailer: 'consum',
-    });
-  };
-
-  const goToDiaSubcategories = (cat: DiaCategory) => {
-    const { emoji, color } = getMeta(cat.name);
-    navigation.navigate('SubCategory', {
-      categoryName: cat.name,
-      emoji,
-      color,
-      subcategories: cat.children,
-      retailer: 'dia',
-    });
-  };
-
-  const handleToggleCategory = async (cat: N1Category) => {
+  const handleToggleCategory = async (c: CatRow) => {
     setSheetCat(null);
-    const { emoji, color } = getMeta(cat.name);
+    const { emoji, color } = getMeta(c.name);
     try {
-      const added = await toggleCategoryFavorite({ refId: String(cat.id), name: cat.name, emoji, color });
-      toast.show(added ? `${cat.name} en favoritos` : `${cat.name} quitada de favoritos`);
+      const added = await toggleCategoryFavorite({ store: c.store, refId: c.refId, name: c.name, emoji, color });
+      toast.show(added ? t('catalog.favAdded', { name: c.name }) : t('catalog.favRemoved', { name: c.name }));
     } catch {
-      toast.show('No se pudo actualizar el favorito.', 'error');
+      toast.show(t('catalog.favError'), 'error');
     }
   };
 
-  const renderCategory = ({ item }: { item: N1Category }) => {
-    const { emoji, color } = getMeta(item.name);
-    const fav = isCategoryFavorite(String(item.id));
+  // Fila de categoría común a los 6 súpers: navega al tocar, ⋯ abre el ActionSheet
+  // (ver subcategorías + marcar/quitar favorita) y estrella si ya es favorita.
+  const renderCatRow = (c: CatRow, isFirst = false) => {
+    const { emoji, color } = getMeta(c.name);
+    const fav = isCategoryFavorite(c.store, c.refId);
     return (
-      <View style={styles.row}>
-        <TouchableOpacity
-          style={styles.rowBody}
-          onPress={() => goToSubcategories(item)}
-          activeOpacity={0.8}
-        >
+      <View
+        ref={isFirst ? firstCatAnchor.ref : undefined}
+        onLayout={isFirst ? firstCatAnchor.onLayout : undefined}
+        style={styles.row}
+      >
+        <TouchableOpacity style={styles.rowBody} onPress={c.onOpen} activeOpacity={0.8}>
           <View style={[styles.thumbnail, { backgroundColor: color + '1e' }]}>
             <Text style={styles.thumbnailEmoji}>{emoji}</Text>
           </View>
           <View style={styles.rowContent}>
-            <Text style={styles.rowName}>{item.name}</Text>
-            <Text style={styles.rowSub}>{item.categories.length} subcategorías</Text>
+            <Text style={styles.rowName}>{c.name}</Text>
+            <Text style={styles.rowSub}>{t('catalog.subcategories', { n: c.subcount })}</Text>
           </View>
         </TouchableOpacity>
         {fav && <Ionicons name="star" size={15} color={colors.accent} style={styles.favStar} />}
-        <TouchableOpacity onPress={() => setSheetCat(item)} hitSlop={8} style={styles.moreBtn} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => setSheetCat(c)} hitSlop={8} style={styles.moreBtn} activeOpacity={0.7}>
           <Ionicons name="ellipsis-horizontal" size={18} color={colors.inkSoft} />
         </TouchableOpacity>
       </View>
     );
   };
 
-  const renderProduct = ({ item }: { item: MercadonaProduct }) => (
-    <TouchableOpacity style={styles.productRow} activeOpacity={0.7} onPress={() => setDetailProductId(item.id)}>
-      <View style={styles.productInfo}>
-        <Text style={styles.productName}>{item.display_name}</Text>
-        <Text style={styles.productSub}>{item.packaging}</Text>
-      </View>
-      <Text style={styles.productPrice}>{formatPrice(item as any)}</Text>
-    </TouchableOpacity>
-  );
+  const renderCategory = ({ item, index }: { item: N1Category; index: number }) =>
+    renderCatRow({ store: 'mercadona', refId: String(item.id), name: item.name, subcount: item.categories.length, onOpen: () => goToSubcategories(item) }, index === 0);
 
-  const renderBpProduct = ({ item }: { item: BonpreuProduct }) => (
-    <TouchableOpacity style={styles.productRow} activeOpacity={0.7} onPress={() => setBpDetail(item)}>
-      {item.thumbnail ? (
-        <ProductImage uri={item.thumbnail} style={styles.bpThumb} />
-      ) : (
-        <View style={[styles.bpThumb, styles.bpThumbEmpty]}>
-          <Ionicons name="image-outline" size={18} color={colors.inkFaint} />
-        </View>
-      )}
-      <View style={styles.productInfo}>
-        <Text style={styles.productName} numberOfLines={2}>{item.displayName}</Text>
-        <Text style={styles.productSub}>{item.priceFormat ?? item.packaging ?? ''}</Text>
-      </View>
-      <Text style={styles.productPrice}>
-        {item.unitPrice != null ? `${item.unitPrice.toFixed(2).replace('.', ',')} €` : ''}
-      </Text>
-    </TouchableOpacity>
-  );
+  const renderBpCategory = ({ item, index }: { item: BonpreuCategory; index: number }) =>
+    renderCatRow({ store: 'esclat', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('esclat', item) }, index === 0);
 
-  const renderBpCategory = ({ item }: { item: BonpreuCategory }) => {
-    const { emoji, color } = getMeta(item.name);
-    return (
-      <TouchableOpacity style={styles.row} activeOpacity={0.8} onPress={() => goToBonpreuSubcategories(item)}>
-        <View style={[styles.thumbnail, { backgroundColor: color + '1e' }]}>
-          <Text style={styles.thumbnailEmoji}>{emoji}</Text>
-        </View>
-        <View style={styles.rowContent}>
-          <Text style={styles.rowName}>{item.name}</Text>
-          <Text style={styles.rowSub}>{item.children.length} subcategorías</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={17} color={colors.inkFaint} />
-      </TouchableOpacity>
-    );
-  };
+  const renderCfCategory = ({ item, index }: { item: CarrefourCategory; index: number }) =>
+    renderCatRow({ store: 'carrefour', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('carrefour', item) }, index === 0);
 
-  const renderCfProduct = ({ item }: { item: CarrefourProduct }) => {
-    const price = item.priceFormat
-      ?? (item.unitPrice != null ? `${item.unitPrice.toFixed(2).replace('.', ',')} €` : '');
-    return (
-      <TouchableOpacity style={styles.productRow} activeOpacity={0.7} onPress={() => setCfDetail(item)}>
-        {item.thumbnail ? (
-          <ProductImage uri={item.thumbnail} style={styles.bpThumb} />
-        ) : (
-          <View style={[styles.bpThumb, styles.bpThumbEmpty]}>
-            <Ionicons name="image-outline" size={18} color={colors.inkFaint} />
-          </View>
-        )}
-        <View style={styles.productInfo}>
-          <Text style={styles.productName} numberOfLines={2}>{item.displayName}</Text>
-          <Text style={styles.productSub}>{item.pricePerUnit ?? ''}</Text>
-        </View>
-        <Text style={styles.productPrice}>{price}</Text>
-      </TouchableOpacity>
-    );
-  };
+  const renderBaCategory = ({ item, index }: { item: BonareaCategory; index: number }) =>
+    renderCatRow({ store: 'bonarea', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('bonarea', item) }, index === 0);
 
-  const renderCfCategory = ({ item }: { item: CarrefourCategory }) => {
-    const { emoji, color } = getMeta(item.name);
-    return (
-      <TouchableOpacity style={styles.row} activeOpacity={0.8} onPress={() => goToCarrefourSubcategories(item)}>
-        <View style={[styles.thumbnail, { backgroundColor: color + '1e' }]}>
-          <Text style={styles.thumbnailEmoji}>{emoji}</Text>
-        </View>
-        <View style={styles.rowContent}>
-          <Text style={styles.rowName}>{item.name}</Text>
-          <Text style={styles.rowSub}>{item.children.length} subcategorías</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={17} color={colors.inkFaint} />
-      </TouchableOpacity>
-    );
-  };
+  const renderCsCategory = ({ item, index }: { item: ConsumCategory; index: number }) =>
+    renderCatRow({ store: 'consum', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('consum', item) }, index === 0);
 
-  const renderBaProduct = ({ item }: { item: BonareaProduct }) => {
-    const price = item.priceFormat
-      ?? (item.unitPrice != null ? `${item.unitPrice.toFixed(2).replace('.', ',')} €` : '');
-    return (
-      <TouchableOpacity style={styles.productRow} activeOpacity={0.7} onPress={() => setBaDetail(item)}>
-        {item.thumbnail ? (
-          <ProductImage uri={item.thumbnail} style={styles.bpThumb} />
-        ) : (
-          <View style={[styles.bpThumb, styles.bpThumbEmpty]}>
-            <Ionicons name="image-outline" size={18} color={colors.inkFaint} />
-          </View>
-        )}
-        <View style={styles.productInfo}>
-          <Text style={styles.productName} numberOfLines={2}>{item.displayName}</Text>
-          <Text style={styles.productSub}>{item.pricePerUnit ?? ''}</Text>
-        </View>
-        <Text style={styles.productPrice}>{price}</Text>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderBaCategory = ({ item }: { item: BonareaCategory }) => {
-    const { emoji, color } = getMeta(item.name);
-    return (
-      <TouchableOpacity style={styles.row} activeOpacity={0.8} onPress={() => goToBonareaSubcategories(item)}>
-        <View style={[styles.thumbnail, { backgroundColor: color + '1e' }]}>
-          <Text style={styles.thumbnailEmoji}>{emoji}</Text>
-        </View>
-        <View style={styles.rowContent}>
-          <Text style={styles.rowName}>{item.name}</Text>
-          <Text style={styles.rowSub}>{item.children.length} subcategorías</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={17} color={colors.inkFaint} />
-      </TouchableOpacity>
-    );
-  };
-
-  const renderCsProduct = ({ item }: { item: ConsumProduct }) => {
-    const price = item.priceFormat
-      ?? (item.unitPrice != null ? `${item.unitPrice.toFixed(2).replace('.', ',')} €` : '');
-    return (
-      <TouchableOpacity style={styles.productRow} activeOpacity={0.7} onPress={() => setCsDetail(item)}>
-        {item.thumbnail ? (
-          <ProductImage uri={item.thumbnail} style={styles.bpThumb} />
-        ) : (
-          <View style={[styles.bpThumb, styles.bpThumbEmpty]}>
-            <Ionicons name="image-outline" size={18} color={colors.inkFaint} />
-          </View>
-        )}
-        <View style={styles.productInfo}>
-          <Text style={styles.productName} numberOfLines={2}>{item.displayName}</Text>
-          <Text style={styles.productSub}>{item.pricePerUnit ?? item.packaging ?? ''}</Text>
-        </View>
-        <Text style={styles.productPrice}>{price}</Text>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderCsCategory = ({ item }: { item: ConsumCategory }) => {
-    const { emoji, color } = getMeta(item.name);
-    return (
-      <TouchableOpacity style={styles.row} activeOpacity={0.8} onPress={() => goToConsumSubcategories(item)}>
-        <View style={[styles.thumbnail, { backgroundColor: color + '1e' }]}>
-          <Text style={styles.thumbnailEmoji}>{emoji}</Text>
-        </View>
-        <View style={styles.rowContent}>
-          <Text style={styles.rowName}>{item.name}</Text>
-          <Text style={styles.rowSub}>{item.children.length} subcategorías</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={17} color={colors.inkFaint} />
-      </TouchableOpacity>
-    );
-  };
-
-  const renderDdProduct = ({ item }: { item: DiaProduct }) => {
-    const price = item.priceFormat
-      ?? (item.unitPrice != null ? `${item.unitPrice.toFixed(2).replace('.', ',')} €` : '');
-    return (
-      <TouchableOpacity style={styles.productRow} activeOpacity={0.7} onPress={() => setDdDetail(item)}>
-        {item.thumbnail ? (
-          <ProductImage uri={item.thumbnail} style={styles.bpThumb} />
-        ) : (
-          <View style={[styles.bpThumb, styles.bpThumbEmpty]}>
-            <Ionicons name="image-outline" size={18} color={colors.inkFaint} />
-          </View>
-        )}
-        <View style={styles.productInfo}>
-          <Text style={styles.productName} numberOfLines={2}>{item.displayName}</Text>
-          <Text style={styles.productSub}>{item.pricePerUnit ?? ''}</Text>
-        </View>
-        <Text style={styles.productPrice}>{price}</Text>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderDdCategory = ({ item }: { item: DiaCategory }) => {
-    const { emoji, color } = getMeta(item.name);
-    return (
-      <TouchableOpacity style={styles.row} activeOpacity={0.8} onPress={() => goToDiaSubcategories(item)}>
-        <View style={[styles.thumbnail, { backgroundColor: color + '1e' }]}>
-          <Text style={styles.thumbnailEmoji}>{emoji}</Text>
-        </View>
-        <View style={styles.rowContent}>
-          <Text style={styles.rowName}>{item.name}</Text>
-          <Text style={styles.rowSub}>{item.children.length} subcategorías</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={17} color={colors.inkFaint} />
-      </TouchableOpacity>
-    );
-  };
+  const renderDdCategory = ({ item, index }: { item: DiaCategory; index: number }) =>
+    renderCatRow({ store: 'dia', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('dia', item) }, index === 0);
 
   // Estados de un listado de búsqueda de productos (compartido).
   const renderSearchStates = (search: string, loading: boolean, error: boolean, empty: boolean, list: React.ReactNode) => {
     if (search.trim().length < 2)
-      return <View style={styles.centerBox}><Text style={styles.errorText}>Escribe al menos 2 letras para buscar.</Text></View>;
+      return <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.minLetters')}</Text></View>;
     if (loading) return <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />;
-    if (error) return <View style={styles.centerBox}><Text style={styles.errorText}>Error al buscar productos.</Text></View>;
-    if (empty) return <View style={styles.centerBox}><Text style={styles.errorText}>Sin resultados.</Text></View>;
+    if (error) return <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.searchError')}</Text></View>;
+    if (empty) return <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.noResults')}</Text></View>;
     return list;
+  };
+
+  // Pestaña "Productos" de un súper: con texto (≥2 letras) → búsqueda server-side
+  // de siempre; sin texto → navegación alfabética del catálogo paginada (browse).
+  const renderProductsTab = (
+    query: string, searchLoading: boolean, searchError: boolean, searchItems: UIProduct[],
+  ) => {
+    if (query.trim().length >= 2) {
+      return renderSearchStates(
+        query, searchLoading, searchError, searchItems.length === 0,
+        <StoreProductList
+          products={searchItems}
+          hideToolbar viewMode={prodViewMode} onViewModeChange={setProdViewMode}
+        />,
+      );
+    }
+    if (browseLoading) return <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />;
+    if (browseError) return <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.searchError')}</Text></View>;
+    return (
+      <StoreProductList
+        products={browse}
+        hideToolbar viewMode={prodViewMode} onViewModeChange={setProdViewMode}
+        onEndReached={loadMoreBrowse}
+        loadingMore={browseMore}
+      />
+    );
   };
 
   const searchBar = (placeholder: string, value: string, onChange: (s: string) => void) => (
@@ -595,7 +486,6 @@ export default function CatalogScreen() {
         value={value}
         onChangeText={onChange}
         returnKeyType="search"
-        autoFocus
       />
       {value.length > 0 && (
         <TouchableOpacity onPress={() => onChange('')}>
@@ -605,82 +495,106 @@ export default function CatalogScreen() {
     </View>
   );
 
+  // Fila de búsqueda de productos: barra (consulta al servidor) + toggle
+  // lista/cuadrícula a la derecha, en una sola fila (misma distribución que las
+  // subcategorías). El toggle controla la vista de StoreProductList desde fuera.
+  const productSearchRow = (placeholder: string, value: string, onChange: (s: string) => void) => (
+    <View style={styles.prodSearchRow}>
+      <View style={[styles.searchBar, styles.prodSearchBox]}>
+        <Ionicons name="search-outline" size={18} color={colors.inkSoft} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder={placeholder}
+          placeholderTextColor={colors.inkFaint}
+          value={value}
+          onChangeText={onChange}
+          returnKeyType="search"
+          autoCorrect={false}
+        />
+        {value.length > 0 && (
+          <TouchableOpacity onPress={() => onChange('')}>
+            <Ionicons name="close-circle" size={18} color={colors.inkFaint} />
+          </TouchableOpacity>
+        )}
+      </View>
+      <ViewModeToggle value={prodViewMode} onChange={setProdViewMode} />
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       <View style={styles.headerArea}>
-        <Text style={styles.title}>Catálogo</Text>
+        <Text style={styles.title}>{t('catalog.title')}</Text>
+        <ActiveCartBanner compact />
       </View>
 
-      {/* Store switcher en rejilla de 2 columnas (oculto si solo hay un super).
-          La última fila impar lleva un único botón a ancho completo (flex: 1). */}
+      {/* Selector de tienda colapsado: muestra solo la activa y, al tocar,
+          despliega el resto en un menú anclado (oculto si solo hay un super). */}
       {visibleStores.length > 1 && (
-        <View style={styles.stores}>
-          {chunk(visibleStores, 2).map((rowStores) => (
-            <View key={rowStores[0].key} style={styles.storeRow}>
-              {rowStores.map((s) => (
-                <TouchableOpacity
-                  key={s.key}
-                  style={[styles.storeBtn, store === s.key && styles.storeBtnActive]}
-                  onPress={() => setStore(s.key)}
-                  activeOpacity={0.8}
-                >
-                  {s.icon ? (
-                    <Image source={s.icon} style={styles.storeIcon} resizeMode="cover" />
-                  ) : (
-                    <Ionicons name="storefront" size={18} color={store === s.key ? colors.accent : colors.inkSoft} />
-                  )}
-                  <Text
-                    style={[styles.storeText, store === s.key && styles.storeTextActive]}
-                    numberOfLines={1}
-                  >
-                    {s.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          ))}
+        <View
+          ref={storeAnchor.ref}
+          style={styles.selectorWrap}
+          onLayout={(e) => { setSelectorBox(e.nativeEvent.layout); storeAnchor.onLayout(); }}
+        >
+          <TouchableOpacity
+            style={styles.selector}
+            onPress={() => setStoreMenuOpen((o) => !o)}
+            activeOpacity={0.8}
+          >
+            {activeStore?.icon ? (
+              <Image source={activeStore.icon} style={styles.selectorIcon} resizeMode="cover" />
+            ) : (
+              <Ionicons name="storefront" size={18} color={colors.accent} />
+            )}
+            <Text style={styles.selectorName} numberOfLines={1}>{activeStore?.name}</Text>
+            <Ionicons
+              name={storeMenuOpen ? 'chevron-up' : 'chevron-down'}
+              size={18}
+              color={colors.inkSoft}
+            />
+          </TouchableOpacity>
         </View>
       )}
 
       {/* Tab switcher */}
       <View style={styles.tabs}>
         <TouchableOpacity
-          style={[styles.tab, tab === 'categorias' && styles.tabActive]}
-          onPress={() => setTab('categorias')}
-          activeOpacity={0.8}
-        >
-          <Text style={[styles.tabText, tab === 'categorias' && styles.tabTextActive]}>Categorías</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
           style={[styles.tab, tab === 'productos' && styles.tabActive]}
           onPress={() => setTab('productos')}
           activeOpacity={0.8}
         >
-          <Text style={[styles.tabText, tab === 'productos' && styles.tabTextActive]}>Productos</Text>
+          <Text style={[styles.tabText, tab === 'productos' && styles.tabTextActive]}>{t('catalog.tabProducts')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, tab === 'categorias' && styles.tabActive]}
+          onPress={() => setTab('categorias')}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.tabText, tab === 'categorias' && styles.tabTextActive]}>{t('catalog.tabCategories')}</Text>
         </TouchableOpacity>
       </View>
 
       {/* ── Mercadona ───────────────────────────────────────────── */}
       {store === 'mercadona' && tab === 'categorias' && (
         <>
-          {searchBar('Buscar categorías...', catSearch, setCatSearch)}
+          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
           {catLoading ? (
             <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
           ) : catError ? (
             <View style={styles.centerBox}>
-              <Text style={styles.errorText}>No se pudo cargar el catálogo.</Text>
+              <Text style={styles.errorText}>{t('catalog.loadError')}</Text>
               <TouchableOpacity onPress={() => {
                 setCatError(false); setCatLoading(true);
                 fetchCategories().then(setCategories).catch(() => setCatError(true)).finally(() => setCatLoading(false));
               }}>
-                <Text style={styles.retryText}>Reintentar</Text>
+                <Text style={styles.retryText}>{t('common.retry')}</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <FlatList
-              data={filteredCats}
+              data={sortedCats(categories)}
               keyExtractor={(item) => String(item.id)}
               renderItem={renderCategory}
               contentContainerStyle={styles.list}
@@ -693,241 +607,234 @@ export default function CatalogScreen() {
 
       {store === 'mercadona' && tab === 'productos' && (
         <>
-          {searchBar('Buscar productos...', prodSearch, setProdSearch)}
-          {renderSearchStates(
-            prodSearch, prodLoading, prodError, prodResults.length === 0,
-            <FlatList
-              data={prodResults}
-              keyExtractor={(item) => item.id}
-              renderItem={renderProduct}
-              contentContainerStyle={styles.list}
-              showsVerticalScrollIndicator={false}
-              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-              keyboardShouldPersistTaps="handled"
-            />,
-          )}
+          {productSearchRow(t('catalog.searchProducts'),prodSearch, setProdSearch)}
+          {renderProductsTab(prodSearch, prodLoading, prodError, prodResults.map((p) => mercadonaToUI(p)))}
         </>
       )}
 
       {/* ── BonpreuEsclat ───────────────────────────────────────── */}
       {store === 'esclat' && tab === 'categorias' && (
-        bpCatsLoading ? (
-          <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
-        ) : bpCatsError ? (
-          <View style={styles.centerBox}>
-            <Text style={styles.errorText}>No se pudo cargar el catálogo de BonpreuEsclat.</Text>
-            <TouchableOpacity onPress={() => {
-              setBpCatsError(false); setBpCatsLoading(true);
-              fetchBonpreuCategoryTree().then(setBpCats).catch(() => setBpCatsError(true)).finally(() => setBpCatsLoading(false));
-            }}>
-              <Text style={styles.retryText}>Reintentar</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <FlatList
-            data={bpCats}
-            keyExtractor={(item) => item.id}
-            renderItem={renderBpCategory}
-            contentContainerStyle={styles.list}
-            showsVerticalScrollIndicator={false}
-            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-          />
-        )
+        <>
+          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
+          {bpCatsLoading ? (
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+          ) : bpCatsError ? (
+            <View style={styles.centerBox}>
+              <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'BonpreuEsclat' })}</Text>
+              <TouchableOpacity onPress={() => {
+                setBpCatsError(false); setBpCatsLoading(true);
+                fetchBonpreuCategoryTree().then(setBpCats).catch(() => setBpCatsError(true)).finally(() => setBpCatsLoading(false));
+              }}>
+                <Text style={styles.retryText}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={sortedCats(bpCats)}
+              keyExtractor={(item) => item.id}
+              renderItem={renderBpCategory}
+              contentContainerStyle={styles.list}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            />
+          )}
+        </>
       )}
 
       {store === 'esclat' && tab === 'productos' && (
         <>
-          {searchBar('Buscar productos...', bpSearch, setBpSearch)}
-          {renderSearchStates(
-            bpSearch, bpLoading, bpError, bpResults.length === 0,
-            <FlatList
-              data={bpResults}
-              keyExtractor={(item) => item.id}
-              renderItem={renderBpProduct}
-              contentContainerStyle={styles.list}
-              showsVerticalScrollIndicator={false}
-              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-              keyboardShouldPersistTaps="handled"
-            />,
-          )}
+          {productSearchRow(t('catalog.searchProducts'),bpSearch, setBpSearch)}
+          {renderProductsTab(bpSearch, bpLoading, bpError, bpResults.map(bonpreuToUI))}
         </>
       )}
 
       {/* ── Carrefour ───────────────────────────────────────────── */}
       {store === 'carrefour' && tab === 'categorias' && (
-        cfCatsLoading ? (
-          <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
-        ) : cfCatsError ? (
-          <View style={styles.centerBox}>
-            <Text style={styles.errorText}>No se pudo cargar el catálogo de Carrefour.</Text>
-            <TouchableOpacity onPress={() => {
-              setCfCatsError(false); setCfCatsLoading(true);
-              fetchCarrefourCategoryTree().then(setCfCats).catch(() => setCfCatsError(true)).finally(() => setCfCatsLoading(false));
-            }}>
-              <Text style={styles.retryText}>Reintentar</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <FlatList
-            data={cfCats}
-            keyExtractor={(item) => item.id}
-            renderItem={renderCfCategory}
-            contentContainerStyle={styles.list}
-            showsVerticalScrollIndicator={false}
-            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-          />
-        )
+        <>
+          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
+          {cfCatsLoading ? (
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+          ) : cfCatsError ? (
+            <View style={styles.centerBox}>
+              <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Carrefour' })}</Text>
+              <TouchableOpacity onPress={() => {
+                setCfCatsError(false); setCfCatsLoading(true);
+                fetchCarrefourCategoryTree().then(setCfCats).catch(() => setCfCatsError(true)).finally(() => setCfCatsLoading(false));
+              }}>
+                <Text style={styles.retryText}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={sortedCats(cfCats)}
+              keyExtractor={(item) => item.id}
+              renderItem={renderCfCategory}
+              contentContainerStyle={styles.list}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            />
+          )}
+        </>
       )}
 
       {store === 'carrefour' && tab === 'productos' && (
         <>
-          {searchBar('Buscar productos...', cfSearch, setCfSearch)}
-          {renderSearchStates(
-            cfSearch, cfLoading, cfError, cfResults.length === 0,
-            <FlatList
-              data={cfResults}
-              keyExtractor={(item) => item.id}
-              renderItem={renderCfProduct}
-              contentContainerStyle={styles.list}
-              showsVerticalScrollIndicator={false}
-              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-              keyboardShouldPersistTaps="handled"
-            />,
-          )}
+          {productSearchRow(t('catalog.searchProducts'),cfSearch, setCfSearch)}
+          {renderProductsTab(cfSearch, cfLoading, cfError, cfResults.map(carrefourToUI))}
         </>
       )}
 
       {/* ── bonÀrea ──────────────────────────────────────────────── */}
       {store === 'bonarea' && tab === 'categorias' && (
-        baCatsLoading ? (
-          <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
-        ) : baCatsError ? (
-          <View style={styles.centerBox}>
-            <Text style={styles.errorText}>No se pudo cargar el catálogo de bonÀrea.</Text>
-            <TouchableOpacity onPress={() => {
-              setBaCatsError(false); setBaCatsLoading(true);
-              fetchBonareaCategoryTree().then(setBaCats).catch(() => setBaCatsError(true)).finally(() => setBaCatsLoading(false));
-            }}>
-              <Text style={styles.retryText}>Reintentar</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <FlatList
-            data={baCats}
-            keyExtractor={(item) => item.id}
-            renderItem={renderBaCategory}
-            contentContainerStyle={styles.list}
-            showsVerticalScrollIndicator={false}
-            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-          />
-        )
+        <>
+          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
+          {baCatsLoading ? (
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+          ) : baCatsError ? (
+            <View style={styles.centerBox}>
+              <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'bonÀrea' })}</Text>
+              <TouchableOpacity onPress={() => {
+                setBaCatsError(false); setBaCatsLoading(true);
+                fetchBonareaCategoryTree().then(setBaCats).catch(() => setBaCatsError(true)).finally(() => setBaCatsLoading(false));
+              }}>
+                <Text style={styles.retryText}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={sortedCats(baCats)}
+              keyExtractor={(item) => item.id}
+              renderItem={renderBaCategory}
+              contentContainerStyle={styles.list}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            />
+          )}
+        </>
       )}
 
       {store === 'bonarea' && tab === 'productos' && (
         <>
-          {searchBar('Buscar productos...', baSearch, setBaSearch)}
-          {renderSearchStates(
-            baSearch, baLoading, baError, baResults.length === 0,
-            <FlatList
-              data={baResults}
-              keyExtractor={(item) => item.id}
-              renderItem={renderBaProduct}
-              contentContainerStyle={styles.list}
-              showsVerticalScrollIndicator={false}
-              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-              keyboardShouldPersistTaps="handled"
-            />,
-          )}
+          {productSearchRow(t('catalog.searchProducts'),baSearch, setBaSearch)}
+          {renderProductsTab(baSearch, baLoading, baError, baResults.map(bonareaToUI))}
         </>
       )}
 
       {/* ── Consum ───────────────────────────────────────────────── */}
       {store === 'consum' && tab === 'categorias' && (
-        csCatsLoading ? (
-          <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
-        ) : csCatsError ? (
-          <View style={styles.centerBox}>
-            <Text style={styles.errorText}>No se pudo cargar el catálogo de Consum.</Text>
-            <TouchableOpacity onPress={() => {
-              setCsCatsError(false); setCsCatsLoading(true);
-              fetchConsumCategoryTree().then(setCsCats).catch(() => setCsCatsError(true)).finally(() => setCsCatsLoading(false));
-            }}>
-              <Text style={styles.retryText}>Reintentar</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <FlatList
-            data={csCats}
-            keyExtractor={(item) => item.id}
-            renderItem={renderCsCategory}
-            contentContainerStyle={styles.list}
-            showsVerticalScrollIndicator={false}
-            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-          />
-        )
+        <>
+          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
+          {csCatsLoading ? (
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+          ) : csCatsError ? (
+            <View style={styles.centerBox}>
+              <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Consum' })}</Text>
+              <TouchableOpacity onPress={() => {
+                setCsCatsError(false); setCsCatsLoading(true);
+                fetchConsumCategoryTree().then(setCsCats).catch(() => setCsCatsError(true)).finally(() => setCsCatsLoading(false));
+              }}>
+                <Text style={styles.retryText}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={sortedCats(csCats)}
+              keyExtractor={(item) => item.id}
+              renderItem={renderCsCategory}
+              contentContainerStyle={styles.list}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            />
+          )}
+        </>
       )}
 
       {store === 'consum' && tab === 'productos' && (
         <>
-          {searchBar('Buscar productos...', csSearch, setCsSearch)}
-          {renderSearchStates(
-            csSearch, csLoading, csError, csResults.length === 0,
-            <FlatList
-              data={csResults}
-              keyExtractor={(item) => item.id}
-              renderItem={renderCsProduct}
-              contentContainerStyle={styles.list}
-              showsVerticalScrollIndicator={false}
-              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-              keyboardShouldPersistTaps="handled"
-            />,
-          )}
+          {productSearchRow(t('catalog.searchProducts'),csSearch, setCsSearch)}
+          {renderProductsTab(csSearch, csLoading, csError, csResults.map(consumToUI))}
         </>
       )}
 
       {/* ── Dia ──────────────────────────────────────────────────── */}
       {store === 'dia' && tab === 'categorias' && (
-        ddCatsLoading ? (
-          <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
-        ) : ddCatsError ? (
-          <View style={styles.centerBox}>
-            <Text style={styles.errorText}>No se pudo cargar el catálogo de Dia.</Text>
-            <TouchableOpacity onPress={() => {
-              setDdCatsError(false); setDdCatsLoading(true);
-              fetchDiaCategoryTree().then(setDdCats).catch(() => setDdCatsError(true)).finally(() => setDdCatsLoading(false));
-            }}>
-              <Text style={styles.retryText}>Reintentar</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <FlatList
-            data={ddCats}
-            keyExtractor={(item) => item.id}
-            renderItem={renderDdCategory}
-            contentContainerStyle={styles.list}
-            showsVerticalScrollIndicator={false}
-            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-          />
-        )
+        <>
+          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
+          {ddCatsLoading ? (
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+          ) : ddCatsError ? (
+            <View style={styles.centerBox}>
+              <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Dia' })}</Text>
+              <TouchableOpacity onPress={() => {
+                setDdCatsError(false); setDdCatsLoading(true);
+                fetchDiaCategoryTree().then(setDdCats).catch(() => setDdCatsError(true)).finally(() => setDdCatsLoading(false));
+              }}>
+                <Text style={styles.retryText}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={sortedCats(ddCats)}
+              keyExtractor={(item) => item.id}
+              renderItem={renderDdCategory}
+              contentContainerStyle={styles.list}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            />
+          )}
+        </>
       )}
 
       {store === 'dia' && tab === 'productos' && (
         <>
-          {searchBar('Buscar productos...', ddSearch, setDdSearch)}
-          {renderSearchStates(
-            ddSearch, ddLoading, ddError, ddResults.length === 0,
-            <FlatList
-              data={ddResults}
-              keyExtractor={(item) => item.id}
-              renderItem={renderDdProduct}
-              contentContainerStyle={styles.list}
-              showsVerticalScrollIndicator={false}
-              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-              keyboardShouldPersistTaps="handled"
-            />,
-          )}
+          {productSearchRow(t('catalog.searchProducts'),ddSearch, setDdSearch)}
+          {renderProductsTab(ddSearch, ddLoading, ddError, ddResults.map(diaToUI))}
         </>
       )}
+
+      {/* Menú desplegable de tiendas, anclado bajo el selector. */}
+      <Modal
+        visible={storeMenuOpen}
+        transparent
+        statusBarTranslucent
+        animationType="fade"
+        onRequestClose={() => setStoreMenuOpen(false)}
+      >
+        <Pressable style={styles.menuBackdrop} onPress={() => setStoreMenuOpen(false)}>
+          {selectorBox && (
+            <View style={[styles.menu, { top: selectorBox.y + selectorBox.height + 6 }]}>
+              {visibleStores.map((s, i) => {
+                const on = s.key === store;
+                const last = i === visibleStores.length - 1;
+                return (
+                  <TouchableOpacity
+                    key={s.key}
+                    style={[styles.menuItem, !last && styles.menuItemBorder, on && styles.menuItemActive]}
+                    onPress={() => { setStore(s.key); setStoreMenuOpen(false); tourNotify('storeSelect'); }}
+                    onLayout={i === 0 ? (e) => setFirstStoreItemH(e.nativeEvent.layout.height) : undefined}
+                    activeOpacity={0.7}
+                  >
+                    {s.icon ? (
+                      <Image source={s.icon} style={styles.selectorIcon} resizeMode="cover" />
+                    ) : (
+                      <Ionicons name="storefront" size={18} color={colors.inkSoft} />
+                    )}
+                    <Text style={[styles.menuItemName, on && styles.menuItemNameActive]} numberOfLines={1}>
+                      {s.name}
+                    </Text>
+                    {on && <Ionicons name="checkmark" size={18} color={colors.accent} />}
+                  </TouchableOpacity>
+                );
+              })}
+              {/* Tutorial: atenúa los súpers por debajo del primero para que el
+                  primero quede "iluminado" (mismo lenguaje que el resto del tour). */}
+              {tourStepId === 'store' && firstStoreItemH > 0 && (
+                <View pointerEvents="none" style={[styles.menuTourDim, { top: firstStoreItemH }]} />
+              )}
+            </View>
+          )}
+        </Pressable>
+      </Modal>
 
       {sheetCat && (
         <ActionSheet
@@ -935,22 +842,15 @@ export default function CatalogScreen() {
           onClose={() => setSheetCat(null)}
           leading={{ type: 'emoji', ...getMeta(sheetCat.name) }}
           title={sheetCat.name}
-          subtitle={`${sheetCat.categories.length} subcategorías`}
+          subtitle={t('catalog.subcategories', { n: sheetCat.subcount })}
           actions={[
-            { icon: 'list-outline', label: 'Ver subcategorías', onPress: () => goToSubcategories(sheetCat) },
-            isCategoryFavorite(String(sheetCat.id))
-              ? { icon: 'star', label: 'Quitar de favoritos', tint: colors.accent, onPress: () => handleToggleCategory(sheetCat) }
-              : { icon: 'star-outline', label: 'Marcar como favorita', tint: colors.accent, onPress: () => handleToggleCategory(sheetCat) },
+            { icon: 'list-outline', label: t('catalog.seeSubcategories'), onPress: () => { const c = sheetCat; setSheetCat(null); c.onOpen(); } },
+            isCategoryFavorite(sheetCat.store, sheetCat.refId)
+              ? { icon: 'star', label: t('catalog.removeFavorite'), tint: colors.accent, onPress: () => handleToggleCategory(sheetCat) }
+              : { icon: 'star-outline', label: t('catalog.markFavorite'), tint: colors.accent, onPress: () => handleToggleCategory(sheetCat) },
           ]}
         />
       )}
-
-      <ProductDetailModal productId={detailProductId} onClose={() => setDetailProductId(null)} />
-      <BonpreuProductModal product={bpDetail} onClose={() => setBpDetail(null)} />
-      <CarrefourProductModal product={cfDetail} onClose={() => setCfDetail(null)} />
-      <BonareaProductModal product={baDetail} onClose={() => setBaDetail(null)} />
-      <ConsumProductModal product={csDetail} onClose={() => setCsDetail(null)} />
-      <DiaProductModal product={ddDetail} onClose={() => setDdDetail(null)} />
     </View>
   );
 }
@@ -958,45 +858,56 @@ export default function CatalogScreen() {
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
-  headerArea: { paddingHorizontal: 16, paddingTop: 56, paddingBottom: 10 },
+  headerArea: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 10,
+  },
   title: {
-    fontSize: 28, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3,
+    fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3,
   },
 
-  // ── Store switcher ────────────────────────────────────────────
-  stores: {
-    marginHorizontal: 16,
-    marginBottom: 10,
-    gap: 8,
-  },
-  storeRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  storeBtn: {
-    flex: 1,
+  // ── Store selector (colapsado) + menú desplegable ─────────────
+  selectorWrap: { marginHorizontal: 16, marginBottom: 10 },
+  selector: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
+    gap: 8,
+    paddingHorizontal: 14,
     paddingVertical: 11,
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.border,
   },
-  storeBtnActive: { borderColor: colors.accent, backgroundColor: colors.accentLight },
-  storeIcon: { width: 20, height: 20 },
-  storeText: { fontSize: 13, fontFamily: fonts.semibold, color: colors.inkSoft },
-  storeTextActive: { color: colors.accent },
+  selectorIcon: { width: 20, height: 20 },
+  selectorName: { flex: 1, fontSize: 14, fontFamily: fonts.semibold, color: colors.ink },
 
-  // ── Coming soon (Esclat categorías) ───────────────────────────
-  comingSoon: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 32 },
-  comingSoonImage: { width: 64, height: 64 },
-  comingSoonTitle: { fontSize: 18, fontFamily: fonts.bold, color: colors.ink },
-  comingSoonText: {
-    fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft,
-    textAlign: 'center', lineHeight: 20,
+  menuBackdrop: { flex: 1 },
+  menu: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
   },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  menuItemBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
+  menuItemActive: { backgroundColor: colors.accentLight },
+  // Tutorial: oscurece la pantalla y atenúa los súpers bajo el primero.
+  menuTourDim: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)' },
+  menuItemName: { flex: 1, fontSize: 14, fontFamily: fonts.semibold, color: colors.ink },
+  menuItemNameActive: { color: colors.accent },
 
   // ── Tab switcher ──────────────────────────────────────────────
   tabs: {
@@ -1027,6 +938,13 @@ const themedStyles = () => StyleSheet.create({
     flex: 1, fontSize: 14, color: colors.ink, padding: 0,
     fontFamily: fonts.medium,
   },
+  // Fila de búsqueda de productos: barra (flex) + toggle lista/cuadrícula.
+  prodSearchRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    marginHorizontal: 16, marginBottom: 8,
+  },
+  // La barra dentro de la fila no lleva márgenes propios (los pone la fila).
+  prodSearchBox: { flex: 1, marginHorizontal: 0, marginBottom: 0 },
 
   // ── Category rows ─────────────────────────────────────────────
   list: { paddingHorizontal: 16, paddingBottom: 20, paddingTop: 4 },
@@ -1046,21 +964,7 @@ const themedStyles = () => StyleSheet.create({
   rowContent: { flex: 1 },
   rowName: { fontSize: 13.5, fontFamily: fonts.semibold, color: colors.ink },
   rowSub: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
-
-  // ── Product rows ──────────────────────────────────────────────
-  productRow: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.white,
-    padding: 11, gap: 10,
-    borderWidth: 1, borderColor: colors.border,
-  },
-  productInfo: { flex: 1 },
-  productName: { fontSize: 13, fontFamily: fonts.semibold, color: colors.ink },
-  productSub: { fontSize: 11, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
-  productPrice: { fontSize: 13, fontFamily: fonts.bold, color: colors.accent },
   favStar: { marginRight: 4 },
-  bpThumb: { width: 42, height: 42, backgroundColor: colors.white },
-  bpThumbEmpty: { alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border },
 
   // ── States ────────────────────────────────────────────────────
   centerBox: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },

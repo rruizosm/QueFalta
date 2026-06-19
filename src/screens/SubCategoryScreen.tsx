@@ -13,18 +13,24 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { CatalogStackParamList } from '../types';
 import { getSubcategoryEmoji } from '../constants/subcategoryEmojis';
-import { useTheme } from '../context/ThemeContext';
+import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
+import { useTourAnchor } from '../context/GuidedTourContext';
+import { sortByName } from '../lib/sort';
+import ActiveCartBanner from '../components/ActiveCartBanner';
 
 type SubCategoryRouteProp = RouteProp<CatalogStackParamList, 'SubCategory'>;
 type Subcat = { id: string | number; name: string };
 
 export default function SubCategoryScreen() {
-  // Suscripción al tema: el color por defecto (colors.accent) se refresca si
-  // cambia el accent mientras la pantalla sigue montada en otra pestaña.
-  useTheme();
+  // useThemedStyles suscribe al tema (recrea estilos y refresca colors.accent /
+  // colors.paper si cambian accent o modo mientras la pantalla sigue montada).
+  const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const route = useRoute<SubCategoryRouteProp>();
   const { categoryName, emoji = '🛒', color = colors.accent, subcategories = [], retailer = 'mercadona' } = route.params;
+  const firstSubAnchor = useTourAnchor('firstSubcategory');
 
   const openSubcategory = (item: Subcat) => {
     if (retailer === 'esclat') {
@@ -68,9 +74,9 @@ export default function SubCategoryScreen() {
     }
   };
 
-  const renderItem = ({ item }: { item: Subcat }) => {
+  const renderItem = ({ item, index }: { item: Subcat; index: number }) => {
     const itemEmoji = getSubcategoryEmoji(item.name, emoji);
-    return (
+    const row = (
       <TouchableOpacity
         style={styles.row}
         activeOpacity={0.8}
@@ -83,11 +89,21 @@ export default function SubCategoryScreen() {
         <Ionicons name="chevron-forward" size={17} color={colors.inkFaint} />
       </TouchableOpacity>
     );
+    // La primera fila se envuelve en un View medible para anclar el resaltado del
+    // tutorial (un TouchableOpacity no siempre expone measureInWindow).
+    if (index !== 0) return row;
+    return (
+      <View ref={firstSubAnchor.ref} collapsable={false} onLayout={firstSubAnchor.onLayout}>
+        {row}
+      </View>
+    );
   };
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+
+      <ActiveCartBanner topInset />
 
       <View style={styles.headerArea}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -95,12 +111,12 @@ export default function SubCategoryScreen() {
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{categoryName}</Text>
-          <Text style={styles.sub}>{subcategories.length} subcategorías</Text>
+          <Text style={styles.sub}>{t('catalog.subcategories', { n: subcategories.length })}</Text>
         </View>
       </View>
 
       <FlatList
-        data={subcategories}
+        data={sortByName(subcategories, (s) => s.name)}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
         contentContainerStyle={styles.list}
@@ -111,13 +127,13 @@ export default function SubCategoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
   headerArea: {
     flexDirection: 'row', alignItems: 'center',
     gap: 12, paddingHorizontal: 16,
-    paddingTop: 52, paddingBottom: 16,
+    paddingTop: 4, paddingBottom: 16,
   },
   backBtn: {
     width: 38, height: 38,

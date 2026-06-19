@@ -13,6 +13,7 @@ import { useCart } from '../context/CartContext';
 import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import { FREE_LIMITS, limitsApply } from '../constants/limits';
 import { fetchPurchases, fetchPurchaseItems, type Purchase } from '../api/purchases';
 import PaywallModal from '../components/PaywallModal';
@@ -27,6 +28,8 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function HistoryScreen() {
   const styles = useThemedStyles(themedStyles);
+  const { t, lang } = useTranslation();
+  const locale = lang === 'ca' ? 'ca-ES' : 'es-ES';
   const navigation = useNavigation<any>();
   const { loadItemsIntoGroupCart } = useCart();
   const { isPremium } = useProfile();
@@ -75,7 +78,7 @@ export default function HistoryScreen() {
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         setItemsCache((c) => ({ ...c, [p.id]: items }));
       } catch {
-        toast.show('No se pudo cargar el detalle.', 'error');
+        toast.show(t('history.detailError'), 'error');
       } finally {
         setItemsLoadingId(null);
       }
@@ -88,15 +91,15 @@ export default function HistoryScreen() {
     try {
       const items = itemsCache[p.id] ?? await fetchPurchaseItems(p.id);
       if (items.length === 0) {
-        toast.show('Esta compra no tiene detalle de productos.', 'error');
+        toast.show(t('history.noDetail'), 'error');
         return;
       }
-      await loadItemsIntoGroupCart(p.groupId, p.groupName ?? 'Grupo', items);
+      await loadItemsIntoGroupCart(p.groupId, p.groupName ?? t('history.groupFallback'), items);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show(`${items.length} productos cargados en ${p.groupName ?? 'el grupo'}`);
+      toast.show(t('history.loaded', { n: items.length, group: p.groupName ?? t('history.theGroupFallback') }));
       navigation.navigate('List');
     } catch {
-      toast.show('No se pudo repetir la compra.', 'error');
+      toast.show(t('history.repeatError'), 'error');
     } finally {
       setRepeatingId(null);
     }
@@ -110,7 +113,7 @@ export default function HistoryScreen() {
       const key = `${d.getFullYear()}-${d.getMonth()}`;
       if (!map.has(key)) {
         map.set(key, {
-          label: cap(d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })),
+          label: cap(d.toLocaleDateString(locale, { month: 'long', year: 'numeric' })),
           total: 0,
           items: [],
         });
@@ -120,17 +123,17 @@ export default function HistoryScreen() {
       m.items.push(p);
     }
     return Array.from(map.values());
-  }, [purchases]);
+  }, [purchases, locale]);
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
-        <Text style={styles.title}>Historial de compra</Text>
+        <Text style={styles.title}>{t('profile.purchaseHistory')}</Text>
         <View style={{ width: 38 }} />
       </View>
 
@@ -139,10 +142,8 @@ export default function HistoryScreen() {
       ) : purchases.length === 0 ? (
         <View style={styles.centerBox}>
           <Ionicons name="receipt-outline" size={48} color={colors.inkFaint} />
-          <Text style={styles.emptyTitle}>Aún no hay compras</Text>
-          <Text style={styles.emptyText}>
-            Cuando finalices una lista, aparecerá aquí con su gasto.
-          </Text>
+          <Text style={styles.emptyTitle}>{t('history.emptyTitle')}</Text>
+          <Text style={styles.emptyText}>{t('history.emptyText')}</Text>
         </View>
       ) : (
         <ScrollView
@@ -174,10 +175,10 @@ export default function HistoryScreen() {
                           <Ionicons name="cart-outline" size={18} color={colors.accent} />
                         </View>
                         <View style={styles.rowInfo}>
-                          <Text style={styles.rowName} numberOfLines={1}>{p.groupName ?? 'Grupo'}</Text>
+                          <Text style={styles.rowName} numberOfLines={1}>{p.groupName ?? t('history.groupFallback')}</Text>
                           <Text style={styles.rowMeta}>
-                            {cap(new Date(p.completedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }))}
-                            {' · '}{p.itemCount} {p.itemCount === 1 ? 'artículo' : 'artículos'}
+                            {cap(new Date(p.completedAt).toLocaleDateString(locale, { day: 'numeric', month: 'short' }))}
+                            {' · '}{p.itemCount} {p.itemCount === 1 ? t('history.item') : t('history.items')}
                           </Text>
                         </View>
                         <Text style={styles.rowTotal}>{formatEuro(p.total)}</Text>
@@ -219,7 +220,7 @@ export default function HistoryScreen() {
                                   activeOpacity={0.85}
                                 >
                                   <Ionicons name="lock-closed" size={15} color={colors.accent} />
-                                  <Text style={styles.repeatLockedText}>Repetir con Plus</Text>
+                                  <Text style={styles.repeatLockedText}>{t('history.repeatPlus')}</Text>
                                 </TouchableOpacity>
                               ) : (
                                 <TouchableOpacity
@@ -233,14 +234,14 @@ export default function HistoryScreen() {
                                   ) : (
                                     <>
                                       <Ionicons name="refresh" size={16} color={colors.white} />
-                                      <Text style={styles.repeatText}>Repetir compra</Text>
+                                      <Text style={styles.repeatText}>{t('history.repeat')}</Text>
                                     </>
                                   )}
                                 </TouchableOpacity>
                               )}
                             </>
                           ) : (
-                            <Text style={styles.noDetail}>Esta compra no tiene detalle de productos.</Text>
+                            <Text style={styles.noDetail}>{t('history.noDetail')}</Text>
                           )}
                         </View>
                       )}
@@ -256,7 +257,7 @@ export default function HistoryScreen() {
       <PaywallModal
         visible={paywallVisible}
         onClose={() => setPaywallVisible(false)}
-        subtitle={`En el plan gratuito puedes repetir tus ${FREE_LIMITS.maxRepeatableHistory} compras más recientes`}
+        subtitle={t('history.paywallSubtitle', { n: FREE_LIMITS.maxRepeatableHistory })}
       />
     </View>
   );

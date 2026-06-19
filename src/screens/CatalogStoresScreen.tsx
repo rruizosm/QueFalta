@@ -10,10 +10,14 @@ import { fonts } from '../constants/typography';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
+import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import { updateProfile } from '../api/profile';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 
 export default function CatalogStoresScreen() {
+  const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { session } = useAuth();
   const { profile, applyProfile } = useProfile();
@@ -25,7 +29,7 @@ export default function CatalogStoresScreen() {
   const toggle = async (key: CatalogStore) => {
     const isOn = selected.includes(key);
     if (isOn && selected.length === 1) {
-      toast.show('Debes mantener al menos un supermercado.', 'error');
+      toast.show(t('catalogStores.keepOne'), 'error');
       return;
     }
     const next = isOn ? selected.filter((s) => s !== key) : [...selected, key];
@@ -39,28 +43,25 @@ export default function CatalogStoresScreen() {
       await updateProfile(userId, { catalogStores: ordered });
     } catch {
       applyProfile({ catalogStores: prev });     // revierte si falla la red
-      toast.show('No se pudo guardar la preferencia.', 'error');
+      toast.show(t('catalogStores.saveError'), 'error');
     }
   };
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
-        <Text style={styles.title}>Supermercados</Text>
+        <Text style={styles.title}>{t('profile.stores')}</Text>
         <View style={{ width: 38 }} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        <Text style={styles.hint}>
-          Elige qué supermercados quieres ver en el catálogo. Puedes activar varios y
-          cambiarlo cuando quieras.
-        </Text>
+        <Text style={styles.hint}>{t('catalogStores.hint')}</Text>
 
         <View style={styles.section}>
           {CATALOG_STORES.map((s, i) => {
@@ -95,7 +96,7 @@ export default function CatalogStoresScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
   header: {

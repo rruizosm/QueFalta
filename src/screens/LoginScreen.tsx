@@ -11,10 +11,12 @@ import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useAuth } from '../context/AuthContext';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import HardShadow from '../components/HardShadow';
 
 export default function LoginScreen() {
   const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
   const { signInWithGoogle } = useAuth();
   const [loading, setLoading] = useState(false);
 
@@ -35,9 +37,7 @@ export default function LoginScreen() {
 
         <View style={styles.heroText}>
           <Text style={styles.title}>LaCompra</Text>
-          <Text style={styles.subtitle}>
-            Tu lista de la compra, compartida con quien quieras.
-          </Text>
+          <Text style={styles.subtitle}>{t('login.subtitle')}</Text>
         </View>
       </View>
 
@@ -54,15 +54,13 @@ export default function LoginScreen() {
             ) : (
               <>
                 <Text style={styles.googleIcon}>G</Text>
-                <Text style={styles.googleButtonText}>Continuar con Google</Text>
+                <Text style={styles.googleButtonText}>{t('login.continueGoogle')}</Text>
               </>
             )}
           </HardShadow>
         </TouchableOpacity>
 
-        <Text style={styles.legal}>
-          Al continuar aceptas los Términos de Servicio y la Política de Privacidad.
-        </Text>
+        <Text style={styles.legal}>{t('login.legal')}</Text>
       </View>
 
     </View>

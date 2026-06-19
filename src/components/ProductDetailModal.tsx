@@ -13,6 +13,7 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../context/ToastContext';
 import { useCart } from '../context/CartContext';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from './QuantityStepper';
 import ProductImage from './ProductImage';
 import SimilarProductsSection from './SimilarProductsSection';
@@ -47,6 +48,7 @@ const clean = (text?: string | null): string | null => {
 
 export default function ProductDetailModal({ productId, onClose }: Props) {
   const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
   const { activeCart, addToActiveCart } = useCart();
   const toast = useToast();
@@ -92,29 +94,30 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
   const origin = product?.origin ?? d?.origin ?? null;
   const suppliers = d?.suppliers?.map((s) => s.name).filter(Boolean).join(', ') || null;
 
-  const fav = product ? isProductFavorite(product.id) : false;
+  const fav = product ? isProductFavorite('mercadona', product.id) : false;
 
   const handleToggleFav = async () => {
     if (!product) return;
     try {
       const added = await toggleProductFavorite({
+        store: 'mercadona',
         refId: product.id,
         name: product.display_name,
         imageUrl: photo ?? product.thumbnail ?? null,
         price: product.price_instructions?.unit_price ?? null,
       });
       toast.show(
-        added ? `${product.display_name} en favoritos` : `${product.display_name} quitado de favoritos`,
+        t(added ? 'product.favAddedNamed' : 'product.favRemovedNamed', { name: product.display_name }),
       );
     } catch {
-      toast.show('No se pudo actualizar el favorito.', 'error');
+      toast.show(t('product.favError'), 'error');
     }
   };
 
   const handleAdd = async () => {
     if (!product) return;
     if (!activeCart) {
-      Alert.alert('Sin carrito activo', 'Activa el carrito de un grupo en la pestaña Grupos antes de añadir productos.');
+      Alert.alert(t('product.noCartTitle'), t('product.noCartMsg'));
       return;
     }
     setAdding(true);
@@ -130,11 +133,11 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
         mercadonaProductId: product.id,
       }]);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show(`${qty} ${qty === 1 ? 'artículo añadido' : 'artículos añadidos'} a ${activeCart.groupName}`);
+      toast.show(t(qty === 1 ? 'product.addedOne' : 'product.addedMany', { n: qty, group: activeCart.groupName }));
       onClose();
     } catch {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      toast.show('No se pudo añadir el producto.', 'error');
+      toast.show(t('product.addErrorSingle'), 'error');
     } finally {
       setAdding(false);
     }
@@ -144,14 +147,14 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
 
   return (
     <View style={styles.overlay}>
-        <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+        <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
             <Ionicons name="close" size={24} color={colors.ink} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Producto</Text>
+          <Text style={styles.headerTitle}>{t('product.detailTitle')}</Text>
           {product ? (
             <TouchableOpacity onPress={handleToggleFav} style={styles.favBtn} activeOpacity={0.7}>
               <Ionicons name={fav ? 'star' : 'star-outline'} size={22} color={colors.accent} />
@@ -166,7 +169,7 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
         ) : error || !product ? (
           <View style={styles.centerBox}>
             <Ionicons name="alert-circle-outline" size={44} color={colors.inkFaint} />
-            <Text style={styles.errorText}>No se pudo cargar la información del producto.</Text>
+            <Text style={styles.errorText}>{t('product.detailLoadError')}</Text>
           </View>
         ) : (
           <>
@@ -195,14 +198,14 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
             <SimilarProductsSection productName={product.display_name} excludeStore="mercadona" />
 
             {/* Details */}
-            <Section title="Descripción" text={d?.description} />
-            <Section title="Información" text={d?.counter_info} />
-            <Section title="Ingredientes" text={product.nutrition_information?.ingredients} />
-            <Section title="Conservación" text={d?.storage_instructions} />
-            <Section title="Origen" text={origin} />
-            <Section title="Proveedor" text={suppliers} />
-            <Section title="Nombre legal" text={d?.legal_name} />
-            <Section title="Advertencias" text={d?.mandatory_mentions ?? d?.danger_mentions} />
+            <Section title={t('product.sections.description')} text={d?.description} />
+            <Section title={t('product.sections.info')} text={d?.counter_info} />
+            <Section title={t('product.sections.ingredients')} text={product.nutrition_information?.ingredients} />
+            <Section title={t('product.sections.storage')} text={d?.storage_instructions} />
+            <Section title={t('product.sections.origin')} text={origin} />
+            <Section title={t('product.sections.supplier')} text={suppliers} />
+            <Section title={t('product.sections.legalName')} text={d?.legal_name} />
+            <Section title={t('product.sections.warnings')} text={d?.mandatory_mentions ?? d?.danger_mentions} />
 
             {product.ean ? (
               <Text style={styles.ean}>EAN: {product.ean}</Text>
@@ -222,7 +225,7 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
               ) : (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <Ionicons name="cart-outline" size={16} color={colors.white} />
-                  <Text style={styles.addBtnText}>Añadir a la cesta</Text>
+                  <Text style={styles.addBtnText}>{t('product.addToCart')}</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -253,7 +256,10 @@ const themedStyles = () => StyleSheet.create({
 
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 10,
+    // El modal se monta a pantalla completa (overlay top:0) desde la lista y el
+    // detalle de grupo → el header tiene que despejar la barra de estado/notch.
+    // 56 = mismo límite superior que las cabeceras del resto de pantallas.
+    paddingHorizontal: 16, paddingTop: 56, paddingBottom: 10,
   },
   closeBtn: {
     width: 38, height: 38,

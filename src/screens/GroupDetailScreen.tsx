@@ -25,6 +25,7 @@ import {
   type GroupItem,
 } from '../api/groups';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import MemberAvatars from '../components/MemberAvatars';
 import ProgressBar from '../components/ProgressBar';
 import ProductDetailModal from '../components/ProductDetailModal';
@@ -38,6 +39,7 @@ const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 
 export default function GroupDetailScreen() {
   const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const route = useRoute<GroupDetailRouteProp>();
   const { groupId } = route.params;
@@ -68,14 +70,14 @@ export default function GroupDetailScreen() {
 
   const handleShare = async () => {
     const link = getInviteLink(groupId);
-    const message = `Únete a mi grupo "${group?.name ?? ''}" en MercaApp:\n${link}`;
+    const message = t('group.shareMessage', { name: group?.name ?? '', link });
     if (Platform.OS === 'web') {
       const nav = (globalThis as any).navigator;
       try {
-        if (nav?.share) await nav.share({ title: 'Invitación a grupo', text: message, url: link });
+        if (nav?.share) await nav.share({ title: t('group.shareTitle'), text: message, url: link });
         else if (nav?.clipboard) {
           await nav.clipboard.writeText(link);
-          (globalThis as any).alert?.('Enlace copiado al portapapeles');
+          (globalThis as any).alert?.(t('group.linkCopied'));
         }
       } catch { /* user cancelled */ }
       return;
@@ -175,7 +177,7 @@ export default function GroupDetailScreen() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+        <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
         <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 120 }} />
       </View>
     );
@@ -184,18 +186,18 @@ export default function GroupDetailScreen() {
   if (error || !group) {
     return (
       <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+        <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={22} color={colors.ink} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Grupo</Text>
+          <Text style={styles.headerTitle}>{t('group.detailTitle')}</Text>
           <View style={{ width: 38 }} />
         </View>
         <View style={styles.centerBox}>
-          <Text style={styles.emptyText}>No se pudo cargar el grupo.</Text>
+          <Text style={styles.emptyText}>{t('group.detailLoadError')}</Text>
           <TouchableOpacity onPress={() => { setLoading(true); load(); }}>
-            <Text style={styles.retryText}>Reintentar</Text>
+            <Text style={styles.retryText}>{t('common.retry')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -204,7 +206,7 @@ export default function GroupDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -232,9 +234,9 @@ export default function GroupDetailScreen() {
           onPress={() => navigation.navigate('GroupMembers', { groupId })}
         >
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Miembros ({group.members.length})</Text>
+            <Text style={styles.sectionTitle}>{t('group.membersTitle', { n: group.members.length })}</Text>
             <View style={styles.manageHint}>
-              <Text style={styles.manageHintText}>Gestionar</Text>
+              <Text style={styles.manageHintText}>{t('group.manage')}</Text>
               <Ionicons name="chevron-forward" size={15} color={colors.accent} />
             </View>
           </View>
@@ -248,7 +250,7 @@ export default function GroupDetailScreen() {
               </Text>
             ))}
             {group.members.length > 4 && (
-              <Text style={styles.memberName}> +{group.members.length - 4} más</Text>
+              <Text style={styles.memberName}>{t('group.moreMembers', { n: group.members.length - 4 })}</Text>
             )}
           </View>
         </TouchableOpacity>
@@ -256,7 +258,7 @@ export default function GroupDetailScreen() {
         {/* Cesta del grupo */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Cesta del grupo</Text>
+            <Text style={styles.sectionTitle}>{t('group.groupCart')}</Text>
             {items.length > 0 && (
               <TouchableOpacity
                 onPress={() => setCartExpanded(true)}
@@ -272,13 +274,13 @@ export default function GroupDetailScreen() {
             <View style={styles.progressWrap}>
               <ProgressBar progress={progress} height={6} />
               <Text style={styles.progressSub}>
-                {doneItems}/{merged.length} · {Math.round(progress * 100)}% completado
+                {t('group.cartProgress', { done: doneItems, total: merged.length, pct: Math.round(progress * 100) })}
               </Text>
             </View>
           )}
 
           {items.length === 0 ? (
-            <Text style={styles.emptyCart}>La cesta del grupo está vacía.</Text>
+            <Text style={styles.emptyCart}>{t('group.emptyCart')}</Text>
           ) : (
             renderCartList(items)
           )}
@@ -289,7 +291,7 @@ export default function GroupDetailScreen() {
       {/* Total bar */}
       {hasPrices && items.length > 0 && (
         <View style={styles.totalBar}>
-          <Text style={styles.totalBarLabel}>Total estimado</Text>
+          <Text style={styles.totalBarLabel}>{t('list.totalEstimated')}</Text>
           <Text style={styles.totalBarAmount}>{formatEuro(totalCost)}</Text>
         </View>
       )}
@@ -298,7 +300,7 @@ export default function GroupDetailScreen() {
       {cartExpanded && (
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle} numberOfLines={1}>Cesta de {group.name}</Text>
+            <Text style={styles.modalTitle} numberOfLines={1}>{t('group.cartOf', { name: group.name })}</Text>
             <TouchableOpacity onPress={() => setCartExpanded(false)} style={styles.backBtn}>
               <Ionicons name="contract-outline" size={20} color={colors.ink} />
             </TouchableOpacity>
@@ -308,7 +310,7 @@ export default function GroupDetailScreen() {
             <View style={styles.modalProgress}>
               <ProgressBar progress={progress} height={6} />
               <Text style={styles.progressSub}>
-                {doneItems}/{merged.length} · {Math.round(progress * 100)}% completado
+                {t('group.cartProgress', { done: doneItems, total: merged.length, pct: Math.round(progress * 100) })}
               </Text>
             </View>
           )}
@@ -322,7 +324,7 @@ export default function GroupDetailScreen() {
 
           {hasPrices && (
             <View style={styles.totalBar}>
-              <Text style={styles.totalBarLabel}>Total estimado</Text>
+              <Text style={styles.totalBarLabel}>{t('list.totalEstimated')}</Text>
               <Text style={styles.totalBarAmount}>{formatEuro(totalCost)}</Text>
             </View>
           )}
@@ -441,7 +443,7 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.white,
     borderTopWidth: 1, borderTopColor: colors.border,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 14, paddingBottom: 28,
+    paddingHorizontal: 16, paddingVertical: 14,
   },
   totalBarLabel: { fontSize: 13, fontFamily: fonts.medium, color: colors.inkSoft },
   totalBarAmount: { fontSize: 22, fontFamily: fonts.bold, color: colors.ink },

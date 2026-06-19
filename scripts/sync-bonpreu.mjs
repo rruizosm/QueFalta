@@ -31,10 +31,15 @@ if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
 
 const HOME = 'https://www.compraonline.bonpreuesclat.cat';
 const CATS_API = `${HOME}/api/webproductpagews/v1/categories`;
-// La web es catalana por defecto. El idioma se fija con la cookie `language`
-// (NO con Accept-Language ni con el dominio, que los ignoran); con `es-ES` tanto
-// la API de categorías como la hidratación de productos devuelven castellano.
-const LANG = process.env.BONPREU_LANG || 'es-ES';
+// El idioma se fija con la cookie `language` (NO con Accept-Language ni con el
+// dominio, que los ignoran), y controla TANTO la API de categorías como la
+// hidratación de productos (PUT /v6/products). La web es bilingüe (es-ES | ca-ES).
+// Hacemos la app bilingüe (como Mercadona): guardamos los DOS idiomas y la app
+// elige según el idioma activo. Pasada PRIMARIA = castellano (rellena display_name
+// / name); 2ª pasada = catalán (rellena display_name_ca / name_ca, casando por id,
+// que es estable entre idiomas). El catálogo se recorre DOS veces (~2× tiempo).
+const LANG = process.env.BONPREU_LANG || 'es-ES';     // primario (castellano)
+const LANG_CA = process.env.BONPREU_LANG_CA || 'ca-ES'; // 2ª pasada (catalán)
 const runStart = new Date().toISOString();
 const chunk = (a, n) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 
@@ -82,7 +87,10 @@ function normalize(p) {
 
 // ── Supabase REST ────────────────────────────────────────────────────────────
 async function upsert(table, rows) {
-  for (const c of chunk(rows, 500)) {
+  // Lotes pequeños: el catálogo de Bonpreu son ~18k productos con `raw` jsonb
+  // grande + índice trigram; a 500/lote el upsert excede el statement_timeout de
+  // Supabase (57014). 100/lote mantiene cada statement bien por debajo del límite.
+  for (const c of chunk(rows, 100)) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
       method: 'POST',
       headers: {
@@ -103,8 +111,8 @@ async function markStale(table) {
 }
 
 // ── Categorías (sin WAF) ─────────────────────────────────────────────────────
-async function fetchCategoryTree() {
-  const res = await fetch(CATS_API, { headers: { Accept: 'application/json', Cookie: `language=${LANG}` } });
+async function fetchCategoryTree(lang = LANG) {
+  const res = await fetch(CATS_API, { headers: { Accept: 'application/json', Cookie: `language=${lang}` } });
   if (!res.ok) throw new Error(`categories ${res.status}`);
   const n1s = await res.json();
   const catRows = [], n2s = [];
@@ -158,20 +166,18 @@ async function processCategory(page, cat, products, membership) {
   }
 }
 
-async function main() {
-  console.log(`[bonpreu] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} conc=${CONCURRENCY}`);
-  const { catRows, n2s } = await fetchCategoryTree();
-  const cats = n2s.slice(0, MAX_CATEGORIES);
-  console.log(`[bonpreu] ${catRows.length} categorías, ${n2s.length} N2 con productos (proceso ${cats.length})`);
-
-  const catName = new Map(n2s.map((c) => [c.id, c.name]));
+// Recorre TODAS las categorías N2 en un idioma (cookie `language=lang`) y captura
+// los productos hidratados. Devuelve products (Map id→detalles) y membership
+// (Map id→Set<categoryId>). En la 2ª pasada (catalán) solo se usa products para leer
+// el display_name en català; el membership/categorías sale de la pasada primaria.
+async function crawlProducts(cats, lang) {
   const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || undefined, headless: true });
   const products = new Map();      // productId → detalles
   const membership = new Map();    // productId → Set<categoryId>
   try {
-    const ctx = await browser.newContext({ locale: LANG });
+    const ctx = await browser.newContext({ locale: lang });
     // Fija el idioma del catálogo (los PUT /v6/products hidratan en este idioma).
-    await ctx.addCookies([{ name: 'language', value: LANG, domain: new URL(HOME).hostname, path: '/' }]);
+    await ctx.addCookies([{ name: 'language', value: lang, domain: new URL(HOME).hostname, path: '/' }]);
 
     // Calentar el WAF en una pestaña (token compartido por el contexto).
     const warm = await ctx.newPage();
@@ -187,21 +193,53 @@ async function main() {
         const cat = queue.shift();
         if (!cat) break;
         try { await processCategory(pg, cat, products, membership); }
-        catch (e) { console.warn(`[bonpreu] ${cat.name} falló: ${e.message}`); }
-        if (++done % 10 === 0) console.log(`[bonpreu] ${done}/${cats.length} categorías · ${products.size} productos`);
+        catch (e) { console.warn(`[bonpreu:${lang}] ${cat.name} falló: ${e.message}`); }
+        if (++done % 10 === 0) console.log(`[bonpreu:${lang}] ${done}/${cats.length} categorías · ${products.size} productos`);
       }
     }));
   } finally {
     await browser.close();
   }
+  return { products, membership };
+}
 
-  // Adjuntar a cada producto sus categorías reales (las que lo listan en su SSR).
+async function main() {
+  console.log(`[bonpreu] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} conc=${CONCURRENCY}`);
+  const { catRows, n2s } = await fetchCategoryTree(LANG);
+  // Nombres de categoría en catalán (API abierta, una sola petición) → name_ca.
+  let caCatName = new Map();
+  try {
+    const caTree = await fetchCategoryTree(LANG_CA);
+    caCatName = new Map(caTree.catRows.map((c) => [c.id, c.name]));
+  } catch (e) { console.warn(`[bonpreu] árbol ${LANG_CA} falló: ${e.message}`); }
+  for (const c of catRows) c.name_ca = caCatName.get(c.id) ?? null;
+
+  const cats = n2s.slice(0, MAX_CATEGORIES);
+  console.log(`[bonpreu] ${catRows.length} categorías, ${n2s.length} N2 con productos (proceso ${cats.length})`);
+
+  const catName = new Map(n2s.map((c) => [c.id, c.name]));
+
+  // Pasada primaria (castellano): productos + pertenencia a categorías.
+  const { products, membership } = await crawlProducts(cats, LANG);
+
+  // 2ª pasada (catalán): solo nombres, casados por id (estable entre idiomas).
+  let caName = new Map();
+  if (!DRY_RUN) {
+    console.log(`[bonpreu] 2ª pasada en ${LANG_CA} (nombres en català)…`);
+    const { products: productsCa } = await crawlProducts(cats, LANG_CA);
+    caName = new Map([...productsCa].map(([id, p]) => [id, p.display_name]).filter(([, n]) => n));
+    console.log(`[bonpreu] ${caName.size} nombres en català`);
+  }
+
+  // Adjuntar a cada producto sus categorías reales (las que lo listan en su SSR)
+  // + el nombre en català (display_name_ca; null → la app cae al castellano).
   const rows = [];
   for (const [id, det] of products) {
     if (!det.display_name) continue;
     const mem = [...(membership.get(id) ?? [])];
     rows.push({
       ...det,
+      display_name_ca: caName.get(id) ?? null,
       category_ids: mem,
       category_id: mem[0] ?? null,
       category_name: mem[0] ? catName.get(mem[0]) ?? null : null,

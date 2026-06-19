@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
@@ -26,12 +26,14 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import { fetchListItems, setItemInCart, assignListItem, clearListItems, deleteListItems, mergeCartItems, type ListItemRow, type MergedCartItem } from '../api/lists';
 import { fetchGroupMembers } from '../api/groups';
 import { recordPurchase } from '../api/purchases';
 import type { GroupMember } from '../types';
 import ProgressBar from '../components/ProgressBar';
 import ProductDetailModal from '../components/ProductDetailModal';
+import ConfirmDialog from '../components/ConfirmDialog';
 import UserAvatar from '../components/UserAvatar';
 
 import { STORE_META, groupByStore } from '../constants/stores';
@@ -46,6 +48,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 
 export default function ListScreen() {
   const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
   const { session } = useAuth();
   const { activeCart } = useCart();
   const toast = useToast();
@@ -61,6 +64,7 @@ export default function ListScreen() {
   const [detailProductId, setDetailProductId] = useState<string | null>(null);
   const [assignItem, setAssignItem] = useState<MergedCartItem | null>(null);
   const [finishing, setFinishing] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
 
   const load = useCallback(() => {
     if (!listId) { setItems([]); setLoading(false); return Promise.resolve(); }
@@ -90,7 +94,7 @@ export default function ListScreen() {
       await Promise.all(item.ids.map((id) => assignListItem(id, memberId)));
     } catch {
       setItems((list) => list.map((it) => (ids.has(it.id) ? { ...it, assignedTo: prev.get(it.id) ?? null } : it)));
-      toast.show('No se pudo asignar el artículo.', 'error');
+      toast.show(t('list.assignError'), 'error');
     }
   };
 
@@ -111,12 +115,29 @@ export default function ListScreen() {
       await recordPurchase(activeCart.groupId, totalCost, snapshot, userId);
       await clearListItems(activeCart.listId);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show('¡Compra finalizada! 🎉');
+      toast.show(t('list.purchaseDone'));
       setItems([]);
     } catch {
-      toast.show('No se pudo finalizar la compra.', 'error');
+      toast.show(t('list.purchaseError'), 'error');
     } finally {
       setFinishing(false);
+    }
+  };
+
+  // Vacía toda la lista del grupo (descarte, sin registrar compra como "Finalizar").
+  const handleClearAll = async () => {
+    setConfirmClear(false);
+    if (!activeCart) return;
+    const prev = items;
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setItems([]);
+    try {
+      await clearListItems(activeCart.listId);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show(t('list.cleared'));
+    } catch {
+      setItems(prev);
+      toast.show(t('list.clearError'), 'error');
     }
   };
 
@@ -130,7 +151,7 @@ export default function ListScreen() {
       return true;
     } catch {
       setItems(prev);
-      toast.show('No se pudo eliminar el artículo.', 'error');
+      toast.show(t('list.removeError'), 'error');
       return false;
     }
   };
@@ -146,7 +167,7 @@ export default function ListScreen() {
       await Promise.all(item.ids.map((id) => setItemInCart(id, next)));
     } catch {
       setItems((prev) => prev.map((it) => (ids.has(it.id) ? { ...it, inCart: prevState.get(it.id) ?? it.inCart } : it)));
-      toast.show('No se pudo actualizar el artículo.', 'error');
+      toast.show(t('list.updateError'), 'error');
     }
   };
 
@@ -191,16 +212,14 @@ export default function ListScreen() {
   if (!activeCart) {
     return (
       <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+        <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
         <View style={styles.header}>
-          <Text style={styles.title}>Mi Lista</Text>
+          <Text style={styles.title}>{t('list.title')}</Text>
         </View>
         <View style={styles.centerBox}>
           <Ionicons name="cart-outline" size={48} color={colors.inkFaint} />
-          <Text style={styles.centerTitle}>No tienes ningún carrito activo</Text>
-          <Text style={styles.centerText}>
-            Ve a Grupos y pulsa "Activar carrito" para empezar tu lista de la compra.
-          </Text>
+          <Text style={styles.centerTitle}>{t('list.noCartTitle')}</Text>
+          <Text style={styles.centerText}>{t('list.noCartText')}</Text>
         </View>
       </View>
     );
@@ -209,7 +228,7 @@ export default function ListScreen() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+        <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
         <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 120 }} />
       </View>
     );
@@ -218,14 +237,14 @@ export default function ListScreen() {
   if (error) {
     return (
       <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+        <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
         <View style={styles.header}>
           <Text style={styles.title} numberOfLines={1}>{activeCart.groupName}</Text>
         </View>
         <View style={styles.centerBox}>
-          <Text style={styles.centerText}>No se pudo cargar la lista.</Text>
+          <Text style={styles.centerText}>{t('list.loadError')}</Text>
           <TouchableOpacity onPress={() => { setLoading(true); load(); }}>
-            <Text style={styles.retryText}>Reintentar</Text>
+            <Text style={styles.retryText}>{t('common.retry')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -234,25 +253,33 @@ export default function ListScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       {/* Header */}
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Text style={styles.title} numberOfLines={1}>{activeCart.groupName}</Text>
           <Text style={styles.subtitle}>
-            {doneItems} de {merged.length} artículos recogidos
+            {t('list.subtitle', { done: doneItems, total: merged.length })}
           </Text>
         </View>
+        {items.length > 0 && (
+          <TouchableOpacity
+            onPress={() => setConfirmClear(true)}
+            style={styles.clearAllBtn}
+            hitSlop={8}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="trash-outline" size={18} color={colors.inkSoft} />
+          </TouchableOpacity>
+        )}
       </View>
 
       {items.length === 0 ? (
         <View style={styles.centerBox}>
           <Ionicons name="list-outline" size={48} color={colors.inkFaint} />
-          <Text style={styles.centerTitle}>Tu lista está vacía</Text>
-          <Text style={styles.centerText}>
-            Añade productos desde el catálogo y aparecerán aquí.
-          </Text>
+          <Text style={styles.centerTitle}>{t('list.emptyTitle')}</Text>
+          <Text style={styles.centerText}>{t('list.emptyText')}</Text>
         </View>
       ) : (
         <>
@@ -260,8 +287,8 @@ export default function ListScreen() {
           <View style={styles.progressArea}>
             <ProgressBar progress={progress} height={8} />
             <View style={styles.progressRow}>
-              <Text style={styles.progressHint}>Toca la papelera dos veces para eliminar un artículo</Text>
-              <Text style={styles.progressLabel}>{Math.round(progress * 100)}% completado</Text>
+              <Text style={styles.progressHint}>{t('list.deleteHint')}</Text>
+              <Text style={styles.progressLabel}>{t('list.completed', { pct: Math.round(progress * 100) })}</Text>
             </View>
           </View>
 
@@ -305,7 +332,7 @@ export default function ListScreen() {
           {/* Total bar */}
           {hasPrices && (
             <View style={styles.totalBar}>
-              <Text style={styles.totalBarLabel}>Total estimado</Text>
+              <Text style={styles.totalBarLabel}>{t('list.totalEstimated')}</Text>
               <Text style={styles.totalBarAmount}>{formatEuro(totalCost)}</Text>
             </View>
           )}
@@ -314,7 +341,7 @@ export default function ListScreen() {
           {doneItems === merged.length && merged.length > 0 && (
             <View style={styles.doneBar}>
               <Text style={styles.doneBarEmoji}>🎉</Text>
-              <Text style={styles.doneBarText}>¡Lista completada!</Text>
+              <Text style={styles.doneBarText}>{t('list.listCompleted')}</Text>
               <TouchableOpacity
                 style={styles.doneBarBtn}
                 onPress={handleFinish}
@@ -322,7 +349,7 @@ export default function ListScreen() {
               >
                 {finishing
                   ? <ActivityIndicator size="small" color={colors.accent} />
-                  : <Text style={styles.doneBarBtnText}>Finalizar</Text>}
+                  : <Text style={styles.doneBarBtnText}>{t('list.finish')}</Text>}
               </TouchableOpacity>
             </View>
           )}
@@ -345,7 +372,7 @@ export default function ListScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setAssignItem(null)} />
           {assignItem && (
             <View style={styles.sheet}>
-              <Text style={styles.sheetTitle} numberOfLines={1}>¿Quién trae {assignItem.productName}?</Text>
+              <Text style={styles.sheetTitle} numberOfLines={1}>{t('list.whoBrings', { product: assignItem.productName })}</Text>
 
               <ScrollView style={styles.sheetList} showsVerticalScrollIndicator={false}>
                 {members.map((m) => {
@@ -371,21 +398,31 @@ export default function ListScreen() {
                 onPress={() => doAssign(assignItem, null)}
               >
                 <Ionicons name="close-circle-outline" size={18} color={colors.inkSoft} />
-                <Text style={styles.sheetClearText}>Sin asignar</Text>
+                <Text style={styles.sheetClearText}>{t('common.unassigned')}</Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
       </Modal>
+
+      <ConfirmDialog
+        visible={confirmClear}
+        title={t('list.clearTitle')}
+        message={t('list.clearMessage')}
+        confirmLabel={t('list.clearConfirm')}
+        cancelLabel={t('common.cancel')}
+        destructive
+        onConfirm={handleClearAll}
+        onCancel={() => setConfirmClear(false)}
+      />
     </View>
   );
 }
 
 // Fila del carrito. Tres zonas táctiles independientes: el checkbox marca
 // "En cesta", la zona central (foto + nombre) abre el detalle del producto y
-// la papelera elimina en dos toques — el primero la "arma" (se vuelve roja,
-// se desarma sola a los 3 s) y el segundo tacha el artículo, lo desvanece y
-// entonces borra. Si el borrado en servidor falla, la fila reaparece.
+// la papelera elimina en un toque — tacha el artículo, lo desvanece y entonces
+// borra. Si el borrado en servidor falla, la fila reaparece.
 function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove }: {
   item: MergedCartItem;
   members: GroupMember[];
@@ -395,24 +432,12 @@ function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove
   onRemove: (item: MergedCartItem) => Promise<boolean>;
 }) {
   const styles = useThemedStyles(themedStyles);
-  const [armed, setArmed] = useState(false);
+  const { t } = useTranslation();
   const [removing, setRemoving] = useState(false);
   const opacity = useRef(new Animated.Value(1)).current;
-  const disarmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => () => {
-    if (disarmTimer.current) clearTimeout(disarmTimer.current);
-  }, []);
 
   const handleDeletePress = () => {
     if (removing) return;
-    if (!armed) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      setArmed(true);
-      disarmTimer.current = setTimeout(() => setArmed(false), 3000);
-      return;
-    }
-    if (disarmTimer.current) clearTimeout(disarmTimer.current);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setRemoving(true);
     // El delay deja ver el tachado un instante antes de desvanecer.
@@ -422,7 +447,6 @@ function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove
         if (!ok) {
           opacity.setValue(1);
           setRemoving(false);
-          setArmed(false);
         }
       });
   };
@@ -481,22 +505,22 @@ function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove
 
       {item.inCart ? (
         <View style={styles.inCartBadge}>
-          <Text style={styles.inCartBadgeText}>En cesta</Text>
+          <Text style={styles.inCartBadgeText}>{t('list.inCart')}</Text>
         </View>
       ) : item.unitPrice != null ? (
         <Text style={styles.itemPrice}>{formatEuro(item.unitPrice * item.quantity)}</Text>
       ) : null}
 
       <TouchableOpacity
-        style={[styles.deleteBtn, armed && styles.deleteBtnArmed]}
+        style={styles.deleteBtn}
         hitSlop={6}
         disabled={removing}
         onPress={handleDeletePress}
       >
         <Ionicons
-          name={armed ? 'trash' : 'trash-outline'}
+          name="trash-outline"
           size={13}
-          color={armed ? colors.white : colors.inkFaint}
+          color={colors.inkFaint}
         />
       </TouchableOpacity>
     </Animated.View>
@@ -512,6 +536,11 @@ const themedStyles = () => StyleSheet.create({
   },
   title: { fontSize: 24, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
   subtitle: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
+  clearAllBtn: {
+    width: 38, height: 38,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white,
+  },
 
   progressArea: { paddingHorizontal: 16, marginBottom: 4, gap: 6 },
   progressRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
@@ -586,7 +615,6 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: colors.border,
   },
-  deleteBtnArmed: { backgroundColor: colors.red, borderColor: colors.red },
 
   // ── Assignee ──────────────────────────────────────────────────
   assignBtn: { padding: 2 },
@@ -633,7 +661,7 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.white,
     borderTopWidth: 1, borderTopColor: colors.border,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 13, paddingBottom: 28,
+    paddingHorizontal: 16, paddingVertical: 14,
   },
   totalBarLabel: { fontSize: 13, fontFamily: fonts.medium, color: colors.inkSoft },
   totalBarAmount: { fontSize: 21, fontFamily: fonts.bold, color: colors.ink },
@@ -643,7 +671,7 @@ const themedStyles = () => StyleSheet.create({
     position: 'absolute', bottom: 0, left: 0, right: 0,
     backgroundColor: colors.accent,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 14, paddingBottom: 28, gap: 10,
+    paddingHorizontal: 16, paddingVertical: 14, gap: 10,
   },
   doneBarEmoji: { fontSize: 20 },
   doneBarText: { flex: 1, fontFamily: fonts.bold, color: colors.white, fontSize: 15 },

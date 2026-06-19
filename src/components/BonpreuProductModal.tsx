@@ -11,6 +11,7 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductImage from '../components/ProductImage';
 import SimilarProductsSection from '../components/SimilarProductsSection';
@@ -28,6 +29,7 @@ export default function BonpreuProductModal({ product, onClose }: Props) {
   const { activeCart, addToActiveCart } = useCart();
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
   const toast = useToast();
+  const { t } = useTranslation();
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
 
@@ -35,25 +37,26 @@ export default function BonpreuProductModal({ product, onClose }: Props) {
 
   if (!product) return null;
   const price = product.unitPrice != null ? `${product.unitPrice.toFixed(2).replace('.', ',')} €` : null;
-  const fav = isProductFavorite(product.id);
+  const fav = isProductFavorite('esclat', product.id);
 
   const handleToggleFav = async () => {
     try {
       const added = await toggleProductFavorite({
+        store: 'esclat',
         refId: product.id,
         name: product.displayName,
         imageUrl: product.thumbnail,
         price: product.unitPrice != null ? String(product.unitPrice) : null,
       });
-      toast.show(added ? `${product.displayName} en favoritos` : `${product.displayName} quitado de favoritos`);
+      toast.show(t(added ? 'product.favAddedNamed' : 'product.favRemovedNamed', { name: product.displayName }));
     } catch {
-      toast.show('No se pudo actualizar el favorito.', 'error');
+      toast.show(t('product.favError'), 'error');
     }
   };
 
   const handleAdd = async () => {
     if (!activeCart) {
-      Alert.alert('Sin carrito activo', 'Activa el carrito de un grupo en la pestaña Grupos antes de añadir productos.');
+      Alert.alert(t('product.noCartTitle'), t('product.noCartMsg'));
       return;
     }
     setAdding(true);
@@ -68,11 +71,11 @@ export default function BonpreuProductModal({ product, onClose }: Props) {
         mercadonaProductId: null,
       }]);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show(`${qty} ${qty === 1 ? 'artículo añadido' : 'artículos añadidos'} a ${activeCart.groupName}`);
+      toast.show(t(qty === 1 ? 'product.addedOne' : 'product.addedMany', { n: qty, group: activeCart.groupName }));
       onClose();
     } catch {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      toast.show('No se pudo añadir el producto.', 'error');
+      toast.show(t('product.addErrorSingle'), 'error');
     } finally {
       setAdding(false);
     }
@@ -80,13 +83,13 @@ export default function BonpreuProductModal({ product, onClose }: Props) {
 
   return (
     <View style={styles.overlay}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
           <Ionicons name="close" size={24} color={colors.ink} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Producto</Text>
+        <Text style={styles.headerTitle}>{t('product.detailTitle')}</Text>
         <TouchableOpacity onPress={handleToggleFav} style={styles.favBtn} activeOpacity={0.7}>
           <Ionicons name={fav ? 'star' : 'star-outline'} size={22} color={colors.accent} />
         </TouchableOpacity>
@@ -115,12 +118,12 @@ export default function BonpreuProductModal({ product, onClose }: Props) {
 
         {product.categoryName ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Categoría</Text>
+            <Text style={styles.sectionTitle}>{t('product.category')}</Text>
             <Text style={styles.sectionText}>{product.categoryName}</Text>
           </View>
         ) : null}
 
-        <Text style={styles.note}>Producto de BonpreuEsclat</Text>
+        <Text style={styles.note}>{t('product.fromStore', { store: 'BonpreuEsclat' })}</Text>
       </ScrollView>
 
       {/* Pie: cantidad + añadir a la cesta */}
@@ -137,7 +140,7 @@ export default function BonpreuProductModal({ product, onClose }: Props) {
           ) : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <Ionicons name="cart-outline" size={16} color={colors.white} />
-              <Text style={styles.addBtnText}>Añadir a la cesta</Text>
+              <Text style={styles.addBtnText}>{t('product.addToCart')}</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -153,7 +156,7 @@ const themedStyles = () => StyleSheet.create({
   },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 10,
+    paddingHorizontal: 16, paddingTop: 16, paddingBottom: 10,
   },
   closeBtn: {
     width: 38, height: 38, backgroundColor: colors.white,

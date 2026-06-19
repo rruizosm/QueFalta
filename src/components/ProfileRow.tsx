@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Switch, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
+import { useThemedStyles } from '../context/ThemeContext';
 
 type RightVariant = 'chevron' | 'switch';
 
@@ -25,6 +26,7 @@ export default function ProfileRow({
   right = 'chevron', switchValue, onSwitchChange,
   danger = false, last = false,
 }: Props) {
+  const styles = useThemedStyles(themedStyles);
   const iconColor = danger ? '#d6452b' : colors.accent;
   const iconBg    = danger ? 'rgba(214,69,43,0.10)' : colors.accentLight;
   const labelColor = danger ? '#d6452b' : colors.ink;
@@ -34,8 +36,8 @@ export default function ProfileRow({
       <View style={[styles.iconBox, { backgroundColor: iconBg }]}>
         <Ionicons name={icon} size={18} color={iconColor} />
       </View>
-      <Text style={[styles.label, { color: labelColor }]}>{label}</Text>
-      {value ? <Text style={styles.value}>{value}</Text> : null}
+      <Text style={[styles.label, { color: labelColor }]} numberOfLines={1}>{label}</Text>
+      {value ? <Text style={styles.value} numberOfLines={1} ellipsizeMode="tail">{value}</Text> : null}
       {badge ? (
         <View style={[styles.badge, { backgroundColor: colors.accent }]}>
           <Text style={styles.badgeText}>{badge > 99 ? '99+' : badge}</Text>
@@ -64,7 +66,7 @@ export default function ProfileRow({
   return inner;
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   row: {
     flexDirection: 'row', alignItems: 'center',
     paddingVertical: 12, gap: 13,
@@ -81,6 +83,7 @@ const styles = StyleSheet.create({
   },
   value: {
     fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft,
+    flexShrink: 1, maxWidth: '55%', textAlign: 'right',
   },
   badge: {
     minWidth: 20, height: 20, borderRadius: 10,

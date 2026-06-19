@@ -1,204 +1,48 @@
-import React, { useEffect, useState } from 'react';
-import { fonts } from '../constants/typography';
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  StatusBar,
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-} from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { Swipeable } from 'react-native-gesture-handler';
-import * as Haptics from 'expo-haptics';
+import { fonts } from '../constants/typography';
 import { colors } from '../constants/colors';
-import {
-  fetchCategoryDetail,
-  flattenProducts,
-  formatPrice,
-  formatSize,
-  type MercadonaProduct,
-} from '../api/mercadona';
+import { fetchCategoryDetail, flattenProducts, type MercadonaProduct } from '../api/mercadona';
 import { CatalogStackParamList } from '../types';
-import { useCart } from '../context/CartContext';
-import { useToast } from '../context/ToastContext';
-import { useFavorites } from '../context/FavoritesContext';
 import { useThemedStyles } from '../context/ThemeContext';
-import QuantityStepper from '../components/QuantityStepper';
-import ProductImage from '../components/ProductImage';
-import ProductDetailModal from '../components/ProductDetailModal';
-import ViewModeToggle, { type ViewMode } from '../components/ViewModeToggle';
-import ProductGridCard from '../components/ProductGridCard';
+import { mercadonaToUI } from '../lib/productAdapters';
+import StoreProductList from '../components/StoreProductList';
+import ActiveCartBanner from '../components/ActiveCartBanner';
 
 type ProductsRouteProp = RouteProp<CatalogStackParamList, 'Products'>;
-
-// Cuadrícula: 4 por fila (primer borrador, a depurar). El ancho de tarjeta se
-// fija aquí para que la última fila no se estire al tener menos de 4 productos.
-const GRID_COLS = 3;
-const GRID_GAP = 8;
-const CARD_W = (Dimensions.get('window').width - 32 - GRID_GAP * (GRID_COLS - 1)) / GRID_COLS;
 
 export default function ProductsScreen() {
   const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
   const route = useRoute<ProductsRouteProp>();
-  const {
-    subcategoryId,
-    subcategoryName,
-    categoryName,
-    emoji = '🛒',
-    color = colors.accent,
-  } = route.params;
-
-  const { activeCart, addToActiveCart } = useCart();
-  const toast = useToast();
-  const { products: favProductsList, isProductFavorite, toggleProductFavorite } = useFavorites();
+  const { subcategoryId, subcategoryName, categoryName, emoji = '🛒' } = route.params;
 
   const [products, setProducts] = useState<MercadonaProduct[]>([]);
   const [loading, setLoading] = useState(true);
-  const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [adding, setAdding] = useState(false);
-  const [detailProductId, setDetailProductId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [error, setError] = useState(false);
 
   useEffect(() => {
+    setLoading(true);
+    setError(false);
     fetchCategoryDetail(subcategoryId)
       .then((detail) => setProducts(flattenProducts(detail)))
-      .catch(console.error)
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [subcategoryId]);
 
-  const increment = (id: string) =>
-    setQuantities((prev) => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
-  const decrement = (id: string) =>
-    setQuantities((prev) => ({ ...prev, [id]: Math.max(0, (prev[id] ?? 0) - 1) }));
-
-  const cartCount = Object.values(quantities).reduce((a, b) => a + b, 0);
-
-  const handleAddToCart = async () => {
-    if (!activeCart) {
-      Alert.alert(
-        'Sin carrito activo',
-        'Activa el carrito de un grupo en la pestaña Grupos antes de añadir productos.',
-      );
-      return;
-    }
-    const items = products
-      .filter((p) => (quantities[p.id] ?? 0) > 0)
-      .map((p) => ({
-        productName: p.display_name,
-        quantity: quantities[p.id],
-        unit: 'ud',
-        categoryEmoji: emoji,
-        categoryName,
-        mercadonaProductId: p.id,
-        unitPrice: parseFloat(p.price_instructions.unit_price),
-        imageUrl: p.thumbnail ?? null,
-      }));
-    if (items.length === 0) return;
-    setAdding(true);
-    try {
-      const count = items.reduce((a, b) => a + b.quantity, 0);
-      await addToActiveCart(items);
-      setQuantities({});
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show(`${count} ${count === 1 ? 'artículo añadido' : 'artículos añadidos'} a ${activeCart.groupName}`);
-    } catch {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      toast.show('No se pudieron añadir los productos.', 'error');
-    } finally {
-      setAdding(false);
-    }
-  };
-
-  const handleSwipeFav = async (p: MercadonaProduct) => {
-    try {
-      const added = await toggleProductFavorite({
-        refId: p.id,
-        name: p.display_name,
-        imageUrl: p.thumbnail ?? null,
-        price: p.price_instructions.unit_price,
-      });
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show(added ? 'Producto añadido a favoritos' : 'Producto eliminado de favoritos');
-    } catch {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      toast.show('No se pudo actualizar el favorito.', 'error');
-    }
-  };
-
-  const renderFavAction = () => (
-    <View style={styles.swipeAction}>
-      <Ionicons name="star" size={22} color={colors.white} />
-    </View>
+  const uiProducts = useMemo(
+    () => products.map((p) => mercadonaToUI(p, categoryName)),
+    [products, categoryName],
   );
-
-  const renderGridItem = ({ item }: { item: MercadonaProduct }) => (
-    <ProductGridCard
-      width={CARD_W}
-      uri={item.thumbnail ?? null}
-      name={item.display_name}
-      price={formatPrice(item)}
-      emoji={emoji}
-      onPress={() => setDetailProductId(item.id)}
-    />
-  );
-
-  const renderItem = ({ item }: { item: MercadonaProduct }) => {
-    const qty = quantities[item.id] ?? 0;
-    const active = qty > 0;
-    const fav = isProductFavorite(item.id);
-    return (
-      <Swipeable
-        friction={1}
-        leftThreshold={48}
-        overshootFriction={8}
-        renderLeftActions={renderFavAction}
-        onSwipeableOpen={(direction, swipeable) => {
-          if (direction === 'left') {
-            handleSwipeFav(item);
-            swipeable.close();
-          }
-        }}
-      >
-        <View style={[styles.row, active && styles.rowActive]}>
-          {fav && <View style={styles.favBar} />}
-          <TouchableOpacity activeOpacity={0.7} onPress={() => setDetailProductId(item.id)}>
-            {item.thumbnail ? (
-              <ProductImage uri={item.thumbnail} style={styles.thumb} />
-            ) : (
-              <View style={[styles.thumb, styles.thumbPlaceholder]}>
-                <Text style={{ fontSize: 22 }}>{emoji}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-          <View style={styles.info}>
-            <Text style={styles.name} numberOfLines={2}>{item.display_name}</Text>
-            <View style={styles.meta}>
-              <Text style={styles.size}>{formatSize(item)}</Text>
-              <Text style={styles.dot}>·</Text>
-              <Text style={styles.price}>{formatPrice(item)}</Text>
-            </View>
-          </View>
-          <QuantityStepper
-            value={qty}
-            onIncrement={() => increment(item.id)}
-            onDecrement={() => decrement(item.id)}
-          />
-        </View>
-      </Swipeable>
-    );
-  };
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      {/* Header */}
+      <ActiveCartBanner topInset />
+
       <View style={styles.headerArea}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
@@ -209,150 +53,24 @@ export default function ProductsScreen() {
             {categoryName} <Text style={{ color: colors.inkFaint }}>›</Text> {subcategoryName}
           </Text>
         </View>
-        <ViewModeToggle value={viewMode} onChange={setViewMode} />
       </View>
 
-      {loading ? (
-        <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
-      ) : viewMode === 'grid' ? (
-        <FlatList
-          key="grid"
-          data={products}
-          keyExtractor={(item) => item.id}
-          numColumns={GRID_COLS}
-          renderItem={renderGridItem}
-          extraData={favProductsList}
-          columnWrapperStyle={styles.gridRow}
-          contentContainerStyle={styles.gridContent}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={styles.empty}>
-              <Text style={styles.emptyText}>No hay productos disponibles</Text>
-            </View>
-          }
-        />
-      ) : (
-        <FlatList
-          key="list"
-          data={products}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          extraData={favProductsList}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-          ListEmptyComponent={
-            <View style={styles.empty}>
-              <Text style={styles.emptyText}>No hay productos disponibles</Text>
-            </View>
-          }
-        />
-      )}
-
-      {/* Cart bar */}
-      {cartCount > 0 && (
-        <View style={styles.cartBar}>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={styles.cartLabel}>
-              {cartCount} artículo{cartCount !== 1 ? 's' : ''} seleccionado{cartCount !== 1 ? 's' : ''}
-            </Text>
-            <Text style={styles.cartTarget} numberOfLines={1}>
-              {activeCart ? `→ ${activeCart.groupName}` : 'Sin carrito activo'}
-            </Text>
-          </View>
-          <TouchableOpacity style={styles.cartBtn} onPress={handleAddToCart} disabled={adding}>
-            {adding ? (
-              <ActivityIndicator size="small" color={colors.white} />
-            ) : (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={styles.cartBtnText}>Añadir</Text>
-                <Ionicons name="arrow-forward" size={14} color={colors.white} />
-              </View>
-            )}
-          </TouchableOpacity>
-        </View>
-      )}
-
-      <ProductDetailModal
-        productId={detailProductId}
-        onClose={() => setDetailProductId(null)}
-      />
+      <StoreProductList products={uiProducts} loading={loading} error={error} emoji={emoji} searchable />
     </View>
   );
 }
 
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
-
   headerArea: {
     flexDirection: 'row', alignItems: 'center',
-    gap: 12, paddingHorizontal: 16,
-    paddingTop: 52, paddingBottom: 12,
+    gap: 12, paddingHorizontal: 16, paddingTop: 4, paddingBottom: 12,
   },
   backBtn: {
-    width: 38, height: 38,
-    backgroundColor: colors.white,
+    width: 38, height: 38, backgroundColor: colors.white,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: colors.border,
   },
   title: { fontSize: 21, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
   breadcrumb: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
-
-  list: { paddingHorizontal: 16, paddingBottom: 110, paddingTop: 4 },
-
-  // Cuadrícula (4/fila). gap horizontal en la fila, vertical en el contenido.
-  gridRow: { gap: GRID_GAP },
-  gridContent: { paddingHorizontal: 16, paddingBottom: 110, paddingTop: 4, gap: GRID_GAP },
-
-  row: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.white,
-    padding: 11,
-    borderWidth: 1, borderColor: colors.border,
-    gap: 12,
-  },
-  rowActive: {
-    backgroundColor: colors.accentLight,
-    borderColor: colors.accentMid,
-  },
-  // Barra naranja persistente a la izquierda cuando el producto es favorito.
-  favBar: {
-    position: 'absolute', left: 0, top: 0, bottom: 0,
-    width: 5, backgroundColor: colors.accent,
-  },
-  // Panel naranja que se revela al deslizar a la derecha (flexible: sin tope brusco).
-  swipeAction: {
-    flex: 1,
-    backgroundColor: colors.accent,
-    alignItems: 'flex-start', justifyContent: 'center',
-    paddingLeft: 26,
-  },
-  thumb: { width: 50, height: 50, flex: 0 },
-  thumbPlaceholder: {
-    backgroundColor: colors.surfaceAlt,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  info: { flex: 1, minWidth: 0 },
-  name: { fontSize: 13.5, fontFamily: fonts.semibold, color: colors.ink, lineHeight: 18 },
-  meta: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 3 },
-  size: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft },
-  dot: { fontSize: 11, color: colors.inkFaint },
-  price: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.accent },
-
-  empty: { padding: 40, alignItems: 'center' },
-  emptyText: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'center' },
-
-  cartBar: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: colors.ink,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 14, paddingBottom: 28,
-  },
-  cartLabel: { fontFamily: fonts.semibold, color: colors.white, fontSize: 13 },
-  cartTarget: { fontFamily: fonts.medium, color: colors.accent, fontSize: 11.5, marginTop: 2 },
-  cartBtn: {
-    backgroundColor: colors.accent,
-    paddingHorizontal: 16, paddingVertical: 10,
-  },
-  cartBtnText: { color: colors.white, fontFamily: fonts.bold, fontSize: 13 },
 });

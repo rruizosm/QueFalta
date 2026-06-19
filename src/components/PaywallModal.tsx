@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
 import { useProfile } from '../context/ProfileContext';
 import {
@@ -30,11 +31,11 @@ type IoniconName = ComponentProps<typeof Ionicons>['name'];
 const TERMS_URL = 'https://quefalta.es/condiciones';
 const PRIVACY_URL = 'https://quefalta.es/privacidad';
 
-const BENEFITS: { icon: IoniconName; title: string; text: string }[] = [
-  { icon: 'people', title: 'Grupos ilimitados', text: 'Crea todos los grupos que necesites' },
-  { icon: 'pricetags', title: 'Comparador completo', text: 'El equivalente más barato en cada súper, con su precio' },
-  { icon: 'receipt', title: 'Historial completo', text: 'Repite cualquier compra pasada' },
-  { icon: 'notifications', title: 'Muy pronto', text: 'Alertas cuando baje el precio de lo que compras' },
+const BENEFITS: { icon: IoniconName; key: string }[] = [
+  { icon: 'people', key: 'groups' },
+  { icon: 'pricetags', key: 'comparator' },
+  { icon: 'receipt', key: 'history' },
+  { icon: 'notifications', key: 'soon' },
 ];
 
 type Plan = 'annual' | 'monthly';
@@ -48,6 +49,7 @@ interface Props {
 
 export default function PaywallModal({ visible, onClose, subtitle }: Props) {
   const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
   const toast = useToast();
   const { refresh } = useProfile();
   const [plan, setPlan] = useState<Plan>('annual');
@@ -69,7 +71,7 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
   const handleSubscribe = async () => {
     const pkg = plan === 'annual' ? offerings?.annual : offerings?.monthly;
     if (!pkg) {
-      toast.show('Las suscripciones se activarán con el lanzamiento 🚀');
+      toast.show(t('paywall.comingSoon'));
       return;
     }
     setBusy(true);
@@ -78,11 +80,11 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
       if (ok) {
         // El webhook escribe premium_until en unos segundos; reintenta el perfil.
         refreshProfileSoon(refresh);
-        toast.show('¡Bienvenido a QuéFalta Plus! ✨');
+        toast.show(t('paywall.welcome'));
         onClose();
       }
     } catch {
-      toast.show('No se pudo completar la compra.', 'error');
+      toast.show(t('paywall.purchaseError'), 'error');
     } finally {
       setBusy(false);
     }
@@ -90,7 +92,7 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
 
   const handleRestore = async () => {
     if (!purchasesAvailable()) {
-      toast.show('Las suscripciones se activarán con el lanzamiento 🚀');
+      toast.show(t('paywall.comingSoon'));
       return;
     }
     setBusy(true);
@@ -98,13 +100,13 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
       const ok = await restorePlus();
       if (ok) {
         refreshProfileSoon(refresh);
-        toast.show('Suscripción restaurada ✨');
+        toast.show(t('paywall.restored'));
         onClose();
       } else {
-        toast.show('No encontramos compras anteriores.');
+        toast.show(t('paywall.noPrevious'));
       }
     } catch {
-      toast.show('No se pudo restaurar la compra.', 'error');
+      toast.show(t('paywall.restoreError'), 'error');
     } finally {
       setBusy(false);
     }
@@ -124,7 +126,7 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
               <View style={{ flex: 1 }}>
                 <Text style={styles.title}>QuéFalta Plus</Text>
                 <Text style={styles.subtitle}>
-                  {subtitle ?? 'Sácale todo el partido a tu compra'}
+                  {subtitle ?? t('paywall.defaultSubtitle')}
                 </Text>
               </View>
               <TouchableOpacity style={styles.closeBtn} onPress={onClose} hitSlop={8}>
@@ -135,13 +137,13 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
             {/* Beneficios */}
             <View style={styles.benefits}>
               {BENEFITS.map((b) => (
-                <View key={b.title} style={styles.benefitRow}>
+                <View key={b.key} style={styles.benefitRow}>
                   <View style={styles.benefitIcon}>
                     <Ionicons name={b.icon} size={16} color={colors.accent} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.benefitTitle}>{b.title}</Text>
-                    <Text style={styles.benefitText}>{b.text}</Text>
+                    <Text style={styles.benefitTitle}>{t(`paywall.benefits.${b.key}Title`)}</Text>
+                    <Text style={styles.benefitText}>{t(`paywall.benefits.${b.key}Text`)}</Text>
                   </View>
                 </View>
               ))}
@@ -155,11 +157,11 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
                 activeOpacity={0.85}
               >
                 <View style={styles.planBadge}>
-                  <Text style={styles.planBadgeText}>7 días gratis</Text>
+                  <Text style={styles.planBadgeText}>{t('paywall.freeTrialBadge')}</Text>
                 </View>
-                <Text style={styles.planName}>Anual</Text>
+                <Text style={styles.planName}>{t('paywall.annual')}</Text>
                 <Text style={styles.planPrice}>{annualPrice}</Text>
-                <Text style={styles.planPer}>al año · sale a 1,08 €/mes</Text>
+                <Text style={styles.planPer}>{t('paywall.annualPer')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -167,9 +169,9 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
                 onPress={() => setPlan('monthly')}
                 activeOpacity={0.85}
               >
-                <Text style={styles.planName}>Mensual</Text>
+                <Text style={styles.planName}>{t('paywall.monthly')}</Text>
                 <Text style={styles.planPrice}>{monthlyPrice}</Text>
-                <Text style={styles.planPer}>al mes</Text>
+                <Text style={styles.planPer}>{t('paywall.monthlyPer')}</Text>
               </TouchableOpacity>
             </View>
 
@@ -187,7 +189,7 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
                   <>
                     <Ionicons name="sparkles" size={17} color={colors.white} />
                     <Text style={styles.ctaText}>
-                      {plan === 'annual' ? 'Probar 7 días gratis' : 'Continuar'}
+                      {plan === 'annual' ? t('paywall.ctaTrial') : t('paywall.ctaContinue')}
                     </Text>
                   </>
                 )}
@@ -197,15 +199,15 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
             {/* Pie legal */}
             <View style={styles.footer}>
               <TouchableOpacity onPress={handleRestore} hitSlop={6} disabled={busy}>
-                <Text style={styles.footerLink}>Restaurar compras</Text>
+                <Text style={styles.footerLink}>{t('paywall.restore')}</Text>
               </TouchableOpacity>
               <Text style={styles.footerDot}>·</Text>
               <TouchableOpacity onPress={() => Linking.openURL(TERMS_URL)} hitSlop={6}>
-                <Text style={styles.footerLink}>Condiciones</Text>
+                <Text style={styles.footerLink}>{t('paywall.terms')}</Text>
               </TouchableOpacity>
               <Text style={styles.footerDot}>·</Text>
               <TouchableOpacity onPress={() => Linking.openURL(PRIVACY_URL)} hitSlop={6}>
-                <Text style={styles.footerLink}>Privacidad</Text>
+                <Text style={styles.footerLink}>{t('paywall.privacy')}</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>

@@ -8,6 +8,7 @@ import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../consta
 import { PRICE_COMPARISON_ENABLED } from '../constants/limits';
 import { useProfile } from '../context/ProfileContext';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import StoreProductModal, { type ProductRef } from './StoreProductModal';
 import PaywallModal from './PaywallModal';
 
@@ -28,6 +29,7 @@ const perUnitLabel = (v: number | null, u: string | null): string | null =>
  *  producto abierto. Sin candidatos → no pinta nada (mejor hueco que match malo). */
 export default function SimilarProductsSection({ productName, excludeStore }: Props) {
   const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
   const { profile } = useProfile();
   const [similars, setSimilars] = useState<SimilarProduct[]>([]);
   const [loading, setLoading] = useState(false);
@@ -56,7 +58,7 @@ export default function SimilarProductsSection({ productName, excludeStore }: Pr
 
   return (
     <View style={styles.compareSection}>
-      <Text style={styles.sectionTitle}>Más barato en otros súper</Text>
+      <Text style={styles.sectionTitle}>{t('similar.title')}</Text>
       {loading ? (
         <ActivityIndicator color={colors.accent} style={{ marginTop: 10, alignSelf: 'flex-start' }} />
       ) : (
@@ -84,7 +86,7 @@ export default function SimilarProductsSection({ productName, excludeStore }: Pr
               <View style={styles.compareInfo}>
                 <Text style={styles.compareStore}>{meta?.name ?? s.store}</Text>
                 <Text style={styles.compareName} numberOfLines={1}>
-                  {s.locked ? 'Hay una opción más barata' : s.displayName}
+                  {s.locked ? t('similar.cheaperOption') : s.displayName}
                 </Text>
               </View>
               {s.locked ? (
@@ -110,7 +112,7 @@ export default function SimilarProductsSection({ productName, excludeStore }: Pr
       <PaywallModal
         visible={paywallVisible}
         onClose={() => setPaywallVisible(false)}
-        subtitle="Desbloquea el comparador para ver el producto y su precio"
+        subtitle={t('similar.unlockTooltip')}
       />
     </View>
   );

@@ -33,7 +33,7 @@ if (-not $role) { throw "Falta SUPABASE_SERVICE_ROLE en .env.local (agrega la se
 $env:SUPABASE_URL          = $url
 $env:SUPABASE_SERVICE_ROLE = $role
 $env:CONCURRENCY           = '5'
-$env:LOCALE                = 'es'
+$env:LOCALE                = 'es'   # idioma PRIMARIO; el sync añade una 2ª pasada en català
 
 # --- Ejecutar el sync ---
 Set-Location $repo

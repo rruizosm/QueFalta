@@ -15,6 +15,9 @@ export interface UserProfile {
   /** Fin de la suscripción QuéFalta Plus (ISO). NULL o pasado = plan free.
    *  Solo la escribe el servidor (trigger en profile_premium.sql). */
   premiumUntil: string | null;
+  /** Cuándo completó el alta inicial (asistente de bienvenida). NULL = aún no
+   *  lo ha hecho → la app muestra el onboarding. Ver profile_onboarding.sql. */
+  onboardedAt: string | null;
 }
 
 /** Normaliza la columna catalog_stores: filtra claves desconocidas y, si queda
@@ -29,7 +32,7 @@ function normalizeCatalogStores(value: unknown): CatalogStore[] {
 export async function fetchProfile(userId: string): Promise<UserProfile> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, name, initials, color, username, avatar_url, discoverable, catalog_stores, premium_until')
+    .select('id, name, initials, color, username, avatar_url, discoverable, catalog_stores, premium_until, onboarded_at')
     .eq('id', userId)
     .single();
 
@@ -45,6 +48,7 @@ export async function fetchProfile(userId: string): Promise<UserProfile> {
     discoverable: data.discoverable ?? true,
     catalogStores: normalizeCatalogStores(data.catalog_stores),
     premiumUntil: data.premium_until ?? null,
+    onboardedAt: data.onboarded_at ?? null,
   };
 }
 
@@ -69,20 +73,29 @@ export async function updateProfile(
   if (error) throw error;
 }
 
-/** Returns true if the username is free (or belongs to this user). */
-export async function isUsernameAvailable(
-  username: string,
-  currentUserId: string,
-): Promise<boolean> {
-  const { data, error } = await supabase
+/** Marca el alta inicial como completada (sella onboarded_at = ahora). A partir
+ *  de aquí el gate de navegación deja de mostrar el onboarding. Devuelve el ISO
+ *  guardado para refrescar la caché del ProfileContext sin re-fetch. */
+export async function completeOnboarding(userId: string): Promise<string> {
+  const onboardedAt = new Date().toISOString();
+  const { error } = await supabase
     .from('profiles')
-    .select('id')
-    .eq('username', username)
-    .neq('id', currentUserId)
-    .maybeSingle();
-
+    .update({ onboarded_at: onboardedAt })
+    .eq('id', userId);
   if (error) throw error;
-  return data === null;
+  return onboardedAt;
+}
+
+/** Returns true if the username is free (or belongs to this user).
+ *  Vía RPC SECURITY DEFINER (username_available.sql): con el modelo de
+ *  visibilidad restringido de profiles, un SELECT directo no vería a usuarios
+ *  ocultos y daría falsos "disponible". La RPC comprueba la unicidad real
+ *  saltándose RLS y solo devuelve un booleano. Excluye tu propia fila por
+ *  auth.uid(), así que no hace falta pasar el userId. */
+export async function isUsernameAvailable(username: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc('username_available', { uname: username });
+  if (error) throw error;
+  return data === true;
 }
 
 export async function uploadAvatar(userId: string, uri: string): Promise<string> {

@@ -7,7 +7,7 @@
     "scheme": "quefalta",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.quefalta.app",
@@ -42,6 +42,9 @@
     },
     "updates": {
       "url": "https://u.expo.dev/cdae19f5-47a5-4a4c-9f94-2befcada0885"
-    }
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
   }
 }

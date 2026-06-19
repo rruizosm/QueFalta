@@ -24,15 +24,15 @@ const MERCA = 'https://tienda.mercadona.es/api';
 const runStart = new Date().toISOString();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const mercaHeaders = {
+const mercaHeaders = (lang) => ({
   Accept: 'application/json',
-  'Accept-Language': 'es-ES,es;q=0.9',
+  'Accept-Language': lang === 'ca' ? 'ca-ES,ca;q=0.9,es;q=0.8' : 'es-ES,es;q=0.9',
   'User-Agent': 'Mozilla/5.0 (compatible; QueFaltaSync/1.0; +https://quefalta.es)',
-};
+});
 
-async function merca(path) {
-  const url = `${MERCA}${path}${path.includes('?') ? '&' : '?'}lang=es&wh=${WH}`;
-  const res = await fetch(url, { headers: mercaHeaders });
+async function merca(path, lang = 'es') {
+  const url = `${MERCA}${path}${path.includes('?') ? '&' : '?'}lang=${lang}&wh=${WH}`;
+  const res = await fetch(url, { headers: mercaHeaders(lang) });
   if (!res.ok) throw new Error(`Mercadona ${res.status} en ${path}`);
   return res.json();
 }
@@ -123,6 +123,30 @@ async function main() {
     }
     if (++done % 20 === 0) console.log(`[sync] ${done}/${n2.length} subcategorías`);
     await sleep(120); // educado con la API
+  }
+
+  // 2b) Segunda pasada en CATALÁN (bilingüe, Fase 2): mismos N2 con lang=ca,
+  // capturamos solo el nombre por id → columna display_name_ca. Solo Mercadona
+  // ofrece catalán por API; mismos ids/precios, solo cambia el texto.
+  const caNames = new Map();
+  let doneCa = 0;
+  for (const sub of n2) {
+    try {
+      const detail = await merca(`/categories/${sub.id}/`, 'ca');
+      for (const group of detail.categories ?? []) {
+        for (const p of group.products ?? []) {
+          if (p.display_name) caNames.set(String(p.id), p.display_name);
+        }
+      }
+    } catch (e) {
+      console.warn(`[sync] subcategoría ${sub.id} (ca) falló: ${e.message}`);
+    }
+    if (++doneCa % 20 === 0) console.log(`[sync] ca ${doneCa}/${n2.length} subcategorías`);
+    await sleep(120); // educado con la API
+  }
+  console.log(`[sync] ${caNames.size} nombres en català`);
+  for (const row of products.values()) {
+    row.display_name_ca = caNames.get(row.id) ?? null;
   }
 
   const rows = [...products.values()];

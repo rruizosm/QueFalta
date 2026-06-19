@@ -9,7 +9,9 @@ import { fonts } from '../constants/typography';
 import type { DiaProduct } from '../api/catalog';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+import { useFavorites } from '../context/FavoritesContext';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductImage from '../components/ProductImage';
 import SimilarProductsSection from '../components/SimilarProductsSection';
@@ -26,7 +28,9 @@ interface Props {
 export default function DiaProductModal({ product, onClose }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { activeCart, addToActiveCart } = useCart();
+  const { isProductFavorite, toggleProductFavorite } = useFavorites();
   const toast = useToast();
+  const { t } = useTranslation();
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
 
@@ -35,10 +39,26 @@ export default function DiaProductModal({ product, onClose }: Props) {
   if (!product) return null;
   const price = product.priceFormat
     ?? (product.unitPrice != null ? `${product.unitPrice.toFixed(2).replace('.', ',')} €` : null);
+  const fav = isProductFavorite('dia', product.id);
+
+  const handleToggleFav = async () => {
+    try {
+      const added = await toggleProductFavorite({
+        store: 'dia',
+        refId: product.id,
+        name: product.displayName,
+        imageUrl: product.thumbnail,
+        price: product.unitPrice != null ? String(product.unitPrice) : null,
+      });
+      toast.show(t(added ? 'product.favAddedNamed' : 'product.favRemovedNamed', { name: product.displayName }));
+    } catch {
+      toast.show(t('product.favError'), 'error');
+    }
+  };
 
   const handleAdd = async () => {
     if (!activeCart) {
-      Alert.alert('Sin carrito activo', 'Activa el carrito de un grupo en la pestaña Grupos antes de añadir productos.');
+      Alert.alert(t('product.noCartTitle'), t('product.noCartMsg'));
       return;
     }
     setAdding(true);
@@ -53,11 +73,11 @@ export default function DiaProductModal({ product, onClose }: Props) {
         mercadonaProductId: null,
       }]);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show(`${qty} ${qty === 1 ? 'artículo añadido' : 'artículos añadidos'} a ${activeCart.groupName}`);
+      toast.show(t(qty === 1 ? 'product.addedOne' : 'product.addedMany', { n: qty, group: activeCart.groupName }));
       onClose();
     } catch {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      toast.show('No se pudo añadir el producto.', 'error');
+      toast.show(t('product.addErrorSingle'), 'error');
     } finally {
       setAdding(false);
     }
@@ -65,14 +85,16 @@ export default function DiaProductModal({ product, onClose }: Props) {
 
   return (
     <View style={styles.overlay}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
           <Ionicons name="close" size={24} color={colors.ink} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Producto</Text>
-        <View style={styles.closeBtn} />
+        <Text style={styles.headerTitle}>{t('product.detailTitle')}</Text>
+        <TouchableOpacity onPress={handleToggleFav} style={styles.favBtn} activeOpacity={0.7}>
+          <Ionicons name={fav ? 'star' : 'star-outline'} size={22} color={colors.accent} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
@@ -97,12 +119,12 @@ export default function DiaProductModal({ product, onClose }: Props) {
 
         {product.categoryName ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Categoría</Text>
+            <Text style={styles.sectionTitle}>{t('product.category')}</Text>
             <Text style={styles.sectionText}>{product.categoryName}</Text>
           </View>
         ) : null}
 
-        <Text style={styles.note}>Producto de Dia</Text>
+        <Text style={styles.note}>{t('product.fromStore', { store: 'Dia' })}</Text>
       </ScrollView>
 
       {/* Pie: cantidad + añadir a la cesta */}
@@ -119,7 +141,7 @@ export default function DiaProductModal({ product, onClose }: Props) {
           ) : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <Ionicons name="cart-outline" size={16} color={colors.white} />
-              <Text style={styles.addBtnText}>Añadir a la cesta</Text>
+              <Text style={styles.addBtnText}>{t('product.addToCart')}</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -135,12 +157,17 @@ const themedStyles = () => StyleSheet.create({
   },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 10,
+    paddingHorizontal: 16, paddingTop: 16, paddingBottom: 10,
   },
   closeBtn: {
     width: 38, height: 38, backgroundColor: colors.white,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: colors.border,
+  },
+  favBtn: {
+    width: 38, height: 38, backgroundColor: colors.white,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: colors.accent,
   },
   headerTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink },
 

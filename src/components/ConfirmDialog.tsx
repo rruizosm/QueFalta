@@ -6,6 +6,7 @@ import { Modal, View, Text, TouchableOpacity, Pressable, StyleSheet } from 'reac
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import HardShadow from './HardShadow';
 
 interface Props {
@@ -24,13 +25,16 @@ export default function ConfirmDialog({
   visible,
   title,
   message,
-  confirmLabel = 'Aceptar',
-  cancelLabel = 'Cancelar',
+  confirmLabel,
+  cancelLabel,
   destructive = false,
   onConfirm,
   onCancel,
 }: Props) {
   const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
+  const confirmText = confirmLabel ?? t('common.ok');
+  const cancelText = cancelLabel ?? t('common.cancel');
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={styles.overlay}>
@@ -40,14 +44,14 @@ export default function ConfirmDialog({
           {message ? <Text style={styles.message}>{message}</Text> : null}
           <View style={styles.actions}>
             <TouchableOpacity style={[styles.btn, styles.btnCancel]} onPress={onCancel} activeOpacity={0.7}>
-              <Text style={styles.btnCancelText}>{cancelLabel}</Text>
+              <Text style={styles.btnCancelText}>{cancelText}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.btn, destructive ? styles.btnDanger : styles.btnConfirm]}
               onPress={onConfirm}
               activeOpacity={0.85}
             >
-              <Text style={styles.btnConfirmText}>{confirmLabel}</Text>
+              <Text style={styles.btnConfirmText}>{confirmText}</Text>
             </TouchableOpacity>
           </View>
         </HardShadow>

@@ -11,6 +11,7 @@ import { fonts } from '../constants/typography';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import { searchUsersByUsername, type SearchedUser } from '../api/groups';
 import {
   fetchFriends, fetchIncomingRequests, fetchOutgoingRequests,
@@ -24,6 +25,7 @@ function Avatar({ color, initials, avatarUrl }: { color: string; initials: strin
 
 export default function FriendsScreen() {
   const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { session } = useAuth();
   const toast = useToast();
@@ -82,7 +84,7 @@ export default function FriendsScreen() {
       if (okMsg) toast.show(okMsg);
       await load();
     } catch {
-      toast.show('Algo salió mal. Inténtalo de nuevo.', 'error');
+      toast.show(t('friends.genericError'), 'error');
     } finally {
       setBusyId(null);
     }
@@ -93,13 +95,13 @@ export default function FriendsScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
-        <Text style={styles.title}>Amigos</Text>
+        <Text style={styles.title}>{t('profile.friends')}</Text>
         <View style={{ width: 38 }} />
       </View>
 
@@ -108,8 +110,8 @@ export default function FriendsScreen() {
         <TextInput
           style={styles.input}
           value={query}
-          onChangeText={(t) => setQuery(t.toLowerCase())}
-          placeholder="buscar usuarios por @"
+          onChangeText={(v) => setQuery(v.toLowerCase())}
+          placeholder={t('friends.searchPlaceholder')}
           placeholderTextColor={colors.inkFaint}
           autoCapitalize="none"
           autoCorrect={false}
@@ -124,7 +126,7 @@ export default function FriendsScreen() {
           {isSearchMode ? (
             // ── Search results ──
             (!searching && results.length === 0) ? (
-              <Text style={styles.empty}>Sin resultados para “@{cleanQ}”.</Text>
+              <Text style={styles.empty}>{t('friends.noResults', { q: cleanQ })}</Text>
             ) : (
               results.map((u) => {
                 const incomingFid = incomingById.get(u.id);
@@ -136,18 +138,18 @@ export default function FriendsScreen() {
                       {u.username ? <Text style={styles.username}>@{u.username}</Text> : null}
                     </View>
                     {friendIds.has(u.id) ? (
-                      <Text style={styles.tagMuted}>Amigo</Text>
+                      <Text style={styles.tagMuted}>{t('friends.friendTag')}</Text>
                     ) : incomingFid ? (
                       <TouchableOpacity style={styles.btnPrimary} disabled={busyId === u.id}
-                        onPress={() => run(u.id, () => acceptFriendRequest(incomingFid), `Ahora sois amigos`)}>
-                        {busyId === u.id ? <ActivityIndicator size="small" color={colors.white} /> : <Text style={styles.btnPrimaryText}>Aceptar</Text>}
+                        onPress={() => run(u.id, () => acceptFriendRequest(incomingFid), t('friends.nowFriends'))}>
+                        {busyId === u.id ? <ActivityIndicator size="small" color={colors.white} /> : <Text style={styles.btnPrimaryText}>{t('friends.accept')}</Text>}
                       </TouchableOpacity>
                     ) : outgoingIds.has(u.id) ? (
-                      <Text style={styles.tagMuted}>Pendiente</Text>
+                      <Text style={styles.tagMuted}>{t('friends.pending')}</Text>
                     ) : (
                       <TouchableOpacity style={styles.btnPrimary} disabled={busyId === u.id}
-                        onPress={() => run(u.id, () => sendFriendRequest(u.id, userId), 'Solicitud enviada')}>
-                        {busyId === u.id ? <ActivityIndicator size="small" color={colors.white} /> : <Text style={styles.btnPrimaryText}>Añadir</Text>}
+                        onPress={() => run(u.id, () => sendFriendRequest(u.id, userId), t('friends.requestSent'))}>
+                        {busyId === u.id ? <ActivityIndicator size="small" color={colors.white} /> : <Text style={styles.btnPrimaryText}>{t('group.add')}</Text>}
                       </TouchableOpacity>
                     )}
                   </View>
@@ -159,7 +161,7 @@ export default function FriendsScreen() {
             <>
               {incoming.length > 0 && (
                 <>
-                  <Text style={styles.sectionLabel}>Solicitudes ({incoming.length})</Text>
+                  <Text style={styles.sectionLabel}>{t('friends.requestsTitle', { n: incoming.length })}</Text>
                   {incoming.map((f) => (
                     <View key={f.friendshipId} style={styles.row}>
                       <Avatar color={f.color} initials={f.initials} avatarUrl={f.avatarUrl} />
@@ -172,8 +174,8 @@ export default function FriendsScreen() {
                       ) : (
                         <View style={styles.reqActions}>
                           <TouchableOpacity style={styles.btnPrimary}
-                            onPress={() => run(f.friendshipId, () => acceptFriendRequest(f.friendshipId), `Ahora sois amigos`)}>
-                            <Text style={styles.btnPrimaryText}>Aceptar</Text>
+                            onPress={() => run(f.friendshipId, () => acceptFriendRequest(f.friendshipId), t('friends.nowFriends'))}>
+                            <Text style={styles.btnPrimaryText}>{t('friends.accept')}</Text>
                           </TouchableOpacity>
                           <TouchableOpacity style={styles.btnGhost}
                             onPress={() => run(f.friendshipId, () => removeFriendship(f.friendshipId), '')}>
@@ -186,9 +188,9 @@ export default function FriendsScreen() {
                 </>
               )}
 
-              <Text style={styles.sectionLabel}>Amigos ({friends.length})</Text>
+              <Text style={styles.sectionLabel}>{t('friends.friendsTitle', { n: friends.length })}</Text>
               {friends.length === 0 ? (
-                <Text style={styles.empty}>Aún no tienes amigos. Busca por @ arriba y envía una solicitud.</Text>
+                <Text style={styles.empty}>{t('friends.empty')}</Text>
               ) : (
                 friends.map((f) => (
                   <View key={f.friendshipId} style={styles.row}>
@@ -201,7 +203,7 @@ export default function FriendsScreen() {
                       <ActivityIndicator size="small" color={colors.inkSoft} />
                     ) : (
                       <TouchableOpacity style={styles.btnGhost} hitSlop={6}
-                        onPress={() => run(f.friendshipId, () => removeFriendship(f.friendshipId), 'Amigo eliminado')}>
+                        onPress={() => run(f.friendshipId, () => removeFriendship(f.friendshipId), t('friends.removed'))}>
                         <Ionicons name="person-remove-outline" size={18} color={colors.inkSoft} />
                       </TouchableOpacity>
                     )}

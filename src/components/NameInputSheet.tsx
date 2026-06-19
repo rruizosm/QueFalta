@@ -20,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import HardShadow from './HardShadow';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
@@ -48,8 +49,8 @@ export default function NameInputSheet({
   title,
   subtitle,
   icon = 'people',
-  label = 'Nombre del grupo',
-  placeholder = 'Casa, Familia, Piso 3ºB…',
+  label,
+  placeholder,
   initialValue = '',
   maxLength = 50,
   submitLabel,
@@ -59,6 +60,9 @@ export default function NameInputSheet({
   onClose,
 }: Props) {
   const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
+  const labelText = label ?? t('group.nameLabel');
+  const placeholderText = placeholder ?? t('group.namePlaceholder');
   const [value, setValue] = useState(initialValue);
 
   useEffect(() => {
@@ -91,11 +95,11 @@ export default function NameInputSheet({
           </View>
 
           <View style={styles.body}>
-            <Text style={styles.inputLabel}>{label}</Text>
+            <Text style={styles.inputLabel}>{labelText}</Text>
             <View style={styles.inputWrap}>
               <TextInput
                 style={styles.input}
-                placeholder={placeholder}
+                placeholder={placeholderText}
                 placeholderTextColor={colors.inkFaint}
                 value={value}
                 onChangeText={setValue}

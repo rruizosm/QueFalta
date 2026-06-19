@@ -5,40 +5,75 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { colors, ACCENT_OPTIONS, type AccentKey } from '../constants/colors';
+import {
+  colors, ACCENT_OPTIONS, type AccentKey,
+  THEME_OPTIONS, type ThemeMode,
+} from '../constants/colors';
 import { fonts } from '../constants/typography';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme, useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 
 export default function AppearanceScreen() {
   const navigation = useNavigation<any>();
-  const { accentKey, setAccentKey } = useTheme();
+  const { accentKey, setAccentKey, themeMode, setThemeMode } = useTheme();
+  const { t } = useTranslation();
+  const styles = useThemedStyles(themedStyles);
 
-  const select = (key: AccentKey) => {
+  const selectAccent = (key: AccentKey) => {
     if (key === accentKey) return;
     setAccentKey(key);
     Haptics.selectionAsync();
   };
 
+  const selectTheme = (mode: ThemeMode) => {
+    if (mode === themeMode) return;
+    setThemeMode(mode);
+    Haptics.selectionAsync();
+  };
+
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
-        <Text style={styles.title}>Apariencia</Text>
+        <Text style={styles.title}>{t('appearance.title')}</Text>
         <View style={{ width: 38 }} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        <Text style={styles.hint}>
-          Elige el color principal de la app. Se aplica al instante y se
-          recuerda en este dispositivo.
-        </Text>
+        <Text style={styles.hint}>{t('appearance.hint')}</Text>
 
-        <Text style={styles.sectionLabel}>Color</Text>
+        <Text style={styles.sectionLabel}>{t('appearance.themeSection')}</Text>
+        <View style={styles.section}>
+          {THEME_OPTIONS.map((opt, i) => {
+            const on = opt.key === themeMode;
+            const last = i === THEME_OPTIONS.length - 1;
+            return (
+              <TouchableOpacity
+                key={opt.key}
+                activeOpacity={0.7}
+                onPress={() => selectTheme(opt.key)}
+                style={[styles.row, !last && styles.rowBorder]}
+              >
+                <View style={styles.themeIcon}>
+                  <Ionicons name={opt.icon as any} size={18} color={colors.inkSoft} />
+                </View>
+                <Text style={styles.rowLabel}>{t(`appearance.themes.${opt.key}`)}</Text>
+                <Ionicons
+                  name={on ? 'checkmark-circle' : 'ellipse-outline'}
+                  size={22}
+                  color={on ? colors.accent : colors.inkFaint}
+                />
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        <Text style={[styles.sectionLabel, styles.sectionLabelGap]}>{t('appearance.colorSection')}</Text>
         <View style={styles.section}>
           {ACCENT_OPTIONS.map((opt, i) => {
             const on = opt.key === accentKey;
@@ -47,11 +82,11 @@ export default function AppearanceScreen() {
               <TouchableOpacity
                 key={opt.key}
                 activeOpacity={0.7}
-                onPress={() => select(opt.key)}
+                onPress={() => selectAccent(opt.key)}
                 style={[styles.row, !last && styles.rowBorder]}
               >
                 <View style={[styles.swatch, { backgroundColor: opt.hex }]} />
-                <Text style={styles.rowLabel}>{opt.name}</Text>
+                <Text style={styles.rowLabel}>{t(`appearance.accents.${opt.key}`)}</Text>
                 <Ionicons
                   name={on ? 'checkmark-circle' : 'ellipse-outline'}
                   size={22}
@@ -66,7 +101,7 @@ export default function AppearanceScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
   header: {
@@ -92,6 +127,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase', letterSpacing: 1.4,
     marginBottom: 4,
   },
+  sectionLabelGap: { marginTop: 22 },
   section: {
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
@@ -102,6 +138,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14, gap: 12,
   },
   rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
+  themeIcon: {
+    width: 26, height: 26, borderRadius: 13,
+    backgroundColor: colors.surfaceAlt,
+    alignItems: 'center', justifyContent: 'center',
+  },
   swatch: { width: 26, height: 26, borderRadius: 13 },
   rowLabel: { flex: 1, fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
 });

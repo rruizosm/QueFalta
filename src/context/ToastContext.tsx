@@ -21,11 +21,16 @@ const ICON: Record<ToastType, keyof typeof Ionicons.glyphMap> = {
   error: 'alert-circle',
   info: 'information-circle',
 };
-const BG: Record<ToastType, string> = {
-  success: colors.ok,
-  error: '#d6452b',
-  info: colors.ink,
-};
+
+// El toast es siempre una superficie oscura con texto blanco (legible en claro y
+// oscuro). El fondo se calcula en render para que `success` use el verde del tema
+// actual; `info` usa un carbón fijo para no aclararse en modo oscuro.
+const TOAST_INK = '#ffffff';
+function toastBg(type: ToastType): string {
+  if (type === 'error') return '#d6452b';
+  if (type === 'success') return colors.ok;
+  return '#2b2521';
+}
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
@@ -60,8 +65,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           pointerEvents="none"
           style={[styles.wrap, { opacity, transform: [{ translateY }] }]}
         >
-          <View style={[styles.toast, { backgroundColor: BG[toast.type] }]}>
-            <Ionicons name={ICON[toast.type]} size={18} color={colors.white} />
+          <View style={[styles.toast, { backgroundColor: toastBg(toast.type) }]}>
+            <Ionicons name={ICON[toast.type]} size={18} color={TOAST_INK} />
             <Text style={styles.text} numberOfLines={2}>{toast.message}</Text>
           </View>
         </Animated.View>
@@ -98,5 +103,5 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 6,
   },
-  text: { flex: 1, fontSize: 13.5, fontFamily: fonts.semibold, color: colors.white },
+  text: { flex: 1, fontSize: 13.5, fontFamily: fonts.semibold, color: TOAST_INK },
 });

@@ -5,12 +5,13 @@ import {
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, ACCENT_OPTIONS } from '../constants/colors';
+import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useTheme, useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
-import { useCart } from '../context/CartContext';
+import { useGuidedTour } from '../context/GuidedTourContext';
 import {
   getNotificationsEnabled, setNotificationsEnabled,
   hasPermission, requestPermission, sendTestNotification,
@@ -27,9 +28,10 @@ export default function ProfileScreen() {
   const navigation = useNavigation<any>();
   const styles = useThemedStyles(themedStyles);
   const { accentKey } = useTheme();
+  const { t, lang } = useTranslation();
   const { session, signOut } = useAuth();
   const { profile, loading, isPremium } = useProfile();
-  const { defaultGroup } = useCart();
+  const { startTour } = useGuidedTour();
   const email = session?.user.email ?? '';
 
   const [notifications, setNotifications] = useState(false);
@@ -69,11 +71,11 @@ export default function ProfileScreen() {
     const granted = (await hasPermission()) || (await requestPermission());
     if (!granted) {
       Alert.alert(
-        'Permiso necesario',
-        'Activa las notificaciones para LaCompra en los ajustes de tu dispositivo.',
+        t('profile.notifPermTitle'),
+        t('profile.notifPermMsg'),
         [
-          { text: 'Cancelar', style: 'cancel' },
-          { text: 'Abrir ajustes', onPress: () => Linking.openSettings() },
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('profile.openSettings'), onPress: () => Linking.openSettings() },
         ],
       );
       return;
@@ -92,24 +94,26 @@ export default function ProfileScreen() {
   const avatarUrl = profile?.avatarUrl ?? null;
 
   const catalogStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
+  const storesTotal = CATALOG_STORE_KEYS.length;
   const storesSummary =
-    catalogStores.length >= CATALOG_STORE_KEYS.length
-      ? 'Todos'
-      : catalogStores
-          .map((k) => CATALOG_STORES.find((s) => s.key === k)?.name)
-          .filter(Boolean)
-          .join(', ') || 'Ninguno';
+    catalogStores.length >= storesTotal
+      ? t('common.all')
+      : catalogStores.length === 0
+        ? t('common.none')
+        : catalogStores.length === 1
+          ? CATALOG_STORES.find((s) => s.key === catalogStores[0])?.name ?? t('profile.storesCount', { n: 1, total: storesTotal })
+          : t('profile.storesCount', { n: catalogStores.length, total: storesTotal });
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
-        <Text style={styles.title}>Perfil</Text>
+        <Text style={styles.title}>{t('profile.title')}</Text>
         <View style={{ width: 38 }} />
       </View>
 
@@ -144,7 +148,7 @@ export default function ProfileScreen() {
               onPress={() => navigation.navigate('EditProfile')}
             >
               <Ionicons name="create-outline" size={14} color={colors.accent} />
-              <Text style={styles.editBtnText}>Editar</Text>
+              <Text style={styles.editBtnText}>{t('profile.edit')}</Text>
             </TouchableOpacity>
           </HardShadow>
 
@@ -163,8 +167,8 @@ export default function ProfileScreen() {
                   <Text style={styles.plusTitle}>QuéFalta Plus</Text>
                   <Text style={styles.plusText}>
                     {isPremium
-                      ? 'Suscripción activa. ¡Gracias por apoyar la app!'
-                      : 'Grupos ilimitados, comparador completo y más'}
+                      ? t('profile.plusActive')
+                      : t('profile.plusInactive')}
                   </Text>
                 </View>
                 {isPremium ? (
@@ -177,58 +181,58 @@ export default function ProfileScreen() {
           )}
 
           {/* CUENTA */}
-          <Text style={styles.sectionLabel}>Cuenta</Text>
+          <Text style={styles.sectionLabel}>{t('profile.sectionAccount')}</Text>
           <View style={styles.section}>
             <ProfileRow
               icon="notifications-outline"
-              label="Notificaciones"
+              label={t('profile.notifications')}
               right="switch"
               switchValue={notifications}
               onSwitchChange={handleToggleNotifications}
             />
             <ProfileRow
               icon="receipt-outline"
-              label="Historial de compra"
+              label={t('profile.purchaseHistory')}
               onPress={() => navigation.navigate('History')}
             />
             <ProfileRow
               icon="shield-checkmark-outline"
-              label="Privacidad y seguridad"
+              label={t('profile.privacySecurity')}
               onPress={() => navigation.navigate('PrivacySecurity')}
               last
             />
           </View>
 
           {/* PREFERENCIAS */}
-          <Text style={styles.sectionLabel}>Preferencias</Text>
+          <Text style={styles.sectionLabel}>{t('profile.sectionPreferences')}</Text>
           <View style={styles.section}>
             <ProfileRow
-              icon="people-outline"
-              label="Grupo por defecto"
-              value={defaultGroup?.groupName ?? 'Sin asignar'}
-              onPress={() => navigation.navigate('DefaultGroup')}
-            />
-            <ProfileRow
               icon="storefront-outline"
-              label="Supermercados"
+              label={t('profile.stores')}
               value={storesSummary}
               onPress={() => navigation.navigate('CatalogStores')}
             />
             <ProfileRow
               icon="color-palette-outline"
-              label="Apariencia"
-              value={ACCENT_OPTIONS.find((o) => o.key === accentKey)?.name}
+              label={t('profile.appearance')}
+              value={t(`appearance.accents.${accentKey}`)}
               onPress={() => navigation.navigate('Appearance')}
+            />
+            <ProfileRow
+              icon="language-outline"
+              label={t('profile.language')}
+              value={t(`language.options.${lang}`)}
+              onPress={() => navigation.navigate('Language')}
               last
             />
           </View>
 
           {/* GRUPOS */}
-          <Text style={styles.sectionLabel}>Social</Text>
+          <Text style={styles.sectionLabel}>{t('profile.sectionSocial')}</Text>
           <View style={styles.section}>
             <ProfileRow
               icon="people-circle-outline"
-              label="Amigos"
+              label={t('profile.friends')}
               badge={pendingRequests}
               onPress={() => navigation.navigate('Friends')}
               last
@@ -236,16 +240,21 @@ export default function ProfileScreen() {
           </View>
 
           {/* SOPORTE */}
-          <Text style={styles.sectionLabel}>Soporte</Text>
+          <Text style={styles.sectionLabel}>{t('profile.sectionSupport')}</Text>
           <View style={styles.section}>
             <ProfileRow
+              icon="play-circle-outline"
+              label={t('profile.watchTutorial')}
+              onPress={() => { navigation.navigate('HomeMain'); startTour(); }}
+            />
+            <ProfileRow
               icon="help-circle-outline"
-              label="Ayuda"
+              label={t('profile.help')}
               onPress={() => {}}
             />
             <ProfileRow
               icon="information-circle-outline"
-              label="Acerca de LaCompra"
+              label={t('profile.about')}
               value="v2.0"
               last
             />
@@ -254,7 +263,7 @@ export default function ProfileScreen() {
           {/* Sign out */}
           <TouchableOpacity style={styles.signOutBtn} onPress={handleSignOut}>
             <Ionicons name="log-out-outline" size={17} color="#d6452b" />
-            <Text style={styles.signOutText}>Cerrar sesión</Text>
+            <Text style={styles.signOutText}>{t('profile.signOut')}</Text>
           </TouchableOpacity>
 
         </ScrollView>
@@ -264,9 +273,9 @@ export default function ProfileScreen() {
 
       <ConfirmDialog
         visible={signOutVisible}
-        title="Cerrar sesión"
-        message="¿Seguro que quieres cerrar sesión?"
-        confirmLabel="Cerrar sesión"
+        title={t('profile.signOut')}
+        message={t('profile.signOutConfirm')}
+        confirmLabel={t('profile.signOut')}
         destructive
         onConfirm={() => { setSignOutVisible(false); signOut(); }}
         onCancel={() => setSignOutVisible(false)}

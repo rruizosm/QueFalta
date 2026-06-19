@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import { getLanguage } from '../i18n';
 import type {
   CategoriesResponse, N1Category, N2CategoryDetail, MercadonaProduct, MercadonaProductDetail,
 } from '../types';
@@ -12,9 +13,28 @@ const BASE =
     ? 'http://localhost:3001/api'
     : 'https://tienda.mercadona.es/api';
 
+// La API de Mercadona es POR ALMACÉN: cada `wh` tiene su propio catálogo e ids, y
+// `GET /products/{id}/` devuelve 404 si ese id no existe en el almacén consultado.
+// Sin `wh`, la API resuelve a un almacén por defecto que NO coincide con el del
+// espejo de Supabase (búsqueda) → productos regionales como "Fuente Dehesa" daban
+// "No se pudo cargar la información del producto".
+// DEBE coincidir con MERCADONA_WH de scripts/sync-catalog.mjs (por defecto "mad1").
+const WH = 'mad1';
+
+/**
+ * Añade lang + almacén a cualquier endpoint. El `lang` sigue al idioma de la app
+ * (Mercadona devuelve nombres/descripciones en català con `lang=ca`); el `wh`
+ * NO depende del idioma (solo cambia el texto, no qué productos existen ni sus
+ * ids), así que el detalle por id sigue coincidiendo con el espejo (ver WH).
+ */
+const url = (path: string) => {
+  const lang = getLanguage() === 'ca' ? 'ca' : 'es';
+  return `${BASE}${path}${path.includes('?') ? '&' : '?'}lang=${lang}&wh=${WH}`;
+};
+
 export async function fetchCategories(): Promise<N1Category[]> {
-  console.log('[mercadona] fetchCategories →', `${BASE}/categories/`);
-  const res = await fetch(`${BASE}/categories/`);
+  console.log('[mercadona] fetchCategories →', url('/categories/'));
+  const res = await fetch(url('/categories/'));
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data: CategoriesResponse = await res.json();
   console.log('[mercadona] fetchCategories ←', data.count, 'categories');
@@ -23,9 +43,9 @@ export async function fetchCategories(): Promise<N1Category[]> {
 
 
 export async function fetchCategoryDetail(id: number): Promise<N2CategoryDetail> {
-  const res = await fetch(`${BASE}/categories/${id}/`);
+  const res = await fetch(url(`/categories/${id}/`));
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    console.log('[mercadona] fetchCategoryDetail →', `${BASE}/categories/${id}/`);
+    console.log('[mercadona] fetchCategoryDetail →', url(`/categories/${id}/`));
   const data: N2CategoryDetail = await res.json();
     console.log('[mercadona] fetchCategoryDetail ←', data.name, data.categories.length, 'subcategories');
   return data;
@@ -33,8 +53,8 @@ export async function fetchCategoryDetail(id: number): Promise<N2CategoryDetail>
 
 /** Full detail for a single product by its Mercadona id. */
 export async function fetchProduct(id: string): Promise<MercadonaProductDetail> {
-  console.log('[mercadona] fetchProduct →', `${BASE}/products/${id}/`);
-  const res = await fetch(`${BASE}/products/${id}/`);
+  console.log('[mercadona] fetchProduct →', url(`/products/${id}/`));
+  const res = await fetch(url(`/products/${id}/`));
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data: MercadonaProductDetail = await res.json();
   console.log('[mercadona] fetchProduct ←', data.display_name);
@@ -64,8 +84,8 @@ export async function fetchSuggestedProducts(limit = 8): Promise<MercadonaProduc
  * price_instructions.is_new viene siempre false, no sirve para detectarlas).
  */
 export async function fetchNewArrivals(): Promise<MercadonaProduct[]> {
-  console.log('[mercadona] fetchNewArrivals →', `${BASE}/home/new-arrivals/`);
-  const res = await fetch(`${BASE}/home/new-arrivals/`);
+  console.log('[mercadona] fetchNewArrivals →', url('/home/new-arrivals/'));
+  const res = await fetch(url('/home/new-arrivals/'));
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data: { items?: MercadonaProduct[] } = await res.json();
   console.log('[mercadona] fetchNewArrivals ←', data.items?.length ?? 0, 'productos');
@@ -83,4 +103,16 @@ export function formatSize(product: MercadonaProduct): string {
   const { unit_size, size_format } = product.price_instructions;
   if (unit_size && size_format) return `${unit_size} ${size_format}`;
   return product.packaging ?? '';
+}
+
+/**
+ * Precio por unidad de medida ("3,90 €/L", "1,50 €/kg") a partir de
+ * reference_price + reference_format de Mercadona, o null si no hay. Es el
+ * precio que permite comparar entre formatos; se muestra junto al del envase.
+ */
+export function formatReferencePrice(product: MercadonaProduct): string | null {
+  const { reference_price, reference_format } = product.price_instructions;
+  const n = parseFloat(reference_price);
+  if (!Number.isFinite(n) || n <= 0 || !reference_format) return null;
+  return `${n.toFixed(2).replace('.', ',')} €/${reference_format}`;
 }

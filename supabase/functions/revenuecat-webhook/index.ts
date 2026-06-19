@@ -26,6 +26,25 @@
 
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
+// Comparación en tiempo constante (patrón double-HMAC): no filtra ni el
+// contenido ni la longitud del token por timing. Web Crypto va nativo en Deno.
+async function safeEqual(a: string, b: string): Promise<boolean> {
+  const key = crypto.getRandomValues(new Uint8Array(32));
+  const k = await crypto.subtle.importKey(
+    'raw', key, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
+  );
+  const enc = new TextEncoder();
+  const [ha, hb] = await Promise.all([
+    crypto.subtle.sign('HMAC', k, enc.encode(a)),
+    crypto.subtle.sign('HMAC', k, enc.encode(b)),
+  ]);
+  const da = new Uint8Array(ha);
+  const db = new Uint8Array(hb);
+  let diff = 0;
+  for (let i = 0; i < da.length; i++) diff |= da[i] ^ db[i];
+  return diff === 0;
+}
+
 // Tipos de evento que mueven la ventana de acceso. El resto (TEST, TRANSFER,
 // NON_RENEWING_PURCHASE…) se ignora con 200 para que RevenueCat no reintente.
 const RELEVANT = new Set([
@@ -45,7 +64,8 @@ Deno.serve(async (req) => {
   }
 
   const token = Deno.env.get('RC_WEBHOOK_TOKEN');
-  if (!token || req.headers.get('Authorization') !== token) {
+  const provided = req.headers.get('Authorization') ?? '';
+  if (!token || !(await safeEqual(provided, token))) {
     return json({ error: 'unauthorized' }, 401);
   }
 

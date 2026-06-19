@@ -19,6 +19,7 @@ import { useCart } from '../context/CartContext';
 import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import { FREE_LIMITS, limitsApply } from '../constants/limits';
 import { fetchMyGroups, createGroup, type GroupSummary } from '../api/groups';
 import MemberAvatars from '../components/MemberAvatars';
@@ -28,6 +29,7 @@ import PaywallModal from '../components/PaywallModal';
 
 export default function GroupsScreen() {
   const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { session } = useAuth();
   const userId = session?.user.id;
@@ -69,7 +71,7 @@ export default function GroupsScreen() {
       if (wasActive) await deactivateCart();
       else await activateCart(group.id, group.name);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      toast.show(wasActive ? 'Carrito desactivado' : `Carrito activo: ${group.name}`);
+      toast.show(wasActive ? t('banner.deactivated') : t('banner.activated', { group: group.name }));
     } finally {
       setActivatingId(null);
     }
@@ -96,7 +98,7 @@ export default function GroupsScreen() {
       setLoading(true);
       load();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show(`Grupo "${name}" creado`);
+      toast.show(t('group.created', { name }));
     } catch (e: any) {
       // Trigger groups_enforce_limit (paywall_gates.sql): el estado local iba
       // por detrás del servidor → paywall en vez de error genérico.
@@ -105,7 +107,7 @@ export default function GroupsScreen() {
         setPaywallVisible(true);
       } else {
         setError(true);
-        toast.show('No se pudo crear el grupo.', 'error');
+        toast.show(t('group.createError'), 'error');
       }
     } finally {
       setCreating(false);
@@ -126,7 +128,7 @@ export default function GroupsScreen() {
               <Text style={styles.cardName}>{item.name}</Text>
               {item.ownerId === userId && (
                 <View style={styles.ownerBadge}>
-                  <Text style={styles.ownerBadgeText}>Tuyo</Text>
+                  <Text style={styles.ownerBadgeText}>{t('group.ownerBadge')}</Text>
                 </View>
               )}
             </View>
@@ -138,7 +140,7 @@ export default function GroupsScreen() {
             <MemberAvatars members={item.members} maxVisible={4} size={30} />
           )}
           <Text style={styles.memberCount}>
-            {item.members.length} {item.members.length === 1 ? 'miembro' : 'miembros'}
+            {item.members.length} {item.members.length === 1 ? t('group.member') : t('group.members')}
           </Text>
 
           {/* Activate button */}
@@ -158,7 +160,7 @@ export default function GroupsScreen() {
                   color={active ? colors.white : colors.accent}
                 />
                 <Text style={[styles.activateBtnText, active && styles.activateBtnTextActive]}>
-                  {active ? 'Carrito activo' : 'Activar carrito'}
+                  {active ? t('group.cartActive') : t('group.activate')}
                 </Text>
               </>
             )}
@@ -170,16 +172,16 @@ export default function GroupsScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       <View style={styles.header}>
-        <Text style={styles.title}>Grupos</Text>
+        <Text style={styles.title}>{t('group.title')}</Text>
         {/* Sin grupos, el CTA es el del estado vacío: no se duplica aquí. */}
         {groups.length > 0 && (
           <TouchableOpacity onPress={handleNewGroup}>
             <HardShadow style={{ backgroundColor: colors.accent, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 8 }}>
               <Ionicons name="add" size={18} color={colors.white} />
-              <Text style={styles.newBtnText}>Nuevo</Text>
+              <Text style={styles.newBtnText}>{t('group.new')}</Text>
             </HardShadow>
           </TouchableOpacity>
         )}
@@ -189,20 +191,20 @@ export default function GroupsScreen() {
         <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
       ) : error ? (
         <View style={styles.centerBox}>
-          <Text style={styles.emptyText}>No se pudieron cargar los grupos.</Text>
+          <Text style={styles.emptyText}>{t('group.loadError')}</Text>
           <TouchableOpacity onPress={() => { setLoading(true); load(); }}>
-            <Text style={styles.retryText}>Reintentar</Text>
+            <Text style={styles.retryText}>{t('common.retry')}</Text>
           </TouchableOpacity>
         </View>
       ) : groups.length === 0 ? (
         <View style={styles.centerBox}>
           <Ionicons name="people-outline" size={48} color={colors.inkFaint} />
-          <Text style={styles.emptyTitle}>Aún no tienes grupos</Text>
-          <Text style={styles.emptyText}>Crea uno para compartir listas de la compra.</Text>
+          <Text style={styles.emptyTitle}>{t('group.emptyTitle')}</Text>
+          <Text style={styles.emptyText}>{t('group.emptyText')}</Text>
           <TouchableOpacity onPress={handleNewGroup}>
             <HardShadow style={{ backgroundColor: colors.accent, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 16, paddingVertical: 11, marginTop: 8 }}>
               <Ionicons name="add" size={18} color={colors.white} />
-              <Text style={styles.newBtnText}>Crear grupo</Text>
+              <Text style={styles.newBtnText}>{t('group.createCta')}</Text>
             </HardShadow>
           </TouchableOpacity>
         </View>
@@ -223,9 +225,9 @@ export default function GroupsScreen() {
       {/* Create group — bottom sheet */}
       <NameInputSheet
         visible={modalVisible}
-        title="Nuevo grupo"
-        subtitle="Lista y carrito compartidos con tu gente"
-        submitLabel="Crear grupo"
+        title={t('group.newGroupTitle')}
+        subtitle={t('group.newGroupSubtitle')}
+        submitLabel={t('group.createCta')}
         busy={creating}
         onSubmit={handleCreate}
         onClose={() => setModalVisible(false)}
@@ -234,7 +236,9 @@ export default function GroupsScreen() {
       <PaywallModal
         visible={paywallVisible}
         onClose={() => setPaywallVisible(false)}
-        subtitle={`El plan gratuito incluye ${FREE_LIMITS.maxCreatedGroups === 1 ? '1 grupo creado' : `${FREE_LIMITS.maxCreatedGroups} grupos creados`}; únete a los que quieras`}
+        subtitle={FREE_LIMITS.maxCreatedGroups === 1
+          ? t('group.paywallLimitOne')
+          : t('group.paywallLimitMany', { n: FREE_LIMITS.maxCreatedGroups })}
       />
     </View>
   );

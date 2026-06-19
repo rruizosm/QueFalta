@@ -10,6 +10,8 @@ import { fonts } from '../constants/typography';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
+import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import { updateProfile } from '../api/profile';
 import { deleteAccount } from '../api/account';
 import ProfileRow from '../components/ProfileRow';
@@ -18,6 +20,8 @@ import ConfirmDialog from '../components/ConfirmDialog';
 const PRIVACY_POLICY_URL = 'https://quefalta.es/privacidad';
 
 export default function PrivacySecurityScreen() {
+  const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { signOut } = useAuth();
   const { profile, applyProfile } = useProfile();
@@ -38,7 +42,7 @@ export default function PrivacySecurityScreen() {
       applyProfile({ discoverable: value });
     } catch {
       setDiscoverable(!value); // revertir si falla
-      toast.show('No se pudo guardar la preferencia.', 'error');
+      toast.show(t('privacy.saveError'), 'error');
     } finally {
       setSavingDiscoverable(false);
     }
@@ -54,8 +58,8 @@ export default function PrivacySecurityScreen() {
       setDeleting(false);
       toast.show(
         e?.message?.includes('Function not found') || e?.message?.includes('404')
-          ? 'La función de borrado aún no está desplegada.'
-          : 'No se pudo eliminar la cuenta. Inténtalo de nuevo.',
+          ? t('privacy.deleteNotDeployed')
+          : t('privacy.deleteFail'),
         'error',
       );
     }
@@ -63,67 +67,65 @@ export default function PrivacySecurityScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
-        <Text style={styles.title}>Privacidad y seguridad</Text>
+        <Text style={styles.title}>{t('profile.privacySecurity')}</Text>
         <View style={{ width: 38 }} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
 
         {/* PRIVACIDAD */}
-        <Text style={styles.sectionLabel}>Privacidad</Text>
+        <Text style={styles.sectionLabel}>{t('privacy.sectionPrivacy')}</Text>
         <View style={styles.section}>
           <ProfileRow
             icon="search-outline"
-            label="Visible para otros"
+            label={t('privacy.discoverable')}
             right="switch"
             switchValue={discoverable}
             onSwitchChange={savingDiscoverable ? undefined : handleToggleDiscoverable}
             last
           />
         </View>
-        <Text style={styles.hint}>
-          Cuando está activo, otras personas pueden encontrarte por tu @usuario para añadirte a grupos.
-        </Text>
+        <Text style={styles.hint}>{t('privacy.discoverableHint')}</Text>
 
         {/* SEGURIDAD */}
-        <Text style={styles.sectionLabel}>Seguridad</Text>
+        <Text style={styles.sectionLabel}>{t('privacy.sectionSecurity')}</Text>
         <View style={styles.section}>
           <ProfileRow
             icon="phone-portrait-outline"
-            label="Cerrar sesión en todos los dispositivos"
+            label={t('privacy.signOutAll')}
             onPress={() => setSignOutAllVisible(true)}
             last
           />
         </View>
 
         {/* DATOS Y POLÍTICAS */}
-        <Text style={styles.sectionLabel}>Datos y políticas</Text>
+        <Text style={styles.sectionLabel}>{t('privacy.sectionData')}</Text>
         <View style={styles.section}>
           <ProfileRow
             icon="document-text-outline"
-            label="Política de privacidad"
+            label={t('privacy.privacyPolicy')}
             onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
           />
           <ProfileRow
             icon="server-outline"
-            label="Qué datos guardamos"
+            label={t('privacy.whatData')}
             onPress={() => Alert.alert(
-              'Qué datos guardamos',
-              'Guardamos tu nombre, correo (vía Google), foto de perfil opcional, @usuario y los grupos y listas a los que perteneces. No compartimos tus datos con terceros.',
+              t('privacy.whatData'),
+              t('privacy.whatDataMsg'),
             )}
             last
           />
         </View>
 
         {/* ZONA DE PELIGRO */}
-        <Text style={[styles.sectionLabel, { color: '#d6452b' }]}>Zona de peligro</Text>
+        <Text style={[styles.sectionLabel, { color: '#d6452b' }]}>{t('privacy.dangerZone')}</Text>
         <TouchableOpacity
           style={styles.deleteBtn}
           onPress={() => setDeleteVisible(true)}
@@ -134,21 +136,19 @@ export default function PrivacySecurityScreen() {
           ) : (
             <>
               <Ionicons name="trash-outline" size={17} color="#d6452b" />
-              <Text style={styles.deleteText}>Eliminar mi cuenta</Text>
+              <Text style={styles.deleteText}>{t('privacy.deleteAccount')}</Text>
             </>
           )}
         </TouchableOpacity>
-        <Text style={styles.hint}>
-          Borra permanentemente tu perfil y tus datos. Esta acción no se puede deshacer.
-        </Text>
+        <Text style={styles.hint}>{t('privacy.deleteHint')}</Text>
 
       </ScrollView>
 
       <ConfirmDialog
         visible={signOutAllVisible}
-        title="Cerrar sesión en todos los dispositivos"
-        message="Se cerrará tu sesión en este y en cualquier otro dispositivo donde hayas iniciado sesión."
-        confirmLabel="Cerrar en todos"
+        title={t('privacy.signOutAll')}
+        message={t('privacy.signOutAllMsg')}
+        confirmLabel={t('privacy.signOutAllConfirm')}
         destructive
         onConfirm={() => { setSignOutAllVisible(false); signOut('global'); }}
         onCancel={() => setSignOutAllVisible(false)}
@@ -156,9 +156,9 @@ export default function PrivacySecurityScreen() {
 
       <ConfirmDialog
         visible={deleteVisible}
-        title="Eliminar cuenta"
-        message="Esta acción es permanente. Se borrarán tu perfil y tus datos, y no podrás recuperarlos."
-        confirmLabel="Eliminar"
+        title={t('privacy.deleteTitle')}
+        message={t('privacy.deleteMsg')}
+        confirmLabel={t('group.deleteConfirm')}
         destructive
         onConfirm={confirmDeleteAccount}
         onCancel={() => setDeleteVisible(false)}
@@ -167,7 +167,7 @@ export default function PrivacySecurityScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
   header: {

@@ -1,6 +1,8 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
+import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 
 export type ViewMode = 'list' | 'grid';
 
@@ -13,6 +15,8 @@ export default function ViewModeToggle({
   value: ViewMode;
   onChange: (v: ViewMode) => void;
 }) {
+  const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
   return (
     <View style={styles.wrap}>
       <TouchableOpacity
@@ -20,7 +24,7 @@ export default function ViewModeToggle({
         onPress={() => onChange('list')}
         activeOpacity={0.7}
         accessibilityRole="button"
-        accessibilityLabel="Vista en lista"
+        accessibilityLabel={t('product.viewList')}
       >
         <Ionicons name="list" size={18} color={value === 'list' ? colors.accent : colors.inkSoft} />
       </TouchableOpacity>
@@ -29,7 +33,7 @@ export default function ViewModeToggle({
         onPress={() => onChange('grid')}
         activeOpacity={0.7}
         accessibilityRole="button"
-        accessibilityLabel="Vista en cuadrícula"
+        accessibilityLabel={t('product.viewGrid')}
       >
         <Ionicons name="grid" size={16} color={value === 'grid' ? colors.accent : colors.inkSoft} />
       </TouchableOpacity>
@@ -37,7 +41,7 @@ export default function ViewModeToggle({
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   wrap: { flexDirection: 'row', backgroundColor: colors.surfaceAlt, padding: 3, gap: 3 },
   btn: { width: 34, height: 32, alignItems: 'center', justifyContent: 'center' },
   btnActive: { backgroundColor: colors.white },

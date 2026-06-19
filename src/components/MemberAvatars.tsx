@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { GroupMember } from '../types';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
+import { useThemedStyles } from '../context/ThemeContext';
 import UserAvatar from './UserAvatar';
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function MemberAvatars({ members, maxVisible = 4, size = 32 }: Props) {
+  const styles = useThemedStyles(themedStyles);
   const visible = members.slice(0, maxVisible);
   const overflow = members.length - maxVisible;
 
@@ -53,7 +55,7 @@ export default function MemberAvatars({ members, maxVisible = 4, size = 32 }: Pr
   );
 }
 
-const styles = StyleSheet.create({
+const themedStyles = () => StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',

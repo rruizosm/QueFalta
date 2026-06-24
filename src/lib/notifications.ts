@@ -1,13 +1,15 @@
 /**
- * Notifications — Phase 1 (local notifications only).
+ * Notifications — local (Phase 1) + remote push (Phase 2).
  *
- * Works in Expo Go on SDK 54: OS permission flow, an Android channel, and
- * scheduling local notifications. Remote push (getExpoPushTokenAsync) is NOT
- * available in Expo Go and is intentionally left for Phase 2 (dev build).
+ * Local notifications work in Expo Go on SDK 54. Remote push needs a dev/prod
+ * build: getExpoPushTokenAsync throws in Expo Go (SDK 53+), so the push helpers
+ * below no-op there (and on web) and only the local toggle keeps working.
  */
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
+import { supabase } from './supabase';
 
 const PREF_KEY = '@notifications_enabled';
 const ANDROID_CHANNEL_ID = 'default';
@@ -67,4 +69,94 @@ export async function getNotificationsEnabled(): Promise<boolean> {
 
 export async function setNotificationsEnabled(enabled: boolean): Promise<void> {
   await AsyncStorage.setItem(PREF_KEY, enabled ? 'true' : 'false');
+}
+
+// ── Remote push (Phase 2) ─────────────────────────────────────────────────────
+
+/** True only in a real build: Expo Go (appOwnership 'expo') can't get a push
+ *  token on SDK 53+, and web has no native push here. */
+function pushSupported(): boolean {
+  return Platform.OS !== 'web' && Constants.appOwnership !== 'expo';
+}
+
+/** EAS projectId — required by getExpoPushTokenAsync. */
+function projectId(): string | undefined {
+  return (
+    Constants.expoConfig?.extra?.eas?.projectId ??
+    (Constants as any).easConfig?.projectId
+  );
+}
+
+/**
+ * Obtains this device's Expo push token and stores it in `push_tokens` for the
+ * given user. Call once a session is available. Best-effort: any failure
+ * (simulator, no permission, Expo Go, missing FCM on Android…) is swallowed so
+ * it never blocks the app — the user simply won't receive remote push.
+ */
+export async function registerForPushNotificationsAsync(userId: string): Promise<void> {
+  if (!pushSupported() || !userId) return;
+  try {
+    // Respeta la preferencia del usuario: si apagó las notificaciones, no
+    // registramos el token (y por tanto no recibe push).
+    if (!(await getNotificationsEnabled())) return;
+    if (!(await hasPermission())) return;
+
+    await ensureAndroidChannel();
+    const id = projectId();
+    if (!id) return;
+
+    const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId: id });
+    if (!token) return;
+
+    await supabase
+      .from('push_tokens')
+      .upsert(
+        { user_id: userId, token, platform: Platform.OS, updated_at: new Date().toISOString() },
+        { onConflict: 'token' },
+      );
+  } catch {
+    // Sin token (simulador, sin permiso, Expo Go, Android sin FCM): la app sigue.
+  }
+}
+
+/** Removes this device's token on logout so the user stops receiving push here. */
+export async function unregisterPushNotificationsAsync(userId: string): Promise<void> {
+  if (!pushSupported() || !userId) return;
+  try {
+    const id = projectId();
+    if (!id) return;
+    const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId: id });
+    if (!token) return;
+    await supabase.from('push_tokens').delete().eq('user_id', userId).eq('token', token);
+  } catch {
+    // Best-effort.
+  }
+}
+
+// ── Tap handling / deep-link ──────────────────────────────────────────────────
+
+/** Payload that `send-push` puts in each notification's `data`, used to
+ *  deep-link to the right screen when the user taps it. */
+export type PushData = {
+  type?: 'cart' | 'friend' | 'group_invite';
+  groupId?: string;
+};
+
+function extractData(response: Notifications.NotificationResponse | null): PushData | null {
+  const data = response?.notification.request.content.data;
+  return data && typeof data === 'object' ? (data as PushData) : null;
+}
+
+/** Subscribes to taps on a notification (app foreground/background). */
+export function addNotificationResponseListener(handler: (data: PushData) => void) {
+  return Notifications.addNotificationResponseReceivedListener((response) => {
+    const data = extractData(response);
+    if (data) handler(data);
+  });
+}
+
+/** The tap that cold-launched the app, if any (handled once at startup). */
+export async function getInitialNotificationData(): Promise<PushData | null> {
+  const response = await Notifications.getLastNotificationResponseAsync();
+  return extractData(response);
 }

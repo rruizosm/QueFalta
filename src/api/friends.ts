@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { notifyFriendRequest } from './push';
 
 export interface FriendProfile {
   friendshipId: string;
@@ -8,9 +9,10 @@ export interface FriendProfile {
   initials: string;
   color: string;
   avatarUrl: string | null;
+  verified: boolean;
 }
 
-const COLS = 'id, name, username, initials, color, avatar_url';
+const COLS = 'id, name, username, initials, color, avatar_url, verified';
 
 /** Fila cruda de profiles → FriendProfile (sin friendshipId). */
 const toProfile = (p: any) => ({
@@ -20,6 +22,7 @@ const toProfile = (p: any) => ({
   initials: p.initials,
   color: p.color,
   avatarUrl: p.avatar_url ?? null,
+  verified: p.verified ?? false,
 });
 
 export async function sendFriendRequest(addresseeId: string, requesterId: string): Promise<void> {
@@ -27,6 +30,7 @@ export async function sendFriendRequest(addresseeId: string, requesterId: string
     .from('friendships')
     .insert({ requester_id: requesterId, addressee_id: addresseeId });
   if (error) throw error;
+  notifyFriendRequest(addresseeId);
 }
 
 export async function acceptFriendRequest(friendshipId: string): Promise<void> {

@@ -15,9 +15,11 @@ import { useGuidedTour } from '../context/GuidedTourContext';
 import {
   getNotificationsEnabled, setNotificationsEnabled,
   hasPermission, requestPermission, sendTestNotification,
+  registerForPushNotificationsAsync, unregisterPushNotificationsAsync,
 } from '../lib/notifications';
 import HardShadow from '../components/HardShadow';
 import ProfileRow from '../components/ProfileRow';
+import VerifiedBadge from '../components/VerifiedBadge';
 import ConfirmDialog from '../components/ConfirmDialog';
 import PaywallModal from '../components/PaywallModal';
 import { CATALOG_STORES, CATALOG_STORE_KEYS } from '../constants/stores';
@@ -62,9 +64,12 @@ export default function ProfileScreen() {
   }, []);
 
   const handleToggleNotifications = async (value: boolean) => {
+    const uid = session?.user.id;
     if (!value) {
       setNotifications(false);
       await setNotificationsEnabled(false);
+      // Deja de recibir push en este dispositivo.
+      if (uid) unregisterPushNotificationsAsync(uid).catch(() => {});
       return;
     }
 
@@ -84,6 +89,8 @@ export default function ProfileScreen() {
     setNotifications(true);
     await setNotificationsEnabled(true);
     await sendTestNotification();
+    // Registra el push token (no-op en Expo Go/web): así llegan también las push.
+    if (uid) registerForPushNotificationsAsync(uid).catch(() => {});
   };
 
   const handleSignOut = () => setSignOutVisible(true);
@@ -135,7 +142,10 @@ export default function ProfileScreen() {
 
             {/* Name + email */}
             <View style={styles.identityText}>
-              <Text style={styles.identityName} numberOfLines={1}>{name}</Text>
+              <View style={styles.identityNameRow}>
+                <Text style={styles.identityName} numberOfLines={1}>{name}</Text>
+                {profile?.verified ? <VerifiedBadge size={17} /> : null}
+              </View>
               <Text style={styles.identityEmail} numberOfLines={1} ellipsizeMode="tail">{email}</Text>
               {profile?.username ? (
                 <Text style={styles.identityUsername}>@{profile.username}</Text>
@@ -276,7 +286,6 @@ export default function ProfileScreen() {
         title={t('profile.signOut')}
         message={t('profile.signOutConfirm')}
         confirmLabel={t('profile.signOut')}
-        destructive
         onConfirm={() => { setSignOutVisible(false); signOut(); }}
         onCancel={() => setSignOutVisible(false)}
       />
@@ -312,7 +321,8 @@ const themedStyles = () => StyleSheet.create({
   },
   avatarInitials: { fontSize: 20, fontFamily: fonts.bold, color: colors.white },
   identityText: { flex: 1, minWidth: 0 },
-  identityName: { fontSize: 19, fontFamily: fonts.bold, color: colors.ink },
+  identityNameRow: { flexDirection: 'row', alignItems: 'center' },
+  identityName: { flexShrink: 1, fontSize: 19, fontFamily: fonts.bold, color: colors.ink },
   identityEmail: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
   identityUsername: { fontSize: 12, fontFamily: fonts.medium, color: colors.accent, marginTop: 1 },
   editBtn: {

@@ -1,7 +1,9 @@
 /** Paso 2 (OBLIGATORIO) — Elegir supermercados del catálogo. Mínimo uno.
- *  Reutiliza la lógica de toggle de CatalogStoresScreen. */
+ *  Empieza SIN nada seleccionado: el usuario marca los que usa (el botón
+ *  Continuar queda desactivado hasta elegir al menos uno). */
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -21,22 +23,19 @@ export default function StoresScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { session } = useAuth();
-  const { profile, applyProfile } = useProfile();
+  const { applyProfile } = useProfile();
   const toast = useToast();
   const userId = session?.user.id ?? '';
 
-  const [selected, setSelected] = useState<CatalogStore[]>(
-    profile?.catalogStores ?? [...CATALOG_STORE_KEYS],
-  );
+  // Empieza SIN nada seleccionado: el usuario marca los súpers que usa. (No
+  // sembramos desde profile.catalogStores porque ahí "vacío" se normaliza a
+  // "todos" —regla del catálogo—, lo que marcaría todo por defecto.)
+  const [selected, setSelected] = useState<CatalogStore[]>([]);
   const [saving, setSaving] = useState(false);
 
   const toggle = (key: CatalogStore) => {
-    const isOn = selected.includes(key);
-    if (isOn && selected.length === 1) {
-      toast.show(t('onboarding.storesKeepOne'), 'error');
-      return;
-    }
     Haptics.selectionAsync();
+    const isOn = selected.includes(key);
     const next = isOn ? selected.filter((s) => s !== key) : [...selected, key];
     setSelected(CATALOG_STORE_KEYS.filter((k) => next.includes(k)));
   };
@@ -57,8 +56,8 @@ export default function StoresScreen() {
 
   return (
     <OnboardingLayout
-      step={2}
-      totalSteps={5}
+      step={3}
+      totalSteps={6}
       eyebrow={t('onboarding.required')}
       title={t('onboarding.storesTitle')}
       subtitle={t('onboarding.storesSubtitle')}
@@ -79,7 +78,13 @@ export default function StoresScreen() {
               style={[styles.card, on && styles.cardOn]}
             >
               {s.icon ? (
-                <Image source={s.icon} style={styles.icon} resizeMode="cover" />
+                <Image
+                  source={s.icon}
+                  style={styles.icon}
+                  contentFit="cover"
+                  cachePolicy="memory-disk"
+                  transition={0}
+                />
               ) : (
                 <View style={[styles.icon, styles.iconEmpty]}>
                   <Ionicons name="storefront" size={18} color={colors.inkSoft} />

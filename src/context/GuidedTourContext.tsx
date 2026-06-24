@@ -7,10 +7,11 @@
  *   1. Prepara un carrito (Grupos)     → activeCart deja de ser null
  *                                        (crea grupo si no tiene + Activar carrito)
  *   2. Abre el Catálogo                → pestaña Catalog enfocada
- *   3. Selecciona un supermercado      → notify('storeSelect')
- *   4. Entra en una categoría          → ruta SubCategory
- *   5. Abre una subcategoría y añade   → notify('cartAdd')
- *   6. Revísalo en Mi lista            → pestaña List
+ *   3. Selecciona un supermercado      → notify('storeSelect') (2 fases: selector
+ *                                        → 2º súper del desplegable)
+ *   4. Añade el 2º producto            → notify('cartAdd') (el usuario navega
+ *                                        categoría/subcategoría por su cuenta)
+ *   5. Revísalo en Mi lista            → pestaña List
  *
  * NO bloquea la app: el overlay atenúa con un "agujero" sobre el objetivo pero
  * deja pasar los toques (pointerEvents). Solo la burbuja captura toques.
@@ -26,7 +27,7 @@ import {
   createContext, useCallback, useContext, useEffect, useMemo, useRef, useState,
 } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, useWindowDimensions,
+  View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Animated, Easing,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -55,7 +56,7 @@ const PRODUCT_ROUTES = [
 
 type AnchorKey =
   | 'storeSelector' | 'tabBar' | 'firstCategory' | 'firstSubcategory'
-  | 'productStepper' | 'addButton' | 'createGroup';
+  | 'productStepper' | 'addButton' | 'createGroup' | 'activateCart';
 type TourEvent = 'storeSelect' | 'qtyPicked' | 'cartAdd';
 
 type Await =
@@ -88,11 +89,13 @@ const STEPS: Step[] = [
     titleKey: 'tour.cartTitle', textKey: 'tour.cartText' },
   { id: 'catalog', icon: 'grid', tabIndex: TAB.Catalog, bubble: 'bottomAboveTabs', await: 'tabCatalog',
     titleKey: 'tour.catalogTitle', textKey: 'tour.catalogText' },
-  { id: 'store', icon: 'storefront', anchorKey: 'storeSelector', bubble: 'bottom', await: 'event:storeSelect',
+  // store: tarjeta en la MISMA posición que catalog (encima de la barra de
+  // pestañas); el chevron/spotlight apuntan al objetivo real (arriba/medio).
+  { id: 'store', icon: 'storefront', anchorKey: 'storeSelector', bubble: 'bottomAboveTabs', await: 'event:storeSelect',
     titleKey: 'tour.storeTitle', textKey: 'tour.storeText' },
-  { id: 'category', icon: 'albums', anchorKey: 'firstCategory', bubble: 'bottom', await: 'route:SubCategory',
-    titleKey: 'tour.categoryTitle', textKey: 'tour.categoryText' },
-  { id: 'add', icon: 'add-circle', anchorKey: 'productStepper', bubble: 'bottom', await: 'event:cartAdd',
+  // add: sin paso de categoría previo (el usuario navega solo). Tarjeta ARRIBA
+  // para no tapar la barra "Añadir" del fondo; resalta el + del 2º producto.
+  { id: 'add', icon: 'add-circle', anchorKey: 'productStepper', bubble: 'top', await: 'event:cartAdd',
     titleKey: 'tour.addTitle', textKey: 'tour.addText' },
   { id: 'list', icon: 'list', tabIndex: TAB.List, bubble: 'bottomAboveTabs', await: 'tabList',
     titleKey: 'tour.listTitle', textKey: 'tour.listText' },
@@ -112,8 +115,9 @@ interface GuidedTourValue {
   stepId: string | null;
   /** Avisa al tour de que el desplegable de súper (un Modal por encima del
    *  overlay) está abierto: el overlay oscurece TODO sin agujero (también el
-   *  selector) y deja que el Modal ilumine solo el primer súper. */
-  setStoreMenuOpen: (open: boolean) => void;
+   *  selector) y deja que el Modal ilumine el súper objetivo. `count` = nº de
+   *  supers visibles, para que el texto diga "el segundo" o "el primero". */
+  setStoreMenuOpen: (open: boolean, count?: number) => void;
 }
 
 const GuidedTourContext = createContext<GuidedTourValue>({
@@ -141,13 +145,28 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
   const [index, setIndex] = useState(0);
   const [anchors, setAnchors] = useState<Partial<Record<AnchorKey, Rect>>>({});
   const [nav, setNav] = useState<{ tab?: string; route?: string }>({});
-  const [storeMenuOpen, setStoreMenuOpen] = useState(false);
+  const [storeMenuOpen, setStoreMenuOpenState] = useState(false);
+  const [storeCount, setStoreCount] = useState(0);
+  // Fase B del paso 'add': true cuando el usuario ya pulsó el "+" (eligió 1ª
+  // unidad). El objetivo pasa del "+" al botón "Añadir".
+  const [addQtyPicked, setAddQtyPicked] = useState(false);
+  const setStoreMenuOpen = useCallback((open: boolean, count?: number) => {
+    setStoreMenuOpenState(open);
+    if (typeof count === 'number') setStoreCount(count);
+  }, []);
 
   const activeRef = useRef(false);
   const indexRef = useRef(0);
   const favBaselineRef = useRef(0);
   const favCountRef = useRef(favProducts.length);
   const autoChecked = useRef(false);
+
+  // Señales animadas que indican "dónde tocar": anillo accent que RESPIRA sobre
+  // el objetivo y chevron que rebota apuntándolo. (Del diseño "Onboarding
+  // Catàleg".) Ambos se pintan DESPUÉS de la tarjeta (ver más abajo) para que el
+  // paso 'add' (tarjeta arriba, objetivo justo detrás) no los oculte.
+  const pulse = useRef(new Animated.Value(0)).current;
+  const bob = useRef(new Animated.Value(0)).current;
 
   activeRef.current = active;
   indexRef.current = index;
@@ -161,6 +180,7 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
   }, [seenKey, toast, t]);
 
   const advance = useCallback(() => {
+    setAddQtyPicked(false); // cada cambio de paso resetea la fase B del 'add'
     setIndex((i) => {
       const ni = i + 1;
       if (ni >= STEPS.length) { finishTour(true); return i; }
@@ -173,6 +193,7 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
   const startTour = useCallback(() => {
     setInvite(false);
     setIndex(0);
+    setAddQtyPicked(false);
     if (STEPS[0].await === 'favorite') favBaselineRef.current = favCountRef.current;
     setActive(true);
   }, []);
@@ -188,7 +209,11 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
 
   const notify = useCallback((ev: TourEvent) => {
     if (!activeRef.current) return;
-    if (STEPS[indexRef.current]?.await === `event:${ev}`) advance();
+    const cur = STEPS[indexRef.current];
+    // Paso 'add': al elegir la 1ª unidad ('qtyPicked') pasa a fase B (objetivo =
+    // botón "Añadir"). No avanza el paso; eso lo hace 'cartAdd'.
+    if (ev === 'qtyPicked' && cur?.id === 'add') setAddQtyPicked(true);
+    if (cur?.await === `event:${ev}`) advance();
   }, [advance]);
 
   const registerAnchor = useCallback((key: AnchorKey, rect: Rect) => {
@@ -222,6 +247,9 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
     });
     return () => clearTimeout(timer);
   }, [seenKey]);
+
+  // (Las señales animadas halo/chevron se arrancan más abajo, una vez calculado
+  //  `hole`: necesitan re-arrancar TAMBIÉN cuando el objetivo se mide y aparecen.)
 
   // Observa la navegación SOLO mientras el tour está activo.
   useEffect(() => {
@@ -276,7 +304,7 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
 
   const value = useMemo(
     () => ({ startTour, notify, registerAnchor, unregisterAnchor, stepId, setStoreMenuOpen }),
-    [startTour, notify, registerAnchor, unregisterAnchor, stepId],
+    [startTour, notify, registerAnchor, unregisterAnchor, stepId, setStoreMenuOpen],
   );
 
   // Geometría del objetivo a resaltar. La barra de pestañas se MIDE (ancla
@@ -298,21 +326,97 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
   // Con el desplegable de súper abierto, NO resaltamos el selector: oscurecemos
   // todo (el selector incluido) y el Modal del menú ilumina solo el primer súper.
   const menuMode = step?.id === 'store' && storeMenuOpen;
+  // Paso 'add': fase A apunta al "+" (productStepper); fase B (ya pulsado +) al
+  // botón "Añadir" (addButton) → los indicadores del "+" desaparecen solos.
+  const addPhaseB = step?.id === 'add' && addQtyPicked;
+  // Paso 'cart' (3 estados, solo cuando el usuario está EN Grupos):
+  //   · ya hay grupo  → botón "Activar carrito" (activateCart)
+  //   · sin grupo     → CTA "crear grupo" (createGroup)
+  //   · fuera de Grupos → ninguno (cae a resaltar la pestaña Grupos para ir allí)
+  // Se gatea por `nav.tab` porque la pantalla de Grupos sigue montada al cambiar
+  // de pestaña: sus anclas quedan registradas y no deben usarse fuera de Grupos.
+  const onGroups = nav.tab === 'Groups';
+  let cartAnchor: AnchorKey | undefined;
+  if (step?.id === 'cart' && onGroups) {
+    // `createGroup` (CTA del estado vacío) tiene PRIORIDAD: solo existe cuando no
+    // hay grupos, así que su presencia descarta cualquier `activateCart` que
+    // hubiera quedado registrado de un grupo ya borrado (defensa anti-fantasma).
+    cartAnchor = anchors.createGroup ? 'createGroup'
+      : anchors.activateCart ? 'activateCart'
+      : undefined;
+  }
+  const effectiveAnchor: AnchorKey | undefined =
+    addPhaseB ? 'addButton'
+      : step?.id === 'cart' ? cartAnchor
+      : step?.anchorKey;
+  const cartActivatePhase = effectiveAnchor === 'activateCart';
   let spot: Rect | null = null;
+  let spotIsTab = false; // el objetivo es una pestaña de la barra inferior
   if (menuMode) spot = null;
-  else if (step?.anchorKey && anchors[step.anchorKey]) spot = anchors[step.anchorKey]!;
-  else if (typeof step?.tabIndex === 'number') spot = tabRect(step.tabIndex);
-
-  const bubblePos = (): any => {
-    if (step?.bubble === 'top') return { top: 86, left: 16, right: 16 };
-    if (step?.bubble === 'bottomAboveTabs') return { bottom: TAB_BAR_HEIGHT + 26, left: 16, right: 16 };
-    return { bottom: 48, left: 16, right: 16 };
-  };
+  else if (effectiveAnchor && anchors[effectiveAnchor]) spot = anchors[effectiveAnchor]!;
+  else if (typeof step?.tabIndex === 'number') { spot = tabRect(step.tabIndex); spotIsTab = true; }
 
   const pad = 8;
   const hole = spot
     ? { x: spot.x - pad, y: spot.y - pad, w: spot.w + pad * 2, h: spot.h + pad * 2 }
     : null;
+
+  // Posición de la tarjeta. `bottomAboveTabs` la fija SIEMPRE en el mismo sitio
+  // (encima de la barra de pestañas, medida): así catalog/store/category/list
+  // comparten ubicación. El hueco extra (CHEVRON_GAP) deja sitio al chevron
+  // cuando el objetivo es el propio tab justo debajo.
+  const CHEVRON_GAP = 58;
+  const barTopY = bar?.y ?? height - TAB_BAR_HEIGHT;
+  const aboveTabsBottom = (height - barTopY) + CHEVRON_GAP;
+  const bubblePos = (): any => {
+    if (step?.bubble === 'top') return { top: 86, left: 16, right: 16 };
+    if (step?.bubble === 'bottomAboveTabs') return { bottom: aboveTabsBottom, left: 16, right: 16 };
+    return { bottom: 48, left: 16, right: 16 };
+  };
+
+  // Chevron centrado sobre el objetivo. Si el objetivo es un TAB (debajo de la
+  // tarjeta) va en el hueco justo encima del tab; si es un ancla (arriba/medio),
+  // encima del ancla. El "pico" solo cuando el objetivo es un tab.
+  const spotCx = hole ? hole.x + hole.w / 2 : 0;
+  const chevronTop = hole ? (spotIsTab ? hole.y - 46 : Math.max(hole.y - 54, 56)) : 0;
+  const showBeak = !!hole && spotIsTab;
+  const beakLeft = Math.min(Math.max(spotCx - 16 - 8, 12), width - 32 - 28);
+
+  // Loops de las señales animadas (halo que "respira" + chevron que rebota). Se
+  // RE-ARRANCAN en cada cambio de paso/fase (index/addQtyPicked/storeMenuOpen) y
+  // —clave— cuando APARECE el objetivo (`holePresent`): el halo y el chevron
+  // (Animated.View) se montan/desmontan según `hole`, y un loop con el driver JS
+  // que ya estaba corriendo NO re-anima una vista que se monta DESPUÉS (p. ej. en
+  // el paso 'add', cuando el ancla del "+" se mide al cargar el producto, ya a
+  // mitad de paso). Al re-arrancar en ese momento, la vista recién montada recibe
+  // un valor animado de nuevo (si no, salían fijos).
+  const holePresent = !!hole;
+  useEffect(() => {
+    if (!active || !holePresent) return;
+    pulse.setValue(0);
+    bob.setValue(0);
+    // El anillo "respira" (opacidad ida/vuelta) en vez de desvanecerse a 0 y
+    // quedarse invisible casi todo el ciclo (lo que se percibía como "no pulsa").
+    // `useNativeDriver: false` A PROPÓSITO: el driver JS reescribe el estilo de la
+    // vista MONTADA en cada frame, así que se re-engancha al re-arrancar el loop
+    // con la vista nueva (el driver nativo no lo hace y se quedaba congelado). Son
+    // 2 animaciones triviales sobre un overlay que solo existe durante el tour.
+    const pulseLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 1, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
+        Animated.timing(pulse, { toValue: 0, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
+      ]),
+    );
+    const bobLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(bob, { toValue: 1, duration: 560, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
+        Animated.timing(bob, { toValue: 0, duration: 560, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
+      ]),
+    );
+    pulseLoop.start();
+    bobLoop.start();
+    return () => { pulseLoop.stop(); bobLoop.stop(); };
+  }, [active, holePresent, index, addQtyPicked, storeMenuOpen, pulse, bob]);
 
   return (
     <GuidedTourContext.Provider value={value}>
@@ -341,17 +445,30 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
 
           {/* Burbuja (sí captura toques) */}
           <View style={[styles.card, bubblePos()]} pointerEvents="auto">
+            {/* "Pico" que apunta al objetivo (solo pasos de pestaña). */}
+            {showBeak && <View pointerEvents="none" style={[styles.beak, { left: beakLeft }]} />}
             <View style={styles.cardHead}>
               <View style={styles.iconBox}>
                 <Ionicons name={step.icon} size={20} color={colors.accent} />
               </View>
-              <Text style={styles.cardTitle}>{t(step.titleKey)}</Text>
+              <Text style={styles.cardTitle}>
+                {menuMode ? t('tour.storeMenuTitle')
+                  : addPhaseB ? t('tour.addConfirmTitle')
+                  : cartActivatePhase ? t('tour.cartActivateTitle')
+                  : t(step.titleKey)}
+              </Text>
               <TouchableOpacity onPress={() => finishTour(false)} hitSlop={8}>
                 <Text style={styles.skip}>{t('tour.skip')}</Text>
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.cardText}>{t(step.textKey)}</Text>
+            <Text style={styles.cardText}>
+              {menuMode
+                ? (storeCount >= 2 ? t('tour.storeMenuTextMulti') : t('tour.storeMenuTextSingle'))
+                : addPhaseB ? t('tour.addConfirmText')
+                : cartActivatePhase ? t('tour.cartActivateText')
+                : t(step.textKey)}
+            </Text>
 
             <View style={styles.cardFooter}>
               <View style={styles.dots}>
@@ -362,6 +479,35 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
               <Text style={styles.stepCount}>{t('onboarding.step', { step: index + 1, total: STEPS.length })}</Text>
             </View>
           </View>
+
+          {/* Anillo accent que "respira" sobre el objetivo (halo justo por fuera
+              del marco). Va DESPUÉS de la tarjeta para que NUNCA quede oculto bajo
+              ella: en el paso 'add' la tarjeta va arriba y el producto/botón puede
+              caer justo detrás → si se pintara antes, la tarjeta lo tapaba. */}
+          {hole && (
+            <Animated.View
+              pointerEvents="none"
+              style={[styles.pulseRing, {
+                left: hole.x - 5, top: hole.y - 5, width: hole.w + 10, height: hole.h + 10,
+                opacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.45, 1] }),
+                transform: [{ scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.06] }) }],
+              }]}
+            />
+          )}
+
+          {/* Chevron que rebota apuntando al objetivo. Va DESPUÉS de la tarjeta
+              (se pinta por encima) y en su hueco, para que no quede tapado. */}
+          {hole && (
+            <Animated.View
+              pointerEvents="none"
+              style={[styles.chevron, {
+                left: spotCx - 19, top: chevronTop,
+                transform: [{ translateY: bob.interpolate({ inputRange: [0, 1], outputRange: [0, 13] }) }],
+              }]}
+            >
+              <Ionicons name="chevron-down" size={22} color={colors.white} />
+            </Animated.View>
+          )}
         </View>
       )}
 
@@ -397,12 +543,21 @@ export function useGuidedTour(): GuidedTourValue {
  *  `clearOnUnmount`: quita el ancla al desmontarse el elemento — para anclas
  *  condicionales (p.ej. el CTA "crear grupo" del estado vacío) que no deben
  *  dejar un spotlight obsoleto cuando desaparecen. */
-export function useTourAnchor(key: AnchorKey, opts?: { clearOnUnmount?: boolean }) {
+export function useTourAnchor(
+  key: AnchorKey,
+  opts?: { clearOnUnmount?: boolean; enabled?: boolean },
+) {
   const { registerAnchor, unregisterAnchor } = useGuidedTour();
   const clearOnUnmount = opts?.clearOnUnmount ?? false;
+  // `enabled` (def. true): mientras sea false NO se registra el ancla y, si ya
+  // estaba puesta, se quita — así el spotlight/chevron no apuntan a un objetivo
+  // que aún no está listo (p. ej. el "+" del producto del paso 'add' antes de
+  // que cargue la lista; si no, se vería el recuadro en una posición obsoleta y
+  // "saltaría" al recolocarse). Al volver a true se re-mide la posición real.
+  const enabled = opts?.enabled ?? true;
   // `any` para poder atar el ref tanto a un View como a un TouchableOpacity.
   const ref = useRef<any>(null);
-  const onLayout = useCallback(() => {
+  const measure = useCallback(() => {
     const node = ref.current as any;
     if (!node?.measureInWindow) return;
     requestAnimationFrame(() => {
@@ -413,6 +568,13 @@ export function useTourAnchor(key: AnchorKey, opts?: { clearOnUnmount?: boolean 
       } catch { /* ignore */ }
     });
   }, [key, registerAnchor]);
+  const onLayout = useCallback(() => {
+    if (enabled) measure();
+  }, [enabled, measure]);
+  useEffect(() => {
+    if (!enabled) { unregisterAnchor(key); return; }
+    measure(); // re-mide al (re)activarse, por si el layout ya ocurrió
+  }, [enabled, key, measure, unregisterAnchor]);
   useEffect(() => {
     if (!clearOnUnmount) return;
     return () => unregisterAnchor(key);
@@ -427,6 +589,18 @@ const themedStyles = () => StyleSheet.create({
     borderWidth: 2, borderColor: colors.white,
     backgroundColor: 'rgba(255,255,255,0.12)',
   },
+  pulseRing: {
+    position: 'absolute',
+    borderWidth: 3, borderColor: colors.accent,
+  },
+  chevron: {
+    position: 'absolute',
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: colors.accent,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.32, shadowRadius: 5, elevation: 6,
+  },
 
   card: {
     position: 'absolute',
@@ -435,6 +609,13 @@ const themedStyles = () => StyleSheet.create({
     padding: 16,
     shadowColor: '#000', shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.22, shadowRadius: 18, elevation: 10,
+  },
+  beak: {
+    position: 'absolute', bottom: -8,
+    width: 16, height: 16,
+    backgroundColor: colors.white,
+    borderRightWidth: 1, borderBottomWidth: 1, borderColor: colors.border,
+    transform: [{ rotate: '45deg' }],
   },
   cardHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   iconBox: {

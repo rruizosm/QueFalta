@@ -84,8 +84,10 @@ export default function StoreProductList({
   const toast = useToast();
   const { products: favList, isProductFavorite, toggleProductFavorite } = useFavorites();
   const { notify: tourNotify } = useGuidedTour();
-  const stepperAnchor = useTourAnchor('productStepper'); // "+" del 2º producto (tutorial)
-  const addBtnAnchor = useTourAnchor('addButton');       // botón "Añadir" (tutorial)
+  // clearOnUnmount: al desmontarse la lista (p. ej. el catálogo cambia a su
+  // spinner de carga y NO monta StoreProductList) se quita el ancla, para que el
+  // spotlight/chevron no queden en la posición del producto de la lista anterior.
+  const addBtnAnchor = useTourAnchor('addButton', { clearOnUnmount: true }); // botón "Añadir" (tutorial)
 
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [adding, setAdding] = useState(false);
@@ -129,6 +131,14 @@ export default function StoreProductList({
     if (pageSize != null) setVisibleCount(pageSize);
   }, [pageSize, query, searchQuery, products]);
   const visible = pageSize != null ? shown.slice(0, visibleCount) : shown;
+
+  // Tutorial (paso 'add'): el ancla del "+" del 2º producto solo se registra
+  // cuando la lista YA ha cargado y ese producto existe. Si no, el spotlight y el
+  // chevron apuntarían a una posición obsoleta (la del producto de la pantalla
+  // anterior) y se verían "saltar" al recolocarse cuando por fin cargan los
+  // productos. Gateado por `enabled`: mientras no esté listo, se quita el ancla.
+  const stepperReady = !loading && !error && visible.length >= 2;
+  const stepperAnchor = useTourAnchor('productStepper', { enabled: stepperReady, clearOnUnmount: true });
 
   const handleEndReached = () => {
     if (pageSize != null && visibleCount < shown.length) {

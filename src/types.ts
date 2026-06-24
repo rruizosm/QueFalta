@@ -145,6 +145,8 @@ export interface GroupMember {
   initials: string;
   color: string;
   avatarUrl?: string | null;
+  /** Cuenta verificada (insignia dorada). Ver profile_verified.sql. */
+  verified?: boolean;
 }
 
 export interface ActivityEntry {
@@ -271,10 +273,13 @@ export type GroupsStackParamList = {
 };
 
 /** Asistente de bienvenida (primera vez). Se muestra cuando hay sesión pero el
- *  perfil aún no tiene onboarded_at. Pasos obligatorios (Username, Stores) y
- *  opcionales (Avatar, Friends, Group). Ver src/screens/onboarding/. */
+ *  perfil aún no tiene onboarded_at. Empieza por el idioma (Language), luego
+ *  pasos obligatorios (Username, Stores) y opcionales (Avatar, Friends, Group).
+ *  Ver src/screens/onboarding/. */
 export type OnboardingStackParamList = {
   Welcome: undefined;
+  Language: undefined;
+  Name: undefined;
   Username: undefined;
   Stores: undefined;
   Avatar: undefined;

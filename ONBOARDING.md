@@ -26,35 +26,62 @@ la reescribe.
 | Paso | Pantalla | Tipo | Reutiliza |
 |------|----------|------|-----------|
 | 0 | Welcome  | — | — |
-| 1 | Username | **Obligatorio** | `isUsernameAvailable` + `updateProfile` (validación en vivo, no avanza sin @ libre) |
-| 2 | Stores   | **Obligatorio** | toggle de `CatalogStoresScreen` → `updateProfile({catalogStores})` (mín. 1) |
-| 3 | Avatar   | Opcional | `expo-image-picker` + `uploadAvatar` |
-| 4 | Friends  | Opcional | `searchUsersByUsername` + `sendFriendRequest` |
-| 5 | Group    | Opcional | `createGroup` |
-| 6 | Done     | — | `completeOnboarding` → sella `onboarded_at`, `applyProfile` cambia el gate |
+| 1 | Name     | **Obligatorio** | `updateProfile({name, initials})` (nombre visible; se prefija con el del proveedor — Google, o Apple vía `credential.fullName`; iniciales con `initialsFromName`). No avanza vacío |
+| 2 | Username | **Obligatorio** | `isUsernameAvailable` + `updateProfile` (validación en vivo, no avanza sin @ libre) |
+| 3 | Stores   | **Obligatorio** | toggle de `CatalogStoresScreen` → `updateProfile({catalogStores})` (mín. 1) |
+| 4 | Avatar   | Opcional | `expo-image-picker` + `uploadAvatar` |
+| 5 | Friends  | Opcional | `searchUsersByUsername` + `sendFriendRequest` |
+| 6 | Group    | Opcional | `createGroup` |
+| — | Done     | — | `completeOnboarding` → sella `onboarded_at`, `applyProfile` cambia el gate |
 
 Los obligatorios bloquean el avance; los opcionales se pueden omitir.
 
 ## Demo — tour INTERACTIVO guiado por acciones (`src/context/GuidedTourContext.tsx`)
 No son tooltips pasivos: cada paso resalta un elemento y **solo avanza cuando el
-usuario hace la acción real**. Recortado al *core loop* — 6 pasos (antes 10):
-1. Prepara un carrito (Grupos) → `activeCart != null`. Si el usuario **no tiene
-   grupo** (lo omitió en el alta), el texto le pide crearlo primero y luego
-   "Activar carrito" (el paso espera `cartActive`, no bloquea con "Saltar").
+usuario hace la acción real**. Recortado al *core loop* — 5 pasos (antes 10):
+1. Prepara un carrito (Grupos) → `activeCart != null`. El spotlight tiene **3
+   estados** (resueltos solo si estás EN la pestaña Grupos, porque la pantalla
+   sigue montada al cambiar de tab y sus anclas quedan registradas): **con grupo**
+   → botón "Activar carrito" (ancla `activateCart`, 1er grupo) con texto
+   `cartActivate*`; **sin grupo** → CTA "crear grupo" (`createGroup`); **fuera de
+   Grupos** → pestaña Grupos (para ir allí). Así, tras crear el grupo durante el
+   paso, el foco salta del tab/“crear” a "Activar carrito". El paso espera
+   `cartActive` (no bloquea con "Saltar").
 2. Abre el Catálogo → pestaña Catalog enfocada
-3. Elige un supermercado → `notify('storeSelect')` desde CatalogScreen
-4. Entra en una categoría → ruta `SubCategory`
-5. Abre una subcategoría y añade un producto → `notify('cartAdd')` desde
-   StoreProductList (fusiona los antiguos pasos subcategoría + `+` + "Añadir")
-6. Revísalo en Mi lista → pestaña List
+3. Elige un supermercado (dos fases) → `notify('storeSelect')` desde CatalogScreen.
+   Fase 1: resalta el selector ("abre la lista"). Fase 2 (desplegable abierto):
+   ilumina el **2º** súper para enseñar a cambiar — o el **1º** si el usuario
+   solo tiene uno (el texto se adapta vía `storeCount` en `setStoreMenuOpen`). Con
+   un único súper el selector está oculto en condiciones normales: se **fuerza
+   visible** durante este paso (`tourStepId === 'store'`). El súper objetivo se
+   indica con **anillo que respira** (opacidad ida/vuelta, `menuPulse` en
+   CatalogScreen), **sin** chevron (el menú es un Modal).
+4. Añade el **2º producto** → `notify('cartAdd')` desde StoreProductList. NO hay
+   paso de categoría: el usuario navega categoría/subcategoría por su cuenta. Dos
+   fases (un solo "dot", como el paso 3): **fase A** resalta el `+` del 2º
+   producto (ancla `productStepper`, atada a `index === 1`); al pulsarlo
+   (`notify('qtyPicked')` → flag `addQtyPicked`) pasa a **fase B**, el objetivo
+   salta al botón "Añadir" (ancla `addButton`) — anillo+chevron del `+`
+   desaparecen — y el texto cambia a `addConfirm*`. La tarjeta va **arriba**
+   (`bubble: 'top'`) para no tapar la barra "Añadir" del fondo en ninguna fase.
+5. Revísalo en Mi lista → pestaña List
 
-> Los pasos de favoritos (swipe + revisión) se quitaron: son secundarios y el
-> usuario los descubre solo. Sus emisores/anclas (`qtyPicked`, `firstSubcategory`,
-> `addButton`) siguen en el código pero quedan inertes (ningún paso los espera).
+> Quitados: los pasos de favoritos (swipe + revisión) y el de categoría. Sus
+> emisores/anclas (`qtyPicked`, `firstSubcategory`, `addButton`, `firstCategory`)
+> siguen en el código pero quedan inertes (ningún paso los espera).
 
 - **No bloquea** (decisión de producto "guiado, no bloqueante"): overlay con
   "agujero" atenuado sobre el objetivo, todo `pointerEvents="none"` salvo la
   burbuja → los toques pasan a la app.
+- **Señales de "dónde tocar"** (diseño `design/onboarding-cataleg.dc.html`, Claude
+  Design): sobre cualquier objetivo medido se animan, con `Animated` (native
+  driver), un **anillo accent que respira** (`pulseRing`, `opacity 0.3↔1` en bucle
+  + leve escala, halo justo por fuera del marco) y un **chevron que rebota**
+  apuntándolo (`chevron`, `chevron-down` accent). En los pasos de pestaña la
+  tarjeta lleva un **pico** (`beak`) alineado al centro del objetivo. Los loops
+  solo corren con el tour activo. ⚠️ Ambos indicadores se pintan **después** de la
+  tarjeta en el JSX: si no, en el paso 'add' (tarjeta arriba, objetivo justo
+  detrás) la tarjeta opaca taparía el anillo.
 - **Señales:** rutas vía `navigationRef` (live binding de `../navigation`),
   `useCart`/`useFavorites`, y `notify()` para acciones puntuales.
 - **Anclaje:** pestañas por geometría (`TAB_COUNT`/índices `TAB`, ⚠️ deben

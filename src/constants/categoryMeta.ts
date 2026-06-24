@@ -98,7 +98,7 @@ const CATEGORY_KEYWORD_RULES: [string, { emoji: string; color: string }][] = [
   ['juguete',         { emoji: '🧸', color: colors.red }],
   ['bebé',            { emoji: '👶', color: colors.teal }],
   ['bebes',           { emoji: '👶', color: colors.teal }],
-  ['mascota',         { emoji: '🐾', color: colors.orange }],
+  ['mascot',          { emoji: '🐾', color: colors.orange }],
   ['ganader',         { emoji: '🚜', color: colors.orange }],
   // ── Salud y belleza ───────────────────────────────────────────
   ['parafarmacia',    { emoji: '💊', color: colors.teal }],
@@ -122,7 +122,7 @@ const CATEGORY_KEYWORD_RULES: [string, { emoji: string; color: string }][] = [
   ['hogar',           { emoji: '🏠', color: colors.orange }],
   ['jardín',          { emoji: '🪴', get color() { return colors.accent; } }],
   // ── Comercial / transversal ───────────────────────────────────
-  ['oferta',          { emoji: '🏷️', color: colors.red }],
+  ['ofert',           { emoji: '🏷️', color: colors.red }],
   ['novedad',         { emoji: '✨', color: colors.yellow }],
 
   // ── CATALÀ (Mercadona con lang=ca + Bonpreu/bonÀrea, nativos) ──
@@ -146,7 +146,7 @@ const CATEGORY_KEYWORD_RULES: [string, { emoji: string; color: string }][] = [
   ['pastisser',       { emoji: '🥐', color: colors.orange }],
   ['cervesa',         { emoji: '🍺', color: colors.yellow }],
   ['celler',          { emoji: '🍷', color: colors.purple }],
-  ['beguda',          { emoji: '🥤', color: colors.teal }],
+  ['begud',           { emoji: '🥤', color: colors.teal }],
   ['congelat',        { emoji: '🧊', color: colors.blue }],
   ['neteja',          { emoji: '🧹', color: colors.purple }],
   ['arròs',           { emoji: '🍚', color: colors.orange }],
@@ -169,6 +169,15 @@ const CATEGORY_KEYWORD_RULES: [string, { emoji: string; color: string }][] = [
   ['aperitiu',        { emoji: '🥨', color: colors.yellow }],
   ['nutrició',        { emoji: '💪', get color() { return colors.accent; } }],
   ['llar',            { emoji: '🏠', color: colors.orange }],
+  // Plurals catalans i N1 de Bonpreu/bonÀrea que requeien al 🛒 per defecte:
+  // 'beguda'≠"begudes", 'mascota'≠"mascotes", etc. (ja corregits a dalt) i aquests:
+  ['làctic',          { emoji: '🥛', color: colors.blue }],
+  ['cuinat',          { emoji: '🍲', color: colors.red }],
+  ['nadon',           { emoji: '👶', color: colors.teal }],
+  ['dieta',           { emoji: '🌿', get color() { return colors.accent; } }],
+  ['intoler',         { emoji: '🌿', get color() { return colors.accent; } }],
+  ['sant joan',       { emoji: '🎉', color: colors.purple }],
+  ['novetat',         { emoji: '✨', color: colors.yellow }],
 ];
 
 export function getMeta(name: string) {

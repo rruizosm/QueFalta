@@ -18,3 +18,15 @@ export async function deleteAccount(): Promise<void> {
   // La sesión queda invalidada al borrarse el usuario; limpiamos el cliente.
   await supabase.auth.signOut();
 }
+
+/**
+ * Envía el authorizationCode del login nativo de Apple a la Edge Function
+ * `apple-link`, que lo canjea por un refresh_token y lo guarda para poder
+ * revocarlo al borrar la cuenta (App Store 5.1.1(v)).
+ *
+ * Best-effort: si falla (función sin desplegar, Apple sin configurar…), el
+ * login no se ve afectado. Por eso NO se lanza el error al llamador.
+ */
+export async function linkAppleCredential(authorizationCode: string): Promise<void> {
+  await supabase.functions.invoke('apple-link', { body: { authorizationCode } });
+}

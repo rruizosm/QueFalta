@@ -5,32 +5,40 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../../constants/colors';
 import { fonts } from '../../constants/typography';
-import { useProfile } from '../../context/ProfileContext';
 import { useThemedStyles } from '../../context/ThemeContext';
 import { useTranslation } from '../../context/LanguageContext';
 import OnboardingLayout from './OnboardingLayout';
 
 const FEATURES: { icon: keyof typeof Ionicons.glyphMap; titleKey: string; textKey: string }[] = [
-  { icon: 'grid-outline',   titleKey: 'onboarding.featCatalogTitle', textKey: 'onboarding.featCatalogText' },
-  { icon: 'people-outline', titleKey: 'onboarding.featListTitle',    textKey: 'onboarding.featListText' },
-  { icon: 'map-outline',    titleKey: 'onboarding.featZonesTitle',   textKey: 'onboarding.featZonesText' },
+  { icon: 'grid-outline',          titleKey: 'onboarding.featCatalogTitle', textKey: 'onboarding.featCatalogText' },
+  { icon: 'people-outline',        titleKey: 'onboarding.featListTitle',    textKey: 'onboarding.featListText' },
+  { icon: 'notifications-outline', titleKey: 'onboarding.featNotifTitle',   textKey: 'onboarding.featNotifText' },
+  { icon: 'repeat-outline',        titleKey: 'onboarding.featZonesTitle',   textKey: 'onboarding.featZonesText' },
 ];
 
 export default function WelcomeScreen() {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
-  const { profile } = useProfile();
-  const firstName = profile?.name?.split(' ')[0];
+
+  // "QuéFalta" se resalta en el azul de marca (fijo, no sigue al accent elegido).
+  const [titleBefore, titleAfter] = t('onboarding.welcomeTitle').split('QuéFalta');
 
   return (
     <OnboardingLayout
-      title={firstName ? t('onboarding.welcomeTitleNamed', { name: firstName }) : t('onboarding.welcomeTitle')}
+      title={
+        <>
+          {titleBefore}
+          <Text style={{ color: colors.blue }}>QuéFalta</Text>
+          {titleAfter}
+        </>
+      }
       subtitle={t('onboarding.welcomeSubtitle')}
+      onBack={() => navigation.goBack()}
       continueLabel={t('onboarding.welcomeCta')}
       onContinue={() => {
         Haptics.selectionAsync();
-        navigation.navigate('Username');
+        navigation.navigate('Name');
       }}
     >
       <View style={styles.list}>

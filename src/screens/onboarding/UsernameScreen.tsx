@@ -79,8 +79,8 @@ export default function UsernameScreen() {
 
   return (
     <OnboardingLayout
-      step={1}
-      totalSteps={5}
+      step={2}
+      totalSteps={6}
       eyebrow={t('onboarding.required')}
       title={t('onboarding.usernameTitle')}
       subtitle={t('onboarding.usernameSubtitle')}

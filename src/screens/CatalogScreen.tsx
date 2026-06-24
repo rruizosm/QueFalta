@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
@@ -12,6 +12,8 @@ import {
   ActivityIndicator,
   Modal,
   Pressable,
+  Animated,
+  Easing,
   type LayoutRectangle,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -105,9 +107,8 @@ export default function CatalogScreen() {
   // Alto del primer ítem del menú (para el "spotlight" del tutorial sobre él).
   const [firstStoreItemH, setFirstStoreItemH] = useState(0);
 
-  // Mantén al tour informado de si el desplegable está abierto: así oscurece
-  // todo (selector incluido) y deja que el Modal ilumine solo el primer súper.
-  useEffect(() => { tourSetStoreMenuOpen(storeMenuOpen); }, [storeMenuOpen, tourSetStoreMenuOpen]);
+  // Resetea el aviso del tour al desmontar. (El efecto que informa de apertura
+  // + nº de supers vive más abajo, tras calcular `visibleStores`.)
   useEffect(() => () => tourSetStoreMenuOpen(false), [tourSetStoreMenuOpen]);
 
   // Solo se muestran los supermercados elegidos en el perfil. Sin preferencia
@@ -116,6 +117,41 @@ export default function CatalogScreen() {
   const enabledStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
   const visibleStores = CATALOG_STORES.filter((s) => enabledStores.includes(s.key));
   const activeStore = CATALOG_STORES.find((s) => s.key === store) ?? visibleStores[0];
+
+  // Informa al tour de si el desplegable está abierto y de cuántos supers hay
+  // (para que el paso 3 diga "el segundo" o, con uno solo, "el primero").
+  useEffect(() => {
+    tourSetStoreMenuOpen(storeMenuOpen, visibleStores.length);
+  }, [storeMenuOpen, visibleStores.length, tourSetStoreMenuOpen]);
+
+  // Al activarse el paso 3, re-mide el selector en pantalla (el ancla pudo
+  // medirse tarde/obsoleta, o el selector se acaba de forzar visible). Sin esto,
+  // la fase 1 no tendría objetivo y no saldrían anillo/chevron.
+  useEffect(() => {
+    if (tourStepId === 'store') storeAnchor.onLayout();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tourStepId]);
+
+  // Súper a iluminar en el desplegable durante el paso 3: el 2º (para enseñar a
+  // cambiar) o el 1º si el usuario solo tiene uno.
+  const tourTargetIdx = visibleStores.length >= 2 ? 1 : 0;
+
+  // Anillo que pulsa sobre el súper objetivo (mismo lenguaje que el resto del
+  // tour, pero SIN chevron: el menú es un Modal). "Respira" (opacidad ida/vuelta,
+  // siempre visible). Solo corre con el menú abierto durante el paso 3.
+  const menuPulse = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (!(tourStepId === 'store' && storeMenuOpen)) return;
+    menuPulse.setValue(0);
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(menuPulse, { toValue: 1, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(menuPulse, { toValue: 0, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [tourStepId, storeMenuOpen, menuPulse]);
 
   // Si la tienda activa deja de estar permitida, salta a la primera visible.
   useEffect(() => {
@@ -535,10 +571,12 @@ export default function CatalogScreen() {
       </View>
 
       {/* Selector de tienda colapsado: muestra solo la activa y, al tocar,
-          despliega el resto en un menú anclado (oculto si solo hay un super). */}
-      {visibleStores.length > 1 && (
+          despliega el resto en un menú anclado. Normalmente oculto con un solo
+          súper, pero se fuerza durante el paso 3 del tour para poder guiarlo. */}
+      {(visibleStores.length > 1 || tourStepId === 'store') && (
         <View
           ref={storeAnchor.ref}
+          collapsable={false}
           style={styles.selectorWrap}
           onLayout={(e) => { setSelectorBox(e.nativeEvent.layout); storeAnchor.onLayout(); }}
         >
@@ -830,10 +868,25 @@ export default function CatalogScreen() {
                   </TouchableOpacity>
                 );
               })}
-              {/* Tutorial: atenúa los súpers por debajo del primero para que el
-                  primero quede "iluminado" (mismo lenguaje que el resto del tour). */}
+              {/* Tutorial (paso 3): atenúa todos los súpers menos el objetivo
+                  (el 2º para enseñar a cambiar; el 1º si solo hay uno) y lo
+                  enmarca. Asume ítems de alto uniforme (= firstStoreItemH). */}
               {tourStepId === 'store' && firstStoreItemH > 0 && (
-                <View pointerEvents="none" style={[styles.menuTourDim, { top: firstStoreItemH }]} />
+                <>
+                  {tourTargetIdx > 0 && (
+                    <View pointerEvents="none" style={[styles.menuTourDim, { top: 0, height: firstStoreItemH * tourTargetIdx }]} />
+                  )}
+                  <View pointerEvents="none" style={[styles.menuTourDim, { top: firstStoreItemH * (tourTargetIdx + 1), bottom: 0 }]} />
+                  {/* Anillo que PULSA sobre el objetivo (opacidad ida/vuelta:
+                      siempre visible, claramente "respira"). */}
+                  <Animated.View
+                    pointerEvents="none"
+                    style={[styles.menuTourRing, {
+                      top: firstStoreItemH * tourTargetIdx, height: firstStoreItemH,
+                      opacity: menuPulse.interpolate({ inputRange: [0, 1], outputRange: [1, 0.3] }),
+                    }]}
+                  />
+                </>
               )}
             </View>
           )}
@@ -908,8 +961,10 @@ const themedStyles = () => StyleSheet.create({
   },
   menuItemBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
   menuItemActive: { backgroundColor: colors.accentLight },
-  // Tutorial: oscurece la pantalla y atenúa los súpers bajo el primero.
-  menuTourDim: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)' },
+  // Tutorial: atenúa los súpers que NO son el objetivo (top/height o top/bottom
+  // se fijan por uso) y enmarca el objetivo.
+  menuTourDim: { position: 'absolute', left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.5)' },
+  menuTourRing: { position: 'absolute', left: 0, right: 0, borderWidth: 3, borderColor: colors.accent },
   menuItemName: { flex: 1, fontSize: 14, fontFamily: fonts.semibold, color: colors.ink },
   menuItemNameActive: { color: colors.accent },
 

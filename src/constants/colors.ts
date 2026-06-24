@@ -89,7 +89,7 @@ export const ACCENT_OPTIONS = [
 
 export type AccentKey = (typeof ACCENT_OPTIONS)[number]['key'];
 
-export const DEFAULT_ACCENT: AccentKey = 'naranja';
+export const DEFAULT_ACCENT: AccentKey = 'azul';
 
 function withAlpha(hex: string, alpha: number): string {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -98,7 +98,7 @@ function withAlpha(hex: string, alpha: number): string {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-let accent      = '#df4b2e';
+let accent      = '#2f6cb5';
 let accentLight = withAlpha(accent, 0.12);
 let accentMid   = withAlpha(accent, 0.30);
 

@@ -24,7 +24,8 @@ interface Props {
   totalSteps?: number;
   /** Etiqueta pequeña sobre el título (ej. "OBLIGATORIO" / "OPCIONAL"). */
   eyebrow?: string;
-  title: string;
+  /** String o nodo (p. ej. con un tramo resaltado en color). */
+  title: ReactNode;
   subtitle?: string;
   children?: ReactNode;
   onBack?: () => void;

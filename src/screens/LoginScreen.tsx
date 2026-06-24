@@ -1,29 +1,56 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Image,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../constants/colors';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { fonts } from '../constants/typography';
 import { useAuth } from '../context/AuthContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import HardShadow from '../components/HardShadow';
 
+const LOGO = require('../../assets/quefalta-blue.png');
+
+// Fondo de marca: mismo azul claro que el cuadrado del logo (quefalta-blue.png),
+// para que el logo se funda con la pantalla. Login es una pantalla de marca con
+// apariencia fija: todo el texto va en tinta casi negra (BRAND_INK) para que se
+// lea bien sobre el azul claro, en lugar de seguir el tema claro/oscuro.
+const LOGO_BG = '#E1EBF7';
+const BRAND_INK = '#2b2521';
+
 export default function LoginScreen() {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
-  const { signInWithGoogle } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const { signInWithGoogle, signInWithApple } = useAuth();
+  // Qué proveedor está autenticando (deshabilita ambos botones y muestra spinner).
+  const [busy, setBusy] = useState<null | 'google' | 'apple'>(null);
+  // Sign in with Apple solo existe en iOS 13+ y en build real (no Expo Go).
+  const [appleAvailable, setAppleAvailable] = useState(false);
+
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    AppleAuthentication.isAvailableAsync()
+      .then(setAppleAvailable)
+      .catch(() => setAppleAvailable(false));
+  }, []);
 
   const handleGoogleSignIn = async () => {
-    setLoading(true);
+    setBusy('google');
     await signInWithGoogle();
-    setLoading(false);
+    setBusy(null);
+  };
+
+  const handleAppleSignIn = async () => {
+    setBusy('apple');
+    await signInWithApple();
+    setBusy(null);
   };
 
   return (
@@ -32,25 +59,46 @@ export default function LoginScreen() {
       {/* Hero */}
       <View style={styles.hero}>
         <HardShadow style={styles.iconBox}>
-          <Ionicons name="cart-outline" size={46} color={colors.white} />
+          <Image source={LOGO} resizeMode="cover" style={styles.logo} />
         </HardShadow>
 
         <View style={styles.heroText}>
-          <Text style={styles.title}>LaCompra</Text>
+          <Text style={styles.title}>QuéFalta</Text>
           <Text style={styles.subtitle}>{t('login.subtitle')}</Text>
         </View>
       </View>
 
       {/* Actions */}
       <View style={styles.actions}>
+        {/* Apple va primero: Apple exige que su botón sea al menos tan prominente
+            como el resto de opciones de login (App Store Review 4.8). */}
+        {appleAvailable && (
+          <TouchableOpacity
+            onPress={handleAppleSignIn}
+            disabled={busy !== null}
+            activeOpacity={0.85}
+          >
+            <HardShadow style={busy !== null ? { ...styles.appleButton, ...styles.buttonDisabled } : styles.appleButton}>
+              {busy === 'apple' ? (
+                <ActivityIndicator color="#ffffff" size="small" />
+              ) : (
+                <>
+                  <Ionicons name="logo-apple" size={18} color="#ffffff" />
+                  <Text style={styles.appleButtonText}>{t('login.continueApple')}</Text>
+                </>
+              )}
+            </HardShadow>
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity
           onPress={handleGoogleSignIn}
-          disabled={loading}
+          disabled={busy !== null}
           activeOpacity={0.85}
         >
-          <HardShadow style={loading ? { ...styles.googleButton, ...styles.googleButtonDisabled } : styles.googleButton}>
-            {loading ? (
-              <ActivityIndicator color={colors.ink} size="small" />
+          <HardShadow style={busy !== null ? { ...styles.googleButton, ...styles.buttonDisabled } : styles.googleButton}>
+            {busy === 'google' ? (
+              <ActivityIndicator color={BRAND_INK} size="small" />
             ) : (
               <>
                 <Text style={styles.googleIcon}>G</Text>
@@ -70,7 +118,7 @@ export default function LoginScreen() {
 const themedStyles = () => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.paper,
+    backgroundColor: LOGO_BG,
     paddingHorizontal: 26,
     paddingTop: 30,
     paddingBottom: 36,
@@ -85,11 +133,15 @@ const themedStyles = () => StyleSheet.create({
     gap: 24,
   },
   iconBox: {
-    width: 96,
-    height: 96,
-    backgroundColor: colors.accent,
+    width: 112,
+    height: 112,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  logo: {
+    width: '100%',
+    height: '100%',
   },
   heroText: {
     alignItems: 'center',
@@ -98,16 +150,16 @@ const themedStyles = () => StyleSheet.create({
   title: {
     fontSize: 38,
     fontFamily: fonts.bold,
-    color: colors.ink,
+    color: BRAND_INK,
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 15,
     fontFamily: fonts.medium,
-    color: colors.inkSoft,
+    color: BRAND_INK,
     textAlign: 'center',
     lineHeight: 22,
-    maxWidth: 240,
+    maxWidth: 260,
   },
 
   // ── Actions ───────────────────────────────────────────────────
@@ -122,8 +174,9 @@ const themedStyles = () => StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 24,
     gap: 12,
+    backgroundColor: '#ffffff', // tarjeta blanca fija sobre el fondo de marca
   },
-  googleButtonDisabled: { opacity: 0.6 },
+  buttonDisabled: { opacity: 0.6 },
   googleIcon: {
     fontSize: 18,
     fontFamily: fonts.bold,
@@ -132,12 +185,26 @@ const themedStyles = () => StyleSheet.create({
   googleButtonText: {
     fontSize: 15,
     fontFamily: fonts.bold,
-    color: colors.ink,
+    color: BRAND_INK,
+  },
+  appleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    gap: 10,
+    backgroundColor: '#000000', // negro Apple sobre el fondo de marca
+  },
+  appleButtonText: {
+    fontSize: 15,
+    fontFamily: fonts.bold,
+    color: '#ffffff',
   },
   legal: {
     fontSize: 11,
     fontFamily: fonts.medium,
-    color: colors.inkFaint,
+    color: BRAND_INK,
     textAlign: 'center',
     lineHeight: 17,
   },

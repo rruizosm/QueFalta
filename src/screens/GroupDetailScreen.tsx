@@ -28,6 +28,7 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import MemberAvatars from '../components/MemberAvatars';
 import ProgressBar from '../components/ProgressBar';
+import ProductImage from '../components/ProductImage';
 import ProductDetailModal from '../components/ProductDetailModal';
 import { STORE_META, groupByStore } from '../constants/stores';
 import { groupByZone, sortZoneItems } from '../constants/zones';
@@ -101,9 +102,6 @@ export default function GroupDetailScreen() {
         key={item.ids[0]}
         style={[styles.listItem, item.inCart && styles.listItemDone]}
       >
-        <View style={[styles.checkbox, item.inCart && styles.checkboxChecked]}>
-          {item.inCart && <Ionicons name="checkmark" size={12} color={colors.white} />}
-        </View>
         {(item.imageUrl || item.categoryEmoji) ? (
           <TouchableOpacity
             activeOpacity={0.7}
@@ -111,10 +109,9 @@ export default function GroupDetailScreen() {
             onPress={() => item.mercadonaProductId && setDetailProductId(item.mercadonaProductId)}
           >
             {item.imageUrl ? (
-              <Image
-                source={{ uri: item.imageUrl }}
+              <ProductImage
+                uri={item.imageUrl}
                 style={big ? styles.listItemThumbBig : styles.listItemThumb}
-                resizeMode="contain"
               />
             ) : (
               <View style={big ? styles.listItemThumbBig : styles.listItemThumb}>
@@ -411,12 +408,6 @@ const themedStyles = () => StyleSheet.create({
     gap: 10,
   },
   listItemDone: { opacity: 0.55 },
-  checkbox: {
-    width: 20, height: 20,
-    borderWidth: 1.5, borderColor: colors.inkFaint,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  checkboxChecked: { backgroundColor: colors.accent, borderColor: colors.accent },
   listItemThumb: {
     width: 34, height: 34, borderRadius: 5,
     backgroundColor: colors.surfaceAlt,

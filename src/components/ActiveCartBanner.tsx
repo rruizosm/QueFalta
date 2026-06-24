@@ -11,6 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -39,6 +40,7 @@ interface Props {
  */
 export default function ActiveCartBanner({ topInset = false, compact = false }: Props) {
   const styles = useThemedStyles(themedStyles);
+  const insets = useSafeAreaInsets();
   const { activeCart, activateCart, deactivateCart, isActive, busy } = useCart();
   const toast = useToast();
   const { t } = useTranslation();
@@ -147,7 +149,7 @@ export default function ActiveCartBanner({ topInset = false, compact = false }: 
       <Modal visible={pickerOpen} transparent animationType="slide" onRequestClose={closePicker}>
         <View style={styles.root}>
           <Pressable style={StyleSheet.absoluteFill} onPress={closePicker} />
-          <View style={styles.sheet}>
+          <View style={[styles.sheet, { paddingBottom: Platform.OS === 'ios' ? 30 : Math.max(insets.bottom, 20) }]}>
             <View style={styles.header}>
               <View style={styles.iconBox}>
                 <Ionicons name="cart" size={22} color={colors.accent} />
@@ -225,7 +227,7 @@ const themedStyles = () => StyleSheet.create({
   sheet: {
     backgroundColor: colors.paper,
     borderTopWidth: 1, borderTopColor: colors.ink,
-    paddingBottom: Platform.OS === 'ios' ? 30 : 20,
+    // paddingBottom inline: iOS 30 (como antes); Android, el inset del sistema.
     maxHeight: '75%',
   },
   header: {

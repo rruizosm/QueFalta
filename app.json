@@ -6,11 +6,12 @@
     "sdkVersion": "54.0.0",
     "scheme": "quefalta",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/quefalta-blue.png",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.quefalta.app",
+      "usesAppleSignIn": true,
       "associatedDomains": [
         "applinks:quefalta.es"
       ],
@@ -20,16 +21,15 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#E1EBF7",
         "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/icon.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.quefalta.app"
     },
     "web": {
-      "favicon": "./assets/icon.png"
+      "favicon": "./assets/quefalta-blue.png"
     },
     "owner": "rruizosma",
     "extra": {
@@ -44,7 +44,14 @@
       "url": "https://u.expo.dev/cdae19f5-47a5-4a4c-9f94-2befcada0885"
     },
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-apple-authentication",
+      [
+        "expo-notifications",
+        {
+          "color": "#2f6cb5"
+        }
+      ]
     ]
   }
 }

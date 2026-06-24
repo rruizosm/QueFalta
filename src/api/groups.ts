@@ -1,11 +1,12 @@
 import { supabase } from '../lib/supabase';
+import { notifyGroupInvite } from './push';
 import type { GroupMember } from '../types';
 
 /** Base pública de la web (Universal Links). Ver quefalta-web/. */
 const WEB_BASE_URL = 'https://quefalta.es';
 
 /** Columnas de perfil que necesita cualquier avatar de miembro. */
-const MEMBER_COLS = 'id, name, initials, color, avatar_url';
+const MEMBER_COLS = 'id, name, initials, color, avatar_url, verified';
 
 /** Fila cruda de profiles → GroupMember (avatar_url → avatarUrl). */
 const toMember = (p: any): GroupMember => ({
@@ -14,6 +15,7 @@ const toMember = (p: any): GroupMember => ({
   initials: p.initials,
   color: p.color,
   avatarUrl: p.avatar_url ?? null,
+  verified: p.verified ?? false,
 });
 
 export interface GroupSummary {
@@ -155,6 +157,7 @@ export interface SearchedUser {
   initials: string;
   color: string;
   avatarUrl: string | null;
+  verified: boolean;
 }
 
 /** Searches discoverable users by @username prefix (for adding to a group). */
@@ -164,7 +167,7 @@ export async function searchUsersByUsername(query: string): Promise<SearchedUser
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, name, username, initials, color, avatar_url')
+    .select('id, name, username, initials, color, avatar_url, verified')
     .eq('discoverable', true)
     .ilike('username', `${q}%`)
     .limit(15);
@@ -177,6 +180,7 @@ export async function searchUsersByUsername(query: string): Promise<SearchedUser
     initials: p.initials,
     color: p.color,
     avatarUrl: p.avatar_url ?? null,
+    verified: p.verified ?? false,
   }));
 }
 
@@ -194,6 +198,9 @@ export async function addMemberToGroup(groupId: string, userId: string): Promise
     .from('group_members')
     .insert({ group_id: groupId, user_id: userId });
   if (error) throw error;
+
+  // Avisa al nuevo miembro ("X te añadió al grupo Y").
+  notifyGroupInvite(groupId, userId);
 }
 
 /** Just the member profiles of a group (lighter than fetchGroupDetail). */

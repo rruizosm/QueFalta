@@ -1,10 +1,15 @@
 # Notificaciones — Estado y hoja de ruta
 
-> Última actualización: 2026-06-03
-> SDK actual: **Expo SDK 54** · Probando en **Expo Go**
+> Última actualización: 2026-06-23
+> SDK actual: **Expo SDK 54** · Push real requiere **dev/prod build** (no Expo Go)
 
 Documento de seguimiento para las notificaciones de la app. Resume qué está
 hecho, qué funciona hoy y qué falta para tener notificaciones push completas.
+
+> **Fase 2 (push remotas) implementada en código (2026-06-23).** Falta solo
+> ejecutar los pasos manuales de despliegue (ver §6). Eventos elegidos:
+> producto añadido al carrito compartido · solicitud de amistad · invitación a
+> un grupo. (El "carrito activado por otro miembro" se descartó.)
 
 ---
 
@@ -52,90 +57,118 @@ expo-notifications ~0.32.17   (instalada con: npx expo install expo-notification
 
 ---
 
-## 3. FASE 2 — PENDIENTE ⏳ (push remotas)
+## 3. FASE 2 — IMPLEMENTADA ✅ (push remotas) · falta DESPLEGAR
 
-Esto es lo necesario para que lleguen avisos aunque la app esté cerrada.
-**Requiere development build** (no se puede probar en Expo Go).
+Avisos que llegan aunque la app esté cerrada. **Requiere dev/prod build** (en
+Expo Go los helpers de push son no-op; las locales siguen funcionando).
 
-### Requisitos previos (infraestructura)
-1. **Development build** con EAS:
-   - `npm install -g eas-cli` (si no está)
-   - `npx expo install expo-dev-client`
-   - `eas build --profile development --platform android`
-   - (iOS necesita **cuenta Apple Developer**, 99 $/año, para certificados APNs)
-2. Añadir el plugin de notificaciones en **`app.json`**:
-   ```json
-   {
-     "expo": {
-       "plugins": [
-         ["expo-notifications", {
-           "icon": "./assets/notification-icon.png",
-           "color": "#FF6B35"
-         }]
-       ]
-     }
-   }
-   ```
+### Arquitectura elegida
+El cliente **invoca una Edge Function** tras cada acción (mismo patrón que
+`apple-link`/`delete-account`), enviando **solo IDs**. La función autentica con
+el JWT del que llama, **deriva el texto y los destinatarios en servidor** (no se
+puede falsear ni spamear) y envía por la **Expo Push API**. Lee `push_tokens`
+con la service-role key (salta RLS). No usa triggers de BD ni webhooks del
+dashboard → todo queda en código y SQL versionado.
 
-### Pasos de implementación
-1. **Obtener el push token** en `src/lib/notifications.ts`:
-   - Tras conceder permiso, llamar a `Notifications.getExpoPushTokenAsync({ projectId })`.
-   - El `projectId` se saca de `Constants.expoConfig.extra.eas.projectId`.
-   - En Android: llamar a `setNotificationChannelAsync` ANTES de pedir el token.
+> Si en el futuro hace falta que las push se disparen también desde fuera de la
+> app (web, escrituras externas), se puede añadir un trigger Postgres con
+> `pg_net` que llame a la MISMA función `send-push`.
 
-2. **Guardar el token en Supabase** — nueva tabla:
-   ```sql
-   CREATE TABLE push_tokens (
-     id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-     user_id     uuid REFERENCES profiles(id) ON DELETE CASCADE,
-     token       text NOT NULL,
-     platform    text,                       -- 'ios' | 'android'
-     created_at  timestamptz DEFAULT now(),
-     UNIQUE (user_id, token)
-   );
-   ALTER TABLE push_tokens ENABLE ROW LEVEL SECURITY;
-   CREATE POLICY "own tokens" ON push_tokens
-     FOR ALL TO authenticated
-     USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-   ```
-   - Un usuario puede tener varios dispositivos → varios tokens.
-   - Borrar el token al cerrar sesión.
+### Archivos (ya escritos)
+- **`app.json`** — plugin `["expo-notifications", { "color": "#2f6cb5" }]`
+  (sin `icon` propio: usa el de la app; añadir un `notification-icon.png`
+  96×96 blanco/transparente es opcional). ⚠️ Cambiar el plugin obliga a un
+  **build nuevo**.
+- **`supabase/migrations/push_tokens.sql`** — tabla `push_tokens`
+  (`unique(token)`, RLS por dueño + policy de "reclamar" para cambio de cuenta
+  en el mismo dispositivo) **+ tabla `push_throttle`** (cooldown anti-saturación,
+  solo la gestiona la función; RLS sin policies).
+- **`src/lib/notifications.ts`** — `registerForPushNotificationsAsync(userId)`
+  (pide el Expo push token y lo guarda; gated por permiso + preferencia ON;
+  no-op en Expo Go/web), `unregisterPushNotificationsAsync(userId)` (logout),
+  y helpers de tap: `addNotificationResponseListener` /
+  `getInitialNotificationData` + tipo `PushData`.
+- **`supabase/functions/send-push/index.ts`** — Edge Function con los 3 eventos.
+- **`src/api/push.ts`** — `notifyCartItemAdded` / `notifyFriendRequest` /
+  `notifyGroupInvite` (fire-and-forget; nunca lanzan).
+- Cableado de disparo:
+  - `src/api/lists.ts` → `addItemsToList` (carrito; no-op si la lista es personal).
+  - `src/api/friends.ts` → `sendFriendRequest`.
+  - `src/api/groups.ts` → `addMemberToGroup` (no en `joinGroup`/`createGroup`).
+- `src/context/AuthContext.tsx` — registra el token al haber sesión y lo borra
+  en `signOut` (antes de cerrar, por la RLS).
+- `src/navigation/index.tsx` — tap en la push → `Groups→GroupDetail` (carrito /
+  invitación) o `Home→Friends` (solicitud).
+- `src/screens/ProfileScreen.tsx` — el toggle registra/borra el token al instante.
 
-3. **Edge Function de envío** (Supabase) que llame a la **Expo Push API**:
-   - Endpoint: `POST https://exp.host/--/api/v2/push/send`
-   - Body: `{ "to": "<ExpoPushToken>", "title": "...", "body": "...", "data": {...} }`
-   - Recomendado usar Expo Push API (abstrae FCM/APNs con un solo endpoint).
+### Eventos y mensajes
+| Evento | Disparo | Destinatarios | Texto | Cooldown |
+|--------|---------|---------------|-------|----------|
+| `cart_item` | añadir al carrito de grupo | resto de miembros | "Ana añadió Leche (y N más)" | **5 min por grupo** |
+| `friend_request` | enviar solicitud | el destinatario | "Ana te ha enviado una solicitud de amistad" | — |
+| `group_invite` | añadir a un miembro | el nuevo miembro | "Ana te añadió al grupo Casa" | — |
 
-4. **Disparar la función ante eventos reales** (elegir cuáles avisar):
-   - Item añadido a un carrito compartido.
-   - Carrito activado por otro miembro.
-   - Invitación a un grupo.
-   - Vía trigger de base de datos o webhook → Edge Function.
-
-5. **Manejar la recepción y el tap** en la app:
-   - `Notifications.addNotificationResponseReceivedListener` → deep-link a la
-     pantalla correcta (grupo / carrito) usando el campo `data`.
+> **Anti-saturación (carrito):** tras enviar un aviso de carrito, ese grupo entra
+> en cooldown de 5 min (clave `cart:<group_id>` en `push_throttle`). Mientras dure,
+> añadir más productos NO genera más notificaciones (lo añada quien lo añada);
+> pasados los 5 min, el siguiente añadido vuelve a avisar. El cooldown arranca
+> solo cuando se envía de verdad (si no hay destinatarios con token, no cuenta).
+> Cambiar `THROTTLE_MS` o la clave (`cart:` → por actor) en `send-push/index.ts`.
 
 ---
 
 ## 4. Decisiones y notas
 
 - La preferencia del toggle se guarda **local (AsyncStorage)**, no en Supabase.
-  Si en el futuro quieres que la preferencia se sincronice entre dispositivos,
-  mover a una columna `notifications_enabled` en la tabla `profiles`.
+  El push token **solo se registra si la preferencia está ON** → apagar el
+  switch borra el token de este dispositivo y dejan de llegar push.
 - El permiso de notificaciones es **por dispositivo** (lo gestiona el OS), por eso
   el switch comprueba el permiso real además de la preferencia guardada.
 - Para push se eligió **Expo Push API** sobre FCM/APNs directo por simplicidad
   multiplataforma.
+- **El cliente manda solo IDs**; el contenido lo arma la función → un cliente
+  manipulado no puede inventar el texto ni enviar a quien no debe (se valida la
+  pertenencia al grupo / la existencia de la solicitud).
+- `push_tokens.unique(token)`: si el mismo dispositivo cambia de cuenta, la fila
+  se reasigna (upsert on conflict). La policy UPDATE permite "reclamar" un token
+  siempre que se deje a nombre propio.
 
 ---
 
-## 5. Checklist para "tener push funcionando"
+## 5. Decisiones de envío
+- **iOS**: funciona con el build EAS + credenciales APNs (ya tienes cuenta Apple
+  Developer; EAS gestiona la APNs key al hacer el build).
+- **Android**: la Expo Push API necesita **credenciales FCM** subidas a Expo
+  (`eas credentials` → Android → FCM, o `google-services.json`). Sin eso,
+  `getExpoPushTokenAsync` falla en Android → no hay token → no llegan push ahí
+  (se traga el error; la app sigue). iOS no se ve afectado.
 
-- [ ] Crear cuenta Apple Developer (solo para iOS)
-- [ ] `expo-dev-client` + primer `eas build` (Android sirve para empezar)
-- [ ] Plugin `expo-notifications` en `app.json`
-- [ ] Obtener y guardar push token en tabla `push_tokens`
-- [ ] Edge Function que llama a Expo Push API
-- [ ] Triggers/eventos que disparan los envíos
-- [ ] Listener de tap → deep-link a la pantalla
+---
+
+## 6. Pasos manuales pendientes (para activar las push)
+
+Todo el código está escrito y el typecheck pasa. Falta SOLO desplegar:
+
+1. **SQL** — ejecutar `supabase/migrations/push_tokens.sql` en Supabase → SQL Editor.
+2. **Edge Function** — `supabase functions deploy send-push` (usa los secrets
+   que Supabase inyecta por defecto: `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
+   `SUPABASE_SERVICE_ROLE_KEY` → nada extra que configurar).
+3. **Build nuevo** — el plugin `expo-notifications` cambió `app.json`, así que
+   hace falta un build EAS nuevo (no basta OTA):
+   `eas build --profile production --platform ios` (o development para probar).
+4. **(Android) credenciales FCM** — solo si quieres push en Android (ver §5).
+5. **Probar** en el build: Perfil → activar Notificaciones (acepta permiso) →
+   debe crearse una fila en `push_tokens`. Con dos cuentas/dispositivos: añadir
+   un producto a un carrito compartido / enviar solicitud / añadir a un grupo →
+   llega la push y, al tocarla, abre la pantalla correcta.
+
+### Checklist
+- [x] Plugin `expo-notifications` en `app.json`
+- [x] Captura/guardado del push token (`push_tokens` + register/unregister)
+- [x] Edge Function `send-push` (Expo Push API, 3 eventos, JWT)
+- [x] Disparo de los 3 eventos desde la app
+- [x] Listener de tap → deep-link a la pantalla
+- [ ] Ejecutar `push_tokens.sql` en Supabase
+- [ ] `supabase functions deploy send-push`
+- [ ] Build EAS nuevo (por el plugin)
+- [ ] (Opcional Android) credenciales FCM en Expo

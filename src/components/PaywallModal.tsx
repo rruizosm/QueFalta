@@ -12,6 +12,7 @@ import {
   ScrollView, StyleSheet, Platform, Linking, ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
@@ -49,6 +50,7 @@ interface Props {
 
 export default function PaywallModal({ visible, onClose, subtitle }: Props) {
   const styles = useThemedStyles(themedStyles);
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const toast = useToast();
   const { refresh } = useProfile();
@@ -116,7 +118,7 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.root}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, { paddingBottom: Platform.OS === 'ios' ? 30 : Math.max(insets.bottom, 20) }]}>
           <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
             {/* Cabecera */}
             <View style={styles.header}>
@@ -223,7 +225,7 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.paper,
     borderTopWidth: 1, borderTopColor: colors.ink,
     maxHeight: '88%',
-    paddingBottom: Platform.OS === 'ios' ? 30 : 20,
+    // paddingBottom inline: iOS 30 (como antes); Android, el inset del sistema.
   },
 
   header: {

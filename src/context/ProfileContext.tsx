@@ -5,7 +5,8 @@
  * so changes show up immediately everywhere without a refetch.
  */
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { fetchProfile, type UserProfile } from '../api/profile';
+import { fetchProfile, updateProfile, type UserProfile } from '../api/profile';
+import { initialsFromName, takePendingProfileName } from '../lib/pendingProfileName';
 import { useAuth } from './AuthContext';
 
 interface ProfileContextValue {
@@ -39,7 +40,18 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     if (!userId) return;
     try {
       const p = await fetchProfile(userId);
-      setProfile(p);
+
+      // Nombre que Apple entregó en el primer login (buzón de pendingProfileName).
+      // Solo existe justo tras un alta con Apple, cuando el perfil aún tiene el
+      // nombre por defecto del trigger → lo persistimos y lo reflejamos ya.
+      const pendingName = takePendingProfileName();
+      if (pendingName && pendingName !== p.name) {
+        const initials = initialsFromName(pendingName);
+        updateProfile(userId, { name: pendingName, initials }).catch(() => {});
+        setProfile({ ...p, name: pendingName, initials });
+      } else {
+        setProfile(p);
+      }
     } catch {
       // keep whatever we had cached
     } finally {

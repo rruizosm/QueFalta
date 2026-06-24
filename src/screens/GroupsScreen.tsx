@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, type ReactNode } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
@@ -36,13 +36,27 @@ function EmptyCreateGroupButton({ label, onPress }: { label: string; onPress: ()
   // El ancla va en un View envolvente (patrón del resto de anclas del tour:
   // measureInWindow fiable sobre View, no sobre TouchableOpacity).
   return (
-    <View ref={anchor.ref} onLayout={anchor.onLayout} style={{ marginTop: 8 }}>
+    <View ref={anchor.ref} collapsable={false} onLayout={anchor.onLayout} style={{ marginTop: 8 }}>
       <TouchableOpacity onPress={onPress}>
         <HardShadow style={{ backgroundColor: colors.accent, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 16, paddingVertical: 11 }}>
           <Ionicons name="add" size={18} color={colors.white} />
           <Text style={{ color: colors.white, fontFamily: fonts.bold, fontSize: 13 }}>{label}</Text>
         </HardShadow>
       </TouchableOpacity>
+    </View>
+  );
+}
+
+// Botón "Activar carrito" del 1er grupo CON el ancla del tour (paso 1). MISMO
+// motivo que arriba: el hook debe vivir DENTRO de un componente que se monte/
+// desmonte con el botón, para que `clearOnUnmount` limpie el foco al borrar el
+// grupo. Si el ancla se declara a nivel de pantalla, GroupsScreen no se desmonta
+// (sigue en el tab) → el rect queda fantasma y el tour resalta un hueco vacío.
+function ActivateCartAnchor({ children }: { children: ReactNode }) {
+  const anchor = useTourAnchor('activateCart', { clearOnUnmount: true });
+  return (
+    <View ref={anchor.ref} collapsable={false} onLayout={anchor.onLayout}>
+      {children}
     </View>
   );
 }
@@ -134,8 +148,32 @@ export default function GroupsScreen() {
     }
   };
 
-  const renderGroup = ({ item }: { item: GroupSummary }) => {
+  const renderGroup = ({ item, index }: { item: GroupSummary; index: number }) => {
     const active = isActive(item.id);
+    // Activate button — el del PRIMER grupo lleva el ancla del tour (paso 1).
+    const activateBtn = (
+      <TouchableOpacity
+        style={[styles.activateBtn, active && styles.activateBtnActive]}
+        onPress={() => handleToggleActive(item)}
+        disabled={busy && activatingId === item.id}
+        activeOpacity={0.85}
+      >
+        {busy && activatingId === item.id ? (
+          <ActivityIndicator size="small" color={active ? colors.white : colors.accent} />
+        ) : (
+          <>
+            <Ionicons
+              name={active ? 'checkmark' : 'cart-outline'}
+              size={15}
+              color={active ? colors.white : colors.accent}
+            />
+            <Text style={[styles.activateBtnText, active && styles.activateBtnTextActive]}>
+              {active ? t('group.cartActive') : t('group.activate')}
+            </Text>
+          </>
+        )}
+      </TouchableOpacity>
+    );
     return (
       <TouchableOpacity
         onPress={() => navigation.navigate('GroupDetail', { groupId: item.id })}
@@ -163,28 +201,9 @@ export default function GroupsScreen() {
             {item.members.length} {item.members.length === 1 ? t('group.member') : t('group.members')}
           </Text>
 
-          {/* Activate button */}
-          <TouchableOpacity
-            style={[styles.activateBtn, active && styles.activateBtnActive]}
-            onPress={() => handleToggleActive(item)}
-            disabled={busy && activatingId === item.id}
-            activeOpacity={0.85}
-          >
-            {busy && activatingId === item.id ? (
-              <ActivityIndicator size="small" color={active ? colors.white : colors.accent} />
-            ) : (
-              <>
-                <Ionicons
-                  name={active ? 'checkmark' : 'cart-outline'}
-                  size={15}
-                  color={active ? colors.white : colors.accent}
-                />
-                <Text style={[styles.activateBtnText, active && styles.activateBtnTextActive]}>
-                  {active ? t('group.cartActive') : t('group.activate')}
-                </Text>
-              </>
-            )}
-          </TouchableOpacity>
+          {/* Activate button: el del 1er grupo va envuelto en el ancla del tour
+              (componente propio → clearOnUnmount al borrar el grupo). */}
+          {index === 0 ? <ActivateCartAnchor>{activateBtn}</ActivateCartAnchor> : activateBtn}
         </HardShadow>
       </TouchableOpacity>
     );
@@ -217,7 +236,9 @@ export default function GroupsScreen() {
           </TouchableOpacity>
         </View>
       ) : groups.length === 0 ? (
-        <View style={styles.centerBox}>
+        // paddingBottom desplaza el bloque (icono + textos + "Crear grupo") un
+        // poco hacia arriba respecto al centro vertical.
+        <View style={[styles.centerBox, { paddingBottom: 160 }]}>
           <Ionicons name="people-outline" size={48} color={colors.inkFaint} />
           <Text style={styles.emptyTitle}>{t('group.emptyTitle')}</Text>
           <Text style={styles.emptyText}>{t('group.emptyText')}</Text>

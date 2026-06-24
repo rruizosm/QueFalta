@@ -18,7 +18,12 @@ import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 
-const LOGO = require('../../assets/quefalta-logo.png');
+const LOGO = require('../../assets/quefalta-logo-blue.png');
+
+// Pantalla de marca con apariencia FIJA (igual que LoginScreen): fondo azul claro
+// del logo y texto en tinta casi negra, para que se lea bien en claro y oscuro.
+const LOGO_BG = '#E1EBF7';
+const BRAND_INK = '#2b2521';
 
 export default function BootLoader() {
   const styles = useThemedStyles(themedStyles);
@@ -67,7 +72,7 @@ export default function BootLoader() {
 
   return (
     <View style={styles.container} onLayout={hideNativeSplash}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle="dark-content" backgroundColor={LOGO_BG} />
 
       <Animated.View style={[styles.content, { opacity: enter, transform: [{ translateY }] }]}>
         <Animated.Image
@@ -104,7 +109,7 @@ function Dot({ pulse, delay, color }: { pulse: Animated.Value; delay: number; co
 const themedStyles = () => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.paper,
+    backgroundColor: LOGO_BG,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -119,7 +124,7 @@ const themedStyles = () => StyleSheet.create({
   brand: {
     fontSize: 30,
     fontFamily: fonts.bold,
-    color: colors.ink,
+    color: BRAND_INK,
     letterSpacing: -0.5,
   },
   dots: {

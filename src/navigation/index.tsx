@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
-import { View } from 'react-native';
+import { View, Platform } from 'react-native';
 import {
   NavigationContainer, createNavigationContainerRef,
   DefaultTheme, DarkTheme, type Theme,
@@ -9,6 +9,7 @@ import {
 } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Linking from 'expo-linking';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
@@ -26,6 +27,11 @@ import { useTranslation } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
 import { GuidedTourProvider, useGuidedTour } from '../context/GuidedTourContext';
 import { joinGroup } from '../api/groups';
+import {
+  addNotificationResponseListener,
+  getInitialNotificationData,
+  type PushData,
+} from '../lib/notifications';
 
 import HomeScreen       from '../screens/HomeScreen';
 import FavoritesScreen  from '../screens/FavoritesScreen';
@@ -60,6 +66,10 @@ const CatalogStack = createNativeStackNavigator<CatalogStackParamList>();
 const GroupsStack  = createNativeStackNavigator<GroupsStackParamList>();
 
 export const navigationRef = createNavigationContainerRef<RootTabParamList>();
+
+/** Tiempo mínimo que se ve el BootLoader (logo + animación de carga) al aparecer
+ *  un usuario: arranque con sesión cacheada y, sobre todo, inicio de sesión. */
+const BOOT_MIN_MS = 2000;
 
 /** Barra de pestañas normal envuelta en un View que se mide a sí mismo: registra
  *  su rect real (ancla 'tabBar') para que el resaltado del tutorial encaje con la
@@ -162,15 +172,26 @@ export default function Navigation() {
   const { show: showToast } = useToast();
   const { profile, loading: profileLoading } = useProfile();
   const userId = session?.user.id;
+  // Solo Android lo necesita: con edge-to-edge dibuja la barra bajo los botones de
+  // navegación y, al fijarle una `height` numérica, BottomTabBar deja de reservar
+  // ese hueco solo (de ahí el solape). En iOS la barra ya se veía bien con la
+  // altura fija, así que ahí no sumamos nada.
+  const insets = useSafeAreaInsets();
+  const bottomInset = Platform.OS === 'android' ? insets.bottom : 0;
 
-  // Tiempo mínimo que se ve el BootLoader: evita un parpadeo del loader cuando
-  // la sesión/perfil resuelven en pocos ms (sesión cacheada). En arranque en
-  // frío real se solapa con la carga, así que no añade espera percibida.
+  // Tiempo mínimo que se ve el BootLoader (logo + animación de carga): 2 s cada
+  // vez que aparece un usuario. Cubre el arranque en frío con sesión cacheada y,
+  // sobre todo, el inicio de sesión (antes el logo solo parpadeaba lo que tardara
+  // el fetch del perfil). El temporizador se re-arma al cambiar userId (login).
+  // Se ancla a userId, así que sin sesión (arranque sin login / logout) no aplica
+  // mínimo: se va al login al instante.
   const [minTimePassed, setMinTimePassed] = useState(false);
   useEffect(() => {
-    const id = setTimeout(() => setMinTimePassed(true), 650);
+    if (!userId) return;
+    setMinTimePassed(false);
+    const id = setTimeout(() => setMinTimePassed(true), BOOT_MIN_MS);
     return () => clearTimeout(id);
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     if (!userId) return;
@@ -199,11 +220,34 @@ export default function Navigation() {
     return () => sub.remove();
   }, [userId]);
 
+  // Tap en una notificación push → abre la pantalla correspondiente. Cubre el
+  // arranque en frío (getInitialNotificationData) y la app ya abierta (listener).
+  useEffect(() => {
+    if (!userId) return;
+
+    const handleData = (data: PushData) => {
+      if (!navigationRef.isReady()) return;
+      if ((data.type === 'cart' || data.type === 'group_invite') && data.groupId) {
+        (navigationRef.navigate as any)('Groups', {
+          screen: 'GroupDetail',
+          params: { groupId: data.groupId },
+        });
+      } else if (data.type === 'friend') {
+        (navigationRef.navigate as any)('Home', { screen: 'Friends' });
+      }
+    };
+
+    getInitialNotificationData().then((data) => { if (data) handleData(data); });
+    const sub = addNotificationResponseListener(handleData);
+    return () => sub.remove();
+  }, [userId]);
+
   // Arranque: mantén el BootLoader visible mientras se resuelve la sesión y, si
   // la hay, el primer fetch del perfil (evita parpadear el onboarding antes de
   // saber si onboarded_at existe), o hasta cumplir el tiempo mínimo. Es lo
   // primero que se renderiza en cada arranque → es quien oculta el splash nativo.
-  const booting = loading || (!!session && profileLoading) || !minTimePassed;
+  const booting =
+    loading || (!!session && (profileLoading || !minTimePassed));
   if (booting) return <BootLoader />;
 
   if (!session) {
@@ -243,9 +287,9 @@ export default function Navigation() {
             backgroundColor: colors.white,
             borderTopColor:  colors.border,
             borderTopWidth:  1,
-            paddingBottom:   10,
+            paddingBottom:   10 + bottomInset,
             paddingTop:       6,
-            height:          70,
+            height:          70 + bottomInset,
           },
           tabBarLabelStyle: {
             fontSize:    11,
@@ -255,7 +299,7 @@ export default function Navigation() {
             const iconMap: Record<string, { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }> = {
               Home:      { active: 'home',   inactive: 'home-outline' },
               Catalog:   { active: 'grid',   inactive: 'grid-outline' },
-              List:      { active: 'list',   inactive: 'list-outline' },
+              List:      { active: 'basket', inactive: 'basket-outline' },
               Groups:    { active: 'people', inactive: 'people-outline' },
             };
             const icons = iconMap[route.name];

@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { notifyCartItemAdded } from './push';
 
 export interface NewListItem {
   productName: string;
@@ -198,4 +199,8 @@ export async function addItemsToList(
 
   const { error } = await supabase.from('list_items').insert(rows);
   if (error) throw error;
+
+  // Avisa a los demás miembros del grupo (no-op si la lista es personal). El
+  // texto y los destinatarios los resuelve la Edge Function en servidor.
+  notifyCartItemAdded(listId, items[0].productName, items.length);
 }

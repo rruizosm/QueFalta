@@ -3,6 +3,8 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { OnboardingStackParamList } from '../../types';
 import WelcomeScreen from './WelcomeScreen';
+import LanguageStepScreen from './LanguageStepScreen';
+import NameScreen from './NameScreen';
 import UsernameScreen from './UsernameScreen';
 import StoresScreen from './StoresScreen';
 import AvatarScreen from './AvatarScreen';
@@ -17,7 +19,9 @@ export default function OnboardingNavigator() {
     <Stack.Navigator
       screenOptions={{ headerShown: false, gestureEnabled: false, animation: 'slide_from_right' }}
     >
+      <Stack.Screen name="Language" component={LanguageStepScreen} />
       <Stack.Screen name="Welcome"  component={WelcomeScreen} />
+      <Stack.Screen name="Name"     component={NameScreen} />
       <Stack.Screen name="Username" component={UsernameScreen} />
       <Stack.Screen name="Stores"   component={StoresScreen} />
       <Stack.Screen name="Avatar"   component={AvatarScreen} />

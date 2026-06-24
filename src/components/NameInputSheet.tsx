@@ -17,6 +17,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
@@ -60,6 +61,7 @@ export default function NameInputSheet({
   onClose,
 }: Props) {
   const styles = useThemedStyles(themedStyles);
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const labelText = label ?? t('group.nameLabel');
   const placeholderText = placeholder ?? t('group.namePlaceholder');
@@ -80,7 +82,7 @@ export default function NameInputSheet({
         style={styles.root}
       >
         <Pressable style={StyleSheet.absoluteFill} onPress={close} />
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, { paddingBottom: Platform.OS === 'ios' ? 30 : Math.max(insets.bottom, 20) }]}>
           <View style={styles.header}>
             <View style={styles.iconBox}>
               <Ionicons name={icon} size={22} color={colors.accent} />
@@ -145,7 +147,7 @@ const themedStyles = () => StyleSheet.create({
   sheet: {
     backgroundColor: colors.paper,
     borderTopWidth: 1, borderTopColor: colors.ink,
-    paddingBottom: Platform.OS === 'ios' ? 30 : 20,
+    // paddingBottom inline: iOS 30 (como antes); Android, el inset del sistema.
   },
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 12,

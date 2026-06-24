@@ -68,8 +68,8 @@ export default function FriendsScreen() {
 
   return (
     <OnboardingLayout
-      step={4}
-      totalSteps={5}
+      step={5}
+      totalSteps={6}
       eyebrow={t('onboarding.optional')}
       title={t('onboarding.friendsTitle')}
       subtitle={t('onboarding.friendsSubtitle')}

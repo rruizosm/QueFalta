@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --cream:#fbf6ee;
+    --cream2:#f3ead9;
+    --ink:#2b2521;
+    --ink-soft:#8a7f73;
+    --accent:#df4b2e;
+    --accent-dark:#c43f24;
+    --accent-tint:#fbe4dc;
+    --white:#ffffff;
+    --border:#ece2d3;
+    --green:#3f8f4f;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+  html,body{background:#cfc7b8;}
+  .canvas{
+    width:1080px;height:1350px;position:relative;overflow:hidden;
+    background:
+      radial-gradient(1100px 700px at 88% -8%, #fff4ec 0%, rgba(255,244,236,0) 55%),
+      radial-gradient(900px 700px at -10% 108%, #fdeee2 0%, rgba(253,238,226,0) 55%),
+      var(--cream);
+    font-family:'Inter',system-ui,sans-serif;color:var(--ink);
+  }
+  /* faint decorative dots */
+  .dots{position:absolute;inset:0;opacity:.5;
+    background-image:radial-gradient(var(--border) 2px, transparent 2px);
+    background-size:42px 42px;-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 18%,#000 46%,transparent 60%);
+            mask-image:linear-gradient(180deg,transparent 0%,#000 18%,#000 46%,transparent 60%);}
+  .blob{position:absolute;border-radius:50%;filter:blur(2px);opacity:.16;}
+  .blob.a{width:300px;height:300px;background:var(--accent);top:-90px;right:-70px;}
+  .blob.b{width:240px;height:240px;background:var(--green);bottom:330px;left:-110px;opacity:.10;}
+
+  .wrap{position:relative;height:100%;padding:60px 72px 54px;display:flex;flex-direction:column;}
+
+  /* ---------- Header ---------- */
+  .header{display:flex;align-items:center;justify-content:space-between;}
+  .brand{display:flex;align-items:center;gap:16px;}
+  .logo-tile{width:104px;height:104px;border-radius:26px;background:var(--white);
+    box-shadow:0 14px 30px rgba(223,75,46,.16),0 2px 0 rgba(0,0,0,.03);
+    display:flex;align-items:center;justify-content:center;border:1px solid var(--border);}
+  .logo-tile img{width:84px;height:84px;object-fit:contain;}
+  .wordmark{font-family:'Fredoka',sans-serif;font-weight:700;font-size:58px;line-height:1;color:var(--accent);letter-spacing:-.5px;}
+  .pill{font-family:'Fredoka',sans-serif;font-weight:600;font-size:24px;color:var(--accent);
+    background:var(--accent-tint);border:1px solid #f3cabd;padding:12px 22px;border-radius:999px;}
+
+  /* ---------- Hero ---------- */
+  .hero{margin-top:34px;}
+  .hero h1{font-family:'Fredoka',sans-serif;font-weight:700;font-size:76px;line-height:1.02;letter-spacing:-1px;}
+  .hero h1 .hl{color:var(--accent);}
+  .hero p{margin-top:16px;font-size:29px;line-height:1.4;color:var(--ink-soft);font-weight:500;max-width:880px;}
+
+  /* ---------- List card ---------- */
+  .card{margin-top:26px;background:var(--white);border:1px solid var(--border);border-radius:30px;
+    box-shadow:0 30px 60px rgba(43,37,33,.10),0 6px 14px rgba(43,37,33,.05);padding:26px 34px 20px;}
+  .card-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:22px;border-bottom:1.5px dashed var(--border);}
+  .card-title{display:flex;align-items:center;gap:14px;}
+  .card-title .emoji{width:54px;height:54px;border-radius:16px;background:var(--accent-tint);display:flex;align-items:center;justify-content:center;font-size:30px;}
+  .card-title .t{font-family:'Fredoka',sans-serif;font-weight:600;font-size:34px;color:var(--ink);}
+  .card-title .s{font-size:21px;color:var(--ink-soft);font-weight:500;margin-top:2px;}
+  .avatars{display:flex;}
+  .avatars .av{width:52px;height:52px;border-radius:50%;border:3px solid var(--white);margin-left:-16px;
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:22px;font-family:'Fredoka',sans-serif;}
+  .av.r{background:#df4b2e;} .av.m{background:#3f8f4f;} .av.l{background:#2f6cb5;} .av.plus{background:#cabfae;color:#5a5046;}
+
+  .rows{margin-top:8px;}
+  .row{display:flex;align-items:center;gap:18px;padding:15px 4px;border-bottom:1px solid #f4eee2;}
+  .row:last-child{border-bottom:0;}
+  .check{width:34px;height:34px;border-radius:10px;border:2.5px solid var(--border);flex:none;display:flex;align-items:center;justify-content:center;}
+  .check.on{background:var(--green);border-color:var(--green);}
+  .check.on svg{width:20px;height:20px;}
+  .row .name{font-size:28px;font-weight:600;color:var(--ink);flex:1;}
+  .row.done .name{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:#cdc3b4;}
+  .tag{font-size:20px;font-weight:700;padding:7px 16px;border-radius:999px;white-space:nowrap;}
+  .price{font-size:25px;font-weight:700;color:var(--ink);width:104px;text-align:right;font-variant-numeric:tabular-nums;}
+
+  /* ---------- Logo wall ---------- */
+  .stores{margin-top:26px;}
+  .stores .lead{display:flex;align-items:center;gap:16px;font-size:25px;font-weight:600;color:var(--ink);}
+  .stores .lead::after{content:"";flex:1;height:1.5px;background:var(--border);}
+  .grid{margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .chip{height:90px;background:var(--white);border:1px solid var(--border);border-radius:20px;
+    display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 18px rgba(43,37,33,.05);}
+  .chip .bw{font-family:'Fredoka',sans-serif;font-weight:700;font-size:32px;letter-spacing:-.5px;}
+  .badge{display:inline-flex;align-items:center;justify-content:center;border-radius:8px;color:#fff;font-family:'Fredoka',sans-serif;font-weight:700;}
+
+  /* ---------- Footer CTA ---------- */
+  .footer{margin-top:auto;padding-top:22px;display:flex;align-items:center;justify-content:space-between;}
+  .cta{display:flex;align-items:center;gap:14px;background:var(--accent);color:#fff;
+    font-family:'Fredoka',sans-serif;font-weight:600;font-size:30px;padding:20px 34px;border-radius:999px;
+    box-shadow:0 16px 30px rgba(223,75,46,.30);}
+  .cta .arrow{width:26px;height:26px;}
+  .web{font-size:27px;font-weight:700;color:var(--ink);}
+  .web span{color:var(--ink-soft);font-weight:600;}
+</style>
+</head>
+<body>
+  <div class="canvas">
+    <div class="dots"></div>
+    <div class="blob a"></div>
+    <div class="blob b"></div>
+
+    <div class="wrap">
+      <!-- HEADER -->
+      <div class="header">
+        <div class="brand">
+          <div class="logo-tile"><img src="../assets/icon.png" alt="QuéFalta" /></div>
+          <div class="wordmark">QuéFalta</div>
+        </div>
+        <div class="pill">Gratis · iOS</div>
+      </div>
+
+      <!-- HERO -->
+      <div class="hero">
+        <h1>La cesta de la compra,<br><span class="hl">compartida</span> con tu gente.</h1>
+        <p>Una sola lista para todo el grupo, en tiempo real y con productos reales de tus supermercados favoritos.</p>
+      </div>
+
+      <!-- LIST CARD -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">
+            <div class="emoji">🧺</div>
+            <div>
+              <div class="t">Lista de casa</div>
+              <div class="s">Compartida · 4 personas</div>
+            </div>
+          </div>
+          <div class="avatars">
+            <div class="av r">R</div>
+            <div class="av m">M</div>
+            <div class="av l">L</div>
+            <div class="av plus">+1</div>
+          </div>
+        </div>
+
+        <div class="rows">
+          <div class="row done">
+            <div class="check on"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="name">Plátano de Canarias</div>
+            <div class="tag" style="background:#e2f0e4;color:#1f7a3f;">Mercadona</div>
+            <div class="price">1,29 €</div>
+          </div>
+          <div class="row">
+            <div class="check"></div>
+            <div class="name">Leche entera · 6 ud</div>
+            <div class="tag" style="background:#fbe0e0;color:#d4232a;">Dia</div>
+            <div class="price">5,40 €</div>
+          </div>
+          <div class="row">
+            <div class="check"></div>
+            <div class="name">Pa de pagès</div>
+            <div class="tag" style="background:#eaf2db;color:#4e7d12;">Bonpreu</div>
+            <div class="price">1,85 €</div>
+          </div>
+          <div class="row">
+            <div class="check"></div>
+            <div class="name">Huevos camperos M</div>
+            <div class="tag" style="background:#fde6dd;color:#e0461f;">Consum</div>
+            <div class="price">2,15 €</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STORES -->
+      <div class="stores">
+        <div class="lead">Con el catálogo de tus súpers:</div>
+        <div class="grid">
+          <div class="chip"><span class="bw" style="color:#1f7a3f;">Mercadona</span></div>
+          <div class="chip"><span class="bw" style="color:#00509f;">Carrefour</span></div>
+          <div class="chip"><span class="bw" style="color:#4e7d12;">BonpreuEsclat</span></div>
+          <div class="chip"><span class="bw" style="color:#14367e;">bon<span style="color:#e8801a;">À</span>rea</span></div>
+          <div class="chip"><span class="bw" style="color:#e0461f;">Consum</span></div>
+          <div class="chip">
+            <span class="bw" style="color:#d4232a;">Dia</span>
+            <span class="badge" style="background:#d4232a;width:34px;height:34px;font-size:22px;">%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="footer">
+        <div class="cta">
+          Descárgala gratis
+          <svg class="arrow" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="web"><span>web ·</span> quefalta.es</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

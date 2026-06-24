@@ -3,6 +3,17 @@
  * Rules are checked in order — first match wins (specific before general).
  */
 const RULES: [string, string][] = [
+  // ── PRIORITARIO: catalán/castellano que chocaría con reglas de abajo ──
+  // 'cola' (refrescos, más abajo) captura "xoCOLAta", "choCOLAte" y "briCOLAtge";
+  // 'gel ' (cosmética) captura "GEL i glaçons" (gel = hielo en catalán). Van aquí
+  // arriba para que ganen al ser primer-match. (Plurales: 'xocolat' cubre
+  // "Xocolata"/"Xocolates", 'glaço' cubre "glaçó"/"glaçons".)
+  ['xocolat',       '🍫'],
+  ['chocolat',      '🍫'],
+  ['bricolatge',    '🔧'],
+  ['bricolaje',     '🔧'],
+  ['glaço',         '🧊'],
+
   // ── Bonpreu / Carrefour / bonÀrea ─────────────────────────────
   // Va PRIMERO: términos específicos de estos catálogos que deben ganar a las
   // reglas generales de abajo (p.ej. "sopas/caldos" antes que la 'crema '
@@ -542,7 +553,7 @@ const RULES: [string, string][] = [
   ['marisc',        '🦐'],
   ['peix',          '🐟'],
   // Làctics
-  ['mantega',       '🧈'],
+  ['manteg',        '🧈'],
   ['iogurt',        '🥛'],
   ['llet',          '🥛'],
   // Fleca i brioixeria
@@ -555,7 +566,7 @@ const RULES: [string, string][] = [
   ['pa ',           '🥖'],
   ['fleca',         '🥖'],
   // Begudes
-  ['cervesa',       '🍺'],
+  ['cerves',        '🍺'],
   ['vi negre',      '🍷'],
   ['vi blanc',      '🍾'],
   ['vi rosat',      '🍾'],
@@ -575,7 +586,7 @@ const RULES: [string, string][] = [
   ['cigró',         '🫘'],
   ['mongeta',       '🫘'],
   ['llegum',        '🫘'],
-  ['conserva',      '🥫'],
+  ['conserv',       '🥫'],
   // Pasta, arròs, cereals
   ['arròs',         '🍚'],
   ['civada',        '🥣'],
@@ -591,9 +602,9 @@ const RULES: [string, string][] = [
   ['cacau',         '☕'],
   ['cafè',          '☕'],
   ['infusió',       '🍵'],
-  ['melmelada',     '🍯'],
+  ['melmelad',      '🍯'],
   ['sucre',         '🍬'],
-  ['llaminadura',   '🍭'],
+  ['llaminadur',    '🍭'],
   ['caramel',       '🍭'],
   // Snacks
   ['fruita seca',   '🥜'],
@@ -630,6 +641,48 @@ const RULES: [string, string][] = [
   ['biberó',        '🍼'],
   ['bolquer',       '🧻'],
   ['nadó',          '👶'],
+
+  // ── CATALÀ (afegits): N2 de Bonpreu/bonÀrea que requeien a l'emoji del pare ──
+  // (plurals que no casaven amb les regles castellanes, i termes que faltaven).
+  // Frescos / alimentació
+  ['xarcuteria',    '🥓'],
+  ['carnisseria',   '🥩'],
+  ['làctic',        '🥛'],   // abans de 'carns'/'ous' ("Làctics i ous" → llet)
+  ['carns',         '🥩'],   // "Carns i ous" → carn (abans que 'ous')
+  ['ous',           '🥚'],
+  ['pizz',          '🍕'],   // "Pizzes", "Pizzes i paninis/truites"
+  ['plats preparats','🍱'],
+  ['plat preparat', '🍱'],
+  ['cuinat',        '🍱'],
+  ['arrebossat',    '🍤'],
+  ['internacional', '🌍'],
+  ['rebosteria',    '🧁'],
+  ['nutrició',      '💪'],
+  ['orxata',        '🥛'],
+  ['postres',       '🍮'],
+  // Begudes
+  ['aigües',        '💧'],
+  ['escumos',       '🥂'],   // "Escumosos"
+  ['vermut',        '🍷'],
+  ['vi aromat',     '🍷'],
+  ['sangria',       '🥤'],
+  ['alcohòl',       '🥃'],   // "Alcohòliques d'alta graduació"
+  ['begudes vegetal','🥛'],
+  ['beguda vegetal','🥛'],
+  ['vins',          '🍷'],
+  // Mascotes
+  ['gats',          '🐱'],   // "Alimentació gats" ('gos' ja cobreix gossos)
+  // Per la llar (basar)
+  ['joguin',        '🧸'],
+  ['papereria',     '📒'],   // abans que 'llibre' (papereria i llibreria)
+  ['llibre',        '📚'],
+  ['espelma',       '🕯️'],
+  ['calçat',        '👟'],
+  ['tèxtil',        '🧶'],
+  ['electrodomèstic','🔌'],
+  ['insecticid',    '🐛'],
+  ['parament',      '🍽️'],
+  ['rentat',        '🧺'],   // "Rentat de roba"
 ];
 
 export function getSubcategoryEmoji(name: string, fallback: string): string {

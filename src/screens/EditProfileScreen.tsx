@@ -28,6 +28,8 @@ export default function EditProfileScreen() {
   const toast = useToast();
   const userId = session?.user.id ?? '';
   const email  = session?.user.email ?? '';
+  // Proveedor con el que se inició sesión (para la etiqueta del correo).
+  const isApple = session?.user.app_metadata?.provider === 'apple';
 
   // Prefill instantly from the cached profile (no empty-field flash).
   const [name, setName]             = useState(profile?.name ?? '');
@@ -267,8 +269,10 @@ export default function EditProfileScreen() {
               <Ionicons name="lock-closed-outline" size={15} color={colors.inkFaint} />
             </View>
             <Text style={styles.helper}>
-              <Text style={{ color: '#4285F4', fontFamily: fonts.bold }}>G</Text>
-              {'  '}{t('editProfile.googleConnected')}
+              {isApple
+                ? <Ionicons name="logo-apple" size={13} color={colors.ink} />
+                : <Text style={{ color: '#4285F4', fontFamily: fonts.bold }}>G</Text>}
+              {'  '}{t(isApple ? 'editProfile.appleConnected' : 'editProfile.googleConnected')}
             </Text>
           </View>
 

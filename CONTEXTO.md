@@ -14,10 +14,12 @@
 ## ⚠️ Imprescindible para arrancar en una máquina nueva
 `.env.local` está **gitignored** (no viaja con el repo). Sin él, Supabase no funciona. Crear en la raíz de `MercaAppMobile`:
 ```
-EXPO_PUBLIC_SUPABASE_URL=https://gkffvigcnsesbaihycay.supabase.co
+EXPO_PUBLIC_SUPABASE_URL=https://auth.quefalta.es
 EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon key del dashboard de Supabase>
 ```
 La anon key se copia de Supabase → Project Settings → API. (Es pública/segura por RLS, pero no se commitea.)
+
+**Custom domain (2026-06-21):** la API de Supabase se sirve por `https://auth.quefalta.es` (add-on Custom Domain). Así el popup de iOS al iniciar sesión muestra `auth.quefalta.es` en vez del subdominio `…supabase.co`. El subdominio original `https://gkffvigcnsesbaihycay.supabase.co` sigue funcionando (fallback de los syncs). El callback OAuth de Google `https://auth.quefalta.es/auth/v1/callback` está dado de alta en Google Cloud Console. La anon key NO cambia.
 
 ## Cómo ejecutar
 - **Dev rápido (Expo Go):** `npx expo start` (en Windows con varios adaptadores de red, fijar IP de Wi-Fi: `REACT_NATIVE_PACKAGER_HOSTNAME=<ip>` y usar `--offline` si el CLI crashea con error `body`).

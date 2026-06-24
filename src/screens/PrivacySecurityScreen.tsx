@@ -149,7 +149,6 @@ export default function PrivacySecurityScreen() {
         title={t('privacy.signOutAll')}
         message={t('privacy.signOutAllMsg')}
         confirmLabel={t('privacy.signOutAllConfirm')}
-        destructive
         onConfirm={() => { setSignOutAllVisible(false); signOut('global'); }}
         onCancel={() => setSignOutAllVisible(false)}
       />
@@ -159,7 +158,6 @@ export default function PrivacySecurityScreen() {
         title={t('privacy.deleteTitle')}
         message={t('privacy.deleteMsg')}
         confirmLabel={t('group.deleteConfirm')}
-        destructive
         onConfirm={confirmDeleteAccount}
         onCancel={() => setDeleteVisible(false)}
       />

@@ -1,3 +1,6 @@
+import { Image as RNImage } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
+
 // ─── Catálogo: supermercados que el usuario puede ver/activar ────────────────
 // Fuente ÚNICA del switcher del catálogo, de la preferencia de perfil
 // "Supermercados" y del agrupado de Lista/Cesta por tienda (de aquí salen los
@@ -16,6 +19,22 @@ export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | n
 
 /** Orden canónico de las claves (para normalizar/ordenar selecciones). */
 export const CATALOG_STORE_KEYS: CatalogStore[] = CATALOG_STORES.map((s) => s.key);
+
+/** URIs resueltos de los logos locales (los `require` son módulos, no URLs;
+ *  expo-image cachea/prefetchea por URI). */
+const STORE_ICON_URIS: string[] = CATALOG_STORES
+  .map((s) => (s.icon != null ? RNImage.resolveAssetSource(s.icon)?.uri : null))
+  .filter((uri): uri is string => !!uri);
+
+/** Precarga los logos de los súpers en la caché (memoria+disco) de expo-image
+ *  para que se muestren AL INSTANTE en el paso de onboarding "Supermercados",
+ *  sin el parpadeo de "cargando". Se llama al entrar al asistente; los logos se
+ *  pintan con <Image> de expo-image (misma caché, mismo URI → acierto directo). */
+export function prefetchStoreIcons(): void {
+  if (STORE_ICON_URIS.length) {
+    ExpoImage.prefetch(STORE_ICON_URIS, 'memory-disk').catch(() => {});
+  }
+}
 
 // ─── Agrupado de Lista/Cesta por supermercado ────────────────────────────────
 // La tienda se deduce de los datos del artículo (sin columna en BD): id de

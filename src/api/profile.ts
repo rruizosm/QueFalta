@@ -1,3 +1,4 @@
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { supabase } from '../lib/supabase';
 import { CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 
@@ -18,6 +19,9 @@ export interface UserProfile {
   /** Cuándo completó el alta inicial (asistente de bienvenida). NULL = aún no
    *  lo ha hecho → la app muestra el onboarding. Ver profile_onboarding.sql. */
   onboardedAt: string | null;
+  /** Cuenta verificada (insignia dorada). Marca manual desde Supabase.
+   *  Ver profile_verified.sql. */
+  verified: boolean;
 }
 
 /** Normaliza la columna catalog_stores: filtra claves desconocidas y, si queda
@@ -32,7 +36,7 @@ function normalizeCatalogStores(value: unknown): CatalogStore[] {
 export async function fetchProfile(userId: string): Promise<UserProfile> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, name, initials, color, username, avatar_url, discoverable, catalog_stores, premium_until, onboarded_at')
+    .select('id, name, initials, color, username, avatar_url, discoverable, catalog_stores, premium_until, onboarded_at, verified')
     .eq('id', userId)
     .single();
 
@@ -49,6 +53,7 @@ export async function fetchProfile(userId: string): Promise<UserProfile> {
     catalogStores: normalizeCatalogStores(data.catalog_stores),
     premiumUntil: data.premium_until ?? null,
     onboardedAt: data.onboarded_at ?? null,
+    verified: data.verified ?? false,
   };
 }
 
@@ -56,6 +61,7 @@ export async function updateProfile(
   userId: string,
   fields: {
     name?: string;
+    initials?: string;
     username?: string | null;
     avatarUrl?: string | null;
     discoverable?: boolean;
@@ -64,6 +70,7 @@ export async function updateProfile(
 ): Promise<void> {
   const updates: Record<string, unknown> = {};
   if (fields.name !== undefined) updates.name = fields.name;
+  if (fields.initials !== undefined) updates.initials = fields.initials;
   if (fields.username !== undefined) updates.username = fields.username;
   if (fields.avatarUrl !== undefined) updates.avatar_url = fields.avatarUrl;
   if (fields.discoverable !== undefined) updates.discoverable = fields.discoverable;
@@ -99,25 +106,35 @@ export async function isUsernameAvailable(username: string): Promise<boolean> {
 }
 
 export async function uploadAvatar(userId: string, uri: string): Promise<string> {
-  // Strip query params before extracting extension (expo-image-picker can append them).
-  const cleanUri = uri.split('?')[0];
-  const rawExt = cleanUri.split('.').pop()?.toLowerCase() ?? 'jpg';
-  const ext = ['jpg', 'jpeg', 'png', 'webp'].includes(rawExt) ? rawExt : 'jpg';
-  const mimeType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+  // Redimensiona a máx. 512px de ancho y recomprime a JPEG ANTES de subir: una
+  // foto de móvil (1–3 MB) baja a ~50–100 KB, sin pérdida visible en un avatar
+  // pequeño. Reduce ~20× el coste de storage y egress en Supabase. El picker ya
+  // recorta a 1:1, así que basta fijar el ancho (la altura mantiene la proporción).
+  const context = ImageManipulator.manipulate(uri);
+  context.resize({ width: 512 });
+  const rendered = await context.renderAsync();
+  const { uri: resizedUri } = await rendered.saveAsync({
+    compress: 0.8,
+    format: SaveFormat.JPEG,
+  });
 
-  // Path: {userId}/avatar.{ext} — first segment must equal the user's UID for the RLS policy.
-  const path = `${userId}/avatar.${ext}`;
+  // Salida siempre JPEG → ruta y contentType fijos. El 1er segmento debe ser el
+  // UID del usuario para que cuadre con la policy RLS del bucket.
+  const path = `${userId}/avatar.jpg`;
 
   // ArrayBuffer is more reliable than Blob in React Native.
-  const response = await fetch(uri);
+  const response = await fetch(resizedUri);
   const arrayBuffer = await response.arrayBuffer();
 
   const { error } = await supabase.storage.from('avatars').upload(path, arrayBuffer, {
     upsert: true,
-    contentType: mimeType,
+    contentType: 'image/jpeg',
   });
   if (error) throw error;
 
+  // La ruta es fija (avatar.jpg) → la URL pública no cambia entre subidas. Sin
+  // cache-busting, el CDN y la caché de Image mostrarían la foto anterior al
+  // cambiarla; el ?v= fuerza recargar la nueva.
   const { data } = supabase.storage.from('avatars').getPublicUrl(path);
-  return data.publicUrl;
+  return `${data.publicUrl}?v=${Date.now()}`;
 }

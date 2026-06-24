@@ -1,5 +1,6 @@
 import { Platform, View, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   useFonts,
   SpaceGrotesk_400Regular,
@@ -35,9 +36,13 @@ export default function App() {
   if (!fontsLoaded) return null;
 
   const inner = (
-    // LanguageProvider y ThemeProvider primero: retienen el render (splash
-    // visible) hasta aplicar idioma y color guardados, para que los textos y los
-    // StyleSheet se creen ya con la preferencia correcta (sin flash).
+    // SafeAreaProvider en la raíz: expone los insets del sistema (barra de
+    // navegación de Android, home indicator de iOS) a toda la app, incluida la
+    // barra de pestañas, para que nada se solape con los botones del sistema.
+    <SafeAreaProvider>
+    {/* LanguageProvider y ThemeProvider primero: retienen el render (splash
+        visible) hasta aplicar idioma y color guardados, para que los textos y los
+        StyleSheet se creen ya con la preferencia correcta (sin flash). */}
     <LanguageProvider>
       <ThemeProvider>
         <GestureHandlerRootView style={{ flex: 1 }}>
@@ -55,6 +60,7 @@ export default function App() {
         </GestureHandlerRootView>
       </ThemeProvider>
     </LanguageProvider>
+    </SafeAreaProvider>
   );
 
   if (Platform.OS !== 'web') return inner;

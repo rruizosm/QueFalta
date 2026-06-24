@@ -16,6 +16,7 @@ import { useTranslation } from '../context/LanguageContext';
 import { addMemberToGroup, fetchGroupMembers } from '../api/groups';
 import { fetchFriends, type FriendProfile } from '../api/friends';
 import UserAvatar from '../components/UserAvatar';
+import VerifiedBadge from '../components/VerifiedBadge';
 
 type AddMemberRouteProp = RouteProp<GroupsStackParamList, 'AddMember'>;
 
@@ -111,7 +112,10 @@ export default function AddMemberScreen() {
                 <View key={f.id} style={styles.row}>
                   <UserAvatar avatarUrl={f.avatarUrl} initials={f.initials} color={f.color} size={42} />
                   <View style={styles.info}>
-                    <Text style={styles.name} numberOfLines={1}>{f.name}</Text>
+                    <View style={styles.nameRow}>
+                      <Text style={styles.name} numberOfLines={1}>{f.name}</Text>
+                      {f.verified ? <VerifiedBadge size={14} /> : null}
+                    </View>
                     {f.username ? <Text style={styles.username}>@{f.username}</Text> : null}
                   </View>
                   {isMember ? (
@@ -168,7 +172,8 @@ const themedStyles = () => StyleSheet.create({
   avatar: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontSize: 15, fontFamily: fonts.bold, color: colors.white },
   info: { flex: 1, minWidth: 0 },
-  name: { fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
+  nameRow: { flexDirection: 'row', alignItems: 'center' },
+  name: { flexShrink: 1, fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
   username: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.accent, marginTop: 1 },
   addBtn: { backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 9 },
   addBtnText: { fontSize: 13, fontFamily: fonts.bold, color: colors.white },

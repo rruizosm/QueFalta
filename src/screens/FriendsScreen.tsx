@@ -18,6 +18,7 @@ import {
   sendFriendRequest, acceptFriendRequest, removeFriendship, type FriendProfile,
 } from '../api/friends';
 import UserAvatar from '../components/UserAvatar';
+import VerifiedBadge from '../components/VerifiedBadge';
 
 function Avatar({ color, initials, avatarUrl }: { color: string; initials: string; avatarUrl?: string | null }) {
   return <UserAvatar avatarUrl={avatarUrl} initials={initials} color={color} size={42} />;
@@ -134,7 +135,10 @@ export default function FriendsScreen() {
                   <View key={u.id} style={styles.row}>
                     <Avatar color={u.color} initials={u.initials} avatarUrl={u.avatarUrl} />
                     <View style={styles.info}>
-                      <Text style={styles.name} numberOfLines={1}>{u.name}</Text>
+                      <View style={styles.nameRow}>
+                        <Text style={styles.name} numberOfLines={1}>{u.name}</Text>
+                        {u.verified ? <VerifiedBadge size={14} /> : null}
+                      </View>
                       {u.username ? <Text style={styles.username}>@{u.username}</Text> : null}
                     </View>
                     {friendIds.has(u.id) ? (
@@ -166,7 +170,10 @@ export default function FriendsScreen() {
                     <View key={f.friendshipId} style={styles.row}>
                       <Avatar color={f.color} initials={f.initials} avatarUrl={f.avatarUrl} />
                       <View style={styles.info}>
-                        <Text style={styles.name} numberOfLines={1}>{f.name}</Text>
+                        <View style={styles.nameRow}>
+                          <Text style={styles.name} numberOfLines={1}>{f.name}</Text>
+                          {f.verified ? <VerifiedBadge size={14} /> : null}
+                        </View>
                         {f.username ? <Text style={styles.username}>@{f.username}</Text> : null}
                       </View>
                       {busyId === f.friendshipId ? (
@@ -196,7 +203,10 @@ export default function FriendsScreen() {
                   <View key={f.friendshipId} style={styles.row}>
                     <Avatar color={f.color} initials={f.initials} avatarUrl={f.avatarUrl} />
                     <View style={styles.info}>
-                      <Text style={styles.name} numberOfLines={1}>{f.name}</Text>
+                      <View style={styles.nameRow}>
+                        <Text style={styles.name} numberOfLines={1}>{f.name}</Text>
+                        {f.verified ? <VerifiedBadge size={14} /> : null}
+                      </View>
                       {f.username ? <Text style={styles.username}>@{f.username}</Text> : null}
                     </View>
                     {busyId === f.friendshipId ? (
@@ -255,7 +265,8 @@ const themedStyles = () => StyleSheet.create({
   avatar: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontSize: 15, fontFamily: fonts.bold, color: colors.white },
   info: { flex: 1, minWidth: 0 },
-  name: { fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
+  nameRow: { flexDirection: 'row', alignItems: 'center' },
+  name: { flexShrink: 1, fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
   username: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.accent, marginTop: 1 },
 
   reqActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },

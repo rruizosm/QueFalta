@@ -32,6 +32,7 @@ import { fetchGroupMembers } from '../api/groups';
 import { recordPurchase } from '../api/purchases';
 import type { GroupMember } from '../types';
 import ProgressBar from '../components/ProgressBar';
+import ProductImage from '../components/ProductImage';
 import ProductDetailModal from '../components/ProductDetailModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import UserAvatar from '../components/UserAvatar';
@@ -63,6 +64,9 @@ export default function ListScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [detailProductId, setDetailProductId] = useState<string | null>(null);
   const [assignItem, setAssignItem] = useState<MergedCartItem | null>(null);
+  // Selector "asignar TODA la lista" (botón de la cabecera). Reusa la misma hoja
+  // de miembros que el asignar por producto.
+  const [assignAllVisible, setAssignAllVisible] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
 
@@ -94,6 +98,21 @@ export default function ListScreen() {
       await Promise.all(item.ids.map((id) => assignListItem(id, memberId)));
     } catch {
       setItems((list) => list.map((it) => (ids.has(it.id) ? { ...it, assignedTo: prev.get(it.id) ?? null } : it)));
+      toast.show(t('list.assignError'), 'error');
+    }
+  };
+
+  // Asigna TODOS los artículos de la lista al miembro elegido (o los desasigna
+  // con memberId = null). Optimista: actualiza el estado local y revierte si falla.
+  const doAssignAll = async (memberId: string | null) => {
+    setAssignAllVisible(false);
+    const prev = items;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setItems((list) => list.map((it) => ({ ...it, assignedTo: memberId })));
+    try {
+      await Promise.all(items.map((it) => assignListItem(it.id, memberId)));
+    } catch {
+      setItems(prev);
       toast.show(t('list.assignError'), 'error');
     }
   };
@@ -239,7 +258,7 @@ export default function ListScreen() {
       <View style={styles.container}>
         <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
         <View style={styles.header}>
-          <Text style={styles.title} numberOfLines={1}>{activeCart.groupName}</Text>
+          <Text style={styles.title}>{activeCart.groupName}</Text>
         </View>
         <View style={styles.centerBox}>
           <Text style={styles.centerText}>{t('list.loadError')}</Text>
@@ -257,21 +276,31 @@ export default function ListScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.title} numberOfLines={1}>{activeCart.groupName}</Text>
+        <View style={styles.headerTexts}>
+          <Text style={styles.title}>{activeCart.groupName}</Text>
           <Text style={styles.subtitle}>
             {t('list.subtitle', { done: doneItems, total: merged.length })}
           </Text>
         </View>
         {items.length > 0 && (
-          <TouchableOpacity
-            onPress={() => setConfirmClear(true)}
-            style={styles.clearAllBtn}
-            hitSlop={8}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="trash-outline" size={18} color={colors.inkSoft} />
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              onPress={() => setAssignAllVisible(true)}
+              style={styles.clearAllBtn}
+              hitSlop={8}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="person-add-outline" size={18} color={colors.inkSoft} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setConfirmClear(true)}
+              style={styles.clearAllBtn}
+              hitSlop={8}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="trash-outline" size={18} color={colors.inkSoft} />
+            </TouchableOpacity>
+          </View>
         )}
       </View>
 
@@ -361,28 +390,32 @@ export default function ListScreen() {
         onClose={() => setDetailProductId(null)}
       />
 
-      {/* Assign-to-member sheet */}
+      {/* Assign-to-member sheet — un producto (assignItem) o toda la lista (assignAllVisible) */}
       <Modal
-        visible={!!assignItem}
+        visible={!!assignItem || assignAllVisible}
         transparent
         animationType="slide"
-        onRequestClose={() => setAssignItem(null)}
+        onRequestClose={() => { setAssignItem(null); setAssignAllVisible(false); }}
       >
         <View style={styles.sheetRoot}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={() => setAssignItem(null)} />
-          {assignItem && (
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => { setAssignItem(null); setAssignAllVisible(false); }} />
+          {(!!assignItem || assignAllVisible) && (
             <View style={styles.sheet}>
-              <Text style={styles.sheetTitle} numberOfLines={1}>{t('list.whoBrings', { product: assignItem.productName })}</Text>
+              <Text style={styles.sheetTitle} numberOfLines={1}>
+                {assignAllVisible
+                  ? t('list.assignAllTitle')
+                  : t('list.whoBrings', { product: assignItem?.productName ?? '' })}
+              </Text>
 
               <ScrollView style={styles.sheetList} showsVerticalScrollIndicator={false}>
                 {members.map((m) => {
-                  const selected = assignItem.assignedTo === m.id;
+                  const selected = !assignAllVisible && assignItem?.assignedTo === m.id;
                   return (
                     <TouchableOpacity
                       key={m.id}
                       style={styles.sheetRow}
                       activeOpacity={0.7}
-                      onPress={() => doAssign(assignItem, m.id)}
+                      onPress={() => (assignAllVisible ? doAssignAll(m.id) : doAssign(assignItem!, m.id))}
                     >
                       <UserAvatar avatarUrl={m.avatarUrl} initials={m.initials} color={m.color} size={38} />
                       <Text style={styles.sheetRowText} numberOfLines={1}>{m.name}</Text>
@@ -395,7 +428,7 @@ export default function ListScreen() {
               <TouchableOpacity
                 style={styles.sheetClear}
                 activeOpacity={0.7}
-                onPress={() => doAssign(assignItem, null)}
+                onPress={() => (assignAllVisible ? doAssignAll(null) : doAssign(assignItem!, null))}
               >
                 <Ionicons name="close-circle-outline" size={18} color={colors.inkSoft} />
                 <Text style={styles.sheetClearText}>{t('common.unassigned')}</Text>
@@ -472,7 +505,7 @@ function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove
         onPress={() => item.mercadonaProductId && onOpenDetail(item.mercadonaProductId)}
       >
         {item.imageUrl ? (
-          <Image source={{ uri: item.imageUrl }} style={styles.itemThumb} resizeMode="contain" />
+          <ProductImage uri={item.imageUrl} style={styles.itemThumb} />
         ) : item.categoryEmoji ? (
           <View style={styles.itemThumbPlaceholder}>
             <Text style={styles.itemEmoji}>{item.categoryEmoji}</Text>
@@ -482,11 +515,20 @@ function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove
           <Text style={[styles.itemName, (item.inCart || removing) && styles.itemNameDone]}>
             {item.productName}
           </Text>
-          <Text style={styles.itemUnit}>{item.quantity} {item.unit}</Text>
+          <View style={styles.itemUnitRow}>
+            <Text style={styles.itemUnit}>{item.quantity} {item.unit}</Text>
+            {item.inCart ? (
+              <View style={styles.inCartBadge}>
+                <Text style={styles.inCartBadgeText}>{t('list.inCart')}</Text>
+              </View>
+            ) : item.unitPrice != null ? (
+              <Text style={styles.itemPrice}>{formatEuro(item.unitPrice * item.quantity)}</Text>
+            ) : null}
+          </View>
         </View>
       </TouchableOpacity>
 
-      {/* Assignee */}
+      {/* Asignar a + papelera, alineados a la derecha y centrados verticalmente */}
       <TouchableOpacity
         style={styles.assignBtn}
         activeOpacity={0.7}
@@ -503,25 +545,13 @@ function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove
         )}
       </TouchableOpacity>
 
-      {item.inCart ? (
-        <View style={styles.inCartBadge}>
-          <Text style={styles.inCartBadgeText}>{t('list.inCart')}</Text>
-        </View>
-      ) : item.unitPrice != null ? (
-        <Text style={styles.itemPrice}>{formatEuro(item.unitPrice * item.quantity)}</Text>
-      ) : null}
-
       <TouchableOpacity
         style={styles.deleteBtn}
         hitSlop={6}
         disabled={removing}
         onPress={handleDeletePress}
       >
-        <Ionicons
-          name="trash-outline"
-          size={13}
-          color={colors.inkFaint}
-        />
+        <Ionicons name="trash-outline" size={14} color={colors.inkFaint} />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -531,11 +561,13 @@ const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
   header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 16, paddingTop: 56, paddingBottom: 12,
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
+    paddingHorizontal: 16, paddingTop: 56, paddingBottom: 12, gap: 8,
   },
+  headerTexts: { flex: 1 },
   title: { fontSize: 24, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
   subtitle: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
+  headerActions: { flexDirection: 'row', gap: 8 },
   clearAllBtn: {
     width: 38, height: 38,
     alignItems: 'center', justifyContent: 'center',
@@ -603,15 +635,19 @@ const themedStyles = () => StyleSheet.create({
   itemContent: { flex: 1 },
   itemName: { fontSize: 13.5, fontFamily: fonts.semibold, color: colors.ink },
   itemNameDone: { color: colors.inkSoft, textDecorationLine: 'line-through' },
-  itemUnit: { fontSize: 11, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
+  // Cantidad + coste/badge en la misma línea, bajo el nombre.
+  itemUnitRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
+  itemUnit: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft },
   itemPrice: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.accent },
+
   inCartBadge: {
     backgroundColor: colors.accent,
     paddingHorizontal: 8, paddingVertical: 3,
   },
   inCartBadgeText: { fontSize: 10, fontFamily: fonts.bold, color: colors.white },
+  // Papelera: mismo tamaño que el checkbox de "seleccionar", a la derecha del todo.
   deleteBtn: {
-    width: 24, height: 24,
+    width: 22, height: 22,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: colors.border,
   },

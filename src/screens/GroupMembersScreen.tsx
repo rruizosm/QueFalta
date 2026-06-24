@@ -17,6 +17,7 @@ import { useTranslation } from '../context/LanguageContext';
 import { deleteGroup, fetchGroupDetail, removeGroupMember, renameGroup, transferGroupAdmin, type GroupSummary } from '../api/groups';
 import ConfirmDialog from '../components/ConfirmDialog';
 import UserAvatar from '../components/UserAvatar';
+import VerifiedBadge from '../components/VerifiedBadge';
 import NameInputSheet from '../components/NameInputSheet';
 
 type MembersRouteProp = RouteProp<GroupsStackParamList, 'GroupMembers'>;
@@ -186,9 +187,12 @@ export default function GroupMembersScreen() {
                 <View key={m.id} style={[styles.row, i < group.members.length - 1 && styles.rowBorder]}>
                   <UserAvatar avatarUrl={m.avatarUrl} initials={m.initials} color={m.color} size={42} />
                   <View style={styles.memberInfo}>
-                    <Text style={styles.memberName} numberOfLines={1}>
-                      {m.name}{isMe ? t('group.meSuffix') : ''}
-                    </Text>
+                    <View style={styles.memberNameRow}>
+                      <Text style={styles.memberName} numberOfLines={1}>
+                        {m.name}{isMe ? t('group.meSuffix') : ''}
+                      </Text>
+                      {m.verified ? <VerifiedBadge size={14} /> : null}
+                    </View>
                     {isMemberAdmin && (
                       <View style={styles.adminBadge}>
                         <Ionicons name="star" size={10} color={colors.accent} />
@@ -262,6 +266,7 @@ export default function GroupMembersScreen() {
               <View style={styles.sheetHeader}>
                 <UserAvatar avatarUrl={actionMember.avatarUrl} initials={actionMember.initials} color={actionMember.color} size={40} />
                 <Text style={styles.sheetTitle} numberOfLines={1}>{actionMember.name}</Text>
+                {actionMember.verified ? <VerifiedBadge size={16} /> : null}
               </View>
 
               <TouchableOpacity
@@ -376,7 +381,8 @@ const themedStyles = () => StyleSheet.create({
   },
   avatarText: { fontSize: 15, fontFamily: fonts.bold, color: colors.white },
   memberInfo: { flex: 1, minWidth: 0, gap: 3 },
-  memberName: { fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
+  memberNameRow: { flexDirection: 'row', alignItems: 'center' },
+  memberName: { flexShrink: 1, fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
   adminBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   adminBadgeText: { fontSize: 11, fontFamily: fonts.bold, color: colors.accent },
   removeBtn: {

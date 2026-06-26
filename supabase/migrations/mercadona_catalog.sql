@@ -1,5 +1,5 @@
 -- Espejo del catálogo de Mercadona en Supabase, para CATÁLOGO + BÚSQUEDA.
--- Lo rellena scripts/sync-catalog.mjs (GitHub Action sync-catalog.yml) 1×/día.
+-- Lo rellena scripts/sync-catalog.mjs (GitHub Action sync-catalog.yml) 1×/semana (lunes).
 -- Así la app no barre ~100 endpoints de Mercadona por usuario: lee de aquí.
 -- (Las novedades NO van por aquí: usan el endpoint /home/new-arrivals/.)
 --

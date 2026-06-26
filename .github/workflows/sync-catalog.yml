@@ -2,7 +2,7 @@ name: Sync Mercadona catalog
 
 on:
   schedule:
-    - cron: '0 5 * * *'   # 05:00 UTC (~07:00 hora peninsular) cada día
+    - cron: '0 6 * * 1'   # lunes 06:00 UTC (08:00 peninsular en verano / 07:00 en invierno)
   workflow_dispatch: {}    # botón "Run workflow" para lanzarlo a mano / probar
 
 # Evita solapamientos si una ejecución tarda más de lo normal.
@@ -13,7 +13,7 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 60   # multi-almacén: barre ~48 almacenes (uno por provincia)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

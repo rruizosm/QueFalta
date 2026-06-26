@@ -1,6 +1,6 @@
 # Lanza el sync de Carrefour desde tu PC (Cloudflare bloquea las IPs de datacenter
 # de GitHub Actions, pero tu IP residencial española sí pasa). Pensado para una
-# Tarea Programada diaria. Ver scripts/README-carrefour-sync.md para instalarla.
+# Tarea Programada SEMANAL (lunes 08:00). Ver scripts/README-carrefour-sync.md para instalarla.
 #
 # Lee los secretos de MercaAppMobile/.env.local (gitignored). Necesita en ese fichero:
 #   EXPO_PUBLIC_SUPABASE_URL=...     (ya lo tienes; se usa como SUPABASE_URL)

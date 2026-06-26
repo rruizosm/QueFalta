@@ -15,10 +15,10 @@ const BASE =
 
 // La API de Mercadona es POR ALMACÉN: cada `wh` tiene su propio catálogo e ids, y
 // `GET /products/{id}/` devuelve 404 si ese id no existe en el almacén consultado.
-// Sin `wh`, la API resuelve a un almacén por defecto que NO coincide con el del
-// espejo de Supabase (búsqueda) → productos regionales como "Fuente Dehesa" daban
-// "No se pudo cargar la información del producto".
-// DEBE coincidir con MERCADONA_WH de scripts/sync-catalog.mjs (por defecto "mad1").
+// mad1 (Madrid) cubre el catálogo NACIONAL (la inmensa mayoría). Para los productos
+// REGIONALES (p.ej. aguas catalanas), que dan 404 en mad1, el detalle se reintenta
+// con su almacén de zona: el sync multi-almacén guarda ese `wh` en source_wh y
+// ProductDetailModal lo pasa a fetchProduct(id, wh). Ver scripts/sync-catalog.mjs.
 const WH = 'mad1';
 
 /**
@@ -27,9 +27,9 @@ const WH = 'mad1';
  * NO depende del idioma (solo cambia el texto, no qué productos existen ni sus
  * ids), así que el detalle por id sigue coincidiendo con el espejo (ver WH).
  */
-const url = (path: string) => {
+const url = (path: string, wh: string = WH) => {
   const lang = getLanguage() === 'ca' ? 'ca' : 'es';
-  return `${BASE}${path}${path.includes('?') ? '&' : '?'}lang=${lang}&wh=${WH}`;
+  return `${BASE}${path}${path.includes('?') ? '&' : '?'}lang=${lang}&wh=${wh}`;
 };
 
 export async function fetchCategories(): Promise<N1Category[]> {
@@ -51,10 +51,15 @@ export async function fetchCategoryDetail(id: number): Promise<N2CategoryDetail>
   return data;
 }
 
-/** Full detail for a single product by its Mercadona id. */
-export async function fetchProduct(id: string): Promise<MercadonaProductDetail> {
-  console.log('[mercadona] fetchProduct →', url(`/products/${id}/`));
-  const res = await fetch(url(`/products/${id}/`));
+/**
+ * Full detail for a single product by its Mercadona id.
+ * `wh` permite consultar el almacén que tiene el producto (regionales): el detalle
+ * por defecto usa mad1 y da 404 para productos que solo existen en otra zona. El
+ * cliente lo obtiene de `source_wh` del espejo (ver fetchProductWh en api/catalog).
+ */
+export async function fetchProduct(id: string, wh?: string): Promise<MercadonaProductDetail> {
+  console.log('[mercadona] fetchProduct →', url(`/products/${id}/`, wh));
+  const res = await fetch(url(`/products/${id}/`, wh));
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data: MercadonaProductDetail = await res.json();
   console.log('[mercadona] fetchProduct ←', data.display_name);

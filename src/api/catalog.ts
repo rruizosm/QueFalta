@@ -1,5 +1,5 @@
 // Lecturas del espejo del catálogo de Mercadona en Supabase
-// (tabla mercadona_products, rellenada 1×/día por scripts/sync-catalog.mjs).
+// (tabla mercadona_products, rellenada 1×/semana por scripts/sync-catalog.mjs).
 //
 // Sustituye al barrido de ~100 endpoints que antes hacía cada usuario para poder
 // buscar: ahora es una sola query con índice trigram. La columna `raw` guarda el
@@ -116,6 +116,43 @@ export async function browseProducts(cursor: BrowseCursor | null, limit = 50): P
     return ca && r.display_name_ca ? { ...p, display_name: r.display_name_ca } : p;
   });
   return { items, nextCursor };
+}
+
+/** Nombres localizados (idioma ACTIVO) de varios productos de Mercadona por id.
+ *  La cesta guarda `product_name` como un snapshot del idioma con el que se añadió
+ *  el producto (e incluso otro miembro del grupo pudo añadirlo en otro idioma):
+ *  con esto la Lista re-traduce esos nombres al idioma actual. Solo Mercadona lo
+ *  necesita —Bonpreu/bonÀrea ya se guardan en català y el resto solo en castellano—.
+ *  Si el catalán aún no está poblado, cae al castellano (coalesce). */
+export async function fetchMercadonaNames(ids: string[]): Promise<Record<string, string>> {
+  const out: Record<string, string> = {};
+  const unique = [...new Set(ids)].filter(Boolean);
+  if (unique.length === 0) return out;
+  const ca = getLanguage() === 'ca';
+  const { data, error } = await supabase
+    .from('mercadona_products')
+    .select('id, display_name, display_name_ca')
+    .in('id', unique);
+  if (error) throw error;
+  for (const r of data ?? []) {
+    const name = ca && r.display_name_ca ? r.display_name_ca : r.display_name;
+    if (name) out[String(r.id)] = name;
+  }
+  return out;
+}
+
+/** Almacén (`wh`) que SÍ tiene este producto Mercadona, según el espejo. El detalle
+ *  por defecto usa mad1 y da 404 para productos regionales (solo existen en otra
+ *  zona, p.ej. aguas catalanas); con esto se reintenta el detalle con su almacén.
+ *  Devuelve null si no se conoce (productos aún sin source_wh → cae a mad1). */
+export async function fetchProductWh(id: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('mercadona_products')
+    .select('source_wh')
+    .eq('id', id)
+    .maybeSingle();
+  if (error || !data) return null;
+  return (data as { source_wh: string | null }).source_wh ?? null;
 }
 
 /** Deduce la tienda a partir del id de producto: Bonpreu usa uuids; Mercadona,
@@ -355,6 +392,17 @@ export interface BonareaProduct {
   priceFormat: string | null;  // precio mostrado ("4,08 €/u.")
   pricePerUnit: string | null; // etiqueta €/unidad canónica ("6,39 €/kg")
   categoryName: string | null;
+  // Ficha (solo en fetchBonareaProduct; null en listados/búsqueda). La rellena
+  // scripts/sync-bonarea.mjs leyendo la página del producto. Ver migración
+  // bonarea_product_detail.sql.
+  description: string | null;
+  ingredients: string | null;
+  allergens: string | null;
+  nutrition: string | null;
+  conservation: string | null;
+  denomination: string | null;
+  origin: string | null;
+  operator: string | null;
 }
 
 // Bilingüe: en català muestra display_name_ca si existe (fallback al castellano).
@@ -368,13 +416,31 @@ const mapBonarea = (r: any): BonareaProduct => {
     priceFormat: r.price_format ?? null,
     pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
     categoryName: r.category_name ?? null,
+    // Ficha (solo presente en detalle; en listados queda undefined → null). Bilingüe:
+    // en català usa la columna _ca si existe, con fallback al castellano.
+    description: pickLang(r.description, r.description_ca),
+    ingredients: pickLang(r.ingredients, r.ingredients_ca),
+    allergens: pickLang(r.allergens, r.allergens_ca),
+    nutrition: pickLang(r.nutrition, r.nutrition_ca),
+    conservation: pickLang(r.conservation, r.conservation_ca),
+    denomination: pickLang(r.denomination, r.denomination_ca),
+    origin: pickLang(r.origin, r.origin_ca),
+    operator: pickLang(r.operator, r.operator_ca),
   };
 };
+
+// Elige el valor catalán si la UI está en català y existe; si no, el castellano.
+const pickLang = (es: any, ca: any): string | null =>
+  (getLanguage() === 'ca' && ca ? ca : es) ?? null;
 
 // €/unidad canónico (columnas l/kg/ud), igual que el resto de supers, para mostrar
 // "6,39 €/kg" de forma consistente (antes se leía la cadena cruda de raw.unitPrice).
 const BONAREA_COLS =
   'id, display_name, display_name_ca, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+// Columnas de ficha (es + ca): solo para el detalle (cargas pesadas → no en listados).
+const BONAREA_DETAIL_COLS =
+  `${BONAREA_COLS}, description, ingredients, allergens, nutrition, conservation, denomination, origin, operator`
+  + `, description_ca, ingredients_ca, allergens_ca, nutrition_ca, conservation_ca, denomination_ca, origin_ca, operator_ca`;
 
 /** Búsqueda por nombre en el catálogo de bonÀrea (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
@@ -402,7 +468,7 @@ export async function browseBonareaProducts(cursor: BrowseCursor | null, limit =
 export async function fetchBonareaProduct(id: string): Promise<BonareaProduct | null> {
   const { data, error } = await supabase
     .from('bonarea_products')
-    .select(BONAREA_COLS)
+    .select(BONAREA_DETAIL_COLS)
     .eq('id', id)
     .maybeSingle();
   if (error) throw error;
@@ -570,6 +636,15 @@ export interface DiaProduct {
   priceFormat: string | null;  // precio mostrado ("5,89 €")
   pricePerUnit: string | null; // etiqueta €/unidad canónica ("9,82 €/kg")
   categoryName: string | null;
+  // Ficha (solo en fetchDiaProduct; null en listados/búsqueda). La rellena
+  // scripts/sync-dia.mjs del vike_pageContext. Ver migración dia_product_detail.sql.
+  description: string | null;
+  ingredients: string | null;
+  nutrition: string | null;
+  conservation: string | null;
+  preparation: string | null;
+  denomination: string | null;
+  operator: string | null;
 }
 
 const mapDia = (r: any): DiaProduct => ({
@@ -581,10 +656,21 @@ const mapDia = (r: any): DiaProduct => ({
   priceFormat: r.price_format ?? null,
   pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
   categoryName: r.category_name ?? null,
+  // Solo presentes cuando se piden (detalle); en listados quedan undefined → null.
+  description: r.description ?? null,
+  ingredients: r.ingredients ?? null,
+  nutrition: r.nutrition ?? null,
+  conservation: r.conservation ?? null,
+  preparation: r.preparation ?? null,
+  denomination: r.denomination ?? null,
+  operator: r.operator ?? null,
 });
 
 const DIA_COLS =
   'id, display_name, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+// Columnas de ficha: solo para el detalle (cargas pesadas → no se piden en listados).
+const DIA_DETAIL_COLS =
+  `${DIA_COLS}, description, ingredients, nutrition, conservation, preparation, denomination, operator`;
 
 /** Búsqueda por nombre en el catálogo de Dia (server-side). */
 export async function searchDiaProducts(query: string, limit = 50): Promise<DiaProduct[]> {
@@ -608,7 +694,7 @@ export async function browseDiaProducts(cursor: BrowseCursor | null, limit = 50)
 export async function fetchDiaProduct(id: string): Promise<DiaProduct | null> {
   const { data, error } = await supabase
     .from('dia_products')
-    .select(DIA_COLS)
+    .select(DIA_DETAIL_COLS)
     .eq('id', id)
     .maybeSingle();
   if (error) throw error;

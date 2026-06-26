@@ -8,6 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { fetchProduct } from '../api/mercadona';
+import { fetchProductWh } from '../api/catalog';
 import type { MercadonaProductDetail } from '../types';
 import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../context/ToastContext';
@@ -65,10 +66,25 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
     setProduct(null);
     setQty(1);
     let cancelled = false;
-    fetchProduct(productId)
-      .then((p) => { if (!cancelled) setProduct(p); })
-      .catch(() => { if (!cancelled) setError(true); })
-      .finally(() => { if (!cancelled) setLoading(false); });
+    (async () => {
+      try {
+        let p: MercadonaProductDetail;
+        try {
+          p = await fetchProduct(productId);
+        } catch {
+          // Producto regional: el almacén por defecto (mad1) no lo tiene → 404.
+          // Buscar en el espejo un almacén que sí lo tenga y reintentar.
+          const wh = await fetchProductWh(productId);
+          if (!wh) throw new Error('sin almacén');
+          p = await fetchProduct(productId, wh);
+        }
+        if (!cancelled) setProduct(p);
+      } catch {
+        if (!cancelled) setError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
     return () => { cancelled = true; };
   }, [productId]);
 

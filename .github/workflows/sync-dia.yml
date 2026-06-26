@@ -2,7 +2,7 @@ name: Sync Dia catalog
 
 on:
   schedule:
-    - cron: '0 7 * * *'    # 07:00 UTC (tras Consum), cada día
+    - cron: '40 6 * * 1'   # lunes 06:40 UTC (tras Consum), semanal
   workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
 
 concurrency:

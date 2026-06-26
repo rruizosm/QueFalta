@@ -33,6 +33,16 @@ const DRY_RUN = process.env.DRY_RUN === '1';
 const CONCURRENCY = Number(process.env.CONCURRENCY || 4);
 const MAX_CATEGORIES = process.env.MAX_CATEGORIES ? Number(process.env.MAX_CATEGORIES) : Infinity;
 
+// Ficha de producto (INGREDIENTES/NUTRICIÓN/ORIGEN…). La ficha cambia poco frente al
+// precio (diario), así que NO se baja la de todos cada día: solo la de productos sin
+// ficha o con detail_synced_at más viejo que DETAIL_TTL_DAYS; el resto arrastra la
+// guardada. OJO Cloudflare: la pasada de ficha multiplica peticiones → conc. baja +
+// DETAIL_MAX para repartir en días. Ver supabase/migrations/carrefour_product_detail.sql.
+const SKIP_DETAIL = process.env.SKIP_DETAIL === '1';     // 1 = no tocar la ficha (preserva la existente)
+const DETAIL_CONCURRENCY = Number(process.env.DETAIL_CONCURRENCY || 3);
+const DETAIL_TTL_DAYS = Number(process.env.DETAIL_TTL_DAYS || 30);
+const DETAIL_MAX = process.env.DETAIL_MAX ? Number(process.env.DETAIL_MAX) : Infinity; // tope de fichas/ejecución
+
 if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
   console.error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE (o usa DRY_RUN=1)');
   process.exit(1);
@@ -166,6 +176,190 @@ function normalize(p) {
   };
 }
 
+// ── Ficha de producto (window.__INITIAL_STATE__ de la PDP) ───────────────────
+// La página del producto (raw.url) embebe window.__INITIAL_STATE__ con nutrition_info
+// TOTALMENTE estructurado: ingredientes (HTML), alergenos{contiene,puedeContener},
+// valorEnergetico, macros (grasas/hidratos/fibra/proteinas/sal con subítems) y masInfo
+// (grupos → listaInfo de {nombre,valor}: conservación, denominación legal, operador…).
+const DETAIL_COLS = ['ingredients', 'allergens', 'nutrition', 'conservation', 'preparation', 'denomination', 'origin', 'operator'];
+
+const ENTITIES = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'", '&nbsp;': ' ' };
+const decodeEntities = (s) => s
+  .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+  .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)))
+  .replace(/&[a-z]+;/gi, (m) => ENTITIES[m.toLowerCase()] ?? m);
+
+function htmlToText(html) {
+  if (html == null) return null;
+  const t = decodeEntities(
+    String(html).replace(/<\s*br\s*\/?\s*>/gi, '\n').replace(/<\/p>/gi, '\n').replace(/<[^>]+>/g, ''),
+  ).replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  return t || null;
+}
+const stripAccents = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+const normName = (s) => stripAccents(String(s || '')).toLowerCase().replace(/\s+/g, ' ').trim();
+const stripUnit = (s) => String(s || '').replace(/\s*\([^)]*\)\s*$/, '').trim(); // "Grasas (g)" → "Grasas"
+
+// Extrae el objeto window.__INITIAL_STATE__ = {…}; (objeto balanceado tras el =).
+function extractInitialState(html) {
+  const i = html.indexOf('window.__INITIAL_STATE__');
+  if (i < 0) return null;
+  const s = html.indexOf('{', i);
+  if (s < 0) return null;
+  let depth = 0;
+  for (let j = s; j < html.length; j++) {
+    if (html[j] === '{') depth++;
+    else if (html[j] === '}' && --depth === 0) {
+      try { return JSON.parse(html.slice(s, j + 1)); } catch { return null; }
+    }
+  }
+  return null;
+}
+
+// Localiza el objeto con `nutrition_info` dentro del estado.
+function findNutritionInfo(state) {
+  const seen = new Set();
+  const walk = (o, d) => {
+    if (!o || typeof o !== 'object' || d > 9 || seen.has(o)) return null;
+    seen.add(o);
+    if (o.nutrition_info) return o.nutrition_info;
+    for (const k of Object.keys(o)) { const r = walk(o[k], d + 1); if (r) return r; }
+    return null;
+  };
+  return walk(state, 0);
+}
+
+// valorEnergetico + macros → texto (un nutriente por línea, subítems entre paréntesis).
+function nutritionText(ni) {
+  const lines = [];
+  lines.push(ni.valorMedioPor ? `Valores medios por ${ni.valorMedioPor}:` : 'Valores medios:');
+  const ve = ni.valorEnergetico;
+  if (ve) {
+    const e = [ve.kilojulios?.valor, ve.kilocalorias?.valor].filter(Boolean).join(' / ');
+    if (e) lines.push(`Valor energético ${e}`);
+  }
+  for (const key of ['grasas', 'hidratos', 'fibra', 'proteinas', 'sal']) {
+    const m = ni[key];
+    if (!m?.valor) continue;
+    let s = `${stripUnit(m.nombre)} ${m.valor}`.trim();
+    const subs = (m.listaInfo || []).filter((x) => x?.valor).map((x) => `${stripUnit(x.nombre)} ${x.valor}`.trim());
+    if (subs.length) s += ` (${subs.join(', ')})`;
+    lines.push(s);
+  }
+  return lines.length > 1 ? lines.join('\n') : null;
+}
+
+// nutrition_info → columnas de ficha.
+function carrefourDetailColumns(ni) {
+  if (!ni) return {};
+  // Aplana masInfo (grupos → ítems) a un mapa nombreNormalizado → valor en texto.
+  const items = {};
+  for (const g of ni.masInfo || []) {
+    for (const it of g.listaInfo || []) if (it?.nombre) items[normName(it.nombre)] = htmlToText(it.valor);
+    if (g.nombre && typeof g.valor === 'string') items[normName(g.nombre)] = htmlToText(g.valor);
+  }
+  const pick = (...subs) => {
+    for (const [k, v] of Object.entries(items)) if (v && subs.some((s) => k.includes(s))) return v;
+    return null;
+  };
+  const a = ni.alergenos;
+  const allergens = a
+    ? [a.contiene && `Contiene: ${a.contiene}`, a.puedeContener && `Puede contener: ${a.puedeContener}`].filter(Boolean).join('\n') || null
+    : null;
+  const operator = [pick('direccion del operador'), pick('razon social fabricante', 'fabricante/envasador')]
+    .filter(Boolean).join('\n') || null;
+  return {
+    ingredients:  htmlToText(ni.ingredientes),
+    allergens,
+    nutrition:    nutritionText(ni),
+    conservation: pick('consumo una vez abierto', 'condiciones', 'conservaci'),
+    preparation:  pick('modo de empleo', 'preparaci', 'instrucciones de uso', 'instrucciones de preparaci'),
+    denomination: pick('denominacion legal', 'denominacion'),
+    origin:       pick('pais de origen', 'procedencia', 'origen'),
+    operator,
+  };
+}
+
+// Descarga la PDP con curl (browser headers, valida sobre __INITIAL_STATE__) y parsea.
+async function fetchDetail(url) {
+  const full = url.startsWith('http') ? url : `${HOME}${url}`;
+  const args = ['-sSL', '--compressed', '--max-time', '30', '-A', UA, ...BROWSER_HEADERS, '-w', '\n__HTTP__%{http_code}', full];
+  for (let t = 0; t < 4; t++) {
+    try {
+      const { stdout } = await execFileP('curl', args, { maxBuffer: 32 * 1024 * 1024 });
+      const mi = stdout.lastIndexOf('\n__HTTP__');
+      const html = mi >= 0 ? stdout.slice(0, mi) : stdout;
+      if (html.includes('window.__INITIAL_STATE__')) {
+        return carrefourDetailColumns(findNutritionInfo(extractInitialState(html) ?? {}));
+      }
+    } catch (e) {
+      if (t === 3) console.warn(`[carrefour] ficha curl ${full} falló: ${e.message.split('\n')[0]}`);
+    }
+    await sleep(800 * (t + 1));
+  }
+  return {}; // sin __INITIAL_STATE__ tras reintentos (Cloudflare): se reintenta otro día
+}
+
+// Lee la ficha ya guardada (id → fila) para decidir qué refrescar y arrastrar la del
+// resto. Paginado por Range (PostgREST corta a 1000).
+async function fetchExistingDetail() {
+  const map = new Map();
+  const cols = ['id', 'detail_synced_at', ...DETAIL_COLS].join(',');
+  const PAGE = 1000;
+  for (let from = 0; ; from += PAGE) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/carrefour_products?select=${cols}`, {
+      headers: {
+        apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}`,
+        Range: `${from}-${from + PAGE - 1}`, 'Range-Unit': 'items',
+      },
+    });
+    if (!res.ok) throw new Error(`read detail ${res.status}: ${await res.text()}`);
+    const batch = await res.json();
+    for (const r of batch) map.set(r.id, r);
+    if (batch.length < PAGE) break;
+  }
+  return map;
+}
+
+// Rellena la ficha de `rows` IN-PLACE: reutiliza la guardada si está al día y descarga
+// (con tope DETAIL_MAX) la de los que faltan/caducaron. Claves uniformes para el upsert.
+async function fillDetail(rows) {
+  const existing = await fetchExistingDetail();
+  const ttlMs = DETAIL_TTL_DAYS * 86400000;
+  const now = Date.now();
+  for (const r of rows) { for (const c of DETAIL_COLS) r[c] = null; r.detail_synced_at = null; }
+  const stale = [];
+  for (const r of rows) {
+    const prev = existing.get(r.id);
+    const fresh = prev?.detail_synced_at && now - new Date(prev.detail_synced_at).getTime() < ttlMs;
+    if (prev) { for (const c of DETAIL_COLS) r[c] = prev[c] ?? null; r.detail_synced_at = prev.detail_synced_at ?? null; }
+    if (!fresh) stale.push(r);
+  }
+  const batch = stale.slice(0, DETAIL_MAX);
+  console.log(`[carrefour] ficha: ${batch.length} a descargar · ${rows.length - batch.length} al día/arrastradas`);
+  const queue = [...batch];
+  let done = 0;
+  await Promise.all(Array.from({ length: DETAIL_CONCURRENCY }, async () => {
+    for (;;) {
+      const r = queue.shift();
+      if (!r) break;
+      const url = r.raw?.url;
+      if (url) {
+        try {
+          const d = await fetchDetail(url);
+          const got = DETAIL_COLS.some((c) => d[c]);
+          const had = DETAIL_COLS.some((c) => r[c]); // r aún tiene lo previo arrastrado
+          // Si no saca nada PERO ya había ficha, NO la pisamos (Cloudflare/cambio de HTML):
+          // se conserva y se reintenta otro día. Si nunca tuvo, se marca rastreada igual.
+          if (got || !had) { Object.assign(r, d); r.detail_synced_at = runStart; }
+        } catch (e) { console.warn(`[carrefour] ficha ${r.id} falló: ${e.message.split('\n')[0]}`); }
+      }
+      if (++done % 50 === 0) console.log(`[carrefour] ficha ${done}/${batch.length}`);
+      await sleep(120);
+    }
+  }));
+}
+
 // ── Supabase REST ────────────────────────────────────────────────────────────
 async function upsert(table, rows) {
   for (const c of chunk(rows, 500)) {
@@ -276,9 +470,28 @@ async function main() {
       sin_img: rows.filter((r) => !r.thumbnail).length,
       sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
     });
+    // Muestra de ficha: descarga la de los primeros productos para verificar el parseo.
+    if (!SKIP_DETAIL) {
+      for (const r of rows.slice(0, 3)) {
+        const url = r.raw?.url;
+        if (!url) continue;
+        try {
+          const d = await fetchDetail(url);
+          console.log(`\nficha ${r.id} — ${r.display_name}`);
+          for (const c of DETAIL_COLS) if (d[c]) console.log(`  ${c}: ${d[c].replace(/\n/g, ' / ').slice(0, 140)}`);
+        } catch (e) { console.warn(`  ficha falló: ${e.message.split('\n')[0]}`); }
+      }
+    }
     return;
   }
   if (rows.length === 0) throw new Error('0 productos (¿bloqueo / cambio de SSR?)');
+
+  // Ficha (INGREDIENTES/NUTRICIÓN/ORIGEN…): solo la de productos nuevos o caducados; el
+  // resto arrastra la guardada. SKIP_DETAIL=1 la deja intacta.
+  if (!SKIP_DETAIL) {
+    try { await fillDetail(rows); }
+    catch (e) { console.warn(`[carrefour] ficha: pasada omitida (${e.message.split('\n')[0]})`); }
+  }
 
   await upsert('carrefour_categories', catRows);
   await upsert('carrefour_products', rows);
@@ -287,4 +500,10 @@ async function main() {
   console.log('[carrefour] OK');
 }
 
-main().catch((e) => { console.error('[carrefour] ERROR', e); process.exit(1); });
+// Ejecuta main() solo al invocar el fichero como script (no al importarlo en tests).
+import { pathToFileURL } from 'node:url';
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+  main().catch((e) => { console.error('[carrefour] ERROR', e); process.exit(1); });
+}
+
+export { carrefourDetailColumns, findNutritionInfo, extractInitialState, nutritionText, htmlToText };

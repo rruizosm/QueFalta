@@ -115,6 +115,16 @@ export default function BonareaProductModal({ product, onClose }: Props) {
         {/* Comparativa: más barato en otros súper */}
         <SimilarProductsSection productName={product.displayName} excludeStore="bonarea" />
 
+        {/* Ficha del producto (de la página de bonÀrea; null si aún no rastreada) */}
+        <Section title={t('product.sections.description')} text={product.description} />
+        <Section title={t('product.sections.ingredients')} text={product.ingredients} />
+        <Section title={t('product.sections.allergens')} text={product.allergens} />
+        <Section title={t('product.sections.nutrition')} text={product.nutrition} />
+        <Section title={t('product.sections.storage')} text={product.conservation} />
+        <Section title={t('product.sections.origin')} text={product.origin} />
+        <Section title={t('product.sections.legalName')} text={product.denomination} />
+        <Section title={t('product.sections.operator')} text={product.operator} />
+
         {product.categoryName ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('product.category')}</Text>
@@ -144,6 +154,19 @@ export default function BonareaProductModal({ product, onClose }: Props) {
           )}
         </TouchableOpacity>
       </View>
+    </View>
+  );
+}
+
+/** Bloque título + texto de la ficha. No pinta nada si el campo viene vacío. */
+function Section({ title, text }: { title: string; text?: string | null }) {
+  const styles = useThemedStyles(themedStyles);
+  const value = text?.trim();
+  if (!value) return null;
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <Text style={styles.sectionText}>{value}</Text>
     </View>
   );
 }

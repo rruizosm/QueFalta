@@ -47,6 +47,15 @@ const CONCURRENCY = Number(process.env.CONCURRENCY || 4);
 const MAX_CATEGORIES = process.env.MAX_CATEGORIES ? Number(process.env.MAX_CATEGORIES) : Infinity;
 const SKIP_N1 = new Set((process.env.SKIP_N1 ?? 'L128').split(',').map((s) => s.trim()).filter(Boolean));
 
+// Ficha de producto (INGREDIENTES/NUTRICIÓN/CONSERVACIÓN…). Como en bonÀrea: la ficha
+// cambia poco frente al precio (diario), así que NO se baja la de todos cada día, solo
+// la de productos sin ficha o con detail_synced_at más viejo que DETAIL_TTL_DAYS; el
+// resto arrastra la guardada. Ver supabase/migrations/dia_product_detail.sql.
+const SKIP_DETAIL = process.env.SKIP_DETAIL === '1';     // 1 = no tocar la ficha (preserva la existente)
+const DETAIL_CONCURRENCY = Number(process.env.DETAIL_CONCURRENCY || 4);
+const DETAIL_TTL_DAYS = Number(process.env.DETAIL_TTL_DAYS || 30);
+const DETAIL_MAX = process.env.DETAIL_MAX ? Number(process.env.DETAIL_MAX) : Infinity; // tope de fichas/ejecución
+
 if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
   console.error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE (o usa DRY_RUN=1)');
   process.exit(1);
@@ -115,6 +124,153 @@ function normalize(p) {
     raw: p,
     synced_at: runStart,
   };
+}
+
+// ── Ficha de producto (JSON estructurado del SSR) ────────────────────────────
+// dia.es embebe el producto completo en el vike_pageContext de su página
+// (raw.url → /…/p/<object_id>): ingredients.text (HTML, alérgenos en <strong>),
+// nutritional_info (estructurada), instructions (conservación/preparación),
+// manufacturer_contact, product_info. dia.es es solo castellano → no bilingüe.
+const DETAIL_COLS = ['description', 'ingredients', 'nutrition', 'conservation', 'preparation', 'denomination', 'operator'];
+
+const ENTITIES = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'", '&nbsp;': ' ' };
+const decodeEntities = (s) => s
+  .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+  .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)))
+  .replace(/&[a-z]+;/gi, (m) => ENTITIES[m.toLowerCase()] ?? m);
+
+// HTML → texto: <br>/<\/p> a salto de línea, resto de tags fuera, entidades, espacios.
+function htmlToText(html) {
+  if (html == null) return null;
+  const t = decodeEntities(
+    String(html)
+      .replace(/<\s*br\s*\/?\s*>/gi, '\n')
+      .replace(/<\/p>/gi, '\n')
+      .replace(/<[^>]+>/g, ''),
+  ).replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  return t || null;
+}
+const numEs = (n) => (typeof n === 'number' ? String(n).replace('.', ',') : n);
+
+// nutritional_info estructurada → texto (un nutriente por línea, decimales con coma).
+function nutritionText(ni) {
+  const nv = ni?.nutritional_values;
+  if (!nv) return null;
+  const lines = [];
+  const size = ni.nutri_size?.value;
+  const unit = ni.nutri_measurement_unit?.value || 'g';
+  lines.push(size ? `Valores medios por ${numEs(size)} ${unit}:` : 'Valores medios:');
+  if (nv.energy_value != null) {
+    const kj = nv.energy_value_kj != null ? `${numEs(nv.energy_value_kj)} ${nv.measure_unit_kj || 'kJ'} / ` : '';
+    lines.push(`Valor energético ${kj}${numEs(nv.energy_value)} ${nv.measure_unit || 'kcal'}`);
+  }
+  for (const row of nv.values || []) {
+    if (!row?.title) continue;
+    let s = `${row.title} ${numEs(row.value)} ${row.measure_unit || ''}`.trim();
+    const subs = (row.items || []).filter((it) => it?.title).map((it) => `${it.title} ${numEs(it.value)} ${it.measure_unit || ''}`.trim());
+    if (subs.length) s += ` (${subs.join(', ')})`;
+    lines.push(s);
+  }
+  return lines.length > 1 ? lines.join('\n') : null;
+}
+
+// Localiza el objeto de producto en el INITIAL_STATE (el que trae ingredients/nutrition).
+function findProductObj(state) {
+  const seen = new Set();
+  const walk = (o, depth) => {
+    if (!o || typeof o !== 'object' || depth > 6 || seen.has(o)) return null;
+    seen.add(o);
+    if ('ingredients' in o || 'nutritional_info' in o || 'product_info' in o) return o;
+    for (const k of Object.keys(o)) { const r = walk(o[k], depth + 1); if (r) return r; }
+    return null;
+  };
+  return walk(state, 0);
+}
+
+// Producto del PDP → columnas de ficha.
+function diaDetailColumns(p) {
+  if (!p) return {};
+  const pi = p.product_info ?? {};
+  const ins = p.instructions ?? {};
+  const mc = p.manufacturer_contact ?? {};
+  const operator = [mc.manufacturer_contact_name, mc.manufacturer_contact_address]
+    .map((s) => (s || '').trim()).filter(Boolean).join('\n') || null;
+  return {
+    description:  htmlToText(pi.description) || null,
+    ingredients:  htmlToText(p.ingredients?.text),
+    nutrition:    nutritionText(p.nutritional_info),
+    conservation: htmlToText(ins.storage_instructions?.text),
+    preparation:  htmlToText(ins.instructions_for_preparation?.text),
+    denomination: htmlToText(pi.product) || null,
+    operator,
+  };
+}
+
+// Descarga la página del producto y devuelve sus columnas de ficha (todas null si no hay).
+async function fetchDetail(url) {
+  const ctx = await getPageContext(url);
+  return diaDetailColumns(findProductObj(ctx.INITIAL_STATE ?? {}));
+}
+
+// Lee la ficha ya guardada (id → fila) para decidir qué refrescar y arrastrar la del
+// resto. Paginado por Range (PostgREST corta a 1000).
+async function fetchExistingDetail() {
+  const map = new Map();
+  const cols = ['id', 'detail_synced_at', ...DETAIL_COLS].join(',');
+  const PAGE = 1000;
+  for (let from = 0; ; from += PAGE) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/dia_products?select=${cols}`, {
+      headers: {
+        apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}`,
+        Range: `${from}-${from + PAGE - 1}`, 'Range-Unit': 'items',
+      },
+    });
+    if (!res.ok) throw new Error(`read detail ${res.status}: ${await res.text()}`);
+    const batch = await res.json();
+    for (const r of batch) map.set(r.id, r);
+    if (batch.length < PAGE) break;
+  }
+  return map;
+}
+
+// Rellena la ficha de `rows` IN-PLACE: reutiliza la guardada si está al día y descarga
+// (con tope DETAIL_MAX) la de los que faltan/caducaron. Garantiza claves uniformes.
+async function fillDetail(rows) {
+  const existing = await fetchExistingDetail();
+  const ttlMs = DETAIL_TTL_DAYS * 86400000;
+  const now = Date.now();
+  for (const r of rows) { for (const c of DETAIL_COLS) r[c] = null; r.detail_synced_at = null; }
+  const stale = [];
+  for (const r of rows) {
+    const prev = existing.get(r.id);
+    const fresh = prev?.detail_synced_at && now - new Date(prev.detail_synced_at).getTime() < ttlMs;
+    if (prev) { for (const c of DETAIL_COLS) r[c] = prev[c] ?? null; r.detail_synced_at = prev.detail_synced_at ?? null; }
+    if (!fresh) stale.push(r);
+  }
+  const batch = stale.slice(0, DETAIL_MAX);
+  console.log(`[dia] ficha: ${batch.length} a descargar · ${rows.length - batch.length} al día/arrastradas`);
+  const queue = [...batch];
+  let done = 0;
+  await Promise.all(Array.from({ length: DETAIL_CONCURRENCY }, async () => {
+    for (;;) {
+      const r = queue.shift();
+      if (!r) break;
+      const url = r.raw?.url;
+      if (url) {
+        try {
+          const d = await fetchDetail(url);
+          const got = DETAIL_COLS.some((c) => d[c]);
+          const had = DETAIL_COLS.some((c) => r[c]); // r aún tiene lo previo arrastrado
+          // Si el parseo no saca nada PERO ya había ficha, NO la pisamos (probable cambio
+          // del SSR): se conserva y se reintenta otro día. Si nunca tuvo, se marca
+          // rastreada igualmente (no reintentar a diario un producto sin ficha).
+          if (got || !had) { Object.assign(r, d); r.detail_synced_at = runStart; }
+        } catch (e) { console.warn(`[dia] ficha ${r.id} falló: ${e.message.split('\n')[0]}`); }
+      }
+      if (++done % 100 === 0) console.log(`[dia] ficha ${done}/${batch.length}`);
+      await sleep(80);
+    }
+  }));
 }
 
 // ── Supabase REST ────────────────────────────────────────────────────────────
@@ -250,9 +406,28 @@ async function main() {
     });
     const unidades = new Set(rows.map((r) => r.raw.prices?.measure_unit).filter(Boolean));
     console.log('measure_units vistas:', [...unidades].join(', '));
+    // Muestra de ficha: descarga la de los primeros productos para verificar el parseo.
+    if (!SKIP_DETAIL) {
+      for (const r of rows.slice(0, 3)) {
+        const url = r.raw?.url;
+        if (!url) continue;
+        try {
+          const d = await fetchDetail(url);
+          console.log(`\nficha ${r.id} — ${r.display_name}`);
+          for (const c of DETAIL_COLS) if (d[c]) console.log(`  ${c}: ${d[c].replace(/\n/g, ' / ').slice(0, 140)}`);
+        } catch (e) { console.warn(`  ficha falló: ${e.message.split('\n')[0]}`); }
+      }
+    }
     return;
   }
   if (rows.length === 0) throw new Error('0 productos (¿cambió el SSR / vike_pageContext?)');
+
+  // Ficha (INGREDIENTES/NUTRICIÓN/CONSERVACIÓN…): solo la de productos nuevos o caducados;
+  // el resto arrastra la guardada. SKIP_DETAIL=1 la deja intacta.
+  if (!SKIP_DETAIL) {
+    try { await fillDetail(rows); }
+    catch (e) { console.warn(`[dia] ficha: pasada omitida (${e.message.split('\n')[0]})`); }
+  }
 
   await upsert('dia_categories', catRows);
   await upsert('dia_products', rows);
@@ -261,4 +436,10 @@ async function main() {
   console.log('[dia] OK');
 }
 
-main().catch((e) => { console.error('[dia] ERROR', e); process.exit(1); });
+// Ejecuta main() solo al invocar el fichero como script (no al importarlo en tests).
+import { pathToFileURL } from 'node:url';
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+  main().catch((e) => { console.error('[dia] ERROR', e); process.exit(1); });
+}
+
+export { diaDetailColumns, findProductObj, nutritionText, htmlToText };

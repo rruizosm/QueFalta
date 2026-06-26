@@ -33,6 +33,11 @@ En Supabase → **SQL Editor**, ejecuta
 [`supabase/migrations/bonarea_catalog.sql`](../supabase/migrations/bonarea_catalog.sql).
 Crea `bonarea_products` y `bonarea_categories`. Sin esto, el sync falla al escribir.
 
+Para la **ficha de producto** (DESCRIPCIÓN/INGREDIENTES/ALÉRGENOS/NUTRICIÓN/ORIGEN…), ejecuta
+también [`supabase/migrations/bonarea_product_detail.sql`](../supabase/migrations/bonarea_product_detail.sql)
+(columnas anulables + `detail_synced_at`). Sin ella, el sync intentará escribir columnas
+inexistentes en la pasada de ficha y fallará el upsert.
+
 ## 2. Service_role key en `.env.local`
 
 Igual que Carrefour: añade en `MercaAppMobile/.env.local` (gitignored) la línea
@@ -60,6 +65,24 @@ Debe terminar con `[bonarea] OK`. El log queda en `scripts/logs/bonarea-sync-<fe
 | `DRY_RUN` | — | `1` = no escribe, imprime resumen |
 | `MAX_CATEGORIES` | ∞ | limita nº de hojas (pruebas) |
 | `KEEP_N1` | `13*300,13*310,13*320` | categorías raíz a incluir (whitelist). Por defecto **solo comida y bebida** (Alimentació, Cuinats, Begudes); `all` = todas; CSV de ids para otra selección |
+| `SKIP_DETAIL` | — | `1` = no toca la ficha (preserva la guardada). Útil si solo quieres refrescar precios |
+| `DETAIL_TTL_DAYS` | `30` | refresca la ficha de un producto si su `detail_synced_at` es más viejo que esto |
+| `DETAIL_MAX` | ∞ | tope de fichas a descargar por ejecución (reparte el rastreo en varios días) |
+| `DETAIL_CONCURRENCY` | `6` | páginas de ficha descargadas en paralelo |
+
+### Ficha de producto (DESCRIPCIÓN/INGREDIENTES/NUTRICIÓN/ORIGEN…)
+
+bonÀrea sirve la ficha como **HTML en servidor** en la página del producto (`raw.urlFriendly`),
+en el bloque `.general-product-info` (pares `<strong>ETIQUETA</strong><p>valor</p>`). El sync la
+parsea a columnas. Como la ficha cambia poco frente al precio (diario), **no se descarga la de
+todos cada día**: solo la de productos **sin ficha** o con `detail_synced_at` más viejo que
+`DETAIL_TTL_DAYS`; el resto arrastra la ya guardada (el upsert de precios no la toca). En DRY_RUN
+se imprime la ficha de los 3 primeros productos para verificar el parseo.
+
+**Bilingüe (es + ca):** la ficha en català va por una urlFriendly distinta
+(`/online/producte/<slug-ca>/<id>`, no la castellana `/producto/`), que sale de la 2ª pasada
+`/ca/`. Se guardan las columnas castellanas y sus `_ca`; `mapBonarea` elige según el idioma de la
+UI con fallback al castellano. Por eso cada producto rastreado descarga DOS páginas (es + ca).
 
 ## 4. Programarlo 1×/día (Tarea Programada de Windows)
 

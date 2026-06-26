@@ -162,7 +162,7 @@ export default function GroupDetailScreen() {
             <View key={z.zone.key}>
               <View style={styles.zoneHeader}>
                 <Text style={styles.zoneHeaderEmoji}>{z.zone.emoji}</Text>
-                <Text style={styles.zoneHeaderText}>{z.zone.label}</Text>
+                <Text style={styles.zoneHeaderText}>{t(`zones.${z.zone.key}`)}</Text>
               </View>
               {sortZoneItems(z.data).map((item) => renderCartItem(item, big))}
             </View>

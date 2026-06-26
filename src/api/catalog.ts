@@ -292,6 +292,16 @@ export interface CarrefourProduct {
   priceFormat: string | null;   // precio mostrado tal cual ("15,40 €")
   pricePerUnit: string | null;  // etiqueta €/unidad canónica ("192,50 €/kg")
   categoryName: string | null;
+  // Ficha (solo en fetchCarrefourProduct; null en listados/búsqueda). La rellena
+  // scripts/sync-carrefour.mjs del window.__INITIAL_STATE__. Ver carrefour_product_detail.sql.
+  ingredients: string | null;
+  allergens: string | null;
+  nutrition: string | null;
+  conservation: string | null;
+  preparation: string | null;
+  denomination: string | null;
+  origin: string | null;
+  operator: string | null;
 }
 
 const mapCarrefour = (r: any): CarrefourProduct => ({
@@ -302,12 +312,24 @@ const mapCarrefour = (r: any): CarrefourProduct => ({
   priceFormat: r.price_format ?? null,
   pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
   categoryName: r.category_name ?? null,
+  // Solo presentes cuando se piden (detalle); en listados quedan undefined → null.
+  ingredients: r.ingredients ?? null,
+  allergens: r.allergens ?? null,
+  nutrition: r.nutrition ?? null,
+  conservation: r.conservation ?? null,
+  preparation: r.preparation ?? null,
+  denomination: r.denomination ?? null,
+  origin: r.origin ?? null,
+  operator: r.operator ?? null,
 });
 
 // El €/unidad de medida del raw venía sin unidad ("192,50 €"); se usa el €/unidad
 // canónico (columnas l/kg/ud) para mostrar "192,50 €/kg" como en el resto de supers.
 const CARREFOUR_COLS =
   'id, display_name, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+// Columnas de ficha: solo para el detalle (cargas pesadas → no se piden en listados).
+const CARREFOUR_DETAIL_COLS =
+  `${CARREFOUR_COLS}, ingredients, allergens, nutrition, conservation, preparation, denomination, origin, operator`;
 
 /** Búsqueda por nombre en el catálogo de Carrefour (server-side). */
 export async function searchCarrefourProducts(query: string, limit = 50): Promise<CarrefourProduct[]> {
@@ -331,7 +353,7 @@ export async function browseCarrefourProducts(cursor: BrowseCursor | null, limit
 export async function fetchCarrefourProduct(id: string): Promise<CarrefourProduct | null> {
   const { data, error } = await supabase
     .from('carrefour_products')
-    .select(CARREFOUR_COLS)
+    .select(CARREFOUR_DETAIL_COLS)
     .eq('id', id)
     .maybeSingle();
   if (error) throw error;

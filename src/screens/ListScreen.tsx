@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
@@ -28,6 +28,7 @@ import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { fetchListItems, setItemInCart, assignListItem, clearListItems, deleteListItems, mergeCartItems, type ListItemRow, type MergedCartItem } from '../api/lists';
+import { fetchMercadonaNames } from '../api/catalog';
 import { fetchGroupMembers } from '../api/groups';
 import { recordPurchase } from '../api/purchases';
 import type { GroupMember } from '../types';
@@ -49,7 +50,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 
 export default function ListScreen() {
   const styles = useThemedStyles(themedStyles);
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const { session } = useAuth();
   const { activeCart } = useCart();
   const toast = useToast();
@@ -58,6 +59,10 @@ export default function ListScreen() {
   const groupId = activeCart?.groupId;
 
   const [items, setItems] = useState<ListItemRow[]>([]);
+  // Nombres de Mercadona re-traducidos al idioma activo (id → nombre). El
+  // product_name guardado en list_items es un snapshot del idioma con el que se
+  // añadió, así que en català se mostraría en castellano sin esto.
+  const [nameOverrides, setNameOverrides] = useState<Record<string, string>>({});
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -190,8 +195,37 @@ export default function ListScreen() {
     }
   };
 
+  // Clave estable con el CONJUNTO de ids de Mercadona presentes (ordenado). Así
+  // marcar "en cesta" (que reemplaza `items` con el mismo conjunto de ids) no
+  // dispara una recarga de nombres; solo cambia al añadir/quitar productos.
+  const mercadonaIdsKey = useMemo(() => {
+    const ids = items.map((it) => it.mercadonaProductId).filter(Boolean) as string[];
+    return [...new Set(ids)].sort().join(',');
+  }, [items]);
+
+  // Re-traduce los nombres de Mercadona al idioma activo (se rehace al cambiar de
+  // idioma o el conjunto de productos). Otros súpers no tienen display_name_ca.
+  useEffect(() => {
+    const ids = mercadonaIdsKey ? mercadonaIdsKey.split(',') : [];
+    if (ids.length === 0) { setNameOverrides({}); return; }
+    let cancelled = false;
+    fetchMercadonaNames(ids)
+      .then((map) => { if (!cancelled) setNameOverrides(map); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [mercadonaIdsKey, lang]);
+
+  // Aplica el nombre localizado (si lo hay) antes de fusionar/pintar.
+  const localizedItems = useMemo(
+    () => items.map((it) =>
+      it.mercadonaProductId && nameOverrides[it.mercadonaProductId]
+        ? { ...it, productName: nameOverrides[it.mercadonaProductId] }
+        : it),
+    [items, nameOverrides],
+  );
+
   // Fusiona duplicados del mismo producto sumando unidades.
-  const merged = mergeCartItems(items);
+  const merged = mergeCartItems(localizedItems);
 
   const doneItems = merged.filter((i) => i.inCart).length;
   const progress = merged.length > 0 ? doneItems / merged.length : 0;
@@ -344,7 +378,7 @@ export default function ListScreen() {
                   )}
                   <View style={styles.zoneHeader}>
                     <Text style={styles.zoneHeaderEmoji}>{section.zone.emoji}</Text>
-                    <Text style={styles.zoneHeaderText}>{section.zone.label}</Text>
+                    <Text style={styles.zoneHeaderText}>{t(`zones.${section.zone.key}`)}</Text>
                     <Text style={styles.zoneHeaderCount}>{zoneInCart}/{section.data.length}</Text>
                   </View>
                 </View>

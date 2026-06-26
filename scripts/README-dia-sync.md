@@ -40,6 +40,11 @@ En Supabase → **SQL Editor**, ejecuta
 [`supabase/migrations/dia_catalog.sql`](../supabase/migrations/dia_catalog.sql).
 Crea `dia_products` y `dia_categories`. Sin esto, el sync falla al escribir.
 
+Para la **ficha de producto** (INGREDIENTES/NUTRICIÓN/CONSERVACIÓN/DENOMINACIÓN…), ejecuta
+también [`supabase/migrations/dia_product_detail.sql`](../supabase/migrations/dia_product_detail.sql)
+(columnas anulables + `detail_synced_at`). Sin ella, el upsert de la pasada de ficha falla
+por columnas inexistentes.
+
 ## 2. Service_role key en `.env.local`
 
 Igual que el resto: añade en `MercaAppMobile/.env.local` (gitignored) la línea
@@ -70,6 +75,19 @@ con CONCURRENCY=4 (son ~600 páginas de ~170 KB).
 | `DRY_RUN` | — | `1` = no escribe, imprime resumen |
 | `MAX_CATEGORIES` | ∞ | limita nº de N2 (pruebas) |
 | `SKIP_N1` | `L128` | N1 a excluir (CSV). Por defecto solo "Novedades y recomendados" |
+| `SKIP_DETAIL` | — | `1` = no toca la ficha (preserva la guardada) |
+| `DETAIL_TTL_DAYS` | `30` | refresca la ficha si su `detail_synced_at` es más viejo que esto |
+| `DETAIL_MAX` | ∞ | tope de fichas a descargar por ejecución (reparte el rastreo) |
+| `DETAIL_CONCURRENCY` | `4` | páginas de ficha en paralelo |
+
+### Ficha de producto (INGREDIENTES/NUTRICIÓN/CONSERVACIÓN…)
+
+dia.es trae el producto **estructurado** en el `vike_pageContext` de su página
+(`raw.url` → `/…/p/<object_id>`): `ingredients.text`, `nutritional_info` (→ texto), `instructions`
+(conservación/preparación), `manufacturer_contact`, `product_info`. **Solo castellano** (dia.es no
+es bilingüe). El sync la descarga **incremental**: solo de productos sin ficha o con
+`detail_synced_at` más viejo que `DETAIL_TTL_DAYS`; el resto arrastra la guardada (el upsert de
+precios no la toca). En DRY_RUN se imprime la ficha de los 3 primeros productos para verificar.
 
 ## 4. Programarlo 1×/día (si se prefiere local en vez de Actions)
 

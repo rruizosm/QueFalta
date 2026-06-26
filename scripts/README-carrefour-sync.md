@@ -12,6 +12,11 @@ En Supabase → **SQL Editor**, ejecuta
 Crea `carrefour_products` y `carrefour_categories`. Sin esto, el sync falla al
 escribir.
 
+Para la **ficha de producto** (INGREDIENTES/NUTRICIÓN/ORIGEN/OPERADOR…), ejecuta también
+[`supabase/migrations/carrefour_product_detail.sql`](../supabase/migrations/carrefour_product_detail.sql)
+(columnas anulables + `detail_synced_at`). Sin ella, el upsert de la pasada de ficha falla
+por columnas inexistentes.
+
 ## 2. Poner la service_role key en `.env.local`
 
 `MercaAppMobile/.env.local` (gitignored) ya tiene `EXPO_PUBLIC_SUPABASE_URL`.
@@ -61,6 +66,27 @@ Start-ScheduledTask  -TaskName 'QueFalta - Sync Carrefour'   # lanzarla ahora
 Get-ScheduledTaskInfo -TaskName 'QueFalta - Sync Carrefour'  # última ejecución y resultado
 Unregister-ScheduledTask -TaskName 'QueFalta - Sync Carrefour' -Confirm:$false  # borrarla
 ```
+
+## Ficha de producto (INGREDIENTES/NUTRICIÓN/ORIGEN…)
+
+Carrefour embebe el producto en `window.__INITIAL_STATE__` de su PDP (`raw.url` →
+`/supermercado/<slug>/R-<id>/p`) con `nutrition_info` **totalmente estructurado**:
+`ingredientes`, `alergenos` (contiene/puede contener), `valorEnergetico`, macros, y
+`masInfo` (grupos → `listaInfo` de nombre/valor: conservación, denominación legal,
+dirección del operador…). Es la ficha más rica de todos los espejos.
+
+El sync la descarga **incremental**: solo de productos sin ficha o con `detail_synced_at`
+más viejo que `DETAIL_TTL_DAYS`; el resto arrastra la guardada (el upsert de precios no la
+toca). **OJO Cloudflare:** la pasada de ficha añade +1 PDP por producto → usa conc. baja y
+reparte con `DETAIL_MAX` (la 1ª ejecución, con todo el catálogo sin ficha, será larga; los
+días siguientes solo lo nuevo/caducado). En DRY_RUN se imprime la ficha de los 3 primeros.
+
+| Var de ficha | Por defecto | Uso |
+|---|---|---|
+| `SKIP_DETAIL` | — | `1` = no toca la ficha (preserva la guardada; solo refresca precios) |
+| `DETAIL_TTL_DAYS` | `30` | refresca la ficha si su `detail_synced_at` es más viejo que esto |
+| `DETAIL_MAX` | ∞ | tope de fichas por ejecución (reparte el crawl bajo Cloudflare en días) |
+| `DETAIL_CONCURRENCY` | `3` | PDPs de ficha en paralelo (bajo para no irritar a Cloudflare) |
 
 ## Notas
 

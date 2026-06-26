@@ -53,6 +53,15 @@ const CA = 'ca';
 const CONCURRENCY = Number(process.env.CONCURRENCY || 5);
 const MAX_CATEGORIES = process.env.MAX_CATEGORIES ? Number(process.env.MAX_CATEGORIES) : Infinity;
 
+// Ficha de producto (DESCRIPCIÓN/INGREDIENTES/NUTRICIÓN/ORIGEN…). La ficha cambia poco
+// frente al precio (diario), así que NO se baja la de todos cada día: solo la de los
+// productos sin ficha o con detail_synced_at más viejo que DETAIL_TTL_DAYS; el resto
+// arrastra la ficha ya guardada. Ver supabase/migrations/bonarea_product_detail.sql.
+const SKIP_DETAIL = process.env.SKIP_DETAIL === '1';     // 1 = no tocar la ficha (preserva la existente)
+const DETAIL_CONCURRENCY = Number(process.env.DETAIL_CONCURRENCY || 6);
+const DETAIL_TTL_DAYS = Number(process.env.DETAIL_TTL_DAYS || 30);
+const DETAIL_MAX = process.env.DETAIL_MAX ? Number(process.env.DETAIL_MAX) : Infinity; // tope de fichas/ejecución
+
 // Categorías raíz (N1) a incluir (whitelist). Por defecto solo comida y bebida:
 // 13*300=Alimentació, 13*310=Cuinats, 13*320=Begudes. bonÀrea trae además bazar
 // (Drogueria, Higiene, Perfumeria, Mascotes, Llar i jardí, Electrodomèstics, Roba,
@@ -187,6 +196,166 @@ function normalize(a) {
   };
 }
 
+// ── Ficha de producto (HTML server-rendered) ─────────────────────────────────
+// bonÀrea sirve la ficha en la página del producto (raw.urlFriendly), en el bloque
+// .general-product-info como pares <strong>ETIQUETA</strong><p>valor</p> (con <br>
+// dentro de los valores largos, p.ej. la tabla nutricional). Al final hay un párrafo
+// de disclaimer legal ("*La información…") que se descarta.
+const DETAIL_COLS = ['description', 'ingredients', 'allergens', 'nutrition', 'conservation', 'denomination', 'origin', 'operator'];
+
+const ENTITIES = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'", '&nbsp;': ' ', '&times;': '×' };
+const decodeEntities = (s) => s
+  .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+  .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)))
+  .replace(/&[a-z]+;/gi, (m) => ENTITIES[m.toLowerCase()] ?? m);
+
+// HTML → texto: <br>/<\/p> a salto de línea, resto de tags fuera, entidades, espacios.
+function htmlToText(html) {
+  const t = decodeEntities(
+    String(html)
+      // Fuera enlaces de navegación ("+ Receta: …") y su texto: no son info de producto.
+      .replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi, '')
+      .replace(/<\s*br\s*\/?\s*>/gi, '\n')
+      .replace(/<\/p>/gi, '\n')
+      .replace(/<[^>]+>/g, ''),
+  )
+    .replace(/[ \t]+/g, ' ')
+    .replace(/ *\n */g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  return t || null;
+}
+const stripAccents = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+const stripDisclaimer = (s) => (s ? s.split(/\*\s*La informaci[oó]/i)[0].trim() || null : s);
+const labelKey = (s) => {
+  const t = htmlToText(s);
+  // Fuera dos-puntos, asteriscos ("INGREDIENTES*:"), el punt volat ("AL·LÈRGENS") y el
+  // apóstrofe ("NOM I ADREÇA DE L'OPERADOR" → "...LOPERADOR").
+  return t ? stripAccents(t).toUpperCase().replace(/[:*·'’]/g, '').replace(/\s+/g, ' ').trim() : '';
+};
+
+// Parsea el bloque .general-product-info → { ETIQUETA_NORMALIZADA: valor }.
+function parseDetailHtml(html) {
+  const i = html.indexOf('general-product-info');
+  if (i < 0) return {};
+  // El bloque termina antes del modal de trazabilidad / footer.
+  const end1 = html.indexOf('modal-trace', i);
+  const end2 = html.indexOf('main-container__footer', i);
+  const end = Math.min(end1 < 0 ? Infinity : end1, end2 < 0 ? Infinity : end2);
+  // Fuera los encabezados de sección (<h4>CARACTERÍSTICAS</h4>, <h4>+ INFORMACIÓN</h4>):
+  // van entre bloques y, si no, su texto se cuela al final del valor anterior.
+  const block = html.slice(i, Number.isFinite(end) ? end : i + 8000).replace(/<h4[\s\S]*?<\/h4>/gi, '');
+  const out = {};
+  const re = /<strong>([\s\S]*?)<\/strong>([\s\S]*?)(?=<strong>|$)/gi;
+  let m;
+  while ((m = re.exec(block))) {
+    const key = labelKey(m[1]);
+    if (!key) continue;
+    const val = stripDisclaimer(htmlToText(m[2]));
+    if (val && !out[key]) out[key] = val;
+  }
+  return out;
+}
+
+// Mapea las etiquetas (es/ca) a las columnas de la ficha.
+function detailToColumns(d) {
+  const pick = (...keys) => { for (const k of keys) if (d[k]) return d[k]; return null; };
+  return {
+    description:  pick('DESCRIPCION', 'DESCRIPCIO'),
+    ingredients:  pick('INGREDIENTES', 'INGREDIENTS'),
+    allergens:    pick('ALERGENOS', 'ALLERGENS'),
+    nutrition:    pick('INFORMACION NUTRICIONAL', 'INFORMACIO NUTRICIONAL', 'VALORES NUTRICIONALES', 'VALOR NUTRICIONAL'),
+    conservation: pick('CONSERVACION', 'CONSERVACIO'),
+    denomination: pick('DENOMINACION', 'DENOMINACIO'),
+    origin:       pick('ORIGEN', 'PAIS DE ORIGEN', 'PAIS DORIGEN'),
+    operator:     pick('NOMBRE I DIRECCION DEL OPERADOR', 'NOMBRE Y DIRECCION DEL OPERADOR', 'NOM I ADRECA DE LOPERADOR', 'OPERADOR'),
+  };
+}
+
+// Descarga la página del producto y devuelve sus columnas de ficha (todas null si no hay).
+async function fetchDetail(urlFriendly) {
+  const html = await curlGet(urlFriendly);
+  return detailToColumns(parseDetailHtml(html));
+}
+
+// Variantes catalanas de las columnas de ficha (description_ca, ingredients_ca…).
+const DETAIL_COLS_CA = DETAIL_COLS.map((c) => `${c}_ca`);
+
+// Lee la ficha ya guardada (id → fila con detail_synced_at + columnas) para decidir
+// qué refrescar y arrastrar la del resto. Paginado por Range (PostgREST corta a 1000).
+async function fetchExistingDetail() {
+  const map = new Map();
+  const cols = ['id', 'detail_synced_at', ...DETAIL_COLS, ...DETAIL_COLS_CA].join(',');
+  const PAGE = 1000;
+  for (let from = 0; ; from += PAGE) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/bonarea_products?select=${cols}`, {
+      headers: {
+        apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}`,
+        Range: `${from}-${from + PAGE - 1}`, 'Range-Unit': 'items',
+      },
+    });
+    if (!res.ok) throw new Error(`read detail ${res.status}: ${await res.text()}`);
+    const batch = await res.json();
+    for (const r of batch) map.set(r.id, r);
+    if (batch.length < PAGE) break;
+  }
+  return map;
+}
+
+// Rellena la ficha de `rows` IN-PLACE en castellano Y català: reutiliza la guardada si
+// está al día, y descarga (con tope DETAIL_MAX) la de los que faltan/caducaron. La ficha
+// catalana va por una urlFriendly distinta (/online/producte/…), que viene de la 2ª pasada
+// (`urlCaById`). Garantiza que TODAS las filas llevan las MISMAS claves (PostgREST pone
+// null en las ausentes del upsert).
+async function fillDetail(rows, urlCaById = new Map()) {
+  const existing = await fetchExistingDetail();
+  const ttlMs = DETAIL_TTL_DAYS * 86400000;
+  const now = Date.now();
+  const ALL_COLS = [...DETAIL_COLS, ...DETAIL_COLS_CA];
+  // Punto de partida: todas las filas con la ficha a null (claves uniformes).
+  for (const r of rows) { for (const c of ALL_COLS) r[c] = null; r.detail_synced_at = null; }
+  const stale = [];
+  for (const r of rows) {
+    const prev = existing.get(r.id);
+    const fresh = prev?.detail_synced_at && now - new Date(prev.detail_synced_at).getTime() < ttlMs;
+    if (prev) { for (const c of ALL_COLS) r[c] = prev[c] ?? null; r.detail_synced_at = prev.detail_synced_at ?? null; }
+    if (!fresh) stale.push(r);
+  }
+  const batch = stale.slice(0, DETAIL_MAX);
+  console.log(`[bonarea] ficha: ${batch.length} a descargar · ${rows.length - batch.length} al día/arrastradas`);
+  const queue = [...batch];
+  let done = 0;
+  await Promise.all(Array.from({ length: DETAIL_CONCURRENCY }, async () => {
+    for (;;) {
+      const r = queue.shift();
+      if (!r) break;
+      try {
+        // Castellano (urlFriendly del artículo primario).
+        const urlEs = r.raw?.urlFriendly;
+        if (urlEs) {
+          const d = await fetchDetail(urlEs);
+          const got = DETAIL_COLS.some((c) => d[c]);
+          const had = DETAIL_COLS.some((c) => r[c]); // r aún tiene lo previo arrastrado
+          // Si el parseo no saca nada PERO ya había ficha, NO la pisamos (probable cambio
+          // de HTML de bonÀrea): se conserva y se reintenta otro día. Si nunca tuvo, se
+          // marca rastreada igualmente (no reintentar a diario un producto sin ficha).
+          if (got || !had) { for (const c of DETAIL_COLS) r[c] = d[c]; r.detail_synced_at = runStart; }
+        }
+        // Català (urlFriendly de la 2ª pasada). Mismo guard, sobre las columnas _ca.
+        const urlCa = urlCaById.get(r.id);
+        if (urlCa) {
+          const d = await fetchDetail(urlCa);
+          const got = DETAIL_COLS.some((c) => d[c]);
+          const had = DETAIL_COLS.some((c) => r[`${c}_ca`]);
+          if (got || !had) for (const c of DETAIL_COLS) r[`${c}_ca`] = d[c];
+        }
+      } catch (e) { console.warn(`[bonarea] ficha ${r.id} falló: ${e.message.split('\n')[0]}`); }
+      if (++done % 100 === 0) console.log(`[bonarea] ficha ${done}/${batch.length}`);
+      await sleep(60);
+    }
+  }));
+}
+
 // ── Supabase REST ────────────────────────────────────────────────────────────
 async function upsert(table, rows) {
   for (const c of chunk(rows, 500)) {
@@ -258,7 +427,7 @@ async function main() {
   // 2ª pasada (catalán): nombres de categoría (name_ca) y producto (display_name_ca),
   // casados por id (estable entre idiomas). El árbol completo viene en una respuesta
   // ShoppingBody; los productos se recorren por las MISMAS hojas que el primario.
-  let catNameCa = new Map(), prodNameCa = new Map();
+  let catNameCa = new Map(), prodNameCa = new Map(), prodUrlCa = new Map();
   if (!DRY_RUN) {
     console.log(`[bonarea] 2ª pasada en /${CA}/ (nombres en català)…`);
     try {
@@ -284,6 +453,8 @@ async function main() {
         }
       }));
       prodNameCa = new Map([...prodsCa].map(([id, p]) => [id, p.display_name]).filter(([, n]) => n));
+      // urlFriendly catalana (/online/producte/…) por id → para bajar la ficha en català.
+      prodUrlCa = new Map([...prodsCa].map(([id, p]) => [id, p.raw?.urlFriendly]).filter(([, u]) => u));
       console.log(`[bonarea] ${catNameCa.size} cat + ${prodNameCa.size} prod en català`);
     } catch (e) { console.warn(`[bonarea] 2ª pasada ${CA} falló: ${e.message}`); }
   }
@@ -328,9 +499,28 @@ async function main() {
       sin_img: rows.filter((r) => !r.thumbnail).length,
       sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
     });
+    // Muestra de ficha: descarga la de los primeros productos para verificar el parseo.
+    if (!SKIP_DETAIL) {
+      for (const r of rows.slice(0, 3)) {
+        const url = r.raw?.urlFriendly;
+        if (!url) continue;
+        try {
+          const d = await fetchDetail(url);
+          console.log(`\nficha ${r.id} — ${r.display_name}`);
+          for (const c of DETAIL_COLS) if (d[c]) console.log(`  ${c}: ${d[c].replace(/\n/g, ' / ').slice(0, 140)}`);
+        } catch (e) { console.warn(`  ficha falló: ${e.message.split('\n')[0]}`); }
+      }
+    }
     return;
   }
   if (rows.length === 0) throw new Error('0 productos (¿cambió la API / referencia inválida?)');
+
+  // Ficha (DESCRIPCIÓN/INGREDIENTES/NUTRICIÓN/ORIGEN…): solo la de productos nuevos o
+  // caducados; el resto arrastra la guardada. SKIP_DETAIL=1 la deja intacta.
+  if (!SKIP_DETAIL) {
+    try { await fillDetail(rows, prodUrlCa); }
+    catch (e) { console.warn(`[bonarea] ficha: pasada omitida (${e.message.split('\n')[0]})`); }
+  }
 
   await upsert('bonarea_categories', catRows);
   await upsert('bonarea_products', rows);
@@ -339,4 +529,10 @@ async function main() {
   console.log('[bonarea] OK');
 }
 
-main().catch((e) => { console.error('[bonarea] ERROR', e); process.exit(1); });
+// Ejecuta main() solo al invocar el fichero como script (no al importarlo en tests).
+import { pathToFileURL } from 'node:url';
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+  main().catch((e) => { console.error('[bonarea] ERROR', e); process.exit(1); });
+}
+
+export { parseDetailHtml, detailToColumns, htmlToText };

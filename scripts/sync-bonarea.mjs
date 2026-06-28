@@ -515,17 +515,33 @@ async function main() {
   }
   if (rows.length === 0) throw new Error('0 productos (¿cambió la API / referencia inválida?)');
 
-  // Ficha (DESCRIPCIÓN/INGREDIENTES/NUTRICIÓN/ORIGEN…): solo la de productos nuevos o
-  // caducados; el resto arrastra la guardada. SKIP_DETAIL=1 la deja intacta.
-  if (!SKIP_DETAIL) {
-    try { await fillDetail(rows, prodUrlCa); }
-    catch (e) { console.warn(`[bonarea] ficha: pasada omitida (${e.message.split('\n')[0]})`); }
-  }
-
+  // Catálogo (precios/nombres/categorías) PRIMERO. La ficha es la parte lenta (baja la
+  // página HTML de cada producto, ×2 idiomas) y puede agotar el tiempo del runner; antes
+  // corría ANTES de este upsert, así que un timeout en la ficha tiraba el run ENTERO sin
+  // guardar ni los precios. Persistimos ya el catálogo; la ficha va después en su propio
+  // upsert: si su pasada se queda a medias, precios y productos nuevos siguen en BD.
   await upsert('bonarea_categories', catRows);
   await upsert('bonarea_products', rows);
   await markStale('bonarea_products');
   await markStale('bonarea_categories');
+
+  // Ficha (DESCRIPCIÓN/INGREDIENTES/NUTRICIÓN/ORIGEN…): solo la de productos nuevos o
+  // caducados; el resto arrastra la guardada. SKIP_DETAIL=1 la deja intacta. fillDetail
+  // rellena las columnas de ficha IN-PLACE con claves uniformes → segundo upsert SOLO de
+  // esas columnas (+ id, para resolver el conflicto): ligero y sin reenviar `raw`. Como las
+  // filas ya existen (upsert anterior), este es siempre UPDATE; no toca synced_at/published.
+  if (!SKIP_DETAIL) {
+    try {
+      await fillDetail(rows, prodUrlCa);
+      const ALL_DETAIL = [...DETAIL_COLS, ...DETAIL_COLS_CA];
+      const detailRows = rows.map((r) => {
+        const o = { id: r.id, detail_synced_at: r.detail_synced_at ?? null };
+        for (const c of ALL_DETAIL) o[c] = r[c] ?? null;
+        return o;
+      });
+      await upsert('bonarea_products', detailRows);
+    } catch (e) { console.warn(`[bonarea] ficha: pasada omitida (${e.message.split('\n')[0]})`); }
+  }
   console.log('[bonarea] OK');
 }
 

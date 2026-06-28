@@ -12,7 +12,9 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Bilingüe (es+ca) Y con pasada de ficha (HTML por producto) → el sync más pesado;
+    # como Bonpreu/Dia, 45 min (antes 30, que se quedaban cortos solo con el catálogo en frío).
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,3 +27,11 @@ jobs:
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
           LOCALE: es   # idioma PRIMARIO; el sync añade una 2ª pasada en català (display_name_ca)
           CONCURRENCY: '6'
+          # Ficha (HTML por producto, ×2 idiomas) = la parte lenta. fillDetail es incremental,
+          # pero en FRÍO (1er run) los ~3.137 productos están todos sin ficha → ~6.300 descargas
+          # (~28 min) que NO caben y, peor, fillDetail corre ANTES de los upsert → un timeout ahí
+          # tira el run entero (ni precios se guardan). Se acota el nº de fichas/run y se sube la
+          # concurrencia: el arranque en frío se reparte en ~2 semanas y cada run termina siempre;
+          # en régimen (TTL 30 días) cada semana refresca solo un puñado y el tope no se alcanza.
+          DETAIL_MAX: '2500'
+          DETAIL_CONCURRENCY: '8'

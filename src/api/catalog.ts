@@ -81,6 +81,23 @@ async function keysetPage(
   return { rows, nextCursor };
 }
 
+// Reconstruye el MercadonaProduct del espejo: nombre en català si procede y, sobre
+// todo, ADJUNTA la categoría (N2) guardada en el espejo a `categories`. El `raw` de
+// listado de Mercadona no incluye `categories` (solo el detalle), así que sin esto
+// los productos añadidos desde búsqueda/navegación alfabética entraban en la Lista
+// sin categoría y caían en "Otros". mercadonaToUI lee `categories?.[0]?.name` para
+// que la Lista los agrupe por zona, igual que la navegación por categorías.
+function mirrorMercadonaProduct(r: any, ca: boolean): MercadonaProduct {
+  const p = r.raw as MercadonaProduct;
+  const display_name = ca && r.display_name_ca ? r.display_name_ca : p.display_name;
+  const categories = p.categories ?? (r.category_name
+    ? [{ id: Number(r.category_id) || 0, name: r.category_name as string }]
+    : undefined);
+  // `regions` (CCAA de exclusividad) es columna del espejo, no del raw de la API.
+  const regions = Array.isArray(r.regions) && r.regions.length ? (r.regions as string[]) : null;
+  return { ...p, display_name, categories, regions };
+}
+
 /** Búsqueda por nombre en TODO el catálogo (server-side). Bilingüe (Fase 2):
  *  en català busca y muestra el nombre catalán (columnas display_name_ca[_norm]
  *  del espejo); en castellano, las columnas originales. Si el sync aún no rellenó
@@ -90,15 +107,12 @@ export async function searchProducts(query: string, limit = 50): Promise<Mercado
   if (q.length < 2) return [];
   const ca = getLanguage() === 'ca';
   const { data, error } = await filterByNameWords(
-    supabase.from('mercadona_products').select('raw, display_name_ca').eq('published', true),
+    supabase.from('mercadona_products').select('raw, display_name_ca, category_name, category_id, regions').eq('published', true),
     q,
     ca ? 'display_name_ca_norm' : 'display_name_norm',
   ).limit(limit);
   if (error) throw error;
-  return (data ?? []).map((r: any) => {
-    const p = r.raw as MercadonaProduct;
-    return ca && r.display_name_ca ? { ...p, display_name: r.display_name_ca } : p;
-  });
+  return (data ?? []).map((r: any) => mirrorMercadonaProduct(r, ca));
 }
 
 /** Navegación alfabética del catálogo de Mercadona (sin búsqueda), paginada por
@@ -107,15 +121,32 @@ export async function browseProducts(cursor: BrowseCursor | null, limit = 50): P
   const ca = getLanguage() === 'ca';
   const { rows, nextCursor } = await keysetPage(
     'mercadona_products',
-    'id, raw, display_name_ca',
+    'id, raw, display_name_ca, category_name, category_id, regions',
     ca ? 'display_name_ca_norm' : 'display_name_norm',
     cursor, limit,
   );
-  const items = rows.map((r: any) => {
-    const p = r.raw as MercadonaProduct;
-    return ca && r.display_name_ca ? { ...p, display_name: r.display_name_ca } : p;
-  });
+  const items = rows.map((r: any) => mirrorMercadonaProduct(r, ca));
   return { items, nextCursor };
+}
+
+/** Productos de una subcategoría (N2) de Mercadona DESDE EL ESPEJO. Antes esta
+ *  pantalla pegaba en vivo a la API de Mercadona, que es POR ALMACÉN: con el mad1
+ *  por defecto se omitían los productos regionales (p.ej. aguas catalanas), que
+ *  solo existen en otro `wh`. El espejo une todos los almacenes (sync multi-wh),
+ *  así que aquí SÍ aparecen los regionales en su categoría, igual que el resto de
+ *  supers. `category_id` es la N2 bajo la que se sincronizó (= subcategoryId que
+ *  navega ProductsScreen). Bilingüe: en català muestra el nombre catalán si existe.
+ *  El orden lo pone StoreProductList (reordena alfabéticamente), no hace falta aquí. */
+export async function fetchMercadonaProductsByCategory(categoryId: number, limit = 1000): Promise<MercadonaProduct[]> {
+  const ca = getLanguage() === 'ca';
+  const { data, error } = await supabase
+    .from('mercadona_products')
+    .select('raw, display_name_ca, category_name, category_id, regions')
+    .eq('published', true)
+    .eq('category_id', categoryId)
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map((r: any) => mirrorMercadonaProduct(r, ca));
 }
 
 /** Nombres localizados (idioma ACTIVO) de varios productos de Mercadona por id.
@@ -141,18 +172,22 @@ export async function fetchMercadonaNames(ids: string[]): Promise<Record<string,
   return out;
 }
 
-/** Almacén (`wh`) que SÍ tiene este producto Mercadona, según el espejo. El detalle
- *  por defecto usa mad1 y da 404 para productos regionales (solo existen en otra
- *  zona, p.ej. aguas catalanas); con esto se reintenta el detalle con su almacén.
- *  Devuelve null si no se conoce (productos aún sin source_wh → cae a mad1). */
-export async function fetchProductWh(id: string): Promise<string | null> {
+/** Almacén (`wh`) + CCAA de exclusividad de un producto Mercadona, según el espejo.
+ *  El detalle por defecto usa mad1 y da 404 para productos regionales (solo existen
+ *  en otra zona, p.ej. aguas catalanas); con `wh` se reintenta el detalle con su
+ *  almacén, y `regions` alimenta la línea "Producto solo disponible en …" de la
+ *  ficha. `wh` es null si no se conoce (productos sin source_wh → cae a mad1);
+ *  `regions` es null para los nacionales. */
+export async function fetchProductMirror(id: string): Promise<{ wh: string | null; regions: string[] | null }> {
   const { data, error } = await supabase
     .from('mercadona_products')
-    .select('source_wh')
+    .select('source_wh, regions')
     .eq('id', id)
     .maybeSingle();
-  if (error || !data) return null;
-  return (data as { source_wh: string | null }).source_wh ?? null;
+  if (error || !data) return { wh: null, regions: null };
+  const row = data as { source_wh: string | null; regions: string[] | null };
+  const regions = Array.isArray(row.regions) && row.regions.length ? row.regions : null;
+  return { wh: row.source_wh ?? null, regions };
 }
 
 /** Deduce la tienda a partir del id de producto: Bonpreu usa uuids; Mercadona,

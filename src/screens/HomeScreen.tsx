@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fonts } from '../constants/typography';
 import {
   View,
@@ -8,7 +9,6 @@ import {
   StyleSheet,
   StatusBar,
   ActivityIndicator,
-  Image,
   RefreshControl,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { useCart } from '../context/CartContext';
 import { useProfile } from '../context/ProfileContext';
+import { useNotifications } from '../context/NotificationsContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { fetchMyGroups, fetchGroupItems, type GroupSummary, type GroupItem } from '../api/groups';
@@ -23,6 +24,14 @@ import ProgressBar from '../components/ProgressBar';
 import MemberAvatars from '../components/MemberAvatars';
 import HardShadow from '../components/HardShadow';
 import ProfileChecklistCard from '../components/ProfileChecklistCard';
+import UserAvatar from '../components/UserAvatar';
+import NotificationsSheet from '../components/NotificationsSheet';
+
+// Snapshot del carrito activo en disco, por usuario+grupo (la clave incluye el
+// userId para no filtrar datos entre cuentas del mismo móvil). Permite pintar
+// "Quedan N artículos" al instante al abrir Home, mientras se revalida en
+// segundo plano — igual que la caché en disco del avatar.
+const cartCacheKey = (userId: string, groupId: string) => `@homeCart:${userId}:${groupId}`;
 
 export default function HomeScreen() {
   const styles = useThemedStyles(themedStyles);
@@ -30,11 +39,20 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const { activeCart } = useCart();
   const { profile } = useProfile();
+  const { unreadCount } = useNotifications();
+  const [notifOpen, setNotifOpen] = useState(false);
+
+  const userId = profile?.id ?? null;
 
   const [groups, setGroups] = useState<GroupSummary[]>([]);
   const [groupsLoading, setGroupsLoading] = useState(true);
   const [cartItems, setCartItems] = useState<GroupItem[]>([]);
-  const [cartLoading, setCartLoading] = useState(false);
+  // Grupo cuyos artículos ya hemos traído frescos de la red. Distingue "aún
+  // cargando" de "carrito vacío de verdad" sin un flag que haga parpadear
+  // "Cargando…" en cada visita. El ref espeja el estado para leerlo dentro de
+  // callbacks asíncronos (evita la carrera caché-vs-red al cambiar de carrito).
+  const [loadedGroup, setLoadedGroup] = useState<string | null>(null);
+  const loadedGroupRef = useRef<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(() => {
@@ -45,18 +63,40 @@ export default function HomeScreen() {
 
     let cartP: Promise<unknown> = Promise.resolve();
     if (activeCart) {
-      setCartLoading(true);
-      cartP = fetchGroupItems(activeCart.groupId)
-        .then(setCartItems)
-        .catch(() => setCartItems([]))
-        .finally(() => setCartLoading(false));
+      const { groupId } = activeCart;
+      cartP = fetchGroupItems(groupId)
+        .then((items) => {
+          setCartItems(items);
+          loadedGroupRef.current = groupId;
+          setLoadedGroup(groupId);
+          if (userId) {
+            AsyncStorage.setItem(cartCacheKey(userId, groupId), JSON.stringify(items)).catch(() => {});
+          }
+        })
+        .catch(() => {});
     } else {
       setCartItems([]);
     }
     return Promise.all([groupsP, cartP]);
-  }, [activeCart]);
+  }, [activeCart, userId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  // Hidrata el contador desde la caché en disco al abrir Home o cambiar de
+  // carrito: "Quedan N artículos" aparece al instante mientras load() revalida.
+  // No pisa datos ya frescos del mismo grupo (guard por ref).
+  useEffect(() => {
+    const gid = activeCart?.groupId ?? null;
+    if (!gid || !userId) return;
+    if (loadedGroupRef.current === gid) return; // ya hay datos frescos en memoria
+    setCartItems([]); // es otro carrito: no muestres el contador del anterior
+    let cancelled = false;
+    AsyncStorage.getItem(cartCacheKey(userId, gid)).then((raw) => {
+      if (cancelled || !raw || loadedGroupRef.current === gid) return;
+      try { setCartItems(JSON.parse(raw) as GroupItem[]); } catch { /* ignore */ }
+    });
+    return () => { cancelled = true; };
+  }, [activeCart?.groupId, userId]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -67,6 +107,10 @@ export default function HomeScreen() {
   const doneItems = cartItems.filter((i) => i.inCart).length;
   const totalItems = cartItems.length;
   const progress = totalItems > 0 ? doneItems / totalItems : 0;
+  const remaining = totalItems - doneItems;
+  // Listo cuando hay datos (de caché o red) o ya confirmamos que el carrito de
+  // este grupo está vacío. Si no, seguimos en la primera carga → "Cargando…".
+  const cartReady = totalItems > 0 || loadedGroup === activeCart?.groupId;
 
   const navigateToCart = () => {
     if (activeCart) {
@@ -90,22 +134,32 @@ export default function HomeScreen() {
 
         {/* Header */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>{t('home.greeting', { name: profile?.name?.split(' ')[0] ?? 'Rubén' })}</Text>
-            <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
-          </View>
+          <TouchableOpacity
+            onPress={() => setNotifOpen(true)}
+            style={styles.bellBtn}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            activeOpacity={0.8}
+            accessibilityLabel={t('notifications.a11yOpen')}
+          >
+            <Ionicons name="notifications-outline" size={22} color={colors.accent} />
+            {unreadCount > 0 ? (
+              <View style={styles.bellBadge}>
+                <Text style={styles.bellBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+              </View>
+            ) : null}
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={() => navigation.navigate('Profile')}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             activeOpacity={0.8}
           >
-            {profile?.avatarUrl ? (
-              <Image source={{ uri: profile.avatarUrl }} style={styles.avatar} />
-            ) : (
-              <View style={[styles.avatar, { backgroundColor: profile?.color ?? colors.accent }]}>
-                <Text style={styles.avatarText}>{profile?.initials ?? 'RU'}</Text>
-              </View>
-            )}
+            <UserAvatar
+              avatarUrl={profile?.avatarUrl ?? null}
+              initials={profile?.initials ?? 'RU'}
+              color={profile?.color ?? colors.accent}
+              size={44}
+              style={styles.avatarRing}
+            />
           </TouchableOpacity>
         </View>
 
@@ -143,13 +197,13 @@ export default function HomeScreen() {
               {/* Bottom row */}
               <View style={styles.cartBottom}>
                 <Text style={styles.cartSub}>
-                  {cartLoading
+                  {!cartReady
                     ? t('common.loading')
                     : totalItems === 0
                       ? t('home.cartEmpty')
-                      : totalItems - doneItems === 0
+                      : remaining === 0
                         ? t('home.cartAllDone')
-                        : t('home.cartRemaining', { n: totalItems - doneItems })}
+                        : t('home.cartRemaining', { n: remaining })}
                 </Text>
                 <TouchableOpacity style={styles.cartChip} onPress={navigateToCart}>
                   <Text style={styles.cartChipText}>{t('home.viewCart')}</Text>
@@ -252,6 +306,8 @@ export default function HomeScreen() {
         </View>
 
       </ScrollView>
+
+      <NotificationsSheet visible={notifOpen} onClose={() => setNotifOpen(false)} />
     </View>
   );
 }
@@ -266,15 +322,23 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  greeting: { fontSize: 24, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
-  subtitle: { fontSize: 13, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
-  avatar: {
+  avatarRing: { borderWidth: 1, borderColor: colors.accent },
+
+  // ── Campana de notificaciones ─────────────────────────────────
+  bellBtn: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: colors.accent,
-    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.accent,
+    alignItems: 'center', justifyContent: 'center',
   },
-  avatarText: { color: colors.white, fontFamily: fonts.bold, fontSize: 15 },
+  bellBadge: {
+    position: 'absolute', top: -2, right: -2,
+    minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 4,
+    backgroundColor: '#df4b2e',
+    borderWidth: 2, borderColor: colors.paper,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  bellBadgeText: { fontSize: 9.5, fontFamily: fonts.bold, color: '#ffffff' },
 
   // ── Cart card ─────────────────────────────────────────────────
   cardWrap: { marginBottom: 28 },

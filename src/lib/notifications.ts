@@ -10,6 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { supabase } from './supabase';
+import { getLanguage, t } from '../i18n';
 
 const PREF_KEY = '@notifications_enabled';
 const ANDROID_CHANNEL_ID = 'default';
@@ -54,8 +55,8 @@ export async function sendTestNotification() {
   await ensureAndroidChannel();
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: 'Notificaciones activadas ✅',
-      body: 'Así recibirás avisos de tus grupos y carritos.',
+      title: t('notifications.test.title'),
+      body: t('notifications.test.body'),
     },
     trigger: null,
   });
@@ -111,11 +112,50 @@ export async function registerForPushNotificationsAsync(userId: string): Promise
     await supabase
       .from('push_tokens')
       .upsert(
-        { user_id: userId, token, platform: Platform.OS, updated_at: new Date().toISOString() },
+        {
+          user_id: userId,
+          token,
+          platform: Platform.OS,
+          // Idioma de ESTE dispositivo: el texto de las push se traduce en
+          // servidor (send-push) según este valor.
+          lang: getLanguage(),
+          updated_at: new Date().toISOString(),
+        },
         { onConflict: 'token' },
       );
   } catch {
     // Sin token (simulador, sin permiso, Expo Go, Android sin FCM): la app sigue.
+  }
+}
+
+/**
+ * Actualiza el idioma del token de ESTE dispositivo cuando el usuario cambia el
+ * idioma de la app, para que las notificaciones push (cuyo texto se genera en el
+ * servidor) lleguen ya en el idioma elegido sin esperar al próximo registro.
+ * Best-effort: cualquier fallo se ignora (Expo Go/web, sin sesión, sin token…).
+ */
+export async function syncPushTokenLanguageAsync(lang: string): Promise<void> {
+  if (!pushSupported()) return;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    const userId = session?.user.id;
+    if (!userId) return;
+    if (!(await getNotificationsEnabled())) return;
+    if (!(await hasPermission())) return;
+
+    const id = projectId();
+    if (!id) return;
+
+    const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId: id });
+    if (!token) return;
+
+    await supabase
+      .from('push_tokens')
+      .update({ lang, updated_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .eq('token', token);
+  } catch {
+    // Best-effort: si no se puede actualizar, el siguiente registro lo corrige.
   }
 }
 

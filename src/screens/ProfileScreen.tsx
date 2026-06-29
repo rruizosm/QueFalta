@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, StatusBar, ActivityIndicator, Alert, Image, Linking,
+  StyleSheet, StatusBar, ActivityIndicator, Alert, Linking,
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
+import Constants from 'expo-constants';
 import { useTheme, useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
-import { useGuidedTour } from '../context/GuidedTourContext';
 import {
   getNotificationsEnabled, setNotificationsEnabled,
   hasPermission, requestPermission, sendTestNotification,
@@ -19,6 +19,7 @@ import {
 } from '../lib/notifications';
 import HardShadow from '../components/HardShadow';
 import ProfileRow from '../components/ProfileRow';
+import UserAvatar from '../components/UserAvatar';
 import VerifiedBadge from '../components/VerifiedBadge';
 import ConfirmDialog from '../components/ConfirmDialog';
 import PaywallModal from '../components/PaywallModal';
@@ -33,8 +34,8 @@ export default function ProfileScreen() {
   const { t, lang } = useTranslation();
   const { session, signOut } = useAuth();
   const { profile, loading, isPremium } = useProfile();
-  const { startTour } = useGuidedTour();
   const email = session?.user.email ?? '';
+  const appVersion = `v${Constants.expoConfig?.version ?? '1.0.0'}`;
 
   const [notifications, setNotifications] = useState(false);
   const [signOutVisible, setSignOutVisible] = useState(false);
@@ -132,13 +133,7 @@ export default function ProfileScreen() {
           {/* Identity card */}
           <HardShadow style={styles.identityCard}>
             {/* Avatar */}
-            {avatarUrl ? (
-              <Image source={{ uri: avatarUrl }} style={styles.avatar} />
-            ) : (
-              <View style={[styles.avatar, { backgroundColor: avatarBg }]}>
-                <Text style={styles.avatarInitials}>{initials}</Text>
-              </View>
-            )}
+            <UserAvatar avatarUrl={avatarUrl} initials={initials} color={avatarBg} size={54} />
 
             {/* Name + email */}
             <View style={styles.identityText}>
@@ -253,19 +248,15 @@ export default function ProfileScreen() {
           <Text style={styles.sectionLabel}>{t('profile.sectionSupport')}</Text>
           <View style={styles.section}>
             <ProfileRow
-              icon="play-circle-outline"
-              label={t('profile.watchTutorial')}
-              onPress={() => { navigation.navigate('HomeMain'); startTour(); }}
-            />
-            <ProfileRow
               icon="help-circle-outline"
               label={t('profile.help')}
-              onPress={() => {}}
+              onPress={() => navigation.navigate('Help')}
             />
             <ProfileRow
               icon="information-circle-outline"
               label={t('profile.about')}
-              value="v2.0"
+              value={appVersion}
+              onPress={() => navigation.navigate('About')}
               last
             />
           </View>
@@ -313,13 +304,8 @@ const themedStyles = () => StyleSheet.create({
   // ── Identity card ─────────────────────────────────────────────
   identityCard: {
     flexDirection: 'row', alignItems: 'center',
-    padding: 14, gap: 13, 
+    padding: 14, gap: 13,
   },
-  avatar: {
-    width: 54, height: 54, borderRadius: 27,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  avatarInitials: { fontSize: 20, fontFamily: fonts.bold, color: colors.white },
   identityText: { flex: 1, minWidth: 0 },
   identityNameRow: { flexDirection: 'row', alignItems: 'center' },
   identityName: { flexShrink: 1, fontSize: 19, fontFamily: fonts.bold, color: colors.ink },

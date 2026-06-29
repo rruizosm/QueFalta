@@ -138,6 +138,7 @@ const themedStyles = () => StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 0, // sin el borde negro de HardShadow: el logo se funde con el fondo
   },
   logo: {
     width: '100%',
@@ -146,6 +147,7 @@ const themedStyles = () => StyleSheet.create({
   heroText: {
     alignItems: 'center',
     gap: 10,
+    marginTop: 8,
   },
   title: {
     fontSize: 38,

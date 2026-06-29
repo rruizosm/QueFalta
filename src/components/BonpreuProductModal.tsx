@@ -14,17 +14,21 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductImage from '../components/ProductImage';
+import ProductInfoSections from '../components/ProductInfoSections';
 import SimilarProductsSection from '../components/SimilarProductsSection';
 
 interface Props {
   /** Producto a mostrar (ya cargado de bonpreu_products). null = oculto. */
   product: BonpreuProduct | null;
   onClose: () => void;
+  /** Padding superior de la cabecera (lo fija StoreProductModal): 56 a pantalla
+   *  completa (cesta), 16 dentro de la hoja (catálogo). */
+  topInset?: number;
 }
 
 /** Detalle de un producto de BonpreuEsclat. Pinta los datos ya cargados en la
  *  búsqueda (no hay fetch: la API de Bonpreu va por el espejo en Supabase). */
-export default function BonpreuProductModal({ product, onClose }: Props) {
+export default function BonpreuProductModal({ product, onClose, topInset = 16 }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { activeCart, addToActiveCart } = useCart();
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
@@ -69,6 +73,7 @@ export default function BonpreuProductModal({ product, onClose }: Props) {
         unitPrice: product.unitPrice,
         imageUrl: product.thumbnail,
         mercadonaProductId: null,
+        storeProductId: product.id,
       }]);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show(t(qty === 1 ? 'product.addedOne' : 'product.addedMany', { n: qty, group: activeCart.groupName }));
@@ -85,7 +90,7 @@ export default function BonpreuProductModal({ product, onClose }: Props) {
     <View style={styles.overlay}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: topInset }]}>
         <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
           <Ionicons name="close" size={24} color={colors.ink} />
         </TouchableOpacity>
@@ -116,12 +121,14 @@ export default function BonpreuProductModal({ product, onClose }: Props) {
         {/* Comparativa: más barato en otros súper */}
         <SimilarProductsSection productName={product.displayName} excludeStore="esclat" />
 
-        {product.categoryName ? (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('product.category')}</Text>
-            <Text style={styles.sectionText}>{product.categoryName}</Text>
-          </View>
-        ) : null}
+        {/* Características del producto. Bonpreu solo expone la categoría (su ficha
+         *  requiere el navegador headless del WAF), pero se pinta con el mismo
+         *  diseño de tarjeta que el resto de súpers. */}
+        <ProductInfoSections
+          items={[
+            { key: 'category', icon: 'pricetags-outline', title: t('product.category'), text: product.categoryName },
+          ]}
+        />
 
         <Text style={styles.note}>{t('product.fromStore', { store: 'BonpreuEsclat' })}</Text>
       </ScrollView>
@@ -185,12 +192,6 @@ const themedStyles = () => StyleSheet.create({
   size: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft },
   refPrice: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
 
-  section: { marginTop: 18 },
-  sectionTitle: {
-    fontSize: 10.5, fontFamily: fonts.bold, color: colors.inkSoft,
-    textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 5,
-  },
-  sectionText: { fontSize: 13.5, fontFamily: fonts.medium, color: colors.ink, lineHeight: 20 },
   note: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkFaint, marginTop: 24 },
 
   footer: {

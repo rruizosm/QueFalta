@@ -16,6 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   applyLanguage, t, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE, type AppLanguage,
 } from '../i18n';
+import { syncPushTokenLanguageAsync } from '../lib/notifications';
 
 const LANGUAGE_KEY = '@app_language';
 
@@ -58,6 +59,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     applyLanguage(value);
     setState(value);
     AsyncStorage.setItem(LANGUAGE_KEY, value).catch(() => {});
+    // Propaga el idioma al token de push de este dispositivo para que las
+    // notificaciones del servidor lleguen en el idioma elegido (no-op en Expo
+    // Go/web o sin sesión). Fire-and-forget: no debe bloquear el cambio de UI.
+    syncPushTokenLanguageAsync(value).catch(() => {});
   }, []);
 
   const value = useMemo(

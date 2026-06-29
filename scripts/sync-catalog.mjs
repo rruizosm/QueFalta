@@ -43,6 +43,37 @@ const MERCA = 'https://tienda.mercadona.es/api';
 const FORCED_WHS = ['mad1', 'bcn1'];
 // Almacenes donde merece la pena la 2ª pasada en català (idioma regional).
 const CA_WHS = ['mad1', 'bcn1'];
+// Almacén de REFERENCIA: si un producto aparece aquí, se considera NACIONAL (está
+// en el catálogo por defecto del cliente). Lo que NO está aquí es regional → se
+// marca con la(s) CCAA donde sí aparece (ver computeRegions).
+const REFERENCE_WH = 'mad1';
+// Provincias forzadas de los almacenes de FORCED_WHS (no se resuelven por CP):
+// mad1 sirve Madrid (28), bcn1 Barcelona (08). Las demás salen de resolvePostalCode.
+const FORCED_WH_PROVINCES = { mad1: '28', bcn1: '08' };
+
+// Provincia (código INE 01–52) → comunidad autónoma. El nombre se muestra tal cual
+// en la app ("Producto solo disponible en {CCAA}"), por eso van en su forma local
+// (Catalunya, Comunitat Valenciana, Illes Balears, Euskadi…).
+const PROVINCE_COMMUNITY = {
+  '01': 'Euskadi', '20': 'Euskadi', '48': 'Euskadi',
+  '02': 'Castilla-La Mancha', '13': 'Castilla-La Mancha', '16': 'Castilla-La Mancha', '19': 'Castilla-La Mancha', '45': 'Castilla-La Mancha',
+  '03': 'Comunitat Valenciana', '12': 'Comunitat Valenciana', '46': 'Comunitat Valenciana',
+  '04': 'Andalucía', '11': 'Andalucía', '14': 'Andalucía', '18': 'Andalucía', '21': 'Andalucía', '23': 'Andalucía', '29': 'Andalucía', '41': 'Andalucía',
+  '05': 'Castilla y León', '09': 'Castilla y León', '24': 'Castilla y León', '34': 'Castilla y León', '37': 'Castilla y León', '40': 'Castilla y León', '42': 'Castilla y León', '47': 'Castilla y León', '49': 'Castilla y León',
+  '06': 'Extremadura', '10': 'Extremadura',
+  '07': 'Illes Balears',
+  '08': 'Catalunya', '17': 'Catalunya', '25': 'Catalunya', '43': 'Catalunya',
+  '15': 'Galicia', '27': 'Galicia', '32': 'Galicia', '36': 'Galicia',
+  '22': 'Aragón', '44': 'Aragón', '50': 'Aragón',
+  '26': 'La Rioja',
+  '28': 'Comunidad de Madrid',
+  '30': 'Región de Murcia',
+  '31': 'Navarra',
+  '33': 'Asturias',
+  '35': 'Canarias', '38': 'Canarias',
+  '39': 'Cantabria',
+  '51': 'Ceuta', '52': 'Melilla',
+};
 
 const runStart = new Date().toISOString();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -96,24 +127,63 @@ async function resolvePostalCode(cp) {
   }
 }
 
-// Lista de almacenes a barrer. Por defecto: mad1 + bcn1 (forzados) + uno por
-// provincia (01..52), resuelto probando varios CP hasta que uno conteste.
+// Lista de almacenes a barrer + el mapa almacén→provincias que sirve (para deducir
+// las CCAA de los productos regionales). Por defecto: mad1 + bcn1 (forzados, con
+// provincia conocida) + uno por provincia (01..52), resuelto probando varios CP
+// hasta que uno conteste. Varias provincias pueden compartir almacén (un almacén
+// sirve una zona), así que `whProvinces` es almacén → Set de provincias.
 async function resolveWarehouses() {
+  const whProvinces = new Map(); // wh -> Set(provincia '01'..'52')
+  const note = (wh, prov) => {
+    if (!wh) return;
+    if (!whProvinces.has(wh)) whProvinces.set(wh, new Set());
+    if (prov) whProvinces.get(wh).add(prov);
+  };
+  for (const [wh, prov] of Object.entries(FORCED_WH_PROVINCES)) note(wh, prov);
+
   if (WHS_ENV) {
     const list = WHS_ENV.split(',').map((s) => s.trim()).filter(Boolean);
-    return [...new Set([...FORCED_WHS, ...list])].slice(0, MAX_WHS);
+    for (const wh of list) note(wh, null);
+    const whs = [...new Set([...FORCED_WHS, ...list])].slice(0, MAX_WHS);
+    return { whs, whProvinces };
   }
-  const found = new Set(FORCED_WHS);
+
   const suffixes = ['001', '002', '004', '080', '200', '500', '700'];
   for (let pp = 1; pp <= 52; pp++) {
     const prov = String(pp).padStart(2, '0');
     for (const suf of suffixes) {
       const wh = await resolvePostalCode(prov + suf);
-      if (wh) { found.add(wh); break; }
+      if (wh) { note(wh, prov); break; }
       await sleep(40);
     }
   }
-  return [...found].slice(0, MAX_WHS);
+  const whs = [...new Set([...FORCED_WHS, ...whProvinces.keys()])].slice(0, MAX_WHS);
+  return { whs, whProvinces };
+}
+
+// Almacén → comunidades que cubre (unión de las CCAA de sus provincias).
+function buildWhCommunities(whProvinces) {
+  const whCommunities = new Map(); // wh -> Set(CCAA)
+  for (const [wh, provs] of whProvinces) {
+    const set = new Set();
+    for (const prov of provs) {
+      const c = PROVINCE_COMMUNITY[prov];
+      if (c) set.add(c);
+    }
+    whCommunities.set(wh, set);
+  }
+  return whCommunities;
+}
+
+// Dado el conjunto de almacenes donde aparece un producto, devuelve la lista de
+// CCAA si es REGIONAL (no está en el almacén de referencia), o null si es nacional
+// (está en mad1) o no se pudo atribuir a ninguna comunidad (fallback seguro: sin
+// insignia ante la duda).
+function computeRegions(whSet, whCommunities) {
+  if (whSet.has(REFERENCE_WH)) return null; // nacional
+  const communities = new Set();
+  for (const wh of whSet) for (const c of whCommunities.get(wh) ?? []) communities.add(c);
+  return communities.size ? [...communities].sort((a, b) => a.localeCompare(b, 'es')) : null;
 }
 
 // upsert vía REST de Supabase (merge-duplicates = ON CONFLICT DO UPDATE por PK).
@@ -155,8 +225,8 @@ async function markStale(table) {
 async function main() {
   console.log(`[sync] inicio ${runStart}${DRY ? ' (DRY_RUN)' : ''}`);
 
-  // 0) Almacenes a barrer.
-  const whs = await resolveWarehouses();
+  // 0) Almacenes a barrer (+ qué provincias sirve cada uno, para deducir las CCAA).
+  const { whs, whProvinces } = await resolveWarehouses();
   console.log(`[sync] ${whs.length} almacenes: ${whs.join(', ')}`);
 
   // 1) Categorías (árbol GLOBAL, igual en todos los almacenes) → tabla de
@@ -177,6 +247,9 @@ async function main() {
   //    que aporta un producto fija su `source_wh` (mad1 va primero → los nacionales
   //    quedan con datos de Madrid; los regionales con su almacén de zona).
   const products = new Map();
+  // id → Set de almacenes donde aparece (para la exclusividad regional). Se acumula
+  // aunque los DATOS del producto ya los aportara un almacén anterior.
+  const whsOfProduct = new Map();
   for (const wh of whs) {
     const before = products.size;
     await pool(n2, CONCURRENCY, async (sub) => {
@@ -186,11 +259,15 @@ async function main() {
         for (const group of detail.categories ?? []) {
           for (const p of group.products ?? []) {
             if (!p.published) continue;
-            if (products.has(String(p.id))) continue; // ya lo aportó otro almacén
+            const id = String(p.id);
+            let whSet = whsOfProduct.get(id);
+            if (!whSet) { whSet = new Set(); whsOfProduct.set(id, whSet); }
+            whSet.add(wh);
+            if (products.has(id)) continue; // los datos ya los aportó otro almacén
             const pi = p.price_instructions ?? {};
             const ppu = canonicalPricePerUnit(pi.reference_price, pi.reference_format);
-            products.set(String(p.id), {
-              id: String(p.id),
+            products.set(id, {
+              id,
               display_name: p.display_name,
               slug: p.slug ?? null,
               packaging: p.packaging ?? null,
@@ -238,15 +315,27 @@ async function main() {
     row.display_name_ca = caNames.get(row.id) ?? null;
   }
 
+  // 2c) Exclusividad regional: de los almacenes donde aparece cada producto. Si no
+  //     está en el almacén de referencia (mad1) es regional → CCAA donde sí está.
+  const whCommunities = buildWhCommunities(whProvinces);
+  let regionalCount = 0;
+  for (const row of products.values()) {
+    row.regions = computeRegions(whsOfProduct.get(row.id) ?? new Set([row.source_wh]), whCommunities);
+    if (row.regions) regionalCount++;
+  }
+  console.log(`[sync] ${regionalCount} productos exclusivos de alguna CCAA`);
+
   const rows = [...products.values()];
   console.log(`[sync] ${rows.length} productos únicos`);
 
   if (rows.length === 0) throw new Error('0 productos: la API no devolvió nada (¿IP bloqueada / wh inválido?)');
 
   if (DRY) {
-    const sample = rows.filter((r) => /font agudes|fuente dehesa|font natura/i.test(r.display_name)).slice(0, 5);
-    console.log('[sync] DRY_RUN — no se escribe. Muestra de productos regionales:');
-    for (const r of sample) console.log(`         ${r.id}  ${r.display_name}  (source_wh=${r.source_wh})`);
+    const regional = rows.filter((r) => r.regions?.length);
+    console.log(`[sync] DRY_RUN — no se escribe. ${regional.length} productos regionales. Muestra:`);
+    for (const r of regional.slice(0, 12)) {
+      console.log(`         ${r.id}  ${r.display_name}  → ${r.regions.join(', ')} (source_wh=${r.source_wh})`);
+    }
     return;
   }
 

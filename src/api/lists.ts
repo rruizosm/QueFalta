@@ -10,6 +10,9 @@ export interface NewListItem {
    *  La lista la mapea a una zona canónica (constants/zones.ts). null → "Otros". */
   categoryName?: string | null;
   mercadonaProductId?: string | null;
+  /** Id del producto en su propio súper (Bonpreu/Carrefour/bonÀrea/Consum/Dia),
+   *  para poder abrir su ficha desde la cesta. Mercadona usa mercadonaProductId. */
+  storeProductId?: string | null;
   unitPrice?: number | null;
   imageUrl?: string | null;
 }
@@ -55,6 +58,7 @@ export interface ListItemRow {
   unitPrice: number | null;
   imageUrl: string | null;
   mercadonaProductId: string | null;
+  storeProductId: string | null;
   /** User id of the member responsible for bringing this item (or null). */
   assignedTo: string | null;
 }
@@ -63,7 +67,7 @@ export interface ListItemRow {
 export async function fetchListItems(listId: string): Promise<ListItemRow[]> {
   const { data, error } = await supabase
     .from('list_items')
-    .select('id, product_name, quantity, unit, in_cart, category_emoji, category_name, unit_price, image_url, mercadona_product_id, assigned_to')
+    .select('id, product_name, quantity, unit, in_cart, category_emoji, category_name, unit_price, image_url, mercadona_product_id, store_product_id, assigned_to')
     .eq('list_id', listId)
     .order('created_at', { ascending: true });
 
@@ -80,6 +84,7 @@ export async function fetchListItems(listId: string): Promise<ListItemRow[]> {
     unitPrice: it.unit_price != null ? Number(it.unit_price) : null,
     imageUrl: it.image_url ?? null,
     mercadonaProductId: it.mercadona_product_id ?? null,
+    storeProductId: it.store_product_id ?? null,
     assignedTo: it.assigned_to ?? null,
   }));
 }
@@ -97,6 +102,7 @@ export interface MergedCartItem {
   categoryEmoji: string | null;
   categoryName: string | null;
   mercadonaProductId: string | null;
+  storeProductId: string | null;
   assignedTo: string | null;
 }
 
@@ -104,6 +110,7 @@ type MergeInput = {
   id: string; productName: string; quantity: number; unit: string; inCart: boolean;
   unitPrice: number | null; imageUrl: string | null; categoryEmoji: string | null;
   mercadonaProductId: string | null; assignedTo?: string | null; categoryName?: string | null;
+  storeProductId?: string | null;
 };
 
 /**
@@ -124,6 +131,7 @@ export function mergeCartItems(items: MergeInput[]): MergedCartItem[] {
       ex.inCart = ex.inCart && it.inCart;
       if (ex.assignedTo !== (it.assignedTo ?? null)) ex.assignedTo = null;
       if (!ex.categoryName && it.categoryName) ex.categoryName = it.categoryName;
+      if (!ex.storeProductId && it.storeProductId) ex.storeProductId = it.storeProductId;
     } else {
       map.set(key, {
         ids: [it.id],
@@ -136,6 +144,7 @@ export function mergeCartItems(items: MergeInput[]): MergedCartItem[] {
         categoryEmoji: it.categoryEmoji,
         categoryName: it.categoryName ?? null,
         mercadonaProductId: it.mercadonaProductId,
+        storeProductId: it.storeProductId ?? null,
         assignedTo: it.assignedTo ?? null,
       });
     }
@@ -148,6 +157,16 @@ export async function setItemInCart(itemId: string, inCart: boolean): Promise<vo
   const { error } = await supabase
     .from('list_items')
     .update({ in_cart: inCart })
+    .eq('id', itemId);
+
+  if (error) throw error;
+}
+
+/** Sets a single row's quantity (used to add/subtract units of a product). */
+export async function updateListItemQuantity(itemId: string, quantity: number): Promise<void> {
+  const { error } = await supabase
+    .from('list_items')
+    .update({ quantity })
     .eq('id', itemId);
 
   if (error) throw error;
@@ -192,6 +211,7 @@ export async function addItemsToList(
     category_emoji: it.categoryEmoji ?? null,
     category_name: it.categoryName ?? null,
     mercadona_product_id: it.mercadonaProductId ?? null,
+    store_product_id: it.storeProductId ?? null,
     unit_price: it.unitPrice ?? null,
     image_url: it.imageUrl ?? null,
     added_by: userId,

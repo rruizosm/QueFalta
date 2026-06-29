@@ -55,7 +55,7 @@ export async function fetchCategoryDetail(id: number): Promise<N2CategoryDetail>
  * Full detail for a single product by its Mercadona id.
  * `wh` permite consultar el almacén que tiene el producto (regionales): el detalle
  * por defecto usa mad1 y da 404 para productos que solo existen en otra zona. El
- * cliente lo obtiene de `source_wh` del espejo (ver fetchProductWh en api/catalog).
+ * cliente lo obtiene de `source_wh` del espejo (ver fetchProductMirror en api/catalog).
  */
 export async function fetchProduct(id: string, wh?: string): Promise<MercadonaProductDetail> {
   console.log('[mercadona] fetchProduct →', url(`/products/${id}/`, wh));

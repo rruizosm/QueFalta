@@ -4,6 +4,7 @@ import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 import ProductImage from './ProductImage';
+import ExclusiveBadge from './ExclusiveBadge';
 
 /**
  * Tarjeta de producto para la vista en cuadrícula: imagen, nombre y precio "y ya".
@@ -17,6 +18,7 @@ export default function ProductGridCard({
   name,
   price,
   emoji,
+  exclusive = false,
   onPress,
 }: {
   width: number;
@@ -24,6 +26,8 @@ export default function ProductGridCard({
   name: string;
   price: string;
   emoji?: string;
+  /** Producto exclusivo de ciertas CCAA → insignia de exclamación sobre la imagen. */
+  exclusive?: boolean;
   onPress: () => void;
 }) {
   const styles = useThemedStyles(themedStyles);
@@ -37,6 +41,7 @@ export default function ProductGridCard({
         ) : (
           <Ionicons name="image-outline" size={22} color={colors.inkFaint} />
         )}
+        {exclusive ? <ExclusiveBadge size={18} style={styles.badge} /> : null}
       </View>
       <Text style={styles.name} numberOfLines={2}>{name}</Text>
       {price ? <Text style={styles.price}>{price}</Text> : null}
@@ -53,6 +58,8 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     marginBottom: 6, overflow: 'hidden',
   },
+  // Insignia de exclusividad, esquina superior izquierda de la imagen.
+  badge: { position: 'absolute', top: 4, left: 4 },
   img: { width: '100%', height: '100%' },
   placeholderEmoji: { fontSize: 26 },
   // minHeight reserva el alto de 2 líneas → precios alineados aunque el nombre ocupe 1.

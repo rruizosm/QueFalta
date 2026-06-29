@@ -14,17 +14,21 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductImage from '../components/ProductImage';
+import ProductInfoSections from '../components/ProductInfoSections';
 import SimilarProductsSection from '../components/SimilarProductsSection';
 
 interface Props {
   /** Producto a mostrar (ya cargado de bonarea_products). null = oculto. */
   product: BonareaProduct | null;
   onClose: () => void;
+  /** Padding superior de la cabecera (lo fija StoreProductModal): 56 a pantalla
+   *  completa (cesta), 16 dentro de la hoja (catálogo). */
+  topInset?: number;
 }
 
 /** Detalle de un producto de bonÀrea. Pinta los datos ya cargados (no hay fetch:
  *  el catálogo de bonÀrea va por el espejo en Supabase). */
-export default function BonareaProductModal({ product, onClose }: Props) {
+export default function BonareaProductModal({ product, onClose, topInset = 16 }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { activeCart, addToActiveCart } = useCart();
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
@@ -70,6 +74,7 @@ export default function BonareaProductModal({ product, onClose }: Props) {
         unitPrice: product.unitPrice,
         imageUrl: product.thumbnail,
         mercadonaProductId: null,
+        storeProductId: product.id,
       }]);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show(t(qty === 1 ? 'product.addedOne' : 'product.addedMany', { n: qty, group: activeCart.groupName }));
@@ -86,7 +91,7 @@ export default function BonareaProductModal({ product, onClose }: Props) {
     <View style={styles.overlay}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: topInset }]}>
         <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
           <Ionicons name="close" size={24} color={colors.ink} />
         </TouchableOpacity>
@@ -115,22 +120,20 @@ export default function BonareaProductModal({ product, onClose }: Props) {
         {/* Comparativa: más barato en otros súper */}
         <SimilarProductsSection productName={product.displayName} excludeStore="bonarea" />
 
-        {/* Ficha del producto (de la página de bonÀrea; null si aún no rastreada) */}
-        <Section title={t('product.sections.description')} text={product.description} />
-        <Section title={t('product.sections.ingredients')} text={product.ingredients} />
-        <Section title={t('product.sections.allergens')} text={product.allergens} />
-        <Section title={t('product.sections.nutrition')} text={product.nutrition} />
-        <Section title={t('product.sections.storage')} text={product.conservation} />
-        <Section title={t('product.sections.origin')} text={product.origin} />
-        <Section title={t('product.sections.legalName')} text={product.denomination} />
-        <Section title={t('product.sections.operator')} text={product.operator} />
-
-        {product.categoryName ? (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('product.category')}</Text>
-            <Text style={styles.sectionText}>{product.categoryName}</Text>
-          </View>
-        ) : null}
+        {/* Características del producto (de la página de bonÀrea; null si aún no rastreada) */}
+        <ProductInfoSections
+          items={[
+            { key: 'description', icon: 'reader-outline', title: t('product.sections.description'), text: product.description },
+            { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: product.ingredients },
+            { key: 'allergens', icon: 'alert-circle-outline', title: t('product.sections.allergens'), text: product.allergens },
+            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition },
+            { key: 'storage', icon: 'time-outline', title: t('product.sections.storage'), text: product.conservation },
+            { key: 'origin', icon: 'location-outline', title: t('product.sections.origin'), text: product.origin },
+            { key: 'legalName', icon: 'document-text-outline', title: t('product.sections.legalName'), text: product.denomination },
+            { key: 'operator', icon: 'business-outline', title: t('product.sections.operator'), text: product.operator },
+            { key: 'category', icon: 'pricetags-outline', title: t('product.category'), text: product.categoryName },
+          ]}
+        />
 
         <Text style={styles.note}>{t('product.fromStore', { store: 'bonÀrea' })}</Text>
       </ScrollView>
@@ -154,19 +157,6 @@ export default function BonareaProductModal({ product, onClose }: Props) {
           )}
         </TouchableOpacity>
       </View>
-    </View>
-  );
-}
-
-/** Bloque título + texto de la ficha. No pinta nada si el campo viene vacío. */
-function Section({ title, text }: { title: string; text?: string | null }) {
-  const styles = useThemedStyles(themedStyles);
-  const value = text?.trim();
-  if (!value) return null;
-  return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      <Text style={styles.sectionText}>{value}</Text>
     </View>
   );
 }
@@ -205,12 +195,6 @@ const themedStyles = () => StyleSheet.create({
   price: { fontSize: 28, fontFamily: fonts.bold, color: colors.accent },
   refPrice: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
 
-  section: { marginTop: 18 },
-  sectionTitle: {
-    fontSize: 10.5, fontFamily: fonts.bold, color: colors.inkSoft,
-    textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 5,
-  },
-  sectionText: { fontSize: 13.5, fontFamily: fonts.medium, color: colors.ink, lineHeight: 20 },
   note: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkFaint, marginTop: 24 },
 
   footer: {

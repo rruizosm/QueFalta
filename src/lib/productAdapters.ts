@@ -24,12 +24,22 @@ export interface UIProduct {
   pricePerUnitLabel: string | null;
   /** Categoría del retailer (para que la Lista agrupe por zona al añadir). */
   categoryName: string | null;
+  /** CCAA donde el producto es EXCLUSIVO, o null si es nacional. Solo Mercadona lo
+   *  aporta (único súper con datos por almacén); dispara la insignia de exclamación
+   *  en lista/cuadrícula y la línea "Producto solo disponible en …" en la ficha. */
+  exclusiveRegions: string[] | null;
 }
 
 const euro = (n: number | null | undefined): string =>
   n != null ? `${n.toFixed(2).replace('.', ',')} €` : '';
 
-export function mercadonaToUI(p: MercadonaProduct, categoryName: string | null = null): UIProduct {
+export function mercadonaToUI(
+  p: MercadonaProduct,
+  // Por defecto, la categoría (N2) que el producto trae del espejo → la Lista lo
+  // agrupa por su zona. ProductsScreen (navegación por categorías) pasa el N1
+  // explícito y ese tiene prioridad.
+  categoryName: string | null = p.categories?.[0]?.name ?? null,
+): UIProduct {
   return {
     id: p.id,
     store: 'mercadona',
@@ -40,6 +50,7 @@ export function mercadonaToUI(p: MercadonaProduct, categoryName: string | null =
     metaLabel: formatSize(p) || null,
     pricePerUnitLabel: formatReferencePrice(p),
     categoryName,
+    exclusiveRegions: p.regions && p.regions.length ? p.regions : null,
   };
 }
 
@@ -48,7 +59,7 @@ export function bonpreuToUI(p: BonpreuProduct): UIProduct {
     id: p.id, store: 'esclat', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: euro(p.unitPrice), unitPrice: p.unitPrice,
     metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit,
-    categoryName: p.categoryName,
+    categoryName: p.categoryName, exclusiveRegions: null,
   };
 }
 
@@ -57,6 +68,7 @@ export function carrefourToUI(p: CarrefourProduct): UIProduct {
     id: p.id, store: 'carrefour', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
+    exclusiveRegions: null,
   };
 }
 
@@ -65,6 +77,7 @@ export function bonareaToUI(p: BonareaProduct): UIProduct {
     id: p.id, store: 'bonarea', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
+    exclusiveRegions: null,
   };
 }
 
@@ -73,7 +86,7 @@ export function consumToUI(p: ConsumProduct): UIProduct {
     id: p.id, store: 'consum', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit,
-    categoryName: p.categoryName,
+    categoryName: p.categoryName, exclusiveRegions: null,
   };
 }
 
@@ -82,6 +95,7 @@ export function diaToUI(p: DiaProduct): UIProduct {
     id: p.id, store: 'dia', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
+    exclusiveRegions: null,
   };
 }
 
@@ -100,5 +114,6 @@ export function favoriteToUI(p: FavoriteProduct): UIProduct {
     metaLabel: null,
     pricePerUnitLabel: null,
     categoryName: null,
+    exclusiveRegions: null,
   };
 }

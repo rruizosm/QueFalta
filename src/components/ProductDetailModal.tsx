@@ -8,7 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { fetchProduct } from '../api/mercadona';
-import { fetchProductWh } from '../api/catalog';
+import { fetchProductMirror } from '../api/catalog';
 import type { MercadonaProductDetail } from '../types';
 import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../context/ToastContext';
@@ -17,12 +17,16 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from './QuantityStepper';
 import ProductImage from './ProductImage';
+import ProductInfoSections from './ProductInfoSections';
 import SimilarProductsSection from './SimilarProductsSection';
 
 interface Props {
   /** Mercadona product id to show. When null, the modal is hidden. */
   productId: string | null;
   onClose: () => void;
+  /** Padding superior de la cabecera. Lo fija StoreProductModal según el contexto:
+   *  56 a pantalla completa (cesta, despeja el notch); 16 en la hoja (catálogo). */
+  topInset?: number;
 }
 
 const formatEuro = (s?: string | null): string | null => {
@@ -47,7 +51,7 @@ const clean = (text?: string | null): string | null => {
   return out || null;
 };
 
-export default function ProductDetailModal({ productId, onClose }: Props) {
+export default function ProductDetailModal({ productId, onClose, topInset = 16 }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
@@ -58,27 +62,33 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
   const [error, setError] = useState(false);
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
+  // CCAA de exclusividad (solo productos regionales): se obtiene del espejo en el
+  // mismo paso que el almacén, así que solo se consulta cuando mad1 da 404.
+  const [regions, setRegions] = useState<string[] | null>(null);
 
   useEffect(() => {
     if (!productId) { setProduct(null); return; }
     setLoading(true);
     setError(false);
     setProduct(null);
+    setRegions(null);
     setQty(1);
     let cancelled = false;
     (async () => {
       try {
         let p: MercadonaProductDetail;
+        let regionsResult: string[] | null = null;
         try {
           p = await fetchProduct(productId);
         } catch {
           // Producto regional: el almacén por defecto (mad1) no lo tiene → 404.
-          // Buscar en el espejo un almacén que sí lo tenga y reintentar.
-          const wh = await fetchProductWh(productId);
-          if (!wh) throw new Error('sin almacén');
-          p = await fetchProduct(productId, wh);
+          // El espejo da un almacén que sí lo tenga (para reintentar) y sus CCAA.
+          const mirror = await fetchProductMirror(productId);
+          if (!mirror.wh) throw new Error('sin almacén');
+          p = await fetchProduct(productId, mirror.wh);
+          regionsResult = mirror.regions;
         }
-        if (!cancelled) setProduct(p);
+        if (!cancelled) { setProduct(p); setRegions(regionsResult); }
       } catch {
         if (!cancelled) setError(true);
       } finally {
@@ -87,6 +97,14 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
     })();
     return () => { cancelled = true; };
   }, [productId]);
+
+  // CCAA → texto legible ("Catalunya", "Catalunya y Comunitat Valenciana"). La
+  // conjunción depende del idioma (y / i). Solo Mercadona regional lo trae.
+  const regionLabel = regions && regions.length
+    ? regions.length === 1
+      ? regions[0]
+      : `${regions.slice(0, -1).join(', ')} ${t('product.regionAnd')} ${regions[regions.length - 1]}`
+    : null;
 
   const photo =
     product?.photos?.[0]?.regular ??
@@ -147,6 +165,7 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
         unitPrice: pi?.unit_price != null ? parseFloat(pi.unit_price) : null,
         imageUrl: photo ?? product.thumbnail ?? null,
         mercadonaProductId: product.id,
+        storeProductId: product.id,
       }]);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show(t(qty === 1 ? 'product.addedOne' : 'product.addedMany', { n: qty, group: activeCart.groupName }));
@@ -166,7 +185,7 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
         <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: topInset }]}>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
             <Ionicons name="close" size={24} color={colors.ink} />
           </TouchableOpacity>
@@ -199,6 +218,15 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
               </View>
             )}
 
+            {/* Exclusividad regional: "Producto solo disponible en {CCAA}", con el
+                mismo icono de exclamación que la insignia de la lista al inicio. */}
+            {regionLabel ? (
+              <View style={styles.regionRow}>
+                <Ionicons name="alert-circle" size={16} color={colors.red} />
+                <Text style={styles.regionText}>{t('product.regionOnly', { regions: regionLabel })}</Text>
+              </View>
+            ) : null}
+
             {/* Name + brand */}
             <Text style={styles.name}>{product.display_name}</Text>
             {brand ? <Text style={styles.brand}>{brand}</Text> : null}
@@ -213,15 +241,19 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
             {/* Comparativa: más barato en otros súper */}
             <SimilarProductsSection productName={product.display_name} excludeStore="mercadona" />
 
-            {/* Details */}
-            <Section title={t('product.sections.description')} text={d?.description} />
-            <Section title={t('product.sections.info')} text={d?.counter_info} />
-            <Section title={t('product.sections.ingredients')} text={product.nutrition_information?.ingredients} />
-            <Section title={t('product.sections.storage')} text={d?.storage_instructions} />
-            <Section title={t('product.sections.origin')} text={origin} />
-            <Section title={t('product.sections.supplier')} text={suppliers} />
-            <Section title={t('product.sections.legalName')} text={d?.legal_name} />
-            <Section title={t('product.sections.warnings')} text={d?.mandatory_mentions ?? d?.danger_mentions} />
+            {/* Características del producto */}
+            <ProductInfoSections
+              items={[
+                { key: 'description', icon: 'reader-outline', title: t('product.sections.description'), text: clean(d?.description) },
+                { key: 'info', icon: 'information-circle-outline', title: t('product.sections.info'), text: clean(d?.counter_info) },
+                { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: clean(product.nutrition_information?.ingredients) },
+                { key: 'storage', icon: 'time-outline', title: t('product.sections.storage'), text: clean(d?.storage_instructions) },
+                { key: 'origin', icon: 'location-outline', title: t('product.sections.origin'), text: clean(origin) },
+                { key: 'supplier', icon: 'pricetag-outline', title: t('product.sections.supplier'), text: clean(suppliers) },
+                { key: 'legalName', icon: 'document-text-outline', title: t('product.sections.legalName'), text: clean(d?.legal_name) },
+                { key: 'warnings', icon: 'warning-outline', title: t('product.sections.warnings'), text: clean(d?.mandatory_mentions ?? d?.danger_mentions) },
+              ]}
+            />
 
             {product.ean ? (
               <Text style={styles.ean}>EAN: {product.ean}</Text>
@@ -252,18 +284,6 @@ export default function ProductDetailModal({ productId, onClose }: Props) {
   );
 }
 
-function Section({ title, text }: { title: string; text?: string | null }) {
-  const styles = useThemedStyles(themedStyles);
-  const value = clean(text);
-  if (!value) return null;
-  return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      <Text style={styles.sectionText}>{value}</Text>
-    </View>
-  );
-}
-
 const themedStyles = () => StyleSheet.create({
   overlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
@@ -272,10 +292,9 @@ const themedStyles = () => StyleSheet.create({
 
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    // El modal se monta a pantalla completa (overlay top:0) desde la lista y el
-    // detalle de grupo → el header tiene que despejar la barra de estado/notch.
-    // 56 = mismo límite superior que las cabeceras del resto de pantallas.
-    paddingHorizontal: 16, paddingTop: 56, paddingBottom: 10,
+    // paddingTop lo fija el prop `topInset` (StoreProductModal): 56 a pantalla
+    // completa (cesta) para despejar el notch, 16 dentro de la hoja (catálogo).
+    paddingHorizontal: 16, paddingBottom: 10,
   },
   closeBtn: {
     width: 38, height: 38,
@@ -304,17 +323,14 @@ const themedStyles = () => StyleSheet.create({
   name: { fontSize: 21, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
   brand: { fontSize: 13.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
 
+  // Aviso de exclusividad regional, justo debajo de la imagen.
+  regionRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 14 },
+  regionText: { flex: 1, fontSize: 13, fontFamily: fonts.semibold, color: colors.red, lineHeight: 18 },
+
   priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 10, marginTop: 14 },
   price: { fontSize: 28, fontFamily: fonts.bold, color: colors.accent },
   size: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft },
   refPrice: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
-
-  section: { marginTop: 18 },
-  sectionTitle: {
-    fontSize: 10.5, fontFamily: fonts.bold, color: colors.inkSoft,
-    textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 5,
-  },
-  sectionText: { fontSize: 13.5, fontFamily: fonts.medium, color: colors.ink, lineHeight: 20 },
 
   ean: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkFaint, marginTop: 22 },
 

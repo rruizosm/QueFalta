@@ -33,6 +33,7 @@ export async function recordPurchase(
       category_emoji: it.categoryEmoji ?? null,
       category_name: it.categoryName ?? null,
       mercadona_product_id: it.mercadonaProductId ?? null,
+      store_product_id: it.storeProductId ?? null,
       unit_price: it.unitPrice ?? null,
       image_url: it.imageUrl ?? null,
     }));
@@ -45,7 +46,7 @@ export async function recordPurchase(
 export async function fetchPurchaseItems(purchaseId: string): Promise<NewListItem[]> {
   const { data, error } = await supabase
     .from('purchase_items')
-    .select('product_name, quantity, unit, category_emoji, category_name, mercadona_product_id, unit_price, image_url')
+    .select('product_name, quantity, unit, category_emoji, category_name, mercadona_product_id, store_product_id, unit_price, image_url')
     .eq('purchase_id', purchaseId);
 
   if (error) throw error;
@@ -57,6 +58,7 @@ export async function fetchPurchaseItems(purchaseId: string): Promise<NewListIte
     categoryEmoji: it.category_emoji ?? null,
     categoryName: it.category_name ?? null,
     mercadonaProductId: it.mercadona_product_id ?? null,
+    storeProductId: it.store_product_id ?? null,
     unitPrice: it.unit_price != null ? Number(it.unit_price) : null,
     imageUrl: it.image_url ?? null,
   }));

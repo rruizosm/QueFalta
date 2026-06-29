@@ -4,7 +4,8 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { fonts } from '../constants/typography';
 import { colors } from '../constants/colors';
-import { fetchCategoryDetail, flattenProducts, type MercadonaProduct } from '../api/mercadona';
+import { type MercadonaProduct } from '../api/mercadona';
+import { fetchMercadonaProductsByCategory } from '../api/catalog';
 import { CatalogStackParamList } from '../types';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
@@ -28,8 +29,8 @@ export default function ProductsScreen() {
   useEffect(() => {
     setLoading(true);
     setError(false);
-    fetchCategoryDetail(subcategoryId)
-      .then((detail) => setProducts(flattenProducts(detail)))
+    fetchMercadonaProductsByCategory(subcategoryId)
+      .then(setProducts)
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [subcategoryId, lang]);

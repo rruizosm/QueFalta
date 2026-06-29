@@ -45,6 +45,14 @@ export interface MercadonaProduct {
   thumbnail: string;
   price_instructions: PriceInstructions;
   published: boolean;
+  /** No viene en el listado de la API; lo adjunta el espejo (api/catalog) con la
+   *  categoría N2 bajo la que se sincronizó, para que la Lista agrupe por zona al
+   *  añadir desde búsqueda/navegación. El detalle (MercadonaProductDetail) sí la trae. */
+  categories?: { id: number; name: string }[];
+  /** CCAA donde el producto es EXCLUSIVO (no está en el almacén nacional mad1), o
+   *  null/[] si es nacional. Lo adjunta el espejo desde la columna `regions`
+   *  (calculada por el sync multi-almacén). Dispara la insignia de exclamación. */
+  regions?: string[] | null;
 }
 
 export interface PriceInstructions {
@@ -214,6 +222,8 @@ export type HomeStackParamList = {
   Language: undefined;
   History: undefined;
   Friends: undefined;
+  Help: undefined;
+  About: undefined;
 };
 
 export type CatalogStackParamList = {

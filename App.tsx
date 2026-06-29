@@ -14,6 +14,7 @@ import { LanguageProvider } from './src/context/LanguageContext';
 import { ThemeProvider } from './src/context/ThemeContext';
 import { AuthProvider } from './src/context/AuthContext';
 import { ProfileProvider } from './src/context/ProfileContext';
+import { NotificationsProvider } from './src/context/NotificationsContext';
 import { CartProvider } from './src/context/CartContext';
 import { FavoritesProvider } from './src/context/FavoritesContext';
 import { ToastProvider } from './src/context/ToastContext';
@@ -48,13 +49,15 @@ export default function App() {
         <GestureHandlerRootView style={{ flex: 1 }}>
           <AuthProvider>
             <ProfileProvider>
-              <CartProvider>
-                <FavoritesProvider>
-                  <ToastProvider>
-                    <Navigation />
-                  </ToastProvider>
-                </FavoritesProvider>
-              </CartProvider>
+              <NotificationsProvider>
+                <CartProvider>
+                  <FavoritesProvider>
+                    <ToastProvider>
+                      <Navigation />
+                    </ToastProvider>
+                  </FavoritesProvider>
+                </CartProvider>
+              </NotificationsProvider>
             </ProfileProvider>
           </AuthProvider>
         </GestureHandlerRootView>

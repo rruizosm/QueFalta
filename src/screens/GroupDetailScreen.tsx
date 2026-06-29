@@ -29,14 +29,23 @@ import { useTranslation } from '../context/LanguageContext';
 import MemberAvatars from '../components/MemberAvatars';
 import ProgressBar from '../components/ProgressBar';
 import ProductImage from '../components/ProductImage';
-import ProductDetailModal from '../components/ProductDetailModal';
-import { STORE_META, groupByStore } from '../constants/stores';
+import StoreProductModal, { type ProductRef } from '../components/StoreProductModal';
+import { STORE_META, groupByStore, storeOfItem } from '../constants/stores';
 import { groupByZone, sortZoneItems } from '../constants/zones';
 import { mergeCartItems, type MergedCartItem } from '../api/lists';
 
 type GroupDetailRouteProp = RouteProp<GroupsStackParamList, 'GroupDetail'>;
 
 const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
+
+// Referencia {tienda, id} para abrir la ficha de un artículo en cualquier súper
+// (ver ListScreen.productRefOf). null = ítem manual/sin id → no abre ficha.
+function productRefOf(item: MergedCartItem): ProductRef | null {
+  const store = storeOfItem(item);
+  if (store === 'otros') return null;
+  const id = store === 'mercadona' ? item.mercadonaProductId : item.storeProductId;
+  return id ? { store, id } : null;
+}
 
 export default function GroupDetailScreen() {
   const styles = useThemedStyles(themedStyles);
@@ -50,7 +59,7 @@ export default function GroupDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [cartExpanded, setCartExpanded] = useState(false);
-  const [detailProductId, setDetailProductId] = useState<string | null>(null);
+  const [detailTarget, setDetailTarget] = useState<ProductRef | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(() => {
@@ -97,6 +106,7 @@ export default function GroupDetailScreen() {
 
   const renderCartItem = (item: MergedCartItem, big = false) => {
     const lineTotal = item.unitPrice != null ? item.unitPrice * item.quantity : null;
+    const detailTarget = productRefOf(item);
     return (
       <View
         key={item.ids[0]}
@@ -105,8 +115,8 @@ export default function GroupDetailScreen() {
         {(item.imageUrl || item.categoryEmoji) ? (
           <TouchableOpacity
             activeOpacity={0.7}
-            disabled={!item.mercadonaProductId}
-            onPress={() => item.mercadonaProductId && setDetailProductId(item.mercadonaProductId)}
+            disabled={!detailTarget}
+            onPress={() => detailTarget && setDetailTarget(detailTarget)}
           >
             {item.imageUrl ? (
               <ProductImage
@@ -328,9 +338,10 @@ export default function GroupDetailScreen() {
         </View>
       )}
 
-      <ProductDetailModal
-        productId={detailProductId}
-        onClose={() => setDetailProductId(null)}
+      <StoreProductModal
+        target={detailTarget}
+        onClose={() => setDetailTarget(null)}
+        fullScreen
       />
     </View>
   );

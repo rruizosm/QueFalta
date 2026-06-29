@@ -5,6 +5,7 @@
  * so changes show up immediately everywhere without a refetch.
  */
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { Image } from 'expo-image';
 import { fetchProfile, updateProfile, type UserProfile } from '../api/profile';
 import { initialsFromName, takePendingProfileName } from '../lib/pendingProfileName';
 import { useAuth } from './AuthContext';
@@ -52,6 +53,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       } else {
         setProfile(p);
       }
+
+      // Calienta la caché en disco de expo-image en cuanto sabemos la URL, así
+      // la foto ya está lista la primera vez que el usuario abre Perfil (sin el
+      // retardo de descargarla al navegar). No-op si ya está cacheada.
+      if (p.avatarUrl) Image.prefetch(p.avatarUrl).catch(() => {});
     } catch {
       // keep whatever we had cached
     } finally {

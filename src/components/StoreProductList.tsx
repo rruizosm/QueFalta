@@ -17,6 +17,7 @@ import type { UIProduct } from '../lib/productAdapters';
 import { sortByName, sortByRelevance } from '../lib/sort';
 import QuantityStepper from './QuantityStepper';
 import ProductImage from './ProductImage';
+import ExclusiveBadge from './ExclusiveBadge';
 import ViewModeToggle, { type ViewMode } from './ViewModeToggle';
 import ProductGridCard from './ProductGridCard';
 import StoreProductModal, { type ProductRef } from './StoreProductModal';
@@ -177,6 +178,8 @@ export default function StoreProductList({
         categoryName: p.categoryName,
         // La tienda de la Lista se deduce del id de Mercadona o del dominio de la imagen.
         mercadonaProductId: p.store === 'mercadona' ? p.id : null,
+        // Id del producto en su súper, para abrir su ficha desde la cesta.
+        storeProductId: p.id,
         unitPrice: p.unitPrice,
         imageUrl: p.imageUrl,
       }));
@@ -227,6 +230,7 @@ export default function StoreProductList({
       name={item.name}
       price={item.priceLabel}
       emoji={emoji}
+      exclusive={item.exclusiveRegions != null}
       onPress={() => setDetail({ store: item.store, id: item.id })}
     />
   );
@@ -265,6 +269,7 @@ export default function StoreProductList({
                 {emoji ? <Text style={{ fontSize: 22 }}>{emoji}</Text> : <Ionicons name="image-outline" size={22} color={colors.inkFaint} />}
               </View>
             )}
+            {item.exclusiveRegions ? <ExclusiveBadge size={16} style={styles.exclusiveBadge} /> : null}
           </TouchableOpacity>
           <View style={styles.info}>
             <Text style={styles.name} numberOfLines={2}>{item.name}</Text>
@@ -432,6 +437,8 @@ const themedStyles = () => StyleSheet.create({
   },
   thumb: { width: 50, height: 50, flex: 0 },
   thumbPlaceholder: { backgroundColor: colors.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
+  // Insignia de exclusividad regional, esquina superior izquierda de la miniatura.
+  exclusiveBadge: { position: 'absolute', top: -5, left: -5 },
   info: { flex: 1, minWidth: 0 },
   name: { fontSize: 13.5, fontFamily: fonts.semibold, color: colors.ink, lineHeight: 18 },
   // Precio del envase, destacado.

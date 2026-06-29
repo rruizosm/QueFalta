@@ -22,6 +22,7 @@ import {
 } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
+import { useNotifications } from '../context/NotificationsContext';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
@@ -43,6 +44,8 @@ import AppearanceScreen from '../screens/AppearanceScreen';
 import LanguageScreen from '../screens/LanguageScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 import FriendsScreen from '../screens/FriendsScreen';
+import HelpScreen from '../screens/HelpScreen';
+import AboutScreen from '../screens/AboutScreen';
 import CatalogScreen    from '../screens/CatalogScreen';
 import SubCategoryScreen from '../screens/SubCategoryScreen';
 import ProductsScreen   from '../screens/ProductsScreen';
@@ -115,6 +118,8 @@ function HomeNavigator() {
       <HomeStack.Screen name="Language" component={LanguageScreen} />
       <HomeStack.Screen name="History" component={HistoryScreen} />
       <HomeStack.Screen name="Friends" component={FriendsScreen} />
+      <HomeStack.Screen name="Help" component={HelpScreen} />
+      <HomeStack.Screen name="About" component={AboutScreen} />
     </HomeStack.Navigator>
   );
 }
@@ -171,6 +176,7 @@ export default function Navigation() {
   const { t } = useTranslation();
   const { show: showToast } = useToast();
   const { profile, loading: profileLoading } = useProfile();
+  const { unreadCount } = useNotifications();
   const userId = session?.user.id;
   // Solo Android lo necesita: con edge-to-edge dibuja la barra bajo los botones de
   // navegación y, al fijarle una `height` numérica, BottomTabBar deja de reservar
@@ -307,7 +313,16 @@ export default function Navigation() {
           },
         })}
       >
-        <Tab.Screen name="Home"      component={HomeNavigator}    options={{ title: t('tabs.home') }} />
+        <Tab.Screen
+          name="Home"
+          component={HomeNavigator}
+          options={{
+            title: t('tabs.home'),
+            // Insignia de no leídas: refleja el mismo unreadCount que la campana del Home.
+            tabBarBadge: unreadCount > 0 ? (unreadCount > 9 ? '9+' : unreadCount) : undefined,
+            tabBarBadgeStyle: { backgroundColor: '#df4b2e', color: '#ffffff', fontFamily: fonts.bold, fontSize: 10 },
+          }}
+        />
         <Tab.Screen name="Catalog"   component={CatalogNavigator} options={{ title: t('tabs.catalog') }} />
         <Tab.Screen name="List"      component={ListScreen}        options={{ title: t('tabs.cart') }} />
         <Tab.Screen name="Groups"    component={GroupsNavigator}   options={{ title: t('tabs.groups') }} />

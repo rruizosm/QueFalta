@@ -27,21 +27,33 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { fetchListItems, setItemInCart, assignListItem, clearListItems, deleteListItems, mergeCartItems, type ListItemRow, type MergedCartItem } from '../api/lists';
+import { fetchListItems, setItemInCart, assignListItem, clearListItems, deleteListItems, updateListItemQuantity, mergeCartItems, type ListItemRow, type MergedCartItem } from '../api/lists';
 import { fetchMercadonaNames } from '../api/catalog';
 import { fetchGroupMembers } from '../api/groups';
 import { recordPurchase } from '../api/purchases';
 import type { GroupMember } from '../types';
 import ProgressBar from '../components/ProgressBar';
 import ProductImage from '../components/ProductImage';
-import ProductDetailModal from '../components/ProductDetailModal';
+import StoreProductModal, { type ProductRef } from '../components/StoreProductModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import UserAvatar from '../components/UserAvatar';
 
-import { STORE_META, groupByStore } from '../constants/stores';
+import { STORE_META, groupByStore, storeOfItem } from '../constants/stores';
 import { groupByZone, sortZoneItems } from '../constants/zones';
 
 const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
+
+// Referencia {tienda, id} para abrir la ficha de un artículo de la cesta en
+// CUALQUIER súper. La tienda se deduce del dominio de la imagen / id de Mercadona
+// (storeOfItem); el id es el de Mercadona para Mercadona y el store_product_id
+// guardado para el resto. Devuelve null para ítems manuales o sin id (no abren
+// ficha), igual que antes.
+function productRefOf(item: MergedCartItem): ProductRef | null {
+  const store = storeOfItem(item);
+  if (store === 'otros') return null;
+  const id = store === 'mercadona' ? item.mercadonaProductId : item.storeProductId;
+  return id ? { store, id } : null;
+}
 
 // LayoutAnimation necesita habilitarse explícitamente en Android.
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -67,7 +79,7 @@ export default function ListScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [detailProductId, setDetailProductId] = useState<string | null>(null);
+  const [detailTarget, setDetailTarget] = useState<ProductRef | null>(null);
   const [assignItem, setAssignItem] = useState<MergedCartItem | null>(null);
   // Selector "asignar TODA la lista" (botón de la cabecera). Reusa la misma hoja
   // de miembros que el asignar por producto.
@@ -180,6 +192,33 @@ export default function ListScreen() {
     }
   };
 
+  // Resta una unidad de un producto. Como un artículo fusionado puede abarcar
+  // varias filas, opera sobre una fila concreta: si tiene cantidad > 1 la baja en
+  // uno; si era la última unidad de esa fila, la borra. Optimista, revierte si falla.
+  const doDecrement = async (item: MergedCartItem) => {
+    if (item.quantity <= 1) return;
+    const rows = items.filter((it) => item.ids.includes(it.id));
+    // Preferimos rebajar una fila con varias unidades antes que borrar una entera.
+    const target = rows.find((r) => r.quantity > 1) ?? rows[rows.length - 1];
+    if (!target) return;
+    const prev = items;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    try {
+      if (target.quantity > 1) {
+        const newQty = target.quantity - 1;
+        setItems((list) => list.map((it) => (it.id === target.id ? { ...it, quantity: newQty } : it)));
+        await updateListItemQuantity(target.id, newQty);
+      } else {
+        setItems((list) => list.filter((it) => it.id !== target.id));
+        await deleteListItems([target.id]);
+      }
+    } catch {
+      setItems(prev);
+      toast.show(t('list.updateError'), 'error');
+    }
+  };
+
   const toggle = async (item: MergedCartItem) => {
     const next = !item.inCart;
     const ids = new Set(item.ids);
@@ -255,9 +294,10 @@ export default function ListScreen() {
       item={item}
       members={members}
       onToggle={toggle}
-      onOpenDetail={setDetailProductId}
+      onOpenDetail={setDetailTarget}
       onAssign={setAssignItem}
       onRemove={doRemove}
+      onDecrement={doDecrement}
     />
   );
 
@@ -419,9 +459,10 @@ export default function ListScreen() {
         </>
       )}
 
-      <ProductDetailModal
-        productId={detailProductId}
-        onClose={() => setDetailProductId(null)}
+      <StoreProductModal
+        target={detailTarget}
+        onClose={() => setDetailTarget(null)}
+        fullScreen
       />
 
       {/* Assign-to-member sheet — un producto (assignItem) o toda la lista (assignAllVisible) */}
@@ -490,13 +531,14 @@ export default function ListScreen() {
 // "En cesta", la zona central (foto + nombre) abre el detalle del producto y
 // la papelera elimina en un toque — tacha el artículo, lo desvanece y entonces
 // borra. Si el borrado en servidor falla, la fila reaparece.
-function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove }: {
+function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove, onDecrement }: {
   item: MergedCartItem;
   members: GroupMember[];
   onToggle: (item: MergedCartItem) => void;
-  onOpenDetail: (productId: string) => void;
+  onOpenDetail: (target: ProductRef) => void;
   onAssign: (item: MergedCartItem) => void;
   onRemove: (item: MergedCartItem) => Promise<boolean>;
+  onDecrement: (item: MergedCartItem) => void;
 }) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
@@ -519,6 +561,8 @@ function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove
   };
 
   const assignee = item.assignedTo ? members.find((m) => m.id === item.assignedTo) : null;
+  // Ficha del producto: disponible para cualquier súper con id (no para manuales).
+  const detailTarget = productRefOf(item);
 
   return (
     <Animated.View style={[styles.itemRow, item.inCart && styles.itemRowDone, { opacity }]}>
@@ -535,8 +579,8 @@ function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove
       <TouchableOpacity
         style={styles.itemBody}
         activeOpacity={0.7}
-        disabled={removing || !item.mercadonaProductId}
-        onPress={() => item.mercadonaProductId && onOpenDetail(item.mercadonaProductId)}
+        disabled={removing || !detailTarget}
+        onPress={() => detailTarget && onOpenDetail(detailTarget)}
       >
         {item.imageUrl ? (
           <ProductImage uri={item.imageUrl} style={styles.itemThumb} />
@@ -551,11 +595,7 @@ function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove
           </Text>
           <View style={styles.itemUnitRow}>
             <Text style={styles.itemUnit}>{item.quantity} {item.unit}</Text>
-            {item.inCart ? (
-              <View style={styles.inCartBadge}>
-                <Text style={styles.inCartBadgeText}>{t('list.inCart')}</Text>
-              </View>
-            ) : item.unitPrice != null ? (
+            {item.unitPrice != null ? (
               <Text style={styles.itemPrice}>{formatEuro(item.unitPrice * item.quantity)}</Text>
             ) : null}
           </View>
@@ -579,14 +619,27 @@ function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove
         )}
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.deleteBtn}
-        hitSlop={6}
-        disabled={removing}
-        onPress={handleDeletePress}
-      >
-        <Ionicons name="trash-outline" size={14} color={colors.inkFaint} />
-      </TouchableOpacity>
+      {/* Restar una unidad (solo si hay más de una) y eliminar, apilados y centrados. */}
+      <View style={styles.qtyActions}>
+        {item.quantity > 1 && (
+          <TouchableOpacity
+            style={styles.qtyBtn}
+            hitSlop={6}
+            disabled={removing}
+            onPress={() => onDecrement(item)}
+          >
+            <Ionicons name="remove" size={15} color={colors.inkFaint} />
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity
+          style={styles.qtyBtn}
+          hitSlop={6}
+          disabled={removing}
+          onPress={handleDeletePress}
+        >
+          <Ionicons name="trash-outline" size={14} color={colors.inkFaint} />
+        </TouchableOpacity>
+      </View>
     </Animated.View>
   );
 }
@@ -674,13 +727,10 @@ const themedStyles = () => StyleSheet.create({
   itemUnit: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft },
   itemPrice: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.accent },
 
-  inCartBadge: {
-    backgroundColor: colors.accent,
-    paddingHorizontal: 8, paddingVertical: 3,
-  },
-  inCartBadgeText: { fontSize: 10, fontFamily: fonts.bold, color: colors.white },
-  // Papelera: mismo tamaño que el checkbox de "seleccionar", a la derecha del todo.
-  deleteBtn: {
+  // Acciones de cantidad (restar / eliminar): apiladas en vertical y centradas,
+  // a la derecha del todo. Cada botón es del tamaño del checkbox de "seleccionar".
+  qtyActions: { alignItems: 'center', justifyContent: 'center', gap: 6 },
+  qtyBtn: {
     width: 22, height: 22,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: colors.border,

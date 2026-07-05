@@ -41,8 +41,12 @@ as $$
 $$;
 
 -- ── Eliminar las policies demasiado amplias ────────────────────
-drop policy if exists "profiles: ver todos"          on public.profiles;
-drop policy if exists "profiles: lectura autenticada" on public.profiles;
+-- OJO: cada una tuvo un nombre distinto a lo largo del tiempo. Todas eran
+-- permisivas (qual = true o auth.role()='authenticated' con rol {public}) y,
+-- al combinarse con OR, reabrían profiles a cualquier sesión. Borrarlas todas.
+drop policy if exists "profiles: ver todos"               on public.profiles;
+drop policy if exists "profiles: lectura autenticada"     on public.profiles;
+drop policy if exists "profiles: lectura pública autenticada" on public.profiles;
 
 -- ── (Re)crear las policies restringidas (todas to authenticated) ─
 drop policy if exists "profiles select: own" on public.profiles;

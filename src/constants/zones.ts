@@ -27,7 +27,7 @@ export interface ShopZone {
 
 export const SHOP_ZONES: ShopZone[] = [
   { key: 'fruta',      label: 'Fruta y verdura',                emoji: '🥦', match: /\bfrutas?\b|\bverduras?\b|hortaliz|fruita|verdura/ },
-  { key: 'frescos',    label: 'Carne, pescado y charcutería',   emoji: '🥩', match: /carnes?\b|carnic|pescad|marisc|charcut|embutid|ques|jamon|peix|\bfrescos?\b/ },
+  { key: 'frescos',    label: 'Carne, pescado y charcutería',   emoji: '🥩', match: /carnes?\b|carnic|pescad|marisc|charcut|embutid|ques|jamon|peix|\bfrescos?\b|xarcut|embotit|butifarra|botifarra|fuet|llonganis|chorizo|salchich|salsitx|sobrassad|sobrasad|morcilla|mortadel|salami|pernil|cansalada|panceta/ },
   { key: 'lacteos',    label: 'Lácteos y huevos',               emoji: '🥛', match: /lacteo|lactic|huevo|\bous?\b|leche|\bllet\b|mantequilla|yogur|iogurt|postre|formatge/ },
   { key: 'pan',        label: 'Panadería y repostería',         emoji: '🥐', match: /panader|\bpan\b|horno|\bforn\b|boller|reposter|pasteler/ },
   { key: 'desayuno',   label: 'Desayuno y dulces',              emoji: '☕', match: /cafe|cacao|infusion|galleta|cereal|mermelada|chocolat|golosina|dulce|azucar|caramelo|miel|esmorzar/ },
@@ -56,12 +56,31 @@ export function zoneOfCategory(categoryName: string | null | undefined): ShopZon
   return SHOP_ZONES.find((z) => z.match.test(name)) ?? OTHER_ZONE;
 }
 
+/** Zona de un artículo de la lista: primero por su categoría y, si esta no resuelve
+ *  (manuales sin categoría, o categorías-cajón de algunos súpers como la colección
+ *  promocional "Para comer" de Bonpreu, que mezcla de todo y no casa con ningún
+ *  pasillo), se deduce del propio NOMBRE del producto. El fallback solo puede SACAR
+ *  cosas de "Otros" hacia un pasillo plausible, nunca recolocar lo ya bien clasificado. */
+export function zoneOfItem(
+  categoryName: string | null | undefined,
+  productName?: string | null,
+): ShopZone {
+  const byCat = zoneOfCategory(categoryName);
+  if (byCat.key !== OTHER_ZONE.key) return byCat;
+  if (productName) {
+    const name = normalize(productName);
+    const z = SHOP_ZONES.find((zz) => zz.match.test(name));
+    if (z) return z;
+  }
+  return OTHER_ZONE;
+}
+
 /** Agrupa por zona en el orden de recorrido (Otros al final), omitiendo vacías. */
-export function groupByZone<T extends { categoryName: string | null }>(
+export function groupByZone<T extends { categoryName: string | null; productName?: string }>(
   items: T[],
 ): { zone: ShopZone; data: T[] }[] {
   return [...SHOP_ZONES, OTHER_ZONE]
-    .map((zone) => ({ zone, data: items.filter((it) => zoneOfCategory(it.categoryName).key === zone.key) }))
+    .map((zone) => ({ zone, data: items.filter((it) => zoneOfItem(it.categoryName, it.productName).key === zone.key) }))
     .filter((g) => g.data.length > 0);
 }
 

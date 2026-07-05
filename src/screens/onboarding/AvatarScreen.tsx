@@ -1,6 +1,6 @@
 /** Paso 3 (OPCIONAL) — Foto de perfil. Reutiliza expo-image-picker + uploadAvatar. */
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -28,11 +28,8 @@ export default function AvatarScreen() {
   const [saving, setSaving] = useState(false);
 
   const pick = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert(t('profile.notifPermTitle'), t('onboarding.galleryPerm'));
-      return;
-    }
+    // El selector del sistema (PHPicker/UIImagePickerController) no necesita
+    // permiso de fototeca: no pedirlo evita el diálogo de "acceso completo".
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,

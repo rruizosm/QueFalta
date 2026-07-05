@@ -1,0 +1,5 @@
+{
+  "NSPhotoLibraryUsageDescription": "QuéFalta només accedeix a la teva fototeca quan tries una foto de perfil. Per exemple, en tocar «Canvia la foto» a Edita el perfil pots seleccionar una imatge de la galeria per fer-la servir com a avatar, visible per als teus amics i els membres dels teus grups de compra. QuéFalta no accedeix, recopila ni puja cap altra foto.",
+  "NSCameraUsageDescription": "QuéFalta només fa servir la càmera si tries fer una foto nova per a la teva foto de perfil. Mai no es captura cap foto sense la teva acció.",
+  "NSMicrophoneUsageDescription": "QuéFalta no grava àudio. Aquest permís només es declara perquè el selector multimèdia del sistema admet vídeo; l'app mai no el sol·licita."
+}

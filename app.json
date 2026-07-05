@@ -43,6 +43,11 @@
     "updates": {
       "url": "https://u.expo.dev/cdae19f5-47a5-4a4c-9f94-2befcada0885"
     },
+    "locales": {
+      "es": "./locales/ios/es.json",
+      "ca": "./locales/ios/ca.json",
+      "en": "./locales/ios/en.json"
+    },
     "plugins": [
       "expo-secure-store",
       "expo-apple-authentication",
@@ -50,6 +55,14 @@
         "expo-notifications",
         {
           "color": "#2f6cb5"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "QuéFalta only accesses your photo library when you choose to set a profile picture. For example, when you tap 'Change photo' in Edit Profile, you can pick an image from your library to use as your avatar, which is shown to your friends and shopping group members. QuéFalta does not access, collect, or upload any other photos.",
+          "cameraPermission": "QuéFalta only uses the camera if you choose to take a new photo to use as your profile picture. Photos are never captured without your action.",
+          "microphonePermission": "QuéFalta does not record audio. This permission is only declared because the system media picker component supports video; the app never requests it."
         }
       ]
     ]

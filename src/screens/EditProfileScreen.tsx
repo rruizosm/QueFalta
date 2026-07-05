@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  StyleSheet, StatusBar, ActivityIndicator, Alert,
+  StyleSheet, StatusBar, ActivityIndicator,
   KeyboardAvoidingView, Platform, Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -75,11 +75,8 @@ export default function EditProfileScreen() {
   }, [username, profile?.username, userId]);
 
   const handlePickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert(t('profile.notifPermTitle'), t('editProfile.galleryPerm'));
-      return;
-    }
+    // El selector del sistema (PHPicker/UIImagePickerController) no necesita
+    // permiso de fototeca: no pedirlo evita el diálogo de "acceso completo".
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,

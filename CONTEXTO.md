@@ -19,6 +19,8 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon key del dashboard de Supabase>
 ```
 La anon key se copia de Supabase → Project Settings → API. (Es pública/segura por RLS, pero no se commitea.)
 
+**`google-services.json` también está gitignored (2026-07-10):** el repo es público y GitHub secret scanning avisó de la API key de Firebase (commit `1a6032c`; la clave sigue en ese historial — mitigación real = restringirla/rotarla en Google Cloud Console). Los builds de EAS la reciben vía la **file env var `GOOGLE_SERVICES_JSON`** (subida a los 3 entornos con `eas env:create --type file --visibility secret`); `app.config.js` (envoltorio dinámico sobre app.json, NO meter ahí más config) resuelve `android.googleServicesFile` = esa env var con fallback a `./google-services.json` en local. En máquina nueva: descargar el fichero de Firebase Console → raíz de `MercaAppMobile` (solo hace falta para `expo run:android`/prebuild local; los builds EAS no lo necesitan en disco).
+
 **Custom domain (2026-06-21):** la API de Supabase se sirve por `https://auth.quefalta.es` (add-on Custom Domain). Así el popup de iOS al iniciar sesión muestra `auth.quefalta.es` en vez del subdominio `…supabase.co`. El subdominio original `https://gkffvigcnsesbaihycay.supabase.co` sigue funcionando (fallback de los syncs). El callback OAuth de Google `https://auth.quefalta.es/auth/v1/callback` está dado de alta en Google Cloud Console. La anon key NO cambia.
 
 ## Cómo ejecutar

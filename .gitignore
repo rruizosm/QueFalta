@@ -33,6 +33,12 @@ yarn-error.*
 # local env files
 .env*.local
 
+# Config de Firebase (FCM Android). Fuera del repo público (GitHub secret
+# scanning avisó de la API key en el commit 1a6032c). Los builds de EAS la
+# reciben vía la file env var GOOGLE_SERVICES_JSON (ver app.config.js); en
+# local se usa la copia de esta carpeta (que git ya no trackea).
+google-services.json
+
 # logs del sync de Carrefour (tarea programada local)
 scripts/logs/
 

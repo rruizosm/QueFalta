@@ -31,7 +31,10 @@
 //  - nutriScore y agrupaciones (Ecológico/Sin Gluten/Vegano/Sin Lactosa/Producto
 //    de Aquí) se conservan en `raw` para features futuras (no columnas propias).
 //  - Precios de la tienda por defecto de la sesión de invitado (como Consum).
-//  - Solo hay imagen 135x135 en el CDN (400/600 dan 404).
+//  - Imágenes: el listado trae urlImagen en 135x135 (borrosa en la ficha), pero
+//    el CDN sirve la MISMA ruta en 300x300 (lo expone el endpoint de detalle,
+//    imagenes300x300; verificado 100% de cobertura en muestra dispersa del
+//    catálogo; 400/600/800 sí dan 404) → se guarda la URL reescrita a 300x300.
 //
 // Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE
 //      PW_CHANNEL=chrome   (usar Chrome del sistema en local; vacío en CI = chromium)
@@ -186,6 +189,12 @@ function brandName(marca) {
   return d ? String(d).trim() || null : null;
 }
 
+// El listado da la imagen en 135x135, que estirada en la ficha (260pt) se ve
+// borrosa. El CDN tiene la misma imagen en 300x300 (misma ruta, otra carpeta;
+// cobertura verificada en todo el catálogo) → se reescribe la URL.
+const thumbnailUrl = (url) =>
+  url ? String(url).replace('/imagenes/articulos/135x135/', '/imagenes/articulos/300x300/') : null;
+
 function normalize(p) {
   const pvp = num(p.pvp);
   const pvpof = num(p.pvpoferta);
@@ -198,7 +207,7 @@ function normalize(p) {
     display_name_ca: null, // lo rellena la 2ª pasada (idioma=ca)
     brand: brandName(p.marca),
     packaging: null, // el formato ya va en el nombre ("Naranja Bolsa 2kg")
-    thumbnail: p.urlImagen || null,
+    thumbnail: thumbnailUrl(p.urlImagen),
     unit_price: price,
     price_format: price != null ? `${eurStr(price)} €` : null,
     price_per_unit: ppu?.value ?? null,

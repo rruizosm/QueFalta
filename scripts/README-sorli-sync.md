@@ -53,7 +53,10 @@ cambios de precio) y re-ejecutar **`supabase/migrations/similar_products.sql`**
 
 ## Notas
 
-- Solo hay imagen `135x135` en el CDN de Sorli (resoluciones mayores dan 404).
+- Imágenes: el listado trae `urlImagen` en `135x135` (se ve borrosa en la ficha),
+  pero el CDN sirve la misma ruta en `300x300` (lo expone el endpoint de detalle
+  `imagenes300x300`; `400/600/800` dan 404). El sync guarda la URL reescrita a
+  `300x300` (cobertura verificada en muestra dispersa de todo el catálogo).
 - El nombre catalán llega inconsistente en los campos `descripcionCat`/`Es` según
   la consulta, así que el sync hace 2 pasadas deterministas (una por idioma) en
   lugar de fiarse de esos campos.

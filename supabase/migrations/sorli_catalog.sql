@@ -65,7 +65,7 @@ create table if not exists public.sorli_products (
   display_name_ca     text,               -- descripcion (ca); null hasta la 2ª pasada → fallback al castellano
   brand               text,               -- marca.descripcion (suele ser null en frescos)
   packaging           text,               -- reservado (el formato ya va en el nombre)
-  thumbnail           text,               -- urlImagen (cdn.sorliclic.com, 135x135)
+  thumbnail           text,               -- urlImagen reescrita a 300x300 (el listado da 135x135; cdn.sorliclic.com)
   category_id         text,               -- categoría HOJA (categoria.idCategoria, nivel 3)
   category_name       text,
   category_ids        text[] not null default '{}',  -- hoja + TODOS sus ancestros (navegación por cualquier nivel)

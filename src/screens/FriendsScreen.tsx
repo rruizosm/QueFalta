@@ -17,6 +17,8 @@ import {
   fetchFriends, fetchIncomingRequests, fetchOutgoingRequests,
   sendFriendRequest, acceptFriendRequest, removeFriendship, type FriendProfile,
 } from '../api/friends';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
+import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import UserAvatar from '../components/UserAvatar';
 import VerifiedBadge from '../components/VerifiedBadge';
 
@@ -26,6 +28,8 @@ function Avatar({ color, initials, avatarUrl }: { color: string; initials: strin
 
 export default function FriendsScreen() {
   const styles = useThemedStyles(themedStyles);
+  const headerTop = useHeaderTopPadding(52);
+  const bottomPad = useTabBarBottomPadding(40);
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { session } = useAuth();
@@ -98,7 +102,7 @@ export default function FriendsScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: headerTop }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
@@ -123,7 +127,7 @@ export default function FriendsScreen() {
       {loading ? (
         <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 60 }} />
       ) : (
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
+        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad }]}>
           {isSearchMode ? (
             // ── Search results ──
             (!searching && results.length === 0) ? (
@@ -232,7 +236,8 @@ const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 10, gap: 12,
+    paddingHorizontal: 16, paddingBottom: 10, gap: 12,
+    // paddingTop inline (useHeaderTopPadding)
   },
   backBtn: {
     width: 38, height: 38, backgroundColor: colors.white,

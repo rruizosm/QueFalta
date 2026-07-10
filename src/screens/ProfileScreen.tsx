@@ -25,11 +25,15 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import PaywallModal from '../components/PaywallModal';
 import { CATALOG_STORES, CATALOG_STORE_KEYS } from '../constants/stores';
 import { PAYWALL_ENABLED } from '../constants/limits';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
+import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { fetchIncomingRequestCount } from '../api/friends';
 
 export default function ProfileScreen() {
   const navigation = useNavigation<any>();
   const styles = useThemedStyles(themedStyles);
+  const headerTop = useHeaderTopPadding(52);
+  const bottomPad = useTabBarBottomPadding(40);
   const { accentKey } = useTheme();
   const { t, lang } = useTranslation();
   const { session, signOut } = useAuth();
@@ -117,7 +121,7 @@ export default function ProfileScreen() {
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: headerTop }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
@@ -128,7 +132,7 @@ export default function ProfileScreen() {
       {loading ? (
         <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 60 }} />
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad }]}>
 
           {/* Identity card */}
           <HardShadow style={styles.identityCard}>
@@ -289,7 +293,8 @@ const themedStyles = () => StyleSheet.create({
 
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 10, gap: 12,
+    paddingHorizontal: 16, paddingBottom: 10, gap: 12,
+    // paddingTop inline (useHeaderTopPadding)
   },
   backBtn: {
     width: 38, height: 38,

@@ -12,6 +12,8 @@ import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
+import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { updateProfile } from '../api/profile';
 import { deleteAccount } from '../api/account';
 import ProfileRow from '../components/ProfileRow';
@@ -21,6 +23,8 @@ const PRIVACY_POLICY_URL = 'https://quefalta.es/privacidad';
 
 export default function PrivacySecurityScreen() {
   const styles = useThemedStyles(themedStyles);
+  const headerTop = useHeaderTopPadding(52);
+  const bottomPad = useTabBarBottomPadding(40);
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { signOut } = useAuth();
@@ -70,7 +74,7 @@ export default function PrivacySecurityScreen() {
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: headerTop }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
@@ -78,7 +82,7 @@ export default function PrivacySecurityScreen() {
         <View style={{ width: 38 }} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad }]}>
 
         {/* PRIVACIDAD */}
         <Text style={styles.sectionLabel}>{t('privacy.sectionPrivacy')}</Text>
@@ -170,7 +174,8 @@ const themedStyles = () => StyleSheet.create({
 
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 10, gap: 12,
+    paddingHorizontal: 16, paddingBottom: 10, gap: 12,
+    // paddingTop inline (useHeaderTopPadding)
   },
   backBtn: {
     width: 38, height: 38,

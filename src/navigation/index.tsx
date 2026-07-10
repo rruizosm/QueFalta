@@ -36,6 +36,9 @@ import {
 
 import HomeScreen       from '../screens/HomeScreen';
 import FavoritesScreen  from '../screens/FavoritesScreen';
+import NewArrivalsScreen from '../screens/NewArrivalsScreen';
+import PriceChangesScreen from '../screens/PriceChangesScreen';
+import OffersScreen from '../screens/OffersScreen';
 import ProfileScreen    from '../screens/ProfileScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import PrivacySecurityScreen from '../screens/PrivacySecurityScreen';
@@ -54,6 +57,7 @@ import CarrefourProductsScreen from '../screens/CarrefourProductsScreen';
 import BonareaProductsScreen from '../screens/BonareaProductsScreen';
 import ConsumProductsScreen from '../screens/ConsumProductsScreen';
 import DiaProductsScreen from '../screens/DiaProductsScreen';
+import SorliProductsScreen from '../screens/SorliProductsScreen';
 import ListScreen       from '../screens/ListScreen';
 import GroupsScreen     from '../screens/GroupsScreen';
 import GroupDetailScreen from '../screens/GroupDetailScreen';
@@ -62,6 +66,10 @@ import AddMemberScreen from '../screens/AddMemberScreen';
 import LoginScreen      from '../screens/LoginScreen';
 import OnboardingNavigator from '../screens/onboarding/OnboardingNavigator';
 import BootLoader       from '../components/BootLoader';
+import { glassAvailable } from '../components/GlassSurface';
+import LiquidGlassTabBar, {
+  LIQUID_TABBAR_HEIGHT, liquidTabBarBottom,
+} from '../components/LiquidGlassTabBar';
 
 const Tab          = createBottomTabNavigator<RootTabParamList>();
 const HomeStack    = createNativeStackNavigator<HomeStackParamList>();
@@ -74,12 +82,25 @@ export const navigationRef = createNavigationContainerRef<RootTabParamList>();
  *  un usuario: arranque con sesión cacheada y, sobre todo, inicio de sesión. */
 const BOOT_MIN_MS = 2000;
 
-/** Barra de pestañas normal envuelta en un View que se mide a sí mismo: registra
- *  su rect real (ancla 'tabBar') para que el resaltado del tutorial encaje con la
- *  barra, respetando el área segura del home indicator. */
+/** Tope del arranque: las llamadas de sesión/perfil van SIN timeout, así que con
+ *  la red colgada (típico en Android al abrir la app mientras renegocia Wi-Fi/
+ *  datos) `booting` no se apagaría nunca y el logo quedaba clavado hasta matar
+ *  la app. Pasado el tope se arranca con lo que haya. */
+const BOOT_MAX_MS = 10000;
+
+/** Envuelve la barra de pestañas en un View que se mide a sí mismo: registra su
+ *  rect real (ancla 'tabBar') para que el resaltado del tutorial encaje con la
+ *  barra, respetando el área segura del home indicator.
+ *
+ *  - Con liquid glass (iOS 26): barra FLOTANTE de cristal con píldora deslizante
+ *    (`LiquidGlassTabBar`, ver LIQUID-GLASS.md). Se posiciona ella misma en
+ *    absolute y las escenas scrollean por debajo; las pantallas compensan el
+ *    solape con useTabBarBottomPadding. El ref/onLayout miden SOLO la barra.
+ *  - Sin glass (Android / iOS ≤ 18): BottomTabBar clásica, en flujo, intacta. */
 function TourTabBar(props: BottomTabBarProps) {
   const { registerAnchor } = useGuidedTour();
   const ref = useRef<View>(null);
+  const insets = useSafeAreaInsets();
   const measure = useCallback(() => {
     const node = ref.current as any;
     if (!node?.measureInWindow) return;
@@ -91,6 +112,17 @@ function TourTabBar(props: BottomTabBarProps) {
       } catch { /* ignore */ }
     });
   }, [registerAnchor]);
+  // Re-mide cuando cambian los insets: en Android edge-to-edge el primer
+  // `onLayout` puede dispararse antes de que el sistema termine de aplicar los
+  // insets, dejando la posición medida obsoleta (más arriba de lo real) sin que
+  // vuelva a dispararse `onLayout` (el tamaño/posición relativa a su padre no
+  // cambia, aunque la ventana sí). Re-medir al estabilizarse los insets corrige
+  // ese desfase.
+  useEffect(measure, [measure, insets.top, insets.bottom]);
+
+  if (glassAvailable) {
+    return <LiquidGlassTabBar {...props} barRef={ref} onBarLayout={measure} />;
+  }
   return (
     <View ref={ref} collapsable={false} onLayout={measure}>
       <BottomTabBar {...props} />
@@ -110,6 +142,9 @@ function HomeNavigator() {
     <HomeStack.Navigator screenOptions={{ headerShown: false }}>
       <HomeStack.Screen name="HomeMain"    component={HomeScreen} />
       <HomeStack.Screen name="Favorites"   component={FavoritesScreen} />
+      <HomeStack.Screen name="NewArrivals" component={NewArrivalsScreen} />
+      <HomeStack.Screen name="PriceChanges" component={PriceChangesScreen} />
+      <HomeStack.Screen name="Offers"      component={OffersScreen} />
       <HomeStack.Screen name="Profile"     component={ProfileScreen} />
       <HomeStack.Screen name="EditProfile" component={EditProfileScreen} />
       <HomeStack.Screen name="PrivacySecurity" component={PrivacySecurityScreen} />
@@ -135,6 +170,7 @@ function CatalogNavigator() {
       <CatalogStack.Screen name="BonareaProducts" component={BonareaProductsScreen} />
       <CatalogStack.Screen name="ConsumProducts" component={ConsumProductsScreen} />
       <CatalogStack.Screen name="DiaProducts" component={DiaProductsScreen} />
+      <CatalogStack.Screen name="SorliProducts" component={SorliProductsScreen} />
     </CatalogStack.Navigator>
   );
 }
@@ -184,6 +220,12 @@ export default function Navigation() {
   // altura fija, así que ahí no sumamos nada.
   const insets = useSafeAreaInsets();
   const bottomInset = Platform.OS === 'android' ? insets.bottom : 0;
+  // Con la barra flotante de cristal (iOS 26) el "alto" que reserva react-nav
+  // para que useTabBarBottomPadding empuje el contenido = alto de la barra + su
+  // separación real al borde inferior (la barra se pinta en absolute; ver
+  // LiquidGlassTabBar). liquidTabBarBottom ya mete la barra dentro del área
+  // segura, así que NO se vuelve a sumar insets.bottom.
+  const glassTabBarHeight = LIQUID_TABBAR_HEIGHT + liquidTabBarBottom(insets.bottom);
 
   // Tiempo mínimo que se ve el BootLoader (logo + animación de carga): 2 s cada
   // vez que aparece un usuario. Cubre el arranque en frío con sesión cacheada y,
@@ -252,8 +294,25 @@ export default function Navigation() {
   // la hay, el primer fetch del perfil (evita parpadear el onboarding antes de
   // saber si onboarded_at existe), o hasta cumplir el tiempo mínimo. Es lo
   // primero que se renderiza en cada arranque → es quien oculta el splash nativo.
-  const booting =
+  const bootingRaw =
     loading || (!!session && (profileLoading || !minTimePassed));
+
+  // Tope de arranque: si esta fase no acaba en BOOT_MAX_MS (fetch colgado),
+  // fuerza la salida. Sin sesión → login (si el refresh llega después,
+  // onAuthStateChange mete al usuario solo); con sesión y sin perfil → app con
+  // lo cacheado (el gate de onboarding ya tolera profile null). El flag se
+  // re-arma por fase (arranque, login) para no saltarse el mínimo del login.
+  const [bootTimedOut, setBootTimedOut] = useState(false);
+  useEffect(() => {
+    if (!bootingRaw) {
+      setBootTimedOut(false);
+      return;
+    }
+    const id = setTimeout(() => setBootTimedOut(true), BOOT_MAX_MS);
+    return () => clearTimeout(id);
+  }, [bootingRaw]);
+
+  const booting = bootingRaw && !bootTimedOut;
   if (booting) return <BootLoader />;
 
   if (!session) {
@@ -289,14 +348,20 @@ export default function Navigation() {
           freezeOnBlur: true,
           tabBarActiveTintColor:   colors.accent,
           tabBarInactiveTintColor: colors.inkSoft,
-          tabBarStyle: {
-            backgroundColor: colors.white,
-            borderTopColor:  colors.border,
-            borderTopWidth:  1,
-            paddingBottom:   10 + bottomInset,
-            paddingTop:       6,
-            height:          70 + bottomInset,
-          },
+          // Con glass (iOS 26) la barra la pinta LiquidGlassTabBar (flotante,
+          // con su propio cristal e iconos); aquí solo importa `height`, que
+          // alimenta useBottomTabBarHeight → useTabBarBottomPadding. Sin glass,
+          // la BottomTabBar clásica con el estilo de siempre (Android intacto).
+          tabBarStyle: glassAvailable
+            ? { height: glassTabBarHeight, backgroundColor: 'transparent', borderTopWidth: 0 }
+            : {
+                backgroundColor: colors.white,
+                borderTopColor:  colors.border,
+                borderTopWidth:  1,
+                paddingBottom:   10 + bottomInset,
+                paddingTop:       6,
+                height:          70 + bottomInset,
+              },
           tabBarLabelStyle: {
             fontSize:    11,
             fontFamily:  fonts.bold,

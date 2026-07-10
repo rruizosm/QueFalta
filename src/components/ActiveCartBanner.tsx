@@ -19,6 +19,7 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { fetchMyGroups, type GroupSummary } from '../api/groups';
 import MemberAvatars from './MemberAvatars';
 
@@ -41,6 +42,7 @@ interface Props {
 export default function ActiveCartBanner({ topInset = false, compact = false }: Props) {
   const styles = useThemedStyles(themedStyles);
   const insets = useSafeAreaInsets();
+  const bannerTop = useHeaderTopPadding(52);
   const { activeCart, activateCart, deactivateCart, isActive, busy } = useCart();
   const toast = useToast();
   const { t } = useTranslation();
@@ -120,7 +122,7 @@ export default function ActiveCartBanner({ topInset = false, compact = false }: 
         style={[
           styles.banner,
           !activeCart && styles.bannerEmpty,
-          topInset && styles.topInset,
+          topInset && { marginTop: bannerTop },
           compact && styles.bannerCompact,
         ]}
         onPress={openPicker}
@@ -208,7 +210,7 @@ const themedStyles = () => StyleSheet.create({
     borderWidth: 1, borderColor: colors.accentMid,
   },
   bannerEmpty: { backgroundColor: colors.white, borderColor: colors.border },
-  topInset: { marginTop: 52 },
+  // topInset (separación de la barra de estado) inline: useHeaderTopPadding(52)
   // En línea junto a un título: sin márgenes propios, se ajusta al contenido y
   // cede espacio al título (maxWidth + flexShrink) sin empujarlo fuera.
   bannerCompact: {

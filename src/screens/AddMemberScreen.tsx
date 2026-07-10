@@ -13,6 +13,8 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
+import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { addMemberToGroup, fetchGroupMembers } from '../api/groups';
 import { fetchFriends, type FriendProfile } from '../api/friends';
 import UserAvatar from '../components/UserAvatar';
@@ -22,6 +24,8 @@ type AddMemberRouteProp = RouteProp<GroupsStackParamList, 'AddMember'>;
 
 export default function AddMemberScreen() {
   const styles = useThemedStyles(themedStyles);
+  const headerTop = useHeaderTopPadding(52);
+  const bottomPad = useTabBarBottomPadding(40);
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { groupId } = useRoute<AddMemberRouteProp>().params;
@@ -72,7 +76,7 @@ export default function AddMemberScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: headerTop }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
@@ -102,7 +106,7 @@ export default function AddMemberScreen() {
           <Text style={styles.emptyText}>{t('group.noFriendsText')}</Text>
         </View>
       ) : (
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
+        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad }]}>
           {filtered.length === 0 ? (
             <Text style={styles.empty}>{t('group.noFriendMatch')}</Text>
           ) : (
@@ -144,7 +148,8 @@ const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 10, gap: 12,
+    paddingHorizontal: 16, paddingBottom: 10, gap: 12,
+    // paddingTop inline (useHeaderTopPadding)
   },
   backBtn: {
     width: 38, height: 38, backgroundColor: colors.white,

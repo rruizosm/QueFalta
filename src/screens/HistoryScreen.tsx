@@ -15,6 +15,8 @@ import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { FREE_LIMITS, limitsApply } from '../constants/limits';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
+import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { fetchPurchases, fetchPurchaseItems, type Purchase } from '../api/purchases';
 import PaywallModal from '../components/PaywallModal';
 import type { NewListItem } from '../api/lists';
@@ -28,6 +30,8 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function HistoryScreen() {
   const styles = useThemedStyles(themedStyles);
+  const headerTop = useHeaderTopPadding(52);
+  const bottomPad = useTabBarBottomPadding(40);
   const { t, lang } = useTranslation();
   const locale = lang === 'ca' ? 'ca-ES' : 'es-ES';
   const navigation = useNavigation<any>();
@@ -129,7 +133,7 @@ export default function HistoryScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: headerTop }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
@@ -148,7 +152,7 @@ export default function HistoryScreen() {
       ) : (
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scroll}
+          contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad }]}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} colors={[colors.accent]} />
           }
@@ -268,7 +272,8 @@ const themedStyles = () => StyleSheet.create({
 
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 10, gap: 12,
+    paddingHorizontal: 16, paddingBottom: 10, gap: 12,
+    // paddingTop inline (useHeaderTopPadding)
   },
   backBtn: {
     width: 38, height: 38,

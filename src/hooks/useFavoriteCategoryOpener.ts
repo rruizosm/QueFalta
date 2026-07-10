@@ -4,7 +4,7 @@ import { getMeta } from '../constants/categoryMeta';
 import { fetchCategories, type N1Category } from '../api/mercadona';
 import {
   fetchBonpreuCategoryTree, fetchCarrefourCategoryTree, fetchBonareaCategoryTree,
-  fetchConsumCategoryTree, fetchDiaCategoryTree,
+  fetchConsumCategoryTree, fetchDiaCategoryTree, fetchSorliCategoryTree,
 } from '../api/catalog';
 import { useFavorites } from '../context/FavoritesContext';
 import type { CatalogStore } from '../constants/stores';
@@ -19,6 +19,7 @@ const TREE_FETCHERS: Record<Exclude<CatalogStore, 'mercadona'>, () => Promise<Mi
   bonarea: fetchBonareaCategoryTree,
   consum: fetchConsumCategoryTree,
   dia: fetchDiaCategoryTree,
+  sorli: fetchSorliCategoryTree,
 };
 
 /**

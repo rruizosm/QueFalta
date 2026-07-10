@@ -1,5 +1,7 @@
 {
-  "NSPhotoLibraryUsageDescription": "QuéFalta solo accede a tu fototeca cuando eliges una foto de perfil. Por ejemplo, al tocar «Cambiar foto» en Editar perfil puedes seleccionar una imagen de tu galería para usarla como avatar, visible para tus amigos y los miembros de tus grupos de compra. QuéFalta no accede, recopila ni sube ninguna otra foto.",
-  "NSCameraUsageDescription": "QuéFalta solo usa la cámara si eliges hacer una foto nueva para tu foto de perfil. Nunca se captura ninguna foto sin tu acción.",
-  "NSMicrophoneUsageDescription": "QuéFalta no graba audio. Este permiso solo se declara porque el selector multimedia del sistema admite vídeo; la app nunca lo solicita."
+  "ios": {
+    "NSPhotoLibraryUsageDescription": "QuéFalta solo accede a tu fototeca cuando eliges una foto de perfil. Por ejemplo, al tocar «Cambiar foto» en Editar perfil puedes seleccionar una imagen de tu galería para usarla como avatar, visible para tus amigos y los miembros de tus grupos de compra. QuéFalta no accede, recopila ni sube ninguna otra foto.",
+    "NSCameraUsageDescription": "QuéFalta solo usa la cámara si eliges hacer una foto nueva para tu foto de perfil. Nunca se captura ninguna foto sin tu acción.",
+    "NSMicrophoneUsageDescription": "QuéFalta no graba audio. Este permiso solo se declara porque el selector multimedia del sistema admite vídeo; la app nunca lo solicita."
+  }
 }

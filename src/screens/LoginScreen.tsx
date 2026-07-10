@@ -9,6 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { fonts } from '../constants/typography';
 import { useAuth } from '../context/AuthContext';
@@ -27,6 +28,11 @@ const BRAND_INK = '#2b2521';
 
 export default function LoginScreen() {
   const styles = useThemedStyles(themedStyles);
+  const insets = useSafeAreaInsets();
+  // Android dibuja edge-to-edge y la barra de navegación (3 botones ≈48dp) es
+  // opaca → el pie legal necesita quedar por encima de insets.bottom. En iOS el
+  // home indicator es transparente y el 36 calibrado ya lo salva → no cambia.
+  const bottomPad = Platform.OS === 'android' ? Math.max(insets.bottom + 12, 36) : 36;
   const { t } = useTranslation();
   const { signInWithGoogle, signInWithApple } = useAuth();
   // Qué proveedor está autenticando (deshabilita ambos botones y muestra spinner).
@@ -54,7 +60,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: bottomPad }]}>
 
       {/* Hero */}
       <View style={styles.hero}>
@@ -121,7 +127,7 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: LOGO_BG,
     paddingHorizontal: 26,
     paddingTop: 30,
-    paddingBottom: 36,
+    // paddingBottom se aplica inline (depende de insets.bottom en Android)
     justifyContent: 'space-between',
   },
 

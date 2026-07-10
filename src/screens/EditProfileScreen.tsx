@@ -16,11 +16,15 @@ import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { updateProfile, uploadAvatar, isUsernameAvailable } from '../api/profile';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
+import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 
 const USERNAME_RE = /^[a-z0-9_.]{3,20}$/;
 
 export default function EditProfileScreen() {
   const styles = useThemedStyles(themedStyles);
+  const headerTop = useHeaderTopPadding(52);
+  const bottomPad = useTabBarBottomPadding(40);
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { session } = useAuth();
@@ -155,16 +159,18 @@ export default function EditProfileScreen() {
   };
   const helper = usernameHelper();
 
+  // 'padding' TAMBIÉN en Android: con edge-to-edge (SDK 54) el adjustResize
+  // del sistema ya no encoge la ventana y el teclado taparía los campos.
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior="padding"
     >
       <View style={styles.container}>
         <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
         {/* Custom header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: headerTop }]}>
           <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={8}>
             <Text style={styles.headerCancel}>{t('common.cancel')}</Text>
           </TouchableOpacity>
@@ -178,7 +184,7 @@ export default function EditProfileScreen() {
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scroll}
+          contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad }]}
           keyboardShouldPersistTaps="handled"
         >
           {/* Photo */}
@@ -300,7 +306,8 @@ const themedStyles = () => StyleSheet.create({
   // ── Header ────────────────────────────────────────────────────
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 10,
+    paddingHorizontal: 16, paddingBottom: 10,
+    // paddingTop inline (useHeaderTopPadding)
   },
   headerCancel: { fontSize: 13.5, fontFamily: fonts.semibold, color: colors.inkSoft },
   headerTitle:  { fontSize: 17,   fontFamily: fonts.bold,    color: colors.ink },

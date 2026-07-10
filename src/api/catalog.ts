@@ -8,6 +8,13 @@ import { supabase } from '../lib/supabase';
 import { getLanguage } from '../i18n';
 import type { MercadonaProduct } from '../types';
 import type { CatalogStore } from '../constants/stores';
+import { fetchNewArrivals } from './mercadona';
+// Solo type-only en sentido inverso (productAdapters importa los tipos de este
+// fichero con `import type`), así que este import NO crea un ciclo en runtime.
+import {
+  mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
+  type UIProduct,
+} from '../lib/productAdapters';
 
 // Misma normalización que la columna generada `display_name_norm` de la BD
 // (NFD + quitar diacríticos combinantes U+0300–U+036F + minúsculas). Igual que
@@ -48,13 +55,17 @@ export interface BrowsePage<T> { items: T[]; nextCursor: BrowseCursor | null }
 // imprescindible: `orderCol` (el nombre normalizado) NO es único, así que un
 // `.gt(orderCol, cursor)` a secas se saltaría los productos que comparten nombre
 // con el último de la página anterior. `cols` debe incluir `id`; `orderCol` se
-// añade al select para poder leer el cursor de la última fila.
+// añade al select para poder leer el cursor de la última fila. `apply` permite
+// añadir filtros extra a la query (p. ej. "solo con oferta viva"): cada llamada
+// a .or() de PostgREST es una condición independiente que se combina con AND,
+// así que no choca con el .or() del cursor.
 async function keysetPage(
   table: string,
   cols: string,
   orderCol: string,
   cursor: BrowseCursor | null,
   limit: number,
+  apply?: (q: any) => any,
 ): Promise<{ rows: any[]; nextCursor: BrowseCursor | null }> {
   let q = supabase
     .from(table)
@@ -63,6 +74,7 @@ async function keysetPage(
     .order(orderCol, { ascending: true })
     .order('id', { ascending: true })
     .limit(limit);
+  if (apply) q = apply(q);
   if (cursor) {
     // Valores entrecomillados (JSON) para que comas/paréntesis del nombre no
     // rompan la sintaxis del filtro `or` de PostgREST.
@@ -327,6 +339,12 @@ export interface CarrefourProduct {
   priceFormat: string | null;   // precio mostrado tal cual ("15,40 €")
   pricePerUnit: string | null;  // etiqueta €/unidad canónica ("192,50 €/kg")
   categoryName: string | null;
+  // Oferta (solo en fetchCarrefourProduct; null en listados/búsqueda). Ver
+  // carrefour_offers.sql. promoText incluye las condiciones y la validez.
+  promoName: string | null;         // "3x2", "2ª unidad -70%"…
+  promoText: string | null;
+  promoEnd: string | null;          // ISO "2026-07-13" (para ocultar caducadas)
+  strikethroughPrice: number | null; // precio ANTERIOR (unitPrice ya es el rebajado)
   // Ficha (solo en fetchCarrefourProduct; null en listados/búsqueda). La rellena
   // scripts/sync-carrefour.mjs del window.__INITIAL_STATE__. Ver carrefour_product_detail.sql.
   ingredients: string | null;
@@ -348,6 +366,10 @@ const mapCarrefour = (r: any): CarrefourProduct => ({
   pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
   categoryName: r.category_name ?? null,
   // Solo presentes cuando se piden (detalle); en listados quedan undefined → null.
+  promoName: r.promo_name ?? null,
+  promoText: r.promo_text ?? null,
+  promoEnd: r.promo_end ?? null,
+  strikethroughPrice: r.strikethrough_price != null ? Number(r.strikethrough_price) : null,
   ingredients: r.ingredients ?? null,
   allergens: r.allergens ?? null,
   nutrition: r.nutrition ?? null,
@@ -362,9 +384,10 @@ const mapCarrefour = (r: any): CarrefourProduct => ({
 // canónico (columnas l/kg/ud) para mostrar "192,50 €/kg" como en el resto de supers.
 const CARREFOUR_COLS =
   'id, display_name, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
-// Columnas de ficha: solo para el detalle (cargas pesadas → no se piden en listados).
+// Columnas de ficha + oferta: solo para el detalle (no se piden en listados).
 const CARREFOUR_DETAIL_COLS =
-  `${CARREFOUR_COLS}, ingredients, allergens, nutrition, conservation, preparation, denomination, origin, operator`;
+  `${CARREFOUR_COLS}, promo_name, promo_text, promo_end, strikethrough_price`
+  + `, ingredients, allergens, nutrition, conservation, preparation, denomination, origin, operator`;
 
 /** Búsqueda por nombre en el catálogo de Carrefour (server-side). */
 export async function searchCarrefourProducts(query: string, limit = 50): Promise<CarrefourProduct[]> {
@@ -799,6 +822,119 @@ export async function fetchDiaProductsByCategory(categoryId: string, limit = 600
   return (data ?? []).map(mapDia);
 }
 
+// ─── Sorli (tabla sorli_products, espejo aparte) ─────────────────────────────
+// Mismo modelo que Consum/Dia (espejo + category_ids + ppu en columnas reales),
+// pero BILINGÜE (es/ca) como Bonpreu/bonÀrea. Lo puebla scripts/sync-sorli.mjs
+// (GitHub Action con navegador headless para firmar la sesión) desde la API JSON
+// de Sorliclic. El árbol tiene 3 niveles; category_ids incluye ancestros, así que
+// la N2 cubre su subárbol. nutriScore/agrupaciones viven en `raw` (sin columna).
+export interface SorliProduct {
+  id: string;                  // idArticulo ("122"), el de la URL del producto
+  displayName: string;         // incluye marca y formato ("Naranja Bolsa 2kg")
+  brand: string | null;
+  thumbnail: string | null;
+  unitPrice: number | null;    // precio con oferta aplicada si la hay
+  priceFormat: string | null;  // precio mostrado ("3,79 €")
+  pricePerUnit: string | null; // etiqueta €/unidad canónica ("1,90 €/kg")
+  categoryName: string | null;
+}
+
+// Bilingüe: en català muestra display_name_ca si existe (fallback al castellano).
+const mapSorli = (r: any): SorliProduct => {
+  const ca = getLanguage() === 'ca';
+  return {
+    id: r.id,
+    displayName: ca && r.display_name_ca ? r.display_name_ca : r.display_name,
+    brand: r.brand ?? null,
+    thumbnail: r.thumbnail ?? null,
+    unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
+    priceFormat: r.price_format ?? null,
+    pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
+    categoryName: r.category_name ?? null,
+  };
+};
+
+const SORLI_COLS =
+  'id, display_name, display_name_ca, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+
+/** Búsqueda por nombre en el catálogo de Sorli (server-side). Bilingüe: en català
+ *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
+export async function searchSorliProducts(query: string, limit = 50): Promise<SorliProduct[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const ca = getLanguage() === 'ca';
+  const { data, error } = await filterByNameWords(
+    supabase.from('sorli_products').select(SORLI_COLS).eq('published', true),
+    q,
+    ca ? 'display_name_ca_norm' : 'display_name_norm',
+  ).limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapSorli);
+}
+
+/** Navegación alfabética del catálogo de Sorli (sin búsqueda), keyset. */
+export async function browseSorliProducts(cursor: BrowseCursor | null, limit = 50): Promise<BrowsePage<SorliProduct>> {
+  const ca = getLanguage() === 'ca';
+  const { rows, nextCursor } = await keysetPage('sorli_products', SORLI_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit);
+  return { items: rows.map(mapSorli), nextCursor };
+}
+
+/** Un producto de Sorli por id (p.ej. para abrir el detalle desde la comparativa). */
+export async function fetchSorliProduct(id: string): Promise<SorliProduct | null> {
+  const { data, error } = await supabase
+    .from('sorli_products')
+    .select(SORLI_COLS)
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapSorli(data) : null;
+}
+
+/** Una categoría N1 de Sorli con sus subcategorías (N2) con productos. */
+export interface SorliCategory {
+  id: string;
+  name: string;
+  children: { id: string; name: string }[];
+}
+
+/** Árbol de categorías de Sorli (N1 → N2) desde el espejo. Bilingüe: en català
+ *  usa name_ca si existe (fallback al castellano). Se reordena en cliente. */
+export async function fetchSorliCategoryTree(): Promise<SorliCategory[]> {
+  const ca = getLanguage() === 'ca';
+  const { data, error } = await supabase
+    .from('sorli_categories')
+    .select('id, name, name_ca, parent_id, product_count')
+    .eq('published', true)
+    .order('name');
+  if (error) throw error;
+  const rows = data ?? [];
+  const nameOf = (r: any) => (ca && r.name_ca ? r.name_ca : r.name);
+  return rows
+    .filter((r: any) => r.parent_id == null)
+    .map((n1: any) => ({
+      id: n1.id,
+      name: nameOf(n1),
+      children: rows
+        .filter((c: any) => c.parent_id === n1.id && (c.product_count ?? 0) > 0)
+        .map((c: any) => ({ id: c.id, name: nameOf(c) })),
+    }))
+    .filter((n1) => n1.children.length > 0);
+}
+
+/** Productos de una subcategoría (N2) de Sorli, vía category_ids (incluye ancestros). */
+export async function fetchSorliProductsByCategory(categoryId: string, limit = 600): Promise<SorliProduct[]> {
+  const ca = getLanguage() === 'ca';
+  const { data, error } = await supabase
+    .from('sorli_products')
+    .select(SORLI_COLS)
+    .eq('published', true)
+    .contains('category_ids', [categoryId])
+    .order(ca ? 'display_name_ca_norm' : 'display_name')
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapSorli);
+}
+
 // ─── Comparativa: producto similar más barato entre supers (RPC similar_products) ─
 export interface SimilarProduct {
   store: CatalogStore;
@@ -832,4 +968,154 @@ export async function fetchSimilarProducts(
     pricePerUnitUnit: r.price_per_unit_unit ?? null,
     locked: !!r.locked, // tolera el RPC viejo sin la columna (→ false)
   }));
+}
+
+// ─── Novedades de la semana + cambios de precio (accesos del Home) ───────────
+// Ambas leen el espejo con una config por súper (tabla + columnas de listado +
+// adaptador fila→UIProduct que reutiliza el map* correspondiente). Requieren
+// las migraciones catalog_first_seen.sql y catalog_price_changes.sql: sin
+// ellas la query falla por columna inexistente y la pantalla muestra su error.
+
+const MIRROR_QUERY: Record<CatalogStore, { table: string; cols: string; toUI: (r: any) => UIProduct }> = {
+  mercadona: {
+    table: 'mercadona_products',
+    // unit_price se añade a las columnas de búsqueda para que fetchPriceChanges
+    // tenga el precio nuevo como columna (el resto de súpers ya lo llevan).
+    cols: 'id, raw, display_name_ca, category_name, category_id, regions, unit_price',
+    toUI: (r) => mercadonaToUI(mirrorMercadonaProduct(r, getLanguage() === 'ca')),
+  },
+  esclat:    { table: 'bonpreu_products',   cols: BONPREU_COLS,   toUI: (r) => bonpreuToUI(mapBonpreu(r)) },
+  carrefour: { table: 'carrefour_products', cols: CARREFOUR_COLS, toUI: (r) => carrefourToUI(mapCarrefour(r)) },
+  bonarea:   { table: 'bonarea_products',   cols: BONAREA_COLS,   toUI: (r) => bonareaToUI(mapBonarea(r)) },
+  consum:    { table: 'consum_products',    cols: CONSUM_COLS,    toUI: (r) => consumToUI(mapConsum(r)) },
+  dia:       { table: 'dia_products',       cols: DIA_COLS,       toUI: (r) => diaToUI(mapDia(r)) },
+  sorli:     { table: 'sorli_products',     cols: SORLI_COLS,     toUI: (r) => sorliToUI(mapSorli(r)) },
+};
+
+// Ventana de "esta semana": los syncs son semanales (lunes); 8 días cubren el
+// último lote con margen sin llegar a solapar dos.
+const WEEK_WINDOW_DAYS = 8;
+const weekAgoISO = () => new Date(Date.now() - WEEK_WINDOW_DAYS * 86_400_000).toISOString();
+
+// Más novedades que esto en una semana no son novedades: es el PRIMER llenado
+// de la tabla (súper recién estrenado o backfill) → se oculta el lote entero.
+const NEW_INITIAL_FILL_CAP = 400;
+
+/** Novedades de la semana de un súper. Mercadona usa su endpoint oficial de
+ *  novedades (curado por ellos, en vivo, disponible desde ya); el resto, la
+ *  columna first_seen_at del espejo: los productos que APARECIERON en el
+ *  último sync. Devuelve UIProduct listos para StoreProductList. */
+export async function fetchWeeklyNewProducts(store: CatalogStore, limit = 100): Promise<UIProduct[]> {
+  if (store === 'mercadona') {
+    // El raw de new-arrivals no trae `categories` → categoryName null y el
+    // producto cae en la zona "Otros" al añadirlo (igual que los favoritos).
+    const items = await fetchNewArrivals();
+    return items.slice(0, limit).map((p) => mercadonaToUI(p));
+  }
+  const m = MIRROR_QUERY[store];
+  const { data, error, count } = await supabase
+    .from(m.table)
+    .select(m.cols, { count: 'exact' })
+    .eq('published', true)
+    .gte('first_seen_at', weekAgoISO())
+    .order('first_seen_at', { ascending: false })
+    .order('display_name', { ascending: true })
+    .limit(limit);
+  if (error) throw error;
+  if ((count ?? 0) > NEW_INITIAL_FILL_CAP) return [];
+  return (data ?? []).map(m.toUI);
+}
+
+/** Un cambio de precio detectado por el trigger del espejo (catalog_price_changes.sql). */
+export interface PriceChangeProduct {
+  product: UIProduct;      // con el precio NUEVO (el actual del espejo)
+  prevPrice: number;
+  newPrice: number;
+  /** Variación en % (negativa = bajada), redondeada a 1 decimal en la BD. */
+  deltaPct: number;
+}
+
+/** Cambios de precio de la última semana en un súper, con la mayor bajada o
+ *  subida primero. Filtra y ordena por price_delta_pct, que calcula el trigger
+ *  junto con prev_unit_price (PostgREST no compara columna contra columna). */
+export async function fetchPriceChanges(
+  store: CatalogStore,
+  direction: 'down' | 'up',
+  limit = 100,
+): Promise<PriceChangeProduct[]> {
+  const m = MIRROR_QUERY[store];
+  const down = direction === 'down';
+  let q = supabase
+    .from(m.table)
+    .select(`${m.cols}, prev_unit_price, price_delta_pct`)
+    .eq('published', true)
+    .gte('price_changed_at', weekAgoISO());
+  q = down ? q.lt('price_delta_pct', 0) : q.gt('price_delta_pct', 0);
+  const { data, error } = await q
+    // Bajadas: el % más negativo primero (asc); subidas: el más positivo (desc).
+    .order('price_delta_pct', { ascending: down })
+    .order('display_name', { ascending: true })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? [])
+    .filter((r: any) => r.unit_price != null && r.prev_unit_price != null && r.price_delta_pct != null)
+    .map((r: any) => ({
+      product: m.toUI(r),
+      prevPrice: Number(r.prev_unit_price),
+      newPrice: Number(r.unit_price),
+      deltaPct: Number(r.price_delta_pct),
+    }));
+}
+
+// ─── Ofertas (acceso del Home) ───────────────────────────────────────────────
+// Solo Carrefour expone promociones en su catálogo (badge + precio tachado en el
+// SSR de listado; ver carrefour_offers.sql). Mercadona no hace ofertas (precios
+// siempre bajos) y el resto de espejos no las publican de forma explotable.
+
+/** Súpers con ofertas (hoy solo Carrefour); OffersScreen monta su selector con
+ *  esta lista, así que añadir un súper aquí + su fetch lo estrena en la UI. */
+export const OFFER_STORES: CatalogStore[] = ['carrefour'];
+
+export interface CarrefourOffer {
+  product: UIProduct;        // con el precio ACTUAL (rebajado si es descuento directo)
+  promoName: string | null;  // "3x2", "2ª unidad -70%"… (null en descuento directo puro)
+  promoEnd: string | null;   // fin de validez ISO ("2026-07-13"), null si el badge no lo traía
+  prevPrice: number | null;  // precio anterior tachado (null en promos de lote)
+}
+
+// "YYYY-MM-DD" en hora LOCAL (toISOString es UTC y adelanta/atrasa el día en
+// torno a medianoche): una promo válida "hasta hoy" debe verse todo el día.
+const todayLocalISO = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+/** Ofertas vivas de Carrefour, paginadas por keyset (orden alfabético, todas
+ *  alcanzables — nada de un limit sin order). Una fila tiene oferta viva si
+ *  conserva precio tachado o si su promo de lote no ha caducado (promo_end
+ *  null = el badge no traía fecha → se muestra hasta que el sync la retire).
+ *  Los datos son del último sync semanal; el filtro de caducidad evita enseñar
+ *  promos que expiraron a mitad de semana. */
+export async function fetchCarrefourOffers(
+  cursor: BrowseCursor | null,
+  limit = 50,
+): Promise<{ items: CarrefourOffer[]; nextCursor: BrowseCursor | null }> {
+  const today = todayLocalISO();
+  const { rows, nextCursor } = await keysetPage(
+    'carrefour_products',
+    `${CARREFOUR_COLS}, promo_name, promo_end, strikethrough_price`,
+    'display_name_norm',
+    cursor,
+    limit,
+    (q) => q.or(
+      `strikethrough_price.not.is.null,and(promo_name.not.is.null,or(promo_end.is.null,promo_end.gte.${today}))`,
+    ),
+  );
+  const items = rows.map((r: any) => ({
+    product: carrefourToUI(mapCarrefour(r)),
+    promoName: r.promo_name ?? null,
+    promoEnd: r.promo_end ?? null,
+    prevPrice: r.strikethrough_price != null ? Number(r.strikethrough_price) : null,
+  }));
+  return { items, nextCursor };
 }

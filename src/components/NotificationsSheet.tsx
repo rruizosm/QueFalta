@@ -11,6 +11,7 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useNotifications, type InboxNotification } from '../context/NotificationsContext';
 import { renderNotification } from '../lib/notificationText';
+import GlassSurface from './GlassSurface';
 
 interface Props {
   visible: boolean;
@@ -55,27 +56,16 @@ export default function NotificationsSheet({ visible, onClose }: Props) {
     clearAll();
   };
 
+  // Alto reservado bajo la cabecera flotante (área segura + fila de 38 + aire).
+  const headerPad = insets.top + 64;
+
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <View style={[styles.screen, { paddingTop: insets.top + 6 }]}>
+      <View style={styles.screen}>
         <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-        <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-            <Ionicons name="close" size={22} color={colors.ink} />
-          </TouchableOpacity>
-          <Text style={styles.title}>{t('notifications.title')}</Text>
-          {items.length > 0 ? (
-            <TouchableOpacity onPress={handleClearAll} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Text style={styles.clearAll}>{t('notifications.clearAll')}</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.headerSpacer} />
-          )}
-        </View>
-
         {items.length === 0 ? (
-          <View style={styles.empty}>
+          <View style={[styles.empty, { paddingTop: headerPad }]}>
             <Ionicons name="notifications-off-outline" size={42} color={colors.inkFaint} />
             <Text style={styles.emptyTitle}>{t('notifications.empty')}</Text>
             <Text style={styles.emptySub}>{t('notifications.emptySub')}</Text>
@@ -83,7 +73,7 @@ export default function NotificationsSheet({ visible, onClose }: Props) {
         ) : (
           <ScrollView
             style={styles.list}
-            contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 16 }]}
+            contentContainerStyle={[styles.listContent, { paddingTop: headerPad, paddingBottom: insets.bottom + 16 }]}
             showsVerticalScrollIndicator={false}
           >
             {items.map((n) => {
@@ -112,6 +102,23 @@ export default function NotificationsSheet({ visible, onClose }: Props) {
             })}
           </ScrollView>
         )}
+
+        {/* Cabecera de CRISTAL flotante (iOS 26): el listado scrollea por debajo
+            y se refracta. Va al final del árbol para renderse ENCIMA. En
+            fallback = barra opaca de papel, idéntica a antes. */}
+        <GlassSurface style={[styles.header, { paddingTop: insets.top + 6 }]} fallbackColor={colors.paper}>
+          <TouchableOpacity onPress={onClose} style={styles.closeBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Ionicons name="close" size={22} color={colors.ink} />
+          </TouchableOpacity>
+          <Text style={styles.title}>{t('notifications.title')}</Text>
+          {items.length > 0 ? (
+            <TouchableOpacity onPress={handleClearAll} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Text style={styles.clearAll}>{t('notifications.clearAll')}</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.headerSpacer} />
+          )}
+        </GlassSurface>
       </View>
     </Modal>
   );
@@ -121,14 +128,16 @@ const themedStyles = () => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.paper },
 
   header: {
+    position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingBottom: 12,
+    borderBottomWidth: 1, borderBottomColor: colors.border,
+    overflow: 'hidden',
   },
+  // Sobre la cabecera de cristal el botón va sin caja (solo icono).
   closeBtn: {
     width: 38, height: 38,
-    backgroundColor: colors.white,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border,
   },
   headerSpacer: { width: 38 },
   title: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink },

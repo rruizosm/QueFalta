@@ -1,0 +1,303 @@
+════════════════════════════════════════════════════════════════════════════
+BÚSQUEDA DE PRODUCTOS — RANKING EN SERVIDOR + PAGINACIÓN (NIVEL 2)
+════════════════════════════════════════════════════════════════════════════
+Fecha del análisis : 2026-07-08 (medido contra producción)
+Estado             : PENDIENTE de implementar (decidido NO poner parche
+                     temporal; este documento es la solución definitiva)
+Afecta a           : los 6 súpers (Mercadona, Bonpreu, Carrefour, bonÀrea,
+                     Consum, Dia)
+Requiere           : 1 migración SQL (a mano en Supabase) + cambios pequeños
+                     en la app (nueva build/OTA)
+
+
+──────────────────────────────────────────────────────────────────────────────
+1. PROBLEMA (bug observado)
+──────────────────────────────────────────────────────────────────────────────
+Buscando "Leche" en Mercadona la app muestra MENOS leches que buscando
+"Leche entera". Faltan productos obvios (p. ej. "Leche entera Hacendado"
+ni aparece con "Leche").
+
+
+──────────────────────────────────────────────────────────────────────────────
+2. CAUSA RAÍZ
+──────────────────────────────────────────────────────────────────────────────
+Las 6 funciones search* de src/api/catalog.ts (searchProducts,
+searchBonpreuProducts, searchCarrefourProducts, searchBonareaProducts,
+searchConsumProducts, searchDiaProducts) hacen:
+
+    supabase.from('<super>_products')
+      .select(COLS).eq('published', true)
+      .ilike('display_name_norm', '%palabra%')   // una por palabra (AND)
+      .limit(50)                                  // ← SIN .order()
+
+Sin ORDER BY, Postgres devuelve 50 filas ARBITRARIAS de entre todas las que
+matchean. El ranking por relevancia del cliente (sortByRelevance en
+src/lib/sort.ts, aplicado por StoreProductList cuando hay searchQuery) solo
+reordena esos 50: los demás nunca llegan al teléfono.
+
+Con "leche" matchean 198 productos → llegan 50 al azar (muchos "chocolate
+con leche", "café con leche"...) y las leches de verdad se quedan fuera.
+Con "leche entera" matchean 30 → caben todos en el límite → se ven todos.
+
+
+──────────────────────────────────────────────────────────────────────────────
+3. DATOS MEDIDOS (producción, 2026-07-08, mercadona_products published)
+──────────────────────────────────────────────────────────────────────────────
+    "leche"        → 198 matches   (solo llegan 50)
+    "leche entera" →  30 matches   (llegan todos)
+    "pan"          → 262           "queso" → 239        "agua" → 212
+    "chocolate"    → 153           "atun"  →  40        "yogur" →  47
+
+Peor caso real observado en Mercadona: ~262. En Carrefour (catálogo mucho
+mayor) los términos genéricos pueden superar el millar.
+
+
+──────────────────────────────────────────────────────────────────────────────
+4. SOLUCIÓN ELEGIDA (visión general)
+──────────────────────────────────────────────────────────────────────────────
+Un RPC de Postgres por súper que:
+  1. Normaliza el texto (mismas reglas que display_name_norm: lower +
+     unaccent, vía el wrapper inmutable f_unaccent ya creado por
+     catalog_unaccent_search.sql).
+  2. Tokeniza igual que filterByNameWords del cliente: palabras separadas
+     por espacios, se ignoran las de 1 letra salvo que no quede ninguna.
+  3. Filtra: TODAS las palabras deben aparecer (LIKE '%w%' sobre la columna
+     *_norm → aprovecha el índice trigram existente).
+  4. PUNTÚA cada fila replicando relevanceScore de src/lib/sort.ts:
+        nombre == consulta                → +1000
+        nombre EMPIEZA por la consulta    → + 400
+        por cada palabra de la consulta:
+          aparece como palabra entera     → + 100
+          el nombre empieza por ella      → +  60
+          cuanto antes aparezca           → + max(0, 40 − posición)
+     Desempate: alfabético por *_norm y luego id (orden estable).
+  5. Devuelve LIMIT lim OFFSET off → los 50 MEJORES, y paginables.
+
+La app pasa de la query PostgREST a supabase.rpc(...), manteniendo el mismo
+select de columnas y el mismo mapeo. El scroll infinito (50+50+50…) se apoya
+en el offset del RPC.
+
+Ventaja clave a futuro: cualquier mejora del ranking (popularidad de compra,
+boost de marca propia, sinónimos…) se hace tocando SOLO la función SQL, sin
+nueva build de la app.
+
+
+──────────────────────────────────────────────────────────────────────────────
+5. MIGRACIÓN SQL (supabase/migrations/catalog_search_rpc.sql — a mano)
+──────────────────────────────────────────────────────────────────────────────
+ADITIVA: no toca tablas ni queries existentes → las builds viejas siguen
+funcionando con la búsqueda antigua mientras los usuarios actualizan.
+
+-- ── Helpers comunes ─────────────────────────────────────────────────────
+
+-- Normaliza como display_name_norm (lower + sin acentos). f_unaccent ya
+-- existe (migración catalog_unaccent_search.sql).
+create or replace function public.catalog_search_norm(q text)
+returns text language sql immutable set search_path = public as $$
+  select public.f_unaccent(lower(trim(q)));
+$$;
+
+-- Escapa los metacaracteres de LIKE del texto del usuario (%, _, \).
+create or replace function public.catalog_like_escape(w text)
+returns text language sql immutable as $$
+  select replace(replace(replace(w, '\', '\\'), '%', '\%'), '_', '\_');
+$$;
+
+-- Tokeniza igual que filterByNameWords del cliente: palabras ≥2 letras;
+-- si no queda ninguna, se usan todas.
+create or replace function public.catalog_search_words(qn text)
+returns text[] language sql immutable as $$
+  with t as (select regexp_split_to_array(qn, '\s+') as ws)
+  select case
+    when exists (select 1 from t, unnest(t.ws) x where length(x) >= 2)
+    then (select array_agg(x) from t, unnest(t.ws) x where length(x) >= 2)
+    else (select ws from t)
+  end;
+$$;
+
+-- Réplica de relevanceScore (src/lib/sort.ts). "Palabra entera" se aproxima
+-- con delimitación por espacios (el cliente usa \b de regex; la diferencia
+-- solo afecta a nombres con guiones/comas y las demás señales la compensan).
+create or replace function public.catalog_search_rank(nn text, qn text, words text[])
+returns integer language sql immutable as $$
+  select
+    (case when nn = qn then 1000 else 0 end)
+  + (case when nn like public.catalog_like_escape(qn) || '%' then 400 else 0 end)
+  + coalesce((
+      select sum(
+          (case when ' ' || nn || ' ' like '% ' || public.catalog_like_escape(w) || ' %' then 100 else 0 end)
+        + (case when nn like public.catalog_like_escape(w) || '%' then 60 else 0 end)
+        + greatest(0, 40 - (strpos(nn, w) - 1))
+      )::int
+      from unnest(words) w
+      where strpos(nn, w) > 0
+    ), 0);
+$$;
+
+-- ── RPC por súper ───────────────────────────────────────────────────────
+-- PLANTILLA BILINGÜE (mercadona, bonpreu, bonarea → tienen display_name_ca_norm).
+-- `returns setof <tabla>`: el cliente elige columnas con .select(COLS) sobre
+-- el rpc (PostgREST filtra verticalmente el resultado de funciones), así el
+-- payload no arrastra `raw` donde no hace falta.
+-- SECURITY INVOKER (el default) → se respeta el RLS de la tabla.
+
+create or replace function public.search_mercadona_products(
+  q text, lang text default 'es', lim int default 50, off int default 0
+) returns setof public.mercadona_products
+language sql stable set search_path = public as $$
+  with pq as (select public.catalog_search_norm(q) as qn),
+       pw as (select public.catalog_search_words((select qn from pq)) as words)
+  select p.*
+  from public.mercadona_products p
+  cross join pq cross join pw
+  cross join lateral (
+    select case when lang = 'ca' then p.display_name_ca_norm
+                else p.display_name_norm end as nn
+  ) c
+  where p.published
+    and length(pq.qn) >= 2
+    and not exists (
+      select 1 from unnest(pw.words) w
+      where c.nn not like '%' || public.catalog_like_escape(w) || '%'
+    )
+  order by public.catalog_search_rank(c.nn, pq.qn, pw.words) desc,
+           c.nn asc, p.id asc
+  limit lim offset off
+$$;
+grant execute on function public.search_mercadona_products(text, text, int, int)
+  to anon, authenticated;
+
+-- Repetir la plantilla bilingüe cambiando SOLO el nombre y la tabla:
+--   search_bonpreu_products  → public.bonpreu_products
+--   search_bonarea_products  → public.bonarea_products
+
+-- PLANTILLA MONOLINGÜE (carrefour, consum, dia → solo display_name_norm):
+create or replace function public.search_carrefour_products(
+  q text, lim int default 50, off int default 0
+) returns setof public.carrefour_products
+language sql stable set search_path = public as $$
+  with pq as (select public.catalog_search_norm(q) as qn),
+       pw as (select public.catalog_search_words((select qn from pq)) as words)
+  select p.*
+  from public.carrefour_products p
+  cross join pq cross join pw
+  where p.published
+    and length(pq.qn) >= 2
+    and not exists (
+      select 1 from unnest(pw.words) w
+      where p.display_name_norm not like '%' || public.catalog_like_escape(w) || '%'
+    )
+  order by public.catalog_search_rank(p.display_name_norm, pq.qn, pw.words) desc,
+           p.display_name_norm asc, p.id asc
+  limit lim offset off
+$$;
+grant execute on function public.search_carrefour_products(text, int, int)
+  to anon, authenticated;
+
+-- Repetir la plantilla monolingüe para:
+--   search_consum_products → public.consum_products
+--   search_dia_products    → public.dia_products
+
+-- Recargar el esquema de PostgREST para que los RPC sean visibles al momento:
+notify pgrst, 'reload schema';
+
+
+──────────────────────────────────────────────────────────────────────────────
+6. CAMBIOS EN LA APP
+──────────────────────────────────────────────────────────────────────────────
+FASE A — cambiar la fuente (mínimo imprescindible, sin scroll aún)
+  src/api/catalog.ts: en cada search* sustituir el from().ilike().limit()
+  por el rpc, conservando COLS y el mapeo. Ejemplo Mercadona:
+
+    const { data, error } = await supabase
+      .rpc('search_mercadona_products', { q, lang: ca ? 'ca' : 'es', lim: limit, off: offset })
+      .select('raw, display_name_ca, category_name, category_id, regions');
+
+  (filterByNameWords deja de usarse en las búsquedas; NO borrarla si la
+  usa algo más. Los súpers monolingües no pasan lang.)
+  Con esto ya llegan "los 50 buenos" y el bug queda resuelto.
+
+FASE B — scroll infinito real (50 + 50 + …)
+  1. catalog.ts: añadir parámetro offset a las 6 search* (por defecto 0).
+  2. StoreProductList: nueva prop `preserveOrder` → cuando está activa, el
+     useMemo `shown` NO aplica sortByRelevance ni sortByName (respeta el
+     orden del servidor). IMPRESCINDIBLE con paginación: si el cliente
+     re-ordenara, cada página nueva recolocaría las filas ya visibles.
+     Usarla SOLO en los resultados de búsqueda del catálogo.
+  3. CatalogScreen: por cada súper, estado { offset, hasMore, loadingMore }
+     de la búsqueda activa. En onEndReached (el StoreProductList ya lo
+     delega al padre): si hasMore && !loadingMore → rpc con off=offset,
+     APPEND deduplicando por id, offset += 50, hasMore = (página llena).
+     Reset al cambiar el texto o el idioma (el debounce de 300 ms ya existe).
+     Mismo patrón que ya usa la navegación alfabética (browse* + keyset).
+
+GOTCHAS
+  • El RLS de las tablas *_products debe permitir SELECT a anon (ya lo
+    permite hoy; el RPC es SECURITY INVOKER y lo respeta).
+  • Ejecutar la migración ANTES de repartir la build: la app nueva sin RPC
+    en la BD rompería la búsqueda. La app vieja con RPC en la BD no se
+    entera de nada (cambio aditivo).
+  • En català, mercadona/bonpreu/bonarea rankean sobre display_name_ca_norm
+    (coalesce al castellano si el sync aún no rellenó el catalán).
+  • El guard q.length < 2 existe en cliente Y en el RPC (defensa doble).
+
+
+──────────────────────────────────────────────────────────────────────────────
+7. ORDEN DE DESPLIEGUE Y ROLLBACK
+──────────────────────────────────────────────────────────────────────────────
+  1) Pegar la migración en el SQL editor de Supabase (aditiva, sin riesgo).
+  2) Verificar los RPC con curl (sección 8) SIN tocar la app.
+  3) Implementar Fase A (+B si se quiere ya), typecheck, probar en Expo.
+  4) Build/OTA.
+  Rollback: revertir el código de la app a las queries viejas (las tablas
+  no han cambiado). Los RPC pueden quedarse o hacerse DROP FUNCTION.
+
+
+──────────────────────────────────────────────────────────────────────────────
+8. VERIFICACIÓN
+──────────────────────────────────────────────────────────────────────────────
+Con la anon key (la de .env.local) contra https://auth.quefalta.es:
+
+  curl -s -X POST \
+    "https://auth.quefalta.es/rest/v1/rpc/search_mercadona_products?select=display_name_norm" \
+    -H "apikey: $ANON" -H "Authorization: Bearer $ANON" \
+    -H "Content-Type: application/json" \
+    -d '{"q":"leche","lang":"es","lim":50,"off":0}'
+
+Esperado con "leche": los primeros resultados son leches de verdad
+("leche entera hacendado", "leche desnatada...") y NO "barritas de
+chocolate con leche...". Probar también:
+  • "leche entera" → los 30 de siempre, exactos primero.
+  • off=50 → página 2 sin repetir ninguno de la página 1.
+  • lang:"ca" con "llet" → nombres catalanes.
+  • "pan", "queso", "agua" (los términos con más matches medidos).
+  • Un término con % o _ (p. ej. "0%") → no rompe (catalog_like_escape).
+En la app: buscar "Leche" en Mercadona debe listar todas las leches al
+principio y seguir cargando al hacer scroll (Fase B).
+
+
+──────────────────────────────────────────────────────────────────────────────
+9. EXTENSIONES FUTURAS (sin tocar la app, editando solo catalog_search_rank)
+──────────────────────────────────────────────────────────────────────────────
+  • Popularidad: sumar señal precalculada (columna rellenada offline desde
+    purchase_items) → "leche entera hacendado" ganaría a marcas minoritarias.
+  • Sinónimos/typos: word_similarity() de pg_trgm como señal secundaria.
+  • Boost de marca propia por súper (hacendado, bonpreu…).
+
+
+──────────────────────────────────────────────────────────────────────────────
+10. ALTERNATIVAS DESCARTADAS (no re-evaluar sin motivo nuevo)
+──────────────────────────────────────────────────────────────────────────────
+  • Subir limit a 300 + pageSize en cliente: arregla el bug pero requiere
+    build igualmente, payload ~6× en búsquedas genéricas y no escala con
+    catálogos grandes (Carrefour). El RPC cuesta poco más y lo resuelve bien.
+  • Paginar la búsqueda por keyset alfabético (como browse*): el orden
+    alfabético es pésimo para búsqueda ("barritas de chocolate con leche"
+    llega antes que "leche entera") y el re-orden del cliente haría bailar
+    las filas al cargar cada página.
+  • Renombrar tablas + vista ordenada por longitud de nombre (DB-only, sin
+    build): funcionaba como parche inmediato pero obliga a re-apuntar los 6
+    syncs a la tabla renombrada (upsert no funciona sobre vistas), rompe los
+    ALTER TABLE de migraciones pendientes sobre esos nombres y añade una
+    indirección permanente. Descartada por el usuario el 2026-07-08.
+════════════════════════════════════════════════════════════════════════════

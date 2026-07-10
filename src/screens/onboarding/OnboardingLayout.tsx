@@ -9,13 +9,15 @@
 import type { ReactNode } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  StatusBar, ActivityIndicator,
+  StatusBar, ActivityIndicator, Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../constants/colors';
 import { fonts } from '../../constants/typography';
 import { useThemedStyles } from '../../context/ThemeContext';
 import { useTranslation } from '../../context/LanguageContext';
+import { useHeaderTopPadding } from '../../hooks/useHeaderTopPadding';
 import ProgressBar from '../../components/ProgressBar';
 
 interface Props {
@@ -54,6 +56,12 @@ export default function OnboardingLayout({
   skipLabel,
 }: Props) {
   const styles = useThemedStyles(themedStyles);
+  const topBarTop = useHeaderTopPadding(54);
+  const insets = useSafeAreaInsets();
+  // Android edge-to-edge: el footer (Continuar/Omitir) debe quedar por encima
+  // de la barra de navegación del sistema (3 botones ≈48dp, opaca). En iOS el
+  // 30 calibrado ya salva el home indicator → no cambia.
+  const footerBottom = Platform.OS === 'android' ? Math.max(insets.bottom + 12, 30) : 30;
   const { t } = useTranslation();
   const continueText = continueLabel ?? t('onboarding.continue');
   const skipText = skipLabel ?? t('onboarding.skipDefault');
@@ -68,7 +76,7 @@ export default function OnboardingLayout({
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       {/* Top bar: back + progreso */}
-      <View style={styles.topBar}>
+      <View style={[styles.topBar, { paddingTop: topBarTop }]}>
         {onBack ? (
           <TouchableOpacity onPress={onBack} style={styles.backBtn} hitSlop={8}>
             <Ionicons name="arrow-back" size={20} color={colors.ink} />
@@ -102,7 +110,7 @@ export default function OnboardingLayout({
 
       {/* Footer: botón principal + omitir */}
       {(onContinue || onSkip) && (
-        <View style={styles.footer}>
+        <View style={[styles.footer, { paddingBottom: footerBottom }]}>
           {onContinue && (
             <TouchableOpacity
               style={[styles.primaryBtn, (continueDisabled || continueLoading) && styles.primaryBtnDisabled]}
@@ -131,7 +139,8 @@ const themedStyles = () => StyleSheet.create({
 
   topBar: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingTop: 54, paddingBottom: 10,
+    paddingHorizontal: 16, paddingBottom: 10,
+    // paddingTop inline (useHeaderTopPadding)
   },
   backBtn: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center' },
   progressCol: { flex: 1, gap: 6 },
@@ -150,7 +159,8 @@ const themedStyles = () => StyleSheet.create({
   body: { marginTop: 22 },
 
   footer: {
-    paddingHorizontal: 24, paddingTop: 10, paddingBottom: 30,
+    paddingHorizontal: 24, paddingTop: 10,
+    // paddingBottom inline: iOS 30 (como antes); Android, sobre el inset del sistema.
     gap: 4,
     borderTopWidth: 1, borderTopColor: colors.border,
     backgroundColor: colors.paper,

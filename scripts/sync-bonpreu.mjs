@@ -17,6 +17,7 @@
 //      MAX_CATEGORIES=N    (limita nº de categorías, para pruebas)
 import { chromium } from 'playwright-core';
 import { canonicalPricePerUnit } from './lib/price.mjs';
+import { markStale as markStaleBatched } from './lib/stale.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -102,13 +103,9 @@ async function upsert(table, rows) {
     if (!res.ok) throw new Error(`upsert ${table} ${res.status}: ${await res.text()}`);
   }
 }
-async function markStale(table) {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/${table}?synced_at=lt.${encodeURIComponent(runStart)}&published=eq.true`,
-    { method: 'PATCH', headers: { apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify({ published: false, synced_at: runStart }) },
-  );
-  if (!res.ok) throw new Error(`markStale ${table} ${res.status}: ${await res.text()}`);
-}
+// Soft-delete por lotes con reintentos (lib/stale.mjs): el UPDATE único de toda
+// la tabla moría por statement_timeout (57014) cuando la BD iba cargada.
+const markStale = (table) => markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart });
 
 // ── Categorías (sin WAF) ─────────────────────────────────────────────────────
 async function fetchCategoryTree(lang = LANG) {

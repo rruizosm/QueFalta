@@ -43,6 +43,14 @@ export default function CarrefourProductModal({ product, onClose, topInset = 16 
   const price = product.priceFormat
     ?? (product.unitPrice != null ? `${product.unitPrice.toFixed(2).replace('.', ',')} €` : null);
   const fav = isProductFavorite('carrefour', product.id);
+  // Oferta (ver carrefour_offers.sql). Los datos son del sync semanal, así que
+  // una promo puede caducar a mitad de semana: promo_end la oculta al vencer
+  // (comparación de fechas ISO en LOCAL; null = el badge no traía fecha).
+  const d = new Date();
+  const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const promoActive = product.promoName != null && (product.promoEnd == null || product.promoEnd >= today);
+  const prevPrice = product.strikethroughPrice != null
+    ? `${product.strikethroughPrice.toFixed(2).replace('.', ',')} €` : null;
 
   const handleToggleFav = async () => {
     try {
@@ -114,8 +122,22 @@ export default function CarrefourProductModal({ product, onClose, topInset = 16 
 
         <View style={styles.priceRow}>
           {price ? <Text style={styles.price}>{price}</Text> : null}
+          {/* Descuento directo: el precio anterior, tachado, junto al rebajado. */}
+          {prevPrice ? <Text style={styles.prevPrice}>{prevPrice}</Text> : null}
         </View>
         {product.pricePerUnit ? <Text style={styles.refPrice}>{product.pricePerUnit}</Text> : null}
+
+        {/* Promo de lote ("3x2", "2ª unidad -70%"…) con sus condiciones completas
+            (el texto de Carrefour ya incluye la validez: "Válido del … al …"). */}
+        {promoActive ? (
+          <View style={styles.promoBox}>
+            <View style={styles.promoPill}>
+              <Ionicons name="pricetags" size={12} color={colors.white} />
+              <Text style={styles.promoPillText}>{product.promoName}</Text>
+            </View>
+            {product.promoText ? <Text style={styles.promoText}>{product.promoText}</Text> : null}
+          </View>
+        ) : null}
 
         {/* Comparativa: más barato en otros súper */}
         <SimilarProductsSection productName={product.displayName} excludeStore="carrefour" />
@@ -193,7 +215,24 @@ const themedStyles = () => StyleSheet.create({
 
   priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 10, marginTop: 14 },
   price: { fontSize: 28, fontFamily: fonts.bold, color: colors.accent },
+  prevPrice: {
+    fontSize: 16, fontFamily: fonts.semibold, color: colors.inkSoft,
+    textDecorationLine: 'line-through',
+  },
   refPrice: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
+
+  // ── Oferta (promo de lote) ────────────────────────────────────
+  promoBox: {
+    marginTop: 14, padding: 12, gap: 8,
+    backgroundColor: colors.accentLight,
+    borderWidth: 1, borderColor: colors.accentMid,
+  },
+  promoPill: {
+    alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: colors.accent, paddingHorizontal: 8, paddingVertical: 4,
+  },
+  promoPillText: { fontSize: 12, fontFamily: fonts.bold, color: colors.white },
+  promoText: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.ink, lineHeight: 18 },
 
   note: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkFaint, marginTop: 24 },
 

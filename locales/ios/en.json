@@ -1,5 +1,7 @@
 {
-  "NSPhotoLibraryUsageDescription": "QuéFalta only accesses your photo library when you choose to set a profile picture. For example, when you tap 'Change photo' in Edit Profile, you can pick an image from your library to use as your avatar, which is shown to your friends and shopping group members. QuéFalta does not access, collect, or upload any other photos.",
-  "NSCameraUsageDescription": "QuéFalta only uses the camera if you choose to take a new photo to use as your profile picture. Photos are never captured without your action.",
-  "NSMicrophoneUsageDescription": "QuéFalta does not record audio. This permission is only declared because the system media picker component supports video; the app never requests it."
+  "ios": {
+    "NSPhotoLibraryUsageDescription": "QuéFalta only accesses your photo library when you choose to set a profile picture. For example, when you tap 'Change photo' in Edit Profile, you can pick an image from your library to use as your avatar, which is shown to your friends and shopping group members. QuéFalta does not access, collect, or upload any other photos.",
+    "NSCameraUsageDescription": "QuéFalta only uses the camera if you choose to take a new photo to use as your profile picture. Photos are never captured without your action.",
+    "NSMicrophoneUsageDescription": "QuéFalta does not record audio. This permission is only declared because the system media picker component supports video; the app never requests it."
+  }
 }

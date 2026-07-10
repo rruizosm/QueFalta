@@ -27,6 +27,8 @@ import HardShadow from '../components/HardShadow';
 import NameInputSheet from '../components/NameInputSheet';
 import PaywallModal from '../components/PaywallModal';
 import { useTourAnchor } from '../context/GuidedTourContext';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
+import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 
 // CTA "crear grupo" del estado vacío, con el ancla del tour (paso 1). Es un
 // componente propio para que el ancla se monte/desmonte CON el botón: al crear
@@ -63,6 +65,8 @@ function ActivateCartAnchor({ children }: { children: ReactNode }) {
 
 export default function GroupsScreen() {
   const styles = useThemedStyles(themedStyles);
+  const headerTop = useHeaderTopPadding(56);
+  const bottomPad = useTabBarBottomPadding(24);
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { session } = useAuth();
@@ -213,7 +217,7 @@ export default function GroupsScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: headerTop }]}>
         <Text style={styles.title}>{t('group.title')}</Text>
         {/* Sin grupos, el CTA es el del estado vacío: no se duplica aquí. */}
         {groups.length > 0 && (
@@ -252,7 +256,7 @@ export default function GroupsScreen() {
           data={groups}
           keyExtractor={(item) => item.id}
           renderItem={renderGroup}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
           showsVerticalScrollIndicator={false}
           ItemSeparatorComponent={() => <View style={{ height: 14 }} />}
           refreshControl={
@@ -288,7 +292,8 @@ const themedStyles = () => StyleSheet.create({
 
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 16, paddingTop: 56, paddingBottom: 16,
+    paddingHorizontal: 16, paddingBottom: 16,
+    // paddingTop inline (useHeaderTopPadding)
   },
   title: { fontSize: 28, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
   newBtnText: { color: colors.white, fontFamily: fonts.bold, fontSize: 13 },

@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { useAuth } from '../context/AuthContext';
@@ -37,6 +38,8 @@ import ProductImage from '../components/ProductImage';
 import StoreProductModal, { type ProductRef } from '../components/StoreProductModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import UserAvatar from '../components/UserAvatar';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
+import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 
 import { STORE_META, groupByStore, storeOfItem } from '../constants/stores';
 import { groupByZone, sortZoneItems } from '../constants/zones';
@@ -62,6 +65,11 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 
 export default function ListScreen() {
   const styles = useThemedStyles(themedStyles);
+  const headerTop = useHeaderTopPadding(56);
+  // Con tab bar de cristal: eleva las barras fijas (total/completada) por encima
+  // del cristal y agranda el paddingBottom de la lista en la misma medida.
+  const tabBarOffset = useTabBarBottomPadding(0);
+  const insets = useSafeAreaInsets();
   const { t, lang } = useTranslation();
   const { session } = useAuth();
   const { activeCart } = useCart();
@@ -306,7 +314,7 @@ export default function ListScreen() {
     return (
       <View style={styles.container}>
         <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: headerTop }]}>
           <Text style={styles.title}>{t('list.title')}</Text>
         </View>
         <View style={styles.centerBox}>
@@ -331,7 +339,7 @@ export default function ListScreen() {
     return (
       <View style={styles.container}>
         <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: headerTop }]}>
           <Text style={styles.title}>{activeCart.groupName}</Text>
         </View>
         <View style={styles.centerBox}>
@@ -349,7 +357,7 @@ export default function ListScreen() {
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: headerTop }]}>
         <View style={styles.headerTexts}>
           <Text style={styles.title}>{activeCart.groupName}</Text>
           <Text style={styles.subtitle}>
@@ -424,7 +432,7 @@ export default function ListScreen() {
                 </View>
               );
             }}
-            contentContainerStyle={styles.list}
+            contentContainerStyle={[styles.list, { paddingBottom: 140 + tabBarOffset }]}
             showsVerticalScrollIndicator={false}
             stickySectionHeadersEnabled={false}
             refreshControl={
@@ -434,7 +442,7 @@ export default function ListScreen() {
 
           {/* Total bar */}
           {hasPrices && (
-            <View style={styles.totalBar}>
+            <View style={[styles.totalBar, { bottom: tabBarOffset }]}>
               <Text style={styles.totalBarLabel}>{t('list.totalEstimated')}</Text>
               <Text style={styles.totalBarAmount}>{formatEuro(totalCost)}</Text>
             </View>
@@ -442,7 +450,7 @@ export default function ListScreen() {
 
           {/* Done bar — covers total bar when complete */}
           {doneItems === merged.length && merged.length > 0 && (
-            <View style={styles.doneBar}>
+            <View style={[styles.doneBar, { bottom: tabBarOffset }]}>
               <Text style={styles.doneBarEmoji}>🎉</Text>
               <Text style={styles.doneBarText}>{t('list.listCompleted')}</Text>
               <TouchableOpacity
@@ -475,7 +483,7 @@ export default function ListScreen() {
         <View style={styles.sheetRoot}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => { setAssignItem(null); setAssignAllVisible(false); }} />
           {(!!assignItem || assignAllVisible) && (
-            <View style={styles.sheet}>
+            <View style={[styles.sheet, { paddingBottom: Platform.OS === 'ios' ? 30 : Math.max(insets.bottom + 10, 30) }]}>
               <Text style={styles.sheetTitle} numberOfLines={1}>
                 {assignAllVisible
                   ? t('list.assignAllTitle')
@@ -649,7 +657,8 @@ const themedStyles = () => StyleSheet.create({
 
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
-    paddingHorizontal: 16, paddingTop: 56, paddingBottom: 12, gap: 8,
+    paddingHorizontal: 16, paddingBottom: 12, gap: 8,
+    // paddingTop inline (useHeaderTopPadding)
   },
   headerTexts: { flex: 1 },
   title: { fontSize: 24, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
@@ -754,7 +763,8 @@ const themedStyles = () => StyleSheet.create({
   sheet: {
     backgroundColor: colors.paper,
     borderTopWidth: 1, borderTopColor: colors.border,
-    paddingTop: 18, paddingBottom: 30,
+    paddingTop: 18,
+    // paddingBottom inline: iOS 30 (como antes); Android, sobre el inset del sistema.
   },
   sheetTitle: { fontSize: 16, fontFamily: fonts.bold, color: colors.ink, paddingHorizontal: 18, marginBottom: 6 },
   sheetList: { maxHeight: 320 },

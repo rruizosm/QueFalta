@@ -1,8 +1,9 @@
 import { useCallback, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, StatusBar, ActivityIndicator, Modal, Pressable,
+  StyleSheet, StatusBar, ActivityIndicator, Modal, Pressable, Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -15,6 +16,8 @@ import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { deleteGroup, fetchGroupDetail, removeGroupMember, renameGroup, transferGroupAdmin, type GroupSummary } from '../api/groups';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
+import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import ConfirmDialog from '../components/ConfirmDialog';
 import UserAvatar from '../components/UserAvatar';
 import VerifiedBadge from '../components/VerifiedBadge';
@@ -24,6 +27,9 @@ type MembersRouteProp = RouteProp<GroupsStackParamList, 'GroupMembers'>;
 
 export default function GroupMembersScreen() {
   const styles = useThemedStyles(themedStyles);
+  const headerTop = useHeaderTopPadding(52);
+  const bottomPad = useTabBarBottomPadding(40);
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { groupId } = useRoute<MembersRouteProp>().params;
@@ -139,7 +145,7 @@ export default function GroupMembersScreen() {
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: headerTop }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
@@ -154,7 +160,7 @@ export default function GroupMembersScreen() {
           <Text style={styles.emptyText}>{t('group.detailLoadError')}</Text>
         </View>
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad }]}>
           <View style={styles.groupNameRow}>
             <Text style={styles.groupName} numberOfLines={1}>{group.name}</Text>
             {isAdmin && (
@@ -262,7 +268,7 @@ export default function GroupMembersScreen() {
         <View style={styles.sheetRoot}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setActionMember(null)} />
           {actionMember && (
-            <View style={styles.sheet}>
+            <View style={[styles.sheet, { paddingBottom: Platform.OS === 'ios' ? 30 : Math.max(insets.bottom, 20) }]}>
               <View style={styles.sheetHeader}>
                 <UserAvatar avatarUrl={actionMember.avatarUrl} initials={actionMember.initials} color={actionMember.color} size={40} />
                 <Text style={styles.sheetTitle} numberOfLines={1}>{actionMember.name}</Text>
@@ -341,7 +347,8 @@ const themedStyles = () => StyleSheet.create({
 
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 10, gap: 12,
+    paddingHorizontal: 16, paddingBottom: 10, gap: 12,
+    // paddingTop inline (useHeaderTopPadding)
   },
   backBtn: {
     width: 38, height: 38,
@@ -412,7 +419,7 @@ const themedStyles = () => StyleSheet.create({
   sheet: {
     backgroundColor: colors.paper,
     borderTopWidth: 1, borderTopColor: colors.border,
-    paddingBottom: 30,
+    // paddingBottom inline: iOS 30 (como antes); Android, el inset del sistema.
   },
   sheetHeader: {
     flexDirection: 'row', alignItems: 'center', gap: 12,

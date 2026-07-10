@@ -26,7 +26,28 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.quefalta.app"
+      "package": "com.quefalta.app",
+      "googleServicesFile": "./google-services.json",
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "quefalta.es",
+              "pathPrefix": "/join"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/quefalta-blue.png"
@@ -54,7 +75,16 @@
       [
         "expo-notifications",
         {
-          "color": "#2f6cb5"
+          "color": "#2f6cb5",
+          "icon": "./assets/notification-icon.png"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#E1EBF7",
+          "image": "./assets/quefalta-logo-blue.png",
+          "imageWidth": 180
         }
       ],
       [

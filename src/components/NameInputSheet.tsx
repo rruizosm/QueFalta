@@ -77,8 +77,10 @@ export default function NameInputSheet({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
+      {/* 'padding' TAMBIÉN en Android: con edge-to-edge (SDK 54) el adjustResize
+          del sistema ya no encoge la ventana y el teclado taparía la hoja. */}
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior="padding"
         style={styles.root}
       >
         <Pressable style={StyleSheet.absoluteFill} onPress={close} />

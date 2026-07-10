@@ -13,6 +13,7 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useGuidedTour, useTourAnchor } from '../context/GuidedTourContext';
+import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import type { UIProduct } from '../lib/productAdapters';
 import { sortByName, sortByRelevance } from '../lib/sort';
 import QuantityStepper from './QuantityStepper';
@@ -65,6 +66,11 @@ interface Props {
    *  siguiente página (catálogo). `loadingMore` pinta el spinner de pie. */
   onEndReached?: () => void;
   loadingMore?: boolean;
+  /** Mantiene el orden en que llegan los `products` (p. ej. cambios de precio
+   *  ordenados por % en el servidor, o las novedades curadas de Mercadona) en
+   *  vez de reordenar alfabéticamente/por relevancia. El buscador interno
+   *  sigue filtrando, solo se omite la reordenación. */
+  keepOrder?: boolean;
 }
 
 /** Lista de productos reutilizable (subcategorías y búsqueda): imagen, stepper +
@@ -75,9 +81,13 @@ export default function StoreProductList({
   emptyText, errorText,
   emoji, searchable = false, searchQuery,
   hideToolbar = false, viewMode: viewModeProp, onViewModeChange,
-  pageSize, onEndReached, loadingMore = false,
+  pageSize, onEndReached, loadingMore = false, keepOrder = false,
 }: Props) {
   const styles = useThemedStyles(themedStyles);
+  // Con tab bar de cristal: eleva la barra "Añadir" (cartBar) por encima del
+  // cristal y agranda el paddingBottom de lista/cuadrícula en la misma medida.
+  const tabBarOffset = useTabBarBottomPadding(0);
+  const bottomPad = 110 + tabBarOffset;
   const { t } = useTranslation();
   const emptyLabel = emptyText ?? t('product.emptyDefault');
   const errorLabel = errorText ?? t('product.errorDefault');
@@ -114,6 +124,9 @@ export default function StoreProductList({
           const name = stripAccents(p.name);
           return words.every((w) => name.includes(w));
         });
+    // keepOrder: el padre ya trae los productos en un orden con significado
+    // (p. ej. cambios de precio por %) → se respeta tal cual.
+    if (keepOrder) return filtered;
     // Con una consulta activa (la interna del buscador o la externa del catálogo)
     // se ordena por RELEVANCIA —exacto › empieza por › palabra entera › posición—;
     // sin texto (navegación/subcategoría) se mantiene el alfabético de siempre.
@@ -121,7 +134,7 @@ export default function StoreProductList({
     return rankQuery.length >= 2
       ? sortByRelevance(filtered, (p) => p.name, rankQuery)
       : sortByName(filtered, (p) => p.name);
-  }, [products, query, searchQuery]);
+  }, [products, query, searchQuery, keepOrder]);
 
   // Ventana local (paginación de favoritos): se pinta solo lo revelado y crece
   // de `pageSize` en `pageSize` al hacer scroll. Sin `pageSize`, se pinta todo
@@ -344,7 +357,7 @@ export default function StoreProductList({
           renderItem={renderGridItem}
           extraData={favList}
           columnWrapperStyle={styles.gridRow}
-          contentContainerStyle={styles.gridContent}
+          contentContainerStyle={[styles.gridContent, { paddingBottom: bottomPad }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
@@ -360,7 +373,7 @@ export default function StoreProductList({
           keyExtractor={(item) => `${item.store}:${item.id}`}
           renderItem={renderItem}
           extraData={favList}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
@@ -373,7 +386,7 @@ export default function StoreProductList({
       )}
 
       {cartCount > 0 && (
-        <View style={styles.cartBar}>
+        <View style={[styles.cartBar, { bottom: tabBarOffset }]}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={styles.cartLabel}>
               {t(cartCount === 1 ? 'product.selectedOne' : 'product.selectedMany', { n: cartCount })}

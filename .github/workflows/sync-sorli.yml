@@ -1,0 +1,28 @@
+name: Sync Sorli catalog
+
+on:
+  schedule:
+    - cron: '50 6 * * 1'   # lunes 06:50 UTC (tras Dia; crons escalonados 0/10/20/30/40/50 para no solapar), semanal
+  workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
+
+concurrency:
+  group: sync-sorli
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30   # bilingüe: recorre el catálogo 2 veces (es + ca)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # Sorli firma el token de sesión `s` en el navegador → arrancamos la sesión
+      # con Playwright + Chromium; el resto de la corrida es fetch de node.
+      - run: npm install playwright && npx playwright install --with-deps chromium
+      - run: node scripts/sync-sorli.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          CONCURRENCY: '6'

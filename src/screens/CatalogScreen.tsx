@@ -31,13 +31,15 @@ import {
   searchBonareaProducts, fetchBonareaCategoryTree,
   searchConsumProducts, fetchConsumCategoryTree,
   searchDiaProducts, fetchDiaCategoryTree,
+  searchSorliProducts, fetchSorliCategoryTree,
   browseProducts, browseBonpreuProducts, browseCarrefourProducts,
-  browseBonareaProducts, browseConsumProducts, browseDiaProducts,
+  browseBonareaProducts, browseConsumProducts, browseDiaProducts, browseSorliProducts,
   type BonpreuProduct, type BonpreuCategory,
   type CarrefourProduct, type CarrefourCategory,
   type BonareaProduct, type BonareaCategory,
   type ConsumProduct, type ConsumCategory,
   type DiaProduct, type DiaCategory,
+  type SorliProduct, type SorliCategory,
   type BrowseCursor, type BrowsePage,
 } from '../api/catalog';
 import { useFavorites } from '../context/FavoritesContext';
@@ -46,9 +48,11 @@ import { useProfile } from '../context/ProfileContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useGuidedTour, useTourAnchor } from '../context/GuidedTourContext';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
+import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import {
-  mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI,
+  mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
   type UIProduct,
 } from '../lib/productAdapters';
 import { sortByName } from '../lib/sort';
@@ -81,11 +85,14 @@ async function loadBrowsePage(store: CatalogStore, cursor: BrowseCursor | null):
     case 'bonarea':   { const { items, nextCursor } = await browseBonareaProducts(cursor); return { items: items.map(bonareaToUI), nextCursor }; }
     case 'consum':    { const { items, nextCursor } = await browseConsumProducts(cursor); return { items: items.map(consumToUI), nextCursor }; }
     case 'dia':       { const { items, nextCursor } = await browseDiaProducts(cursor); return { items: items.map(diaToUI), nextCursor }; }
+    case 'sorli':     { const { items, nextCursor } = await browseSorliProducts(cursor); return { items: items.map(sorliToUI), nextCursor }; }
   }
 }
 
 export default function CatalogScreen() {
   const styles = useThemedStyles(themedStyles);
+  const headerTop = useHeaderTopPadding(52);
+  const bottomPad = useTabBarBottomPadding(20);
   const navigation = useNavigation<any>();
   const { t, lang } = useTranslation();
   const { isCategoryFavorite, toggleCategoryFavorite } = useFavorites();
@@ -226,6 +233,17 @@ export default function CatalogScreen() {
   const [ddCatsLoading, setDdCatsLoading] = useState(false);
   const [ddCatsError, setDdCatsError] = useState(false);
 
+  // Búsqueda de productos Sorli (espejo)
+  const [soSearch, setSoSearch] = useState('');
+  const [soResults, setSoResults] = useState<SorliProduct[]>([]);
+  const [soLoading, setSoLoading] = useState(false);
+  const [soError, setSoError] = useState(false);
+
+  // Categorías Sorli (espejo)
+  const [soCats, setSoCats] = useState<SorliCategory[]>([]);
+  const [soCatsLoading, setSoCatsLoading] = useState(false);
+  const [soCatsError, setSoCatsError] = useState(false);
+
   // Navegación de productos (pestaña "Productos" sin texto): listado alfabético
   // del catálogo del súper activo, paginado por keyset. Estado ÚNICO compartido
   // por los 6 súpers porque solo se ve uno a la vez (igual que `catSearch`).
@@ -235,7 +253,7 @@ export default function CatalogScreen() {
   const [browseMore, setBrowseMore] = useState(false);       // páginas siguientes
   const [browseError, setBrowseError] = useState(false);
   // Texto de búsqueda del súper activo: con <2 letras estamos en modo navegación.
-  const prodQuery = { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch }[store];
+  const prodQuery = { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch }[store];
   const browseMode = tab === 'productos' && prodQuery.trim().length < 2;
 
   // Carga la página 1 al entrar a navegación (cambio de súper, limpiar la
@@ -388,6 +406,28 @@ export default function CatalogScreen() {
     return () => clearTimeout(handle);
   }, [ddSearch]);
 
+  // Carga perezosa de categorías Sorli la primera vez que se entra a esa tienda.
+  useEffect(() => { setSoCats([]); }, [lang]);
+  useEffect(() => {
+    if (store !== 'sorli' || soCats.length > 0 || soCatsLoading) return;
+    setSoCatsLoading(true); setSoCatsError(false);
+    fetchSorliCategoryTree()
+      .then(setSoCats)
+      .catch(() => setSoCatsError(true))
+      .finally(() => setSoCatsLoading(false));
+  }, [store, lang]);
+
+  // Sorli: búsqueda server-side con debounce (bilingüe: re-busca al cambiar idioma).
+  useEffect(() => {
+    const q = soSearch.trim();
+    if (q.length < 2) { setSoResults([]); setSoError(false); setSoLoading(false); return; }
+    setSoLoading(true); setSoError(false);
+    const handle = setTimeout(() => {
+      searchSorliProducts(q).then(setSoResults).catch(() => setSoError(true)).finally(() => setSoLoading(false));
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [soSearch, lang]);
+
   // Filtro de categorías por texto (cliente). Compartido por los 6 súpers: en la
   // pestaña de categorías solo se ve un súper a la vez, así que un único `catSearch` basta.
   const matchesCatSearch = (name: string) =>
@@ -479,6 +519,9 @@ export default function CatalogScreen() {
   const renderDdCategory = ({ item, index }: { item: DiaCategory; index: number }) =>
     renderCatRow({ store: 'dia', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('dia', item) }, index === 0);
 
+  const renderSoCategory = ({ item, index }: { item: SorliCategory; index: number }) =>
+    renderCatRow({ store: 'sorli', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('sorli', item) }, index === 0);
+
   // Estados de un listado de búsqueda de productos (compartido).
   const renderSearchStates = (search: string, loading: boolean, error: boolean, empty: boolean, list: React.ReactNode) => {
     if (search.trim().length < 2)
@@ -565,7 +608,7 @@ export default function CatalogScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      <View style={styles.headerArea}>
+      <View style={[styles.headerArea, { paddingTop: headerTop }]}>
         <Text style={styles.title}>{t('catalog.title')}</Text>
         <ActiveCartBanner compact />
       </View>
@@ -639,7 +682,7 @@ export default function CatalogScreen() {
               data={sortedCats(categories)}
               keyExtractor={(item) => String(item.id)}
               renderItem={renderCategory}
-              contentContainerStyle={styles.list}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -675,7 +718,7 @@ export default function CatalogScreen() {
               data={sortedCats(bpCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderBpCategory}
-              contentContainerStyle={styles.list}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -711,7 +754,7 @@ export default function CatalogScreen() {
               data={sortedCats(cfCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderCfCategory}
-              contentContainerStyle={styles.list}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -747,7 +790,7 @@ export default function CatalogScreen() {
               data={sortedCats(baCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderBaCategory}
-              contentContainerStyle={styles.list}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -783,7 +826,7 @@ export default function CatalogScreen() {
               data={sortedCats(csCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderCsCategory}
-              contentContainerStyle={styles.list}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -819,7 +862,7 @@ export default function CatalogScreen() {
               data={sortedCats(ddCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderDdCategory}
-              contentContainerStyle={styles.list}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -831,6 +874,42 @@ export default function CatalogScreen() {
         <>
           {productSearchRow(t('catalog.searchProducts'),ddSearch, setDdSearch)}
           {renderProductsTab(ddSearch, ddLoading, ddError, ddResults.map(diaToUI))}
+        </>
+      )}
+
+      {/* ── Sorli ────────────────────────────────────────────────── */}
+      {store === 'sorli' && tab === 'categorias' && (
+        <>
+          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
+          {soCatsLoading ? (
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+          ) : soCatsError ? (
+            <View style={styles.centerBox}>
+              <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Sorli' })}</Text>
+              <TouchableOpacity onPress={() => {
+                setSoCatsError(false); setSoCatsLoading(true);
+                fetchSorliCategoryTree().then(setSoCats).catch(() => setSoCatsError(true)).finally(() => setSoCatsLoading(false));
+              }}>
+                <Text style={styles.retryText}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={sortedCats(soCats)}
+              keyExtractor={(item) => item.id}
+              renderItem={renderSoCategory}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            />
+          )}
+        </>
+      )}
+
+      {store === 'sorli' && tab === 'productos' && (
+        <>
+          {productSearchRow(t('catalog.searchProducts'),soSearch, setSoSearch)}
+          {renderProductsTab(soSearch, soLoading, soError, soResults.map(sorliToUI))}
         </>
       )}
 
@@ -917,7 +996,8 @@ const themedStyles = () => StyleSheet.create({
 
   headerArea: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 10,
+    paddingHorizontal: 16, paddingBottom: 10,
+    // paddingTop inline (useHeaderTopPadding)
   },
   title: {
     fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3,

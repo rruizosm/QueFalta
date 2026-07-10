@@ -5,9 +5,10 @@
  * acciones y botón Cancelar.
  */
 import {
-  View, Text, Image, Modal, Pressable, TouchableOpacity, StyleSheet,
+  View, Text, Image, Modal, Pressable, TouchableOpacity, StyleSheet, Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
@@ -38,12 +39,13 @@ interface Props {
 
 export default function ActionSheet({ visible, onClose, title, subtitle, leading, actions }: Props) {
   const styles = useThemedStyles(themedStyles);
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.sheetRoot}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, { paddingBottom: Platform.OS === 'ios' ? 30 : Math.max(insets.bottom, 20) }]}>
           <View style={styles.sheetHeader}>
             {leading?.type === 'emoji' && (
               <View style={[styles.leadingBox, { backgroundColor: leading.color + '1e' }]}>
@@ -91,7 +93,7 @@ const themedStyles = () => StyleSheet.create({
   sheet: {
     backgroundColor: colors.paper,
     borderTopWidth: 1, borderTopColor: colors.border,
-    paddingBottom: 30,
+    // paddingBottom inline: iOS 30 (como antes); Android, el inset del sistema.
   },
   sheetHeader: {
     flexDirection: 'row', alignItems: 'center', gap: 12,

@@ -13,6 +13,7 @@ import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useFavoriteCategoryOpener } from '../hooks/useFavoriteCategoryOpener';
+import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { favoriteToUI } from '../lib/productAdapters';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import type { FavoriteCategory } from '../types';
@@ -32,6 +33,7 @@ export default function FavoritesScreen() {
   const { t } = useTranslation();
   const { categories: favCategories, products: favProducts, toggleCategoryFavorite } = useFavorites();
   const { openFavCategory } = useFavoriteCategoryOpener();
+  const bottomPad = useTabBarBottomPadding(20);
   const toast = useToast();
 
   const [store, setStore] = useState<CatalogStore>('mercadona');
@@ -201,7 +203,7 @@ export default function FavoritesScreen() {
               data={shownCategories}
               keyExtractor={(item) => `${item.store}:${item.refId}`}
               renderItem={renderCategory}
-              contentContainerStyle={styles.list}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
               keyboardDismissMode="on-drag"

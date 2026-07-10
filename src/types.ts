@@ -214,6 +214,9 @@ export type RootTabParamList = {
 export type HomeStackParamList = {
   HomeMain: undefined;
   Favorites: undefined;
+  NewArrivals: undefined;
+  PriceChanges: undefined;
+  Offers: undefined;
   Profile: undefined;
   EditProfile: undefined;
   PrivacySecurity: undefined;
@@ -232,9 +235,9 @@ export type CatalogStackParamList = {
     categoryName: string;
     emoji?: string;
     color?: string;
-    /** Subcategorías N2. Mercadona usa ids numéricos; Bonpreu/Carrefour/bonÀrea/Consum/Dia, ids string. */
+    /** Subcategorías N2. Mercadona usa ids numéricos; Bonpreu/Carrefour/bonÀrea/Consum/Dia/Sorli, ids string. */
     subcategories: { id: string | number; name: string }[];
-    retailer?: 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia';
+    retailer?: 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli';
   };
   Products: {
     subcategoryId: number;
@@ -269,6 +272,12 @@ export type CatalogStackParamList = {
   };
   /** Productos de una subcategoría de Dia (lee del espejo). */
   DiaProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentName?: string;
+  };
+  /** Productos de una subcategoría de Sorli (lee del espejo). */
+  SorliProducts: {
     categoryId: string;
     categoryName: string;
     parentName?: string;

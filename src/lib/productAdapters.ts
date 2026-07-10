@@ -5,7 +5,7 @@ import type { CatalogStore } from '../constants/stores';
 import type { MercadonaProduct, FavoriteProduct } from '../types';
 import { formatPrice, formatSize, formatReferencePrice } from '../api/mercadona';
 import type {
-  BonpreuProduct, CarrefourProduct, BonareaProduct, ConsumProduct, DiaProduct,
+  BonpreuProduct, CarrefourProduct, BonareaProduct, ConsumProduct, DiaProduct, SorliProduct,
 } from '../api/catalog';
 
 export interface UIProduct {
@@ -94,6 +94,16 @@ export function diaToUI(p: DiaProduct): UIProduct {
   return {
     id: p.id, store: 'dia', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
+    exclusiveRegions: null,
+  };
+}
+
+export function sorliToUI(p: SorliProduct): UIProduct {
+  return {
+    id: p.id, store: 'sorli', name: p.displayName, imageUrl: p.thumbnail,
+    priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    // El formato ya va en el nombre ("Naranja Bolsa 2kg") → sin metaLabel.
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
     exclusiveRegions: null,
   };

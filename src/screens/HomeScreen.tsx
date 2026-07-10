@@ -1,31 +1,43 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fonts } from '../constants/typography';
 import {
   View,
   Text,
+  Image,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
   StatusBar,
   ActivityIndicator,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { useCart } from '../context/CartContext';
 import { useProfile } from '../context/ProfileContext';
 import { useNotifications } from '../context/NotificationsContext';
+import { useFavorites } from '../context/FavoritesContext';
+import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { fetchMyGroups, fetchGroupItems, type GroupSummary, type GroupItem } from '../api/groups';
+import { fetchPurchases, fetchPurchaseItems, type Purchase } from '../api/purchases';
+import { favoriteToUI, type UIProduct } from '../lib/productAdapters';
+import { STORE_META } from '../constants/stores';
 import ProgressBar from '../components/ProgressBar';
 import MemberAvatars from '../components/MemberAvatars';
 import HardShadow from '../components/HardShadow';
 import ProfileChecklistCard from '../components/ProfileChecklistCard';
 import UserAvatar from '../components/UserAvatar';
 import NotificationsSheet from '../components/NotificationsSheet';
+import GlassSurface from '../components/GlassSurface';
+import ProductImage from '../components/ProductImage';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
+import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 
 // Snapshot del carrito activo en disco, por usuario+grupo (la clave incluye el
 // userId para no filtrar datos entre cuentas del mismo móvil). Permite pintar
@@ -33,13 +45,21 @@ import NotificationsSheet from '../components/NotificationsSheet';
 // segundo plano — igual que la caché en disco del avatar.
 const cartCacheKey = (userId: string, groupId: string) => `@homeCart:${userId}:${groupId}`;
 
+const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
 export default function HomeScreen() {
   const styles = useThemedStyles(themedStyles);
+  const headerTop = useHeaderTopPadding(56);
+  const bottomPad = useTabBarBottomPadding(32);
   const navigation = useNavigation<any>();
-  const { t } = useTranslation();
-  const { activeCart } = useCart();
+  const { t, lang } = useTranslation();
+  const locale = lang === 'ca' ? 'ca-ES' : 'es-ES';
+  const { activeCart, addToActiveCart, loadItemsIntoGroupCart } = useCart();
   const { profile } = useProfile();
   const { unreadCount } = useNotifications();
+  const { products: favProducts } = useFavorites();
+  const toast = useToast();
   const [notifOpen, setNotifOpen] = useState(false);
 
   const userId = profile?.id ?? null;
@@ -54,12 +74,21 @@ export default function HomeScreen() {
   const [loadedGroup, setLoadedGroup] = useState<string | null>(null);
   const loadedGroupRef = useRef<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [lastPurchase, setLastPurchase] = useState<Purchase | null>(null);
+  const [repeating, setRepeating] = useState(false);
+  // Favoritos en vuelo hacia el carrito (clave `store:id`): pinta el spinner en
+  // su tesela y evita el doble toque, sin bloquear el resto del carrusel.
+  const [addingFavs, setAddingFavs] = useState<Record<string, boolean>>({});
 
   const load = useCallback(() => {
     const groupsP = fetchMyGroups()
       .then(setGroups)
       .catch(() => setGroups([]))
       .finally(() => setGroupsLoading(false));
+
+    const purchasesP = fetchPurchases()
+      .then((list) => setLastPurchase(list[0] ?? null))
+      .catch(() => {});
 
     let cartP: Promise<unknown> = Promise.resolve();
     if (activeCart) {
@@ -77,7 +106,7 @@ export default function HomeScreen() {
     } else {
       setCartItems([]);
     }
-    return Promise.all([groupsP, cartP]);
+    return Promise.all([groupsP, cartP, purchasesP]);
   }, [activeCart, userId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
@@ -121,12 +150,80 @@ export default function HomeScreen() {
     }
   };
 
+  // Carrusel: los favoritos más recientes (el contexto ya los ordena así).
+  const favTiles = useMemo(() => favProducts.slice(0, 10).map(favoriteToUI), [favProducts]);
+
+  // Añade 1 ud del favorito al carrito activo. Mismo item que construye
+  // StoreProductList; los favoritos no guardan categoría → zona "Otros".
+  const addFavToCart = async (p: UIProduct) => {
+    if (!activeCart) {
+      Alert.alert(t('product.noCartTitle'), t('product.noCartMsg'));
+      return;
+    }
+    const k = `${p.store}:${p.id}`;
+    setAddingFavs((m) => ({ ...m, [k]: true }));
+    try {
+      await addToActiveCart([{
+        productName: p.name,
+        quantity: 1,
+        unit: 'ud',
+        categoryEmoji: null,
+        categoryName: p.categoryName,
+        mercadonaProductId: p.store === 'mercadona' ? p.id : null,
+        storeProductId: p.id,
+        unitPrice: p.unitPrice,
+        imageUrl: p.imageUrl,
+      }]);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show(t('product.addedOne', { n: 1, group: activeCart.groupName }));
+      load(); // revalida el "Quedan N artículos" de la tarjeta del carrito
+    } catch {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      toast.show(t('product.addError'), 'error');
+    } finally {
+      setAddingFavs((m) => {
+        const next = { ...m };
+        delete next[k];
+        return next;
+      });
+    }
+  };
+
+  // "Repetir compra" de la más reciente: mismo flujo que HistoryScreen. La más
+  // reciente siempre es repetible en el plan gratuito, así que aquí no hay gate.
+  const repeatLastPurchase = async () => {
+    if (!lastPurchase || repeating) return;
+    setRepeating(true);
+    try {
+      const items = await fetchPurchaseItems(lastPurchase.id);
+      if (items.length === 0) {
+        toast.show(t('history.noDetail'), 'error');
+        return;
+      }
+      await loadItemsIntoGroupCart(
+        lastPurchase.groupId,
+        lastPurchase.groupName ?? t('history.groupFallback'),
+        items,
+      );
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show(t('history.loaded', {
+        n: items.length,
+        group: lastPurchase.groupName ?? t('history.theGroupFallback'),
+      }));
+      navigation.navigate('List');
+    } catch {
+      toast.show(t('history.repeatError'), 'error');
+    } finally {
+      setRepeating(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, { paddingTop: headerTop, paddingBottom: bottomPad }]}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} colors={[colors.accent]} />
         }
@@ -134,20 +231,81 @@ export default function HomeScreen() {
 
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => setNotifOpen(true)}
-            style={styles.bellBtn}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            activeOpacity={0.8}
-            accessibilityLabel={t('notifications.a11yOpen')}
-          >
-            <Ionicons name="notifications-outline" size={22} color={colors.accent} />
-            {unreadCount > 0 ? (
-              <View style={styles.bellBadge}>
-                <Text style={styles.bellBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
-              </View>
-            ) : null}
-          </TouchableOpacity>
+          {/* Grupo de accesos: campana + novedades + cambios de precios + ofertas
+              (mismos círculos glass); el avatar queda solo a la derecha. */}
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              onPress={() => setNotifOpen(true)}
+              style={styles.bellBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              activeOpacity={0.8}
+              accessibilityLabel={t('notifications.a11yOpen')}
+            >
+              {/* Círculo de cristal (iOS 26) con tinte de acento; fallback = círculo
+                  blanco de siempre. El badge va FUERA (no lo recorta overflow). */}
+              <GlassSurface
+                style={styles.bellGlass}
+                tintColor={colors.accentLight}
+                interactive
+                fallbackColor={colors.white}
+              >
+                <Ionicons name="notifications-outline" size={22} color={colors.accent} />
+              </GlassSurface>
+              {unreadCount > 0 ? (
+                <View style={styles.bellBadge}>
+                  <Text style={styles.bellBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+                </View>
+              ) : null}
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('NewArrivals')}
+              style={styles.bellBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              activeOpacity={0.8}
+              accessibilityLabel={t('newArrivals.a11yOpen')}
+            >
+              <GlassSurface
+                style={styles.bellGlass}
+                tintColor={colors.accentLight}
+                interactive
+                fallbackColor={colors.white}
+              >
+                <Ionicons name="sparkles-outline" size={21} color={colors.accent} />
+              </GlassSurface>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('PriceChanges')}
+              style={styles.bellBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              activeOpacity={0.8}
+              accessibilityLabel={t('priceChanges.a11yOpen')}
+            >
+              <GlassSurface
+                style={styles.bellGlass}
+                tintColor={colors.accentLight}
+                interactive
+                fallbackColor={colors.white}
+              >
+                <Ionicons name="trending-down-outline" size={22} color={colors.accent} />
+              </GlassSurface>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Offers')}
+              style={styles.bellBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              activeOpacity={0.8}
+              accessibilityLabel={t('offers.a11yOpen')}
+            >
+              <GlassSurface
+                style={styles.bellGlass}
+                tintColor={colors.accentLight}
+                interactive
+                fallbackColor={colors.white}
+              >
+                <Ionicons name="pricetags-outline" size={21} color={colors.accent} />
+              </GlassSurface>
+            </TouchableOpacity>
+          </View>
           <TouchableOpacity
             onPress={() => navigation.navigate('Profile')}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -229,41 +387,132 @@ export default function HomeScreen() {
           </TouchableOpacity>
         )}
 
-        {/* CTA: añade productos desde el catálogo */}
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Catalog')}
-          activeOpacity={0.85}
-          style={styles.ctaWrap}
-        >
-          <HardShadow style={styles.ctaInner}>
-            <View style={styles.ctaIconBox}>
-              <Ionicons name="basket-outline" size={22} color={colors.white} />
+        {/* Tus favoritos: carrusel con añadido de un toque. Sin favoritos aún,
+            la tarjeta CTA de siempre como puerta de entrada a la pantalla. */}
+        {favTiles.length > 0 ? (
+          <View style={styles.sectionWrap}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{t('home.yourFavorites')}</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Favorites')}>
+                <Text style={styles.seeAll}>{t('home.seeAll')}</Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.ctaTextCol}>
-              <Text style={styles.ctaTitle}>{t('home.ctaTitle')}</Text>
-              <Text style={styles.ctaSub}>{t('home.ctaSub')}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} />
-          </HardShadow>
-        </TouchableOpacity>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.favStrip}
+              contentContainerStyle={styles.favStripContent}
+            >
+              {favTiles.map((p) => {
+                const k = `${p.store}:${p.id}`;
+                const adding = !!addingFavs[k];
+                return (
+                  <TouchableOpacity
+                    key={k}
+                    style={styles.favTile}
+                    onPress={() => addFavToCart(p)}
+                    activeOpacity={0.7}
+                    disabled={adding}
+                    accessibilityLabel={p.name}
+                  >
+                    <View style={styles.favImgWrap}>
+                      {p.imageUrl ? (
+                        <ProductImage uri={p.imageUrl} style={styles.favImg} />
+                      ) : (
+                        <Ionicons name="image-outline" size={22} color={colors.inkFaint} />
+                      )}
+                      {STORE_META[p.store]?.icon ? (
+                        <Image source={STORE_META[p.store].icon} style={styles.favStoreIcon} resizeMode="contain" />
+                      ) : null}
+                      <View style={styles.favAddBadge}>
+                        {adding ? (
+                          <ActivityIndicator size="small" color={colors.white} />
+                        ) : (
+                          <Ionicons name="add" size={17} color={colors.white} />
+                        )}
+                      </View>
+                    </View>
+                    <Text style={styles.favName} numberOfLines={2}>{p.name}</Text>
+                    {p.priceLabel ? <Text style={styles.favPrice}>{p.priceLabel}</Text> : null}
+                  </TouchableOpacity>
+                );
+              })}
+              {favProducts.length > favTiles.length && (
+                <TouchableOpacity
+                  style={styles.favMoreTile}
+                  onPress={() => navigation.navigate('Favorites')}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="star" size={20} color={colors.accent} />
+                  <Text style={styles.favMoreText}>{t('home.seeAll')}</Text>
+                </TouchableOpacity>
+              )}
+            </ScrollView>
+          </View>
+        ) : (
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Favorites')}
+            activeOpacity={0.85}
+            style={styles.ctaWrap}
+          >
+            <HardShadow style={styles.ctaInner}>
+              <View style={styles.ctaIconBox}>
+                <Ionicons name="star-outline" size={22} color={colors.white} />
+              </View>
+              <View style={styles.ctaTextCol}>
+                <Text style={styles.ctaTitle}>{t('home.favCtaTitle')}</Text>
+                <Text style={styles.ctaSub}>{t('home.favCtaSub')}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} />
+            </HardShadow>
+          </TouchableOpacity>
+        )}
 
-        {/* CTA: abre tus favoritos (antes una pestaña inferior) */}
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Favorites')}
-          activeOpacity={0.85}
-          style={styles.ctaWrap}
-        >
-          <HardShadow style={styles.ctaInner}>
-            <View style={styles.ctaIconBox}>
-              <Ionicons name="star-outline" size={22} color={colors.white} />
+        {/* Última compra: repetirla con un toque; la tarjeta abre el historial */}
+        {lastPurchase && (
+          <View style={styles.sectionWrap}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{t('home.lastPurchase')}</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('History')}>
+                <Text style={styles.seeAll}>{t('home.seeAll')}</Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.ctaTextCol}>
-              <Text style={styles.ctaTitle}>{t('home.favCtaTitle')}</Text>
-              <Text style={styles.ctaSub}>{t('home.favCtaSub')}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} />
-          </HardShadow>
-        </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('History')} activeOpacity={0.85}>
+              <HardShadow style={styles.lastBuyInner}>
+                <View style={styles.lastBuyRow}>
+                  <View style={styles.lastBuyIcon}>
+                    <Ionicons name="receipt-outline" size={20} color={colors.accent} />
+                  </View>
+                  <View style={styles.lastBuyInfo}>
+                    <Text style={styles.lastBuyName} numberOfLines={1}>
+                      {lastPurchase.groupName ?? t('history.groupFallback')}
+                    </Text>
+                    <Text style={styles.lastBuyMeta}>
+                      {cap(new Date(lastPurchase.completedAt).toLocaleDateString(locale, { day: 'numeric', month: 'short' }))}
+                      {' · '}{lastPurchase.itemCount} {lastPurchase.itemCount === 1 ? t('history.item') : t('history.items')}
+                    </Text>
+                  </View>
+                  <Text style={styles.lastBuyTotal}>{formatEuro(lastPurchase.total)}</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.repeatBtn}
+                  onPress={repeatLastPurchase}
+                  disabled={repeating}
+                  activeOpacity={0.85}
+                >
+                  {repeating ? (
+                    <ActivityIndicator size="small" color={colors.white} />
+                  ) : (
+                    <>
+                      <Ionicons name="refresh" size={15} color={colors.white} />
+                      <Text style={styles.repeatText}>{t('history.repeat')}</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </HardShadow>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Mis grupos */}
         <View style={styles.sectionHeader}>
@@ -314,7 +563,8 @@ export default function HomeScreen() {
 
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
-  scroll: { padding: 16, paddingTop: 56, paddingBottom: 32 },
+  // paddingTop inline (useHeaderTopPadding)
+  scroll: { padding: 16, paddingBottom: 32 },
 
   header: {
     flexDirection: 'row',
@@ -322,14 +572,19 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
+  // Campana + novedades + cambios de precios + ofertas, agrupados a la izquierda.
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   avatarRing: { borderWidth: 1, borderColor: colors.accent },
 
   // ── Campana de notificaciones ─────────────────────────────────
-  bellBtn: {
+  // El botón es solo el contexto de posición del badge; el círculo lo pinta
+  // bellGlass (cristal en iOS 26, blanco en fallback).
+  bellBtn: { width: 44, height: 44 },
+  bellGlass: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.accent,
     alignItems: 'center', justifyContent: 'center',
+    overflow: 'hidden',
   },
   bellBadge: {
     position: 'absolute', top: -2, right: -2,
@@ -341,7 +596,7 @@ const themedStyles = () => StyleSheet.create({
   bellBadgeText: { fontSize: 9.5, fontFamily: fonts.bold, color: '#ffffff' },
 
   // ── Cart card ─────────────────────────────────────────────────
-  cardWrap: { marginBottom: 28 },
+  cardWrap: { marginBottom: 24 },
 
   cartHeader: {
     flexDirection: 'row', alignItems: 'center', gap: 11,
@@ -387,6 +642,8 @@ const themedStyles = () => StyleSheet.create({
   noCartBtnText: { color: colors.white, fontFamily: fonts.bold, fontSize: 14 },
 
   // ── Sections ──────────────────────────────────────────────────
+  // Ritmo vertical unificado: 24 entre bloques (cardWrap, sectionWrap, ctaWrap).
+  sectionWrap: { marginBottom: 24 },
   sectionHeader: {
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'center', marginBottom: 10,
@@ -394,7 +651,58 @@ const themedStyles = () => StyleSheet.create({
   sectionTitle: { fontSize: 16, fontFamily: fonts.bold, color: colors.ink },
   seeAll: { fontSize: 13, fontFamily: fonts.semibold, color: colors.accent },
 
-  // ── CTA "Añade al carrito" ────────────────────────────────────
+  // ── Carrusel de favoritos ─────────────────────────────────────
+  // El strip sangra hasta los bordes de la pantalla (compensa el padding 16
+  // del scroll) para que las teselas entren/salgan por el borde real.
+  favStrip: { marginHorizontal: -16 },
+  favStripContent: { paddingHorizontal: 16, gap: 10 },
+  favTile: { width: 104 },
+  favImgWrap: {
+    width: '100%', aspectRatio: 1,
+    backgroundColor: colors.white,
+    borderWidth: 1, borderColor: colors.border,
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 6, overflow: 'hidden',
+  },
+  favImg: { width: '100%', height: '100%' },
+  favStoreIcon: { position: 'absolute', top: 4, left: 4, width: 14, height: 14 },
+  favAddBadge: {
+    position: 'absolute', bottom: 0, right: 0,
+    width: 24, height: 24,
+    backgroundColor: colors.accent,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  // minHeight reserva 2 líneas → precios alineados (igual que ProductGridCard).
+  favName: { fontSize: 11.5, fontFamily: fonts.semibold, color: colors.ink, lineHeight: 14, minHeight: 28 },
+  favPrice: { fontSize: 12, fontFamily: fonts.bold, color: colors.accent, marginTop: 2 },
+  favMoreTile: {
+    width: 104, aspectRatio: 1,
+    backgroundColor: colors.accentLight,
+    borderWidth: 1, borderColor: colors.border,
+    alignItems: 'center', justifyContent: 'center', gap: 6,
+  },
+  favMoreText: { fontSize: 12, fontFamily: fonts.bold, color: colors.accent },
+
+  // ── Última compra ─────────────────────────────────────────────
+  lastBuyInner: { padding: 14 },
+  lastBuyRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  lastBuyIcon: {
+    width: 40, height: 40, flexShrink: 0,
+    backgroundColor: colors.accentLight,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  lastBuyInfo: { flex: 1, minWidth: 0 },
+  lastBuyName: { fontSize: 14.5, fontFamily: fonts.bold, color: colors.ink },
+  lastBuyMeta: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
+  lastBuyTotal: { fontSize: 15, fontFamily: fonts.bold, color: colors.accent, flexShrink: 0 },
+  repeatBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
+    backgroundColor: colors.accent,
+    paddingVertical: 11, marginTop: 12,
+  },
+  repeatText: { fontSize: 13, fontFamily: fonts.bold, color: colors.white },
+
+  // ── CTA de favoritos (solo cuando aún no hay favoritos) ───────
   ctaWrap: { marginBottom: 24 },
   ctaInner: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
   ctaIconBox: {
@@ -407,7 +715,7 @@ const themedStyles = () => StyleSheet.create({
   ctaSub: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
 
   // ── Groups ────────────────────────────────────────────────────
-  // 16 + los 8 del último groupRow = 24, igual que el hueco sobre "Mis grupos" (ctaWrap).
+  // 16 + los 8 del último groupRow = 24, igual que el hueco entre secciones (sectionWrap).
   groupsBlock: { marginBottom: 16 },
   noGroups: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, marginBottom: 16 },
   groupRow: {

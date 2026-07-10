@@ -24,17 +24,23 @@ SplashScreen.preventAutoHideAsync();
 // El splash nativo entrega el relevo al BootLoader con un fundido suave (lo
 // oculta BootLoader en su primer layout, no aquí).
 SplashScreen.setOptions({ duration: 280, fade: true });
+// Red de seguridad (sobre todo Android): si el primer layout del BootLoader no
+// llega (arranque retenido o bug nativo del splash), descubre la app a los 4 s
+// en vez de dejar el icono clavado. No-op si BootLoader ya lo ocultó.
+setTimeout(() => { SplashScreen.hideAsync().catch(() => {}); }, 4000);
 configureNotificationHandler();
 
 export default function App() {
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     SpaceGrotesk_400Regular,
     SpaceGrotesk_500Medium,
     SpaceGrotesk_600SemiBold,
     SpaceGrotesk_700Bold,
   });
 
-  if (!fontsLoaded) return null;
+  // Si la carga de fuentes FALLA hay que arrancar igualmente (con la fuente del
+  // sistema): quedarse en null dejaría el splash nativo en pantalla para siempre.
+  if (!fontsLoaded && !fontError) return null;
 
   const inner = (
     // SafeAreaProvider en la raíz: expone los insets del sistema (barra de

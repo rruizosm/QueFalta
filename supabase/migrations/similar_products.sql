@@ -152,6 +152,13 @@ language sql stable as $$
     from public.dia_products d cross join q
     where 'dia' = any (p_stores) and d.published
       and public.catalog_family_match(lower(d.display_name), q.needle)
+    union all
+    select 'sorli', o.id, o.display_name, o.thumbnail,
+           o.unit_price, o.price_per_unit, o.price_per_unit_unit,
+           similarity(q.needle, lower(o.display_name))
+    from public.sorli_products o cross join q
+    where 'sorli' = any (p_stores) and o.published
+      and public.catalog_family_match(lower(o.display_name), q.needle)
   ),
   ranked as (
     select *, min(price_per_unit) over (partition by store) as min_ppu

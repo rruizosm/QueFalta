@@ -17,6 +17,7 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useTourAnchor } from '../context/GuidedTourContext';
 import { sortByName } from '../lib/sort';
+import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import ActiveCartBanner from '../components/ActiveCartBanner';
 
 type SubCategoryRouteProp = RouteProp<CatalogStackParamList, 'SubCategory'>;
@@ -26,6 +27,7 @@ export default function SubCategoryScreen() {
   // useThemedStyles suscribe al tema (recrea estilos y refresca colors.accent /
   // colors.paper si cambian accent o modo mientras la pantalla sigue montada).
   const styles = useThemedStyles(themedStyles);
+  const bottomPad = useTabBarBottomPadding(20);
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const route = useRoute<SubCategoryRouteProp>();
@@ -59,6 +61,12 @@ export default function SubCategoryScreen() {
       });
     } else if (retailer === 'dia') {
       navigation.navigate('DiaProducts', {
+        categoryId: String(item.id),
+        categoryName: item.name,
+        parentName: categoryName,
+      });
+    } else if (retailer === 'sorli') {
+      navigation.navigate('SorliProducts', {
         categoryId: String(item.id),
         categoryName: item.name,
         parentName: categoryName,
@@ -119,7 +127,7 @@ export default function SubCategoryScreen() {
         data={sortByName(subcategories, (s) => s.name)}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
       />

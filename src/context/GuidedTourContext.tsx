@@ -27,8 +27,9 @@ import {
   createContext, useCallback, useContext, useEffect, useMemo, useRef, useState,
 } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Animated, Easing,
+  View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Animated, Easing, Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -46,12 +47,16 @@ const SEEN_KEY = '@guidedtour_seen_v1';
 
 // Debe coincidir con navigation/index.tsx: [Home, Catalog, List, Groups].
 const TAB_COUNT = 4;
+// Altura BASE de la barra (sin el inset inferior de Android) — debe coincidir
+// con el `height: 70 + bottomInset` de `tabBarStyle` en navigation/index.tsx.
+// Solo se usa como estimación de emergencia si el ancla 'tabBar' aún no se ha
+// medido; en cuanto se mide, se usa su alto REAL (ver `barHeight` más abajo).
 const TAB_BAR_HEIGHT = 70;
 const TAB = { Home: 0, Catalog: 1, List: 2, Groups: 3 } as const;
 
 const PRODUCT_ROUTES = [
   'Products', 'BonpreuProducts', 'CarrefourProducts',
-  'BonareaProducts', 'ConsumProducts', 'DiaProducts',
+  'BonareaProducts', 'ConsumProducts', 'DiaProducts', 'SorliProducts',
 ];
 
 type AnchorKey =
@@ -133,6 +138,11 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
   const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  // Estimación de la altura real de la barra (mismo cálculo que `bottomInset`
+  // en navigation/index.tsx) para cuando el ancla 'tabBar' todavía no se ha
+  // medido — así el fallback no se queda corto en Android edge-to-edge.
+  const fallbackBarHeight = TAB_BAR_HEIGHT + (Platform.OS === 'android' ? insets.bottom : 0);
   const { session } = useAuth();
   const { activeCart } = useCart();
   const { products: favProducts } = useFavorites();
@@ -154,6 +164,30 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
     setStoreMenuOpenState(open);
     if (typeof count === 'number') setStoreCount(count);
   }, []);
+
+  // Origen del árbol de la app según `measureInWindow` (sonda 1×1 en el
+  // (0,0) del root). En Android, RN implementa measureInWindow restando el
+  // "marco visible" de la ventana, que EXCLUYE la barra de estado → todas las
+  // anclas llegan `insets.top` más arriba de su posición real en el overlay
+  // (que sí arranca en el borde superior de la pantalla con edge-to-edge).
+  // Restar el origen medido con la MISMA API corrige cualquier convención;
+  // en iOS la sonda mide (0,0) y no cambia nada.
+  const [origin, setOrigin] = useState({ x: 0, y: 0 });
+  const originRef = useRef<View>(null);
+  const measureOrigin = useCallback(() => {
+    const node = originRef.current as any;
+    if (!node?.measureInWindow) return;
+    requestAnimationFrame(() => {
+      try {
+        node.measureInWindow((x: number, y: number) => {
+          setOrigin((prev) => (prev.x === x && prev.y === y ? prev : { x, y }));
+        });
+      } catch { /* ignore */ }
+    });
+  }, []);
+  // Re-mide el origen al activarse el tour (por si la ventana cambió desde el
+  // arranque) además de en el onLayout inicial de la sonda.
+  useEffect(() => { if (active) measureOrigin(); }, [active, measureOrigin]);
 
   const activeRef = useRef(false);
   const indexRef = useRef(0);
@@ -179,15 +213,20 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
     if (completed) toast.show(t('tour.done'));
   }, [seenKey, toast, t]);
 
+  // OJO: nada de efectos secundarios dentro del updater de setIndex — React
+  // ejecuta los updaters DURANTE el render y llamar ahí a finishTour (que hace
+  // toast.show → setState del ToastProvider) da "Cannot update a component
+  // while rendering a different component". La decisión se toma con indexRef,
+  // que se actualiza aquí mismo para que dos advance() en el mismo tick no
+  // salten un paso de más.
   const advance = useCallback(() => {
     setAddQtyPicked(false); // cada cambio de paso resetea la fase B del 'add'
-    setIndex((i) => {
-      const ni = i + 1;
-      if (ni >= STEPS.length) { finishTour(true); return i; }
-      Haptics.selectionAsync();
-      if (STEPS[ni].await === 'favorite') favBaselineRef.current = favCountRef.current;
-      return ni;
-    });
+    const ni = indexRef.current + 1;
+    if (ni >= STEPS.length) { finishTour(true); return; }
+    indexRef.current = ni;
+    Haptics.selectionAsync();
+    if (STEPS[ni].await === 'favorite') favBaselineRef.current = favCountRef.current;
+    setIndex(ni);
   }, [finishTour]);
 
   const startTour = useCallback(() => {
@@ -311,11 +350,14 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
   // 'tabBar'): usamos su BORDE SUPERIOR real (acierta con el home indicator) y
   // una altura FIJA de contenido (icono+etiqueta) — no la altura total medida,
   // que puede incluir el relleno del área segura y estiraría el recuadro.
-  const bar = anchors.tabBar;
+  // Toda ancla medida con measureInWindow se pasa a coordenadas del overlay
+  // restando el origen medido con esa misma API (ver `origin` arriba).
+  const toOverlay = (r: Rect): Rect => ({ x: r.x - origin.x, y: r.y - origin.y, w: r.w, h: r.h });
+  const bar = anchors.tabBar ? toOverlay(anchors.tabBar) : undefined;
   const cellW = (bar?.w ?? width) / TAB_COUNT;
   const TAB_CONTENT_H = 50;
   const tabRect = (i: number): Rect => {
-    const barY = bar?.y ?? height - TAB_BAR_HEIGHT;
+    const barY = bar?.y ?? height - fallbackBarHeight;
     return {
       x: (bar?.x ?? 0) + cellW * i + cellW * 0.16,
       y: barY + 5,
@@ -353,7 +395,7 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
   let spot: Rect | null = null;
   let spotIsTab = false; // el objetivo es una pestaña de la barra inferior
   if (menuMode) spot = null;
-  else if (effectiveAnchor && anchors[effectiveAnchor]) spot = anchors[effectiveAnchor]!;
+  else if (effectiveAnchor && anchors[effectiveAnchor]) spot = toOverlay(anchors[effectiveAnchor]!);
   else if (typeof step?.tabIndex === 'number') { spot = tabRect(step.tabIndex); spotIsTab = true; }
 
   const pad = 8;
@@ -366,8 +408,15 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
   // comparten ubicación. El hueco extra (CHEVRON_GAP) deja sitio al chevron
   // cuando el objetivo es el propio tab justo debajo.
   const CHEVRON_GAP = 58;
-  const barTopY = bar?.y ?? height - TAB_BAR_HEIGHT;
-  const aboveTabsBottom = (height - barTopY) + CHEVRON_GAP;
+  // Alto REAL medido de la barra (ancla 'tabBar') en vez de `height - bar.y`:
+  // esa resta asume que `useWindowDimensions().height` coincide exactamente con
+  // el sistema de coordenadas de `measureInWindow`, lo que en Android
+  // edge-to-edge no siempre es cierto — el desajuste desplazaba la tarjeta (y,
+  // como comparten `bar.y`, también el anillo del tab) hacia arriba de la
+  // pantalla. Usar el alto medido directamente es autoconsistente y evita el
+  // problema por completo.
+  const barHeight = bar?.h ?? fallbackBarHeight;
+  const aboveTabsBottom = barHeight + CHEVRON_GAP;
   const bubblePos = (): any => {
     if (step?.bubble === 'top') return { top: 86, left: 16, right: 16 };
     if (step?.bubble === 'bottomAboveTabs') return { bottom: aboveTabsBottom, left: 16, right: 16 };
@@ -421,6 +470,16 @@ export function GuidedTourProvider({ children }: { children: React.ReactNode }) 
   return (
     <GuidedTourContext.Provider value={value}>
       {children}
+
+      {/* Sonda de origen: 1×1 invisible en el (0,0) del root, medida con la
+          misma API que las anclas (ver comentario de `origin`). */}
+      <View
+        ref={originRef}
+        collapsable={false}
+        pointerEvents="none"
+        onLayout={measureOrigin}
+        style={styles.originProbe}
+      />
 
       {step && (
         <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
@@ -583,6 +642,7 @@ export function useTourAnchor(
 }
 
 const themedStyles = () => StyleSheet.create({
+  originProbe: { position: 'absolute', top: 0, left: 0, width: 1, height: 1, opacity: 0 },
   dim: { position: 'absolute', backgroundColor: 'rgba(0,0,0,0.6)' },
   ring: {
     position: 'absolute',

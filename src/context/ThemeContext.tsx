@@ -54,6 +54,15 @@ function resolveScheme(mode: ThemeMode, system: ColorScheme): ColorScheme {
   return mode === 'system' ? system : mode;
 }
 
+/** Alinea la apariencia NATIVA (trait claro/oscuro de las ventanas) con el
+ *  tema elegido: los materiales del sistema (p. ej. el liquid glass de
+ *  GlassSurface, que va en 'auto') siguen así el tema DE LA APP aunque el
+ *  usuario lo fuerce distinto del sistema. En 'system' se limpia el override
+ *  (vuelve a seguir al dispositivo). */
+function applyNativeScheme(mode: ThemeMode) {
+  Appearance.setColorScheme(mode === 'system' ? null : mode);
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [accentKey, setKey] = useState<AccentKey | null>(null);
   const [themeMode, setMode] = useState<ThemeMode | null>(null);
@@ -72,12 +81,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         const mode = isThemeMode(rawMode) ? rawMode : DEFAULT_THEME_MODE;
         applyAccent(key);
         applyTheme(resolveScheme(mode, systemScheme));
+        applyNativeScheme(mode);
         setKey(key);
         setMode(mode);
       })
       .catch(() => {
         applyAccent(DEFAULT_ACCENT);
         applyTheme(resolveScheme(DEFAULT_THEME_MODE, systemScheme));
+        applyNativeScheme(DEFAULT_THEME_MODE);
         setKey(DEFAULT_ACCENT);
         setMode(DEFAULT_THEME_MODE);
       });
@@ -111,7 +122,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const setThemeMode = useCallback((mode: ThemeMode) => {
     // Aplica la paleta de inmediato (antes del re-render) para evitar un frame
-    // con el tema anterior.
+    // con el tema anterior. applyNativeScheme va ANTES de leer getColorScheme:
+    // al pasar a 'system' limpia el override y la lectura ya devuelve el
+    // esquema real del dispositivo (con override activo devolvería el forzado).
+    applyNativeScheme(mode);
     applyTheme(resolveScheme(mode, Appearance.getColorScheme() === 'dark' ? 'dark' : 'light'));
     setMode(mode);
     AsyncStorage.setItem(THEME_KEY, mode).catch(() => {});

@@ -25,6 +25,7 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { canonicalPricePerUnit } from './lib/price.mjs';
+import { markStale as markStaleBatched } from './lib/stale.mjs';
 const execFileP = promisify(execFile);
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -156,9 +157,21 @@ const eurNum = (s) => {
   return Number.isFinite(n) ? n : null;
 };
 
+// "13/07/2026" → "2026-07-13" (fechas de validez del badge de promo).
+const isoDate = (s) => {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(s ?? '').trim());
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : null;
+};
+
 function normalize(p) {
   // €/unidad canónico: Carrefour da price_per_unit ("1,11 €", el valor) + measure_unit ("l").
   const ppu = canonicalPricePerUnit(p.price_per_unit, p.measure_unit);
+  // Oferta (ver carrefour_offers.sql): badge_map.promotions[0] trae la promo de
+  // lote con fechas; badge es el fallback sin fechas. strikethrough_price es el
+  // precio ANTERIOR de un descuento directo (price ya viene rebajado). Las claves
+  // van SIEMPRE en el payload (null si no hay) para que el upsert LIMPIE la
+  // oferta del producto cuando desaparece de la web.
+  const promo = p.badge_map?.promotions?.[0] ?? null;
   return {
     id: String(p.product_id),
     retailer_product_id: p.sku_id ?? null,
@@ -171,6 +184,11 @@ function normalize(p) {
     price_per_unit_unit: ppu?.unit ?? null,
     available: p.units_in_stock == null ? true : Number(p.units_in_stock) > 0,
     published: true,
+    promo_name: promo?.name ?? p.badge?.name ?? null,
+    promo_text: promo?.pdp_text ?? p.badge?.description ?? null,
+    promo_start: isoDate(promo?.start_date),
+    promo_end: isoDate(promo?.end_date),
+    strikethrough_price: eurNum(p.strikethrough_price),
     raw: p,
     synced_at: runStart,
   };
@@ -374,13 +392,9 @@ async function upsert(table, rows) {
     if (!res.ok) throw new Error(`upsert ${table} ${res.status}: ${await res.text()}`);
   }
 }
-async function markStale(table) {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/${table}?synced_at=lt.${encodeURIComponent(runStart)}&published=eq.true`,
-    { method: 'PATCH', headers: { apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify({ published: false, synced_at: runStart }) },
-  );
-  if (!res.ok) throw new Error(`markStale ${table} ${res.status}: ${await res.text()}`);
-}
+// Soft-delete por lotes con reintentos (lib/stale.mjs): el UPDATE único de toda
+// la tabla moría por statement_timeout (57014) cuando la BD iba cargada.
+const markStale = (table) => markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart });
 
 // ── Árbol de categorías (N1 → N2) ────────────────────────────────────────────
 async function fetchCategoryTree() {
@@ -469,6 +483,8 @@ async function main() {
       sin_ppu: rows.filter((r) => r.price_per_unit == null).length,
       sin_img: rows.filter((r) => !r.thumbnail).length,
       sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
+      con_promo: rows.filter((r) => r.promo_name != null).length,
+      con_tachado: rows.filter((r) => r.strikethrough_price != null).length,
     });
     // Muestra de ficha: descarga la de los primeros productos para verificar el parseo.
     if (!SKIP_DETAIL) {

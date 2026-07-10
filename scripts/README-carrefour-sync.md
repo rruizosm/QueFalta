@@ -17,6 +17,13 @@ Para la **ficha de producto** (INGREDIENTES/NUTRICIÓN/ORIGEN/OPERADOR…), ejec
 (columnas anulables + `detail_synced_at`). Sin ella, el upsert de la pasada de ficha falla
 por columnas inexistentes.
 
+Para las **ofertas** (pantalla "Ofertas" del Home), ejecuta también
+[`supabase/migrations/carrefour_offers.sql`](../supabase/migrations/carrefour_offers.sql)
+(columnas `promo_*` + `strikethrough_price`, con backfill desde `raw`). Sin ella, el
+upsert del sync falla por columnas inexistentes. Los datos de promo vienen embebidos
+en las MISMAS páginas de listado que ya se recorren (badge + precio tachado del SSR),
+así que no añade peticiones.
+
 ## 2. Poner la service_role key en `.env.local`
 
 `MercaAppMobile/.env.local` (gitignored) ya tiene `EXPO_PUBLIC_SUPABASE_URL`.

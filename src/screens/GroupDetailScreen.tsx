@@ -26,6 +26,8 @@ import {
 } from '../api/groups';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
+import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import MemberAvatars from '../components/MemberAvatars';
 import ProgressBar from '../components/ProgressBar';
 import ProductImage from '../components/ProductImage';
@@ -49,6 +51,10 @@ function productRefOf(item: MergedCartItem): ProductRef | null {
 
 export default function GroupDetailScreen() {
   const styles = useThemedStyles(themedStyles);
+  const headerTop = useHeaderTopPadding(52);
+  // Con tab bar de cristal: eleva las barras de total (pantalla y overlay de
+  // cesta expandida) por encima del cristal y agranda los paddingBottom igual.
+  const tabBarOffset = useTabBarBottomPadding(0);
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const route = useRoute<GroupDetailRouteProp>();
@@ -194,7 +200,7 @@ export default function GroupDetailScreen() {
     return (
       <View style={styles.container}>
         <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: headerTop }]}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={22} color={colors.ink} />
           </TouchableOpacity>
@@ -216,7 +222,7 @@ export default function GroupDetailScreen() {
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: headerTop }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
@@ -228,7 +234,7 @@ export default function GroupDetailScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, { paddingBottom: 90 + tabBarOffset }]}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} colors={[colors.accent]} />
         }
@@ -297,7 +303,7 @@ export default function GroupDetailScreen() {
 
       {/* Total bar */}
       {hasPrices && items.length > 0 && (
-        <View style={styles.totalBar}>
+        <View style={[styles.totalBar, { bottom: tabBarOffset }]}>
           <Text style={styles.totalBarLabel}>{t('list.totalEstimated')}</Text>
           <Text style={styles.totalBarAmount}>{formatEuro(totalCost)}</Text>
         </View>
@@ -306,7 +312,7 @@ export default function GroupDetailScreen() {
       {/* Expanded cart overlay */}
       {cartExpanded && (
         <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
+          <View style={[styles.modalHeader, { paddingTop: headerTop }]}>
             <Text style={styles.modalTitle} numberOfLines={1}>{t('group.cartOf', { name: group.name })}</Text>
             <TouchableOpacity onPress={() => setCartExpanded(false)} style={styles.backBtn}>
               <Ionicons name="contract-outline" size={20} color={colors.ink} />
@@ -323,14 +329,14 @@ export default function GroupDetailScreen() {
           )}
 
           <ScrollView
-            contentContainerStyle={styles.modalScroll}
+            contentContainerStyle={[styles.modalScroll, { paddingBottom: 90 + tabBarOffset }]}
             showsVerticalScrollIndicator={false}
           >
             {renderCartList(items, true)}
           </ScrollView>
 
           {hasPrices && (
-            <View style={styles.totalBar}>
+            <View style={[styles.totalBar, { bottom: tabBarOffset }]}>
               <Text style={styles.totalBarLabel}>{t('list.totalEstimated')}</Text>
               <Text style={styles.totalBarAmount}>{formatEuro(totalCost)}</Text>
             </View>
@@ -353,7 +359,8 @@ const themedStyles = () => StyleSheet.create({
   // ── Header ────────────────────────────────────────────────────
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 12, gap: 12,
+    paddingHorizontal: 16, paddingBottom: 12, gap: 12,
+    // paddingTop inline (useHeaderTopPadding)
   },
   backBtn: {
     width: 38, height: 38,
@@ -462,7 +469,8 @@ const themedStyles = () => StyleSheet.create({
   },
   modalHeader: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 12, gap: 12,
+    paddingHorizontal: 16, paddingBottom: 12, gap: 12,
+    // paddingTop inline (useHeaderTopPadding)
   },
   modalTitle: { flex: 1, fontSize: 21, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
   modalProgress: { paddingHorizontal: 16, paddingBottom: 8, gap: 6 },

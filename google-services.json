@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "701352196391",
+    "project_id": "mercaapp-cfea2",
+    "storage_bucket": "mercaapp-cfea2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:701352196391:android:03aa7991eba41c7758d102",
+        "android_client_info": {
+          "package_name": "com.quefalta.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "701352196391-6gbrhdepgjvoa3fslc9qtds3j1912bjd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDm3fsd9EytNvIcupEEgvQhsO7yxSNkwf4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "701352196391-6gbrhdepgjvoa3fslc9qtds3j1912bjd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

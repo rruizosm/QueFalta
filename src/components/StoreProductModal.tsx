@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import { Modal, View, ActivityIndicator, StyleSheet } from 'react-native';
 import { colors } from '../constants/colors';
 import {
-  fetchBonpreuProduct, fetchCarrefourProduct, fetchBonareaProduct, fetchConsumProduct, fetchDiaProduct,
-  type BonpreuProduct, type CarrefourProduct, type BonareaProduct, type ConsumProduct, type DiaProduct,
+  fetchBonpreuProduct, fetchCarrefourProduct, fetchBonareaProduct, fetchConsumProduct, fetchDiaProduct, fetchSorliProduct,
+  type BonpreuProduct, type CarrefourProduct, type BonareaProduct, type ConsumProduct, type DiaProduct, type SorliProduct,
 } from '../api/catalog';
 import type { CatalogStore } from '../constants/stores';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 
 /** Referencia a un producto de cualquier súper (lo que devuelve la comparativa). */
 export interface ProductRef {
@@ -32,9 +33,14 @@ interface Props {
  *  espejos se carga el producto por id y se pinta su modal correspondiente. */
 export default function StoreProductModal({ target, onClose, fullScreen = false }: Props) {
   const styles = useThemedStyles(themedStyles);
+  const fullScreenTop = useHeaderTopPadding(56);
+  // Alto reservado arriba para el banner del carrito activo (ActiveCartBanner
+  // con topInset, marginTop useHeaderTopPadding(52) + ~48 de banner): la hoja
+  // arranca justo debajo de él. Si cambia el banner, ajustar.
+  const sheetTop = useHeaderTopPadding(52) + 48;
   const toast = useToast();
   const { t } = useTranslation();
-  const [mirror, setMirror] = useState<BonpreuProduct | CarrefourProduct | BonareaProduct | ConsumProduct | DiaProduct | null>(null);
+  const [mirror, setMirror] = useState<BonpreuProduct | CarrefourProduct | BonareaProduct | ConsumProduct | DiaProduct | SorliProduct | null>(null);
 
   useEffect(() => {
     setMirror(null);
@@ -45,6 +51,7 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
       : target.store === 'carrefour' ? fetchCarrefourProduct
       : target.store === 'consum' ? fetchConsumProduct
       : target.store === 'dia' ? fetchDiaProduct
+      : target.store === 'sorli' ? fetchSorliProduct
       : fetchBonareaProduct;
     fetcher(target.id)
       .then((p) => {
@@ -61,9 +68,9 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
   if (!target) return null;
 
   // Inset superior de la cabecera del modal interno: a pantalla completa (cesta)
-  // despeja la barra de estado/notch como el resto de cabeceras (56); en la hoja
-  // basta con poco, porque la propia hoja ya arranca bajo el notch (top: 100).
-  const topInset = fullScreen ? 56 : 16;
+  // despeja la barra de estado/notch como el resto de cabeceras (56 en iOS); en
+  // la hoja basta con poco, porque la propia hoja ya arranca bajo el notch.
+  const topInset = fullScreen ? fullScreenTop : 16;
 
   // Los modales se cargan con require() EN render para romper el ciclo de módulos:
   // cada modal importa SimilarProductsSection, que importa este dispatcher.
@@ -89,6 +96,9 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
   } else if (target.store === 'dia') {
     const DiaProductModal = require('./DiaProductModal').default;
     content = <DiaProductModal product={mirror} onClose={onClose} topInset={topInset} />;
+  } else if (target.store === 'sorli') {
+    const SorliProductModal = require('./SorliProductModal').default;
+    content = <SorliProductModal product={mirror} onClose={onClose} topInset={topInset} />;
   } else {
     const BonareaProductModal = require('./BonareaProductModal').default;
     content = <BonareaProductModal product={mirror} onClose={onClose} topInset={topInset} />;
@@ -101,19 +111,16 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
           visible arriba (lo pinta la pantalla de debajo —subcategoría/catálogo/
           favoritos—). Los modales internos son overlays absolute-fill → rellenan
           el contenedor en ambos casos. */}
-      <View style={fullScreen ? styles.sheetFull : styles.sheet}>{content}</View>
+      <View style={fullScreen ? styles.sheetFull : [styles.sheet, { top: sheetTop }]}>{content}</View>
     </Modal>
   );
 }
 
-// Alto reservado arriba para el banner del carrito activo (ActiveCartBanner con
-// topInset): la hoja arranca justo debajo de él. Si cambia el banner, ajustar.
-const SHEET_TOP = 100;
-
 const themedStyles = () => StyleSheet.create({
   sheet: {
     position: 'absolute',
-    top: SHEET_TOP, left: 0, right: 0, bottom: 0,
+    left: 0, right: 0, bottom: 0,
+    // top inline (sheetTop): bajo el banner del carrito activo
     backgroundColor: colors.paper,
     borderTopWidth: 1, borderTopColor: colors.border,
     shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 8,

@@ -13,6 +13,7 @@ import { fetchNewArrivals } from './mercadona';
 // fichero con `import type`), así que este import NO crea un ciclo en runtime.
 import {
   mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
+  eroskiToUI, capraboToUI,
   type UIProduct,
 } from '../lib/productAdapters';
 
@@ -935,6 +936,103 @@ export async function fetchSorliProductsByCategory(categoryId: string, limit = 6
   return (data ?? []).map(mapSorli);
 }
 
+// ─── Eroski + Caprabo (tablas eroski_products / caprabo_products) ────────────
+// Comparten backend (Apache Tapestry): mismo modelo de producto, mismos ids de
+// categoría, mismo scraper (scripts/lib/eroski-tapestry.mjs). Solo castellano y
+// SIN precio por unidad (el €/L no está en el listado, solo en la ficha) → una
+// forma común `TapestryProduct` y helpers genéricos por tabla; los exports por
+// tienda solo fijan la tabla. `store` en el mapa a UI lo pone cada adaptador.
+export interface TapestryProduct {
+  id: string;
+  displayName: string;
+  brand: string | null;
+  thumbnail: string | null;
+  unitPrice: number | null;
+  priceFormat: string | null;
+  categoryName: string | null;
+}
+
+const mapTapestry = (r: any): TapestryProduct => ({
+  id: r.id,
+  displayName: r.display_name,
+  brand: r.brand ?? null,
+  thumbnail: r.thumbnail ?? null,
+  unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
+  priceFormat: r.price_format ?? null,
+  categoryName: r.category_name ?? null,
+});
+
+const TAPESTRY_COLS = 'id, display_name, brand, thumbnail, unit_price, price_format, category_name';
+
+async function searchTapestry(table: string, query: string, limit: number): Promise<TapestryProduct[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const { data, error } = await filterByNameWords(
+    supabase.from(table).select(TAPESTRY_COLS).eq('published', true),
+    q,
+  ).limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapTapestry);
+}
+
+async function browseTapestry(table: string, cursor: BrowseCursor | null, limit: number): Promise<BrowsePage<TapestryProduct>> {
+  const { rows, nextCursor } = await keysetPage(table, TAPESTRY_COLS, 'display_name_norm', cursor, limit);
+  return { items: rows.map(mapTapestry), nextCursor };
+}
+
+async function fetchTapestryProduct(table: string, id: string): Promise<TapestryProduct | null> {
+  const { data, error } = await supabase.from(table).select(TAPESTRY_COLS).eq('id', id).maybeSingle();
+  if (error) throw error;
+  return data ? mapTapestry(data) : null;
+}
+
+export interface TapestryCategory { id: string; name: string; children: { id: string; name: string }[]; }
+
+async function fetchTapestryTree(catTable: string): Promise<TapestryCategory[]> {
+  const { data, error } = await supabase
+    .from(catTable)
+    .select('id, name, parent_id, product_count')
+    .eq('published', true)
+    .order('name');
+  if (error) throw error;
+  const rows = data ?? [];
+  return rows
+    .filter((r: any) => r.parent_id == null)
+    .map((n1: any) => ({
+      id: n1.id,
+      name: n1.name,
+      children: rows
+        .filter((c: any) => c.parent_id === n1.id && (c.product_count ?? 0) > 0)
+        .map((c: any) => ({ id: c.id, name: c.name })),
+    }))
+    .filter((n1) => n1.children.length > 0);
+}
+
+async function fetchTapestryByCategory(table: string, categoryId: string, limit: number): Promise<TapestryProduct[]> {
+  const { data, error } = await supabase
+    .from(table)
+    .select(TAPESTRY_COLS)
+    .eq('published', true)
+    .contains('category_ids', [categoryId])
+    .order('display_name')
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapTapestry);
+}
+
+// Exports por tienda (solo fijan la tabla; misma forma TapestryProduct).
+export const searchEroskiProducts = (q: string, limit = 50) => searchTapestry('eroski_products', q, limit);
+export const browseEroskiProducts = (cursor: BrowseCursor | null, limit = 50) => browseTapestry('eroski_products', cursor, limit);
+export const fetchEroskiProduct = (id: string) => fetchTapestryProduct('eroski_products', id);
+export const fetchEroskiCategoryTree = () => fetchTapestryTree('eroski_categories');
+export const fetchEroskiProductsByCategory = (categoryId: string, limit = 600) => fetchTapestryByCategory('eroski_products', categoryId, limit);
+
+export const searchCapraboProducts = (q: string, limit = 50) => searchTapestry('caprabo_products', q, limit);
+export const browseCapraboProducts = (cursor: BrowseCursor | null, limit = 50) => browseTapestry('caprabo_products', cursor, limit);
+export const fetchCapraboProduct = (id: string) => fetchTapestryProduct('caprabo_products', id);
+export const fetchCapraboCategoryTree = () => fetchTapestryTree('caprabo_categories');
+export const fetchCapraboProductsByCategory = (categoryId: string, limit = 600) => fetchTapestryByCategory('caprabo_products', categoryId, limit);
+
 // ─── Comparativa: producto similar más barato entre supers (RPC similar_products) ─
 export interface SimilarProduct {
   store: CatalogStore;
@@ -990,6 +1088,8 @@ const MIRROR_QUERY: Record<CatalogStore, { table: string; cols: string; toUI: (r
   consum:    { table: 'consum_products',    cols: CONSUM_COLS,    toUI: (r) => consumToUI(mapConsum(r)) },
   dia:       { table: 'dia_products',       cols: DIA_COLS,       toUI: (r) => diaToUI(mapDia(r)) },
   sorli:     { table: 'sorli_products',     cols: SORLI_COLS,     toUI: (r) => sorliToUI(mapSorli(r)) },
+  eroski:    { table: 'eroski_products',    cols: TAPESTRY_COLS,  toUI: (r) => eroskiToUI(mapTapestry(r)) },
+  caprabo:   { table: 'caprabo_products',   cols: TAPESTRY_COLS,  toUI: (r) => capraboToUI(mapTapestry(r)) },
 };
 
 // Ventana de "esta semana": los syncs son semanales (lunes); 8 días cubren el

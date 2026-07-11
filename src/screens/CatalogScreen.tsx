@@ -32,14 +32,18 @@ import {
   searchConsumProducts, fetchConsumCategoryTree,
   searchDiaProducts, fetchDiaCategoryTree,
   searchSorliProducts, fetchSorliCategoryTree,
+  searchEroskiProducts, fetchEroskiCategoryTree,
+  searchCapraboProducts, fetchCapraboCategoryTree,
   browseProducts, browseBonpreuProducts, browseCarrefourProducts,
   browseBonareaProducts, browseConsumProducts, browseDiaProducts, browseSorliProducts,
+  browseEroskiProducts, browseCapraboProducts,
   type BonpreuProduct, type BonpreuCategory,
   type CarrefourProduct, type CarrefourCategory,
   type BonareaProduct, type BonareaCategory,
   type ConsumProduct, type ConsumCategory,
   type DiaProduct, type DiaCategory,
   type SorliProduct, type SorliCategory,
+  type TapestryProduct, type TapestryCategory,
   type BrowseCursor, type BrowsePage,
 } from '../api/catalog';
 import { useFavorites } from '../context/FavoritesContext';
@@ -53,6 +57,7 @@ import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import {
   mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
+  eroskiToUI, capraboToUI,
   type UIProduct,
 } from '../lib/productAdapters';
 import { sortByName } from '../lib/sort';
@@ -86,6 +91,8 @@ async function loadBrowsePage(store: CatalogStore, cursor: BrowseCursor | null):
     case 'consum':    { const { items, nextCursor } = await browseConsumProducts(cursor); return { items: items.map(consumToUI), nextCursor }; }
     case 'dia':       { const { items, nextCursor } = await browseDiaProducts(cursor); return { items: items.map(diaToUI), nextCursor }; }
     case 'sorli':     { const { items, nextCursor } = await browseSorliProducts(cursor); return { items: items.map(sorliToUI), nextCursor }; }
+    case 'eroski':    { const { items, nextCursor } = await browseEroskiProducts(cursor); return { items: items.map(eroskiToUI), nextCursor }; }
+    case 'caprabo':   { const { items, nextCursor } = await browseCapraboProducts(cursor); return { items: items.map(capraboToUI), nextCursor }; }
   }
 }
 
@@ -244,6 +251,24 @@ export default function CatalogScreen() {
   const [soCatsLoading, setSoCatsLoading] = useState(false);
   const [soCatsError, setSoCatsError] = useState(false);
 
+  // Búsqueda + categorías Eroski (espejo)
+  const [ekSearch, setEkSearch] = useState('');
+  const [ekResults, setEkResults] = useState<TapestryProduct[]>([]);
+  const [ekLoading, setEkLoading] = useState(false);
+  const [ekError, setEkError] = useState(false);
+  const [ekCats, setEkCats] = useState<TapestryCategory[]>([]);
+  const [ekCatsLoading, setEkCatsLoading] = useState(false);
+  const [ekCatsError, setEkCatsError] = useState(false);
+
+  // Búsqueda + categorías Caprabo (espejo)
+  const [cbSearch, setCbSearch] = useState('');
+  const [cbResults, setCbResults] = useState<TapestryProduct[]>([]);
+  const [cbLoading, setCbLoading] = useState(false);
+  const [cbError, setCbError] = useState(false);
+  const [cbCats, setCbCats] = useState<TapestryCategory[]>([]);
+  const [cbCatsLoading, setCbCatsLoading] = useState(false);
+  const [cbCatsError, setCbCatsError] = useState(false);
+
   // Navegación de productos (pestaña "Productos" sin texto): listado alfabético
   // del catálogo del súper activo, paginado por keyset. Estado ÚNICO compartido
   // por los 6 súpers porque solo se ve uno a la vez (igual que `catSearch`).
@@ -253,7 +278,7 @@ export default function CatalogScreen() {
   const [browseMore, setBrowseMore] = useState(false);       // páginas siguientes
   const [browseError, setBrowseError] = useState(false);
   // Texto de búsqueda del súper activo: con <2 letras estamos en modo navegación.
-  const prodQuery = { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch }[store];
+  const prodQuery = { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch }[store];
   const browseMode = tab === 'productos' && prodQuery.trim().length < 2;
 
   // Carga la página 1 al entrar a navegación (cambio de súper, limpiar la
@@ -428,6 +453,48 @@ export default function CatalogScreen() {
     return () => clearTimeout(handle);
   }, [soSearch, lang]);
 
+  // Carga perezosa de categorías Eroski la primera vez que se entra a esa tienda.
+  useEffect(() => {
+    if (store !== 'eroski' || ekCats.length > 0 || ekCatsLoading) return;
+    setEkCatsLoading(true); setEkCatsError(false);
+    fetchEroskiCategoryTree()
+      .then(setEkCats)
+      .catch(() => setEkCatsError(true))
+      .finally(() => setEkCatsLoading(false));
+  }, [store]);
+
+  // Eroski: búsqueda server-side con debounce.
+  useEffect(() => {
+    const q = ekSearch.trim();
+    if (q.length < 2) { setEkResults([]); setEkError(false); setEkLoading(false); return; }
+    setEkLoading(true); setEkError(false);
+    const handle = setTimeout(() => {
+      searchEroskiProducts(q).then(setEkResults).catch(() => setEkError(true)).finally(() => setEkLoading(false));
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [ekSearch]);
+
+  // Carga perezosa de categorías Caprabo la primera vez que se entra a esa tienda.
+  useEffect(() => {
+    if (store !== 'caprabo' || cbCats.length > 0 || cbCatsLoading) return;
+    setCbCatsLoading(true); setCbCatsError(false);
+    fetchCapraboCategoryTree()
+      .then(setCbCats)
+      .catch(() => setCbCatsError(true))
+      .finally(() => setCbCatsLoading(false));
+  }, [store]);
+
+  // Caprabo: búsqueda server-side con debounce.
+  useEffect(() => {
+    const q = cbSearch.trim();
+    if (q.length < 2) { setCbResults([]); setCbError(false); setCbLoading(false); return; }
+    setCbLoading(true); setCbError(false);
+    const handle = setTimeout(() => {
+      searchCapraboProducts(q).then(setCbResults).catch(() => setCbError(true)).finally(() => setCbLoading(false));
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [cbSearch]);
+
   // Filtro de categorías por texto (cliente). Compartido por los 6 súpers: en la
   // pestaña de categorías solo se ve un súper a la vez, así que un único `catSearch` basta.
   const matchesCatSearch = (name: string) =>
@@ -521,6 +588,12 @@ export default function CatalogScreen() {
 
   const renderSoCategory = ({ item, index }: { item: SorliCategory; index: number }) =>
     renderCatRow({ store: 'sorli', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('sorli', item) }, index === 0);
+
+  const renderEkCategory = ({ item, index }: { item: TapestryCategory; index: number }) =>
+    renderCatRow({ store: 'eroski', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('eroski', item) }, index === 0);
+
+  const renderCbCategory = ({ item, index }: { item: TapestryCategory; index: number }) =>
+    renderCatRow({ store: 'caprabo', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('caprabo', item) }, index === 0);
 
   // Estados de un listado de búsqueda de productos (compartido).
   const renderSearchStates = (search: string, loading: boolean, error: boolean, empty: boolean, list: React.ReactNode) => {
@@ -910,6 +983,78 @@ export default function CatalogScreen() {
         <>
           {productSearchRow(t('catalog.searchProducts'),soSearch, setSoSearch)}
           {renderProductsTab(soSearch, soLoading, soError, soResults.map(sorliToUI))}
+        </>
+      )}
+
+      {/* ── Eroski ───────────────────────────────────────────────── */}
+      {store === 'eroski' && tab === 'categorias' && (
+        <>
+          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
+          {ekCatsLoading ? (
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+          ) : ekCatsError ? (
+            <View style={styles.centerBox}>
+              <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Eroski' })}</Text>
+              <TouchableOpacity onPress={() => {
+                setEkCatsError(false); setEkCatsLoading(true);
+                fetchEroskiCategoryTree().then(setEkCats).catch(() => setEkCatsError(true)).finally(() => setEkCatsLoading(false));
+              }}>
+                <Text style={styles.retryText}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={sortedCats(ekCats)}
+              keyExtractor={(item) => item.id}
+              renderItem={renderEkCategory}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            />
+          )}
+        </>
+      )}
+
+      {store === 'eroski' && tab === 'productos' && (
+        <>
+          {productSearchRow(t('catalog.searchProducts'),ekSearch, setEkSearch)}
+          {renderProductsTab(ekSearch, ekLoading, ekError, ekResults.map(eroskiToUI))}
+        </>
+      )}
+
+      {/* ── Caprabo ──────────────────────────────────────────────── */}
+      {store === 'caprabo' && tab === 'categorias' && (
+        <>
+          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
+          {cbCatsLoading ? (
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+          ) : cbCatsError ? (
+            <View style={styles.centerBox}>
+              <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Caprabo' })}</Text>
+              <TouchableOpacity onPress={() => {
+                setCbCatsError(false); setCbCatsLoading(true);
+                fetchCapraboCategoryTree().then(setCbCats).catch(() => setCbCatsError(true)).finally(() => setCbCatsLoading(false));
+              }}>
+                <Text style={styles.retryText}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={sortedCats(cbCats)}
+              keyExtractor={(item) => item.id}
+              renderItem={renderCbCategory}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            />
+          )}
+        </>
+      )}
+
+      {store === 'caprabo' && tab === 'productos' && (
+        <>
+          {productSearchRow(t('catalog.searchProducts'),cbSearch, setCbSearch)}
+          {renderProductsTab(cbSearch, cbLoading, cbError, cbResults.map(capraboToUI))}
         </>
       )}
 

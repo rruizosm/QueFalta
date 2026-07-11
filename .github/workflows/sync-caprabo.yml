@@ -1,0 +1,26 @@
+name: Sync Caprabo catalog
+
+on:
+  schedule:
+    - cron: '20 7 * * 1'   # lunes 07:20 UTC (tras Eroski), semanal
+  workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
+
+concurrency:
+  group: sync-caprabo
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45   # catálogo de Cataluña (scraping HTML de ~750 hojas)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # Mismo backend que Eroski (Tapestry): solo fetch de node, sin navegador.
+      - run: node scripts/sync-caprabo.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          CONCURRENCY: '6'

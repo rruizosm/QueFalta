@@ -71,6 +71,18 @@ export default function SubCategoryScreen() {
         categoryName: item.name,
         parentName: categoryName,
       });
+    } else if (retailer === 'eroski') {
+      navigation.navigate('EroskiProducts', {
+        categoryId: String(item.id),
+        categoryName: item.name,
+        parentName: categoryName,
+      });
+    } else if (retailer === 'caprabo') {
+      navigation.navigate('CapraboProducts', {
+        categoryId: String(item.id),
+        categoryName: item.name,
+        parentName: categoryName,
+      });
     } else {
       navigation.navigate('Products', {
         subcategoryId: Number(item.id),

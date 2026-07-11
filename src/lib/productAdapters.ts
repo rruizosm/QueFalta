@@ -6,6 +6,7 @@ import type { MercadonaProduct, FavoriteProduct } from '../types';
 import { formatPrice, formatSize, formatReferencePrice } from '../api/mercadona';
 import type {
   BonpreuProduct, CarrefourProduct, BonareaProduct, ConsumProduct, DiaProduct, SorliProduct,
+  TapestryProduct,
 } from '../api/catalog';
 
 export interface UIProduct {
@@ -108,6 +109,20 @@ export function sorliToUI(p: SorliProduct): UIProduct {
     exclusiveRegions: null,
   };
 }
+
+// Eroski y Caprabo comparten forma (TapestryProduct); el store lo fija el wrapper.
+// Sin €/unidad (no está en el listado) → pricePerUnitLabel null. El nombre ya
+// incluye marca y formato ("Leche entera uht BIZKAIA ESNEA, brik 1 litro").
+function tapestryToUI(p: TapestryProduct, store: CatalogStore): UIProduct {
+  return {
+    id: p.id, store, name: p.displayName, imageUrl: p.thumbnail,
+    priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    metaLabel: null, pricePerUnitLabel: null, categoryName: p.categoryName,
+    exclusiveRegions: null,
+  };
+}
+export const eroskiToUI = (p: TapestryProduct): UIProduct => tapestryToUI(p, 'eroski');
+export const capraboToUI = (p: TapestryProduct): UIProduct => tapestryToUI(p, 'caprabo');
 
 /** Favorito guardado → producto de UI. El precio es el snapshot de cuando se
  *  marcó; no hay metaLabel ni categoría del retailer (se perdieron al guardar). */

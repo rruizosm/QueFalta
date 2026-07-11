@@ -235,9 +235,9 @@ export type CatalogStackParamList = {
     categoryName: string;
     emoji?: string;
     color?: string;
-    /** Subcategorías N2. Mercadona usa ids numéricos; Bonpreu/Carrefour/bonÀrea/Consum/Dia/Sorli, ids string. */
+    /** Subcategorías N2. Mercadona usa ids numéricos; el resto de espejos, ids string. */
     subcategories: { id: string | number; name: string }[];
-    retailer?: 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli';
+    retailer?: 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo';
   };
   Products: {
     subcategoryId: number;
@@ -278,6 +278,18 @@ export type CatalogStackParamList = {
   };
   /** Productos de una subcategoría de Sorli (lee del espejo). */
   SorliProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentName?: string;
+  };
+  /** Productos de una subcategoría de Eroski (lee del espejo). */
+  EroskiProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentName?: string;
+  };
+  /** Productos de una subcategoría de Caprabo (lee del espejo). */
+  CapraboProducts: {
     categoryId: string;
     categoryName: string;
     parentName?: string;

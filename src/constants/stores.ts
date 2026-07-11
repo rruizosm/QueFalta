@@ -5,7 +5,7 @@ import { Image as ExpoImage } from 'expo-image';
 // Fuente ÚNICA del switcher del catálogo, de la preferencia de perfil
 // "Supermercados" y del agrupado de Lista/Cesta por tienda (de aquí salen los
 // nombres e iconos). Para añadir una tienda: súmala aquí, al tipo y a storeOfItem.
-export type CatalogStore = 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli';
+export type CatalogStore = 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo';
 
 /** Metadatos (nombre + icono) en orden de aparición. */
 export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | null }[] = [
@@ -16,6 +16,8 @@ export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | n
   { key: 'consum',    name: 'Consum',        icon: require('../../assets/stores/consum.png') },
   { key: 'dia',       name: 'Dia',           icon: require('../../assets/stores/dia.png') },
   { key: 'sorli',     name: 'Sorli',         icon: require('../../assets/stores/sorli.png') },
+  { key: 'eroski',    name: 'Eroski',        icon: require('../../assets/stores/eroski.png') },
+  { key: 'caprabo',   name: 'Caprabo',       icon: require('../../assets/stores/caprabo.png') },
 ];
 
 /** Orden canónico de las claves (para normalizar/ordenar selecciones). */
@@ -53,7 +55,8 @@ type StoreClue = { imageUrl?: string | null; mercadonaProductId?: string | null 
 
 // Dominio de la miniatura guardada en list_items: bonpreuesclat.cat, mercadona.es,
 // carrefour.es, bonarea.com, cdn-consum.aktiosdigitalservices.com, dia.es,
-// cdn.sorliclic.com. Mercadona también se reconoce por su id de producto.
+// cdn.sorliclic.com, eroski.es, capraboacasa.com. Mercadona también se reconoce
+// por su id de producto.
 export function storeOfItem(it: StoreClue): Store {
   const url = it.imageUrl ?? '';
   if (url.includes('bonpreuesclat')) return 'esclat';
@@ -63,6 +66,8 @@ export function storeOfItem(it: StoreClue): Store {
   if (url.includes('consum')) return 'consum';
   if (url.includes('dia.es')) return 'dia';
   if (url.includes('sorliclic')) return 'sorli';
+  if (url.includes('capraboacasa')) return 'caprabo';
+  if (url.includes('eroski')) return 'eroski';
   return 'otros';
 }
 

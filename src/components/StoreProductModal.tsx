@@ -3,7 +3,9 @@ import { Modal, View, ActivityIndicator, StyleSheet } from 'react-native';
 import { colors } from '../constants/colors';
 import {
   fetchBonpreuProduct, fetchCarrefourProduct, fetchBonareaProduct, fetchConsumProduct, fetchDiaProduct, fetchSorliProduct,
+  fetchEroskiProduct, fetchCapraboProduct,
   type BonpreuProduct, type CarrefourProduct, type BonareaProduct, type ConsumProduct, type DiaProduct, type SorliProduct,
+  type TapestryProduct,
 } from '../api/catalog';
 import type { CatalogStore } from '../constants/stores';
 import { useToast } from '../context/ToastContext';
@@ -40,7 +42,7 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
   const sheetTop = useHeaderTopPadding(52) + 48;
   const toast = useToast();
   const { t } = useTranslation();
-  const [mirror, setMirror] = useState<BonpreuProduct | CarrefourProduct | BonareaProduct | ConsumProduct | DiaProduct | SorliProduct | null>(null);
+  const [mirror, setMirror] = useState<BonpreuProduct | CarrefourProduct | BonareaProduct | ConsumProduct | DiaProduct | SorliProduct | TapestryProduct | null>(null);
 
   useEffect(() => {
     setMirror(null);
@@ -52,6 +54,8 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
       : target.store === 'consum' ? fetchConsumProduct
       : target.store === 'dia' ? fetchDiaProduct
       : target.store === 'sorli' ? fetchSorliProduct
+      : target.store === 'eroski' ? fetchEroskiProduct
+      : target.store === 'caprabo' ? fetchCapraboProduct
       : fetchBonareaProduct;
     fetcher(target.id)
       .then((p) => {
@@ -99,6 +103,10 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
   } else if (target.store === 'sorli') {
     const SorliProductModal = require('./SorliProductModal').default;
     content = <SorliProductModal product={mirror} onClose={onClose} topInset={topInset} />;
+  } else if (target.store === 'eroski' || target.store === 'caprabo') {
+    const TapestryProductModal = require('./TapestryProductModal').default;
+    const storeLabel = target.store === 'caprabo' ? 'Caprabo' : 'Eroski';
+    content = <TapestryProductModal product={mirror} store={target.store} storeLabel={storeLabel} onClose={onClose} topInset={topInset} />;
   } else {
     const BonareaProductModal = require('./BonareaProductModal').default;
     content = <BonareaProductModal product={mirror} onClose={onClose} topInset={topInset} />;

@@ -1,0 +1,27 @@
+name: Sync Eroski catalog
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'    # lunes 07:00 UTC (tras Sorli), semanal
+  workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
+
+concurrency:
+  group: sync-eroski
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55   # catálogo nacional grande (scraping HTML de ~800 hojas)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # Eroski/Caprabo son HTML plano (framework Tapestry): solo fetch de node,
+      # sin navegador ni sesión (paginación por ?pageNumber=N).
+      - run: node scripts/sync-eroski.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          CONCURRENCY: '6'

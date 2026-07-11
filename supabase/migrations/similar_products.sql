@@ -34,7 +34,7 @@ returns text language sql immutable as $$
           regexp_replace(
             regexp_replace(
               regexp_replace(lower(coalesce(p, '')), '\([^)]*\)', ' ', 'g'),
-              '\y(hacendado|bonpreu|bon[àa]rea|carrefour|consum|selecci[oó]n\s+de\s+dia|dia\s+l[áa]ctea|dia\s+mari\s+marinera|dia|deliplus|aliada|bosque\s+verde)\y',
+              '\y(hacendado|bonpreu|bon[àa]rea|carrefour|consum|selecci[oó]n\s+de\s+dia|dia\s+l[áa]ctea|dia\s+mari\s+marinera|dia|deliplus|aliada|bosque\s+verde|eroski|caprabo|sorli)\y',
               ' ', 'g'
             ),
             '\y\d+([.,]\d+)?\s*(kg|g|gr|ml|cl|l|ud|uds|u|pack|x)\y',
@@ -159,6 +159,20 @@ language sql stable as $$
     from public.sorli_products o cross join q
     where 'sorli' = any (p_stores) and o.published
       and public.catalog_family_match(lower(o.display_name), q.needle)
+    union all
+    select 'eroski', e.id, e.display_name, e.thumbnail,
+           e.unit_price, e.price_per_unit, e.price_per_unit_unit,
+           similarity(q.needle, lower(e.display_name))
+    from public.eroski_products e cross join q
+    where 'eroski' = any (p_stores) and e.published
+      and public.catalog_family_match(lower(e.display_name), q.needle)
+    union all
+    select 'caprabo', k.id, k.display_name, k.thumbnail,
+           k.unit_price, k.price_per_unit, k.price_per_unit_unit,
+           similarity(q.needle, lower(k.display_name))
+    from public.caprabo_products k cross join q
+    where 'caprabo' = any (p_stores) and k.published
+      and public.catalog_family_match(lower(k.display_name), q.needle)
   ),
   ranked as (
     select *, min(price_per_unit) over (partition by store) as min_ppu

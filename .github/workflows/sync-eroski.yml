@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: 20
       # Eroski/Caprabo son HTML plano (framework Tapestry): solo fetch de node,
-      # sin navegador ni sesión (paginación por ?pageNumber=N).
+      # sin navegador (SSR del 1er lote + POST loadpage con cookies de sesión).
       - run: node scripts/sync-eroski.mjs
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

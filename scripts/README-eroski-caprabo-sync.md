@@ -14,9 +14,14 @@ categoría, mismo markup, misma paginación. Toda la lógica vive en
    enlaces `/es/supermercado/{n1}/{n2}/{n3}[/{n4}]/`. De ahí se derivan las HOJAS
    (categorías sin hijas) y el mapa hijo→padre. Se excluyen los N1 no-alimentación
    (papelería, hogar/bricolaje, electrónica, descanso, electrohogar).
-2. **GET de cada hoja** con `?pageNumber=1,2,…` (paginación clásica, SIN sesión ni
-   el endpoint stateful `loadpage`; 20 productos/página) hasta que una página no
-   aporta ids nuevos.
+2. **GET de cada hoja** SIN query (el SSR trae el 1er lote de 20) guardando las
+   cookies de sesión, y después el endpoint stateful de Tapestry:
+   `POST /es/supermarket:loadpage?t:ac={ruta}` con cuerpo
+   `t:zoneid=productListZone&pageNumber=N` (N = lotes ya recibidos) y cabeceras
+   `Origin`/`Referer`/`X-Requested-With` (sin ellas → redirect a error). El JSON
+   devuelve en `content` el siguiente lote de 20; vacío = fin de la categoría.
+   ⚠️ La paginación clásica `?pageNumber=N` (diseño original) **dejó de funcionar
+   el 2026-07-11**: el server responde "No se obtuvieron resultados".
 3. Cada "tile" trae un JSON `data-metrics` (evento `select_item`) con **id, nombre,
    marca, categoría y precio**. El parser tolera comillas simples y dobles +
    HTML-escapado. Imagen grande = `/images/{id}_x.jpg`.
@@ -48,13 +53,18 @@ Cuando el servidor va cargado, sirve la página de categoría COMPLETA (200, tí
 correcto) pero SIN los tiles de producto — indistinguible de una categoría vacía
 mirando una sola página. Para no despublicar productos vivos por un pico de carga:
 
-1. La página 1 de cada hoja con 0 productos se **reintenta** (3× con backoff).
-2. Se cuenta la fracción de **hojas que acaban vacías**; si supera `EMPTY_ABORT_PCT`
-   (20% por defecto) el run **aborta sin escribir** (ni upsert ni markStale).
+1. La página 1 de cada hoja con 0 tiles se **reintenta** (3× con backoff).
+2. Se cuenta la fracción de **hojas cuya página 1 llegó sin ningún tile**; si
+   supera `EMPTY_ABORT_PCT` (20% por defecto) el run **aborta sin escribir**
+   (ni upsert ni markStale).
 
-En CI cada workflow corre con IP limpia y separados en el tiempo, así que el % de
-hojas vacías es bajo. Ejecutar dos crawls grandes seguidos desde la misma IP
-(p. ej. en local) sí dispara throttling: espaciarlos o usar `MAX_LEAVES`.
+⚠️ El criterio es "hojas SIN TILES", no "hojas que no aportan productos nuevos":
+hay hojas legítimas que solo contienen productos ya vistos en otras categorías
+(solapamiento del árbol; ~62 en Eroski, se loguean aparte como "hojas
+solo-duplicados"). La 1ª versión mezclaba ambas cosas y el run de CI del
+2026-07-11 abortó con "56% vacías" un crawl que en realidad igualaba al DRY_RUN
+previo (10.694) — ambos capados a ~la mitad del catálogo real (21.073 con la
+paginación stateful) por la retirada de `?pageNumber`.
 
 ## Ejecutar
 

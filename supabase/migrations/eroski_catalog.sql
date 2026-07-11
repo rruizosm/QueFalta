@@ -3,7 +3,8 @@
 -- por tienda"). Eroski y Caprabo comparten backend (Apache Tapestry) pero son
 -- tiendas distintas → una tabla cada una (ver caprabo_catalog.sql, gemela).
 --
--- El sync scrapea las páginas de categoría (?pageNumber=N, sin sesión) y saca de
+-- El sync scrapea las páginas de categoría (SSR del 1er lote + POST loadpage con
+-- cookies de sesión) y saca de
 -- cada "tile" el JSON data-metrics (id, nombre, marca, categoría, precio). NO hay
 -- precio por unidad ni EAN en el listado (solo en la ficha) → price_per_unit
 -- queda null. Solo castellano (Eroski/Caprabo no traducen los nombres).

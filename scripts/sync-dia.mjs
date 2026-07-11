@@ -3,25 +3,34 @@
 // Sin dependencias npm. Usa fetch nativo de Node 18+ (dia.es no tiene Cloudflare
 // ni pide cookies para leer).
 //
-// dia.es es una SPA Vike (vite-plugin-ssr) con SSR completo (verificado 2026-06-12).
-// Cada página de categoría embebe TODO su estado en un JSON:
+// dia.es es una SPA Vike (vite-plugin-ssr). Desde 2026-07-11 el sync usa su API
+// REST JSON abierta (antes /api/v1/plp-back daba 422; ya NO). Es MÁS ROBUSTA que
+// raspar el SSR (versionada /api/v1/, ~20 KB JSON/página vs ~150 KB de HTML) — la
+// lección de Eroski (retiraron ?pageNumber=N y rompió el scraper) empuja a ello.
 //
-//   GET /<cat>/<subcat>/c/L####?page=N   (paginada a 20 productos)
-//   → <script id="vike_pageContext" type="application/json"> con:
-//     INITIAL_STATE.l2.plp_items[]: productos estructurados (object_id, display_name,
-//       brand, image, prices{price, price_per_unit, measure_unit, strikethrough_price,
-//       is_promo_price, discount_percentage}, units_in_stock, url)
-//     INITIAL_STATE.header.categoriesData.categories: árbol N1→N2 COMPLETO (30 N1, ~300 N2)
-//     INITIAL_STATE.pagination.pagination.total_pages
+//   GET /api/v1/plp-back/plp?navigation=L1                (Origin/Referer de dia.es)
+//   → { category_data.categories: árbol N1→N2 COMPLETO (31 N1, ~296 N2, con id+link+name),
+//       plp_items[]: productos estructurados de la página (object_id, sku_id, display_name,
+//         brand, image, prices{price, price_per_unit, measure_unit, strikethrough_price,
+//         is_promo_price, discount_percentage}, units_in_stock, url),
+//       pagination.pagination.total_pages }
+//   navigation=L1 NO filtra: devuelve el CATÁLOGO ENTERO paginado (~5.500 productos,
+//   ~278 páginas de 20). La categoría de cada producto se deriva de su `url`
+//   (/frutas/platanos-y-bananas/p/42070 → N2 "platanos-y-bananas") casada contra
+//   los `link` del árbol (verificado: 100% de las urls mapean).
 //
-// (El API XHR /api/v1/plp-back devuelve 422 fuera del navegador; el JSON del SSR
-// es equivalente y más robusto. /api/v1/search-back/search/reduced?q= sí es API
-// abierta — documentada para búsqueda futura, el sync no la usa.)
+// (Los endpoints filtrados por categoría —/api/v1/plp-back/l1/all/{N1}/reduced?
+//  category_id={N2}— existen pero OMITEN `brand`, por eso se usa el catálogo
+//  completo, que sí lo trae. /api/v1/search-back/search?q= es API de búsqueda
+//  abierta con items estructurados + l1/l2_category_description — no usada aquí.)
 //
-// Estrategia (estilo bonÀrea "recorrer hojas", aquí las hojas son las N2):
-//   1. GET una página cualquiera → árbol de categorías del header.
-//   2. Por cada N2: GET sus páginas (?page=1..total_pages) → plp_items.
-//      La membership de un producto son las N2 que lo listan + sus N1.
+// La FICHA (ingredientes/nutrición/…) sigue viniendo del SSR de cada producto
+// (raw.url → vike_pageContext): la API de listado no la expone. Ver más abajo.
+//
+// Estrategia:
+//   1. GET plp?navigation=L1 → árbol de categorías + total_pages.
+//   2. Paginar el catálogo entero (page=1..total_pages) → todos los plp_items.
+//      Membership = la N2 del `url` de cada producto + su N1 (mapa desde el árbol).
 //   3. Normalizar + upsert en Supabase (soft-delete de lo ausente vía markStale).
 //
 // Notas:
@@ -99,6 +108,36 @@ async function getPageContext(path, { tries = 4 } = {}) {
   }
   throw new Error(`no se pudo GET ${path}`);
 }
+
+// ── API REST JSON (listado + árbol) ──────────────────────────────────────────
+// El BFF exige Origin/Referer de dia.es (si no, 403/redirect). navigation=L1 es
+// obligatorio ("navigation in query is required") y devuelve el catálogo entero.
+async function getApi(path, { tries = 4 } = {}) {
+  const url = `${HOME}/api/v1/${path}`;
+  for (let t = 0; t < tries; t++) {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          'User-Agent': UA, Accept: 'application/json',
+          Origin: HOME, Referer: `${HOME}/`, 'Accept-Language': 'es-ES,es;q=0.9',
+        },
+        signal: AbortSignal.timeout(40000),
+      });
+      if (res.ok) return await res.json();
+      console.warn(`[dia] API ${path} → ${res.status} (intento ${t + 1})`);
+    } catch (e) {
+      console.warn(`[dia] API ${path} falló: ${e.message} (intento ${t + 1})`);
+    }
+    await sleep(800 * (t + 1));
+  }
+  throw new Error(`no se pudo GET api/${path}`);
+}
+
+// Slug de categoría de una url de producto: "/frutas/platanos-y-bananas/p/42070"
+// → "frutas/platanos-y-bananas" (los segmentos antes de /p/).
+const catSlugOfUrl = (url) => (url || '').replace(/\/p\/[^/]+\/?$/, '').split('/').filter(Boolean).join('/');
+// Mismo slug desde un `link` del árbol ("/frutas/platanos-y-bananas/c/L2033" → idem).
+const catSlugOfLink = (link) => (link || '').replace(/\/c\/[^/]+\/?$/, '').split('/').filter(Boolean).join('/');
 
 // ── Normalización de un plp_item ─────────────────────────────────────────────
 const eurStr = (n) => (typeof n === 'number' ? n.toFixed(2).replace('.', ',') : null);
@@ -292,78 +331,87 @@ async function upsert(table, rows) {
 // la tabla moría por statement_timeout (57014) cuando la BD iba cargada.
 const markStale = (table) => markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart });
 
-// ── Procesar una N2: pedir todas sus páginas ─────────────────────────────────
-async function processN2(n2, products, membership) {
-  let totalPages = 1;
-  for (let page = 1; page <= totalPages; page++) {
-    const ctx = await getPageContext(`${n2.url}${page > 1 ? `?page=${page}` : ''}`);
-    const st = ctx.INITIAL_STATE ?? {};
-    if (page === 1) {
-      totalPages = st.pagination?.pagination?.total_pages ?? 1;
-    }
-    const items = st.l2?.plp_items ?? [];
-    for (const p of items) {
-      if (p?.object_id == null) continue;
-      const id = String(p.object_id);
-      if (!products.has(id)) {
-        const norm = normalize(p);
-        if (norm.display_name) products.set(id, norm);
-      }
-      let set = membership.get(id);
-      if (!set) membership.set(id, (set = new Set()));
-      set.add(n2.id);
-    }
-    await sleep(60);
-  }
+// Una página del catálogo entero (navigation=L1). Devuelve { items, totalPages }.
+async function catalogPage(page) {
+  const j = await getApi(`plp-back/plp?navigation=L1${page > 1 ? `&page=${page}` : ''}`);
+  // La API devuelve pagination.total_pages PLANO (el SSR lo anidaba en
+  // pagination.pagination; no confundir). Tolera ambas por si acaso.
+  const pg = j.pagination ?? {};
+  return {
+    items: j.plp_items ?? [],
+    totalPages: pg.total_pages ?? pg.pagination?.total_pages ?? 1,
+    tree: j.category_data?.categories ?? null,
+  };
 }
 
 async function main() {
   console.log(`[dia] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} conc=${CONCURRENCY}`);
 
-  // El árbol N1→N2 viene en el header de CUALQUIER página SSR.
-  const boot = await getPageContext('/congelados/pescado-y-marisco/c/L2132');
-  const n1s = (boot.INITIAL_STATE?.header?.categoriesData?.categories ?? [])
-    .filter((c) => c?.id && !SKIP_N1.has(c.id));
-  if (n1s.length === 0) throw new Error('no encuentro el árbol de categorías en el header');
+  // 1ª página: árbol de categorías (category_data) + total de páginas + primeros
+  // productos. El árbol es N1→N2 (con id, name, link). Se saltan los N1 de SKIP_N1
+  // (L128 "Novedades y recomendados" = marketing rotatorio).
+  const first = await catalogPage(1);
+  const n1s = (first.tree ?? []).filter((c) => c?.id && !SKIP_N1.has(c.id));
+  if (n1s.length === 0) throw new Error('no encuentro category_data.categories en la API');
 
-  // OJO con los duplicados (el upsert revienta con "cannot affect row a second
-  // time" si un id va dos veces): cada N1 trae un hijo "Ver todo" con el MISMO id
-  // que el padre, y una N2 puede colgar de varios N1 (p.ej. en "Verano"). Se
-  // deduplica por id quedándose la primera aparición, pero el id del N1 SÍ entra
-  // en la lista de recorrido (su página lista todo el N1: cubre productos que no
-  // salen en ninguna N2 concreta).
-  const catRows = [], crawl = [], seen = new Set();
+  // catRows (N1 + N2, deduplicados: cada N1 trae un hijo "Todo X" con el id del
+  // padre) y mapa slug→N2id para asignar la categoría de cada producto por su url.
+  const catRows = [], seen = new Set();
+  const slugToN2 = new Map();
   for (const n1 of n1s) {
     if (!seen.has(n1.id)) {
       seen.add(n1.id);
       catRows.push({ id: n1.id, name: (n1.name || '').trim(), parent_id: null, url: n1.link || null, product_count: null, published: true, synced_at: runStart });
-      if (n1.link) crawl.push({ id: n1.id, name: (n1.name || '').trim(), url: n1.link });
     }
     for (const n2 of n1.children ?? []) {
-      if (!n2?.id || !n2.link || seen.has(n2.id)) continue;
-      seen.add(n2.id);
-      catRows.push({ id: n2.id, name: (n2.name || '').trim(), parent_id: n1.id, url: n2.link, product_count: null, published: true, synced_at: runStart });
-      crawl.push({ id: n2.id, name: (n2.name || '').trim(), url: n2.link });
+      if (!n2?.id || !n2.link || n2.id === n1.id) continue; // "Todo X" comparte id con el N1
+      if (!seen.has(n2.id)) {
+        seen.add(n2.id);
+        catRows.push({ id: n2.id, name: (n2.name || '').trim(), parent_id: n1.id, url: n2.link, product_count: null, published: true, synced_at: runStart });
+      }
+      const slug = catSlugOfLink(n2.link);
+      if (slug && !slugToN2.has(slug)) slugToN2.set(slug, n2.id);
     }
   }
-  const todo = crawl.slice(0, MAX_CATEGORIES);
-  console.log(`[dia] ${n1s.length} N1 · ${catRows.length} categorías únicas · ${crawl.length} a recorrer (proceso ${todo.length})`);
+  const totalPages = Math.min(first.totalPages, MAX_CATEGORIES === Infinity ? first.totalPages : MAX_CATEGORIES);
+  console.log(`[dia] ${n1s.length} N1 · ${catRows.length} categorías · ${first.totalPages} páginas de catálogo (proceso ${totalPages})`);
 
   const catName = new Map(catRows.map((c) => [c.id, c.name]));
   const parentOf = new Map(catRows.map((c) => [c.id, c.parent_id]));
   const products = new Map();   // object_id → producto normalizado
   const membership = new Map(); // object_id → Set<id N2>
 
-  const queue = [...todo];
-  let done = 0;
+  const ingest = (items) => {
+    for (const p of items) {
+      if (p?.object_id == null) continue;
+      const id = String(p.object_id);
+      if (!products.has(id)) {
+        const norm = normalize(p);
+        if (!norm.display_name) continue;
+        products.set(id, norm);
+      }
+      // Categoría por la url del producto (N2 del árbol). Si no mapea, sin categoría.
+      const n2 = slugToN2.get(catSlugOfUrl(p.url));
+      if (n2) {
+        let set = membership.get(id);
+        if (!set) membership.set(id, (set = new Set()));
+        set.add(n2);
+      }
+    }
+  };
+  ingest(first.items);
+
+  // Resto de páginas en paralelo (pool de workers sobre los números de página).
+  const pages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
+  let done = 1;
   await Promise.all(Array.from({ length: CONCURRENCY }, async () => {
     for (;;) {
-      const n2 = queue.shift();
-      if (!n2) break;
-      try { await processN2(n2, products, membership); }
-      catch (e) { console.warn(`[dia] N2 ${n2.name} (${n2.id}) falló: ${e.message}`); }
-      if (++done % 25 === 0) console.log(`[dia] ${done}/${todo.length} N2 · ${products.size} productos`);
-      await sleep(100);
+      const page = pages.shift();
+      if (page == null) break;
+      try { ingest((await catalogPage(page)).items); }
+      catch (e) { console.warn(`[dia] página ${page} falló: ${e.message}`); }
+      if (++done % 25 === 0) console.log(`[dia] ${done}/${totalPages} páginas · ${products.size} productos`);
+      await sleep(80);
     }
   }));
 

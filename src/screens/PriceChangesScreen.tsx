@@ -13,6 +13,9 @@ import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../consta
 import StoreProductList from '../components/StoreProductList';
 import StoreDropdown from '../components/StoreDropdown';
 import ActiveCartBanner from '../components/ActiveCartBanner';
+import GlassSurface, { glassAvailable } from '../components/GlassSurface';
+import SlidingSegments from '../components/SlidingSegments';
+import ViewModeToggle, { type ViewMode } from '../components/ViewModeToggle';
 
 type Direction = 'down' | 'up';
 
@@ -28,6 +31,15 @@ const pctLabel = (n: number) =>
  * magnitud del cambio (orden del servidor, keepOrder). Los datos los deja el
  * trigger del sync semanal: ver supabase/migrations/catalog_price_changes.sql
  * (sin ejecutarla no hay datos y se muestra el vacío).
+ *
+ * Liquid Glass (F3 piloto, solo `glassAvailable`): TODO el chrome —banner de
+ * carrito, cabecera, selector de súper y pestañas— vive en una franja de
+ * cristal flotante (absolute, al final del árbol como NotificationsSheet) y la
+ * lista pasa por debajo y se refracta (topInset de StoreProductList = altura
+ * medida del chrome). Las pestañas usan la píldora deslizante de acento
+ * (SlidingSegments, lenguaje F1b) y el toggle lista/cuadrícula sube al chrome
+ * (hideToolbar + viewMode controlado). En fallback (Android / iOS ≤ 18) el
+ * árbol y los estilos son EXACTAMENTE los de siempre.
  */
 export default function PriceChangesScreen() {
   const styles = useThemedStyles(themedStyles);
@@ -43,6 +55,11 @@ export default function PriceChangesScreen() {
   );
   const [store, setStore] = useState<CatalogStore>(stores[0]?.key ?? 'mercadona');
   const [direction, setDirection] = useState<Direction>('down');
+
+  // Solo en glass: view mode controlado (el toggle vive en el chrome de
+  // cristal) y altura medida del chrome para que la lista pase por debajo.
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [chromeH, setChromeH] = useState(0);
 
   useEffect(() => {
     if (stores.length > 0 && !stores.some((s) => s.key === store)) {
@@ -82,15 +99,20 @@ export default function PriceChangesScreen() {
     [cache, cacheKey, t],
   );
 
-  return (
-    <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
-
+  // Chrome de la pantalla (banner + cabecera + selector + pestañas), idéntico
+  // en ambos modos salvo: back sin caja sobre el cristal (como el cerrar de
+  // NotificationsSheet) y pestañas con píldora deslizante + toggle en línea.
+  const chrome = (
+    <>
       <ActiveCartBanner topInset />
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={glassAvailable ? styles.backBtnGlass : styles.backBtn}
+          activeOpacity={0.7}
+        >
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
         <Text style={styles.title}>{t('priceChanges.title')}</Text>
@@ -101,29 +123,54 @@ export default function PriceChangesScreen() {
         <StoreDropdown stores={stores} value={store} onChange={setStore} />
       )}
 
-      {/* Pestañas Bajadas / Subidas (mismo switcher que Favoritos/Catálogo). */}
-      <View style={styles.tabs}>
-        <TouchableOpacity
-          style={[styles.tab, direction === 'down' && styles.tabActive]}
-          onPress={() => setDirection('down')}
-          activeOpacity={0.8}
-        >
-          <View style={styles.tabInner}>
-            <Ionicons name="arrow-down" size={13} color={direction === 'down' ? colors.ink : colors.inkSoft} />
-            <Text style={[styles.tabText, direction === 'down' && styles.tabTextActive]}>{t('priceChanges.down')}</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, direction === 'up' && styles.tabActive]}
-          onPress={() => setDirection('up')}
-          activeOpacity={0.8}
-        >
-          <View style={styles.tabInner}>
-            <Ionicons name="arrow-up" size={13} color={direction === 'up' ? colors.ink : colors.inkSoft} />
-            <Text style={[styles.tabText, direction === 'up' && styles.tabTextActive]}>{t('priceChanges.up')}</Text>
-          </View>
-        </TouchableOpacity>
-      </View>
+      {glassAvailable ? (
+        // Pestañas de píldora deslizante + toggle lista/cuadrícula en la misma
+        // fila (en fallback el toggle lo pinta el toolbar interno de la lista).
+        <View style={styles.glassControls}>
+          <SlidingSegments
+            style={{ flex: 1 }}
+            segments={[
+              { key: 'down', label: t('priceChanges.down'), icon: 'arrow-down' },
+              { key: 'up', label: t('priceChanges.up'), icon: 'arrow-up' },
+            ]}
+            value={direction}
+            onChange={setDirection}
+          />
+          <ViewModeToggle value={viewMode} onChange={setViewMode} />
+        </View>
+      ) : (
+        // Pestañas Bajadas / Subidas (mismo switcher que Favoritos/Catálogo).
+        <View style={styles.tabs}>
+          <TouchableOpacity
+            style={[styles.tab, direction === 'down' && styles.tabActive]}
+            onPress={() => setDirection('down')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.tabInner}>
+              <Ionicons name="arrow-down" size={13} color={direction === 'down' ? colors.ink : colors.inkSoft} />
+              <Text style={[styles.tabText, direction === 'down' && styles.tabTextActive]}>{t('priceChanges.down')}</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, direction === 'up' && styles.tabActive]}
+            onPress={() => setDirection('up')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.tabInner}>
+              <Ionicons name="arrow-up" size={13} color={direction === 'up' ? colors.ink : colors.inkSoft} />
+              <Text style={[styles.tabText, direction === 'up' && styles.tabTextActive]}>{t('priceChanges.up')}</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
+    </>
+  );
+
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+
+      {!glassAvailable && chrome}
 
       <StoreProductList
         products={products}
@@ -132,7 +179,26 @@ export default function PriceChangesScreen() {
         emptyText={t('priceChanges.empty')}
         errorText={t('priceChanges.error')}
         keepOrder
+        topInset={glassAvailable ? chromeH : 0}
+        hideToolbar={glassAvailable}
+        viewMode={glassAvailable ? viewMode : undefined}
+        onViewModeChange={glassAvailable ? setViewMode : undefined}
       />
+
+      {/* Chrome de cristal: al FINAL del árbol para pintarse encima; la lista
+          se refracta al pasar por debajo. El StoreDropdown puede seguir dentro:
+          el cristal arranca en y=0, así que el onLayout con el que ancla su
+          menú sigue dando coordenadas de pantalla. */}
+      {glassAvailable && (
+        <View
+          style={styles.chrome}
+          onLayout={(e) => setChromeH(e.nativeEvent.layout.height)}
+        >
+          <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>
+            {chrome}
+          </GlassSurface>
+        </View>
+      )}
     </View>
   );
 }
@@ -151,9 +217,14 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: colors.border,
   },
+  // Sobre el cristal, sin caja (evita glass anidado; como NotificationsSheet).
+  backBtnGlass: {
+    width: 38, height: 38,
+    alignItems: 'center', justifyContent: 'center',
+  },
   title: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3, textAlign: 'center' },
 
-  // ── Tab switcher (Bajadas / Subidas) ──────────────────────────
+  // ── Tab switcher (Bajadas / Subidas), SOLO fallback ───────────
   tabs: {
     flexDirection: 'row',
     marginHorizontal: 16, marginBottom: 10,
@@ -165,4 +236,12 @@ const themedStyles = () => StyleSheet.create({
   tabInner: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   tabText: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.inkSoft },
   tabTextActive: { color: colors.ink },
+
+  // ── Chrome de cristal (solo glassAvailable, F3) ───────────────
+  chrome: { position: 'absolute', top: 0, left: 0, right: 0 },
+  chromeGlass: { paddingBottom: 10 },
+  glassControls: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    marginHorizontal: 16,
+  },
 });

@@ -71,6 +71,12 @@ interface Props {
    *  vez de reordenar alfabéticamente/por relevancia. El buscador interno
    *  sigue filtrando, solo se omite la reordenación. */
   keepOrder?: boolean;
+  /** Altura del chrome flotante de cristal de la pantalla (F3, solo glass):
+   *  se suma al paddingTop del CONTENIDO scrolleable —la lista arranca bajo el
+   *  chrome y al hacer scroll se refracta tras él— y desplaza los estados de
+   *  carga/error en la misma medida. Úsalo junto con `hideToolbar`: el toolbar
+   *  interno va en flujo y quedaría oculto debajo del cristal. 0 = como hoy. */
+  topInset?: number;
 }
 
 /** Lista de productos reutilizable (subcategorías y búsqueda): imagen, stepper +
@@ -82,6 +88,7 @@ export default function StoreProductList({
   emoji, searchable = false, searchQuery,
   hideToolbar = false, viewMode: viewModeProp, onViewModeChange,
   pageSize, onEndReached, loadingMore = false, keepOrder = false,
+  topInset = 0,
 }: Props) {
   const styles = useThemedStyles(themedStyles);
   // Con tab bar de cristal: eleva la barra "Añadir" (cartBar) por encima del
@@ -345,9 +352,9 @@ export default function StoreProductList({
       )}
 
       {loading ? (
-        <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+        <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + topInset }} />
       ) : error ? (
-        <View style={styles.center}><Text style={styles.emptyText}>{errorLabel}</Text></View>
+        <View style={[styles.center, topInset > 0 && { marginTop: topInset }]}><Text style={styles.emptyText}>{errorLabel}</Text></View>
       ) : viewMode === 'grid' ? (
         <FlatList
           key="grid"
@@ -357,7 +364,7 @@ export default function StoreProductList({
           renderItem={renderGridItem}
           extraData={favList}
           columnWrapperStyle={styles.gridRow}
-          contentContainerStyle={[styles.gridContent, { paddingBottom: bottomPad }]}
+          contentContainerStyle={[styles.gridContent, { paddingBottom: bottomPad, paddingTop: 4 + topInset }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
@@ -373,7 +380,7 @@ export default function StoreProductList({
           keyExtractor={(item) => `${item.store}:${item.id}`}
           renderItem={renderItem}
           extraData={favList}
-          contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+          contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + topInset }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"

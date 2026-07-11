@@ -152,19 +152,40 @@ deslizante. Recreado en `src/components/LiquidGlassTabBar.tsx` (reemplaza a
    no-leídas visible sobre el cristal; al abrir el panel y hacer scroll, las filas
    se refractan bajo la cabecera; cerrar funciona; Android/fallback intacto.
 
-## F3 — Cabeceras de pantalla + banner del carrito ⬜
+## F3 — Cabeceras de pantalla + banner del carrito 🔄 piloto ✅ 2026-07-10
 
 20 pantallas usan cabecera custom con `useHeaderTopPadding`. NO tocar las 20 de golpe.
 
-1. Crear `GlassHeader` (composición: `GlassSurface` + reglas actuales de cabecera) y
-   aplicarlo en UNA pantalla con scroll largo (propuesta: Catálogo o Productos).
+1. ~~Crear `GlassHeader`~~ → **PILOTO HECHO en `PriceChangesScreen`** (código ✅
+   2026-07-10, typecheck verde, falta validar en device) con una variante más ambiciosa
+   que la cabecera suelta: TODO el chrome (ActiveCartBanner + cabecera + StoreDropdown +
+   pestañas) va en UNA franja `GlassSurface` flotante (`fallbackColor=paper`), absolute
+   al final del árbol (patrón NotificationsSheet), y la lista pasa por debajo y se
+   refracta. Piezas reutilizables que deja para el resto de F3:
+   - **`StoreProductList` gana `topInset`** (paddingTop del contenido scrolleable +
+     desplaza spinner/error): la pantalla mide el chrome con onLayout y se lo pasa.
+     Usar junto con `hideToolbar` (el toolbar interno quedaría oculto bajo el cristal);
+     el ViewModeToggle sube al chrome con `viewMode`/`onViewModeChange` controlados.
+   - **`SlidingSegments`** (componente nuevo): switcher segmentado con píldora
+     deslizante de acento (mismas curvas spring+squash que la tab bar F1b). Solo para
+     chrome glass — NO pinta cristal propio (no anidar GlassSurface): pista = velo
+     blanco translúcido. En fallback cada pantalla conserva su switcher clásico.
+   - Back button sin caja sobre el cristal (como el cerrar de NotificationsSheet).
+   - El StoreDropdown puede vivir DENTRO de la franja: el cristal arranca en y=0, así
+     que su onLayout sigue dando coordenadas de pantalla para anclar el menú.
 2. Igual que la tab bar: la cabecera debe superponerse al scroll (absolute arriba +
    `paddingTop` equivalente en el contenido) para que el efecto exista. En fallback,
-   en flujo y opaca como hoy.
-3. Si gusta → extender al resto de pantallas mecánicamente (una a una, mismo patrón).
-4. `ActiveCartBanner` (flotante) → `GlassSurface`, misma fase por ser elemento flotante.
-5. **Validar:** títulos legibles al pasar contenido claro Y oscuro por debajo; regla
-   `useHeaderTopPadding` intacta (alturas idénticas al fallback).
+   en flujo y opaca como hoy. ✓ (así está hecho el piloto)
+3. Si gusta → extender al resto de pantallas mecánicamente (una a una, mismo patrón;
+   candidatas naturales: NewArrivals/Offers, que comparten estructura exacta).
+4. `ActiveCartBanner` (flotante) → `GlassSurface`, misma fase por ser elemento
+   flotante. (En el piloto va dentro de la franja como control opaco; su versión
+   glass propia queda pendiente para cuando se haga en todas las pantallas.)
+5. **Validar (piloto):** título/pestañas legibles al pasar filas claras Y oscuras por
+   debajo; píldora desliza con rebote al cambiar Bajadas/Subidas; toggle
+   lista/cuadrícula funciona desde el chrome; menú del selector de súper se ancla
+   bien; regla `useHeaderTopPadding` intacta (alturas idénticas al fallback);
+   Android/fallback pixel-idéntico a hoy.
 
 ## F4 — Hojas y modales ⬜
 
@@ -202,7 +223,8 @@ Consum via `ProductInfoSections`).
 
 - ✅ F0 (2026-07-08) · 🔄 F1 (código ✅ 2026-07-08 + test1 fix tema + F1b barra flotante
   con píldora ✅ 2026-07-09; falta validar en device) · 🔄 F2 (código ✅ 2026-07-09,
-  falta validar) · ⬜ F3 · ⬜ F4 · ⬜ F5
+  falta validar) · 🔄 F3 (piloto Cambios de precios ✅ 2026-07-10, falta validar;
+  resto de pantallas ⬜) · ⬜ F4 · ⬜ F5
 - Siguiente paso: build interno `preview` de iOS (una vez): `eas device:create` si
   hace falta + `eas build -p ios --profile preview` → instalar en el iPhone (iOS 26)
   → para iterar, `eas update --channel preview --platform ios`.

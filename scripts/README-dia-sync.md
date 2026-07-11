@@ -1,8 +1,10 @@
 # Sync de Dia — espejo del catálogo en Supabase
 
-dia.es es una SPA **Vike (vite-plugin-ssr) con SSR completo**: cada página de
-categoría embebe TODO su estado (productos estructurados + árbol de categorías +
-paginación) en un `<script id="vike_pageContext" type="application/json">`. No hay
+dia.es es una SPA **Vike (vite-plugin-ssr)** con una **API REST JSON abierta**
+(`/api/v1/plp-back`). Desde 2026-07-11 el sync usa esa API en vez de raspar el SSR
+(la API antes daba 422 fuera del navegador; ya no). Es más robusta —versionada,
+~20 KB JSON/página vs ~150 KB de HTML— y da la misma data; la lección de Eroski
+(retiraron `?pageNumber=N` y rompió su scraper) empuja a preferir la API. No hay
 que parsear HTML ni usar navegador headless, y **no hay Cloudflare**.
 
 - **Vía recomendada:** workflow [`.github/workflows/sync-dia.yml`](../.github/workflows/sync-dia.yml)
@@ -10,28 +12,34 @@ que parsear HTML ni usar navegador headless, y **no hay Cloudflare**.
   `SUPABASE_SERVICE_ROLE` que ya existen en el repo. Solo node (fetch nativo).
 - **Local (opcional):** `scripts/run-dia-sync.ps1`, útil para probar a mano.
 
-## Cómo funciona (descubierto 2026-06-12)
+## Cómo funciona (API JSON, reescrito 2026-07-11)
 
-- **Páginas de categoría:** `GET https://www.dia.es/<cat>/<subcat>/c/L####?page=N`
-  (paginadas a 20). Del JSON embebido se usa:
-  - `INITIAL_STATE.l2.plp_items[]`: productos (`object_id`, `display_name`, `brand`,
+- **Endpoint:** `GET https://www.dia.es/api/v1/plp-back/plp?navigation=L1&page=N`
+  con cabeceras `Origin`/`Referer` de dia.es (si no, 403). `navigation=L1` es
+  obligatorio y **NO filtra: devuelve el CATÁLOGO ENTERO** paginado (~5.500
+  productos, ~278 páginas de 20). De la respuesta se usa:
+  - `plp_items[]`: productos (`object_id`, `sku_id`, `display_name`, `brand`,
     `image`, `prices`, `units_in_stock`, `url`).
-  - `INITIAL_STATE.header.categoriesData.categories`: **árbol N1→N2 completo**
-    (30 N1, ~290 N2) — disponible en cualquier página, de ahí sale la taxonomía.
-  - `INITIAL_STATE.pagination.pagination.total_pages`.
+  - `category_data.categories`: **árbol N1→N2 completo** (31 N1, ~296 N2, con
+    `id`/`name`/`link`) — llega en cada página, de ahí sale la taxonomía.
+  - `pagination.total_pages` (PLANO; el SSR lo anidaba en `pagination.pagination`).
+- **Categoría de cada producto:** se deriva de su `url`
+  (`/frutas/platanos-y-bananas/p/42070` → N2 "platanos-y-bananas") casada contra
+  los `link` del árbol (100 % de las urls mapean; `category_ids` = N2 + su N1).
 - **Precios:** `prices.price` ya lleva la promo aplicada (`strikethrough_price` =
   original; `is_promo_price`/`is_club_price`/`discount_percentage` en `raw`).
   `prices.price_per_unit` + `measure_unit` ("KILO"/"LITRO"/"UNIDAD"/"100 GR."/
   "DOCENA"…) → `price_per_unit` canónico (l/kg/ud) vía `lib/price.mjs` (la docena
-  se convierte a €/ud; "LAVADO"/"METRO" quedan sin ppu, no son comparables).
-- La N1 **"Novedades y recomendados" (L128) se salta** (marketing rotatorio, no
-  taxonomía). El resto de N1 "agregadoras" (Verano, Sin gluten) se conservan:
-  la membership por `category_ids` deduplica sola.
-- **El API XHR `/api/v1/plp-back` devuelve 422 fuera del navegador** — no usarlo.
-  `/api/v1/search-back/search/reduced?q=<texto>` SÍ es API JSON abierta (búsqueda;
-  documentada para el futuro, el sync no la necesita). También existe `/api/v1/cart`.
-- **Gotcha HTTP:** con `Accept: text/html` a secas el servidor devuelve **500**;
-  hay que mandar el Accept completo de navegador (o ninguno).
+  a €/ud; "LAVADO"/"METRO" quedan sin ppu, no son comparables).
+- La N1 **"Novedades y recomendados" (L128) se salta** (marketing rotatorio).
+- **Endpoints alternativos (no usados):** los filtrados por categoría
+  `/api/v1/plp-back/l1/all/{N1}/reduced?category_id={N2}` filtran pero OMITEN
+  `brand` (por eso se usa el catálogo completo). `/api/v1/search-back/search?q=`
+  es API de búsqueda abierta con items estructurados + `l1/l2_category_description`.
+- La **ficha** (INGREDIENTES/NUTRICIÓN/…) sí sigue viniendo del **SSR de cada
+  producto** (`raw.url` → `vike_pageContext`): la API de listado no la expone.
+  Gotcha: con `Accept: text/html` a secas ese SSR devuelve **500** (usar el
+  Accept completo de navegador).
 - Los precios son de la **zona por defecto** (CP 28041 Madrid, sesión anónima).
 
 ## 1. Crear las tablas en Supabase (una vez)
@@ -53,8 +61,8 @@ Igual que el resto: añade en `MercaAppMobile/.env.local` (gitignored) la línea
 ## 3. Probar a mano
 
 ```powershell
-# Prueba rápida sin escribir en Supabase (6 subcategorías):
-$env:DRY_RUN='1'; $env:MAX_CATEGORIES='6'; node scripts/sync-dia.mjs
+# Prueba rápida sin escribir en Supabase (8 páginas de catálogo, sin ficha):
+$env:DRY_RUN='1'; $env:MAX_PAGES='8'; $env:SKIP_DETAIL='1'; node scripts/sync-dia.mjs
 
 # Run real (escribe en Supabase, lee secretos de .env.local):
 & "C:\Users\ruben\OneDrive\Escritorio\MercaApp\MercaAppMobile\scripts\run-dia-sync.ps1"
@@ -62,18 +70,18 @@ $env:DRY_RUN='1'; $env:MAX_CATEGORIES='6'; node scripts/sync-dia.mjs
 
 Debe terminar con `[dia] OK`. El log queda en `scripts/logs/dia-sync-<fecha>.log`.
 
-Resultado del DRY_RUN completo (2026-06-12): 287 N2 → **5.433 productos**,
-0 sin precio, 0 sin imagen, 58 sin €/unidad (1 %), 123 con promo. Tarda ~6 min
-con CONCURRENCY=4 (son ~600 páginas de ~170 KB).
+Resultado del DRY_RUN completo (API, 2026-07-11): 278 páginas → **5.556 productos**,
+0 sin precio, 0 sin imagen, 17 sin categoría (0,3 %, urls que no mapean), 49 sin
+€/unidad, 102 con promo. Más ligero que el SSR anterior (JSON de ~20 KB/página).
 
 ### Variables de entorno
 
 | Var | Por defecto | Uso |
 |-----|-------------|-----|
 | `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE` | — | destino (obligatorias salvo DRY_RUN) |
-| `CONCURRENCY` | `4` | subcategorías en paralelo |
+| `CONCURRENCY` | `4` | páginas del catálogo en paralelo |
 | `DRY_RUN` | — | `1` = no escribe, imprime resumen |
-| `MAX_CATEGORIES` | ∞ | limita nº de N2 (pruebas) |
+| `MAX_PAGES` | ∞ | limita nº de páginas del catálogo (pruebas; alias viejo `MAX_CATEGORIES`) |
 | `SKIP_N1` | `L128` | N1 a excluir (CSV). Por defecto solo "Novedades y recomendados" |
 | `SKIP_DETAIL` | — | `1` = no toca la ficha (preserva la guardada) |
 | `DETAIL_TTL_DAYS` | `30` | refresca la ficha si su `detail_synced_at` es más viejo que esto |

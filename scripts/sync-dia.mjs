@@ -45,7 +45,7 @@
 // Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE
 //      CONCURRENCY=4       (N2 procesadas en paralelo)
 //      DRY_RUN=1           (no escribe en Supabase; imprime resumen)
-//      MAX_CATEGORIES=N    (limita nº de N2, para pruebas)
+//      MAX_PAGES=N         (limita nº de páginas del catálogo, para pruebas)
 //      SKIP_N1=csv         (ids de N1 a excluir; por defecto "L128")
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
@@ -54,7 +54,10 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
 const DRY_RUN = process.env.DRY_RUN === '1';
 const CONCURRENCY = Number(process.env.CONCURRENCY || 4);
-const MAX_CATEGORIES = process.env.MAX_CATEGORIES ? Number(process.env.MAX_CATEGORIES) : Infinity;
+// MAX_PAGES limita las páginas del catálogo entero (antes MAX_CATEGORIES, cuando
+// se recorría por N2); se acepta el nombre viejo por compatibilidad.
+const MAX_PAGES = process.env.MAX_PAGES ? Number(process.env.MAX_PAGES)
+  : process.env.MAX_CATEGORIES ? Number(process.env.MAX_CATEGORIES) : Infinity;
 const SKIP_N1 = new Set((process.env.SKIP_N1 ?? 'L128').split(',').map((s) => s.trim()).filter(Boolean));
 
 // Ficha de producto (INGREDIENTES/NUTRICIÓN/CONSERVACIÓN…). Como en bonÀrea: la ficha
@@ -373,7 +376,7 @@ async function main() {
       if (slug && !slugToN2.has(slug)) slugToN2.set(slug, n2.id);
     }
   }
-  const totalPages = Math.min(first.totalPages, MAX_CATEGORIES === Infinity ? first.totalPages : MAX_CATEGORIES);
+  const totalPages = Math.min(first.totalPages, MAX_PAGES === Infinity ? first.totalPages : MAX_PAGES);
   console.log(`[dia] ${n1s.length} N1 · ${catRows.length} categorías · ${first.totalPages} páginas de catálogo (proceso ${totalPages})`);
 
   const catName = new Map(catRows.map((c) => [c.id, c.name]));

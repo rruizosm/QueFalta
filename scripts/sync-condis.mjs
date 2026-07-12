@@ -17,10 +17,13 @@
 //   family (N2), variety (N3), parentCategory (= N2 id), on_sale, on_promotion,
 //   is_novelty, without_gluten/without_lactose, isEco, state.
 //
-// Las 94 categorías HOJA (nivel "family", cXX__cat########) salen del sitemap
-// público. browseValue = cada una; browseField=parentCategory las particiona (cada
-// producto cae en UNA sola → membership trivial, como Dia). El árbol es de 2
-// niveles: N1 = section (prefijo cXX, 11) → N2 = family (94).
+// Las 94 categorías HOJA (nivel "family") se enumeran desde la PROPIA API de
+// Empathy (el sitemap dejó de servir — ahora redirige a un bucle de OAuth
+// anónimo): browse por store → facetSection (11 secciones) → browse por sección
+// → facetFamily (los nombres de familia). Luego se navega cada familia por
+// nombre (browseField=family). El árbol (2 niveles, N1 = section → N2 = family)
+// y la membership se reconstruyen del p.parentCategory (cXX__cat########) y
+// p.section/family de cada producto, estables entre idiomas.
 //
 // BILINGÜE es/ca (param lang): 2 pasadas rellenan display_name / display_name_ca
 // (como Sorli/Bonpreu). La 1ª (es) fija el conjunto de productos; la 2ª (ca) solo
@@ -57,7 +60,6 @@ if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
   process.exit(1);
 }
 
-const WEB = 'https://compraonline.condis.es';
 const API = 'https://api.empathy.co/search/v1/query/condis';
 const CDN = 'https://cdn.condis.es';
 const ROWS = 400; // tope de Empathy: rows debe ser < 500
@@ -84,31 +86,37 @@ async function getJson(url, { tries = 4 } = {}) {
   throw new Error(`no se pudo GET ${url}`);
 }
 
-async function getText(url, { tries = 4 } = {}) {
-  for (let t = 0; t < tries; t++) {
-    try {
-      const res = await fetch(url, {
-        headers: { 'User-Agent': UA, Accept: 'text/xml,application/xml,text/html;q=0.9,*/*;q=0.8', 'Accept-Language': 'es-ES,es;q=0.9' },
-        signal: AbortSignal.timeout(40000),
-      });
-      if (res.ok) return await res.text();
-      console.warn(`[condis] GET ${url} → ${res.status} (intento ${t + 1})`);
-    } catch (e) {
-      console.warn(`[condis] GET ${url} falló: ${e.message} (intento ${t + 1})`);
-    }
-    await sleep(800 * (t + 1));
-  }
-  throw new Error(`no se pudo GET ${url}`);
+// ── Enumeración de categorías HOJA (nivel family) SIN sitemap ─────────────────
+// El sitemap de compraonline.condis.es dejó de servir (ahora redirige a un bucle
+// infinito de OAuth anónimo /api/proxy/signin → fetch aborta por exceso de
+// redirecciones). Se enumeran las familias desde la PROPIA API de Empathy (mismo
+// host, sin auth): el catálogo entero se navega con browseField=store&browseValue
+// ={STORE} (7.591 productos; sus facets listan las 11 secciones), y cada sección
+// con browseField=section devuelve en facetFamily sus familias. NO se navega la
+// sección/catálogo entero producto a producto (Empathy corta la paginación a
+// start≈500), pero los facets se calculan sobre todo el conjunto → dan la lista
+// completa aunque no se pagine. Luego se navega cada FAMILIA por nombre
+// (browseField=family), que son pequeñas (≤ ~300) y sí paginan enteras.
+//
+// Devuelve los NOMBRES de familia del idioma pedido (browseField=family usa el
+// nombre, no el id cXX__cat). El id/jerarquía de categoría se reconstruye después
+// del propio producto (p.parentCategory + p.section/family), estable entre idiomas.
+function facetValues(json, facet) {
+  const f = (json.catalog?.facets ?? []).find((x) => x.facet === facet);
+  return (f?.values ?? []).map((v) => v.value).filter(Boolean);
 }
 
-// ── Categorías HOJA (nivel family) desde el sitemap público ───────────────────
-// Las urls de categoría son /…/c/{cXX__cat########}/{lang}_ES. Nos quedamos con
-// las es (94). El N1 es el prefijo cXX. Los NOMBRES los ponen los productos (el
-// slug del sitemap no es un nombre presentable).
-async function leafCategoryIds() {
-  const xml = await getText(`${WEB}/sitemap.xml`);
-  const ids = [...xml.matchAll(/\/c\/(c\d+__cat\d+)\/es_ES</g)].map((m) => m[1]);
-  return [...new Set(ids)];
+async function familyNames(lang) {
+  const root = await getJson(`${API}/browse?browseField=store&browseValue=${STORE}&lang=${lang}&store=${STORE}&rows=0`);
+  const sections = facetValues(root, 'facetSection');
+  if (sections.length === 0) throw new Error('Empathy no devolvió secciones (¿cambió la API?)');
+  const families = new Set();
+  for (const sec of sections) {
+    const j = await getJson(`${API}/browse?browseField=section&browseValue=${encodeURIComponent(sec)}&lang=${lang}&store=${STORE}&rows=0`);
+    for (const fam of facetValues(j, 'facetFamily')) families.add(fam);
+    await sleep(40);
+  }
+  return [...families];
 }
 
 // ── Normalización de un producto de Empathy ───────────────────────────────────
@@ -159,12 +167,13 @@ async function upsert(table, rows) {
 }
 const markStale = (table) => markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart });
 
-// Una pasada de idioma sobre una categoría: pagina (start/rows) y devuelve todos
-// sus productos. lang = 'es' | 'ca'.
-async function browseCategory(n2, lang) {
+// Una pasada de idioma sobre una FAMILIA (por nombre): pagina (start/rows) y
+// devuelve todos sus productos. lang = 'es' | 'ca'. Las familias son pequeñas
+// (≤ ~300 en Condis), así que rara vez pasa de la 1ª página.
+async function browseFamily(family, lang) {
   const out = [];
   for (let start = 0; ; start += ROWS) {
-    const j = await getJson(`${API}/browse?browseField=parentCategory&browseValue=${encodeURIComponent(n2)}&lang=${lang}&store=${STORE}&start=${start}&rows=${ROWS}`);
+    const j = await getJson(`${API}/browse?browseField=family&browseValue=${encodeURIComponent(family)}&lang=${lang}&store=${STORE}&start=${start}&rows=${ROWS}`);
     const items = j.catalog?.content ?? [];
     out.push(...items);
     const total = j.catalog?.numFound ?? out.length;
@@ -176,16 +185,17 @@ async function browseCategory(n2, lang) {
 async function main() {
   console.log(`[condis] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} store=${STORE} conc=${CONCURRENCY}`);
 
-  let leaves = await leafCategoryIds();
-  leaves = leaves.filter((id) => !SKIP_N1.has(id.split('__')[0]));
-  if (MAX_CATEGORIES !== Infinity) leaves = leaves.slice(0, MAX_CATEGORIES);
-  if (leaves.length === 0) throw new Error('no encuentro categorías hoja en el sitemap');
-  console.log(`[condis] ${leaves.length} categorías hoja (N2)`);
+  let families = await familyNames('es');
+  if (MAX_CATEGORIES !== Infinity) families = families.slice(0, MAX_CATEGORIES);
+  if (families.length === 0) throw new Error('no encuentro familias en la API de Empathy');
+  console.log(`[condis] ${families.length} familias (N2)`);
 
   const products = new Map();     // id → producto normalizado (es)
   const nameCa = new Map();       // id → display_name_ca
   const membership = new Map();   // id → Set<N2 id>
-  // Nombres del árbol (aprendidos de los productos).
+  // Nombres del árbol (aprendidos de los productos). El id de N2 es el
+  // p.parentCategory (cXX__cat########, estable entre idiomas) y el de N1 su
+  // prefijo cXX; los NOMBRES salen de p.section / p.family del idioma navegado.
   const n1Name = new Map(), n1NameCa = new Map();
   const n2Name = new Map(), n2NameCa = new Map(), n2Parent = new Map();
 
@@ -193,21 +203,27 @@ async function main() {
     n1: p.section || p.category?.[0] || null,
     n2: p.family || p.category?.[1] || null,
   });
+  // id de N2 (family) de un producto = su parentCategory (cXX__cat…); N1 = prefijo cXX.
+  const idsOf = (p) => {
+    const n2 = p.parentCategory ? String(p.parentCategory) : null;
+    return { n2, n1: n2 ? n2.split('__')[0] : null };
+  };
 
-  // Pasada ES: fija el conjunto de productos + membership + nombres es.
-  const queue = [...leaves];
+  // Pasada ES: fija el conjunto de productos + membership + nombres es. Se navega
+  // por NOMBRE de familia; la categoría de cada producto se toma de su parentCategory.
+  const queue = [...families];
   let done = 0;
   await Promise.all(Array.from({ length: CONCURRENCY }, async () => {
     for (;;) {
-      const n2 = queue.shift();
-      if (n2 == null) break;
-      const n1 = n2.split('__')[0];
-      n2Parent.set(n2, n1);
+      const family = queue.shift();
+      if (family == null) break;
       try {
-        const items = await browseCategory(n2, 'es');
+        const items = await browseFamily(family, 'es');
         for (const p of items) {
           const id = String(p.id ?? p.externalId ?? '');
-          if (!id) continue;
+          const { n2, n1 } = idsOf(p);
+          if (!id || !n2 || SKIP_N1.has(n1)) continue;
+          n2Parent.set(n2, n1);
           if (!products.has(id)) {
             const norm = normalize(p);
             if (!norm.display_name) continue;
@@ -220,34 +236,36 @@ async function main() {
           if (nm.n2 && !n2Name.has(n2)) n2Name.set(n2, nm.n2);
           if (nm.n1 && !n1Name.has(n1)) n1Name.set(n1, nm.n1);
         }
-      } catch (e) { console.warn(`[condis] cat ${n2} (es) falló: ${e.message}`); }
-      if (++done % 20 === 0) console.log(`[condis] es ${done}/${leaves.length} · ${products.size} productos`);
+      } catch (e) { console.warn(`[condis] familia ${family} (es) falló: ${e.message}`); }
+      if (++done % 20 === 0) console.log(`[condis] es ${done}/${families.length} · ${products.size} productos`);
       await sleep(60);
     }
   }));
   console.log(`[condis] ES: ${products.size} productos`);
 
-  // Pasada CA: solo nombres (producto + categorías) por id.
-  const queueCa = [...leaves];
+  // Pasada CA: solo nombres (producto + categorías) por id. Familias en catalán.
+  let familiesCa = await familyNames('ca');
+  if (MAX_CATEGORIES !== Infinity) familiesCa = familiesCa.slice(0, MAX_CATEGORIES);
+  const queueCa = [...familiesCa];
   let doneCa = 0;
   await Promise.all(Array.from({ length: CONCURRENCY }, async () => {
     for (;;) {
-      const n2 = queueCa.shift();
-      if (n2 == null) break;
-      const n1 = n2.split('__')[0];
+      const family = queueCa.shift();
+      if (family == null) break;
       try {
-        const items = await browseCategory(n2, 'ca');
+        const items = await browseFamily(family, 'ca');
         for (const p of items) {
           const id = String(p.id ?? p.externalId ?? '');
-          if (!id) continue;
+          const { n2, n1 } = idsOf(p);
+          if (!id || !n2) continue;
           const ca = (p.description || '').trim();
           if (ca) nameCa.set(id, ca);
           const nm = catNames(p);
           if (nm.n2 && !n2NameCa.has(n2)) n2NameCa.set(n2, nm.n2);
           if (nm.n1 && !n1NameCa.has(n1)) n1NameCa.set(n1, nm.n1);
         }
-      } catch (e) { console.warn(`[condis] cat ${n2} (ca) falló: ${e.message}`); }
-      if (++doneCa % 20 === 0) console.log(`[condis] ca ${doneCa}/${leaves.length}`);
+      } catch (e) { console.warn(`[condis] familia ${family} (ca) falló: ${e.message}`); }
+      if (++doneCa % 20 === 0) console.log(`[condis] ca ${doneCa}/${familiesCa.length}`);
       await sleep(60);
     }
   }));

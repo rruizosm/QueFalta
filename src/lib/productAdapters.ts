@@ -6,7 +6,7 @@ import type { MercadonaProduct, FavoriteProduct } from '../types';
 import { formatPrice, formatSize, formatReferencePrice } from '../api/mercadona';
 import type {
   BonpreuProduct, CarrefourProduct, BonareaProduct, ConsumProduct, DiaProduct, SorliProduct,
-  TapestryProduct,
+  CondisProduct, AmetllerProduct, AldiProduct, TapestryProduct,
 } from '../api/catalog';
 
 export interface UIProduct {
@@ -106,6 +106,38 @@ export function sorliToUI(p: SorliProduct): UIProduct {
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     // El formato ya va en el nombre ("Naranja Bolsa 2kg") → sin metaLabel.
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
+    exclusiveRegions: null,
+  };
+}
+
+// Condis: bilingüe (es/ca) con €/unidad en columna, como Sorli. El nombre ya trae
+// marca y formato ("Leche Condis semidesnatada 1 L") → sin metaLabel.
+export function condisToUI(p: CondisProduct): UIProduct {
+  return {
+    id: p.id, store: 'condis', name: p.displayName, imageUrl: p.thumbnail,
+    priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
+    exclusiveRegions: null,
+  };
+}
+
+// Ametller Origen: bilingüe (es/ca) con €/unidad en columna, como Sorli/Condis.
+// El nombre ya trae marca y formato ("… Ametller Origen 150 g") → sin metaLabel.
+export function ametllerToUI(p: AmetllerProduct): UIProduct {
+  return {
+    id: p.id, store: 'ametller', name: p.displayName, imageUrl: p.thumbnail,
+    priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
+    exclusiveRegions: null,
+  };
+}
+
+// Aldi: es-only, con marca y formato del envase (salesUnit) → metaLabel como Consum.
+export function aldiToUI(p: AldiProduct): UIProduct {
+  return {
+    id: p.id, store: 'aldi', name: p.displayName, imageUrl: p.thumbnail,
+    priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
     exclusiveRegions: null,
   };
 }

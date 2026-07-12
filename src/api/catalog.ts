@@ -13,7 +13,7 @@ import { fetchNewArrivals } from './mercadona';
 // fichero con `import type`), así que este import NO crea un ciclo en runtime.
 import {
   mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
-  eroskiToUI, capraboToUI,
+  condisToUI, eroskiToUI, capraboToUI, ametllerToUI, aldiToUI,
   type UIProduct,
 } from '../lib/productAdapters';
 
@@ -936,6 +936,351 @@ export async function fetchSorliProductsByCategory(categoryId: string, limit = 6
   return (data ?? []).map(mapSorli);
 }
 
+// ─── Condis (tabla condis_products, espejo aparte) ──────────────────────────
+// Mismo modelo que Sorli (espejo + category_ids + ppu en columnas, BILINGÜE es/ca).
+// Lo puebla scripts/sync-condis.mjs desde la API JSON abierta de Empathy (buscador
+// de compraonline.condis.es). Árbol de 2 niveles (N1 sección → N2 family);
+// category_ids incluye el N1, así que la N2 cubre su subárbol. Sin ficha en v1.
+export interface CondisProduct {
+  id: string;                  // id de Empathy ("704048")
+  displayName: string;         // incluye marca y formato ("Leche Condis semidesnatada 1 L")
+  brand: string | null;
+  thumbnail: string | null;
+  unitPrice: number | null;    // precio con oferta aplicada si la hay
+  priceFormat: string | null;  // precio mostrado ("0,87 €")
+  pricePerUnit: string | null; // etiqueta €/unidad canónica ("0,87 €/L")
+  categoryName: string | null;
+}
+
+// Bilingüe: en català muestra display_name_ca si existe (fallback al castellano).
+const mapCondis = (r: any): CondisProduct => {
+  const ca = getLanguage() === 'ca';
+  return {
+    id: r.id,
+    displayName: ca && r.display_name_ca ? r.display_name_ca : r.display_name,
+    brand: r.brand ?? null,
+    thumbnail: r.thumbnail ?? null,
+    unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
+    priceFormat: r.price_format ?? null,
+    pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
+    categoryName: r.category_name ?? null,
+  };
+};
+
+const CONDIS_COLS =
+  'id, display_name, display_name_ca, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+
+/** Búsqueda por nombre en el catálogo de Condis (server-side). Bilingüe: en català
+ *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
+export async function searchCondisProducts(query: string, limit = 50): Promise<CondisProduct[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const ca = getLanguage() === 'ca';
+  const { data, error } = await filterByNameWords(
+    supabase.from('condis_products').select(CONDIS_COLS).eq('published', true),
+    q,
+    ca ? 'display_name_ca_norm' : 'display_name_norm',
+  ).limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapCondis);
+}
+
+/** Navegación alfabética del catálogo de Condis (sin búsqueda), keyset. */
+export async function browseCondisProducts(cursor: BrowseCursor | null, limit = 50): Promise<BrowsePage<CondisProduct>> {
+  const ca = getLanguage() === 'ca';
+  const { rows, nextCursor } = await keysetPage('condis_products', CONDIS_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit);
+  return { items: rows.map(mapCondis), nextCursor };
+}
+
+/** Un producto de Condis por id (p.ej. para abrir el detalle desde la comparativa). */
+export async function fetchCondisProduct(id: string): Promise<CondisProduct | null> {
+  const { data, error } = await supabase
+    .from('condis_products')
+    .select(CONDIS_COLS)
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapCondis(data) : null;
+}
+
+/** Una categoría N1 de Condis con sus subcategorías (N2) con productos. */
+export interface CondisCategory {
+  id: string;
+  name: string;
+  children: { id: string; name: string }[];
+}
+
+/** Árbol de categorías de Condis (N1 → N2) desde el espejo. Bilingüe: en català
+ *  usa name_ca si existe (fallback al castellano). Se reordena en cliente. */
+export async function fetchCondisCategoryTree(): Promise<CondisCategory[]> {
+  const ca = getLanguage() === 'ca';
+  const { data, error } = await supabase
+    .from('condis_categories')
+    .select('id, name, name_ca, parent_id, product_count')
+    .eq('published', true)
+    .order('name');
+  if (error) throw error;
+  const rows = data ?? [];
+  const nameOf = (r: any) => (ca && r.name_ca ? r.name_ca : r.name);
+  return rows
+    .filter((r: any) => r.parent_id == null)
+    .map((n1: any) => ({
+      id: n1.id,
+      name: nameOf(n1),
+      children: rows
+        .filter((c: any) => c.parent_id === n1.id && (c.product_count ?? 0) > 0)
+        .map((c: any) => ({ id: c.id, name: nameOf(c) })),
+    }))
+    .filter((n1) => n1.children.length > 0);
+}
+
+/** Productos de una subcategoría (N2) de Condis, vía category_ids (incluye ancestros). */
+export async function fetchCondisProductsByCategory(categoryId: string, limit = 600): Promise<CondisProduct[]> {
+  const ca = getLanguage() === 'ca';
+  const { data, error } = await supabase
+    .from('condis_products')
+    .select(CONDIS_COLS)
+    .eq('published', true)
+    .contains('category_ids', [categoryId])
+    .order(ca ? 'display_name_ca_norm' : 'display_name')
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapCondis);
+}
+
+// ─── Ametller Origen (tabla ametller_products, espejo aparte) ────────────────
+// Mismo modelo que bonÀrea (espejo + category_ids + ppu en columnas + FICHA
+// bilingüe es/ca). Lo puebla scripts/sync-ametller.mjs desde la SCAPI de
+// Salesforce Commerce Cloud (token de invitado por PKCE, 100% fetch). Árbol de
+// hasta 3 niveles; category_ids incluye ancestros. Único espejo (con Consum) con
+// EAN estructurado. Ficha: ingredientes/nutrición/conservación/origen (bilingües;
+// SIN alérgenos: SFCC los da como códigos numéricos sin leyenda pública).
+export interface AmetllerProduct {
+  id: string;                  // productId SFCC ("55274")
+  displayName: string;         // incluye marca y formato ("… Ametller Origen 150 g")
+  brand: string | null;
+  thumbnail: string | null;
+  unitPrice: number | null;    // precio del envase
+  priceFormat: string | null;  // precio mostrado ("1,49 €")
+  pricePerUnit: string | null; // etiqueta €/unidad canónica ("9,93 €/kg")
+  categoryName: string | null;
+  ean: string | null;
+  // Ficha (solo en fetchAmetllerProduct; null en listados/búsqueda). Bilingüe.
+  ingredients: string | null;
+  nutrition: string | null;
+  conservation: string | null;
+  origin: string | null;
+}
+
+// Bilingüe: en català muestra display_name_ca / ficha _ca si existen (fallback es).
+const mapAmetller = (r: any): AmetllerProduct => {
+  const ca = getLanguage() === 'ca';
+  return {
+    id: r.id,
+    displayName: ca && r.display_name_ca ? r.display_name_ca : r.display_name,
+    brand: r.brand ?? null,
+    thumbnail: r.thumbnail ?? null,
+    unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
+    priceFormat: r.price_format ?? null,
+    pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
+    categoryName: r.category_name ?? null,
+    ean: r.ean ?? null,
+    // Ficha (solo presente en detalle; en listados queda undefined → null).
+    ingredients: pickLang(r.ingredients, r.ingredients_ca),
+    nutrition: pickLang(r.nutrition, r.nutrition_ca),
+    conservation: pickLang(r.conservation, r.conservation_ca),
+    origin: pickLang(r.origin, r.origin_ca),
+  };
+};
+
+const AMETLLER_COLS =
+  'id, display_name, display_name_ca, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+// Columnas de ficha (es + ca) + ean: solo para el detalle (no en listados).
+const AMETLLER_DETAIL_COLS =
+  `${AMETLLER_COLS}, ean, ingredients, nutrition, conservation, origin`
+  + `, ingredients_ca, nutrition_ca, conservation_ca, origin_ca`;
+
+/** Búsqueda por nombre en el catálogo de Ametller (server-side). Bilingüe: en català
+ *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
+export async function searchAmetllerProducts(query: string, limit = 50): Promise<AmetllerProduct[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const ca = getLanguage() === 'ca';
+  const { data, error } = await filterByNameWords(
+    supabase.from('ametller_products').select(AMETLLER_COLS).eq('published', true),
+    q,
+    ca ? 'display_name_ca_norm' : 'display_name_norm',
+  ).limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapAmetller);
+}
+
+/** Navegación alfabética del catálogo de Ametller (sin búsqueda), keyset. */
+export async function browseAmetllerProducts(cursor: BrowseCursor | null, limit = 50): Promise<BrowsePage<AmetllerProduct>> {
+  const ca = getLanguage() === 'ca';
+  const { rows, nextCursor } = await keysetPage('ametller_products', AMETLLER_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit);
+  return { items: rows.map(mapAmetller), nextCursor };
+}
+
+/** Un producto de Ametller por id (con ficha; p.ej. para abrir el detalle). */
+export async function fetchAmetllerProduct(id: string): Promise<AmetllerProduct | null> {
+  const { data, error } = await supabase
+    .from('ametller_products')
+    .select(AMETLLER_DETAIL_COLS)
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapAmetller(data) : null;
+}
+
+/** Una categoría N1 de Ametller con sus subcategorías (N2) con productos. */
+export interface AmetllerCategory {
+  id: string;
+  name: string;
+  children: { id: string; name: string }[];
+}
+
+/** Árbol de categorías de Ametller (N1 → N2) desde el espejo. Bilingüe: en català
+ *  usa name_ca si existe (fallback al castellano). Se reordena en cliente. */
+export async function fetchAmetllerCategoryTree(): Promise<AmetllerCategory[]> {
+  const ca = getLanguage() === 'ca';
+  const { data, error } = await supabase
+    .from('ametller_categories')
+    .select('id, name, name_ca, parent_id, product_count')
+    .eq('published', true)
+    .order('name');
+  if (error) throw error;
+  const rows = data ?? [];
+  const nameOf = (r: any) => (ca && r.name_ca ? r.name_ca : r.name);
+  return rows
+    .filter((r: any) => r.parent_id == null)
+    .map((n1: any) => ({
+      id: n1.id,
+      name: nameOf(n1),
+      children: rows
+        .filter((c: any) => c.parent_id === n1.id && (c.product_count ?? 0) > 0)
+        .map((c: any) => ({ id: c.id, name: nameOf(c) })),
+    }))
+    .filter((n1) => n1.children.length > 0);
+}
+
+/** Productos de una subcategoría (N2) de Ametller, vía category_ids (incluye ancestros). */
+export async function fetchAmetllerProductsByCategory(categoryId: string, limit = 600): Promise<AmetllerProduct[]> {
+  const ca = getLanguage() === 'ca';
+  const { data, error } = await supabase
+    .from('ametller_products')
+    .select(AMETLLER_COLS)
+    .eq('published', true)
+    .contains('category_ids', [categoryId])
+    .order(ca ? 'display_name_ca_norm' : 'display_name')
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapAmetller);
+}
+
+// ─── Aldi (tabla aldi_products, espejo aparte) ───────────────────────────────
+// Mismo modelo que Consum (espejo + category_ids + ppu en columnas reales, con
+// marca y formato del envase), pero SOLO castellano (aldi.es no es bilingüe) y
+// SIN ficha ni EAN. Lo puebla scripts/sync-aldi.mjs raspando el JSON de Algolia
+// embebido en el SSR de cada categoría hoja de aldi.es. Árbol de 2 niveles
+// (N1 → N2 hoja); category_ids incluye el N1, así que la N2 cubre su subárbol.
+export interface AldiProduct {
+  id: string;                  // objectID de Algolia ("970000")
+  displayName: string;
+  brand: string | null;
+  packaging: string | null;    // salesUnit ("1 l unidad", "140 g unidad")
+  thumbnail: string | null;
+  unitPrice: number | null;    // precio del envase
+  priceFormat: string | null;  // precio mostrado ("1,05 €")
+  pricePerUnit: string | null; // etiqueta €/unidad canónica ("1,05 €/L")
+  categoryName: string | null;
+}
+
+const mapAldi = (r: any): AldiProduct => ({
+  id: r.id,
+  displayName: r.display_name,
+  brand: r.brand ?? null,
+  packaging: r.packaging ?? null,
+  thumbnail: r.thumbnail ?? null,
+  unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
+  priceFormat: r.price_format ?? null,
+  pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
+  categoryName: r.category_name ?? null,
+});
+
+const ALDI_COLS =
+  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+
+/** Búsqueda por nombre en el catálogo de Aldi (server-side). */
+export async function searchAldiProducts(query: string, limit = 50): Promise<AldiProduct[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const { data, error } = await filterByNameWords(
+    supabase.from('aldi_products').select(ALDI_COLS).eq('published', true),
+    q,
+  ).limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapAldi);
+}
+
+/** Navegación alfabética del catálogo de Aldi (sin búsqueda), keyset. */
+export async function browseAldiProducts(cursor: BrowseCursor | null, limit = 50): Promise<BrowsePage<AldiProduct>> {
+  const { rows, nextCursor } = await keysetPage('aldi_products', ALDI_COLS, 'display_name_norm', cursor, limit);
+  return { items: rows.map(mapAldi), nextCursor };
+}
+
+/** Un producto de Aldi por id (p.ej. para abrir el detalle desde la comparativa). */
+export async function fetchAldiProduct(id: string): Promise<AldiProduct | null> {
+  const { data, error } = await supabase
+    .from('aldi_products')
+    .select(ALDI_COLS)
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapAldi(data) : null;
+}
+
+/** Una categoría N1 de Aldi con sus subcategorías (N2) con productos. */
+export interface AldiCategory {
+  id: string;
+  name: string;
+  children: { id: string; name: string }[];
+}
+
+/** Árbol de categorías de Aldi (N1 → N2) desde el espejo. */
+export async function fetchAldiCategoryTree(): Promise<AldiCategory[]> {
+  const { data, error } = await supabase
+    .from('aldi_categories')
+    .select('id, name, parent_id, product_count')
+    .eq('published', true)
+    .order('name');
+  if (error) throw error;
+  const rows = data ?? [];
+  return rows
+    .filter((r: any) => r.parent_id == null)
+    .map((n1: any) => ({
+      id: n1.id,
+      name: n1.name,
+      children: rows
+        .filter((c: any) => c.parent_id === n1.id && (c.product_count ?? 0) > 0)
+        .map((c: any) => ({ id: c.id, name: c.name })),
+    }))
+    .filter((n1) => n1.children.length > 0);
+}
+
+/** Productos de una subcategoría (N2) de Aldi, vía category_ids (incluye el N1). */
+export async function fetchAldiProductsByCategory(categoryId: string, limit = 600): Promise<AldiProduct[]> {
+  const { data, error } = await supabase
+    .from('aldi_products')
+    .select(ALDI_COLS)
+    .eq('published', true)
+    .contains('category_ids', [categoryId])
+    .order('display_name')
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapAldi);
+}
+
 // ─── Eroski + Caprabo (tablas eroski_products / caprabo_products) ────────────
 // Comparten backend (Apache Tapestry): mismo modelo de producto, mismos ids de
 // categoría, mismo scraper (scripts/lib/eroski-tapestry.mjs). Solo castellano y
@@ -1090,6 +1435,9 @@ const MIRROR_QUERY: Record<CatalogStore, { table: string; cols: string; toUI: (r
   sorli:     { table: 'sorli_products',     cols: SORLI_COLS,     toUI: (r) => sorliToUI(mapSorli(r)) },
   eroski:    { table: 'eroski_products',    cols: TAPESTRY_COLS,  toUI: (r) => eroskiToUI(mapTapestry(r)) },
   caprabo:   { table: 'caprabo_products',   cols: TAPESTRY_COLS,  toUI: (r) => capraboToUI(mapTapestry(r)) },
+  condis:    { table: 'condis_products',    cols: CONDIS_COLS,    toUI: (r) => condisToUI(mapCondis(r)) },
+  ametller:  { table: 'ametller_products',  cols: AMETLLER_COLS,  toUI: (r) => ametllerToUI(mapAmetller(r)) },
+  aldi:      { table: 'aldi_products',       cols: ALDI_COLS,      toUI: (r) => aldiToUI(mapAldi(r)) },
 };
 
 // Ventana de "esta semana": los syncs son semanales (lunes); 8 días cubren el

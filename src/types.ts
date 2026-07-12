@@ -237,7 +237,7 @@ export type CatalogStackParamList = {
     color?: string;
     /** Subcategorías N2. Mercadona usa ids numéricos; el resto de espejos, ids string. */
     subcategories: { id: string | number; name: string }[];
-    retailer?: 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo';
+    retailer?: 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi';
   };
   Products: {
     subcategoryId: number;
@@ -290,6 +290,24 @@ export type CatalogStackParamList = {
   };
   /** Productos de una subcategoría de Caprabo (lee del espejo). */
   CapraboProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentName?: string;
+  };
+  /** Productos de una subcategoría de Condis (lee del espejo). */
+  CondisProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentName?: string;
+  };
+  /** Productos de una subcategoría de Ametller Origen (lee del espejo). */
+  AmetllerProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentName?: string;
+  };
+  /** Productos de una subcategoría de Aldi (lee del espejo). */
+  AldiProducts: {
     categoryId: string;
     categoryName: string;
     parentName?: string;

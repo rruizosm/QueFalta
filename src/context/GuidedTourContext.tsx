@@ -57,7 +57,7 @@ const TAB = { Home: 0, Catalog: 1, List: 2, Groups: 3 } as const;
 const PRODUCT_ROUTES = [
   'Products', 'BonpreuProducts', 'CarrefourProducts',
   'BonareaProducts', 'ConsumProducts', 'DiaProducts', 'SorliProducts',
-  'EroskiProducts', 'CapraboProducts',
+  'EroskiProducts', 'CapraboProducts', 'CondisProducts', 'AmetllerProducts', 'AldiProducts',
 ];
 
 type AnchorKey =

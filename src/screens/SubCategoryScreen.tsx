@@ -83,6 +83,24 @@ export default function SubCategoryScreen() {
         categoryName: item.name,
         parentName: categoryName,
       });
+    } else if (retailer === 'condis') {
+      navigation.navigate('CondisProducts', {
+        categoryId: String(item.id),
+        categoryName: item.name,
+        parentName: categoryName,
+      });
+    } else if (retailer === 'ametller') {
+      navigation.navigate('AmetllerProducts', {
+        categoryId: String(item.id),
+        categoryName: item.name,
+        parentName: categoryName,
+      });
+    } else if (retailer === 'aldi') {
+      navigation.navigate('AldiProducts', {
+        categoryId: String(item.id),
+        categoryName: item.name,
+        parentName: categoryName,
+      });
     } else {
       navigation.navigate('Products', {
         subcategoryId: Number(item.id),

@@ -1,0 +1,27 @@
+name: Sync Aldi catalog
+
+on:
+  schedule:
+    - cron: '20 8 * * 1'   # lunes 08:20 UTC (tras Ametller), semanal
+  workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
+
+concurrency:
+  group: sync-aldi
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20   # es-only, raspa el JSON embebido de ~166 hojas (fetch ligero)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # Aldi va por el JSON de Algolia embebido en el SSR de aldi.es (sin cookies
+      # ni navegador): solo node.
+      - run: node scripts/sync-aldi.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          CONCURRENCY: '6'

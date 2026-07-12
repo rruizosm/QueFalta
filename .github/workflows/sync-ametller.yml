@@ -1,0 +1,27 @@
+name: Sync Ametller catalog
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'    # lunes 08:00 UTC (tras Condis), semanal
+  workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
+
+concurrency:
+  group: sync-ametller
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20   # bilingüe: detalle 2 veces (es + ca), pero es SCAPI ligera (~3k productos)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # Ametller usa la SCAPI de Salesforce con token de invitado por PKCE
+      # (sin cookies ni navegador): solo node.
+      - run: node scripts/sync-ametller.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          CONCURRENCY: '6'

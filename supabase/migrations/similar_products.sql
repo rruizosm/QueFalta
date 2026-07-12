@@ -34,7 +34,7 @@ returns text language sql immutable as $$
           regexp_replace(
             regexp_replace(
               regexp_replace(lower(coalesce(p, '')), '\([^)]*\)', ' ', 'g'),
-              '\y(hacendado|bonpreu|bon[àa]rea|carrefour|consum|selecci[oó]n\s+de\s+dia|dia\s+l[áa]ctea|dia\s+mari\s+marinera|dia|deliplus|aliada|bosque\s+verde|eroski|caprabo|sorli)\y',
+              '\y(hacendado|bonpreu|bon[àa]rea|carrefour|consum|selecci[oó]n\s+de\s+dia|dia\s+l[áa]ctea|dia\s+mari\s+marinera|dia|deliplus|aliada|bosque\s+verde|eroski|caprabo|sorli|ametller\s+origen|ametller)\y',
               ' ', 'g'
             ),
             '\y\d+([.,]\d+)?\s*(kg|g|gr|ml|cl|l|ud|uds|u|pack|x)\y',
@@ -173,6 +173,27 @@ language sql stable as $$
     from public.caprabo_products k cross join q
     where 'caprabo' = any (p_stores) and k.published
       and public.catalog_family_match(lower(k.display_name), q.needle)
+    union all
+    select 'condis', n.id, n.display_name, n.thumbnail,
+           n.unit_price, n.price_per_unit, n.price_per_unit_unit,
+           similarity(q.needle, lower(n.display_name))
+    from public.condis_products n cross join q
+    where 'condis' = any (p_stores) and n.published
+      and public.catalog_family_match(lower(n.display_name), q.needle)
+    union all
+    select 'ametller', a.id, a.display_name, a.thumbnail,
+           a.unit_price, a.price_per_unit, a.price_per_unit_unit,
+           similarity(q.needle, lower(a.display_name))
+    from public.ametller_products a cross join q
+    where 'ametller' = any (p_stores) and a.published
+      and public.catalog_family_match(lower(a.display_name), q.needle)
+    union all
+    select 'aldi', l.id, l.display_name, l.thumbnail,
+           l.unit_price, l.price_per_unit, l.price_per_unit_unit,
+           similarity(q.needle, lower(l.display_name))
+    from public.aldi_products l cross join q
+    where 'aldi' = any (p_stores) and l.published
+      and public.catalog_family_match(lower(l.display_name), q.needle)
   ),
   ranked as (
     select *, min(price_per_unit) over (partition by store) as min_ppu

@@ -1,0 +1,26 @@
+name: Sync Condis catalog
+
+on:
+  schedule:
+    - cron: '40 7 * * 1'   # lunes 07:40 UTC (tras Caprabo), semanal
+  workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
+
+concurrency:
+  group: sync-condis
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20   # bilingüe: recorre el catálogo 2 veces (es + ca), pero es API JSON ligera
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # Condis usa la API JSON abierta de Empathy (sin cookies ni navegador): solo node.
+      - run: node scripts/sync-condis.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          CONCURRENCY: '6'

@@ -5,7 +5,8 @@ import { fetchCategories, type N1Category } from '../api/mercadona';
 import {
   fetchBonpreuCategoryTree, fetchCarrefourCategoryTree, fetchBonareaCategoryTree,
   fetchConsumCategoryTree, fetchDiaCategoryTree, fetchSorliCategoryTree,
-  fetchEroskiCategoryTree, fetchCapraboCategoryTree,
+  fetchEroskiCategoryTree, fetchCapraboCategoryTree, fetchCondisCategoryTree,
+  fetchAmetllerCategoryTree, fetchAldiCategoryTree,
 } from '../api/catalog';
 import { useFavorites } from '../context/FavoritesContext';
 import type { CatalogStore } from '../constants/stores';
@@ -23,6 +24,9 @@ const TREE_FETCHERS: Record<Exclude<CatalogStore, 'mercadona'>, () => Promise<Mi
   sorli: fetchSorliCategoryTree,
   eroski: fetchEroskiCategoryTree,
   caprabo: fetchCapraboCategoryTree,
+  condis: fetchCondisCategoryTree,
+  ametller: fetchAmetllerCategoryTree,
+  aldi: fetchAldiCategoryTree,
 };
 
 /**

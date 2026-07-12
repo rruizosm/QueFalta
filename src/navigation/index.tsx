@@ -58,6 +58,9 @@ import BonareaProductsScreen from '../screens/BonareaProductsScreen';
 import ConsumProductsScreen from '../screens/ConsumProductsScreen';
 import DiaProductsScreen from '../screens/DiaProductsScreen';
 import SorliProductsScreen from '../screens/SorliProductsScreen';
+import CondisProductsScreen from '../screens/CondisProductsScreen';
+import AmetllerProductsScreen from '../screens/AmetllerProductsScreen';
+import AldiProductsScreen from '../screens/AldiProductsScreen';
 import TapestryProductsScreen from '../screens/TapestryProductsScreen';
 import ListScreen       from '../screens/ListScreen';
 import GroupsScreen     from '../screens/GroupsScreen';
@@ -174,6 +177,9 @@ function CatalogNavigator() {
       <CatalogStack.Screen name="SorliProducts" component={SorliProductsScreen} />
       <CatalogStack.Screen name="EroskiProducts" component={TapestryProductsScreen} />
       <CatalogStack.Screen name="CapraboProducts" component={TapestryProductsScreen} />
+      <CatalogStack.Screen name="CondisProducts" component={CondisProductsScreen} />
+      <CatalogStack.Screen name="AmetllerProducts" component={AmetllerProductsScreen} />
+      <CatalogStack.Screen name="AldiProducts" component={AldiProductsScreen} />
     </CatalogStack.Navigator>
   );
 }

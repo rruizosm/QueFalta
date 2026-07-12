@@ -34,15 +34,22 @@ import {
   searchSorliProducts, fetchSorliCategoryTree,
   searchEroskiProducts, fetchEroskiCategoryTree,
   searchCapraboProducts, fetchCapraboCategoryTree,
+  searchCondisProducts, fetchCondisCategoryTree,
+  searchAmetllerProducts, fetchAmetllerCategoryTree,
+  searchAldiProducts, fetchAldiCategoryTree,
   browseProducts, browseBonpreuProducts, browseCarrefourProducts,
   browseBonareaProducts, browseConsumProducts, browseDiaProducts, browseSorliProducts,
-  browseEroskiProducts, browseCapraboProducts,
+  browseEroskiProducts, browseCapraboProducts, browseCondisProducts, browseAmetllerProducts,
+  browseAldiProducts,
   type BonpreuProduct, type BonpreuCategory,
   type CarrefourProduct, type CarrefourCategory,
   type BonareaProduct, type BonareaCategory,
   type ConsumProduct, type ConsumCategory,
   type DiaProduct, type DiaCategory,
   type SorliProduct, type SorliCategory,
+  type CondisProduct, type CondisCategory,
+  type AmetllerProduct, type AmetllerCategory,
+  type AldiProduct, type AldiCategory,
   type TapestryProduct, type TapestryCategory,
   type BrowseCursor, type BrowsePage,
 } from '../api/catalog';
@@ -57,7 +64,7 @@ import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import {
   mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
-  eroskiToUI, capraboToUI,
+  eroskiToUI, capraboToUI, condisToUI, ametllerToUI, aldiToUI,
   type UIProduct,
 } from '../lib/productAdapters';
 import { sortByName } from '../lib/sort';
@@ -93,6 +100,9 @@ async function loadBrowsePage(store: CatalogStore, cursor: BrowseCursor | null):
     case 'sorli':     { const { items, nextCursor } = await browseSorliProducts(cursor); return { items: items.map(sorliToUI), nextCursor }; }
     case 'eroski':    { const { items, nextCursor } = await browseEroskiProducts(cursor); return { items: items.map(eroskiToUI), nextCursor }; }
     case 'caprabo':   { const { items, nextCursor } = await browseCapraboProducts(cursor); return { items: items.map(capraboToUI), nextCursor }; }
+    case 'condis':    { const { items, nextCursor } = await browseCondisProducts(cursor); return { items: items.map(condisToUI), nextCursor }; }
+    case 'ametller':  { const { items, nextCursor } = await browseAmetllerProducts(cursor); return { items: items.map(ametllerToUI), nextCursor }; }
+    case 'aldi':      { const { items, nextCursor } = await browseAldiProducts(cursor); return { items: items.map(aldiToUI), nextCursor }; }
   }
 }
 
@@ -269,6 +279,39 @@ export default function CatalogScreen() {
   const [cbCatsLoading, setCbCatsLoading] = useState(false);
   const [cbCatsError, setCbCatsError] = useState(false);
 
+  // Búsqueda de productos Condis (espejo)
+  const [coSearch, setCoSearch] = useState('');
+  const [coResults, setCoResults] = useState<CondisProduct[]>([]);
+  const [coLoading, setCoLoading] = useState(false);
+  const [coError, setCoError] = useState(false);
+
+  // Categorías Condis (espejo)
+  const [coCats, setCoCats] = useState<CondisCategory[]>([]);
+  const [coCatsLoading, setCoCatsLoading] = useState(false);
+  const [coCatsError, setCoCatsError] = useState(false);
+
+  // Búsqueda de productos Ametller Origen (espejo)
+  const [amSearch, setAmSearch] = useState('');
+  const [amResults, setAmResults] = useState<AmetllerProduct[]>([]);
+  const [amLoading, setAmLoading] = useState(false);
+  const [amError, setAmError] = useState(false);
+
+  // Categorías Ametller (espejo)
+  const [amCats, setAmCats] = useState<AmetllerCategory[]>([]);
+  const [amCatsLoading, setAmCatsLoading] = useState(false);
+  const [amCatsError, setAmCatsError] = useState(false);
+
+  // Búsqueda de productos Aldi (espejo)
+  const [alSearch, setAlSearch] = useState('');
+  const [alResults, setAlResults] = useState<AldiProduct[]>([]);
+  const [alLoading, setAlLoading] = useState(false);
+  const [alError, setAlError] = useState(false);
+
+  // Categorías Aldi (espejo)
+  const [alCats, setAlCats] = useState<AldiCategory[]>([]);
+  const [alCatsLoading, setAlCatsLoading] = useState(false);
+  const [alCatsError, setAlCatsError] = useState(false);
+
   // Navegación de productos (pestaña "Productos" sin texto): listado alfabético
   // del catálogo del súper activo, paginado por keyset. Estado ÚNICO compartido
   // por los 6 súpers porque solo se ve uno a la vez (igual que `catSearch`).
@@ -278,7 +321,7 @@ export default function CatalogScreen() {
   const [browseMore, setBrowseMore] = useState(false);       // páginas siguientes
   const [browseError, setBrowseError] = useState(false);
   // Texto de búsqueda del súper activo: con <2 letras estamos en modo navegación.
-  const prodQuery = { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch }[store];
+  const prodQuery = { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch, condis: coSearch, ametller: amSearch, aldi: alSearch }[store];
   const browseMode = tab === 'productos' && prodQuery.trim().length < 2;
 
   // Carga la página 1 al entrar a navegación (cambio de súper, limpiar la
@@ -495,6 +538,71 @@ export default function CatalogScreen() {
     return () => clearTimeout(handle);
   }, [cbSearch]);
 
+  // Carga perezosa de categorías Condis la primera vez que se entra a esa tienda.
+  useEffect(() => { setCoCats([]); }, [lang]);
+  useEffect(() => {
+    if (store !== 'condis' || coCats.length > 0 || coCatsLoading) return;
+    setCoCatsLoading(true); setCoCatsError(false);
+    fetchCondisCategoryTree()
+      .then(setCoCats)
+      .catch(() => setCoCatsError(true))
+      .finally(() => setCoCatsLoading(false));
+  }, [store, lang]);
+
+  // Condis: búsqueda server-side con debounce (bilingüe: re-busca al cambiar idioma).
+  useEffect(() => {
+    const q = coSearch.trim();
+    if (q.length < 2) { setCoResults([]); setCoError(false); setCoLoading(false); return; }
+    setCoLoading(true); setCoError(false);
+    const handle = setTimeout(() => {
+      searchCondisProducts(q).then(setCoResults).catch(() => setCoError(true)).finally(() => setCoLoading(false));
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [coSearch, lang]);
+
+  // Carga perezosa de categorías Ametller la primera vez que se entra a esa tienda.
+  useEffect(() => { setAmCats([]); }, [lang]);
+  useEffect(() => {
+    if (store !== 'ametller' || amCats.length > 0 || amCatsLoading) return;
+    setAmCatsLoading(true); setAmCatsError(false);
+    fetchAmetllerCategoryTree()
+      .then(setAmCats)
+      .catch(() => setAmCatsError(true))
+      .finally(() => setAmCatsLoading(false));
+  }, [store, lang]);
+
+  // Ametller: búsqueda server-side con debounce (bilingüe: re-busca al cambiar idioma).
+  useEffect(() => {
+    const q = amSearch.trim();
+    if (q.length < 2) { setAmResults([]); setAmError(false); setAmLoading(false); return; }
+    setAmLoading(true); setAmError(false);
+    const handle = setTimeout(() => {
+      searchAmetllerProducts(q).then(setAmResults).catch(() => setAmError(true)).finally(() => setAmLoading(false));
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [amSearch, lang]);
+
+  // Carga perezosa de categorías Aldi la primera vez que se entra a esa tienda.
+  useEffect(() => {
+    if (store !== 'aldi' || alCats.length > 0 || alCatsLoading) return;
+    setAlCatsLoading(true); setAlCatsError(false);
+    fetchAldiCategoryTree()
+      .then(setAlCats)
+      .catch(() => setAlCatsError(true))
+      .finally(() => setAlCatsLoading(false));
+  }, [store]);
+
+  // Aldi: búsqueda server-side con debounce (es-only).
+  useEffect(() => {
+    const q = alSearch.trim();
+    if (q.length < 2) { setAlResults([]); setAlError(false); setAlLoading(false); return; }
+    setAlLoading(true); setAlError(false);
+    const handle = setTimeout(() => {
+      searchAldiProducts(q).then(setAlResults).catch(() => setAlError(true)).finally(() => setAlLoading(false));
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [alSearch]);
+
   // Filtro de categorías por texto (cliente). Compartido por los 6 súpers: en la
   // pestaña de categorías solo se ve un súper a la vez, así que un único `catSearch` basta.
   const matchesCatSearch = (name: string) =>
@@ -594,6 +702,15 @@ export default function CatalogScreen() {
 
   const renderCbCategory = ({ item, index }: { item: TapestryCategory; index: number }) =>
     renderCatRow({ store: 'caprabo', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('caprabo', item) }, index === 0);
+
+  const renderCoCategory = ({ item, index }: { item: CondisCategory; index: number }) =>
+    renderCatRow({ store: 'condis', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('condis', item) }, index === 0);
+
+  const renderAmCategory = ({ item, index }: { item: AmetllerCategory; index: number }) =>
+    renderCatRow({ store: 'ametller', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('ametller', item) }, index === 0);
+
+  const renderAlCategory = ({ item, index }: { item: AldiCategory; index: number }) =>
+    renderCatRow({ store: 'aldi', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('aldi', item) }, index === 0);
 
   // Estados de un listado de búsqueda de productos (compartido).
   const renderSearchStates = (search: string, loading: boolean, error: boolean, empty: boolean, list: React.ReactNode) => {
@@ -1055,6 +1172,114 @@ export default function CatalogScreen() {
         <>
           {productSearchRow(t('catalog.searchProducts'),cbSearch, setCbSearch)}
           {renderProductsTab(cbSearch, cbLoading, cbError, cbResults.map(capraboToUI))}
+        </>
+      )}
+
+      {/* ── Condis ───────────────────────────────────────────────── */}
+      {store === 'condis' && tab === 'categorias' && (
+        <>
+          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
+          {coCatsLoading ? (
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+          ) : coCatsError ? (
+            <View style={styles.centerBox}>
+              <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Condis' })}</Text>
+              <TouchableOpacity onPress={() => {
+                setCoCatsError(false); setCoCatsLoading(true);
+                fetchCondisCategoryTree().then(setCoCats).catch(() => setCoCatsError(true)).finally(() => setCoCatsLoading(false));
+              }}>
+                <Text style={styles.retryText}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={sortedCats(coCats)}
+              keyExtractor={(item) => item.id}
+              renderItem={renderCoCategory}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            />
+          )}
+        </>
+      )}
+
+      {store === 'condis' && tab === 'productos' && (
+        <>
+          {productSearchRow(t('catalog.searchProducts'),coSearch, setCoSearch)}
+          {renderProductsTab(coSearch, coLoading, coError, coResults.map(condisToUI))}
+        </>
+      )}
+
+      {/* ── Ametller Origen ──────────────────────────────────────── */}
+      {store === 'ametller' && tab === 'categorias' && (
+        <>
+          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
+          {amCatsLoading ? (
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+          ) : amCatsError ? (
+            <View style={styles.centerBox}>
+              <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Ametller Origen' })}</Text>
+              <TouchableOpacity onPress={() => {
+                setAmCatsError(false); setAmCatsLoading(true);
+                fetchAmetllerCategoryTree().then(setAmCats).catch(() => setAmCatsError(true)).finally(() => setAmCatsLoading(false));
+              }}>
+                <Text style={styles.retryText}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={sortedCats(amCats)}
+              keyExtractor={(item) => item.id}
+              renderItem={renderAmCategory}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            />
+          )}
+        </>
+      )}
+
+      {store === 'ametller' && tab === 'productos' && (
+        <>
+          {productSearchRow(t('catalog.searchProducts'),amSearch, setAmSearch)}
+          {renderProductsTab(amSearch, amLoading, amError, amResults.map(ametllerToUI))}
+        </>
+      )}
+
+      {/* ── Aldi ─────────────────────────────────────────────────── */}
+      {store === 'aldi' && tab === 'categorias' && (
+        <>
+          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
+          {alCatsLoading ? (
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+          ) : alCatsError ? (
+            <View style={styles.centerBox}>
+              <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Aldi' })}</Text>
+              <TouchableOpacity onPress={() => {
+                setAlCatsError(false); setAlCatsLoading(true);
+                fetchAldiCategoryTree().then(setAlCats).catch(() => setAlCatsError(true)).finally(() => setAlCatsLoading(false));
+              }}>
+                <Text style={styles.retryText}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={sortedCats(alCats)}
+              keyExtractor={(item) => item.id}
+              renderItem={renderAlCategory}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            />
+          )}
+        </>
+      )}
+
+      {store === 'aldi' && tab === 'productos' && (
+        <>
+          {productSearchRow(t('catalog.searchProducts'),alSearch, setAlSearch)}
+          {renderProductsTab(alSearch, alLoading, alError, alResults.map(aldiToUI))}
         </>
       )}
 

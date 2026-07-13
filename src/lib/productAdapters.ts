@@ -6,7 +6,7 @@ import type { MercadonaProduct, FavoriteProduct } from '../types';
 import { formatPrice, formatSize, formatReferencePrice } from '../api/mercadona';
 import type {
   BonpreuProduct, CarrefourProduct, BonareaProduct, ConsumProduct, DiaProduct, SorliProduct,
-  CondisProduct, AmetllerProduct, AldiProduct, TapestryProduct,
+  CondisProduct, AmetllerProduct, AldiProduct, HiperdinoProduct, AlcampoProduct, TapestryProduct,
 } from '../api/catalog';
 
 export interface UIProduct {
@@ -136,6 +136,27 @@ export function ametllerToUI(p: AmetllerProduct): UIProduct {
 export function aldiToUI(p: AldiProduct): UIProduct {
   return {
     id: p.id, store: 'aldi', name: p.displayName, imageUrl: p.thumbnail,
+    priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
+    exclusiveRegions: null,
+  };
+}
+
+// HiperDino: es-only, sin marca/formato aparte (van en el nombre) ni €/ud.
+export function hiperdinoToUI(p: HiperdinoProduct): UIProduct {
+  return {
+    id: p.id, store: 'hiperdino', name: p.displayName, imageUrl: p.thumbnail,
+    priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
+    exclusiveRegions: null,
+  };
+}
+
+// Alcampo: es-only, con marca y formato del envase (packSizeDescription) → metaLabel
+// como Consum/Aldi, y €/unidad en columna.
+export function alcampoToUI(p: AlcampoProduct): UIProduct {
+  return {
+    id: p.id, store: 'alcampo', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
     exclusiveRegions: null,

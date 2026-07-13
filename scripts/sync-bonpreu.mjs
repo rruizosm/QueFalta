@@ -87,20 +87,35 @@ function normalize(p) {
 }
 
 // ── Supabase REST ────────────────────────────────────────────────────────────
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
 async function upsert(table, rows) {
   // Lotes pequeños: el catálogo de Bonpreu son ~18k productos con `raw` jsonb
   // grande + índice trigram; a 500/lote el upsert excede el statement_timeout de
-  // Supabase (57014). 100/lote mantiene cada statement bien por debajo del límite.
-  for (const c of chunk(rows, 100)) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-      method: 'POST',
-      headers: {
-        apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}`,
-        'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal',
-      },
-      body: JSON.stringify(c),
-    });
-    if (!res.ok) throw new Error(`upsert ${table} ${res.status}: ${await res.text()}`);
+  // Supabase (57014). 50/lote mantiene cada statement bien por debajo del límite.
+  // Además, el lunes se solapan los 6+ syncs y la BD va cargada → un 57014/5xx
+  // suelto tiraba el run entero (visto 2026-07-13). Cada lote reintenta con
+  // backoff (mismo criterio que lib/stale.mjs) para absorber los picos.
+  for (const c of chunk(rows, 50)) {
+    let last;
+    let done = false;
+    for (let t = 0; t < 4 && !done; t++) {
+      if (t) await sleep(1500 * 2 ** (t - 1));
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+          method: 'POST',
+          headers: {
+            apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}`,
+            'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal',
+          },
+          body: JSON.stringify(c),
+        });
+        if (res.ok) { done = true; break; }
+        last = new Error(`upsert ${table} ${res.status}: ${await res.text()}`);
+      } catch (e) { last = e; }
+      console.warn(`[bonpreu] ${String(last.message).split('\n')[0]} (intento ${t + 1}/4)`);
+    }
+    if (!done) throw last;
   }
 }
 // Soft-delete por lotes con reintentos (lib/stale.mjs): el UPDATE único de toda

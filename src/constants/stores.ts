@@ -5,7 +5,7 @@ import { Image as ExpoImage } from 'expo-image';
 // Fuente ÚNICA del switcher del catálogo, de la preferencia de perfil
 // "Supermercados" y del agrupado de Lista/Cesta por tienda (de aquí salen los
 // nombres e iconos). Para añadir una tienda: súmala aquí, al tipo y a storeOfItem.
-export type CatalogStore = 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi';
+export type CatalogStore = 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi' | 'hiperdino' | 'alcampo';
 
 /** Metadatos (nombre + icono) en orden de aparición. */
 export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | null }[] = [
@@ -21,6 +21,8 @@ export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | n
   { key: 'condis',    name: 'Condis',        icon: require('../../assets/stores/condis.png') },
   { key: 'ametller',  name: 'Ametller Origen', icon: require('../../assets/stores/ametller.png') },
   { key: 'aldi',      name: 'Aldi',          icon: require('../../assets/stores/aldi.png') },
+  { key: 'hiperdino', name: 'HiperDino',     icon: require('../../assets/stores/hiperdino.png') },
+  { key: 'alcampo',   name: 'Alcampo',       icon: require('../../assets/stores/alcampo.png') },
 ];
 
 /** Orden canónico de las claves (para normalizar/ordenar selecciones). */
@@ -59,7 +61,8 @@ type StoreClue = { imageUrl?: string | null; mercadonaProductId?: string | null 
 // Dominio de la miniatura guardada en list_items: bonpreuesclat.cat, mercadona.es,
 // carrefour.es, bonarea.com, cdn-consum.aktiosdigitalservices.com, dia.es,
 // cdn.sorliclic.com, eroski.es, capraboacasa.com, cdn.condis.es, ametllerorigen.com,
-// scene7.com/is/image/aldinord (Aldi). Mercadona también se reconoce por su id.
+// scene7.com/is/image/aldinord (Aldi), cdn.hiperdino.es (HiperDino),
+// compraonline.alcampo.es (Alcampo). Mercadona también se reconoce por su id.
 export function storeOfItem(it: StoreClue): Store {
   const url = it.imageUrl ?? '';
   if (url.includes('bonpreuesclat')) return 'esclat';
@@ -74,6 +77,8 @@ export function storeOfItem(it: StoreClue): Store {
   if (url.includes('condis')) return 'condis';
   if (url.includes('ametllerorigen')) return 'ametller';
   if (url.includes('scene7.com/is/image/aldinord')) return 'aldi';
+  if (url.includes('cdn.hiperdino')) return 'hiperdino';
+  if (url.includes('alcampo')) return 'alcampo';
   return 'otros';
 }
 

@@ -2,7 +2,7 @@ name: Sync BonpreuEsclat catalog
 
 on:
   schedule:
-    - cron: '10 6 * * 1'   # lunes 06:10 UTC (tras Mercadona), semanal
+    - cron: '40 6 * * 1'   # lunes 06:40 UTC (tras Mercadona; pesado, headless 2 pasadas), semanal
   workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
 
 concurrency:

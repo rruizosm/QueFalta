@@ -3,9 +3,9 @@ import { Modal, View, ActivityIndicator, StyleSheet } from 'react-native';
 import { colors } from '../constants/colors';
 import {
   fetchBonpreuProduct, fetchCarrefourProduct, fetchBonareaProduct, fetchConsumProduct, fetchDiaProduct, fetchSorliProduct,
-  fetchEroskiProduct, fetchCapraboProduct, fetchCondisProduct, fetchAmetllerProduct, fetchAldiProduct,
+  fetchEroskiProduct, fetchCapraboProduct, fetchCondisProduct, fetchAmetllerProduct, fetchAldiProduct, fetchHiperdinoProduct, fetchAlcampoProduct,
   type BonpreuProduct, type CarrefourProduct, type BonareaProduct, type ConsumProduct, type DiaProduct, type SorliProduct,
-  type CondisProduct, type AmetllerProduct, type AldiProduct, type TapestryProduct,
+  type CondisProduct, type AmetllerProduct, type AldiProduct, type HiperdinoProduct, type AlcampoProduct, type TapestryProduct,
 } from '../api/catalog';
 import type { CatalogStore } from '../constants/stores';
 import { useToast } from '../context/ToastContext';
@@ -42,7 +42,7 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
   const sheetTop = useHeaderTopPadding(52) + 48;
   const toast = useToast();
   const { t } = useTranslation();
-  const [mirror, setMirror] = useState<BonpreuProduct | CarrefourProduct | BonareaProduct | ConsumProduct | DiaProduct | SorliProduct | CondisProduct | AmetllerProduct | AldiProduct | TapestryProduct | null>(null);
+  const [mirror, setMirror] = useState<BonpreuProduct | CarrefourProduct | BonareaProduct | ConsumProduct | DiaProduct | SorliProduct | CondisProduct | AmetllerProduct | AldiProduct | HiperdinoProduct | AlcampoProduct | TapestryProduct | null>(null);
 
   useEffect(() => {
     setMirror(null);
@@ -59,6 +59,8 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
       : target.store === 'condis' ? fetchCondisProduct
       : target.store === 'ametller' ? fetchAmetllerProduct
       : target.store === 'aldi' ? fetchAldiProduct
+      : target.store === 'hiperdino' ? fetchHiperdinoProduct
+      : target.store === 'alcampo' ? fetchAlcampoProduct
       : fetchBonareaProduct;
     fetcher(target.id)
       .then((p) => {
@@ -119,6 +121,12 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
   } else if (target.store === 'aldi') {
     const AldiProductModal = require('./AldiProductModal').default;
     content = <AldiProductModal product={mirror} onClose={onClose} topInset={topInset} />;
+  } else if (target.store === 'hiperdino') {
+    const HiperdinoProductModal = require('./HiperdinoProductModal').default;
+    content = <HiperdinoProductModal product={mirror} onClose={onClose} topInset={topInset} />;
+  } else if (target.store === 'alcampo') {
+    const AlcampoProductModal = require('./AlcampoProductModal').default;
+    content = <AlcampoProductModal product={mirror} onClose={onClose} topInset={topInset} />;
   } else {
     const BonareaProductModal = require('./BonareaProductModal').default;
     content = <BonareaProductModal product={mirror} onClose={onClose} topInset={topInset} />;

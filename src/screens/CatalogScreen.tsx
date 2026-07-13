@@ -37,10 +37,12 @@ import {
   searchCondisProducts, fetchCondisCategoryTree,
   searchAmetllerProducts, fetchAmetllerCategoryTree,
   searchAldiProducts, fetchAldiCategoryTree,
+  searchHiperdinoProducts, fetchHiperdinoCategoryTree,
+  searchAlcampoProducts, fetchAlcampoCategoryTree,
   browseProducts, browseBonpreuProducts, browseCarrefourProducts,
   browseBonareaProducts, browseConsumProducts, browseDiaProducts, browseSorliProducts,
   browseEroskiProducts, browseCapraboProducts, browseCondisProducts, browseAmetllerProducts,
-  browseAldiProducts,
+  browseAldiProducts, browseHiperdinoProducts, browseAlcampoProducts,
   type BonpreuProduct, type BonpreuCategory,
   type CarrefourProduct, type CarrefourCategory,
   type BonareaProduct, type BonareaCategory,
@@ -50,6 +52,8 @@ import {
   type CondisProduct, type CondisCategory,
   type AmetllerProduct, type AmetllerCategory,
   type AldiProduct, type AldiCategory,
+  type HiperdinoProduct, type HiperdinoCategory,
+  type AlcampoProduct, type AlcampoCategory,
   type TapestryProduct, type TapestryCategory,
   type BrowseCursor, type BrowsePage,
 } from '../api/catalog';
@@ -64,7 +68,7 @@ import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import {
   mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
-  eroskiToUI, capraboToUI, condisToUI, ametllerToUI, aldiToUI,
+  eroskiToUI, capraboToUI, condisToUI, ametllerToUI, aldiToUI, hiperdinoToUI, alcampoToUI,
   type UIProduct,
 } from '../lib/productAdapters';
 import { sortByName } from '../lib/sort';
@@ -103,6 +107,8 @@ async function loadBrowsePage(store: CatalogStore, cursor: BrowseCursor | null):
     case 'condis':    { const { items, nextCursor } = await browseCondisProducts(cursor); return { items: items.map(condisToUI), nextCursor }; }
     case 'ametller':  { const { items, nextCursor } = await browseAmetllerProducts(cursor); return { items: items.map(ametllerToUI), nextCursor }; }
     case 'aldi':      { const { items, nextCursor } = await browseAldiProducts(cursor); return { items: items.map(aldiToUI), nextCursor }; }
+    case 'hiperdino': { const { items, nextCursor } = await browseHiperdinoProducts(cursor); return { items: items.map(hiperdinoToUI), nextCursor }; }
+    case 'alcampo':   { const { items, nextCursor } = await browseAlcampoProducts(cursor); return { items: items.map(alcampoToUI), nextCursor }; }
   }
 }
 
@@ -312,6 +318,28 @@ export default function CatalogScreen() {
   const [alCatsLoading, setAlCatsLoading] = useState(false);
   const [alCatsError, setAlCatsError] = useState(false);
 
+  // Búsqueda de productos HiperDino (espejo)
+  const [hdSearch, setHdSearch] = useState('');
+  const [hdResults, setHdResults] = useState<HiperdinoProduct[]>([]);
+  const [hdLoading, setHdLoading] = useState(false);
+  const [hdError, setHdError] = useState(false);
+
+  // Categorías HiperDino (espejo)
+  const [hdCats, setHdCats] = useState<HiperdinoCategory[]>([]);
+  const [hdCatsLoading, setHdCatsLoading] = useState(false);
+  const [hdCatsError, setHdCatsError] = useState(false);
+
+  // Búsqueda de productos Alcampo (espejo)
+  const [acSearch, setAcSearch] = useState('');
+  const [acResults, setAcResults] = useState<AlcampoProduct[]>([]);
+  const [acLoading, setAcLoading] = useState(false);
+  const [acError, setAcError] = useState(false);
+
+  // Categorías Alcampo (espejo)
+  const [acCats, setAcCats] = useState<AlcampoCategory[]>([]);
+  const [acCatsLoading, setAcCatsLoading] = useState(false);
+  const [acCatsError, setAcCatsError] = useState(false);
+
   // Navegación de productos (pestaña "Productos" sin texto): listado alfabético
   // del catálogo del súper activo, paginado por keyset. Estado ÚNICO compartido
   // por los 6 súpers porque solo se ve uno a la vez (igual que `catSearch`).
@@ -321,7 +349,7 @@ export default function CatalogScreen() {
   const [browseMore, setBrowseMore] = useState(false);       // páginas siguientes
   const [browseError, setBrowseError] = useState(false);
   // Texto de búsqueda del súper activo: con <2 letras estamos en modo navegación.
-  const prodQuery = { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch, condis: coSearch, ametller: amSearch, aldi: alSearch }[store];
+  const prodQuery = { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch, condis: coSearch, ametller: amSearch, aldi: alSearch, hiperdino: hdSearch, alcampo: acSearch }[store];
   const browseMode = tab === 'productos' && prodQuery.trim().length < 2;
 
   // Carga la página 1 al entrar a navegación (cambio de súper, limpiar la
@@ -603,6 +631,48 @@ export default function CatalogScreen() {
     return () => clearTimeout(handle);
   }, [alSearch]);
 
+  // Carga perezosa de categorías HiperDino la primera vez que se entra a esa tienda.
+  useEffect(() => {
+    if (store !== 'hiperdino' || hdCats.length > 0 || hdCatsLoading) return;
+    setHdCatsLoading(true); setHdCatsError(false);
+    fetchHiperdinoCategoryTree()
+      .then(setHdCats)
+      .catch(() => setHdCatsError(true))
+      .finally(() => setHdCatsLoading(false));
+  }, [store]);
+
+  // HiperDino: búsqueda server-side con debounce (es-only).
+  useEffect(() => {
+    const q = hdSearch.trim();
+    if (q.length < 2) { setHdResults([]); setHdError(false); setHdLoading(false); return; }
+    setHdLoading(true); setHdError(false);
+    const handle = setTimeout(() => {
+      searchHiperdinoProducts(q).then(setHdResults).catch(() => setHdError(true)).finally(() => setHdLoading(false));
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [hdSearch]);
+
+  // Carga perezosa de categorías Alcampo la primera vez que se entra a esa tienda.
+  useEffect(() => {
+    if (store !== 'alcampo' || acCats.length > 0 || acCatsLoading) return;
+    setAcCatsLoading(true); setAcCatsError(false);
+    fetchAlcampoCategoryTree()
+      .then(setAcCats)
+      .catch(() => setAcCatsError(true))
+      .finally(() => setAcCatsLoading(false));
+  }, [store]);
+
+  // Alcampo: búsqueda server-side con debounce (es-only).
+  useEffect(() => {
+    const q = acSearch.trim();
+    if (q.length < 2) { setAcResults([]); setAcError(false); setAcLoading(false); return; }
+    setAcLoading(true); setAcError(false);
+    const handle = setTimeout(() => {
+      searchAlcampoProducts(q).then(setAcResults).catch(() => setAcError(true)).finally(() => setAcLoading(false));
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [acSearch]);
+
   // Filtro de categorías por texto (cliente). Compartido por los 6 súpers: en la
   // pestaña de categorías solo se ve un súper a la vez, así que un único `catSearch` basta.
   const matchesCatSearch = (name: string) =>
@@ -711,6 +781,12 @@ export default function CatalogScreen() {
 
   const renderAlCategory = ({ item, index }: { item: AldiCategory; index: number }) =>
     renderCatRow({ store: 'aldi', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('aldi', item) }, index === 0);
+
+  const renderHdCategory = ({ item, index }: { item: HiperdinoCategory; index: number }) =>
+    renderCatRow({ store: 'hiperdino', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('hiperdino', item) }, index === 0);
+
+  const renderAcCategory = ({ item, index }: { item: AlcampoCategory; index: number }) =>
+    renderCatRow({ store: 'alcampo', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('alcampo', item) }, index === 0);
 
   // Estados de un listado de búsqueda de productos (compartido).
   const renderSearchStates = (search: string, loading: boolean, error: boolean, empty: boolean, list: React.ReactNode) => {
@@ -1280,6 +1356,78 @@ export default function CatalogScreen() {
         <>
           {productSearchRow(t('catalog.searchProducts'),alSearch, setAlSearch)}
           {renderProductsTab(alSearch, alLoading, alError, alResults.map(aldiToUI))}
+        </>
+      )}
+
+      {/* ── HiperDino ────────────────────────────────────────────── */}
+      {store === 'hiperdino' && tab === 'categorias' && (
+        <>
+          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
+          {hdCatsLoading ? (
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+          ) : hdCatsError ? (
+            <View style={styles.centerBox}>
+              <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'HiperDino' })}</Text>
+              <TouchableOpacity onPress={() => {
+                setHdCatsError(false); setHdCatsLoading(true);
+                fetchHiperdinoCategoryTree().then(setHdCats).catch(() => setHdCatsError(true)).finally(() => setHdCatsLoading(false));
+              }}>
+                <Text style={styles.retryText}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={sortedCats(hdCats)}
+              keyExtractor={(item) => item.id}
+              renderItem={renderHdCategory}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            />
+          )}
+        </>
+      )}
+
+      {store === 'hiperdino' && tab === 'productos' && (
+        <>
+          {productSearchRow(t('catalog.searchProducts'),hdSearch, setHdSearch)}
+          {renderProductsTab(hdSearch, hdLoading, hdError, hdResults.map(hiperdinoToUI))}
+        </>
+      )}
+
+      {/* ── Alcampo ──────────────────────────────────────────────── */}
+      {store === 'alcampo' && tab === 'categorias' && (
+        <>
+          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
+          {acCatsLoading ? (
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+          ) : acCatsError ? (
+            <View style={styles.centerBox}>
+              <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Alcampo' })}</Text>
+              <TouchableOpacity onPress={() => {
+                setAcCatsError(false); setAcCatsLoading(true);
+                fetchAlcampoCategoryTree().then(setAcCats).catch(() => setAcCatsError(true)).finally(() => setAcCatsLoading(false));
+              }}>
+                <Text style={styles.retryText}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={sortedCats(acCats)}
+              keyExtractor={(item) => item.id}
+              renderItem={renderAcCategory}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            />
+          )}
+        </>
+      )}
+
+      {store === 'alcampo' && tab === 'productos' && (
+        <>
+          {productSearchRow(t('catalog.searchProducts'),acSearch, setAcSearch)}
+          {renderProductsTab(acSearch, acLoading, acError, acResults.map(alcampoToUI))}
         </>
       )}
 

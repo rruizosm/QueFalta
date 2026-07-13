@@ -2,7 +2,7 @@ name: Sync Caprabo catalog
 
 on:
   schedule:
-    - cron: '20 7 * * 1'   # lunes 07:20 UTC (tras Eroski), semanal
+    - cron: '30 9 * * 1'   # lunes 09:30 UTC (tras Eroski), semanal
   workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
 
 concurrency:

@@ -237,7 +237,7 @@ export type CatalogStackParamList = {
     color?: string;
     /** Subcategorías N2. Mercadona usa ids numéricos; el resto de espejos, ids string. */
     subcategories: { id: string | number; name: string }[];
-    retailer?: 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi';
+    retailer?: 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi' | 'hiperdino' | 'alcampo';
   };
   Products: {
     subcategoryId: number;
@@ -308,6 +308,18 @@ export type CatalogStackParamList = {
   };
   /** Productos de una subcategoría de Aldi (lee del espejo). */
   AldiProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentName?: string;
+  };
+  /** Productos de una subcategoría de HiperDino (lee del espejo). */
+  HiperdinoProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentName?: string;
+  };
+  /** Productos de una subcategoría de Alcampo (lee del espejo). */
+  AlcampoProducts: {
     categoryId: string;
     categoryName: string;
     parentName?: string;

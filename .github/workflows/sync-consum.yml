@@ -2,7 +2,7 @@ name: Sync Consum catalog
 
 on:
   schedule:
-    - cron: '30 6 * * 1'   # lunes 06:30 UTC (tras bonÀrea), semanal
+    - cron: '30 7 * * 1'   # lunes 07:30 UTC (tras bonÀrea), semanal
   workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
 
 concurrency:

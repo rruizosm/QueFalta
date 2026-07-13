@@ -58,6 +58,7 @@ const PRODUCT_ROUTES = [
   'Products', 'BonpreuProducts', 'CarrefourProducts',
   'BonareaProducts', 'ConsumProducts', 'DiaProducts', 'SorliProducts',
   'EroskiProducts', 'CapraboProducts', 'CondisProducts', 'AmetllerProducts', 'AldiProducts',
+  'HiperdinoProducts',
 ];
 
 type AnchorKey =

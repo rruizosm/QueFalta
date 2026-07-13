@@ -2,7 +2,7 @@ name: Sync Aldi catalog
 
 on:
   schedule:
-    - cron: '20 8 * * 1'   # lunes 08:20 UTC (tras Ametller), semanal
+    - cron: '40 10 * * 1'  # lunes 10:40 UTC (tras Ametller), semanal
   workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
 
 concurrency:

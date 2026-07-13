@@ -2,7 +2,7 @@ name: Sync bonArea catalog
 
 on:
   schedule:
-    - cron: '20 6 * * 1'   # lunes 06:20 UTC (tras Bonpreu), semanal
+    - cron: '10 7 * * 1'   # lunes 07:10 UTC (tras Bonpreu), semanal
   workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
 
 concurrency:

@@ -13,7 +13,7 @@ import { fetchNewArrivals } from './mercadona';
 // fichero con `import type`), así que este import NO crea un ciclo en runtime.
 import {
   mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
-  condisToUI, eroskiToUI, capraboToUI, ametllerToUI, aldiToUI,
+  condisToUI, eroskiToUI, capraboToUI, ametllerToUI, aldiToUI, hiperdinoToUI, alcampoToUI,
   type UIProduct,
 } from '../lib/productAdapters';
 
@@ -1281,6 +1281,235 @@ export async function fetchAldiProductsByCategory(categoryId: string, limit = 60
   return (data ?? []).map(mapAldi);
 }
 
+// ─── HiperDino (tabla hiperdino_products, espejo aparte) ─────────────────────
+// Mismo modelo que Aldi (espejo + category_ids, con category_name), pero SOLO
+// castellano (hiperdino.es no es bilingüe), SIN ficha, SIN EAN y SIN €/unidad
+// (Magento no lo expone). Lo puebla scripts/sync-hiperdino.mjs vía GraphQL de
+// Magento. Árbol de 2 niveles (N1 → N2); category_ids incluye el N1.
+// OJO: HiperDino solo opera en Canarias (ver COMUNIDAD-AUTONOMA.md).
+export interface HiperdinoProduct {
+  id: string;                  // sku de Magento ("000000000003970669")
+  displayName: string;
+  brand: string | null;        // null (el nombre ya incluye marca)
+  packaging: string | null;    // null (el formato va en el nombre)
+  thumbnail: string | null;
+  unitPrice: number | null;    // precio del envase
+  priceFormat: string | null;  // precio mostrado ("1,99 €")
+  pricePerUnit: string | null; // null (HiperDino no expone €/ud)
+  categoryName: string | null;
+}
+
+const mapHiperdino = (r: any): HiperdinoProduct => ({
+  id: r.id,
+  displayName: r.display_name,
+  brand: r.brand ?? null,
+  packaging: r.packaging ?? null,
+  thumbnail: r.thumbnail ?? null,
+  unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
+  priceFormat: r.price_format ?? null,
+  pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
+  categoryName: r.category_name ?? null,
+});
+
+const HIPERDINO_COLS =
+  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+
+/** Búsqueda por nombre en el catálogo de HiperDino (server-side). */
+export async function searchHiperdinoProducts(query: string, limit = 50): Promise<HiperdinoProduct[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const { data, error } = await filterByNameWords(
+    supabase.from('hiperdino_products').select(HIPERDINO_COLS).eq('published', true),
+    q,
+  ).limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapHiperdino);
+}
+
+/** Navegación alfabética del catálogo de HiperDino (sin búsqueda), keyset. */
+export async function browseHiperdinoProducts(cursor: BrowseCursor | null, limit = 50): Promise<BrowsePage<HiperdinoProduct>> {
+  const { rows, nextCursor } = await keysetPage('hiperdino_products', HIPERDINO_COLS, 'display_name_norm', cursor, limit);
+  return { items: rows.map(mapHiperdino), nextCursor };
+}
+
+/** Un producto de HiperDino por id (p.ej. para abrir el detalle desde la comparativa). */
+export async function fetchHiperdinoProduct(id: string): Promise<HiperdinoProduct | null> {
+  const { data, error } = await supabase
+    .from('hiperdino_products')
+    .select(HIPERDINO_COLS)
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapHiperdino(data) : null;
+}
+
+/** Una categoría N1 de HiperDino con sus subcategorías (N2) con productos. */
+export interface HiperdinoCategory {
+  id: string;
+  name: string;
+  children: { id: string; name: string }[];
+}
+
+/** Árbol de categorías de HiperDino (N1 → N2) desde el espejo. */
+export async function fetchHiperdinoCategoryTree(): Promise<HiperdinoCategory[]> {
+  const { data, error } = await supabase
+    .from('hiperdino_categories')
+    .select('id, name, parent_id, product_count')
+    .eq('published', true)
+    .order('name');
+  if (error) throw error;
+  const rows = data ?? [];
+  return rows
+    .filter((r: any) => r.parent_id == null)
+    .map((n1: any) => ({
+      id: n1.id,
+      name: n1.name,
+      children: rows
+        .filter((c: any) => c.parent_id === n1.id && (c.product_count ?? 0) > 0)
+        .map((c: any) => ({ id: c.id, name: c.name })),
+    }))
+    .filter((n1) => n1.children.length > 0);
+}
+
+/** Productos de una subcategoría (N2) de HiperDino, vía category_ids (incluye el N1). */
+export async function fetchHiperdinoProductsByCategory(categoryId: string, limit = 600): Promise<HiperdinoProduct[]> {
+  const { data, error } = await supabase
+    .from('hiperdino_products')
+    .select(HIPERDINO_COLS)
+    .eq('published', true)
+    .contains('category_ids', [categoryId])
+    .order('display_name')
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapHiperdino);
+}
+
+// ─── Alcampo (tabla alcampo_products, espejo aparte) ─────────────────────────
+// Mismo modelo que Dia (espejo + category_ids + ppu en columnas reales, CON ficha).
+// SOLO castellano (compraonline.alcampo.es sirve es-ES). Lo puebla
+// scripts/sync-alcampo.mjs desde la API REST de Ocado (product-pages, listado
+// decorado) + el HTML de la PDP (ficha). El árbol es de 2 niveles (N1→N2). El EAN
+// solo está en ~20 % de las fichas (columna, no mostrada); el comparador casa por
+// nombre. Ver migración alcampo_catalog.sql.
+export interface AlcampoProduct {
+  id: string;                  // productId (UUID de Ocado)
+  displayName: string;         // incluye marca y formato
+  brand: string | null;
+  packaging: string | null;    // packSizeDescription ("9000ml", "10x41.5g")
+  thumbnail: string | null;
+  unitPrice: number | null;    // precio del envase
+  priceFormat: string | null;  // precio mostrado ("5,04 €")
+  pricePerUnit: string | null; // etiqueta €/unidad canónica ("0,84 €/L")
+  categoryName: string | null;
+  // Ficha (solo en fetchAlcampoProduct; null en listados/búsqueda). La rellena
+  // scripts/sync-alcampo.mjs del HTML de la PDP. Ver migración alcampo_catalog.sql.
+  description: string | null;
+  ingredients: string | null;
+  nutrition: string | null;
+  conservation: string | null;
+  preparation: string | null;
+  denomination: string | null;
+  operator: string | null;
+  origin: string | null;
+}
+
+const mapAlcampo = (r: any): AlcampoProduct => ({
+  id: r.id,
+  displayName: r.display_name,
+  brand: r.brand ?? null,
+  packaging: r.packaging ?? null,
+  thumbnail: r.thumbnail ?? null,
+  unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
+  priceFormat: r.price_format ?? null,
+  pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
+  categoryName: r.category_name ?? null,
+  // Solo presentes cuando se piden (detalle); en listados quedan undefined → null.
+  description: r.description ?? null,
+  ingredients: r.ingredients ?? null,
+  nutrition: r.nutrition ?? null,
+  conservation: r.conservation ?? null,
+  preparation: r.preparation ?? null,
+  denomination: r.denomination ?? null,
+  operator: r.operator ?? null,
+  origin: r.origin ?? null,
+});
+
+const ALCAMPO_COLS =
+  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+// Columnas de ficha: solo para el detalle (cargas pesadas → no se piden en listados).
+const ALCAMPO_DETAIL_COLS =
+  `${ALCAMPO_COLS}, description, ingredients, nutrition, conservation, preparation, denomination, operator, origin`;
+
+/** Búsqueda por nombre en el catálogo de Alcampo (server-side). */
+export async function searchAlcampoProducts(query: string, limit = 50): Promise<AlcampoProduct[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const { data, error } = await filterByNameWords(
+    supabase.from('alcampo_products').select(ALCAMPO_COLS).eq('published', true),
+    q,
+  ).limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapAlcampo);
+}
+
+/** Navegación alfabética del catálogo de Alcampo (sin búsqueda), keyset. */
+export async function browseAlcampoProducts(cursor: BrowseCursor | null, limit = 50): Promise<BrowsePage<AlcampoProduct>> {
+  const { rows, nextCursor } = await keysetPage('alcampo_products', ALCAMPO_COLS, 'display_name_norm', cursor, limit);
+  return { items: rows.map(mapAlcampo), nextCursor };
+}
+
+/** Un producto de Alcampo por id (p.ej. para abrir el detalle desde la comparativa). */
+export async function fetchAlcampoProduct(id: string): Promise<AlcampoProduct | null> {
+  const { data, error } = await supabase
+    .from('alcampo_products')
+    .select(ALCAMPO_DETAIL_COLS)
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapAlcampo(data) : null;
+}
+
+/** Una categoría N1 de Alcampo con sus subcategorías (N2) con productos. */
+export interface AlcampoCategory {
+  id: string;
+  name: string;
+  children: { id: string; name: string }[];
+}
+
+/** Árbol de categorías de Alcampo (N1 → N2) desde el espejo. */
+export async function fetchAlcampoCategoryTree(): Promise<AlcampoCategory[]> {
+  const { data, error } = await supabase
+    .from('alcampo_categories')
+    .select('id, name, parent_id, product_count')
+    .eq('published', true)
+    .order('name');
+  if (error) throw error;
+  const rows = data ?? [];
+  return rows
+    .filter((r: any) => r.parent_id == null)
+    .map((n1: any) => ({
+      id: n1.id,
+      name: n1.name,
+      children: rows
+        .filter((c: any) => c.parent_id === n1.id && (c.product_count ?? 0) > 0)
+        .map((c: any) => ({ id: c.id, name: c.name })),
+    }))
+    .filter((n1) => n1.children.length > 0);
+}
+
+/** Productos de una subcategoría (N2) de Alcampo, vía category_ids (incluye el N1). */
+export async function fetchAlcampoProductsByCategory(categoryId: string, limit = 600): Promise<AlcampoProduct[]> {
+  const { data, error } = await supabase
+    .from('alcampo_products')
+    .select(ALCAMPO_COLS)
+    .eq('published', true)
+    .contains('category_ids', [categoryId])
+    .order('display_name')
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapAlcampo);
+}
+
 // ─── Eroski + Caprabo (tablas eroski_products / caprabo_products) ────────────
 // Comparten backend (Apache Tapestry): mismo modelo de producto, mismos ids de
 // categoría, mismo scraper (scripts/lib/eroski-tapestry.mjs). Solo castellano y
@@ -1438,6 +1667,8 @@ const MIRROR_QUERY: Record<CatalogStore, { table: string; cols: string; toUI: (r
   condis:    { table: 'condis_products',    cols: CONDIS_COLS,    toUI: (r) => condisToUI(mapCondis(r)) },
   ametller:  { table: 'ametller_products',  cols: AMETLLER_COLS,  toUI: (r) => ametllerToUI(mapAmetller(r)) },
   aldi:      { table: 'aldi_products',       cols: ALDI_COLS,      toUI: (r) => aldiToUI(mapAldi(r)) },
+  hiperdino: { table: 'hiperdino_products',  cols: HIPERDINO_COLS, toUI: (r) => hiperdinoToUI(mapHiperdino(r)) },
+  alcampo:   { table: 'alcampo_products',    cols: ALCAMPO_COLS,   toUI: (r) => alcampoToUI(mapAlcampo(r)) },
 };
 
 // Ventana de "esta semana": los syncs son semanales (lunes); 8 días cubren el

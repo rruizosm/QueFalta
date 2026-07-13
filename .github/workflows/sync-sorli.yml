@@ -2,7 +2,7 @@ name: Sync Sorli catalog
 
 on:
   schedule:
-    - cron: '50 6 * * 1'   # lunes 06:50 UTC (tras Dia; crons escalonados 0/10/20/30/40/50 para no solapar), semanal
+    - cron: '20 8 * * 1'   # lunes 08:20 UTC (tras Dia; pesado, headless), semanal
   workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
 
 concurrency:

@@ -2,7 +2,7 @@ name: Sync Eroski catalog
 
 on:
   schedule:
-    - cron: '0 7 * * 1'    # lunes 07:00 UTC (tras Sorli), semanal
+    - cron: '0 9 * * 1'    # lunes 09:00 UTC (tras Sorli; pesado, 21k), semanal
   workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
 
 concurrency:

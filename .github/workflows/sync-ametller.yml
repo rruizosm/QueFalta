@@ -2,7 +2,7 @@ name: Sync Ametller catalog
 
 on:
   schedule:
-    - cron: '0 8 * * 1'    # lunes 08:00 UTC (tras Condis), semanal
+    - cron: '20 10 * * 1'  # lunes 10:20 UTC (tras Condis), semanal
   workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
 
 concurrency:

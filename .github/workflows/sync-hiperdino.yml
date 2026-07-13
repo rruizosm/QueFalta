@@ -1,26 +1,26 @@
-name: Sync Condis catalog
+name: Sync HiperDino catalog
 
 on:
   schedule:
-    - cron: '0 10 * * 1'   # lunes 10:00 UTC (tras Caprabo), semanal
+    - cron: '40 11 * * 1'  # lunes 11:40 UTC (tras Alcampo), semanal
   workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
 
 concurrency:
-  group: sync-condis
+  group: sync-hiperdino
   cancel-in-progress: false
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 20   # bilingüe: recorre el catálogo 2 veces (es + ca), pero es API JSON ligera
+    timeout-minutes: 20   # es-only, GraphQL de Magento abierto (fetch puro, ~13 requests)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      # Condis usa la API JSON abierta de Empathy (sin cookies ni navegador): solo node.
-      - run: node scripts/sync-condis.mjs
+      # HiperDino va por el GraphQL abierto de Magento (sin cookies ni navegador):
+      # solo node.
+      - run: node scripts/sync-hiperdino.mjs
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
-          CONCURRENCY: '6'

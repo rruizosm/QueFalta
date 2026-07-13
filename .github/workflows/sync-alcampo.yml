@@ -1,26 +1,28 @@
-name: Sync Condis catalog
+name: Sync Alcampo catalog
 
 on:
   schedule:
-    - cron: '0 10 * * 1'   # lunes 10:00 UTC (tras Caprabo), semanal
+    - cron: '0 11 * * 1'   # lunes 11:00 UTC (tras Aldi; pesado, 25k), semanal
   workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
 
 concurrency:
-  group: sync-condis
+  group: sync-alcampo
   cancel-in-progress: false
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 20   # bilingüe: recorre el catálogo 2 veces (es + ca), pero es API JSON ligera
+    timeout-minutes: 40   # es-only; ~25k productos por hojas + ficha incremental (fetch puro)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      # Condis usa la API JSON abierta de Empathy (sin cookies ni navegador): solo node.
-      - run: node scripts/sync-condis.mjs
+      # Alcampo va por la API REST de Ocado (product-pages) + HTML de la PDP para la
+      # ficha, con una cookie de sesión anónima. Sin navegador: solo node.
+      - run: node scripts/sync-alcampo.mjs
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
           CONCURRENCY: '6'
+          DETAIL_CONCURRENCY: '4'

@@ -34,7 +34,7 @@ returns text language sql immutable as $$
           regexp_replace(
             regexp_replace(
               regexp_replace(lower(coalesce(p, '')), '\([^)]*\)', ' ', 'g'),
-              '\y(hacendado|bonpreu|bon[àa]rea|carrefour|consum|selecci[oó]n\s+de\s+dia|dia\s+l[áa]ctea|dia\s+mari\s+marinera|dia|deliplus|aliada|bosque\s+verde|eroski|caprabo|sorli|ametller\s+origen|ametller)\y',
+              '\y(hacendado|bonpreu|bon[àa]rea|carrefour|consum|selecci[oó]n\s+de\s+dia|dia\s+l[áa]ctea|dia\s+mari\s+marinera|dia|deliplus|aliada|bosque\s+verde|eroski|caprabo|sorli|ametller\s+origen|ametller|producto\s+alcampo|alcampo\s+cultivamos\s+lo\s+bueno|alcampo|auchan)\y',
               ' ', 'g'
             ),
             '\y\d+([.,]\d+)?\s*(kg|g|gr|ml|cl|l|ud|uds|u|pack|x)\y',
@@ -194,6 +194,20 @@ language sql stable as $$
     from public.aldi_products l cross join q
     where 'aldi' = any (p_stores) and l.published
       and public.catalog_family_match(lower(l.display_name), q.needle)
+    union all
+    select 'hiperdino', h.id, h.display_name, h.thumbnail,
+           h.unit_price, h.price_per_unit, h.price_per_unit_unit,
+           similarity(q.needle, lower(h.display_name))
+    from public.hiperdino_products h cross join q
+    where 'hiperdino' = any (p_stores) and h.published
+      and public.catalog_family_match(lower(h.display_name), q.needle)
+    union all
+    select 'alcampo', p.id, p.display_name, p.thumbnail,
+           p.unit_price, p.price_per_unit, p.price_per_unit_unit,
+           similarity(q.needle, lower(p.display_name))
+    from public.alcampo_products p cross join q
+    where 'alcampo' = any (p_stores) and p.published
+      and public.catalog_family_match(lower(p.display_name), q.needle)
   ),
   ranked as (
     select *, min(price_per_unit) over (partition by store) as min_ppu

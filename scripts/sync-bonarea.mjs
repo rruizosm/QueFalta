@@ -524,15 +524,19 @@ async function main() {
 
   // Ficha (DESCRIPCIÓN/INGREDIENTES/NUTRICIÓN/ORIGEN…): solo la de productos nuevos o
   // caducados; el resto arrastra la guardada. SKIP_DETAIL=1 la deja intacta. fillDetail
-  // rellena las columnas de ficha IN-PLACE con claves uniformes → segundo upsert SOLO de
-  // esas columnas (+ id, para resolver el conflicto): ligero y sin reenviar `raw`. Como las
-  // filas ya existen (upsert anterior), este es siempre UPDATE; no toca synced_at/published.
+  // rellena las columnas de ficha IN-PLACE con claves uniformes → segundo upsert de esas
+  // columnas + detail_synced_at. OJO: aunque las filas ya existan, PostgREST hace
+  // INSERT ... ON CONFLICT DO UPDATE y Postgres valida NOT NULL sobre la tupla propuesta
+  // ANTES de resolver el conflicto → hay que reenviar las columnas NOT NULL sin default
+  // (display_name y raw), o el upsert entero muere con 23502 y la pasada de ficha se pierde
+  // (bug histórico: detail_synced_at quedaba a 0). unit_price NO se reenvía a propósito
+  // (dispararía el trigger de cambios de precio con el mismo valor).
   if (!SKIP_DETAIL) {
     try {
       await fillDetail(rows, prodUrlCa);
       const ALL_DETAIL = [...DETAIL_COLS, ...DETAIL_COLS_CA];
       const detailRows = rows.map((r) => {
-        const o = { id: r.id, detail_synced_at: r.detail_synced_at ?? null };
+        const o = { id: r.id, display_name: r.display_name, raw: r.raw, detail_synced_at: r.detail_synced_at ?? null };
         for (const c of ALL_DETAIL) o[c] = r[c] ?? null;
         return o;
       });

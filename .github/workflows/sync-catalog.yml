@@ -23,3 +23,8 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          # EAN (detalle por producto): incremental. Tope por run para que el arranque
+          # en frío (~6.400 detalles) quepa en el timeout junto al barrido multi-almacén;
+          # se completa en ~2 runs y luego solo pide el de las novedades.
+          EAN_MAX: '3500'
+          EAN_CONCURRENCY: '6'

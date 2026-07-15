@@ -31,6 +31,12 @@ const WHS_ENV = process.env.MERCADONA_WHS;
 const MAX_WHS = process.env.MERCADONA_MAX_WHS ? Number(process.env.MERCADONA_MAX_WHS) : Infinity;
 const CONCURRENCY = Number(process.env.CONCURRENCY || 3);
 const DRY = process.env.DRY_RUN === '1';
+// Pasada de EAN: el código de barras solo está en el DETALLE por producto
+// (/products/{id}/), no en los listados de categoría → pasada aparte, INCREMENTAL
+// (el EAN es inmutable: solo se pide el de los productos que aún no lo tienen).
+const SKIP_EAN = process.env.SKIP_EAN === '1';
+const EAN_MAX = process.env.EAN_MAX ? Number(process.env.EAN_MAX) : Infinity; // tope de detalles/run (arranque en frío)
+const EAN_CONCURRENCY = Number(process.env.EAN_CONCURRENCY || 6);
 
 if (!SUPABASE_URL || !SERVICE_ROLE) {
   console.error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE');
@@ -210,6 +216,26 @@ async function upsert(table, rows) {
 // moría por statement_timeout (57014) cuando la BD iba cargada.
 const markStale = (table) => markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart });
 
+// ids de mercadona_products que YA tienen ean (para saltarlos: el EAN es inmutable,
+// no hay que volver a pedir el detalle de lo ya resuelto). Paginado (PostgREST corta a 1000).
+async function fetchIdsWithEan() {
+  const ids = new Set();
+  const PAGE = 1000;
+  for (let from = 0; ; from += PAGE) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/mercadona_products?select=id&ean=not.is.null`, {
+      headers: {
+        apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}`,
+        Range: `${from}-${from + PAGE - 1}`, 'Range-Unit': 'items',
+      },
+    });
+    if (!res.ok) throw new Error(`read ean ${res.status}: ${await res.text()}`);
+    const batch = await res.json();
+    for (const r of batch) ids.add(String(r.id));
+    if (batch.length < PAGE) break;
+  }
+  return ids;
+}
+
 async function main() {
   console.log(`[sync] inicio ${runStart}${DRY ? ' (DRY_RUN)' : ''}`);
 
@@ -332,6 +358,34 @@ async function main() {
   await upsert('mercadona_products', rows);
   await markStale('mercadona_products');
   await markStale('mercadona_categories');
+
+  // 4) EAN (para el enriquecimiento nutricional vía OpenFoodFacts por EAN). Solo está
+  //    en el detalle por producto (/products/{id}/), que se pide con el source_wh del
+  //    producto (los regionales dan 404 en mad1). INCREMENTAL: solo los que aún no lo
+  //    tienen (backfill único + novedades semanales). Va DESPUÉS del upsert de catálogo
+  //    para que un fallo/timeout aquí no tire precios; su upsert reenvía display_name+raw
+  //    (NOT NULL sin default) y NO unit_price (no disparar el trigger de precios).
+  //    SKIP_EAN=1 la salta; EAN_MAX acota el arranque en frío para caber en el timeout.
+  if (!SKIP_EAN) {
+    try {
+      const withEan = await fetchIdsWithEan();
+      const pending = rows.filter((r) => !withEan.has(r.id));
+      const batch = pending.slice(0, EAN_MAX);
+      console.log(`[sync] EAN: ${withEan.size} ya tienen · ${pending.length} pendientes · ${batch.length} a pedir`);
+      const eanRows = [];
+      let done = 0;
+      await pool(batch, EAN_CONCURRENCY, async (r) => {
+        await sleep(30 + Math.random() * 50); // educado con la API
+        try {
+          const d = await merca(`/products/${r.id}/`, 'es', r.source_wh);
+          if (d?.ean) eanRows.push({ id: r.id, display_name: r.display_name, raw: r.raw, ean: String(d.ean) });
+        } catch { /* 404 puntual (producto retirado entre pasadas): se reintenta otro run */ }
+        if (++done % 500 === 0) console.log(`[sync] EAN ${done}/${batch.length} · ${eanRows.length} con ean`);
+      });
+      if (eanRows.length) await upsert('mercadona_products', eanRows);
+      console.log(`[sync] EAN: ${eanRows.length} escritos (${pending.length - batch.length} quedan para el próximo run)`);
+    } catch (e) { console.warn(`[sync] EAN: pasada omitida (${e.message.split('\n')[0]})`); }
+  }
 
   console.log('[sync] OK');
 }

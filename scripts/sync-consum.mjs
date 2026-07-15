@@ -131,7 +131,7 @@ function normalize(p) {
     brand: (pd.brand?.name || '').trim() || null,
     packaging,
     thumbnail: pickThumbnail(p),
-    ean13: p.ean || null,
+    ean: p.ean || null,
     unit_price: price,
     price_format: price != null ? `${eurStr(price)} €` : null,
     price_per_unit: ppu?.value ?? null,
@@ -236,13 +236,13 @@ async function main() {
 
   if (DRY_RUN) {
     console.log('muestra (5):');
-    for (const r of rows.slice(0, 5)) console.log(`  ${r.id}  ${r.display_name}  [${r.brand ?? '—'}]  ${r.price_format}  ${r.price_per_unit != null ? r.price_per_unit + ' €/' + r.price_per_unit_unit : '—'}  ean=${r.ean13 ?? '—'}`);
+    for (const r of rows.slice(0, 5)) console.log(`  ${r.id}  ${r.display_name}  [${r.brand ?? '—'}]  ${r.price_format}  ${r.price_per_unit != null ? r.price_per_unit + ' €/' + r.price_per_unit_unit : '—'}  ean=${r.ean ?? '—'}`);
     if (rows[0]) console.log('category_ids[0] (hojas + ancestros):', rows[0].category_ids.join(', '));
     console.log('nulos →', {
       sin_precio: rows.filter((r) => r.unit_price == null).length,
       sin_ppu: rows.filter((r) => r.price_per_unit == null).length,
       sin_img: rows.filter((r) => !r.thumbnail).length,
-      sin_ean: rows.filter((r) => !r.ean13).length,
+      sin_ean: rows.filter((r) => !r.ean).length,
       sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
       con_oferta: rows.filter((r) => (r.raw.priceData?.prices ?? []).some((p) => p.id === 'OFFER_PRICE')).length,
     });

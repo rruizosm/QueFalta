@@ -185,7 +185,7 @@ function normalize(a) {
     retailer_product_id: String(a.identifier),
     display_name: (a.description || '').trim(),
     thumbnail: img,
-    ean13: null,
+    ean: null,
     unit_price: price,
     price_format: price != null ? `${eurStr(price)} ${unit}`.trim() : (a.unitPrice ?? null),
     price_per_unit: ppu?.value ?? null,

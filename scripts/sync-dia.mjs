@@ -157,7 +157,7 @@ function normalize(p) {
     display_name: (p.display_name || '').trim(),
     brand: (p.brand || '').trim() || null,
     thumbnail: p.image ? `${HOME}${p.image}` : null,
-    ean13: null,
+    ean: null,
     unit_price: price,
     price_format: price != null ? `${eurStr(price)} €` : null,
     price_per_unit: ppu?.value ?? null,

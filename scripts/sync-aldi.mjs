@@ -123,8 +123,22 @@ const imageOf = (h) => {
 };
 
 function normalize(h) {
-  const price = num(h.currentPrice?.priceValue);
-  const bp = h.currentPrice?.basePrice?.[0];
+  const currentPrice = h.currentPrice ?? {};
+  const price = num(currentPrice.priceValue);
+  const strikePrice = num(currentPrice.strikePrice?.strikePriceValue);
+  const promoBasePrice = strikePrice != null && price != null && strikePrice > price
+    ? strikePrice
+    : null;
+  const promo = (h.promotionPrices ?? []).find((p) => num(p?.strikePrice?.strikePriceValue) != null)
+    ?? h.promotionPrices?.[0]
+    ?? null;
+  const promoName = [currentPrice.priceTagLabels?.promoText1, currentPrice.priceTagLabels?.promoText2]
+    .filter((value) => typeof value === 'string' && value.trim())
+    .join(' · ') || (promoBasePrice != null ? 'Oferta' : null);
+  const unixEnd = Number(promo?.validUntil ?? currentPrice.validUntil);
+  const promoEnd = promo?.validUntilLocalDate
+    ?? (Number.isFinite(unixEnd) && unixEnd > 0 ? new Date(unixEnd * 1000).toISOString().slice(0, 10) : null);
+  const bp = currentPrice.basePrice?.[0];
   const ppu = bp ? canonicalPricePerUnit(bp.basePriceValue, bp.basePriceScale) : null;
   return {
     id: String(h.objectID),
@@ -135,6 +149,9 @@ function normalize(h) {
     thumbnail: imageOf(h),
     unit_price: price,
     price_format: price != null ? `${eurStr(price)} €` : null,
+    promo_name: promoBasePrice != null ? promoName : null,
+    promo_base_price: promoBasePrice,
+    promo_end: promoBasePrice != null ? promoEnd : null,
     price_per_unit: ppu?.value ?? null,
     price_per_unit_unit: ppu?.unit ?? null,
     available: h.isAvailable !== false,
@@ -252,6 +269,7 @@ async function main() {
       sin_ppu: rows.filter((r) => r.price_per_unit == null).length,
       sin_img: rows.filter((r) => !r.thumbnail).length,
       sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
+      con_oferta: rows.filter((r) => r.promo_base_price != null).length,
     });
     return;
   }

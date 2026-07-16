@@ -22,8 +22,8 @@
 //
 // Notas:
 //  - Precio = price_range.minimum_price.final_price.value. HiperDino trae también
-//    regular_price (tachado de promo) → se guarda en `raw` para el futuro, pero
-//    v1 NO cablea ofertas (mismo alcance simple que Aldi/Eroski).
+//    regular_price (tachado de promo): se persiste como oferta SOLO cuando es
+//    mayor que el final, nunca se deduce de cambios entre syncs.
 //  - SIN EAN (el sku es un código interno de 18 dígitos, no código de barras) →
 //    el comparador casa por nombre. SIN €/unidad (Magento no lo expone aquí).
 //    SIN ficha (ingredientes/nutrición). El nombre ya incluye marca y formato.
@@ -137,6 +137,10 @@ const eurStr = (n) => (typeof n === 'number' ? n.toFixed(2).replace('.', ',') : 
 
 function normalize(it) {
   const price = num(it.price_range?.minimum_price?.final_price?.value);
+  const regularPrice = num(it.price_range?.minimum_price?.regular_price?.value);
+  const promoBasePrice = regularPrice != null && price != null && regularPrice > price
+    ? regularPrice
+    : null;
   return {
     id: String(it.sku),
     retailer_product_id: String(it.sku),          // código interno HiperDino (NO EAN)
@@ -146,11 +150,12 @@ function normalize(it) {
     thumbnail: imageOf(it.sku),
     unit_price: price,
     price_format: price != null ? `${eurStr(price)} €` : null,
+    promo_base_price: promoBasePrice,
     price_per_unit: null,                          // HiperDino no expone €/ud
     price_per_unit_unit: null,
     available: true,
     published: true,
-    raw: it,                                       // incluye regular_price (tachado) para el futuro
+    raw: it,
     synced_at: runStart,
   };
 }

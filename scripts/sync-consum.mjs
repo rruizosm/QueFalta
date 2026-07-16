@@ -120,11 +120,18 @@ function pickThumbnail(p) {
 
 function normalize(p) {
   const pd = p.productData ?? {};
-  // Precio que paga el cliente: OFFER_PRICE si hay oferta activa, si no PRICE.
+  // Una oferta REAL de Consum viene marcada explícitamente con OFFER_PRICE y
+  // conserva PRICE como su precio habitual. No inferirla de cambios entre
+  // syncs: un producto que simplemente baja de precio no es una oferta.
   // OJO: centAmount viene en EUROS pese al nombre (1.45 = 1,45 €).
   const prices = p.priceData?.prices ?? [];
-  const entry = prices.find((x) => x.id === 'OFFER_PRICE') ?? prices.find((x) => x.id === 'PRICE') ?? prices[0];
+  const regularEntry = prices.find((x) => x.id === 'PRICE') ?? prices[0];
+  const offerEntry = prices.find((x) => x.id === 'OFFER_PRICE');
+  const entry = offerEntry ?? regularEntry;
   const price = typeof entry?.value?.centAmount === 'number' ? entry.value.centAmount : null;
+  const promoBasePrice = offerEntry && typeof regularEntry?.value?.centAmount === 'number'
+    ? regularEntry.value.centAmount
+    : null;
   const ppu = canonicalPricePerUnit(entry?.value?.centUnitAmount, p.priceData?.unitPriceUnitType);
   // "Rabanito Bolsa 250 Gr" (description) = name + formato → el resto es el envase.
   const name = (pd.name || '').trim();
@@ -145,6 +152,7 @@ function normalize(p) {
     ean: p.ean || null,
     unit_price: price,
     price_format: price != null ? `${eurStr(price)} €` : null,
+    promo_base_price: promoBasePrice,
     price_per_unit: ppu?.value ?? null,
     price_per_unit_unit: ppu?.unit ?? null,
     available: pd.availability === '1' && pd.temporaryOutOfStock !== true,
@@ -160,6 +168,20 @@ const compactPrice = (r) => ({
   ppu: r.price_per_unit,
   ppuu: r.price_per_unit_unit,
   av: r.available,
+  pb: r.promo_base_price,
+});
+
+const locationPriceRow = (productId, zoneId, price) => ({
+  id: `consum:${zoneId}:${productId}`,
+  store: 'consum',
+  product_id: productId,
+  location_id: zoneId,
+  unit_price: price.p,
+  price_per_unit: price.ppu,
+  price_per_unit_unit: price.ppuu,
+  available: price.av !== false,
+  published: true,
+  synced_at: runStart,
 });
 
 // ── Supabase REST ────────────────────────────────────────────────────────────
@@ -178,7 +200,9 @@ async function upsert(table, rows) {
 }
 // Soft-delete por lotes con reintentos (lib/stale.mjs): el UPDATE único de toda
 // la tabla moría por statement_timeout (57014) cuando la BD iba cargada.
-const markStale = (table) => markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart });
+const markStale = (table, options = {}) => markStaleBatched({
+  url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart, ...options,
+});
 
 async function main() {
   console.log(`[consum] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} conc=${CONCURRENCY}`);
@@ -264,6 +288,7 @@ async function main() {
   };
   const catCount = new Map();
   const rows = [];
+  const locationPriceRows = [];
   for (const det of products.values()) {
     const leaves = [...new Set(det._leaves)].filter((id) => catName.has(id));
     const communities = new Set([...det._zones]
@@ -274,9 +299,19 @@ async function main() {
     const regionalPrices = {};
     for (const zone of ZONES.slice(1)) {
       const price = det._priceByZone.get(zone.id);
-      if (price && (price.p !== basePrice.p || price.av !== basePrice.av || price.ppu !== basePrice.ppu)) regionalPrices[zone.id] = price;
+      if (price && (price.p !== basePrice.p || price.av !== basePrice.av || price.ppu !== basePrice.ppu || price.pb !== basePrice.pb)) regionalPrices[zone.id] = price;
     }
     det.regional_prices = Object.keys(regionalPrices).length ? regionalPrices : null;
+    const offerZones = ZONES
+      .filter((zone) => {
+        const price = det._priceByZone.get(zone.id);
+        return price?.pb != null && price.p != null && price.pb > price.p;
+      })
+      .map((zone) => zone.id);
+    det.offer_zones = offerZones.length ? offerZones : null;
+    for (const [zoneId, price] of det._priceByZone) {
+      locationPriceRows.push(locationPriceRow(det.id, zoneId, price));
+    }
     delete det._leaves;
     delete det._zones;
     delete det._priceByZone;
@@ -293,6 +328,7 @@ async function main() {
   }
   for (const c of catRows) c.product_count = catCount.get(c.id) ?? 0;
   console.log(`[consum] ${rows.length} productos únicos · ${rows.filter((r) => r.regions).length} regionales · ${rows.filter((r) => r.regional_prices).length} con precio por zona`);
+  console.log(`[consum] ${locationPriceRows.length} precios efectivos por ubicación`);
 
   if (DRY_RUN) {
     console.log('muestra (5):');
@@ -312,8 +348,10 @@ async function main() {
 
   await upsert('consum_categories', catRows);
   await upsert('consum_products', rows);
+  await upsert('catalog_location_prices', locationPriceRows);
   await markStale('consum_products');
   await markStale('consum_categories');
+  await markStale('catalog_location_prices', { filters: 'store=eq.consum' });
   console.log('[consum] OK');
 }
 

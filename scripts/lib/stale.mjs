@@ -35,17 +35,18 @@ async function fetchRetry(url, init, what, tries = 4) {
 // `in.()`, escapando \ y " como pide PostgREST.
 const quoteId = (id) => `"${String(id).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
 
-export async function markStale({ url, key, table, runStart, batch = 200 }) {
+export async function markStale({ url, key, table, runStart, batch = 200, filters = '' }) {
   const base = `${url}/rest/v1/${table}`;
   const headers = { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' };
   const stale = `synced_at=lt.${encodeURIComponent(runStart)}&published=eq.true`;
+  const scope = filters ? `&${filters}` : '';
   let total = 0;
   for (;;) {
-    const sel = await fetchRetry(`${base}?select=id&${stale}&limit=${batch}`, { headers }, `select ${table}`);
+    const sel = await fetchRetry(`${base}?select=id&${stale}${scope}&limit=${batch}`, { headers }, `select ${table}`);
     const ids = await sel.json();
     if (!ids.length) break;
     await fetchRetry(
-      `${base}?id=in.(${encodeURIComponent(ids.map((r) => quoteId(r.id)).join(','))})&${stale}`,
+      `${base}?id=in.(${encodeURIComponent(ids.map((r) => quoteId(r.id)).join(','))})&${stale}${scope}`,
       {
         method: 'PATCH',
         headers: { ...headers, Prefer: 'return=minimal' },

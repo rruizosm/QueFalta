@@ -29,8 +29,8 @@
 //
 // Notas:
 //  - Las copias de "Oferta2" traen new_value_cents/end_date (precio de oferta):
-//    NO se aplican a unit_price (rotan entre semana y el sync es semanal) pero
-//    se guardan en raw.offer para una futura pantalla de ofertas.
+//    no cambian unit_price del catálogo normal, pero se guardan por centro para
+//    la pantalla Ofertas. Nunca se infieren de cambios entre syncs.
 //  - unit_measure: L/Kg/Un/Do(tzena)/M/?/'' → canonicalPricePerUnit solo entiende
 //    l/kg/ud/docena; el resto queda sin €/unidad canónico.
 //  - Sin EAN (item_id es interno) → comparador por nombre, como casi todos.
@@ -42,6 +42,7 @@
 //      MAX_PRODUCTS=N       (limita nº de productos, para pruebas)
 //      SKIP_DETAIL=1        (no tocar la ficha; preserva la existente)
 //      DETAIL_CONCURRENCY=6 DETAIL_TTL_DAYS=30 DETAIL_MAX=N (tope fichas/run)
+//      PRODUCT_UPSERT_BATCH=50 (filas por escritura de productos en Supabase)
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 
@@ -55,6 +56,7 @@ const SKIP_DETAIL = process.env.SKIP_DETAIL === '1';
 const DETAIL_CONCURRENCY = Number(process.env.DETAIL_CONCURRENCY || 6);
 const DETAIL_TTL_DAYS = Number(process.env.DETAIL_TTL_DAYS || 30);
 const DETAIL_MAX = process.env.DETAIL_MAX ? Number(process.env.DETAIL_MAX) : Infinity;
+const PRODUCT_UPSERT_BATCH = Number(process.env.PRODUCT_UPSERT_BATCH || 50);
 
 // GUARDARRAÍL: el catálogo vivo ronda los 7.3k productos; menos de esto = scrape
 // parcial (WAF/API rota) → abortar para que markStale no despublique el catálogo.
@@ -88,7 +90,7 @@ async function login(center) {
 
 // GET a la API con el token de invitado y reintentos: 401 (token caducado) →
 // re-login; 429/5xx → backoff.
-async function apiGet(path, center = CENTER, { tries = 4 } = {}) {
+async function apiGet(path, center = CENTER, { tries = 4, allowNotFound = false } = {}) {
   for (let t = 0; t < tries; t++) {
     try {
       if (!tokens.get(center)) await login(center);
@@ -97,6 +99,10 @@ async function apiGet(path, center = CENTER, { tries = 4 } = {}) {
         signal: AbortSignal.timeout(120000),
       });
       if (res.ok) return res.json();
+      // Algunos productos que siguen en el listado no publican ficha. Es una
+      // ausencia permanente, no un error transitorio: no reintentarla ni
+      // ensuciar el log del sync.
+      if (res.status === 404 && allowNotFound) return null;
       if (res.status === 401 && t < tries - 1) { tokens.delete(center); await sleep(400); continue; }
       if ((res.status === 429 || res.status >= 500) && t < tries - 1) { await sleep(1500 * (t + 1)); continue; }
       throw new Error(`HTTP ${res.status}`);
@@ -137,6 +143,11 @@ const eurStr = (n) => (typeof n === 'number' ? n.toFixed(2).replace('.', ',') : 
 const clean = (s) => { const v = (s == null ? '' : String(s)).trim(); return v || null; };
 // unit_measure de Plusfresc → unidad que entiende canonicalPricePerUnit.
 const UM_MAP = { L: 'l', KG: 'kg', UN: 'ud', DO: 'docena', DOT: 'docena' };
+const offerEndISO = (date) => {
+  const value = clean(date);
+  const m = value?.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : value;
+};
 
 function normalize(copies) {
   // Copia primaria: la de hoja numérica (las de Oferta2/promos llevan filter_id
@@ -144,6 +155,10 @@ function normalize(copies) {
   const primary = copies.find((c) => /^\d+$/.test(String(c.filter_id ?? ''))) ?? copies[0];
   const offerCopy = copies.find((c) => c.new_value_cents != null && c.new_value_cents > 0);
   const price = primary.value_cents > 0 ? primary.value_cents / 100 : null;
+  const offerPrice = offerCopy ? offerCopy.new_value_cents / 100 : null;
+  const offerBasePrice = offerCopy?.value_cents > offerCopy?.new_value_cents
+    ? offerCopy.value_cents / 100
+    : null;
   const ppu = primary.value_x_unit > 0
     ? canonicalPricePerUnit(primary.value_x_unit / 100, UM_MAP[(primary.unit_measure || '').toUpperCase()])
     : null;
@@ -156,12 +171,22 @@ function normalize(copies) {
     thumbnail: img ? IMG_BASE + img : null,
     unit_price: price,
     price_format: price != null ? `${eurStr(price)} €` : null,
+    promo_name: offerCopy ? textOf(offerCopy, 'es', [6]) ?? 'Promoción' : null,
+    promo_name_ca: offerCopy ? textOf(offerCopy, 'ca', [6]) ?? 'Promoció' : null,
+    promo_offer_price: offerPrice,
+    promo_base_price: offerBasePrice,
+    promo_end: offerCopy ? offerEndISO(offerCopy.end_date) : null,
     price_per_unit: ppu?.value ?? null,
     price_per_unit_unit: ppu?.unit ?? null,
     available: primary.available !== false,
     published: true,
     raw: offerCopy && offerCopy !== primary
-      ? { ...primary, offer: { new_value_cents: offerCopy.new_value_cents, end_date: offerCopy.end_date ?? null } }
+      ? { ...primary, offer: {
+        new_value_cents: offerCopy.new_value_cents,
+        end_date: offerCopy.end_date ?? null,
+        promo_id: offerCopy.promo_id ?? null,
+        qty_required: offerCopy.qty_required ?? null,
+      } }
       : primary,
     synced_at: runStart,
     // Hojas numéricas de TODAS las copias (multi-categoría) para la membership.
@@ -175,6 +200,11 @@ const compactPrice = (r) => ({
   ppu: r.price_per_unit,
   ppuu: r.price_per_unit_unit,
   av: r.available,
+  pn: r.promo_name,
+  pnc: r.promo_name_ca,
+  po: r.promo_offer_price,
+  pb: r.promo_base_price,
+  pe: r.promo_end,
 });
 
 // ── Ficha (productdetails/files/{item}/{lang}) ───────────────────────────────
@@ -253,8 +283,8 @@ async function fillDetail(rows) {
       const r = queue.shift();
       if (!r) break;
       try {
-        const es = parseDetail(await apiGet(`productdetails/files/${r.id}/es`));
-        const ca = parseDetail(await apiGet(`productdetails/files/${r.id}/ca`));
+        const es = parseDetail(await apiGet(`productdetails/files/${r.id}/es`, CENTER, { allowNotFound: true }));
+        const ca = parseDetail(await apiGet(`productdetails/files/${r.id}/ca`, CENTER, { allowNotFound: true }));
         // Si el fetch no saca nada PERO ya había ficha, NO la pisamos (probable
         // cambio de API): se conserva y se reintenta otro día. Si nunca tuvo,
         // se marca rastreada igualmente (no reintentar cada semana sin datos).
@@ -278,19 +308,50 @@ async function fillDetail(rows) {
 
 // ── Supabase REST ────────────────────────────────────────────────────────────
 async function upsert(table, rows) {
-  for (const c of chunk(rows, 500)) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-      method: 'POST',
-      headers: {
-        apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}`,
-        'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal',
-      },
-      body: JSON.stringify(c),
-    });
-    if (!res.ok) throw new Error(`upsert ${table} ${res.status}: ${await res.text()}`);
+  // `plusfresc_products` tiene JSONB grande, tres índices trigram/GIN y un
+  // trigger de precios. Los lotes de 500 superan el statement_timeout de
+  // Supabase; 50 mantiene la transacción acotada incluso si coinciden syncs.
+  const batchSize = table === 'plusfresc_products' ? PRODUCT_UPSERT_BATCH : 500;
+  for (const c of chunk(rows, batchSize)) {
+    let last;
+    let done = false;
+    for (let t = 0; t < 4 && !done; t++) {
+      if (t) await sleep(1500 * 2 ** (t - 1));
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+          method: 'POST',
+          headers: {
+            apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}`,
+            'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal',
+          },
+          body: JSON.stringify(c),
+        });
+        if (res.ok) { done = true; break; }
+        last = new Error(`upsert ${table} ${res.status}: ${await res.text()}`);
+      } catch (e) { last = e; }
+      console.warn(`[plusfresc] ${String(last.message).split('\n')[0]} (intento ${t + 1}/4)`);
+    }
+    if (!done) throw last;
   }
 }
 const markStale = (table) => markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart });
+const markLocationPricesStale = () => markStaleBatched({
+  url: SUPABASE_URL, key: SERVICE_ROLE, table: 'catalog_location_prices', runStart,
+  filters: 'store=eq.plusfresc',
+});
+
+const locationPriceRow = (productId, centerId, price) => ({
+  id: `plusfresc:${centerId}:${productId}`,
+  store: 'plusfresc',
+  product_id: productId,
+  location_id: centerId,
+  unit_price: price.p,
+  price_per_unit: price.ppu,
+  price_per_unit_unit: price.ppuu,
+  available: price.av !== false,
+  published: true,
+  synced_at: runStart,
+});
 
 async function main() {
   console.log(`[plusfresc] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} centro=${CENTER}`);
@@ -362,6 +423,7 @@ async function main() {
   // 3) Membership: hoja(s) + ancestros por PREFIJO de id ("09011001" → 090110,
   //    0901, 09), limitados a categorías que existen en el árbol.
   const catCount = new Map();
+  const locationPriceRows = [];
   for (const r of rows) {
     r.centers = r._centers.size === ALL_CENTERS.length ? null : [...r._centers].sort((a, b) => Number(a) - Number(b));
     const basePrice = r._priceByCenter.get(CENTER) ?? compactPrice(r);
@@ -369,9 +431,16 @@ async function main() {
     for (const center of r._centers) {
       if (center === CENTER) continue;
       const price = r._priceByCenter.get(center);
-      if (price && (price.p !== basePrice.p || price.av !== basePrice.av || price.ppu !== basePrice.ppu)) centerPrices[center] = price;
+      if (price && (price.p !== basePrice.p || price.av !== basePrice.av || price.ppu !== basePrice.ppu || price.po !== basePrice.po || price.pb !== basePrice.pb || price.pe !== basePrice.pe)) centerPrices[center] = price;
     }
     r.center_prices = Object.keys(centerPrices).length ? centerPrices : null;
+    const offerCenters = [...r._centers]
+      .filter((center) => r._priceByCenter.get(center)?.po != null)
+      .sort((a, b) => Number(a) - Number(b));
+    r.offer_centers = offerCenters.length ? offerCenters : null;
+    for (const [centerId, price] of r._priceByCenter) {
+      locationPriceRows.push(locationPriceRow(r.id, centerId, price));
+    }
     delete r._centers;
     delete r._priceByCenter;
     const expanded = new Set();
@@ -391,6 +460,7 @@ async function main() {
   const catRows = cats.map((c) => ({
     ...c, product_count: catCount.get(c.id) ?? 0, published: true, synced_at: runStart,
   }));
+  console.log(`[plusfresc] ${locationPriceRows.length} precios efectivos por ubicación`);
 
   // 4) Ficha incremental (es + ca).
   if (!SKIP_DETAIL && !DRY_RUN) await fillDetail(rows);
@@ -423,8 +493,10 @@ async function main() {
   }
   await upsert('plusfresc_categories', catRows);
   await upsert('plusfresc_products', rows);
+  await upsert('catalog_location_prices', locationPriceRows);
   await markStale('plusfresc_products');
   await markStale('plusfresc_categories');
+  await markLocationPricesStale();
   console.log('[plusfresc] OK');
 }
 

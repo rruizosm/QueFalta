@@ -35,12 +35,17 @@
 // Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE
 //      DRY_RUN=1           (no escribe en Supabase; imprime resumen)
 //      MIN_PRODUCTS=5000   (suelo del guardarraíl)
+//      UPSERT_BATCH_SIZE=100 (filas por sentencia REST; bajar si Supabase está cargado)
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
 const DRY_RUN = process.env.DRY_RUN === '1';
 const MIN_PRODUCTS = Number(process.env.MIN_PRODUCTS || 10000);
+const configuredBatchSize = Number(process.env.UPSERT_BATCH_SIZE || 100);
+const UPSERT_BATCH_SIZE = Number.isFinite(configuredBatchSize) && configuredBatchSize > 0
+  ? Math.floor(configuredBatchSize)
+  : 100;
 
 if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
   console.error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE (o usa DRY_RUN=1)');
@@ -162,16 +167,38 @@ function normalize(it) {
 
 // ── Supabase REST ────────────────────────────────────────────────────────────
 async function upsert(table, rows) {
-  for (const c of chunk(rows, 500)) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-      method: 'POST',
-      headers: {
-        apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}`,
-        'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal',
-      },
-      body: JSON.stringify(c),
-    });
-    if (!res.ok) throw new Error(`upsert ${table} ${res.status}: ${await res.text()}`);
+  const batches = chunk(rows, UPSERT_BATCH_SIZE);
+  for (let i = 0; i < batches.length; i++) {
+    const c = batches[i];
+    let lastError;
+    for (let attempt = 1; attempt <= 4; attempt++) {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+          method: 'POST',
+          headers: {
+            apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}`,
+            'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal',
+          },
+          body: JSON.stringify(c),
+          signal: AbortSignal.timeout(60000),
+        });
+        if (res.ok) { lastError = null; break; }
+        lastError = new Error(`upsert ${table} ${res.status}: ${await res.text()}`);
+        // Un timeout de Postgres (57014), un 5xx o un rate-limit no ha
+        // confirmado el lote. Reintentar el UPSERT es idempotente por la PK.
+        if (res.status !== 429 && res.status < 500) break;
+      } catch (error) {
+        lastError = error;
+      }
+      if (attempt < 4) {
+        console.warn(`[hiperdino] ${table}: lote ${i + 1}/${batches.length} falló; reintento ${attempt + 1}/4`);
+        await sleep(1500 * 2 ** (attempt - 1));
+      }
+    }
+    if (lastError) throw lastError;
+    if ((i + 1) % 10 === 0 || i + 1 === batches.length) {
+      console.log(`[hiperdino] ${table}: ${Math.min((i + 1) * UPSERT_BATCH_SIZE, rows.length)}/${rows.length}`);
+    }
   }
 }
 const markStale = (table) => markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart });

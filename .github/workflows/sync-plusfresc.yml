@@ -1,0 +1,29 @@
+name: Sync Plusfresc catalog
+
+on:
+  schedule:
+    - cron: '40 10 * * 1'  # lunes 10:40 UTC (tras Ametller), semanal
+  workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
+
+concurrency:
+  group: sync-plusfresc
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    # El listado es UNA petición; el grueso es la ficha incremental (~7.3k
+    # productos × 2 idiomas la primera vez; después solo los caducados/nuevos).
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # Plusfresc tiene API REST abierta con JWT de invitado (sin cookies ni
+      # navegador): solo node.
+      - run: node scripts/sync-plusfresc.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          DETAIL_CONCURRENCY: '6'

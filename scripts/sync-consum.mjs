@@ -54,17 +54,28 @@ if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
 
 const API = 'https://tienda.consum.es/api/rest/V1.0';
 const PAGE_SIZE = 100; // límite real del endpoint (limit>100 devuelve 100 igualmente)
+// Una zona representativa por cada CCAA donde Consum aparece en la app.
+const ZONES = [
+  { id: '147', cp: '46001', ccaa: 'Comunitat Valenciana' },
+  { id: '575', cp: '08201', ccaa: 'Catalunya' },
+  { id: '495', cp: '30001', ccaa: 'Región de Murcia' },
+  { id: '1105', cp: '02001', ccaa: 'Castilla-La Mancha' },
+  { id: '254', cp: '04001', ccaa: 'Andalucía' },
+];
+const BASE_ZONE = ZONES[0];
 const runStart = new Date().toISOString();
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const chunk = (a, n) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 
-async function getJson(path, { tries = 4 } = {}) {
+async function getJson(path, { tries = 4, zoneId = null } = {}) {
   const url = `${API}${path}`;
   for (let t = 0; t < tries; t++) {
     try {
-      const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' }, signal: AbortSignal.timeout(30000) });
+      const headers = { 'User-Agent': UA, Accept: 'application/json' };
+      if (zoneId) headers['X-TOL-ZONE'] = zoneId;
+      const res = await fetch(url, { headers, signal: AbortSignal.timeout(30000) });
       if (res.ok) return await res.json();
       console.warn(`[consum] GET ${path} → ${res.status} (intento ${t + 1})`);
     } catch (e) {
@@ -143,6 +154,14 @@ function normalize(p) {
   };
 }
 
+const compactPrice = (r) => ({
+  p: r.unit_price,
+  pf: r.price_format,
+  ppu: r.price_per_unit,
+  ppuu: r.price_per_unit_unit,
+  av: r.available,
+});
+
 // ── Supabase REST ────────────────────────────────────────────────────────────
 async function upsert(table, rows) {
   for (const c of chunk(rows, 500)) {
@@ -172,24 +191,31 @@ async function main() {
   console.log(`[consum] ${catRows.length} categorías · N1: ${n1Names.join(', ')}`);
 
   // Primera página → totalCount; el resto en paralelo por offset.
-  const first = await getJson(`/catalog/product?offset=0&limit=${PAGE_SIZE}`);
+  const first = await getJson(`/catalog/product?offset=0&limit=${PAGE_SIZE}`, { zoneId: BASE_ZONE.id });
   const total = first.totalCount ?? 0;
   const pages = Math.min(Math.ceil(total / PAGE_SIZE), MAX_PAGES);
   console.log(`[consum] ${total} productos anunciados · ${pages} páginas`);
 
   const products = new Map(); // code → producto normalizado (con categorías hoja crudas en _leaves)
-  const ingest = (list) => {
+  const ingest = (list, zone) => {
     for (const p of list || []) {
       if (p?.code == null || p.type === 'recipe') continue;
       const id = String(p.code);
-      if (products.has(id)) continue;
-      const norm = normalize(p);
-      if (!norm.display_name) continue;
-      norm._leaves = (p.categories || []).map((c) => String(c.id));
-      products.set(id, norm);
+      if (!products.has(id)) {
+        const norm = normalize(p);
+        if (!norm.display_name) continue;
+        norm._leaves = [];
+        norm._zones = new Set();
+        norm._priceByZone = new Map();
+        products.set(id, norm);
+      }
+      const norm = products.get(id);
+      for (const c of p.categories || []) norm._leaves.push(String(c.id));
+      norm._zones.add(zone.id);
+      norm._priceByZone.set(zone.id, compactPrice(normalize(p)));
     }
   };
-  ingest(first.products);
+  ingest(first.products, BASE_ZONE);
 
   const offsets = Array.from({ length: pages - 1 }, (_, i) => (i + 1) * PAGE_SIZE);
   let done = 1;
@@ -197,12 +223,33 @@ async function main() {
     for (;;) {
       const off = offsets.shift();
       if (off == null) break;
-      try { ingest((await getJson(`/catalog/product?offset=${off}&limit=${PAGE_SIZE}`)).products); }
+      try { ingest((await getJson(`/catalog/product?offset=${off}&limit=${PAGE_SIZE}`, { zoneId: BASE_ZONE.id })).products, BASE_ZONE); }
       catch (e) { console.warn(`[consum] página offset=${off} falló: ${e.message}`); }
       if (++done % 20 === 0) console.log(`[consum] ${done}/${pages} páginas · ${products.size} productos`);
       await sleep(120);
     }
   }));
+
+  // Barrido de las otras CCAA. El endpoint fija surtido/precio solo con
+  // X-TOL-ZONE; no requiere cookies ni dirección guardada.
+  for (const zone of ZONES.slice(1)) {
+    const zoneFirst = await getJson(`/catalog/product?offset=0&limit=${PAGE_SIZE}`, { zoneId: zone.id });
+    const zonePages = Math.min(Math.ceil((zoneFirst.totalCount ?? 0) / PAGE_SIZE), MAX_PAGES);
+    ingest(zoneFirst.products, zone);
+    const zoneOffsets = Array.from({ length: zonePages - 1 }, (_, i) => (i + 1) * PAGE_SIZE);
+    let zoneDone = 1;
+    await Promise.all(Array.from({ length: CONCURRENCY }, async () => {
+      for (;;) {
+        const off = zoneOffsets.shift();
+        if (off == null) break;
+        try { ingest((await getJson(`/catalog/product?offset=${off}&limit=${PAGE_SIZE}`, { zoneId: zone.id })).products, zone); }
+        catch (e) { console.warn(`[consum] ${zone.id} offset=${off} falló: ${e.message}`); }
+        if (++zoneDone % 20 === 0) console.log(`[consum] zona ${zone.id}: ${zoneDone}/${zonePages} páginas · ${products.size} productos acumulados`);
+        await sleep(120);
+      }
+    }));
+    console.log(`[consum] zona ${zone.id} (${zone.ccaa}): ${zoneFirst.totalCount ?? 0} anunciados`);
+  }
 
   // category_ids = hojas conocidas + TODOS sus ancestros (como bonÀrea): la app
   // navega N1→N2 y consulta por la N2; con los ancestros incluidos un producto de
@@ -218,8 +265,21 @@ async function main() {
   const catCount = new Map();
   const rows = [];
   for (const det of products.values()) {
-    const leaves = det._leaves.filter((id) => catName.has(id));
+    const leaves = [...new Set(det._leaves)].filter((id) => catName.has(id));
+    const communities = new Set([...det._zones]
+      .map((zoneId) => ZONES.find((z) => z.id === zoneId)?.ccaa)
+      .filter(Boolean));
+    det.regions = communities.size >= new Set(ZONES.map((z) => z.ccaa)).size ? null : [...communities].sort((a, b) => a.localeCompare(b, 'es'));
+    const basePrice = det._priceByZone.get(BASE_ZONE.id) ?? compactPrice(det);
+    const regionalPrices = {};
+    for (const zone of ZONES.slice(1)) {
+      const price = det._priceByZone.get(zone.id);
+      if (price && (price.p !== basePrice.p || price.av !== basePrice.av || price.ppu !== basePrice.ppu)) regionalPrices[zone.id] = price;
+    }
+    det.regional_prices = Object.keys(regionalPrices).length ? regionalPrices : null;
     delete det._leaves;
+    delete det._zones;
+    delete det._priceByZone;
     const expanded = new Set();
     for (const leaf of leaves) for (const a of ancestorsOf(leaf)) expanded.add(a);
     const primary = leaves[0] ?? null;
@@ -232,7 +292,7 @@ async function main() {
     for (const c of expanded) catCount.set(c, (catCount.get(c) ?? 0) + 1);
   }
   for (const c of catRows) c.product_count = catCount.get(c.id) ?? 0;
-  console.log(`[consum] ${rows.length} productos únicos`);
+  console.log(`[consum] ${rows.length} productos únicos · ${rows.filter((r) => r.regions).length} regionales · ${rows.filter((r) => r.regional_prices).length} con precio por zona`);
 
   if (DRY_RUN) {
     console.log('muestra (5):');

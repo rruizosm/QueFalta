@@ -189,6 +189,15 @@ function brandName(marca) {
   return d ? String(d).trim() || null : null;
 }
 
+function nutriScoreGrade(product) {
+  const value = product.nutriScore ?? product.nutriscore ?? product.nutri_score;
+  const candidate = value && typeof value === 'object'
+    ? value.grade ?? value.letter ?? value.value
+    : value;
+  const grade = typeof candidate === 'string' ? candidate.trim().toUpperCase() : null;
+  return ['A', 'B', 'C', 'D', 'E'].includes(grade) ? grade : null;
+}
+
 // El listado da la imagen en 135x135, que estirada en la ficha (260pt) se ve
 // borrosa. El CDN tiene la misma imagen en 300x300 (misma ruta, otra carpeta;
 // cobertura verificada en todo el catálogo) → se reescribe la URL.
@@ -212,6 +221,7 @@ function normalize(p) {
     price_format: price != null ? `${eurStr(price)} €` : null,
     price_per_unit: ppu?.value ?? null,
     price_per_unit_unit: ppu?.unit ?? null,
+    nutri_score: nutriScoreGrade(p),
     available: p.desactivado !== true,
     published: true,
     raw: p,

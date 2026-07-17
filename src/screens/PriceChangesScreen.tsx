@@ -10,12 +10,13 @@ import { useTranslation } from '../context/LanguageContext';
 import { fetchPriceChanges, type PriceChangeProduct } from '../api/catalog';
 import type { UIProduct } from '../lib/productAdapters';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
+import { storeInRegion, storesForRegion } from '../constants/regions';
 import StoreProductList from '../components/StoreProductList';
 import StoreDropdown from '../components/StoreDropdown';
 import ActiveCartBanner from '../components/ActiveCartBanner';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import SlidingSegments from '../components/SlidingSegments';
-import ViewModeToggle, { type ViewMode } from '../components/ViewModeToggle';
+import { type ViewMode } from '../components/ViewModeToggle';
 
 type Direction = 'down' | 'up';
 
@@ -48,10 +49,14 @@ export default function PriceChangesScreen() {
   const { profile } = useProfile();
 
   // Solo los súpers activados en el perfil (misma regla que el catálogo).
-  const enabledKeys = profile?.catalogStores ?? CATALOG_STORE_KEYS;
+  const region = profile?.region ?? null;
+  const postalCode = profile?.postalCode ?? null;
+  const preferredStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
+  const enabledKeys = preferredStores.filter((store) => storeInRegion(store, region));
+  const allowedStores = enabledKeys.length > 0 ? enabledKeys : storesForRegion(region);
   const stores = useMemo(
-    () => CATALOG_STORES.filter((s) => enabledKeys.includes(s.key)),
-    [enabledKeys],
+    () => CATALOG_STORES.filter((s) => allowedStores.includes(s.key)),
+    [allowedStores],
   );
   const [store, setStore] = useState<CatalogStore>(stores[0]?.key ?? 'mercadona');
   const [direction, setDirection] = useState<Direction>('down');
@@ -68,7 +73,7 @@ export default function PriceChangesScreen() {
   }, [stores, store]);
 
   // Caché por súper+dirección para no repetir consultas al alternar.
-  const cacheKey = `${store}:${direction}`;
+  const cacheKey = `${store}:${direction}:${region ?? 'none'}:${postalCode ?? 'none'}`;
   const [cache, setCache] = useState<Record<string, PriceChangeProduct[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -78,25 +83,30 @@ export default function PriceChangesScreen() {
     let cancelled = false;
     setLoading(true);
     setError(false);
-    fetchPriceChanges(store, direction)
+    fetchPriceChanges(store, direction, region, postalCode)
       .then((items) => { if (!cancelled) setCache((c) => ({ ...c, [cacheKey]: items })); })
       .catch(() => { if (!cancelled) setError(true); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
     // cache a propósito fuera de deps: solo dispara al cambiar súper/dirección.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, direction]);
+  }, [store, direction, region, postalCode, cacheKey]);
 
-  // El precio nuevo va destacado (priceLabel del adaptador); el anterior y el %
-  // viajan en la línea secundaria gris (metaLabel) → StoreProductList se
-  // reutiliza tal cual, con stepper/cesta/favoritos/ficha incluidos.
+  // La línea de precio de la fila pasa a "anterior tachado · actual en
+  // verde/rojo · (%)" vía priceChange (lo pinta StoreProductList) →
+  // StoreProductList se reutiliza tal cual, con stepper/cesta/favoritos/ficha.
   const products: UIProduct[] = useMemo(
     () => (cache[cacheKey] ?? []).map((c) => ({
       ...c.product,
-      metaLabel: t('priceChanges.before', { price: euro(c.prevPrice), pct: pctLabel(c.deltaPct) }),
+      priceChange: {
+        prevLabel: euro(c.prevPrice),
+        pctLabel: pctLabel(c.deltaPct),
+        direction,
+      },
+      metaLabel: null,
       pricePerUnitLabel: null,
     })),
-    [cache, cacheKey, t],
+    [cache, cacheKey, direction],
   );
 
   // Chrome de la pantalla (banner + cabecera + selector + pestañas), idéntico
@@ -104,7 +114,7 @@ export default function PriceChangesScreen() {
   // NotificationsSheet) y pestañas con píldora deslizante + toggle en línea.
   const chrome = (
     <>
-      <ActiveCartBanner topInset />
+      <ActiveCartBanner topInset nameOnly />
 
       {/* Header */}
       <View style={styles.header}>
@@ -116,12 +126,12 @@ export default function PriceChangesScreen() {
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
         <Text style={styles.title}>{t('priceChanges.title')}</Text>
-        <View style={{ width: 38 }} />
+        {stores.length > 1 ? (
+          <StoreDropdown stores={stores} value={store} onChange={setStore} />
+        ) : (
+          <View style={{ width: 38 }} />
+        )}
       </View>
-
-      {stores.length > 1 && (
-        <StoreDropdown stores={stores} value={store} onChange={setStore} />
-      )}
 
       {glassAvailable ? (
         // Pestañas de píldora deslizante + toggle lista/cuadrícula en la misma
@@ -136,7 +146,16 @@ export default function PriceChangesScreen() {
             value={direction}
             onChange={setDirection}
           />
-          <ViewModeToggle value={viewMode} onChange={setViewMode} />
+          {/* Mismo toggle lista/cuadrícula que el catálogo (SlidingSegments compacto). */}
+          <SlidingSegments
+            compact
+            segments={[
+              { key: 'list', icon: 'list' },
+              { key: 'grid', icon: 'grid' },
+            ]}
+            value={viewMode}
+            onChange={setViewMode}
+          />
         </View>
       ) : (
         // Pestañas Bajadas / Subidas (mismo switcher que Favoritos/Catálogo).

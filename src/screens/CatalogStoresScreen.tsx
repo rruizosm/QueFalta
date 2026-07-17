@@ -16,6 +16,7 @@ import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { updateProfile } from '../api/profile';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
+import { storeInRegion } from '../constants/regions';
 
 export default function CatalogStoresScreen() {
   const styles = useThemedStyles(themedStyles);
@@ -29,6 +30,13 @@ export default function CatalogStoresScreen() {
   const userId = session?.user.id ?? '';
 
   const selected = profile?.catalogStores ?? [...CATALOG_STORE_KEYS];
+
+  // Solo se ofrecen los súpers de la comunidad autónoma del usuario ('ES' o
+  // NULL = todos). Para activar uno de fuera: Perfil → Comunidad autónoma →
+  // "Toda España". La preferencia guardada puede contener súpers de fuera de
+  // la región (no se destruye al cambiar de CCAA); simplemente no se listan.
+  const region = profile?.region ?? null;
+  const shown = CATALOG_STORES.filter((s) => storeInRegion(s.key, region));
 
   const toggle = async (key: CatalogStore) => {
     const isOn = selected.includes(key);
@@ -68,9 +76,9 @@ export default function CatalogStoresScreen() {
         <Text style={styles.hint}>{t('catalogStores.hint')}</Text>
 
         <View style={styles.section}>
-          {CATALOG_STORES.map((s, i) => {
+          {shown.map((s, i) => {
             const on = selected.includes(s.key);
-            const last = i === CATALOG_STORES.length - 1;
+            const last = i === shown.length - 1;
             return (
               <TouchableOpacity
                 key={s.key}

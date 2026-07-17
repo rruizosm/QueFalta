@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import {
-  View, Text, Image, Modal, Pressable, TouchableOpacity, StyleSheet,
-  type LayoutRectangle,
+  View, Text, Image, Modal, Pressable, TouchableOpacity, FlatList, StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import type { CatalogStore } from '../constants/stores';
 
 interface StoreOption { key: CatalogStore; name: string; icon: number | null }
@@ -19,105 +20,148 @@ interface Props {
 }
 
 /**
- * Selector de súper colapsado (mismo aspecto que el del catálogo/favoritos,
- * extraído a componente para Novedades y Cambios de precios): solo se ve el
- * activo; al tocar despliega el resto en un menú anclado bajo el selector.
- * Debe ser hijo directo del contenedor de la pantalla para que el `onLayout`
- * dé coordenadas de pantalla (así se ancla el menú del Modal).
+ * Selector de súper para las cabeceras de Novedades/Ofertas/Cambios de precios:
+ * un BOTÓN REDONDO con solo el logo del súper activo (vive en línea con el
+ * título de la sección). Al tocarlo — con efecto de pulsación — abre a pantalla
+ * completa la rejilla de súpers disponibles en DOS COLUMNAS (cada uno = tarjeta
+ * cuadrada de esquinas redondeadas con logo + nombre en columna).
  */
 export default function StoreDropdown({ stores, value, onChange }: Props) {
   const styles = useThemedStyles(themedStyles);
+  const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [box, setBox] = useState<LayoutRectangle | null>(null);
   const active = stores.find((s) => s.key === value) ?? stores[0];
+
+  const renderItem = ({ item }: { item: StoreOption }) => {
+    const on = item.key === value;
+    return (
+      <Pressable
+        style={({ pressed }) => [
+          styles.card,
+          on && styles.cardActive,
+          pressed && styles.cardPressed,
+        ]}
+        onPress={() => { onChange(item.key); setOpen(false); }}
+      >
+        {on && (
+          <View style={styles.cardCheck}>
+            <Ionicons name="checkmark" size={14} color={colors.white} />
+          </View>
+        )}
+        <View style={styles.cardLogoWrap}>
+          {item.icon ? (
+            <Image source={item.icon} style={styles.cardLogo} resizeMode="cover" />
+          ) : (
+            <Ionicons name="storefront" size={30} color={colors.accent} />
+          )}
+        </View>
+        <Text style={[styles.cardName, on && styles.cardNameActive]} numberOfLines={2}>
+          {item.name}
+        </Text>
+      </Pressable>
+    );
+  };
 
   return (
     <>
-      <View style={styles.selectorWrap} onLayout={(e) => setBox(e.nativeEvent.layout)}>
-        <TouchableOpacity
-          style={styles.selector}
-          onPress={() => setOpen((o) => !o)}
-          activeOpacity={0.8}
-        >
-          {active?.icon ? (
-            <Image source={active.icon} style={styles.selectorIcon} resizeMode="cover" />
-          ) : (
-            <Ionicons name="storefront" size={18} color={colors.accent} />
-          )}
-          <Text style={styles.selectorName} numberOfLines={1}>{active?.name}</Text>
-          <Ionicons
-            name={open ? 'chevron-up' : 'chevron-down'}
-            size={18}
-            color={colors.inkSoft}
-          />
-        </TouchableOpacity>
-      </View>
+      {/* Botón redondo con el logo del súper activo, en línea con el título. */}
+      <Pressable
+        style={({ pressed }) => [styles.chip, pressed && styles.chipPressed]}
+        onPress={() => setOpen(true)}
+        accessibilityRole="button"
+        accessibilityLabel={active?.name}
+      >
+        {active?.icon ? (
+          <Image source={active.icon} style={styles.chipLogo} resizeMode="cover" />
+        ) : (
+          <Ionicons name="storefront" size={20} color={colors.accent} />
+        )}
+      </Pressable>
 
+      {/* Rejilla a pantalla completa. */}
       <Modal
         visible={open}
-        transparent
+        animationType="slide"
         statusBarTranslucent
-        animationType="fade"
         onRequestClose={() => setOpen(false)}
       >
-        <Pressable style={styles.menuBackdrop} onPress={() => setOpen(false)}>
-          {box && (
-            <View style={[styles.menu, { top: box.y + box.height + 6 }]}>
-              {stores.map((s, i) => {
-                const on = s.key === value;
-                const last = i === stores.length - 1;
-                return (
-                  <TouchableOpacity
-                    key={s.key}
-                    style={[styles.menuItem, !last && styles.menuItemBorder, on && styles.menuItemActive]}
-                    onPress={() => { onChange(s.key); setOpen(false); }}
-                    activeOpacity={0.7}
-                  >
-                    {s.icon ? (
-                      <Image source={s.icon} style={styles.selectorIcon} resizeMode="cover" />
-                    ) : (
-                      <Ionicons name="storefront" size={18} color={colors.inkSoft} />
-                    )}
-                    <Text style={[styles.menuItemName, on && styles.menuItemNameActive]} numberOfLines={1}>
-                      {s.name}
-                    </Text>
-                    {on && <Ionicons name="checkmark" size={18} color={colors.accent} />}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          )}
-        </Pressable>
+        <View style={[styles.sheet, { paddingTop: insets.top }]}>
+          <View style={styles.sheetHeader}>
+            <Text style={styles.sheetTitle}>{t('storePicker.title')}</Text>
+            <TouchableOpacity style={styles.closeBtn} onPress={() => setOpen(false)} hitSlop={8}>
+              <Ionicons name="close" size={22} color={colors.ink} />
+            </TouchableOpacity>
+          </View>
+
+          <FlatList
+            data={stores}
+            keyExtractor={(s) => s.key}
+            renderItem={renderItem}
+            numColumns={2}
+            columnWrapperStyle={styles.gridRow}
+            contentContainerStyle={[styles.grid, { paddingBottom: insets.bottom + 24 }]}
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
       </Modal>
     </>
   );
 }
 
-const themedStyles = () => StyleSheet.create({
-  selectorWrap: { marginHorizontal: 16, marginBottom: 10 },
-  selector: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 14, paddingVertical: 11,
-    backgroundColor: colors.white,
-    borderWidth: 1, borderColor: colors.border,
-  },
-  selectorIcon: { width: 20, height: 20 },
-  selectorName: { flex: 1, fontSize: 14, fontFamily: fonts.semibold, color: colors.ink },
+const CHIP = 40;
 
-  menuBackdrop: { flex: 1 },
-  menu: {
-    position: 'absolute', left: 16, right: 16,
+const themedStyles = () => StyleSheet.create({
+  // ── Botón redondo (trigger, en la cabecera) ───────────────────
+  chip: {
+    width: CHIP, height: CHIP, borderRadius: CHIP / 2,
+    overflow: 'hidden', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.accentLight,
+  },
+  chipPressed: { transform: [{ scale: 0.9 }], opacity: 0.85 },
+  chipLogo: { width: '100%', height: '100%' },
+
+  // ── Rejilla a pantalla completa ───────────────────────────────
+  sheet: { flex: 1, backgroundColor: colors.paper },
+  sheetHeader: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 16, paddingVertical: 14,
+    borderBottomWidth: 1, borderBottomColor: colors.border,
+  },
+  sheetTitle: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
+  closeBtn: {
+    width: 38, height: 38, borderRadius: 19,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.surfaceAlt,
+  },
+
+  grid: { padding: 16 },
+  gridRow: { gap: 12, marginBottom: 12 },
+  card: {
+    flex: 1, aspectRatio: 1,
+    alignItems: 'center', justifyContent: 'center', gap: 10,
+    paddingHorizontal: 10,
     backgroundColor: colors.white,
+    borderRadius: 20,
     borderWidth: 1, borderColor: colors.border,
-    shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 }, elevation: 8,
   },
-  menuItem: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingHorizontal: 14, paddingVertical: 12,
+  cardActive: { borderColor: colors.accent, backgroundColor: colors.accentLight },
+  cardPressed: { transform: [{ scale: 0.96 }], opacity: 0.9 },
+  cardCheck: {
+    position: 'absolute', top: 8, right: 8,
+    width: 22, height: 22, borderRadius: 11,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.accent,
   },
-  menuItemBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
-  menuItemActive: { backgroundColor: colors.accentLight },
-  menuItemName: { flex: 1, fontSize: 14, fontFamily: fonts.semibold, color: colors.ink },
-  menuItemNameActive: { color: colors.accent },
+  cardLogoWrap: {
+    width: 56, height: 56, borderRadius: 28, overflow: 'hidden',
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.white,
+  },
+  cardLogo: { width: '100%', height: '100%' },
+  cardName: {
+    fontSize: 14, fontFamily: fonts.semibold, color: colors.ink,
+    textAlign: 'center',
+  },
+  cardNameActive: { color: colors.accent },
 });

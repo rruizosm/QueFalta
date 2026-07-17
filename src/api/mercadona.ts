@@ -32,9 +32,11 @@ const url = (path: string, wh: string = WH) => {
   return `${BASE}${path}${path.includes('?') ? '&' : '?'}lang=${lang}&wh=${wh}`;
 };
 
+const headers = { 'x-version': 'v9317' };
+
 export async function fetchCategories(): Promise<N1Category[]> {
   console.log('[mercadona] fetchCategories →', url('/categories/'));
-  const res = await fetch(url('/categories/'));
+  const res = await fetch(url('/categories/'), { headers });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data: CategoriesResponse = await res.json();
   console.log('[mercadona] fetchCategories ←', data.count, 'categories');
@@ -43,7 +45,7 @@ export async function fetchCategories(): Promise<N1Category[]> {
 
 
 export async function fetchCategoryDetail(id: number): Promise<N2CategoryDetail> {
-  const res = await fetch(url(`/categories/${id}/`));
+  const res = await fetch(url(`/categories/${id}/`), { headers });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
     console.log('[mercadona] fetchCategoryDetail →', url(`/categories/${id}/`));
   const data: N2CategoryDetail = await res.json();
@@ -59,7 +61,7 @@ export async function fetchCategoryDetail(id: number): Promise<N2CategoryDetail>
  */
 export async function fetchProduct(id: string, wh?: string): Promise<MercadonaProductDetail> {
   console.log('[mercadona] fetchProduct →', url(`/products/${id}/`, wh));
-  const res = await fetch(url(`/products/${id}/`, wh));
+  const res = await fetch(url(`/products/${id}/`, wh), { headers });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data: MercadonaProductDetail = await res.json();
   console.log('[mercadona] fetchProduct ←', data.display_name);
@@ -88,13 +90,30 @@ export async function fetchSuggestedProducts(limit = 8): Promise<MercadonaProduc
  * Novedades reales de Mercadona. Usa el endpoint dedicado (el campo
  * price_instructions.is_new viene siempre false, no sirve para detectarlas).
  */
-export async function fetchNewArrivals(): Promise<MercadonaProduct[]> {
-  console.log('[mercadona] fetchNewArrivals →', url('/home/new-arrivals/'));
-  const res = await fetch(url('/home/new-arrivals/'));
+export async function fetchNewArrivals(wh?: string): Promise<MercadonaProduct[]> {
+  console.log('[mercadona] fetchNewArrivals →', url('/home/new-arrivals/', wh));
+  const res = await fetch(url('/home/new-arrivals/', wh), { headers });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data: { items?: MercadonaProduct[] } = await res.json();
   console.log('[mercadona] fetchNewArrivals ←', data.items?.length ?? 0, 'productos');
   return (data.items ?? []).filter((p) => p.published);
+}
+
+/** Resuelve el almacén que Mercadona asigna a un CP. El header de respuesta es
+ * la misma fuente que usa el sync multi-almacén; si falla, el llamante cae al
+ * catálogo de Madrid (`mad1`). */
+export async function resolveWarehouseForPostalCode(postalCode: string | null): Promise<string | null> {
+  if (!postalCode || !/^\d{5}$/.test(postalCode)) return null;
+  try {
+    const res = await fetch(url('/postal-codes/actions/change-pc/'), {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ new_postal_code: postalCode }),
+    });
+    return res.ok ? res.headers.get('x-customer-wh') : null;
+  } catch {
+    return null;
+  }
 }
 
 /** Returns a price string like "1,15 €" */

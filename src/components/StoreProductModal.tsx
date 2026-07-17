@@ -4,13 +4,15 @@ import { colors } from '../constants/colors';
 import {
   fetchBonpreuProduct, fetchCarrefourProduct, fetchBonareaProduct, fetchConsumProduct, fetchDiaProduct, fetchSorliProduct,
   fetchEroskiProduct, fetchCapraboProduct, fetchCondisProduct, fetchAmetllerProduct, fetchAldiProduct, fetchHiperdinoProduct, fetchAlcampoProduct,
+  fetchPlusfrescProduct,
   type BonpreuProduct, type CarrefourProduct, type BonareaProduct, type ConsumProduct, type DiaProduct, type SorliProduct,
-  type CondisProduct, type AmetllerProduct, type AldiProduct, type HiperdinoProduct, type AlcampoProduct, type TapestryProduct,
+  type CondisProduct, type AmetllerProduct, type AldiProduct, type HiperdinoProduct, type AlcampoProduct, type PlusfrescProduct, type TapestryProduct,
 } from '../api/catalog';
 import type { CatalogStore } from '../constants/stores';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
+import { useProfile } from '../context/ProfileContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 
 /** Referencia a un producto de cualquier súper (lo que devuelve la comparativa). */
@@ -42,7 +44,10 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
   const sheetTop = useHeaderTopPadding(52) + 48;
   const toast = useToast();
   const { t } = useTranslation();
-  const [mirror, setMirror] = useState<BonpreuProduct | CarrefourProduct | BonareaProduct | ConsumProduct | DiaProduct | SorliProduct | CondisProduct | AmetllerProduct | AldiProduct | HiperdinoProduct | AlcampoProduct | TapestryProduct | null>(null);
+  const { profile } = useProfile();
+  const region = profile?.region ?? null;
+  const postalCode = profile?.postalCode ?? null;
+  const [mirror, setMirror] = useState<BonpreuProduct | CarrefourProduct | BonareaProduct | ConsumProduct | DiaProduct | SorliProduct | CondisProduct | AmetllerProduct | AldiProduct | HiperdinoProduct | AlcampoProduct | PlusfrescProduct | TapestryProduct | null>(null);
 
   useEffect(() => {
     setMirror(null);
@@ -50,9 +55,9 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
     let cancelled = false;
     const fetcher =
       target.store === 'esclat' ? fetchBonpreuProduct
-      : target.store === 'carrefour' ? fetchCarrefourProduct
-      : target.store === 'consum' ? fetchConsumProduct
-      : target.store === 'dia' ? fetchDiaProduct
+      : target.store === 'carrefour' ? (id: string) => fetchCarrefourProduct(id, region)
+       : target.store === 'consum' ? (id: string) => fetchConsumProduct(id, region, postalCode)
+      : target.store === 'dia' ? (id: string) => fetchDiaProduct(id, region)
       : target.store === 'sorli' ? fetchSorliProduct
       : target.store === 'eroski' ? fetchEroskiProduct
       : target.store === 'caprabo' ? fetchCapraboProduct
@@ -61,6 +66,7 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
       : target.store === 'aldi' ? fetchAldiProduct
       : target.store === 'hiperdino' ? fetchHiperdinoProduct
       : target.store === 'alcampo' ? fetchAlcampoProduct
+       : target.store === 'plusfresc' ? (id: string) => fetchPlusfrescProduct(id, postalCode)
       : fetchBonareaProduct;
     fetcher(target.id)
       .then((p) => {
@@ -72,7 +78,7 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
         if (!cancelled) { toast.show(t('product.loadError'), 'error'); onClose(); }
       });
     return () => { cancelled = true; };
-  }, [target?.store, target?.id]);
+  }, [target?.store, target?.id, region, postalCode]);
 
   if (!target) return null;
 
@@ -127,6 +133,9 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
   } else if (target.store === 'alcampo') {
     const AlcampoProductModal = require('./AlcampoProductModal').default;
     content = <AlcampoProductModal product={mirror} onClose={onClose} topInset={topInset} />;
+  } else if (target.store === 'plusfresc') {
+    const PlusfrescProductModal = require('./PlusfrescProductModal').default;
+    content = <PlusfrescProductModal product={mirror} onClose={onClose} topInset={topInset} />;
   } else {
     const BonareaProductModal = require('./BonareaProductModal').default;
     content = <BonareaProductModal product={mirror} onClose={onClose} topInset={topInset} />;

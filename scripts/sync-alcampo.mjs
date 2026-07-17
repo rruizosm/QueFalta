@@ -35,7 +35,16 @@
 //    ("fop.price.per.litre"/"…kilo"/"…unit") → base canónica l/kg/ud vía lib/price.mjs.
 //  - EAN presente solo en ~20 % de las fichas (Características); NULL en el resto → el
 //    comparador casa por nombre igualmente (como Aldi/Eroski).
-//  - Precios de la zona por defecto (regionId "Vaguada"/Madrid; sesión anónima).
+//  - CATÁLOGO NACIONAL ÚNICO (una sola pasada, sin barrido por código postal): a
+//    diferencia de Dia (tiendas físicas locales → surtido por CP, ver sync-dia.mjs),
+//    Alcampo es plataforma Ocado con centro central. La web pide un CP, pero solo
+//    determina si HAY reparto (deliverability) y el grupo de reparto; NO cambia el
+//    surtido ni los precios. VERIFICADO en vivo 2026-07-14: fijando la región de la
+//    sesión (deliverability → temporary-delivery-destination → sessions/proposition,
+//    con X-CSRF-TOKEN) a Madrid, Barcelona, Sevilla, A Coruña, Baleares y Canarias,
+//    el product-pages devuelve EXACTAMENTE los mismos productos y precios (incl.
+//    Canarias: mismos precios, tax=TAX_INCLUDED, sin IGIC diferenciado). Por eso el
+//    sync no barre zonas: "los productos de Madrid" = los de toda España.
 //  - GUARDARRAÍL: si el nº de productos únicos cae por debajo de MIN_PRODUCTS
 //    (scrape parcial / bloqueo), se ABORTA sin escribir para que markStale no
 //    despublique el catálogo vivo.

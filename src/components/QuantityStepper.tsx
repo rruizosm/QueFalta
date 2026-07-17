@@ -9,11 +9,39 @@ interface Props {
   onIncrement: () => void;
   onDecrement: () => void;
   min?: number;
+  // Filas de listado (catálogo, ofertas, novedades, cambios de precio): pila
+  // vertical +/cantidad/− en cápsula redondeada. Las fichas de producto
+  // (footer junto al botón "Añadir") siguen con el layout horizontal.
+  vertical?: boolean;
 }
 
-export default function QuantityStepper({ value, onIncrement, onDecrement, min = 0 }: Props) {
+export default function QuantityStepper({ value, onIncrement, onDecrement, min = 0, vertical = false }: Props) {
   const styles = useThemedStyles(themedStyles);
   const atMin = value <= min;
+
+  if (vertical) {
+    return (
+      <View style={styles.vContainer}>
+        <TouchableOpacity
+          style={styles.vBtn}
+          onPress={onIncrement}
+          hitSlop={{ top: 6, bottom: 2, left: 12, right: 12 }}
+        >
+          <Text style={styles.vBtnText}>+</Text>
+        </TouchableOpacity>
+        <Text style={styles.vValue}>{value}</Text>
+        <TouchableOpacity
+          style={[styles.vBtn, atMin && styles.vBtnDisabled]}
+          onPress={onDecrement}
+          disabled={atMin}
+          hitSlop={{ top: 2, bottom: 6, left: 12, right: 12 }}
+        >
+          <Text style={[styles.vBtnText, atMin && styles.vBtnTextDisabled]}>−</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -69,6 +97,44 @@ const themedStyles = () => StyleSheet.create({
     minWidth: 32,
     textAlign: 'center',
     fontSize: 15,
+    fontFamily: fonts.bold,
+    color: colors.ink,
+  },
+
+  // ── Variante vertical (+ / cantidad / −), cápsula redondeada ──────────
+  vContainer: {
+    alignItems: 'center',
+    width: 34,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderRadius: 17,
+    overflow: 'hidden',
+  },
+  vBtn: {
+    width: '100%',
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.accent,
+  },
+  vBtnDisabled: {
+    backgroundColor: colors.border,
+  },
+  vBtnText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.white,
+    lineHeight: 18,
+    fontFamily: fonts.bold,
+  },
+  vBtnTextDisabled: {
+    color: colors.inkSoft,
+  },
+  vValue: {
+    width: '100%',
+    textAlign: 'center',
+    paddingVertical: 5,
+    fontSize: 14,
     fontFamily: fonts.bold,
     color: colors.ink,
   },

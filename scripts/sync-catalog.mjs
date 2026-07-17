@@ -24,6 +24,7 @@
 
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
+import { PROVINCE_COMMUNITY } from './lib/province-community.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -58,30 +59,6 @@ const REFERENCE_WH = 'mad1';
 // mad1 sirve Madrid (28), bcn1 Barcelona (08). Las demás salen de resolvePostalCode.
 const FORCED_WH_PROVINCES = { mad1: '28', bcn1: '08' };
 
-// Provincia (código INE 01–52) → comunidad autónoma. El nombre se muestra tal cual
-// en la app ("Producto solo disponible en {CCAA}"), por eso van en su forma local
-// (Catalunya, Comunitat Valenciana, Illes Balears, Euskadi…).
-const PROVINCE_COMMUNITY = {
-  '01': 'Euskadi', '20': 'Euskadi', '48': 'Euskadi',
-  '02': 'Castilla-La Mancha', '13': 'Castilla-La Mancha', '16': 'Castilla-La Mancha', '19': 'Castilla-La Mancha', '45': 'Castilla-La Mancha',
-  '03': 'Comunitat Valenciana', '12': 'Comunitat Valenciana', '46': 'Comunitat Valenciana',
-  '04': 'Andalucía', '11': 'Andalucía', '14': 'Andalucía', '18': 'Andalucía', '21': 'Andalucía', '23': 'Andalucía', '29': 'Andalucía', '41': 'Andalucía',
-  '05': 'Castilla y León', '09': 'Castilla y León', '24': 'Castilla y León', '34': 'Castilla y León', '37': 'Castilla y León', '40': 'Castilla y León', '42': 'Castilla y León', '47': 'Castilla y León', '49': 'Castilla y León',
-  '06': 'Extremadura', '10': 'Extremadura',
-  '07': 'Illes Balears',
-  '08': 'Catalunya', '17': 'Catalunya', '25': 'Catalunya', '43': 'Catalunya',
-  '15': 'Galicia', '27': 'Galicia', '32': 'Galicia', '36': 'Galicia',
-  '22': 'Aragón', '44': 'Aragón', '50': 'Aragón',
-  '26': 'La Rioja',
-  '28': 'Comunidad de Madrid',
-  '30': 'Región de Murcia',
-  '31': 'Navarra',
-  '33': 'Asturias',
-  '35': 'Canarias', '38': 'Canarias',
-  '39': 'Cantabria',
-  '51': 'Ceuta', '52': 'Melilla',
-};
-
 const runStart = new Date().toISOString();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -89,6 +66,7 @@ const mercaHeaders = (lang) => ({
   Accept: 'application/json',
   'Accept-Language': lang === 'ca' ? 'ca-ES,ca;q=0.9,es;q=0.8' : 'es-ES,es;q=0.9',
   'User-Agent': 'Mozilla/5.0 (compatible; QueFaltaSync/1.0; +https://quefalta.es)',
+  'x-version': 'v9317',
 });
 
 async function merca(path, lang = 'es', wh = 'mad1') {
@@ -216,24 +194,35 @@ async function upsert(table, rows) {
 // moría por statement_timeout (57014) cuando la BD iba cargada.
 const markStale = (table) => markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart });
 
-// ids de mercadona_products que YA tienen ean (para saltarlos: el EAN es inmutable,
-// no hay que volver a pedir el detalle de lo ya resuelto). Paginado (PostgREST corta a 1000).
-async function fetchIdsWithEan() {
+async function fetchIdsWhere(filter, label) {
   const ids = new Set();
   const PAGE = 1000;
   for (let from = 0; ; from += PAGE) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/mercadona_products?select=id&ean=not.is.null`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/mercadona_products?select=id&${filter}`, {
       headers: {
         apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}`,
         Range: `${from}-${from + PAGE - 1}`, 'Range-Unit': 'items',
       },
     });
-    if (!res.ok) throw new Error(`read ean ${res.status}: ${await res.text()}`);
+    if (!res.ok) throw new Error(`read ${label} ${res.status}: ${await res.text()}`);
     const batch = await res.json();
     for (const r of batch) ids.add(String(r.id));
     if (batch.length < PAGE) break;
   }
   return ids;
+}
+
+async function fetchDetailState() {
+  const [withEan, withNutrition] = await Promise.all([
+    fetchIdsWhere('ean=not.is.null', 'ean'),
+    fetchIdsWhere('nutrition=not.is.null', 'nutrition'),
+  ]);
+  return { withEan, withNutrition };
+}
+
+function mercadonaNutrition(detail) {
+  const table = detail?.product_information?.nutritional_information;
+  return Array.isArray(table) && table.length ? table : null;
 }
 
 async function main() {
@@ -368,23 +357,27 @@ async function main() {
   //    SKIP_EAN=1 la salta; EAN_MAX acota el arranque en frío para caber en el timeout.
   if (!SKIP_EAN) {
     try {
-      const withEan = await fetchIdsWithEan();
-      const pending = rows.filter((r) => !withEan.has(r.id));
+      const { withEan, withNutrition } = await fetchDetailState();
+      const pending = rows.filter((r) => !withEan.has(r.id) || !withNutrition.has(r.id));
       const batch = pending.slice(0, EAN_MAX);
-      console.log(`[sync] EAN: ${withEan.size} ya tienen · ${pending.length} pendientes · ${batch.length} a pedir`);
+      console.log(`[sync] detalle: ${withEan.size} con ean · ${withNutrition.size} con nutrition · ${pending.length} pendientes · ${batch.length} a pedir`);
       const eanRows = [];
+      const nutritionRows = [];
       let done = 0;
       await pool(batch, EAN_CONCURRENCY, async (r) => {
         await sleep(30 + Math.random() * 50); // educado con la API
         try {
           const d = await merca(`/products/${r.id}/`, 'es', r.source_wh);
-          if (d?.ean) eanRows.push({ id: r.id, display_name: r.display_name, raw: r.raw, ean: String(d.ean) });
+          const nutrition = mercadonaNutrition(d);
+          if (d?.ean && !withEan.has(r.id)) eanRows.push({ id: r.id, display_name: r.display_name, raw: r.raw, ean: String(d.ean) });
+          if (nutrition && !withNutrition.has(r.id)) nutritionRows.push({ id: r.id, display_name: r.display_name, raw: r.raw, nutrition });
         } catch { /* 404 puntual (producto retirado entre pasadas): se reintenta otro run */ }
-        if (++done % 500 === 0) console.log(`[sync] EAN ${done}/${batch.length} · ${eanRows.length} con ean`);
+        if (++done % 500 === 0) console.log(`[sync] detalle ${done}/${batch.length} · ${eanRows.length} ean · ${nutritionRows.length} nutrition`);
       });
       if (eanRows.length) await upsert('mercadona_products', eanRows);
-      console.log(`[sync] EAN: ${eanRows.length} escritos (${pending.length - batch.length} quedan para el próximo run)`);
-    } catch (e) { console.warn(`[sync] EAN: pasada omitida (${e.message.split('\n')[0]})`); }
+      if (nutritionRows.length) await upsert('mercadona_products', nutritionRows);
+      console.log(`[sync] detalle: ${eanRows.length} ean · ${nutritionRows.length} nutrition escritos (${pending.length - batch.length} quedan para el próximo run)`);
+    } catch (e) { console.warn(`[sync] detalle: pasada omitida (${e.message.split('\n')[0]})`); }
   }
 
   console.log('[sync] OK');

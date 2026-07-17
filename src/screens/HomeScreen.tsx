@@ -28,7 +28,6 @@ import { fetchMyGroups, fetchGroupItems, type GroupSummary, type GroupItem } fro
 import { fetchPurchases, fetchPurchaseItems, type Purchase } from '../api/purchases';
 import { favoriteToUI, type UIProduct } from '../lib/productAdapters';
 import { STORE_META } from '../constants/stores';
-import ProgressBar from '../components/ProgressBar';
 import MemberAvatars from '../components/MemberAvatars';
 import HardShadow from '../components/HardShadow';
 import ProfileChecklistCard from '../components/ProfileChecklistCard';
@@ -133,23 +132,6 @@ export default function HomeScreen() {
     setRefreshing(false);
   }, [load]);
 
-  const doneItems = cartItems.filter((i) => i.inCart).length;
-  const totalItems = cartItems.length;
-  const progress = totalItems > 0 ? doneItems / totalItems : 0;
-  const remaining = totalItems - doneItems;
-  // Listo cuando hay datos (de caché o red) o ya confirmamos que el carrito de
-  // este grupo está vacío. Si no, seguimos en la primera carga → "Cargando…".
-  const cartReady = totalItems > 0 || loadedGroup === activeCart?.groupId;
-
-  const navigateToCart = () => {
-    if (activeCart) {
-      navigation.navigate('Groups', {
-        screen: 'GroupDetail',
-        params: { groupId: activeCart.groupId },
-      });
-    }
-  };
-
   // Carrusel: los favoritos más recientes (el contexto ya los ordena así).
   const favTiles = useMemo(() => favProducts.slice(0, 10).map(favoriteToUI), [favProducts]);
 
@@ -231,8 +213,8 @@ export default function HomeScreen() {
 
         {/* Header */}
         <View style={styles.header}>
-          {/* Grupo de accesos: campana + novedades + cambios de precios + ofertas
-              (mismos círculos glass); el avatar queda solo a la derecha. */}
+          {/* Grupo de accesos: solo la campana (novedades/ofertas/cambios de precio
+              se movieron a los bloques rectangulares de abajo); avatar a la derecha. */}
           <View style={styles.headerActions}>
             <TouchableOpacity
               onPress={() => setNotifOpen(true)}
@@ -257,54 +239,6 @@ export default function HomeScreen() {
                 </View>
               ) : null}
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('NewArrivals')}
-              style={styles.bellBtn}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              activeOpacity={0.8}
-              accessibilityLabel={t('newArrivals.a11yOpen')}
-            >
-              <GlassSurface
-                style={styles.bellGlass}
-                tintColor={colors.accentLight}
-                interactive
-                fallbackColor={colors.white}
-              >
-                <Ionicons name="sparkles-outline" size={21} color={colors.accent} />
-              </GlassSurface>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('PriceChanges')}
-              style={styles.bellBtn}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              activeOpacity={0.8}
-              accessibilityLabel={t('priceChanges.a11yOpen')}
-            >
-              <GlassSurface
-                style={styles.bellGlass}
-                tintColor={colors.accentLight}
-                interactive
-                fallbackColor={colors.white}
-              >
-                <Ionicons name="trending-down-outline" size={22} color={colors.accent} />
-              </GlassSurface>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('Offers')}
-              style={styles.bellBtn}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              activeOpacity={0.8}
-              accessibilityLabel={t('offers.a11yOpen')}
-            >
-              <GlassSurface
-                style={styles.bellGlass}
-                tintColor={colors.accentLight}
-                interactive
-                fallbackColor={colors.white}
-              >
-                <Ionicons name="pricetags-outline" size={21} color={colors.accent} />
-              </GlassSurface>
-            </TouchableOpacity>
           </View>
           <TouchableOpacity
             onPress={() => navigation.navigate('Profile')}
@@ -324,68 +258,34 @@ export default function HomeScreen() {
         {/* Checklist de pasos opcionales pendientes (se oculta sola al completarlos) */}
         <ProfileChecklistCard groupCount={groups.length} />
 
-        {/* Active cart card */}
-        {activeCart ? (
-          <TouchableOpacity onPress={navigateToCart} activeOpacity={0.85} style={styles.cardWrap}>
-            <HardShadow style={{ backgroundColor: colors.accent, padding: 16 }}>
-              {/* Top row */}
-              <View style={styles.cartHeader}>
-                <View style={styles.cartIconBox}>
-                  <Ionicons name="cart-outline" size={22} color={colors.white} />
+        {/* Accesos rápidos: novedades, ofertas y cambios de precio. Un bloque
+            rectangular por cada uno, apilados. Antes eran círculos glass en la
+            cabecera (y ocupaban el sitio de la tarjeta de carrito activo). */}
+        <View style={styles.quickBlocks}>
+          {[
+            { key: 'newArrivals', route: 'NewArrivals', icon: 'sparkles-outline' },
+            { key: 'offers', route: 'Offers', icon: 'pricetags-outline' },
+            { key: 'priceChanges', route: 'PriceChanges', icon: 'trending-down-outline' },
+          ].map((b) => (
+            <TouchableOpacity
+              key={b.key}
+              onPress={() => navigation.navigate(b.route)}
+              activeOpacity={0.85}
+              accessibilityLabel={t(`${b.key}.a11yOpen`)}
+            >
+              <HardShadow style={styles.quickInner}>
+                <View style={styles.quickIconBox}>
+                  <Ionicons name={b.icon as any} size={22} color={colors.white} />
                 </View>
-                <View style={styles.cartTitleCol}>
-                  <View style={styles.cartEyebrowRow}>
-                    <Text style={styles.cartEyebrow}>{t('home.cartActive')}</Text>
-                    <Text style={styles.cartFraction}>{doneItems}/{totalItems}</Text>
-                  </View>
-                  <Text style={styles.cartName} numberOfLines={1}>{activeCart.groupName}</Text>
+                <View style={styles.quickTextCol}>
+                  <Text style={styles.quickTitle}>{t(`${b.key}.title`)}</Text>
+                  <Text style={styles.quickSub}>{t(`${b.key}.subtitle`)}</Text>
                 </View>
-              </View>
-
-              {/* Progress */}
-              <View style={{ marginTop: 14 }}>
-                <ProgressBar
-                  progress={progress}
-                  height={7}
-                  color={colors.white}
-                  trackColor="rgba(255,255,255,0.25)"
-                />
-              </View>
-
-              {/* Bottom row */}
-              <View style={styles.cartBottom}>
-                <Text style={styles.cartSub}>
-                  {!cartReady
-                    ? t('common.loading')
-                    : totalItems === 0
-                      ? t('home.cartEmpty')
-                      : remaining === 0
-                        ? t('home.cartAllDone')
-                        : t('home.cartRemaining', { n: remaining })}
-                </Text>
-                <TouchableOpacity style={styles.cartChip} onPress={navigateToCart}>
-                  <Text style={styles.cartChipText}>{t('home.viewCart')}</Text>
-                  <Ionicons name="arrow-forward" size={13} color={colors.white} />
-                </TouchableOpacity>
-              </View>
-            </HardShadow>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Groups')}
-            activeOpacity={0.85}
-            style={styles.cardWrap}
-          >
-            <HardShadow style={{ padding: 20, alignItems: 'center', gap: 6 }}>
-              <Ionicons name="cart-outline" size={32} color={colors.inkFaint} />
-              <Text style={styles.noCartTitle}>{t('home.noCartTitle')}</Text>
-              <Text style={styles.noCartSub}>{t('home.noCartSub')}</Text>
-              <View style={styles.noCartBtn}>
-                <Text style={styles.noCartBtnText}>{t('home.goToGroups')}</Text>
-              </View>
-            </HardShadow>
-          </TouchableOpacity>
-        )}
+                <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} />
+              </HardShadow>
+            </TouchableOpacity>
+          ))}
+        </View>
 
         {/* Tus favoritos: carrusel con añadido de un toque. Sin favoritos aún,
             la tarjeta CTA de siempre como puerta de entrada a la pantalla. */}
@@ -595,54 +495,21 @@ const themedStyles = () => StyleSheet.create({
   },
   bellBadgeText: { fontSize: 9.5, fontFamily: fonts.bold, color: '#ffffff' },
 
-  // ── Cart card ─────────────────────────────────────────────────
-  cardWrap: { marginBottom: 24 },
-
-  cartHeader: {
-    flexDirection: 'row', alignItems: 'center', gap: 11,
-  },
-  cartTitleCol: { flex: 1, minWidth: 0 },
-  cartIconBox: {
-    width: 40, height: 40, flexShrink: 0,
-    backgroundColor: 'rgba(255,255,255,0.22)',
+  // ── Bloques rápidos (novedades / ofertas / cambios de precio) ──
+  // Uno debajo de otro; 24 de separación con la siguiente sección.
+  quickBlocks: { gap: 12, marginBottom: 24 },
+  quickInner: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
+  quickIconBox: {
+    width: 42, height: 42, flexShrink: 0,
+    backgroundColor: colors.accent,
     alignItems: 'center', justifyContent: 'center',
   },
-  cartEyebrowRow: {
-    flexDirection: 'row', justifyContent: 'space-between',
-    alignItems: 'center', gap: 8,
-  },
-  cartEyebrow: {
-    fontSize: 10.5, fontFamily: fonts.bold, color: 'rgba(255,255,255,0.80)',
-    textTransform: 'uppercase', letterSpacing: 1.4,
-  },
-  cartName: { fontSize: 19, lineHeight: 23, fontFamily: fonts.bold, color: colors.white, marginTop: 2 },
-  cartFraction: { fontSize: 20, fontFamily: fonts.bold, color: colors.white, flexShrink: 0 },
-  cartBottom: {
-    flexDirection: 'row', justifyContent: 'space-between',
-    alignItems: 'center', marginTop: 14,
-  },
-  cartSub: { fontSize: 12.5, fontFamily: fonts.medium, color: 'rgba(255,255,255,0.85)' },
-  cartChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 5,
-    paddingHorizontal: 12, paddingVertical: 7,
-    backgroundColor: 'rgba(255,255,255,0.20)',
-  },
-  cartChipText: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.white },
-
-  // ── No cart card ──────────────────────────────────────────────
-  noCartTitle: { fontSize: 16, fontFamily: fonts.bold, color: colors.ink },
-  noCartSub: {
-    fontSize: 13, fontFamily: fonts.medium, color: colors.inkSoft,
-    textAlign: 'center', marginBottom: 4,
-  },
-  noCartBtn: {
-    marginTop: 8, backgroundColor: colors.accent,
-    paddingHorizontal: 18, paddingVertical: 11,
-  },
-  noCartBtnText: { color: colors.white, fontFamily: fonts.bold, fontSize: 14 },
+  quickTextCol: { flex: 1, minWidth: 0 },
+  quickTitle: { fontSize: 15, fontFamily: fonts.bold, color: colors.ink },
+  quickSub: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
 
   // ── Sections ──────────────────────────────────────────────────
-  // Ritmo vertical unificado: 24 entre bloques (cardWrap, sectionWrap, ctaWrap).
+  // Ritmo vertical unificado: 24 entre bloques (quickBlocks, sectionWrap, ctaWrap).
   sectionWrap: { marginBottom: 24 },
   sectionHeader: {
     flexDirection: 'row', justifyContent: 'space-between',

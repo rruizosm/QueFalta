@@ -24,6 +24,7 @@ import VerifiedBadge from '../components/VerifiedBadge';
 import ConfirmDialog from '../components/ConfirmDialog';
 import PaywallModal from '../components/PaywallModal';
 import { CATALOG_STORES, CATALOG_STORE_KEYS } from '../constants/stores';
+import { REGION_ALL } from '../constants/regions';
 import { PAYWALL_ENABLED } from '../constants/limits';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
@@ -115,6 +116,14 @@ export default function ProfileScreen() {
         : catalogStores.length === 1
           ? CATALOG_STORES.find((s) => s.key === catalogStores[0])?.name ?? t('profile.storesCount', { n: 1, total: storesTotal })
           : t('profile.storesCount', { n: catalogStores.length, total: storesTotal });
+
+  // Nombre localizado de la CCAA ('ES' = Toda España; null solo puede darse si
+  // el fetch del perfil falló — tras el gate nunca queda sin responder).
+  const region = profile?.region ?? null;
+  const regionSummary =
+    region === null ? t('region.notSet')
+    : region === REGION_ALL ? t('region.all')
+    : t(`region.names.${region}`);
 
   return (
     <View style={styles.container}>
@@ -220,6 +229,12 @@ export default function ProfileScreen() {
               label={t('profile.stores')}
               value={storesSummary}
               onPress={() => navigation.navigate('CatalogStores')}
+            />
+            <ProfileRow
+              icon="location-outline"
+              label={t('profile.region')}
+              value={regionSummary}
+              onPress={() => navigation.navigate('RegionSettings')}
             />
             <ProfileRow
               icon="color-palette-outline"

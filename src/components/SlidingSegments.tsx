@@ -25,10 +25,12 @@ const HEIGHT = 40;
 const RADIUS = 20;
 const PAD = 3; // padding interno de la pista (la píldora corre dentro de él)
 const PILL_RADIUS = RADIUS - PAD;
+const COMPACT_SEG_W = 42; // ancho fijo de cada segmento en modo icono (compact)
 
 export interface Segment<K extends string> {
   key: K;
-  label: string;
+  /** Etiqueta de texto; omítela para un segmento SOLO icono (modo compact). */
+  label?: string;
   icon?: keyof typeof Ionicons.glyphMap;
 }
 
@@ -37,6 +39,8 @@ interface Props<K extends string> {
   value: K;
   onChange: (key: K) => void;
   style?: StyleProp<ViewStyle>;
+  /** Segmentos cuadrados de ancho fijo y solo icono (p. ej. lista/cuadrícula). */
+  compact?: boolean;
 }
 
 function hexToRgba(hex: string, a: number): string {
@@ -47,7 +51,7 @@ function hexToRgba(hex: string, a: number): string {
 }
 
 export default function SlidingSegments<K extends string>({
-  segments, value, onChange, style,
+  segments, value, onChange, style, compact = false,
 }: Props<K>) {
   const n = segments.length;
   const active = Math.max(0, segments.findIndex((s) => s.key === value));
@@ -90,7 +94,7 @@ export default function SlidingSegments<K extends string>({
   const accent = colors.accent;
 
   return (
-    <View style={[styles.track, style]} onLayout={onLayout}>
+    <View style={[styles.track, compact && styles.trackCompact, style]} onLayout={onLayout}>
       {/* Píldora deslizante de acento. */}
       {tabW > 0 && (
         <Animated.View
@@ -115,7 +119,7 @@ export default function SlidingSegments<K extends string>({
         return (
           <Pressable
             key={s.key}
-            style={styles.seg}
+            style={[styles.seg, compact && styles.segCompact]}
             accessibilityRole="button"
             accessibilityState={focused ? { selected: true } : {}}
             accessibilityLabel={s.label}
@@ -126,10 +130,12 @@ export default function SlidingSegments<K extends string>({
               }
             }}
           >
-            {s.icon ? <Ionicons name={s.icon} size={13} color={color} /> : null}
-            <Text style={[styles.label, { color, fontFamily: focused ? fonts.bold : fonts.semibold }]}>
-              {s.label}
-            </Text>
+            {s.icon ? <Ionicons name={s.icon} size={s.label ? 13 : 19} color={color} /> : null}
+            {s.label ? (
+              <Text style={[styles.label, { color, fontFamily: focused ? fonts.bold : fonts.semibold }]}>
+                {s.label}
+              </Text>
+            ) : null}
           </Pressable>
         );
       })}
@@ -147,6 +153,8 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.55)',
     overflow: 'hidden',
   },
+  // Compact: la pista se ciñe a su contenido (segmentos de ancho fijo).
+  trackCompact: { alignSelf: 'center' },
   pill: {
     position: 'absolute', left: 0, top: PAD, bottom: PAD,
     borderRadius: PILL_RADIUS,
@@ -157,5 +165,7 @@ const styles = StyleSheet.create({
   seg: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5,
   },
+  // Compact: ancho fijo (cuadrado) en vez de repartir el espacio.
+  segCompact: { flex: 0, width: COMPACT_SEG_W },
   label: { fontSize: 12.5, letterSpacing: 0.1 },
 });

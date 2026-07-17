@@ -16,6 +16,7 @@ import QuantityStepper from '../components/QuantityStepper';
 import ProductImage from '../components/ProductImage';
 import ProductInfoSections from '../components/ProductInfoSections';
 import SimilarProductsSection from '../components/SimilarProductsSection';
+import ProductPriceLine from '../components/ProductPriceLine';
 
 interface Props {
   /** Producto a mostrar (ya cargado de carrefour_products). null = oculto. */
@@ -120,11 +121,12 @@ export default function CarrefourProductModal({ product, onClose, topInset = 16 
 
         <Text style={styles.name}>{product.displayName}</Text>
 
-        <View style={styles.priceRow}>
-          {price ? <Text style={styles.price}>{price}</Text> : null}
-          {/* Descuento directo: el precio anterior, tachado, junto al rebajado. */}
-          {prevPrice ? <Text style={styles.prevPrice}>{prevPrice}</Text> : null}
-        </View>
+        <ProductPriceLine
+          store="carrefour"
+          productId={product.id}
+          price={price}
+          fallbackPreviousPrice={prevPrice}
+        />
         {product.pricePerUnit ? <Text style={styles.refPrice}>{product.pricePerUnit}</Text> : null}
 
         {/* Promo de lote ("3x2", "2ª unidad -70%"…) con sus condiciones completas

@@ -2,7 +2,8 @@ name: Sync BonpreuEsclat catalog
 
 on:
   schedule:
-    - cron: '40 6 * * 1'   # lunes 06:40 UTC (tras Mercadona; pesado, headless 2 pasadas), semanal
+    - cron: '0 9 * * 2'    # martes 11:00 hora de Madrid en horario de verano (CEST, UTC+2)
+    - cron: '0 10 * * 2'   # martes 11:00 hora de Madrid en horario de invierno (CET, UTC+1)
   workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
 
 concurrency:
@@ -14,13 +15,28 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45   # bilingüe: recorre el catálogo 2 veces (es + ca)
     steps:
+      # Hay 2 cron (UTC no sigue el cambio de hora): este descarta el disparo que no cae en las 11:00 de Madrid.
+      - name: Comprobar hora de Madrid
+        id: check
+        run: |
+          HOUR=$(TZ=Europe/Madrid date +%H)
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$HOUR" != "11" ]; then
+            echo "Son las ${HOUR}h en Madrid, no las 11h: se salta este disparo."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/checkout@v4
+        if: steps.check.outputs.skip != 'true'
       - uses: actions/setup-node@v4
+        if: steps.check.outputs.skip != 'true'
         with:
           node-version: 20
       # Bonpreu exige navegador real (AWS WAF). Instalamos Playwright + Chromium.
       - run: npm install playwright && npx playwright install --with-deps chromium
+        if: steps.check.outputs.skip != 'true'
       - run: node scripts/sync-bonpreu.mjs
+        if: steps.check.outputs.skip != 'true'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}

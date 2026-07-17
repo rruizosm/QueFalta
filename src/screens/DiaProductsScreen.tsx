@@ -9,6 +9,7 @@ import { fetchDiaProductsByCategory, type DiaProduct } from '../api/catalog';
 import { getMeta } from '../constants/categoryMeta';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
+import { useProfile } from '../context/ProfileContext';
 import { diaToUI } from '../lib/productAdapters';
 import StoreProductList from '../components/StoreProductList';
 import ActiveCartBanner from '../components/ActiveCartBanner';
@@ -18,6 +19,7 @@ type RouteProps = RouteProp<CatalogStackParamList, 'DiaProducts'>;
 export default function DiaProductsScreen() {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
+  const { profile } = useProfile();
   const navigation = useNavigation<any>();
   const { categoryId, categoryName, parentName } = useRoute<RouteProps>().params;
 
@@ -28,11 +30,11 @@ export default function DiaProductsScreen() {
   useEffect(() => {
     setLoading(true);
     setError(false);
-    fetchDiaProductsByCategory(categoryId)
+    fetchDiaProductsByCategory(categoryId, profile?.region ?? null)
       .then(setProducts)
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [categoryId]);
+  }, [categoryId, profile?.region]);
 
   const uiProducts = useMemo(() => products.map(diaToUI), [products]);
 

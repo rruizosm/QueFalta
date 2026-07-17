@@ -6,8 +6,10 @@ import type { MercadonaProduct, FavoriteProduct } from '../types';
 import { formatPrice, formatSize, formatReferencePrice } from '../api/mercadona';
 import type {
   BonpreuProduct, CarrefourProduct, BonareaProduct, ConsumProduct, DiaProduct, SorliProduct,
-  CondisProduct, AmetllerProduct, AldiProduct, HiperdinoProduct, AlcampoProduct, TapestryProduct,
+  CondisProduct, AmetllerProduct, AldiProduct, HiperdinoProduct, AlcampoProduct, PlusfrescProduct, TapestryProduct,
 } from '../api/catalog';
+
+export type NutriScoreGrade = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export interface UIProduct {
   id: string;
@@ -23,12 +25,16 @@ export interface UIProduct {
   /** Precio por unidad de medida ya formateado ("3,90 €/L", "1,50 €/kg"), o null.
    *  Se muestra entre paréntesis a la derecha del precio del envase. */
   pricePerUnitLabel: string | null;
+  nutriScoreGrade?: NutriScoreGrade | null;
+  /** Tipo de oferta ("3x2", "2ª ud. -70%"…) para resaltar ARRIBA del nombre en
+   *  rojo (pantalla de Ofertas). Opcional: solo lo aporta OffersScreen. */
+  offerTag?: string | null;
+  /** Cambio de precio (pantalla Cambios de precios): la fila sustituye la línea
+   *  de precio por "anterior tachado · actual en verde/rojo · (%)". Opcional:
+   *  solo lo aporta PriceChangesScreen. */
+  priceChange?: { prevLabel: string; pctLabel: string; direction: 'up' | 'down' } | null;
   /** Categoría del retailer (para que la Lista agrupe por zona al añadir). */
   categoryName: string | null;
-  /** CCAA donde el producto es EXCLUSIVO, o null si es nacional. Solo Mercadona lo
-   *  aporta (único súper con datos por almacén); dispara la insignia de exclamación
-   *  en lista/cuadrícula y la línea "Producto solo disponible en …" en la ficha. */
-  exclusiveRegions: string[] | null;
 }
 
 const euro = (n: number | null | undefined): string =>
@@ -51,7 +57,6 @@ export function mercadonaToUI(
     metaLabel: formatSize(p) || null,
     pricePerUnitLabel: formatReferencePrice(p),
     categoryName,
-    exclusiveRegions: p.regions && p.regions.length ? p.regions : null,
   };
 }
 
@@ -60,7 +65,7 @@ export function bonpreuToUI(p: BonpreuProduct): UIProduct {
     id: p.id, store: 'esclat', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: euro(p.unitPrice), unitPrice: p.unitPrice,
     metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit,
-    categoryName: p.categoryName, exclusiveRegions: null,
+    categoryName: p.categoryName,
   };
 }
 
@@ -69,7 +74,6 @@ export function carrefourToUI(p: CarrefourProduct): UIProduct {
     id: p.id, store: 'carrefour', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
-    exclusiveRegions: null,
   };
 }
 
@@ -78,7 +82,6 @@ export function bonareaToUI(p: BonareaProduct): UIProduct {
     id: p.id, store: 'bonarea', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
-    exclusiveRegions: null,
   };
 }
 
@@ -87,7 +90,7 @@ export function consumToUI(p: ConsumProduct): UIProduct {
     id: p.id, store: 'consum', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit,
-    categoryName: p.categoryName, exclusiveRegions: null,
+    categoryName: p.categoryName,
   };
 }
 
@@ -96,7 +99,6 @@ export function diaToUI(p: DiaProduct): UIProduct {
     id: p.id, store: 'dia', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
-    exclusiveRegions: null,
   };
 }
 
@@ -106,7 +108,7 @@ export function sorliToUI(p: SorliProduct): UIProduct {
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     // El formato ya va en el nombre ("Naranja Bolsa 2kg") → sin metaLabel.
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
-    exclusiveRegions: null,
+    nutriScoreGrade: p.nutriScoreGrade,
   };
 }
 
@@ -117,7 +119,6 @@ export function condisToUI(p: CondisProduct): UIProduct {
     id: p.id, store: 'condis', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
-    exclusiveRegions: null,
   };
 }
 
@@ -128,7 +129,6 @@ export function ametllerToUI(p: AmetllerProduct): UIProduct {
     id: p.id, store: 'ametller', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
-    exclusiveRegions: null,
   };
 }
 
@@ -138,7 +138,6 @@ export function aldiToUI(p: AldiProduct): UIProduct {
     id: p.id, store: 'aldi', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
-    exclusiveRegions: null,
   };
 }
 
@@ -148,7 +147,6 @@ export function hiperdinoToUI(p: HiperdinoProduct): UIProduct {
     id: p.id, store: 'hiperdino', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
-    exclusiveRegions: null,
   };
 }
 
@@ -159,7 +157,16 @@ export function alcampoToUI(p: AlcampoProduct): UIProduct {
     id: p.id, store: 'alcampo', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
-    exclusiveRegions: null,
+  };
+}
+
+// Plusfresc: bilingüe (es/ca) con €/unidad en columna, como Sorli/Condis/Ametller.
+// El nombre ya trae marca y formato ("Leche fresca entera LETONA, 1.5 l") → sin metaLabel.
+export function plusfrescToUI(p: PlusfrescProduct): UIProduct {
+  return {
+    id: p.id, store: 'plusfresc', name: p.displayName, imageUrl: p.thumbnail,
+    priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
   };
 }
 
@@ -171,7 +178,6 @@ function tapestryToUI(p: TapestryProduct, store: CatalogStore): UIProduct {
     id: p.id, store, name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     metaLabel: null, pricePerUnitLabel: null, categoryName: p.categoryName,
-    exclusiveRegions: null,
   };
 }
 export const eroskiToUI = (p: TapestryProduct): UIProduct => tapestryToUI(p, 'eroski');
@@ -192,6 +198,5 @@ export function favoriteToUI(p: FavoriteProduct): UIProduct {
     metaLabel: null,
     pricePerUnitLabel: null,
     categoryName: null,
-    exclusiveRegions: null,
   };
 }

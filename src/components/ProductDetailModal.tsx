@@ -17,8 +17,11 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from './QuantityStepper';
 import ProductImage from './ProductImage';
+import FoodIndexSummary from './FoodIndexSummary';
 import ProductInfoSections from './ProductInfoSections';
+import { useNutritionInfoDisclosure } from './NutritionInfoButton';
 import SimilarProductsSection from './SimilarProductsSection';
+import ProductPriceLine from './ProductPriceLine';
 
 interface Props {
   /** Mercadona product id to show. When null, the modal is hidden. */
@@ -62,33 +65,29 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16 }
   const [error, setError] = useState(false);
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
-  // CCAA de exclusividad (solo productos regionales): se obtiene del espejo en el
-  // mismo paso que el almacén, así que solo se consulta cuando mad1 da 404.
-  const [regions, setRegions] = useState<string[] | null>(null);
+  const [mirrorEan, setMirrorEan] = useState<string | null>(null);
 
   useEffect(() => {
     if (!productId) { setProduct(null); return; }
     setLoading(true);
     setError(false);
     setProduct(null);
-    setRegions(null);
+    setMirrorEan(null);
     setQty(1);
     let cancelled = false;
     (async () => {
       try {
         let p: MercadonaProductDetail;
-        let regionsResult: string[] | null = null;
+        const mirror = await fetchProductMirror(productId);
         try {
           p = await fetchProduct(productId);
         } catch {
           // Producto regional: el almacén por defecto (mad1) no lo tiene → 404.
-          // El espejo da un almacén que sí lo tenga (para reintentar) y sus CCAA.
-          const mirror = await fetchProductMirror(productId);
+          // El espejo da un almacén que sí lo tiene para reintentar.
           if (!mirror.wh) throw new Error('sin almacén');
           p = await fetchProduct(productId, mirror.wh);
-          regionsResult = mirror.regions;
         }
-        if (!cancelled) { setProduct(p); setRegions(regionsResult); }
+        if (!cancelled) { setProduct(p); setMirrorEan(mirror.ean); }
       } catch {
         if (!cancelled) setError(true);
       } finally {
@@ -97,14 +96,6 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16 }
     })();
     return () => { cancelled = true; };
   }, [productId]);
-
-  // CCAA → texto legible ("Catalunya", "Catalunya y Comunitat Valenciana"). La
-  // conjunción depende del idioma (y / i). Solo Mercadona regional lo trae.
-  const regionLabel = regions && regions.length
-    ? regions.length === 1
-      ? regions[0]
-      : `${regions.slice(0, -1).join(', ')} ${t('product.regionAnd')} ${regions[regions.length - 1]}`
-    : null;
 
   const photo =
     product?.photos?.[0]?.regular ??
@@ -127,8 +118,15 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16 }
   const brand = product?.brand ?? d?.brand ?? null;
   const origin = product?.origin ?? d?.origin ?? null;
   const suppliers = d?.suppliers?.map((s) => s.name).filter(Boolean).join(', ') || null;
+  const ingredients =
+    product?.nutrition_information?.ingredients
+    ?? product?.product_information?.ingredients?.accessible_text
+    ?? product?.product_information?.ingredients?.detail
+    ?? null;
 
   const fav = product ? isProductFavorite('mercadona', product.id) : false;
+  const nutritionEan = mirrorEan ?? product?.ean ?? null;
+  const nutrition = useNutritionInfoDisclosure({ store: 'mercadona', ean: nutritionEan });
 
   const handleToggleFav = async () => {
     if (!product) return;
@@ -209,7 +207,6 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16 }
         ) : (
           <>
           <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-            {/* Photo */}
             {photo ? (
               <ProductImage uri={photo} style={styles.photo} />
             ) : (
@@ -218,25 +215,15 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16 }
               </View>
             )}
 
-            {/* Exclusividad regional: "Producto solo disponible en {CCAA}", con el
-                mismo icono de exclamación que la insignia de la lista al inicio. */}
-            {regionLabel ? (
-              <View style={styles.regionRow}>
-                <Ionicons name="alert-circle" size={16} color={colors.red} />
-                <Text style={styles.regionText}>{t('product.regionOnly', { regions: regionLabel })}</Text>
-              </View>
-            ) : null}
-
-            {/* Name + brand */}
             <Text style={styles.name}>{product.display_name}</Text>
             {brand ? <Text style={styles.brand}>{brand}</Text> : null}
 
-            {/* Price */}
-            <View style={styles.priceRow}>
-              {price ? <Text style={styles.price}>{price}</Text> : null}
-              {size ? <Text style={styles.size}>{size}</Text> : null}
-            </View>
+            <ProductPriceLine store="mercadona" productId={product.id} price={price} size={size} />
             {refPrice ? <Text style={styles.refPrice}>{refPrice}</Text> : null}
+
+            {nutrition.info?.foodIndex ? (
+              <FoodIndexSummary index={nutrition.info.foodIndex} onPress={nutrition.open} />
+            ) : null}
 
             {/* Comparativa: más barato en otros súper */}
             <SimilarProductsSection productName={product.display_name} excludeStore="mercadona" />
@@ -244,9 +231,18 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16 }
             {/* Características del producto */}
             <ProductInfoSections
               items={[
+                {
+                  key: 'nutrition',
+                  icon: 'nutrition-outline',
+                  title: t('product.sections.nutrition'),
+                  text: nutrition.info?.foodIndex
+                    ? t('nutrition.index.rowSummary', { score: nutrition.info.foodIndex.score })
+                    : nutrition.active ? t('nutrition.source') : null,
+                  onPress: nutrition.active ? nutrition.open : undefined,
+                },
                 { key: 'description', icon: 'reader-outline', title: t('product.sections.description'), text: clean(d?.description) },
                 { key: 'info', icon: 'information-circle-outline', title: t('product.sections.info'), text: clean(d?.counter_info) },
-                { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: clean(product.nutrition_information?.ingredients) },
+                { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: clean(ingredients) },
                 { key: 'storage', icon: 'time-outline', title: t('product.sections.storage'), text: clean(d?.storage_instructions) },
                 { key: 'origin', icon: 'location-outline', title: t('product.sections.origin'), text: clean(origin) },
                 { key: 'supplier', icon: 'pricetag-outline', title: t('product.sections.supplier'), text: clean(suppliers) },
@@ -259,6 +255,7 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16 }
               <Text style={styles.ean}>EAN: {product.ean}</Text>
             ) : null}
           </ScrollView>
+          {nutrition.modal}
 
           <View style={styles.footer}>
             <QuantityStepper
@@ -322,10 +319,6 @@ const themedStyles = () => StyleSheet.create({
 
   name: { fontSize: 21, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
   brand: { fontSize: 13.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
-
-  // Aviso de exclusividad regional, justo debajo de la imagen.
-  regionRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 14 },
-  regionText: { flex: 1, fontSize: 13, fontFamily: fonts.semibold, color: colors.red, lineHeight: 18 },
 
   priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 10, marginTop: 14 },
   price: { fontSize: 28, fontFamily: fonts.bold, color: colors.accent },

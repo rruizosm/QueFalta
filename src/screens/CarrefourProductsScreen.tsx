@@ -9,6 +9,7 @@ import { fetchCarrefourProductsByCategory, type CarrefourProduct } from '../api/
 import { getMeta } from '../constants/categoryMeta';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
+import { useProfile } from '../context/ProfileContext';
 import { carrefourToUI } from '../lib/productAdapters';
 import StoreProductList from '../components/StoreProductList';
 import ActiveCartBanner from '../components/ActiveCartBanner';
@@ -18,6 +19,7 @@ type RouteProps = RouteProp<CatalogStackParamList, 'CarrefourProducts'>;
 export default function CarrefourProductsScreen() {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
+  const { profile } = useProfile();
   const navigation = useNavigation<any>();
   const { categoryId, categoryName, parentName } = useRoute<RouteProps>().params;
 
@@ -28,11 +30,11 @@ export default function CarrefourProductsScreen() {
   useEffect(() => {
     setLoading(true);
     setError(false);
-    fetchCarrefourProductsByCategory(categoryId)
+    fetchCarrefourProductsByCategory(categoryId, profile?.region ?? null)
       .then(setProducts)
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [categoryId]);
+  }, [categoryId, profile?.region]);
 
   const uiProducts = useMemo(() => products.map(carrefourToUI), [products]);
 

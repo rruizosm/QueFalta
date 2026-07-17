@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Sincroniza el catálogo de Dia → Supabase (catálogo + búsqueda), 1×/día.
+// Sincroniza el catálogo de Dia → Supabase (catálogo + búsqueda), 1×/semana.
 // Sin dependencias npm. Usa fetch nativo de Node 18+ (dia.es no tiene Cloudflare
-// ni pide cookies para leer).
+// ni pide cookies para LEER, pero SÍ hace falta sesión para fijar código postal).
 //
 // dia.es es una SPA Vike (vite-plugin-ssr). Desde 2026-07-11 el sync usa su API
 // REST JSON abierta (antes /api/v1/plp-back daba 422; ya NO). Es MÁS ROBUSTA que
@@ -14,8 +14,8 @@
 //         brand, image, prices{price, price_per_unit, measure_unit, strikethrough_price,
 //         is_promo_price, discount_percentage}, units_in_stock, url),
 //       pagination.pagination.total_pages }
-//   navigation=L1 NO filtra: devuelve el CATÁLOGO ENTERO paginado (~5.500 productos,
-//   ~278 páginas de 20). La categoría de cada producto se deriva de su `url`
+//   navigation=L1 NO filtra por categoría: devuelve el CATÁLOGO ENTERO paginado
+//   (~20/página). La categoría de cada producto se deriva de su `url`
 //   (/frutas/platanos-y-bananas/p/42070 → N2 "platanos-y-bananas") casada contra
 //   los `link` del árbol (verificado: 100% de las urls mapean).
 //
@@ -24,31 +24,69 @@
 //  completo, que sí lo trae. /api/v1/search-back/search?q= es API de búsqueda
 //  abierta con items estructurados + l1/l2_category_description — no usada aquí.)
 //
+// MULTI-ZONA (2026-07-14): dia.es adapta el SURTIDO al código postal (lo anuncia
+// el propio sitio: "¿Sabes que podemos adaptar nuestro surtido a tu código
+// postal?"), igual que Mercadona por almacén. Verificado en vivo: el mismo
+// catálogo va de 204 a 295 páginas según la zona (Madrid/Barcelona/Sevilla/A
+// Coruña…), y CPs cercanos de una misma ciudad comparten `physical_store_id`
+// (28041 y 28001 Madrid → mismo id) → un CP representativo por provincia basta,
+// como Mercadona con sus almacenes. Flujo de sesión (anónima, por cookie):
+//   1. GET /            → Set-Cookie session_id (crea sesión).
+//   2. GET /api/v1/common-aggregator/check-service?postal_code=CP
+//      → { physical_store_id } (o sin cuerpo/206 si esa zona no tiene servicio;
+//        verificado: Canarias no responde con id — se salta esa provincia).
+//   3. PUT /api/v1/common-aggregator/save-shipping-address?new_postal_code=CP
+//      → 204, fija el CP en la sesión (rota session_id; hay que seguir
+//        actualizando cookies de las respuestas).
+//   4. GET plp-back/plp?navigation=L1 con esa misma cookie → catálogo de la zona.
+// Este sync barre un CP por provincia (01–52, igual que sync-catalog.mjs de
+// Mercadona), deduplica por `physical_store_id` (varias provincias pueden
+// compartir tienda/zona) y une los productos por `object_id` (id GLOBAL: un id
+// = el mismo producto en toda España, si aparece). Guarda en `regions` la(s)
+// CCAA donde un producto está disponible, o null si aparece en TODAS las CCAA
+// con servicio (nacional) — misma semántica que `mercadona_products.regions`
+// (null = sin restricción; lista = "solo disponible en esas CCAA"). OJO: a
+// diferencia de Mercadona, la nacionalidad NO se decide por "estar en la zona de
+// Madrid" (esa tienda NO es superconjunto nacional en Dia → marcaría cientos de
+// productos comunes como falsos regionales), sino por aparecer en todas las CCAA
+// barridas (ver computeRegions). La CCAA no se usa aún para filtrar nada en la
+// app (queda para más adelante); hoy solo se guarda junto con el catálogo para
+// no tener que rehacer este barrido después.
+//
 // La FICHA (ingredientes/nutrición/…) sigue viniendo del SSR de cada producto
-// (raw.url → vike_pageContext): la API de listado no la expone. Ver más abajo.
+// (raw.url → vike_pageContext): la API de listado no la expone, y no depende de
+// la zona (la url del producto es la misma en toda España). Ver más abajo.
 //
 // Estrategia:
-//   1. GET plp?navigation=L1 → árbol de categorías + total_pages.
-//   2. Paginar el catálogo entero (page=1..total_pages) → todos los plp_items.
-//      Membership = la N2 del `url` de cada producto + su N1 (mapa desde el árbol).
-//   3. Normalizar + upsert en Supabase (soft-delete de lo ausente vía markStale).
+//   1. Resolver zonas: 1 CP por provincia → physical_store_id (check-service),
+//      deduplicado. Madrid primero solo para que sus datos (precio/nombre) sean
+//      los "por defecto" de los productos nacionales.
+//   2. Por cada zona: sesión nueva, fijar su CP, paginar el catálogo entero
+//      (page=1..total_pages) → todos los plp_items, acumulando en qué zonas
+//      aparece cada producto (para `regions`). El árbol de categorías se toma
+//      solo de la primera zona (taxonomía nacional, no varía por zona).
+//   3. Normalizar + calcular `regions` + upsert en Supabase (soft-delete de lo
+//      ausente vía markStale).
 //
 // Notas:
 //  - prices.price ya lleva la promo aplicada (strikethrough_price = original; flags
 //    is_promo_price/is_club_price en raw). price_per_unit sigue a la promo.
 //  - measure_unit viene en castellano ("KILO", "LITRO", "UNIDAD") → base canónica
 //    l/kg/ud vía lib/price.mjs.
-//  - Los precios son de la zona por defecto (CP 28041 Madrid, sesión anónima).
+//  - Los precios de cada producto son los de la PRIMERA zona que lo trae (por
+//    orden de barrido, Madrid primero) — igual que Mercadona con `mad1`.
 //  - La N1 "Novedades y recomendados" (L128) se salta: es marketing rotatorio, no
 //    taxonomía; sus productos viven también en su categoría real.
 //
 // Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE
-//      CONCURRENCY=4       (N2 procesadas en paralelo)
+//      CONCURRENCY=4       (páginas procesadas en paralelo, por zona)
 //      DRY_RUN=1           (no escribe en Supabase; imprime resumen)
-//      MAX_PAGES=N         (limita nº de páginas del catálogo, para pruebas)
+//      MAX_PAGES=N         (limita nº de páginas de CADA zona, para pruebas)
+//      MAX_ZONES=N         (limita nº de zonas a barrer, para pruebas)
 //      SKIP_N1=csv         (ids de N1 a excluir; por defecto "L128")
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
+import { PROVINCE_COMMUNITY } from './lib/province-community.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -59,6 +97,7 @@ const CONCURRENCY = Number(process.env.CONCURRENCY || 4);
 const MAX_PAGES = process.env.MAX_PAGES ? Number(process.env.MAX_PAGES)
   : process.env.MAX_CATEGORIES ? Number(process.env.MAX_CATEGORIES) : Infinity;
 const SKIP_N1 = new Set((process.env.SKIP_N1 ?? 'L128').split(',').map((s) => s.trim()).filter(Boolean));
+const MAX_ZONES = process.env.MAX_ZONES ? Number(process.env.MAX_ZONES) : Infinity;
 
 // Ficha de producto (INGREDIENTES/NUTRICIÓN/CONSERVACIÓN…). Como en bonÀrea: la ficha
 // cambia poco frente al precio (diario), así que NO se baja la de todos cada día, solo
@@ -80,6 +119,132 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const chunk = (a, n) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
+
+// ── Sesión anónima (cookie jar) ──────────────────────────────────────────────
+// dia.es guarda el CP fijado en la sesión (cookie `session_id`, HttpOnly). El
+// jar es un objeto plano nombre→valor; se actualiza con el Set-Cookie de CADA
+// respuesta porque save-shipping-address rota session_id.
+async function newSession() {
+  const res = await fetch(`${HOME}/`, { headers: { 'User-Agent': UA, Accept: 'text/html' }, signal: AbortSignal.timeout(20000) });
+  const jar = {};
+  mergeSetCookies(jar, res);
+  return jar;
+}
+const cookieHeader = (jar) => Object.entries(jar).map(([k, v]) => `${k}=${v}`).join('; ');
+function mergeSetCookies(jar, res) {
+  const cookies = res.headers.getSetCookie ? res.headers.getSetCookie() : [];
+  for (const c of cookies) {
+    const [pair] = c.split(';');
+    const eq = pair.indexOf('=');
+    if (eq > 0) jar[pair.slice(0, eq)] = pair.slice(eq + 1);
+  }
+}
+
+// Zona de un CP (o null si dia.es no sirve ahí — verificado: Canarias no
+// devuelve physical_store_id). No muta la sesión (solo lectura).
+async function checkService(jar, cp) {
+  try {
+    const res = await fetch(`${HOME}/api/v1/common-aggregator/check-service?postal_code=${cp}`, {
+      headers: { 'User-Agent': UA, Accept: 'application/json', Origin: HOME, Referer: `${HOME}/`, Cookie: cookieHeader(jar) },
+      signal: AbortSignal.timeout(20000),
+    });
+    mergeSetCookies(jar, res);
+    if (!res.ok) return null;
+    const j = await res.json().catch(() => null);
+    return j?.physical_store_id ? String(j.physical_store_id) : null;
+  } catch { return null; }
+}
+
+// Fija el CP en la sesión del jar (lo que hace el modal de "código postal" de
+// la web). Tras esto, plp-back/plp?navigation=L1 con las mismas cookies
+// devuelve el catálogo de esa zona.
+async function setPostalCode(jar, cp) {
+  try {
+    const res = await fetch(`${HOME}/api/v1/common-aggregator/save-shipping-address?new_postal_code=${cp}`, {
+      method: 'PUT',
+      headers: {
+        'User-Agent': UA, Accept: 'application/json', 'Content-Type': 'application/json',
+        Origin: HOME, Referer: `${HOME}/`, Cookie: cookieHeader(jar),
+      },
+      body: 'null',
+      signal: AbortSignal.timeout(20000),
+    });
+    mergeSetCookies(jar, res);
+    return res.ok;
+  } catch { return false; }
+}
+
+// CP candidatos de una provincia (INE 01–52) a probar con check-service hasta
+// que uno responda con physical_store_id (algunos no existen/no tienen reparto).
+const zoneSuffixes = ['001', '002', '004', '010', '500'];
+
+// Resuelve 1 zona (physical_store_id) por provincia + el mapa zona→provincias
+// que cubre (para derivar sus CCAA). Madrid (28) se barre primero solo para que
+// sus datos (precio/nombre) sean los "por defecto" de los productos nacionales,
+// como Mercadona con mad1 — pero, a diferencia de Mercadona, la tienda de Madrid
+// NO es superconjunto nacional, así que la nacionalidad NO se decide por "estar
+// en Madrid" sino por "aparecer en todas las CCAA con servicio" (ver
+// computeRegions). Provincias sin servicio (verificado: Canarias 35/38, Melilla
+// 52) se quedan fuera del barrido.
+async function resolveZones() {
+  const jar = await newSession();
+  const zoneProvinces = new Map(); // physical_store_id -> Set(provincia)
+  const zoneCp = new Map();        // physical_store_id -> CP representativo (para el crawl)
+  const note = (zone, prov, cp) => {
+    if (!zone) return;
+    if (!zoneProvinces.has(zone)) zoneProvinces.set(zone, new Set());
+    zoneProvinces.get(zone).add(prov);
+    if (!zoneCp.has(zone)) zoneCp.set(zone, cp);
+  };
+
+  const provinces = Array.from({ length: 52 }, (_, i) => String(i + 1).padStart(2, '0'));
+  provinces.sort((a, b) => (a === '28' ? -1 : b === '28' ? 1 : 0)); // 28 (Madrid) primero
+
+  for (const prov of provinces) {
+    let found = false;
+    for (const suf of zoneSuffixes) {
+      const cp = prov + suf;
+      const zone = await checkService(jar, cp);
+      if (zone) { found = true; note(zone, prov, cp); break; }
+      await sleep(120);
+    }
+    if (!found) console.warn(`[dia] provincia ${prov}: sin servicio (Canarias/Melilla), se salta`);
+  }
+
+  // Reordena las zonas para que la de Madrid vaya primero (sus datos —precio,
+  // nombre— quedan como los "por defecto" de los productos que trae).
+  const zones = [...zoneProvinces.keys()].sort(
+    (a, b) => (zoneProvinces.get(b).has('28') ? 1 : 0) - (zoneProvinces.get(a).has('28') ? 1 : 0),
+  );
+  return { zones: zones.slice(0, MAX_ZONES), zoneProvinces, zoneCp };
+}
+
+// Zona → comunidades que cubre (unión de las CCAA de sus provincias).
+function buildZoneCommunities(zoneProvinces) {
+  const zoneCommunities = new Map();
+  for (const [zone, provs] of zoneProvinces) {
+    const set = new Set();
+    for (const prov of provs) { const c = PROVINCE_COMMUNITY[prov]; if (c) set.add(c); }
+    zoneCommunities.set(zone, set);
+  }
+  return zoneCommunities;
+}
+
+// Dado el conjunto de zonas donde aparece un producto, devuelve la(s) CCAA donde
+// está disponible, o null si es NACIONAL (aparece en TODAS las CCAA con servicio)
+// — misma semántica que mercadona_products.regions: null = sin restricción; una
+// lista = "solo disponible en esas CCAA". A diferencia de Mercadona, la
+// nacionalidad NO se decide por estar en una zona de referencia (la tienda de
+// Madrid muestreada no es superconjunto nacional en Dia → daría cientos de
+// falsos regionales), sino comparando con `allCommunities` (las CCAA que cubre
+// el barrido completo). Fallback seguro: sin CCAA atribuibles → null (nacional).
+function computeRegions(zoneSet, zoneCommunities, allCommunities) {
+  const communities = new Set();
+  for (const zone of zoneSet) for (const c of zoneCommunities.get(zone) ?? []) communities.add(c);
+  if (communities.size === 0) return null;                 // sin atribución → nacional
+  if (communities.size >= allCommunities.size) return null; // en todas las CCAA → nacional
+  return [...communities].sort((a, b) => a.localeCompare(b, 'es'));
+}
 
 // GET una página y devuelve su vike_pageContext parseado (el estado SSR completo).
 async function getPageContext(path, { tries = 4 } = {}) {
@@ -114,8 +279,9 @@ async function getPageContext(path, { tries = 4 } = {}) {
 
 // ── API REST JSON (listado + árbol) ──────────────────────────────────────────
 // El BFF exige Origin/Referer de dia.es (si no, 403/redirect). navigation=L1 es
-// obligatorio ("navigation in query is required") y devuelve el catálogo entero.
-async function getApi(path, { tries = 4 } = {}) {
+// obligatorio ("navigation in query is required") y devuelve el catálogo entero
+// DE LA ZONA fijada en la sesión del `jar` (ver setPostalCode).
+async function getApi(path, { tries = 4, jar } = {}) {
   const url = `${HOME}/api/v1/${path}`;
   for (let t = 0; t < tries; t++) {
     try {
@@ -123,9 +289,11 @@ async function getApi(path, { tries = 4 } = {}) {
         headers: {
           'User-Agent': UA, Accept: 'application/json',
           Origin: HOME, Referer: `${HOME}/`, 'Accept-Language': 'es-ES,es;q=0.9',
+          ...(jar ? { Cookie: cookieHeader(jar) } : {}),
         },
         signal: AbortSignal.timeout(40000),
       });
+      if (jar) mergeSetCookies(jar, res);
       if (res.ok) return await res.json();
       console.warn(`[dia] API ${path} → ${res.status} (intento ${t + 1})`);
     } catch (e) {
@@ -334,9 +502,10 @@ async function upsert(table, rows) {
 // la tabla moría por statement_timeout (57014) cuando la BD iba cargada.
 const markStale = (table) => markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart });
 
-// Una página del catálogo entero (navigation=L1). Devuelve { items, totalPages }.
-async function catalogPage(page) {
-  const j = await getApi(`plp-back/plp?navigation=L1${page > 1 ? `&page=${page}` : ''}`);
+// Una página del catálogo entero (navigation=L1) de la zona del `jar`. Devuelve
+// { items, totalPages }.
+async function catalogPage(page, jar) {
+  const j = await getApi(`plp-back/plp?navigation=L1${page > 1 ? `&page=${page}` : ''}`, { jar });
   // La API devuelve pagination.total_pages PLANO (el SSR lo anidaba en
   // pagination.pagination; no confundir). Tolera ambas por si acaso.
   const pg = j.pagination ?? {};
@@ -350,73 +519,113 @@ async function catalogPage(page) {
 async function main() {
   console.log(`[dia] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} conc=${CONCURRENCY}`);
 
-  // 1ª página: árbol de categorías (category_data) + total de páginas + primeros
-  // productos. El árbol es N1→N2 (con id, name, link). Se saltan los N1 de SKIP_N1
-  // (L128 "Novedades y recomendados" = marketing rotatorio).
-  const first = await catalogPage(1);
-  const n1s = (first.tree ?? []).filter((c) => c?.id && !SKIP_N1.has(c.id));
-  if (n1s.length === 0) throw new Error('no encuentro category_data.categories en la API');
+  // 0) Resolver zonas: 1 CP por provincia → physical_store_id, deduplicado
+  //    (Madrid primero, para que sus datos sean los "por defecto").
+  const { zones, zoneProvinces, zoneCp } = await resolveZones();
+  if (zones.length === 0) throw new Error('no se resolvió ninguna zona (¿cambió check-service?)');
+  console.log(`[dia] ${zones.length} zonas a barrer`);
 
-  // catRows (N1 + N2, deduplicados: cada N1 trae un hijo "Todo X" con el id del
-  // padre) y mapa slug→N2id para asignar la categoría de cada producto por su url.
-  const catRows = [], seen = new Set();
-  const slugToN2 = new Map();
-  for (const n1 of n1s) {
-    if (!seen.has(n1.id)) {
-      seen.add(n1.id);
-      catRows.push({ id: n1.id, name: (n1.name || '').trim(), parent_id: null, url: n1.link || null, product_count: null, published: true, synced_at: runStart });
-    }
-    for (const n2 of n1.children ?? []) {
-      if (!n2?.id || !n2.link || n2.id === n1.id) continue; // "Todo X" comparte id con el N1
-      if (!seen.has(n2.id)) {
-        seen.add(n2.id);
-        catRows.push({ id: n2.id, name: (n2.name || '').trim(), parent_id: n1.id, url: n2.link, product_count: null, published: true, synced_at: runStart });
+  // catRows/slugToN2/catName/parentOf: el árbol de categorías es taxonomía
+  // nacional (no varía por zona) → se construye solo con la 1ª zona barrida.
+  let catRows = null, seen = null, slugToN2 = null, catName = null, parentOf = null;
+  const products = new Map();        // object_id → producto normalizado (datos de la 1ª zona que lo trae)
+  const membership = new Map();      // object_id → Set<id N2>
+  const zonesOfProduct = new Map();  // object_id → Set<physical_store_id>
+  const sweptZones = new Set();      // zonas que fijaron CP y barrieron (para allCommunities)
+
+  for (const zone of zones) {
+    const cp = zoneCp.get(zone);
+    const jar = await newSession();
+    const ok = await setPostalCode(jar, cp);
+    if (!ok) { console.warn(`[dia] zona ${zone} (CP ${cp}): no se pudo fijar el CP, se salta`); continue; }
+    sweptZones.add(zone);
+
+    const first = await catalogPage(1, jar);
+
+    if (!catRows) {
+      // Árbol de categorías (category_data): N1→N2 (con id, name, link). Se
+      // saltan los N1 de SKIP_N1 (L128 "Novedades y recomendados" = marketing).
+      const n1s = (first.tree ?? []).filter((c) => c?.id && !SKIP_N1.has(c.id));
+      if (n1s.length === 0) throw new Error('no encuentro category_data.categories en la API');
+      catRows = []; seen = new Set(); slugToN2 = new Map();
+      for (const n1 of n1s) {
+        if (!seen.has(n1.id)) {
+          seen.add(n1.id);
+          catRows.push({ id: n1.id, name: (n1.name || '').trim(), parent_id: null, url: n1.link || null, product_count: null, published: true, synced_at: runStart });
+        }
+        for (const n2 of n1.children ?? []) {
+          if (!n2?.id || !n2.link || n2.id === n1.id) continue; // "Todo X" comparte id con el N1
+          if (!seen.has(n2.id)) {
+            seen.add(n2.id);
+            catRows.push({ id: n2.id, name: (n2.name || '').trim(), parent_id: n1.id, url: n2.link, product_count: null, published: true, synced_at: runStart });
+          }
+          const slug = catSlugOfLink(n2.link);
+          if (slug && !slugToN2.has(slug)) slugToN2.set(slug, n2.id);
+        }
       }
-      const slug = catSlugOfLink(n2.link);
-      if (slug && !slugToN2.has(slug)) slugToN2.set(slug, n2.id);
+      catName = new Map(catRows.map((c) => [c.id, c.name]));
+      parentOf = new Map(catRows.map((c) => [c.id, c.parent_id]));
+      console.log(`[dia] ${n1s.length} N1 · ${catRows.length} categorías (árbol tomado de la zona ${zone})`);
     }
+
+    const totalPages = Math.min(first.totalPages, MAX_PAGES === Infinity ? first.totalPages : MAX_PAGES);
+
+    const ingest = (items) => {
+      for (const p of items) {
+        if (p?.object_id == null) continue;
+        const id = String(p.object_id);
+        if (!products.has(id)) {
+          const norm = normalize(p);
+          if (!norm.display_name) continue;
+          products.set(id, norm);
+        }
+        let zs = zonesOfProduct.get(id);
+        if (!zs) zonesOfProduct.set(id, (zs = new Set()));
+        zs.add(zone);
+        // Categoría por la url del producto (N2 del árbol). Si no mapea, sin categoría.
+        const n2 = slugToN2.get(catSlugOfUrl(p.url));
+        if (n2) {
+          let set = membership.get(id);
+          if (!set) membership.set(id, (set = new Set()));
+          set.add(n2);
+        }
+      }
+    };
+    ingest(first.items);
+
+    // Resto de páginas de esta zona, en paralelo (pool de workers).
+    const pages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
+    let done = 1;
+    await Promise.all(Array.from({ length: CONCURRENCY }, async () => {
+      for (;;) {
+        const page = pages.shift();
+        if (page == null) break;
+        try { ingest((await catalogPage(page, jar)).items); }
+        catch (e) { console.warn(`[dia] zona ${zone} página ${page} falló: ${e.message}`); }
+        if (++done % 50 === 0) console.log(`[dia] zona ${zone}: ${done}/${totalPages} páginas`);
+        await sleep(80);
+      }
+    }));
+    console.log(`[dia] zona ${zone} (CP ${cp}): ${totalPages} páginas · ${products.size} productos acumulados`);
   }
-  const totalPages = Math.min(first.totalPages, MAX_PAGES === Infinity ? first.totalPages : MAX_PAGES);
-  console.log(`[dia] ${n1s.length} N1 · ${catRows.length} categorías · ${first.totalPages} páginas de catálogo (proceso ${totalPages})`);
 
-  const catName = new Map(catRows.map((c) => [c.id, c.name]));
-  const parentOf = new Map(catRows.map((c) => [c.id, c.parent_id]));
-  const products = new Map();   // object_id → producto normalizado
-  const membership = new Map(); // object_id → Set<id N2>
+  if (!catRows) throw new Error('ninguna zona barrió con éxito (¿fallaron todos los save-shipping-address?)');
 
-  const ingest = (items) => {
-    for (const p of items) {
-      if (p?.object_id == null) continue;
-      const id = String(p.object_id);
-      if (!products.has(id)) {
-        const norm = normalize(p);
-        if (!norm.display_name) continue;
-        products.set(id, norm);
-      }
-      // Categoría por la url del producto (N2 del árbol). Si no mapea, sin categoría.
-      const n2 = slugToN2.get(catSlugOfUrl(p.url));
-      if (n2) {
-        let set = membership.get(id);
-        if (!set) membership.set(id, (set = new Set()));
-        set.add(n2);
-      }
-    }
-  };
-  ingest(first.items);
-
-  // Resto de páginas en paralelo (pool de workers sobre los números de página).
-  const pages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
-  let done = 1;
-  await Promise.all(Array.from({ length: CONCURRENCY }, async () => {
-    for (;;) {
-      const page = pages.shift();
-      if (page == null) break;
-      try { ingest((await catalogPage(page)).items); }
-      catch (e) { console.warn(`[dia] página ${page} falló: ${e.message}`); }
-      if (++done % 25 === 0) console.log(`[dia] ${done}/${totalPages} páginas · ${products.size} productos`);
-      await sleep(80);
-    }
-  }));
+  // regions: CCAA donde cada producto está disponible; null = nacional (en todas
+  // las CCAA con servicio), misma semántica que mercadona_products.regions. No se
+  // usa aún para filtrar nada en la app — se guarda para no rehacer este barrido
+  // después (filtrado por CP/comunidad autónoma del usuario, ver regions.ts).
+  const zoneCommunities = buildZoneCommunities(zoneProvinces);
+  // allCommunities = CCAA cubiertas por las zonas efectivamente barridas (no las
+  // que fallaron al fijar CP): el umbral para considerar "nacional".
+  const allCommunities = new Set();
+  for (const zone of sweptZones) for (const c of zoneCommunities.get(zone) ?? []) allCommunities.add(c);
+  let regionalCount = 0;
+  for (const [id, det] of products) {
+    det.regions = computeRegions(zonesOfProduct.get(id) ?? new Set(), zoneCommunities, allCommunities);
+    if (det.regions) regionalCount++;
+  }
+  console.log(`[dia] ${allCommunities.size} CCAA con servicio · ${regionalCount} productos con disponibilidad regional limitada`);
 
   // category_ids = N2 observadas + su N1 (árbol de 2 niveles, como Bonpreu).
   const catCount = new Map();
@@ -454,6 +663,9 @@ async function main() {
     });
     const unidades = new Set(rows.map((r) => r.raw.prices?.measure_unit).filter(Boolean));
     console.log('measure_units vistas:', [...unidades].join(', '));
+    const regional = rows.filter((r) => r.regions?.length);
+    console.log(`disponibilidad regional limitada: ${regional.length}. Muestra:`);
+    for (const r of regional.slice(0, 12)) console.log(`         ${r.id}  ${r.display_name}  → ${r.regions.join(', ')}`);
     // Muestra de ficha: descarga la de los primeros productos para verificar el parseo.
     if (!SKIP_DETAIL) {
       for (const r of rows.slice(0, 3)) {

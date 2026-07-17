@@ -1,6 +1,8 @@
-/** Paso 2 (OBLIGATORIO) — Elegir supermercados del catálogo. Mínimo uno.
- *  Empieza SIN nada seleccionado: el usuario marca los que usa (el botón
- *  Continuar queda desactivado hasta elegir al menos uno). */
+/** Paso 4 (OBLIGATORIO) — Elegir supermercados del catálogo. Mínimo uno.
+ *  El grid solo ofrece los súpers disponibles en la comunidad autónoma elegida
+ *  en el paso anterior (storeInRegion; con "Toda España" se ven todos) y
+ *  arranca con todos ellos pre-marcados: el usuario ya declaró comprar en esa
+ *  zona, así que desmarcar es la excepción. Mínimo uno para continuar. */
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
@@ -16,6 +18,7 @@ import { useThemedStyles } from '../../context/ThemeContext';
 import { useTranslation } from '../../context/LanguageContext';
 import { updateProfile } from '../../api/profile';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../../constants/stores';
+import { storeInRegion } from '../../constants/regions';
 import OnboardingLayout from './OnboardingLayout';
 
 export default function StoresScreen() {
@@ -23,14 +26,18 @@ export default function StoresScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { session } = useAuth();
-  const { applyProfile } = useProfile();
+  const { profile, applyProfile } = useProfile();
   const toast = useToast();
   const userId = session?.user.id ?? '';
 
-  // Empieza SIN nada seleccionado: el usuario marca los súpers que usa. (No
-  // sembramos desde profile.catalogStores porque ahí "vacío" se normaliza a
-  // "todos" —regla del catálogo—, lo que marcaría todo por defecto.)
-  const [selected, setSelected] = useState<CatalogStore[]>([]);
+  // Solo los súpers de la CCAA elegida en el paso anterior ('ES' = todos).
+  const region = profile?.region ?? null;
+  const shown = CATALOG_STORES.filter((s) => storeInRegion(s.key, region));
+
+  // Arranca con los súpers de la región pre-marcados (el usuario ya declaró
+  // comprar ahí); puede desmarcar los que no use. (No sembramos desde
+  // profile.catalogStores porque ahí "vacío" se normaliza a "todos".)
+  const [selected, setSelected] = useState<CatalogStore[]>(() => shown.map((s) => s.key));
   const [saving, setSaving] = useState(false);
 
   const toggle = (key: CatalogStore) => {
@@ -56,8 +63,8 @@ export default function StoresScreen() {
 
   return (
     <OnboardingLayout
-      step={3}
-      totalSteps={6}
+      step={4}
+      totalSteps={7}
       eyebrow={t('onboarding.required')}
       title={t('onboarding.storesTitle')}
       subtitle={t('onboarding.storesSubtitle')}
@@ -68,7 +75,7 @@ export default function StoresScreen() {
       onContinue={handleContinue}
     >
       <View style={styles.grid}>
-        {CATALOG_STORES.map((s) => {
+        {shown.map((s) => {
           const on = selected.includes(s.key);
           return (
             <TouchableOpacity

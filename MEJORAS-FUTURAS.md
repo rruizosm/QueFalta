@@ -11,7 +11,7 @@
 | Feature | Estado actual | Esfuerzo | Prioridad |
 |---|---|---|---|
 | **B. Comparador de precios** | Construido y desactivado por kill-switch | Bajo (reactivar + pulir matching) | **1º** |
-| **A. Nutriscore estilo Yuka** | Backend hecho y aparcado en rama `health-score-wip` | Medio (UI + extender a espejos + run) | **2º** |
+| **A. Índice alimentario** | MVP UI Mercadona con Open Food Facts; fallback de visión aparcado | Medio (extender cobertura + persistencia) | **2º** |
 | **C. Plato → cesta** | No existe; se apoya en A y B | Alto (feature nueva) | **3º** |
 
 **El hilo común de las tres es el emparejamiento/relevancia de productos** — cualquier inversión ahí
@@ -37,11 +37,16 @@ paga tres veces. Ver la sección "Arquitectura de matching".
 
 ---
 
-## A. Nutriscore / nota de salud estilo Yuka
+## A. Índice alimentario
 
 ### Estado real
+- **MVP UI implementado en la ficha de Mercadona (2026-07-16):** Open Food Facts
+  aporta nutrición, NOVA y Green-Score por EAN; el cliente calcula el índice
+  0-100 con pesos dinámicos y muestra el desglose 1-10.
 - Backend (visión sobre `photos[1].zoom` — etiqueta trasera — → Nutri-Score) **hecho y aparcado**
-  en la rama `health-score-wip` (commit `37d903b`). Falta la UI y ejecutar el proceso.
+  en la rama `health-score-wip` (commit `37d903b`). Su fórmula 60/30/10 y la
+  columna antigua `ean13` ya no coinciden con el índice actual: sirve como
+  referencia para un futuro fallback, no debe integrarse tal cual.
 - Cobertura de datos de ingredientes/nutrición por súper:
 
 | Súper | Datos estructurados | Cómo |
@@ -61,11 +66,12 @@ estructurada (Dia, Carrefour, bonÀrea) la nota se calcula **sin LLM, gratis y s
 La visión con Haiku queda solo para Mercadona (coste por producto, one-shot + incremental).
 
 ### Trabajo pendiente
-1. Extender el cálculo determinista de Nutri-Score a Dia/Carrefour/bonÀrea.
-2. Ejecutar el pipeline de visión de Mercadona (rama `health-score-wip`).
-3. UI de la nota (0-100) en la ficha de producto.
-4. Decidir Plus vs gratis (estaba diseñado como feature Plus).
-5. (Opcional, caro) Bonpreu vía headless.
+1. Extender el índice a los otros súper con EAN o ficha nutricional estructurada.
+2. Rediseñar el pipeline de visión como fallback para Mercadona sin ficha en
+   Open Food Facts (usar `ean`, `source_wh` y la fórmula 60/25/15 actual).
+3. Decidir si se precalcula/persiste para disponer del índice sin depender de
+   una consulta en vivo a Open Food Facts.
+4. (Opcional, caro) Bonpreu vía headless.
 
 ---
 

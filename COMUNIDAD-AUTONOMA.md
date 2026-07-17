@@ -5,6 +5,11 @@
 > **filtrar qué supermercados** aparecen en el catálogo (los regionales solo en su
 > zona; los nacionales siempre). Escrito para que otra sesión lo implemente sin
 > re-investigar. Rutas reales `archivo:línea` verificadas el 2026-07-12.
+>
+> ⚠️ **Cambio 2026-07-16 (§13):** la app ya NO pide la CCAA con un selector:
+> pide el **código postal** y deriva la comunidad de sus 2 primeros dígitos.
+> Se guarda además `profiles.postal_code`. Los §5–§8 describen la UX original
+> con selector; la mecánica (gate, guardado, filtro) sigue vigente.
 
 ---
 
@@ -632,42 +637,110 @@ Toast de error de guardado: reutilizar `onboarding.saveError` (ya existe).
 
 ## 11. Checklist de implementación por fases
 
+> Implementado el 2026-07-13 (typecheck verde, sin validar en device). Cuando se
+> escribió este doc había 12 súpers; al implementar ya había 14 (`hiperdino` y
+> `alcampo` en `stores.ts`): ambos entraron directos en `STORE_REGIONS`
+> (Hiperdino `ES-CN`; Alcampo nacional = `null`), sin líneas comentadas.
+
 ### F0 — Modelo de datos y constantes
-- [ ] `supabase/migrations/profile_region.sql` (columna `region text`, §2). Ejecutar en Supabase.
-- [ ] `src/constants/regions.ts` nuevo (`RegionCode`, `REGION_ALL`, `REGION_CODES`, `STORE_REGIONS`, `storeInRegion`, `storesForRegion`, `REGION_MERCADONA_NAME`) — §4.
-- [ ] `src/api/profile.ts`: `UserProfile.region`, `fetchProfile` select+map (`:39`, `:45-57`), `updateProfile` (`:60-80`).
-- [ ] i18n: bloque `region:` + claves `onboarding.region*` + `profile.region` (es y ca) — §9.
+- [x] `supabase/migrations/profile_region.sql` (columna `region text`, §2). ⚠️ **PENDIENTE ejecutar en Supabase** (imprescindible antes de arrancar: `fetchProfile` ya selecciona `region`).
+- [x] `src/constants/regions.ts` nuevo (`RegionCode`, `REGION_ALL`, `REGION_CODES`, `STORE_REGIONS`, `storeInRegion`, `storesForRegion`, `nationalStores`, `REGION_MERCADONA_NAME`) — §4.
+- [x] `src/api/profile.ts`: `UserProfile.region`, `fetchProfile` select+map, `updateProfile`.
+- [x] i18n: bloque `region:` (con `title`/`hint` para Ajustes) + claves `onboarding.region*` + `profile.region` (es y ca) — §9.
 
 ### F1 — Onboarding
-- [ ] `src/components/RegionPicker.tsx` (lista reutilizable de CCAA + "Toda España").
-- [ ] `src/screens/onboarding/RegionScreen.tsx` (usa `OnboardingLayout` step 3/7 + RegionPicker).
-- [ ] `OnboardingNavigator.tsx:26`: registrar `Region` entre `Username` y `Stores`.
-- [ ] `types.ts:328` (`OnboardingStackParamList`): `Region: undefined`.
-- [ ] `UsernameScreen.tsx`: `onContinue` → `navigate('Region')`.
-- [ ] Renumerar `totalSteps` a 7 en Name/Username/Stores/Avatar/Friends/Group (§5) + step de Region = 3.
-- [ ] `StoresScreen.tsx:71`: filtrar grid con `storeInRegion` + pre-marcar los de la región (`:33`).
+- [x] `src/components/RegionPicker.tsx` (lista reutilizable de CCAA + "Toda España"; estética LanguageStepScreen).
+- [x] `src/screens/onboarding/RegionScreen.tsx` (`OnboardingLayout` step 3/7 + RegionPicker; guarda al continuar).
+- [x] `OnboardingNavigator.tsx`: `Region` registrado entre `Username` y `Stores`.
+- [x] `types.ts` (`OnboardingStackParamList`): `Region: undefined`.
+- [x] `UsernameScreen.tsx`: `onContinue` → `navigate('Region')`.
+- [x] `totalSteps` a 7 en Name(1)/Username(2)/Stores(4)/Avatar(5)/Friends(6)/Group(7); Region = 3.
+- [x] `StoresScreen.tsx`: grid filtrado con `storeInRegion` + pre-marcados los de la región.
 
 ### F2 — Gate usuarios existentes
-- [ ] `src/screens/onboarding/RegionGateScreen.tsx` (sin barra de progreso; guarda + applyProfile).
-- [ ] `navigation/index.tsx`: gate `if (profile && profile.onboardedAt && !profile.region)` tras el de onboarding (`:338`).
+- [x] `src/screens/onboarding/RegionGateScreen.tsx` (sin barra de progreso; guarda + applyProfile desmonta el gate).
+- [x] `navigation/index.tsx`: gate `if (profile && profile.onboardedAt && !profile.region)` tras el de onboarding.
 
 ### F3 — Filtrado
-- [ ] `CatalogScreen.tsx:140-143`: `enabledStores = prefStores ∩ storeInRegion(region)` + fallback a nacionales si vacío.
-- [ ] `CatalogStoresScreen.tsx:71`: filtrar `CATALOG_STORES` por región (con "Toda España" = todos).
-- [ ] Verificar auto-salto `CatalogScreen.tsx:181-185` con la nueva `enabledStores`.
-- [ ] NO tocar `groupByStore`/`storeOfItem` (`stores.ts:63-85`).
+- [x] `CatalogScreen.tsx`: `enabledStores = prefStores ∩ región`, con fallback a `storesForRegion(region)` si la intersección queda vacía (nunca catálogo vacío).
+- [x] `CatalogStoresScreen.tsx`: lista filtrada por región (con "Toda España" = todos). La preferencia guardada NO se reescribe.
+- [x] Auto-salto de CatalogScreen verificado: `enabledStores` nunca queda vacía → siempre salta a una tienda visible.
+- [x] `groupByStore`/`storeOfItem` intactos (el filtro es de descubrimiento, no de lo ya guardado).
 
 ### F4 — Ajustes
-- [ ] `RegionSettingsScreen` (o RegionGateScreen con atrás) + registrar en `HomeStack` (`navigation/index.tsx:144-163`) + `HomeStackParamList` (`types.ts`).
-- [ ] `ProfileScreen.tsx:218`: `ProfileRow` "Comunidad autónoma" con `regionSummary` → navega a la pantalla.
+- [x] `src/screens/RegionSettingsScreen.tsx` (header estilo CatalogStoresScreen + RegionPicker, guardado optimista con revert) + registrado en `HomeStack` y `HomeStackParamList` (`RegionSettings`).
+- [x] `ProfileScreen.tsx`: `ProfileRow` "Comunidad autónoma" (icono location) con `regionSummary` bajo la fila de Supermercados.
 
 ### F5 — Pulido / verificación
-- [ ] Typecheck verde (`CatalogStore` cerrado; ojo Hiperdino comentado).
+- [x] Typecheck verde (`npx tsc --noEmit`, 2026-07-13).
+- [ ] ⚠️ Ejecutar `profile_region.sql` en Supabase ANTES de arrancar la app con este código.
 - [ ] Probar en device: onboarding nuevo (paso 3), gate de usuario existente, cambio en Ajustes, catálogo filtrado, "Toda España".
-- [ ] (Futuro) Hiperdino 13º: añadir a `stores.ts:8`+`:11` y descomentar en `STORE_REGIONS`.
 - [ ] (Futuro) Sinergia: filtrar `mercadona_products.regions` por la CCAA del usuario vía `REGION_MERCADONA_NAME` (fuera de alcance).
 
 ---
+
+## 12. F6 — Disponibilidad y precios regionales de productos
+
+Implementado: la CCAA deja de ser solo un filtro de supermercados y pasa a
+filtrar también los productos que se pueden descubrir en Mercadona, Carrefour y Dia.
+
+- `mercadona_products.regions`, `carrefour_products.regions` y
+  `dia_products.regions` comparten el contrato: `NULL` o `{}` significa producto
+  nacional; una lista contiene las CCAA donde el producto se vende.
+- Las búsquedas, la navegación del catálogo y las subcategorías aplican el filtro
+  en Supabase: productos nacionales más los que contienen la CCAA elegida. Con
+  `region = NULL` o `ES` no se filtra.
+- El catálogo vuelve a consultar al cambiar la CCAA y las pantallas de
+  subcategoría hacen lo mismo; por tanto, no se muestran productos de otra zona.
+- Se elimina la insignia de exclamación de lista/cuadrícula y el texto de
+  disponibilidad de la ficha. La apertura del detalle mantiene la CCAA para no
+  resolver un producto fuera de su zona.
+
+Carrefour aplica además `carrefour_products.regional_prices` al adaptar cada
+producto: sustituye precio, formato y precio por unidad cuando existe una
+sobrescritura para la CCAA seleccionada. Mercadona y Dia solo almacenan por ahora
+disponibilidad regional, por lo que conservan el precio base sincronizado.
+
+---
+
+## 13. F7 — Código postal en lugar de selector de CCAA (2026-07-16)
+
+**Motivación** (ver `MULTIZONA-CONSUM-PLUSFRESC.md`): el CP es la clave nativa de
+TODAS las APIs que regionalizan (Mercadona almacén, Carrefour werks, Dia zona,
+Consum `X-TOL-ZONE`, Plusfresc centro) y **contiene** la CCAA (2 primeros dígitos
+= provincia → CCAA, mapeo fijo). Además Plusfresc y Consum regionalizan por
+provincia/centro DENTRO de una misma CCAA — granularidad que el selector de
+comunidad no puede capturar. Pedir el CP captura hoy el dato que esas features
+necesitarán mañana, sin volver a preguntar.
+
+**Qué cambió** (typecheck verde 2026-07-16; misma migración pendiente):
+
+- `profile_region.sql`: añade TAMBIÉN `profiles.postal_code text` (nullable).
+  `region` se sigue guardando (derivada); `postal_code` NULL si eligió "Toda
+  España". Sigue SIN ejecutarse en Supabase (una sola migración para todo).
+- `regions.ts`: `PROVINCE_REGION` (52 prefijos "01"–"52" → `RegionCode`) +
+  `regionFromPostalCode(cp)` (valida formato y prefijo; null = inválido).
+- `api/profile.ts`: `UserProfile.postalCode` + select/update de `postal_code`.
+- `RegionPicker.tsx`: reescrito — input numérico de 5 dígitos con confirmación
+  de la comunidad derivada (tarjeta accent "Tu comunidad autónoma: Cataluña ✓"),
+  error si el prefijo no existe, y debajo la tarjeta "Toda España" (sin CP).
+  Nuevo contrato: `{ region, postalCode }` via `onChange`; `region: null` =
+  selección incompleta (el padre deshabilita Continuar / no guarda). El CP en
+  edición vive en estado local del picker.
+- Las 3 pantallas (`RegionScreen` 3/7, `RegionGateScreen`, `RegionSettingsScreen`)
+  guardan `{ region, postalCode }`. Ajustes solo guarda estados completos
+  (CP válido o "Toda España") y re-monta el picker (key) si el guardado
+  optimista revierte por fallo de red.
+- i18n: `onboarding.regionTitle` → "¿Cuál es tu código postal?" (+gate),
+  `region.postalCodePlaceholder/postalCodeInvalid/detected/orAll`, `region.hint`
+  actualizado (es+ca).
+
+**Sin cambios**: el FILTRO sigue siendo por `region` (CCAA) en todas partes —
+`storeInRegion`, catálogo, Stores, Ajustes de súpers, F6. `postal_code` hoy solo
+se almacena. La fila de Perfil sigue mostrando el nombre de la comunidad.
+
+**Privacidad**: el CP no se muestra en ninguna vista pública de perfil y solo lo
+selecciona `fetchProfile` (fila propia). Documentado en la migración.
 
 ### Resumen de archivos reales tocados
 

@@ -31,6 +31,9 @@ interface Props {
    *  sin márgenes propios, se ajusta al contenido y omite el "Añade productos a"
    *  mostrando solo el nombre del grupo. */
   compact?: boolean;
+  /** Omite el prefijo "Añade productos a" y muestra solo el nombre del grupo,
+   *  conservando el layout normal (a diferencia de compact). */
+  nameOnly?: boolean;
 }
 
 /**
@@ -39,7 +42,7 @@ interface Props {
  * donde estés (catálogo, categorías, subcategorías, productos, favoritos…).
  * Sin carrito activo invita a elegir uno.
  */
-export default function ActiveCartBanner({ topInset = false, compact = false }: Props) {
+export default function ActiveCartBanner({ topInset = false, compact = false, nameOnly = false }: Props) {
   const styles = useThemedStyles(themedStyles);
   const insets = useSafeAreaInsets();
   const bannerTop = useHeaderTopPadding(52);
@@ -132,7 +135,7 @@ export default function ActiveCartBanner({ topInset = false, compact = false }: 
           <>
             <Ionicons name="cart" size={18} color={colors.accent} />
             <Text style={[styles.text, compact && styles.textCompact]} numberOfLines={1}>
-              {compact ? (
+              {compact || nameOnly ? (
                 <Text style={styles.group}>{activeCart.groupName}</Text>
               ) : (
                 <>{t('banner.addTo')} <Text style={styles.group}>{activeCart.groupName}</Text></>

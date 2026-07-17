@@ -12,6 +12,7 @@ import { useTranslation } from '../context/LanguageContext';
 import { consumToUI } from '../lib/productAdapters';
 import StoreProductList from '../components/StoreProductList';
 import ActiveCartBanner from '../components/ActiveCartBanner';
+import { useProfile } from '../context/ProfileContext';
 
 type RouteProps = RouteProp<CatalogStackParamList, 'ConsumProducts'>;
 
@@ -20,6 +21,7 @@ export default function ConsumProductsScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { categoryId, categoryName, parentName } = useRoute<RouteProps>().params;
+  const { profile } = useProfile();
 
   const [products, setProducts] = useState<ConsumProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,11 +30,11 @@ export default function ConsumProductsScreen() {
   useEffect(() => {
     setLoading(true);
     setError(false);
-    fetchConsumProductsByCategory(categoryId)
+    fetchConsumProductsByCategory(categoryId, profile?.region ?? null, profile?.postalCode ?? null)
       .then(setProducts)
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [categoryId]);
+  }, [categoryId, profile?.region, profile?.postalCode]);
 
   const uiProducts = useMemo(() => products.map(consumToUI), [products]);
 

@@ -5,7 +5,7 @@ import { Image as ExpoImage } from 'expo-image';
 // Fuente ÚNICA del switcher del catálogo, de la preferencia de perfil
 // "Supermercados" y del agrupado de Lista/Cesta por tienda (de aquí salen los
 // nombres e iconos). Para añadir una tienda: súmala aquí, al tipo y a storeOfItem.
-export type CatalogStore = 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi' | 'hiperdino' | 'alcampo';
+export type CatalogStore = 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi' | 'hiperdino' | 'alcampo' | 'plusfresc';
 
 /** Metadatos (nombre + icono) en orden de aparición. */
 export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | null }[] = [
@@ -14,15 +14,16 @@ export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | n
   { key: 'carrefour', name: 'Carrefour',     icon: require('../../assets/stores/carrefour.png') },
   { key: 'bonarea',   name: 'bonÀrea',       icon: require('../../assets/stores/bonarea.png') },
   { key: 'consum',    name: 'Consum',        icon: require('../../assets/stores/consum.png') },
-  { key: 'dia',       name: 'Dia',           icon: require('../../assets/stores/dia.png') },
+  { key: 'dia',       name: 'Dia',           icon: require('../../assets/stores/dia.jpg') },
   { key: 'sorli',     name: 'Sorli',         icon: require('../../assets/stores/sorli.png') },
   { key: 'eroski',    name: 'Eroski',        icon: require('../../assets/stores/eroski.png') },
   { key: 'caprabo',   name: 'Caprabo',       icon: require('../../assets/stores/caprabo.png') },
   { key: 'condis',    name: 'Condis',        icon: require('../../assets/stores/condis.png') },
   { key: 'ametller',  name: 'Ametller Origen', icon: require('../../assets/stores/ametller.png') },
   { key: 'aldi',      name: 'Aldi',          icon: require('../../assets/stores/aldi.png') },
-  { key: 'hiperdino', name: 'HiperDino',     icon: require('../../assets/stores/hiperdino.png') },
+  { key: 'hiperdino', name: 'HiperDino',     icon: require('../../assets/stores/hiperdino.jpg') },
   { key: 'alcampo',   name: 'Alcampo',       icon: require('../../assets/stores/alcampo.png') },
+  { key: 'plusfresc', name: 'Plusfresc',     icon: require('../../assets/stores/plusfresc.png') },
 ];
 
 /** Orden canónico de las claves (para normalizar/ordenar selecciones). */
@@ -62,7 +63,8 @@ type StoreClue = { imageUrl?: string | null; mercadonaProductId?: string | null 
 // carrefour.es, bonarea.com, cdn-consum.aktiosdigitalservices.com, dia.es,
 // cdn.sorliclic.com, eroski.es, capraboacasa.com, cdn.condis.es, ametllerorigen.com,
 // scene7.com/is/image/aldinord (Aldi), cdn.hiperdino.es (HiperDino),
-// compraonline.alcampo.es (Alcampo). Mercadona también se reconoce por su id.
+// compraonline.alcampo.es (Alcampo), compra.plusfresc.cat (Plusfresc).
+// Mercadona también se reconoce por su id.
 export function storeOfItem(it: StoreClue): Store {
   const url = it.imageUrl ?? '';
   if (url.includes('bonpreuesclat')) return 'esclat';
@@ -79,6 +81,7 @@ export function storeOfItem(it: StoreClue): Store {
   if (url.includes('scene7.com/is/image/aldinord')) return 'aldi';
   if (url.includes('cdn.hiperdino')) return 'hiperdino';
   if (url.includes('alcampo')) return 'alcampo';
+  if (url.includes('plusfresc')) return 'plusfresc';
   return 'otros';
 }
 

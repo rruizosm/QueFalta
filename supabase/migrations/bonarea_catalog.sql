@@ -26,7 +26,7 @@ create table if not exists public.bonarea_products (
   retailer_product_id text,               -- = identifier (mismo valor; se guarda por simetría con las otras tiendas)
   display_name        text not null,      -- description
   thumbnail           text,               -- https://images.bonarea.com/<image[0]>
-  ean13               text,               -- la API no expone EAN → null
+  ean                 text,               -- la API no expone EAN → null
   category_id         text,               -- categoría "primaria" (1ª de category_ids)
   category_name       text,
   category_ids        text[] not null default '{}',  -- hoja(s) que listan el producto + TODOS sus ancestros (permite navegar por cualquier nivel)

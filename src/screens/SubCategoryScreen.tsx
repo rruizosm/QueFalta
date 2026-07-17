@@ -113,6 +113,12 @@ export default function SubCategoryScreen() {
         categoryName: item.name,
         parentName: categoryName,
       });
+    } else if (retailer === 'plusfresc') {
+      navigation.navigate('PlusfrescProducts', {
+        categoryId: String(item.id),
+        categoryName: item.name,
+        parentName: categoryName,
+      });
     } else {
       navigation.navigate('Products', {
         subcategoryId: Number(item.id),

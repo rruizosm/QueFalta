@@ -49,10 +49,6 @@ export interface MercadonaProduct {
    *  categoría N2 bajo la que se sincronizó, para que la Lista agrupe por zona al
    *  añadir desde búsqueda/navegación. El detalle (MercadonaProductDetail) sí la trae. */
   categories?: { id: number; name: string }[];
-  /** CCAA donde el producto es EXCLUSIVO (no está en el almacén nacional mad1), o
-   *  null/[] si es nacional. Lo adjunta el espejo desde la columna `regions`
-   *  (calculada por el sync multi-almacén). Dispara la insignia de exclamación. */
-  regions?: string[] | null;
 }
 
 export interface PriceInstructions {
@@ -83,6 +79,39 @@ export interface MercadonaProductDetail {
     allergens?: string | null;
     ingredients?: string | null;
   };
+  product_information?: MercadonaProductInformation | null;
+}
+
+export interface MercadonaProductInformation {
+  ingredients?: {
+    detail?: string | null;
+    traces?: string | null;
+    accessible_text?: string | null;
+    mandatory_mention?: string | null;
+  } | null;
+  nutritional_information?: MercadonaNutritionalInformation[] | null;
+  legal_notice?: string | null;
+}
+
+export interface MercadonaNutritionalInformation {
+  per_quantity?: string | null;
+  energy_joules?: MercadonaNutrientValue | null;
+  energy_calories?: MercadonaNutrientValue | null;
+  nutrients?: MercadonaNutrient[] | null;
+  accessible_text?: string | null;
+}
+
+export interface MercadonaNutrientValue {
+  name?: string | null;
+  amount?: string | null;
+  unit?: string | null;
+}
+
+export interface MercadonaNutrient extends MercadonaNutrientValue {
+  sub_nutrients?: {
+    subtitle?: string | null;
+    items?: MercadonaNutrientValue[] | null;
+  } | null;
 }
 
 export interface ProductPhoto {
@@ -221,6 +250,7 @@ export type HomeStackParamList = {
   EditProfile: undefined;
   PrivacySecurity: undefined;
   CatalogStores: undefined;
+  RegionSettings: undefined;
   Appearance: undefined;
   Language: undefined;
   History: undefined;
@@ -237,7 +267,7 @@ export type CatalogStackParamList = {
     color?: string;
     /** Subcategorías N2. Mercadona usa ids numéricos; el resto de espejos, ids string. */
     subcategories: { id: string | number; name: string }[];
-    retailer?: 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi' | 'hiperdino' | 'alcampo';
+    retailer?: 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi' | 'hiperdino' | 'alcampo' | 'plusfresc';
   };
   Products: {
     subcategoryId: number;
@@ -324,6 +354,12 @@ export type CatalogStackParamList = {
     categoryName: string;
     parentName?: string;
   };
+  /** Productos de una subcategoría de Plusfresc (lee del espejo). */
+  PlusfrescProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentName?: string;
+  };
 };
 
 export type GroupsStackParamList = {
@@ -335,13 +371,14 @@ export type GroupsStackParamList = {
 
 /** Asistente de bienvenida (primera vez). Se muestra cuando hay sesión pero el
  *  perfil aún no tiene onboarded_at. Empieza por el idioma (Language), luego
- *  pasos obligatorios (Username, Stores) y opcionales (Avatar, Friends, Group).
- *  Ver src/screens/onboarding/. */
+ *  pasos obligatorios (Username, Region, Stores) y opcionales (Avatar, Friends,
+ *  Group). Ver src/screens/onboarding/. */
 export type OnboardingStackParamList = {
   Welcome: undefined;
   Language: undefined;
   Name: undefined;
   Username: undefined;
+  Region: undefined;
   Stores: undefined;
   Avatar: undefined;
   Friends: undefined;

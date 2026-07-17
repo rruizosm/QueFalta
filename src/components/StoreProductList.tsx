@@ -18,10 +18,10 @@ import type { UIProduct } from '../lib/productAdapters';
 import { sortByName, sortByRelevance } from '../lib/sort';
 import QuantityStepper from './QuantityStepper';
 import ProductImage from './ProductImage';
-import ExclusiveBadge from './ExclusiveBadge';
 import ViewModeToggle, { type ViewMode } from './ViewModeToggle';
 import ProductGridCard from './ProductGridCard';
 import StoreProductModal, { type ProductRef } from './StoreProductModal';
+import GlassSurface from './GlassSurface';
 
 // Cuadrícula: 3 por fila (idéntica a las subcategorías).
 const GRID_COLS = 3;
@@ -249,8 +249,11 @@ export default function StoreProductList({
       uri={item.imageUrl}
       name={item.name}
       price={item.priceLabel}
+      priceChange={item.priceChange ? {
+        prevLabel: item.priceChange.prevLabel,
+        direction: item.priceChange.direction,
+      } : null}
       emoji={emoji}
-      exclusive={item.exclusiveRegions != null}
       onPress={() => setDetail({ store: item.store, id: item.id })}
     />
   );
@@ -261,6 +264,7 @@ export default function StoreProductList({
     const fav = isProductFavorite(item.store, item.id);
     const stepper = (
       <QuantityStepper
+        vertical
         value={qty}
         onIncrement={() => increment(item.id)}
         onDecrement={() => decrement(item.id)}
@@ -279,7 +283,11 @@ export default function StoreProductList({
           }
         }}
       >
-        <View style={[styles.row, active && styles.rowActive]}>
+        <GlassSurface
+          style={[styles.row, active && styles.rowActive]}
+          tintColor={active ? colors.accentLight : undefined}
+          fallbackColor={active ? colors.accentLight : colors.white}
+        >
           {fav && <View style={styles.favBar} />}
           <TouchableOpacity activeOpacity={0.7} onPress={() => setDetail({ store: item.store, id: item.id })}>
             {item.imageUrl ? (
@@ -289,14 +297,32 @@ export default function StoreProductList({
                 {emoji ? <Text style={{ fontSize: 22 }}>{emoji}</Text> : <Ionicons name="image-outline" size={22} color={colors.inkFaint} />}
               </View>
             )}
-            {item.exclusiveRegions ? <ExclusiveBadge size={16} style={styles.exclusiveBadge} /> : null}
           </TouchableOpacity>
           <View style={styles.info}>
+            {/* Tipo de oferta resaltado en rojo, ARRIBA del nombre (Ofertas). */}
+            {item.offerTag ? (
+              <View style={styles.offerTag}>
+                <Ionicons name="pricetag" size={10} color={colors.white} />
+                <Text style={styles.offerTagText} numberOfLines={1}>{item.offerTag}</Text>
+              </View>
+            ) : null}
             <Text style={styles.name} numberOfLines={2}>{item.name}</Text>
             {/* Precio destacado y, debajo, una línea gris "tamaño · €/unidad". La
                 2ª línea dispone de todo el ancho, así que nada se trunca (a
-                diferencia de tres columnas peleando por el hueco bajo el nombre). */}
-            {item.priceLabel ? <Text style={styles.price}>{item.priceLabel}</Text> : null}
+                diferencia de tres columnas peleando por el hueco bajo el nombre).
+                Con priceChange (Cambios de precios) la línea de precio pasa a
+                "anterior tachado · actual en verde/rojo · (%)". */}
+            {item.priceChange ? (
+              <View style={styles.changeRow}>
+                <Text style={styles.changePrev}>{item.priceChange.prevLabel}</Text>
+                <Text style={[styles.changePrice, { color: item.priceChange.direction === 'down' ? colors.ok : colors.red }]}>
+                  {item.priceLabel}
+                </Text>
+                <Text style={[styles.changePct, { color: item.priceChange.direction === 'down' ? colors.ok : colors.red }]}>
+                  ({item.priceChange.pctLabel})
+                </Text>
+              </View>
+            ) : item.priceLabel ? <Text style={styles.price}>{item.priceLabel}</Text> : null}
             {(item.metaLabel || item.pricePerUnitLabel) ? (
               <Text style={styles.sub} numberOfLines={1}>
                 {[item.metaLabel, item.pricePerUnitLabel].filter(Boolean).join('  ·  ')}
@@ -310,7 +336,7 @@ export default function StoreProductList({
               {stepper}
             </View>
           ) : stepper}
-        </View>
+        </GlassSurface>
       </Swipeable>
     );
   };
@@ -418,7 +444,7 @@ export default function StoreProductList({
         </View>
       )}
 
-      <StoreProductModal target={detail} onClose={() => setDetail(null)} />
+      <StoreProductModal target={detail} onClose={() => setDetail(null)} fullScreen />
     </View>
   );
 }
@@ -442,7 +468,8 @@ const themedStyles = () => StyleSheet.create({
 
   list: { paddingHorizontal: 16, paddingBottom: 110, paddingTop: 4 },
   gridRow: { gap: GRID_GAP },
-  gridContent: { paddingHorizontal: 16, paddingBottom: 110, paddingTop: 4, gap: GRID_GAP },
+  // Entre filas hay más aire que entre columnas (GRID_GAP + 10).
+  gridContent: { paddingHorizontal: 16, paddingBottom: 110, paddingTop: 4, gap: GRID_GAP + 10 },
 
   row: {
     flexDirection: 'row', alignItems: 'center',
@@ -455,14 +482,30 @@ const themedStyles = () => StyleSheet.create({
     flex: 1, backgroundColor: colors.accent,
     alignItems: 'flex-start', justifyContent: 'center', paddingLeft: 26,
   },
-  thumb: { width: 50, height: 50, flex: 0 },
+  thumb: { width: 60, height: 60, flex: 0 },
   thumbPlaceholder: { backgroundColor: colors.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
-  // Insignia de exclusividad regional, esquina superior izquierda de la miniatura.
-  exclusiveBadge: { position: 'absolute', top: -5, left: -5 },
   info: { flex: 1, minWidth: 0 },
+  // Etiqueta de oferta: píldora roja llamativa, sobre el nombre.
+  offerTag: {
+    alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: colors.red, borderRadius: 5,
+    paddingHorizontal: 7, paddingVertical: 3, marginBottom: 4,
+  },
+  offerTagText: {
+    fontSize: 11, fontFamily: fonts.bold, color: colors.white,
+    letterSpacing: 0.2, textTransform: 'uppercase',
+  },
   name: { fontSize: 13.5, fontFamily: fonts.semibold, color: colors.ink, lineHeight: 18 },
   // Precio del envase, destacado.
   price: { fontSize: 15, fontFamily: fonts.bold, color: colors.accent, marginTop: 4 },
+  // Cambio de precio: "anterior tachado · actual coloreado · (%)", alineado por base.
+  changeRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6, marginTop: 4 },
+  changePrev: {
+    fontSize: 12, fontFamily: fonts.semibold, color: colors.inkSoft,
+    textDecorationLine: 'line-through',
+  },
+  changePrice: { fontSize: 16, fontFamily: fonts.bold },
+  changePct: { fontSize: 11.5, fontFamily: fonts.bold },
   // Línea secundaria gris: "tamaño · €/unidad" (con todo el ancho disponible).
   sub: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
 

@@ -24,6 +24,12 @@ upsert del sync falla por columnas inexistentes. Los datos de promo vienen embeb
 en las MISMAS páginas de listado que ya se recorren (badge + precio tachado del SSR),
 así que no añade peticiones.
 
+Para el **multi-zona por comunidad autónoma** (ver "Multi-zona" abajo), ejecuta también
+[`supabase/migrations/carrefour_regions.sql`](../supabase/migrations/carrefour_regions.sql)
+(columnas `regions text[]` + `regional_prices jsonb`). **IMPRESCINDIBLE antes del próximo
+sync**: el upsert ya incluye esas columnas en cada fila y falla sin ellas (como
+`carrefour_offers.sql`).
+
 ## 2. Poner la service_role key en `.env.local`
 
 `MercaAppMobile/.env.local` (gitignored) ya tiene `EXPO_PUBLIC_SUPABASE_URL`.
@@ -44,8 +50,11 @@ Desde PowerShell:
 & "C:\Users\ruben\OneDrive\Escritorio\MercaApp\MercaAppMobile\scripts\run-carrefour-sync.ps1"
 ```
 
-Debe terminar con `[carrefour] OK` y poblar ~16.000 productos. El log queda en
-`scripts/logs/carrefour-sync-<fecha>.log`.
+Debe terminar con `[carrefour] OK`. El **barrido multi-zona** (~18 almacenes, una
+capital por comunidad) recorre el catálogo entero una vez por zona → tarda **~2 h** y
+puebla la UNIÓN de todas las zonas (más de los ~16.000 de solo-Madrid, por los
+exclusivos regionales). Para una prueba rápida usa `MAX_ZONES=2 MAX_CATEGORIES=5
+DRY_RUN=1`. El log queda en `scripts/logs/carrefour-sync-<fecha>.log`.
 
 ## 4. Programarlo 1×/semana (lunes 08:00)
 
@@ -55,7 +64,7 @@ Pega esto en PowerShell (crea la tarea "QueFalta - Sync Carrefour", semanal los 
 $ps1 = "C:\Users\ruben\OneDrive\Escritorio\MercaApp\MercaAppMobile\scripts\run-carrefour-sync.ps1"
 $action   = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$ps1`""
 $trigger  = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday -At 8:00am
-$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 40)
+$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 4)
 Register-ScheduledTask -TaskName 'QueFalta - Sync Carrefour' -Action $action -Trigger $trigger -Settings $settings -Description 'Sincroniza el catalogo de Carrefour a Supabase' -Force
 ```
 
@@ -94,6 +103,49 @@ días siguientes solo lo nuevo/caducado). En DRY_RUN se imprime la ficha de los 
 | `DETAIL_TTL_DAYS` | `30` | refresca la ficha si su `detail_synced_at` es más viejo que esto |
 | `DETAIL_MAX` | ∞ | tope de fichas por ejecución (reparte el crawl bajo Cloudflare en días) |
 | `DETAIL_CONCURRENCY` | `3` | PDPs de ficha en paralelo (bajo para no irritar a Cloudflare) |
+
+## Multi-zona por comunidad autónoma
+
+Carrefour **regionaliza catálogo Y precio** por código postal: cada CP resuelve a un
+**almacén** (`werks_id`) distinto (48 en toda España, incluso sub-provincia: Madrid
+capital ≠ Las Rozas). El SSR elige almacén según la cookie `salepoint`
+(`salePointId|drive|CP|deliveryType|projectionDays`); **SIN cookie = Madrid** (COL
+PINAR, CP 28232). Truco: con un `salePointId` placeholder + el CP real,
+`/cloud-api/salepoints/v1/` re-resuelve el almacén de esa zona (el `?postalCode=` de la
+query se ignora, todo va por cookie).
+
+Verificado en vivo: en "aceites y vinagres" Las Palmas trae **224 productos vs 156** de
+Madrid (85 exclusivos: marcas canarias), Barcelona añade aceites catalanes, y el precio
+difiere en **43-59%** de los comunes. Un crawl único de Madrid se pierde miles de
+productos regionales.
+
+El sync barre **una capital por comunidad autónoma** (~19 CPs, deduplicados por almacén
+≈ 18 crawls; decisión de coste frente a los 48 almacenes), pasando la cookie del CP, y
+une los productos por `product_id`. Guarda (ver
+[`carrefour_regions.sql`](../supabase/migrations/carrefour_regions.sql)):
+
+- `regions text[]` — CCAA donde el producto está disponible; `NULL` = **nacional** (en
+  todas las CCAA barridas). Misma semántica que `mercadona/dia_products.regions`.
+- `regional_prices jsonb` — precio por CCAA cuando **difiere del de Madrid** (base):
+  `{ "<CCAA>": {"p":unit_price,"pf":price_format,"ppu":…,"ppuu":…,"av":disponible} }`;
+  `NULL` si el precio es uniforme.
+
+Las **columnas base** (`unit_price`, `price_format`…) siguen siendo las de **Madrid**
+(COL PINAR = comportamiento sin cookie) → **la app NO cambia** hasta implementar el
+filtro por comunidad (`src/constants/regions.ts`). Hoy solo se GUARDA, para no rehacer
+el barrido después. Madrid se barre primero (sus datos = los "por defecto").
+
+Variables útiles: `MAX_ZONES=N` (limita nº de almacenes; para pruebas o para partir el
+barrido) y `MAX_CATEGORIES=N` (limita nº de N2).
+
+**Orden a prueba de cortes + tope de ficha.** El sync guarda el **catálogo + `regions`/
+`regional_prices` PRIMERO** (log `[carrefour] catálogo + regions guardados`) y descarga la
+**ficha después**, en una 2ª pasada. Así, si la tarea se corta a media ficha (el 1er run
+multi-zona tiene ~17 000 fichas nuevas ≈ 3 h que, sumadas a las ~2 h de zonas, **no caben en
+la ventana de 4 h**), el catálogo ya quedó a salvo en Supabase. Para que cada run termine
+limpio con `[carrefour] OK`, `run-carrefour-sync.ps1` fija **`DETAIL_MAX=6000`** (tope de
+fichas por ejecución); el backlog de fichas se drena en ~3 runs semanales (la ficha es
+incremental, `DETAIL_TTL_DAYS=30`). Si amplías `-ExecutionTimeLimit`, sube o quita ese tope.
 
 ## Notas
 

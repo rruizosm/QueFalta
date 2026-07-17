@@ -8,14 +8,71 @@ import { supabase } from '../lib/supabase';
 import { getLanguage } from '../i18n';
 import type { MercadonaProduct } from '../types';
 import type { CatalogStore } from '../constants/stores';
-import { fetchNewArrivals } from './mercadona';
+import { REGION_ALL, REGION_MERCADONA_NAME, type RegionValue } from '../constants/regions';
+import { consumZoneFromPostalCode, plusfrescCenterFromPostalCode } from '../constants/retailerZones';
+import { fetchNewArrivals, resolveWarehouseForPostalCode } from './mercadona';
 // Solo type-only en sentido inverso (productAdapters importa los tipos de este
 // fichero con `import type`), así que este import NO crea un ciclo en runtime.
 import {
   mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
-  condisToUI, eroskiToUI, capraboToUI, ametllerToUI, aldiToUI, hiperdinoToUI, alcampoToUI,
+  condisToUI, eroskiToUI, capraboToUI, ametllerToUI, aldiToUI, hiperdinoToUI, alcampoToUI, plusfrescToUI,
   type UIProduct,
 } from '../lib/productAdapters';
+
+export interface ProductPriceChange {
+  previousPrice: number;
+  direction: 'up' | 'down';
+}
+
+const PRICE_CHANGE_TABLE: Record<CatalogStore, string> = {
+  mercadona: 'mercadona_products', esclat: 'bonpreu_products', carrefour: 'carrefour_products',
+  bonarea: 'bonarea_products', consum: 'consum_products', dia: 'dia_products', sorli: 'sorli_products',
+  eroski: 'eroski_products', caprabo: 'caprabo_products', condis: 'condis_products',
+  ametller: 'ametller_products', aldi: 'aldi_products', hiperdino: 'hiperdino_products',
+  alcampo: 'alcampo_products', plusfresc: 'plusfresc_products',
+};
+
+/** Última variación semanal del precio base de un producto. Si la migración aún
+ * no existe en un espejo, se oculta el indicador sin impedir abrir la ficha. */
+export async function fetchProductPriceChange(
+  store: CatalogStore,
+  productId: string,
+  postalCode: string | null = null,
+): Promise<ProductPriceChange | null> {
+  const locationId = locationForPriceHistory(store, postalCode);
+  if (locationId && (store === 'consum' || store === 'plusfresc')) {
+    const { data, error } = await supabase
+      .from('catalog_location_price_changes')
+      .select('prev_unit_price, new_unit_price, price_delta_pct, changed_at')
+      .eq('store', store)
+      .eq('location_id', locationId)
+      .eq('product_id', productId)
+      .gte('changed_at', weekAgoISO())
+      .order('changed_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error || !data) return null;
+    const previousPrice = Number(data.prev_unit_price);
+    const delta = Number(data.price_delta_pct);
+    if (!Number.isFinite(previousPrice) || previousPrice < 0 || !Number.isFinite(delta) || delta === 0) {
+      return null;
+    }
+    return { previousPrice, direction: delta < 0 ? 'down' : 'up' };
+  }
+  const { data, error } = await supabase
+    .from(PRICE_CHANGE_TABLE[store])
+    .select('prev_unit_price, price_delta_pct, price_changed_at')
+    .eq('id', productId)
+    .gte('price_changed_at', weekAgoISO())
+    .maybeSingle();
+  if (error || !data) return null;
+  const previousPrice = Number(data.prev_unit_price);
+  const delta = Number(data.price_delta_pct);
+  if (!Number.isFinite(previousPrice) || previousPrice < 0 || !Number.isFinite(delta) || delta === 0) {
+    return null;
+  }
+  return { previousPrice, direction: delta < 0 ? 'down' : 'up' };
+}
 
 // Misma normalización que la columna generada `display_name_norm` de la BD
 // (NFD + quitar diacríticos combinantes U+0300–U+036F + minúsculas). Igual que
@@ -40,6 +97,23 @@ function filterByNameWords<T extends { ilike(column: string, pattern: string): T
   const meaningful = words.filter((w) => w.length >= 2);
   const tokens = meaningful.length > 0 ? meaningful : words;
   return tokens.reduce((b, w) => b.ilike(column, `%${w}%`), builder);
+}
+
+/** Restringe un espejo a los productos disponibles en la CCAA seleccionada.
+ * `regions` solo se rellena para productos exclusivos: NULL (y las filas
+ * antiguas con {}) equivale a disponibilidad nacional. */
+function filterRegionalAvailability(query: any, region: RegionValue | null): any {
+  if (region == null || region === REGION_ALL) return query;
+  const community = REGION_MERCADONA_NAME[region];
+  if (!community) return query;
+  const pgArray = `{${JSON.stringify(community)}}`;
+  return query.or(`regions.is.null,regions.eq.{},regions.cs.${pgArray}`);
+}
+
+/** `centers` is NULL for products present in every Plusfresc center. */
+function filterCenterAvailability(query: any, center: string | null): any {
+  if (!center) return query;
+  return query.or(`centers.is.null,centers.eq.{},centers.cs.{${JSON.stringify(center)}}`);
 }
 
 // ─── Navegación del catálogo (pestaña "Productos" sin búsqueda) ──────────────
@@ -67,12 +141,16 @@ async function keysetPage(
   cursor: BrowseCursor | null,
   limit: number,
   apply?: (q: any) => any,
+  // Orden descendente (Ofertas ordenadas por precio de mayor a menor): invierte
+  // el order y la condición del cursor. Quien lo use debe excluir filas con
+  // `orderCol` null (el cursor no sabe compararlas).
+  desc = false,
 ): Promise<{ rows: any[]; nextCursor: BrowseCursor | null }> {
   let q = supabase
     .from(table)
     .select(`${cols}, ${orderCol}`)
     .eq('published', true)
-    .order(orderCol, { ascending: true })
+    .order(orderCol, { ascending: !desc })
     .order('id', { ascending: true })
     .limit(limit);
   if (apply) q = apply(q);
@@ -81,7 +159,8 @@ async function keysetPage(
     // rompan la sintaxis del filtro `or` de PostgREST.
     const n = JSON.stringify(cursor.name);
     const i = JSON.stringify(cursor.id);
-    q = q.or(`${orderCol}.gt.${n},and(${orderCol}.eq.${n},id.gt.${i})`);
+    const cmp = desc ? 'lt' : 'gt';
+    q = q.or(`${orderCol}.${cmp}.${n},and(${orderCol}.eq.${n},id.gt.${i})`);
   }
   const { data, error } = await q;
   if (error) throw error;
@@ -106,21 +185,22 @@ function mirrorMercadonaProduct(r: any, ca: boolean): MercadonaProduct {
   const categories = p.categories ?? (r.category_name
     ? [{ id: Number(r.category_id) || 0, name: r.category_name as string }]
     : undefined);
-  // `regions` (CCAA de exclusividad) es columna del espejo, no del raw de la API.
-  const regions = Array.isArray(r.regions) && r.regions.length ? (r.regions as string[]) : null;
-  return { ...p, display_name, categories, regions };
+  return { ...p, display_name, categories };
 }
 
 /** Búsqueda por nombre en TODO el catálogo (server-side). Bilingüe (Fase 2):
  *  en català busca y muestra el nombre catalán (columnas display_name_ca[_norm]
  *  del espejo); en castellano, las columnas originales. Si el sync aún no rellenó
  *  el catalán, `display_name_ca` es null → cae al castellano sin romperse. */
-export async function searchProducts(query: string, limit = 50): Promise<MercadonaProduct[]> {
+export async function searchProducts(query: string, region: RegionValue | null, limit = 50): Promise<MercadonaProduct[]> {
   const q = query.trim();
   if (q.length < 2) return [];
   const ca = getLanguage() === 'ca';
   const { data, error } = await filterByNameWords(
-    supabase.from('mercadona_products').select('raw, display_name_ca, category_name, category_id, regions').eq('published', true),
+    filterRegionalAvailability(
+      supabase.from('mercadona_products').select('raw, display_name_ca, category_name, category_id').eq('published', true),
+      region,
+    ),
     q,
     ca ? 'display_name_ca_norm' : 'display_name_norm',
   ).limit(limit);
@@ -130,13 +210,13 @@ export async function searchProducts(query: string, limit = 50): Promise<Mercado
 
 /** Navegación alfabética del catálogo de Mercadona (sin búsqueda), paginada por
  *  keyset. Bilingüe: en català ordena/muestra por el nombre catalán. */
-export async function browseProducts(cursor: BrowseCursor | null, limit = 50): Promise<BrowsePage<MercadonaProduct>> {
+export async function browseProducts(cursor: BrowseCursor | null, region: RegionValue | null, limit = 50): Promise<BrowsePage<MercadonaProduct>> {
   const ca = getLanguage() === 'ca';
   const { rows, nextCursor } = await keysetPage(
     'mercadona_products',
-    'id, raw, display_name_ca, category_name, category_id, regions',
+    'id, raw, display_name_ca, category_name, category_id',
     ca ? 'display_name_ca_norm' : 'display_name_norm',
-    cursor, limit,
+    cursor, limit, (q) => filterRegionalAvailability(q, region),
   );
   const items = rows.map((r: any) => mirrorMercadonaProduct(r, ca));
   return { items, nextCursor };
@@ -150,14 +230,16 @@ export async function browseProducts(cursor: BrowseCursor | null, limit = 50): P
  *  supers. `category_id` es la N2 bajo la que se sincronizó (= subcategoryId que
  *  navega ProductsScreen). Bilingüe: en català muestra el nombre catalán si existe.
  *  El orden lo pone StoreProductList (reordena alfabéticamente), no hace falta aquí. */
-export async function fetchMercadonaProductsByCategory(categoryId: number, limit = 1000): Promise<MercadonaProduct[]> {
+export async function fetchMercadonaProductsByCategory(categoryId: number, region: RegionValue | null, limit = 1000): Promise<MercadonaProduct[]> {
   const ca = getLanguage() === 'ca';
-  const { data, error } = await supabase
-    .from('mercadona_products')
-    .select('raw, display_name_ca, category_name, category_id, regions')
-    .eq('published', true)
-    .eq('category_id', categoryId)
-    .limit(limit);
+  const { data, error } = await filterRegionalAvailability(
+    supabase
+      .from('mercadona_products')
+      .select('raw, display_name_ca, category_name, category_id')
+      .eq('published', true)
+      .eq('category_id', categoryId),
+    region,
+  ).limit(limit);
   if (error) throw error;
   return (data ?? []).map((r: any) => mirrorMercadonaProduct(r, ca));
 }
@@ -185,22 +267,18 @@ export async function fetchMercadonaNames(ids: string[]): Promise<Record<string,
   return out;
 }
 
-/** Almacén (`wh`) + CCAA de exclusividad de un producto Mercadona, según el espejo.
- *  El detalle por defecto usa mad1 y da 404 para productos regionales (solo existen
- *  en otra zona, p.ej. aguas catalanas); con `wh` se reintenta el detalle con su
- *  almacén, y `regions` alimenta la línea "Producto solo disponible en …" de la
- *  ficha. `wh` es null si no se conoce (productos sin source_wh → cae a mad1);
- *  `regions` es null para los nacionales. */
-export async function fetchProductMirror(id: string): Promise<{ wh: string | null; regions: string[] | null }> {
+/** Almacén (`wh`) y EAN de un producto Mercadona según el espejo. El detalle por
+ * defecto usa mad1; para un producto regional se reintenta con un almacén que sí
+ * lo vende, evitando el 404. */
+export async function fetchProductMirror(id: string): Promise<{ wh: string | null; ean: string | null }> {
   const { data, error } = await supabase
     .from('mercadona_products')
-    .select('source_wh, regions')
+    .select('source_wh, ean')
     .eq('id', id)
     .maybeSingle();
-  if (error || !data) return { wh: null, regions: null };
-  const row = data as { source_wh: string | null; regions: string[] | null };
-  const regions = Array.isArray(row.regions) && row.regions.length ? row.regions : null;
-  return { wh: row.source_wh ?? null, regions };
+  if (error || !data) return { wh: null, ean: null };
+  const row = data as { source_wh: string | null; ean: string | null };
+  return { wh: row.source_wh ?? null, ean: row.ean ?? null };
 }
 
 /** Deduce la tienda a partir del id de producto: Bonpreu usa uuids; Mercadona,
@@ -358,13 +436,23 @@ export interface CarrefourProduct {
   operator: string | null;
 }
 
-const mapCarrefour = (r: any): CarrefourProduct => ({
+/** Carrefour guarda Madrid en las columnas base y solo persiste en
+ * `regional_prices` los valores distintos. Selecciona el override de la CCAA
+ * activa sin alterar las consultas de otras pantallas (ofertas/histórico). */
+const mapCarrefour = (r: any, region: RegionValue | null = null): CarrefourProduct => {
+  const community = region != null && region !== REGION_ALL
+    ? REGION_MERCADONA_NAME[region]
+    : null;
+  const regional = community && r.regional_prices && typeof r.regional_prices === 'object'
+    ? r.regional_prices[community]
+    : null;
+  return {
   id: r.id,
   displayName: r.display_name,
   thumbnail: r.thumbnail ?? null,
-  unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
-  priceFormat: r.price_format ?? null,
-  pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
+  unitPrice: regional?.p != null ? Number(regional.p) : r.unit_price != null ? Number(r.unit_price) : null,
+  priceFormat: regional?.pf ?? r.price_format ?? null,
+  pricePerUnit: regional?.ppu != null ? ppuLabel(regional.ppu, regional.ppuu) : ppuLabel(r.price_per_unit, r.price_per_unit_unit),
   categoryName: r.category_name ?? null,
   // Solo presentes cuando se piden (detalle); en listados quedan undefined → null.
   promoName: r.promo_name ?? null,
@@ -379,44 +467,53 @@ const mapCarrefour = (r: any): CarrefourProduct => ({
   denomination: r.denomination ?? null,
   origin: r.origin ?? null,
   operator: r.operator ?? null,
-});
+  };
+};
 
 // El €/unidad de medida del raw venía sin unidad ("192,50 €"); se usa el €/unidad
 // canónico (columnas l/kg/ud) para mostrar "192,50 €/kg" como en el resto de supers.
 const CARREFOUR_COLS =
-  'id, display_name, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+  'id, display_name, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, regions, regional_prices';
 // Columnas de ficha + oferta: solo para el detalle (no se piden en listados).
 const CARREFOUR_DETAIL_COLS =
   `${CARREFOUR_COLS}, promo_name, promo_text, promo_end, strikethrough_price`
   + `, ingredients, allergens, nutrition, conservation, preparation, denomination, origin, operator`;
 
 /** Búsqueda por nombre en el catálogo de Carrefour (server-side). */
-export async function searchCarrefourProducts(query: string, limit = 50): Promise<CarrefourProduct[]> {
+export async function searchCarrefourProducts(query: string, region: RegionValue | null, limit = 50): Promise<CarrefourProduct[]> {
   const q = query.trim();
   if (q.length < 2) return [];
   const { data, error } = await filterByNameWords(
-    supabase.from('carrefour_products').select(CARREFOUR_COLS).eq('published', true),
+    filterRegionalAvailability(
+      supabase.from('carrefour_products').select(CARREFOUR_COLS).eq('published', true),
+      region,
+    ),
     q,
   ).limit(limit);
   if (error) throw error;
-  return (data ?? []).map(mapCarrefour);
+  return (data ?? []).map((r: any) => mapCarrefour(r, region));
 }
 
 /** Navegación alfabética del catálogo de Carrefour (sin búsqueda), keyset. */
-export async function browseCarrefourProducts(cursor: BrowseCursor | null, limit = 50): Promise<BrowsePage<CarrefourProduct>> {
-  const { rows, nextCursor } = await keysetPage('carrefour_products', CARREFOUR_COLS, 'display_name_norm', cursor, limit);
-  return { items: rows.map(mapCarrefour), nextCursor };
+export async function browseCarrefourProducts(cursor: BrowseCursor | null, region: RegionValue | null, limit = 50): Promise<BrowsePage<CarrefourProduct>> {
+  const { rows, nextCursor } = await keysetPage(
+    'carrefour_products', CARREFOUR_COLS, 'display_name_norm', cursor, limit,
+    (q) => filterRegionalAvailability(q, region),
+  );
+  return { items: rows.map((r) => mapCarrefour(r, region)), nextCursor };
 }
 
 /** Un producto de Carrefour por id (p.ej. para abrir el detalle desde la comparativa). */
-export async function fetchCarrefourProduct(id: string): Promise<CarrefourProduct | null> {
-  const { data, error } = await supabase
-    .from('carrefour_products')
-    .select(CARREFOUR_DETAIL_COLS)
-    .eq('id', id)
-    .maybeSingle();
+export async function fetchCarrefourProduct(id: string, region: RegionValue | null): Promise<CarrefourProduct | null> {
+  const { data, error } = await filterRegionalAvailability(
+    supabase
+      .from('carrefour_products')
+      .select(CARREFOUR_DETAIL_COLS)
+      .eq('id', id),
+    region,
+  ).maybeSingle();
   if (error) throw error;
-  return data ? mapCarrefour(data) : null;
+  return data ? mapCarrefour(data, region) : null;
 }
 
 /** Una categoría N1 de Carrefour con sus subcategorías (N2) con productos. */
@@ -448,16 +545,18 @@ export async function fetchCarrefourCategoryTree(): Promise<CarrefourCategory[]>
 }
 
 /** Productos de una subcategoría (N2) de Carrefour, vía category_ids. */
-export async function fetchCarrefourProductsByCategory(categoryId: string, limit = 400): Promise<CarrefourProduct[]> {
-  const { data, error } = await supabase
-    .from('carrefour_products')
-    .select(CARREFOUR_COLS)
-    .eq('published', true)
-    .contains('category_ids', [categoryId])
-    .order('display_name')
-    .limit(limit);
+export async function fetchCarrefourProductsByCategory(categoryId: string, region: RegionValue | null, limit = 400): Promise<CarrefourProduct[]> {
+  const { data, error } = await filterRegionalAvailability(
+    supabase
+      .from('carrefour_products')
+      .select(CARREFOUR_COLS)
+      .eq('published', true)
+      .contains('category_ids', [categoryId])
+      .order('display_name'),
+    region,
+  ).limit(limit);
   if (error) throw error;
-  return (data ?? []).map(mapCarrefour);
+  return (data ?? []).map((r: any) => mapCarrefour(r, region));
 }
 
 // ─── bonÀrea (tabla bonarea_products, espejo aparte) ─────────────────────────
@@ -618,48 +717,52 @@ export interface ConsumProduct {
   categoryName: string | null;
 }
 
-const mapConsum = (r: any): ConsumProduct => ({
+const mapConsum = (r: any, postalCode: string | null = null): ConsumProduct => {
+  const regional = consumZoneFromPostalCode(postalCode) && r.regional_prices && typeof r.regional_prices === 'object'
+    ? r.regional_prices[consumZoneFromPostalCode(postalCode)!]
+    : null;
+  return {
   id: r.id,
   displayName: r.display_name,
   brand: r.brand ?? null,
   packaging: r.packaging ?? null,
   thumbnail: r.thumbnail ?? null,
-  unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
-  priceFormat: r.price_format ?? null,
-  pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
+  unitPrice: regional?.p != null ? Number(regional.p) : r.unit_price != null ? Number(r.unit_price) : null,
+  priceFormat: regional?.pf ?? r.price_format ?? null,
+  pricePerUnit: regional?.ppu != null ? ppuLabel(regional.ppu, regional.ppuu) : ppuLabel(r.price_per_unit, r.price_per_unit_unit),
   categoryName: r.category_name ?? null,
-});
+  };
+};
 
 const CONSUM_COLS =
-  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, regions, regional_prices, promo_base_price, offer_zones';
 
 /** Búsqueda por nombre en el catálogo de Consum (server-side). */
-export async function searchConsumProducts(query: string, limit = 50): Promise<ConsumProduct[]> {
+export async function searchConsumProducts(query: string, region: RegionValue | null, postalCode: string | null, limit = 50): Promise<ConsumProduct[]> {
   const q = query.trim();
   if (q.length < 2) return [];
   const { data, error } = await filterByNameWords(
-    supabase.from('consum_products').select(CONSUM_COLS).eq('published', true),
+    filterRegionalAvailability(supabase.from('consum_products').select(CONSUM_COLS).eq('published', true), region),
     q,
   ).limit(limit);
   if (error) throw error;
-  return (data ?? []).map(mapConsum);
+  return (data ?? []).map((r: any) => mapConsum(r, postalCode));
 }
 
 /** Navegación alfabética del catálogo de Consum (sin búsqueda), keyset. */
-export async function browseConsumProducts(cursor: BrowseCursor | null, limit = 50): Promise<BrowsePage<ConsumProduct>> {
-  const { rows, nextCursor } = await keysetPage('consum_products', CONSUM_COLS, 'display_name_norm', cursor, limit);
-  return { items: rows.map(mapConsum), nextCursor };
+export async function browseConsumProducts(cursor: BrowseCursor | null, region: RegionValue | null, postalCode: string | null, limit = 50): Promise<BrowsePage<ConsumProduct>> {
+  const { rows, nextCursor } = await keysetPage('consum_products', CONSUM_COLS, 'display_name_norm', cursor, limit, (q) => filterRegionalAvailability(q, region));
+  return { items: rows.map((r) => mapConsum(r, postalCode)), nextCursor };
 }
 
 /** Un producto de Consum por id (p.ej. para abrir el detalle desde la comparativa). */
-export async function fetchConsumProduct(id: string): Promise<ConsumProduct | null> {
-  const { data, error } = await supabase
+export async function fetchConsumProduct(id: string, region: RegionValue | null, postalCode: string | null): Promise<ConsumProduct | null> {
+  const { data, error } = await filterRegionalAvailability(supabase
     .from('consum_products')
     .select(CONSUM_COLS)
-    .eq('id', id)
-    .maybeSingle();
+    .eq('id', id), region).maybeSingle();
   if (error) throw error;
-  return data ? mapConsum(data) : null;
+  return data ? mapConsum(data, postalCode) : null;
 }
 
 /** Una categoría N1 de Consum con sus subcategorías (N2) con productos. */
@@ -692,16 +795,15 @@ export async function fetchConsumCategoryTree(): Promise<ConsumCategory[]> {
 }
 
 /** Productos de una subcategoría (N2) de Consum, vía category_ids (incluye ancestros). */
-export async function fetchConsumProductsByCategory(categoryId: string, limit = 600): Promise<ConsumProduct[]> {
-  const { data, error } = await supabase
+export async function fetchConsumProductsByCategory(categoryId: string, region: RegionValue | null, postalCode: string | null, limit = 600): Promise<ConsumProduct[]> {
+  const { data, error } = await filterRegionalAvailability(supabase
     .from('consum_products')
     .select(CONSUM_COLS)
     .eq('published', true)
     .contains('category_ids', [categoryId])
-    .order('display_name')
-    .limit(limit);
+    .order('display_name'), region).limit(limit);
   if (error) throw error;
-  return (data ?? []).map(mapConsum);
+  return (data ?? []).map((r: any) => mapConsum(r, postalCode));
 }
 
 // ─── Dia (tabla dia_products, espejo aparte) ─────────────────────────────────
@@ -748,17 +850,20 @@ const mapDia = (r: any): DiaProduct => ({
 });
 
 const DIA_COLS =
-  'id, display_name, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+  'id, display_name, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, regions';
 // Columnas de ficha: solo para el detalle (cargas pesadas → no se piden en listados).
 const DIA_DETAIL_COLS =
   `${DIA_COLS}, description, ingredients, nutrition, conservation, preparation, denomination, operator`;
 
 /** Búsqueda por nombre en el catálogo de Dia (server-side). */
-export async function searchDiaProducts(query: string, limit = 50): Promise<DiaProduct[]> {
+export async function searchDiaProducts(query: string, region: RegionValue | null, limit = 50): Promise<DiaProduct[]> {
   const q = query.trim();
   if (q.length < 2) return [];
   const { data, error } = await filterByNameWords(
-    supabase.from('dia_products').select(DIA_COLS).eq('published', true),
+    filterRegionalAvailability(
+      supabase.from('dia_products').select(DIA_COLS).eq('published', true),
+      region,
+    ),
     q,
   ).limit(limit);
   if (error) throw error;
@@ -766,18 +871,23 @@ export async function searchDiaProducts(query: string, limit = 50): Promise<DiaP
 }
 
 /** Navegación alfabética del catálogo de Dia (sin búsqueda), keyset. */
-export async function browseDiaProducts(cursor: BrowseCursor | null, limit = 50): Promise<BrowsePage<DiaProduct>> {
-  const { rows, nextCursor } = await keysetPage('dia_products', DIA_COLS, 'display_name_norm', cursor, limit);
+export async function browseDiaProducts(cursor: BrowseCursor | null, region: RegionValue | null, limit = 50): Promise<BrowsePage<DiaProduct>> {
+  const { rows, nextCursor } = await keysetPage(
+    'dia_products', DIA_COLS, 'display_name_norm', cursor, limit,
+    (q) => filterRegionalAvailability(q, region),
+  );
   return { items: rows.map(mapDia), nextCursor };
 }
 
 /** Un producto de Dia por id (p.ej. para abrir el detalle desde la comparativa). */
-export async function fetchDiaProduct(id: string): Promise<DiaProduct | null> {
-  const { data, error } = await supabase
-    .from('dia_products')
-    .select(DIA_DETAIL_COLS)
-    .eq('id', id)
-    .maybeSingle();
+export async function fetchDiaProduct(id: string, region: RegionValue | null): Promise<DiaProduct | null> {
+  const { data, error } = await filterRegionalAvailability(
+    supabase
+      .from('dia_products')
+      .select(DIA_DETAIL_COLS)
+      .eq('id', id),
+    region,
+  ).maybeSingle();
   if (error) throw error;
   return data ? mapDia(data) : null;
 }
@@ -811,14 +921,16 @@ export async function fetchDiaCategoryTree(): Promise<DiaCategory[]> {
 }
 
 /** Productos de una subcategoría (N2) de Dia, vía category_ids. */
-export async function fetchDiaProductsByCategory(categoryId: string, limit = 600): Promise<DiaProduct[]> {
-  const { data, error } = await supabase
-    .from('dia_products')
-    .select(DIA_COLS)
-    .eq('published', true)
-    .contains('category_ids', [categoryId])
-    .order('display_name')
-    .limit(limit);
+export async function fetchDiaProductsByCategory(categoryId: string, region: RegionValue | null, limit = 600): Promise<DiaProduct[]> {
+  const { data, error } = await filterRegionalAvailability(
+    supabase
+      .from('dia_products')
+      .select(DIA_COLS)
+      .eq('published', true)
+      .contains('category_ids', [categoryId])
+      .order('display_name'),
+    region,
+  ).limit(limit);
   if (error) throw error;
   return (data ?? []).map(mapDia);
 }
@@ -838,7 +950,18 @@ export interface SorliProduct {
   priceFormat: string | null;  // precio mostrado ("3,79 €")
   pricePerUnit: string | null; // etiqueta €/unidad canónica ("1,90 €/kg")
   categoryName: string | null;
+  nutriScoreGrade: 'A' | 'B' | 'C' | 'D' | 'E' | null;
 }
+
+const nutriScoreGrade = (value: unknown): SorliProduct['nutriScoreGrade'] => {
+  const candidate = typeof value === 'object' && value != null
+    ? (value as any).grade ?? (value as any).letter ?? (value as any).value
+    : value;
+  const grade = typeof candidate === 'string' ? candidate.trim().toUpperCase() : null;
+  return grade && ['A', 'B', 'C', 'D', 'E'].includes(grade)
+    ? grade as SorliProduct['nutriScoreGrade']
+    : null;
+};
 
 // Bilingüe: en català muestra display_name_ca si existe (fallback al castellano).
 const mapSorli = (r: any): SorliProduct => {
@@ -852,11 +975,12 @@ const mapSorli = (r: any): SorliProduct => {
     priceFormat: r.price_format ?? null,
     pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
     categoryName: r.category_name ?? null,
+    nutriScoreGrade: nutriScoreGrade(r.nutri_score),
   };
 };
 
 const SORLI_COLS =
-  'id, display_name, display_name_ca, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+  'id, display_name, display_name_ca, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, nutri_score';
 
 /** Búsqueda por nombre en el catálogo de Sorli (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
@@ -1209,7 +1333,7 @@ const mapAldi = (r: any): AldiProduct => ({
 });
 
 const ALDI_COLS =
-  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name, promo_base_price, promo_end';
 
 /** Búsqueda por nombre en el catálogo de Aldi (server-side). */
 export async function searchAldiProducts(query: string, limit = 50): Promise<AldiProduct[]> {
@@ -1312,7 +1436,7 @@ const mapHiperdino = (r: any): HiperdinoProduct => ({
 });
 
 const HIPERDINO_COLS =
-  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_base_price';
 
 /** Búsqueda por nombre en el catálogo de HiperDino (server-side). */
 export async function searchHiperdinoProducts(query: string, limit = 50): Promise<HiperdinoProduct[]> {
@@ -1607,6 +1731,139 @@ export const fetchCapraboProduct = (id: string) => fetchTapestryProduct('caprabo
 export const fetchCapraboCategoryTree = () => fetchTapestryTree('caprabo_categories');
 export const fetchCapraboProductsByCategory = (categoryId: string, limit = 600) => fetchTapestryByCategory('caprabo_products', categoryId, limit);
 
+// ─── Plusfresc (tabla plusfresc_products, espejo aparte) ─────────────────────
+// Mismo modelo que bonÀrea/Ametller (espejo + category_ids + ppu en columnas +
+// FICHA bilingüe es/ca). Lo puebla scripts/sync-plusfresc.mjs desde la API REST
+// abierta de wscompra.plusfresc.cat (JWT de invitado, fetch puro). Árbol de
+// hasta 4 niveles por prefijo de id; category_ids incluye ancestros. Ficha:
+// descripción/ingredientes/ALÉRGENOS/nutrición/conservación (único espejo con
+// alérgenos legibles junto a Carrefour); las columnas _ca solo existen si la
+// API los dio traducidos (fallback al castellano vía pickLang).
+export interface PlusfrescProduct {
+  id: string;                  // item_id ("002843")
+  displayName: string;         // incluye marca y formato ("Leche fresca entera LETONA, 1.5 l")
+  brand: string | null;
+  thumbnail: string | null;
+  unitPrice: number | null;    // precio del envase
+  priceFormat: string | null;  // precio mostrado ("2,89 €")
+  pricePerUnit: string | null; // etiqueta €/unidad canónica ("1,92 €/L")
+  categoryName: string | null;
+  // Ficha (solo en fetchPlusfrescProduct; null en listados/búsqueda). Bilingüe.
+  description: string | null;
+  ingredients: string | null;
+  allergens: string | null;
+  nutrition: string | null;
+  conservation: string | null;
+}
+
+// Bilingüe: en català muestra display_name_ca / ficha _ca si existen (fallback es).
+const mapPlusfresc = (r: any, postalCode: string | null = null): PlusfrescProduct => {
+  const ca = getLanguage() === 'ca';
+  const center = plusfrescCenterFromPostalCode(postalCode);
+  const regional = center && r.center_prices && typeof r.center_prices === 'object'
+    ? r.center_prices[center]
+    : null;
+  return {
+    id: r.id,
+    displayName: ca && r.display_name_ca ? r.display_name_ca : r.display_name,
+    brand: r.brand ?? null,
+    thumbnail: r.thumbnail ?? null,
+    unitPrice: regional?.p != null ? Number(regional.p) : r.unit_price != null ? Number(r.unit_price) : null,
+    priceFormat: regional?.pf ?? r.price_format ?? null,
+    pricePerUnit: regional?.ppu != null ? ppuLabel(regional.ppu, regional.ppuu) : ppuLabel(r.price_per_unit, r.price_per_unit_unit),
+    categoryName: r.category_name ?? null,
+    // Ficha (solo presente en detalle; en listados queda undefined → null).
+    description: pickLang(r.description, r.description_ca),
+    ingredients: pickLang(r.ingredients, r.ingredients_ca),
+    allergens: pickLang(r.allergens, r.allergens_ca),
+    nutrition: pickLang(r.nutrition, r.nutrition_ca),
+    conservation: pickLang(r.conservation, r.conservation_ca),
+  };
+};
+
+const PLUSFRESC_COLS =
+  'id, display_name, display_name_ca, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, centers, center_prices, promo_name, promo_name_ca, promo_offer_price, promo_base_price, promo_end, offer_centers';
+// Columnas de ficha (es + ca): solo para el detalle (no en listados).
+const PLUSFRESC_DETAIL_COLS =
+  `${PLUSFRESC_COLS}, description, ingredients, allergens, nutrition, conservation`
+  + `, description_ca, ingredients_ca, allergens_ca, nutrition_ca, conservation_ca`;
+
+/** Búsqueda por nombre en el catálogo de Plusfresc (server-side). Bilingüe: en català
+ *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
+export async function searchPlusfrescProducts(query: string, postalCode: string | null, limit = 50): Promise<PlusfrescProduct[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const ca = getLanguage() === 'ca';
+  const { data, error } = await filterByNameWords(
+    filterCenterAvailability(supabase.from('plusfresc_products').select(PLUSFRESC_COLS).eq('published', true), plusfrescCenterFromPostalCode(postalCode)),
+    q,
+    ca ? 'display_name_ca_norm' : 'display_name_norm',
+  ).limit(limit);
+  if (error) throw error;
+  return (data ?? []).map((r: any) => mapPlusfresc(r, postalCode));
+}
+
+/** Navegación alfabética del catálogo de Plusfresc (sin búsqueda), keyset. */
+export async function browsePlusfrescProducts(cursor: BrowseCursor | null, postalCode: string | null, limit = 50): Promise<BrowsePage<PlusfrescProduct>> {
+  const ca = getLanguage() === 'ca';
+  const { rows, nextCursor } = await keysetPage('plusfresc_products', PLUSFRESC_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, (q) => filterCenterAvailability(q, plusfrescCenterFromPostalCode(postalCode)));
+  return { items: rows.map((r) => mapPlusfresc(r, postalCode)), nextCursor };
+}
+
+/** Un producto de Plusfresc por id (con ficha; p.ej. para abrir el detalle). */
+export async function fetchPlusfrescProduct(id: string, postalCode: string | null): Promise<PlusfrescProduct | null> {
+  const { data, error } = await filterCenterAvailability(supabase
+    .from('plusfresc_products')
+    .select(PLUSFRESC_DETAIL_COLS)
+    .eq('id', id), plusfrescCenterFromPostalCode(postalCode)).maybeSingle();
+  if (error) throw error;
+  return data ? mapPlusfresc(data, postalCode) : null;
+}
+
+/** Una categoría N1 de Plusfresc con sus subcategorías (N2) con productos. */
+export interface PlusfrescCategory {
+  id: string;
+  name: string;
+  children: { id: string; name: string }[];
+}
+
+/** Árbol de categorías de Plusfresc (N1 → N2) desde el espejo. Bilingüe: en català
+ *  usa name_ca si existe (fallback al castellano). Se reordena en cliente. */
+export async function fetchPlusfrescCategoryTree(): Promise<PlusfrescCategory[]> {
+  const ca = getLanguage() === 'ca';
+  const { data, error } = await supabase
+    .from('plusfresc_categories')
+    .select('id, name, name_ca, parent_id, product_count')
+    .eq('published', true)
+    .order('name');
+  if (error) throw error;
+  const rows = data ?? [];
+  const nameOf = (r: any) => (ca && r.name_ca ? r.name_ca : r.name);
+  return rows
+    .filter((r: any) => r.parent_id == null)
+    .map((n1: any) => ({
+      id: n1.id,
+      name: nameOf(n1),
+      children: rows
+        .filter((c: any) => c.parent_id === n1.id && (c.product_count ?? 0) > 0)
+        .map((c: any) => ({ id: c.id, name: nameOf(c) })),
+    }))
+    .filter((n1) => n1.children.length > 0);
+}
+
+/** Productos de una subcategoría (N2) de Plusfresc, vía category_ids (incluye ancestros). */
+export async function fetchPlusfrescProductsByCategory(categoryId: string, postalCode: string | null, limit = 600): Promise<PlusfrescProduct[]> {
+  const ca = getLanguage() === 'ca';
+  const { data, error } = await filterCenterAvailability(supabase
+    .from('plusfresc_products')
+    .select(PLUSFRESC_COLS)
+    .eq('published', true)
+    .contains('category_ids', [categoryId])
+    .order(ca ? 'display_name_ca_norm' : 'display_name'), plusfrescCenterFromPostalCode(postalCode)).limit(limit);
+  if (error) throw error;
+  return (data ?? []).map((r: any) => mapPlusfresc(r, postalCode));
+}
+
 // ─── Comparativa: producto similar más barato entre supers (RPC similar_products) ─
 export interface SimilarProduct {
   store: CatalogStore;
@@ -1653,7 +1910,7 @@ const MIRROR_QUERY: Record<CatalogStore, { table: string; cols: string; toUI: (r
     table: 'mercadona_products',
     // unit_price se añade a las columnas de búsqueda para que fetchPriceChanges
     // tenga el precio nuevo como columna (el resto de súpers ya lo llevan).
-    cols: 'id, raw, display_name_ca, category_name, category_id, regions, unit_price',
+    cols: 'id, raw, display_name_ca, category_name, category_id, unit_price',
     toUI: (r) => mercadonaToUI(mirrorMercadonaProduct(r, getLanguage() === 'ca')),
   },
   esclat:    { table: 'bonpreu_products',   cols: BONPREU_COLS,   toUI: (r) => bonpreuToUI(mapBonpreu(r)) },
@@ -1669,7 +1926,28 @@ const MIRROR_QUERY: Record<CatalogStore, { table: string; cols: string; toUI: (r
   aldi:      { table: 'aldi_products',       cols: ALDI_COLS,      toUI: (r) => aldiToUI(mapAldi(r)) },
   hiperdino: { table: 'hiperdino_products',  cols: HIPERDINO_COLS, toUI: (r) => hiperdinoToUI(mapHiperdino(r)) },
   alcampo:   { table: 'alcampo_products',    cols: ALCAMPO_COLS,   toUI: (r) => alcampoToUI(mapAlcampo(r)) },
+  plusfresc: { table: 'plusfresc_products',  cols: PLUSFRESC_COLS, toUI: (r) => plusfrescToUI(mapPlusfresc(r)) },
 };
+
+/** Aplica la disponibilidad que cada espejo conoce. Los catálogos sin columnas
+ * regionales se mantienen tal cual; su visibilidad global se resuelve en UI por
+ * STORE_REGIONS. */
+function filterMirrorLocation(query: any, store: CatalogStore, region: RegionValue | null, postalCode: string | null): any {
+  if (store === 'mercadona' || store === 'carrefour' || store === 'consum' || store === 'dia') {
+    return filterRegionalAvailability(query, region);
+  }
+  if (store === 'plusfresc') return filterCenterAvailability(query, plusfrescCenterFromPostalCode(postalCode));
+  return query;
+}
+
+/** Mismo adaptador que el catálogo principal, pero conservando la ubicación del
+ * perfil al pintar feeds transversales (Novedades/Cambios de precios). */
+function mirrorToUIAtLocation(store: CatalogStore, row: any, region: RegionValue | null, postalCode: string | null): UIProduct {
+  if (store === 'carrefour') return carrefourToUI(mapCarrefour(row, region));
+  if (store === 'consum') return consumToUI(mapConsum(row, postalCode));
+  if (store === 'plusfresc') return plusfrescToUI(mapPlusfresc(row, postalCode));
+  return MIRROR_QUERY[store].toUI(row);
+}
 
 // Ventana de "esta semana": los syncs son semanales (lunes); 8 días cubren el
 // último lote con margen sin llegar a solapar dos.
@@ -1684,25 +1962,31 @@ const NEW_INITIAL_FILL_CAP = 400;
  *  novedades (curado por ellos, en vivo, disponible desde ya); el resto, la
  *  columna first_seen_at del espejo: los productos que APARECIERON en el
  *  último sync. Devuelve UIProduct listos para StoreProductList. */
-export async function fetchWeeklyNewProducts(store: CatalogStore, limit = 100): Promise<UIProduct[]> {
+export async function fetchWeeklyNewProducts(
+  store: CatalogStore,
+  region: RegionValue | null,
+  postalCode: string | null,
+  limit = 100,
+): Promise<UIProduct[]> {
   if (store === 'mercadona') {
     // El raw de new-arrivals no trae `categories` → categoryName null y el
     // producto cae en la zona "Otros" al añadirlo (igual que los favoritos).
-    const items = await fetchNewArrivals();
+    const warehouse = await resolveWarehouseForPostalCode(postalCode);
+    const items = await fetchNewArrivals(warehouse ?? undefined);
     return items.slice(0, limit).map((p) => mercadonaToUI(p));
   }
   const m = MIRROR_QUERY[store];
-  const { data, error, count } = await supabase
+  const { data, error, count } = await filterMirrorLocation(supabase
     .from(m.table)
     .select(m.cols, { count: 'exact' })
     .eq('published', true)
     .gte('first_seen_at', weekAgoISO())
     .order('first_seen_at', { ascending: false })
-    .order('display_name', { ascending: true })
+    .order('display_name', { ascending: true }), store, region, postalCode)
     .limit(limit);
   if (error) throw error;
   if ((count ?? 0) > NEW_INITIAL_FILL_CAP) return [];
-  return (data ?? []).map(m.toUI);
+  return (data ?? []).map((r: any) => mirrorToUIAtLocation(store, r, region, postalCode));
 }
 
 /** Un cambio de precio detectado por el trigger del espejo (catalog_price_changes.sql). */
@@ -1714,21 +1998,90 @@ export interface PriceChangeProduct {
   deltaPct: number;
 }
 
+function locationForPriceHistory(
+  store: CatalogStore,
+  postalCode: string | null,
+): string | null {
+  if (store === 'consum') return consumZoneFromPostalCode(postalCode);
+  if (store === 'plusfresc') return plusfrescCenterFromPostalCode(postalCode);
+  return null;
+}
+
+/** Price changes in the normalized location history. Product data is read from
+ * the catalog mirror afterwards so modals, cart and favorites keep working. */
+async function fetchLocationPriceChanges(
+  store: 'consum' | 'plusfresc',
+  locationId: string,
+  direction: 'down' | 'up',
+  region: RegionValue | null,
+  postalCode: string | null,
+  limit: number,
+): Promise<PriceChangeProduct[]> {
+  const down = direction === 'down';
+  let changesQuery = supabase
+    .from('catalog_location_price_changes')
+    .select('product_id, prev_unit_price, new_unit_price, price_delta_pct, changed_at')
+    .eq('store', store)
+    .eq('location_id', locationId)
+    .gte('changed_at', weekAgoISO());
+  changesQuery = down ? changesQuery.lt('price_delta_pct', 0) : changesQuery.gt('price_delta_pct', 0);
+  const { data: changes, error: changesError } = await changesQuery
+    .order('price_delta_pct', { ascending: down })
+    .order('changed_at', { ascending: false })
+    .limit(limit);
+  if (changesError) throw changesError;
+
+  // A product can change twice in one week. Preserve the current behavior of
+  // one card per product, using the most relevant change from the ordered feed.
+  const latestByProduct = new Map<string, any>();
+  for (const change of changes ?? []) {
+    if (!latestByProduct.has(change.product_id)) latestByProduct.set(change.product_id, change);
+  }
+  const productIds = [...latestByProduct.keys()];
+  if (productIds.length === 0) return [];
+
+  const m = MIRROR_QUERY[store];
+  const { data: products, error: productsError } = await filterMirrorLocation(supabase
+    .from(m.table)
+    .select(m.cols)
+    .in('id', productIds)
+    .eq('published', true), store, region, postalCode);
+  if (productsError) throw productsError;
+  const productById = new Map((products ?? []).map((product: any) => [product.id, product]));
+
+  return [...latestByProduct.values()].flatMap((change: any) => {
+    const product = productById.get(change.product_id);
+    if (!product) return [];
+    return [{
+      product: mirrorToUIAtLocation(store, product, region, postalCode),
+      prevPrice: Number(change.prev_unit_price),
+      newPrice: Number(change.new_unit_price),
+      deltaPct: Number(change.price_delta_pct),
+    }];
+  });
+}
+
 /** Cambios de precio de la última semana en un súper, con la mayor bajada o
  *  subida primero. Filtra y ordena por price_delta_pct, que calcula el trigger
  *  junto con prev_unit_price (PostgREST no compara columna contra columna). */
 export async function fetchPriceChanges(
   store: CatalogStore,
   direction: 'down' | 'up',
+  region: RegionValue | null,
+  postalCode: string | null,
   limit = 100,
 ): Promise<PriceChangeProduct[]> {
+  const locationId = locationForPriceHistory(store, postalCode);
+  if (locationId && (store === 'consum' || store === 'plusfresc')) {
+    return fetchLocationPriceChanges(store, locationId, direction, region, postalCode, limit);
+  }
   const m = MIRROR_QUERY[store];
   const down = direction === 'down';
-  let q = supabase
+  let q = filterMirrorLocation(supabase
     .from(m.table)
     .select(`${m.cols}, prev_unit_price, price_delta_pct`)
     .eq('published', true)
-    .gte('price_changed_at', weekAgoISO());
+    .gte('price_changed_at', weekAgoISO()), store, region, postalCode);
   q = down ? q.lt('price_delta_pct', 0) : q.gt('price_delta_pct', 0);
   const { data, error } = await q
     // Bajadas: el % más negativo primero (asc); subidas: el más positivo (desc).
@@ -1739,7 +2092,7 @@ export async function fetchPriceChanges(
   return (data ?? [])
     .filter((r: any) => r.unit_price != null && r.prev_unit_price != null && r.price_delta_pct != null)
     .map((r: any) => ({
-      product: m.toUI(r),
+      product: mirrorToUIAtLocation(store, r, region, postalCode),
       prevPrice: Number(r.prev_unit_price),
       newPrice: Number(r.unit_price),
       deltaPct: Number(r.price_delta_pct),
@@ -1751,15 +2104,45 @@ export async function fetchPriceChanges(
 // SSR de listado; ver carrefour_offers.sql). Mercadona no hace ofertas (precios
 // siempre bajos) y el resto de espejos no las publican de forma explotable.
 
-/** Súpers con ofertas (hoy solo Carrefour); OffersScreen monta su selector con
+/** Súpers con ofertas; OffersScreen monta su selector con
  *  esta lista, así que añadir un súper aquí + su fetch lo estrena en la UI. */
-export const OFFER_STORES: CatalogStore[] = ['carrefour'];
+export const OFFER_STORES: CatalogStore[] = ['carrefour', 'esclat', 'consum', 'plusfresc', 'hiperdino', 'aldi'];
 
 export interface CarrefourOffer {
   product: UIProduct;        // con el precio ACTUAL (rebajado si es descuento directo)
   promoName: string | null;  // "3x2", "2ª unidad -70%"… (null en descuento directo puro)
   promoEnd: string | null;   // fin de validez ISO ("2026-07-13"), null si el badge no lo traía
   prevPrice: number | null;  // precio anterior tachado (null en promos de lote)
+}
+/** Alias genérico: una oferta cualquiera de la pantalla "Ofertas" (varios súpers). */
+export type StoreOffer = CarrefourOffer;
+
+/** Filtros de la pantalla Ofertas (se aplican EN SERVIDOR: el listado es keyset
+ *  sobre miles de filas, filtrar solo lo ya cargado enseñaría resultados a
+ *  medias). Vacío/undefined = sin filtro. */
+export interface OfferFilters {
+  /** Búsqueda por nombre (insensible a acentos, palabras en cualquier orden). */
+  search?: string;
+  /** Categorías seleccionadas (multi); [] = todas. */
+  categories?: string[];
+  /** Rango de precio: min exclusivo, max inclusivo (null = sin tope). */
+  priceMin?: number | null;
+  priceMax?: number | null;
+  /** Orden por precio; sin él, alfabético. */
+  sort?: 'asc' | 'desc' | null;
+}
+
+// Condiciones comunes de OfferFilters sobre una query de espejo (todas se
+// AND-combinan con el filtro de oferta viva y el cursor). Con orden por precio
+// se excluyen filas sin precio: el cursor keyset no sabe compararlas.
+function applyOfferFilters(q: any, f: OfferFilters | undefined, normCol: string) {
+  if (!f) return q;
+  if (f.search && f.search.trim().length >= 2) q = filterByNameWords(q, f.search, normCol);
+  if (f.categories && f.categories.length > 0) q = q.in('category_name', f.categories);
+  if (f.priceMin != null && f.priceMin > 0) q = q.gt('unit_price', f.priceMin);
+  if (f.priceMax != null) q = q.lte('unit_price', f.priceMax);
+  if (f.sort) q = q.not('unit_price', 'is', null);
+  return q;
 }
 
 // "YYYY-MM-DD" en hora LOCAL (toISOString es UTC y adelanta/atrasa el día en
@@ -1769,6 +2152,76 @@ const todayLocalISO = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
+// Filtro PostgREST de "oferta viva" de Carrefour (compartido por el listado y
+// el recuento de categorías): precio tachado o promo de lote no caducada.
+const carrefourOfferLiveness = () =>
+  `strikethrough_price.not.is.null,and(promo_name.not.is.null,or(promo_end.is.null,promo_end.gte.${todayLocalISO()}))`;
+
+/** Categorías con ofertas vivas del súper (para la hoja de filtros), vía
+ *  agregado `count()` de PostgREST (una fila por categoría, sin traerse los
+ *  miles de productos). Si los agregados no estuvieran habilitados en el
+ *  proyecto, devuelve [] y la hoja simplemente no ofrece categoría. */
+export async function fetchOfferCategories(
+  store: CatalogStore,
+  region: RegionValue | null,
+  postalCode: string | null,
+): Promise<string[]> {
+  try {
+    // `as any`: el parser de tipos de supabase-js no entiende el select con
+    // agregado ("category_name, count()") y desborda la instanciación (TS2589).
+    let q: any;
+    if (store === 'esclat') {
+      q = (supabase.from('bonpreu_products').select('category_name, count()') as any)
+        .eq('published', true).not('promo_name', 'is', null).not('category_name', 'is', null);
+    } else if (store === 'consum') {
+      const zone = consumZoneFromPostalCode(postalCode);
+      if (!zone) return [];
+      q = filterRegionalAvailability(
+        (supabase.from('consum_products').select('category_name, count()') as any)
+          .eq('published', true)
+          .not('category_name', 'is', null)
+          .contains('offer_zones', [zone]),
+        region,
+      );
+    } else if (store === 'plusfresc') {
+      const center = plusfrescCenterFromPostalCode(postalCode);
+      if (!center) return [];
+      q = filterCenterAvailability(
+        (supabase.from('plusfresc_products').select('category_name, count()') as any)
+          .eq('published', true)
+          .not('category_name', 'is', null)
+          .contains('offer_centers', [center])
+          .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`),
+        center,
+      );
+    } else if (store === 'hiperdino') {
+      q = (supabase.from('hiperdino_products').select('category_name, count()') as any)
+        .eq('published', true)
+        .not('category_name', 'is', null)
+        .not('promo_base_price', 'is', null);
+    } else if (store === 'aldi') {
+      q = (supabase.from('aldi_products').select('category_name, count()') as any)
+        .eq('published', true)
+        .not('category_name', 'is', null)
+        .not('promo_base_price', 'is', null)
+        .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`);
+    } else {
+      q = filterRegionalAvailability(
+        (supabase.from('carrefour_products').select('category_name, count()') as any)
+          .eq('published', true).not('category_name', 'is', null).or(carrefourOfferLiveness()),
+        region,
+      );
+    }
+    const { data, error } = await q;
+    if (error) throw error;
+    return ((data ?? []) as any[])
+      .map((r) => String(r.category_name))
+      .sort((a: string, b: string) => a.localeCompare(b, 'es'));
+  } catch {
+    return [];
+  }
+}
+
 /** Ofertas vivas de Carrefour, paginadas por keyset (orden alfabético, todas
  *  alcanzables — nada de un limit sin order). Una fila tiene oferta viva si
  *  conserva precio tachado o si su promo de lote no ha caducado (promo_end
@@ -1777,24 +2230,256 @@ const todayLocalISO = () => {
  *  promos que expiraron a mitad de semana. */
 export async function fetchCarrefourOffers(
   cursor: BrowseCursor | null,
+  region: RegionValue | null,
   limit = 50,
+  filters?: OfferFilters,
 ): Promise<{ items: CarrefourOffer[]; nextCursor: BrowseCursor | null }> {
-  const today = todayLocalISO();
   const { rows, nextCursor } = await keysetPage(
     'carrefour_products',
     `${CARREFOUR_COLS}, promo_name, promo_end, strikethrough_price`,
-    'display_name_norm',
+    filters?.sort ? 'unit_price' : 'display_name_norm',
     cursor,
     limit,
-    (q) => q.or(
-      `strikethrough_price.not.is.null,and(promo_name.not.is.null,or(promo_end.is.null,promo_end.gte.${today}))`,
-    ),
+    (q) => applyOfferFilters(filterRegionalAvailability(q.or(carrefourOfferLiveness()), region), filters, 'display_name_norm'),
+    filters?.sort === 'desc',
   );
   const items = rows.map((r: any) => ({
-    product: carrefourToUI(mapCarrefour(r)),
+    product: carrefourToUI(mapCarrefour(r, region)),
     promoName: r.promo_name ?? null,
     promoEnd: r.promo_end ?? null,
     prevPrice: r.strikethrough_price != null ? Number(r.strikethrough_price) : null,
   }));
   return { items, nextCursor };
+}
+
+/** Ofertas de BonpreuEsclat: productos de la categoría "Ofertas" (bilingüe), que
+ *  el sync marca con `promo_name` = tipo de promo ("Precio rebajado", "2ª unidad
+ *  con descuento"…). En el listado de Bonpreu no hay precio tachado ni fecha de
+ *  caducidad → prevPrice/promoEnd van null y la oferta se ve mientras el sync la
+ *  siga listando (se limpia sola cuando el producto sale de "Ofertas"). Keyset
+ *  alfabético como Carrefour. Requiere supabase/migrations/bonpreu_offers.sql. */
+export async function fetchBonpreuOffers(
+  cursor: BrowseCursor | null,
+  limit = 50,
+  filters?: OfferFilters,
+): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
+  const ca = getLanguage() === 'ca';
+  const normCol = ca ? 'display_name_ca_norm' : 'display_name_norm';
+  const { rows, nextCursor } = await keysetPage(
+    'bonpreu_products',
+    `${BONPREU_COLS}, promo_name, promo_name_ca`,
+    filters?.sort ? 'unit_price' : normCol,
+    cursor,
+    limit,
+    (q) => applyOfferFilters(q.not('promo_name', 'is', null), filters, normCol),
+    filters?.sort === 'desc',
+  );
+  const items = rows.map((r: any) => ({
+    product: bonpreuToUI(mapBonpreu(r)),
+    promoName: (ca && r.promo_name_ca ? r.promo_name_ca : r.promo_name) ?? null,
+    promoEnd: null,
+    prevPrice: null,
+  }));
+  return { items, nextCursor };
+}
+
+/** La API de Consum solo considera oferta una fila con OFFER_PRICE. La zona se
+ * guarda por separado en offer_zones para que una bajada ordinaria de precio,
+ * aunque coincida con el sync anterior, nunca entre en esta pantalla. */
+function consumOfferAt(row: any, postalCode: string | null): { basePrice: number; offerPrice: number } | null {
+  const zone = consumZoneFromPostalCode(postalCode);
+  const regional = zone && row.regional_prices && typeof row.regional_prices === 'object'
+    ? row.regional_prices[zone]
+    : null;
+  const basePrice = regional?.pb ?? row.promo_base_price;
+  const offerPrice = regional?.p ?? row.unit_price;
+  if (basePrice == null || offerPrice == null || Number(basePrice) <= Number(offerPrice)) return null;
+  return { basePrice: Number(basePrice), offerPrice: Number(offerPrice) };
+}
+
+export async function fetchConsumOffers(
+  cursor: BrowseCursor | null,
+  region: RegionValue | null,
+  postalCode: string | null,
+  limit = 50,
+  filters?: OfferFilters,
+): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
+  const zone = consumZoneFromPostalCode(postalCode);
+  if (!zone) return { items: [], nextCursor: null };
+  const { rows, nextCursor } = await keysetPage(
+    'consum_products',
+    CONSUM_COLS,
+    filters?.sort ? 'unit_price' : 'display_name_norm',
+    cursor,
+    limit,
+    (q) => applyOfferFilters(
+      filterRegionalAvailability(q.contains('offer_zones', [zone]), region),
+      filters,
+      'display_name_norm',
+    ),
+    filters?.sort === 'desc',
+  );
+  const items = rows.flatMap((row: any) => {
+    const offer = consumOfferAt(row, postalCode);
+    if (!offer) return [];
+    return [{
+      product: consumToUI(mapConsum(row, postalCode)),
+      promoName: 'Oferta',
+      promoEnd: null,
+      prevPrice: offer.basePrice,
+    }];
+  });
+  return { items, nextCursor };
+}
+
+/** HiperDino solo entra en Ofertas cuando Magento publica un regular_price
+ * estrictamente mayor que el final_price actual. */
+export async function fetchHiperdinoOffers(
+  cursor: BrowseCursor | null,
+  limit = 50,
+  filters?: OfferFilters,
+): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
+  const { rows, nextCursor } = await keysetPage(
+    'hiperdino_products',
+    HIPERDINO_COLS,
+    filters?.sort ? 'unit_price' : 'display_name_norm',
+    cursor,
+    limit,
+    (q) => applyOfferFilters(q.not('promo_base_price', 'is', null), filters, 'display_name_norm'),
+    filters?.sort === 'desc',
+  );
+  const items = rows.flatMap((row: any) => {
+    if (row.unit_price == null || row.promo_base_price == null || Number(row.promo_base_price) <= Number(row.unit_price)) return [];
+    return [{
+      product: hiperdinoToUI(mapHiperdino(row)),
+      promoName: 'Oferta',
+      promoEnd: null,
+      prevPrice: Number(row.promo_base_price),
+    }];
+  });
+  return { items, nextCursor };
+}
+
+/** Aldi expone el precio tachado y la vigencia en el hit de Algolia. */
+export async function fetchAldiOffers(
+  cursor: BrowseCursor | null,
+  limit = 50,
+  filters?: OfferFilters,
+): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
+  const { rows, nextCursor } = await keysetPage(
+    'aldi_products',
+    ALDI_COLS,
+    filters?.sort ? 'unit_price' : 'display_name_norm',
+    cursor,
+    limit,
+    (q) => applyOfferFilters(
+      q.not('promo_base_price', 'is', null).or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`),
+      filters,
+      'display_name_norm',
+    ),
+    filters?.sort === 'desc',
+  );
+  const items = rows.flatMap((row: any) => {
+    if (row.unit_price == null || row.promo_base_price == null || Number(row.promo_base_price) <= Number(row.unit_price)) return [];
+    return [{
+      product: aldiToUI(mapAldi(row)),
+      promoName: row.promo_name ?? 'Oferta',
+      promoEnd: row.promo_end ?? null,
+      prevPrice: Number(row.promo_base_price),
+    }];
+  });
+  return { items, nextCursor };
+}
+
+function plusfrescOfferAt(row: any, postalCode: string | null) {
+  const center = plusfrescCenterFromPostalCode(postalCode);
+  const regional = center && row.center_prices && typeof row.center_prices === 'object'
+    ? row.center_prices[center]
+    : null;
+  const offerPrice = regional?.po ?? row.promo_offer_price;
+  if (offerPrice == null) return null;
+  return {
+    center,
+    offerPrice: Number(offerPrice),
+    basePrice: regional?.pb ?? row.promo_base_price,
+    promoName: regional?.pn ?? row.promo_name ?? 'Promoción',
+    promoNameCa: regional?.pnc ?? row.promo_name_ca ?? 'Promoció',
+    promoEnd: regional?.pe ?? row.promo_end ?? null,
+  };
+}
+
+export async function fetchPlusfrescOffers(
+  cursor: BrowseCursor | null,
+  postalCode: string | null,
+  limit = 50,
+  filters?: OfferFilters,
+): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
+  const center = plusfrescCenterFromPostalCode(postalCode);
+  if (!center) return { items: [], nextCursor: null };
+  const ca = getLanguage() === 'ca';
+  const normCol = ca ? 'display_name_ca_norm' : 'display_name_norm';
+  const { rows, nextCursor } = await keysetPage(
+    'plusfresc_products',
+    PLUSFRESC_COLS,
+    filters?.sort ? 'unit_price' : normCol,
+    cursor,
+    limit,
+    (q) => applyOfferFilters(
+      filterCenterAvailability(
+        q.contains('offer_centers', [center]).or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`),
+        center,
+      ),
+      filters,
+      normCol,
+    ),
+    filters?.sort === 'desc',
+  );
+  const items = rows.flatMap((row: any) => {
+    const offer = plusfrescOfferAt(row, postalCode);
+    if (!offer) return [];
+    // El catálogo general conserva el precio ordinario. Solo en la pantalla de
+    // Ofertas se sustituye por el precio explícito de Oferta2.
+    const offerRow: any = {
+      ...row,
+      unit_price: offer.offerPrice,
+      price_format: `${offer.offerPrice.toFixed(2).replace('.', ',')} €`,
+    };
+    if (offer.center) {
+      offerRow.center_prices = {
+        ...(row.center_prices ?? {}),
+        [offer.center]: {
+          ...(row.center_prices?.[offer.center] ?? {}),
+          p: offer.offerPrice,
+          pf: offerRow.price_format,
+        },
+      };
+    }
+    return [{
+      product: plusfrescToUI(mapPlusfresc(offerRow, postalCode)),
+      promoName: ca ? offer.promoNameCa : offer.promoName,
+      promoEnd: offer.promoEnd,
+      prevPrice: offer.basePrice != null && Number(offer.basePrice) > offer.offerPrice
+        ? Number(offer.basePrice)
+        : null,
+    }];
+  });
+  return { items, nextCursor };
+}
+
+/** Ofertas de un súper (dispatch por tienda).
+ *  Firma común para que OffersScreen pagine cualquiera con el mismo keyset. */
+export function fetchStoreOffers(
+  store: CatalogStore,
+  cursor: BrowseCursor | null,
+  region: RegionValue | null,
+  postalCode: string | null,
+  limit = 50,
+  filters?: OfferFilters,
+): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
+  if (store === 'esclat') return fetchBonpreuOffers(cursor, limit, filters);
+  if (store === 'consum') return fetchConsumOffers(cursor, region, postalCode, limit, filters);
+  if (store === 'plusfresc') return fetchPlusfrescOffers(cursor, postalCode, limit, filters);
+  if (store === 'hiperdino') return fetchHiperdinoOffers(cursor, limit, filters);
+  if (store === 'aldi') return fetchAldiOffers(cursor, limit, filters);
+  return fetchCarrefourOffers(cursor, region, limit, filters);
 }

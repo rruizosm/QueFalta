@@ -33,6 +33,12 @@ if (-not $role) { throw "Falta SUPABASE_SERVICE_ROLE en .env.local (agrega la se
 $env:SUPABASE_URL          = $url
 $env:SUPABASE_SERVICE_ROLE = $role
 $env:CONCURRENCY           = '4'
+# Tope de fichas por ejecución para caber en la ventana de 4 h de la tarea: el barrido
+# multi-zona (~18 almacenes) ya consume ~2 h, y en el 1er run hay ~17k fichas nuevas que
+# NO caben enteras. El catálogo + regions se guardan ANTES de la ficha (ver sync-carrefour.mjs),
+# así que aunque la ficha se corte el catálogo queda a salvo; el backlog se drena en ~3 runs
+# semanales (DETAIL_TTL_DAYS=30). Súbelo/quítalo (Infinity) si amplías el límite de la tarea.
+if (-not $env:DETAIL_MAX) { $env:DETAIL_MAX = '6000' }
 
 # --- Ejecutar el sync ---
 Set-Location $repo

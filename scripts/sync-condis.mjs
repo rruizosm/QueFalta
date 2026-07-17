@@ -29,6 +29,16 @@
 // (como Sorli/Bonpreu). La 1ª (es) fija el conjunto de productos; la 2ª (ca) solo
 // añade el nombre catalán por id.
 //
+// UNA SOLA TIENDA (store=718 = Barcelona), NO multi-tienda: la API toma un `store`
+// por CP, pero VERIFICADO en vivo 2026-07-14 que NO hace falta barrer varias.
+// Condis tiene 31 tiendas (ids 433–780) y la 718 es SUPERCONJUNTO de todas: su
+// catálogo (7.592 prod) contiene el de cualquier otra (5.335–7.098) SIN productos
+// exclusivos fuera de ella, y los PRECIOS son idénticos entre tiendas (comparado el
+// catálogo completo de 718 vs 540/780/433: 0 productos exclusivos, 0 precios
+// distintos). Lo único que varía por tienda es la DISPONIBILIDAD local (una tienda
+// pequeña no stockea parte del surtido), no el catálogo ni el precio. Por eso
+// recoger solo 718 ya captura TODO el catálogo de Condis.
+//
 // Imágenes: el CDN público cdn.condis.es sirve fit-in/{WxH}/es/products/{id}.jpg
 // (las de la app privada /images/catalog/… piden sesión → 404). Se usa 600x600.
 //
@@ -40,7 +50,8 @@
 //
 // Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE
 //      CONCURRENCY=6     (categorías en paralelo)
-//      STORE=718         (id de tienda; precio POR TIENDA, 718 = área Barcelona)
+//      STORE=718         (id de tienda; 718 = Barcelona = superconjunto, catálogo
+//                         y precio idénticos al resto de tiendas → no cambiar)
 //      DRY_RUN=1         (no escribe en Supabase; imprime resumen)
 //      MAX_CATEGORIES=N  (limita nº de categorías, para pruebas)
 //      SKIP_N1=csv       (ids de N1 a excluir; por defecto ninguno)

@@ -1,6 +1,7 @@
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { supabase } from '../lib/supabase';
 import { CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
+import type { RegionValue } from '../constants/regions';
 
 export interface UserProfile {
   id: string;
@@ -13,6 +14,16 @@ export interface UserProfile {
   discoverable: boolean;
   /** Supermercados que se muestran en el catálogo. Vacío/null en BD = todos. */
   catalogStores: CatalogStore[];
+  /** Comunidad autónoma (ISO 3166-2:ES) para filtrar los súpers del catálogo.
+   *  Derivada del código postal. NULL = sin responder → la app la pide
+   *  (onboarding o gate); 'ES' = toda España (sin filtro).
+   *  Ver profile_region.sql y constants/regions.ts. */
+  region: RegionValue | null;
+  /** Código postal (5 dígitos) del que se derivó `region`. NULL si eligió
+   *  "toda España". Hoy solo se guarda; habilita futuras features de zona
+   *  exacta (precios regionales por almacén/centro). NO mostrarlo en vistas
+   *  públicas de perfil. */
+  postalCode: string | null;
   /** Fin de la suscripción QuéFalta Plus (ISO). NULL o pasado = plan free.
    *  Solo la escribe el servidor (trigger en profile_premium.sql). */
   premiumUntil: string | null;
@@ -36,7 +47,7 @@ function normalizeCatalogStores(value: unknown): CatalogStore[] {
 export async function fetchProfile(userId: string): Promise<UserProfile> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, name, initials, color, username, avatar_url, discoverable, catalog_stores, premium_until, onboarded_at, verified')
+    .select('id, name, initials, color, username, avatar_url, discoverable, catalog_stores, region, postal_code, premium_until, onboarded_at, verified')
     .eq('id', userId)
     .single();
 
@@ -51,6 +62,8 @@ export async function fetchProfile(userId: string): Promise<UserProfile> {
     avatarUrl: data.avatar_url ?? null,
     discoverable: data.discoverable ?? true,
     catalogStores: normalizeCatalogStores(data.catalog_stores),
+    region: (data.region as RegionValue) ?? null,
+    postalCode: data.postal_code ?? null,
     premiumUntil: data.premium_until ?? null,
     onboardedAt: data.onboarded_at ?? null,
     verified: data.verified ?? false,
@@ -66,6 +79,8 @@ export async function updateProfile(
     avatarUrl?: string | null;
     discoverable?: boolean;
     catalogStores?: CatalogStore[];
+    region?: RegionValue | null;
+    postalCode?: string | null;
   },
 ): Promise<void> {
   const updates: Record<string, unknown> = {};
@@ -75,6 +90,8 @@ export async function updateProfile(
   if (fields.avatarUrl !== undefined) updates.avatar_url = fields.avatarUrl;
   if (fields.discoverable !== undefined) updates.discoverable = fields.discoverable;
   if (fields.catalogStores !== undefined) updates.catalog_stores = fields.catalogStores;
+  if (fields.region !== undefined) updates.region = fields.region;
+  if (fields.postalCode !== undefined) updates.postal_code = fields.postalCode;
 
   const { error } = await supabase.from('profiles').update(updates).eq('id', userId);
   if (error) throw error;

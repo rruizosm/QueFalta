@@ -61,7 +61,7 @@ export default function UsernameScreen() {
       await updateProfile(userId, { username: raw });
       applyProfile({ username: raw });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      navigation.navigate('Stores');
+      navigation.navigate('Region');
     } catch (e: any) {
       const dup = e?.message?.includes('unique') || e?.code === '23505';
       if (dup) setState('taken');
@@ -80,7 +80,7 @@ export default function UsernameScreen() {
   return (
     <OnboardingLayout
       step={2}
-      totalSteps={6}
+      totalSteps={7}
       eyebrow={t('onboarding.required')}
       title={t('onboarding.usernameTitle')}
       subtitle={t('onboarding.usernameSubtitle')}

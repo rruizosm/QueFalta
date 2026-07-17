@@ -26,7 +26,7 @@ create table if not exists public.carrefour_products (
   retailer_product_id text,               -- sku_id (id numérico del retailer)
   display_name        text not null,      -- name
   thumbnail           text,               -- images.desktop
-  ean13               text,               -- código de barras (null en granel/fresco sin EAN)
+  ean                 text,               -- código de barras (null en granel/fresco sin EAN)
   category_id         text,               -- categoría "primaria" (1ª de category_ids)
   category_name       text,
   category_ids        text[] not null default '{}',  -- TODAS las N2 que listan el producto

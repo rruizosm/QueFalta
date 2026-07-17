@@ -33,16 +33,33 @@ import { fetchMercadonaNames } from '../api/catalog';
 import { fetchGroupMembers } from '../api/groups';
 import { recordPurchase } from '../api/purchases';
 import type { GroupMember } from '../types';
-import ProgressBar from '../components/ProgressBar';
 import ProductImage from '../components/ProductImage';
 import StoreProductModal, { type ProductRef } from '../components/StoreProductModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import UserAvatar from '../components/UserAvatar';
+import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 
-import { STORE_META, groupByStore, storeOfItem } from '../constants/stores';
-import { groupByZone, sortZoneItems } from '../constants/zones';
+import { STORE_META, groupByStore, storeOfItem, type Store } from '../constants/stores';
+import { groupByZone, sortZoneItems, type ShopZone } from '../constants/zones';
+
+// Sección del SectionList de la cesta. `zone` es null en la sección "tienda
+// plegada" (solo cabecera de tienda, sin productos). Los contadores son sobre
+// el total real; `data` puede ir vacía al plegar zona o tienda.
+type CartSection = {
+  key: string;
+  store: Store;
+  zone: ShopZone | null;
+  firstOfStore: boolean;
+  storeCollapsed: boolean;
+  storeCount: number;
+  storeInCart: number;
+  zoneCount: number;
+  zoneInCart: number;
+  zoneCollapsed: boolean;
+  data: MergedCartItem[];
+};
 
 const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 
@@ -94,6 +111,38 @@ export default function ListScreen() {
   const [assignAllVisible, setAssignAllVisible] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
+  // Cabeceras plegadas por el usuario: por tienda (clave = store) y por
+  // tienda×zona (clave = `${store}:${zone.key}`). En memoria — se reinicia al
+  // recargar. Plegar una tienda oculta todas sus zonas y productos; plegar una
+  // zona oculta solo sus productos.
+  const [collapsedStores, setCollapsedStores] = useState<Set<string>>(new Set());
+  const [collapsedZones, setCollapsedZones] = useState<Set<string>>(new Set());
+
+  // Liquid Glass (F3): la cabecera vive en una franja de cristal flotante y la
+  // lista pasa por debajo refractándose (paddingTop del contenido = altura
+  // medida del chrome). En fallback (Android / iOS ≤ 18), cabecera en flujo.
+  const [chromeH, setChromeH] = useState(0);
+  const glassInset = glassAvailable ? chromeH : 0;
+
+  const toggleStore = useCallback((store: string) => {
+    Haptics.selectionAsync();
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setCollapsedStores((prev) => {
+      const next = new Set(prev);
+      next.has(store) ? next.delete(store) : next.add(store);
+      return next;
+    });
+  }, []);
+
+  const toggleZone = useCallback((key: string) => {
+    Haptics.selectionAsync();
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setCollapsedZones((prev) => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  }, []);
 
   const load = useCallback(() => {
     if (!listId) { setItems([]); setLoading(false); return Promise.resolve(); }
@@ -275,7 +324,6 @@ export default function ListScreen() {
   const merged = mergeCartItems(localizedItems);
 
   const doneItems = merged.filter((i) => i.inCart).length;
-  const progress = merged.length > 0 ? doneItems / merged.length : 0;
   const totalCost = merged
     .filter((i) => i.unitPrice != null)
     .reduce((sum, i) => sum + i.unitPrice! * i.quantity, 0);
@@ -284,17 +332,44 @@ export default function ListScreen() {
   // Agrupado Tienda → Zona del súper (pasillo); dentro de cada zona, pendientes
   // primero y alfabético. Cada par tienda×zona es una sección del SectionList;
   // la cabecera de tienda solo se pinta en la primera zona de esa tienda.
-  const sections = groupByStore(merged).flatMap((g) => {
+  // Plegado: si la tienda está plegada se emite una única sección con solo su
+  // cabecera (sin zonas ni productos); si una zona está plegada, su cabecera se
+  // mantiene pero `data` va vacía. Los contadores se calculan sobre el total
+  // real (no sobre `data`, que puede quedar vacía al plegar).
+  const sections: CartSection[] = groupByStore(merged).flatMap((g): CartSection[] => {
     const storeInCart = g.data.filter((it) => it.inCart).length;
-    return groupByZone(g.data).map((z, zi) => ({
-      key: `${g.store}:${z.zone.key}`,
-      store: g.store,
-      zone: z.zone,
-      firstOfStore: zi === 0,
-      storeCount: g.data.length,
-      storeInCart,
-      data: sortZoneItems(z.data),
-    }));
+    if (collapsedStores.has(g.store)) {
+      return [{
+        key: `${g.store}:__store`,
+        store: g.store,
+        zone: null,
+        firstOfStore: true,
+        storeCollapsed: true,
+        storeCount: g.data.length,
+        storeInCart,
+        zoneCount: 0,
+        zoneInCart: 0,
+        zoneCollapsed: false,
+        data: [] as MergedCartItem[],
+      }];
+    }
+    return groupByZone(g.data).map((z, zi) => {
+      const zoneKey = `${g.store}:${z.zone.key}`;
+      const zoneCollapsed = collapsedZones.has(zoneKey);
+      return {
+        key: zoneKey,
+        store: g.store,
+        zone: z.zone,
+        firstOfStore: zi === 0,
+        storeCollapsed: false,
+        storeCount: g.data.length,
+        storeInCart,
+        zoneCount: z.data.length,
+        zoneInCart: z.data.filter((it) => it.inCart).length,
+        zoneCollapsed,
+        data: zoneCollapsed ? ([] as MergedCartItem[]) : sortZoneItems(z.data),
+      };
+    });
   });
 
   const renderItem = ({ item }: { item: MergedCartItem }) => (
@@ -352,39 +427,45 @@ export default function ListScreen() {
     );
   }
 
+  // Chrome de la pantalla (cabecera con grupo + contador y acciones), idéntico
+  // en ambos modos; en glass va dentro de la franja de cristal flotante y los
+  // botones pierden la caja (como el back de Cambios de precios).
+  const chrome = (
+    <View style={[styles.header, { paddingTop: headerTop }]}>
+      {/* Título a todo el ancho; las acciones van en la fila del contador,
+          alineadas a la derecha, para no robarle espacio al nombre del grupo. */}
+      <Text style={styles.title}>{activeCart.groupName}</Text>
+      <View style={styles.subtitleRow}>
+        <Text style={styles.subtitle}>
+          {t('list.subtitle', { done: doneItems, total: merged.length })}
+        </Text>
+        {items.length > 0 && (
+          <View style={styles.headerActions}>
+            <Pressable
+              onPress={() => setAssignAllVisible(true)}
+              style={({ pressed }) => [styles.headerBtn, pressed && styles.headerBtnPressed]}
+              hitSlop={8}
+            >
+              <Ionicons name="person-add-outline" size={18} color={colors.inkSoft} />
+            </Pressable>
+            <Pressable
+              onPress={() => setConfirmClear(true)}
+              style={({ pressed }) => [styles.headerBtn, pressed && styles.headerBtnPressed]}
+              hitSlop={8}
+            >
+              <Ionicons name="trash-outline" size={18} color={colors.inkSoft} />
+            </Pressable>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: headerTop }]}>
-        <View style={styles.headerTexts}>
-          <Text style={styles.title}>{activeCart.groupName}</Text>
-          <Text style={styles.subtitle}>
-            {t('list.subtitle', { done: doneItems, total: merged.length })}
-          </Text>
-        </View>
-        {items.length > 0 && (
-          <View style={styles.headerActions}>
-            <TouchableOpacity
-              onPress={() => setAssignAllVisible(true)}
-              style={styles.clearAllBtn}
-              hitSlop={8}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="person-add-outline" size={18} color={colors.inkSoft} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setConfirmClear(true)}
-              style={styles.clearAllBtn}
-              hitSlop={8}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="trash-outline" size={18} color={colors.inkSoft} />
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
+      {!glassAvailable && chrome}
 
       {items.length === 0 ? (
         <View style={styles.centerBox}>
@@ -394,15 +475,6 @@ export default function ListScreen() {
         </View>
       ) : (
         <>
-          {/* Progress */}
-          <View style={styles.progressArea}>
-            <ProgressBar progress={progress} height={8} />
-            <View style={styles.progressRow}>
-              <Text style={styles.progressHint}>{t('list.deleteHint')}</Text>
-              <Text style={styles.progressLabel}>{t('list.completed', { pct: Math.round(progress * 100) })}</Text>
-            </View>
-          </View>
-
           {/* List */}
           <SectionList
             sections={sections}
@@ -410,11 +482,14 @@ export default function ListScreen() {
             renderItem={renderItem}
             renderSectionHeader={({ section }) => {
               const meta = STORE_META[section.store];
-              const zoneInCart = section.data.filter((it) => it.inCart).length;
               return (
                 <View>
                   {section.firstOfStore && (
-                    <View style={[styles.storeHeader, section.key !== sections[0].key && { marginTop: 18 }]}>
+                    <TouchableOpacity
+                      style={[styles.storeHeader, section.key !== sections[0].key && { marginTop: 18 }]}
+                      activeOpacity={0.6}
+                      onPress={() => toggleStore(section.store)}
+                    >
                       {meta.icon ? (
                         <Image source={meta.icon} style={styles.storeHeaderIcon} resizeMode="cover" />
                       ) : (
@@ -422,21 +497,44 @@ export default function ListScreen() {
                       )}
                       <Text style={styles.storeHeaderText}>{meta.name}</Text>
                       <Text style={styles.storeHeaderCount}>{section.storeInCart}/{section.storeCount}</Text>
-                    </View>
+                      <Ionicons
+                        name={section.storeCollapsed ? 'chevron-forward' : 'chevron-down'}
+                        size={15}
+                        color={colors.inkFaint}
+                      />
+                    </TouchableOpacity>
                   )}
-                  <View style={styles.zoneHeader}>
-                    <Text style={styles.zoneHeaderEmoji}>{section.zone.emoji}</Text>
-                    <Text style={styles.zoneHeaderText}>{t(`zones.${section.zone.key}`)}</Text>
-                    <Text style={styles.zoneHeaderCount}>{zoneInCart}/{section.data.length}</Text>
-                  </View>
+                  {section.zone && (
+                    <TouchableOpacity
+                      style={styles.zoneHeader}
+                      activeOpacity={0.6}
+                      onPress={() => toggleZone(section.key)}
+                    >
+                      <Text style={styles.zoneHeaderEmoji}>{section.zone.emoji}</Text>
+                      <Text style={styles.zoneHeaderText}>{t(`zones.${section.zone.key}`)}</Text>
+                      <Text style={styles.zoneHeaderCount}>{section.zoneInCart}/{section.zoneCount}</Text>
+                      <Ionicons
+                        name={section.zoneCollapsed ? 'chevron-forward' : 'chevron-down'}
+                        size={13}
+                        color={colors.inkFaint}
+                      />
+                    </TouchableOpacity>
+                  )}
                 </View>
               );
             }}
-            contentContainerStyle={[styles.list, { paddingBottom: 140 + tabBarOffset }]}
+            contentContainerStyle={[styles.list, { paddingBottom: 140 + tabBarOffset, paddingTop: 8 + glassInset }]}
             showsVerticalScrollIndicator={false}
             stickySectionHeadersEnabled={false}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} colors={[colors.accent]} />
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={colors.accent}
+                colors={[colors.accent]}
+                // El spinner nace bajo el chrome de cristal, no detrás.
+                progressViewOffset={glassInset}
+              />
             }
           />
 
@@ -465,6 +563,19 @@ export default function ListScreen() {
             </View>
           )}
         </>
+      )}
+
+      {/* Chrome de cristal: al FINAL del árbol para pintarse encima; la lista
+          se refracta al pasar por debajo (paddingTop = altura medida). */}
+      {glassAvailable && (
+        <View
+          style={styles.chrome}
+          onLayout={(e) => setChromeH(e.nativeEvent.layout.height)}
+        >
+          <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>
+            {chrome}
+          </GlassSurface>
+        </View>
       )}
 
       <StoreProductModal
@@ -521,13 +632,14 @@ export default function ListScreen() {
         </View>
       </Modal>
 
+      {/* Sin `destructive`: el botón Vaciar va en el accent elegido por el
+          usuario (Apariencia), no en el rojo fijo de acciones destructivas. */}
       <ConfirmDialog
         visible={confirmClear}
         title={t('list.clearTitle')}
         message={t('list.clearMessage')}
         confirmLabel={t('list.clearConfirm')}
         cancelLabel={t('common.cancel')}
-        destructive
         onConfirm={handleClearAll}
         onCancel={() => setConfirmClear(false)}
       />
@@ -656,24 +768,26 @@ const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
   header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
-    paddingHorizontal: 16, paddingBottom: 12, gap: 8,
+    paddingHorizontal: 16, paddingBottom: 12,
     // paddingTop inline (useHeaderTopPadding)
   },
-  headerTexts: { flex: 1 },
   title: { fontSize: 24, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
-  subtitle: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
-  headerActions: { flexDirection: 'row', gap: 8 },
-  clearAllBtn: {
-    width: 38, height: 38,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white,
+  // Contador + acciones (esferas) en la misma fila, bajo el título.
+  subtitleRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    gap: 8, marginTop: 2,
   },
-
-  progressArea: { paddingHorizontal: 16, marginBottom: 4, gap: 6 },
-  progressRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
-  progressHint: { flex: 1, fontSize: 10.5, fontFamily: fonts.medium, color: colors.inkFaint },
-  progressLabel: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'right' },
+  subtitle: { flex: 1, fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft },
+  headerActions: { flexDirection: 'row', gap: 8 },
+  // Esfera (círculo, como el cerrar de NotificationsSheet) con efecto de
+  // pulsado (se encoge y atenúa mientras está presionado). Igual en glass y
+  // fallback: color sólido, sin glass anidado.
+  headerBtn: {
+    width: 38, height: 38, borderRadius: 19,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.surfaceAlt,
+  },
+  headerBtnPressed: { transform: [{ scale: 0.88 }], opacity: 0.7 },
 
   list: { paddingHorizontal: 16, paddingBottom: 140, paddingTop: 8 },
 
@@ -720,9 +834,9 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   checkboxChecked: { backgroundColor: colors.accent, borderColor: colors.accent },
-  itemThumb: { width: 40, height: 40, borderRadius: 6, backgroundColor: colors.white },
+  itemThumb: { width: 50, height: 50, borderRadius: 6, backgroundColor: colors.white },
   itemThumbPlaceholder: {
-    width: 40, height: 40, borderRadius: 6,
+    width: 50, height: 50, borderRadius: 6,
     backgroundColor: colors.surfaceAlt,
     alignItems: 'center', justifyContent: 'center',
   },
@@ -737,12 +851,13 @@ const themedStyles = () => StyleSheet.create({
   itemPrice: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.accent },
 
   // Acciones de cantidad (restar / eliminar): apiladas en vertical y centradas,
-  // a la derecha del todo. Cada botón es del tamaño del checkbox de "seleccionar".
+  // a la derecha del todo. Cada botón es del tamaño del checkbox de "seleccionar"
+  // y con SU MISMO trazo (1.5 inkFaint) para que se vean igual de marcados.
   qtyActions: { alignItems: 'center', justifyContent: 'center', gap: 6 },
   qtyBtn: {
     width: 22, height: 22,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border,
+    borderWidth: 1.5, borderColor: colors.inkFaint,
   },
 
   // ── Assignee ──────────────────────────────────────────────────
@@ -752,10 +867,11 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   assignAvatarText: { fontSize: 11, fontFamily: fonts.bold, color: colors.white },
+  // Mismo trazo que el checkbox (1.5 inkFaint); discontinuo = sin asignar.
   assignEmpty: {
     width: 28, height: 28, borderRadius: 14,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border, borderStyle: 'dashed',
+    borderWidth: 1.5, borderColor: colors.inkFaint, borderStyle: 'dashed',
   },
 
   // ── Assign sheet ──────────────────────────────────────────────
@@ -819,4 +935,8 @@ const themedStyles = () => StyleSheet.create({
   centerTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink, textAlign: 'center' },
   centerText: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'center', lineHeight: 20 },
   retryText: { fontSize: 14, fontFamily: fonts.bold, color: colors.accent, marginTop: 4 },
+
+  // ── Chrome de cristal (solo glassAvailable, F3) ───────────────
+  chrome: { position: 'absolute', top: 0, left: 0, right: 0 },
+  chromeGlass: { paddingBottom: 2 },
 });

@@ -14,9 +14,9 @@ import {
   Pressable,
   Animated,
   Easing,
-  type LayoutRectangle,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { getMeta } from '../constants/categoryMeta';
@@ -39,10 +39,11 @@ import {
   searchAldiProducts, fetchAldiCategoryTree,
   searchHiperdinoProducts, fetchHiperdinoCategoryTree,
   searchAlcampoProducts, fetchAlcampoCategoryTree,
+  searchPlusfrescProducts, fetchPlusfrescCategoryTree,
   browseProducts, browseBonpreuProducts, browseCarrefourProducts,
   browseBonareaProducts, browseConsumProducts, browseDiaProducts, browseSorliProducts,
   browseEroskiProducts, browseCapraboProducts, browseCondisProducts, browseAmetllerProducts,
-  browseAldiProducts, browseHiperdinoProducts, browseAlcampoProducts,
+  browseAldiProducts, browseHiperdinoProducts, browseAlcampoProducts, browsePlusfrescProducts,
   type BonpreuProduct, type BonpreuCategory,
   type CarrefourProduct, type CarrefourCategory,
   type BonareaProduct, type BonareaCategory,
@@ -54,6 +55,7 @@ import {
   type AldiProduct, type AldiCategory,
   type HiperdinoProduct, type HiperdinoCategory,
   type AlcampoProduct, type AlcampoCategory,
+  type PlusfrescProduct, type PlusfrescCategory,
   type TapestryProduct, type TapestryCategory,
   type BrowseCursor, type BrowsePage,
 } from '../api/catalog';
@@ -66,16 +68,20 @@ import { useGuidedTour, useTourAnchor } from '../context/GuidedTourContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
+import { storeInRegion, storesForRegion, type RegionValue } from '../constants/regions';
 import {
   mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
   eroskiToUI, capraboToUI, condisToUI, ametllerToUI, aldiToUI, hiperdinoToUI, alcampoToUI,
+  plusfrescToUI,
   type UIProduct,
 } from '../lib/productAdapters';
 import { sortByName } from '../lib/sort';
 import ActionSheet from '../components/ActionSheet';
 import StoreProductList from '../components/StoreProductList';
-import ViewModeToggle, { type ViewMode } from '../components/ViewModeToggle';
+import { type ViewMode } from '../components/ViewModeToggle';
 import ActiveCartBanner from '../components/ActiveCartBanner';
+import GlassSurface, { glassAvailable } from '../components/GlassSurface';
+import SlidingSegments from '../components/SlidingSegments';
 
 // Las tiendas y sus metadatos viven en constants/stores.ts (fuente única
 // compartida con la preferencia de perfil "Supermercados").
@@ -93,14 +99,19 @@ interface CatRow {
 /** Carga una página de navegación del catálogo del súper activo y la normaliza a
  *  UIProduct (cada súper tiene su browse + adaptador). El cursor lo gestiona el
  *  llamante; aquí solo se traduce store → (browse, adapter). */
-async function loadBrowsePage(store: CatalogStore, cursor: BrowseCursor | null): Promise<BrowsePage<UIProduct>> {
+async function loadBrowsePage(
+  store: CatalogStore,
+  cursor: BrowseCursor | null,
+  region: RegionValue | null,
+  postalCode: string | null,
+): Promise<BrowsePage<UIProduct>> {
   switch (store) {
-    case 'mercadona': { const { items, nextCursor } = await browseProducts(cursor); return { items: items.map((p) => mercadonaToUI(p)), nextCursor }; }
+    case 'mercadona': { const { items, nextCursor } = await browseProducts(cursor, region); return { items: items.map((p) => mercadonaToUI(p)), nextCursor }; }
     case 'esclat':    { const { items, nextCursor } = await browseBonpreuProducts(cursor); return { items: items.map(bonpreuToUI), nextCursor }; }
-    case 'carrefour': { const { items, nextCursor } = await browseCarrefourProducts(cursor); return { items: items.map(carrefourToUI), nextCursor }; }
+    case 'carrefour': { const { items, nextCursor } = await browseCarrefourProducts(cursor, region); return { items: items.map(carrefourToUI), nextCursor }; }
     case 'bonarea':   { const { items, nextCursor } = await browseBonareaProducts(cursor); return { items: items.map(bonareaToUI), nextCursor }; }
-    case 'consum':    { const { items, nextCursor } = await browseConsumProducts(cursor); return { items: items.map(consumToUI), nextCursor }; }
-    case 'dia':       { const { items, nextCursor } = await browseDiaProducts(cursor); return { items: items.map(diaToUI), nextCursor }; }
+    case 'consum':    { const { items, nextCursor } = await browseConsumProducts(cursor, region, postalCode); return { items: items.map(consumToUI), nextCursor }; }
+    case 'dia':       { const { items, nextCursor } = await browseDiaProducts(cursor, region); return { items: items.map(diaToUI), nextCursor }; }
     case 'sorli':     { const { items, nextCursor } = await browseSorliProducts(cursor); return { items: items.map(sorliToUI), nextCursor }; }
     case 'eroski':    { const { items, nextCursor } = await browseEroskiProducts(cursor); return { items: items.map(eroskiToUI), nextCursor }; }
     case 'caprabo':   { const { items, nextCursor } = await browseCapraboProducts(cursor); return { items: items.map(capraboToUI), nextCursor }; }
@@ -109,6 +120,7 @@ async function loadBrowsePage(store: CatalogStore, cursor: BrowseCursor | null):
     case 'aldi':      { const { items, nextCursor } = await browseAldiProducts(cursor); return { items: items.map(aldiToUI), nextCursor }; }
     case 'hiperdino': { const { items, nextCursor } = await browseHiperdinoProducts(cursor); return { items: items.map(hiperdinoToUI), nextCursor }; }
     case 'alcampo':   { const { items, nextCursor } = await browseAlcampoProducts(cursor); return { items: items.map(alcampoToUI), nextCursor }; }
+    case 'plusfresc': { const { items, nextCursor } = await browsePlusfrescProducts(cursor, postalCode); return { items: items.map(plusfrescToUI), nextCursor }; }
   }
 }
 
@@ -118,6 +130,7 @@ export default function CatalogScreen() {
   const bottomPad = useTabBarBottomPadding(20);
   const navigation = useNavigation<any>();
   const { t, lang } = useTranslation();
+  const insets = useSafeAreaInsets();
   const { isCategoryFavorite, toggleCategoryFavorite } = useFavorites();
   const toast = useToast();
   const { notify: tourNotify, stepId: tourStepId, setStoreMenuOpen: tourSetStoreMenuOpen } = useGuidedTour();
@@ -130,21 +143,35 @@ export default function CatalogScreen() {
   // (la controla la fila de búsqueda, no el toolbar interno de StoreProductList).
   const [prodViewMode, setProdViewMode] = useState<ViewMode>('list');
 
-  // Selector de tienda colapsado: solo se ve la activa; al tocar se despliega
-  // un menú con el resto. `selectorBox` guarda su posición para anclar el menú.
+  // Liquid Glass (F3): igual que Cambios de precios, todo el chrome (cabecera,
+  // pestañas + selector de súper y buscador) vive en una franja de cristal
+  // flotante y la lista pasa por debajo refractándose. `chromeH` = altura medida
+  // de esa franja → se usa como topInset del contenido. En fallback (Android /
+  // iOS ≤ 18) glassInset = 0 y el chrome va en flujo, como siempre.
+  const [chromeH, setChromeH] = useState(0);
+  const glassInset = glassAvailable ? chromeH : 0;
+
+  // Selector de tienda colapsado: solo se ve el logo del súper activo (chip
+  // redondo); al tocar se abre a pantalla completa la rejilla de súpers en 2
+  // columnas (mismo diseño que Ofertas/Novedades/Cambios de precios).
   const [storeMenuOpen, setStoreMenuOpen] = useState(false);
-  const [selectorBox, setSelectorBox] = useState<LayoutRectangle | null>(null);
-  // Alto del primer ítem del menú (para el "spotlight" del tutorial sobre él).
-  const [firstStoreItemH, setFirstStoreItemH] = useState(0);
 
   // Resetea el aviso del tour al desmontar. (El efecto que informa de apertura
   // + nº de supers vive más abajo, tras calcular `visibleStores`.)
   useEffect(() => () => tourSetStoreMenuOpen(false), [tourSetStoreMenuOpen]);
 
-  // Solo se muestran los supermercados elegidos en el perfil. Sin preferencia
-  // (usuario antiguo / perfil aún cargando) → todos.
+  // Solo se muestran los supermercados elegidos en el perfil ∩ los disponibles
+  // en su comunidad autónoma (regionales solo en su zona; con region 'ES' o
+  // NULL no se filtra nada). La preferencia NO se reescribe al cambiar de CCAA:
+  // los súpers de fuera solo dejan de mostrarse y reaparecen si vuelve. Si la
+  // intersección queda vacía (eligió solo súpers de otra región), cae a todos
+  // los de la región — nunca un catálogo vacío (los nacionales están en todas).
   const { profile } = useProfile();
-  const enabledStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
+  const region = profile?.region ?? null;
+  const postalCode = profile?.postalCode ?? null;
+  const prefStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
+  const prefInRegion = prefStores.filter((k) => storeInRegion(k, region));
+  const enabledStores = prefInRegion.length > 0 ? prefInRegion : storesForRegion(region);
   const visibleStores = CATALOG_STORES.filter((s) => enabledStores.includes(s.key));
   const activeStore = CATALOG_STORES.find((s) => s.key === store) ?? visibleStores[0];
 
@@ -340,6 +367,17 @@ export default function CatalogScreen() {
   const [acCatsLoading, setAcCatsLoading] = useState(false);
   const [acCatsError, setAcCatsError] = useState(false);
 
+  // Búsqueda de productos Plusfresc (espejo)
+  const [pfSearch, setPfSearch] = useState('');
+  const [pfResults, setPfResults] = useState<PlusfrescProduct[]>([]);
+  const [pfLoading, setPfLoading] = useState(false);
+  const [pfError, setPfError] = useState(false);
+
+  // Categorías Plusfresc (espejo)
+  const [pfCats, setPfCats] = useState<PlusfrescCategory[]>([]);
+  const [pfCatsLoading, setPfCatsLoading] = useState(false);
+  const [pfCatsError, setPfCatsError] = useState(false);
+
   // Navegación de productos (pestaña "Productos" sin texto): listado alfabético
   // del catálogo del súper activo, paginado por keyset. Estado ÚNICO compartido
   // por los 6 súpers porque solo se ve uno a la vez (igual que `catSearch`).
@@ -349,7 +387,10 @@ export default function CatalogScreen() {
   const [browseMore, setBrowseMore] = useState(false);       // páginas siguientes
   const [browseError, setBrowseError] = useState(false);
   // Texto de búsqueda del súper activo: con <2 letras estamos en modo navegación.
-  const prodQuery = { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch, condis: coSearch, ametller: amSearch, aldi: alSearch, hiperdino: hdSearch, alcampo: acSearch }[store];
+  const prodQuery = { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch, condis: coSearch, ametller: amSearch, aldi: alSearch, hiperdino: hdSearch, alcampo: acSearch, plusfresc: pfSearch }[store];
+  // Setter de búsqueda de productos del súper activo (para la fila de búsqueda
+  // única que ahora vive en el chrome, en vez de una por bloque de súper).
+  const setProdQuery = { mercadona: setProdSearch, esclat: setBpSearch, carrefour: setCfSearch, bonarea: setBaSearch, consum: setCsSearch, dia: setDdSearch, sorli: setSoSearch, eroski: setEkSearch, caprabo: setCbSearch, condis: setCoSearch, ametller: setAmSearch, aldi: setAlSearch, hiperdino: setHdSearch, alcampo: setAcSearch, plusfresc: setPfSearch }[store];
   const browseMode = tab === 'productos' && prodQuery.trim().length < 2;
 
   // Carga la página 1 al entrar a navegación (cambio de súper, limpiar la
@@ -358,19 +399,19 @@ export default function CatalogScreen() {
     if (!browseMode) return;
     let cancelled = false;
     setBrowse([]); setBrowseCursor(null); setBrowseError(false); setBrowseMore(false); setBrowseLoading(true);
-    loadBrowsePage(store, null)
+      loadBrowsePage(store, null, region, postalCode)
       .then(({ items, nextCursor }) => { if (!cancelled) { setBrowse(items); setBrowseCursor(nextCursor); } })
       .catch(() => { if (!cancelled) setBrowseError(true); })
       .finally(() => { if (!cancelled) setBrowseLoading(false); });
     return () => { cancelled = true; };
-  }, [store, browseMode, lang]);
+  }, [store, browseMode, lang, region, postalCode]);
 
   // Siguiente página keyset al llegar al final de la lista.
   const loadMoreBrowse = () => {
     if (browseLoading || browseMore || browseCursor == null) return;
     const cursor = browseCursor;
     setBrowseMore(true);
-    loadBrowsePage(store, cursor)
+      loadBrowsePage(store, cursor, region, postalCode)
       .then(({ items, nextCursor }) => { setBrowse((prev) => [...prev, ...items]); setBrowseCursor(nextCursor); })
       .catch(() => { /* conserva lo ya cargado */ })
       .finally(() => setBrowseMore(false));
@@ -401,10 +442,10 @@ export default function CatalogScreen() {
     if (q.length < 2) { setProdResults([]); setProdError(false); setProdLoading(false); return; }
     setProdLoading(true); setProdError(false);
     const handle = setTimeout(() => {
-      searchProducts(q).then(setProdResults).catch(() => setProdError(true)).finally(() => setProdLoading(false));
+      searchProducts(q, region).then(setProdResults).catch(() => setProdError(true)).finally(() => setProdLoading(false));
     }, 300);
     return () => clearTimeout(handle);
-  }, [prodSearch, lang]);
+  }, [prodSearch, lang, region]);
 
   // BonpreuEsclat: búsqueda server-side con debounce.
   useEffect(() => {
@@ -433,10 +474,10 @@ export default function CatalogScreen() {
     if (q.length < 2) { setCfResults([]); setCfError(false); setCfLoading(false); return; }
     setCfLoading(true); setCfError(false);
     const handle = setTimeout(() => {
-      searchCarrefourProducts(q).then(setCfResults).catch(() => setCfError(true)).finally(() => setCfLoading(false));
+      searchCarrefourProducts(q, region).then(setCfResults).catch(() => setCfError(true)).finally(() => setCfLoading(false));
     }, 300);
     return () => clearTimeout(handle);
-  }, [cfSearch]);
+  }, [cfSearch, region]);
 
   // Carga perezosa de categorías bonÀrea la primera vez que se entra a esa tienda.
   useEffect(() => { setBaCats([]); }, [lang]);
@@ -476,10 +517,10 @@ export default function CatalogScreen() {
     if (q.length < 2) { setCsResults([]); setCsError(false); setCsLoading(false); return; }
     setCsLoading(true); setCsError(false);
     const handle = setTimeout(() => {
-      searchConsumProducts(q).then(setCsResults).catch(() => setCsError(true)).finally(() => setCsLoading(false));
+      searchConsumProducts(q, region, postalCode).then(setCsResults).catch(() => setCsError(true)).finally(() => setCsLoading(false));
     }, 300);
     return () => clearTimeout(handle);
-  }, [csSearch]);
+  }, [csSearch, region, postalCode]);
 
   // Carga perezosa de categorías Dia la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -497,10 +538,10 @@ export default function CatalogScreen() {
     if (q.length < 2) { setDdResults([]); setDdError(false); setDdLoading(false); return; }
     setDdLoading(true); setDdError(false);
     const handle = setTimeout(() => {
-      searchDiaProducts(q).then(setDdResults).catch(() => setDdError(true)).finally(() => setDdLoading(false));
+      searchDiaProducts(q, region).then(setDdResults).catch(() => setDdError(true)).finally(() => setDdLoading(false));
     }, 300);
     return () => clearTimeout(handle);
-  }, [ddSearch]);
+  }, [ddSearch, region]);
 
   // Carga perezosa de categorías Sorli la primera vez que se entra a esa tienda.
   useEffect(() => { setSoCats([]); }, [lang]);
@@ -673,6 +714,28 @@ export default function CatalogScreen() {
     return () => clearTimeout(handle);
   }, [acSearch]);
 
+  // Carga perezosa de categorías Plusfresc la primera vez que se entra a esa tienda.
+  useEffect(() => { setPfCats([]); }, [lang]);
+  useEffect(() => {
+    if (store !== 'plusfresc' || pfCats.length > 0 || pfCatsLoading) return;
+    setPfCatsLoading(true); setPfCatsError(false);
+    fetchPlusfrescCategoryTree()
+      .then(setPfCats)
+      .catch(() => setPfCatsError(true))
+      .finally(() => setPfCatsLoading(false));
+  }, [store, lang]);
+
+  // Plusfresc: búsqueda server-side con debounce (bilingüe: re-busca al cambiar idioma).
+  useEffect(() => {
+    const q = pfSearch.trim();
+    if (q.length < 2) { setPfResults([]); setPfError(false); setPfLoading(false); return; }
+    setPfLoading(true); setPfError(false);
+    const handle = setTimeout(() => {
+      searchPlusfrescProducts(q, postalCode).then(setPfResults).catch(() => setPfError(true)).finally(() => setPfLoading(false));
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [pfSearch, lang, postalCode]);
+
   // Filtro de categorías por texto (cliente). Compartido por los 6 súpers: en la
   // pestaña de categorías solo se ve un súper a la vez, así que un único `catSearch` basta.
   const matchesCatSearch = (name: string) =>
@@ -788,11 +851,14 @@ export default function CatalogScreen() {
   const renderAcCategory = ({ item, index }: { item: AlcampoCategory; index: number }) =>
     renderCatRow({ store: 'alcampo', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('alcampo', item) }, index === 0);
 
+  const renderPfCategory = ({ item, index }: { item: PlusfrescCategory; index: number }) =>
+    renderCatRow({ store: 'plusfresc', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('plusfresc', item) }, index === 0);
+
   // Estados de un listado de búsqueda de productos (compartido).
   const renderSearchStates = (search: string, loading: boolean, error: boolean, empty: boolean, list: React.ReactNode) => {
     if (search.trim().length < 2)
       return <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.minLetters')}</Text></View>;
-    if (loading) return <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />;
+    if (loading) return <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />;
     if (error) return <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.searchError')}</Text></View>;
     if (empty) return <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.noResults')}</Text></View>;
     return list;
@@ -810,10 +876,11 @@ export default function CatalogScreen() {
           products={searchItems}
           searchQuery={query}
           hideToolbar viewMode={prodViewMode} onViewModeChange={setProdViewMode}
+          topInset={glassInset}
         />,
       );
     }
-    if (browseLoading) return <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />;
+    if (browseLoading) return <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />;
     if (browseError) return <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.searchError')}</Text></View>;
     return (
       <StoreProductList
@@ -821,6 +888,7 @@ export default function CatalogScreen() {
         hideToolbar viewMode={prodViewMode} onViewModeChange={setProdViewMode}
         onEndReached={loadMoreBrowse}
         loadingMore={browseMore}
+        topInset={glassInset}
       />
     );
   };
@@ -845,8 +913,9 @@ export default function CatalogScreen() {
   );
 
   // Fila de búsqueda de productos: barra (consulta al servidor) + toggle
-  // lista/cuadrícula a la derecha, en una sola fila (misma distribución que las
-  // subcategorías). El toggle controla la vista de StoreProductList desde fuera.
+  // lista/cuadrícula a la derecha, en una sola fila. En glass el toggle es un
+  // SlidingSegments compacto (misma píldora de acento deslizante que las
+  // pestañas); en fallback, la pastilla estática de Claude Design.
   const productSearchRow = (placeholder: string, value: string, onChange: (s: string) => void) => (
     <View style={styles.prodSearchRow}>
       <View style={[styles.searchBar, styles.prodSearchBox]}>
@@ -866,73 +935,124 @@ export default function CatalogScreen() {
           </TouchableOpacity>
         )}
       </View>
-      <ViewModeToggle value={prodViewMode} onChange={setProdViewMode} />
+      {glassAvailable ? (
+        <SlidingSegments
+          compact
+          segments={[
+            { key: 'list', icon: 'list' },
+            { key: 'grid', icon: 'grid' },
+          ]}
+          value={prodViewMode}
+          onChange={setProdViewMode}
+        />
+      ) : (
+        <View style={styles.viewToggle}>
+          <TouchableOpacity
+            style={[styles.viewBtn, prodViewMode === 'list' && styles.viewBtnOn]}
+            onPress={() => setProdViewMode('list')}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="list" size={19} color={prodViewMode === 'list' ? colors.white : colors.inkSoft} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.viewBtn, prodViewMode === 'grid' && styles.viewBtnOn]}
+            onPress={() => setProdViewMode('grid')}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="grid" size={17} color={prodViewMode === 'grid' ? colors.white : colors.inkSoft} />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
+  );
+
+  // Selector de súper compacto: chip REDONDO con solo el logo del súper activo,
+  // como bloque aparte en la misma fila que las pestañas. Al tocar abre el panel
+  // de cristal centrado (ya no un desplegable anclado), así que no necesita medir
+  // su rect; el wrapper conserva el ancla del tutorial (ring sobre el selector).
+  const storeSelectorBlock = (visibleStores.length > 1 || tourStepId === 'store') && (
+    <View ref={storeAnchor.ref} collapsable={false} onLayout={storeAnchor.onLayout}>
+      <TouchableOpacity
+        style={styles.selector}
+        onPress={() => setStoreMenuOpen((o) => !o)}
+        activeOpacity={0.8}
+      >
+        {activeStore?.icon ? (
+          <Image source={activeStore.icon} style={styles.selectorLogo} resizeMode="cover" />
+        ) : (
+          <Ionicons name="storefront" size={22} color={colors.accent} />
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+
+  // Chrome de la pantalla (cabecera + fila de pestañas/selector + buscador),
+  // rediseñado según el panel de Claude Design (segmentado de pastilla blanca,
+  // chip redondo de súper, buscador y toggle redondeados). Es idéntico en ambos
+  // modos; en glass va dentro de la franja de cristal flotante.
+  const chrome = (
+    <>
+      <View style={[styles.headerArea, { paddingTop: headerTop }]}>
+        <Text style={styles.title}>{t('catalog.title')}</Text>
+        <ActiveCartBanner compact />
+      </View>
+
+      {/* Fila única: pestañas Productos/Categorías (flex) + selector de súper
+          como bloque aparte a la derecha. En glass, píldora de acento deslizante
+          (SlidingSegments) para conservar el efecto al cambiar de pestaña; en
+          fallback, segmentado de pastilla blanca estático (Claude Design). */}
+      <View style={styles.controlsRow}>
+        {glassAvailable ? (
+          <SlidingSegments
+            style={{ flex: 1 }}
+            segments={[
+              { key: 'productos', label: t('catalog.tabProducts'), icon: 'cube-outline' },
+              { key: 'categorias', label: t('catalog.tabCategories'), icon: 'grid-outline' },
+            ]}
+            value={tab}
+            onChange={setTab}
+          />
+        ) : (
+          <View style={styles.seg}>
+            <TouchableOpacity
+              style={[styles.segBtn, tab === 'productos' && styles.segBtnOn]}
+              onPress={() => setTab('productos')}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="cube-outline" size={16} color={tab === 'productos' ? colors.accent : colors.inkSoft} />
+              <Text style={[styles.segTxt, tab === 'productos' ? styles.segTxtOn : styles.segTxtOff]}>{t('catalog.tabProducts')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.segBtn, tab === 'categorias' && styles.segBtnOn]}
+              onPress={() => setTab('categorias')}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="grid-outline" size={16} color={tab === 'categorias' ? colors.accent : colors.inkSoft} />
+              <Text style={[styles.segTxt, tab === 'categorias' ? styles.segTxtOn : styles.segTxtOff]}>{t('catalog.tabCategories')}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        {storeSelectorBlock}
+      </View>
+
+      {/* Buscador de la pestaña activa (categorías compartido; productos por súper). */}
+      {tab === 'categorias'
+        ? searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)
+        : productSearchRow(t('catalog.searchProducts'), prodQuery, setProdQuery)}
+    </>
   );
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      <View style={[styles.headerArea, { paddingTop: headerTop }]}>
-        <Text style={styles.title}>{t('catalog.title')}</Text>
-        <ActiveCartBanner compact />
-      </View>
-
-      {/* Selector de tienda colapsado: muestra solo la activa y, al tocar,
-          despliega el resto en un menú anclado. Normalmente oculto con un solo
-          súper, pero se fuerza durante el paso 3 del tour para poder guiarlo. */}
-      {(visibleStores.length > 1 || tourStepId === 'store') && (
-        <View
-          ref={storeAnchor.ref}
-          collapsable={false}
-          style={styles.selectorWrap}
-          onLayout={(e) => { setSelectorBox(e.nativeEvent.layout); storeAnchor.onLayout(); }}
-        >
-          <TouchableOpacity
-            style={styles.selector}
-            onPress={() => setStoreMenuOpen((o) => !o)}
-            activeOpacity={0.8}
-          >
-            {activeStore?.icon ? (
-              <Image source={activeStore.icon} style={styles.selectorIcon} resizeMode="cover" />
-            ) : (
-              <Ionicons name="storefront" size={18} color={colors.accent} />
-            )}
-            <Text style={styles.selectorName} numberOfLines={1}>{activeStore?.name}</Text>
-            <Ionicons
-              name={storeMenuOpen ? 'chevron-up' : 'chevron-down'}
-              size={18}
-              color={colors.inkSoft}
-            />
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Tab switcher */}
-      <View style={styles.tabs}>
-        <TouchableOpacity
-          style={[styles.tab, tab === 'productos' && styles.tabActive]}
-          onPress={() => setTab('productos')}
-          activeOpacity={0.8}
-        >
-          <Text style={[styles.tabText, tab === 'productos' && styles.tabTextActive]}>{t('catalog.tabProducts')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, tab === 'categorias' && styles.tabActive]}
-          onPress={() => setTab('categorias')}
-          activeOpacity={0.8}
-        >
-          <Text style={[styles.tabText, tab === 'categorias' && styles.tabTextActive]}>{t('catalog.tabCategories')}</Text>
-        </TouchableOpacity>
-      </View>
+      {!glassAvailable && chrome}
 
       {/* ── Mercadona ───────────────────────────────────────────── */}
       {store === 'mercadona' && tab === 'categorias' && (
         <>
-          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
           {catLoading ? (
-            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
           ) : catError ? (
             <View style={styles.centerBox}>
               <Text style={styles.errorText}>{t('catalog.loadError')}</Text>
@@ -948,7 +1068,7 @@ export default function CatalogScreen() {
               data={sortedCats(categories)}
               keyExtractor={(item) => String(item.id)}
               renderItem={renderCategory}
-              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -958,7 +1078,6 @@ export default function CatalogScreen() {
 
       {store === 'mercadona' && tab === 'productos' && (
         <>
-          {productSearchRow(t('catalog.searchProducts'),prodSearch, setProdSearch)}
           {renderProductsTab(prodSearch, prodLoading, prodError, prodResults.map((p) => mercadonaToUI(p)))}
         </>
       )}
@@ -966,9 +1085,8 @@ export default function CatalogScreen() {
       {/* ── BonpreuEsclat ───────────────────────────────────────── */}
       {store === 'esclat' && tab === 'categorias' && (
         <>
-          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
           {bpCatsLoading ? (
-            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
           ) : bpCatsError ? (
             <View style={styles.centerBox}>
               <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'BonpreuEsclat' })}</Text>
@@ -984,7 +1102,7 @@ export default function CatalogScreen() {
               data={sortedCats(bpCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderBpCategory}
-              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -994,7 +1112,6 @@ export default function CatalogScreen() {
 
       {store === 'esclat' && tab === 'productos' && (
         <>
-          {productSearchRow(t('catalog.searchProducts'),bpSearch, setBpSearch)}
           {renderProductsTab(bpSearch, bpLoading, bpError, bpResults.map(bonpreuToUI))}
         </>
       )}
@@ -1002,9 +1119,8 @@ export default function CatalogScreen() {
       {/* ── Carrefour ───────────────────────────────────────────── */}
       {store === 'carrefour' && tab === 'categorias' && (
         <>
-          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
           {cfCatsLoading ? (
-            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
           ) : cfCatsError ? (
             <View style={styles.centerBox}>
               <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Carrefour' })}</Text>
@@ -1020,7 +1136,7 @@ export default function CatalogScreen() {
               data={sortedCats(cfCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderCfCategory}
-              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -1030,7 +1146,6 @@ export default function CatalogScreen() {
 
       {store === 'carrefour' && tab === 'productos' && (
         <>
-          {productSearchRow(t('catalog.searchProducts'),cfSearch, setCfSearch)}
           {renderProductsTab(cfSearch, cfLoading, cfError, cfResults.map(carrefourToUI))}
         </>
       )}
@@ -1038,9 +1153,8 @@ export default function CatalogScreen() {
       {/* ── bonÀrea ──────────────────────────────────────────────── */}
       {store === 'bonarea' && tab === 'categorias' && (
         <>
-          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
           {baCatsLoading ? (
-            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
           ) : baCatsError ? (
             <View style={styles.centerBox}>
               <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'bonÀrea' })}</Text>
@@ -1056,7 +1170,7 @@ export default function CatalogScreen() {
               data={sortedCats(baCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderBaCategory}
-              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -1066,7 +1180,6 @@ export default function CatalogScreen() {
 
       {store === 'bonarea' && tab === 'productos' && (
         <>
-          {productSearchRow(t('catalog.searchProducts'),baSearch, setBaSearch)}
           {renderProductsTab(baSearch, baLoading, baError, baResults.map(bonareaToUI))}
         </>
       )}
@@ -1074,9 +1187,8 @@ export default function CatalogScreen() {
       {/* ── Consum ───────────────────────────────────────────────── */}
       {store === 'consum' && tab === 'categorias' && (
         <>
-          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
           {csCatsLoading ? (
-            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
           ) : csCatsError ? (
             <View style={styles.centerBox}>
               <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Consum' })}</Text>
@@ -1092,7 +1204,7 @@ export default function CatalogScreen() {
               data={sortedCats(csCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderCsCategory}
-              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -1102,7 +1214,6 @@ export default function CatalogScreen() {
 
       {store === 'consum' && tab === 'productos' && (
         <>
-          {productSearchRow(t('catalog.searchProducts'),csSearch, setCsSearch)}
           {renderProductsTab(csSearch, csLoading, csError, csResults.map(consumToUI))}
         </>
       )}
@@ -1110,9 +1221,8 @@ export default function CatalogScreen() {
       {/* ── Dia ──────────────────────────────────────────────────── */}
       {store === 'dia' && tab === 'categorias' && (
         <>
-          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
           {ddCatsLoading ? (
-            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
           ) : ddCatsError ? (
             <View style={styles.centerBox}>
               <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Dia' })}</Text>
@@ -1128,7 +1238,7 @@ export default function CatalogScreen() {
               data={sortedCats(ddCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderDdCategory}
-              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -1138,7 +1248,6 @@ export default function CatalogScreen() {
 
       {store === 'dia' && tab === 'productos' && (
         <>
-          {productSearchRow(t('catalog.searchProducts'),ddSearch, setDdSearch)}
           {renderProductsTab(ddSearch, ddLoading, ddError, ddResults.map(diaToUI))}
         </>
       )}
@@ -1146,9 +1255,8 @@ export default function CatalogScreen() {
       {/* ── Sorli ────────────────────────────────────────────────── */}
       {store === 'sorli' && tab === 'categorias' && (
         <>
-          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
           {soCatsLoading ? (
-            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
           ) : soCatsError ? (
             <View style={styles.centerBox}>
               <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Sorli' })}</Text>
@@ -1164,7 +1272,7 @@ export default function CatalogScreen() {
               data={sortedCats(soCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderSoCategory}
-              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -1174,7 +1282,6 @@ export default function CatalogScreen() {
 
       {store === 'sorli' && tab === 'productos' && (
         <>
-          {productSearchRow(t('catalog.searchProducts'),soSearch, setSoSearch)}
           {renderProductsTab(soSearch, soLoading, soError, soResults.map(sorliToUI))}
         </>
       )}
@@ -1182,9 +1289,8 @@ export default function CatalogScreen() {
       {/* ── Eroski ───────────────────────────────────────────────── */}
       {store === 'eroski' && tab === 'categorias' && (
         <>
-          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
           {ekCatsLoading ? (
-            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
           ) : ekCatsError ? (
             <View style={styles.centerBox}>
               <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Eroski' })}</Text>
@@ -1200,7 +1306,7 @@ export default function CatalogScreen() {
               data={sortedCats(ekCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderEkCategory}
-              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -1210,7 +1316,6 @@ export default function CatalogScreen() {
 
       {store === 'eroski' && tab === 'productos' && (
         <>
-          {productSearchRow(t('catalog.searchProducts'),ekSearch, setEkSearch)}
           {renderProductsTab(ekSearch, ekLoading, ekError, ekResults.map(eroskiToUI))}
         </>
       )}
@@ -1218,9 +1323,8 @@ export default function CatalogScreen() {
       {/* ── Caprabo ──────────────────────────────────────────────── */}
       {store === 'caprabo' && tab === 'categorias' && (
         <>
-          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
           {cbCatsLoading ? (
-            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
           ) : cbCatsError ? (
             <View style={styles.centerBox}>
               <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Caprabo' })}</Text>
@@ -1236,7 +1340,7 @@ export default function CatalogScreen() {
               data={sortedCats(cbCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderCbCategory}
-              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -1246,7 +1350,6 @@ export default function CatalogScreen() {
 
       {store === 'caprabo' && tab === 'productos' && (
         <>
-          {productSearchRow(t('catalog.searchProducts'),cbSearch, setCbSearch)}
           {renderProductsTab(cbSearch, cbLoading, cbError, cbResults.map(capraboToUI))}
         </>
       )}
@@ -1254,9 +1357,8 @@ export default function CatalogScreen() {
       {/* ── Condis ───────────────────────────────────────────────── */}
       {store === 'condis' && tab === 'categorias' && (
         <>
-          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
           {coCatsLoading ? (
-            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
           ) : coCatsError ? (
             <View style={styles.centerBox}>
               <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Condis' })}</Text>
@@ -1272,7 +1374,7 @@ export default function CatalogScreen() {
               data={sortedCats(coCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderCoCategory}
-              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -1282,7 +1384,6 @@ export default function CatalogScreen() {
 
       {store === 'condis' && tab === 'productos' && (
         <>
-          {productSearchRow(t('catalog.searchProducts'),coSearch, setCoSearch)}
           {renderProductsTab(coSearch, coLoading, coError, coResults.map(condisToUI))}
         </>
       )}
@@ -1290,9 +1391,8 @@ export default function CatalogScreen() {
       {/* ── Ametller Origen ──────────────────────────────────────── */}
       {store === 'ametller' && tab === 'categorias' && (
         <>
-          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
           {amCatsLoading ? (
-            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
           ) : amCatsError ? (
             <View style={styles.centerBox}>
               <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Ametller Origen' })}</Text>
@@ -1308,7 +1408,7 @@ export default function CatalogScreen() {
               data={sortedCats(amCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderAmCategory}
-              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -1318,7 +1418,6 @@ export default function CatalogScreen() {
 
       {store === 'ametller' && tab === 'productos' && (
         <>
-          {productSearchRow(t('catalog.searchProducts'),amSearch, setAmSearch)}
           {renderProductsTab(amSearch, amLoading, amError, amResults.map(ametllerToUI))}
         </>
       )}
@@ -1326,9 +1425,8 @@ export default function CatalogScreen() {
       {/* ── Aldi ─────────────────────────────────────────────────── */}
       {store === 'aldi' && tab === 'categorias' && (
         <>
-          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
           {alCatsLoading ? (
-            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
           ) : alCatsError ? (
             <View style={styles.centerBox}>
               <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Aldi' })}</Text>
@@ -1344,7 +1442,7 @@ export default function CatalogScreen() {
               data={sortedCats(alCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderAlCategory}
-              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -1354,7 +1452,6 @@ export default function CatalogScreen() {
 
       {store === 'aldi' && tab === 'productos' && (
         <>
-          {productSearchRow(t('catalog.searchProducts'),alSearch, setAlSearch)}
           {renderProductsTab(alSearch, alLoading, alError, alResults.map(aldiToUI))}
         </>
       )}
@@ -1362,9 +1459,8 @@ export default function CatalogScreen() {
       {/* ── HiperDino ────────────────────────────────────────────── */}
       {store === 'hiperdino' && tab === 'categorias' && (
         <>
-          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
           {hdCatsLoading ? (
-            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
           ) : hdCatsError ? (
             <View style={styles.centerBox}>
               <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'HiperDino' })}</Text>
@@ -1380,7 +1476,7 @@ export default function CatalogScreen() {
               data={sortedCats(hdCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderHdCategory}
-              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -1390,7 +1486,6 @@ export default function CatalogScreen() {
 
       {store === 'hiperdino' && tab === 'productos' && (
         <>
-          {productSearchRow(t('catalog.searchProducts'),hdSearch, setHdSearch)}
           {renderProductsTab(hdSearch, hdLoading, hdError, hdResults.map(hiperdinoToUI))}
         </>
       )}
@@ -1398,9 +1493,8 @@ export default function CatalogScreen() {
       {/* ── Alcampo ──────────────────────────────────────────────── */}
       {store === 'alcampo' && tab === 'categorias' && (
         <>
-          {searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)}
           {acCatsLoading ? (
-            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
           ) : acCatsError ? (
             <View style={styles.centerBox}>
               <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Alcampo' })}</Text>
@@ -1416,7 +1510,7 @@ export default function CatalogScreen() {
               data={sortedCats(acCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderAcCategory}
-              contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]}
               showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             />
@@ -1426,68 +1520,129 @@ export default function CatalogScreen() {
 
       {store === 'alcampo' && tab === 'productos' && (
         <>
-          {productSearchRow(t('catalog.searchProducts'),acSearch, setAcSearch)}
           {renderProductsTab(acSearch, acLoading, acError, acResults.map(alcampoToUI))}
         </>
       )}
 
-      {/* Menú desplegable de tiendas, anclado bajo el selector. */}
+      {/* ── Plusfresc ────────────────────────────────────────────── */}
+      {store === 'plusfresc' && tab === 'categorias' && (
+        <>
+          {pfCatsLoading ? (
+            <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
+          ) : pfCatsError ? (
+            <View style={styles.centerBox}>
+              <Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Plusfresc' })}</Text>
+              <TouchableOpacity onPress={() => {
+                setPfCatsError(false); setPfCatsLoading(true);
+                fetchPlusfrescCategoryTree().then(setPfCats).catch(() => setPfCatsError(true)).finally(() => setPfCatsLoading(false));
+              }}>
+                <Text style={styles.retryText}>{t('common.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={sortedCats(pfCats)}
+              keyExtractor={(item) => item.id}
+              renderItem={renderPfCategory}
+              contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            />
+          )}
+        </>
+      )}
+
+      {store === 'plusfresc' && tab === 'productos' && (
+        <>
+          {renderProductsTab(pfSearch, pfLoading, pfError, pfResults.map(plusfrescToUI))}
+        </>
+      )}
+
+      {/* Chrome de cristal: al FINAL del árbol para pintarse encima; la lista
+          se refracta al pasar por debajo (topInset = altura medida del chrome).
+          El selector sigue dentro: el cristal arranca en y=0 y su onLayout mide
+          en pantalla (measureInWindow) para anclar el menú. */}
+      {glassAvailable && (
+        <View
+          style={styles.chrome}
+          onLayout={(e) => setChromeH(e.nativeEvent.layout.height)}
+        >
+          <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>
+            {chrome}
+          </GlassSurface>
+        </View>
+      )}
+
+      {/* Panel de tiendas: rejilla a pantalla completa en DOS COLUMNAS (cada súper
+          = tarjeta cuadrada de esquinas redondeadas con logo + nombre en columna),
+          mismo diseño que Ofertas/Novedades/Cambios de precios. */}
       <Modal
         visible={storeMenuOpen}
-        transparent
+        animationType="slide"
         statusBarTranslucent
-        animationType="fade"
         onRequestClose={() => setStoreMenuOpen(false)}
       >
-        <Pressable style={styles.menuBackdrop} onPress={() => setStoreMenuOpen(false)}>
-          {selectorBox && (
-            <View style={[styles.menu, { top: selectorBox.y + selectorBox.height + 6 }]}>
-              {visibleStores.map((s, i) => {
-                const on = s.key === store;
-                const last = i === visibleStores.length - 1;
-                return (
-                  <TouchableOpacity
-                    key={s.key}
-                    style={[styles.menuItem, !last && styles.menuItemBorder, on && styles.menuItemActive]}
-                    onPress={() => { setStore(s.key); setStoreMenuOpen(false); tourNotify('storeSelect'); }}
-                    onLayout={i === 0 ? (e) => setFirstStoreItemH(e.nativeEvent.layout.height) : undefined}
-                    activeOpacity={0.7}
-                  >
-                    {s.icon ? (
-                      <Image source={s.icon} style={styles.selectorIcon} resizeMode="cover" />
-                    ) : (
-                      <Ionicons name="storefront" size={18} color={colors.inkSoft} />
-                    )}
-                    <Text style={[styles.menuItemName, on && styles.menuItemNameActive]} numberOfLines={1}>
-                      {s.name}
-                    </Text>
-                    {on && <Ionicons name="checkmark" size={18} color={colors.accent} />}
-                  </TouchableOpacity>
-                );
-              })}
-              {/* Tutorial (paso 3): atenúa todos los súpers menos el objetivo
-                  (el 2º para enseñar a cambiar; el 1º si solo hay uno) y lo
-                  enmarca. Asume ítems de alto uniforme (= firstStoreItemH). */}
-              {tourStepId === 'store' && firstStoreItemH > 0 && (
-                <>
-                  {tourTargetIdx > 0 && (
-                    <View pointerEvents="none" style={[styles.menuTourDim, { top: 0, height: firstStoreItemH * tourTargetIdx }]} />
+        <View style={[styles.storeSheet, { paddingTop: insets.top }]}>
+          <View style={styles.storeSheetHeader}>
+            <Text style={styles.storeSheetTitle}>{t('storePicker.title')}</Text>
+            <TouchableOpacity style={styles.storeCloseBtn} onPress={() => setStoreMenuOpen(false)} hitSlop={8}>
+              <Ionicons name="close" size={22} color={colors.ink} />
+            </TouchableOpacity>
+          </View>
+
+          <FlatList
+            data={visibleStores}
+            keyExtractor={(s) => s.key}
+            numColumns={2}
+            extraData={[store, tourStepId, storeMenuOpen]}
+            columnWrapperStyle={styles.storeGridRow}
+            contentContainerStyle={[styles.storeGrid, { paddingBottom: insets.bottom + 24 }]}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item, index }) => {
+              const on = item.key === store;
+              // Tutorial (paso 3): resalta el súper objetivo (el 2º para enseñar a
+              // cambiar; el 1º si solo hay uno) y atenúa el resto.
+              const tourActive = tourStepId === 'store' && storeMenuOpen;
+              const dimmed = tourActive && index !== tourTargetIdx;
+              return (
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.storeCard,
+                    on && styles.storeCardActive,
+                    pressed && styles.storeCardPressed,
+                    dimmed && styles.storeCardDim,
+                  ]}
+                  onPress={() => { setStore(item.key); setStoreMenuOpen(false); tourNotify('storeSelect'); }}
+                >
+                  {on && (
+                    <View style={styles.storeCardCheck}>
+                      <Ionicons name="checkmark" size={14} color={colors.white} />
+                    </View>
                   )}
-                  <View pointerEvents="none" style={[styles.menuTourDim, { top: firstStoreItemH * (tourTargetIdx + 1), bottom: 0 }]} />
-                  {/* Anillo que PULSA sobre el objetivo (opacidad ida/vuelta:
-                      siempre visible, claramente "respira"). */}
-                  <Animated.View
-                    pointerEvents="none"
-                    style={[styles.menuTourRing, {
-                      top: firstStoreItemH * tourTargetIdx, height: firstStoreItemH,
-                      opacity: menuPulse.interpolate({ inputRange: [0, 1], outputRange: [1, 0.3] }),
-                    }]}
-                  />
-                </>
-              )}
-            </View>
-          )}
-        </Pressable>
+                  <View style={styles.storeCardLogoWrap}>
+                    {item.icon ? (
+                      <Image source={item.icon} style={styles.storeCardLogo} resizeMode="cover" />
+                    ) : (
+                      <Ionicons name="storefront" size={30} color={colors.accent} />
+                    )}
+                  </View>
+                  <Text style={[styles.storeCardName, on && styles.storeCardNameActive]} numberOfLines={2}>
+                    {item.name}
+                  </Text>
+                  {/* Anillo de acento que "respira" sobre el súper objetivo. */}
+                  {tourActive && index === tourTargetIdx && (
+                    <Animated.View
+                      pointerEvents="none"
+                      style={[styles.storeCardRing, {
+                        opacity: menuPulse.interpolate({ inputRange: [0, 1], outputRange: [1, 0.3] }),
+                      }]}
+                    />
+                  )}
+                </Pressable>
+              );
+            }}
+          />
+        </View>
       </Modal>
 
       {sheetCat && (
@@ -1521,75 +1676,112 @@ const themedStyles = () => StyleSheet.create({
     fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3,
   },
 
-  // ── Store selector (colapsado) + menú desplegable ─────────────
-  selectorWrap: { marginHorizontal: 16, marginBottom: 10 },
+  // ── Store selector (avatar redondo con logo, sin anillo) ───────
   selector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
+    width: 48, height: 48, borderRadius: 24, overflow: 'hidden',
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.accentLight,
   },
-  selectorIcon: { width: 20, height: 20 },
-  selectorName: { flex: 1, fontSize: 14, fontFamily: fonts.semibold, color: colors.ink },
+  selectorLogo: { width: '100%', height: '100%' },
 
-  menuBackdrop: { flex: 1 },
-  menu: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 8,
+  // ── Panel de tiendas: rejilla a pantalla completa (2 columnas) ─
+  storeSheet: { flex: 1, backgroundColor: colors.paper },
+  storeSheetHeader: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 16, paddingVertical: 14,
+    borderBottomWidth: 1, borderBottomColor: colors.border,
   },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  menuItemBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
-  menuItemActive: { backgroundColor: colors.accentLight },
-  // Tutorial: atenúa los súpers que NO son el objetivo (top/height o top/bottom
-  // se fijan por uso) y enmarca el objetivo.
-  menuTourDim: { position: 'absolute', left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.5)' },
-  menuTourRing: { position: 'absolute', left: 0, right: 0, borderWidth: 3, borderColor: colors.accent },
-  menuItemName: { flex: 1, fontSize: 14, fontFamily: fonts.semibold, color: colors.ink },
-  menuItemNameActive: { color: colors.accent },
-
-  // ── Tab switcher ──────────────────────────────────────────────
-  tabs: {
-    flexDirection: 'row',
-    marginHorizontal: 16,
-    marginBottom: 10,
+  storeSheetTitle: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
+  storeCloseBtn: {
+    width: 38, height: 38, borderRadius: 19,
+    alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.surfaceAlt,
-    padding: 3,
-    gap: 3,
   },
-  tab: {
-    flex: 1, paddingVertical: 8, alignItems: 'center',
+  storeGrid: { padding: 16 },
+  storeGridRow: { gap: 12, marginBottom: 12 },
+  storeCard: {
+    flex: 1, aspectRatio: 1,
+    alignItems: 'center', justifyContent: 'center', gap: 10,
+    paddingHorizontal: 10,
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    borderWidth: 1, borderColor: colors.border,
   },
-  tabActive: { backgroundColor: colors.white },
-  tabText: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.inkSoft },
-  tabTextActive: { color: colors.ink },
+  storeCardActive: { borderColor: colors.accent, backgroundColor: colors.accentLight },
+  storeCardPressed: { transform: [{ scale: 0.96 }], opacity: 0.9 },
+  storeCardDim: { opacity: 0.3 },
+  storeCardCheck: {
+    position: 'absolute', top: 8, right: 8,
+    width: 22, height: 22, borderRadius: 11,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.accent,
+  },
+  storeCardLogoWrap: {
+    width: 56, height: 56, borderRadius: 28, overflow: 'hidden',
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.white,
+  },
+  storeCardLogo: { width: '100%', height: '100%' },
+  storeCardName: { fontSize: 14, fontFamily: fonts.semibold, color: colors.ink, textAlign: 'center' },
+  storeCardNameActive: { color: colors.accent },
+  // Tutorial: anillo de acento que "respira" sobre el súper objetivo.
+  storeCardRing: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    borderRadius: 20, borderWidth: 3, borderColor: colors.accent,
+  },
+
+  // ── Fila de pestañas + selector de súper (un bloque aparte) ───
+  controlsRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    marginHorizontal: 16, marginBottom: 10,
+  },
+
+  // ── Segmentado Productos/Categorías (pastilla blanca, Claude Design) ─
+  seg: {
+    flex: 1, flexDirection: 'row',
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: 16, padding: 5, gap: 6,
+  },
+  segBtn: {
+    flex: 1, flexDirection: 'row',
+    alignItems: 'center', justifyContent: 'center', gap: 8,
+    paddingVertical: 11, borderRadius: 12,
+  },
+  segBtnOn: {
+    backgroundColor: colors.white,
+    shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  segTxt: { fontSize: 14 },
+  segTxtOn: { fontFamily: fonts.bold, color: colors.accent },
+  segTxtOff: { fontFamily: fonts.semibold, color: colors.inkSoft },
+
+  // ── Toggle lista/cuadrícula (pastilla redondeada, Claude Design) ─
+  viewToggle: {
+    flexDirection: 'row', gap: 5,
+    backgroundColor: colors.surfaceAlt,
+    padding: 5, borderRadius: 14,
+  },
+  viewBtn: {
+    width: 40, height: 40, borderRadius: 10,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  viewBtnOn: {
+    backgroundColor: colors.accent,
+    shadowColor: colors.accent, shadowOpacity: 0.4, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
 
   // ── Search ────────────────────────────────────────────────────
   searchBar: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: colors.white,
     marginHorizontal: 16, marginBottom: 8,
-    paddingHorizontal: 14, paddingVertical: 11,
-    gap: 10,
+    paddingHorizontal: 16, paddingVertical: 13,
+    gap: 11,
+    borderRadius: 16,
     borderWidth: 1, borderColor: colors.border,
+    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
   },
   searchInput: {
     flex: 1, fontSize: 14, color: colors.ink, padding: 0,
@@ -1627,4 +1819,8 @@ const themedStyles = () => StyleSheet.create({
   centerBox: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   errorText: { fontSize: 15, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'center' },
   retryText: { fontSize: 14, fontFamily: fonts.bold, color: colors.accent },
+
+  // ── Chrome de cristal (solo glassAvailable, F3) ───────────────
+  chrome: { position: 'absolute', top: 0, left: 0, right: 0 },
+  chromeGlass: { paddingBottom: 2 },
 });

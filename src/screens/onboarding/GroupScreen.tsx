@@ -47,8 +47,8 @@ export default function GroupScreen() {
 
   return (
     <OnboardingLayout
-      step={6}
-      totalSteps={6}
+      step={7}
+      totalSteps={7}
       eyebrow={t('onboarding.optional')}
       title={t('onboarding.groupTitle')}
       subtitle={t('onboarding.groupSubtitle')}

@@ -52,7 +52,7 @@ export default function NameScreen() {
   return (
     <OnboardingLayout
       step={1}
-      totalSteps={6}
+      totalSteps={7}
       eyebrow={t('onboarding.required')}
       title={t('onboarding.nameTitle')}
       subtitle={t('onboarding.nameSubtitle')}

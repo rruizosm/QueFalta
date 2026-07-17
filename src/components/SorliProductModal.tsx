@@ -14,6 +14,7 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductImage from '../components/ProductImage';
+import ProductDetailHero from '../components/ProductDetailHero';
 import ProductInfoSections from '../components/ProductInfoSections';
 import SimilarProductsSection from '../components/SimilarProductsSection';
 
@@ -103,21 +104,16 @@ export default function SorliProductModal({ product, onClose, topInset = 16 }: P
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        {product.thumbnail ? (
-          <ProductImage uri={product.thumbnail} style={styles.photo} />
-        ) : (
-          <View style={[styles.photo, styles.photoPlaceholder]}>
-            <Ionicons name="image-outline" size={48} color={colors.inkFaint} />
-          </View>
-        )}
-
-        <Text style={styles.name}>{product.displayName}</Text>
-        {product.brand ? <Text style={styles.brand}>{product.brand}</Text> : null}
-
-        <View style={styles.priceRow}>
-          {price ? <Text style={styles.price}>{price}</Text> : null}
-        </View>
-        {product.pricePerUnit ? <Text style={styles.refPrice}>{product.pricePerUnit}</Text> : null}
+        <ProductDetailHero
+          imageUri={product.thumbnail}
+          name={product.displayName}
+          brand={product.brand}
+          price={price}
+          store="sorli"
+          productId={product.id}
+          referencePrice={product.pricePerUnit}
+          nutriScoreGrade={product.nutriScoreGrade}
+        />
 
         {/* Comparativa: más barato en otros súper */}
         <SimilarProductsSection productName={product.displayName} excludeStore="sorli" />

@@ -34,7 +34,7 @@ returns text language sql immutable as $$
           regexp_replace(
             regexp_replace(
               regexp_replace(lower(coalesce(p, '')), '\([^)]*\)', ' ', 'g'),
-              '\y(hacendado|bonpreu|bon[àa]rea|carrefour|consum|selecci[oó]n\s+de\s+dia|dia\s+l[áa]ctea|dia\s+mari\s+marinera|dia|deliplus|aliada|bosque\s+verde|eroski|caprabo|sorli|ametller\s+origen|ametller|producto\s+alcampo|alcampo\s+cultivamos\s+lo\s+bueno|alcampo|auchan)\y',
+              '\y(hacendado|bonpreu|bon[àa]rea|carrefour|consum|selecci[oó]n\s+de\s+dia|dia\s+l[áa]ctea|dia\s+mari\s+marinera|dia|deliplus|aliada|bosque\s+verde|eroski|caprabo|sorli|ametller\s+origen|ametller|producto\s+alcampo|alcampo\s+cultivamos\s+lo\s+bueno|alcampo|auchan|plusfresc|plus\s+fresc)\y',
               ' ', 'g'
             ),
             '\y\d+([.,]\d+)?\s*(kg|g|gr|ml|cl|l|ud|uds|u|pack|x)\y',
@@ -208,6 +208,13 @@ language sql stable as $$
     from public.alcampo_products p cross join q
     where 'alcampo' = any (p_stores) and p.published
       and public.catalog_family_match(lower(p.display_name), q.needle)
+    union all
+    select 'plusfresc', f.id, f.display_name, f.thumbnail,
+           f.unit_price, f.price_per_unit, f.price_per_unit_unit,
+           similarity(q.needle, lower(f.display_name))
+    from public.plusfresc_products f cross join q
+    where 'plusfresc' = any (p_stores) and f.published
+      and public.catalog_family_match(lower(f.display_name), q.needle)
   ),
   ranked as (
     select *, min(price_per_unit) over (partition by store) as min_ppu

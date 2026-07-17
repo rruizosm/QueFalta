@@ -28,11 +28,11 @@ comprar. No es "el mismo producto" (la marca blanca no existe entre cadenas), si
 |-----------|-----------------------|:-----------:|:----------:|----------------------|:-------:|
 | Mercadona | `mercadona_products`  | ✅ `display_name` | ✅ | ✅ `raw.price_instructions.reference_price/format` | ❌ |
 | Bonpreu   | `bonpreu_products`    | ✅          | ✅         | ✅ `price_format` ("1,50 €/kg") | ❌ |
-| Carrefour | `carrefour_products`  | ✅          | ✅         | ✅ `raw->>'price_per_unit'` (el `price_format` es absoluto) | ✅ `ean13` |
+| Carrefour | `carrefour_products`  | ✅          | ✅         | ✅ `raw->>'price_per_unit'` (el `price_format` es absoluto) | ✅ `ean` |
 | bonÀrea   | `bonarea_products`    | ✅          | ✅         | ✅ `raw->>'unitPrice'` (el `price_format` es absoluto) | ❌ |
 
 **Conclusiones de datos:**
-- **No hay match por código:** solo Carrefour trae `ean13`; el resto no, y la marca
+- **No hay match por código:** solo Carrefour trae `ean` (antes `ean13`); el resto no, y la marca
   blanca no comparte EAN entre cadenas. → matching por nombre.
 - **€/unidad disponible en las cuatro** (Mercadona/Bonpreu en columna directa;
   Carrefour/bonÀrea dentro de `raw`). Es el **gran igualador**: un pack de 9×1 L y

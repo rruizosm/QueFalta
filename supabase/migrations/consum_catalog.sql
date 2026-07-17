@@ -30,7 +30,7 @@ create table if not exists public.consum_products (
   brand               text,               -- productData.brand.name (Consum la da estructurada)
   packaging           text,               -- formato del envase sacado de productData.description ("250 Gr")
   thumbnail           text,               -- productData.imageURL (cdn-consum.aktiosdigitalservices.com)
-  ean13               text,               -- ean (Consum SÍ lo expone, único súper que lo da)
+  ean                 text,               -- código de barras (Consum SÍ lo expone)
   category_id         text,               -- categoría "primaria" (1ª hoja de categories[])
   category_name       text,
   category_ids        text[] not null default '{}',  -- hojas de categories[] + TODOS sus ancestros (navegación por cualquier nivel)

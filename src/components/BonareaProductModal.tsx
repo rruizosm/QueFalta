@@ -16,6 +16,7 @@ import QuantityStepper from '../components/QuantityStepper';
 import ProductImage from '../components/ProductImage';
 import ProductInfoSections from '../components/ProductInfoSections';
 import SimilarProductsSection from '../components/SimilarProductsSection';
+import ProductPriceLine from '../components/ProductPriceLine';
 
 interface Props {
   /** Producto a mostrar (ya cargado de bonarea_products). null = oculto. */
@@ -112,9 +113,7 @@ export default function BonareaProductModal({ product, onClose, topInset = 16 }:
 
         <Text style={styles.name}>{product.displayName}</Text>
 
-        <View style={styles.priceRow}>
-          {price ? <Text style={styles.price}>{price}</Text> : null}
-        </View>
+        <ProductPriceLine store="bonarea" productId={product.id} price={price} />
         {product.pricePerUnit ? <Text style={styles.refPrice}>{product.pricePerUnit}</Text> : null}
 
         {/* Comparativa: más barato en otros súper */}

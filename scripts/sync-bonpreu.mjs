@@ -122,20 +122,67 @@ async function upsert(table, rows) {
 // la tabla moría por statement_timeout (57014) cuando la BD iba cargada.
 const markStale = (table) => markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart });
 
+// La N1 "Ofertas" (bilingüe: "Ofertes") NO es taxonomía real: agrupa productos
+// que ya están en su categoría de verdad (Lácteos, Bebidas…) pero en promoción.
+// La usamos como fuente de la sección "Ofertas" (su nombre de subcategoría —
+// "Precio rebajado", "2ª unidad con descuento"… — es el tipo de promo) y la
+// SACAMOS de las categorías del catálogo. Detección por nombre (robusta a que
+// cambie el uuid). Ver supabase/migrations/bonpreu_offers.sql.
+const isOffersN1 = (name) => /^\s*ofert(a|e)s\s*$/i.test(name || '');
+
+// Ramas N1 (por nombre exacto del árbol es) que cuentan como "alimentación" para
+// la sección de Ofertas: solo se muestran ofertas de productos que pertenezcan a
+// alguna de ellas. Quedan FUERA "Para el hogar", "Espacio mascotas" y "Acción
+// solidaria". (Solo filtra las ofertas; el catálogo sigue teniéndolo todo.)
+const OFFER_FOOD_N1 = new Set([
+  'Frescos', 'Alimentación', 'Bebidas', 'Congelados', 'Lácteos y huevos',
+  'Dietas, intolerancias y estilos de vida', 'Productos Km0', 'Bodega',
+  'Cuidado personal', 'Limpieza del hogar', 'Parafarmacia', 'Bebés',
+  'Prepárate para el verano',
+]);
+// Prioridad del tipo de promo cuando un producto está en varias subcategorías de
+// oferta: se muestra la etiqueta más informativa. Menor = más prioritario.
+const promoRank = (name) => {
+  const n = (name || '').toLowerCase();
+  if (/rebaj/.test(n)) return 0;              // Precio rebajado
+  if (/2|seg[oa]n|unitat|unidad/.test(n)) return 1; // 2as unidades con descuento
+  if (/lot/.test(n)) return 2;                // Lotes oferta
+  if (/bonif/.test(n)) return 3;              // Bonificaciones
+  if (/regal/.test(n)) return 4;              // Unidades regalo
+  return 5;                                    // Otras ofertas
+};
+
 // ── Categorías (sin WAF) ─────────────────────────────────────────────────────
+// Devuelve también offerIds (todas las categorías del árbol "Ofertas") y
+// offerNames (id → nombre, en el idioma pedido) para etiquetar las promos.
 async function fetchCategoryTree(lang = LANG) {
   const res = await fetch(CATS_API, { headers: { Accept: 'application/json', Cookie: `language=${lang}` } });
   if (!res.ok) throw new Error(`categories ${res.status}`);
   const n1s = await res.json();
   const catRows = [], n2s = [];
+  const offerIds = new Set();
+  const offerNames = new Map();
   for (const n1 of n1s) {
-    catRows.push({ id: n1.categoryId, name: n1.name, parent_id: null, product_count: n1.productCount ?? null, published: true, synced_at: runStart });
+    const isOffers = isOffersN1(n1.name);
+    if (isOffers) {
+      offerIds.add(n1.categoryId);
+      offerNames.set(n1.categoryId, n1.name);
+    } else {
+      catRows.push({ id: n1.categoryId, name: n1.name, parent_id: null, product_count: n1.productCount ?? null, published: true, synced_at: runStart });
+    }
     for (const n2 of n1.childCategories ?? []) {
-      catRows.push({ id: n2.categoryId, name: n2.name, parent_id: n1.categoryId, product_count: n2.productCount ?? null, published: true, synced_at: runStart });
+      if (isOffers) {
+        offerIds.add(n2.categoryId);
+        offerNames.set(n2.categoryId, n2.name);
+      } else {
+        catRows.push({ id: n2.categoryId, name: n2.name, parent_id: n1.categoryId, product_count: n2.productCount ?? null, published: true, synced_at: runStart });
+      }
+      // Las subcategorías de oferta SÍ se rastrean (para saber qué productos van
+      // en promoción y de qué tipo); solo se excluyen del árbol de categorías.
       if ((n2.productCount ?? 0) > 0) n2s.push({ id: n2.categoryId, name: n2.name });
     }
   }
-  return { catRows, n2s };
+  return { catRows, n2s, offerIds, offerNames };
 }
 
 // ── Procesar una categoría ───────────────────────────────────────────────────
@@ -217,14 +264,22 @@ async function crawlProducts(cats, lang) {
 
 async function main() {
   console.log(`[bonpreu] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} conc=${CONCURRENCY}`);
-  const { catRows, n2s } = await fetchCategoryTree(LANG);
+  const { catRows, n2s, offerIds, offerNames } = await fetchCategoryTree(LANG);
   // Nombres de categoría en catalán (API abierta, una sola petición) → name_ca.
   let caCatName = new Map();
+  let offerNamesCa = new Map();
   try {
     const caTree = await fetchCategoryTree(LANG_CA);
     caCatName = new Map(caTree.catRows.map((c) => [c.id, c.name]));
+    offerNamesCa = caTree.offerNames;
   } catch (e) { console.warn(`[bonpreu] árbol ${LANG_CA} falló: ${e.message}`); }
   for (const c of catRows) c.name_ca = caCatName.get(c.id) ?? null;
+  console.log(`[bonpreu] ${offerIds.size} categorías de oferta (excluidas del árbol)`);
+
+  // Ofertas SOLO de alimentación: N2 que cuelgan de una N1 de OFFER_FOOD_N1. Una
+  // oferta se muestra si el producto pertenece (por su categoría real) a alguna.
+  const foodN1Ids = new Set(catRows.filter((c) => c.parent_id == null && OFFER_FOOD_N1.has(c.name)).map((c) => c.id));
+  const foodN2Ids = new Set(catRows.filter((c) => c.parent_id != null && foodN1Ids.has(c.parent_id)).map((c) => c.id));
 
   const cats = n2s.slice(0, MAX_CATEGORIES);
   console.log(`[bonpreu] ${catRows.length} categorías, ${n2s.length} N2 con productos (proceso ${cats.length})`);
@@ -246,18 +301,34 @@ async function main() {
   // Adjuntar a cada producto sus categorías reales (las que lo listan en su SSR)
   // + el nombre en català (display_name_ca; null → la app cae al castellano).
   const rows = [];
+  let onOffer = 0;
   for (const [id, det] of products) {
     if (!det.display_name) continue;
     const mem = [...(membership.get(id) ?? [])];
+    // Separa la pertenencia real (categorías del catálogo) de las de oferta.
+    const offerMem = mem.filter((c) => offerIds.has(c));
+    const realMem = mem.filter((c) => !offerIds.has(c));
+    // Solo se marca como oferta si es alimentación (alguna categoría real de food).
+    const isFood = realMem.some((c) => foodN2Ids.has(c));
+    // Etiqueta de promo = subcategoría de oferta más informativa (promoRank).
+    let promoId = null;
+    if (isFood) for (const c of offerMem) {
+      if (promoId == null || promoRank(offerNames.get(c)) < promoRank(offerNames.get(promoId))) promoId = c;
+    }
+    const promo_name = promoId ? offerNames.get(promoId) ?? null : null;
+    const promo_name_ca = promoId ? offerNamesCa.get(promoId) ?? offerNames.get(promoId) ?? null : null;
+    if (promo_name) onOffer++;
     rows.push({
       ...det,
       display_name_ca: caName.get(id) ?? null,
-      category_ids: mem,
-      category_id: mem[0] ?? null,
-      category_name: mem[0] ? catName.get(mem[0]) ?? null : null,
+      category_ids: realMem,
+      category_id: realMem[0] ?? null,
+      category_name: realMem[0] ? catName.get(realMem[0]) ?? null : null,
+      promo_name,
+      promo_name_ca,
     });
   }
-  console.log(`[bonpreu] ${rows.length} productos únicos`);
+  console.log(`[bonpreu] ${rows.length} productos únicos · ${onOffer} en oferta`);
 
   if (DRY_RUN) {
     const perCat = new Map();
@@ -269,7 +340,13 @@ async function main() {
       sin_ppu: rows.filter((r) => r.price_per_unit == null).length,
       sin_img: rows.filter((r) => !r.thumbnail).length,
       sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
+      con_oferta: rows.filter((r) => r.promo_name != null).length,
     });
+    if (offerNames.size) {
+      const byPromo = new Map();
+      for (const r of rows) if (r.promo_name) byPromo.set(r.promo_name, (byPromo.get(r.promo_name) ?? 0) + 1);
+      console.log('ofertas por tipo:', Object.fromEntries(byPromo));
+    }
     return;
   }
   if (rows.length === 0) throw new Error('0 productos (¿WAF/navegador?)');

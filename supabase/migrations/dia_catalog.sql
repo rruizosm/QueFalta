@@ -1,17 +1,15 @@
 -- Espejo del catálogo de Dia en Supabase (CATÁLOGO + BÚSQUEDA).
--- Lo rellena scripts/sync-dia.mjs 1×/día.
+-- Lo rellena scripts/sync-dia.mjs 1×/semana.
 -- Tabla aparte de Mercadona/Bonpreu/Carrefour/bonÀrea/Consum (modelo "una tabla por tienda").
 --
--- dia.es es una SPA Vike (vite-plugin-ssr) renderizada en servidor: cada página de
--- categoría (/<cat>/<subcat>/c/L####?page=N, paginada a 20) embebe un bloque
--- <script id="vike_pageContext" type="application/json"> con:
---   INITIAL_STATE.l2.plp_items[]              → productos YA estructurados
---   INITIAL_STATE.header.categoriesData       → árbol N1→N2 completo (30 N1, ~300 N2)
---   INITIAL_STATE.pagination                  → total_pages
--- No hay que parsear HTML: se extrae ese JSON. (El API XHR /api/v1/plp-back existe
--- pero devuelve 422 sin el contexto correcto; el SSR es más robusto.)
--- Los precios llevan la promo aplicada (strikethrough_price = original, en raw)
--- y son de la zona por defecto (CP 28041 Madrid, sesión anónima).
+-- dia.es expone una API REST JSON abierta (/api/v1/plp-back/plp?navigation=L1)
+-- con los productos ya estructurados + el árbol de categorías + total_pages. El
+-- sync barre VARIAS zonas (una por provincia): dia.es adapta el surtido al código
+-- postal, así que se fija un CP por zona en la sesión y se pagina el catálogo de
+-- cada una, uniendo los productos por object_id. La disponibilidad por comunidad
+-- autónoma va en la columna `regions` (ver dia_regions.sql). Los precios llevan
+-- la promo aplicada (strikethrough_price = original, en raw) y son los de la
+-- primera zona que trae cada producto (Madrid primero → datos por defecto).
 -- La app SOLO lee; las escrituras van con la service_role key (se salta RLS).
 -- Ejecutar en: Supabase → SQL Editor.
 
@@ -33,7 +31,7 @@ create table if not exists public.dia_products (
   display_name        text not null,      -- display_name (incluye marca y formato: "... Dia 600 g")
   brand               text,               -- brand ("Dia Mari Marinera")
   thumbnail           text,               -- https://www.dia.es + image
-  ean13               text,               -- la API no expone EAN → null
+  ean                 text,               -- la API no expone EAN → null
   category_id         text,               -- N2 "primaria" (1ª en la que se observó)
   category_name       text,
   category_ids        text[] not null default '{}',  -- N2 donde aparece + sus N1 (navegación por ambos niveles)

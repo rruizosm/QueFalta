@@ -76,10 +76,16 @@ Register-ScheduledTask -TaskName 'QueFalta - Sync Consum' -Action $action -Trigg
 
 ## Notas
 
+- El sync barre cinco zonas `X-TOL-ZONE`: València (147, referencia), Barcelona
+  (575), Murcia (495), Albacete (1105) y Almería (254). Persiste disponibilidad
+  por CCAA en `regions` y diferencias de precio por zona en `regional_prices`.
+  Ejecutar `supabase/migrations/consum_regions.sql` antes del primer sync
+  multi-zona; el cliente elige el override con el CP del perfil.
+
 - **Carrito (futuro):** no investigado aún; la web tiene carrito pero seguramente
   exija login. No bloquea nada de lo actual (catálogo + búsqueda + comparativa).
 - **Geobloqueo:** las pruebas desde fuera de España funcionaron → GitHub Actions
   debería ir bien; si algún día falla con 403, mover a local como Carrefour.
-- **EAN:** `consum_products.ean13` abre la puerta a matching EXACTO de productos
+- **EAN:** `consum_products.ean` (antes `ean13`, ver `ean_unify.sql`) abre la puerta a matching EXACTO de productos
   entre súpers en la comparativa (hoy se hace por nombre); Mercadona/Bonpreu/
   Carrefour/bonÀrea no lo dan, pero si se añade otra fuente con EAN, ya está aquí.

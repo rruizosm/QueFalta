@@ -63,6 +63,7 @@ import AmetllerProductsScreen from '../screens/AmetllerProductsScreen';
 import AldiProductsScreen from '../screens/AldiProductsScreen';
 import HiperdinoProductsScreen from '../screens/HiperdinoProductsScreen';
 import AlcampoProductsScreen from '../screens/AlcampoProductsScreen';
+import PlusfrescProductsScreen from '../screens/PlusfrescProductsScreen';
 import TapestryProductsScreen from '../screens/TapestryProductsScreen';
 import ListScreen       from '../screens/ListScreen';
 import GroupsScreen     from '../screens/GroupsScreen';
@@ -71,6 +72,8 @@ import GroupMembersScreen from '../screens/GroupMembersScreen';
 import AddMemberScreen from '../screens/AddMemberScreen';
 import LoginScreen      from '../screens/LoginScreen';
 import OnboardingNavigator from '../screens/onboarding/OnboardingNavigator';
+import RegionGateScreen from '../screens/onboarding/RegionGateScreen';
+import RegionSettingsScreen from '../screens/RegionSettingsScreen';
 import BootLoader       from '../components/BootLoader';
 import { glassAvailable } from '../components/GlassSurface';
 import LiquidGlassTabBar, {
@@ -155,6 +158,7 @@ function HomeNavigator() {
       <HomeStack.Screen name="EditProfile" component={EditProfileScreen} />
       <HomeStack.Screen name="PrivacySecurity" component={PrivacySecurityScreen} />
       <HomeStack.Screen name="CatalogStores" component={CatalogStoresScreen} />
+      <HomeStack.Screen name="RegionSettings" component={RegionSettingsScreen} />
       <HomeStack.Screen name="Appearance" component={AppearanceScreen} />
       <HomeStack.Screen name="Language" component={LanguageScreen} />
       <HomeStack.Screen name="History" component={HistoryScreen} />
@@ -184,6 +188,7 @@ function CatalogNavigator() {
       <CatalogStack.Screen name="AldiProducts" component={AldiProductsScreen} />
       <CatalogStack.Screen name="HiperdinoProducts" component={HiperdinoProductsScreen} />
       <CatalogStack.Screen name="AlcampoProducts" component={AlcampoProductsScreen} />
+      <CatalogStack.Screen name="PlusfrescProducts" component={PlusfrescProductsScreen} />
     </CatalogStack.Navigator>
   );
 }
@@ -343,6 +348,18 @@ export default function Navigation() {
     return (
       <NavigationContainer theme={theme}>
         <OnboardingNavigator />
+      </NavigationContainer>
+    );
+  }
+
+  // Usuario ya incorporado pero sin comunidad autónoma (columna nueva → todos
+  // los existentes empiezan con region NULL): gate de UNA sola pregunta, sin
+  // repetir el asistente. Los nuevos nunca llegan aquí (el onboarding ya fija
+  // region en su paso 3). Al guardar, applyProfile re-renderiza y entra al Home.
+  if (profile && profile.onboardedAt && !profile.region) {
+    return (
+      <NavigationContainer theme={theme}>
+        <RegionGateScreen />
       </NavigationContainer>
     );
   }

@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
+import GlassSurface from './GlassSurface';
 
 // LayoutAnimation necesita habilitarse a mano en Android para animar el desplegado.
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -20,6 +21,7 @@ export interface ProductInfoItem {
   title: string;
   /** Texto de la característica. Si viene vacío/nulo, la fila no se pinta. */
   text?: string | null;
+  onPress?: () => void;
 }
 
 /**
@@ -30,27 +32,37 @@ export interface ProductInfoItem {
  */
 export default function ProductInfoSections({ items }: { items: ProductInfoItem[] }) {
   const styles = useThemedStyles(themedStyles);
-  const visible = items.filter((i) => i.text && i.text.trim().length > 0);
+  const visible = items
+    .filter((i) => (i.text && i.text.trim().length > 0) || i.onPress)
+    .sort((a, b) => {
+      if (a.key === 'nutrition') return -1;
+      if (b.key === 'nutrition') return 1;
+      return 0;
+    });
   if (visible.length === 0) return null;
 
   return (
-    <View style={styles.card}>
+    <GlassSurface style={styles.card} fallbackColor={colors.white}>
       {visible.map((item, idx) => (
         <View key={item.key}>
           {idx > 0 ? <View style={styles.separator} /> : null}
           <Row item={item} />
         </View>
       ))}
-    </View>
+    </GlassSurface>
   );
 }
 
 function Row({ item }: { item: ProductInfoItem }) {
   const styles = useThemedStyles(themedStyles);
   const [expanded, setExpanded] = useState(false);
-  const value = item.text!.trim();
+  const value = item.text?.trim() ?? null;
 
   const toggle = () => {
+    if (item.onPress) {
+      item.onPress();
+      return;
+    }
     LayoutAnimation.configureNext(
       LayoutAnimation.create(160, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity),
     );
@@ -65,9 +77,11 @@ function Row({ item }: { item: ProductInfoItem }) {
         </View>
         <View style={styles.body}>
           <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.value} numberOfLines={expanded ? undefined : 1}>
-            {value}
-          </Text>
+          {value ? (
+            <Text style={styles.value} numberOfLines={expanded ? undefined : 1}>
+              {value}
+            </Text>
+          ) : null}
         </View>
         <Ionicons
           name="chevron-forward"

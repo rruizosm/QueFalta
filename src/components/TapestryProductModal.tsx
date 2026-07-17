@@ -17,6 +17,7 @@ import QuantityStepper from '../components/QuantityStepper';
 import ProductImage from '../components/ProductImage';
 import ProductInfoSections from '../components/ProductInfoSections';
 import SimilarProductsSection from '../components/SimilarProductsSection';
+import ProductPriceLine from '../components/ProductPriceLine';
 
 interface Props {
   /** Producto a mostrar (ya cargado de {eroski,caprabo}_products). null = oculto. */
@@ -117,9 +118,7 @@ export default function TapestryProductModal({ product, store, storeLabel, onClo
         <Text style={styles.name}>{product.displayName}</Text>
         {product.brand ? <Text style={styles.brand}>{product.brand}</Text> : null}
 
-        <View style={styles.priceRow}>
-          {price ? <Text style={styles.price}>{price}</Text> : null}
-        </View>
+        <ProductPriceLine store={store} productId={product.id} price={price} />
 
         {/* Comparativa: más barato en otros súper */}
         <SimilarProductsSection productName={product.displayName} excludeStore={store} />

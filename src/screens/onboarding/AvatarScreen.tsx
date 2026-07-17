@@ -66,8 +66,8 @@ export default function AvatarScreen() {
 
   return (
     <OnboardingLayout
-      step={4}
-      totalSteps={6}
+      step={5}
+      totalSteps={7}
       eyebrow={t('onboarding.optional')}
       title={t('onboarding.avatarTitle')}
       subtitle={t('onboarding.avatarSubtitle')}

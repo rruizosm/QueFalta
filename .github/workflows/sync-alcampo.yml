@@ -12,7 +12,7 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 60   # es-only; ~25k productos por hojas + ficha incremental (fetch puro)
+    timeout-minutes: 80   # es-only; ~25k productos por hojas + ficha incremental (fetch puro)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

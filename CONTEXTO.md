@@ -37,6 +37,11 @@ para que los espejos fuera de las seis tablas originales guarden el historial.
 En la pantalla Cambios de precios, la cuadricula muestra anterior tachado y
 nuevo precio verde/rojo sin porcentaje; la lista conserva el porcentaje.
 
+**Sync Alcampo 2026-07-18:** el upsert de productos usa lotes de 50 con cuatro
+reintentos y backoff. Los lotes de 500, por el `raw` jsonb, la ficha, los índices
+trigram y el trigger de precios, podían superar el `statement_timeout` de
+PostgREST (57014). El `timeout-minutes` de GitHub Actions es independiente.
+
 ## Identidad
 
 ## Actualizacion CP: Consum y Plusfresc (2026-07-16)

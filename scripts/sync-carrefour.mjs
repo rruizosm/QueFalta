@@ -76,7 +76,10 @@ if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
 
 const HOME = 'https://www.carrefour.es';
 const PAGE_SIZE = 24;
-const SKIP_N1 = new Set(['cat20968591']); // "Ofertas": no es taxonomía, duplica productos ya capturados en su N2 real.
+const SKIP_N1 = new Set([
+  'cat20968591', // "Ofertas": no es taxonomía, duplica productos ya capturados en su N2 real.
+  'cat20005',    // "Droguería y limpieza": excluida del catálogo de QuéFalta.
+]);
 const runStart = new Date().toISOString();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const chunk = (a, n) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));

@@ -56,6 +56,7 @@
 //      MIN_PRODUCTS=8000    (suelo del guardarraíl)
 //      SKIP_DETAIL=1        (no tocar la ficha; preserva la existente)
 //      DETAIL_CONCURRENCY=4 · DETAIL_TTL_DAYS=30 · DETAIL_MAX=N (tope de fichas/run)
+//      UPSERT_BATCH_SIZE=50  (lote pequeño para no exceder statement_timeout)
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 
@@ -72,6 +73,8 @@ const SKIP_DETAIL = process.env.SKIP_DETAIL === '1';
 const DETAIL_CONCURRENCY = Number(process.env.DETAIL_CONCURRENCY || 4);
 const DETAIL_TTL_DAYS = Number(process.env.DETAIL_TTL_DAYS || 30);
 const DETAIL_MAX = process.env.DETAIL_MAX ? Number(process.env.DETAIL_MAX) : Infinity;
+const UPSERT_BATCH_SIZE = Number(process.env.UPSERT_BATCH_SIZE || 50);
+const UPSERT_ATTEMPTS = 4;
 
 if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
   console.error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE (o usa DRY_RUN=1)');
@@ -367,16 +370,43 @@ async function fillDetail(rows) {
 
 // ── Supabase REST ────────────────────────────────────────────────────────────
 async function upsert(table, rows) {
-  for (const c of chunk(rows, 500)) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-      method: 'POST',
-      headers: {
-        apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}`,
-        'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal',
-      },
-      body: JSON.stringify(c),
-    });
-    if (!res.ok) throw new Error(`upsert ${table} ${res.status}: ${await res.text()}`);
+  // `alcampo_products` lleva raw jsonb, ficha, índices trigram y trigger de precios.
+  // Con 500 filas un statement llegó a superar el timeout de PostgREST (57014).
+  // Los POST no se reintentan automáticamente: usamos lotes pequeños y backoff.
+  const batches = chunk(rows, UPSERT_BATCH_SIZE);
+  for (let i = 0; i < batches.length; i++) {
+    const c = batches[i];
+    let last = null;
+    let done = false;
+    for (let t = 0; t < UPSERT_ATTEMPTS && !done; t++) {
+      if (t) await sleep(1500 * 2 ** (t - 1));
+      let res;
+      try {
+        res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+          method: 'POST',
+          headers: {
+            apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}`,
+            'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal',
+          },
+          body: JSON.stringify(c),
+        });
+      } catch (e) {
+        last = e;
+      }
+      if (res?.ok) {
+        done = true;
+        break;
+      }
+      if (res) {
+        last = new Error(`upsert ${table} ${res.status}: ${await res.text()}`);
+        if (res.status !== 429 && res.status < 500) throw last;
+      }
+      console.warn(`[alcampo] ${String(last?.message).split('\n')[0]} (intento ${t + 1}/${UPSERT_ATTEMPTS})`);
+    }
+    if (!done) throw last;
+    if ((i + 1) % 25 === 0 || i + 1 === batches.length) {
+      console.log(`[alcampo] upsert ${table} ${i + 1}/${batches.length} lotes`);
+    }
   }
 }
 const markStale = (table) => markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart });

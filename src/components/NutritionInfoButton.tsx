@@ -1,14 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
-  ActivityIndicator, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View,
+  ActivityIndicator, LayoutAnimation, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import type { CatalogStore } from '../constants/stores';
 import { fetchOpenFoodFactsNutrition, type OpenFoodFactsNutrition } from '../api/openFoodFacts';
+import { parseCatalogNutrition, parseMercadonaNutrition } from '../api/mercadonaNutrition';
 import {
-  foodIndexColor, foodIndexTextColor, foodPointColor,
+  foodIndexColor, foodIndexTextColor, foodPointColor, foodPointTextColor,
   type FoodIndexComponentId, type FoodIndexPoint,
 } from '../lib/foodIndex';
 import { useThemedStyles } from '../context/ThemeContext';
@@ -17,6 +18,13 @@ import { useTranslation } from '../context/LanguageContext';
 interface Props {
   store: CatalogStore;
   ean?: string | null;
+  /** Muestra el detalle dentro de la ficha en vez de abrir un modal. */
+  inline?: boolean;
+  /** Tabla nutrition del espejo, usada como fallback cuando no hay EAN o OFF no encuentra el producto. */
+  fallbackNutrition?: unknown | null;
+  fallbackProductName?: string | null;
+  fallbackCategoryName?: string | null;
+  fallbackIngredients?: string | null;
 }
 
 const componentLabelKey: Record<FoodIndexComponentId, string> = {
@@ -30,6 +38,7 @@ const pointLabelKey: Record<string, string> = {
   sugars: 'nutrition.index.points.sugars',
   saturated_fat: 'nutrition.index.points.saturated_fat',
   salt: 'nutrition.index.points.salt',
+  sweeteners: 'nutrition.index.points.sweeteners',
   fiber: 'nutrition.index.points.fiber',
   fruits_vegetables_legumes: 'nutrition.index.points.fruits_vegetables_legumes',
   proteins: 'nutrition.index.points.proteins',
@@ -49,12 +58,52 @@ const fmt = (value: number | null, unit: string, locale: string) =>
     : `${value.toLocaleString(locale, { maximumFractionDigits: 1 })} ${unit}`;
 
 const pointValue = (point: FoodIndexPoint, locale: string) => {
+  if (point.id === 'sweeteners') return locale.startsWith('ca') ? 'Present' : 'Presente';
   const value = point.value.toLocaleString(locale, { maximumFractionDigits: 1 });
   const unit = point.unit ? ` ${point.unit}` : '';
   return point.unit === '%' ? `${value}${unit}` : `${value}${unit} / 100 g/ml`;
 };
 
-export function useNutritionInfoDisclosure({ store, ean }: Props) {
+function NutritionDisclosureShell({
+  inline, visible, onClose, children,
+}: {
+  inline: boolean;
+  visible: boolean;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
+
+  if (inline) {
+    return visible ? <View style={styles.inlineBody}>{children}</View> : null;
+  }
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <View style={styles.modalBackdrop}>
+        <View style={styles.modalCard}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>{t('nutrition.title')}</Text>
+            <TouchableOpacity style={styles.closeBtn} onPress={onClose} hitSlop={8}>
+              <Ionicons name="close" size={20} color={colors.ink} />
+            </TouchableOpacity>
+          </View>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.modalBody}
+          >
+            {children}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+export function useNutritionInfoDisclosure({
+  store, ean, inline = false, fallbackNutrition, fallbackProductName, fallbackCategoryName, fallbackIngredients,
+}: Props) {
   const styles = useThemedStyles(themedStyles);
   const { t, lang } = useTranslation();
   const locale = lang === 'ca' ? 'ca-ES' : 'es-ES';
@@ -64,7 +113,20 @@ export function useNutritionInfoDisclosure({ store, ean }: Props) {
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState(false);
 
-  const active = store === 'mercadona' && !!ean;
+  const fallbackInfo = useMemo(
+    () => {
+      const context = {
+        productName: fallbackProductName,
+        categoryName: fallbackCategoryName,
+        ingredients: fallbackIngredients,
+      };
+      return store === 'mercadona'
+        ? parseMercadonaNutrition(fallbackNutrition, context)
+        : parseCatalogNutrition(fallbackNutrition, context);
+    },
+    [store, fallbackNutrition, fallbackProductName, fallbackCategoryName, fallbackIngredients],
+  );
+  const active = !!ean || !!fallbackInfo;
 
   useEffect(() => {
     setInfo(null);
@@ -72,19 +134,41 @@ export function useNutritionInfoDisclosure({ store, ean }: Props) {
     setError(false);
     setLoading(false);
     setVisible(false);
-    if (!active || !ean) return;
+    if (!active) return;
+    if (!ean) {
+      setInfo(fallbackInfo);
+      if (!fallbackInfo) setNotFound(true);
+      return;
+    }
 
     let cancelled = false;
     fetchOpenFoodFactsNutrition(ean)
       .then((data) => {
-        if (!cancelled && data) setInfo(data);
+        if (cancelled) return;
+        if (data) setInfo(data);
+        else if (fallbackInfo) setInfo(fallbackInfo);
+        else setNotFound(true);
       })
-      .catch(() => undefined);
+      .catch(() => {
+        if (!cancelled && fallbackInfo) setInfo(fallbackInfo);
+      });
     return () => { cancelled = true; };
-  }, [active, ean]);
+  }, [active, ean, fallbackInfo]);
 
   const open = async () => {
-    if (!active || !ean) return;
+    if (!active) return;
+    if (inline && visible) {
+      LayoutAnimation.configureNext(
+        LayoutAnimation.create(160, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity),
+      );
+      setVisible(false);
+      return;
+    }
+    if (inline) {
+      LayoutAnimation.configureNext(
+        LayoutAnimation.create(160, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity),
+      );
+    }
     setVisible(true);
     setNotFound(false);
     setError(false);
@@ -95,11 +179,13 @@ export function useNutritionInfoDisclosure({ store, ean }: Props) {
 
     setLoading(true);
     try {
-      const data = await fetchOpenFoodFactsNutrition(ean);
+      const data = ean ? await fetchOpenFoodFactsNutrition(ean) : null;
       if (data) setInfo(data);
+      else if (fallbackInfo) setInfo(fallbackInfo);
       else setNotFound(true);
     } catch {
-      setError(true);
+      if (fallbackInfo) setInfo(fallbackInfo);
+      else setError(true);
     } finally {
       setLoading(false);
     }
@@ -138,7 +224,7 @@ export function useNutritionInfoDisclosure({ store, ean }: Props) {
       {points.length > 0 ? (
         <View style={styles.pointList}>
           {points.map((point) => {
-            const color = foodPointColor(point.kind);
+            const color = foodPointColor(point);
             const labelKey = pointLabelKey[point.id];
             const label = labelKey ? t(labelKey) : point.id.replace(/_/g, ' ');
             return (
@@ -150,7 +236,7 @@ export function useNutritionInfoDisclosure({ store, ean }: Props) {
                     <Text style={styles.pointValue}>{pointValue(point, locale)}</Text>
                   </View>
                   <View style={[styles.pointBadge, { backgroundColor: color }]}>
-                    <Text style={styles.pointBadgeText}>
+                    <Text style={[styles.pointBadgeText, { color: foodPointTextColor(point) }]}>
                       {t('nutrition.index.pointScore', {
                         score: point.points,
                         max: point.pointsMax,
@@ -210,21 +296,12 @@ export function useNutritionInfoDisclosure({ store, ean }: Props) {
     </View>
   );
 
-  const modal = (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={() => setVisible(false)}>
-      <View style={styles.modalBackdrop}>
-        <View style={styles.modalCard}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>{t('nutrition.title')}</Text>
-            <TouchableOpacity style={styles.closeBtn} onPress={() => setVisible(false)} hitSlop={8}>
-              <Ionicons name="close" size={20} color={colors.ink} />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.modalBody}
-          >
+  const disclosure = (
+    <NutritionDisclosureShell
+      inline={inline}
+      visible={visible}
+      onClose={() => setVisible(false)}
+    >
             {loading ? (
               <ActivityIndicator size="large" color={colors.accent} style={styles.loader} />
             ) : error ? (
@@ -233,11 +310,11 @@ export function useNutritionInfoDisclosure({ store, ean }: Props) {
               <Text style={styles.message}>{t('nutrition.notFound')}</Text>
             ) : info ? (
               <>
-                {info.productName ? <Text style={styles.productName}>{info.productName}</Text> : null}
+                {!inline && info.productName ? <Text style={styles.productName}>{info.productName}</Text> : null}
 
                 {index ? (
                   <>
-                    <View style={styles.indexHero}>
+                    {!inline ? <View style={styles.indexHero}>
                       <View
                         style={[
                           styles.indexCircle,
@@ -273,7 +350,7 @@ export function useNutritionInfoDisclosure({ store, ean }: Props) {
                         </Text>
                         <Text style={styles.indexFormula}>{formula}</Text>
                       </View>
-                    </View>
+                    </View> : null}
 
                     <Text style={styles.sectionTitle}>{t('nutrition.index.howCalculated')}</Text>
                     <Text style={styles.sectionHint}>{t('nutrition.index.calculationNote')}</Text>
@@ -331,26 +408,30 @@ export function useNutritionInfoDisclosure({ store, ean }: Props) {
                   <Text style={styles.message}>{t('nutrition.index.notAvailable')}</Text>
                 )}
 
-                {renderInfoSection(
-                  'nutrition.processing.title',
-                  'nutrition.processing.hint',
-                  'nutrition.processing.none',
-                  info.novaGroup === 4 ? [{
-                    label: t('nutrition.processing.ultraProcessedTitle'),
-                    detail: t('nutrition.processing.ultraProcessedDetail'),
-                  }] : [],
-                  '#c83b32',
-                )}
-                {renderInfoSection(
-                  'nutrition.additives.title',
-                  'nutrition.additives.hint',
-                  'nutrition.additives.none',
-                  info.additives.map((additive) => ({
-                    label: additive.code,
-                    detail: additive.name ?? t('nutrition.additives.itemDetail'),
-                  })),
-                  '#d09a23',
-                )}
+                {info.source === 'openfoodfacts' ? (
+                  <>
+                    {renderInfoSection(
+                      'nutrition.processing.title',
+                      'nutrition.processing.hint',
+                      'nutrition.processing.none',
+                      info.novaGroup === 4 ? [{
+                        label: t('nutrition.processing.ultraProcessedTitle'),
+                        detail: t('nutrition.processing.ultraProcessedDetail'),
+                      }] : [],
+                      '#c83b32',
+                    )}
+                    {renderInfoSection(
+                      'nutrition.additives.title',
+                      'nutrition.additives.hint',
+                      'nutrition.additives.none',
+                      info.additives.map((additive) => ({
+                        label: additive.code,
+                        detail: additive.name ?? t('nutrition.additives.itemDetail'),
+                      })),
+                      '#d09a23',
+                    )}
+                  </>
+                ) : null}
 
                 <Text style={styles.sectionTitle}>{t('nutrition.index.valuesTitle')}</Text>
                 {rows.length > 0 ? (
@@ -366,17 +447,29 @@ export function useNutritionInfoDisclosure({ store, ean }: Props) {
                   <Text style={styles.message}>{t('nutrition.noNutrients')}</Text>
                 )}
 
-                <Text style={styles.source}>{t('nutrition.source')}</Text>
+                <Text style={styles.source}>
+                  {t(
+                    info.source === 'mercadona'
+                      ? 'nutrition.sourceMercadona'
+                      : info.source === 'catalog'
+                        ? 'nutrition.sourceCatalog'
+                        : 'nutrition.source',
+                  )}
+                </Text>
                 <Text style={styles.disclaimer}>{t('nutrition.index.disclaimer')}</Text>
               </>
             ) : null}
-          </ScrollView>
-        </View>
-      </View>
-    </Modal>
+    </NutritionDisclosureShell>
   );
 
-  return { active, open, modal, info };
+  return {
+    active,
+    open,
+    modal: inline ? null : disclosure,
+    inlineContent: inline ? disclosure : null,
+    expanded: visible,
+    info,
+  };
 }
 
 export default function NutritionInfoButton({ store, ean }: Props) {
@@ -476,6 +569,7 @@ const themedStyles = () => StyleSheet.create({
     borderRadius: 10,
   },
   modalBody: { padding: 16, paddingBottom: 22 },
+  inlineBody: { paddingTop: 1 },
   loader: { marginVertical: 36 },
   message: {
     fontSize: 14,

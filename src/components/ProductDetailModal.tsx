@@ -66,6 +66,8 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16 }
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
   const [mirrorEan, setMirrorEan] = useState<string | null>(null);
+  const [mirrorNutrition, setMirrorNutrition] = useState<unknown | null>(null);
+  const [mirrorCategoryName, setMirrorCategoryName] = useState<string | null>(null);
 
   useEffect(() => {
     if (!productId) { setProduct(null); return; }
@@ -73,6 +75,8 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16 }
     setError(false);
     setProduct(null);
     setMirrorEan(null);
+    setMirrorNutrition(null);
+    setMirrorCategoryName(null);
     setQty(1);
     let cancelled = false;
     (async () => {
@@ -87,7 +91,12 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16 }
           if (!mirror.wh) throw new Error('sin almacén');
           p = await fetchProduct(productId, mirror.wh);
         }
-        if (!cancelled) { setProduct(p); setMirrorEan(mirror.ean); }
+        if (!cancelled) {
+          setProduct(p);
+          setMirrorEan(mirror.ean);
+          setMirrorNutrition(mirror.nutrition);
+          setMirrorCategoryName(mirror.categoryName);
+        }
       } catch {
         if (!cancelled) setError(true);
       } finally {
@@ -126,7 +135,15 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16 }
 
   const fav = product ? isProductFavorite('mercadona', product.id) : false;
   const nutritionEan = mirrorEan ?? product?.ean ?? null;
-  const nutrition = useNutritionInfoDisclosure({ store: 'mercadona', ean: nutritionEan });
+  const nutrition = useNutritionInfoDisclosure({
+    store: 'mercadona',
+    ean: nutritionEan,
+    inline: true,
+    fallbackNutrition: mirrorNutrition,
+    fallbackProductName: product?.display_name,
+    fallbackCategoryName: mirrorCategoryName,
+    fallbackIngredients: ingredients,
+  });
 
   const handleToggleFav = async () => {
     if (!product) return;
@@ -222,7 +239,13 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16 }
             {refPrice ? <Text style={styles.refPrice}>{refPrice}</Text> : null}
 
             {nutrition.info?.foodIndex ? (
-              <FoodIndexSummary index={nutrition.info.foodIndex} onPress={nutrition.open} />
+              <FoodIndexSummary
+                index={nutrition.info.foodIndex}
+                onPress={nutrition.open}
+                expanded={nutrition.expanded}
+              >
+                {nutrition.inlineContent}
+              </FoodIndexSummary>
             ) : null}
 
             {/* Comparativa: más barato en otros súper */}
@@ -231,15 +254,6 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16 }
             {/* Características del producto */}
             <ProductInfoSections
               items={[
-                {
-                  key: 'nutrition',
-                  icon: 'nutrition-outline',
-                  title: t('product.sections.nutrition'),
-                  text: nutrition.info?.foodIndex
-                    ? t('nutrition.index.rowSummary', { score: nutrition.info.foodIndex.score })
-                    : nutrition.active ? t('nutrition.source') : null,
-                  onPress: nutrition.active ? nutrition.open : undefined,
-                },
                 { key: 'description', icon: 'reader-outline', title: t('product.sections.description'), text: clean(d?.description) },
                 { key: 'info', icon: 'information-circle-outline', title: t('product.sections.info'), text: clean(d?.counter_info) },
                 { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: clean(ingredients) },
@@ -255,7 +269,6 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16 }
               <Text style={styles.ean}>EAN: {product.ean}</Text>
             ) : null}
           </ScrollView>
-          {nutrition.modal}
 
           <View style={styles.footer}>
             <QuantityStepper

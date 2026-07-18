@@ -43,7 +43,7 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
   // arranca justo debajo de él. Si cambia el banner, ajustar.
   const sheetTop = useHeaderTopPadding(52) + 48;
   const toast = useToast();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const { profile } = useProfile();
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
@@ -78,7 +78,7 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
         if (!cancelled) { toast.show(t('product.loadError'), 'error'); onClose(); }
       });
     return () => { cancelled = true; };
-  }, [target?.store, target?.id, region, postalCode]);
+  }, [target?.store, target?.id, region, postalCode, lang]);
 
   if (!target) return null;
 

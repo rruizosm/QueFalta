@@ -22,9 +22,12 @@
 //     marca, categoría (c1>c2>c3) y precio. Es la fuente limpia; el resto del
 //     markup (comillas simples en el fragmento AJAX, dobles + HTML-escapado en la
 //     página completa) se ignora. El parser tolera ambos estilos de comillas.
+//  4. La nutrición se completa incrementalmente con GET de la ficha
+//     /es/productdetail/{id}-{slug}/. Se guarda como texto normalizado por 100
+//     g/ml, compatible con `parseCatalogNutrition` y el bloque Índice Alimentario.
 //
-// No hay precio por unidad (€/L) ni EAN en los listados (solo en la ficha), así
-// que price_per_unit queda null en v1 (como algunos productos de otros súpers).
+// No hay precio por unidad (€/L) ni EAN en los listados; la ficha HTML tampoco
+// expone un EAN verificable. price_per_unit queda null (como en otros súpers).
 // Nombres solo en castellano (Caprabo /ca/ redirige; su data-locale=ca pero
 // lang=es → los nombres de producto no se traducen).
 
@@ -42,7 +45,9 @@ export const NON_FOOD_N1 = new Set([
 ]);
 
 const htmlUnescape = (s) =>
-  s.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&')
+  s.replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ');
 
 // Jar de cookies mínimo (por hoja): el loadpage stateful necesita la sesión
@@ -181,6 +186,99 @@ export function parseTiles(html) {
     out.push(it);
   }
   return out;
+}
+
+// ── Ficha de producto: tabla nutricional SSR ────────────────────────────────
+// La web publica una lista HTML del tipo:
+//   Cantidad <span>100 gramos</span>
+//   Energía <span>177 kilojulios</span>
+//   Grasas <span>0.4 gramos</span>
+// La convertimos al contrato textual común de los espejos para que el cliente
+// pueda pasar `nutrition` directamente a `parseCatalogNutrition`.
+const stripHtml = (value) => htmlUnescape((value ?? '')
+  .replace(/<br\s*\/?>/gi, '\n')
+  .replace(/<[^>]+>/g, ' '))
+  .replace(/\s+/g, ' ')
+  .trim();
+
+const nutritionKey = (value) => stripHtml(value)
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .replace(/[:\s]+$/g, '')
+  .trim();
+
+function canonicalNutritionLabel(value) {
+  const clean = stripHtml(value).replace(/:\s*$/, '');
+  const key = nutritionKey(clean);
+  if (/^(energia|valor energetico)$/.test(key)) return 'Valor energético';
+  if (/^(acidos? grasos? saturados?|grasas? saturadas?)$/.test(key)) return 'Grasas saturadas';
+  if (/^grasas?$/.test(key)) return 'Grasas';
+  if (/^(hidratos? de carbono|carbohidratos?)$/.test(key)) return 'Hidratos de carbono';
+  if (/^(de los cuales )?azucares?$/.test(key)) return 'Azúcares';
+  if (/^fibra( alimentaria)?$/.test(key)) return 'Fibra';
+  if (/^proteinas?$/.test(key)) return 'Proteínas';
+  if (/^sal$/.test(key)) return 'Sal';
+  return clean;
+}
+
+function canonicalNutritionValue(value) {
+  return stripHtml(value)
+    .replace(/kilocalor(?:ía|ia)(?:\s+it\s*\([^)]*\))?s?/gi, 'kcal')
+    .replace(/kilojulios?/gi, 'kJ')
+    .replace(/microgramos?/gi, 'µg')
+    .replace(/miligramos?/gi, 'mg')
+    .replace(/mililitros?/gi, 'ml')
+    .replace(/gramos?/gi, 'g')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/** Extrae la nutrición de una PDP y devuelve texto por 100 g/ml reutilizable
+ * por el Índice Alimentario. Devuelve null cuando la ficha no publica tabla. */
+export function parseNutritionHtml(html) {
+  if (typeof html !== 'string' || !html) return null;
+  const title = html.match(
+    /<span[^>]*class=(['"])[^'"]*\btitle\b[^'"]*\1[^>]*>\s*Informaci[oó]n\s+Nutricional\s*<\/span>/i,
+  );
+  if (!title || title.index == null) return null;
+  const afterTitle = html.slice(title.index + title[0].length);
+  const list = afterTitle.match(/<ul[^>]*class=(['"])[^'"]*\blist\b[^'"]*\1[^>]*>([\s\S]*?)<\/ul>/i);
+  if (!list) return null;
+
+  let perQuantity = null;
+  const nutrients = [];
+  for (const item of list[2].matchAll(/<li[^>]*>([\s\S]*?)<span[^>]*>([\s\S]*?)<\/span>[\s\S]*?<\/li>/gi)) {
+    const label = stripHtml(item[1]);
+    const value = canonicalNutritionValue(item[2]);
+    if (!label || !value) continue;
+    if (nutritionKey(label) === 'cantidad') {
+      perQuantity = value;
+      continue;
+    }
+    nutrients.push(`${canonicalNutritionLabel(label)}: ${value}`);
+  }
+  if (nutrients.length === 0) return null;
+  return [perQuantity ? `Valores medios por ${perQuantity}` : 'Valores medios por 100 g', ...nutrients].join('\n');
+}
+
+const productSlug = (name) => (name ?? '')
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '')
+  .slice(0, 140) || 'producto';
+
+const productDetailUrl = (base, row) =>
+  `${base}/es/productdetail/${encodeURIComponent(row.id)}-${productSlug(row.display_name)}/`;
+
+async function fetchProductNutrition(base, row) {
+  const html = await fetchText(productDetailUrl(base, row), { tries: 3 });
+  // Un 200 de Tapestry puede ser una página de error genérica. Este id solo
+  // aparece en la ficha real y permite distinguirla de una respuesta vacía.
+  if (!html || !html.includes(`item-detail-main-${row.id}`)) return { ok: false, nutrition: null };
+  return { ok: true, nutrition: parseNutritionHtml(html) };
 }
 
 // ── Paginación stateful (Tapestry `supermarket:loadpage`) ────────────────────
@@ -362,6 +460,11 @@ export async function runSync({ base, store, table, catTable }) {
   const DRY_RUN = process.env.DRY_RUN === '1';
   const CONCURRENCY = Number(process.env.CONCURRENCY || 5);
   const MAX_LEAVES = process.env.MAX_LEAVES ? Number(process.env.MAX_LEAVES) : Infinity;
+  const SKIP_DETAIL = process.env.SKIP_DETAIL === '1';
+  const DETAIL_CONCURRENCY = Math.max(1, Number(process.env.DETAIL_CONCURRENCY || 3));
+  const DETAIL_TTL_DAYS = Math.max(1, Number(process.env.DETAIL_TTL_DAYS || 90));
+  const DETAIL_MAX = process.env.DETAIL_MAX ? Number(process.env.DETAIL_MAX) : 1000;
+  const DRY_DETAIL_MAX = Math.max(0, Number(process.env.DRY_DETAIL_MAX || 3));
   const runStart = new Date().toISOString();
   const tag = `[${store}]`;
   const log = (m) => console.log(`${tag} ${m}`);
@@ -385,6 +488,84 @@ export async function runSync({ base, store, table, catTable }) {
       });
       if (!res.ok) throw new Error(`upsert ${tbl} ${res.status}: ${await res.text()}`);
     }
+  }
+
+  // Lee la nutrición ya guardada para no descargar decenas de miles de fichas
+  // cada semana. `detail_synced_at` también permite recordar que una PDP válida
+  // no publicaba tabla y evita reintentar ese null hasta que venza el TTL.
+  async function fetchExistingNutrition() {
+    const map = new Map();
+    const PAGE = 1000;
+    for (let from = 0; ; from += PAGE) {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/${table}?select=id,nutrition,detail_synced_at&order=id.asc`,
+        {
+          headers: {
+            apikey: SERVICE_ROLE,
+            Authorization: `Bearer ${SERVICE_ROLE}`,
+            Range: `${from}-${from + PAGE - 1}`,
+            'Range-Unit': 'items',
+          },
+        },
+      );
+      if (!res.ok) throw new Error(`read nutrition ${table} ${res.status}: ${await res.text()}`);
+      const batch = await res.json();
+      for (const row of batch) map.set(String(row.id), row);
+      if (batch.length < PAGE) break;
+    }
+    return map;
+  }
+
+  async function loadExistingNutrition(rows) {
+    const existing = await fetchExistingNutrition();
+    const ttlMs = DETAIL_TTL_DAYS * 86400000;
+    const now = Date.now();
+    const stale = [];
+    for (const row of rows) {
+      const previous = existing.get(row.id);
+      row.nutrition = previous?.nutrition ?? null;
+      row.detail_synced_at = previous?.detail_synced_at ?? null;
+      const detailTime = row.detail_synced_at ? new Date(row.detail_synced_at).getTime() : NaN;
+      if (!Number.isFinite(detailTime) || now - detailTime >= ttlMs) stale.push(row);
+    }
+    return stale;
+  }
+
+  async function downloadNutrition(stale, max = DETAIL_MAX) {
+    const batch = stale.slice(0, max);
+    const queue = [...batch];
+    const updated = [];
+    let done = 0;
+    let withNutrition = 0;
+    let withoutNutrition = 0;
+    log(`nutrición: ${batch.length} fichas a descargar · ${stale.length - batch.length} pospuestas`);
+    await Promise.all(Array.from({ length: DETAIL_CONCURRENCY }, async () => {
+      for (;;) {
+        const row = queue.shift();
+        if (!row) break;
+        try {
+          const detail = await fetchProductNutrition(base, row);
+          if (detail.ok) {
+            const hadNutrition = !!row.nutrition;
+            // Un null nuevo es válido si la ficha nunca tuvo nutrición. Si ya
+            // había texto, conservarlo protege ante un cambio puntual de markup.
+            if (detail.nutrition || !hadNutrition) {
+              row.nutrition = detail.nutrition;
+              row.detail_synced_at = runStart;
+              updated.push(row);
+              if (detail.nutrition) withNutrition++;
+              else withoutNutrition++;
+            }
+          }
+        } catch (e) {
+          log(`nutrición ${row.id} falló: ${e.message.split('\n')[0]}`);
+        }
+        if (++done % 100 === 0) log(`nutrición ${done}/${batch.length}`);
+        await sleep(120);
+      }
+    }));
+    log(`nutrición: ${withNutrition} con tabla · ${withoutNutrition} sin tabla · ${updated.length} comprobadas`);
+    return updated;
   }
 
   log(`inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} conc=${CONCURRENCY} base=${base}`);
@@ -418,13 +599,30 @@ export async function runSync({ base, store, table, catTable }) {
       sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
       sin_marca: rows.filter((r) => !r.brand).length,
     });
+    if (!SKIP_DETAIL && DRY_DETAIL_MAX > 0) {
+      const checked = await downloadNutrition(rows, Math.min(DRY_DETAIL_MAX, rows.length));
+      for (const row of checked) {
+        console.log(`\nnutrición ${row.id} — ${row.display_name}`);
+        console.log(row.nutrition ?? '  (la ficha no publica información nutricional)');
+      }
+    }
     return;
   }
   if (rows.length === 0) throw new Error('0 productos (¿cambió el markup o el árbol?)');
 
+  let staleNutrition = [];
+  if (!SKIP_DETAIL) staleNutrition = await loadExistingNutrition(rows);
+
+  // Guardamos primero el catálogo: si la pasada incremental de fichas se corta,
+  // precios/disponibilidad y soft-delete ya quedan actualizados.
   await upsert(catTable, catOut);
   await upsert(table, rows);
   await markStale({ url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart });
   await markStale({ url: SUPABASE_URL, key: SERVICE_ROLE, table: catTable, runStart });
+
+  if (!SKIP_DETAIL) {
+    const updated = await downloadNutrition(staleNutrition);
+    if (updated.length > 0) await upsert(table, updated);
+  }
   log('OK');
 }

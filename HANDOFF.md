@@ -69,8 +69,8 @@ brazo por tabla). Estado al 2026-07-15:
 | 5 | Consum | API REST abierta | ✅ | ⚠️ | EAN + marca estructurados. Sin ficha (no la expone). |
 | 6 | Dia | SSR Vike `vike_pageContext` | ✅ base | ⚠️ multi-zona local | Ficha es. Multi-zona 48 CP LOCAL. |
 | 7 | Sorli | Playwright bootstrap + fetch | ✅ | ⚠️ | Bilingüe es/ca. nutriScore propio vacío 99%. |
-| 8 | Eroski | Tapestry (`lib/eroski-tapestry.mjs`) | ✅ `6e72611` | ⚠️ | es-only, sin €/ud ni ficha. |
-| 9 | Caprabo | Tapestry (compartido con Eroski) | ✅ `6e72611` | ⚠️ | Idem Eroski. |
+| 8 | Eroski | Tapestry (`lib/eroski-tapestry.mjs`) | ✅ `6e72611` | ⚠️ nutrición | es-only, sin €/ud/EAN; nutrición PDP incremental local. |
+| 9 | Caprabo | Tapestry (compartido con Eroski) | ✅ `6e72611` | ⚠️ nutrición | Idem Eroski. |
 | 10 | Condis | Empathy.co API JSON abierta | ⚠️ dudoso | ⚠️ | Bilingüe. Sin ficha v1. "Commit en espera" por Ametller → VERIFICAR. |
 | 11 | Ametller | SCAPI Salesforce (guest PKCE) | ❌ local | ⚠️ | Bilingüe + ficha + EAN. Logo placeholder. |
 | 12 | Aldi | SSR Algolia embebido (`__NEXT_DATA__`) | ❌ local | ⚠️ | es-only, sin EAN. Guardarraíl <800. Logo placeholder. |
@@ -102,6 +102,8 @@ La lista **completa y anotada** está en CONTEXTO.md. Aquí, lo esencial y el OR
 - `profile_premium.sql` → `paywall_gates.sql` → (re)`similar_products.sql`.
 - `carrefour_offers.sql` y `carrefour_regions.sql` **ANTES** del próximo sync de Carrefour (el `upsert` las incluye).
 - Cada `bonarea/dia/carrefour_product_detail.sql` antes del sync de su súper (pasada de ficha).
+- `20260718133958_eroski_caprabo_nutrition.sql` antes de los próximos syncs de
+  Eroski/Caprabo; añade `nutrition` y `detail_synced_at`.
 - Migración de cada súper nuevo (`ametller/aldi/hiperdino/alcampo/plusfresc/condis/eroski/caprabo_catalog.sql`)
   → luego **re-ejecutar `similar_products.sql`**.
 

@@ -1,4 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import type { ReactNode } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -12,6 +13,8 @@ import GlassSurface from './GlassSurface';
 interface Props {
   index: FoodIndex;
   onPress: () => void;
+  expanded?: boolean;
+  children?: ReactNode;
 }
 
 const labelKey: Record<FoodIndexComponentId, string> = {
@@ -28,7 +31,7 @@ const levelKey = (score: number) => {
   return 'nutrition.index.levelVeryLow';
 };
 
-export default function FoodIndexSummary({ index, onPress }: Props) {
+export default function FoodIndexSummary({ index, onPress, expanded = false, children }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
   const scoreColor = foodIndexColor(index.score);
@@ -38,14 +41,15 @@ export default function FoodIndexSummary({ index, onPress }: Props) {
     .join(' + ');
 
   return (
-    <TouchableOpacity
-      style={styles.touchable}
-      onPress={onPress}
-      activeOpacity={0.72}
-      accessibilityRole="button"
-      accessibilityLabel={`${t('nutrition.index.title')}: ${index.score} ${t('nutrition.index.outOf100')}`}
-    >
-      <GlassSurface style={styles.card} fallbackColor={colors.white}>
+    <GlassSurface style={styles.card} fallbackColor={colors.white}>
+      <TouchableOpacity
+        style={styles.summary}
+        onPress={onPress}
+        activeOpacity={0.72}
+        accessibilityRole="button"
+        accessibilityState={{ expanded }}
+        accessibilityLabel={`${t('nutrition.index.title')}: ${index.score} ${t('nutrition.index.outOf100')}`}
+      >
         <View style={[styles.scoreCircle, { backgroundColor: scoreColor }]}>
           <Text style={[styles.score, { color: scoreTextColor }]}>{index.score}</Text>
           <Text style={[styles.scoreMax, { color: scoreTextColor }]}>/100</Text>
@@ -60,26 +64,39 @@ export default function FoodIndexSummary({ index, onPress }: Props) {
           <Text style={styles.hint}>{t('nutrition.index.tapForDetails')}</Text>
         </View>
 
-        <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} />
-      </GlassSurface>
-    </TouchableOpacity>
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color={colors.inkFaint}
+          style={{ transform: [{ rotate: expanded ? '90deg' : '0deg' }] }}
+        />
+      </TouchableOpacity>
+      {expanded && children ? (
+        <View style={styles.details}>
+          <View style={styles.separator} />
+          {children}
+        </View>
+      ) : null}
+    </GlassSurface>
   );
 }
 
 const themedStyles = () => StyleSheet.create({
-  touchable: { marginTop: 18 },
   card: {
+    marginTop: 18,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.white,
+    overflow: 'hidden',
+  },
+  summary: {
     minHeight: 98,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
     paddingHorizontal: 14,
     paddingVertical: 13,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
-    overflow: 'hidden',
   },
   scoreCircle: {
     width: 68,
@@ -114,5 +131,11 @@ const themedStyles = () => StyleSheet.create({
     fontSize: 11.5,
     fontFamily: fonts.medium,
     color: colors.accent,
+  },
+  details: { paddingHorizontal: 14, paddingBottom: 16 },
+  separator: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.border,
+    marginBottom: 1,
   },
 });

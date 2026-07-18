@@ -27,6 +27,8 @@ export interface FoodIndex {
 
 interface BuildFoodIndexInput {
   attributeGroups?: unknown;
+  /** Puntuación nutricional ya calculada a partir de una tabla de valores. */
+  nutritionScore?: unknown;
   nutriScoreGrade?: unknown;
   nutriScoreData?: unknown;
   novaGroup?: unknown;
@@ -113,7 +115,7 @@ const parsePoints = (nutriScoreData: unknown): FoodIndexPoint[] => {
     return raw.flatMap((item) => {
       if (!isRecord(item) || typeof item.id !== 'string') return [];
       const value = finite(item.value);
-      const score = nutriScorePoints(item.points, item.points_max);
+      const score = nutriScorePoints(item.points, item.points_max ?? item.pointsMax);
       // Un valor nulo significa que Open Food Facts no conoce ese nutriente:
       // no lo presentamos como si fuese una puntuación baja real.
       if (value == null || score == null) return [];
@@ -143,6 +145,7 @@ const parsePoints = (nutriScoreData: unknown): FoodIndexPoint[] => {
  */
 export function buildFoodIndex({
   attributeGroups,
+  nutritionScore,
   nutriScoreGrade,
   nutriScoreData,
   novaGroup,
@@ -150,7 +153,8 @@ export function buildFoodIndex({
   sustainabilityGrade,
 }: BuildFoodIndexInput): FoodIndex | null {
   const nutrition =
-    attributeScore(attributeGroups, 'nutriscore')
+    score100(nutritionScore)
+    ?? attributeScore(attributeGroups, 'nutriscore')
     ?? nutritionFallback(nutriScoreGrade);
   if (nutrition == null) return null;
 
@@ -224,7 +228,25 @@ export function foodIndexTextColor(score: number): string {
   return score >= 40 && score < 60 ? '#2b2521' : '#ffffff';
 }
 
-/** Color de la escala 1-10, donde 10 siempre significa mejor. */
-export function foodPointColor(kind: FoodIndexPointKind): string {
-  return kind === 'positive' ? '#2f8f4e' : '#c83b32';
+/**
+ * Calidad nutricional del componente en una escala 0–100. En energía, azúcar,
+ * saturadas, sal y edulcorantes menos puntos es mejor; en fibra, F/V/L y
+ * proteínas ocurre lo contrario. Así una sal baja no aparece como un aviso rojo.
+ */
+export function foodPointNutritionScore(point: FoodIndexPoint): number {
+  if (point.pointsMax <= 0) return 50;
+  const ratio = clamp(point.points / point.pointsMax, 0, 1);
+  const limitingNutrients = new Set([
+    'energy', 'sugars', 'saturated_fat', 'salt', 'sweeteners',
+  ]);
+  return Math.round((limitingNutrients.has(point.id) ? 1 - ratio : ratio) * 100);
+}
+
+/** Color de rojo a verde según la calidad del nutriente concreto. */
+export function foodPointColor(point: FoodIndexPoint): string {
+  return foodIndexColor(foodPointNutritionScore(point));
+}
+
+export function foodPointTextColor(point: FoodIndexPoint): string {
+  return foodIndexTextColor(foodPointNutritionScore(point));
 }

@@ -270,15 +270,30 @@ export async function fetchMercadonaNames(ids: string[]): Promise<Record<string,
 /** Almacén (`wh`) y EAN de un producto Mercadona según el espejo. El detalle por
  * defecto usa mad1; para un producto regional se reintenta con un almacén que sí
  * lo vende, evitando el 404. */
-export async function fetchProductMirror(id: string): Promise<{ wh: string | null; ean: string | null }> {
+export async function fetchProductMirror(id: string): Promise<{
+  wh: string | null;
+  ean: string | null;
+  nutrition: unknown | null;
+  categoryName: string | null;
+}> {
   const { data, error } = await supabase
     .from('mercadona_products')
-    .select('source_wh, ean')
+    .select('source_wh, ean, nutrition, category_name')
     .eq('id', id)
     .maybeSingle();
-  if (error || !data) return { wh: null, ean: null };
-  const row = data as { source_wh: string | null; ean: string | null };
-  return { wh: row.source_wh ?? null, ean: row.ean ?? null };
+  if (error || !data) return { wh: null, ean: null, nutrition: null, categoryName: null };
+  const row = data as {
+    source_wh: string | null;
+    ean: string | null;
+    nutrition: unknown | null;
+    category_name: string | null;
+  };
+  return {
+    wh: row.source_wh ?? null,
+    ean: row.ean ?? null,
+    nutrition: row.nutrition ?? null,
+    categoryName: row.category_name ?? null,
+  };
 }
 
 /** Deduce la tienda a partir del id de producto: Bonpreu usa uuids; Mercadona,
@@ -418,6 +433,7 @@ export interface CarrefourProduct {
   priceFormat: string | null;   // precio mostrado tal cual ("15,40 €")
   pricePerUnit: string | null;  // etiqueta €/unidad canónica ("192,50 €/kg")
   categoryName: string | null;
+  ean: string | null;
   // Oferta (solo en fetchCarrefourProduct; null en listados/búsqueda). Ver
   // carrefour_offers.sql. promoText incluye las condiciones y la validez.
   promoName: string | null;         // "3x2", "2ª unidad -70%"…
@@ -454,6 +470,7 @@ const mapCarrefour = (r: any, region: RegionValue | null = null): CarrefourProdu
   priceFormat: regional?.pf ?? r.price_format ?? null,
   pricePerUnit: regional?.ppu != null ? ppuLabel(regional.ppu, regional.ppuu) : ppuLabel(r.price_per_unit, r.price_per_unit_unit),
   categoryName: r.category_name ?? null,
+  ean: r.ean ?? null,
   // Solo presentes cuando se piden (detalle); en listados quedan undefined → null.
   promoName: r.promo_name ?? null,
   promoText: r.promo_text ?? null,
@@ -477,7 +494,7 @@ const CARREFOUR_COLS =
 // Columnas de ficha + oferta: solo para el detalle (no se piden en listados).
 const CARREFOUR_DETAIL_COLS =
   `${CARREFOUR_COLS}, promo_name, promo_text, promo_end, strikethrough_price`
-  + `, ingredients, allergens, nutrition, conservation, preparation, denomination, origin, operator`;
+  + `, ean, ingredients, allergens, nutrition, conservation, preparation, denomination, origin, operator`;
 
 /** Búsqueda por nombre en el catálogo de Carrefour (server-side). */
 export async function searchCarrefourProducts(query: string, region: RegionValue | null, limit = 50): Promise<CarrefourProduct[]> {

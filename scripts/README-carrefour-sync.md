@@ -149,6 +149,19 @@ incremental, `DETAIL_TTL_DAYS=30`). Si amplías `-ExecutionTimeLimit`, sube o qu
 
 ## Notas
 
+- **Backfill de EAN:** [`backfill-carrefour-ean.mjs`](backfill-carrefour-ean.mjs)
+  recorre los productos publicados que aún no tienen EAN, descarga su ficha y lo
+  completa sin reejecutar el barrido multi-zona. Primero probar en PowerShell con
+  `$env:DRY_RUN='1'; $env:LIMIT='10'; node scripts/backfill-carrefour-ean.mjs`;
+  para ejecutar un producto concreto, `$env:DRY_RUN='1';
+  $env:PRODUCT_ID='VC4AECOMM-550788'; node scripts/backfill-carrefour-ean.mjs`;
+  para ejecutarlo completo, `node scripts/backfill-carrefour-ean.mjs`. Es
+  reanudable: al relanzarlo solo procesa las filas cuyo `ean` continúe siendo
+  `NULL`.
+- **Rama excluida:** el sync omite por completo “Droguería y limpieza” (N1
+  `cat20005`) y sus subcategorías; no se incorpora ningún producto al recorrer
+  esa rama. La retirada inicial de los datos existentes está documentada en
+  [`supabase/migrations/carrefour_exclude_drogueria_limpieza.sql`](../supabase/migrations/carrefour_exclude_drogueria_limpieza.sql).
 - Tope de Carrefour: ~1008 productos por categoría N2; las secciones enormes
   (Alimentación, Desayuno, Conservas…) quedan truncadas ahí.
 - Si algún día Cloudflare empieza a bloquear también tu IP residencial, las

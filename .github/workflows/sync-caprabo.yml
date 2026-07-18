@@ -12,7 +12,7 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 45   # catálogo de Cataluña (scraping HTML de ~750 hojas)
+    timeout-minutes: 75   # catálogo + hasta 1.000 fichas nutricionales incrementales
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,3 +24,5 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
           CONCURRENCY: '6'
+          DETAIL_CONCURRENCY: '3'
+          DETAIL_MAX: '1000'

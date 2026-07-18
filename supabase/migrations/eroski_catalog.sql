@@ -6,8 +6,8 @@
 -- El sync scrapea las páginas de categoría (SSR del 1er lote + POST loadpage con
 -- cookies de sesión) y saca de
 -- cada "tile" el JSON data-metrics (id, nombre, marca, categoría, precio). NO hay
--- precio por unidad ni EAN en el listado (solo en la ficha) → price_per_unit
--- queda null. Solo castellano (Eroski/Caprabo no traducen los nombres).
+-- precio por unidad ni EAN en el listado; la ficha aporta nutrición pero no un
+-- EAN verificable → price_per_unit queda null. Solo castellano.
 --
 -- Autocontenida: incluye búsqueda insensible a acentos (display_name_norm),
 -- novedades (first_seen_at) y cambios de precio (prev_unit_price/price_changed_at/
@@ -61,6 +61,8 @@ create table if not exists public.eroski_products (
   price_per_unit_unit text,
   available           boolean not null default true,
   published           boolean not null default true,
+  nutrition           text,               -- tabla de la PDP, normalizada por 100 g/ml
+  detail_synced_at    timestamptz,        -- control incremental de la ficha nutricional
   raw                 jsonb not null,     -- item de data-metrics
   synced_at           timestamptz not null default now(),
   first_seen_at       timestamptz not null default '2000-01-01'::timestamptz,

@@ -1,6 +1,7 @@
 import { buildFoodIndex, type FoodIndex } from '../lib/foodIndex';
 
 export interface OpenFoodFactsNutrition {
+  source: 'openfoodfacts' | 'mercadona' | 'catalog';
   productName: string | null;
   nutriScoreGrade: string | null;
   nutriScoreScore: number | null;
@@ -114,6 +115,7 @@ export function fetchOpenFoodFactsNutrition(ean: string): Promise<OpenFoodFactsN
     const nutriScoreScore = num(p.nutriscore_score);
     const novaGroup = num(p.nova_group ?? p.nova_groups);
     return {
+      source: 'openfoodfacts' as const,
       productName: p.product_name ?? null,
       nutriScoreGrade,
       nutriScoreScore,

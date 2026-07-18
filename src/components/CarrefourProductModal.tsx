@@ -14,7 +14,9 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductImage from '../components/ProductImage';
+import FoodIndexSummary from '../components/FoodIndexSummary';
 import ProductInfoSections from '../components/ProductInfoSections';
+import { useNutritionInfoDisclosure } from '../components/NutritionInfoButton';
 import SimilarProductsSection from '../components/SimilarProductsSection';
 import ProductPriceLine from '../components/ProductPriceLine';
 
@@ -37,6 +39,16 @@ export default function CarrefourProductModal({ product, onClose, topInset = 16 
   const { t } = useTranslation();
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
+
+  const nutrition = useNutritionInfoDisclosure({
+    store: 'carrefour',
+    ean: product?.ean,
+    inline: true,
+    fallbackNutrition: product?.nutrition,
+    fallbackProductName: product?.displayName,
+    fallbackCategoryName: product?.categoryName,
+    fallbackIngredients: product?.ingredients,
+  });
 
   useEffect(() => { setQty(1); }, [product?.id]);
 
@@ -129,6 +141,16 @@ export default function CarrefourProductModal({ product, onClose, topInset = 16 
         />
         {product.pricePerUnit ? <Text style={styles.refPrice}>{product.pricePerUnit}</Text> : null}
 
+        {nutrition.info?.foodIndex ? (
+          <FoodIndexSummary
+            index={nutrition.info.foodIndex}
+            onPress={nutrition.open}
+            expanded={nutrition.expanded}
+          >
+            {nutrition.inlineContent}
+          </FoodIndexSummary>
+        ) : null}
+
         {/* Promo de lote ("3x2", "2ª unidad -70%"…) con sus condiciones completas
             (el texto de Carrefour ya incluye la validez: "Válido del … al …"). */}
         {promoActive ? (
@@ -149,7 +171,6 @@ export default function CarrefourProductModal({ product, onClose, topInset = 16 
           items={[
             { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: product.ingredients },
             { key: 'allergens', icon: 'alert-circle-outline', title: t('product.sections.allergens'), text: product.allergens },
-            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition },
             { key: 'storage', icon: 'time-outline', title: t('product.sections.storage'), text: product.conservation },
             { key: 'preparation', icon: 'restaurant-outline', title: t('product.sections.preparation'), text: product.preparation },
             { key: 'origin', icon: 'location-outline', title: t('product.sections.origin'), text: product.origin },

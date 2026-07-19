@@ -26,11 +26,12 @@ categoría, mismo markup, misma paginación. Toda la lógica vive en
    marca, categoría y precio**. El parser tolera comillas simples y dobles +
    HTML-escapado. Imagen grande = `/images/{id}_x.jpg`.
 4. Tras guardar el catálogo, descarga incrementalmente la ficha HTML
-   `GET /es/productdetail/{id}-{slug}/` y extrae la lista **Información
-   Nutricional**. La normaliza como texto por 100 g/ml (`Valor energético: …`,
-   `Grasas: …`, etc.), formato compatible con `parseCatalogNutrition` y el
-   bloque Índice Alimentario. `detail_synced_at` evita repetir fichas durante el
-   TTL, incluidas las que legítimamente no publican nutrición.
+   `GET /es/productdetail/{id}-{slug}/` y extrae **Ingredientes**, **Condiciones
+   de conservación**, **Fabricante** (incluida la dirección cuando se publica) e
+   **Información Nutricional**. La nutrición se normaliza por 100 g/ml (`Valor
+   energético: …`, `Grasas: …`, etc.), formato compatible con
+   `parseCatalogNutrition`. `detail_synced_at` evita repetir fichas durante el
+   TTL, incluidas las que legítimamente no publican datos de ficha.
 5. Normaliza + **upsert** en `{eroski,caprabo}_products` / `_categories`, con
    soft-delete (`markStale`) de lo ausente.
 
@@ -46,8 +47,10 @@ insensible a acentos, novedades y cambios de precio) y re-ejecutar
 **`supabase/migrations/similar_products.sql`** (ya incluye los brazos de ambos).
 
 Si las tablas ya existen, ejecutar antes del siguiente sync
-**`supabase/migrations/20260718133958_eroski_caprabo_nutrition.sql`**, que añade
-`nutrition` y `detail_synced_at` a las dos tablas.
+**`supabase/migrations/20260718133958_eroski_caprabo_nutrition.sql`** y después
+**`supabase/migrations/20260719102703_eroski_caprabo_product_detail.sql`**. La
+segunda añade `ingredients`, `conservation` y `manufacturer`, y programa el
+backfill incremental de las fichas existentes.
 
 ## Variables de entorno
 
@@ -56,7 +59,7 @@ Si las tablas ya existen, ejecutar antes del siguiente sync
 - `DRY_RUN=1` — no escribe; imprime un resumen.
 - `MAX_LEAVES=N` — limita nº de hojas (pruebas rápidas).
 - `EMPTY_ABORT_PCT=20` — umbral del guardarraíl (ver abajo).
-- `SKIP_DETAIL=1` — omite la pasada nutricional y conserva lo ya almacenado.
+- `SKIP_DETAIL=1` — omite la pasada de ficha y conserva lo ya almacenado.
 - `DETAIL_CONCURRENCY=3` — fichas descargadas en paralelo.
 - `DETAIL_TTL_DAYS=90` — tiempo antes de volver a comprobar una ficha.
 - `DETAIL_MAX=1000` — máximo de fichas por ejecución; permite un backfill
@@ -87,6 +90,7 @@ paginación stateful) por la retirada de `?pageNumber`.
 - **GitHub Actions:** `sync-eroski.yml` (lunes 09:00 UTC) y `sync-caprabo.yml`
   (lunes 09:30 UTC), o botón *Run workflow*. Solo `node` (sin navegador).
 - **Prueba en seco:** `DRY_RUN=1 MAX_LEAVES=10 node scripts/sync-eroski.mjs`
-  (o `sync-caprabo.mjs`). Al final imprime hasta 3 tablas nutricionales reales.
+  (o `sync-caprabo.mjs`). Al final imprime hasta 3 fichas reales con los campos
+  extraídos.
 - **Backfill acelerado manual:** aumentar `DETAIL_MAX` y el timeout del proceso;
   los siguientes runs continúan por las filas cuyo `detail_synced_at` siga vacío.

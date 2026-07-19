@@ -28,7 +28,7 @@ export interface OpenFoodFactsAdditive {
 const OFF_BASE_URL = 'https://world.openfoodfacts.org/api/v2/product';
 // Cambiar la versión invalida resultados calculados con una fórmula anterior
 // durante Fast Refresh o una sesión que ya hubiera precargado el producto.
-const INDEX_CALCULATION_VERSION = '3';
+const INDEX_CALCULATION_VERSION = '4';
 const OFF_CACHE = new Map<string, Promise<OpenFoodFactsNutrition | null>>();
 const OFF_FIELDS = [
   'product_name',
@@ -114,6 +114,7 @@ export function fetchOpenFoodFactsNutrition(ean: string): Promise<OpenFoodFactsN
         : null;
     const nutriScoreScore = num(p.nutriscore_score);
     const novaGroup = num(p.nova_group ?? p.nova_groups);
+    const nutriScoreApplicable = /^[A-E]$/.test(nutriScoreGrade ?? '');
     return {
       source: 'openfoodfacts' as const,
       productName: p.product_name ?? null,
@@ -123,14 +124,14 @@ export function fetchOpenFoodFactsNutrition(ean: string): Promise<OpenFoodFactsN
         ? novaGroup
         : null,
       additives: additives(p.additives_tags, p.ingredients),
-      foodIndex: buildFoodIndex({
+      foodIndex: nutriScoreApplicable ? buildFoodIndex({
         attributeGroups: p.attribute_groups_data,
         nutriScoreGrade,
         nutriScoreData: p.nutriscore_data,
         novaGroup,
         sustainabilityScore: p.environmental_score_score ?? p.ecoscore_score,
         sustainabilityGrade: p.environmental_score_grade ?? p.ecoscore_grade,
-      }),
+      }) : null,
       nutriments: {
         energyKcal: num(n['energy-kcal_100g']),
         fat: num(n.fat_100g),

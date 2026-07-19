@@ -87,6 +87,86 @@ import SlidingSegments from '../components/SlidingSegments';
 // compartida con la preferencia de perfil "Supermercados").
 type StoreKey = CatalogStore;
 
+// Primera página por súper/contexto durante la sesión. El catálogo se
+// sincroniza semanalmente, pero un TTL corto permite mostrar al instante una
+// revisita y revalidar silenciosamente si la copia ya tiene unos minutos.
+const BROWSE_CACHE_TTL_MS = 5 * 60 * 1000;
+interface BrowseCacheEntry {
+  page: BrowsePage<UIProduct>;
+  cachedAt: number;
+}
+const browsePageCache = new Map<string, BrowseCacheEntry>();
+
+function browseCacheKey(
+  store: CatalogStore,
+  lang: string,
+  region: RegionValue | null,
+  postalCode: string | null,
+): string {
+  return `${store}:${lang}:${region ?? 'all'}:${postalCode ?? 'none'}`;
+}
+
+function startCategoryLoad<T>(
+  load: (signal: AbortSignal) => Promise<T[]>,
+  setItems: (items: T[]) => void,
+  setLoading: (loading: boolean) => void,
+  setError: (error: boolean) => void,
+): () => void {
+  const controller = new AbortController();
+  let cancelled = false;
+  setLoading(true);
+  setError(false);
+  load(controller.signal)
+    .then((items) => {
+      if (!cancelled) {
+        setLoading(false);
+        setItems(items);
+      }
+    })
+    .catch(() => {
+      if (!cancelled) {
+        setLoading(false);
+        setError(true);
+      }
+    });
+  return () => {
+    cancelled = true;
+    controller.abort();
+  };
+}
+
+function startProductSearch<T>(
+  rawQuery: string,
+  load: (query: string, signal: AbortSignal) => Promise<T[]>,
+  setItems: (items: T[]) => void,
+  setLoading: (loading: boolean) => void,
+  setError: (error: boolean) => void,
+): (() => void) | undefined {
+  const query = rawQuery.trim();
+  if (query.length < 2) {
+    setItems([]);
+    setError(false);
+    setLoading(false);
+    return;
+  }
+  const controller = new AbortController();
+  let cancelled = false;
+  setLoading(true);
+  setError(false);
+  const handle = setTimeout(() => {
+    load(query, controller.signal)
+      .then((items) => { if (!cancelled) setItems(items); })
+      .catch(() => { if (!cancelled) setError(true); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+  }, 300);
+  return () => {
+    cancelled = true;
+    clearTimeout(handle);
+    controller.abort();
+    setLoading(false);
+  };
+}
+
 /** Datos mínimos para pintar una fila de categoría de cualquier súper + su ⋯. */
 interface CatRow {
   store: CatalogStore;
@@ -104,23 +184,24 @@ async function loadBrowsePage(
   cursor: BrowseCursor | null,
   region: RegionValue | null,
   postalCode: string | null,
+  signal?: AbortSignal,
 ): Promise<BrowsePage<UIProduct>> {
   switch (store) {
-    case 'mercadona': { const { items, nextCursor } = await browseProducts(cursor, region); return { items: items.map((p) => mercadonaToUI(p)), nextCursor }; }
-    case 'esclat':    { const { items, nextCursor } = await browseBonpreuProducts(cursor); return { items: items.map(bonpreuToUI), nextCursor }; }
-    case 'carrefour': { const { items, nextCursor } = await browseCarrefourProducts(cursor, region); return { items: items.map(carrefourToUI), nextCursor }; }
-    case 'bonarea':   { const { items, nextCursor } = await browseBonareaProducts(cursor); return { items: items.map(bonareaToUI), nextCursor }; }
-    case 'consum':    { const { items, nextCursor } = await browseConsumProducts(cursor, region, postalCode); return { items: items.map(consumToUI), nextCursor }; }
-    case 'dia':       { const { items, nextCursor } = await browseDiaProducts(cursor, region); return { items: items.map(diaToUI), nextCursor }; }
-    case 'sorli':     { const { items, nextCursor } = await browseSorliProducts(cursor); return { items: items.map(sorliToUI), nextCursor }; }
-    case 'eroski':    { const { items, nextCursor } = await browseEroskiProducts(cursor); return { items: items.map(eroskiToUI), nextCursor }; }
-    case 'caprabo':   { const { items, nextCursor } = await browseCapraboProducts(cursor); return { items: items.map(capraboToUI), nextCursor }; }
-    case 'condis':    { const { items, nextCursor } = await browseCondisProducts(cursor); return { items: items.map(condisToUI), nextCursor }; }
-    case 'ametller':  { const { items, nextCursor } = await browseAmetllerProducts(cursor); return { items: items.map(ametllerToUI), nextCursor }; }
-    case 'aldi':      { const { items, nextCursor } = await browseAldiProducts(cursor); return { items: items.map(aldiToUI), nextCursor }; }
-    case 'hiperdino': { const { items, nextCursor } = await browseHiperdinoProducts(cursor); return { items: items.map(hiperdinoToUI), nextCursor }; }
-    case 'alcampo':   { const { items, nextCursor } = await browseAlcampoProducts(cursor); return { items: items.map(alcampoToUI), nextCursor }; }
-    case 'plusfresc': { const { items, nextCursor } = await browsePlusfrescProducts(cursor, postalCode); return { items: items.map(plusfrescToUI), nextCursor }; }
+    case 'mercadona': { const { items, nextCursor } = await browseProducts(cursor, region, 50, signal); return { items: items.map((p) => mercadonaToUI(p)), nextCursor }; }
+    case 'esclat':    { const { items, nextCursor } = await browseBonpreuProducts(cursor, 50, signal); return { items: items.map(bonpreuToUI), nextCursor }; }
+    case 'carrefour': { const { items, nextCursor } = await browseCarrefourProducts(cursor, region, 50, signal); return { items: items.map(carrefourToUI), nextCursor }; }
+    case 'bonarea':   { const { items, nextCursor } = await browseBonareaProducts(cursor, 50, signal); return { items: items.map(bonareaToUI), nextCursor }; }
+    case 'consum':    { const { items, nextCursor } = await browseConsumProducts(cursor, region, postalCode, 50, signal); return { items: items.map(consumToUI), nextCursor }; }
+    case 'dia':       { const { items, nextCursor } = await browseDiaProducts(cursor, region, 50, signal); return { items: items.map(diaToUI), nextCursor }; }
+    case 'sorli':     { const { items, nextCursor } = await browseSorliProducts(cursor, 50, signal); return { items: items.map(sorliToUI), nextCursor }; }
+    case 'eroski':    { const { items, nextCursor } = await browseEroskiProducts(cursor, 50, signal); return { items: items.map(eroskiToUI), nextCursor }; }
+    case 'caprabo':   { const { items, nextCursor } = await browseCapraboProducts(cursor, 50, signal); return { items: items.map(capraboToUI), nextCursor }; }
+    case 'condis':    { const { items, nextCursor } = await browseCondisProducts(cursor, 50, signal); return { items: items.map(condisToUI), nextCursor }; }
+    case 'ametller':  { const { items, nextCursor } = await browseAmetllerProducts(cursor, 50, signal); return { items: items.map(ametllerToUI), nextCursor }; }
+    case 'aldi':      { const { items, nextCursor } = await browseAldiProducts(cursor, 50, signal); return { items: items.map(aldiToUI), nextCursor }; }
+    case 'hiperdino': { const { items, nextCursor } = await browseHiperdinoProducts(cursor, 50, signal); return { items: items.map(hiperdinoToUI), nextCursor }; }
+    case 'alcampo':   { const { items, nextCursor } = await browseAlcampoProducts(cursor, 50, signal); return { items: items.map(alcampoToUI), nextCursor }; }
+    case 'plusfresc': { const { items, nextCursor } = await browsePlusfrescProducts(cursor, postalCode, 50, signal); return { items: items.map(plusfrescToUI), nextCursor }; }
   }
 }
 
@@ -218,7 +299,7 @@ export default function CatalogScreen() {
   }, [enabledStores, store]);
 
   const [categories, setCategories] = useState<N1Category[]>([]);
-  const [catLoading, setCatLoading] = useState(true);
+  const [catLoading, setCatLoading] = useState(false);
   const [catError, setCatError] = useState(false);
   const [catSearch, setCatSearch] = useState('');
 
@@ -384,357 +465,288 @@ export default function CatalogScreen() {
   const [browse, setBrowse] = useState<UIProduct[]>([]);
   const [browseCursor, setBrowseCursor] = useState<BrowseCursor | null>(null);
   const [browseLoading, setBrowseLoading] = useState(false); // página inicial
+  const [browseRefreshing, setBrowseRefreshing] = useState(false); // SWR sin spinner
   const [browseMore, setBrowseMore] = useState(false);       // páginas siguientes
   const [browseError, setBrowseError] = useState(false);
+  const browseInitialController = useRef<AbortController | null>(null);
+  const browseMoreController = useRef<AbortController | null>(null);
   // Texto de búsqueda del súper activo: con <2 letras estamos en modo navegación.
   const prodQuery = { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch, condis: coSearch, ametller: amSearch, aldi: alSearch, hiperdino: hdSearch, alcampo: acSearch, plusfresc: pfSearch }[store];
   // Setter de búsqueda de productos del súper activo (para la fila de búsqueda
   // única que ahora vive en el chrome, en vez de una por bloque de súper).
   const setProdQuery = { mercadona: setProdSearch, esclat: setBpSearch, carrefour: setCfSearch, bonarea: setBaSearch, consum: setCsSearch, dia: setDdSearch, sorli: setSoSearch, eroski: setEkSearch, caprabo: setCbSearch, condis: setCoSearch, ametller: setAmSearch, aldi: setAlSearch, hiperdino: setHdSearch, alcampo: setAcSearch, plusfresc: setPfSearch }[store];
   const browseMode = tab === 'productos' && prodQuery.trim().length < 2;
+  const activeBrowseKey = browseCacheKey(store, lang, region, postalCode);
+  const activeBrowseKeyRef = useRef(activeBrowseKey);
+  activeBrowseKeyRef.current = activeBrowseKey;
 
-  // Carga la página 1 al entrar a navegación (cambio de súper, limpiar la
-  // búsqueda o abrir la pestaña Productos sin texto).
+  // Primera página con caché de sesión + stale-while-revalidate. Una revisita
+  // fresca no toca la red; una copia caducada se muestra al instante y se renueva
+  // sin desmontar la lista. El AbortController corta la petición al cambiar de
+  // súper/idioma/ubicación o abandonar Productos.
   useEffect(() => {
-    if (!browseMode) return;
+    browseInitialController.current?.abort();
+    browseMoreController.current?.abort();
+    browseInitialController.current = null;
+    browseMoreController.current = null;
+    if (!browseMode) {
+      setBrowseRefreshing(false);
+      setBrowseMore(false);
+      return;
+    }
+
+    const requestKey = activeBrowseKey;
+    const cached = browsePageCache.get(requestKey);
+    const hasCachedPage = cached != null;
+    if (cached) {
+      setBrowse(cached.page.items);
+      setBrowseCursor(cached.page.nextCursor);
+      setBrowseLoading(false);
+      setBrowseError(false);
+      setBrowseMore(false);
+      if (Date.now() - cached.cachedAt < BROWSE_CACHE_TTL_MS) return;
+    } else {
+      setBrowse([]);
+      setBrowseCursor(null);
+      setBrowseError(false);
+      setBrowseMore(false);
+      setBrowseLoading(true);
+    }
+
     let cancelled = false;
-    setBrowse([]); setBrowseCursor(null); setBrowseError(false); setBrowseMore(false); setBrowseLoading(true);
-      loadBrowsePage(store, null, region, postalCode)
-      .then(({ items, nextCursor }) => { if (!cancelled) { setBrowse(items); setBrowseCursor(nextCursor); } })
-      .catch(() => { if (!cancelled) setBrowseError(true); })
-      .finally(() => { if (!cancelled) setBrowseLoading(false); });
-    return () => { cancelled = true; };
-  }, [store, browseMode, lang, region, postalCode]);
+    const controller = new AbortController();
+    browseInitialController.current = controller;
+    setBrowseRefreshing(hasCachedPage);
+    loadBrowsePage(store, null, region, postalCode, controller.signal)
+      .then((page) => {
+        if (cancelled || activeBrowseKeyRef.current !== requestKey) return;
+        browsePageCache.set(requestKey, { page, cachedAt: Date.now() });
+        setBrowse(page.items);
+        setBrowseCursor(page.nextCursor);
+        setBrowseError(false);
+      })
+      .catch(() => {
+        if (!cancelled && !hasCachedPage) setBrowseError(true);
+      })
+      .finally(() => {
+        if (cancelled) return;
+        if (browseInitialController.current === controller) browseInitialController.current = null;
+        setBrowseLoading(false);
+        setBrowseRefreshing(false);
+      });
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [store, browseMode, lang, region, postalCode, activeBrowseKey]);
 
   // Siguiente página keyset al llegar al final de la lista.
   const loadMoreBrowse = () => {
-    if (browseLoading || browseMore || browseCursor == null) return;
+    if (browseLoading || browseRefreshing || browseMore || browseCursor == null) return;
     const cursor = browseCursor;
+    const requestKey = activeBrowseKey;
+    const controller = new AbortController();
+    browseMoreController.current?.abort();
+    browseMoreController.current = controller;
     setBrowseMore(true);
-      loadBrowsePage(store, cursor, region, postalCode)
-      .then(({ items, nextCursor }) => { setBrowse((prev) => [...prev, ...items]); setBrowseCursor(nextCursor); })
+    loadBrowsePage(store, cursor, region, postalCode, controller.signal)
+      .then(({ items, nextCursor }) => {
+        if (activeBrowseKeyRef.current !== requestKey) return;
+        setBrowse((prev) => [...prev, ...items]);
+        setBrowseCursor(nextCursor);
+      })
       .catch(() => { /* conserva lo ya cargado */ })
-      .finally(() => setBrowseMore(false));
+      .finally(() => {
+        if (browseMoreController.current === controller) browseMoreController.current = null;
+        if (activeBrowseKeyRef.current === requestKey) setBrowseMore(false);
+      });
   };
 
+  useEffect(() => { setCategories([]); setCatError(false); setCatLoading(false); }, [lang]);
   useEffect(() => {
-    setCatLoading(true); setCatError(false);
-    fetchCategories()
-      .then(setCategories)
-      .catch(() => setCatError(true))
-      .finally(() => setCatLoading(false));
-  }, [lang]);
+    if (tab !== 'categorias' || store !== 'mercadona' || categories.length > 0 || catLoading) return;
+    return startCategoryLoad(fetchCategories, setCategories, setCatLoading, setCatError);
+  }, [store, tab, lang, categories.length]);
 
   // Carga perezosa de categorías Bonpreu la primera vez que se entra a esa tienda.
   useEffect(() => { setBpCats([]); }, [lang]);
   useEffect(() => {
-    if (store !== 'esclat' || bpCats.length > 0 || bpCatsLoading) return;
-    setBpCatsLoading(true); setBpCatsError(false);
-    fetchBonpreuCategoryTree()
-      .then(setBpCats)
-      .catch(() => setBpCatsError(true))
-      .finally(() => setBpCatsLoading(false));
-  }, [store, lang]);
+    if (tab !== 'categorias' || store !== 'esclat' || bpCats.length > 0 || bpCatsLoading) return;
+    return startCategoryLoad(fetchBonpreuCategoryTree, setBpCats, setBpCatsLoading, setBpCatsError);
+  }, [store, tab, lang, bpCats.length]);
 
   // Mercadona: búsqueda server-side con debounce (antes barría ~100 subcategorías).
   useEffect(() => {
-    const q = prodSearch.trim();
-    if (q.length < 2) { setProdResults([]); setProdError(false); setProdLoading(false); return; }
-    setProdLoading(true); setProdError(false);
-    const handle = setTimeout(() => {
-      searchProducts(q, region).then(setProdResults).catch(() => setProdError(true)).finally(() => setProdLoading(false));
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [prodSearch, lang, region]);
+    if (store !== 'mercadona') return;
+    return startProductSearch(prodSearch, (q, signal) => searchProducts(q, region, 50, signal), setProdResults, setProdLoading, setProdError);
+  }, [store, prodSearch, lang, region]);
 
   // BonpreuEsclat: búsqueda server-side con debounce.
   useEffect(() => {
-    const q = bpSearch.trim();
-    if (q.length < 2) { setBpResults([]); setBpError(false); setBpLoading(false); return; }
-    setBpLoading(true); setBpError(false);
-    const handle = setTimeout(() => {
-      searchBonpreuProducts(q).then(setBpResults).catch(() => setBpError(true)).finally(() => setBpLoading(false));
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [bpSearch, lang]);
+    if (store !== 'esclat') return;
+    return startProductSearch(bpSearch, (q, signal) => searchBonpreuProducts(q, 50, signal), setBpResults, setBpLoading, setBpError);
+  }, [store, bpSearch, lang]);
 
   // Carga perezosa de categorías Carrefour la primera vez que se entra a esa tienda.
   useEffect(() => {
-    if (store !== 'carrefour' || cfCats.length > 0 || cfCatsLoading) return;
-    setCfCatsLoading(true); setCfCatsError(false);
-    fetchCarrefourCategoryTree()
-      .then(setCfCats)
-      .catch(() => setCfCatsError(true))
-      .finally(() => setCfCatsLoading(false));
-  }, [store]);
+    if (tab !== 'categorias' || store !== 'carrefour' || cfCats.length > 0 || cfCatsLoading) return;
+    return startCategoryLoad(fetchCarrefourCategoryTree, setCfCats, setCfCatsLoading, setCfCatsError);
+  }, [store, tab]);
 
   // Carrefour: búsqueda server-side con debounce.
   useEffect(() => {
-    const q = cfSearch.trim();
-    if (q.length < 2) { setCfResults([]); setCfError(false); setCfLoading(false); return; }
-    setCfLoading(true); setCfError(false);
-    const handle = setTimeout(() => {
-      searchCarrefourProducts(q, region).then(setCfResults).catch(() => setCfError(true)).finally(() => setCfLoading(false));
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [cfSearch, region]);
+    if (store !== 'carrefour') return;
+    return startProductSearch(cfSearch, (q, signal) => searchCarrefourProducts(q, region, 50, signal), setCfResults, setCfLoading, setCfError);
+  }, [store, cfSearch, region]);
 
   // Carga perezosa de categorías bonÀrea la primera vez que se entra a esa tienda.
   useEffect(() => { setBaCats([]); }, [lang]);
   useEffect(() => {
-    if (store !== 'bonarea' || baCats.length > 0 || baCatsLoading) return;
-    setBaCatsLoading(true); setBaCatsError(false);
-    fetchBonareaCategoryTree()
-      .then(setBaCats)
-      .catch(() => setBaCatsError(true))
-      .finally(() => setBaCatsLoading(false));
-  }, [store, lang]);
+    if (tab !== 'categorias' || store !== 'bonarea' || baCats.length > 0 || baCatsLoading) return;
+    return startCategoryLoad(fetchBonareaCategoryTree, setBaCats, setBaCatsLoading, setBaCatsError);
+  }, [store, tab, lang, baCats.length]);
 
   // bonÀrea: búsqueda server-side con debounce.
   useEffect(() => {
-    const q = baSearch.trim();
-    if (q.length < 2) { setBaResults([]); setBaError(false); setBaLoading(false); return; }
-    setBaLoading(true); setBaError(false);
-    const handle = setTimeout(() => {
-      searchBonareaProducts(q).then(setBaResults).catch(() => setBaError(true)).finally(() => setBaLoading(false));
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [baSearch, lang]);
+    if (store !== 'bonarea') return;
+    return startProductSearch(baSearch, (q, signal) => searchBonareaProducts(q, 50, signal), setBaResults, setBaLoading, setBaError);
+  }, [store, baSearch, lang]);
 
   // Carga perezosa de categorías Consum la primera vez que se entra a esa tienda.
   useEffect(() => {
-    if (store !== 'consum' || csCats.length > 0 || csCatsLoading) return;
-    setCsCatsLoading(true); setCsCatsError(false);
-    fetchConsumCategoryTree()
-      .then(setCsCats)
-      .catch(() => setCsCatsError(true))
-      .finally(() => setCsCatsLoading(false));
-  }, [store]);
+    if (tab !== 'categorias' || store !== 'consum' || csCats.length > 0 || csCatsLoading) return;
+    return startCategoryLoad(fetchConsumCategoryTree, setCsCats, setCsCatsLoading, setCsCatsError);
+  }, [store, tab]);
 
   // Consum: búsqueda server-side con debounce.
   useEffect(() => {
-    const q = csSearch.trim();
-    if (q.length < 2) { setCsResults([]); setCsError(false); setCsLoading(false); return; }
-    setCsLoading(true); setCsError(false);
-    const handle = setTimeout(() => {
-      searchConsumProducts(q, region, postalCode).then(setCsResults).catch(() => setCsError(true)).finally(() => setCsLoading(false));
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [csSearch, region, postalCode]);
+    if (store !== 'consum') return;
+    return startProductSearch(csSearch, (q, signal) => searchConsumProducts(q, region, postalCode, 50, signal), setCsResults, setCsLoading, setCsError);
+  }, [store, csSearch, region, postalCode]);
 
   // Carga perezosa de categorías Dia la primera vez que se entra a esa tienda.
   useEffect(() => {
-    if (store !== 'dia' || ddCats.length > 0 || ddCatsLoading) return;
-    setDdCatsLoading(true); setDdCatsError(false);
-    fetchDiaCategoryTree()
-      .then(setDdCats)
-      .catch(() => setDdCatsError(true))
-      .finally(() => setDdCatsLoading(false));
-  }, [store]);
+    if (tab !== 'categorias' || store !== 'dia' || ddCats.length > 0 || ddCatsLoading) return;
+    return startCategoryLoad(fetchDiaCategoryTree, setDdCats, setDdCatsLoading, setDdCatsError);
+  }, [store, tab]);
 
   // Dia: búsqueda server-side con debounce.
   useEffect(() => {
-    const q = ddSearch.trim();
-    if (q.length < 2) { setDdResults([]); setDdError(false); setDdLoading(false); return; }
-    setDdLoading(true); setDdError(false);
-    const handle = setTimeout(() => {
-      searchDiaProducts(q, region).then(setDdResults).catch(() => setDdError(true)).finally(() => setDdLoading(false));
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [ddSearch, region]);
+    if (store !== 'dia') return;
+    return startProductSearch(ddSearch, (q, signal) => searchDiaProducts(q, region, 50, signal), setDdResults, setDdLoading, setDdError);
+  }, [store, ddSearch, region]);
 
   // Carga perezosa de categorías Sorli la primera vez que se entra a esa tienda.
   useEffect(() => { setSoCats([]); }, [lang]);
   useEffect(() => {
-    if (store !== 'sorli' || soCats.length > 0 || soCatsLoading) return;
-    setSoCatsLoading(true); setSoCatsError(false);
-    fetchSorliCategoryTree()
-      .then(setSoCats)
-      .catch(() => setSoCatsError(true))
-      .finally(() => setSoCatsLoading(false));
-  }, [store, lang]);
+    if (tab !== 'categorias' || store !== 'sorli' || soCats.length > 0 || soCatsLoading) return;
+    return startCategoryLoad(fetchSorliCategoryTree, setSoCats, setSoCatsLoading, setSoCatsError);
+  }, [store, tab, lang, soCats.length]);
 
   // Sorli: búsqueda server-side con debounce (bilingüe: re-busca al cambiar idioma).
   useEffect(() => {
-    const q = soSearch.trim();
-    if (q.length < 2) { setSoResults([]); setSoError(false); setSoLoading(false); return; }
-    setSoLoading(true); setSoError(false);
-    const handle = setTimeout(() => {
-      searchSorliProducts(q).then(setSoResults).catch(() => setSoError(true)).finally(() => setSoLoading(false));
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [soSearch, lang]);
+    if (store !== 'sorli') return;
+    return startProductSearch(soSearch, (q, signal) => searchSorliProducts(q, 50, signal), setSoResults, setSoLoading, setSoError);
+  }, [store, soSearch, lang]);
 
   // Carga perezosa de categorías Eroski la primera vez que se entra a esa tienda.
   useEffect(() => {
-    if (store !== 'eroski' || ekCats.length > 0 || ekCatsLoading) return;
-    setEkCatsLoading(true); setEkCatsError(false);
-    fetchEroskiCategoryTree()
-      .then(setEkCats)
-      .catch(() => setEkCatsError(true))
-      .finally(() => setEkCatsLoading(false));
-  }, [store]);
+    if (tab !== 'categorias' || store !== 'eroski' || ekCats.length > 0 || ekCatsLoading) return;
+    return startCategoryLoad(fetchEroskiCategoryTree, setEkCats, setEkCatsLoading, setEkCatsError);
+  }, [store, tab]);
 
   // Eroski: búsqueda server-side con debounce.
   useEffect(() => {
-    const q = ekSearch.trim();
-    if (q.length < 2) { setEkResults([]); setEkError(false); setEkLoading(false); return; }
-    setEkLoading(true); setEkError(false);
-    const handle = setTimeout(() => {
-      searchEroskiProducts(q).then(setEkResults).catch(() => setEkError(true)).finally(() => setEkLoading(false));
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [ekSearch]);
+    if (store !== 'eroski') return;
+    return startProductSearch(ekSearch, (q, signal) => searchEroskiProducts(q, 50, signal), setEkResults, setEkLoading, setEkError);
+  }, [store, ekSearch]);
 
   // Carga perezosa de categorías Caprabo la primera vez que se entra a esa tienda.
   useEffect(() => {
-    if (store !== 'caprabo' || cbCats.length > 0 || cbCatsLoading) return;
-    setCbCatsLoading(true); setCbCatsError(false);
-    fetchCapraboCategoryTree()
-      .then(setCbCats)
-      .catch(() => setCbCatsError(true))
-      .finally(() => setCbCatsLoading(false));
-  }, [store]);
+    if (tab !== 'categorias' || store !== 'caprabo' || cbCats.length > 0 || cbCatsLoading) return;
+    return startCategoryLoad(fetchCapraboCategoryTree, setCbCats, setCbCatsLoading, setCbCatsError);
+  }, [store, tab]);
 
   // Caprabo: búsqueda server-side con debounce.
   useEffect(() => {
-    const q = cbSearch.trim();
-    if (q.length < 2) { setCbResults([]); setCbError(false); setCbLoading(false); return; }
-    setCbLoading(true); setCbError(false);
-    const handle = setTimeout(() => {
-      searchCapraboProducts(q).then(setCbResults).catch(() => setCbError(true)).finally(() => setCbLoading(false));
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [cbSearch]);
+    if (store !== 'caprabo') return;
+    return startProductSearch(cbSearch, (q, signal) => searchCapraboProducts(q, 50, signal), setCbResults, setCbLoading, setCbError);
+  }, [store, cbSearch]);
 
   // Carga perezosa de categorías Condis la primera vez que se entra a esa tienda.
   useEffect(() => { setCoCats([]); }, [lang]);
   useEffect(() => {
-    if (store !== 'condis' || coCats.length > 0 || coCatsLoading) return;
-    setCoCatsLoading(true); setCoCatsError(false);
-    fetchCondisCategoryTree()
-      .then(setCoCats)
-      .catch(() => setCoCatsError(true))
-      .finally(() => setCoCatsLoading(false));
-  }, [store, lang]);
+    if (tab !== 'categorias' || store !== 'condis' || coCats.length > 0 || coCatsLoading) return;
+    return startCategoryLoad(fetchCondisCategoryTree, setCoCats, setCoCatsLoading, setCoCatsError);
+  }, [store, tab, lang, coCats.length]);
 
   // Condis: búsqueda server-side con debounce (bilingüe: re-busca al cambiar idioma).
   useEffect(() => {
-    const q = coSearch.trim();
-    if (q.length < 2) { setCoResults([]); setCoError(false); setCoLoading(false); return; }
-    setCoLoading(true); setCoError(false);
-    const handle = setTimeout(() => {
-      searchCondisProducts(q).then(setCoResults).catch(() => setCoError(true)).finally(() => setCoLoading(false));
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [coSearch, lang]);
+    if (store !== 'condis') return;
+    return startProductSearch(coSearch, (q, signal) => searchCondisProducts(q, 50, signal), setCoResults, setCoLoading, setCoError);
+  }, [store, coSearch, lang]);
 
   // Carga perezosa de categorías Ametller la primera vez que se entra a esa tienda.
   useEffect(() => { setAmCats([]); }, [lang]);
   useEffect(() => {
-    if (store !== 'ametller' || amCats.length > 0 || amCatsLoading) return;
-    setAmCatsLoading(true); setAmCatsError(false);
-    fetchAmetllerCategoryTree()
-      .then(setAmCats)
-      .catch(() => setAmCatsError(true))
-      .finally(() => setAmCatsLoading(false));
-  }, [store, lang]);
+    if (tab !== 'categorias' || store !== 'ametller' || amCats.length > 0 || amCatsLoading) return;
+    return startCategoryLoad(fetchAmetllerCategoryTree, setAmCats, setAmCatsLoading, setAmCatsError);
+  }, [store, tab, lang, amCats.length]);
 
   // Ametller: búsqueda server-side con debounce (bilingüe: re-busca al cambiar idioma).
   useEffect(() => {
-    const q = amSearch.trim();
-    if (q.length < 2) { setAmResults([]); setAmError(false); setAmLoading(false); return; }
-    setAmLoading(true); setAmError(false);
-    const handle = setTimeout(() => {
-      searchAmetllerProducts(q).then(setAmResults).catch(() => setAmError(true)).finally(() => setAmLoading(false));
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [amSearch, lang]);
+    if (store !== 'ametller') return;
+    return startProductSearch(amSearch, (q, signal) => searchAmetllerProducts(q, 50, signal), setAmResults, setAmLoading, setAmError);
+  }, [store, amSearch, lang]);
 
   // Carga perezosa de categorías Aldi la primera vez que se entra a esa tienda.
   useEffect(() => {
-    if (store !== 'aldi' || alCats.length > 0 || alCatsLoading) return;
-    setAlCatsLoading(true); setAlCatsError(false);
-    fetchAldiCategoryTree()
-      .then(setAlCats)
-      .catch(() => setAlCatsError(true))
-      .finally(() => setAlCatsLoading(false));
-  }, [store]);
+    if (tab !== 'categorias' || store !== 'aldi' || alCats.length > 0 || alCatsLoading) return;
+    return startCategoryLoad(fetchAldiCategoryTree, setAlCats, setAlCatsLoading, setAlCatsError);
+  }, [store, tab]);
 
   // Aldi: búsqueda server-side con debounce (es-only).
   useEffect(() => {
-    const q = alSearch.trim();
-    if (q.length < 2) { setAlResults([]); setAlError(false); setAlLoading(false); return; }
-    setAlLoading(true); setAlError(false);
-    const handle = setTimeout(() => {
-      searchAldiProducts(q).then(setAlResults).catch(() => setAlError(true)).finally(() => setAlLoading(false));
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [alSearch]);
+    if (store !== 'aldi') return;
+    return startProductSearch(alSearch, (q, signal) => searchAldiProducts(q, 50, signal), setAlResults, setAlLoading, setAlError);
+  }, [store, alSearch]);
 
   // Carga perezosa de categorías HiperDino la primera vez que se entra a esa tienda.
   useEffect(() => {
-    if (store !== 'hiperdino' || hdCats.length > 0 || hdCatsLoading) return;
-    setHdCatsLoading(true); setHdCatsError(false);
-    fetchHiperdinoCategoryTree()
-      .then(setHdCats)
-      .catch(() => setHdCatsError(true))
-      .finally(() => setHdCatsLoading(false));
-  }, [store]);
+    if (tab !== 'categorias' || store !== 'hiperdino' || hdCats.length > 0 || hdCatsLoading) return;
+    return startCategoryLoad(fetchHiperdinoCategoryTree, setHdCats, setHdCatsLoading, setHdCatsError);
+  }, [store, tab]);
 
   // HiperDino: búsqueda server-side con debounce (es-only).
   useEffect(() => {
-    const q = hdSearch.trim();
-    if (q.length < 2) { setHdResults([]); setHdError(false); setHdLoading(false); return; }
-    setHdLoading(true); setHdError(false);
-    const handle = setTimeout(() => {
-      searchHiperdinoProducts(q).then(setHdResults).catch(() => setHdError(true)).finally(() => setHdLoading(false));
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [hdSearch]);
+    if (store !== 'hiperdino') return;
+    return startProductSearch(hdSearch, (q, signal) => searchHiperdinoProducts(q, 50, signal), setHdResults, setHdLoading, setHdError);
+  }, [store, hdSearch]);
 
   // Carga perezosa de categorías Alcampo la primera vez que se entra a esa tienda.
   useEffect(() => {
-    if (store !== 'alcampo' || acCats.length > 0 || acCatsLoading) return;
-    setAcCatsLoading(true); setAcCatsError(false);
-    fetchAlcampoCategoryTree()
-      .then(setAcCats)
-      .catch(() => setAcCatsError(true))
-      .finally(() => setAcCatsLoading(false));
-  }, [store]);
+    if (tab !== 'categorias' || store !== 'alcampo' || acCats.length > 0 || acCatsLoading) return;
+    return startCategoryLoad(fetchAlcampoCategoryTree, setAcCats, setAcCatsLoading, setAcCatsError);
+  }, [store, tab]);
 
   // Alcampo: búsqueda server-side con debounce (es-only).
   useEffect(() => {
-    const q = acSearch.trim();
-    if (q.length < 2) { setAcResults([]); setAcError(false); setAcLoading(false); return; }
-    setAcLoading(true); setAcError(false);
-    const handle = setTimeout(() => {
-      searchAlcampoProducts(q).then(setAcResults).catch(() => setAcError(true)).finally(() => setAcLoading(false));
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [acSearch]);
+    if (store !== 'alcampo') return;
+    return startProductSearch(acSearch, (q, signal) => searchAlcampoProducts(q, 50, signal), setAcResults, setAcLoading, setAcError);
+  }, [store, acSearch]);
 
   // Carga perezosa de categorías Plusfresc la primera vez que se entra a esa tienda.
   useEffect(() => { setPfCats([]); }, [lang]);
   useEffect(() => {
-    if (store !== 'plusfresc' || pfCats.length > 0 || pfCatsLoading) return;
-    setPfCatsLoading(true); setPfCatsError(false);
-    fetchPlusfrescCategoryTree()
-      .then(setPfCats)
-      .catch(() => setPfCatsError(true))
-      .finally(() => setPfCatsLoading(false));
-  }, [store, lang]);
+    if (tab !== 'categorias' || store !== 'plusfresc' || pfCats.length > 0 || pfCatsLoading) return;
+    return startCategoryLoad(fetchPlusfrescCategoryTree, setPfCats, setPfCatsLoading, setPfCatsError);
+  }, [store, tab, lang, pfCats.length]);
 
   // Plusfresc: búsqueda server-side con debounce (bilingüe: re-busca al cambiar idioma).
   useEffect(() => {
-    const q = pfSearch.trim();
-    if (q.length < 2) { setPfResults([]); setPfError(false); setPfLoading(false); return; }
-    setPfLoading(true); setPfError(false);
-    const handle = setTimeout(() => {
-      searchPlusfrescProducts(q, postalCode).then(setPfResults).catch(() => setPfError(true)).finally(() => setPfLoading(false));
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [pfSearch, lang, postalCode]);
+    if (store !== 'plusfresc') return;
+    return startProductSearch(pfSearch, (q, signal) => searchPlusfrescProducts(q, postalCode, 50, signal), setPfResults, setPfLoading, setPfError);
+  }, [store, pfSearch, lang, postalCode]);
 
   // Filtro de categorías por texto (cliente). Compartido por los 6 súpers: en la
   // pestaña de categorías solo se ve un súper a la vez, así que un único `catSearch` basta.
@@ -886,6 +898,7 @@ export default function CatalogScreen() {
       <StoreProductList
         products={browse}
         hideToolbar viewMode={prodViewMode} onViewModeChange={setProdViewMode}
+        keepOrder
         onEndReached={loadMoreBrowse}
         loadingMore={browseMore}
         topInset={glassInset}

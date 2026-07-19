@@ -20,7 +20,7 @@ interface Props {
   ean?: string | null;
   /** Muestra el detalle dentro de la ficha en vez de abrir un modal. */
   inline?: boolean;
-  /** Tabla nutrition del espejo, usada como fallback cuando no hay EAN o OFF no encuentra el producto. */
+  /** Tabla nutrition del espejo, usada si no hay EAN o OFF no devuelve un Nutri-Score aplicable. */
   fallbackNutrition?: unknown | null;
   fallbackProductName?: string | null;
   fallbackCategoryName?: string | null;
@@ -63,6 +63,16 @@ const pointValue = (point: FoodIndexPoint, locale: string) => {
   const unit = point.unit ? ` ${point.unit}` : '';
   return point.unit === '%' ? `${value}${unit}` : `${value}${unit} / 100 g/ml`;
 };
+
+const hasApplicableNutriScore = (info: OpenFoodFactsNutrition | null) =>
+  info?.source === 'openfoodfacts' && /^[A-E]$/.test(info.nutriScoreGrade ?? '');
+
+const resolveNutritionSource = (
+  openFoodFactsInfo: OpenFoodFactsNutrition | null,
+  fallbackInfo: OpenFoodFactsNutrition | null,
+) => hasApplicableNutriScore(openFoodFactsInfo)
+  ? openFoodFactsInfo
+  : fallbackInfo ?? openFoodFactsInfo;
 
 function NutritionDisclosureShell({
   inline, visible, onClose, children,
@@ -145,8 +155,8 @@ export function useNutritionInfoDisclosure({
     fetchOpenFoodFactsNutrition(ean)
       .then((data) => {
         if (cancelled) return;
-        if (data) setInfo(data);
-        else if (fallbackInfo) setInfo(fallbackInfo);
+        const resolved = resolveNutritionSource(data, fallbackInfo);
+        if (resolved) setInfo(resolved);
         else setNotFound(true);
       })
       .catch(() => {
@@ -180,8 +190,8 @@ export function useNutritionInfoDisclosure({
     setLoading(true);
     try {
       const data = ean ? await fetchOpenFoodFactsNutrition(ean) : null;
-      if (data) setInfo(data);
-      else if (fallbackInfo) setInfo(fallbackInfo);
+      const resolved = resolveNutritionSource(data, fallbackInfo);
+      if (resolved) setInfo(resolved);
       else setNotFound(true);
     } catch {
       if (fallbackInfo) setInfo(fallbackInfo);

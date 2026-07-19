@@ -102,8 +102,13 @@ La lista **completa y anotada** está en CONTEXTO.md. Aquí, lo esencial y el OR
 - `profile_premium.sql` → `paywall_gates.sql` → (re)`similar_products.sql`.
 - `carrefour_offers.sql` y `carrefour_regions.sql` **ANTES** del próximo sync de Carrefour (el `upsert` las incluye).
 - Cada `bonarea/dia/carrefour_product_detail.sql` antes del sync de su súper (pasada de ficha).
-- `20260718133958_eroski_caprabo_nutrition.sql` antes de los próximos syncs de
-  Eroski/Caprabo; añade `nutrition` y `detail_synced_at`.
+- `20260718133958_eroski_caprabo_nutrition.sql` y después
+  `20260719102703_eroski_caprabo_product_detail.sql` antes de los próximos syncs
+  de Eroski/Caprabo; añaden la ficha nutricional y los campos `ingredients`,
+  `conservation` y `manufacturer`.
+- `20260718183152_catalog_browse_indexes.sql` añade índices parciales para la
+  navegación alfabética keyset de todos los catálogos. Es aditiva y no bloquea
+  el arranque, pero debe ejecutarse para obtener toda la mejora de rendimiento.
 - Migración de cada súper nuevo (`ametller/aldi/hiperdino/alcampo/plusfresc/condis/eroski/caprabo_catalog.sql`)
   → luego **re-ejecutar `similar_products.sql`**.
 

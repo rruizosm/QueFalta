@@ -15,7 +15,9 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductImage from '../components/ProductImage';
+import FoodIndexSummary from '../components/FoodIndexSummary';
 import ProductInfoSections from '../components/ProductInfoSections';
+import { useNutritionInfoDisclosure } from '../components/NutritionInfoButton';
 import SimilarProductsSection from '../components/SimilarProductsSection';
 import ProductPriceLine from '../components/ProductPriceLine';
 
@@ -41,6 +43,13 @@ export default function TapestryProductModal({ product, store, storeLabel, onClo
   const { t } = useTranslation();
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
+  const nutrition = useNutritionInfoDisclosure({
+    store,
+    inline: true,
+    fallbackNutrition: product?.nutrition,
+    fallbackProductName: product?.displayName,
+    fallbackCategoryName: product?.categoryName,
+  });
 
   useEffect(() => { setQty(1); }, [product?.id]);
 
@@ -119,6 +128,16 @@ export default function TapestryProductModal({ product, store, storeLabel, onClo
         {product.brand ? <Text style={styles.brand}>{product.brand}</Text> : null}
 
         <ProductPriceLine store={store} productId={product.id} price={price} />
+
+        {nutrition.info?.foodIndex ? (
+          <FoodIndexSummary
+            index={nutrition.info.foodIndex}
+            onPress={nutrition.open}
+            expanded={nutrition.expanded}
+          >
+            {nutrition.inlineContent}
+          </FoodIndexSummary>
+        ) : null}
 
         {/* Comparativa: más barato en otros súper */}
         <SimilarProductsSection productName={product.displayName} excludeStore={store} />

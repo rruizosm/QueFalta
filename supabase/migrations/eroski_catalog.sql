@@ -61,8 +61,11 @@ create table if not exists public.eroski_products (
   price_per_unit_unit text,
   available           boolean not null default true,
   published           boolean not null default true,
+  ingredients         text,               -- ingredientes de la ficha
   nutrition           text,               -- tabla de la PDP, normalizada por 100 g/ml
-  detail_synced_at    timestamptz,        -- control incremental de la ficha nutricional
+  conservation        text,               -- condiciones de conservación de la ficha
+  manufacturer        text,               -- fabricante y dirección publicados en la ficha
+  detail_synced_at    timestamptz,        -- control incremental de la ficha de producto
   raw                 jsonb not null,     -- item de data-metrics
   synced_at           timestamptz not null default now(),
   first_seen_at       timestamptz not null default '2000-01-01'::timestamptz,

@@ -34,9 +34,9 @@ const url = (path: string, wh: string = WH) => {
 
 const headers = { 'x-version': 'v9317' };
 
-export async function fetchCategories(): Promise<N1Category[]> {
+export async function fetchCategories(signal?: AbortSignal): Promise<N1Category[]> {
   console.log('[mercadona] fetchCategories →', url('/categories/'));
-  const res = await fetch(url('/categories/'), { headers });
+  const res = await fetch(url('/categories/'), { headers, signal });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data: CategoriesResponse = await res.json();
   console.log('[mercadona] fetchCategories ←', data.count, 'categories');

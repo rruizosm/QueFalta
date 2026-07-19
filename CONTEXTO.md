@@ -3,23 +3,45 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
+## Rendimiento del catálogo (2026-07-18)
+
+- La pestaña **Productos** conserva en memoria la primera página por
+  `súper + idioma + comunidad + código postal` durante 5 minutos. Al volver a
+  una tienda muestra la copia inmediatamente; si está caducada usa
+  stale-while-revalidate y la renueva sin ocultar la lista ni mostrar el spinner
+  inicial.
+- Los árboles de categorías no se solicitan al cambiar de súper en Productos:
+  se cargan únicamente al abrir la pestaña **Categorías**. Las peticiones de
+  navegación, búsqueda y categorías usan `AbortController`, de modo que cambiar
+  de tienda cancela el trabajo anterior y evita respuestas fuera de orden.
+- Los `SELECT` de navegación/búsqueda piden solo los campos de las tarjetas. En
+  particular, Mercadona ya no descarga `raw` para cada fila; las columnas de
+  detalle y promoción quedan reservadas para ficha u Ofertas.
+- `20260718183152_catalog_browse_indexes.sql` crea índices B-tree parciales
+  `(display_name_norm, id) WHERE published = true` para todos los espejos y su
+  variante catalana donde existe. Coinciden con el filtro y el orden de la
+  paginación keyset. La migración es aditiva, pero sigue pendiente de ejecutar
+  manualmente en producción.
+
 ## Índice alimentario (2026-07-16)
 
 - La ficha de Mercadona consulta Open Food Facts por EAN y muestra un **Índice
   alimentario 0-100**. No requiere migración: se calcula en cliente con los
   `match` oficiales de los atributos `nutriscore`, `nova` y `ecoscore`, usando
   solo atributos con `status='known'`.
-- Las fichas de Carrefour y Ametller reutilizan el mismo bloque desplegable:
-  consultan Open Food Facts por EAN y, si no hay coincidencia, estiman el índice
-  con la tabla nutricional publicada en su ficha. Carrefour selecciona su EAN
-  solo en el detalle; Ametller ya lo aporta en la ficha estructurada.
+- Todas las fichas con EAN consultan primero Open Food Facts. Si devuelve un
+  Nutri-Score aplicable (A–E), usan sus datos; si no hay coincidencia o el
+  Nutri-Score no aplica, calculan el índice con la tabla nutricional publicada en
+  Supabase para que el desglose de puntos se refiera a sus valores. Carrefour y
+  Alcampo seleccionan su EAN solo en el detalle; Ametller ya lo aporta en la ficha
+  estructurada.
 - Plusfresc reutiliza también el bloque desplegable, pero como no ofrece EAN usa
   directamente `nutrition` en castellano y `nutrition_ca` en catalán, calculándolo
   en cliente con el mismo parser nutricional de catálogo.
 - Eroski y Caprabo guardan también la tabla nutricional de su ficha HTML en
   `nutrition`, normalizada por 100 g/ml para reutilizar `parseCatalogNutrition`.
-  El sync compartido la completa incrementalmente; el bloque visual del índice
-  en sus modales queda para el siguiente paso.
+  El sync compartido la completa incrementalmente y sus modales reutilizan el
+  mismo bloque visual del índice, sin consulta a Open Food Facts porque no hay EAN.
 - Pesos según cobertura: nutrición sola 100%; nutrición+procesamiento 70/30;
   nutrición+sostenibilidad 80/20; los tres bloques 60/25/15. Sin nutrición no se
   publica índice. La UI muestra los pesos y la aportación de cada bloque.
@@ -52,6 +74,14 @@ nuevo precio verde/rojo sin porcentaje; la lista conserva el porcentaje.
 reintentos y backoff. Los lotes de 500, por el `raw` jsonb, la ficha, los índices
 trigram y el trigger de precios, podían superar el `statement_timeout` de
 PostgREST (57014). El `timeout-minutes` de GitHub Actions es independiente.
+
+**Categorías Alcampo 2026-07-19:** el árbol de Ocado repite las etiquetas de
+alimentación dentro de Folletos, Club, campañas y ramas regionales. El sync
+acepta únicamente las diez raíces de primer nivel —las de mayor número de
+subcategorías— y sus hijos directos; no se deben volver a recorrer coincidencias
+por nombre en todo el árbol. Se eliminaron de producción 162 categorías y 817
+productos de esas ramas secundarias; quedan 120 categorías y 15.024 productos
+del surtido nacional canónico.
 
 ## Identidad
 
@@ -165,7 +195,8 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - **Ficha de producto bonÀrea** (`supabase/migrations/bonarea_product_detail.sql`): columnas anulables `description/ingredients/allergens/nutrition/conservation/denomination/origin/operator` **+ sus `_ca`** (bilingüe es/ca) + `detail_synced_at` en `bonarea_products`. La rellena `scripts/sync-bonarea.mjs` leyendo la página de cada producto (HTML server-rendered, bloque `.general-product-info`); **bilingüe**: la ficha catalana va por una urlFriendly distinta (`/online/producte/…`) que sale de la 2ª pasada `/ca/`. Descarga **incremental** (solo productos sin ficha o con `detail_synced_at` viejo, flags `DETAIL_*`/`SKIP_DETAIL`). `mapBonarea` elige idioma (fallback es) y `BonareaProductModal` pinta las secciones sin cambios. **Imprescindible ejecutarla antes del próximo sync**, si no el upsert de la pasada de ficha falla por columnas inexistentes. bonÀrea y Dia son los únicos espejos que exponen ficha; Consum NO (su API solo da códigos de filtro y el JSON nutricional del CDN da 404 — verificado en vivo 2026-06-26).
 - **Ficha de producto Dia** (`supabase/migrations/dia_product_detail.sql`): columnas anulables `description/ingredients/nutrition/conservation/preparation/denomination/operator` + `detail_synced_at` en `dia_products`. La rellena `scripts/sync-dia.mjs` leyendo la página de cada producto (raw.url): dia.es es SSR Vike con el producto ESTRUCTURADO en `vike_pageContext` (`ingredients.text`, `nutritional_info`, `instructions`, `manufacturer_contact`, `product_info`). **Solo castellano** (dia.es no es bilingüe) → sin columnas `_ca`. Descarga **incremental** (flags `DETAIL_*`/`SKIP_DETAIL`, igual que bonÀrea). `mapDia`/`DiaProductModal` ya lo pintan. **Imprescindible ejecutarla antes del próximo sync de Dia**.
 - **Ficha de producto Carrefour** (`supabase/migrations/carrefour_product_detail.sql`): columnas anulables `ingredients/allergens/nutrition/conservation/preparation/denomination/origin/operator` + `detail_synced_at` en `carrefour_products`. La rellena `scripts/sync-carrefour.mjs` leyendo la PDP de cada producto (raw.url): Carrefour embebe `window.__INITIAL_STATE__` con `nutrition_info` TOTALMENTE estructurado (ingredientes, `alergenos`{contiene,puedeContener}, valorEnergetico, macros, y `masInfo` grupos→listaInfo de nombre/valor: conservación, denominación legal, operador…). **Solo castellano** → sin `_ca`. Descarga **incremental** (flags `DETAIL_*`/`SKIP_DETAIL`). OJO Cloudflare: el sync corre en local y la pasada de ficha multiplica peticiones → `DETAIL_MAX`/conc. baja la reparten. `mapCarrefour`/`CarrefourProductModal` ya lo pintan. **Imprescindible ejecutarla antes del próximo sync de Carrefour**. El backfill independiente `scripts/backfill-carrefour-ean.mjs` descarga la misma PDP para las filas publicadas sin EAN y guarda `product.ean`; es reanudable (`ean IS NULL`) y admite `DRY_RUN`, `LIMIT` y `PRODUCT_ID`. (Bonpreu es el único espejo con ficha aún sin implementar: requiere el navegador headless del WAF, 1 nav/producto.)
-- **Nutrición Eroski/Caprabo** (`supabase/migrations/20260718133958_eroski_caprabo_nutrition.sql`): añade `nutrition` + `detail_synced_at` a ambas tablas. `scripts/lib/eroski-tapestry.mjs` descarga la PDP con GET y transforma la lista HTML a texto estable por 100 g/ml, compatible con el Índice Alimentario. Pasada incremental con TTL 90 días y `DETAIL_MAX=1000` por defecto. **Ejecutar la migración antes del siguiente sync**; no se ha aplicado automáticamente a producción.
+- **Ficha Eroski/Caprabo** (`supabase/migrations/20260718133958_eroski_caprabo_nutrition.sql` + `20260719102703_eroski_caprabo_product_detail.sql`): añade `nutrition`, `ingredients`, `conservation`, `manufacturer` y `detail_synced_at` a ambas tablas. `scripts/lib/eroski-tapestry.mjs` descarga la PDP con GET y extrae esos bloques; normaliza la nutrición por 100 g/ml para el Índice Alimentario. La segunda migración invalida de forma segura el TTL para completar el backfill gradual (`DETAIL_MAX=1000`; TTL 90 días después). **Ejecutar ambas migraciones, en ese orden, antes del siguiente sync**; no se han aplicado automáticamente a producción.
+- **Índices de navegación del catálogo** (`supabase/migrations/20260718183152_catalog_browse_indexes.sql`): índices B-tree parciales por `(display_name_norm, id)` y `(display_name_ca_norm, id)` donde corresponde, con `WHERE published = true`. Aceleran la primera página y el keyset de Productos sin cambiar el esquema que selecciona el cliente. El SQL omite de forma segura las tablas/columnas aún no creadas. **Pendiente de ejecutar manualmente en producción**.
 - ⚠️ **Favoritos por tienda** (`supabase/migrations/favorites_store.sql`): añade columna `store` a `favorites` + cambia la unicidad a `(user_id, kind, store, ref_id)` (los ids se solapan entre súpers). IMPRESCINDIBLE antes de arrancar tras este cambio: `fetchFavorites` ya selecciona `store` y falla sin ella. La migración hace backfill de filas viejas (productos por dominio de imagen, categorías → mercadona). Habilita: favoritos de producto/categoría en los 6 súpers (swipe en listas/búsqueda + estrella en los modales) y el agrupado de favoritos por súper en el Home.
 - **Búsqueda insensible a acentos** (`supabase/migrations/catalog_unaccent_search.sql`): añade columna generada `display_name_norm` (minúsculas + sin acentos vía wrapper inmutable `f_unaccent`) + índice trigram a las 6 tablas `*_products`. La app (`src/api/catalog.ts` → `filterByNameWords`) ya busca sobre esa columna normalizando el texto del usuario, así que "platano" encuentra "Plátano". Aditiva (no toca columnas/índices viejos), backfill automático, sin cambios en los syncs. Sin ejecutarla, la búsqueda no devuelve nada (filtra por una columna inexistente).
 - **Catálogo Mercadona en catalán (Fase 2 bilingüe)** (`supabase/migrations/mercadona_catalog_ca.sql`): añade a `mercadona_products` la columna `display_name_ca` + la generada `display_name_ca_norm` (= `coalesce(display_name_ca, display_name)` normalizada) + índice trigram. La pestaña "Productos" del catálogo (espejo) busca/muestra en català cuando la UI está en català (`searchProducts` mira el idioma con `getLanguage()`); el resto de vistas de Mercadona van en vivo con `lang=ca` y no necesitan BD. **Imprescindible ejecutarla antes de arrancar en català** (si no, `searchProducts` filtra por `display_name_ca_norm`, inexistente → la búsqueda peta en català). Tras ejecutarla, **relanzar el sync** (`scripts/sync-catalog.mjs` / workflow `sync-catalog.yml`) para que su 2ª pasada `lang=ca` rellene `display_name_ca` (hasta entonces, búsqueda en català funciona pero muestra nombres en castellano por el coalesce). Solo Mercadona soporta catalán por API.

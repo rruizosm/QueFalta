@@ -22,9 +22,9 @@
 //     marca, categoría (c1>c2>c3) y precio. Es la fuente limpia; el resto del
 //     markup (comillas simples en el fragmento AJAX, dobles + HTML-escapado en la
 //     página completa) se ignora. El parser tolera ambos estilos de comillas.
-//  4. La nutrición se completa incrementalmente con GET de la ficha
-//     /es/productdetail/{id}-{slug}/. Se guarda como texto normalizado por 100
-//     g/ml, compatible con `parseCatalogNutrition` y el bloque Índice Alimentario.
+//  4. La ficha se completa incrementalmente con GET de
+//     /es/productdetail/{id}-{slug}/. Guarda ingredientes, condiciones de
+//     conservación, fabricante y la tabla nutricional normalizada por 100 g/ml.
 //
 // No hay precio por unidad (€/L) ni EAN en los listados; la ficha HTML tampoco
 // expone un EAN verificable. price_per_unit queda null (como en otros súpers).
@@ -262,6 +262,34 @@ export function parseNutritionHtml(html) {
   return [perQuantity ? `Valores medios por ${perQuantity}` : 'Valores medios por 100 g', ...nutrients].join('\n');
 }
 
+function featureText(html, titlePattern) {
+  if (typeof html !== 'string' || !html) return null;
+  const titleRe = /<span[^>]*class=(['"])[^'"]*\btitle\b[^'"]*\1[^>]*>([\s\S]*?)<\/span>/gi;
+  for (const match of html.matchAll(titleRe)) {
+    if (!titlePattern.test(stripHtml(match[2]))) continue;
+    const afterTitle = html.slice((match.index ?? 0) + match[0].length);
+    const nextFeature = afterTitle.search(/<div[^>]*class=(['"])[^'"]*\bfeature\b[^'"]*\1[^>]*>/i);
+    const section = afterTitle.slice(0, nextFeature >= 0 ? nextFeature : 1600);
+    const paragraphs = [...section.matchAll(
+      /<p[^>]*class=(['"])[^'"]*\btext\b[^'"]*\1[^>]*>([\s\S]*?)<\/p>/gi,
+    )]
+      .map((paragraph) => stripHtml(paragraph[2]))
+      .filter(Boolean);
+    return paragraphs.length > 0 ? paragraphs.join('\n') : null;
+  }
+  return null;
+}
+
+/** Extrae los campos de ficha que publican Eroski y Caprabo en bloques feature. */
+export function parseProductDetailHtml(html) {
+  return {
+    ingredients: featureText(html, /^ingredientes$/i),
+    conservation: featureText(html, /^condiciones\s+de\s+conservaci[oó]n$/i),
+    manufacturer: featureText(html, /^fabricante$/i),
+    nutrition: parseNutritionHtml(html),
+  };
+}
+
 const productSlug = (name) => (name ?? '')
   .normalize('NFD')
   .replace(/[\u0300-\u036f]/g, '')
@@ -273,12 +301,14 @@ const productSlug = (name) => (name ?? '')
 const productDetailUrl = (base, row) =>
   `${base}/es/productdetail/${encodeURIComponent(row.id)}-${productSlug(row.display_name)}/`;
 
-async function fetchProductNutrition(base, row) {
+async function fetchProductDetail(base, row) {
   const html = await fetchText(productDetailUrl(base, row), { tries: 3 });
   // Un 200 de Tapestry puede ser una página de error genérica. Este id solo
   // aparece en la ficha real y permite distinguirla de una respuesta vacía.
-  if (!html || !html.includes(`item-detail-main-${row.id}`)) return { ok: false, nutrition: null };
-  return { ok: true, nutrition: parseNutritionHtml(html) };
+  if (!html || !html.includes(`item-detail-main-${row.id}`)) {
+    return { ok: false, ingredients: null, conservation: null, manufacturer: null, nutrition: null };
+  }
+  return { ok: true, ...parseProductDetailHtml(html) };
 }
 
 // ── Paginación stateful (Tapestry `supermarket:loadpage`) ────────────────────
@@ -468,6 +498,7 @@ export async function runSync({ base, store, table, catTable }) {
   const runStart = new Date().toISOString();
   const tag = `[${store}]`;
   const log = (m) => console.log(`${tag} ${m}`);
+  const DETAIL_COLS = ['ingredients', 'conservation', 'manufacturer', 'nutrition'];
 
   if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
     console.error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE (o usa DRY_RUN=1)');
@@ -490,15 +521,14 @@ export async function runSync({ base, store, table, catTable }) {
     }
   }
 
-  // Lee la nutrición ya guardada para no descargar decenas de miles de fichas
-  // cada semana. `detail_synced_at` también permite recordar que una PDP válida
-  // no publicaba tabla y evita reintentar ese null hasta que venza el TTL.
-  async function fetchExistingNutrition() {
+  // Lee la ficha ya guardada para no descargar decenas de miles de PDP cada
+  // semana. `detail_synced_at` también recuerda fichas válidas sin información.
+  async function fetchExistingDetails() {
     const map = new Map();
     const PAGE = 1000;
     for (let from = 0; ; from += PAGE) {
       const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/${table}?select=id,nutrition,detail_synced_at&order=id.asc`,
+        `${SUPABASE_URL}/rest/v1/${table}?select=id,${DETAIL_COLS.join(',')},detail_synced_at&order=id.asc`,
         {
           headers: {
             apikey: SERVICE_ROLE,
@@ -508,7 +538,7 @@ export async function runSync({ base, store, table, catTable }) {
           },
         },
       );
-      if (!res.ok) throw new Error(`read nutrition ${table} ${res.status}: ${await res.text()}`);
+      if (!res.ok) throw new Error(`read detail ${table} ${res.status}: ${await res.text()}`);
       const batch = await res.json();
       for (const row of batch) map.set(String(row.id), row);
       if (batch.length < PAGE) break;
@@ -516,14 +546,14 @@ export async function runSync({ base, store, table, catTable }) {
     return map;
   }
 
-  async function loadExistingNutrition(rows) {
-    const existing = await fetchExistingNutrition();
+  async function loadExistingDetails(rows) {
+    const existing = await fetchExistingDetails();
     const ttlMs = DETAIL_TTL_DAYS * 86400000;
     const now = Date.now();
     const stale = [];
     for (const row of rows) {
       const previous = existing.get(row.id);
-      row.nutrition = previous?.nutrition ?? null;
+      for (const column of DETAIL_COLS) row[column] = previous?.[column] ?? null;
       row.detail_synced_at = previous?.detail_synced_at ?? null;
       const detailTime = row.detail_synced_at ? new Date(row.detail_synced_at).getTime() : NaN;
       if (!Number.isFinite(detailTime) || now - detailTime >= ttlMs) stale.push(row);
@@ -531,40 +561,44 @@ export async function runSync({ base, store, table, catTable }) {
     return stale;
   }
 
-  async function downloadNutrition(stale, max = DETAIL_MAX) {
+  async function downloadDetails(stale, max = DETAIL_MAX) {
     const batch = stale.slice(0, max);
     const queue = [...batch];
     const updated = [];
     let done = 0;
-    let withNutrition = 0;
-    let withoutNutrition = 0;
-    log(`nutrición: ${batch.length} fichas a descargar · ${stale.length - batch.length} pospuestas`);
+    let withDetails = 0;
+    let withoutDetails = 0;
+    log(`ficha: ${batch.length} productos a descargar · ${stale.length - batch.length} pospuestos`);
     await Promise.all(Array.from({ length: DETAIL_CONCURRENCY }, async () => {
       for (;;) {
         const row = queue.shift();
         if (!row) break;
         try {
-          const detail = await fetchProductNutrition(base, row);
+          const detail = await fetchProductDetail(base, row);
           if (detail.ok) {
-            const hadNutrition = !!row.nutrition;
-            // Un null nuevo es válido si la ficha nunca tuvo nutrición. Si ya
-            // había texto, conservarlo protege ante un cambio puntual de markup.
-            if (detail.nutrition || !hadNutrition) {
-              row.nutrition = detail.nutrition;
+            const hadDetails = DETAIL_COLS.some((column) => !!row[column]);
+            const foundDetails = DETAIL_COLS.some((column) => !!detail[column]);
+            // Un null nuevo es válido si la ficha nunca publicó datos. Para no
+            // borrar información conocida ante un cambio puntual de markup, solo
+            // se reemplaza una columna cuando la respuesta trae ese campo.
+            if (foundDetails || !hadDetails) {
+              for (const column of DETAIL_COLS) {
+                if (detail[column] != null || row[column] == null) row[column] = detail[column];
+              }
               row.detail_synced_at = runStart;
               updated.push(row);
-              if (detail.nutrition) withNutrition++;
-              else withoutNutrition++;
+              if (foundDetails) withDetails++;
+              else withoutDetails++;
             }
           }
         } catch (e) {
-          log(`nutrición ${row.id} falló: ${e.message.split('\n')[0]}`);
+          log(`ficha ${row.id} falló: ${e.message.split('\n')[0]}`);
         }
-        if (++done % 100 === 0) log(`nutrición ${done}/${batch.length}`);
+        if (++done % 100 === 0) log(`ficha ${done}/${batch.length}`);
         await sleep(120);
       }
     }));
-    log(`nutrición: ${withNutrition} con tabla · ${withoutNutrition} sin tabla · ${updated.length} comprobadas`);
+    log(`ficha: ${withDetails} con datos · ${withoutDetails} sin datos · ${updated.length} comprobadas`);
     return updated;
   }
 
@@ -600,18 +634,18 @@ export async function runSync({ base, store, table, catTable }) {
       sin_marca: rows.filter((r) => !r.brand).length,
     });
     if (!SKIP_DETAIL && DRY_DETAIL_MAX > 0) {
-      const checked = await downloadNutrition(rows, Math.min(DRY_DETAIL_MAX, rows.length));
+      const checked = await downloadDetails(rows, Math.min(DRY_DETAIL_MAX, rows.length));
       for (const row of checked) {
-        console.log(`\nnutrición ${row.id} — ${row.display_name}`);
-        console.log(row.nutrition ?? '  (la ficha no publica información nutricional)');
+        console.log(`\nficha ${row.id} — ${row.display_name}`);
+        for (const column of DETAIL_COLS) console.log(`  ${column}: ${row[column] ?? '—'}`);
       }
     }
     return;
   }
   if (rows.length === 0) throw new Error('0 productos (¿cambió el markup o el árbol?)');
 
-  let staleNutrition = [];
-  if (!SKIP_DETAIL) staleNutrition = await loadExistingNutrition(rows);
+  let staleDetails = [];
+  if (!SKIP_DETAIL) staleDetails = await loadExistingDetails(rows);
 
   // Guardamos primero el catálogo: si la pasada incremental de fichas se corta,
   // precios/disponibilidad y soft-delete ya quedan actualizados.
@@ -621,7 +655,7 @@ export async function runSync({ base, store, table, catTable }) {
   await markStale({ url: SUPABASE_URL, key: SERVICE_ROLE, table: catTable, runStart });
 
   if (!SKIP_DETAIL) {
-    const updated = await downloadNutrition(staleNutrition);
+    const updated = await downloadDetails(staleDetails);
     if (updated.length > 0) await upsert(table, updated);
   }
   log('OK');

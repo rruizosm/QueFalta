@@ -147,12 +147,23 @@ async function buildFoodTree() {
   const roots = await getJson('/v1/categories?decoration=false&categoryDepth=6');
   if (!Array.isArray(roots)) throw new Error('no se pudo leer el árbol de categorías');
 
-  const foodRoots = [];
-  const findRoots = (node) => {
-    if (FOOD_ROOTS.has(node.name) && node.retailerCategoryId) foodRoots.push(node);
-    else for (const c of node.childCategories || []) findRoots(c);
-  };
-  for (const n of roots) findRoots(n);
+  // La API repite estas etiquetas dentro de Folletos, Club, campañas y árboles
+  // regionales. Solo los nodos de primer nivel son el surtido nacional canónico;
+  // además son los que tienen más subcategorías. Recorrer todo el árbol por nombre
+  // mezclaba esos árboles secundarios y duplicaba categorías y productos.
+  const foodRoots = roots.filter((node) =>
+    FOOD_ROOTS.has(node.name) && node.retailerCategoryId,
+  );
+  const missingRoots = [...FOOD_ROOTS].filter(
+    (name) => !foodRoots.some((node) => node.name === name),
+  );
+  if (missingRoots.length || foodRoots.length !== FOOD_ROOTS.size) {
+    throw new Error(
+      `raíces canónicas de alimentación inesperadas: ${missingRoots.length
+        ? `faltan ${missingRoots.join(', ')}`
+        : `se recibieron ${foodRoots.length} para ${FOOD_ROOTS.size} nombres`}`,
+    );
+  }
 
   const catName = new Map();
   const catParent = new Map();

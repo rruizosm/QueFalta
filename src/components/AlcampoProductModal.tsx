@@ -14,7 +14,9 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductImage from '../components/ProductImage';
+import FoodIndexSummary from '../components/FoodIndexSummary';
 import ProductInfoSections from '../components/ProductInfoSections';
+import { useNutritionInfoDisclosure } from '../components/NutritionInfoButton';
 import SimilarProductsSection from '../components/SimilarProductsSection';
 import ProductPriceLine from '../components/ProductPriceLine';
 
@@ -39,6 +41,16 @@ export default function AlcampoProductModal({ product, onClose, topInset = 16 }:
   const { t } = useTranslation();
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
+
+  const nutrition = useNutritionInfoDisclosure({
+    store: 'alcampo',
+    ean: product?.ean,
+    inline: true,
+    fallbackNutrition: product?.nutrition,
+    fallbackProductName: product?.displayName,
+    fallbackCategoryName: product?.categoryName,
+    fallbackIngredients: product?.ingredients,
+  });
 
   useEffect(() => { setQty(1); }, [product?.id]);
 
@@ -119,6 +131,16 @@ export default function AlcampoProductModal({ product, onClose, topInset = 16 }:
         <ProductPriceLine store="alcampo" productId={product.id} price={price} />
         {product.pricePerUnit ? <Text style={styles.refPrice}>{product.pricePerUnit}</Text> : null}
 
+        {nutrition.info?.foodIndex ? (
+          <FoodIndexSummary
+            index={nutrition.info.foodIndex}
+            onPress={nutrition.open}
+            expanded={nutrition.expanded}
+          >
+            {nutrition.inlineContent}
+          </FoodIndexSummary>
+        ) : null}
+
         {/* Comparativa: más barato en otros súper */}
         <SimilarProductsSection productName={product.displayName} excludeStore="alcampo" />
 
@@ -127,7 +149,6 @@ export default function AlcampoProductModal({ product, onClose, topInset = 16 }:
           items={[
             { key: 'description', icon: 'reader-outline', title: t('product.sections.description'), text: product.description },
             { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: product.ingredients },
-            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition },
             { key: 'storage', icon: 'time-outline', title: t('product.sections.storage'), text: product.conservation },
             { key: 'preparation', icon: 'restaurant-outline', title: t('product.sections.preparation'), text: product.preparation },
             { key: 'legalName', icon: 'document-text-outline', title: t('product.sections.legalName'), text: product.denomination },

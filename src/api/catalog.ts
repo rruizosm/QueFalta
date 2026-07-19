@@ -116,6 +116,12 @@ function filterCenterAvailability(query: any, center: string | null): any {
   return query.or(`centers.is.null,centers.eq.{},centers.cs.{${JSON.stringify(center)}}`);
 }
 
+/** Adjunta cancelación real al fetch de PostgREST sin obligar a los llamantes
+ * que no la necesitan a crear un AbortController. */
+function abortable<T>(query: T, signal?: AbortSignal): T {
+  return signal ? (query as any).abortSignal(signal) : query;
+}
+
 // ─── Navegación del catálogo (pestaña "Productos" sin búsqueda) ──────────────
 // Listado alfabético paginado del catálogo completo de un súper. Pagina por
 // keyset (cursor sobre el nombre normalizado), no por OFFSET: cada "cargar 50
@@ -145,6 +151,7 @@ async function keysetPage(
   // el order y la condición del cursor. Quien lo use debe excluir filas con
   // `orderCol` null (el cursor no sabe compararlas).
   desc = false,
+  signal?: AbortSignal,
 ): Promise<{ rows: any[]; nextCursor: BrowseCursor | null }> {
   let q = supabase
     .from(table)
@@ -162,6 +169,7 @@ async function keysetPage(
     const cmp = desc ? 'lt' : 'gt';
     q = q.or(`${orderCol}.${cmp}.${n},and(${orderCol}.eq.${n},id.gt.${i})`);
   }
+  if (signal) q = q.abortSignal(signal);
   const { data, error } = await q;
   if (error) throw error;
   // El select dinámico (`${cols}, ${orderCol}`) impide a supabase-js inferir la
@@ -173,50 +181,73 @@ async function keysetPage(
   return { rows, nextCursor };
 }
 
-// Reconstruye el MercadonaProduct del espejo: nombre en català si procede y, sobre
-// todo, ADJUNTA la categoría (N2) guardada en el espejo a `categories`. El `raw` de
-// listado de Mercadona no incluye `categories` (solo el detalle), así que sin esto
-// los productos añadidos desde búsqueda/navegación alfabética entraban en la Lista
-// sin categoría y caían en "Otros". mercadonaToUI lee `categories?.[0]?.name` para
-// que la Lista los agrupe por zona, igual que la navegación por categorías.
+// Columnas ligeras suficientes para pintar las tarjetas de Mercadona. Antes los
+// listados descargaban `raw` completo (aprox. 65 KB por página de 50) aunque la
+// ficha vuelve a pedir el detalle al abrirse. Todas estas columnas ya las rellena
+// sync-catalog.mjs, así que no dependen de una migración nueva.
+const MERCADONA_LIST_COLS =
+  'id, display_name, display_name_ca, slug, packaging, thumbnail, unit_price, price_per_unit, price_per_unit_unit, category_name, category_id';
+
+// Reconstruye la forma mínima MercadonaProduct que consumen los adaptadores. Se
+// conserva compatibilidad con cualquier llamada antigua que todavía aporte raw.
 function mirrorMercadonaProduct(r: any, ca: boolean): MercadonaProduct {
-  const p = r.raw as MercadonaProduct;
-  const display_name = ca && r.display_name_ca ? r.display_name_ca : p.display_name;
-  const categories = p.categories ?? (r.category_name
+  const raw = r.raw && typeof r.raw === 'object' ? r.raw as Partial<MercadonaProduct> : null;
+  const display_name = ca && r.display_name_ca
+    ? r.display_name_ca
+    : r.display_name ?? raw?.display_name ?? '';
+  const ppuUnit = r.price_per_unit_unit === 'l' ? 'L' : r.price_per_unit_unit ?? '';
+  const priceInstructions = raw?.price_instructions ?? {
+    unit_price: r.unit_price != null ? String(r.unit_price) : '0',
+    bulk_price: '',
+    unit_size: 0,
+    size_format: '',
+    reference_price: r.price_per_unit != null ? String(r.price_per_unit) : '',
+    reference_format: ppuUnit,
+  };
+  const categories = raw?.categories ?? (r.category_name
     ? [{ id: Number(r.category_id) || 0, name: r.category_name as string }]
     : undefined);
-  return { ...p, display_name, categories };
+  return {
+    id: String(r.id ?? raw?.id ?? ''),
+    slug: String(r.slug ?? raw?.slug ?? ''),
+    display_name,
+    packaging: String(r.packaging ?? raw?.packaging ?? ''),
+    thumbnail: String(r.thumbnail ?? raw?.thumbnail ?? ''),
+    price_instructions: priceInstructions,
+    published: true,
+    categories,
+  };
 }
 
 /** Búsqueda por nombre en TODO el catálogo (server-side). Bilingüe (Fase 2):
  *  en català busca y muestra el nombre catalán (columnas display_name_ca[_norm]
  *  del espejo); en castellano, las columnas originales. Si el sync aún no rellenó
  *  el catalán, `display_name_ca` es null → cae al castellano sin romperse. */
-export async function searchProducts(query: string, region: RegionValue | null, limit = 50): Promise<MercadonaProduct[]> {
+export async function searchProducts(query: string, region: RegionValue | null, limit = 50, signal?: AbortSignal): Promise<MercadonaProduct[]> {
   const q = query.trim();
   if (q.length < 2) return [];
   const ca = getLanguage() === 'ca';
-  const { data, error } = await filterByNameWords(
+  const { data, error } = await abortable(filterByNameWords(
     filterRegionalAvailability(
-      supabase.from('mercadona_products').select('raw, display_name_ca, category_name, category_id').eq('published', true),
+      supabase.from('mercadona_products').select(MERCADONA_LIST_COLS).eq('published', true),
       region,
     ),
     q,
     ca ? 'display_name_ca_norm' : 'display_name_norm',
-  ).limit(limit);
+  ).limit(limit), signal);
   if (error) throw error;
   return (data ?? []).map((r: any) => mirrorMercadonaProduct(r, ca));
 }
 
 /** Navegación alfabética del catálogo de Mercadona (sin búsqueda), paginada por
  *  keyset. Bilingüe: en català ordena/muestra por el nombre catalán. */
-export async function browseProducts(cursor: BrowseCursor | null, region: RegionValue | null, limit = 50): Promise<BrowsePage<MercadonaProduct>> {
+export async function browseProducts(cursor: BrowseCursor | null, region: RegionValue | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<MercadonaProduct>> {
   const ca = getLanguage() === 'ca';
   const { rows, nextCursor } = await keysetPage(
     'mercadona_products',
-    'id, raw, display_name_ca, category_name, category_id',
+    MERCADONA_LIST_COLS,
     ca ? 'display_name_ca_norm' : 'display_name_norm',
-    cursor, limit, (q) => filterRegionalAvailability(q, region),
+    cursor, limit, (q) => filterRegionalAvailability(q, region), false, signal,
   );
   const items = rows.map((r: any) => mirrorMercadonaProduct(r, ca));
   return { items, nextCursor };
@@ -235,7 +266,7 @@ export async function fetchMercadonaProductsByCategory(categoryId: number, regio
   const { data, error } = await filterRegionalAvailability(
     supabase
       .from('mercadona_products')
-      .select('raw, display_name_ca, category_name, category_id')
+      .select(MERCADONA_LIST_COLS)
       .eq('published', true)
       .eq('category_id', categoryId),
     region,
@@ -345,23 +376,23 @@ const BONPREU_COLS =
 
 /** Búsqueda por nombre en el catálogo de BonpreuEsclat (server-side). Bilingüe:
  *  en català busca/muestra por la columna catalana (display_name_ca[_norm]). */
-export async function searchBonpreuProducts(query: string, limit = 50): Promise<BonpreuProduct[]> {
+export async function searchBonpreuProducts(query: string, limit = 50, signal?: AbortSignal): Promise<BonpreuProduct[]> {
   const q = query.trim();
   if (q.length < 2) return [];
   const ca = getLanguage() === 'ca';
-  const { data, error } = await filterByNameWords(
+  const { data, error } = await abortable(filterByNameWords(
     supabase.from('bonpreu_products').select(BONPREU_COLS).eq('published', true),
     q,
     ca ? 'display_name_ca_norm' : 'display_name_norm',
-  ).limit(limit);
+  ).limit(limit), signal);
   if (error) throw error;
   return (data ?? []).map(mapBonpreu);
 }
 
 /** Navegación alfabética del catálogo de BonpreuEsclat (sin búsqueda), keyset. */
-export async function browseBonpreuProducts(cursor: BrowseCursor | null, limit = 50): Promise<BrowsePage<BonpreuProduct>> {
+export async function browseBonpreuProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<BonpreuProduct>> {
   const ca = getLanguage() === 'ca';
-  const { rows, nextCursor } = await keysetPage('bonpreu_products', BONPREU_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit);
+  const { rows, nextCursor } = await keysetPage('bonpreu_products', BONPREU_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, undefined, false, signal);
   return { items: rows.map(mapBonpreu), nextCursor };
 }
 
@@ -385,13 +416,13 @@ export interface BonpreuCategory {
 
 /** Árbol de categorías de Bonpreu (N1 → N2) desde el espejo. Bilingüe: en català
  *  usa name_ca si existe (fallback al castellano). Se reordena en cliente. */
-export async function fetchBonpreuCategoryTree(): Promise<BonpreuCategory[]> {
+export async function fetchBonpreuCategoryTree(signal?: AbortSignal): Promise<BonpreuCategory[]> {
   const ca = getLanguage() === 'ca';
-  const { data, error } = await supabase
+  const { data, error } = await abortable(supabase
     .from('bonpreu_categories')
     .select('id, name, name_ca, parent_id, product_count')
     .eq('published', true)
-    .order('name');
+    .order('name'), signal);
   if (error) throw error;
   const rows = data ?? [];
   const nameOf = (r: any) => (ca && r.name_ca ? r.name_ca : r.name);
@@ -490,32 +521,32 @@ const mapCarrefour = (r: any, region: RegionValue | null = null): CarrefourProdu
 // El €/unidad de medida del raw venía sin unidad ("192,50 €"); se usa el €/unidad
 // canónico (columnas l/kg/ud) para mostrar "192,50 €/kg" como en el resto de supers.
 const CARREFOUR_COLS =
-  'id, display_name, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, regions, regional_prices';
+  'id, display_name, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, regional_prices';
 // Columnas de ficha + oferta: solo para el detalle (no se piden en listados).
 const CARREFOUR_DETAIL_COLS =
   `${CARREFOUR_COLS}, promo_name, promo_text, promo_end, strikethrough_price`
   + `, ean, ingredients, allergens, nutrition, conservation, preparation, denomination, origin, operator`;
 
 /** Búsqueda por nombre en el catálogo de Carrefour (server-side). */
-export async function searchCarrefourProducts(query: string, region: RegionValue | null, limit = 50): Promise<CarrefourProduct[]> {
+export async function searchCarrefourProducts(query: string, region: RegionValue | null, limit = 50, signal?: AbortSignal): Promise<CarrefourProduct[]> {
   const q = query.trim();
   if (q.length < 2) return [];
-  const { data, error } = await filterByNameWords(
+  const { data, error } = await abortable(filterByNameWords(
     filterRegionalAvailability(
       supabase.from('carrefour_products').select(CARREFOUR_COLS).eq('published', true),
       region,
     ),
     q,
-  ).limit(limit);
+  ).limit(limit), signal);
   if (error) throw error;
   return (data ?? []).map((r: any) => mapCarrefour(r, region));
 }
 
 /** Navegación alfabética del catálogo de Carrefour (sin búsqueda), keyset. */
-export async function browseCarrefourProducts(cursor: BrowseCursor | null, region: RegionValue | null, limit = 50): Promise<BrowsePage<CarrefourProduct>> {
+export async function browseCarrefourProducts(cursor: BrowseCursor | null, region: RegionValue | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<CarrefourProduct>> {
   const { rows, nextCursor } = await keysetPage(
     'carrefour_products', CARREFOUR_COLS, 'display_name_norm', cursor, limit,
-    (q) => filterRegionalAvailability(q, region),
+    (q) => filterRegionalAvailability(q, region), false, signal,
   );
   return { items: rows.map((r) => mapCarrefour(r, region)), nextCursor };
 }
@@ -541,12 +572,12 @@ export interface CarrefourCategory {
 }
 
 /** Árbol de categorías de Carrefour (N1 → N2) desde el espejo. */
-export async function fetchCarrefourCategoryTree(): Promise<CarrefourCategory[]> {
-  const { data, error } = await supabase
+export async function fetchCarrefourCategoryTree(signal?: AbortSignal): Promise<CarrefourCategory[]> {
+  const { data, error } = await abortable(supabase
     .from('carrefour_categories')
     .select('id, name, parent_id, product_count')
     .eq('published', true)
-    .order('name');
+    .order('name'), signal);
   if (error) throw error;
   const rows = data ?? [];
   return rows
@@ -641,23 +672,23 @@ const BONAREA_DETAIL_COLS =
 
 /** Búsqueda por nombre en el catálogo de bonÀrea (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
-export async function searchBonareaProducts(query: string, limit = 50): Promise<BonareaProduct[]> {
+export async function searchBonareaProducts(query: string, limit = 50, signal?: AbortSignal): Promise<BonareaProduct[]> {
   const q = query.trim();
   if (q.length < 2) return [];
   const ca = getLanguage() === 'ca';
-  const { data, error } = await filterByNameWords(
+  const { data, error } = await abortable(filterByNameWords(
     supabase.from('bonarea_products').select(BONAREA_COLS).eq('published', true),
     q,
     ca ? 'display_name_ca_norm' : 'display_name_norm',
-  ).limit(limit);
+  ).limit(limit), signal);
   if (error) throw error;
   return (data ?? []).map(mapBonarea);
 }
 
 /** Navegación alfabética del catálogo de bonÀrea (sin búsqueda), keyset. */
-export async function browseBonareaProducts(cursor: BrowseCursor | null, limit = 50): Promise<BrowsePage<BonareaProduct>> {
+export async function browseBonareaProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<BonareaProduct>> {
   const ca = getLanguage() === 'ca';
-  const { rows, nextCursor } = await keysetPage('bonarea_products', BONAREA_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit);
+  const { rows, nextCursor } = await keysetPage('bonarea_products', BONAREA_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, undefined, false, signal);
   return { items: rows.map(mapBonarea), nextCursor };
 }
 
@@ -681,13 +712,13 @@ export interface BonareaCategory {
 
 /** Árbol de categorías de bonÀrea (N1 → N2) desde el espejo. Bilingüe: en català
  *  usa name_ca si existe (fallback al castellano). Se reordena en cliente. */
-export async function fetchBonareaCategoryTree(): Promise<BonareaCategory[]> {
+export async function fetchBonareaCategoryTree(signal?: AbortSignal): Promise<BonareaCategory[]> {
   const ca = getLanguage() === 'ca';
-  const { data, error } = await supabase
+  const { data, error } = await abortable(supabase
     .from('bonarea_categories')
     .select('id, name, name_ca, parent_id, product_count')
     .eq('published', true)
-    .order('name');
+    .order('name'), signal);
   if (error) throw error;
   const rows = data ?? [];
   const nameOf = (r: any) => (ca && r.name_ca ? r.name_ca : r.name);
@@ -752,23 +783,24 @@ const mapConsum = (r: any, postalCode: string | null = null): ConsumProduct => {
 };
 
 const CONSUM_COLS =
-  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, regions, regional_prices, promo_base_price, offer_zones';
+  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, regional_prices';
+const CONSUM_OFFER_COLS = `${CONSUM_COLS}, promo_base_price`;
 
 /** Búsqueda por nombre en el catálogo de Consum (server-side). */
-export async function searchConsumProducts(query: string, region: RegionValue | null, postalCode: string | null, limit = 50): Promise<ConsumProduct[]> {
+export async function searchConsumProducts(query: string, region: RegionValue | null, postalCode: string | null, limit = 50, signal?: AbortSignal): Promise<ConsumProduct[]> {
   const q = query.trim();
   if (q.length < 2) return [];
-  const { data, error } = await filterByNameWords(
+  const { data, error } = await abortable(filterByNameWords(
     filterRegionalAvailability(supabase.from('consum_products').select(CONSUM_COLS).eq('published', true), region),
     q,
-  ).limit(limit);
+  ).limit(limit), signal);
   if (error) throw error;
   return (data ?? []).map((r: any) => mapConsum(r, postalCode));
 }
 
 /** Navegación alfabética del catálogo de Consum (sin búsqueda), keyset. */
-export async function browseConsumProducts(cursor: BrowseCursor | null, region: RegionValue | null, postalCode: string | null, limit = 50): Promise<BrowsePage<ConsumProduct>> {
-  const { rows, nextCursor } = await keysetPage('consum_products', CONSUM_COLS, 'display_name_norm', cursor, limit, (q) => filterRegionalAvailability(q, region));
+export async function browseConsumProducts(cursor: BrowseCursor | null, region: RegionValue | null, postalCode: string | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<ConsumProduct>> {
+  const { rows, nextCursor } = await keysetPage('consum_products', CONSUM_COLS, 'display_name_norm', cursor, limit, (q) => filterRegionalAvailability(q, region), false, signal);
   return { items: rows.map((r) => mapConsum(r, postalCode)), nextCursor };
 }
 
@@ -791,12 +823,12 @@ export interface ConsumCategory {
 
 /** Árbol de categorías de Consum (N1 → N2) desde el espejo. El árbol real tiene
  *  4 niveles; category_ids incluye ancestros, así que la N2 cubre su subárbol. */
-export async function fetchConsumCategoryTree(): Promise<ConsumCategory[]> {
-  const { data, error } = await supabase
+export async function fetchConsumCategoryTree(signal?: AbortSignal): Promise<ConsumCategory[]> {
+  const { data, error } = await abortable(supabase
     .from('consum_categories')
     .select('id, name, parent_id, product_count')
     .eq('published', true)
-    .order('name');
+    .order('name'), signal);
   if (error) throw error;
   const rows = data ?? [];
   return rows
@@ -867,31 +899,31 @@ const mapDia = (r: any): DiaProduct => ({
 });
 
 const DIA_COLS =
-  'id, display_name, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, regions';
+  'id, display_name, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
 // Columnas de ficha: solo para el detalle (cargas pesadas → no se piden en listados).
 const DIA_DETAIL_COLS =
   `${DIA_COLS}, description, ingredients, nutrition, conservation, preparation, denomination, operator`;
 
 /** Búsqueda por nombre en el catálogo de Dia (server-side). */
-export async function searchDiaProducts(query: string, region: RegionValue | null, limit = 50): Promise<DiaProduct[]> {
+export async function searchDiaProducts(query: string, region: RegionValue | null, limit = 50, signal?: AbortSignal): Promise<DiaProduct[]> {
   const q = query.trim();
   if (q.length < 2) return [];
-  const { data, error } = await filterByNameWords(
+  const { data, error } = await abortable(filterByNameWords(
     filterRegionalAvailability(
       supabase.from('dia_products').select(DIA_COLS).eq('published', true),
       region,
     ),
     q,
-  ).limit(limit);
+  ).limit(limit), signal);
   if (error) throw error;
   return (data ?? []).map(mapDia);
 }
 
 /** Navegación alfabética del catálogo de Dia (sin búsqueda), keyset. */
-export async function browseDiaProducts(cursor: BrowseCursor | null, region: RegionValue | null, limit = 50): Promise<BrowsePage<DiaProduct>> {
+export async function browseDiaProducts(cursor: BrowseCursor | null, region: RegionValue | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<DiaProduct>> {
   const { rows, nextCursor } = await keysetPage(
     'dia_products', DIA_COLS, 'display_name_norm', cursor, limit,
-    (q) => filterRegionalAvailability(q, region),
+    (q) => filterRegionalAvailability(q, region), false, signal,
   );
   return { items: rows.map(mapDia), nextCursor };
 }
@@ -917,12 +949,12 @@ export interface DiaCategory {
 }
 
 /** Árbol de categorías de Dia (N1 → N2) desde el espejo. */
-export async function fetchDiaCategoryTree(): Promise<DiaCategory[]> {
-  const { data, error } = await supabase
+export async function fetchDiaCategoryTree(signal?: AbortSignal): Promise<DiaCategory[]> {
+  const { data, error } = await abortable(supabase
     .from('dia_categories')
     .select('id, name, parent_id, product_count')
     .eq('published', true)
-    .order('name');
+    .order('name'), signal);
   if (error) throw error;
   const rows = data ?? [];
   return rows
@@ -1001,23 +1033,23 @@ const SORLI_COLS =
 
 /** Búsqueda por nombre en el catálogo de Sorli (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
-export async function searchSorliProducts(query: string, limit = 50): Promise<SorliProduct[]> {
+export async function searchSorliProducts(query: string, limit = 50, signal?: AbortSignal): Promise<SorliProduct[]> {
   const q = query.trim();
   if (q.length < 2) return [];
   const ca = getLanguage() === 'ca';
-  const { data, error } = await filterByNameWords(
+  const { data, error } = await abortable(filterByNameWords(
     supabase.from('sorli_products').select(SORLI_COLS).eq('published', true),
     q,
     ca ? 'display_name_ca_norm' : 'display_name_norm',
-  ).limit(limit);
+  ).limit(limit), signal);
   if (error) throw error;
   return (data ?? []).map(mapSorli);
 }
 
 /** Navegación alfabética del catálogo de Sorli (sin búsqueda), keyset. */
-export async function browseSorliProducts(cursor: BrowseCursor | null, limit = 50): Promise<BrowsePage<SorliProduct>> {
+export async function browseSorliProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<SorliProduct>> {
   const ca = getLanguage() === 'ca';
-  const { rows, nextCursor } = await keysetPage('sorli_products', SORLI_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit);
+  const { rows, nextCursor } = await keysetPage('sorli_products', SORLI_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, undefined, false, signal);
   return { items: rows.map(mapSorli), nextCursor };
 }
 
@@ -1041,13 +1073,13 @@ export interface SorliCategory {
 
 /** Árbol de categorías de Sorli (N1 → N2) desde el espejo. Bilingüe: en català
  *  usa name_ca si existe (fallback al castellano). Se reordena en cliente. */
-export async function fetchSorliCategoryTree(): Promise<SorliCategory[]> {
+export async function fetchSorliCategoryTree(signal?: AbortSignal): Promise<SorliCategory[]> {
   const ca = getLanguage() === 'ca';
-  const { data, error } = await supabase
+  const { data, error } = await abortable(supabase
     .from('sorli_categories')
     .select('id, name, name_ca, parent_id, product_count')
     .eq('published', true)
-    .order('name');
+    .order('name'), signal);
   if (error) throw error;
   const rows = data ?? [];
   const nameOf = (r: any) => (ca && r.name_ca ? r.name_ca : r.name);
@@ -1113,23 +1145,23 @@ const CONDIS_COLS =
 
 /** Búsqueda por nombre en el catálogo de Condis (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
-export async function searchCondisProducts(query: string, limit = 50): Promise<CondisProduct[]> {
+export async function searchCondisProducts(query: string, limit = 50, signal?: AbortSignal): Promise<CondisProduct[]> {
   const q = query.trim();
   if (q.length < 2) return [];
   const ca = getLanguage() === 'ca';
-  const { data, error } = await filterByNameWords(
+  const { data, error } = await abortable(filterByNameWords(
     supabase.from('condis_products').select(CONDIS_COLS).eq('published', true),
     q,
     ca ? 'display_name_ca_norm' : 'display_name_norm',
-  ).limit(limit);
+  ).limit(limit), signal);
   if (error) throw error;
   return (data ?? []).map(mapCondis);
 }
 
 /** Navegación alfabética del catálogo de Condis (sin búsqueda), keyset. */
-export async function browseCondisProducts(cursor: BrowseCursor | null, limit = 50): Promise<BrowsePage<CondisProduct>> {
+export async function browseCondisProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<CondisProduct>> {
   const ca = getLanguage() === 'ca';
-  const { rows, nextCursor } = await keysetPage('condis_products', CONDIS_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit);
+  const { rows, nextCursor } = await keysetPage('condis_products', CONDIS_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, undefined, false, signal);
   return { items: rows.map(mapCondis), nextCursor };
 }
 
@@ -1153,13 +1185,13 @@ export interface CondisCategory {
 
 /** Árbol de categorías de Condis (N1 → N2) desde el espejo. Bilingüe: en català
  *  usa name_ca si existe (fallback al castellano). Se reordena en cliente. */
-export async function fetchCondisCategoryTree(): Promise<CondisCategory[]> {
+export async function fetchCondisCategoryTree(signal?: AbortSignal): Promise<CondisCategory[]> {
   const ca = getLanguage() === 'ca';
-  const { data, error } = await supabase
+  const { data, error } = await abortable(supabase
     .from('condis_categories')
     .select('id, name, name_ca, parent_id, product_count')
     .eq('published', true)
-    .order('name');
+    .order('name'), signal);
   if (error) throw error;
   const rows = data ?? [];
   const nameOf = (r: any) => (ca && r.name_ca ? r.name_ca : r.name);
@@ -1243,23 +1275,23 @@ const AMETLLER_DETAIL_COLS =
 
 /** Búsqueda por nombre en el catálogo de Ametller (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
-export async function searchAmetllerProducts(query: string, limit = 50): Promise<AmetllerProduct[]> {
+export async function searchAmetllerProducts(query: string, limit = 50, signal?: AbortSignal): Promise<AmetllerProduct[]> {
   const q = query.trim();
   if (q.length < 2) return [];
   const ca = getLanguage() === 'ca';
-  const { data, error } = await filterByNameWords(
+  const { data, error } = await abortable(filterByNameWords(
     supabase.from('ametller_products').select(AMETLLER_COLS).eq('published', true),
     q,
     ca ? 'display_name_ca_norm' : 'display_name_norm',
-  ).limit(limit);
+  ).limit(limit), signal);
   if (error) throw error;
   return (data ?? []).map(mapAmetller);
 }
 
 /** Navegación alfabética del catálogo de Ametller (sin búsqueda), keyset. */
-export async function browseAmetllerProducts(cursor: BrowseCursor | null, limit = 50): Promise<BrowsePage<AmetllerProduct>> {
+export async function browseAmetllerProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<AmetllerProduct>> {
   const ca = getLanguage() === 'ca';
-  const { rows, nextCursor } = await keysetPage('ametller_products', AMETLLER_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit);
+  const { rows, nextCursor } = await keysetPage('ametller_products', AMETLLER_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, undefined, false, signal);
   return { items: rows.map(mapAmetller), nextCursor };
 }
 
@@ -1283,13 +1315,13 @@ export interface AmetllerCategory {
 
 /** Árbol de categorías de Ametller (N1 → N2) desde el espejo. Bilingüe: en català
  *  usa name_ca si existe (fallback al castellano). Se reordena en cliente. */
-export async function fetchAmetllerCategoryTree(): Promise<AmetllerCategory[]> {
+export async function fetchAmetllerCategoryTree(signal?: AbortSignal): Promise<AmetllerCategory[]> {
   const ca = getLanguage() === 'ca';
-  const { data, error } = await supabase
+  const { data, error } = await abortable(supabase
     .from('ametller_categories')
     .select('id, name, name_ca, parent_id, product_count')
     .eq('published', true)
-    .order('name');
+    .order('name'), signal);
   if (error) throw error;
   const rows = data ?? [];
   const nameOf = (r: any) => (ca && r.name_ca ? r.name_ca : r.name);
@@ -1350,23 +1382,24 @@ const mapAldi = (r: any): AldiProduct => ({
 });
 
 const ALDI_COLS =
-  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name, promo_base_price, promo_end';
+  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+const ALDI_OFFER_COLS = `${ALDI_COLS}, promo_name, promo_base_price, promo_end`;
 
 /** Búsqueda por nombre en el catálogo de Aldi (server-side). */
-export async function searchAldiProducts(query: string, limit = 50): Promise<AldiProduct[]> {
+export async function searchAldiProducts(query: string, limit = 50, signal?: AbortSignal): Promise<AldiProduct[]> {
   const q = query.trim();
   if (q.length < 2) return [];
-  const { data, error } = await filterByNameWords(
+  const { data, error } = await abortable(filterByNameWords(
     supabase.from('aldi_products').select(ALDI_COLS).eq('published', true),
     q,
-  ).limit(limit);
+  ).limit(limit), signal);
   if (error) throw error;
   return (data ?? []).map(mapAldi);
 }
 
 /** Navegación alfabética del catálogo de Aldi (sin búsqueda), keyset. */
-export async function browseAldiProducts(cursor: BrowseCursor | null, limit = 50): Promise<BrowsePage<AldiProduct>> {
-  const { rows, nextCursor } = await keysetPage('aldi_products', ALDI_COLS, 'display_name_norm', cursor, limit);
+export async function browseAldiProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<AldiProduct>> {
+  const { rows, nextCursor } = await keysetPage('aldi_products', ALDI_COLS, 'display_name_norm', cursor, limit, undefined, false, signal);
   return { items: rows.map(mapAldi), nextCursor };
 }
 
@@ -1389,12 +1422,12 @@ export interface AldiCategory {
 }
 
 /** Árbol de categorías de Aldi (N1 → N2) desde el espejo. */
-export async function fetchAldiCategoryTree(): Promise<AldiCategory[]> {
-  const { data, error } = await supabase
+export async function fetchAldiCategoryTree(signal?: AbortSignal): Promise<AldiCategory[]> {
+  const { data, error } = await abortable(supabase
     .from('aldi_categories')
     .select('id, name, parent_id, product_count')
     .eq('published', true)
-    .order('name');
+    .order('name'), signal);
   if (error) throw error;
   const rows = data ?? [];
   return rows
@@ -1453,23 +1486,24 @@ const mapHiperdino = (r: any): HiperdinoProduct => ({
 });
 
 const HIPERDINO_COLS =
-  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_base_price';
+  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+const HIPERDINO_OFFER_COLS = `${HIPERDINO_COLS}, promo_base_price`;
 
 /** Búsqueda por nombre en el catálogo de HiperDino (server-side). */
-export async function searchHiperdinoProducts(query: string, limit = 50): Promise<HiperdinoProduct[]> {
+export async function searchHiperdinoProducts(query: string, limit = 50, signal?: AbortSignal): Promise<HiperdinoProduct[]> {
   const q = query.trim();
   if (q.length < 2) return [];
-  const { data, error } = await filterByNameWords(
+  const { data, error } = await abortable(filterByNameWords(
     supabase.from('hiperdino_products').select(HIPERDINO_COLS).eq('published', true),
     q,
-  ).limit(limit);
+  ).limit(limit), signal);
   if (error) throw error;
   return (data ?? []).map(mapHiperdino);
 }
 
 /** Navegación alfabética del catálogo de HiperDino (sin búsqueda), keyset. */
-export async function browseHiperdinoProducts(cursor: BrowseCursor | null, limit = 50): Promise<BrowsePage<HiperdinoProduct>> {
-  const { rows, nextCursor } = await keysetPage('hiperdino_products', HIPERDINO_COLS, 'display_name_norm', cursor, limit);
+export async function browseHiperdinoProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<HiperdinoProduct>> {
+  const { rows, nextCursor } = await keysetPage('hiperdino_products', HIPERDINO_COLS, 'display_name_norm', cursor, limit, undefined, false, signal);
   return { items: rows.map(mapHiperdino), nextCursor };
 }
 
@@ -1492,12 +1526,12 @@ export interface HiperdinoCategory {
 }
 
 /** Árbol de categorías de HiperDino (N1 → N2) desde el espejo. */
-export async function fetchHiperdinoCategoryTree(): Promise<HiperdinoCategory[]> {
-  const { data, error } = await supabase
+export async function fetchHiperdinoCategoryTree(signal?: AbortSignal): Promise<HiperdinoCategory[]> {
+  const { data, error } = await abortable(supabase
     .from('hiperdino_categories')
     .select('id, name, parent_id, product_count')
     .eq('published', true)
-    .order('name');
+    .order('name'), signal);
   if (error) throw error;
   const rows = data ?? [];
   return rows
@@ -1552,6 +1586,7 @@ export interface AlcampoProduct {
   denomination: string | null;
   operator: string | null;
   origin: string | null;
+  ean: string | null;
 }
 
 const mapAlcampo = (r: any): AlcampoProduct => ({
@@ -1573,29 +1608,30 @@ const mapAlcampo = (r: any): AlcampoProduct => ({
   denomination: r.denomination ?? null,
   operator: r.operator ?? null,
   origin: r.origin ?? null,
+  ean: r.ean ?? null,
 });
 
 const ALCAMPO_COLS =
   'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
 // Columnas de ficha: solo para el detalle (cargas pesadas → no se piden en listados).
 const ALCAMPO_DETAIL_COLS =
-  `${ALCAMPO_COLS}, description, ingredients, nutrition, conservation, preparation, denomination, operator, origin`;
+  `${ALCAMPO_COLS}, description, ingredients, nutrition, conservation, preparation, denomination, operator, origin, ean`;
 
 /** Búsqueda por nombre en el catálogo de Alcampo (server-side). */
-export async function searchAlcampoProducts(query: string, limit = 50): Promise<AlcampoProduct[]> {
+export async function searchAlcampoProducts(query: string, limit = 50, signal?: AbortSignal): Promise<AlcampoProduct[]> {
   const q = query.trim();
   if (q.length < 2) return [];
-  const { data, error } = await filterByNameWords(
+  const { data, error } = await abortable(filterByNameWords(
     supabase.from('alcampo_products').select(ALCAMPO_COLS).eq('published', true),
     q,
-  ).limit(limit);
+  ).limit(limit), signal);
   if (error) throw error;
   return (data ?? []).map(mapAlcampo);
 }
 
 /** Navegación alfabética del catálogo de Alcampo (sin búsqueda), keyset. */
-export async function browseAlcampoProducts(cursor: BrowseCursor | null, limit = 50): Promise<BrowsePage<AlcampoProduct>> {
-  const { rows, nextCursor } = await keysetPage('alcampo_products', ALCAMPO_COLS, 'display_name_norm', cursor, limit);
+export async function browseAlcampoProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<AlcampoProduct>> {
+  const { rows, nextCursor } = await keysetPage('alcampo_products', ALCAMPO_COLS, 'display_name_norm', cursor, limit, undefined, false, signal);
   return { items: rows.map(mapAlcampo), nextCursor };
 }
 
@@ -1618,12 +1654,12 @@ export interface AlcampoCategory {
 }
 
 /** Árbol de categorías de Alcampo (N1 → N2) desde el espejo. */
-export async function fetchAlcampoCategoryTree(): Promise<AlcampoCategory[]> {
-  const { data, error } = await supabase
+export async function fetchAlcampoCategoryTree(signal?: AbortSignal): Promise<AlcampoCategory[]> {
+  const { data, error } = await abortable(supabase
     .from('alcampo_categories')
     .select('id, name, parent_id, product_count')
     .eq('published', true)
-    .order('name');
+    .order('name'), signal);
   if (error) throw error;
   const rows = data ?? [];
   return rows
@@ -1665,6 +1701,7 @@ export interface TapestryProduct {
   unitPrice: number | null;
   priceFormat: string | null;
   categoryName: string | null;
+  nutrition: string | null;
 }
 
 const mapTapestry = (r: any): TapestryProduct => ({
@@ -1675,40 +1712,42 @@ const mapTapestry = (r: any): TapestryProduct => ({
   unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
   priceFormat: r.price_format ?? null,
   categoryName: r.category_name ?? null,
+  nutrition: r.nutrition ?? null,
 });
 
 const TAPESTRY_COLS = 'id, display_name, brand, thumbnail, unit_price, price_format, category_name';
+const TAPESTRY_DETAIL_COLS = `${TAPESTRY_COLS}, nutrition`;
 
-async function searchTapestry(table: string, query: string, limit: number): Promise<TapestryProduct[]> {
+async function searchTapestry(table: string, query: string, limit: number, signal?: AbortSignal): Promise<TapestryProduct[]> {
   const q = query.trim();
   if (q.length < 2) return [];
-  const { data, error } = await filterByNameWords(
+  const { data, error } = await abortable(filterByNameWords(
     supabase.from(table).select(TAPESTRY_COLS).eq('published', true),
     q,
-  ).limit(limit);
+  ).limit(limit), signal);
   if (error) throw error;
   return (data ?? []).map(mapTapestry);
 }
 
-async function browseTapestry(table: string, cursor: BrowseCursor | null, limit: number): Promise<BrowsePage<TapestryProduct>> {
-  const { rows, nextCursor } = await keysetPage(table, TAPESTRY_COLS, 'display_name_norm', cursor, limit);
+async function browseTapestry(table: string, cursor: BrowseCursor | null, limit: number, signal?: AbortSignal): Promise<BrowsePage<TapestryProduct>> {
+  const { rows, nextCursor } = await keysetPage(table, TAPESTRY_COLS, 'display_name_norm', cursor, limit, undefined, false, signal);
   return { items: rows.map(mapTapestry), nextCursor };
 }
 
 async function fetchTapestryProduct(table: string, id: string): Promise<TapestryProduct | null> {
-  const { data, error } = await supabase.from(table).select(TAPESTRY_COLS).eq('id', id).maybeSingle();
+  const { data, error } = await supabase.from(table).select(TAPESTRY_DETAIL_COLS).eq('id', id).maybeSingle();
   if (error) throw error;
   return data ? mapTapestry(data) : null;
 }
 
 export interface TapestryCategory { id: string; name: string; children: { id: string; name: string }[]; }
 
-async function fetchTapestryTree(catTable: string): Promise<TapestryCategory[]> {
-  const { data, error } = await supabase
+async function fetchTapestryTree(catTable: string, signal?: AbortSignal): Promise<TapestryCategory[]> {
+  const { data, error } = await abortable(supabase
     .from(catTable)
     .select('id, name, parent_id, product_count')
     .eq('published', true)
-    .order('name');
+    .order('name'), signal);
   if (error) throw error;
   const rows = data ?? [];
   return rows
@@ -1736,16 +1775,16 @@ async function fetchTapestryByCategory(table: string, categoryId: string, limit:
 }
 
 // Exports por tienda (solo fijan la tabla; misma forma TapestryProduct).
-export const searchEroskiProducts = (q: string, limit = 50) => searchTapestry('eroski_products', q, limit);
-export const browseEroskiProducts = (cursor: BrowseCursor | null, limit = 50) => browseTapestry('eroski_products', cursor, limit);
+export const searchEroskiProducts = (q: string, limit = 50, signal?: AbortSignal) => searchTapestry('eroski_products', q, limit, signal);
+export const browseEroskiProducts = (cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal) => browseTapestry('eroski_products', cursor, limit, signal);
 export const fetchEroskiProduct = (id: string) => fetchTapestryProduct('eroski_products', id);
-export const fetchEroskiCategoryTree = () => fetchTapestryTree('eroski_categories');
+export const fetchEroskiCategoryTree = (signal?: AbortSignal) => fetchTapestryTree('eroski_categories', signal);
 export const fetchEroskiProductsByCategory = (categoryId: string, limit = 600) => fetchTapestryByCategory('eroski_products', categoryId, limit);
 
-export const searchCapraboProducts = (q: string, limit = 50) => searchTapestry('caprabo_products', q, limit);
-export const browseCapraboProducts = (cursor: BrowseCursor | null, limit = 50) => browseTapestry('caprabo_products', cursor, limit);
+export const searchCapraboProducts = (q: string, limit = 50, signal?: AbortSignal) => searchTapestry('caprabo_products', q, limit, signal);
+export const browseCapraboProducts = (cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal) => browseTapestry('caprabo_products', cursor, limit, signal);
 export const fetchCapraboProduct = (id: string) => fetchTapestryProduct('caprabo_products', id);
-export const fetchCapraboCategoryTree = () => fetchTapestryTree('caprabo_categories');
+export const fetchCapraboCategoryTree = (signal?: AbortSignal) => fetchTapestryTree('caprabo_categories', signal);
 export const fetchCapraboProductsByCategory = (categoryId: string, limit = 600) => fetchTapestryByCategory('caprabo_products', categoryId, limit);
 
 // ─── Plusfresc (tabla plusfresc_products, espejo aparte) ─────────────────────
@@ -1799,7 +1838,9 @@ const mapPlusfresc = (r: any, postalCode: string | null = null): PlusfrescProduc
 };
 
 const PLUSFRESC_COLS =
-  'id, display_name, display_name_ca, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, centers, center_prices, promo_name, promo_name_ca, promo_offer_price, promo_base_price, promo_end, offer_centers';
+  'id, display_name, display_name_ca, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, center_prices';
+const PLUSFRESC_OFFER_COLS =
+  `${PLUSFRESC_COLS}, promo_name, promo_name_ca, promo_offer_price, promo_base_price, promo_end`;
 // Columnas de ficha (es + ca): solo para el detalle (no en listados).
 const PLUSFRESC_DETAIL_COLS =
   `${PLUSFRESC_COLS}, description, ingredients, allergens, nutrition, conservation`
@@ -1807,23 +1848,23 @@ const PLUSFRESC_DETAIL_COLS =
 
 /** Búsqueda por nombre en el catálogo de Plusfresc (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
-export async function searchPlusfrescProducts(query: string, postalCode: string | null, limit = 50): Promise<PlusfrescProduct[]> {
+export async function searchPlusfrescProducts(query: string, postalCode: string | null, limit = 50, signal?: AbortSignal): Promise<PlusfrescProduct[]> {
   const q = query.trim();
   if (q.length < 2) return [];
   const ca = getLanguage() === 'ca';
-  const { data, error } = await filterByNameWords(
+  const { data, error } = await abortable(filterByNameWords(
     filterCenterAvailability(supabase.from('plusfresc_products').select(PLUSFRESC_COLS).eq('published', true), plusfrescCenterFromPostalCode(postalCode)),
     q,
     ca ? 'display_name_ca_norm' : 'display_name_norm',
-  ).limit(limit);
+  ).limit(limit), signal);
   if (error) throw error;
   return (data ?? []).map((r: any) => mapPlusfresc(r, postalCode));
 }
 
 /** Navegación alfabética del catálogo de Plusfresc (sin búsqueda), keyset. */
-export async function browsePlusfrescProducts(cursor: BrowseCursor | null, postalCode: string | null, limit = 50): Promise<BrowsePage<PlusfrescProduct>> {
+export async function browsePlusfrescProducts(cursor: BrowseCursor | null, postalCode: string | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<PlusfrescProduct>> {
   const ca = getLanguage() === 'ca';
-  const { rows, nextCursor } = await keysetPage('plusfresc_products', PLUSFRESC_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, (q) => filterCenterAvailability(q, plusfrescCenterFromPostalCode(postalCode)));
+  const { rows, nextCursor } = await keysetPage('plusfresc_products', PLUSFRESC_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, (q) => filterCenterAvailability(q, plusfrescCenterFromPostalCode(postalCode)), false, signal);
   return { items: rows.map((r) => mapPlusfresc(r, postalCode)), nextCursor };
 }
 
@@ -1846,13 +1887,13 @@ export interface PlusfrescCategory {
 
 /** Árbol de categorías de Plusfresc (N1 → N2) desde el espejo. Bilingüe: en català
  *  usa name_ca si existe (fallback al castellano). Se reordena en cliente. */
-export async function fetchPlusfrescCategoryTree(): Promise<PlusfrescCategory[]> {
+export async function fetchPlusfrescCategoryTree(signal?: AbortSignal): Promise<PlusfrescCategory[]> {
   const ca = getLanguage() === 'ca';
-  const { data, error } = await supabase
+  const { data, error } = await abortable(supabase
     .from('plusfresc_categories')
     .select('id, name, name_ca, parent_id, product_count')
     .eq('published', true)
-    .order('name');
+    .order('name'), signal);
   if (error) throw error;
   const rows = data ?? [];
   const nameOf = (r: any) => (ca && r.name_ca ? r.name_ca : r.name);
@@ -2325,7 +2366,7 @@ export async function fetchConsumOffers(
   if (!zone) return { items: [], nextCursor: null };
   const { rows, nextCursor } = await keysetPage(
     'consum_products',
-    CONSUM_COLS,
+    CONSUM_OFFER_COLS,
     filters?.sort ? 'unit_price' : 'display_name_norm',
     cursor,
     limit,
@@ -2358,7 +2399,7 @@ export async function fetchHiperdinoOffers(
 ): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
   const { rows, nextCursor } = await keysetPage(
     'hiperdino_products',
-    HIPERDINO_COLS,
+    HIPERDINO_OFFER_COLS,
     filters?.sort ? 'unit_price' : 'display_name_norm',
     cursor,
     limit,
@@ -2385,7 +2426,7 @@ export async function fetchAldiOffers(
 ): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
   const { rows, nextCursor } = await keysetPage(
     'aldi_products',
-    ALDI_COLS,
+    ALDI_OFFER_COLS,
     filters?.sort ? 'unit_price' : 'display_name_norm',
     cursor,
     limit,
@@ -2437,7 +2478,7 @@ export async function fetchPlusfrescOffers(
   const normCol = ca ? 'display_name_ca_norm' : 'display_name_norm';
   const { rows, nextCursor } = await keysetPage(
     'plusfresc_products',
-    PLUSFRESC_COLS,
+    PLUSFRESC_OFFER_COLS,
     filters?.sort ? 'unit_price' : normCol,
     cursor,
     limit,

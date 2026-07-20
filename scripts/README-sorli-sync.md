@@ -28,6 +28,8 @@ los de la tienda por defecto de la sesión de invitado (como Consum).
 
 ## Requisitos previos (una vez)
 
+Si la tabla `sorli_products` ya existÃ­a, ejecutar tambiÃ©n `supabase/migrations/sorli_nutri_score.sql` antes de lanzar el sync. Esta columna se incluye ya en `sorli_catalog.sql` para instalaciones nuevas.
+
 Ejecutar la migración **`supabase/migrations/sorli_catalog.sql`** en el SQL Editor
 de Supabase (crea las tablas con todo: búsqueda insensible a acentos, novedades y
 cambios de precio) y re-ejecutar **`supabase/migrations/similar_products.sql`**

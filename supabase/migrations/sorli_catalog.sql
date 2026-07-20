@@ -75,6 +75,7 @@ create table if not exists public.sorli_products (
   price_per_unit_unit text,               -- 'l' | 'kg' | 'ud'
   available           boolean not null default true,  -- !desactivado
   published           boolean not null default true,
+  nutri_score         text check (nutri_score is null or nutri_score in ('A', 'B', 'C', 'D', 'E')),
   raw                 jsonb not null,     -- artículo de la API (incluye nutriScore, agrupaciones, oferta…)
   synced_at           timestamptz not null default now(),
   -- Novedades de la semana (catalog_first_seen.sql). Default sentinel antiguo:

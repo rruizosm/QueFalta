@@ -14,7 +14,9 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductImage from '../components/ProductImage';
+import FoodIndexSummary from '../components/FoodIndexSummary';
 import ProductInfoSections from '../components/ProductInfoSections';
+import { useNutritionInfoDisclosure } from '../components/NutritionInfoButton';
 import SimilarProductsSection from '../components/SimilarProductsSection';
 import ProductPriceLine from '../components/ProductPriceLine';
 
@@ -38,6 +40,12 @@ export default function ConsumProductModal({ product, onClose, topInset = 16 }: 
   const { t } = useTranslation();
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
+
+  const nutrition = useNutritionInfoDisclosure({
+    store: 'consum',
+    ean: product?.ean,
+    inline: true,
+  });
 
   useEffect(() => { setQty(1); }, [product?.id]);
 
@@ -117,6 +125,16 @@ export default function ConsumProductModal({ product, onClose, topInset = 16 }: 
 
         <ProductPriceLine store="consum" productId={product.id} price={price} size={product.packaging} />
         {product.pricePerUnit ? <Text style={styles.refPrice}>{product.pricePerUnit}</Text> : null}
+
+        {nutrition.info?.foodIndex ? (
+          <FoodIndexSummary
+            index={nutrition.info.foodIndex}
+            onPress={nutrition.open}
+            expanded={nutrition.expanded}
+          >
+            {nutrition.inlineContent}
+          </FoodIndexSummary>
+        ) : null}
 
         {/* Comparativa: más barato en otros súper */}
         <SimilarProductsSection productName={product.displayName} excludeStore="consum" />

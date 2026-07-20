@@ -771,6 +771,7 @@ export interface ConsumProduct {
   priceFormat: string | null;  // precio mostrado ("1,15 €")
   pricePerUnit: string | null; // etiqueta €/unidad canónica ("4,60 €/kg")
   categoryName: string | null;
+  ean: string | null;
 }
 
 const mapConsum = (r: any, postalCode: string | null = null): ConsumProduct => {
@@ -787,11 +788,13 @@ const mapConsum = (r: any, postalCode: string | null = null): ConsumProduct => {
   priceFormat: regional?.pf ?? r.price_format ?? null,
   pricePerUnit: regional?.ppu != null ? ppuLabel(regional.ppu, regional.ppuu) : ppuLabel(r.price_per_unit, r.price_per_unit_unit),
   categoryName: r.category_name ?? null,
+  ean: r.ean ?? null,
   };
 };
 
 const CONSUM_COLS =
   'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, regional_prices';
+const CONSUM_DETAIL_COLS = `${CONSUM_COLS}, ean`;
 const CONSUM_OFFER_COLS = `${CONSUM_COLS}, promo_base_price`;
 
 /** Búsqueda por nombre en el catálogo de Consum (server-side). */
@@ -816,7 +819,7 @@ export async function browseConsumProducts(cursor: BrowseCursor | null, region: 
 export async function fetchConsumProduct(id: string, region: RegionValue | null, postalCode: string | null): Promise<ConsumProduct | null> {
   const { data, error } = await filterRegionalAvailability(supabase
     .from('consum_products')
-    .select(CONSUM_COLS)
+    .select(CONSUM_DETAIL_COLS)
     .eq('id', id), region).maybeSingle();
   if (error) throw error;
   return data ? mapConsum(data, postalCode) : null;

@@ -24,6 +24,10 @@ const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
 const DRY_RUN = process.env.DRY_RUN === '1';
 const CONCURRENCY = Number(process.env.CONCURRENCY || 4);
 const MAX_CATEGORIES = process.env.MAX_CATEGORIES ? Number(process.env.MAX_CATEGORIES) : Infinity;
+const SKIP_DETAIL = process.env.SKIP_DETAIL === '1';
+const DETAIL_CONCURRENCY = Number(process.env.DETAIL_CONCURRENCY || 2);
+const DETAIL_TTL_DAYS = Number(process.env.DETAIL_TTL_DAYS || 30);
+const DETAIL_MAX = process.env.DETAIL_MAX ? Number(process.env.DETAIL_MAX) : 500;
 
 if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
   console.error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE (o usa DRY_RUN=1)');
@@ -61,6 +65,45 @@ const priceText = (p) => {
   return `${u.price.amount} ${u.price.currency || 'EUR'}${unit ? '/' + unit : ''}`;
 };
 const imageUrl = (p) => p?.image?.src || (Array.isArray(p?.images) && (p.images[0]?.src || p.images[0]?.url)) || null;
+
+const htmlEntity = (s) => String(s)
+  .replace(/&nbsp;/gi, ' ')
+  .replace(/&amp;/gi, '&')
+  .replace(/&quot;/gi, '"')
+  .replace(/&#39;|&apos;/gi, "'")
+  .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)));
+const cleanDetail = (s) => htmlEntity(String(s ?? '')
+  .replace(/<br\s*\/?>/gi, '\n')
+  .replace(/<\/(?:p|li|div|tr|h[1-6])\s*>/gi, '\n')
+  .replace(/<\/(?:td|th)\s*>/gi, '\t')
+  .replace(/<[^>]+>/g, ''))
+  .replace(/[ \t]+\n/g, '\n')
+  .replace(/\n[ \t]+/g, '\n')
+  .replace(/[ \t]{2,}/g, ' ')
+  .replace(/\n{3,}/g, '\n\n')
+  .trim();
+
+function detailKey(title) {
+  return cleanDetail(title).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+function assignDetail(out, title, content) {
+  const key = detailKey(title);
+  const value = cleanDetail(content);
+  if (!value) return;
+  if (/ingredient/.test(key)) out.ingredients ??= value;
+  else if (/nutri|dades nutricional|datos nutricional|informacion nutricional/.test(key)) out.nutrition ??= value;
+  else if (/proveedor|proveidor|supplier/.test(key)) out.supplier_name ??= value;
+  else if (/marca|brand/.test(key)) out.brand ??= value;
+  else if (/informacion del producto|informacio del product|product information|product info/.test(key)) out.product_info ??= value;
+}
+
+function parseProductDetailHtml(html) {
+  const out = {};
+  const sectionRe = /<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>([\s\S]*?)(?=<h[1-6][^>]*>|$)/gi;
+  for (const match of html.matchAll(sectionRe)) assignDetail(out, match[1], match[2]);
+  return out;
+}
 
 // Detalles de un producto (independientes de la categoría). La pertenencia a
 // categorías se calcula aparte (membership) leyendo los IDs del SSR de cada página.
@@ -190,7 +233,7 @@ async function fetchCategoryTree(lang = LANG) {
 // que la página hidrata SON los de esta categoría → `localIds` = pertenencia.
 // No depende de window.__INITIAL_STATE__ (en CI/headless no está disponible al
 // evaluar; la SPA ya lo consumió). `membership`: Map<productId, Set<categoryId>>.
-async function processCategory(page, cat, products, membership) {
+async function processCategory(page, cat, products, membership, retailerLinks) {
   const localIds = new Set();
   const onResp = async (resp) => {
     const req = resp.request();
@@ -214,6 +257,14 @@ async function processCategory(page, cat, products, membership) {
       await page.waitForTimeout(350);
       if (localIds.size === last) stable++; else { stable = 0; last = localIds.size; }
     }
+    const links = await page.locator('a[data-test="fop-product-link"][href*="/products/"]').evaluateAll((els) =>
+      els.filter((a) => a.getAttribute('aria-hidden') !== 'true').map((a) => ({ href: a.href })));
+    for (const link of links) {
+      const retailerId = new URL(link.href).pathname.split('/').filter(Boolean).pop();
+      if (retailerId && !retailerLinks.has(retailerId)) {
+        retailerLinks.set(retailerId, { href: link.href, categoryUrl: `${HOME}/categories/${cat.id}` });
+      }
+    }
   } finally {
     page.off('response', onResp);
   }
@@ -231,6 +282,7 @@ async function processCategory(page, cat, products, membership) {
 // el display_name en català; el membership/categorías sale de la pasada primaria.
 async function crawlProducts(cats, lang) {
   const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || undefined, headless: true });
+  const retailerLinks = new Map();
   const products = new Map();      // productId → detalles
   const membership = new Map();    // productId → Set<categoryId>
   try {
@@ -251,7 +303,7 @@ async function crawlProducts(cats, lang) {
       for (;;) {
         const cat = queue.shift();
         if (!cat) break;
-        try { await processCategory(pg, cat, products, membership); }
+        try { await processCategory(pg, cat, products, membership, retailerLinks); }
         catch (e) { console.warn(`[bonpreu:${lang}] ${cat.name} falló: ${e.message}`); }
         if (++done % 10 === 0) console.log(`[bonpreu:${lang}] ${done}/${cats.length} categorías · ${products.size} productos`);
       }
@@ -259,7 +311,88 @@ async function crawlProducts(cats, lang) {
   } finally {
     await browser.close();
   }
-  return { products, membership };
+  return { products, membership, retailerLinks };
+}
+
+const DETAIL_FIELDS = ['product_info', 'supplier_name', 'ingredients', 'nutrition'];
+
+async function fetchExistingDetails() {
+  const result = new Map();
+  if (DRY_RUN) return result;
+  const cols = ['id', 'brand', 'detail_synced_at', ...DETAIL_FIELDS].join(',');
+  for (let offset = 0;; offset += 1000) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/bonpreu_products?select=${encodeURIComponent(cols)}&order=id&limit=1000&offset=${offset}`, {
+      headers: { apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}` },
+    });
+    if (!res.ok) throw new Error(`read bonpreu_products details ${res.status}: ${await res.text()}`);
+    const rows = await res.json();
+    for (const row of rows) result.set(row.id, row);
+    if (rows.length < 1000) break;
+  }
+  return result;
+}
+
+async function crawlProductDetails(rows, retailerLinks) {
+  if (SKIP_DETAIL) return;
+  const existing = await fetchExistingDetails();
+  const cutoff = Date.now() - DETAIL_TTL_DAYS * 86400000;
+  const groups = new Map();
+  for (const row of rows) {
+    const old = existing.get(row.id);
+    for (const field of DETAIL_FIELDS) row[field] = old?.[field] ?? null;
+    row.detail_synced_at = old?.detail_synced_at ?? null;
+    // Hay fichas que legítimamente no publican proveedor o nutrición. El timestamp
+    // evita que esas ausencias consuman siempre el cupo de backfill.
+    const stale = !old?.detail_synced_at || Date.parse(old.detail_synced_at) < cutoff;
+    const link = retailerLinks.get(row.retailer_product_id);
+    if (stale && link) {
+      let group = groups.get(link.categoryUrl);
+      if (!group) groups.set(link.categoryUrl, (group = []));
+      group.push({ row, link });
+    }
+  }
+  const pending = [...groups.values()].flat().slice(0, DETAIL_MAX);
+  if (!pending.length) { console.log('[bonpreu] fichas: nada pendiente'); return; }
+  console.log(`[bonpreu] fichas: ${pending.length} pendientes (lÃ­mite ${DETAIL_MAX})`);
+  const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || undefined, headless: true });
+  try {
+    const ctx = await browser.newContext({ locale: LANG });
+    await ctx.addCookies([{ name: 'language', value: LANG, domain: new URL(HOME).hostname, path: '/' }]);
+    const queue = [...groups.values()].filter((group) => group.some((item) => pending.includes(item)));
+    const pages = await Promise.all(Array.from({ length: Math.max(1, DETAIL_CONCURRENCY) }, () => ctx.newPage()));
+    let done = 0;
+    await Promise.all(pages.map(async (page) => {
+      for (;;) {
+        const group = queue.shift();
+        if (!group) break;
+        const work = group.filter((item) => pending.includes(item));
+        try {
+          await page.goto(group[0].link.categoryUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.locator('#onetrust-accept-btn-handler').click({ force: true, timeout: 2000 }).catch(() => {});
+          for (const item of work) {
+            let index = -1;
+            for (let i = 0; i < 120 && index < 0; i++) {
+              index = await page.locator('a[data-test="fop-product-link"]').evaluateAll((els, href) =>
+                els.findIndex((a) => a.href === href && a.getAttribute('aria-hidden') !== 'true'), item.link.href);
+              if (index < 0) { await page.mouse.wheel(0, 14000); await page.waitForTimeout(350); }
+            }
+            if (index < 0) continue;
+            await page.locator('a[data-test="fop-product-link"]').nth(index).click({ force: true });
+            await page.waitForTimeout(700);
+            const detail = parseProductDetailHtml(await page.content());
+            for (const field of DETAIL_FIELDS) if (detail[field]) item.row[field] = detail[field];
+            if (detail.brand && !item.row.brand) item.row.brand = detail.brand;
+            item.row.detail_synced_at = runStart;
+            await page.goBack({ waitUntil: 'domcontentloaded', timeout: 30000 }).catch(async () => {
+              await page.goto(group[0].link.categoryUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+            });
+            await page.waitForTimeout(250);
+            if (++done % 25 === 0) console.log(`[bonpreu] fichas ${done}/${pending.length}`);
+          }
+        } catch (e) { console.warn(`[bonpreu] grupo de fichas fallÃ³: ${e.message}`); }
+      }
+    }));
+  } finally { await browser.close(); }
 }
 
 async function main() {
@@ -287,7 +420,7 @@ async function main() {
   const catName = new Map(n2s.map((c) => [c.id, c.name]));
 
   // Pasada primaria (castellano): productos + pertenencia a categorías.
-  const { products, membership } = await crawlProducts(cats, LANG);
+  const { products, membership, retailerLinks } = await crawlProducts(cats, LANG);
 
   // 2ª pasada (catalán): solo nombres, casados por id (estable entre idiomas).
   let caName = new Map();
@@ -329,6 +462,14 @@ async function main() {
     });
   }
   console.log(`[bonpreu] ${rows.length} productos únicos · ${onOffer} en oferta`);
+
+  await crawlProductDetails(rows, retailerLinks);
+  if (DRY_RUN) console.log('[bonpreu] detalle detectado:', {
+    informacion: rows.filter((r) => r.product_info).length,
+    proveedor: rows.filter((r) => r.supplier_name).length,
+    ingredientes: rows.filter((r) => r.ingredients).length,
+    nutricion: rows.filter((r) => r.nutrition).length,
+  });
 
   if (DRY_RUN) {
     const perCat = new Map();

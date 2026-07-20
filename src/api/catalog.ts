@@ -1124,11 +1124,16 @@ export async function fetchSorliProductsByCategory(categoryId: string, limit = 6
 // Mismo modelo que Sorli (espejo + category_ids + ppu en columnas, BILINGÜE es/ca).
 // Lo puebla scripts/sync-condis.mjs desde la API JSON abierta de Empathy (buscador
 // de compraonline.condis.es). Árbol de 2 niveles (N1 sección → N2 family);
-// category_ids incluye el N1, así que la N2 cubre su subárbol. Sin ficha en v1.
+// category_ids incluye el N1, así que la N2 cubre su subárbol. La ficha se obtiene
+// del productInformation RSC mediante una sesión OAuth anónima incremental.
 export interface CondisProduct {
   id: string;                  // id de Empathy ("704048")
   displayName: string;         // incluye marca y formato ("Leche Condis semidesnatada 1 L")
   brand: string | null;
+  ingredients: string | null;
+  nutrition: string | null;
+  conservation: string | null;
+  manufacturer: string | null;
   thumbnail: string | null;
   unitPrice: number | null;    // precio con oferta aplicada si la hay
   priceFormat: string | null;  // precio mostrado ("0,87 €")
@@ -1143,6 +1148,10 @@ const mapCondis = (r: any): CondisProduct => {
     id: r.id,
     displayName: ca && r.display_name_ca ? r.display_name_ca : r.display_name,
     brand: r.brand ?? null,
+    ingredients: r.ingredients ?? null,
+    nutrition: r.nutrition ?? null,
+    conservation: r.conservation ?? null,
+    manufacturer: r.manufacturer ?? null,
     thumbnail: r.thumbnail ?? null,
     unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
     priceFormat: r.price_format ?? null,
@@ -1152,7 +1161,7 @@ const mapCondis = (r: any): CondisProduct => {
 };
 
 const CONDIS_COLS =
-  'id, display_name, display_name_ca, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+  'id, display_name, display_name_ca, brand, ingredients, nutrition, conservation, manufacturer, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
 
 /** Búsqueda por nombre en el catálogo de Condis (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */

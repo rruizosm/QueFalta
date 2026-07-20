@@ -9,7 +9,8 @@ compraonline.condis.es es una SPA **Next.js (App Router/RSC)**. Su API de catál
 propia (`catalog-api.condis.es`) está **protegida** (403: exige API keys que van
 server-side), pero su **buscador usa Empathy.co**, que expone una **API JSON
 ABIERTA** (sin auth ni cookies, no hay Cloudflare) y sirve el catálogo entero
-categoría a categoría. No hay que parsear HTML ni usar navegador headless.
+categoría a categoría. El catálogo no requiere navegador; solo el inicio de la
+sesión anónima usada para enriquecer las fichas necesita Playwright.
 
 - **Categorías hoja (N2, nivel "family"):** del sitemap público
   `https://compraonline.condis.es/sitemap.xml` → 94 urls `/…/c/{cXX__cat########}/es_ES`.
@@ -40,16 +41,20 @@ categoría a categoría. No hay que parsear HTML ni usar navegador headless.
   cambian precios/surtido; se fija una para tener precios consistentes (como Dia con
   el CP de Madrid o Sorli con idTienda).
 
-### Sin ficha en v1
+### Ficha incremental
 
-La **ficha** (ingredientes/nutrición/conservación/fabricante) SÍ existe, estructurada,
-en el `productInformation` del payload RSC del PDP (`/{slug}/p/{id}/{es|ca}_ES`,
-slug-agnóstico + bilingüe). **Pero** el PDP redirige por un flujo **OAuth de invitado**
-(`/api/anonymous/oauth2/authorize`) que hay que reproducir en CADA petición (el
-`fetch` de node entra en bucle de redirección; una sola cookie `anonymous-user-sub-cookie`
-"fría" vuelve a dar 307) → frágil y pesado para ~15k páginas (es+ca). Se deja como
-**mejora futura**. Como Sorli/Eroski/Caprabo, el listado ya trae precio, €/unidad,
-marca y categoría; lo único que falta es la ficha.
+La **ficha** (ingredientes/nutrición/conservación/fabricante) se obtiene del
+`productInformation` estructurado del payload RSC del PDP. Playwright completa una
+vez el flujo OAuth de invitado y las siguientes descargas reutilizan sus cookies
+mediante el cliente HTTP del mismo contexto; no se renderiza cada ficha.
+
+El backfill es progresivo y conserva los datos existentes. Variables disponibles:
+
+- `SKIP_DETAIL=1`: omite las fichas sin sobrescribir sus columnas.
+- `DETAIL_CONCURRENCY=6`: descargas HTTP simultáneas tras iniciar la sesión.
+- `DETAIL_MAX=1000`: fichas máximas por ejecución normal.
+- `DETAIL_TTL_DAYS=90`: antigüedad a partir de la que se refresca una ficha.
+- `DRY_DETAIL_MAX=1`: fichas que se prueban durante un dry-run.
 
 ## Requisitos previos (una vez)
 
@@ -57,7 +62,9 @@ Ejecutar en el **SQL Editor** de Supabase
 [`supabase/migrations/condis_catalog.sql`](../supabase/migrations/condis_catalog.sql).
 Crea `condis_products` y `condis_categories` (búsqueda insensible a acentos bilingüe,
 novedades y cambios de precio ya incluidos; es AUTOCONTENIDA). Sin esto, el sync falla
-al escribir. Re-ejecutar también
+al escribir. Si la tabla ya existía antes de incorporar las fichas, ejecutar también
+[`supabase/migrations/20260720190224_condis_product_details.sql`](../supabase/migrations/20260720190224_condis_product_details.sql)
+Re-ejecutar además
 [`supabase/migrations/similar_products.sql`](../supabase/migrations/similar_products.sql)
 (ya incluye el brazo de Condis) — solo relevante si se reactiva el comparador.
 
@@ -66,7 +73,7 @@ al escribir. Re-ejecutar también
 - **GitHub Actions:** workflow
   [`.github/workflows/sync-condis.yml`](../.github/workflows/sync-condis.yml)
   (lunes 07:40 UTC, tras Caprabo; o botón *Run workflow*). Usa los secrets
-  `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE`. Solo `node` (sin navegador).
+  `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE`; el workflow instala Chromium.
 - **Local (opcional):** `scripts/run-condis-sync.ps1` (lee los secretos de
   `.env.local`).
 - **Prueba en seco:**
@@ -84,6 +91,11 @@ al escribir. Re-ejecutar también
 | `DRY_RUN` | — | `1` = no escribe, imprime resumen |
 | `MAX_CATEGORIES` | ∞ | limita nº de categorías (pruebas) |
 | `SKIP_N1` | — | ids de N1 (`cXX`) a excluir (CSV) |
+| `SKIP_DETAIL` | — | `1` = no descarga ni sobrescribe fichas |
+| `DETAIL_CONCURRENCY` | `6` | descargas de ficha simultáneas |
+| `DETAIL_MAX` | `1000` | fichas máximas por ejecución |
+| `DETAIL_TTL_DAYS` | `90` | días antes de refrescar una ficha |
+| `DRY_DETAIL_MAX` | `1` | fichas descargadas en prueba seca |
 
 ## Notas
 

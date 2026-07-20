@@ -27,9 +27,8 @@ interface Props {
   topInset?: number;
 }
 
-/** Detalle de un producto de Condis. Pinta los datos ya cargados (no hay fetch:
- *  el catálogo va por el espejo en Supabase). Como Sorli, muestra marca (cuando la
- *  hay) y categoría; el nombre ya viene en el idioma activo del map. */
+/** Detalle de un producto de Condis. Pinta los datos ya cargados del espejo en
+ *  Supabase, incluida la ficha enriquecida por el sync. */
 export default function CondisProductModal({ product, onClose, topInset = 16 }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { activeCart, addToActiveCart } = useCart();
@@ -121,10 +120,13 @@ export default function CondisProductModal({ product, onClose, topInset = 16 }: 
         {/* Comparativa: más barato en otros súper */}
         <SimilarProductsSection productName={product.displayName} excludeStore="condis" />
 
-        {/* Características. El listado de Condis no expone ficha (ingredientes/
-         *  nutrición); se muestra la categoría con el mismo diseño de tarjeta. */}
+        {/* Características extraídas de la ficha pública mediante el sync. */}
         <ProductInfoSections
           items={[
+            { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: product.ingredients },
+            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition },
+            { key: 'conservation', icon: 'snow-outline', title: t('product.sections.storage'), text: product.conservation },
+            { key: 'manufacturer', icon: 'business-outline', title: t('product.sections.manufacturer'), text: product.manufacturer },
             { key: 'category', icon: 'pricetags-outline', title: t('product.category'), text: product.categoryName },
           ]}
         />

@@ -119,11 +119,13 @@ export default function BonpreuProductModal({ product, onClose, topInset = 16 }:
         {/* Comparativa: más barato en otros súper */}
         <SimilarProductsSection productName={product.displayName} excludeStore="esclat" />
 
-        {/* Características del producto. Bonpreu solo expone la categoría (su ficha
-         *  requiere el navegador headless del WAF), pero se pinta con el mismo
-         *  diseño de tarjeta que el resto de súpers. */}
+        {/* Características extraídas de la ficha pública mediante el sync. */}
         <ProductInfoSections
           items={[
+            { key: 'product_info', icon: 'reader-outline', title: t('product.sections.info'), text: product.productInfo },
+            { key: 'supplier_name', icon: 'business-outline', title: t('product.sections.supplier'), text: product.supplierName },
+            { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: product.ingredients },
+            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition },
             { key: 'category', icon: 'pricetags-outline', title: t('product.category'), text: product.categoryName },
           ]}
         />

@@ -23,6 +23,11 @@ create table if not exists public.bonpreu_products (
   retailer_product_id text,               -- id "humano" del retailer
   display_name        text not null,
   brand               text,
+  product_info        text,
+  supplier_name       text,
+  ingredients         text,
+  nutrition           text,
+  detail_synced_at    timestamptz,
   packaging           text,               -- packSizeDescription
   thumbnail           text,               -- url de imagen
   category_id         text,               -- categoría "primaria" (1ª de category_ids)
@@ -40,6 +45,11 @@ create table if not exists public.bonpreu_products (
 -- Para despliegues donde la tabla ya existía sin la columna.
 alter table public.bonpreu_products
   add column if not exists category_ids text[] not null default '{}';
+alter table public.bonpreu_products add column if not exists product_info text;
+alter table public.bonpreu_products add column if not exists supplier_name text;
+alter table public.bonpreu_products add column if not exists ingredients text;
+alter table public.bonpreu_products add column if not exists nutrition text;
+alter table public.bonpreu_products add column if not exists detail_synced_at timestamptz;
 
 create index if not exists bonpreu_products_category_idx
   on public.bonpreu_products (category_id);

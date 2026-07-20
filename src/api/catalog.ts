@@ -347,6 +347,10 @@ export interface BonpreuProduct {
   id: string;
   displayName: string;
   brand: string | null;
+  productInfo: string | null;
+  supplierName: string | null;
+  ingredients: string | null;
+  nutrition: string | null;
   packaging: string | null;
   thumbnail: string | null;
   unitPrice: number | null;
@@ -362,6 +366,10 @@ const mapBonpreu = (r: any): BonpreuProduct => {
     id: r.id,
     displayName: ca && r.display_name_ca ? r.display_name_ca : r.display_name,
     brand: r.brand ?? null,
+    productInfo: r.product_info ?? null,
+    supplierName: r.supplier_name ?? null,
+    ingredients: r.ingredients ?? null,
+    nutrition: r.nutrition ?? null,
     packaging: r.packaging ?? null,
     thumbnail: r.thumbnail ?? null,
     unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
@@ -372,7 +380,7 @@ const mapBonpreu = (r: any): BonpreuProduct => {
 };
 
 const BONPREU_COLS =
-  'id, display_name, display_name_ca, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+  'id, display_name, display_name_ca, brand, product_info, supplier_name, ingredients, nutrition, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
 
 /** Búsqueda por nombre en el catálogo de BonpreuEsclat (server-side). Bilingüe:
  *  en català busca/muestra por la columna catalana (display_name_ca[_norm]). */

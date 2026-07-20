@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Sincroniza el catálogo de Condis (Condisline) → Supabase (catálogo + búsqueda),
-// 1×/semana. Sin dependencias npm; usa fetch nativo de Node 18+.
+// 1×/semana. El catálogo usa fetch nativo; la ficha inicia OAuth con Playwright.
 //
 // Condis (compraonline.condis.es) es una SPA Next.js (App Router/RSC). Su API de
 // catálogo real (catalog-api.condis.es) está protegida (403, exige API keys que
@@ -42,11 +42,9 @@
 // Imágenes: el CDN público cdn.condis.es sirve fit-in/{WxH}/es/products/{id}.jpg
 // (las de la app privada /images/catalog/… piden sesión → 404). Se usa 600x600.
 //
-// SIN FICHA (ingredientes/nutrición): existe estructurada en el RSC del PDP
-// (productInformation), pero el PDP redirige por un flujo OAuth de invitado que hay
-// que reproducir en CADA petición (fetch entra en bucle de redirección) → frágil y
-// pesado para ~15k páginas. Se deja como mejora futura (ver README). Como Sorli/
-// Eroski/Caprabo, el listado ya trae precio/€ud/marca/categoría.
+// FICHA: ingredientes/nutrición/conservación/fabricante vienen estructurados en el
+// productInformation del RSC del PDP. Playwright completa una vez el OAuth anónimo;
+// el resto se descarga por HTTP reutilizando las cookies del contexto.
 //
 // Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE
 //      CONCURRENCY=6     (categorías en paralelo)
@@ -55,8 +53,12 @@
 //      DRY_RUN=1         (no escribe en Supabase; imprime resumen)
 //      MAX_CATEGORIES=N  (limita nº de categorías, para pruebas)
 //      SKIP_N1=csv       (ids de N1 a excluir; por defecto ninguno)
+//      SKIP_DETAIL=1      (omite la ficha sin borrar datos anteriores)
+//      DETAIL_CONCURRENCY=6 · DETAIL_MAX=1000 · DETAIL_TTL_DAYS=90
+//      DRY_DETAIL_MAX=1   (fichas descargadas en DRY_RUN)
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
+import { chromium } from 'playwright-core';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -65,6 +67,11 @@ const CONCURRENCY = Number(process.env.CONCURRENCY || 6);
 const STORE = String(process.env.STORE || '718');
 const MAX_CATEGORIES = process.env.MAX_CATEGORIES ? Number(process.env.MAX_CATEGORIES) : Infinity;
 const SKIP_N1 = new Set((process.env.SKIP_N1 ?? '').split(',').map((s) => s.trim()).filter(Boolean));
+const SKIP_DETAIL = process.env.SKIP_DETAIL === '1';
+const DETAIL_CONCURRENCY = Math.max(1, Number(process.env.DETAIL_CONCURRENCY || 6));
+const DETAIL_TTL_DAYS = Math.max(1, Number(process.env.DETAIL_TTL_DAYS || 90));
+const DETAIL_MAX = process.env.DETAIL_MAX ? Number(process.env.DETAIL_MAX) : 1000;
+const DRY_DETAIL_MAX = Math.max(0, Number(process.env.DRY_DETAIL_MAX || 1));
 
 if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
   console.error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE (o usa DRY_RUN=1)');
@@ -73,12 +80,82 @@ if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
 
 const API = 'https://api.empathy.co/search/v1/query/condis';
 const CDN = 'https://cdn.condis.es';
+const HOME = 'https://compraonline.condis.es';
 const ROWS = 400; // tope de Empathy: rows debe ser < 500
 const runStart = new Date().toISOString();
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const chunk = (a, n) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
+
+const decodeHtml = (value) => String(value ?? '')
+  .replace(/<br\s*\/?>|<\/br\s*>/gi, '\n')
+  .replace(/<\/(?:p|li|div|tr)\s*>/gi, '\n')
+  .replace(/<[^>]+>/g, '')
+  .replace(/&nbsp;/gi, ' ')
+  .replace(/&amp;/gi, '&')
+  .replace(/&quot;/gi, '"')
+  .replace(/&#39;|&apos;/gi, "'")
+  .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+  .replace(/[ \t]+\n/g, '\n')
+  .replace(/\n[ \t]+/g, '\n')
+  .replace(/[ \t]{2,}/g, ' ')
+  .replace(/\n{3,}/g, '\n\n')
+  .trim();
+
+function balancedObject(text, start) {
+  let depth = 0, quoted = false, escaped = false;
+  for (let i = start; i < text.length; i++) {
+    const char = text[i];
+    if (quoted) {
+      if (escaped) escaped = false;
+      else if (char === '\\') escaped = true;
+      else if (char === '"') quoted = false;
+    } else if (char === '"') quoted = true;
+    else if (char === '{') depth++;
+    else if (char === '}' && --depth === 0) return text.slice(start, i + 1);
+  }
+  return null;
+}
+
+function parseProductDetailHtml(html, expectedId = null) {
+  const chunks = [];
+  const rscRe = /self\.__next_f\.push\(\[1,"((?:\\.|[^"\\])*)"\]\)<\/script>/g;
+  for (const match of html.matchAll(rscRe)) {
+    try { chunks.push(JSON.parse(`"${match[1]}"`)); } catch {}
+  }
+  const text = chunks.join('');
+  const marker = '"productInformation":';
+  let from = 0;
+  while (from < text.length) {
+    const markerAt = text.indexOf(marker, from);
+    if (markerAt < 0) break;
+    const start = text.indexOf('{', markerAt + marker.length);
+    const json = start >= 0 ? balancedObject(text, start) : null;
+    from = markerAt + marker.length;
+    if (!json) continue;
+    try {
+      const product = JSON.parse(json);
+      if (expectedId != null && String(product.ID) !== String(expectedId)) continue;
+      const facts = product.nutritional_info?.nutritional_facts ?? [];
+      const nutrition = facts.map((fact) => {
+        const label = decodeHtml(fact.description);
+        const amount = decodeHtml(fact.amount_per_100g);
+        const unit = decodeHtml(fact.unit_of_measure);
+        return label && amount ? `${label}: ${amount}${unit ? ` ${unit}` : ''}` : null;
+      }).filter(Boolean).join('\n');
+      const manufacturer = [product.manufacturer?.name, product.manufacturer?.contact_info]
+        .map(decodeHtml).filter(Boolean).join('\n');
+      return {
+        ingredients: decodeHtml(product.ingredients) || null,
+        nutrition: nutrition || null,
+        conservation: decodeHtml(product.instructions) || null,
+        manufacturer: manufacturer || null,
+      };
+    } catch {}
+  }
+  return null;
+}
 
 async function getJson(url, { tries = 4 } = {}) {
   for (let t = 0; t < tries; t++) {
@@ -177,6 +254,104 @@ async function upsert(table, rows) {
   }
 }
 const markStale = (table) => markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart });
+
+const DETAIL_FIELDS = ['ingredients', 'nutrition', 'conservation', 'manufacturer'];
+
+async function fetchExistingDetails() {
+  const map = new Map();
+  if (DRY_RUN) return map;
+  const columns = ['id', 'detail_synced_at', ...DETAIL_FIELDS].join(',');
+  for (let offset = 0;; offset += 1000) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/condis_products?select=${encodeURIComponent(columns)}&order=id&limit=1000&offset=${offset}`, {
+      headers: { apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}` },
+      signal: AbortSignal.timeout(40000),
+    });
+    if (!res.ok) throw new Error(`read condis_products details ${res.status}: ${await res.text()}`);
+    const rows = await res.json();
+    for (const row of rows) map.set(row.id, row);
+    if (rows.length < 1000) break;
+  }
+  return map;
+}
+
+async function loadProductDocument(page, row) {
+  const target = new URL(row.raw.url, HOME).href;
+  let documentPromise;
+  const onResponse = (response) => {
+    if (response.status() === 200 && response.url().split('?')[0] === target) documentPromise = response.text();
+  };
+  page.on('response', onResponse);
+  try {
+    await page.goto(target, { waitUntil: 'commit', timeout: 30000 });
+    for (let i = 0; i < 120 && !documentPromise; i++) await page.waitForTimeout(250);
+    if (!documentPromise) throw new Error(`sin documento final para ${row.id}`);
+    return await documentPromise;
+  } finally { page.off('response', onResponse); }
+}
+
+async function fetchProductDocument(request, row) {
+  const target = new URL(row.raw.url, HOME).href;
+  let last;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const response = await request.get(target, { timeout: 40000, maxRedirects: 8 });
+      if (response.ok()) return await response.text();
+      last = new Error(`${response.status()} ${response.url()}`);
+    } catch (e) { last = e; }
+    await sleep(800 * (attempt + 1));
+  }
+  throw last;
+}
+
+async function enrichProductDetails(rows) {
+  if (SKIP_DETAIL || rows.length === 0) return;
+  const existing = await fetchExistingDetails();
+  const cutoff = Date.now() - DETAIL_TTL_DAYS * 86400000;
+  const stale = [];
+  for (const row of rows) {
+    const old = existing.get(row.id);
+    for (const field of DETAIL_FIELDS) row[field] = old?.[field] ?? null;
+    row.detail_synced_at = old?.detail_synced_at ?? null;
+    if ((!old?.detail_synced_at || Date.parse(old.detail_synced_at) < cutoff) && row.raw?.url) stale.push(row);
+  }
+  const limit = DRY_RUN ? DRY_DETAIL_MAX : DETAIL_MAX;
+  const batch = stale.slice(0, limit);
+  if (!batch.length) { console.log('[condis] ficha: nada pendiente'); return; }
+  console.log(`[condis] ficha: ${batch.length} productos · ${stale.length - batch.length} pospuestos`);
+
+  const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || undefined, headless: true });
+  try {
+    const context = await browser.newContext({ locale: 'es-ES' });
+    const warmPage = await context.newPage();
+    const warmRow = batch.shift();
+    let sessionReady = false;
+    try {
+      const html = await loadProductDocument(warmPage, warmRow);
+      const detail = parseProductDetailHtml(html, warmRow.id);
+      if (!detail) throw new Error('productInformation ausente');
+      Object.assign(warmRow, detail, { detail_synced_at: runStart });
+      sessionReady = true;
+    } catch (e) { console.warn(`[condis] ficha ${warmRow.id} falló: ${e.message}`); }
+    await warmPage.close();
+    if (!sessionReady) return;
+
+    const queue = [...batch];
+    let done = 1;
+    await Promise.all(Array.from({ length: DETAIL_CONCURRENCY }, async () => {
+      for (;;) {
+        const row = queue.shift();
+        if (!row) break;
+        try {
+          const html = await fetchProductDocument(context.request, row);
+          const detail = parseProductDetailHtml(html, row.id);
+          if (!detail) throw new Error('productInformation ausente');
+          Object.assign(row, detail, { detail_synced_at: runStart });
+        } catch (e) { console.warn(`[condis] ficha ${row.id} falló: ${e.message}`); }
+        if (++done % 100 === 0) console.log(`[condis] ficha ${done}/${done + queue.length}`);
+      }
+    }));
+  } finally { await browser.close(); }
+}
 
 // Una pasada de idioma sobre una FAMILIA (por nombre): pagina (start/rows) y
 // devuelve todos sus productos. lang = 'es' | 'ca'. Las familias son pequeñas
@@ -317,6 +492,8 @@ async function main() {
   for (const c of catRows) c.product_count = catCount.get(c.id) ?? 0;
   console.log(`[condis] ${rows.length} productos únicos · ${catRows.length} categorías`);
 
+  await enrichProductDetails(rows);
+
   if (DRY_RUN) {
     console.log('muestra (5):');
     for (const r of rows.slice(0, 5)) console.log(`  ${r.id}  ${r.display_name}  [ca: ${r.display_name_ca ?? '—'}]  [${r.brand ?? '—'}]  ${r.price_format}  ${r.price_per_unit != null ? r.price_per_unit + ' €/' + r.price_per_unit_unit : '—'}`);
@@ -329,6 +506,14 @@ async function main() {
       sin_nombre_ca: rows.filter((r) => !r.display_name_ca).length,
       con_promo: rows.filter((r) => r.raw.on_sale || r.raw.on_promotion).length,
     });
+    console.log('detalle:', {
+      ingredientes: rows.filter((r) => r.ingredients).length,
+      nutricion: rows.filter((r) => r.nutrition).length,
+      conservacion: rows.filter((r) => r.conservation).length,
+      fabricante: rows.filter((r) => r.manufacturer).length,
+    });
+    const detail = rows.find((r) => r.detail_synced_at);
+    if (detail) for (const field of DETAIL_FIELDS) console.log(`  ${field}: ${detail[field] ?? 'â€”'}`);
     return;
   }
   if (rows.length === 0) throw new Error('0 productos (¿cambió la API de Empathy?)');
@@ -345,4 +530,4 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   main().catch((e) => { console.error('[condis] ERROR', e); process.exit(1); });
 }
 
-export { ppuFromPum, normalize };
+export { ppuFromPum, normalize, parseProductDetailHtml };

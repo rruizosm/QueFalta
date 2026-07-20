@@ -341,8 +341,8 @@ const es: TranslationTree = {
     viewGrid: 'Vista en cuadrícula',
     // Insignia de exclusividad regional (solo Mercadona). {{regions}} = CCAA.
     sections: {
-      description: 'Descripción', info: 'Información', ingredients: 'Ingredientes',
-      storage: 'Conservación', origin: 'Origen', supplier: 'Proveedor',
+      description: 'Descripción', info: 'Información', productInfo: 'Información del producto', ingredients: 'Ingredientes',
+      brand: 'Marca', storage: 'Conservación', origin: 'Origen', supplier: 'Proveedor', supplierName: 'Nombre del proveedor',
       legalName: 'Nombre legal', warnings: 'Advertencias',
       allergens: 'Alérgenos', nutrition: 'Información nutricional', operator: 'Operador',
       preparation: 'Preparación',
@@ -1048,8 +1048,8 @@ const ca: TranslationTree = {
     viewGrid: 'Vista de quadrícula',
     // Insígnia d'exclusivitat regional (només Mercadona). {{regions}} = CCAA.
     sections: {
-      description: 'Descripció', info: 'Informació', ingredients: 'Ingredients',
-      storage: 'Conservació', origin: 'Origen', supplier: 'Proveïdor',
+      description: 'Descripció', info: 'Informació', productInfo: 'Informació del producte', ingredients: 'Ingredients',
+      brand: 'Marca', storage: 'Conservació', origin: 'Origen', supplier: 'Proveïdor', supplierName: 'Nom del proveïdor',
       legalName: 'Nom legal', warnings: 'Advertiments',
       allergens: 'Al·lèrgens', nutrition: 'Informació nutricional', operator: 'Operador',
       preparation: 'Preparació',

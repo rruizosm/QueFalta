@@ -87,6 +87,18 @@ function detailKey(title) {
   return cleanDetail(title).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
+function supplierFromAdditionalDescription(value) {
+  const lines = value.split('\n').map((line) => line.trim()).filter(Boolean);
+  const labelRe = /^(?:(?:nombre|nom)\s+(?:del|de\s+l['’])\s*)?(?:operador|proveedor|proveidor)\s*:?\s*(.*)$/i;
+  for (let i = 0; i < lines.length; i++) {
+    const match = lines[i].match(labelRe);
+    if (!match) continue;
+    const supplier = (match[1] || lines[i + 1] || '').replace(/^[:\s-]+/, '').trim();
+    if (supplier) return supplier;
+  }
+  return null;
+}
+
 function assignDetail(out, title, content) {
   const key = detailKey(title);
   const value = cleanDetail(content);
@@ -96,6 +108,9 @@ function assignDetail(out, title, content) {
   else if (/proveedor|proveidor|supplier/.test(key)) out.supplier_name ??= value;
   else if (/marca|brand/.test(key)) out.brand ??= value;
   else if (/informacion del producto|informacio del product|product information|product info/.test(key)) out.product_info ??= value;
+  else if (/descripcion adicional|descripcio addicional|additional description/.test(key)) {
+    out.supplier_name ??= supplierFromAdditionalDescription(value);
+  }
 }
 
 function parseProductDetailHtml(html) {
@@ -315,6 +330,11 @@ async function crawlProducts(cats, lang) {
 }
 
 const DETAIL_FIELDS = ['product_info', 'supplier_name', 'ingredients', 'nutrition'];
+// La primera versión no detectaba el proveedor porque Bonpreu lo publica como
+// "Nombre del operador" dentro de "Descripción adicional". Fuerza una sola
+// recarga de las fichas anteriores a esta versión; el nuevo timestamp evita
+// reintentos diarios en productos que legítimamente no incluyen ese dato.
+const SUPPLIER_PARSER_REFRESH_AFTER = Date.parse('2026-07-20T20:00:00.000Z');
 
 async function fetchExistingDetails() {
   const result = new Map();
@@ -332,6 +352,31 @@ async function fetchExistingDetails() {
   return result;
 }
 
+async function openProductFromCategory(page, href) {
+  const targetPath = new URL(href).pathname;
+  for (let i = 0; i < 120; i++) {
+    // The virtualized grid replaces nodes while Playwright scrolls to them.
+    // Clicking synchronously in the DOM by stable URL avoids stale nth indexes.
+    const clicked = await page.locator('a[data-test="fop-product-link"]').evaluateAll((links, targetHref) => {
+      const link = links.find((candidate) => candidate.href === targetHref
+        && candidate.getAttribute('aria-hidden') !== 'true');
+      if (!link) return false;
+      link.click();
+      return true;
+    }, href);
+    if (clicked) {
+      await page.waitForURL((url) => url.pathname === targetPath, { timeout: 30000 });
+      // Some fresh products legitimately have no detail sections. The stable
+      // product URL plus a short hydration wait is therefore the success signal.
+      await page.waitForTimeout(700);
+      return true;
+    }
+    await page.mouse.wheel(0, 14000);
+    await page.waitForTimeout(350);
+  }
+  return false;
+}
+
 async function crawlProductDetails(rows, retailerLinks) {
   if (SKIP_DETAIL) return;
   const existing = await fetchExistingDetails();
@@ -343,7 +388,10 @@ async function crawlProductDetails(rows, retailerLinks) {
     row.detail_synced_at = old?.detail_synced_at ?? null;
     // Hay fichas que legítimamente no publican proveedor o nutrición. El timestamp
     // evita que esas ausencias consuman siempre el cupo de backfill.
-    const stale = !old?.detail_synced_at || Date.parse(old.detail_synced_at) < cutoff;
+    const detailSyncedAt = Date.parse(old?.detail_synced_at);
+    const needsSupplierRefresh = !old?.supplier_name
+      && (!Number.isFinite(detailSyncedAt) || detailSyncedAt < SUPPLIER_PARSER_REFRESH_AFTER);
+    const stale = !Number.isFinite(detailSyncedAt) || detailSyncedAt < cutoff || needsSupplierRefresh;
     const link = retailerLinks.get(row.retailer_product_id);
     if (stale && link) {
       let group = groups.get(link.categoryUrl);
@@ -360,7 +408,7 @@ async function crawlProductDetails(rows, retailerLinks) {
     await ctx.addCookies([{ name: 'language', value: LANG, domain: new URL(HOME).hostname, path: '/' }]);
     const queue = [...groups.values()].filter((group) => group.some((item) => pending.includes(item)));
     const pages = await Promise.all(Array.from({ length: Math.max(1, DETAIL_CONCURRENCY) }, () => ctx.newPage()));
-    let done = 0;
+    let attempted = 0, succeeded = 0, failed = 0;
     await Promise.all(pages.map(async (page) => {
       for (;;) {
         const group = queue.shift();
@@ -370,28 +418,44 @@ async function crawlProductDetails(rows, retailerLinks) {
           await page.goto(group[0].link.categoryUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
           await page.locator('#onetrust-accept-btn-handler').click({ force: true, timeout: 2000 }).catch(() => {});
           for (const item of work) {
-            let index = -1;
-            for (let i = 0; i < 120 && index < 0; i++) {
-              index = await page.locator('a[data-test="fop-product-link"]').evaluateAll((els, href) =>
-                els.findIndex((a) => a.href === href && a.getAttribute('aria-hidden') !== 'true'), item.link.href);
-              if (index < 0) { await page.mouse.wheel(0, 14000); await page.waitForTimeout(350); }
+            try {
+              const opened = await openProductFromCategory(page, item.link.href);
+              if (!opened) throw new Error('product link not found after scrolling the category');
+              const detail = parseProductDetailHtml(await page.content());
+              for (const field of DETAIL_FIELDS) if (detail[field]) item.row[field] = detail[field];
+              if (detail.brand && !item.row.brand) item.row.brand = detail.brand;
+              item.row.detail_synced_at = runStart;
+              succeeded++;
+            } catch (e) {
+              failed++;
+              console.warn(`[bonpreu] ficha ${item.row.retailer_product_id} fallo: ${e.message}`);
+            } finally {
+              attempted++;
+              try {
+                if (new URL(page.url()).pathname.startsWith('/products/')) {
+                  await page.goBack({ waitUntil: 'domcontentloaded', timeout: 30000 }).catch(async () => {
+                    await page.goto(group[0].link.categoryUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+                  });
+                } else if (!page.url().startsWith(group[0].link.categoryUrl)) {
+                  await page.goto(group[0].link.categoryUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+                }
+              } catch (e) {
+                console.warn(`[bonpreu] no se pudo restaurar la categoria: ${e.message}`);
+              }
+              await page.waitForTimeout(250);
+              if (attempted % 25 === 0) {
+                console.log(`[bonpreu] fichas ${attempted}/${pending.length} - ${succeeded} correctas - ${failed} fallidas`);
+              }
             }
-            if (index < 0) continue;
-            await page.locator('a[data-test="fop-product-link"]').nth(index).click({ force: true });
-            await page.waitForTimeout(700);
-            const detail = parseProductDetailHtml(await page.content());
-            for (const field of DETAIL_FIELDS) if (detail[field]) item.row[field] = detail[field];
-            if (detail.brand && !item.row.brand) item.row.brand = detail.brand;
-            item.row.detail_synced_at = runStart;
-            await page.goBack({ waitUntil: 'domcontentloaded', timeout: 30000 }).catch(async () => {
-              await page.goto(group[0].link.categoryUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
-            });
-            await page.waitForTimeout(250);
-            if (++done % 25 === 0) console.log(`[bonpreu] fichas ${done}/${pending.length}`);
           }
-        } catch (e) { console.warn(`[bonpreu] grupo de fichas fallÃ³: ${e.message}`); }
+        } catch (e) {
+          failed += work.length;
+          attempted += work.length;
+          console.warn(`[bonpreu] categoria de fichas fallo: ${e.message}`);
+        }
       }
     }));
+    console.log(`[bonpreu] fichas completadas: ${succeeded}/${pending.length} - ${failed} fallidas`);
   } finally { await browser.close(); }
 }
 

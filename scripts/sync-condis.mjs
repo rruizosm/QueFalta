@@ -323,20 +323,33 @@ async function enrichProductDetails(rows) {
   try {
     const context = await browser.newContext({ locale: 'es-ES' });
     const warmPage = await context.newPage();
-    const warmRow = batch.shift();
-    let sessionReady = false;
-    try {
-      const html = await loadProductDocument(warmPage, warmRow);
-      const detail = parseProductDetailHtml(html, warmRow.id);
-      if (!detail) throw new Error('productInformation ausente');
-      Object.assign(warmRow, detail, { detail_synced_at: runStart });
-      sessionReady = true;
-    } catch (e) { console.warn(`[condis] ficha ${warmRow.id} falló: ${e.message}`); }
-    await warmPage.close();
-    if (!sessionReady) return;
-
     const queue = [...batch];
-    let done = 1;
+    let completed = 0;
+    let succeeded = 0;
+    let failed = 0;
+    let sessionReady = false;
+    // Una ficha concreta puede haber desaparecido o redirigir sin devolver RSC.
+    // No debe impedir que el resto abra la sesión OAuth y se enriquezca.
+    for (let warmAttempts = 0; queue.length && warmAttempts < 8 && !sessionReady; warmAttempts++) {
+      const warmRow = queue.shift();
+      try {
+        const html = await loadProductDocument(warmPage, warmRow);
+        const detail = parseProductDetailHtml(html, warmRow.id);
+        if (!detail) throw new Error('productInformation ausente');
+        Object.assign(warmRow, detail, { detail_synced_at: runStart });
+        succeeded++;
+        sessionReady = true;
+      } catch (e) {
+        failed++;
+        console.warn(`[condis] ficha ${warmRow.id} falló: ${e.message}`);
+      }
+      completed++;
+    }
+    await warmPage.close();
+    if (!sessionReady) {
+      throw new Error(`ficha: no se pudo abrir la sesión OAuth tras ${completed} intentos; ${queue.length} fichas no se descargaron`);
+    }
+
     await Promise.all(Array.from({ length: DETAIL_CONCURRENCY }, async () => {
       for (;;) {
         const row = queue.shift();
@@ -346,10 +359,16 @@ async function enrichProductDetails(rows) {
           const detail = parseProductDetailHtml(html, row.id);
           if (!detail) throw new Error('productInformation ausente');
           Object.assign(row, detail, { detail_synced_at: runStart });
-        } catch (e) { console.warn(`[condis] ficha ${row.id} falló: ${e.message}`); }
-        if (++done % 100 === 0) console.log(`[condis] ficha ${done}/${done + queue.length}`);
+          succeeded++;
+        } catch (e) {
+          failed++;
+          console.warn(`[condis] ficha ${row.id} falló: ${e.message}`);
+        }
+        completed++;
+        if (completed % 100 === 0) console.log(`[condis] ficha ${completed}/${batch.length}`);
       }
     }));
+    console.log(`[condis] ficha: ${succeeded}/${batch.length} procesadas · ${failed} fallos`);
   } finally { await browser.close(); }
 }
 

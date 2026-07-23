@@ -90,6 +90,14 @@ const chunk = (a, n) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) =
 
 function productUrl(rawUrl) {
   const url = new URL(rawUrl, HOME);
+  const productMarker = '/p/';
+  const markerAt = url.pathname.lastIndexOf(productMarker);
+  if (markerAt > 0) {
+    // Algunos slugs conservan una '/' del nombre del producto. Todo lo que
+    // precede a /p/{id} es el slug; las barras del nombre deben ser guiones.
+    const slug = url.pathname.slice(0, markerAt).replace(/^\/+/, '').replace(/\/+/g, '-');
+    url.pathname = `/${slug}${url.pathname.slice(markerAt)}`;
+  }
   // Empathy puede devolver el slug con un '%' literal (por ejemplo, "50%"
   // en el nombre). Conservamos escapes válidos como %20 y convertimos solo
   // los '%' sueltos en %25, evitando URLs inválidas en Playwright/fetch.

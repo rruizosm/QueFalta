@@ -14,6 +14,9 @@ import {
   Pressable,
   Animated,
   Easing,
+  LayoutAnimation,
+  Platform,
+  UIManager,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -102,8 +105,9 @@ function browseCacheKey(
   lang: string,
   region: RegionValue | null,
   postalCode: string | null,
+  order: 'asc' | 'desc',
 ): string {
-  return `${store}:${lang}:${region ?? 'all'}:${postalCode ?? 'none'}`;
+  return `${store}:${lang}:${region ?? 'all'}:${postalCode ?? 'none'}:${order}`;
 }
 
 function startCategoryLoad<T>(
@@ -185,23 +189,24 @@ async function loadBrowsePage(
   region: RegionValue | null,
   postalCode: string | null,
   signal?: AbortSignal,
+  order: 'priceAsc' | 'priceDesc' = 'priceAsc',
 ): Promise<BrowsePage<UIProduct>> {
   switch (store) {
-    case 'mercadona': { const { items, nextCursor } = await browseProducts(cursor, region, 50, signal); return { items: items.map((p) => mercadonaToUI(p)), nextCursor }; }
-    case 'esclat':    { const { items, nextCursor } = await browseBonpreuProducts(cursor, 50, signal); return { items: items.map(bonpreuToUI), nextCursor }; }
-    case 'carrefour': { const { items, nextCursor } = await browseCarrefourProducts(cursor, region, 50, signal); return { items: items.map(carrefourToUI), nextCursor }; }
-    case 'bonarea':   { const { items, nextCursor } = await browseBonareaProducts(cursor, 50, signal); return { items: items.map(bonareaToUI), nextCursor }; }
-    case 'consum':    { const { items, nextCursor } = await browseConsumProducts(cursor, region, postalCode, 50, signal); return { items: items.map(consumToUI), nextCursor }; }
-    case 'dia':       { const { items, nextCursor } = await browseDiaProducts(cursor, region, 50, signal); return { items: items.map(diaToUI), nextCursor }; }
-    case 'sorli':     { const { items, nextCursor } = await browseSorliProducts(cursor, 50, signal); return { items: items.map(sorliToUI), nextCursor }; }
-    case 'eroski':    { const { items, nextCursor } = await browseEroskiProducts(cursor, 50, signal); return { items: items.map(eroskiToUI), nextCursor }; }
-    case 'caprabo':   { const { items, nextCursor } = await browseCapraboProducts(cursor, 50, signal); return { items: items.map(capraboToUI), nextCursor }; }
-    case 'condis':    { const { items, nextCursor } = await browseCondisProducts(cursor, 50, signal); return { items: items.map(condisToUI), nextCursor }; }
-    case 'ametller':  { const { items, nextCursor } = await browseAmetllerProducts(cursor, 50, signal); return { items: items.map(ametllerToUI), nextCursor }; }
-    case 'aldi':      { const { items, nextCursor } = await browseAldiProducts(cursor, 50, signal); return { items: items.map(aldiToUI), nextCursor }; }
-    case 'hiperdino': { const { items, nextCursor } = await browseHiperdinoProducts(cursor, 50, signal); return { items: items.map(hiperdinoToUI), nextCursor }; }
-    case 'alcampo':   { const { items, nextCursor } = await browseAlcampoProducts(cursor, 50, signal); return { items: items.map(alcampoToUI), nextCursor }; }
-    case 'plusfresc': { const { items, nextCursor } = await browsePlusfrescProducts(cursor, postalCode, 50, signal); return { items: items.map(plusfrescToUI), nextCursor }; }
+    case 'mercadona': { const { items, nextCursor } = await browseProducts(cursor, region, 50, signal, order as never); return { items: items.map((p) => mercadonaToUI(p)), nextCursor }; }
+    case 'esclat':    { const { items, nextCursor } = await browseBonpreuProducts(cursor, 50, signal, order as never); return { items: items.map(bonpreuToUI), nextCursor }; }
+    case 'carrefour': { const { items, nextCursor } = await browseCarrefourProducts(cursor, region, 50, signal, order as never); return { items: items.map(carrefourToUI), nextCursor }; }
+    case 'bonarea':   { const { items, nextCursor } = await browseBonareaProducts(cursor, 50, signal, order as never); return { items: items.map(bonareaToUI), nextCursor }; }
+    case 'consum':    { const { items, nextCursor } = await browseConsumProducts(cursor, region, postalCode, 50, signal, order as never); return { items: items.map(consumToUI), nextCursor }; }
+    case 'dia':       { const { items, nextCursor } = await browseDiaProducts(cursor, region, 50, signal, order as never); return { items: items.map(diaToUI), nextCursor }; }
+    case 'sorli':     { const { items, nextCursor } = await browseSorliProducts(cursor, 50, signal, order as never); return { items: items.map(sorliToUI), nextCursor }; }
+    case 'eroski':    { const { items, nextCursor } = await browseEroskiProducts(cursor, 50, signal, order as never); return { items: items.map(eroskiToUI), nextCursor }; }
+    case 'caprabo':   { const { items, nextCursor } = await browseCapraboProducts(cursor, 50, signal, order as never); return { items: items.map(capraboToUI), nextCursor }; }
+    case 'condis':    { const { items, nextCursor } = await browseCondisProducts(cursor, 50, signal, order as never); return { items: items.map(condisToUI), nextCursor }; }
+    case 'ametller':  { const { items, nextCursor } = await browseAmetllerProducts(cursor, 50, signal, order as never); return { items: items.map(ametllerToUI), nextCursor }; }
+    case 'aldi':      { const { items, nextCursor } = await browseAldiProducts(cursor, 50, signal, order as never); return { items: items.map(aldiToUI), nextCursor }; }
+    case 'hiperdino': { const { items, nextCursor } = await browseHiperdinoProducts(cursor, 50, signal, order as never); return { items: items.map(hiperdinoToUI), nextCursor }; }
+    case 'alcampo':   { const { items, nextCursor } = await browseAlcampoProducts(cursor, 50, signal, order as never); return { items: items.map(alcampoToUI), nextCursor }; }
+    case 'plusfresc': { const { items, nextCursor } = await browsePlusfrescProducts(cursor, postalCode, 50, signal, order as never); return { items: items.map(plusfrescToUI), nextCursor }; }
   }
 }
 
@@ -223,6 +228,23 @@ export default function CatalogScreen() {
   // Vista lista/cuadrícula compartida por los listados de búsqueda de productos
   // (la controla la fila de búsqueda, no el toolbar interno de StoreProductList).
   const [prodViewMode, setProdViewMode] = useState<ViewMode>('list');
+  // Orden de precio elegido desde los dos controles junto a lista/cuadrícula.
+  const [productOrder, setProductOrder] = useState<'asc' | 'desc'>('asc');
+  const [productSearchExpanded, setProductSearchExpanded] = useState(false);
+
+  useEffect(() => {
+    if (Platform.OS === 'android') UIManager.setLayoutAnimationEnabledExperimental?.(true);
+  }, []);
+
+  const setProductSearchFocus = (expanded: boolean) => {
+    if (expanded === productSearchExpanded) return;
+    LayoutAnimation.configureNext({
+      duration: 220,
+      update: { type: LayoutAnimation.Types.easeInEaseOut },
+      delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+    });
+    setProductSearchExpanded(expanded);
+  };
 
   // Liquid Glass (F3): igual que Cambios de precios, todo el chrome (cabecera,
   // pestañas + selector de súper y buscador) vive en una franja de cristal
@@ -476,7 +498,10 @@ export default function CatalogScreen() {
   // única que ahora vive en el chrome, en vez de una por bloque de súper).
   const setProdQuery = { mercadona: setProdSearch, esclat: setBpSearch, carrefour: setCfSearch, bonarea: setBaSearch, consum: setCsSearch, dia: setDdSearch, sorli: setSoSearch, eroski: setEkSearch, caprabo: setCbSearch, condis: setCoSearch, ametller: setAmSearch, aldi: setAlSearch, hiperdino: setHdSearch, alcampo: setAcSearch, plusfresc: setPfSearch }[store];
   const browseMode = tab === 'productos' && prodQuery.trim().length < 2;
-  const activeBrowseKey = browseCacheKey(store, lang, region, postalCode);
+  const browseOrder = productOrder === 'desc' ? 'priceDesc' : 'priceAsc';
+  const activeBrowseKey = browseCacheKey(
+    store, lang, region, postalCode, productOrder,
+  );
   const activeBrowseKeyRef = useRef(activeBrowseKey);
   activeBrowseKeyRef.current = activeBrowseKey;
 
@@ -517,7 +542,7 @@ export default function CatalogScreen() {
     const controller = new AbortController();
     browseInitialController.current = controller;
     setBrowseRefreshing(hasCachedPage);
-    loadBrowsePage(store, null, region, postalCode, controller.signal)
+    loadBrowsePage(store, null, region, postalCode, controller.signal, browseOrder)
       .then((page) => {
         if (cancelled || activeBrowseKeyRef.current !== requestKey) return;
         browsePageCache.set(requestKey, { page, cachedAt: Date.now() });
@@ -538,7 +563,7 @@ export default function CatalogScreen() {
       cancelled = true;
       controller.abort();
     };
-  }, [store, browseMode, lang, region, postalCode, activeBrowseKey]);
+  }, [store, browseMode, lang, region, postalCode, activeBrowseKey, browseOrder]);
 
   // Siguiente página keyset al llegar al final de la lista.
   const loadMoreBrowse = () => {
@@ -549,7 +574,7 @@ export default function CatalogScreen() {
     browseMoreController.current?.abort();
     browseMoreController.current = controller;
     setBrowseMore(true);
-    loadBrowsePage(store, cursor, region, postalCode, controller.signal)
+    loadBrowsePage(store, cursor, region, postalCode, controller.signal, browseOrder)
       .then(({ items, nextCursor }) => {
         if (activeBrowseKeyRef.current !== requestKey) return;
         setBrowse((prev) => [...prev, ...items]);
@@ -881,14 +906,27 @@ export default function CatalogScreen() {
   const renderProductsTab = (
     query: string, searchLoading: boolean, searchError: boolean, searchItems: UIProduct[],
   ) => {
+    const orderedSearchItems = [...searchItems].sort((a, b) => {
+      // Los productos sin precio quedan al final en ambos sentidos: no es
+      // correcto presentarlos como el precio más alto al ordenar descendente.
+      if (a.unitPrice == null && b.unitPrice == null) return 0;
+      if (a.unitPrice == null) return 1;
+      if (b.unitPrice == null) return -1;
+      return productOrder === 'asc'
+        ? a.unitPrice - b.unitPrice
+        : b.unitPrice - a.unitPrice;
+    });
     if (query.trim().length >= 2) {
       return renderSearchStates(
-        query, searchLoading, searchError, searchItems.length === 0,
+        query, searchLoading, searchError, orderedSearchItems.length === 0,
         <StoreProductList
-          products={searchItems}
-          searchQuery={query}
+          products={orderedSearchItems}
+          searchQuery={undefined}
           hideToolbar viewMode={prodViewMode} onViewModeChange={setProdViewMode}
+          keepOrder
+          roundedCards
           topInset={glassInset}
+          onScrollBeginDrag={() => setProductSearchFocus(false)}
         />,
       );
     }
@@ -898,10 +936,12 @@ export default function CatalogScreen() {
       <StoreProductList
         products={browse}
         hideToolbar viewMode={prodViewMode} onViewModeChange={setProdViewMode}
+        roundedCards
         keepOrder
         onEndReached={loadMoreBrowse}
         loadingMore={browseMore}
         topInset={glassInset}
+        onScrollBeginDrag={() => setProductSearchFocus(false)}
       />
     );
   };
@@ -925,10 +965,8 @@ export default function CatalogScreen() {
     </View>
   );
 
-  // Fila de búsqueda de productos: barra (consulta al servidor) + toggle
-  // lista/cuadrícula a la derecha, en una sola fila. En glass el toggle es un
-  // SlidingSegments compacto (misma píldora de acento deslizante que las
-  // pestañas); en fallback, la pastilla estática de Claude Design.
+  // Fila de búsqueda de productos: los dos selectores conservan exactamente el
+  // patrón existente de lista/cuadrícula; el primero solo cambia el precio.
   const productSearchRow = (placeholder: string, value: string, onChange: (s: string) => void) => (
     <View style={styles.prodSearchRow}>
       <View style={[styles.searchBar, styles.prodSearchBox]}>
@@ -939,6 +977,8 @@ export default function CatalogScreen() {
           placeholderTextColor={colors.inkFaint}
           value={value}
           onChangeText={onChange}
+          onFocus={() => setProductSearchFocus(true)}
+          onBlur={() => setProductSearchFocus(false)}
           returnKeyType="search"
           autoCorrect={false}
         />
@@ -948,34 +988,42 @@ export default function CatalogScreen() {
           </TouchableOpacity>
         )}
       </View>
-      {glassAvailable ? (
-        <SlidingSegments
-          compact
-          segments={[
-            { key: 'list', icon: 'list' },
-            { key: 'grid', icon: 'grid' },
-          ]}
-          value={prodViewMode}
-          onChange={setProdViewMode}
-        />
-      ) : (
-        <View style={styles.viewToggle}>
-          <TouchableOpacity
-            style={[styles.viewBtn, prodViewMode === 'list' && styles.viewBtnOn]}
-            onPress={() => setProdViewMode('list')}
-            activeOpacity={0.85}
-          >
-            <Ionicons name="list" size={19} color={prodViewMode === 'list' ? colors.white : colors.inkSoft} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.viewBtn, prodViewMode === 'grid' && styles.viewBtnOn]}
-            onPress={() => setProdViewMode('grid')}
-            activeOpacity={0.85}
-          >
-            <Ionicons name="grid" size={17} color={prodViewMode === 'grid' ? colors.white : colors.inkSoft} />
-          </TouchableOpacity>
-        </View>
-      )}
+      <View style={styles.prodControls}>
+        {glassAvailable ? (
+          <SlidingSegments
+            compact
+            segments={[{ key: 'asc', icon: 'arrow-up' }, { key: 'desc', icon: 'arrow-down' }]}
+            value={productOrder}
+            onChange={(value) => setProductOrder(value as 'asc' | 'desc')}
+          />
+        ) : (
+          <View style={styles.viewToggle}>
+            <TouchableOpacity style={[styles.viewBtn, productOrder === 'asc' && styles.viewBtnOn]} onPress={() => setProductOrder('asc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel="Precio ascendente">
+              <Ionicons name="arrow-up" size={18} color={productOrder === 'asc' ? colors.white : colors.inkSoft} />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.viewBtn, productOrder === 'desc' && styles.viewBtnOn]} onPress={() => setProductOrder('desc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel="Precio descendente">
+              <Ionicons name="arrow-down" size={18} color={productOrder === 'desc' ? colors.white : colors.inkSoft} />
+            </TouchableOpacity>
+          </View>
+        )}
+        {!productSearchExpanded && (glassAvailable ? (
+          <SlidingSegments
+            compact
+            segments={[{ key: 'list', icon: 'list' }, { key: 'grid', icon: 'grid' }]}
+            value={prodViewMode}
+            onChange={(value) => setProdViewMode(value as ViewMode)}
+          />
+        ) : (
+          <View style={styles.viewToggle}>
+            <TouchableOpacity style={[styles.viewBtn, prodViewMode === 'list' && styles.viewBtnOn]} onPress={() => setProdViewMode('list')} activeOpacity={0.85}>
+              <Ionicons name="list" size={19} color={prodViewMode === 'list' ? colors.white : colors.inkSoft} />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.viewBtn, prodViewMode === 'grid' && styles.viewBtnOn]} onPress={() => setProdViewMode('grid')} activeOpacity={0.85}>
+              <Ionicons name="grid" size={17} color={prodViewMode === 'grid' ? colors.white : colors.inkSoft} />
+            </TouchableOpacity>
+          </View>
+        ))}
+      </View>
     </View>
   );
 
@@ -1800,13 +1848,14 @@ const themedStyles = () => StyleSheet.create({
     flex: 1, fontSize: 14, color: colors.ink, padding: 0,
     fontFamily: fonts.medium,
   },
-  // Fila de búsqueda de productos: barra (flex) + toggle lista/cuadrícula.
+  // Fila de búsqueda de productos: barra (flex) + orden + lista/cuadrícula.
   prodSearchRow: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     marginHorizontal: 16, marginBottom: 8,
   },
   // La barra dentro de la fila no lleva márgenes propios (los pone la fila).
-  prodSearchBox: { flex: 1, marginHorizontal: 0, marginBottom: 0 },
+  prodSearchBox: { flex: 1, marginHorizontal: 0, marginBottom: 0, minWidth: 0 },
+  prodControls: { flexDirection: 'row', alignItems: 'center', gap: 10 },
 
   // ── Category rows ─────────────────────────────────────────────
   list: { paddingHorizontal: 16, paddingBottom: 20, paddingTop: 4 },

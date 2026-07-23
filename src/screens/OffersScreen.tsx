@@ -173,7 +173,7 @@ export default function OffersScreen() {
   // (SlidingSegments en glass / pastilla estática en fallback, como el catálogo).
   const chrome = (
     <>
-      <ActiveCartBanner topInset nameOnly />
+      <ActiveCartBanner topInset nameOnly rounded />
 
       {/* Header */}
       <View style={styles.header}>
@@ -269,6 +269,7 @@ export default function OffersScreen() {
         hideToolbar
         viewMode={viewMode}
         onViewModeChange={setViewMode}
+        roundedCards
       />
 
       {/* Hoja de filtros: categorías / precio / orden, recarga la query en vivo. */}
@@ -307,17 +308,16 @@ const themedStyles = () => StyleSheet.create({
     paddingHorizontal: 16, paddingTop: 4, paddingBottom: 10, gap: 12,
   },
   backBtn: {
-    width: 38, height: 38,
-    backgroundColor: colors.white,
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: colors.surfaceAlt,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border,
   },
   // Sobre el cristal, sin caja (evita glass anidado; como en Cambios de precios).
   backBtnGlass: {
     width: 38, height: 38,
     alignItems: 'center', justifyContent: 'center',
   },
-  title: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3, textAlign: 'center' },
+  title: { flex: 1, fontSize: 22, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4, textAlign: 'center' },
 
   // ── Fila filtros + buscador (diseño del catálogo) ─────────────
   searchRow: {
@@ -325,11 +325,10 @@ const themedStyles = () => StyleSheet.create({
     marginHorizontal: 16, marginBottom: 8,
   },
   filterBtn: {
-    width: 46, height: 46, borderRadius: 16,
+    width: 46, height: 46, borderRadius: 18,
     alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
-    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
   },
   filterBtnOn: { backgroundColor: colors.accent, borderColor: colors.accent },
   searchBar: {
@@ -337,9 +336,8 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.white,
     paddingHorizontal: 16, paddingVertical: 13,
     gap: 11,
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1, borderColor: colors.border,
-    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
   },
   searchInput: {
     flex: 1, fontSize: 14, color: colors.ink, padding: 0,
@@ -347,12 +345,12 @@ const themedStyles = () => StyleSheet.create({
   },
   // Toggle lista/cuadrícula en fallback (misma pastilla que el catálogo).
   viewToggle: {
-    flexDirection: 'row', gap: 5,
+    flexDirection: 'row', gap: 3,
     backgroundColor: colors.surfaceAlt,
-    padding: 5, borderRadius: 14,
+    padding: 4, borderRadius: 18,
   },
   viewBtn: {
-    width: 40, height: 40, borderRadius: 10,
+    width: 36, height: 36, borderRadius: 14,
     alignItems: 'center', justifyContent: 'center',
   },
   viewBtnOn: {
@@ -362,6 +360,10 @@ const themedStyles = () => StyleSheet.create({
   },
 
   // ── Chrome de cristal (solo glassAvailable, F3) ───────────────
-  chrome: { position: 'absolute', top: 0, left: 0, right: 0 },
-  chromeGlass: { paddingBottom: 10 },
+  chrome: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
+  chromeGlass: {
+    paddingBottom: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+  },
 });

@@ -61,8 +61,8 @@ export default function PriceChangesScreen() {
   const [store, setStore] = useState<CatalogStore>(stores[0]?.key ?? 'mercadona');
   const [direction, setDirection] = useState<Direction>('down');
 
-  // Solo en glass: view mode controlado (el toggle vive en el chrome de
-  // cristal) y altura medida del chrome para que la lista pase por debajo.
+  // View mode controlado: el toggle vive junto a las pestañas en ambos modos.
+  // La altura medida solo se usa en glass para que la lista pase por debajo.
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [chromeH, setChromeH] = useState(0);
 
@@ -114,7 +114,7 @@ export default function PriceChangesScreen() {
   // NotificationsSheet) y pestañas con píldora deslizante + toggle en línea.
   const chrome = (
     <>
-      <ActiveCartBanner topInset nameOnly />
+      <ActiveCartBanner topInset nameOnly rounded />
 
       {/* Header */}
       <View style={styles.header}>
@@ -134,8 +134,7 @@ export default function PriceChangesScreen() {
       </View>
 
       {glassAvailable ? (
-        // Pestañas de píldora deslizante + toggle lista/cuadrícula en la misma
-        // fila (en fallback el toggle lo pinta el toolbar interno de la lista).
+        // Pestañas de píldora deslizante + toggle lista/cuadrícula en la misma fila.
         <View style={styles.glassControls}>
           <SlidingSegments
             style={{ flex: 1 }}
@@ -158,28 +157,45 @@ export default function PriceChangesScreen() {
           />
         </View>
       ) : (
-        // Pestañas Bajadas / Subidas (mismo switcher que Favoritos/Catálogo).
-        <View style={styles.tabs}>
-          <TouchableOpacity
-            style={[styles.tab, direction === 'down' && styles.tabActive]}
-            onPress={() => setDirection('down')}
-            activeOpacity={0.8}
-          >
-            <View style={styles.tabInner}>
-              <Ionicons name="arrow-down" size={13} color={direction === 'down' ? colors.ink : colors.inkSoft} />
-              <Text style={[styles.tabText, direction === 'down' && styles.tabTextActive]}>{t('priceChanges.down')}</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, direction === 'up' && styles.tabActive]}
-            onPress={() => setDirection('up')}
-            activeOpacity={0.8}
-          >
-            <View style={styles.tabInner}>
-              <Ionicons name="arrow-up" size={13} color={direction === 'up' ? colors.ink : colors.inkSoft} />
-              <Text style={[styles.tabText, direction === 'up' && styles.tabTextActive]}>{t('priceChanges.up')}</Text>
-            </View>
-          </TouchableOpacity>
+        <View style={styles.fallbackControls}>
+          <View style={styles.tabs}>
+            <TouchableOpacity
+              style={[styles.tab, direction === 'down' && styles.tabActive]}
+              onPress={() => setDirection('down')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.tabInner}>
+                <Ionicons name="arrow-down" size={13} color={direction === 'down' ? colors.ink : colors.inkSoft} />
+                <Text style={[styles.tabText, direction === 'down' && styles.tabTextActive]}>{t('priceChanges.down')}</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.tab, direction === 'up' && styles.tabActive]}
+              onPress={() => setDirection('up')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.tabInner}>
+                <Ionicons name="arrow-up" size={13} color={direction === 'up' ? colors.ink : colors.inkSoft} />
+                <Text style={[styles.tabText, direction === 'up' && styles.tabTextActive]}>{t('priceChanges.up')}</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.viewToggle}>
+            <TouchableOpacity
+              style={[styles.viewBtn, viewMode === 'list' && styles.viewBtnOn]}
+              onPress={() => setViewMode('list')}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="list" size={19} color={viewMode === 'list' ? colors.white : colors.inkSoft} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.viewBtn, viewMode === 'grid' && styles.viewBtnOn]}
+              onPress={() => setViewMode('grid')}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="grid" size={17} color={viewMode === 'grid' ? colors.white : colors.inkSoft} />
+            </TouchableOpacity>
+          </View>
         </View>
       )}
     </>
@@ -199,9 +215,10 @@ export default function PriceChangesScreen() {
         errorText={t('priceChanges.error')}
         keepOrder
         topInset={glassAvailable ? chromeH : 0}
-        hideToolbar={glassAvailable}
-        viewMode={glassAvailable ? viewMode : undefined}
-        onViewModeChange={glassAvailable ? setViewMode : undefined}
+        hideToolbar
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        roundedCards
       />
 
       {/* Chrome de cristal: al FINAL del árbol para pintarse encima; la lista
@@ -231,34 +248,58 @@ const themedStyles = () => StyleSheet.create({
     paddingHorizontal: 16, paddingTop: 4, paddingBottom: 10, gap: 12,
   },
   backBtn: {
-    width: 38, height: 38,
-    backgroundColor: colors.white,
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: colors.surfaceAlt,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border,
   },
   // Sobre el cristal, sin caja (evita glass anidado; como NotificationsSheet).
   backBtnGlass: {
     width: 38, height: 38,
     alignItems: 'center', justifyContent: 'center',
   },
-  title: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3, textAlign: 'center' },
+  title: { flex: 1, fontSize: 22, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4, textAlign: 'center' },
 
   // ── Tab switcher (Bajadas / Subidas), SOLO fallback ───────────
   tabs: {
-    flexDirection: 'row',
-    marginHorizontal: 16, marginBottom: 10,
+    flex: 1, flexDirection: 'row',
     backgroundColor: colors.surfaceAlt,
-    padding: 3, gap: 3,
+    padding: 3, gap: 3, borderRadius: 18,
   },
-  tab: { flex: 1, paddingVertical: 8, alignItems: 'center' },
-  tabActive: { backgroundColor: colors.white },
+  tab: { flex: 1, paddingVertical: 9, alignItems: 'center', borderRadius: 15 },
+  tabActive: {
+    backgroundColor: colors.accentLight,
+    borderWidth: 1,
+    borderColor: colors.accentMid,
+  },
   tabInner: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   tabText: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.inkSoft },
   tabTextActive: { color: colors.ink },
+  fallbackControls: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    marginHorizontal: 16, marginBottom: 10,
+  },
+  viewToggle: {
+    flexDirection: 'row', gap: 3,
+    backgroundColor: colors.surfaceAlt,
+    padding: 4, borderRadius: 18,
+  },
+  viewBtn: {
+    width: 36, height: 36, borderRadius: 14,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  viewBtnOn: {
+    backgroundColor: colors.accent,
+    shadowColor: colors.accent, shadowOpacity: 0.4, shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 }, elevation: 2,
+  },
 
   // ── Chrome de cristal (solo glassAvailable, F3) ───────────────
-  chrome: { position: 'absolute', top: 0, left: 0, right: 0 },
-  chromeGlass: { paddingBottom: 10 },
+  chrome: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
+  chromeGlass: {
+    paddingBottom: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+  },
   glassControls: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     marginHorizontal: 16,

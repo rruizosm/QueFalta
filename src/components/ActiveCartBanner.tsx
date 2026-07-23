@@ -28,12 +28,13 @@ interface Props {
    *  elemento de la pantalla (va encima de la cabecera, no debajo). */
   topInset?: boolean;
   /** Versión condensada para vivir en línea (p. ej. a la derecha de un título):
-   *  sin márgenes propios, se ajusta al contenido y omite el "Añade productos a"
-   *  mostrando solo el nombre del grupo. */
+   *  sin márgenes propios y solo con icono de carrito + flecha inferior. */
   compact?: boolean;
   /** Omite el prefijo "Añade productos a" y muestra solo el nombre del grupo,
    *  conservando el layout normal (a diferencia de compact). */
   nameOnly?: boolean;
+  /** Variante redondeada para cabeceras del sistema visual principal. */
+  rounded?: boolean;
 }
 
 /**
@@ -42,7 +43,12 @@ interface Props {
  * donde estés (catálogo, categorías, subcategorías, productos, favoritos…).
  * Sin carrito activo invita a elegir uno.
  */
-export default function ActiveCartBanner({ topInset = false, compact = false, nameOnly = false }: Props) {
+export default function ActiveCartBanner({
+  topInset = false,
+  compact = false,
+  nameOnly = false,
+  rounded = false,
+}: Props) {
   const styles = useThemedStyles(themedStyles);
   const insets = useSafeAreaInsets();
   const bannerTop = useHeaderTopPadding(52);
@@ -126,12 +132,18 @@ export default function ActiveCartBanner({ topInset = false, compact = false, na
           styles.banner,
           !activeCart && styles.bannerEmpty,
           topInset && { marginTop: bannerTop },
+          rounded && styles.bannerRounded,
           compact && styles.bannerCompact,
         ]}
         onPress={openPicker}
         activeOpacity={0.85}
       >
-        {activeCart ? (
+        {compact ? (
+          <View style={styles.compactIconStack}>
+            <Ionicons name={activeCart ? 'cart' : 'cart-outline'} size={19} color={activeCart ? colors.accent : colors.inkSoft} />
+            <Ionicons name="chevron-down" size={13} color={activeCart ? colors.accent : colors.inkSoft} />
+          </View>
+        ) : activeCart ? (
           <>
             <Ionicons name="cart" size={18} color={colors.accent} />
             <Text style={[styles.text, compact && styles.textCompact]} numberOfLines={1}>
@@ -148,7 +160,9 @@ export default function ActiveCartBanner({ topInset = false, compact = false, na
             <Text style={[styles.emptyText, compact && styles.textCompact]} numberOfLines={1}>{t('banner.choose')}</Text>
           </>
         )}
-        <Ionicons name="chevron-down" size={16} color={activeCart ? colors.accent : colors.inkSoft} />
+        {!compact && (
+          <Ionicons name="chevron-down" size={16} color={activeCart ? colors.accent : colors.inkSoft} />
+        )}
       </TouchableOpacity>
 
       <Modal visible={pickerOpen} transparent animationType="slide" onRequestClose={closePicker}>
@@ -213,14 +227,18 @@ const themedStyles = () => StyleSheet.create({
     borderWidth: 1, borderColor: colors.accentMid,
   },
   bannerEmpty: { backgroundColor: colors.white, borderColor: colors.border },
+  bannerRounded: { borderRadius: 18 },
   // topInset (separación de la barra de estado) inline: useHeaderTopPadding(52)
-  // En línea junto a un título: sin márgenes propios, se ajusta al contenido y
-  // cede espacio al título (maxWidth + flexShrink) sin empujarlo fuera.
+  // En línea junto a un título: botón mínimo con carrito y flecha inferior.
   bannerCompact: {
     marginHorizontal: 0, marginBottom: 0,
-    paddingHorizontal: 12, paddingVertical: 8,
-    flexShrink: 1, maxWidth: 240,
+    width: 44, height: 44,
+    paddingHorizontal: 0, paddingVertical: 0,
+    alignItems: 'center', justifyContent: 'center',
+    gap: 0,
+    flexShrink: 0, borderRadius: 18,
   },
+  compactIconStack: { alignItems: 'center', justifyContent: 'center', gap: 0 },
   text: { flex: 1, fontSize: 13, fontFamily: fonts.medium, color: colors.ink },
   // Sin flex:1 para no estirarse; solo encoge si no cabe el nombre del grupo.
   textCompact: { flex: 0, flexShrink: 1 },

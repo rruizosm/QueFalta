@@ -77,6 +77,12 @@ interface Props {
    *  carga/error en la misma medida. Úsalo junto con `hideToolbar`: el toolbar
    *  interno va en flujo y quedaría oculto debajo del cristal. 0 = como hoy. */
   topInset?: number;
+  /** Redondea las tarjetas de lista y cuadrícula en superficies principales. */
+  roundedCards?: boolean;
+  /** Etiqueta común que se muestra en todas las tarjetas de esta vista. */
+  badgeLabel?: string;
+  /** Permite al padre reaccionar al inicio del desplazamiento de productos. */
+  onScrollBeginDrag?: () => void;
 }
 
 /** Lista de productos reutilizable (subcategorías y búsqueda): imagen, stepper +
@@ -88,7 +94,7 @@ export default function StoreProductList({
   emoji, searchable = false, searchQuery,
   hideToolbar = false, viewMode: viewModeProp, onViewModeChange,
   pageSize, onEndReached, loadingMore = false, keepOrder = false,
-  topInset = 0,
+  topInset = 0, roundedCards = false, badgeLabel, onScrollBeginDrag,
 }: Props) {
   const styles = useThemedStyles(themedStyles);
   // Con tab bar de cristal: eleva la barra "Añadir" (cartBar) por encima del
@@ -254,6 +260,8 @@ export default function StoreProductList({
         direction: item.priceChange.direction,
       } : null}
       emoji={emoji}
+      rounded={roundedCards}
+      badgeLabel={badgeLabel}
       onPress={() => setDetail({ store: item.store, id: item.id })}
     />
   );
@@ -284,7 +292,7 @@ export default function StoreProductList({
         }}
       >
         <GlassSurface
-          style={[styles.row, active && styles.rowActive]}
+          style={[styles.row, roundedCards && styles.rowRounded, active && styles.rowActive]}
           tintColor={active ? colors.accentLight : undefined}
           fallbackColor={active ? colors.accentLight : colors.white}
         >
@@ -299,6 +307,11 @@ export default function StoreProductList({
             )}
           </TouchableOpacity>
           <View style={styles.info}>
+            {badgeLabel ? (
+              <View style={styles.newTag}>
+                <Text style={styles.newTagText}>{badgeLabel}</Text>
+              </View>
+            ) : null}
             {/* Tipo de oferta resaltado en rojo, ARRIBA del nombre (Ofertas). */}
             {item.offerTag ? (
               <View style={styles.offerTag}>
@@ -394,6 +407,7 @@ export default function StoreProductList({
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
+          onScrollBeginDrag={onScrollBeginDrag}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.4}
           ListFooterComponent={listFooter}
@@ -410,6 +424,7 @@ export default function StoreProductList({
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
+          onScrollBeginDrag={onScrollBeginDrag}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.4}
           ListFooterComponent={listFooter}
@@ -477,6 +492,7 @@ const themedStyles = () => StyleSheet.create({
     borderWidth: 1, borderColor: colors.border, gap: 12,
   },
   rowActive: { backgroundColor: colors.accentLight, borderColor: colors.accentMid },
+  rowRounded: { borderRadius: 18, overflow: 'hidden' },
   favBar: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 5, backgroundColor: colors.accent },
   swipeAction: {
     flex: 1, backgroundColor: colors.accent,
@@ -494,6 +510,20 @@ const themedStyles = () => StyleSheet.create({
   offerTagText: {
     fontSize: 11, fontFamily: fonts.bold, color: colors.white,
     letterSpacing: 0.2, textTransform: 'uppercase',
+  },
+  newTag: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#F4C84A',
+    borderRadius: 5,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    marginBottom: 4,
+  },
+  newTagText: {
+    fontSize: 11,
+    fontFamily: fonts.bold,
+    color: colors.ink,
+    letterSpacing: 0.2,
   },
   name: { fontSize: 13.5, fontFamily: fonts.semibold, color: colors.ink, lineHeight: 18 },
   // Precio del envase, destacado.

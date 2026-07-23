@@ -28,12 +28,13 @@ import { fetchMyGroups, fetchGroupItems, type GroupSummary, type GroupItem } fro
 import { fetchPurchases, fetchPurchaseItems, type Purchase } from '../api/purchases';
 import { favoriteToUI, type UIProduct } from '../lib/productAdapters';
 import { STORE_META } from '../constants/stores';
+import ProgressBar from '../components/ProgressBar';
 import MemberAvatars from '../components/MemberAvatars';
 import HardShadow from '../components/HardShadow';
 import ProfileChecklistCard from '../components/ProfileChecklistCard';
 import UserAvatar from '../components/UserAvatar';
 import NotificationsSheet from '../components/NotificationsSheet';
-import GlassSurface from '../components/GlassSurface';
+import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import ProductImage from '../components/ProductImage';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
@@ -60,6 +61,7 @@ export default function HomeScreen() {
   const { products: favProducts } = useFavorites();
   const toast = useToast();
   const [notifOpen, setNotifOpen] = useState(false);
+  const [headerH, setHeaderH] = useState(0);
 
   const userId = profile?.id ?? null;
 
@@ -132,6 +134,20 @@ export default function HomeScreen() {
     setRefreshing(false);
   }, [load]);
 
+  const doneItems = cartItems.filter((item) => item.inCart).length;
+  const totalItems = cartItems.length;
+  const remaining = totalItems - doneItems;
+  const progress = totalItems > 0 ? doneItems / totalItems : 0;
+  const cartReady = totalItems > 0 || loadedGroup === activeCart?.groupId;
+
+  const navigateToCart = () => {
+    if (!activeCart) return;
+    navigation.navigate('Groups', {
+      screen: 'GroupDetail',
+      params: { groupId: activeCart.groupId },
+    });
+  };
+
   // Carrusel: los favoritos más recientes (el contexto ya los ordena así).
   const favTiles = useMemo(() => favProducts.slice(0, 10).map(favoriteToUI), [favProducts]);
 
@@ -200,63 +216,145 @@ export default function HomeScreen() {
     }
   };
 
+  const firstName = profile?.name?.trim().split(/\s+/)[0] || '';
+  const header = (
+    <View style={[styles.header, { paddingTop: headerTop }]}>
+      <View style={styles.headerTitleWrap}>
+        <View style={styles.headerIcon}>
+          <Ionicons name="home-outline" size={18} color={colors.accent} />
+        </View>
+        <View style={styles.headerCopy}>
+          <Text style={styles.headerTitle} numberOfLines={1}>
+            {firstName ? t('home.greeting', { name: firstName }) : 'QuéFalta'}
+          </Text>
+          <Text style={styles.headerSubtitle}>{t('home.subtitle')}</Text>
+        </View>
+      </View>
+
+      <View style={styles.headerActions}>
+        <TouchableOpacity
+          onPress={() => setNotifOpen(true)}
+          style={styles.bellBtn}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          activeOpacity={0.8}
+          accessibilityLabel={t('notifications.a11yOpen')}
+        >
+          <View style={styles.bellSurface}>
+            <Ionicons name="notifications-outline" size={20} color={colors.accent} />
+          </View>
+          {unreadCount > 0 ? (
+            <View style={styles.bellBadge}>
+              <Text style={styles.bellBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+            </View>
+          ) : null}
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Profile')}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          activeOpacity={0.8}
+        >
+          <UserAvatar
+            avatarUrl={profile?.avatarUrl ?? null}
+            initials={profile?.initials ?? 'RU'}
+            color={profile?.color ?? colors.accent}
+            size={40}
+            style={styles.avatarRing}
+          />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      {!glassAvailable && header}
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scroll, { paddingTop: headerTop, paddingBottom: bottomPad }]}
+        contentContainerStyle={[
+          styles.scroll,
+          { paddingTop: glassAvailable ? headerH + 12 : 4, paddingBottom: bottomPad },
+        ]}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} colors={[colors.accent]} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.accent}
+            colors={[colors.accent]}
+            progressViewOffset={glassAvailable ? headerH : 0}
+          />
         }
       >
 
-        {/* Header */}
-        <View style={styles.header}>
-          {/* Grupo de accesos: solo la campana (novedades/ofertas/cambios de precio
-              se movieron a los bloques rectangulares de abajo); avatar a la derecha. */}
-          <View style={styles.headerActions}>
-            <TouchableOpacity
-              onPress={() => setNotifOpen(true)}
-              style={styles.bellBtn}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              activeOpacity={0.8}
-              accessibilityLabel={t('notifications.a11yOpen')}
-            >
-              {/* Círculo de cristal (iOS 26) con tinte de acento; fallback = círculo
-                  blanco de siempre. El badge va FUERA (no lo recorta overflow). */}
-              <GlassSurface
-                style={styles.bellGlass}
-                tintColor={colors.accentLight}
-                interactive
-                fallbackColor={colors.white}
-              >
-                <Ionicons name="notifications-outline" size={22} color={colors.accent} />
-              </GlassSurface>
-              {unreadCount > 0 ? (
-                <View style={styles.bellBadge}>
-                  <Text style={styles.bellBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
-                </View>
-              ) : null}
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Profile')}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            activeOpacity={0.8}
-          >
-            <UserAvatar
-              avatarUrl={profile?.avatarUrl ?? null}
-              initials={profile?.initials ?? 'RU'}
-              color={profile?.color ?? colors.accent}
-              size={44}
-              style={styles.avatarRing}
-            />
-          </TouchableOpacity>
-        </View>
-
         {/* Checklist de pasos opcionales pendientes (se oculta sola al completarlos) */}
         <ProfileChecklistCard groupCount={groups.length} />
+
+        {/* Resumen del carrito activo: conserva la carga instantánea desde caché
+            y la revalidación en segundo plano que ya gestiona esta pantalla. */}
+        {activeCart ? (
+          <TouchableOpacity
+            onPress={navigateToCart}
+            activeOpacity={0.85}
+            style={styles.cardWrap}
+          >
+            <HardShadow style={styles.cartCard}>
+              <View style={styles.cartHeader}>
+                <View style={styles.cartIconBox}>
+                  <Ionicons name="cart-outline" size={21} color={colors.white} />
+                </View>
+                <View style={styles.cartTitleCol}>
+                  <View style={styles.cartEyebrowRow}>
+                    <Text style={styles.cartEyebrow}>{t('home.cartActive')}</Text>
+                    <Text style={styles.cartFraction}>{doneItems}/{totalItems}</Text>
+                  </View>
+                  <Text style={styles.cartName} numberOfLines={1}>{activeCart.groupName}</Text>
+                </View>
+              </View>
+
+              <View style={styles.cartProgress}>
+                <ProgressBar
+                  progress={progress}
+                  height={7}
+                  color={colors.white}
+                  trackColor="rgba(255,255,255,0.25)"
+                />
+              </View>
+
+              <View style={styles.cartBottom}>
+                <Text style={styles.cartSub}>
+                  {!cartReady
+                    ? t('common.loading')
+                    : totalItems === 0
+                      ? t('home.cartEmpty')
+                      : remaining === 0
+                        ? t('home.cartAllDone')
+                        : t('home.cartRemaining', { n: remaining })}
+                </Text>
+                <View style={styles.cartChip}>
+                  <Text style={styles.cartChipText}>{t('home.viewCart')}</Text>
+                  <Ionicons name="arrow-forward" size={13} color={colors.white} />
+                </View>
+              </View>
+            </HardShadow>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Groups')}
+            activeOpacity={0.85}
+            style={styles.cardWrap}
+          >
+            <HardShadow style={styles.noCartCard}>
+              <View style={styles.noCartIcon}>
+                <Ionicons name="cart-outline" size={24} color={colors.accent} />
+              </View>
+              <View style={styles.noCartCopy}>
+                <Text style={styles.noCartTitle}>{t('home.noCartTitle')}</Text>
+                <Text style={styles.noCartSub}>{t('home.noCartSub')}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} />
+            </HardShadow>
+          </TouchableOpacity>
+        )}
 
         {/* Accesos rápidos: novedades, ofertas y cambios de precio. Un bloque
             rectangular por cada uno, apilados. Antes eran círculos glass en la
@@ -456,6 +554,14 @@ export default function HomeScreen() {
 
       </ScrollView>
 
+      {glassAvailable && (
+        <View style={styles.chrome} onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)}>
+          <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>
+            {header}
+          </GlassSurface>
+        </View>
+      )}
+
       <NotificationsSheet visible={notifOpen} onClose={() => setNotifOpen(false)} />
     </View>
   );
@@ -463,28 +569,36 @@ export default function HomeScreen() {
 
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
-  // paddingTop inline (useHeaderTopPadding)
   scroll: { padding: 16, paddingBottom: 32 },
 
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    gap: 10, paddingHorizontal: 16, paddingBottom: 12,
   },
-  // Campana + novedades + cambios de precios + ofertas, agrupados a la izquierda.
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  headerTitleWrap: {
+    flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 10,
+  },
+  headerIcon: {
+    width: 34, height: 34, borderRadius: 17,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.accentLight,
+  },
+  headerCopy: { flex: 1, minWidth: 0 },
+  headerTitle: {
+    fontSize: 23, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4,
+  },
+  headerSubtitle: {
+    fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1,
+  },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   avatarRing: { borderWidth: 1, borderColor: colors.accent },
 
   // ── Campana de notificaciones ─────────────────────────────────
-  // El botón es solo el contexto de posición del badge; el círculo lo pinta
-  // bellGlass (cristal en iOS 26, blanco en fallback).
-  bellBtn: { width: 44, height: 44 },
-  bellGlass: {
-    width: 44, height: 44, borderRadius: 22,
-    borderWidth: 1, borderColor: colors.accent,
+  bellBtn: { width: 38, height: 38 },
+  bellSurface: {
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: colors.surfaceAlt,
     alignItems: 'center', justifyContent: 'center',
-    overflow: 'hidden',
   },
   bellBadge: {
     position: 'absolute', top: -2, right: -2,
@@ -495,12 +609,70 @@ const themedStyles = () => StyleSheet.create({
   },
   bellBadgeText: { fontSize: 9.5, fontFamily: fonts.bold, color: '#ffffff' },
 
+  // ── Carrito activo ─────────────────────────────────────────────
+  cardWrap: { marginBottom: 20 },
+  cartCard: {
+    padding: 16,
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
+    borderRadius: 18,
+    overflow: 'hidden',
+  },
+  cartHeader: { flexDirection: 'row', alignItems: 'center', gap: 11 },
+  cartTitleCol: { flex: 1, minWidth: 0 },
+  cartIconBox: {
+    width: 40, height: 40, borderRadius: 14, flexShrink: 0,
+    backgroundColor: 'rgba(255,255,255,0.20)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  cartEyebrowRow: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8,
+  },
+  cartEyebrow: {
+    fontSize: 10.5, fontFamily: fonts.bold, color: 'rgba(255,255,255,0.82)',
+    textTransform: 'uppercase', letterSpacing: 1.3,
+  },
+  cartName: {
+    fontSize: 19, lineHeight: 23, fontFamily: fonts.bold, color: colors.white, marginTop: 2,
+  },
+  cartFraction: { fontSize: 18, fontFamily: fonts.bold, color: colors.white, flexShrink: 0 },
+  cartProgress: { marginTop: 14 },
+  cartBottom: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', gap: 10, marginTop: 14,
+  },
+  cartSub: {
+    flex: 1, fontSize: 12.5, fontFamily: fonts.medium, color: 'rgba(255,255,255,0.86)',
+  },
+  cartChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingHorizontal: 12, paddingVertical: 7, borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.20)',
+  },
+  cartChipText: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.white },
+  noCartCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    padding: 14, borderColor: colors.border, borderRadius: 18,
+  },
+  noCartIcon: {
+    width: 42, height: 42, borderRadius: 14,
+    backgroundColor: colors.accentLight,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  noCartCopy: { flex: 1, minWidth: 0 },
+  noCartTitle: { fontSize: 15, fontFamily: fonts.bold, color: colors.ink },
+  noCartSub: {
+    fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2,
+  },
+
   // ── Bloques rápidos (novedades / ofertas / cambios de precio) ──
-  // Uno debajo de otro; 24 de separación con la siguiente sección.
-  quickBlocks: { gap: 12, marginBottom: 24 },
-  quickInner: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
+  quickBlocks: { gap: 10, marginBottom: 20 },
+  quickInner: {
+    flexDirection: 'row', alignItems: 'center', gap: 12, padding: 13,
+    borderColor: colors.border, borderRadius: 18,
+  },
   quickIconBox: {
-    width: 42, height: 42, flexShrink: 0,
+    width: 42, height: 42, borderRadius: 14, flexShrink: 0,
     backgroundColor: colors.accent,
     alignItems: 'center', justifyContent: 'center',
   },
@@ -509,8 +681,7 @@ const themedStyles = () => StyleSheet.create({
   quickSub: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
 
   // ── Sections ──────────────────────────────────────────────────
-  // Ritmo vertical unificado: 24 entre bloques (quickBlocks, sectionWrap, ctaWrap).
-  sectionWrap: { marginBottom: 24 },
+  sectionWrap: { marginBottom: 20 },
   sectionHeader: {
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'center', marginBottom: 10,
@@ -523,19 +694,22 @@ const themedStyles = () => StyleSheet.create({
   // del scroll) para que las teselas entren/salgan por el borde real.
   favStrip: { marginHorizontal: -16 },
   favStripContent: { paddingHorizontal: 16, gap: 10 },
-  favTile: { width: 104 },
+  favTile: {
+    width: 104, padding: 7, borderRadius: 18,
+    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
+  },
   favImgWrap: {
     width: '100%', aspectRatio: 1,
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
     alignItems: 'center', justifyContent: 'center',
-    marginBottom: 6, overflow: 'hidden',
+    borderRadius: 12, marginBottom: 6, overflow: 'hidden',
   },
   favImg: { width: '100%', height: '100%' },
   favStoreIcon: { position: 'absolute', top: 4, left: 4, width: 14, height: 14 },
   favAddBadge: {
     position: 'absolute', bottom: 0, right: 0,
-    width: 24, height: 24,
+    width: 24, height: 24, borderTopLeftRadius: 10,
     backgroundColor: colors.accent,
     alignItems: 'center', justifyContent: 'center',
   },
@@ -543,7 +717,7 @@ const themedStyles = () => StyleSheet.create({
   favName: { fontSize: 11.5, fontFamily: fonts.semibold, color: colors.ink, lineHeight: 14, minHeight: 28 },
   favPrice: { fontSize: 12, fontFamily: fonts.bold, color: colors.accent, marginTop: 2 },
   favMoreTile: {
-    width: 104, aspectRatio: 1,
+    width: 104, aspectRatio: 1, borderRadius: 18,
     backgroundColor: colors.accentLight,
     borderWidth: 1, borderColor: colors.border,
     alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -551,10 +725,10 @@ const themedStyles = () => StyleSheet.create({
   favMoreText: { fontSize: 12, fontFamily: fonts.bold, color: colors.accent },
 
   // ── Última compra ─────────────────────────────────────────────
-  lastBuyInner: { padding: 14 },
+  lastBuyInner: { padding: 14, borderColor: colors.border, borderRadius: 18 },
   lastBuyRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   lastBuyIcon: {
-    width: 40, height: 40, flexShrink: 0,
+    width: 40, height: 40, borderRadius: 14, flexShrink: 0,
     backgroundColor: colors.accentLight,
     alignItems: 'center', justifyContent: 'center',
   },
@@ -565,15 +739,18 @@ const themedStyles = () => StyleSheet.create({
   repeatBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
     backgroundColor: colors.accent,
-    paddingVertical: 11, marginTop: 12,
+    paddingVertical: 11, marginTop: 12, borderRadius: 14,
   },
   repeatText: { fontSize: 13, fontFamily: fonts.bold, color: colors.white },
 
   // ── CTA de favoritos (solo cuando aún no hay favoritos) ───────
-  ctaWrap: { marginBottom: 24 },
-  ctaInner: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
+  ctaWrap: { marginBottom: 20 },
+  ctaInner: {
+    flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14,
+    borderColor: colors.border, borderRadius: 18,
+  },
   ctaIconBox: {
-    width: 42, height: 42, flexShrink: 0,
+    width: 42, height: 42, borderRadius: 14, flexShrink: 0,
     backgroundColor: colors.accent,
     alignItems: 'center', justifyContent: 'center',
   },
@@ -589,9 +766,16 @@ const themedStyles = () => StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     backgroundColor: colors.white,
     padding: 14, marginBottom: 8,
-    borderWidth: 1, borderColor: colors.border,
+    borderWidth: 1, borderColor: colors.border, borderRadius: 18,
   },
   groupRowLeft: { flex: 1 },
   groupRowName: { fontSize: 14, fontFamily: fonts.semibold, color: colors.ink },
   groupRowSub: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
+
+  // ── Cabecera Glass ─────────────────────────────────────────────
+  chrome: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
+  chromeGlass: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+  },
 });

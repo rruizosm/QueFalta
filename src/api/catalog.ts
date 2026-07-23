@@ -128,9 +128,10 @@ function abortable<T>(query: T, signal?: AbortSignal): T {
 // más" es una query con índice que arranca donde quedó la anterior, sin barrer
 // ni saltar filas aunque cambie el catálogo entre páginas.
 
-/** Cursor keyset: nombre normalizado + id (clave primaria) como desempate. */
-export interface BrowseCursor { name: string; id: string }
+/** Cursor keyset: valor de orden + id (clave primaria) como desempate. */
+export interface BrowseCursor { name: string | number; id: string }
 export interface BrowsePage<T> { items: T[]; nextCursor: BrowseCursor | null }
+type BrowseOrder = boolean | 'priceAsc' | 'priceDesc';
 
 // Una página keyset ordenada por (orderCol, id). El desempate por id es
 // imprescindible: `orderCol` (el nombre normalizado) NO es único, así que un
@@ -147,27 +148,30 @@ async function keysetPage(
   cursor: BrowseCursor | null,
   limit: number,
   apply?: (q: any) => any,
-  // Orden descendente (Ofertas ordenadas por precio de mayor a menor): invierte
-  // el order y la condición del cursor. Quien lo use debe excluir filas con
-  // `orderCol` null (el cursor no sabe compararlas).
-  desc = false,
+  order: BrowseOrder = false,
   signal?: AbortSignal,
 ): Promise<{ rows: any[]; nextCursor: BrowseCursor | null }> {
+  const priceOrder = order === 'priceAsc' || order === 'priceDesc';
+  const desc = order === true || order === 'priceDesc';
+  const activeOrderCol = priceOrder ? 'unit_price' : orderCol;
   let q = supabase
     .from(table)
-    .select(`${cols}, ${orderCol}`)
+    .select(`${cols}, ${activeOrderCol}`)
     .eq('published', true)
-    .order(orderCol, { ascending: !desc })
+    .order(activeOrderCol, { ascending: !desc })
     .order('id', { ascending: true })
     .limit(limit);
   if (apply) q = apply(q);
+  // El cursor por precio no puede atravesar valores nulos. En la práctica son
+  // artículos sin precio publicable, que tampoco deben mezclarse en este orden.
+  if (priceOrder) q = q.not('unit_price', 'is', null);
   if (cursor) {
     // Valores entrecomillados (JSON) para que comas/paréntesis del nombre no
     // rompan la sintaxis del filtro `or` de PostgREST.
     const n = JSON.stringify(cursor.name);
     const i = JSON.stringify(cursor.id);
     const cmp = desc ? 'lt' : 'gt';
-    q = q.or(`${orderCol}.${cmp}.${n},and(${orderCol}.eq.${n},id.gt.${i})`);
+    q = q.or(`${activeOrderCol}.${cmp}.${n},and(${activeOrderCol}.eq.${n},id.gt.${i})`);
   }
   if (signal) q = q.abortSignal(signal);
   const { data, error } = await q;
@@ -177,7 +181,7 @@ async function keysetPage(
   const rows = (data ?? []) as any[];
   // Solo hay más páginas si esta vino llena; si no, el cursor es null (fin).
   const last = rows.length === limit ? rows[rows.length - 1] : null;
-  const nextCursor = last ? { name: String(last[orderCol] ?? ''), id: String(last.id) } : null;
+  const nextCursor = last ? { name: last[activeOrderCol], id: String(last.id) } : null;
   return { rows, nextCursor };
 }
 
@@ -241,13 +245,13 @@ export async function searchProducts(query: string, region: RegionValue | null, 
 
 /** Navegación alfabética del catálogo de Mercadona (sin búsqueda), paginada por
  *  keyset. Bilingüe: en català ordena/muestra por el nombre catalán. */
-export async function browseProducts(cursor: BrowseCursor | null, region: RegionValue | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<MercadonaProduct>> {
+export async function browseProducts(cursor: BrowseCursor | null, region: RegionValue | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<MercadonaProduct>> {
   const ca = getLanguage() === 'ca';
   const { rows, nextCursor } = await keysetPage(
     'mercadona_products',
     MERCADONA_LIST_COLS,
     ca ? 'display_name_ca_norm' : 'display_name_norm',
-    cursor, limit, (q) => filterRegionalAvailability(q, region), false, signal,
+    cursor, limit, (q) => filterRegionalAvailability(q, region), descending, signal,
   );
   const items = rows.map((r: any) => mirrorMercadonaProduct(r, ca));
   return { items, nextCursor };
@@ -398,9 +402,9 @@ export async function searchBonpreuProducts(query: string, limit = 50, signal?: 
 }
 
 /** Navegación alfabética del catálogo de BonpreuEsclat (sin búsqueda), keyset. */
-export async function browseBonpreuProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<BonpreuProduct>> {
+export async function browseBonpreuProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<BonpreuProduct>> {
   const ca = getLanguage() === 'ca';
-  const { rows, nextCursor } = await keysetPage('bonpreu_products', BONPREU_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, undefined, false, signal);
+  const { rows, nextCursor } = await keysetPage('bonpreu_products', BONPREU_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, undefined, descending, signal);
   return { items: rows.map(mapBonpreu), nextCursor };
 }
 
@@ -551,10 +555,10 @@ export async function searchCarrefourProducts(query: string, region: RegionValue
 }
 
 /** Navegación alfabética del catálogo de Carrefour (sin búsqueda), keyset. */
-export async function browseCarrefourProducts(cursor: BrowseCursor | null, region: RegionValue | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<CarrefourProduct>> {
+export async function browseCarrefourProducts(cursor: BrowseCursor | null, region: RegionValue | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<CarrefourProduct>> {
   const { rows, nextCursor } = await keysetPage(
     'carrefour_products', CARREFOUR_COLS, 'display_name_norm', cursor, limit,
-    (q) => filterRegionalAvailability(q, region), false, signal,
+    (q) => filterRegionalAvailability(q, region), descending, signal,
   );
   return { items: rows.map((r) => mapCarrefour(r, region)), nextCursor };
 }
@@ -694,9 +698,9 @@ export async function searchBonareaProducts(query: string, limit = 50, signal?: 
 }
 
 /** Navegación alfabética del catálogo de bonÀrea (sin búsqueda), keyset. */
-export async function browseBonareaProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<BonareaProduct>> {
+export async function browseBonareaProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<BonareaProduct>> {
   const ca = getLanguage() === 'ca';
-  const { rows, nextCursor } = await keysetPage('bonarea_products', BONAREA_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, undefined, false, signal);
+  const { rows, nextCursor } = await keysetPage('bonarea_products', BONAREA_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, undefined, descending, signal);
   return { items: rows.map(mapBonarea), nextCursor };
 }
 
@@ -810,8 +814,8 @@ export async function searchConsumProducts(query: string, region: RegionValue | 
 }
 
 /** Navegación alfabética del catálogo de Consum (sin búsqueda), keyset. */
-export async function browseConsumProducts(cursor: BrowseCursor | null, region: RegionValue | null, postalCode: string | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<ConsumProduct>> {
-  const { rows, nextCursor } = await keysetPage('consum_products', CONSUM_COLS, 'display_name_norm', cursor, limit, (q) => filterRegionalAvailability(q, region), false, signal);
+export async function browseConsumProducts(cursor: BrowseCursor | null, region: RegionValue | null, postalCode: string | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<ConsumProduct>> {
+  const { rows, nextCursor } = await keysetPage('consum_products', CONSUM_COLS, 'display_name_norm', cursor, limit, (q) => filterRegionalAvailability(q, region), descending, signal);
   return { items: rows.map((r) => mapConsum(r, postalCode)), nextCursor };
 }
 
@@ -931,10 +935,10 @@ export async function searchDiaProducts(query: string, region: RegionValue | nul
 }
 
 /** Navegación alfabética del catálogo de Dia (sin búsqueda), keyset. */
-export async function browseDiaProducts(cursor: BrowseCursor | null, region: RegionValue | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<DiaProduct>> {
+export async function browseDiaProducts(cursor: BrowseCursor | null, region: RegionValue | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<DiaProduct>> {
   const { rows, nextCursor } = await keysetPage(
     'dia_products', DIA_COLS, 'display_name_norm', cursor, limit,
-    (q) => filterRegionalAvailability(q, region), false, signal,
+    (q) => filterRegionalAvailability(q, region), descending, signal,
   );
   return { items: rows.map(mapDia), nextCursor };
 }
@@ -1058,9 +1062,9 @@ export async function searchSorliProducts(query: string, limit = 50, signal?: Ab
 }
 
 /** Navegación alfabética del catálogo de Sorli (sin búsqueda), keyset. */
-export async function browseSorliProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<SorliProduct>> {
+export async function browseSorliProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<SorliProduct>> {
   const ca = getLanguage() === 'ca';
-  const { rows, nextCursor } = await keysetPage('sorli_products', SORLI_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, undefined, false, signal);
+  const { rows, nextCursor } = await keysetPage('sorli_products', SORLI_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, undefined, descending, signal);
   return { items: rows.map(mapSorli), nextCursor };
 }
 
@@ -1179,9 +1183,9 @@ export async function searchCondisProducts(query: string, limit = 50, signal?: A
 }
 
 /** Navegación alfabética del catálogo de Condis (sin búsqueda), keyset. */
-export async function browseCondisProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<CondisProduct>> {
+export async function browseCondisProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<CondisProduct>> {
   const ca = getLanguage() === 'ca';
-  const { rows, nextCursor } = await keysetPage('condis_products', CONDIS_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, undefined, false, signal);
+  const { rows, nextCursor } = await keysetPage('condis_products', CONDIS_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, undefined, descending, signal);
   return { items: rows.map(mapCondis), nextCursor };
 }
 
@@ -1309,9 +1313,9 @@ export async function searchAmetllerProducts(query: string, limit = 50, signal?:
 }
 
 /** Navegación alfabética del catálogo de Ametller (sin búsqueda), keyset. */
-export async function browseAmetllerProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<AmetllerProduct>> {
+export async function browseAmetllerProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<AmetllerProduct>> {
   const ca = getLanguage() === 'ca';
-  const { rows, nextCursor } = await keysetPage('ametller_products', AMETLLER_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, undefined, false, signal);
+  const { rows, nextCursor } = await keysetPage('ametller_products', AMETLLER_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, undefined, descending, signal);
   return { items: rows.map(mapAmetller), nextCursor };
 }
 
@@ -1418,8 +1422,8 @@ export async function searchAldiProducts(query: string, limit = 50, signal?: Abo
 }
 
 /** Navegación alfabética del catálogo de Aldi (sin búsqueda), keyset. */
-export async function browseAldiProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<AldiProduct>> {
-  const { rows, nextCursor } = await keysetPage('aldi_products', ALDI_COLS, 'display_name_norm', cursor, limit, undefined, false, signal);
+export async function browseAldiProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<AldiProduct>> {
+  const { rows, nextCursor } = await keysetPage('aldi_products', ALDI_COLS, 'display_name_norm', cursor, limit, undefined, descending, signal);
   return { items: rows.map(mapAldi), nextCursor };
 }
 
@@ -1522,8 +1526,8 @@ export async function searchHiperdinoProducts(query: string, limit = 50, signal?
 }
 
 /** Navegación alfabética del catálogo de HiperDino (sin búsqueda), keyset. */
-export async function browseHiperdinoProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<HiperdinoProduct>> {
-  const { rows, nextCursor } = await keysetPage('hiperdino_products', HIPERDINO_COLS, 'display_name_norm', cursor, limit, undefined, false, signal);
+export async function browseHiperdinoProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<HiperdinoProduct>> {
+  const { rows, nextCursor } = await keysetPage('hiperdino_products', HIPERDINO_COLS, 'display_name_norm', cursor, limit, undefined, descending, signal);
   return { items: rows.map(mapHiperdino), nextCursor };
 }
 
@@ -1650,8 +1654,8 @@ export async function searchAlcampoProducts(query: string, limit = 50, signal?: 
 }
 
 /** Navegación alfabética del catálogo de Alcampo (sin búsqueda), keyset. */
-export async function browseAlcampoProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<AlcampoProduct>> {
-  const { rows, nextCursor } = await keysetPage('alcampo_products', ALCAMPO_COLS, 'display_name_norm', cursor, limit, undefined, false, signal);
+export async function browseAlcampoProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<AlcampoProduct>> {
+  const { rows, nextCursor } = await keysetPage('alcampo_products', ALCAMPO_COLS, 'display_name_norm', cursor, limit, undefined, descending, signal);
   return { items: rows.map(mapAlcampo), nextCursor };
 }
 
@@ -1749,8 +1753,8 @@ async function searchTapestry(table: string, query: string, limit: number, signa
   return (data ?? []).map(mapTapestry);
 }
 
-async function browseTapestry(table: string, cursor: BrowseCursor | null, limit: number, signal?: AbortSignal): Promise<BrowsePage<TapestryProduct>> {
-  const { rows, nextCursor } = await keysetPage(table, TAPESTRY_COLS, 'display_name_norm', cursor, limit, undefined, false, signal);
+async function browseTapestry(table: string, cursor: BrowseCursor | null, limit: number, signal?: AbortSignal, descending = false): Promise<BrowsePage<TapestryProduct>> {
+  const { rows, nextCursor } = await keysetPage(table, TAPESTRY_COLS, 'display_name_norm', cursor, limit, undefined, descending, signal);
   return { items: rows.map(mapTapestry), nextCursor };
 }
 
@@ -1796,13 +1800,13 @@ async function fetchTapestryByCategory(table: string, categoryId: string, limit:
 
 // Exports por tienda (solo fijan la tabla; misma forma TapestryProduct).
 export const searchEroskiProducts = (q: string, limit = 50, signal?: AbortSignal) => searchTapestry('eroski_products', q, limit, signal);
-export const browseEroskiProducts = (cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal) => browseTapestry('eroski_products', cursor, limit, signal);
+export const browseEroskiProducts = (cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false) => browseTapestry('eroski_products', cursor, limit, signal, descending);
 export const fetchEroskiProduct = (id: string) => fetchTapestryProduct('eroski_products', id);
 export const fetchEroskiCategoryTree = (signal?: AbortSignal) => fetchTapestryTree('eroski_categories', signal);
 export const fetchEroskiProductsByCategory = (categoryId: string, limit = 600) => fetchTapestryByCategory('eroski_products', categoryId, limit);
 
 export const searchCapraboProducts = (q: string, limit = 50, signal?: AbortSignal) => searchTapestry('caprabo_products', q, limit, signal);
-export const browseCapraboProducts = (cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal) => browseTapestry('caprabo_products', cursor, limit, signal);
+export const browseCapraboProducts = (cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false) => browseTapestry('caprabo_products', cursor, limit, signal, descending);
 export const fetchCapraboProduct = (id: string) => fetchTapestryProduct('caprabo_products', id);
 export const fetchCapraboCategoryTree = (signal?: AbortSignal) => fetchTapestryTree('caprabo_categories', signal);
 export const fetchCapraboProductsByCategory = (categoryId: string, limit = 600) => fetchTapestryByCategory('caprabo_products', categoryId, limit);
@@ -1882,9 +1886,9 @@ export async function searchPlusfrescProducts(query: string, postalCode: string 
 }
 
 /** Navegación alfabética del catálogo de Plusfresc (sin búsqueda), keyset. */
-export async function browsePlusfrescProducts(cursor: BrowseCursor | null, postalCode: string | null, limit = 50, signal?: AbortSignal): Promise<BrowsePage<PlusfrescProduct>> {
+export async function browsePlusfrescProducts(cursor: BrowseCursor | null, postalCode: string | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<PlusfrescProduct>> {
   const ca = getLanguage() === 'ca';
-  const { rows, nextCursor } = await keysetPage('plusfresc_products', PLUSFRESC_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, (q) => filterCenterAvailability(q, plusfrescCenterFromPostalCode(postalCode)), false, signal);
+  const { rows, nextCursor } = await keysetPage('plusfresc_products', PLUSFRESC_COLS, ca ? 'display_name_ca_norm' : 'display_name_norm', cursor, limit, (q) => filterCenterAvailability(q, plusfrescCenterFromPostalCode(postalCode)), descending, signal);
   return { items: rows.map((r) => mapPlusfresc(r, postalCode)), nextCursor };
 }
 

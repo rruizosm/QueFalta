@@ -118,17 +118,20 @@ const themedStyles = () => StyleSheet.create({
   card: {
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
-    padding: 14, marginBottom: 24,
+    padding: 14, marginBottom: 20, borderRadius: 18,
   },
   head: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   title: { fontSize: 15, fontFamily: fonts.bold, color: colors.ink },
   sub: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
-  closeBtn: { width: 26, height: 26, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceAlt },
+  closeBtn: {
+    width: 26, height: 26, borderRadius: 13,
+    alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceAlt,
+  },
 
   list: { marginTop: 12, gap: 8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 11 },
   check: {
-    width: 26, height: 26, flexShrink: 0,
+    width: 26, height: 26, borderRadius: 9, flexShrink: 0,
     alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.accentLight,
   },

@@ -204,7 +204,8 @@ const es: TranslationTree = {
     },
   },
   newArrivals: {
-    title: 'Novedades de la semana',
+    title: 'Novedades',
+    badge: 'Novedad',
     subtitle: 'Productos recién llegados',
     a11yOpen: 'Ver las novedades de la semana',
     empty: 'No hay novedades esta semana en este súper.',
@@ -913,7 +914,8 @@ const ca: TranslationTree = {
     },
   },
   newArrivals: {
-    title: 'Novetats de la setmana',
+    title: 'Novetats',
+    badge: 'Novetat',
     subtitle: "Productes acabats d'arribar",
     a11yOpen: 'Veure les novetats de la setmana',
     empty: 'No hi ha novetats aquesta setmana en aquest súper.',

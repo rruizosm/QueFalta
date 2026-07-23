@@ -88,6 +88,15 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const chunk = (a, n) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 
+function productUrl(rawUrl) {
+  const url = new URL(rawUrl, HOME);
+  // Empathy puede devolver el slug con un '%' literal (por ejemplo, "50%"
+  // en el nombre). Conservamos escapes válidos como %20 y convertimos solo
+  // los '%' sueltos en %25, evitando URLs inválidas en Playwright/fetch.
+  url.pathname = url.pathname.replace(/%(?![0-9a-f]{2})/gi, '%25');
+  return url.href;
+}
+
 const decodeHtml = (value) => String(value ?? '')
   .replace(/<br\s*\/?>|<\/br\s*>/gi, '\n')
   .replace(/<\/(?:p|li|div|tr)\s*>/gi, '\n')
@@ -275,7 +284,7 @@ async function fetchExistingDetails() {
 }
 
 async function loadProductDocument(page, row) {
-  const target = new URL(row.raw.url, HOME).href;
+  const target = productUrl(row.raw.url);
   try {
     // Condis puede cambiar la URL durante el OAuth (slash final, locale o
     // callback intermedio). Esperar una respuesta con la URL exacta descarta
@@ -294,7 +303,7 @@ async function loadProductDocument(page, row) {
 }
 
 async function fetchProductDocument(request, row) {
-  const target = new URL(row.raw.url, HOME).href;
+  const target = productUrl(row.raw.url);
   let last;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
@@ -553,4 +562,4 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   main().catch((e) => { console.error('[condis] ERROR', e); process.exit(1); });
 }
 
-export { ppuFromPum, normalize, parseProductDetailHtml };
+export { ppuFromPum, normalize, parseProductDetailHtml, productUrl };

@@ -1,0 +1,29 @@
+name: Mercadona health score
+
+on:
+  # CRON DESACTIVADO mientras la feature está aparcada (rama health-score-wip).
+  # Al retomar: añadir el secret ANTHROPIC_API_KEY y reactivar el schedule.
+  #   schedule:
+  #     - cron: '0 5 * * *'    # 05:00 UTC (antes del sync de catálogo), cada día
+  workflow_dispatch: {}     # botón "Run workflow" para el backfill / pruebas
+
+concurrency:
+  group: mercadona-nutrition
+  cancel-in-progress: false
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60      # el primer backfill (~miles de productos) tarda
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # Incremental: solo procesa lo que falta. Necesita ANTHROPIC_API_KEY (secret nuevo).
+      - run: node scripts/extract-mercadona-nutrition.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CONCURRENCY: '6'

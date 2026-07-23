@@ -14,7 +14,9 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductImage from '../components/ProductImage';
+import FoodIndexSummary from '../components/FoodIndexSummary';
 import ProductInfoSections from '../components/ProductInfoSections';
+import { useNutritionInfoDisclosure } from '../components/NutritionInfoButton';
 import SimilarProductsSection from '../components/SimilarProductsSection';
 import ProductPriceLine from '../components/ProductPriceLine';
 
@@ -37,6 +39,14 @@ export default function BonpreuProductModal({ product, onClose, topInset = 16 }:
   const { t } = useTranslation();
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
+  const nutrition = useNutritionInfoDisclosure({
+    store: 'esclat',
+    inline: true,
+    fallbackNutrition: product?.nutrition,
+    fallbackProductName: product?.displayName,
+    fallbackCategoryName: product?.categoryName,
+    fallbackIngredients: product?.ingredients,
+  });
 
   useEffect(() => { setQty(1); }, [product?.id]);
 
@@ -116,14 +126,26 @@ export default function BonpreuProductModal({ product, onClose, topInset = 16 }:
         <ProductPriceLine store="esclat" productId={product.id} price={price} size={product.packaging} />
         {product.priceFormat ? <Text style={styles.refPrice}>{product.priceFormat}</Text> : null}
 
+        {nutrition.info?.foodIndex ? (
+          <FoodIndexSummary
+            index={nutrition.info.foodIndex}
+            onPress={nutrition.open}
+            expanded={nutrition.expanded}
+          >
+            {nutrition.inlineContent}
+          </FoodIndexSummary>
+        ) : null}
+
         {/* Comparativa: más barato en otros súper */}
         <SimilarProductsSection productName={product.displayName} excludeStore="esclat" />
 
-        {/* Características del producto. Bonpreu solo expone la categoría (su ficha
-         *  requiere el navegador headless del WAF), pero se pinta con el mismo
-         *  diseño de tarjeta que el resto de súpers. */}
+        {/* Características extraídas de la ficha pública mediante el sync. */}
         <ProductInfoSections
           items={[
+            { key: 'product_info', icon: 'reader-outline', title: t('product.sections.productInfo'), text: product.productInfo },
+            { key: 'brand', icon: 'ribbon-outline', title: t('product.sections.brand'), text: product.brand },
+            { key: 'supplier_name', icon: 'business-outline', title: t('product.sections.supplierName'), text: product.supplierName },
+            { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: product.ingredients },
             { key: 'category', icon: 'pricetags-outline', title: t('product.category'), text: product.categoryName },
           ]}
         />

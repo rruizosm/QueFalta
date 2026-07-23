@@ -56,6 +56,11 @@ create table if not exists public.condis_categories (
 
 -- ── Productos ────────────────────────────────────────────────────────────────
 create table if not exists public.condis_products (
+  ingredients         text,
+  nutrition           text,
+  conservation        text,
+  manufacturer        text,
+  detail_synced_at    timestamptz,
   id                  text primary key,   -- id de Empathy ("704048")
   retailer_product_id text,               -- externalId (suele coincidir con id)
   display_name        text not null,      -- description (es); incluye marca/formato
@@ -85,6 +90,12 @@ create table if not exists public.condis_products (
   display_name_ca_norm text generated always as (lower(public.f_unaccent(coalesce(display_name_ca, display_name)))) stored
 );
 
+alter table public.condis_products add column if not exists ingredients text;
+alter table public.condis_products add column if not exists nutrition text;
+alter table public.condis_products add column if not exists conservation text;
+alter table public.condis_products add column if not exists manufacturer text;
+alter table public.condis_products add column if not exists detail_synced_at timestamptz;
+
 -- Filas nuevas a partir de ahora se fechan con now() (novedades reales).
 alter table public.condis_products alter column first_seen_at set default now();
 
@@ -103,7 +114,6 @@ create index if not exists condis_products_first_seen_idx
 create index if not exists condis_products_price_changed_idx
   on public.condis_products (price_changed_at desc)
   where price_changed_at is not null;
-
 drop trigger if exists track_price_change on public.condis_products;
 create trigger track_price_change
   before update of unit_price on public.condis_products

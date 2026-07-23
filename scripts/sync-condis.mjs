@@ -97,8 +97,7 @@ function productUrl(rawUrl) {
     // precede a /p/{id} es el slug; las barras del nombre deben ser guiones.
     const slug = url.pathname.slice(0, markerAt)
       .replace(/^\/+/, '')
-      .replace(/\/+/g, '-')
-      .replace(/-{2,}/g, '-');
+      .replace(/\/+/g, '-');
     url.pathname = `/${slug}${url.pathname.slice(markerAt)}`;
   }
   // Empathy puede devolver el slug con un '%' literal (por ejemplo, "50%"

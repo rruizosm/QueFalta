@@ -27,4 +27,4 @@ jobs:
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
           CONCURRENCY: '6'
           DETAIL_CONCURRENCY: '6'
-          DETAIL_MAX: '7000'
+          DETAIL_MAX: '1000'

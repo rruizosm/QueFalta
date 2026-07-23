@@ -276,17 +276,21 @@ async function fetchExistingDetails() {
 
 async function loadProductDocument(page, row) {
   const target = new URL(row.raw.url, HOME).href;
-  let documentPromise;
-  const onResponse = (response) => {
-    if (response.status() === 200 && response.url().split('?')[0] === target) documentPromise = response.text();
-  };
-  page.on('response', onResponse);
   try {
+    // Condis puede cambiar la URL durante el OAuth (slash final, locale o
+    // callback intermedio). Esperar una respuesta con la URL exacta descarta
+    // el documento válido aunque la navegación haya terminado correctamente.
     await page.goto(target, { waitUntil: 'commit', timeout: 30000 });
-    for (let i = 0; i < 120 && !documentPromise; i++) await page.waitForTimeout(250);
-    if (!documentPromise) throw new Error(`sin documento final para ${row.id}`);
-    return await documentPromise;
-  } finally { page.off('response', onResponse); }
+    for (let i = 0; i < 120; i++) {
+      const html = await page.content();
+      if (html.includes('productInformation')) return html;
+      await page.waitForTimeout(250);
+    }
+    throw new Error(`sin documento final para ${row.id} (url final: ${page.url()})`);
+  } catch (e) {
+    if (e.message?.startsWith('sin documento final')) throw e;
+    throw new Error(`${e.message} (url final: ${page.url()})`);
+  }
 }
 
 async function fetchProductDocument(request, row) {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
@@ -60,6 +60,20 @@ type CartSection = {
   zoneCollapsed: boolean;
   data: MergedCartItem[];
 };
+
+type PreparedCartStore = {
+  store: Store;
+  count: number;
+  inCart: number;
+  zones: {
+    zone: ShopZone;
+    count: number;
+    inCart: number;
+    data: MergedCartItem[];
+  }[];
+};
+
+const EMPTY_CART_ITEMS: MergedCartItem[] = [];
 
 const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 
@@ -126,7 +140,8 @@ export default function ListScreen() {
 
   const toggleStore = useCallback((store: string) => {
     Haptics.selectionAsync();
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    // Animar aquí fuerza a recalcular el layout de todas las filas visibles y
+    // se vuelve costoso al desplegar una tienda completa.
     setCollapsedStores((prev) => {
       const next = new Set(prev);
       next.has(store) ? next.delete(store) : next.add(store);
@@ -136,7 +151,7 @@ export default function ListScreen() {
 
   const toggleZone = useCallback((key: string) => {
     Haptics.selectionAsync();
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    // La cabecera responde al instante; SectionList virtualiza las filas nuevas.
     setCollapsedZones((prev) => {
       const next = new Set(prev);
       next.has(key) ? next.delete(key) : next.add(key);
@@ -234,7 +249,7 @@ export default function ListScreen() {
     }
   };
 
-  const doRemove = async (item: MergedCartItem): Promise<boolean> => {
+  const doRemove = useCallback(async (item: MergedCartItem): Promise<boolean> => {
     const ids = new Set(item.ids);
     const prev = items;
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -247,12 +262,12 @@ export default function ListScreen() {
       toast.show(t('list.removeError'), 'error');
       return false;
     }
-  };
+  }, [items, t, toast]);
 
   // Resta una unidad de un producto. Como un artículo fusionado puede abarcar
   // varias filas, opera sobre una fila concreta: si tiene cantidad > 1 la baja en
   // uno; si era la última unidad de esa fila, la borra. Optimista, revierte si falla.
-  const doDecrement = async (item: MergedCartItem) => {
+  const doDecrement = useCallback(async (item: MergedCartItem) => {
     if (item.quantity <= 1) return;
     const rows = items.filter((it) => item.ids.includes(it.id));
     // Preferimos rebajar una fila con varias unidades antes que borrar una entera.
@@ -274,9 +289,9 @@ export default function ListScreen() {
       setItems(prev);
       toast.show(t('list.updateError'), 'error');
     }
-  };
+  }, [items, t, toast]);
 
-  const toggle = async (item: MergedCartItem) => {
+  const toggle = useCallback(async (item: MergedCartItem) => {
     const next = !item.inCart;
     const ids = new Set(item.ids);
     const prevState = new Map(items.filter((it) => ids.has(it.id)).map((it) => [it.id, it.inCart]));
@@ -289,7 +304,7 @@ export default function ListScreen() {
       setItems((prev) => prev.map((it) => (ids.has(it.id) ? { ...it, inCart: prevState.get(it.id) ?? it.inCart } : it)));
       toast.show(t('list.updateError'), 'error');
     }
-  };
+  }, [items, t, toast]);
 
   // Clave estable con el CONJUNTO de ids de Mercadona presentes (ordenado). Así
   // marcar "en cesta" (que reemplaza `items` con el mismo conjunto de ids) no
@@ -321,13 +336,33 @@ export default function ListScreen() {
   );
 
   // Fusiona duplicados del mismo producto sumando unidades.
-  const merged = mergeCartItems(localizedItems);
+  const merged = useMemo(() => mergeCartItems(localizedItems), [localizedItems]);
 
-  const doneItems = merged.filter((i) => i.inCart).length;
-  const totalCost = merged
-    .filter((i) => i.unitPrice != null)
-    .reduce((sum, i) => sum + i.unitPrice! * i.quantity, 0);
-  const hasPrices = merged.some((i) => i.unitPrice != null);
+  const { doneItems, totalCost, hasPrices } = useMemo(() => ({
+    doneItems: merged.filter((i) => i.inCart).length,
+    totalCost: merged.reduce(
+      (sum, i) => sum + (i.unitPrice != null ? i.unitPrice * i.quantity : 0),
+      0,
+    ),
+    hasPrices: merged.some((i) => i.unitPrice != null),
+  }), [merged]);
+
+  // El agrupado, sus contadores y el orden alfabético dependen de los
+  // productos, no de si una cabecera está plegada. Prepararlos una sola vez
+  // evita repetir filtros y ordenaciones al tocar una tienda o zona.
+  const preparedStores = useMemo<PreparedCartStore[]>(() => (
+    groupByStore(merged).map((group) => ({
+      store: group.store,
+      count: group.data.length,
+      inCart: group.data.filter((item) => item.inCart).length,
+      zones: groupByZone(group.data).map((zoneGroup) => ({
+        zone: zoneGroup.zone,
+        count: zoneGroup.data.length,
+        inCart: zoneGroup.data.filter((item) => item.inCart).length,
+        data: sortZoneItems(zoneGroup.data),
+      })),
+    }))
+  ), [merged]);
 
   // Agrupado Tienda → Zona del súper (pasillo); dentro de cada zona, pendientes
   // primero y alfabético. Cada par tienda×zona es una sección del SectionList;
@@ -336,43 +371,42 @@ export default function ListScreen() {
   // cabecera (sin zonas ni productos); si una zona está plegada, su cabecera se
   // mantiene pero `data` va vacía. Los contadores se calculan sobre el total
   // real (no sobre `data`, que puede quedar vacía al plegar).
-  const sections: CartSection[] = groupByStore(merged).flatMap((g): CartSection[] => {
-    const storeInCart = g.data.filter((it) => it.inCart).length;
-    if (collapsedStores.has(g.store)) {
+  const sections = useMemo<CartSection[]>(() => preparedStores.flatMap((group): CartSection[] => {
+    if (collapsedStores.has(group.store)) {
       return [{
-        key: `${g.store}:__store`,
-        store: g.store,
+        key: `${group.store}:__store`,
+        store: group.store,
         zone: null,
         firstOfStore: true,
         storeCollapsed: true,
-        storeCount: g.data.length,
-        storeInCart,
+        storeCount: group.count,
+        storeInCart: group.inCart,
         zoneCount: 0,
         zoneInCart: 0,
         zoneCollapsed: false,
-        data: [] as MergedCartItem[],
+        data: EMPTY_CART_ITEMS,
       }];
     }
-    return groupByZone(g.data).map((z, zi) => {
-      const zoneKey = `${g.store}:${z.zone.key}`;
+    return group.zones.map((zoneGroup, zoneIndex) => {
+      const zoneKey = `${group.store}:${zoneGroup.zone.key}`;
       const zoneCollapsed = collapsedZones.has(zoneKey);
       return {
         key: zoneKey,
-        store: g.store,
-        zone: z.zone,
-        firstOfStore: zi === 0,
+        store: group.store,
+        zone: zoneGroup.zone,
+        firstOfStore: zoneIndex === 0,
         storeCollapsed: false,
-        storeCount: g.data.length,
-        storeInCart,
-        zoneCount: z.data.length,
-        zoneInCart: z.data.filter((it) => it.inCart).length,
+        storeCount: group.count,
+        storeInCart: group.inCart,
+        zoneCount: zoneGroup.count,
+        zoneInCart: zoneGroup.inCart,
         zoneCollapsed,
-        data: zoneCollapsed ? ([] as MergedCartItem[]) : sortZoneItems(z.data),
+        data: zoneCollapsed ? EMPTY_CART_ITEMS : zoneGroup.data,
       };
     });
-  });
+  }), [preparedStores, collapsedStores, collapsedZones]);
 
-  const renderItem = ({ item }: { item: MergedCartItem }) => (
+  const renderItem = useCallback(({ item }: { item: MergedCartItem }) => (
     <CartItemRow
       item={item}
       members={members}
@@ -382,98 +416,90 @@ export default function ListScreen() {
       onRemove={doRemove}
       onDecrement={doDecrement}
     />
-  );
+  ), [members, toggle, doRemove, doDecrement]);
 
-  // ── No active cart ────────────────────────────────────────────
-  if (!activeCart) {
-    return (
-      <View style={styles.container}>
-        <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
-        <View style={[styles.header, { paddingTop: headerTop }]}>
-          <Text style={styles.title}>{t('list.title')}</Text>
-        </View>
-        <View style={styles.centerBox}>
-          <Ionicons name="cart-outline" size={48} color={colors.inkFaint} />
-          <Text style={styles.centerTitle}>{t('list.noCartTitle')}</Text>
-          <Text style={styles.centerText}>{t('list.noCartText')}</Text>
-        </View>
-      </View>
-    );
-  }
-
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
-        <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 120 }} />
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.container}>
-        <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
-        <View style={[styles.header, { paddingTop: headerTop }]}>
-          <Text style={styles.title}>{activeCart.groupName}</Text>
-        </View>
-        <View style={styles.centerBox}>
-          <Text style={styles.centerText}>{t('list.loadError')}</Text>
-          <TouchableOpacity onPress={() => { setLoading(true); load(); }}>
-            <Text style={styles.retryText}>{t('common.retry')}</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
-
-  // Chrome de la pantalla (cabecera con grupo + contador y acciones), idéntico
-  // en ambos modos; en glass va dentro de la franja de cristal flotante y los
-  // botones pierden la caja (como el back de Cambios de precios).
-  const chrome = (
+  // ── Shared screen shell ───────────────────────────────────────
+  // Cabecera compartida por todos los estados. En glass vive en una franja
+  // flotante medida; en fallback forma parte del flujo normal de la pantalla.
+  const header = (
     <View style={[styles.header, { paddingTop: headerTop }]}>
-      {/* Título a todo el ancho; las acciones van en la fila del contador,
-          alineadas a la derecha, para no robarle espacio al nombre del grupo. */}
-      <Text style={styles.title}>{activeCart.groupName}</Text>
-      <View style={styles.subtitleRow}>
-        <Text style={styles.subtitle}>
-          {t('list.subtitle', { done: doneItems, total: merged.length })}
-        </Text>
-        {items.length > 0 && (
-          <View style={styles.headerActions}>
-            <Pressable
-              onPress={() => setAssignAllVisible(true)}
-              style={({ pressed }) => [styles.headerBtn, pressed && styles.headerBtnPressed]}
-              hitSlop={8}
-            >
-              <Ionicons name="person-add-outline" size={18} color={colors.inkSoft} />
-            </Pressable>
-            <Pressable
-              onPress={() => setConfirmClear(true)}
-              style={({ pressed }) => [styles.headerBtn, pressed && styles.headerBtnPressed]}
-              hitSlop={8}
-            >
-              <Ionicons name="trash-outline" size={18} color={colors.inkSoft} />
-            </Pressable>
-          </View>
-        )}
+      <View style={styles.titleWrap}>
+        <View style={styles.titleIcon}>
+          <Ionicons name="basket" size={18} color={colors.accent} />
+        </View>
+        <Text style={styles.title}>{activeCart?.groupName ?? t('list.title')}</Text>
       </View>
+
+      {activeCart && !loading && !error && (
+        <View style={styles.subtitleRow}>
+          <Text style={styles.subtitle}>
+            {t('list.subtitle', { done: doneItems, total: merged.length })}
+          </Text>
+          {items.length > 0 && (
+            <View style={styles.headerActions}>
+              <Pressable
+                onPress={() => setAssignAllVisible(true)}
+                style={({ pressed }) => [styles.headerBtn, styles.headerBtnPrimary, pressed && styles.headerBtnPressed]}
+                hitSlop={10}
+              >
+                <Ionicons name="person-add-outline" size={17} color={colors.white} />
+              </Pressable>
+              <Pressable
+                onPress={() => setConfirmClear(true)}
+                style={({ pressed }) => [styles.headerBtn, pressed && styles.headerBtnPressed]}
+                hitSlop={10}
+              >
+                <Ionicons name="trash-outline" size={17} color={colors.inkSoft} />
+              </Pressable>
+            </View>
+          )}
+        </View>
+      )}
     </View>
   );
+
+  const screenState = !activeCart ? (
+    <View style={[
+      styles.centerBox,
+      styles.centerBoxRaised,
+      glassAvailable && { paddingTop: glassInset },
+    ]}>
+      <Ionicons name="cart-outline" size={48} color={colors.inkFaint} />
+      <Text style={styles.centerTitle}>{t('list.noCartTitle')}</Text>
+      <Text style={styles.centerText}>{t('list.noCartText')}</Text>
+    </View>
+  ) : loading ? (
+    <ActivityIndicator
+      size="large"
+      color={colors.accent}
+      style={{ marginTop: glassInset + 48 }}
+    />
+  ) : error ? (
+    <View style={[styles.centerBox, glassAvailable && { paddingTop: glassInset }]}>
+      <Text style={styles.centerText}>{t('list.loadError')}</Text>
+      <TouchableOpacity onPress={() => { setLoading(true); load(); }}>
+        <Text style={styles.retryText}>{t('common.retry')}</Text>
+      </TouchableOpacity>
+    </View>
+  ) : items.length === 0 ? (
+    <View style={[
+      styles.centerBox,
+      styles.centerBoxRaised,
+      glassAvailable && { paddingTop: glassInset },
+    ]}>
+      <Ionicons name="list-outline" size={48} color={colors.inkFaint} />
+      <Text style={styles.centerTitle}>{t('list.emptyTitle')}</Text>
+      <Text style={styles.centerText}>{t('list.emptyText')}</Text>
+    </View>
+  ) : null;
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      {!glassAvailable && chrome}
+      {!glassAvailable && header}
 
-      {items.length === 0 ? (
-        <View style={styles.centerBox}>
-          <Ionicons name="list-outline" size={48} color={colors.inkFaint} />
-          <Text style={styles.centerTitle}>{t('list.emptyTitle')}</Text>
-          <Text style={styles.centerText}>{t('list.emptyText')}</Text>
-        </View>
-      ) : (
+      {screenState ?? (
         <>
           {/* List */}
           <SectionList
@@ -540,7 +566,7 @@ export default function ListScreen() {
 
           {/* Total bar */}
           {hasPrices && (
-            <View style={[styles.totalBar, { bottom: tabBarOffset }]}>
+            <View style={[styles.totalBar, { bottom: tabBarOffset + 8 }]}>
               <Text style={styles.totalBarLabel}>{t('list.totalEstimated')}</Text>
               <Text style={styles.totalBarAmount}>{formatEuro(totalCost)}</Text>
             </View>
@@ -548,7 +574,7 @@ export default function ListScreen() {
 
           {/* Done bar — covers total bar when complete */}
           {doneItems === merged.length && merged.length > 0 && (
-            <View style={[styles.doneBar, { bottom: tabBarOffset }]}>
+            <View style={[styles.doneBar, { bottom: tabBarOffset + 8 }]}>
               <Text style={styles.doneBarEmoji}>🎉</Text>
               <Text style={styles.doneBarText}>{t('list.listCompleted')}</Text>
               <TouchableOpacity
@@ -573,7 +599,7 @@ export default function ListScreen() {
           onLayout={(e) => setChromeH(e.nativeEvent.layout.height)}
         >
           <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>
-            {chrome}
+            {header}
           </GlassSurface>
         </View>
       )}
@@ -651,7 +677,7 @@ export default function ListScreen() {
 // "En cesta", la zona central (foto + nombre) abre el detalle del producto y
 // la papelera elimina en un toque — tacha el artículo, lo desvanece y entonces
 // borra. Si el borrado en servidor falla, la fila reaparece.
-function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove, onDecrement }: {
+const CartItemRow = memo(function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove, onDecrement }: {
   item: MergedCartItem;
   members: GroupMember[];
   onToggle: (item: MergedCartItem) => void;
@@ -762,7 +788,7 @@ function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove
       </View>
     </Animated.View>
   );
-}
+});
 
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
@@ -771,22 +797,29 @@ const themedStyles = () => StyleSheet.create({
     paddingHorizontal: 16, paddingBottom: 12,
     // paddingTop inline (useHeaderTopPadding)
   },
-  title: { fontSize: 24, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
+  titleWrap: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  titleIcon: {
+    width: 34, height: 34, borderRadius: 17,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.accentLight,
+  },
+  title: { flex: 1, fontSize: 25, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4 },
   // Contador + acciones (esferas) en la misma fila, bajo el título.
   subtitleRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    gap: 8, marginTop: 2,
+    gap: 8, marginTop: 8,
   },
   subtitle: { flex: 1, fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft },
-  headerActions: { flexDirection: 'row', gap: 8 },
+  headerActions: { flexDirection: 'row', gap: 6 },
   // Esfera (círculo, como el cerrar de NotificationsSheet) con efecto de
   // pulsado (se encoge y atenúa mientras está presionado). Igual en glass y
   // fallback: color sólido, sin glass anidado.
   headerBtn: {
-    width: 38, height: 38, borderRadius: 19,
+    width: 34, height: 34, borderRadius: 17,
     alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.surfaceAlt,
   },
+  headerBtnPrimary: { backgroundColor: colors.accent },
   headerBtnPressed: { transform: [{ scale: 0.88 }], opacity: 0.7 },
 
   list: { paddingHorizontal: 16, paddingBottom: 140, paddingTop: 8 },
@@ -798,16 +831,22 @@ const themedStyles = () => StyleSheet.create({
 
   // ── Store section header ──────────────────────────────────────
   storeHeader: {
-    flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8,
+    minHeight: 40,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    marginBottom: 8, paddingHorizontal: 12, paddingVertical: 9,
+    backgroundColor: colors.white,
+    borderWidth: 1, borderColor: colors.border, borderRadius: 18,
   },
-  storeHeaderIcon: { width: 18, height: 18 },
+  storeHeaderIcon: { width: 18, height: 18, borderRadius: 4 },
   storeHeaderText: { fontSize: 13, fontFamily: fonts.bold, color: colors.ink, flex: 1 },
   storeHeaderCount: { fontSize: 11.5, fontFamily: fonts.bold, color: colors.inkSoft },
 
   // ── Zone sub-header (pasillo dentro de la tienda) ─────────────
   zoneHeader: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    marginTop: 2, marginBottom: 7, paddingLeft: 2,
+    minHeight: 34, marginTop: 2, marginBottom: 8,
+    paddingHorizontal: 10, paddingVertical: 7,
+    backgroundColor: colors.surfaceAlt, borderRadius: 18,
   },
   zoneHeaderEmoji: { fontSize: 12 },
   zoneHeaderText: {
@@ -820,23 +859,23 @@ const themedStyles = () => StyleSheet.create({
   itemRow: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: colors.white,
-    padding: 13, marginBottom: 8,
-    borderWidth: 1, borderColor: colors.border,
-    gap: 11,
+    paddingHorizontal: 13, paddingVertical: 12, marginBottom: 10,
+    borderWidth: 1, borderColor: colors.border, borderRadius: 18,
+    gap: 10,
   },
   itemRowDone: {
     backgroundColor: colors.accentLight,
-    borderColor: colors.accentMid,
+    borderColor: colors.accent,
   },
   checkbox: {
-    width: 22, height: 22,
+    width: 22, height: 22, borderRadius: 11,
     borderWidth: 1.5, borderColor: colors.inkFaint,
     alignItems: 'center', justifyContent: 'center',
   },
   checkboxChecked: { backgroundColor: colors.accent, borderColor: colors.accent },
-  itemThumb: { width: 50, height: 50, borderRadius: 6, backgroundColor: colors.white },
+  itemThumb: { width: 50, height: 50, borderRadius: 10, backgroundColor: colors.white },
   itemThumbPlaceholder: {
-    width: 50, height: 50, borderRadius: 6,
+    width: 50, height: 50, borderRadius: 10,
     backgroundColor: colors.surfaceAlt,
     alignItems: 'center', justifyContent: 'center',
   },
@@ -855,7 +894,7 @@ const themedStyles = () => StyleSheet.create({
   // y con SU MISMO trazo (1.5 inkFaint) para que se vean igual de marcados.
   qtyActions: { alignItems: 'center', justifyContent: 'center', gap: 6 },
   qtyBtn: {
-    width: 22, height: 22,
+    width: 22, height: 22, borderRadius: 11,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1.5, borderColor: colors.inkFaint,
   },
@@ -879,7 +918,8 @@ const themedStyles = () => StyleSheet.create({
   sheet: {
     backgroundColor: colors.paper,
     borderTopWidth: 1, borderTopColor: colors.border,
-    paddingTop: 18,
+    borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    paddingTop: 18, overflow: 'hidden',
     // paddingBottom inline: iOS 30 (como antes); Android, sobre el inset del sistema.
   },
   sheetTitle: { fontSize: 16, fontFamily: fonts.bold, color: colors.ink, paddingHorizontal: 18, marginBottom: 6 },
@@ -903,27 +943,28 @@ const themedStyles = () => StyleSheet.create({
 
   // ── Total bar ─────────────────────────────────────────────────
   totalBar: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
+    position: 'absolute', bottom: 0, left: 16, right: 16,
     backgroundColor: colors.white,
-    borderTopWidth: 1, borderTopColor: colors.border,
+    borderWidth: 1, borderColor: colors.border, borderRadius: 18,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 14,
+    paddingHorizontal: 14, paddingVertical: 12,
   },
   totalBarLabel: { fontSize: 13, fontFamily: fonts.medium, color: colors.inkSoft },
   totalBarAmount: { fontSize: 21, fontFamily: fonts.bold, color: colors.ink },
 
   // ── Done bar ──────────────────────────────────────────────────
   doneBar: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
+    position: 'absolute', bottom: 0, left: 16, right: 16,
     backgroundColor: colors.accent,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 14, gap: 10,
+    paddingHorizontal: 14, paddingVertical: 12, gap: 10,
+    borderRadius: 18,
   },
   doneBarEmoji: { fontSize: 20 },
   doneBarText: { flex: 1, fontFamily: fonts.bold, color: colors.white, fontSize: 15 },
   doneBarBtn: {
     backgroundColor: colors.white,
-    paddingHorizontal: 16, paddingVertical: 10,
+    paddingHorizontal: 16, paddingVertical: 10, borderRadius: 15,
   },
   doneBarBtnText: { fontFamily: fonts.bold, color: colors.accent, fontSize: 13 },
 
@@ -932,11 +973,12 @@ const themedStyles = () => StyleSheet.create({
     flex: 1, alignItems: 'center', justifyContent: 'center',
     paddingHorizontal: 40, gap: 10,
   },
+  centerBoxRaised: { paddingBottom: 160 },
   centerTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink, textAlign: 'center' },
   centerText: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'center', lineHeight: 20 },
   retryText: { fontSize: 14, fontFamily: fonts.bold, color: colors.accent, marginTop: 4 },
 
   // ── Chrome de cristal (solo glassAvailable, F3) ───────────────
-  chrome: { position: 'absolute', top: 0, left: 0, right: 0 },
-  chromeGlass: { paddingBottom: 2 },
+  chrome: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
+  chromeGlass: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
 });

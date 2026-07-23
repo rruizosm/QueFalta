@@ -26,6 +26,7 @@ import MemberAvatars from '../components/MemberAvatars';
 import HardShadow from '../components/HardShadow';
 import NameInputSheet from '../components/NameInputSheet';
 import PaywallModal from '../components/PaywallModal';
+import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import { useTourAnchor } from '../context/GuidedTourContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
@@ -85,6 +86,7 @@ export default function GroupsScreen() {
   const [paywallVisible, setPaywallVisible] = useState(false);
 
   const [refreshing, setRefreshing] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   const load = useCallback(() => {
     setError(false);
@@ -183,7 +185,7 @@ export default function GroupsScreen() {
         onPress={() => navigation.navigate('GroupDetail', { groupId: item.id })}
         activeOpacity={0.85}
       >
-        <HardShadow style={active ? { ...styles.card, ...styles.cardActive } : styles.card}>
+        <View style={[styles.card, active && styles.cardActive]}>
           {/* Name + badge + chevron */}
           <View style={styles.cardHeader}>
             <View style={styles.cardTitleRow}>
@@ -197,43 +199,56 @@ export default function GroupsScreen() {
             <Ionicons name="chevron-forward" size={16} color={colors.inkFaint} />
           </View>
 
-          {/* Avatars + count */}
-          {item.members.length > 0 && (
-            <MemberAvatars members={item.members} maxVisible={4} size={30} />
-          )}
-          <Text style={styles.memberCount}>
-            {item.members.length} {item.members.length === 1 ? t('group.member') : t('group.members')}
-          </Text>
+          <View style={styles.cardFooter}>
+            <View style={styles.memberMeta}>
+              {item.members.length > 0 && (
+                <MemberAvatars members={item.members} maxVisible={3} size={26} />
+              )}
+              <Text style={styles.memberCount}>
+                {item.members.length} {item.members.length === 1 ? t('group.member') : t('group.members')}
+              </Text>
+            </View>
 
-          {/* Activate button: el del 1er grupo va envuelto en el ancla del tour
-              (componente propio → clearOnUnmount al borrar el grupo). */}
-          {index === 0 ? <ActivateCartAnchor>{activateBtn}</ActivateCartAnchor> : activateBtn}
-        </HardShadow>
+            {/* Activate button: el del 1er grupo va envuelto en el ancla del tour
+                (componente propio → clearOnUnmount al borrar el grupo). */}
+            {index === 0 ? <ActivateCartAnchor>{activateBtn}</ActivateCartAnchor> : activateBtn}
+          </View>
+        </View>
       </TouchableOpacity>
     );
   };
+
+  const header = (
+    <View style={[styles.header, { paddingTop: headerTop }]}>
+      <View style={styles.titleWrap}>
+        <View style={styles.titleIcon}>
+          <Ionicons name="people" size={18} color={colors.accent} />
+        </View>
+        <Text style={styles.title}>{t('group.title')}</Text>
+      </View>
+      {groups.length > 0 && (
+        <TouchableOpacity onPress={handleNewGroup} style={styles.newBtn} activeOpacity={0.8}>
+          <Ionicons name="add" size={18} color={colors.white} />
+          <Text style={styles.newBtnText}>{t('group.new')}</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      <View style={[styles.header, { paddingTop: headerTop }]}>
-        <Text style={styles.title}>{t('group.title')}</Text>
-        {/* Sin grupos, el CTA es el del estado vacío: no se duplica aquí. */}
-        {groups.length > 0 && (
-          <TouchableOpacity onPress={handleNewGroup}>
-            <HardShadow style={{ backgroundColor: colors.accent, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 8 }}>
-              <Ionicons name="add" size={18} color={colors.white} />
-              <Text style={styles.newBtnText}>{t('group.new')}</Text>
-            </HardShadow>
-          </TouchableOpacity>
-        )}
-      </View>
+      {!glassAvailable && header}
 
       {loading ? (
-        <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 }} />
+        <ActivityIndicator
+          size="large"
+          color={colors.accent}
+          style={{ marginTop: (glassAvailable ? headerHeight : 0) + 48 }}
+        />
       ) : error ? (
-        <View style={styles.centerBox}>
+        <View style={[styles.centerBox, glassAvailable && { paddingTop: headerHeight }]}>
           <Text style={styles.emptyText}>{t('group.loadError')}</Text>
           <TouchableOpacity onPress={() => { setLoading(true); load(); }}>
             <Text style={styles.retryText}>{t('common.retry')}</Text>
@@ -242,7 +257,7 @@ export default function GroupsScreen() {
       ) : groups.length === 0 ? (
         // paddingBottom desplaza el bloque (icono + textos + "Crear grupo") un
         // poco hacia arriba respecto al centro vertical.
-        <View style={[styles.centerBox, { paddingBottom: 160 }]}>
+        <View style={[styles.centerBox, { paddingBottom: 160 }, glassAvailable && { paddingTop: headerHeight }]}>
           <Ionicons name="people-outline" size={48} color={colors.inkFaint} />
           <Text style={styles.emptyTitle}>{t('group.emptyTitle')}</Text>
           <Text style={styles.emptyText}>{t('group.emptyText')}</Text>
@@ -256,9 +271,12 @@ export default function GroupsScreen() {
           data={groups}
           keyExtractor={(item) => item.id}
           renderItem={renderGroup}
-          contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
+          contentContainerStyle={[
+            styles.list,
+            { paddingTop: glassAvailable ? headerHeight + 8 : 0, paddingBottom: bottomPad },
+          ]}
           showsVerticalScrollIndicator={false}
-          ItemSeparatorComponent={() => <View style={{ height: 14 }} />}
+          ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} colors={[colors.accent]} />
           }
@@ -283,6 +301,14 @@ export default function GroupsScreen() {
           ? t('group.paywallLimitOne')
           : t('group.paywallLimitMany', { n: FREE_LIMITS.maxCreatedGroups })}
       />
+
+      {glassAvailable && (
+        <View style={styles.chrome} onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}>
+          <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>
+            {header}
+          </GlassSurface>
+        </View>
+      )}
     </View>
   );
 }
@@ -292,31 +318,48 @@ const themedStyles = () => StyleSheet.create({
 
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 16, paddingBottom: 16,
+    paddingHorizontal: 16, paddingBottom: 12,
     // paddingTop inline (useHeaderTopPadding)
   },
-  title: { fontSize: 28, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
+  titleWrap: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  titleIcon: {
+    width: 34, height: 34, borderRadius: 17,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.accentLight,
+  },
+  title: { fontSize: 25, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4 },
+  newBtn: {
+    minHeight: 34, paddingHorizontal: 11, borderRadius: 17,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
+    backgroundColor: colors.accent,
+  },
   newBtnText: { color: colors.white, fontFamily: fonts.bold, fontSize: 13 },
 
   list: { paddingHorizontal: 16, paddingBottom: 24 },
 
   // ── Group card ────────────────────────────────────────────────
-  card: { padding: 16, gap: 10 },
-  cardActive: { borderColor: colors.accent },
+  card: {
+    paddingHorizontal: 13, paddingVertical: 12, gap: 9,
+    backgroundColor: colors.white,
+    borderWidth: 1, borderColor: colors.border, borderRadius: 18,
+  },
+  cardActive: { borderColor: colors.accent, backgroundColor: colors.accentLight },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   cardTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
-  cardName: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink },
+  cardName: { fontSize: 16, fontFamily: fonts.bold, color: colors.ink },
   ownerBadge: {
     backgroundColor: colors.accentLight,
-    paddingHorizontal: 8, paddingVertical: 3,
+    paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
   },
   ownerBadgeText: { fontSize: 10.5, fontFamily: fonts.bold, color: colors.accent },
-  memberCount: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft },
+  cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  memberMeta: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 8, minWidth: 0 },
+  memberCount: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft },
 
   activateBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, paddingVertical: 10,
-    borderWidth: 1, borderColor: colors.accent,
+    gap: 5, minHeight: 30, paddingHorizontal: 10, paddingVertical: 6,
+    borderWidth: 1, borderColor: colors.accent, borderRadius: 15,
   },
   activateBtnActive: { backgroundColor: colors.accent },
   activateBtnText: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.accent },
@@ -327,4 +370,7 @@ const themedStyles = () => StyleSheet.create({
   emptyTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink },
   emptyText: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'center' },
   retryText: { fontSize: 14, fontFamily: fonts.bold, color: colors.accent },
+
+  chrome: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
+  chromeGlass: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
 });

@@ -22,6 +22,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import UserAvatar from '../components/UserAvatar';
 import VerifiedBadge from '../components/VerifiedBadge';
 import NameInputSheet from '../components/NameInputSheet';
+import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 
 type MembersRouteProp = RouteProp<GroupsStackParamList, 'GroupMembers'>;
 
@@ -47,6 +48,7 @@ export default function GroupMembersScreen() {
   const [deleting, setDeleting] = useState(false);
   const [renameVisible, setRenameVisible] = useState(false);
   const [renaming, setRenaming] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   const load = useCallback(() => {
     fetchGroupDetail(groupId)
@@ -140,49 +142,76 @@ export default function GroupMembersScreen() {
     }
   };
 
+  const header = (
+    <View style={[styles.header, { paddingTop: headerTop }]}>
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={glassAvailable ? styles.backBtnGlass : styles.backBtn}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="arrow-back" size={22} color={colors.ink} />
+      </TouchableOpacity>
+      <Text style={styles.title}>{t('group.membersHeader')}</Text>
+      <View style={{ width: 38 }} />
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: headerTop }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color={colors.ink} />
-        </TouchableOpacity>
-        <Text style={styles.title}>{t('group.membersHeader')}</Text>
-        <View style={{ width: 38 }} />
-      </View>
+      {!glassAvailable && header}
 
       {loading ? (
-        <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 60 }} />
+        <ActivityIndicator
+          size="large"
+          color={colors.accent}
+          style={{ marginTop: (glassAvailable ? headerHeight : 0) + 60 }}
+        />
       ) : !group ? (
-        <View style={styles.centerBox}>
+        <View style={[styles.centerBox, glassAvailable && { paddingTop: headerHeight }]}>
           <Text style={styles.emptyText}>{t('group.detailLoadError')}</Text>
         </View>
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad }]}>
-          <View style={styles.groupNameRow}>
-            <Text style={styles.groupName} numberOfLines={1}>{group.name}</Text>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[
+            styles.scroll,
+            {
+              paddingTop: glassAvailable ? headerHeight + 8 : 0,
+              paddingBottom: bottomPad,
+            },
+          ]}
+        >
+          <View style={styles.groupHero}>
+            <View style={styles.groupNameRow}>
+              <View style={styles.groupNameCopy}>
+                <Text style={styles.groupName} numberOfLines={1}>{group.name}</Text>
+                <View style={styles.countPill}>
+                  <Ionicons name="people-outline" size={13} color={colors.accent} />
+                  <Text style={styles.countLabel}>
+                    {group.members.length} {group.members.length === 1 ? t('group.member') : t('group.members')}
+                  </Text>
+                </View>
+              </View>
+              {isAdmin && (
+                <TouchableOpacity onPress={() => setRenameVisible(true)} hitSlop={8} style={styles.renameBtn}>
+                  <Ionicons name="create-outline" size={17} color={colors.accent} />
+                </TouchableOpacity>
+              )}
+            </View>
+
             {isAdmin && (
-              <TouchableOpacity onPress={() => setRenameVisible(true)} hitSlop={8} style={styles.renameBtn}>
-                <Ionicons name="create-outline" size={18} color={colors.accent} />
+              <TouchableOpacity
+                style={styles.addBtn}
+                activeOpacity={0.8}
+                onPress={() => navigation.navigate('AddMember', { groupId })}
+              >
+                <Ionicons name="person-add-outline" size={17} color={colors.white} />
+                <Text style={styles.addBtnText}>{t('group.addMember')}</Text>
               </TouchableOpacity>
             )}
           </View>
-          <Text style={styles.countLabel}>
-            {group.members.length} {group.members.length === 1 ? t('group.member') : t('group.members')}
-          </Text>
-
-          {isAdmin && (
-            <TouchableOpacity
-              style={styles.addBtn}
-              activeOpacity={0.8}
-              onPress={() => navigation.navigate('AddMember', { groupId })}
-            >
-              <Ionicons name="person-add-outline" size={18} color={colors.accent} />
-              <Text style={styles.addBtnText}>{t('group.addMember')}</Text>
-            </TouchableOpacity>
-          )}
 
           <View style={styles.section}>
             {group.members.map((m, i) => {
@@ -191,7 +220,7 @@ export default function GroupMembersScreen() {
               const canRemove = isAdmin && !isMemberAdmin;
               return (
                 <View key={m.id} style={[styles.row, i < group.members.length - 1 && styles.rowBorder]}>
-                  <UserAvatar avatarUrl={m.avatarUrl} initials={m.initials} color={m.color} size={42} />
+                  <UserAvatar avatarUrl={m.avatarUrl} initials={m.initials} color={m.color} size={38} />
                   <View style={styles.memberInfo}>
                     <View style={styles.memberNameRow}>
                       <Text style={styles.memberName} numberOfLines={1}>
@@ -268,7 +297,11 @@ export default function GroupMembersScreen() {
         <View style={styles.sheetRoot}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setActionMember(null)} />
           {actionMember && (
-            <View style={[styles.sheet, { paddingBottom: Platform.OS === 'ios' ? 30 : Math.max(insets.bottom, 20) }]}>
+            <GlassSurface
+              style={[styles.sheet, { paddingBottom: Platform.OS === 'ios' ? 30 : Math.max(insets.bottom, 20) }]}
+              tintColor={colors.accentLight}
+              fallbackColor={colors.paper}
+            >
               <View style={styles.sheetHeader}>
                 <UserAvatar avatarUrl={actionMember.avatarUrl} initials={actionMember.initials} color={actionMember.color} size={40} />
                 <Text style={styles.sheetTitle} numberOfLines={1}>{actionMember.name}</Text>
@@ -300,7 +333,7 @@ export default function GroupMembersScreen() {
               >
                 <Text style={styles.sheetCancelText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
-            </View>
+            </GlassSurface>
           )}
         </View>
       </Modal>
@@ -338,6 +371,14 @@ export default function GroupMembersScreen() {
         onConfirm={confirmDelete}
         onCancel={() => setDeleteVisible(false)}
       />
+
+      {glassAvailable && (
+        <View style={styles.chrome} onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}>
+          <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>
+            {header}
+          </GlassSurface>
+        </View>
+      )}
     </View>
   );
 }
@@ -347,40 +388,52 @@ const themedStyles = () => StyleSheet.create({
 
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingBottom: 10, gap: 12,
+    paddingHorizontal: 16, paddingBottom: 10, gap: 10,
     // paddingTop inline (useHeaderTopPadding)
   },
   backBtn: {
     width: 38, height: 38,
     backgroundColor: colors.white,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border,
+    borderWidth: 1, borderColor: colors.border, borderRadius: 19,
   },
+  backBtnGlass: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center' },
   title: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
 
   scroll: { paddingHorizontal: 16, paddingBottom: 40 },
 
-  groupNameRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 6 },
-  groupName: { flexShrink: 1, fontSize: 22, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4 },
+  groupHero: {
+    backgroundColor: colors.white,
+    borderWidth: 1, borderColor: colors.border, borderRadius: 20,
+    padding: 13, gap: 11, marginBottom: 10,
+  },
+  groupNameRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  groupNameCopy: { flex: 1, minWidth: 0, gap: 7 },
+  groupName: { flexShrink: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4 },
   renameBtn: {
-    width: 30, height: 30,
+    width: 32, height: 32, borderRadius: 16,
     backgroundColor: colors.accentLight,
     alignItems: 'center', justifyContent: 'center',
   },
-  countLabel: { fontSize: 13, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2, marginBottom: 14 },
+  countPill: {
+    alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10,
+    backgroundColor: colors.accentLight,
+  },
+  countLabel: { fontSize: 11.5, fontFamily: fonts.semibold, color: colors.accent },
   addBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    paddingVertical: 12, marginBottom: 14,
-    borderWidth: 1, borderColor: colors.accent,
+    minHeight: 36, paddingHorizontal: 12, paddingVertical: 8,
+    borderRadius: 18, backgroundColor: colors.accent,
   },
-  addBtnText: { fontSize: 14, fontFamily: fonts.bold, color: colors.accent },
+  addBtnText: { fontSize: 13, fontFamily: fonts.bold, color: colors.white },
 
   section: {
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12, borderRadius: 18, overflow: 'hidden',
   },
-  row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, gap: 12 },
+  row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, gap: 11 },
   rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
   avatar: {
     width: 42, height: 42, borderRadius: 21,
@@ -393,19 +446,21 @@ const themedStyles = () => StyleSheet.create({
   adminBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   adminBadgeText: { fontSize: 11, fontFamily: fonts.bold, color: colors.accent },
   removeBtn: {
-    width: 34, height: 34,
+    width: 32, height: 32, borderRadius: 16,
     alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.surfaceAlt,
   },
 
   adminNote: {
     fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft,
-    marginTop: 18, lineHeight: 18,
+    marginTop: 12, lineHeight: 18,
+    paddingHorizontal: 12, paddingVertical: 10,
+    backgroundColor: colors.surfaceAlt, borderRadius: 14,
   },
   leaveBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, marginTop: 22,
-    paddingVertical: 13,
+    gap: 8, marginTop: 12,
+    paddingVertical: 11, borderRadius: 17,
     borderWidth: 1, borderColor: 'rgba(214,69,43,0.5)',
     backgroundColor: 'rgba(214,69,43,0.06)',
   },
@@ -417,13 +472,14 @@ const themedStyles = () => StyleSheet.create({
   // ── Action sheet ──────────────────────────────────────────────
   sheetRoot: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.45)' },
   sheet: {
-    backgroundColor: colors.paper,
     borderTopWidth: 1, borderTopColor: colors.border,
+    borderTopLeftRadius: 26, borderTopRightRadius: 26,
+    overflow: 'hidden',
     // paddingBottom inline: iOS 30 (como antes); Android, el inset del sistema.
   },
   sheetHeader: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 18, paddingVertical: 16,
+    paddingHorizontal: 18, paddingVertical: 14,
     borderBottomWidth: 1, borderBottomColor: colors.border,
   },
   sheetAvatar: {
@@ -434,10 +490,13 @@ const themedStyles = () => StyleSheet.create({
   sheetTitle: { flex: 1, fontSize: 16, fontFamily: fonts.bold, color: colors.ink },
   sheetAction: {
     flexDirection: 'row', alignItems: 'center', gap: 13,
-    paddingHorizontal: 18, paddingVertical: 16,
+    paddingHorizontal: 18, paddingVertical: 14,
     borderBottomWidth: 1, borderBottomColor: colors.border,
   },
   sheetActionText: { fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
   sheetCancel: { alignItems: 'center', paddingVertical: 16, marginTop: 4 },
   sheetCancelText: { fontSize: 15, fontFamily: fonts.bold, color: colors.inkSoft },
+
+  chrome: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 20 },
+  chromeGlass: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
 });

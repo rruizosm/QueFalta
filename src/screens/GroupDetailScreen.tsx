@@ -32,6 +32,7 @@ import MemberAvatars from '../components/MemberAvatars';
 import ProgressBar from '../components/ProgressBar';
 import ProductImage from '../components/ProductImage';
 import StoreProductModal, { type ProductRef } from '../components/StoreProductModal';
+import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import { STORE_META, groupByStore, storeOfItem } from '../constants/stores';
 import { groupByZone, sortZoneItems } from '../constants/zones';
 import { mergeCartItems, type MergedCartItem } from '../api/lists';
@@ -67,6 +68,7 @@ export default function GroupDetailScreen() {
   const [cartExpanded, setCartExpanded] = useState(false);
   const [detailTarget, setDetailTarget] = useState<ProductRef | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   const load = useCallback(() => {
     setError(false);
@@ -187,11 +189,45 @@ export default function GroupDetailScreen() {
       );
     });
 
+  const header = (
+    <View style={[styles.header, { paddingTop: headerTop }]}>
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={glassAvailable ? styles.backBtnGlass : styles.backBtn}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="arrow-back" size={22} color={colors.ink} />
+      </TouchableOpacity>
+      <Text style={styles.headerTitle} numberOfLines={1}>
+        {group?.name ?? t('group.detailTitle')}
+      </Text>
+      {group ? (
+        <TouchableOpacity onPress={handleShare} style={styles.shareBtn} activeOpacity={0.75}>
+          <Ionicons name="share-social-outline" size={19} color={colors.accent} />
+        </TouchableOpacity>
+      ) : (
+        <View style={{ width: 38 }} />
+      )}
+    </View>
+  );
+
   if (loading) {
     return (
       <View style={styles.container}>
         <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
-        <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 120 }} />
+        {!glassAvailable && header}
+        <ActivityIndicator
+          size="large"
+          color={colors.accent}
+          style={{ marginTop: (glassAvailable ? headerHeight : 0) + 60 }}
+        />
+        {glassAvailable && (
+          <View style={styles.chrome} onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}>
+            <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>
+              {header}
+            </GlassSurface>
+          </View>
+        )}
       </View>
     );
   }
@@ -200,19 +236,20 @@ export default function GroupDetailScreen() {
     return (
       <View style={styles.container}>
         <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
-        <View style={[styles.header, { paddingTop: headerTop }]}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={22} color={colors.ink} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('group.detailTitle')}</Text>
-          <View style={{ width: 38 }} />
-        </View>
-        <View style={styles.centerBox}>
+        {!glassAvailable && header}
+        <View style={[styles.centerBox, glassAvailable && { paddingTop: headerHeight }]}>
           <Text style={styles.emptyText}>{t('group.detailLoadError')}</Text>
           <TouchableOpacity onPress={() => { setLoading(true); load(); }}>
             <Text style={styles.retryText}>{t('common.retry')}</Text>
           </TouchableOpacity>
         </View>
+        {glassAvailable && (
+          <View style={styles.chrome} onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}>
+            <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>
+              {header}
+            </GlassSurface>
+          </View>
+        )}
       </View>
     );
   }
@@ -221,20 +258,17 @@ export default function GroupDetailScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: headerTop }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color={colors.ink} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>{group.name}</Text>
-        <TouchableOpacity onPress={handleShare} style={styles.shareBtn}>
-          <Ionicons name="share-social-outline" size={19} color={colors.accent} />
-        </TouchableOpacity>
-      </View>
+      {!glassAvailable && header}
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scroll, { paddingBottom: 90 + tabBarOffset }]}
+        contentContainerStyle={[
+          styles.scroll,
+          {
+            paddingTop: glassAvailable ? headerHeight + 8 : 0,
+            paddingBottom: 90 + tabBarOffset,
+          },
+        ]}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} colors={[colors.accent]} />
         }
@@ -242,36 +276,47 @@ export default function GroupDetailScreen() {
 
         {/* Members */}
         <TouchableOpacity
-          style={styles.section}
+          style={[styles.section, styles.membersSection]}
           activeOpacity={0.7}
           onPress={() => navigation.navigate('GroupMembers', { groupId })}
         >
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{t('group.membersTitle', { n: group.members.length })}</Text>
-            <View style={styles.manageHint}>
-              <Text style={styles.manageHintText}>{t('group.manage')}</Text>
-              <Ionicons name="chevron-forward" size={15} color={colors.accent} />
+          <View style={styles.memberSummaryRow}>
+            <View style={styles.memberAvatarsWrap}>
+              {group.members.length > 0 ? (
+                <MemberAvatars members={group.members} maxVisible={4} size={30} />
+              ) : (
+                <Ionicons name="people-outline" size={20} color={colors.accent} />
+              )}
             </View>
-          </View>
-          {group.members.length > 0 && (
-            <MemberAvatars members={group.members} maxVisible={6} size={32} />
-          )}
-          <View style={styles.membersNames}>
-            {group.members.slice(0, 4).map((m, i) => (
-              <Text key={m.id} style={styles.memberName}>
-                {m.name}{i < Math.min(group.members.length, 4) - 1 ? ', ' : ''}
-              </Text>
-            ))}
-            {group.members.length > 4 && (
-              <Text style={styles.memberName}>{t('group.moreMembers', { n: group.members.length - 4 })}</Text>
-            )}
+            <View style={styles.memberSummaryCopy}>
+              <Text style={styles.sectionTitle}>{t('group.membersTitle', { n: group.members.length })}</Text>
+              <View style={styles.membersNames}>
+                {group.members.slice(0, 3).map((m, i) => (
+                  <Text key={m.id} style={styles.memberName} numberOfLines={1}>
+                    {m.name}{i < Math.min(group.members.length, 3) - 1 ? ', ' : ''}
+                  </Text>
+                ))}
+                {group.members.length > 3 && (
+                  <Text style={styles.memberName}>{t('group.moreMembers', { n: group.members.length - 3 })}</Text>
+                )}
+              </View>
+            </View>
+            <View style={styles.manageBtn}>
+              <Text style={styles.manageHintText}>{t('group.manage')}</Text>
+              <Ionicons name="chevron-forward" size={17} color={colors.accent} />
+            </View>
           </View>
         </TouchableOpacity>
 
         {/* Cesta del grupo */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{t('group.groupCart')}</Text>
+            <View style={styles.sectionTitleRow}>
+              <View style={styles.sectionIcon}>
+                <Ionicons name="basket-outline" size={16} color={colors.accent} />
+              </View>
+              <Text style={styles.sectionTitle}>{t('group.groupCart')}</Text>
+            </View>
             {items.length > 0 && (
               <TouchableOpacity
                 onPress={() => setCartExpanded(true)}
@@ -303,21 +348,28 @@ export default function GroupDetailScreen() {
 
       {/* Total bar */}
       {hasPrices && items.length > 0 && (
-        <View style={[styles.totalBar, { bottom: tabBarOffset }]}>
+        <GlassSurface
+          style={[styles.totalBar, { bottom: tabBarOffset + 8 }]}
+          tintColor={colors.accentLight}
+          fallbackColor={colors.white}
+        >
           <Text style={styles.totalBarLabel}>{t('list.totalEstimated')}</Text>
           <Text style={styles.totalBarAmount}>{formatEuro(totalCost)}</Text>
-        </View>
+        </GlassSurface>
       )}
 
       {/* Expanded cart overlay */}
       {cartExpanded && (
         <View style={styles.modalContainer}>
-          <View style={[styles.modalHeader, { paddingTop: headerTop }]}>
+          <GlassSurface style={[styles.modalHeader, { paddingTop: headerTop }]} fallbackColor={colors.paper}>
             <Text style={styles.modalTitle} numberOfLines={1}>{t('group.cartOf', { name: group.name })}</Text>
-            <TouchableOpacity onPress={() => setCartExpanded(false)} style={styles.backBtn}>
+            <TouchableOpacity
+              onPress={() => setCartExpanded(false)}
+              style={glassAvailable ? styles.backBtnGlass : styles.backBtn}
+            >
               <Ionicons name="contract-outline" size={20} color={colors.ink} />
             </TouchableOpacity>
-          </View>
+          </GlassSurface>
 
           {items.length > 0 && (
             <View style={styles.modalProgress}>
@@ -336,10 +388,14 @@ export default function GroupDetailScreen() {
           </ScrollView>
 
           {hasPrices && (
-            <View style={[styles.totalBar, { bottom: tabBarOffset }]}>
+            <GlassSurface
+              style={[styles.totalBar, { bottom: tabBarOffset + 8 }]}
+              tintColor={colors.accentLight}
+              fallbackColor={colors.white}
+            >
               <Text style={styles.totalBarLabel}>{t('list.totalEstimated')}</Text>
               <Text style={styles.totalBarAmount}>{formatEuro(totalCost)}</Text>
-            </View>
+            </GlassSurface>
           )}
         </View>
       )}
@@ -349,6 +405,14 @@ export default function GroupDetailScreen() {
         onClose={() => setDetailTarget(null)}
         fullScreen
       />
+
+      {glassAvailable && !cartExpanded && (
+        <View style={styles.chrome} onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}>
+          <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>
+            {header}
+          </GlassSurface>
+        </View>
+      )}
     </View>
   );
 }
@@ -359,20 +423,21 @@ const themedStyles = () => StyleSheet.create({
   // ── Header ────────────────────────────────────────────────────
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingBottom: 12, gap: 12,
+    paddingHorizontal: 16, paddingBottom: 10, gap: 10,
     // paddingTop inline (useHeaderTopPadding)
   },
   backBtn: {
     width: 38, height: 38,
     backgroundColor: colors.white,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border,
+    borderWidth: 1, borderColor: colors.border, borderRadius: 19,
   },
-  headerTitle: { flex: 1, fontSize: 21, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
+  backBtnGlass: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
   shareBtn: {
     width: 38, height: 38,
     backgroundColor: colors.accentLight,
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center', borderRadius: 19,
   },
 
   scroll: { paddingHorizontal: 16, paddingBottom: 90 },
@@ -381,18 +446,35 @@ const themedStyles = () => StyleSheet.create({
   section: {
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
-    padding: 14, marginBottom: 10, gap: 10,
+    padding: 13, marginBottom: 10, gap: 9, borderRadius: 18,
   },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  sectionIcon: {
+    width: 30, height: 30, borderRadius: 15,
+    backgroundColor: colors.accentLight,
+    alignItems: 'center', justifyContent: 'center',
+  },
   sectionTitle: { fontSize: 14, fontFamily: fonts.bold, color: colors.ink },
   expandBtn: {
     width: 30, height: 30,
     backgroundColor: colors.accentLight,
+    alignItems: 'center', justifyContent: 'center', borderRadius: 15,
+  },
+  membersSection: { paddingVertical: 11 },
+  memberSummaryRow: { flexDirection: 'row', alignItems: 'center', gap: 11 },
+  memberAvatarsWrap: {
+    minWidth: 38, height: 38, justifyContent: 'center',
+  },
+  memberSummaryCopy: { flex: 1, minWidth: 0, gap: 3 },
+  membersNames: { flexDirection: 'row', flexWrap: 'nowrap', overflow: 'hidden' },
+  memberName: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft },
+  manageBtn: {
+    height: 30, borderRadius: 15, paddingLeft: 10, paddingRight: 7,
+    flexDirection: 'row', gap: 1,
+    backgroundColor: colors.accentLight,
     alignItems: 'center', justifyContent: 'center',
   },
-  membersNames: { flexDirection: 'row', flexWrap: 'wrap' },
-  memberName: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft },
-  manageHint: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   manageHintText: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.accent },
 
   progressWrap: { gap: 6 },
@@ -403,7 +485,9 @@ const themedStyles = () => StyleSheet.create({
   // ── Store sub-header dentro de la cesta ───────────────────────
   storeHeader: {
     flexDirection: 'row', alignItems: 'center', gap: 7,
-    marginTop: 8, marginBottom: 2,
+    marginTop: 7, marginBottom: 2,
+    paddingHorizontal: 8, paddingVertical: 5,
+    backgroundColor: colors.surfaceAlt, borderRadius: 10,
   },
   storeHeaderIcon: { width: 16, height: 16 },
   storeHeaderText: { fontSize: 12, fontFamily: fonts.bold, color: colors.ink, flex: 1 },
@@ -421,18 +505,18 @@ const themedStyles = () => StyleSheet.create({
   // ── Cart rows ─────────────────────────────────────────────────
   listItem: {
     flexDirection: 'row', alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 9,
     borderBottomWidth: 1, borderBottomColor: colors.border,
     gap: 10,
   },
   listItemDone: { opacity: 0.55 },
   listItemThumb: {
-    width: 34, height: 34, borderRadius: 5,
+    width: 34, height: 34, borderRadius: 10,
     backgroundColor: colors.surfaceAlt,
     alignItems: 'center', justifyContent: 'center',
   },
   listItemThumbBig: {
-    width: 44, height: 44, borderRadius: 6,
+    width: 44, height: 44, borderRadius: 12,
     backgroundColor: colors.surfaceAlt,
     alignItems: 'center', justifyContent: 'center',
   },
@@ -448,11 +532,11 @@ const themedStyles = () => StyleSheet.create({
 
   // ── Total bar ─────────────────────────────────────────────────
   totalBar: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: colors.white,
-    borderTopWidth: 1, borderTopColor: colors.border,
+    position: 'absolute', bottom: 0, left: 12, right: 12,
+    borderWidth: 1, borderColor: colors.border, borderRadius: 20,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 14,
+    paddingHorizontal: 16, paddingVertical: 12,
+    overflow: 'hidden',
   },
   totalBarLabel: { fontSize: 13, fontFamily: fonts.medium, color: colors.inkSoft },
   totalBarAmount: { fontSize: 22, fontFamily: fonts.bold, color: colors.ink },
@@ -470,9 +554,13 @@ const themedStyles = () => StyleSheet.create({
   modalHeader: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16, paddingBottom: 12, gap: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border,
     // paddingTop inline (useHeaderTopPadding)
   },
   modalTitle: { flex: 1, fontSize: 21, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
   modalProgress: { paddingHorizontal: 16, paddingBottom: 8, gap: 6 },
   modalScroll: { paddingHorizontal: 16, paddingBottom: 90 },
+
+  chrome: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 20 },
+  chromeGlass: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
 });

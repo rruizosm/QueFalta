@@ -31,6 +31,8 @@
 // Nombres solo en castellano (Caprabo /ca/ redirige; su data-locale=ca pero
 // lang=es → los nombres de producto no se traducen).
 
+import { parseTapestryOfferBlock } from './retailer-offers.mjs';
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
 
@@ -176,14 +178,25 @@ const ancestorsOf = (parentOf, id) => {
 export function parseTiles(html) {
   const out = [];
   const seen = new Set();
-  for (const m of html.matchAll(/data-metrics=(['"])(.*?)\1/gs)) {
-    let d;
-    try { d = JSON.parse(htmlUnescape(m[2])); } catch { continue; }
-    if (d?.event !== 'select_item') continue;
-    const it = d?.ecommerce?.items?.[0];
-    if (!it?.item_id || seen.has(it.item_id)) continue;
-    seen.add(it.item_id);
-    out.push(it);
+  const chunks = html.split(/(?=<div class=["']col border-0 product-item-lineal\b)/g);
+  const hasTileChunks = chunks.some((chunk) =>
+    /^<div class=["']col border-0 product-item-lineal\b/.test(chunk));
+  const tileChunks = hasTileChunks
+    ? chunks.filter((chunk) => /^<div class=["']col border-0 product-item-lineal\b/.test(chunk))
+    : [html];
+
+  for (const chunk of tileChunks) {
+    for (const m of chunk.matchAll(/data-metrics=(['"])(.*?)\1/gs)) {
+      let d;
+      try { d = JSON.parse(htmlUnescape(m[2])); } catch { continue; }
+      if (d?.event !== 'select_item') continue;
+      const it = d?.ecommerce?.items?.[0];
+      if (!it?.item_id || seen.has(it.item_id)) continue;
+      seen.add(it.item_id);
+      const offer = parseTapestryOfferBlock(chunk, it.price);
+      out.push(offer ? { ...it, ...offer } : it);
+      break;
+    }
   }
   return out;
 }
@@ -472,6 +485,12 @@ function makeNormalize(base, runStart) {
       category_ids: ancestors,
       unit_price: price,
       price_format: price != null ? `${eurStr(price)} €` : null,
+      promo_name: it.promo_name ?? null,
+      promo_text: it.promo_text ?? null,
+      promo_price: it.promo_price ?? null,
+      promo_base_price: it.promo_base_price ?? null,
+      promo_start: it.promo_start ?? null,
+      promo_end: it.promo_end ?? null,
       price_per_unit: null,       // el €/unidad no está en el listado (solo en la ficha)
       price_per_unit_unit: null,
       available: true,
@@ -632,6 +651,7 @@ export async function runSync({ base, store, table, catTable }) {
       sin_img: rows.filter((r) => !r.thumbnail).length,
       sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
       sin_marca: rows.filter((r) => !r.brand).length,
+      con_oferta: rows.filter((r) => r.promo_name != null).length,
     });
     if (!SKIP_DETAIL && DRY_DETAIL_MAX > 0) {
       const checked = await downloadDetails(rows, Math.min(DRY_DETAIL_MAX, rows.length));

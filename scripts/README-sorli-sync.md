@@ -22,6 +22,18 @@ navegador (MD5 dependiente de `window`) y que el servidor valida contra la cooki
    ancestros) y hace **upsert** en `sorli_products` / `sorli_categories`, con
    soft-delete (`markStale`) de lo que ya no aparece.
 
+### Ofertas
+
+La página oficial `/es/ofertas` llama al mismo `filtersort` con
+`soloOfertas=true`, pero cada artículo del catálogo general ya incluye la señal
+completa: `oferta`, `textoOferta`, `ofertaEnVigor`, `pvp`/`pvpoferta` y fechas.
+El sync la normaliza sin repetir el crawl:
+
+- etiqueta bilingüe (`3x2`, `2ª unidad al 50%`, lote a precio fijo, regalo…);
+- condiciones completas de promociones complejas;
+- precio anterior en descuentos directos;
+- fecha inicial y final para retirar campañas caducadas.
+
 `nutriScore` y las `agrupaciones` (Ecológico/Sin Gluten/Vegano/Sin Lactosa/
 Producto de Aquí) se conservan en `raw` para features futuras. Los precios son
 los de la tienda por defecto de la sesión de invitado (como Consum).
@@ -29,6 +41,11 @@ los de la tienda por defecto de la sesión de invitado (como Consum).
 ## Requisitos previos (una vez)
 
 Si la tabla `sorli_products` ya existÃ­a, ejecutar tambiÃ©n `supabase/migrations/sorli_nutri_score.sql` antes de lanzar el sync. Esta columna se incluye ya en `sorli_catalog.sql` para instalaciones nuevas.
+
+Para activar las ofertas en una instalación existente, ejecutar además
+`supabase/migrations/20260723212240_sorli_offers.sql`. Incluye backfill desde
+`raw`; debe estar aplicada antes del siguiente sync porque el upsert ya envía
+las nuevas columnas.
 
 Ejecutar la migración **`supabase/migrations/sorli_catalog.sql`** en el SQL Editor
 de Supabase (crea las tablas con todo: búsqueda insensible a acentos, novedades y

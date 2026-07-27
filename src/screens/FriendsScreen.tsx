@@ -21,6 +21,8 @@ import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import UserAvatar from '../components/UserAvatar';
 import VerifiedBadge from '../components/VerifiedBadge';
+import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
+import { glassAvailable } from '../components/GlassSurface';
 
 function Avatar({ color, initials, avatarUrl }: { color: string; initials: string; avatarUrl?: string | null }) {
   return <UserAvatar avatarUrl={avatarUrl} initials={initials} color={color} size={42} />;
@@ -46,6 +48,8 @@ export default function FriendsScreen() {
   const [results, setResults] = useState<SearchedUser[]>([]);
   const [searching, setSearching] = useState(false);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [headerH, setHeaderH] = useState(0);
+  const glassInset = glassAvailable ? headerH : 0;
 
   const load = useCallback(() => {
     if (!userId) return Promise.resolve();
@@ -102,15 +106,9 @@ export default function FriendsScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      <View style={[styles.header, { paddingTop: headerTop }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color={colors.ink} />
-        </TouchableOpacity>
-        <Text style={styles.title}>{t('profile.friends')}</Text>
-        <View style={{ width: 38 }} />
-      </View>
+      <ProfileSubscreenHeader title={t('profile.friends')} icon="people-circle-outline" headerTop={headerTop} onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)} />
 
-      <View style={styles.searchWrap}>
+      <View style={[styles.searchWrap, glassInset ? { marginTop: glassInset + 8 } : null]}>
         <Text style={styles.atPrefix}>@</Text>
         <TextInput
           style={styles.input}
@@ -127,7 +125,7 @@ export default function FriendsScreen() {
       {loading ? (
         <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 60 }} />
       ) : (
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad }]}>
+          <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad }]}>
           {isSearchMode ? (
             // ── Search results ──
             (!searching && results.length === 0) ? (
@@ -234,38 +232,26 @@ export default function FriendsScreen() {
 
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
-  header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingBottom: 10, gap: 12,
-    // paddingTop inline (useHeaderTopPadding)
-  },
-  backBtn: {
-    width: 38, height: 38, backgroundColor: colors.white,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border,
-  },
-  title: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
-
   searchWrap: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     marginHorizontal: 16, marginTop: 8,
     backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
-    paddingHorizontal: 13, paddingVertical: 11,
+    paddingHorizontal: 13, paddingVertical: 12, borderRadius: 16,
   },
   atPrefix: { fontSize: 15, fontFamily: fonts.bold, color: colors.inkFaint },
   input: { flex: 1, fontSize: 14.5, fontFamily: fonts.medium, color: colors.ink, padding: 0 },
 
   scroll: { paddingHorizontal: 16, paddingTop: 14, paddingBottom: 40 },
   sectionLabel: {
-    fontSize: 10.5, fontFamily: fonts.bold, color: colors.inkSoft,
-    textTransform: 'uppercase', letterSpacing: 1.4, marginTop: 10, marginBottom: 8,
+    fontSize: 15, fontFamily: fonts.bold, color: colors.ink,
+    marginTop: 14, marginBottom: 8,
   },
   empty: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 10, lineHeight: 20 },
 
   row: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
-    paddingHorizontal: 14, paddingVertical: 11, marginBottom: 8,
+    paddingHorizontal: 14, paddingVertical: 11, marginBottom: 9, borderRadius: 18,
   },
   avatar: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontSize: 15, fontFamily: fonts.bold, color: colors.white },
@@ -275,11 +261,11 @@ const themedStyles = () => StyleSheet.create({
   username: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.accent, marginTop: 1 },
 
   reqActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  btnPrimary: { backgroundColor: colors.accent, paddingHorizontal: 14, paddingVertical: 9, minWidth: 78, alignItems: 'center' },
+  btnPrimary: { backgroundColor: colors.accent, paddingHorizontal: 14, paddingVertical: 9, minWidth: 78, alignItems: 'center', borderRadius: 12 },
   btnPrimaryText: { fontSize: 13, fontFamily: fonts.bold, color: colors.white },
   btnGhost: {
     width: 34, height: 34, alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: colors.surfaceAlt, borderRadius: 12,
   },
   tagMuted: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.inkSoft },
 });

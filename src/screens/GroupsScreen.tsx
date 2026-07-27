@@ -1,4 +1,4 @@
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, useState } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
@@ -27,43 +27,12 @@ import HardShadow from '../components/HardShadow';
 import NameInputSheet from '../components/NameInputSheet';
 import PaywallModal from '../components/PaywallModal';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
-import { useTourAnchor } from '../context/GuidedTourContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 
 // CTA "crear grupo" del estado vacío, con el ancla del tour (paso 1). Es un
 // componente propio para que el ancla se monte/desmonte CON el botón: al crear
 // el primer grupo el estado vacío desaparece y `clearOnUnmount` limpia el foco.
-function EmptyCreateGroupButton({ label, onPress }: { label: string; onPress: () => void }) {
-  const anchor = useTourAnchor('createGroup', { clearOnUnmount: true });
-  // El ancla va en un View envolvente (patrón del resto de anclas del tour:
-  // measureInWindow fiable sobre View, no sobre TouchableOpacity).
-  return (
-    <View ref={anchor.ref} collapsable={false} onLayout={anchor.onLayout} style={{ marginTop: 8 }}>
-      <TouchableOpacity onPress={onPress}>
-        <HardShadow style={{ backgroundColor: colors.accent, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 16, paddingVertical: 11 }}>
-          <Ionicons name="add" size={18} color={colors.white} />
-          <Text style={{ color: colors.white, fontFamily: fonts.bold, fontSize: 13 }}>{label}</Text>
-        </HardShadow>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-// Botón "Activar carrito" del 1er grupo CON el ancla del tour (paso 1). MISMO
-// motivo que arriba: el hook debe vivir DENTRO de un componente que se monte/
-// desmonte con el botón, para que `clearOnUnmount` limpie el foco al borrar el
-// grupo. Si el ancla se declara a nivel de pantalla, GroupsScreen no se desmonta
-// (sigue en el tab) → el rect queda fantasma y el tour resalta un hueco vacío.
-function ActivateCartAnchor({ children }: { children: ReactNode }) {
-  const anchor = useTourAnchor('activateCart', { clearOnUnmount: true });
-  return (
-    <View ref={anchor.ref} collapsable={false} onLayout={anchor.onLayout}>
-      {children}
-    </View>
-  );
-}
-
 export default function GroupsScreen() {
   const styles = useThemedStyles(themedStyles);
   const headerTop = useHeaderTopPadding(56);
@@ -211,7 +180,7 @@ export default function GroupsScreen() {
 
             {/* Activate button: el del 1er grupo va envuelto en el ancla del tour
                 (componente propio → clearOnUnmount al borrar el grupo). */}
-            {index === 0 ? <ActivateCartAnchor>{activateBtn}</ActivateCartAnchor> : activateBtn}
+            {activateBtn}
           </View>
         </View>
       </TouchableOpacity>
@@ -261,10 +230,12 @@ export default function GroupsScreen() {
           <Ionicons name="people-outline" size={48} color={colors.inkFaint} />
           <Text style={styles.emptyTitle}>{t('group.emptyTitle')}</Text>
           <Text style={styles.emptyText}>{t('group.emptyText')}</Text>
-          {/* Componente propio para que el ancla del tour (spotlight sobre este
-              CTA) se monte/desmonte CON el estado vacío: al crear el grupo
-              desaparece y el ancla se limpia sola (clearOnUnmount). */}
-          <EmptyCreateGroupButton label={t('group.createCta')} onPress={handleNewGroup} />
+          <TouchableOpacity onPress={handleNewGroup} style={{ marginTop: 8 }}>
+            <HardShadow style={{ backgroundColor: colors.accent, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 16, paddingVertical: 11 }}>
+              <Ionicons name="add" size={18} color={colors.white} />
+              <Text style={{ color: colors.white, fontFamily: fonts.bold, fontSize: 13 }}>{t('group.createCta')}</Text>
+            </HardShadow>
+          </TouchableOpacity>
         </View>
       ) : (
         <FlatList

@@ -12,12 +12,13 @@ import { useTranslation } from '../context/LanguageContext';
 import { useProfile } from '../context/ProfileContext';
 import { mercadonaToUI } from '../lib/productAdapters';
 import StoreProductList from '../components/StoreProductList';
-import ActiveCartBanner from '../components/ActiveCartBanner';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 
 type ProductsRouteProp = RouteProp<CatalogStackParamList, 'Products'>;
 
 export default function ProductsScreen() {
   const styles = useThemedStyles(themedStyles);
+  const headerTop = useHeaderTopPadding(52);
   const { lang } = useTranslation();
   const { profile } = useProfile();
   const navigation = useNavigation<any>();
@@ -46,9 +47,7 @@ export default function ProductsScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      <ActiveCartBanner topInset />
-
-      <View style={styles.headerArea}>
+      <View style={[styles.headerArea, { paddingTop: headerTop }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
@@ -60,7 +59,7 @@ export default function ProductsScreen() {
         </View>
       </View>
 
-      <StoreProductList products={uiProducts} loading={loading} error={error} emoji={emoji} searchable />
+      <StoreProductList products={uiProducts} loading={loading} error={error} emoji={emoji} searchable roundedCards />
     </View>
   );
 }

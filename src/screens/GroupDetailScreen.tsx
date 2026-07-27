@@ -288,19 +288,6 @@ export default function GroupDetailScreen() {
                 <Ionicons name="people-outline" size={20} color={colors.accent} />
               )}
             </View>
-            <View style={styles.memberSummaryCopy}>
-              <Text style={styles.sectionTitle}>{t('group.membersTitle', { n: group.members.length })}</Text>
-              <View style={styles.membersNames}>
-                {group.members.slice(0, 3).map((m, i) => (
-                  <Text key={m.id} style={styles.memberName} numberOfLines={1}>
-                    {m.name}{i < Math.min(group.members.length, 3) - 1 ? ', ' : ''}
-                  </Text>
-                ))}
-                {group.members.length > 3 && (
-                  <Text style={styles.memberName}>{t('group.moreMembers', { n: group.members.length - 3 })}</Text>
-                )}
-              </View>
-            </View>
             <View style={styles.manageBtn}>
               <Text style={styles.manageHintText}>{t('group.manage')}</Text>
               <Ionicons name="chevron-forward" size={17} color={colors.accent} />
@@ -462,13 +449,10 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', borderRadius: 15,
   },
   membersSection: { paddingVertical: 11 },
-  memberSummaryRow: { flexDirection: 'row', alignItems: 'center', gap: 11 },
+  memberSummaryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   memberAvatarsWrap: {
     minWidth: 38, height: 38, justifyContent: 'center',
   },
-  memberSummaryCopy: { flex: 1, minWidth: 0, gap: 3 },
-  membersNames: { flexDirection: 'row', flexWrap: 'nowrap', overflow: 'hidden' },
-  memberName: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft },
   manageBtn: {
     height: 30, borderRadius: 15, paddingLeft: 10, paddingRight: 7,
     flexDirection: 'row', gap: 1,

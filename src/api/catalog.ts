@@ -5,6 +5,9 @@
 // buscar: ahora es una sola query con índice trigram. La columna `raw` guarda el
 // MercadonaProduct completo.
 import { supabase } from '../lib/supabase';
+import { offerTypesOf, type OfferType } from '../lib/offerTypes';
+export { offerTypesForStore } from '../lib/offerTypes';
+export type { OfferType } from '../lib/offerTypes';
 import { getLanguage } from '../i18n';
 import type { MercadonaProduct } from '../types';
 import type { CatalogStore } from '../constants/stores';
@@ -154,9 +157,15 @@ async function keysetPage(
   const priceOrder = order === 'priceAsc' || order === 'priceDesc';
   const desc = order === true || order === 'priceDesc';
   const activeOrderCol = priceOrder ? 'unit_price' : orderCol;
+  // Las proyecciones ligeras ya contienen normalmente `unit_price` y la
+  // columna de nombre. Repetirla en el select provoca un 500 de PostgREST al
+  // mezclar supermercados y pedir el orden por precio.
+  const selectCols = cols.split(',').some((column) => column.trim() === activeOrderCol)
+    ? cols
+    : `${cols}, ${activeOrderCol}`;
   let q = supabase
     .from(table)
-    .select(`${cols}, ${activeOrderCol}`)
+    .select(selectCols)
     .eq('published', true)
     .order(activeOrderCol, { ascending: !desc })
     .order('id', { ascending: true })
@@ -358,6 +367,10 @@ export interface BonpreuProduct {
   packaging: string | null;
   thumbnail: string | null;
   unitPrice: number | null;
+  promoPrice: number | null;
+  promoBasePrice: number | null;
+  promoName: string | null;
+  promoText: string | null;
   priceFormat: string | null;
   pricePerUnit: string | null; // etiqueta €/unidad canónica ("1,50 €/kg")
   categoryName: string | null;
@@ -377,6 +390,10 @@ const mapBonpreu = (r: any): BonpreuProduct => {
     packaging: r.packaging ?? null,
     thumbnail: r.thumbnail ?? null,
     unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
+    promoPrice: r.promo_price != null ? Number(r.promo_price) : null,
+    promoBasePrice: r.promo_base_price != null ? Number(r.promo_base_price) : null,
+    promoName: (ca && r.promo_name_ca ? r.promo_name_ca : r.promo_name) ?? null,
+    promoText: r.promo_text ?? null,
     priceFormat: r.price_format ?? null,
     pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
     categoryName: r.category_name ?? null,
@@ -384,7 +401,7 @@ const mapBonpreu = (r: any): BonpreuProduct => {
 };
 
 const BONPREU_COLS =
-  'id, display_name, display_name_ca, brand, product_info, supplier_name, ingredients, nutrition, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+  'id, display_name, display_name_ca, brand, product_info, supplier_name, ingredients, nutrition, packaging, thumbnail, unit_price, promo_price, promo_base_price, promo_name, promo_name_ca, promo_text, price_format, category_name, price_per_unit, price_per_unit_unit';
 
 /** Búsqueda por nombre en el catálogo de BonpreuEsclat (server-side). Bilingüe:
  *  en català busca/muestra por la columna catalana (display_name_ca[_norm]). */
@@ -883,6 +900,9 @@ export interface DiaProduct {
   priceFormat: string | null;  // precio mostrado ("5,89 €")
   pricePerUnit: string | null; // etiqueta €/unidad canónica ("9,82 €/kg")
   categoryName: string | null;
+  promoName: string | null;       // "3x2", "2ª unidad al 50%", "CLUB Dia · 25%"…
+  promoText: string | null;       // condiciones completas publicadas por Dia
+  promoBasePrice: number | null;  // precio tachado en descuentos directos
   // Ficha (solo en fetchDiaProduct; null en listados/búsqueda). La rellena
   // scripts/sync-dia.mjs del vike_pageContext. Ver migración dia_product_detail.sql.
   description: string | null;
@@ -894,27 +914,57 @@ export interface DiaProduct {
   operator: string | null;
 }
 
-const mapDia = (r: any): DiaProduct => ({
-  id: r.id,
-  displayName: r.display_name,
-  brand: r.brand ?? null,
-  thumbnail: r.thumbnail ?? null,
-  unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
-  priceFormat: r.price_format ?? null,
-  pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
-  categoryName: r.category_name ?? null,
-  // Solo presentes cuando se piden (detalle); en listados quedan undefined → null.
-  description: r.description ?? null,
-  ingredients: r.ingredients ?? null,
-  nutrition: r.nutrition ?? null,
-  conservation: r.conservation ?? null,
-  preparation: r.preparation ?? null,
-  denomination: r.denomination ?? null,
-  operator: r.operator ?? null,
-});
+const mapDia = (r: any, region: RegionValue | null = null): DiaProduct => {
+  const community = region != null && region !== REGION_ALL
+    ? REGION_MERCADONA_NAME[region]
+    : null;
+  const regionalOffers = r.regional_offers && typeof r.regional_offers === 'object'
+    ? r.regional_offers
+    : {};
+  const regionalOffer = community ? regionalOffers[community] : null;
+  const hasRegionalSnapshots = Object.keys(regionalOffers).length > 0;
+  const offerRegions = Array.isArray(r.offer_regions) ? r.offer_regions : null;
+  const baseOfferApplies = r.promo_name != null && (
+    !community
+    || offerRegions == null
+    || offerRegions.includes(community)
+  );
+  // Sin una CCAA concreta (perfil "Todas") se usa la oferta base. Con CCAA,
+  // el snapshot regional manda; el backfill anterior al primer sync regional
+  // conserva la semántica nacional mediante offer_regions = NULL.
+  const offerActive = regionalOffer != null
+    || (!community && r.promo_name != null)
+    || (!hasRegionalSnapshots && baseOfferApplies);
+  return {
+    id: r.id,
+    displayName: r.display_name,
+    brand: r.brand ?? null,
+    thumbnail: r.thumbnail ?? null,
+    unitPrice: regionalOffer?.p != null ? Number(regionalOffer.p) : r.unit_price != null ? Number(r.unit_price) : null,
+    priceFormat: regionalOffer?.pf ?? r.price_format ?? null,
+    pricePerUnit: regionalOffer?.ppu != null
+      ? ppuLabel(regionalOffer.ppu, regionalOffer.ppuu)
+      : ppuLabel(r.price_per_unit, r.price_per_unit_unit),
+    categoryName: r.category_name ?? null,
+    promoName: offerActive ? regionalOffer?.n ?? r.promo_name ?? null : null,
+    promoText: offerActive ? regionalOffer?.t ?? r.promo_text ?? null : null,
+    promoBasePrice: offerActive
+      ? regionalOffer?.bp != null ? Number(regionalOffer.bp) : r.promo_base_price != null ? Number(r.promo_base_price) : null
+      : null,
+    // Solo presentes cuando se piden (detalle); en listados quedan undefined → null.
+    description: r.description ?? null,
+    ingredients: r.ingredients ?? null,
+    nutrition: r.nutrition ?? null,
+    conservation: r.conservation ?? null,
+    preparation: r.preparation ?? null,
+    denomination: r.denomination ?? null,
+    operator: r.operator ?? null,
+  };
+};
 
 const DIA_COLS =
-  'id, display_name, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+  'id, display_name, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name, promo_text, promo_base_price, offer_regions, regional_offers';
+const DIA_OFFER_COLS = DIA_COLS;
 // Columnas de ficha: solo para el detalle (cargas pesadas → no se piden en listados).
 const DIA_DETAIL_COLS =
   `${DIA_COLS}, description, ingredients, nutrition, conservation, preparation, denomination, operator`;
@@ -931,7 +981,7 @@ export async function searchDiaProducts(query: string, region: RegionValue | nul
     q,
   ).limit(limit), signal);
   if (error) throw error;
-  return (data ?? []).map(mapDia);
+  return (data ?? []).map((r: any) => mapDia(r, region));
 }
 
 /** Navegación alfabética del catálogo de Dia (sin búsqueda), keyset. */
@@ -940,7 +990,7 @@ export async function browseDiaProducts(cursor: BrowseCursor | null, region: Reg
     'dia_products', DIA_COLS, 'display_name_norm', cursor, limit,
     (q) => filterRegionalAvailability(q, region), descending, signal,
   );
-  return { items: rows.map(mapDia), nextCursor };
+  return { items: rows.map((r) => mapDia(r, region)), nextCursor };
 }
 
 /** Un producto de Dia por id (p.ej. para abrir el detalle desde la comparativa). */
@@ -953,7 +1003,7 @@ export async function fetchDiaProduct(id: string, region: RegionValue | null): P
     region,
   ).maybeSingle();
   if (error) throw error;
-  return data ? mapDia(data) : null;
+  return data ? mapDia(data, region) : null;
 }
 
 /** Una categoría N1 de Dia con sus subcategorías (N2) con productos. */
@@ -996,7 +1046,7 @@ export async function fetchDiaProductsByCategory(categoryId: string, region: Reg
     region,
   ).limit(limit);
   if (error) throw error;
-  return (data ?? []).map(mapDia);
+  return (data ?? []).map((r: any) => mapDia(r, region));
 }
 
 // ─── Sorli (tabla sorli_products, espejo aparte) ─────────────────────────────
@@ -1015,6 +1065,11 @@ export interface SorliProduct {
   pricePerUnit: string | null; // etiqueta €/unidad canónica ("1,90 €/kg")
   categoryName: string | null;
   nutriScoreGrade: 'A' | 'B' | 'C' | 'D' | 'E' | null;
+  promoName: string | null;
+  promoText: string | null;
+  promoBasePrice: number | null;
+  promoStart: string | null;
+  promoEnd: string | null;
 }
 
 const nutriScoreGrade = (value: unknown): SorliProduct['nutriScoreGrade'] => {
@@ -1030,6 +1085,8 @@ const nutriScoreGrade = (value: unknown): SorliProduct['nutriScoreGrade'] => {
 // Bilingüe: en català muestra display_name_ca si existe (fallback al castellano).
 const mapSorli = (r: any): SorliProduct => {
   const ca = getLanguage() === 'ca';
+  const promoEnd = r.promo_end ?? null;
+  const promoLive = r.promo_name != null && (promoEnd == null || promoEnd >= todayLocalISO());
   return {
     id: r.id,
     displayName: ca && r.display_name_ca ? r.display_name_ca : r.display_name,
@@ -1040,11 +1097,16 @@ const mapSorli = (r: any): SorliProduct => {
     pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
     categoryName: r.category_name ?? null,
     nutriScoreGrade: nutriScoreGrade(r.nutri_score),
+    promoName: promoLive ? (ca && r.promo_name_ca ? r.promo_name_ca : r.promo_name) ?? null : null,
+    promoText: promoLive ? (ca && r.promo_text_ca ? r.promo_text_ca : r.promo_text) ?? null : null,
+    promoBasePrice: promoLive && r.promo_base_price != null ? Number(r.promo_base_price) : null,
+    promoStart: promoLive ? r.promo_start ?? null : null,
+    promoEnd: promoLive ? promoEnd : null,
   };
 };
 
 const SORLI_COLS =
-  'id, display_name, display_name_ca, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, nutri_score';
+  'id, display_name, display_name_ca, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, nutri_score, promo_name, promo_name_ca, promo_text, promo_text_ca, promo_base_price, promo_start, promo_end';
 
 /** Búsqueda por nombre en el catálogo de Sorli (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
@@ -1166,6 +1228,8 @@ const mapCondis = (r: any): CondisProduct => {
 
 const CONDIS_COLS =
   'id, display_name, display_name_ca, brand, ingredients, nutrition, conservation, manufacturer, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+const CONDIS_OFFER_COLS =
+  `${CONDIS_COLS}, promo_name, promo_text, promo_price, promo_base_price, promo_start, promo_end`;
 
 /** Búsqueda por nombre en el catálogo de Condis (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
@@ -1292,6 +1356,8 @@ const mapAmetller = (r: any): AmetllerProduct => {
 
 const AMETLLER_COLS =
   'id, display_name, display_name_ca, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+const AMETLLER_OFFER_COLS =
+  `${AMETLLER_COLS}, promo_name, promo_text, promo_price, promo_base_price, promo_start, promo_end`;
 // Columnas de ficha (es + ca) + ean: solo para el detalle (no en listados).
 const AMETLLER_DETAIL_COLS =
   `${AMETLLER_COLS}, ean, ingredients, nutrition, conservation, origin`
@@ -1637,6 +1703,8 @@ const mapAlcampo = (r: any): AlcampoProduct => ({
 
 const ALCAMPO_COLS =
   'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
+const ALCAMPO_OFFER_COLS =
+  `${ALCAMPO_COLS}, promo_name, promo_text, promo_price, promo_base_price, promo_start, promo_end`;
 // Columnas de ficha: solo para el detalle (cargas pesadas → no se piden en listados).
 const ALCAMPO_DETAIL_COLS =
   `${ALCAMPO_COLS}, description, ingredients, nutrition, conservation, preparation, denomination, operator, origin, ean`;
@@ -1740,6 +1808,8 @@ const mapTapestry = (r: any): TapestryProduct => ({
 });
 
 const TAPESTRY_COLS = 'id, display_name, brand, thumbnail, unit_price, price_format, category_name';
+const TAPESTRY_OFFER_COLS =
+  `${TAPESTRY_COLS}, promo_name, promo_text, promo_price, promo_base_price, promo_start, promo_end`;
 const TAPESTRY_DETAIL_COLS = `${TAPESTRY_COLS}, nutrition`;
 
 async function searchTapestry(table: string, query: string, limit: number, signal?: AbortSignal): Promise<TapestryProduct[]> {
@@ -2027,6 +2097,7 @@ function filterMirrorLocation(query: any, store: CatalogStore, region: RegionVal
 function mirrorToUIAtLocation(store: CatalogStore, row: any, region: RegionValue | null, postalCode: string | null): UIProduct {
   if (store === 'carrefour') return carrefourToUI(mapCarrefour(row, region));
   if (store === 'consum') return consumToUI(mapConsum(row, postalCode));
+  if (store === 'dia') return diaToUI(mapDia(row, region));
   if (store === 'plusfresc') return plusfrescToUI(mapPlusfresc(row, postalCode));
   return MIRROR_QUERY[store].toUI(row);
 }
@@ -2182,13 +2253,59 @@ export async function fetchPriceChanges(
 }
 
 // ─── Ofertas (acceso del Home) ───────────────────────────────────────────────
-// Solo Carrefour expone promociones en su catálogo (badge + precio tachado en el
-// SSR de listado; ver carrefour_offers.sql). Mercadona no hace ofertas (precios
-// siempre bajos) y el resto de espejos no las publican de forma explotable.
+// Cada retailer entra únicamente con una señal explícita de promoción del feed:
+// nunca se confunde una variación semanal ordinaria con una oferta.
 
 /** Súpers con ofertas; OffersScreen monta su selector con
  *  esta lista, así que añadir un súper aquí + su fetch lo estrena en la UI. */
-export const OFFER_STORES: CatalogStore[] = ['carrefour', 'esclat', 'consum', 'plusfresc', 'hiperdino', 'aldi'];
+export const OFFER_STORES: CatalogStore[] = [
+  'carrefour', 'esclat', 'consum', 'dia', 'sorli', 'eroski', 'caprabo',
+  'condis', 'ametller', 'aldi', 'hiperdino', 'alcampo', 'plusfresc',
+];
+
+type NormalizedOfferStore = 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'alcampo';
+
+const NORMALIZED_OFFER_CONFIG: Record<NormalizedOfferStore, {
+  table: string;
+  columns: string;
+  bilingual: boolean;
+  toUI: (row: any) => UIProduct;
+}> = {
+  eroski: {
+    table: 'eroski_products',
+    columns: TAPESTRY_OFFER_COLS,
+    bilingual: false,
+    toUI: (row) => eroskiToUI(mapTapestry(row)),
+  },
+  caprabo: {
+    table: 'caprabo_products',
+    columns: TAPESTRY_OFFER_COLS,
+    bilingual: false,
+    toUI: (row) => capraboToUI(mapTapestry(row)),
+  },
+  condis: {
+    table: 'condis_products',
+    columns: CONDIS_OFFER_COLS,
+    bilingual: true,
+    toUI: (row) => condisToUI(mapCondis(row)),
+  },
+  ametller: {
+    table: 'ametller_products',
+    columns: AMETLLER_OFFER_COLS,
+    bilingual: true,
+    toUI: (row) => ametllerToUI(mapAmetller(row)),
+  },
+  alcampo: {
+    table: 'alcampo_products',
+    columns: ALCAMPO_OFFER_COLS,
+    bilingual: false,
+    toUI: (row) => alcampoToUI(mapAlcampo(row)),
+  },
+};
+
+const isNormalizedOfferStore = (store: CatalogStore): store is NormalizedOfferStore =>
+  store === 'eroski' || store === 'caprabo' || store === 'condis'
+  || store === 'ametller' || store === 'alcampo';
 
 export interface CarrefourOffer {
   product: UIProduct;        // con el precio ACTUAL (rebajado si es descuento directo)
@@ -2199,9 +2316,9 @@ export interface CarrefourOffer {
 /** Alias genérico: una oferta cualquiera de la pantalla "Ofertas" (varios súpers). */
 export type StoreOffer = CarrefourOffer;
 
-/** Filtros de la pantalla Ofertas (se aplican EN SERVIDOR: el listado es keyset
- *  sobre miles de filas, filtrar solo lo ya cargado enseñaría resultados a
- *  medias). Vacío/undefined = sin filtro. */
+/** Filtros de la pantalla Ofertas. Nombre/categoría/precio se aplican en
+ * PostgREST; el tipo se resuelve sobre la promoción final y recorre páginas
+ * keyset completas. Nunca se filtra solo lo ya visible. */
 export interface OfferFilters {
   /** Búsqueda por nombre (insensible a acentos, palabras en cualquier orden). */
   search?: string;
@@ -2212,6 +2329,8 @@ export interface OfferFilters {
   priceMax?: number | null;
   /** Orden por precio; sin él, alfabético. */
   sort?: 'asc' | 'desc' | null;
+  /** Tipos de promoción seleccionados (multi); [] = todos. */
+  offerTypes?: OfferType[];
 }
 
 // Condiciones comunes de OfferFilters sobre una query de espejo (todas se
@@ -2234,71 +2353,114 @@ const todayLocalISO = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
+// La web de Plusfresc y el sync usan Lleida (centro 12) como catálogo de
+// referencia cuando el CP no pertenece a una zona de reparto conocida.
+const plusfrescOfferCenter = (postalCode: string | null) =>
+  plusfrescCenterFromPostalCode(postalCode) ?? '12';
+
 // Filtro PostgREST de "oferta viva" de Carrefour (compartido por el listado y
 // el recuento de categorías): precio tachado o promo de lote no caducada.
 const carrefourOfferLiveness = () =>
   `strikethrough_price.not.is.null,and(promo_name.not.is.null,or(promo_end.is.null,promo_end.gte.${todayLocalISO()}))`;
 
-/** Categorías con ofertas vivas del súper (para la hoja de filtros), vía
- *  agregado `count()` de PostgREST (una fila por categoría, sin traerse los
- *  miles de productos). Si los agregados no estuvieran habilitados en el
- *  proyecto, devuelve [] y la hoja simplemente no ofrece categoría. */
+/** Categorías con ofertas vivas del súper (para la hoja de filtros).
+ * PostgREST tiene los agregados deshabilitados en producción (PGRST123), así
+ * que se leen solo id+categoría en páginas de 1.000 y se deduplican en cliente.
+ * El resultado se cachea por súper/ubicación en OffersScreen. */
 export async function fetchOfferCategories(
   store: CatalogStore,
   region: RegionValue | null,
   postalCode: string | null,
 ): Promise<string[]> {
   try {
-    // `as any`: el parser de tipos de supabase-js no entiende el select con
-    // agregado ("category_name, count()") y desborda la instanciación (TS2589).
-    let q: any;
-    if (store === 'esclat') {
-      q = (supabase.from('bonpreu_products').select('category_name, count()') as any)
-        .eq('published', true).not('promo_name', 'is', null).not('category_name', 'is', null);
-    } else if (store === 'consum') {
-      const zone = consumZoneFromPostalCode(postalCode);
-      if (!zone) return [];
-      q = filterRegionalAvailability(
-        (supabase.from('consum_products').select('category_name, count()') as any)
+    const buildQuery = () => {
+      let q: any;
+      if (store === 'esclat') {
+        q = supabase.from('bonpreu_products').select('id, category_name')
+          .eq('published', true).not('promo_name', 'is', null).not('category_name', 'is', null);
+      } else if (store === 'consum') {
+        const zone = consumZoneFromPostalCode(postalCode);
+        if (!zone) return null;
+        q = filterRegionalAvailability(
+          supabase.from('consum_products').select('id, category_name')
+            .eq('published', true)
+            .not('category_name', 'is', null)
+            .contains('offer_zones', [zone]),
+          region,
+        );
+      } else if (store === 'dia') {
+        q = filterRegionalAvailability(
+          supabase.from('dia_products').select('id, category_name')
+            .eq('published', true)
+            .not('promo_name', 'is', null)
+            .not('category_name', 'is', null),
+          region,
+        );
+        if (region != null && region !== REGION_ALL) {
+          const community = REGION_MERCADONA_NAME[region];
+          if (community) {
+            const pgArray = `{${JSON.stringify(community)}}`;
+            q = q.or(`offer_regions.is.null,offer_regions.cs.${pgArray}`);
+          }
+        }
+      } else if (store === 'sorli') {
+        q = supabase.from('sorli_products').select('id, category_name')
+          .eq('published', true)
+          .not('promo_name', 'is', null)
+          .not('category_name', 'is', null)
+          .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`);
+      } else if (store === 'plusfresc') {
+        const center = plusfrescOfferCenter(postalCode);
+        q = filterCenterAvailability(
+          supabase.from('plusfresc_products').select('id, category_name')
+            .eq('published', true)
+            .not('category_name', 'is', null)
+            .contains('offer_centers', [center])
+            .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`),
+          center,
+        );
+      } else if (store === 'hiperdino') {
+        q = supabase.from('hiperdino_products').select('id, category_name')
           .eq('published', true)
           .not('category_name', 'is', null)
-          .contains('offer_zones', [zone]),
-        region,
-      );
-    } else if (store === 'plusfresc') {
-      const center = plusfrescCenterFromPostalCode(postalCode);
-      if (!center) return [];
-      q = filterCenterAvailability(
-        (supabase.from('plusfresc_products').select('category_name, count()') as any)
+          .not('promo_base_price', 'is', null);
+      } else if (store === 'aldi') {
+        q = supabase.from('aldi_products').select('id, category_name')
           .eq('published', true)
           .not('category_name', 'is', null)
-          .contains('offer_centers', [center])
-          .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`),
-        center,
-      );
-    } else if (store === 'hiperdino') {
-      q = (supabase.from('hiperdino_products').select('category_name, count()') as any)
-        .eq('published', true)
-        .not('category_name', 'is', null)
-        .not('promo_base_price', 'is', null);
-    } else if (store === 'aldi') {
-      q = (supabase.from('aldi_products').select('category_name, count()') as any)
-        .eq('published', true)
-        .not('category_name', 'is', null)
-        .not('promo_base_price', 'is', null)
-        .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`);
-    } else {
-      q = filterRegionalAvailability(
-        (supabase.from('carrefour_products').select('category_name, count()') as any)
-          .eq('published', true).not('category_name', 'is', null).or(carrefourOfferLiveness()),
-        region,
-      );
+          .not('promo_base_price', 'is', null)
+          .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`);
+      } else if (isNormalizedOfferStore(store)) {
+        const config = NORMALIZED_OFFER_CONFIG[store];
+        q = supabase.from(config.table).select('id, category_name')
+          .eq('published', true)
+          .not('category_name', 'is', null)
+          .not('promo_name', 'is', null)
+          .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`);
+      } else {
+        q = filterRegionalAvailability(
+          supabase.from('carrefour_products').select('id, category_name')
+            .eq('published', true).not('category_name', 'is', null).or(carrefourOfferLiveness()),
+          region,
+        );
+      }
+      return q;
+    };
+
+    const categories = new Set<string>();
+    const pageSize = 1000;
+    for (let offset = 0; ; offset += pageSize) {
+      const query = buildQuery();
+      if (!query) return [];
+      const { data, error } = await query.order('id').range(offset, offset + pageSize - 1);
+      if (error) throw error;
+      const rows = (data ?? []) as any[];
+      for (const row of rows) {
+        if (row.category_name) categories.add(String(row.category_name));
+      }
+      if (rows.length < pageSize) break;
     }
-    const { data, error } = await q;
-    if (error) throw error;
-    return ((data ?? []) as any[])
-      .map((r) => String(r.category_name))
-      .sort((a: string, b: string) => a.localeCompare(b, 'es'));
+    return [...categories].sort((a, b) => a.localeCompare(b, 'es'));
   } catch {
     return [];
   }
@@ -2349,7 +2511,7 @@ export async function fetchBonpreuOffers(
   const normCol = ca ? 'display_name_ca_norm' : 'display_name_norm';
   const { rows, nextCursor } = await keysetPage(
     'bonpreu_products',
-    `${BONPREU_COLS}, promo_name, promo_name_ca`,
+    BONPREU_COLS,
     filters?.sort ? 'unit_price' : normCol,
     cursor,
     limit,
@@ -2414,6 +2576,134 @@ export async function fetchConsumOffers(
   return { items, nextCursor };
 }
 
+/** DIA publica en el mismo PLP estructurado dos señales explícitas: rebajas
+ * CLUB Dia (precio tachado + porcentaje) y promociones de lote/online
+ * (`promotions[].description`). El sync las normaliza y guarda por CCAA. */
+export async function fetchDiaOffers(
+  cursor: BrowseCursor | null,
+  region: RegionValue | null,
+  limit = 50,
+  filters?: OfferFilters,
+): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
+  const community = region != null && region !== REGION_ALL
+    ? REGION_MERCADONA_NAME[region]
+    : null;
+  const { rows, nextCursor } = await keysetPage(
+    'dia_products',
+    DIA_OFFER_COLS,
+    filters?.sort ? 'unit_price' : 'display_name_norm',
+    cursor,
+    limit,
+    (q) => {
+      let live = filterRegionalAvailability(q.not('promo_name', 'is', null), region);
+      if (community) {
+        const pgArray = `{${JSON.stringify(community)}}`;
+        live = live.or(`offer_regions.is.null,offer_regions.cs.${pgArray}`);
+      }
+      return applyOfferFilters(live, filters, 'display_name_norm');
+    },
+    filters?.sort === 'desc',
+  );
+  const items = rows.flatMap((row: any) => {
+    const product = mapDia(row, region);
+    if (!product.promoName) return [];
+    return [{
+      product: diaToUI(product),
+      promoName: product.promoName,
+      promoEnd: null,
+      prevPrice: product.promoBasePrice,
+    }];
+  });
+  return { items, nextCursor };
+}
+
+/** Sorliclic expone la sección oficial `/ofertas` mediante `soloOfertas=true`.
+ * El catálogo general contiene la misma señal estructurada (`oferta`,
+ * `textoOferta`, vigencia y precio), normalizada por el sync en columnas. */
+export async function fetchSorliOffers(
+  cursor: BrowseCursor | null,
+  limit = 50,
+  filters?: OfferFilters,
+): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
+  const ca = getLanguage() === 'ca';
+  const normCol = ca ? 'display_name_ca_norm' : 'display_name_norm';
+  const { rows, nextCursor } = await keysetPage(
+    'sorli_products',
+    SORLI_COLS,
+    filters?.sort ? 'unit_price' : normCol,
+    cursor,
+    limit,
+    (q) => applyOfferFilters(
+      q.not('promo_name', 'is', null).or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`),
+      filters,
+      normCol,
+    ),
+    filters?.sort === 'desc',
+  );
+  const items = rows.flatMap((row: any) => {
+    const product = mapSorli(row);
+    if (!product.promoName) return [];
+    return [{
+      product: sorliToUI(product),
+      promoName: product.promoName,
+      promoEnd: product.promoEnd,
+      prevPrice: product.promoBasePrice,
+    }];
+  });
+  return { items, nextCursor };
+}
+
+/** Eroski/Caprabo (tile HTML), Condis (Empathy), Ametller (SCAPI) y Alcampo
+ * (Ocado) comparten el contrato normalizado. promo_price solo sustituye al
+ * precio ordinario cuando el retailer publica un precio final directo; los
+ * lotes conservan el precio unitario normal y muestran su condición. */
+export async function fetchNormalizedRetailerOffers(
+  store: NormalizedOfferStore,
+  cursor: BrowseCursor | null,
+  limit = 50,
+  filters?: OfferFilters,
+): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
+  const config = NORMALIZED_OFFER_CONFIG[store];
+  const ca = config.bilingual && getLanguage() === 'ca';
+  const normCol = ca ? 'display_name_ca_norm' : 'display_name_norm';
+  const { rows, nextCursor } = await keysetPage(
+    config.table,
+    config.columns,
+    filters?.sort ? 'unit_price' : normCol,
+    cursor,
+    limit,
+    (q) => applyOfferFilters(
+      q.not('promo_name', 'is', null)
+        .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`),
+      filters,
+      normCol,
+    ),
+    filters?.sort === 'desc',
+  );
+
+  const items = rows.map((row: any) => {
+    const promoPrice = row.promo_price != null ? Number(row.promo_price) : null;
+    const currentPrice = promoPrice != null && promoPrice > 0 ? promoPrice : Number(row.unit_price);
+    const offerRow = promoPrice != null && promoPrice > 0
+      ? {
+          ...row,
+          unit_price: promoPrice,
+          price_format: `${promoPrice.toFixed(2).replace('.', ',')} €`,
+        }
+      : row;
+    const basePrice = row.promo_base_price != null ? Number(row.promo_base_price) : null;
+    return {
+      product: config.toUI(offerRow),
+      promoName: row.promo_name ?? null,
+      promoEnd: row.promo_end ?? null,
+      prevPrice: basePrice != null && Number.isFinite(currentPrice) && basePrice > currentPrice
+        ? basePrice
+        : null,
+    };
+  });
+  return { items, nextCursor };
+}
+
 /** HiperDino solo entra en Ofertas cuando Magento publica un regular_price
  * estrictamente mayor que el final_price actual. */
 export async function fetchHiperdinoOffers(
@@ -2474,7 +2764,7 @@ export async function fetchAldiOffers(
 }
 
 function plusfrescOfferAt(row: any, postalCode: string | null) {
-  const center = plusfrescCenterFromPostalCode(postalCode);
+  const center = plusfrescOfferCenter(postalCode);
   const regional = center && row.center_prices && typeof row.center_prices === 'object'
     ? row.center_prices[center]
     : null;
@@ -2496,8 +2786,7 @@ export async function fetchPlusfrescOffers(
   limit = 50,
   filters?: OfferFilters,
 ): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
-  const center = plusfrescCenterFromPostalCode(postalCode);
-  if (!center) return { items: [], nextCursor: null };
+  const center = plusfrescOfferCenter(postalCode);
   const ca = getLanguage() === 'ca';
   const normCol = ca ? 'display_name_ca_norm' : 'display_name_norm';
   const { rows, nextCursor } = await keysetPage(
@@ -2548,9 +2837,10 @@ export async function fetchPlusfrescOffers(
   return { items, nextCursor };
 }
 
-/** Ofertas de un súper (dispatch por tienda).
- *  Firma común para que OffersScreen pagine cualquiera con el mismo keyset. */
-export function fetchStoreOffers(
+/** Una página cruda de ofertas del retailer. Los filtros de nombre, categoría y
+ * precio ya viajan a PostgREST; el tipo se clasifica sobre la promoción final
+ * resuelta (incluidas variantes regionales/bilingües). */
+function fetchStoreOfferPage(
   store: CatalogStore,
   cursor: BrowseCursor | null,
   region: RegionValue | null,
@@ -2560,8 +2850,53 @@ export function fetchStoreOffers(
 ): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
   if (store === 'esclat') return fetchBonpreuOffers(cursor, limit, filters);
   if (store === 'consum') return fetchConsumOffers(cursor, region, postalCode, limit, filters);
+  if (store === 'dia') return fetchDiaOffers(cursor, region, limit, filters);
+  if (store === 'sorli') return fetchSorliOffers(cursor, limit, filters);
   if (store === 'plusfresc') return fetchPlusfrescOffers(cursor, postalCode, limit, filters);
   if (store === 'hiperdino') return fetchHiperdinoOffers(cursor, limit, filters);
   if (store === 'aldi') return fetchAldiOffers(cursor, limit, filters);
+  if (isNormalizedOfferStore(store)) return fetchNormalizedRetailerOffers(store, cursor, limit, filters);
   return fetchCarrefourOffers(cursor, region, limit, filters);
+}
+
+/** Ofertas de un súper con paginación completa también al filtrar por tipo.
+ * Se recorren páginas keyset del servidor hasta reunir resultados suficientes;
+ * se devuelve la página filtrada entera para no saltarse coincidencias cuando
+ * el cursor avance al siguiente bloque crudo. */
+export async function fetchStoreOffers(
+  store: CatalogStore,
+  cursor: BrowseCursor | null,
+  region: RegionValue | null,
+  postalCode: string | null,
+  limit = 50,
+  filters?: OfferFilters,
+): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
+  const selectedTypes = filters?.offerTypes?.length ? new Set(filters.offerTypes) : null;
+  if (!selectedTypes) {
+    return fetchStoreOfferPage(store, cursor, region, postalCode, limit, filters);
+  }
+
+  const serverFilters: OfferFilters = { ...filters, offerTypes: undefined };
+  const items: StoreOffer[] = [];
+  let scanCursor = cursor;
+  const scanLimit = Math.max(limit, 100);
+
+  for (;;) {
+    const page = await fetchStoreOfferPage(
+      store,
+      scanCursor,
+      region,
+      postalCode,
+      scanLimit,
+      serverFilters,
+    );
+    items.push(...page.items.filter((offer) =>
+      offerTypesOf(offer).some((type) => selectedTypes.has(type)),
+    ));
+
+    if (!page.nextCursor || items.length >= limit) {
+      return { items, nextCursor: page.nextCursor };
+    }
+    scanCursor = page.nextCursor;
+  }
 }

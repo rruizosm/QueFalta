@@ -51,8 +51,8 @@ export default function NameScreen() {
 
   return (
     <OnboardingLayout
-      step={1}
-      totalSteps={7}
+      step={2}
+      totalSteps={8}
       eyebrow={t('onboarding.required')}
       title={t('onboarding.nameTitle')}
       subtitle={t('onboarding.nameSubtitle')}
@@ -88,6 +88,7 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
     paddingHorizontal: 14, paddingVertical: 14,
+    borderRadius: 18,
   },
   input: { flex: 1, fontSize: 16, fontFamily: fonts.semibold, color: colors.ink, padding: 0 },
   helper: { fontSize: 12.5, lineHeight: 17, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 10 },

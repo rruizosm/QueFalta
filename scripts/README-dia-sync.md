@@ -55,6 +55,14 @@ se implementará más adelante (ver `src/constants/regions.ts`).
   `prices.price_per_unit` + `measure_unit` ("KILO"/"LITRO"/"UNIDAD"/"100 GR."/
   "DOCENA"…) → `price_per_unit` canónico (l/kg/ud) vía `lib/price.mjs` (la docena
   a €/ud; "LAVADO"/"METRO" quedan sin ppu, no son comparables).
+- **Ofertas:** la página `/ofertas` usa un feed específico para agrupar por
+  categoría, pero los mismos productos del PLP general ya incluyen toda la señal
+  necesaria y sin duplicados: descuentos directos en `prices` y promociones
+  `promotions[].description` ("3X2", "2ª UD AL 50%", "2 UD POR 3 EUROS"…).
+  El sync normaliza `promo_name`, `promo_text` y `promo_base_price`, y acumula
+  `offer_regions`/`regional_offers` por CCAA durante el barrido multi-zona. Así
+  la app muestra el tipo y el precio correctos de la región tanto en catálogo
+  como en Ofertas y en la ficha.
 - La N1 **"Novedades y recomendados" (L128) se salta** (marketing rotatorio).
 - **Endpoints alternativos (no usados):** los filtrados por categoría
   `/api/v1/plp-back/l1/all/{N1}/reduced?category_id={N2}` filtran pero OMITEN
@@ -82,6 +90,11 @@ por columnas inexistentes.
 Para la **disponibilidad por comunidad autónoma** (columna `regions`), ejecuta también
 [`supabase/migrations/dia_regions.sql`](../supabase/migrations/dia_regions.sql). Sin ella,
 el upsert del catálogo falla (el sync incluye `regions` en cada fila desde el barrido multi-zona).
+
+Para las **ofertas de DIA**, ejecuta además
+[`supabase/migrations/20260723204711_dia_offers.sql`](../supabase/migrations/20260723204711_dia_offers.sql).
+Hace backfill inmediato desde `raw` y añade las columnas regionales que enviará
+el próximo sync. Debe estar aplicada antes de ejecutarlo.
 
 ## 2. Service_role key en `.env.local`
 
@@ -115,11 +128,16 @@ categoría (0,3 %), ~60 sin €/unidad, 1.816 con disponibilidad regional limita
 | `DRY_RUN` | — | `1` = no escribe, imprime resumen |
 | `MAX_ZONES` | ∞ | limita nº de zonas (provincias) a barrer (pruebas) |
 | `MAX_PAGES` | ∞ | limita nº de páginas por zona (pruebas; alias viejo `MAX_CATEGORIES`) |
+| `DIA_API_PREFIX` | autodetecta `/api/v1` y luego `/api` ante 404 | fuerza el prefijo del BFF de DIA |
 | `SKIP_N1` | `L128` | N1 a excluir (CSV). Por defecto solo "Novedades y recomendados" |
 | `SKIP_DETAIL` | — | `1` = no toca la ficha (preserva la guardada) |
 | `DETAIL_TTL_DAYS` | `30` | refresca la ficha si su `detail_synced_at` es más viejo que esto |
 | `DETAIL_MAX` | ∞ | tope de fichas a descargar por ejecución (reparte el rastreo) |
 | `DETAIL_CONCURRENCY` | `4` | páginas de ficha en paralelo |
+
+La salida incluye dos contadores de promoción: productos en oferta y cuántos
+de ellos tienen la oferta limitada a determinadas CCAA. Las promociones de lote
+cuentan aunque `prices.is_promo_price` sea `false`.
 
 ### Ficha de producto (INGREDIENTES/NUTRICIÓN/CONSERVACIÓN…)
 

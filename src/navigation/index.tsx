@@ -1,5 +1,5 @@
-import { useEffect, useCallback, useRef, useState } from 'react';
-import { View, Platform } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import {
   NavigationContainer, createNavigationContainerRef,
   DefaultTheme, DarkTheme, type Theme,
@@ -26,7 +26,6 @@ import { useNotifications } from '../context/NotificationsContext';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
-import { GuidedTourProvider, useGuidedTour } from '../context/GuidedTourContext';
 import { joinGroup } from '../api/groups';
 import {
   addNotificationResponseListener,
@@ -97,46 +96,8 @@ const BOOT_MIN_MS = 2000;
  *  la app. Pasado el tope se arranca con lo que haya. */
 const BOOT_MAX_MS = 10000;
 
-/** Envuelve la barra de pestañas en un View que se mide a sí mismo: registra su
- *  rect real (ancla 'tabBar') para que el resaltado del tutorial encaje con la
- *  barra, respetando el área segura del home indicator.
- *
- *  - Con liquid glass (iOS 26): barra FLOTANTE de cristal con píldora deslizante
- *    (`LiquidGlassTabBar`, ver LIQUID-GLASS.md). Se posiciona ella misma en
- *    absolute y las escenas scrollean por debajo; las pantallas compensan el
- *    solape con useTabBarBottomPadding. El ref/onLayout miden SOLO la barra.
- *  - Sin glass (Android / iOS ≤ 18): BottomTabBar clásica, en flujo, intacta. */
-function TourTabBar(props: BottomTabBarProps) {
-  const { registerAnchor } = useGuidedTour();
-  const ref = useRef<View>(null);
-  const insets = useSafeAreaInsets();
-  const measure = useCallback(() => {
-    const node = ref.current as any;
-    if (!node?.measureInWindow) return;
-    requestAnimationFrame(() => {
-      try {
-        node.measureInWindow((x: number, y: number, w: number, h: number) => {
-          if (w > 0 && h > 0) registerAnchor('tabBar', { x, y, w, h });
-        });
-      } catch { /* ignore */ }
-    });
-  }, [registerAnchor]);
-  // Re-mide cuando cambian los insets: en Android edge-to-edge el primer
-  // `onLayout` puede dispararse antes de que el sistema termine de aplicar los
-  // insets, dejando la posición medida obsoleta (más arriba de lo real) sin que
-  // vuelva a dispararse `onLayout` (el tamaño/posición relativa a su padre no
-  // cambia, aunque la ventana sí). Re-medir al estabilizarse los insets corrige
-  // ese desfase.
-  useEffect(measure, [measure, insets.top, insets.bottom]);
-
-  if (glassAvailable) {
-    return <LiquidGlassTabBar {...props} barRef={ref} onBarLayout={measure} />;
-  }
-  return (
-    <View ref={ref} collapsable={false} onLayout={measure}>
-      <BottomTabBar {...props} />
-    </View>
-  );
+function AppTabBar(props: BottomTabBarProps) {
+  return glassAvailable ? <LiquidGlassTabBar {...props} /> : <BottomTabBar {...props} />;
 }
 
 function parseInviteUrl(url: string): string | null {
@@ -366,9 +327,8 @@ export default function Navigation() {
 
   return (
     <NavigationContainer ref={navigationRef} theme={theme}>
-      <GuidedTourProvider>
       <Tab.Navigator
-        tabBar={(props) => <TourTabBar {...props} />}
+        tabBar={(props) => <AppTabBar {...props} />}
         screenOptions={({ route }) => ({
           headerShown: false,
           // Premonta todas las pestañas durante el arranque (no perezosas) y
@@ -422,7 +382,6 @@ export default function Navigation() {
         <Tab.Screen name="List"      component={ListScreen}        options={{ title: t('tabs.cart') }} />
         <Tab.Screen name="Groups"    component={GroupsNavigator}   options={{ title: t('tabs.groups') }} />
       </Tab.Navigator>
-      </GuidedTourProvider>
     </NavigationContainer>
   );
 }

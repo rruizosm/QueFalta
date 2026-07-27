@@ -2,7 +2,6 @@
  *  cuando hay sesión pero el perfil aún no tiene onboarded_at. */
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { OnboardingStackParamList } from '../../types';
-import WelcomeScreen from './WelcomeScreen';
 import LanguageStepScreen from './LanguageStepScreen';
 import NameScreen from './NameScreen';
 import UsernameScreen from './UsernameScreen';
@@ -21,7 +20,6 @@ export default function OnboardingNavigator() {
       screenOptions={{ headerShown: false, gestureEnabled: false, animation: 'slide_from_right' }}
     >
       <Stack.Screen name="Language" component={LanguageStepScreen} />
-      <Stack.Screen name="Welcome"  component={WelcomeScreen} />
       <Stack.Screen name="Name"     component={NameScreen} />
       <Stack.Screen name="Username" component={UsernameScreen} />
       <Stack.Screen name="Region"   component={RegionScreen} />

@@ -73,6 +73,13 @@ create table if not exists public.sorli_products (
   price_format        text,               -- texto mostrado ("3,79 €")
   price_per_unit      numeric,            -- € por unidad CANÓNICA (l/kg/ud), de precioUnidadMedida + unidadMedida
   price_per_unit_unit text,               -- 'l' | 'kg' | 'ud'
+  promo_name          text,               -- tipo corto de oferta en castellano
+  promo_name_ca       text,               -- tipo corto de oferta en catalán
+  promo_text          text,               -- condiciones de promociones complejas
+  promo_text_ca       text,               -- condiciones en catalán
+  promo_base_price    numeric check (promo_base_price is null or promo_base_price >= 0),
+  promo_start         date,
+  promo_end           date,
   available           boolean not null default true,  -- !desactivado
   published           boolean not null default true,
   nutri_score         text check (nutri_score is null or nutri_score in ('A', 'B', 'C', 'D', 'E')),
@@ -109,6 +116,12 @@ create index if not exists sorli_products_first_seen_idx
 create index if not exists sorli_products_price_changed_idx
   on public.sorli_products (price_changed_at desc)
   where price_changed_at is not null;
+create index if not exists sorli_products_offers_name_idx
+  on public.sorli_products (display_name_norm, id)
+  where published = true and promo_name is not null;
+create index if not exists sorli_products_offers_name_ca_idx
+  on public.sorli_products (display_name_ca_norm, id)
+  where published = true and promo_name is not null;
 
 drop trigger if exists track_price_change on public.sorli_products;
 create trigger track_price_change
@@ -116,6 +129,11 @@ create trigger track_price_change
   for each row execute function public.catalog_track_price_change();
 
 comment on column public.sorli_products.price_per_unit is '€ por unidad canónica (price_per_unit_unit). NULL = sin dato.';
+comment on column public.sorli_products.promo_name is 'Tipo corto de oferta Sorli en castellano.';
+comment on column public.sorli_products.promo_name_ca is 'Tipo corto de oferta Sorli en catalán.';
+comment on column public.sorli_products.promo_text is 'Condiciones completas de promociones complejas.';
+comment on column public.sorli_products.promo_text_ca is 'Condiciones completas de la promoción en catalán.';
+comment on column public.sorli_products.promo_base_price is 'Precio anterior tachado cuando pvp > pvpoferta.';
 
 -- ── RLS: lectura pública, escritura solo service_role ────────────────────────
 alter table public.sorli_products   enable row level security;
@@ -128,3 +146,6 @@ on public.sorli_products for select to anon, authenticated using (true);
 drop policy if exists "sorli categories read" on public.sorli_categories;
 create policy "sorli categories read"
 on public.sorli_categories for select to anon, authenticated using (true);
+
+grant select on table public.sorli_products, public.sorli_categories to anon, authenticated;
+grant select, insert, update, delete on table public.sorli_products, public.sorli_categories to service_role;

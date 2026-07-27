@@ -57,6 +57,12 @@ create table if not exists public.eroski_products (
   category_ids        text[] not null default '{}',  -- hoja + ancestros (navegación por cualquier nivel)
   unit_price          numeric,            -- precio del envase en € (item.price)
   price_format        text,               -- texto mostrado ("1,29 €")
+  promo_name          text,               -- etiqueta del tile (3x2, 2ª unidad, -25%...)
+  promo_text          text,
+  promo_price         numeric,            -- item.price si hay descuento directo
+  promo_base_price    numeric,            -- price-before tachado
+  promo_start         date,
+  promo_end           date,
   price_per_unit      numeric,            -- €/unidad canónica: NULL (no está en el listado)
   price_per_unit_unit text,
   available           boolean not null default true,

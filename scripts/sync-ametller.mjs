@@ -42,6 +42,7 @@
 //      MAX_PRODUCTS=N      (limita nº de productos, para pruebas)
 import crypto from 'node:crypto';
 import { canonicalPricePerUnit } from './lib/price.mjs';
+import { normalizeAmetllerOffer } from './lib/retailer-offers.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -215,6 +216,7 @@ const nutrients = (s) => { const v = clean(s); return v ? v.split(',').map((x) =
 function normalizeEs(p) {
   const ppu = canonicalPricePerUnit(p.pricePerUnit, UM_MAP[(p.unitMeasure || '').toUpperCase()] ?? p.unitMeasure);
   const price = num(p.price);
+  const offer = normalizeAmetllerOffer(p);
   return {
     id: String(p.id),
     retailer_product_id: null,
@@ -226,6 +228,12 @@ function normalizeEs(p) {
     ean: clean(p.ean),
     unit_price: price,
     price_format: price != null ? `${eurStr(price)} €` : null,
+    promo_name: offer?.promo_name ?? null,
+    promo_text: offer?.promo_text ?? null,
+    promo_price: offer?.promo_price ?? null,
+    promo_base_price: offer?.promo_base_price ?? null,
+    promo_start: offer?.promo_start ?? null,
+    promo_end: offer?.promo_end ?? null,
     price_per_unit: ppu?.value ?? null,
     price_per_unit_unit: ppu?.unit ?? null,
     available: p.inventory ? p.inventory.orderable !== false : true,
@@ -341,6 +349,7 @@ async function main() {
     if (rows[0]) console.log('category_ids[0]:', rows[0].category_ids.join(', '));
     console.log('nulos →', {
       sin_precio: rows.filter((r) => r.unit_price == null).length,
+      con_oferta: rows.filter((r) => r.promo_name != null).length,
       sin_ppu: rows.filter((r) => r.price_per_unit == null).length,
       sin_img: rows.filter((r) => !r.thumbnail).length,
       sin_ean: rows.filter((r) => !r.ean).length,

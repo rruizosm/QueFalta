@@ -192,11 +192,13 @@ const themedStyles = () => StyleSheet.create({
     width: 38, height: 38, backgroundColor: colors.white,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: colors.border,
+    borderRadius: 19,
   },
   favBtn: {
     width: 38, height: 38, backgroundColor: colors.white,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: colors.accent,
+    borderRadius: 19,
   },
   headerTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink },
 
@@ -204,6 +206,7 @@ const themedStyles = () => StyleSheet.create({
   photo: {
     width: '100%', height: 260, backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border, marginBottom: 16,
+    borderRadius: 20,
   },
   photoPlaceholder: { alignItems: 'center', justifyContent: 'center' },
 

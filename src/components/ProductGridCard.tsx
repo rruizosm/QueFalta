@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -15,6 +15,8 @@ export default function ProductGridCard({
   emoji,
   rounded = false,
   badgeLabel,
+  offerTag,
+  storeLogo,
   onPress,
 }: {
   width: number;
@@ -27,15 +29,24 @@ export default function ProductGridCard({
   rounded?: boolean;
   /** Etiqueta superpuesta sobre la imagen (p. ej. "Novedad"). */
   badgeLabel?: string;
+  /** Tipo de promoción del retailer (3x2, CLUB Dia · 25%…). */
+  offerTag?: string | null;
+  storeLogo?: number | null;
   onPress: () => void;
 }) {
   const styles = useThemedStyles(themedStyles);
+  const hasStoreLogo = storeLogo != null;
   return (
     <TouchableOpacity
       style={[styles.card, rounded && styles.cardRounded, { width }]}
       activeOpacity={0.7}
       onPress={onPress}
     >
+      {hasStoreLogo ? (
+        <View style={styles.storeLogoBadge} pointerEvents="none">
+          <Image source={storeLogo} style={styles.storeLogo} resizeMode="contain" />
+        </View>
+      ) : null}
       <GlassSurface
         style={[styles.imgWrap, rounded && styles.imgWrapRounded]}
         fallbackColor={colors.white}
@@ -48,8 +59,19 @@ export default function ProductGridCard({
           <Ionicons name="image-outline" size={22} color={colors.inkFaint} />
         )}
         {badgeLabel ? (
-          <View style={styles.badge}>
+          <View style={[styles.badge, hasStoreLogo && styles.badgeBelowStoreLogo]}>
             <Text style={styles.badgeText}>{badgeLabel}</Text>
+          </View>
+        ) : null}
+        {offerTag ? (
+          <View style={[
+            styles.offerTag,
+            (badgeLabel || hasStoreLogo) && styles.offerTagBelowBadge,
+            hasStoreLogo && !badgeLabel && styles.offerTagBelowStoreLogo,
+            badgeLabel && hasStoreLogo && styles.offerTagBelowBadgeAndStoreLogo,
+          ]}>
+            <Ionicons name="pricetag" size={9} color={colors.white} />
+            <Text style={styles.offerTagText} numberOfLines={1}>{offerTag}</Text>
           </View>
         ) : null}
       </GlassSurface>
@@ -72,7 +94,7 @@ export default function ProductGridCard({
 }
 
 const themedStyles = () => StyleSheet.create({
-  card: {},
+  card: { position: 'relative' },
   cardRounded: {
     padding: 8,
     backgroundColor: colors.white,
@@ -101,6 +123,37 @@ const themedStyles = () => StyleSheet.create({
     fontSize: 9.5,
     fontFamily: fonts.bold,
     color: colors.ink,
+    letterSpacing: 0.1,
+  },
+  storeLogoBadge: {
+    position: 'absolute', top: 0, left: 0, zIndex: 3,
+    width: 34, height: 34,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  storeLogo: { width: '100%', height: '100%' },
+  badgeBelowStoreLogo: { top: 44 },
+  offerTag: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    right: 6,
+    minHeight: 21,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.red,
+    borderRadius: 5,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+  },
+  offerTagBelowBadge: { top: 32 },
+  offerTagBelowStoreLogo: { top: 44 },
+  offerTagBelowBadgeAndStoreLogo: { top: 70 },
+  offerTagText: {
+    flexShrink: 1,
+    fontSize: 9,
+    fontFamily: fonts.bold,
+    color: colors.white,
     letterSpacing: 0.1,
   },
   placeholderEmoji: { fontSize: 26 },

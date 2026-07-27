@@ -12,12 +12,11 @@ import type { UIProduct } from '../lib/productAdapters';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import { storeInRegion, storesForRegion } from '../constants/regions';
 import StoreProductList from '../components/StoreProductList';
-import StoreDropdown from '../components/StoreDropdown';
-import ActiveCartBanner from '../components/ActiveCartBanner';
+import StoreDropdown, { type StoreSelection } from '../components/StoreDropdown';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import { type ViewMode } from '../components/ViewModeToggle';
 import SlidingSegments from '../components/SlidingSegments';
-import ProductFilterSheet, { PRICE_RANGES, type PriceSort } from '../components/ProductFilterSheet';
+import ProductFilterSheet, { PRICE_RANGES, type FilterGroup, type PriceSort } from '../components/ProductFilterSheet';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 
 // Misma normalización que la búsqueda del catálogo (insensible a acentos/mayúsculas).
@@ -39,7 +38,7 @@ const stripAccents = (s: string) =>
  * Todo filtra en cliente: las novedades son ~100 filas ya cargadas en memoria.
  *
  * Liquid Glass (F3, solo `glassAvailable`): mismo patrón que Cambios de precios
- * — todo el chrome (banner de carrito, cabecera, selector de súper y fila de
+ * — todo el chrome (cabecera, selector de súper y fila de
  * búsqueda) vive en una franja de cristal flotante (absolute, al final del
  * árbol) y la lista pasa por debajo refractándose (topInset = alto medido del
  * chrome; hideToolbar + viewMode controlado). En fallback, el árbol y los
@@ -62,12 +61,12 @@ export default function NewArrivalsScreen() {
     () => CATALOG_STORES.filter((s) => allowedStores.includes(s.key)),
     [allowedStores],
   );
-  const [store, setStore] = useState<CatalogStore>(stores[0]?.key ?? 'mercadona');
+  const [store, setStore] = useState<StoreSelection>(stores[0]?.key ?? 'all');
 
   // Si la preferencia cambia y la tienda activa deja de estar, salta a la primera.
   useEffect(() => {
-    if (stores.length > 0 && !stores.some((s) => s.key === store)) {
-      setStore(stores[0].key);
+    if (stores.length > 0 && store !== 'all' && !stores.some((s) => s.key === store)) {
+      setStore('all');
     }
   }, [stores, store]);
 
@@ -80,9 +79,10 @@ export default function NewArrivalsScreen() {
   const [query, setQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const [category, setCategory] = useState<string[]>([]); // multi; [] = todas
+  const [filterStores, setFilterStores] = useState<CatalogStore[]>([]);
   const [priceRange, setPriceRange] = useState<number | null>(null); // índice en PRICE_RANGES
   const [sort, setSort] = useState<PriceSort | null>(null);
-  const filtersActive = category.length > 0 || priceRange != null || sort != null;
+  const filtersActive = category.length > 0 || filterStores.length > 0 || priceRange != null || sort != null;
 
   // Las categorías son de CADA súper → al cambiar de súper el filtro deja de
   // tener sentido y se limpia (precio/orden sí sobreviven, son universales).
@@ -92,22 +92,35 @@ export default function NewArrivalsScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [chromeH, setChromeH] = useState(0);
 
-  const cacheKey = `${store}:${region ?? 'none'}:${postalCode ?? 'none'}`;
+  const cacheKeyFor = (storeKey: CatalogStore) => `${storeKey}:${region ?? 'none'}:${postalCode ?? 'none'}`;
   useEffect(() => {
-    if (cache[cacheKey]) { setLoading(false); setError(false); return; }
+    const requestedStores = store === 'all' ? stores.map((item) => item.key) : [store];
+    const missingStores = requestedStores.filter((storeKey) => !cache[cacheKeyFor(storeKey)]);
+    if (missingStores.length === 0) { setLoading(false); setError(false); return; }
     let cancelled = false;
     setLoading(true);
     setError(false);
-    fetchWeeklyNewProducts(store, region, postalCode)
-      .then((items) => { if (!cancelled) setCache((c) => ({ ...c, [cacheKey]: items })); })
+    Promise.all(missingStores.map(async (storeKey) => ({
+      storeKey,
+      items: await fetchWeeklyNewProducts(storeKey, region, postalCode, 50),
+    })))
+      .then((results) => {
+        if (!cancelled) setCache((current) => ({
+          ...current,
+          ...Object.fromEntries(results.map(({ storeKey, items }) => [cacheKeyFor(storeKey), items])),
+        }));
+      })
       .catch(() => { if (!cancelled) setError(true); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
     // cache a propósito fuera de deps: solo dispara al cambiar de súper.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, region, postalCode, cacheKey]);
+  }, [store, stores, region, postalCode]);
 
-  const base = cache[cacheKey] ?? [];
+  const base = useMemo(() => {
+    if (store !== 'all') return cache[cacheKeyFor(store)] ?? [];
+    return stores.flatMap((item) => cache[cacheKeyFor(item.key)] ?? []);
+  }, [store, stores, cache, region, postalCode]);
 
   // Categorías disponibles en las novedades del súper activo (únicas, ordenadas).
   const categories = useMemo(() => {
@@ -116,13 +129,39 @@ export default function NewArrivalsScreen() {
     return [...set].sort((a, b) => a.localeCompare(b, 'es'));
   }, [base]);
 
+  const categoryGroups = useMemo<FilterGroup[]>(() => {
+    if (store !== 'all') return [];
+    return stores.map((item) => {
+      const values = new Set<string>();
+      (cache[cacheKeyFor(item.key)] ?? []).forEach((product) => {
+        if (product.categoryName) values.add(product.categoryName);
+      });
+      return {
+        key: item.key,
+        label: item.name,
+        options: [...values].sort((a, b) => a.localeCompare(b, 'es')).map((value) => ({
+          value: `${item.key}\u001f${value}`,
+          label: value,
+        })),
+      };
+    }).filter((group) => group.options.length > 0);
+  }, [store, stores, cache, region, postalCode]);
+
   // Búsqueda + filtros + orden. Sin orden elegido se respeta el orden en que
   // llegan (curado en Mercadona); con orden por precio, los sin precio al final.
   const products = useMemo(() => {
     const words = stripAccents(query).trim().split(/\s+/).filter((w) => w.length >= 2);
     const range = priceRange != null ? PRICE_RANGES[priceRange] : null;
+    const categoryStores = new Set(category.map((value) => value.split('\u001f')[0] as CatalogStore));
+    const selectedStoreSet = new Set(filterStores);
     let out = base.filter((p) => {
-      if (category.length > 0 && (p.categoryName == null || !category.includes(p.categoryName))) return false;
+      const productStore = p.store as CatalogStore;
+      if (store === 'all' && selectedStoreSet.size > 0 && !selectedStoreSet.has(productStore)) return false;
+      if (category.length > 0) {
+        if (store === 'all') {
+          if (!categoryStores.has(productStore) || !category.includes(`${productStore}\u001f${p.categoryName ?? ''}`)) return false;
+        } else if (p.categoryName == null || !category.includes(p.categoryName)) return false;
+      }
       if (range) {
         if (p.unitPrice == null) return false;
         if (p.unitPrice <= range.min) return false;
@@ -144,10 +183,10 @@ export default function NewArrivalsScreen() {
         return sort === 'asc' ? pa - pb : pb - pa;
       });
     }
-    return out;
-  }, [base, query, category, priceRange, sort]);
+    return store === 'all' ? out.slice(0, 50) : out;
+  }, [base, query, category, filterStores, priceRange, sort, store]);
 
-  // Chrome de la pantalla (cabecera con carrito + selector + fila de búsqueda),
+  // Chrome de la pantalla (cabecera + selector + fila de búsqueda),
   // idéntico en ambos modos salvo el back sin caja sobre el cristal y el toggle
   // (SlidingSegments en glass / pastilla estática en fallback, como el catálogo).
   const chrome = (
@@ -161,17 +200,25 @@ export default function NewArrivalsScreen() {
         >
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
-        <View style={styles.titleArea}>
-          <Text style={styles.title} numberOfLines={1}>{t('newArrivals.title')}</Text>
-          {stores.length > 1 && (
-            <StoreDropdown stores={stores} value={store} onChange={setStore} />
-          )}
-        </View>
-        <ActiveCartBanner compact />
+        <Text style={styles.title} numberOfLines={1}>{t('newArrivals.title')}</Text>
+        {stores.length > 0 ? (
+          <StoreDropdown stores={stores} value={store} onChange={setStore} includeAll labeled />
+        ) : (
+          <View style={styles.headerSpacer} />
+        )}
       </View>
 
       {/* Fila buscador + filtros + toggle (mismo diseño que el catálogo). */}
       <View style={styles.searchRow}>
+        <TouchableOpacity
+          style={[styles.filterBtn, filtersActive && styles.filterBtnOn]}
+          onPress={() => setFilterOpen(true)}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={t('filters.a11yOpen')}
+        >
+          <Ionicons name="options-outline" size={20} color={filtersActive ? colors.white : colors.inkSoft} />
+        </TouchableOpacity>
         <View style={styles.searchBar}>
           <Ionicons name="search-outline" size={18} color={colors.inkSoft} />
           <TextInput
@@ -189,15 +236,6 @@ export default function NewArrivalsScreen() {
             </TouchableOpacity>
           )}
         </View>
-        <TouchableOpacity
-          style={[styles.filterBtn, filtersActive && styles.filterBtnOn]}
-          onPress={() => setFilterOpen(true)}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          accessibilityLabel={t('filters.a11yOpen')}
-        >
-          <Ionicons name="options-outline" size={20} color={filtersActive ? colors.white : colors.inkSoft} />
-        </TouchableOpacity>
         {glassAvailable ? (
           <SlidingSegments
             compact
@@ -248,6 +286,7 @@ export default function NewArrivalsScreen() {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         roundedCards
+        showStoreLogo={store === 'all'}
         badgeLabel={t('newArrivals.badge')}
       />
 
@@ -262,6 +301,10 @@ export default function NewArrivalsScreen() {
         onPriceRange={setPriceRange}
         sort={sort}
         onSort={setSort}
+        stores={store === 'all' ? stores.map((item) => ({ value: item.key, label: item.name })) : []}
+        selectedStores={filterStores}
+        onStores={(values) => setFilterStores(values as CatalogStore[])}
+        categoryGroups={categoryGroups}
       />
 
       {/* Chrome de cristal: al FINAL del árbol para pintarse encima; la lista
@@ -296,13 +339,11 @@ const themedStyles = () => StyleSheet.create({
     width: 38, height: 38,
     alignItems: 'center', justifyContent: 'center',
   },
-  titleArea: {
-    flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 8,
-  },
   title: {
-    flexShrink: 1, fontSize: 20, fontFamily: fonts.bold,
+    flex: 1, minWidth: 0, fontSize: 20, fontFamily: fonts.bold,
     color: colors.ink, letterSpacing: -0.3,
   },
+  headerSpacer: { width: 38, height: 38 },
 
   // ── Fila buscador + filtro + vista (diseño del catálogo) ──────
   searchRow: {
@@ -310,7 +351,7 @@ const themedStyles = () => StyleSheet.create({
     marginHorizontal: 16, marginBottom: 8,
   },
   filterBtn: {
-    width: 44, height: 44, borderRadius: 18,
+    width: glassAvailable ? 40 : 44, height: glassAvailable ? 40 : 44, borderRadius: 18,
     alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.surfaceAlt,
   },
@@ -318,7 +359,7 @@ const themedStyles = () => StyleSheet.create({
   searchBar: {
     flex: 1, flexDirection: 'row', alignItems: 'center',
     backgroundColor: colors.white,
-    paddingHorizontal: 16, paddingVertical: 13,
+    height: glassAvailable ? 40 : 44, paddingHorizontal: 16,
     gap: 11,
     borderRadius: 18,
     borderWidth: 1, borderColor: colors.border,

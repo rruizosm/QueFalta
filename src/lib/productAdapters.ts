@@ -99,6 +99,7 @@ export function diaToUI(p: DiaProduct): UIProduct {
     id: p.id, store: 'dia', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
+    offerTag: p.promoName,
   };
 }
 
@@ -109,6 +110,7 @@ export function sorliToUI(p: SorliProduct): UIProduct {
     // El formato ya va en el nombre ("Naranja Bolsa 2kg") → sin metaLabel.
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
     nutriScoreGrade: p.nutriScoreGrade,
+    offerTag: p.promoName,
   };
 }
 

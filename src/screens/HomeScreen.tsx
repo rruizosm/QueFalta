@@ -666,7 +666,7 @@ const themedStyles = () => StyleSheet.create({
   },
 
   // ── Bloques rápidos (novedades / ofertas / cambios de precio) ──
-  quickBlocks: { gap: 10, marginBottom: 20 },
+  quickBlocks: { gap: 10, marginBottom: 10 },
   quickInner: {
     flexDirection: 'row', alignItems: 'center', gap: 12, padding: 13,
     borderColor: colors.border, borderRadius: 18,

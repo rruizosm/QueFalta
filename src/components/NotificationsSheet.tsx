@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, Modal, StatusBar,
+  View, Text, ScrollView, TouchableOpacity, Pressable, StyleSheet, Modal, StatusBar,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -42,6 +43,7 @@ export default function NotificationsSheet({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { items, remove, clearAll, markAllRead } = useNotifications();
+  const navigation = useNavigation<any>();
 
   // Al abrir, marca todo como leído (apaga la insignia de la campana y la pestaña).
   useEffect(() => { if (visible) markAllRead(); }, [visible, markAllRead]);
@@ -54,6 +56,11 @@ export default function NotificationsSheet({ visible, onClose }: Props) {
   const handleClearAll = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     clearAll();
+  };
+
+  const openFriends = () => {
+    onClose();
+    navigation.navigate('Friends');
   };
 
   // Alto reservado bajo la cabecera flotante (área segura + fila de 38 + aire).
@@ -80,7 +87,12 @@ export default function NotificationsSheet({ visible, onClose }: Props) {
               const meta = TYPE_META[n.type] ?? TYPE_META.general;
               const { title, body } = renderNotification(n, t);
               return (
-                <View key={n.id} style={styles.row}>
+                <Pressable
+                  key={n.id}
+                  style={styles.row}
+                  onPress={n.type === 'friend' ? openFriends : undefined}
+                  disabled={n.type !== 'friend'}
+                >
                   <View style={[styles.rowIcon, { backgroundColor: meta.tint + '22' }]}>
                     <Ionicons name={meta.icon} size={18} color={meta.tint} />
                   </View>
@@ -89,15 +101,32 @@ export default function NotificationsSheet({ visible, onClose }: Props) {
                     {body ? <Text style={styles.rowText} numberOfLines={3}>{body}</Text> : null}
                     <Text style={styles.rowTime}>{relTime(n.createdAt, t)}</Text>
                   </View>
+                  {n.type === 'friend' ? (
+                    <TouchableOpacity
+                      onPress={(event) => {
+                        event.stopPropagation();
+                        openFriends();
+                      }}
+                      style={styles.rowOpen}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('notifications.a11yOpenFriend')}
+                    >
+                      <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
+                    </TouchableOpacity>
+                  ) : null}
                   <TouchableOpacity
-                    onPress={() => handleRemove(n.id)}
+                    onPress={(event) => {
+                      event.stopPropagation();
+                      handleRemove(n.id);
+                    }}
                     style={styles.rowDelete}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     accessibilityLabel={t('notifications.a11yDelete')}
                   >
                     <Ionicons name="close" size={18} color={colors.inkFaint} />
                   </TouchableOpacity>
-                </View>
+                </Pressable>
               );
             })}
           </ScrollView>
@@ -160,6 +189,7 @@ const themedStyles = () => StyleSheet.create({
   rowText: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2, lineHeight: 17 },
   rowTime: { fontSize: 11, fontFamily: fonts.medium, color: colors.inkFaint, marginTop: 4 },
   rowDelete: { width: 26, height: 26, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  rowOpen: { width: 26, height: 26, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
 
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 40, paddingBottom: 60 },
   emptyTitle: { fontSize: 15, fontFamily: fonts.bold, color: colors.ink, marginTop: 4 },

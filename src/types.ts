@@ -374,7 +374,6 @@ export type GroupsStackParamList = {
  *  pasos obligatorios (Username, Region, Stores) y opcionales (Avatar, Friends,
  *  Group). Ver src/screens/onboarding/. */
 export type OnboardingStackParamList = {
-  Welcome: undefined;
   Language: undefined;
   Name: undefined;
   Username: undefined;

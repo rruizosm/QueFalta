@@ -7,13 +7,13 @@ import { fonts } from '../constants/typography';
 import { useProfile } from '../context/ProfileContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { fetchPriceChanges, type PriceChangeProduct } from '../api/catalog';
 import type { UIProduct } from '../lib/productAdapters';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import { storeInRegion, storesForRegion } from '../constants/regions';
 import StoreProductList from '../components/StoreProductList';
-import StoreDropdown from '../components/StoreDropdown';
-import ActiveCartBanner from '../components/ActiveCartBanner';
+import StoreDropdown, { type StoreSelection } from '../components/StoreDropdown';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import SlidingSegments from '../components/SlidingSegments';
 import { type ViewMode } from '../components/ViewModeToggle';
@@ -33,8 +33,8 @@ const pctLabel = (n: number) =>
  * trigger del sync semanal: ver supabase/migrations/catalog_price_changes.sql
  * (sin ejecutarla no hay datos y se muestra el vacío).
  *
- * Liquid Glass (F3 piloto, solo `glassAvailable`): TODO el chrome —banner de
- * carrito, cabecera, selector de súper y pestañas— vive en una franja de
+ * Liquid Glass (F3 piloto, solo `glassAvailable`): TODO el chrome —cabecera,
+ * selector de súper y pestañas— vive en una franja de
  * cristal flotante (absolute, al final del árbol como NotificationsSheet) y la
  * lista pasa por debajo y se refracta (topInset de StoreProductList = altura
  * medida del chrome). Las pestañas usan la píldora deslizante de acento
@@ -46,6 +46,7 @@ export default function PriceChangesScreen() {
   const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
   const { t } = useTranslation();
+  const headerTop = useHeaderTopPadding(52);
   const { profile } = useProfile();
 
   // Solo los súpers activados en el perfil (misma regla que el catálogo).
@@ -58,7 +59,7 @@ export default function PriceChangesScreen() {
     () => CATALOG_STORES.filter((s) => allowedStores.includes(s.key)),
     [allowedStores],
   );
-  const [store, setStore] = useState<CatalogStore>(stores[0]?.key ?? 'mercadona');
+  const [store, setStore] = useState<StoreSelection>(stores[0]?.key ?? 'all');
   const [direction, setDirection] = useState<Direction>('down');
 
   // View mode controlado: el toggle vive junto a las pestañas en ambos modos.
@@ -67,36 +68,56 @@ export default function PriceChangesScreen() {
   const [chromeH, setChromeH] = useState(0);
 
   useEffect(() => {
-    if (stores.length > 0 && !stores.some((s) => s.key === store)) {
-      setStore(stores[0].key);
+    if (stores.length > 0 && store !== 'all' && !stores.some((s) => s.key === store)) {
+      setStore('all');
     }
   }, [stores, store]);
 
   // Caché por súper+dirección para no repetir consultas al alternar.
-  const cacheKey = `${store}:${direction}:${region ?? 'none'}:${postalCode ?? 'none'}`;
+  const cacheKeyFor = (storeKey: CatalogStore) =>
+    `${storeKey}:${direction}:${region ?? 'none'}:${postalCode ?? 'none'}`;
   const [cache, setCache] = useState<Record<string, PriceChangeProduct[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (cache[cacheKey]) { setLoading(false); setError(false); return; }
+    const requestedStores = store === 'all' ? stores.map((item) => item.key) : [store];
+    const missingStores = requestedStores.filter((storeKey) => !cache[cacheKeyFor(storeKey)]);
+    if (missingStores.length === 0) { setLoading(false); setError(false); return; }
     let cancelled = false;
     setLoading(true);
     setError(false);
-    fetchPriceChanges(store, direction, region, postalCode)
-      .then((items) => { if (!cancelled) setCache((c) => ({ ...c, [cacheKey]: items })); })
+    Promise.all(missingStores.map(async (storeKey) => ({
+      storeKey,
+      items: await fetchPriceChanges(storeKey, direction, region, postalCode, 50),
+    })))
+      .then((results) => {
+        if (!cancelled) setCache((current) => ({
+          ...current,
+          ...Object.fromEntries(results.map(({ storeKey, items }) => [cacheKeyFor(storeKey), items])),
+        }));
+      })
       .catch(() => { if (!cancelled) setError(true); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
     // cache a propósito fuera de deps: solo dispara al cambiar súper/dirección.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, direction, region, postalCode, cacheKey]);
+  }, [store, stores, direction, region, postalCode]);
 
   // La línea de precio de la fila pasa a "anterior tachado · actual en
   // verde/rojo · (%)" vía priceChange (lo pinta StoreProductList) →
   // StoreProductList se reutiliza tal cual, con stepper/cesta/favoritos/ficha.
   const products: UIProduct[] = useMemo(
-    () => (cache[cacheKey] ?? []).map((c) => ({
+    () => {
+      const changes = store === 'all'
+        ? stores.flatMap((item) => cache[cacheKeyFor(item.key)] ?? [])
+        : cache[cacheKeyFor(store)] ?? [];
+      const ordered = store === 'all'
+        ? [...changes].sort((a, b) => direction === 'down'
+          ? a.deltaPct - b.deltaPct
+          : b.deltaPct - a.deltaPct).slice(0, 50)
+        : changes;
+      return ordered.map((c) => ({
       ...c.product,
       priceChange: {
         prevLabel: euro(c.prevPrice),
@@ -105,19 +126,18 @@ export default function PriceChangesScreen() {
       },
       metaLabel: null,
       pricePerUnitLabel: null,
-    })),
-    [cache, cacheKey, direction],
+      }));
+    },
+    [cache, store, stores, direction, region, postalCode],
   );
 
-  // Chrome de la pantalla (banner + cabecera + selector + pestañas), idéntico
+  // Chrome de la pantalla (cabecera + selector + pestañas), idéntico
   // en ambos modos salvo: back sin caja sobre el cristal (como el cerrar de
   // NotificationsSheet) y pestañas con píldora deslizante + toggle en línea.
   const chrome = (
     <>
-      <ActiveCartBanner topInset nameOnly rounded />
-
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: headerTop }]}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={glassAvailable ? styles.backBtnGlass : styles.backBtn}
@@ -125,9 +145,9 @@ export default function PriceChangesScreen() {
         >
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
-        <Text style={styles.title}>{t('priceChanges.title')}</Text>
-        {stores.length > 1 ? (
-          <StoreDropdown stores={stores} value={store} onChange={setStore} />
+        <Text style={styles.title} numberOfLines={1}>{t('priceChanges.title')}</Text>
+        {stores.length > 0 ? (
+          <StoreDropdown stores={stores} value={store} onChange={setStore} includeAll labeled />
         ) : (
           <View style={{ width: 38 }} />
         )}
@@ -219,6 +239,7 @@ export default function PriceChangesScreen() {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         roundedCards
+        showStoreLogo={store === 'all'}
       />
 
       {/* Chrome de cristal: al FINAL del árbol para pintarse encima; la lista
@@ -245,7 +266,7 @@ const themedStyles = () => StyleSheet.create({
   // ── Header (mismo patrón que Favoritos) ───────────────────────
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingTop: 4, paddingBottom: 10, gap: 12,
+    paddingHorizontal: 16, paddingTop: 4, paddingBottom: 10, gap: 10,
   },
   backBtn: {
     width: 38, height: 38, borderRadius: 19,
@@ -257,7 +278,10 @@ const themedStyles = () => StyleSheet.create({
     width: 38, height: 38,
     alignItems: 'center', justifyContent: 'center',
   },
-  title: { flex: 1, fontSize: 22, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4, textAlign: 'center' },
+  title: {
+    flex: 1, minWidth: 0, fontSize: 20, fontFamily: fonts.bold,
+    color: colors.ink, letterSpacing: -0.3,
+  },
 
   // ── Tab switcher (Bajadas / Subidas), SOLO fallback ───────────
   tabs: {

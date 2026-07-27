@@ -7,22 +7,51 @@ import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useProfile } from '../context/ProfileContext';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
+import { createMultiStorePager, type MultiStorePager } from '../lib/multiStorePager';
 import {
-  fetchStoreOffers, fetchOfferCategories, OFFER_STORES,
-  type BrowseCursor, type StoreOffer, type OfferFilters,
+  fetchStoreOffers, fetchOfferCategories, offerTypesForStore, OFFER_STORES,
+  type BrowseCursor, type StoreOffer, type OfferFilters, type OfferType,
 } from '../api/catalog';
 import type { UIProduct } from '../lib/productAdapters';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import { storeInRegion, storesForRegion } from '../constants/regions';
 import StoreProductList from '../components/StoreProductList';
-import StoreDropdown from '../components/StoreDropdown';
-import ActiveCartBanner from '../components/ActiveCartBanner';
+import StoreDropdown, { type StoreSelection } from '../components/StoreDropdown';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import { type ViewMode } from '../components/ViewModeToggle';
 import SlidingSegments from '../components/SlidingSegments';
-import ProductFilterSheet, { PRICE_RANGES, type PriceSort } from '../components/ProductFilterSheet';
+import ProductFilterSheet, {
+  PRICE_RANGES,
+  type FilterGroup,
+  type PriceSort,
+} from '../components/ProductFilterSheet';
 
 const euro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
+const FACET_SEPARATOR = '\u001f';
+const facetValue = (store: CatalogStore, value: string) => `${store}${FACET_SEPARATOR}${value}`;
+const facetValuesForStore = (values: string[], store: CatalogStore) =>
+  values
+    .filter((value) => value.startsWith(`${store}${FACET_SEPARATOR}`))
+    .map((value) => value.slice(value.indexOf(FACET_SEPARATOR) + 1));
+
+function compareOffers(sort: PriceSort | null) {
+  return (a: StoreOffer, b: StoreOffer) => {
+    if (sort) {
+      const priceA = a.product.unitPrice;
+      const priceB = b.product.unitPrice;
+      if (priceA == null && priceB != null) return 1;
+      if (priceA != null && priceB == null) return -1;
+      const priceDiff = (priceA ?? 0) - (priceB ?? 0);
+      if (priceDiff !== 0) return sort === 'asc' ? priceDiff : -priceDiff;
+    }
+    const nameDiff = a.product.name.localeCompare(b.product.name, 'es', { sensitivity: 'base' });
+    if (nameDiff !== 0) return nameDiff;
+    const storeDiff = CATALOG_STORE_KEYS.indexOf(a.product.store)
+      - CATALOG_STORE_KEYS.indexOf(b.product.store);
+    return storeDiff !== 0 ? storeDiff : a.product.id.localeCompare(b.product.id);
+  };
+}
 
 /**
  * OffersScreen — "Ofertas" (botón de la cabecera del Home, junto a Novedades y
@@ -30,23 +59,29 @@ const euro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
  * "2ª unidad -70%"…) y descuentos directos ("Antes X €"), en la línea secundaria
  * de cada fila. La exponen los súpers de OFFER_STORES (Carrefour vía badges de
  * promo; BonpreuEsclat vía su categoría "Ofertas"; Consum solo cuando su API
- * marca explícitamente OFFER_PRICE; Plusfresc vía sus copias Oferta2; HiperDino
- * vía su precio regular tachado; Aldi vía precio tachado y vigencia de Algolia)
+ * marca explícitamente OFFER_PRICE; DIA vía CLUB/online y precio tachado por
+ * CCAA; Sorli vía sus tipos estructurados y vigencia; Plusfresc vía sus copias
+ * Oferta2; HiperDino vía su precio regular tachado; Aldi vía precio tachado y
+ * vigencia de Algolia; Eroski/Caprabo vía el tile de oferta; Condis vía
+ * on_sale/on_promotion; Ametller vía productPromotions; y Alcampo vía
+ * promotions/promoPrice)
  * y el selector alterna entre
  * ellos; no se filtra por la preferencia de súpers del usuario porque quien solo
  * usa otro súper también puede querer ver ofertas. A diferencia de Novedades
  * (~100 filas), aquí hay miles → paginación keyset de servidor (onEndReached),
  * todas alcanzables. Requiere las migraciones carrefour_offers.sql /
  * bonpreu_offers.sql / consum_offers.sql / plusfresc_offers.sql /
- * hiperdino_offers.sql / aldi_offers.sql (sin ellas la query falla por columna
- * inexistente).
+ * hiperdino_offers.sql / aldi_offers.sql /
+ * 20260726200544_retailer_offers_condis_ametller_alcampo_eroski_caprabo.sql /
+ * 20260723204711_dia_offers.sql / 20260723212240_sorli_offers.sql
+ * (sin ellas la query falla por columna inexistente).
  *
  * Bajo la cabecera va la fila buscador + filtros (mismo diseño que Novedades y
  * la pestaña Productos del catálogo): botón de filtros a la IZQUIERDA
- * (categorías con oferta viva, rango de precio y orden por precio, en
- * ProductFilterSheet), búsqueda por nombre y toggle lista/cuadrícula. Aquí los
- * filtros van EN LA QUERY (OfferFilters): filtrar solo lo ya paginado enseñaría
- * resultados a medias, así que cada cambio recarga la primera página.
+ * (tipo de oferta, categorías con oferta viva, rango y orden por precio, en
+ * ProductFilterSheet), búsqueda por nombre y toggle lista/cuadrícula. Los
+ * filtros conservan el recorrido keyset completo: cada cambio recarga la
+ * primera página y nunca se limita a los productos que ya estaban visibles.
  *
  * Liquid Glass (F3): mismo patrón que Novedades/Cambios de precios — el chrome
  * entero en franja de cristal flotante y la lista refractándose por debajo.
@@ -55,6 +90,7 @@ export default function OffersScreen() {
   const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
   const { t } = useTranslation();
+  const headerTop = useHeaderTopPadding(52);
   const { profile } = useProfile();
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
@@ -66,7 +102,7 @@ export default function OffersScreen() {
     () => CATALOG_STORES.filter((s) => OFFER_STORES.includes(s.key) && allowedStores.includes(s.key)),
     [allowedStores],
   );
-  const [store, setStore] = useState<CatalogStore>(stores[0]?.key ?? 'carrefour');
+  const [store, setStore] = useState<StoreSelection>(stores[0]?.key ?? 'all');
 
   const [items, setItems] = useState<StoreOffer[]>([]);
   const [cursor, setCursor] = useState<BrowseCursor | null>(null);
@@ -75,6 +111,7 @@ export default function OffersScreen() {
   const [error, setError] = useState(false);
   // Descarta respuestas de una carga anterior (cambio de súper/filtros o desmontaje).
   const loadSeq = useRef(0);
+  const allOffersPager = useRef<MultiStorePager<StoreOffer> | null>(null);
 
   // Búsqueda y filtros (server-side; ver OfferFilters). La búsqueda se debouncea
   // para no lanzar una query por tecla.
@@ -82,32 +119,84 @@ export default function OffersScreen() {
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const [category, setCategory] = useState<string[]>([]); // multi; [] = todas
+  const [selectedOfferTypes, setSelectedOfferTypes] = useState<string[]>([]); // multi; [] = todos
+  const [filterStores, setFilterStores] = useState<CatalogStore[]>([]); // [] = todos
   const [priceRange, setPriceRange] = useState<number | null>(null); // índice en PRICE_RANGES
   const [sort, setSort] = useState<PriceSort | null>(null);
-  const filtersActive = category.length > 0 || priceRange != null || sort != null;
+  const filtersActive = category.length > 0 || selectedOfferTypes.length > 0
+    || priceRange != null || sort != null || (store === 'all' && filterStores.length > 0);
 
   useEffect(() => {
     const id = setTimeout(() => setDebouncedQuery(query), 300);
     return () => clearTimeout(id);
   }, [query]);
 
-  // Las categorías son de CADA súper → se limpian al cambiar (precio/orden no).
-  useEffect(() => { setCategory([]); }, [store]);
+  // Categorías y tipos disponibles dependen de cada súper → se limpian al cambiar.
+  useEffect(() => {
+    setCategory([]);
+    setSelectedOfferTypes([]);
+  }, [store]);
 
   const filters: OfferFilters = useMemo(() => ({
     search: debouncedQuery,
-    categories: category,
+    categories: store === 'all' ? [] : category,
+    offerTypes: store === 'all' ? [] : selectedOfferTypes as OfferType[],
     priceMin: priceRange != null ? PRICE_RANGES[priceRange].min : null,
     priceMax: priceRange != null ? PRICE_RANGES[priceRange].max : null,
     sort,
-  }), [debouncedQuery, category, priceRange, sort]);
+  }), [store, debouncedQuery, category, selectedOfferTypes, priceRange, sort]);
+
+  const offerStoreKeys = useMemo(() => stores.map((option) => option.key), [stores]);
+  useEffect(() => {
+    if (store !== 'all' && !offerStoreKeys.includes(store)) {
+      setStore(stores[0]?.key ?? 'all');
+    }
+  }, [store, stores, offerStoreKeys]);
+  let filteredOfferStores = store === 'all' && filterStores.length > 0
+    ? offerStoreKeys.filter((key) => filterStores.includes(key))
+    : offerStoreKeys;
+  if (store === 'all' && category.length > 0) {
+    const categoryStores = new Set(category.map((value) => value.split(FACET_SEPARATOR)[0]));
+    filteredOfferStores = filteredOfferStores.filter((key) => categoryStores.has(key));
+  }
+  if (store === 'all' && selectedOfferTypes.length > 0) {
+    const typeStores = new Set(selectedOfferTypes.map((value) => value.split(FACET_SEPARATOR)[0]));
+    filteredOfferStores = filteredOfferStores.filter((key) => typeStores.has(key));
+  }
+  const filteredOfferStoresKey = filteredOfferStores.join(',');
+  const filtersForStore = useCallback((selectedStore: CatalogStore): OfferFilters => ({
+    ...filters,
+    categories: store === 'all' ? facetValuesForStore(category, selectedStore) : category,
+    offerTypes: store === 'all'
+      ? facetValuesForStore(selectedOfferTypes, selectedStore) as OfferType[]
+      : selectedOfferTypes as OfferType[],
+  }), [filters, store, category, selectedOfferTypes]);
+
+  const offerTypeLabels = useMemo<Record<OfferType, string>>(() => ({
+    discount: t('offers.typeDiscount'),
+    second_unit: t('offers.typeSecondUnit'),
+    multibuy: t('offers.typeMultibuy'),
+    club: t('offers.typeClub'),
+    other: t('offers.typeOther'),
+  }), [t]);
+  const offerTypeOptions = useMemo(() => {
+    return store === 'all'
+      ? []
+      : offerTypesForStore(store).map((value) => ({ value, label: offerTypeLabels[value] }));
+  }, [store, offerTypeLabels]);
 
   // Categorías con oferta viva del súper activo (para la hoja de filtros),
   // cacheadas por súper para no repetir el agregado al alternar en el selector.
   const [categoriesCache, setCategoriesCache] = useState<Record<string, string[]>>({});
-  const categoriesKey = `${store}:${region ?? 'none'}:${postalCode ?? 'none'}`;
+  const [categoriesLoading, setCategoriesLoading] = useState<Record<string, boolean>>({});
+  const categoriesKeyForStore = useCallback(
+    (selectedStore: CatalogStore) =>
+      `${selectedStore}:${region ?? 'none'}:${postalCode ?? 'none'}`,
+    [region, postalCode],
+  );
+  const categoriesKey = store === 'all' ? null : categoriesKeyForStore(store);
   useEffect(() => {
-    if (categoriesCache[categoriesKey]) return;
+    if (store === 'all' || categoriesKey == null || categoriesCache[categoriesKey]) return;
     let cancelled = false;
     fetchOfferCategories(store, region, postalCode)
       .then((cats) => { if (!cancelled) setCategoriesCache((c) => ({ ...c, [categoriesKey]: cats })); })
@@ -116,6 +205,38 @@ export default function OffersScreen() {
     // cache a propósito fuera de deps: solo dispara al cambiar de súper.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, region, postalCode, categoriesKey]);
+
+  const ensureOfferCategories = useCallback((selectedStore: CatalogStore) => {
+    const key = categoriesKeyForStore(selectedStore);
+    if (categoriesCache[key] || categoriesLoading[key]) return;
+    setCategoriesLoading((current) => ({ ...current, [key]: true }));
+    fetchOfferCategories(selectedStore, region, postalCode)
+      .then((cats) => setCategoriesCache((current) => ({ ...current, [key]: cats })))
+      .catch(() => setCategoriesCache((current) => ({ ...current, [key]: [] })))
+      .finally(() => setCategoriesLoading((current) => ({ ...current, [key]: false })));
+  }, [categoriesCache, categoriesLoading, categoriesKeyForStore, region, postalCode]);
+
+  const categoryGroups = useMemo<FilterGroup[]>(() => stores.map((option) => {
+    const key = categoriesKeyForStore(option.key);
+    return {
+      key: option.key,
+      label: option.name,
+      loading: !!categoriesLoading[key] || categoriesCache[key] == null,
+      options: (categoriesCache[key] ?? []).map((categoryName) => ({
+        value: facetValue(option.key, categoryName),
+        label: categoryName,
+      })),
+    };
+  }), [stores, categoriesCache, categoriesLoading, categoriesKeyForStore]);
+
+  const offerTypeGroups = useMemo<FilterGroup[]>(() => stores.map((option) => ({
+    key: option.key,
+    label: option.name,
+    options: offerTypesForStore(option.key).map((value) => ({
+      value: facetValue(option.key, value),
+      label: offerTypeLabels[value],
+    })),
+  })), [stores, offerTypeLabels]);
 
   // Solo en glass: view mode controlado (el toggle vive en el chrome de cristal)
   // y alto medido del chrome para que la lista pase por debajo.
@@ -130,7 +251,34 @@ export default function OffersScreen() {
     setCursor(null);
     setLoading(true);
     setError(false);
-    fetchStoreOffers(store, null, region, postalCode, 50, filters)
+    if (store === 'all') {
+      const pager = createMultiStorePager({
+        stores: filteredOfferStores,
+        loadPage: (selectedStore, pageCursor, limit) =>
+          fetchStoreOffers(
+            selectedStore,
+            pageCursor,
+            region,
+            postalCode,
+            limit,
+            filtersForStore(selectedStore),
+          ),
+        compare: compareOffers(sort),
+      });
+      allOffersPager.current = pager;
+      pager.nextPage(50)
+        .then((pageItems) => {
+          if (loadSeq.current !== seq) return;
+          setItems(pageItems);
+          setCursor(pager.hasMore() ? { name: 0, id: 'all' } : null);
+        })
+        .catch(() => { if (loadSeq.current === seq) setError(true); })
+        .finally(() => { if (loadSeq.current === seq) setLoading(false); });
+      return;
+    }
+
+    allOffersPager.current = null;
+    fetchStoreOffers(store, null, region, postalCode, 50, filtersForStore(store))
       .then((page) => {
         if (loadSeq.current !== seq) return;
         setItems(page.items);
@@ -138,14 +286,37 @@ export default function OffersScreen() {
       })
       .catch(() => { if (loadSeq.current === seq) setError(true); })
       .finally(() => { if (loadSeq.current === seq) setLoading(false); });
-  }, [store, filters, region, postalCode]);
+  }, [
+    store,
+    filtersForStore,
+    region,
+    postalCode,
+    sort,
+    filteredOfferStoresKey,
+  ]);
 
   // Páginas siguientes al llegar al final (cursor null = no hay más).
   const loadMore = useCallback(() => {
     if (!cursor || loading || loadingMore) return;
     const seq = loadSeq.current;
     setLoadingMore(true);
-    fetchStoreOffers(store, cursor, region, postalCode, 50, filters)
+    if (store === 'all') {
+      const pager = allOffersPager.current;
+      if (!pager) {
+        setLoadingMore(false);
+        return;
+      }
+      pager.nextPage(50)
+        .then((pageItems) => {
+          if (loadSeq.current !== seq) return;
+          setItems((prev) => [...prev, ...pageItems]);
+          setCursor(pager.hasMore() ? { name: 0, id: 'all' } : null);
+        })
+        .catch(() => {})
+        .finally(() => { if (loadSeq.current === seq) setLoadingMore(false); });
+      return;
+    }
+    fetchStoreOffers(store, cursor, region, postalCode, 50, filtersForStore(store))
       .then((page) => {
         if (loadSeq.current !== seq) return;
         setItems((prev) => [...prev, ...page.items]);
@@ -153,7 +324,7 @@ export default function OffersScreen() {
       })
       .catch(() => {}) // fallo de red al paginar: se reintenta al volver a llegar al final
       .finally(() => { if (loadSeq.current === seq) setLoadingMore(false); });
-  }, [store, filters, region, postalCode, cursor, loading, loadingMore]);
+  }, [store, filtersForStore, region, postalCode, cursor, loading, loadingMore]);
 
   // El TIPO de oferta ("3x2", "2ª ud. -70%"…) se resalta en rojo ARRIBA del
   // nombre (offerTag); el precio anterior ("Antes 2,95 €") va en la línea gris.
@@ -168,15 +339,13 @@ export default function OffersScreen() {
     [items, t],
   );
 
-  // Chrome de la pantalla (banner + cabecera + selector + fila de búsqueda),
+  // Chrome de la pantalla (cabecera + selector + fila de búsqueda),
   // idéntico en ambos modos salvo el back sin caja sobre el cristal y el toggle
   // (SlidingSegments en glass / pastilla estática en fallback, como el catálogo).
   const chrome = (
     <>
-      <ActiveCartBanner topInset nameOnly rounded />
-
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: headerTop }]}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={glassAvailable ? styles.backBtnGlass : styles.backBtn}
@@ -184,10 +353,10 @@ export default function OffersScreen() {
         >
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
-        <Text style={styles.title}>{t('offers.title')}</Text>
+        <Text style={styles.title} numberOfLines={1}>{t('offers.title')}</Text>
         {/* Siempre visible (aunque haya un solo súper con ofertas): es lo que dice
             de qué súper son las ofertas que se están viendo. */}
-        <StoreDropdown stores={stores} value={store} onChange={setStore} />
+        <StoreDropdown stores={stores} value={store} onChange={setStore} includeAll labeled />
       </View>
 
       {/* Fila filtros + buscador + toggle (mismo diseño que Novedades/catálogo). */}
@@ -199,7 +368,7 @@ export default function OffersScreen() {
           accessibilityRole="button"
           accessibilityLabel={t('filters.a11yOpen')}
         >
-          <Ionicons name="options-outline" size={20} color={filtersActive ? colors.white : colors.ink} />
+          <Ionicons name="options-outline" size={20} color={filtersActive ? colors.white : colors.inkSoft} />
         </TouchableOpacity>
         <View style={styles.searchBar}>
           <Ionicons name="search-outline" size={18} color={colors.inkSoft} />
@@ -270,15 +439,27 @@ export default function OffersScreen() {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         roundedCards
+        showStoreLogo={store === 'all'}
       />
 
       {/* Hoja de filtros: categorías / precio / orden, recarga la query en vivo. */}
       <ProductFilterSheet
         visible={filterOpen}
         onClose={() => setFilterOpen(false)}
-          categories={categoriesCache[categoriesKey] ?? []}
+        categories={categoriesKey ? categoriesCache[categoriesKey] ?? [] : []}
         category={category}
         onCategory={setCategory}
+        categoryGroups={store === 'all' ? categoryGroups : []}
+        onCategoryGroupOpen={(key) => ensureOfferCategories(key as CatalogStore)}
+        offerTypes={offerTypeOptions}
+        offerTypeGroups={store === 'all' ? offerTypeGroups : []}
+        selectedOfferTypes={selectedOfferTypes}
+        onOfferTypes={setSelectedOfferTypes}
+        stores={store === 'all'
+          ? stores.map((option) => ({ value: option.key, label: option.name }))
+          : []}
+        selectedStores={filterStores}
+        onStores={(values) => setFilterStores(values as CatalogStore[])}
         priceRange={priceRange}
         onPriceRange={setPriceRange}
         sort={sort}
@@ -305,7 +486,7 @@ const themedStyles = () => StyleSheet.create({
   // ── Header (mismo patrón que Novedades/Cambios de precios) ─────
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingTop: 4, paddingBottom: 10, gap: 12,
+    paddingHorizontal: 16, paddingTop: 4, paddingBottom: 10, gap: 10,
   },
   backBtn: {
     width: 38, height: 38, borderRadius: 19,
@@ -317,7 +498,10 @@ const themedStyles = () => StyleSheet.create({
     width: 38, height: 38,
     alignItems: 'center', justifyContent: 'center',
   },
-  title: { flex: 1, fontSize: 22, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4, textAlign: 'center' },
+  title: {
+    flex: 1, minWidth: 0, fontSize: 20, fontFamily: fonts.bold,
+    color: colors.ink, letterSpacing: -0.3,
+  },
 
   // ── Fila filtros + buscador (diseño del catálogo) ─────────────
   searchRow: {
@@ -325,16 +509,15 @@ const themedStyles = () => StyleSheet.create({
     marginHorizontal: 16, marginBottom: 8,
   },
   filterBtn: {
-    width: 46, height: 46, borderRadius: 18,
+    width: glassAvailable ? 40 : 44, height: glassAvailable ? 40 : 44, borderRadius: 18,
     alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.white,
-    borderWidth: 1, borderColor: colors.border,
+    backgroundColor: colors.surfaceAlt,
   },
   filterBtnOn: { backgroundColor: colors.accent, borderColor: colors.accent },
   searchBar: {
     flex: 1, flexDirection: 'row', alignItems: 'center',
     backgroundColor: colors.white,
-    paddingHorizontal: 16, paddingVertical: 13,
+    height: glassAvailable ? 40 : 44, paddingHorizontal: 16,
     gap: 11,
     borderRadius: 18,
     borderWidth: 1, borderColor: colors.border,

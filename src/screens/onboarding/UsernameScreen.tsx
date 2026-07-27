@@ -79,8 +79,8 @@ export default function UsernameScreen() {
 
   return (
     <OnboardingLayout
-      step={2}
-      totalSteps={7}
+      step={3}
+      totalSteps={8}
       eyebrow={t('onboarding.required')}
       title={t('onboarding.usernameTitle')}
       subtitle={t('onboarding.usernameSubtitle')}
@@ -126,6 +126,7 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
     paddingHorizontal: 14, paddingVertical: 14,
+    borderRadius: 18,
   },
   inputBoxError: { borderColor: '#d6452b' },
   at: { fontSize: 17, fontFamily: fonts.bold, color: colors.inkFaint },

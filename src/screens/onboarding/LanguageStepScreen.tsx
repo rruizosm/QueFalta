@@ -35,10 +35,12 @@ export default function LanguageStepScreen() {
     <OnboardingLayout
       title={t('onboarding.languageTitle')}
       subtitle={t('onboarding.languageSubtitle')}
+      step={1}
+      totalSteps={8}
       continueLabel={t('onboarding.continue')}
       onContinue={() => {
         Haptics.selectionAsync();
-        navigation.navigate('Welcome');
+        navigation.navigate('Name');
       }}
     >
       <View style={styles.list}>
@@ -75,6 +77,7 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
     paddingHorizontal: 14, paddingVertical: 16,
+    borderRadius: 18,
   },
   cardOn: { borderColor: colors.accent, backgroundColor: colors.accentLight },
   langIcon: {

@@ -61,10 +61,10 @@ export const STORE_REGIONS: Record<CatalogStore, RegionCode[] | null> = {
   caprabo:   ['ES-CT'],
   ametller:  ['ES-CT'],
   plusfresc: ['ES-CT'],
-  condis:    ['ES-CT', 'ES-MD'],
-  bonarea:   ['ES-CT', 'ES-AR', 'ES-VC'],
-  consum:    ['ES-VC', 'ES-MC', 'ES-CM', 'ES-AN', 'ES-CT'],
-  eroski:    ['ES-PV', 'ES-NC', 'ES-GA', 'ES-CT', 'ES-IB'],
+  condis:    ['ES-CT'],
+  bonarea:   ['ES-CT', 'ES-AR', 'ES-CM', 'ES-MD', 'ES-VC', 'ES-RI', 'ES-NC'],
+  consum:    ['ES-AN', 'ES-AR', 'ES-CM', 'ES-CT', 'ES-MC', 'ES-VC'],
+  eroski:    ['ES-AS', 'ES-AR', 'ES-CB', 'ES-CL', 'ES-CT', 'ES-GA', 'ES-IB', 'ES-NC', 'ES-PV', 'ES-RI'],
   hiperdino: ['ES-CN'],
 };
 

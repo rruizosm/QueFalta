@@ -18,13 +18,17 @@ interface Props {
   switchValue?: boolean;
   onSwitchChange?: (v: boolean) => void;
   danger?: boolean;
+  /** Muestra el acceso como una función Plus sin desactivar su pulsación. */
+  locked?: boolean;
   last?: boolean;
+  /** Esquinas suaves para las tarjetas modernas de Perfil. */
+  rounded?: boolean;
 }
 
 export default function ProfileRow({
   icon, label, value, badge, onPress,
   right = 'chevron', switchValue, onSwitchChange,
-  danger = false, last = false,
+  danger = false, locked = false, last = false, rounded = true,
 }: Props) {
   const styles = useThemedStyles(themedStyles);
   const iconColor = danger ? '#d6452b' : colors.accent;
@@ -33,7 +37,7 @@ export default function ProfileRow({
 
   const inner = (
     <View style={[styles.row, !last && styles.rowBorder]}>
-      <View style={[styles.iconBox, { backgroundColor: iconBg }]}>
+      <View style={[styles.iconBox, rounded && styles.iconBoxRounded, { backgroundColor: iconBg }]}>
         <Ionicons name={icon} size={18} color={iconColor} />
       </View>
       <Text style={[styles.label, { color: labelColor }]} numberOfLines={1}>{label}</Text>
@@ -50,6 +54,8 @@ export default function ProfileRow({
           trackColor={{ false: colors.border, true: colors.accent }}
           thumbColor={colors.white}
         />
+      ) : locked ? (
+        <Ionicons name="lock-closed" size={15} color={colors.inkSoft} />
       ) : !danger ? (
         <Ionicons name="chevron-forward" size={16} color={colors.inkFaint} />
       ) : null}
@@ -78,6 +84,7 @@ const themedStyles = () => StyleSheet.create({
     width: 34, height: 34,
     alignItems: 'center', justifyContent: 'center',
   },
+  iconBoxRounded: { borderRadius: 11 },
   label: {
     flex: 1, fontSize: 14, fontFamily: fonts.semibold,
   },

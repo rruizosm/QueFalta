@@ -66,8 +66,8 @@ export default function AvatarScreen() {
 
   return (
     <OnboardingLayout
-      step={5}
-      totalSteps={7}
+      step={6}
+      totalSteps={8}
       eyebrow={t('onboarding.optional')}
       title={t('onboarding.avatarTitle')}
       subtitle={t('onboarding.avatarSubtitle')}
@@ -105,6 +105,7 @@ const themedStyles = () => StyleSheet.create({
   avatar: {
     width: 132, height: 132, borderRadius: 66,
     alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: colors.border,
   },
   initials: { fontSize: 46, fontFamily: fonts.bold, color: colors.white },
   cameraBadge: {

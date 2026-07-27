@@ -15,10 +15,10 @@ import { CatalogStackParamList } from '../types';
 import { getSubcategoryEmoji } from '../constants/subcategoryEmojis';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { useTourAnchor } from '../context/GuidedTourContext';
 import { sortByName } from '../lib/sort';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
-import ActiveCartBanner from '../components/ActiveCartBanner';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
+import GlassSurface from '../components/GlassSurface';
 
 type SubCategoryRouteProp = RouteProp<CatalogStackParamList, 'SubCategory'>;
 type Subcat = { id: string | number; name: string };
@@ -27,12 +27,12 @@ export default function SubCategoryScreen() {
   // useThemedStyles suscribe al tema (recrea estilos y refresca colors.accent /
   // colors.paper si cambian accent o modo mientras la pantalla sigue montada).
   const styles = useThemedStyles(themedStyles);
+  const headerTop = useHeaderTopPadding(52);
   const bottomPad = useTabBarBottomPadding(20);
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const route = useRoute<SubCategoryRouteProp>();
   const { categoryName, emoji = '🛒', color = colors.accent, subcategories = [], retailer = 'mercadona' } = route.params;
-  const firstSubAnchor = useTourAnchor('firstSubcategory');
 
   const openSubcategory = (item: Subcat) => {
     if (retailer === 'esclat') {
@@ -130,28 +130,24 @@ export default function SubCategoryScreen() {
     }
   };
 
-  const renderItem = ({ item, index }: { item: Subcat; index: number }) => {
+  const renderItem = ({ item }: { item: Subcat }) => {
     const itemEmoji = getSubcategoryEmoji(item.name, emoji);
-    const row = (
-      <TouchableOpacity
-        style={styles.row}
-        activeOpacity={0.8}
-        onPress={() => openSubcategory(item)}
-      >
-        <View style={[styles.thumbnail, { backgroundColor: color + '1e' }]}>
-          <Text style={styles.thumbnailEmoji}>{itemEmoji}</Text>
-        </View>
-        <Text style={styles.rowName}>{item.name}</Text>
-        <Ionicons name="chevron-forward" size={17} color={colors.inkFaint} />
-      </TouchableOpacity>
-    );
-    // La primera fila se envuelve en un View medible para anclar el resaltado del
-    // tutorial (un TouchableOpacity no siempre expone measureInWindow).
-    if (index !== 0) return row;
     return (
-      <View ref={firstSubAnchor.ref} collapsable={false} onLayout={firstSubAnchor.onLayout}>
-        {row}
-      </View>
+      <GlassSurface style={styles.row} fallbackColor={colors.white}>
+        <TouchableOpacity
+          style={styles.rowBody}
+          activeOpacity={0.8}
+          onPress={() => openSubcategory(item)}
+        >
+          <View style={[styles.thumbnail, { backgroundColor: color + '1e' }]}>
+            <Text style={styles.thumbnailEmoji}>{itemEmoji}</Text>
+          </View>
+          <Text style={styles.rowName}>{item.name}</Text>
+          <View style={styles.chevronWrap}>
+            <Ionicons name="chevron-forward" size={17} color={colors.inkSoft} />
+          </View>
+        </TouchableOpacity>
+      </GlassSurface>
     );
   };
 
@@ -159,9 +155,7 @@ export default function SubCategoryScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      <ActiveCartBanner topInset />
-
-      <View style={styles.headerArea}>
+      <View style={[styles.headerArea, { paddingTop: headerTop }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
@@ -202,15 +196,21 @@ const themedStyles = () => StyleSheet.create({
 
   list: { paddingHorizontal: 16, paddingBottom: 20 },
   row: {
-    flexDirection: 'row', alignItems: 'center',
     backgroundColor: colors.white,
-    padding: 11, gap: 12,
     borderWidth: 1, borderColor: colors.border,
+    borderRadius: 18,
+    overflow: 'hidden',
   },
+  rowBody: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 11 },
   thumbnail: {
     width: 42, height: 42,
+    borderRadius: 14,
     alignItems: 'center', justifyContent: 'center',
   },
   thumbnailEmoji: { fontSize: 21 },
   rowName: { flex: 1, fontSize: 14, fontFamily: fonts.semibold, color: colors.ink },
+  chevronWrap: {
+    width: 32, height: 32, borderRadius: 16,
+    alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceAlt,
+  },
 });

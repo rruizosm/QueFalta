@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Dimensions,
+  View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Dimensions, Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -12,9 +12,9 @@ import { useToast } from '../context/ToastContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { useGuidedTour, useTourAnchor } from '../context/GuidedTourContext';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import type { UIProduct } from '../lib/productAdapters';
+import { CATALOG_STORES } from '../constants/stores';
 import { sortByName, sortByRelevance } from '../lib/sort';
 import QuantityStepper from './QuantityStepper';
 import ProductImage from './ProductImage';
@@ -83,6 +83,7 @@ interface Props {
   badgeLabel?: string;
   /** Permite al padre reaccionar al inicio del desplazamiento de productos. */
   onScrollBeginDrag?: () => void;
+  showStoreLogo?: boolean;
 }
 
 /** Lista de productos reutilizable (subcategorías y búsqueda): imagen, stepper +
@@ -95,6 +96,7 @@ export default function StoreProductList({
   hideToolbar = false, viewMode: viewModeProp, onViewModeChange,
   pageSize, onEndReached, loadingMore = false, keepOrder = false,
   topInset = 0, roundedCards = false, badgeLabel, onScrollBeginDrag,
+  showStoreLogo = false,
 }: Props) {
   const styles = useThemedStyles(themedStyles);
   // Con tab bar de cristal: eleva la barra "Añadir" (cartBar) por encima del
@@ -107,11 +109,9 @@ export default function StoreProductList({
   const { activeCart, addToActiveCart } = useCart();
   const toast = useToast();
   const { products: favList, isProductFavorite, toggleProductFavorite } = useFavorites();
-  const { notify: tourNotify } = useGuidedTour();
   // clearOnUnmount: al desmontarse la lista (p. ej. el catálogo cambia a su
   // spinner de carga y NO monta StoreProductList) se quita el ancla, para que el
   // spotlight/chevron no queden en la posición del producto de la lista anterior.
-  const addBtnAnchor = useTourAnchor('addButton', { clearOnUnmount: true }); // botón "Añadir" (tutorial)
 
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [adding, setAdding] = useState(false);
@@ -159,14 +159,6 @@ export default function StoreProductList({
   }, [pageSize, query, searchQuery, products]);
   const visible = pageSize != null ? shown.slice(0, visibleCount) : shown;
 
-  // Tutorial (paso 'add'): el ancla del "+" del 2º producto solo se registra
-  // cuando la lista YA ha cargado y ese producto existe. Si no, el spotlight y el
-  // chevron apuntarían a una posición obsoleta (la del producto de la pantalla
-  // anterior) y se verían "saltar" al recolocarse cuando por fin cargan los
-  // productos. Gateado por `enabled`: mientras no esté listo, se quita el ancla.
-  const stepperReady = !loading && !error && visible.length >= 2;
-  const stepperAnchor = useTourAnchor('productStepper', { enabled: stepperReady, clearOnUnmount: true });
-
   const handleEndReached = () => {
     if (pageSize != null && visibleCount < shown.length) {
       setVisibleCount((c) => c + pageSize); // revela más de lo ya cargado
@@ -184,10 +176,6 @@ export default function StoreProductList({
   // Suma solo sobre los productos visibles: en la búsqueda el componente persiste
   // entre consultas, así que ignoramos cantidades stale de resultados anteriores.
   const cartCount = products.reduce((n, p) => n + (quantities[p.id] ?? 0), 0);
-
-  // Tutorial: al elegir la 1ª unidad avanza del paso "pulsa +" al de "Añadir".
-  const hasQty = cartCount > 0;
-  useEffect(() => { if (hasQty) tourNotify('qtyPicked'); }, [hasQty, tourNotify]);
 
   const handleAddToCart = async () => {
     if (!activeCart) {
@@ -215,7 +203,6 @@ export default function StoreProductList({
       const count = items.reduce((a, b) => a + b.quantity, 0);
       await addToActiveCart(items);
       setQuantities({});
-      tourNotify('cartAdd');   // avanza el tutorial si está en el paso "añade un producto"
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show(t(count === 1 ? 'product.addedOne' : 'product.addedMany', { n: count, group: activeCart.groupName }));
     } catch {
@@ -262,6 +249,8 @@ export default function StoreProductList({
       emoji={emoji}
       rounded={roundedCards}
       badgeLabel={badgeLabel}
+      offerTag={item.offerTag}
+      storeLogo={showStoreLogo ? CATALOG_STORES.find((store) => store.key === item.store)?.icon : null}
       onPress={() => setDetail({ store: item.store, id: item.id })}
     />
   );
@@ -297,6 +286,15 @@ export default function StoreProductList({
           fallbackColor={active ? colors.accentLight : colors.white}
         >
           {fav && <View style={styles.favBar} />}
+          {showStoreLogo && (
+            <View style={styles.storeLogoBadge} pointerEvents="none">
+              <Image
+                source={CATALOG_STORES.find((store) => store.key === item.store)?.icon ?? undefined}
+                style={styles.storeLogo}
+                resizeMode="contain"
+              />
+            </View>
+          )}
           <TouchableOpacity activeOpacity={0.7} onPress={() => setDetail({ store: item.store, id: item.id })}>
             {item.imageUrl ? (
               <ProductImage uri={item.imageUrl} style={styles.thumb} />
@@ -342,13 +340,7 @@ export default function StoreProductList({
               </Text>
             ) : null}
           </View>
-          {/* El 2º producto de la lista lleva el ancla del "+" para el tutorial
-              (envuelto en un View medible). */}
-          {index === 1 ? (
-            <View ref={stepperAnchor.ref} collapsable={false} onLayout={stepperAnchor.onLayout}>
-              {stepper}
-            </View>
-          ) : stepper}
+          {stepper}
         </GlassSurface>
       </Swipeable>
     );
@@ -407,6 +399,14 @@ export default function StoreProductList({
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
+          // El cambio de numColumns obliga a FlatList a reconstruir la lista.
+          // Mantener una ventana pequeña y repartir el trabajo evita bloquear
+          // el hilo JS mientras la píldora del selector termina su animación.
+          removeClippedSubviews
+          initialNumToRender={GRID_COLS * 3}
+          maxToRenderPerBatch={GRID_COLS * 2}
+          updateCellsBatchingPeriod={40}
+          windowSize={5}
           onScrollBeginDrag={onScrollBeginDrag}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.4}
@@ -424,6 +424,11 @@ export default function StoreProductList({
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
+          removeClippedSubviews
+          initialNumToRender={8}
+          maxToRenderPerBatch={6}
+          updateCellsBatchingPeriod={40}
+          windowSize={5}
           onScrollBeginDrag={onScrollBeginDrag}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.4}
@@ -443,9 +448,7 @@ export default function StoreProductList({
               {activeCart ? t('product.toGroup', { group: activeCart.groupName }) : t('product.noCartTitle')}
             </Text>
           </View>
-          {/* Ancla del botón "Añadir" para el tutorial (View medible). */}
-          <View ref={addBtnAnchor.ref} collapsable={false} onLayout={addBtnAnchor.onLayout}>
-            <TouchableOpacity style={styles.cartBtn} onPress={handleAddToCart} disabled={adding}>
+          <TouchableOpacity style={styles.cartBtn} onPress={handleAddToCart} disabled={adding}>
               {adding ? (
                 <ActivityIndicator size="small" color={colors.white} />
               ) : (
@@ -454,8 +457,7 @@ export default function StoreProductList({
                   <Ionicons name="arrow-forward" size={14} color={colors.white} />
                 </View>
               )}
-            </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         </View>
       )}
 
@@ -494,6 +496,12 @@ const themedStyles = () => StyleSheet.create({
   rowActive: { backgroundColor: colors.accentLight, borderColor: colors.accentMid },
   rowRounded: { borderRadius: 18, overflow: 'hidden' },
   favBar: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 5, backgroundColor: colors.accent },
+  storeLogoBadge: {
+    position: 'absolute', top: 0, left: 0, zIndex: 2,
+    width: 36, height: 36,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  storeLogo: { width: '100%', height: '100%' },
   swipeAction: {
     flex: 1, backgroundColor: colors.accent,
     alignItems: 'flex-start', justifyContent: 'center', paddingLeft: 26,

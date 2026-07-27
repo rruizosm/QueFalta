@@ -57,6 +57,7 @@
 //      DETAIL_CONCURRENCY=6 · DETAIL_MAX=1000 · DETAIL_TTL_DAYS=90
 //      DRY_DETAIL_MAX=1   (fichas descargadas en DRY_RUN)
 import { canonicalPricePerUnit } from './lib/price.mjs';
+import { normalizeCondisOffer } from './lib/retailer-offers.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { chromium } from 'playwright-core';
 
@@ -240,6 +241,7 @@ function ppuFromPum(pum) {
 function normalize(p) {
   const price = typeof p.price?.current === 'number' ? p.price.current : null;
   const ppu = ppuFromPum(p.pum);
+  const offer = normalizeCondisOffer(p);
   return {
     id: String(p.id ?? p.externalId),
     retailer_product_id: p.externalId != null ? String(p.externalId) : null,
@@ -249,6 +251,12 @@ function normalize(p) {
     thumbnail: `${CDN}/fit-in/600x600/es/products/${p.id}.jpg`,
     unit_price: price,
     price_format: price != null ? `${eurStr(price)} €` : null,
+    promo_name: offer?.promo_name ?? null,
+    promo_text: offer?.promo_text ?? null,
+    promo_price: offer?.promo_price ?? null,
+    promo_base_price: offer?.promo_base_price ?? null,
+    promo_start: offer?.promo_start ?? null,
+    promo_end: offer?.promo_end ?? null,
     price_per_unit: ppu?.value ?? null,
     price_per_unit_unit: ppu?.unit ?? null,
     available: p.state ? p.state === 'ACTIVE' : true,
@@ -546,7 +554,7 @@ async function main() {
       sin_img: rows.filter((r) => !r.thumbnail).length,
       sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
       sin_nombre_ca: rows.filter((r) => !r.display_name_ca).length,
-      con_promo: rows.filter((r) => r.raw.on_sale || r.raw.on_promotion).length,
+      con_promo: rows.filter((r) => r.promo_name != null).length,
     });
     console.log('detalle:', {
       ingredientes: rows.filter((r) => r.ingredients).length,

@@ -51,7 +51,14 @@ export default function BonpreuProductModal({ product, onClose, topInset = 16 }:
   useEffect(() => { setQty(1); }, [product?.id]);
 
   if (!product) return null;
-  const price = product.unitPrice != null ? `${product.unitPrice.toFixed(2).replace('.', ',')} €` : null;
+  const reducedPrice = /rebaj/i.test(product.promoName ?? '')
+    && product.promoBasePrice != null
+    && (product.promoPrice ?? product.unitPrice) != null
+    && product.promoBasePrice > (product.promoPrice ?? product.unitPrice)!;
+  const currentPrice = reducedPrice ? (product.promoPrice ?? product.unitPrice) : product.unitPrice;
+  const price = currentPrice != null ? `${currentPrice.toFixed(2).replace('.', ',')} €` : null;
+  const previousPromoPrice = reducedPrice && product.promoBasePrice != null
+    ? `${product.promoBasePrice.toFixed(2).replace('.', ',')} €` : null;
   const fav = isProductFavorite('esclat', product.id);
 
   const handleToggleFav = async () => {
@@ -81,7 +88,7 @@ export default function BonpreuProductModal({ product, onClose, topInset = 16 }:
         quantity: qty,
         unit: 'ud',
         categoryName: product.categoryName,
-        unitPrice: product.unitPrice,
+        unitPrice: currentPrice,
         imageUrl: product.thumbnail,
         mercadonaProductId: null,
         storeProductId: product.id,
@@ -123,8 +130,25 @@ export default function BonpreuProductModal({ product, onClose, topInset = 16 }:
         <Text style={styles.name}>{product.displayName}</Text>
         {product.brand ? <Text style={styles.brand}>{product.brand}</Text> : null}
 
-        <ProductPriceLine store="esclat" productId={product.id} price={price} size={product.packaging} />
+        <ProductPriceLine
+          store="esclat"
+          productId={product.id}
+          price={price}
+          size={product.packaging}
+          promotionPreviousPrice={previousPromoPrice}
+          priceTone={reducedPrice ? 'down' : 'default'}
+        />
         {product.priceFormat ? <Text style={styles.refPrice}>{product.priceFormat}</Text> : null}
+
+        {product.promoName ? (
+          <View style={styles.promoBox}>
+            <View style={styles.promoPill}>
+              <Ionicons name="pricetags" size={12} color={colors.white} />
+              <Text style={styles.promoPillText}>{product.promoName}</Text>
+            </View>
+            {product.promoText ? <Text style={styles.promoText}>{product.promoText}</Text> : null}
+          </View>
+        ) : null}
 
         {nutrition.info?.foodIndex ? (
           <FoodIndexSummary
@@ -189,11 +213,13 @@ const themedStyles = () => StyleSheet.create({
     width: 38, height: 38, backgroundColor: colors.white,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: colors.border,
+    borderRadius: 19,
   },
   favBtn: {
     width: 38, height: 38, backgroundColor: colors.white,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: colors.accent,
+    borderRadius: 19,
   },
   headerTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink },
 
@@ -201,6 +227,7 @@ const themedStyles = () => StyleSheet.create({
   photo: {
     width: '100%', height: 260, backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border, marginBottom: 16,
+    borderRadius: 20,
   },
   photoPlaceholder: { alignItems: 'center', justifyContent: 'center' },
 
@@ -211,6 +238,18 @@ const themedStyles = () => StyleSheet.create({
   price: { fontSize: 28, fontFamily: fonts.bold, color: colors.accent },
   size: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft },
   refPrice: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
+
+  promoBox: {
+    marginTop: 14, padding: 12, gap: 8,
+    backgroundColor: colors.accentLight,
+    borderWidth: 1, borderColor: colors.accentMid,
+  },
+  promoPill: {
+    alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: colors.accent, paddingHorizontal: 8, paddingVertical: 4,
+  },
+  promoPillText: { fontSize: 12, fontFamily: fonts.bold, color: colors.white },
+  promoText: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.ink, lineHeight: 18 },
 
   note: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkFaint, marginTop: 24 },
 

@@ -18,6 +18,8 @@ import { useTranslation } from '../context/LanguageContext';
 import { updateProfile, uploadAvatar, isUsernameAvailable } from '../api/profile';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
+import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
+import { glassAvailable } from '../components/GlassSurface';
 
 const USERNAME_RE = /^[a-z0-9_.]{3,20}$/;
 
@@ -45,6 +47,8 @@ export default function EditProfileScreen() {
 
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving]       = useState(false);
+  const [headerH, setHeaderH] = useState(0);
+  const glassInset = glassAvailable ? headerH : 0;
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -169,22 +173,23 @@ export default function EditProfileScreen() {
       <View style={styles.container}>
         <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-        {/* Custom header */}
-        <View style={[styles.header, { paddingTop: headerTop }]}>
-          <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={8}>
-            <Text style={styles.headerCancel}>{t('common.cancel')}</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('editProfile.title')}</Text>
-          <TouchableOpacity onPress={handleSave} disabled={saving} hitSlop={8}>
-            {saving
-              ? <ActivityIndicator size="small" color={colors.accent} />
-              : <Text style={styles.headerSave}>{t('common.save')}</Text>}
-          </TouchableOpacity>
-        </View>
+        <ProfileSubscreenHeader
+          title={t('editProfile.title')}
+          icon="create-outline"
+          headerTop={headerTop}
+          onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)}
+          right={
+            <TouchableOpacity onPress={handleSave} disabled={saving} hitSlop={8} style={styles.headerSaveBtn}>
+              {saving
+                ? <ActivityIndicator size="small" color={colors.accent} />
+                : <Text style={styles.headerSave}>{t('common.save')}</Text>}
+            </TouchableOpacity>
+          }
+        />
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad }]}
+          contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad, paddingTop: glassInset ? glassInset + 12 : 6 }]}
           keyboardShouldPersistTaps="handled"
         >
           {/* Photo */}
@@ -304,19 +309,13 @@ const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
   // ── Header ────────────────────────────────────────────────────
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 10,
-    // paddingTop inline (useHeaderTopPadding)
-  },
-  headerCancel: { fontSize: 13.5, fontFamily: fonts.semibold, color: colors.inkSoft },
-  headerTitle:  { fontSize: 17,   fontFamily: fonts.bold,    color: colors.ink },
-  headerSave:   { fontSize: 13.5, fontFamily: fonts.bold,    color: colors.accent },
+  headerSaveBtn: { paddingHorizontal: 2, paddingVertical: 8 },
+  headerSave: { fontSize: 13.5, fontFamily: fonts.bold, color: colors.accent },
 
   scroll: { paddingHorizontal: 16, paddingBottom: 40 },
 
   // ── Photo ─────────────────────────────────────────────────────
-  photoSection: { alignItems: 'center', gap: 10, marginBottom: 20, marginTop: 8 },
+  photoSection: { alignItems: 'center', gap: 10, marginBottom: 22, marginTop: 8, paddingVertical: 16, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, borderRadius: 22 },
   avatarWrap:   { position: 'relative' },
   avatar: {
     width: 88, height: 88, borderRadius: 44,
@@ -337,15 +336,12 @@ const themedStyles = () => StyleSheet.create({
 
   // ── Fields ────────────────────────────────────────────────────
   fieldGroup: { marginBottom: 14 },
-  fieldLabel: {
-    fontSize: 10.5, fontFamily: fonts.bold, color: colors.inkSoft,
-    textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 6,
-  },
+  fieldLabel: { fontSize: 14, fontFamily: fonts.bold, color: colors.ink, marginBottom: 7 },
   inputBox: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
-    paddingHorizontal: 13, paddingVertical: 11, gap: 8,
+    paddingHorizontal: 13, paddingVertical: 12, gap: 8, borderRadius: 15,
   },
   inputBoxReadonly: { backgroundColor: colors.surfaceAlt },
   input: { fontSize: 14.5, fontFamily: fonts.medium, color: colors.ink, flex: 1, padding: 0 },
@@ -364,8 +360,8 @@ const themedStyles = () => StyleSheet.create({
   saveBtn: {
     backgroundColor: colors.accent,
     paddingVertical: 14,
-    alignItems: 'center', justifyContent: 'center',
-    marginTop: 8,
+    alignItems: 'center', justifyContent: 'center', borderRadius: 18,
+    marginTop: 10,
   },
   saveBtnText: { fontSize: 14.5, fontFamily: fonts.bold, color: colors.white },
 });

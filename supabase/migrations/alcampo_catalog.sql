@@ -70,6 +70,12 @@ create table if not exists public.alcampo_products (
   category_ids        text[] not null default '{}',  -- N1 + N2 (navegación por cualquier nivel)
   unit_price          numeric,            -- precio del envase en € (price.amount)
   price_format        text,               -- texto mostrado ("5,04 €")
+  promo_name          text,               -- etiqueta explícita de promotions[]
+  promo_text          text,               -- condiciones completas publicadas
+  promo_price         numeric,            -- promoPrice.amount
+  promo_base_price    numeric,            -- price.amount cuando promoPrice es menor
+  promo_start         date,
+  promo_end           date,
   price_per_unit      numeric,            -- € por unidad CANÓNICA (l/kg/ud), de unitPrice
   price_per_unit_unit text,               -- 'l' | 'kg' | 'ud'
   available           boolean not null default true,

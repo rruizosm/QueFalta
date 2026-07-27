@@ -47,8 +47,8 @@ export default function GroupScreen() {
 
   return (
     <OnboardingLayout
-      step={7}
-      totalSteps={7}
+      step={8}
+      totalSteps={8}
       eyebrow={t('onboarding.optional')}
       title={t('onboarding.groupTitle')}
       subtitle={t('onboarding.groupSubtitle')}
@@ -98,6 +98,7 @@ const themedStyles = () => StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 10,
     backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
     paddingHorizontal: 14, paddingVertical: 14,
+    borderRadius: 18,
   },
   input: { flex: 1, fontSize: 16, fontFamily: fonts.semibold, color: colors.ink, padding: 0 },
 
@@ -109,6 +110,7 @@ const themedStyles = () => StyleSheet.create({
   suggChip: {
     backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
     paddingHorizontal: 14, paddingVertical: 9,
+    borderRadius: 999,
   },
   suggChipOn: { borderColor: colors.accent, backgroundColor: colors.accentLight },
   suggText: { fontSize: 13, fontFamily: fonts.semibold, color: colors.inkSoft },

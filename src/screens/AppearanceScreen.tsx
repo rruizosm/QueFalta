@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
   StyleSheet, StatusBar,
@@ -14,6 +15,8 @@ import { useTheme, useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
+import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
+import { glassAvailable } from '../components/GlassSurface';
 
 export default function AppearanceScreen() {
   const navigation = useNavigation<any>();
@@ -22,6 +25,8 @@ export default function AppearanceScreen() {
   const styles = useThemedStyles(themedStyles);
   const headerTop = useHeaderTopPadding(52);
   const bottomPad = useTabBarBottomPadding(40);
+  const [headerH, setHeaderH] = useState(0);
+  const glassInset = glassAvailable ? headerH : 0;
 
   const selectAccent = (key: AccentKey) => {
     if (key === accentKey) return;
@@ -39,16 +44,9 @@ export default function AppearanceScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: headerTop }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color={colors.ink} />
-        </TouchableOpacity>
-        <Text style={styles.title}>{t('appearance.title')}</Text>
-        <View style={{ width: 38 }} />
-      </View>
+      <ProfileSubscreenHeader title={t('appearance.title')} icon="color-palette-outline" headerTop={headerTop} onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)} />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad }]}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad, paddingTop: glassInset ? glassInset + 12 : 6 }]}>
         <Text style={styles.hint}>{t('appearance.hint')}</Text>
 
         <Text style={styles.sectionLabel}>{t('appearance.themeSection')}</Text>
@@ -108,39 +106,25 @@ export default function AppearanceScreen() {
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
-  header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingBottom: 10, gap: 12,
-    // paddingTop inline (useHeaderTopPadding)
-  },
-  backBtn: {
-    width: 38, height: 38,
-    backgroundColor: colors.white,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border,
-  },
-  title: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
-
   scroll: { paddingHorizontal: 16, paddingBottom: 40 },
 
   hint: {
     fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft,
-    marginTop: 6, marginBottom: 14, lineHeight: 17,
+    marginBottom: 16, lineHeight: 18,
   },
   sectionLabel: {
-    fontSize: 10.5, fontFamily: fonts.bold, color: colors.inkSoft,
-    textTransform: 'uppercase', letterSpacing: 1.4,
-    marginBottom: 4,
+    fontSize: 15, fontFamily: fonts.bold, color: colors.ink,
+    marginBottom: 8,
   },
   sectionLabelGap: { marginTop: 22 },
   section: {
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
-    paddingHorizontal: 14,
+    paddingHorizontal: 14, borderRadius: 18, overflow: 'hidden',
   },
   row: {
     flexDirection: 'row', alignItems: 'center',
-    paddingVertical: 14, gap: 12,
+    paddingVertical: 13, gap: 12,
   },
   rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
   themeIcon: {

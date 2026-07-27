@@ -12,12 +12,13 @@ import { useTranslation } from '../context/LanguageContext';
 import { useProfile } from '../context/ProfileContext';
 import { diaToUI } from '../lib/productAdapters';
 import StoreProductList from '../components/StoreProductList';
-import ActiveCartBanner from '../components/ActiveCartBanner';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 
 type RouteProps = RouteProp<CatalogStackParamList, 'DiaProducts'>;
 
 export default function DiaProductsScreen() {
   const styles = useThemedStyles(themedStyles);
+  const headerTop = useHeaderTopPadding(52);
   const { t } = useTranslation();
   const { profile } = useProfile();
   const navigation = useNavigation<any>();
@@ -42,9 +43,7 @@ export default function DiaProductsScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      <ActiveCartBanner topInset />
-
-      <View style={styles.headerArea}>
+      <View style={[styles.headerArea, { paddingTop: headerTop }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
@@ -64,6 +63,7 @@ export default function DiaProductsScreen() {
         emoji={getMeta(parentName ?? categoryName).emoji}
         emptyText={t('product.emptyCategory')}
         searchable
+        roundedCards
       />
     </View>
   );

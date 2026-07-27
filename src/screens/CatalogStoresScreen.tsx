@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, Image,
   StyleSheet, StatusBar,
@@ -17,6 +18,8 @@ import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { updateProfile } from '../api/profile';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import { storeInRegion } from '../constants/regions';
+import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
+import { glassAvailable } from '../components/GlassSurface';
 
 export default function CatalogStoresScreen() {
   const styles = useThemedStyles(themedStyles);
@@ -28,6 +31,8 @@ export default function CatalogStoresScreen() {
   const { profile, applyProfile } = useProfile();
   const toast = useToast();
   const userId = session?.user.id ?? '';
+  const [headerH, setHeaderH] = useState(0);
+  const glassInset = glassAvailable ? headerH : 0;
 
   const selected = profile?.catalogStores ?? [...CATALOG_STORE_KEYS];
 
@@ -63,16 +68,9 @@ export default function CatalogStoresScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: headerTop }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color={colors.ink} />
-        </TouchableOpacity>
-        <Text style={styles.title}>{t('profile.stores')}</Text>
-        <View style={{ width: 38 }} />
-      </View>
+      <ProfileSubscreenHeader title={t('profile.stores')} icon="storefront-outline" headerTop={headerTop} onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)} />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad }]}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad, paddingTop: glassInset ? glassInset + 12 : 6 }]}>
         <Text style={styles.hint}>{t('catalogStores.hint')}</Text>
 
         <View style={styles.section}>
@@ -111,36 +109,23 @@ export default function CatalogStoresScreen() {
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
-  header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingBottom: 10, gap: 12,
-    // paddingTop inline (useHeaderTopPadding)
-  },
-  backBtn: {
-    width: 38, height: 38,
-    backgroundColor: colors.white,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border,
-  },
-  title: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
-
   scroll: { paddingHorizontal: 16, paddingBottom: 40 },
 
   hint: {
     fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft,
-    marginTop: 6, marginBottom: 14, lineHeight: 17,
+    marginBottom: 14, lineHeight: 18,
   },
   section: {
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
-    paddingHorizontal: 14,
+    paddingHorizontal: 14, borderRadius: 18, overflow: 'hidden',
   },
   row: {
     flexDirection: 'row', alignItems: 'center',
-    paddingVertical: 14, gap: 12,
+    paddingVertical: 13, gap: 12,
   },
   rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
-  storeIcon: { width: 26, height: 26 },
+  storeIcon: { width: 28, height: 28, borderRadius: 8 },
   storeIconEmpty: { alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceAlt },
   rowLabel: { flex: 1, fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
 });

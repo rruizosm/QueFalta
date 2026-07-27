@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, Image, Share,
   StyleSheet, StatusBar, Linking,
@@ -12,6 +13,8 @@ import { useTranslation } from '../context/LanguageContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import ProfileRow from '../components/ProfileRow';
+import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
+import { glassAvailable } from '../components/GlassSurface';
 
 const LOGO = require('../../assets/quefalta-blue.png');
 
@@ -31,6 +34,8 @@ export default function AboutScreen() {
   const bottomPad = useTabBarBottomPadding(40);
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
+  const [headerH, setHeaderH] = useState(0);
+  const glassInset = glassAvailable ? headerH : 0;
 
   const version = Constants.expoConfig?.version ?? '1.0.0';
   const build =
@@ -48,16 +53,9 @@ export default function AboutScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: headerTop }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color={colors.ink} />
-        </TouchableOpacity>
-        <Text style={styles.title}>{t('about.title')}</Text>
-        <View style={{ width: 38 }} />
-      </View>
+      <ProfileSubscreenHeader title={t('about.title')} icon="information-circle-outline" headerTop={headerTop} onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)} />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad }]}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad, paddingTop: glassInset ? glassInset + 4 : 0 }]}>
 
         {/* MARCA */}
         <View style={styles.brand}>
@@ -138,23 +136,10 @@ export default function AboutScreen() {
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
-  header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingBottom: 10, gap: 12,
-    // paddingTop inline (useHeaderTopPadding)
-  },
-  backBtn: {
-    width: 38, height: 38,
-    backgroundColor: colors.white,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border,
-  },
-  title: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
-
   scroll: { paddingHorizontal: 16, paddingBottom: 40 },
 
-  brand: { alignItems: 'center', paddingTop: 20, paddingBottom: 8 },
-  logo: { width: 88, height: 88, borderRadius: 20, borderWidth: 1, borderColor: colors.border },
+  brand: { alignItems: 'center', paddingTop: 20, paddingBottom: 14, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, borderRadius: 22 },
+  logo: { width: 80, height: 80, borderRadius: 20, borderWidth: 1, borderColor: colors.border },
   brandName: {
     fontSize: 22, fontFamily: fonts.bold, color: colors.ink,
     letterSpacing: -0.4, marginTop: 12,
@@ -166,14 +151,13 @@ const themedStyles = () => StyleSheet.create({
   },
 
   sectionLabel: {
-    fontSize: 10.5, fontFamily: fonts.bold, color: colors.inkSoft,
-    textTransform: 'uppercase', letterSpacing: 1.4,
-    marginTop: 18, marginBottom: 4,
+    fontSize: 15, fontFamily: fonts.bold, color: colors.ink,
+    marginTop: 22, marginBottom: 8,
   },
   section: {
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
-    paddingHorizontal: 14,
+    paddingHorizontal: 14, borderRadius: 18, overflow: 'hidden',
   },
   credits: {
     fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft,

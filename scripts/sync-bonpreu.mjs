@@ -58,6 +58,27 @@ const num = (v) => { const n = typeof v === 'string' ? parseFloat(v) : v; return
 // catálogo mal, todo envase ≠ 1 unidad de medida). Reparado con
 // supabase/migrations/fix_bonpreu_prices.sql sobre el raw ya almacenado.
 const priceAmount = (p) => num(p?.price?.current?.amount) ?? num(p?.price?.amount);
+const promotionText = (p) => {
+  const promotions = Array.isArray(p?.promotions) ? p.promotions : [p?.promotions];
+  return promotions
+    .map((promotion) => typeof promotion?.description === 'string' ? promotion.description.trim() : '')
+    .filter(Boolean)
+    .join(' · ') || null;
+};
+// Bonpreu puede publicar la rebaja de dos maneras: precio normal + promoPrice,
+// o precio final + texto "Antes X,XX€". Conservamos ambos importes para que la
+// ficha muestre una oferta real, no el último cambio semanal de precio.
+function promotionPrices(p) {
+  const current = priceAmount(p);
+  const promo = num(p?.promoPrice?.amount);
+  if (current != null && promo != null && promo < current) {
+    return { promoPrice: promo, basePrice: current };
+  }
+  const text = promotionText(p);
+  const match = text?.match(/\bantes\s*([0-9]+(?:[.,][0-9]{1,2})?)\s*(?:€|eur)\b/i);
+  const base = match ? num(match[1].replace(',', '.')) : null;
+  return { promoPrice: null, basePrice: current != null && base != null && base > current ? base : null };
+}
 const priceText = (p) => {
   const u = p?.unitPrice;
   if (!u?.price?.amount) return null;
@@ -125,6 +146,7 @@ function parseProductDetailHtml(html) {
 function normalize(p) {
   // €/unidad canónico: Bonpreu da unitPrice.price.amount + unitPrice.unit ("litre"…).
   const ppu = canonicalPricePerUnit(p?.unitPrice?.price?.amount, p?.unitPrice?.unit);
+  const { promoPrice, basePrice } = promotionPrices(p);
   return {
     id: p.productId,
     retailer_product_id: p.retailerProductId ?? null,
@@ -133,6 +155,9 @@ function normalize(p) {
     packaging: p.packSizeDescription ?? null,
     thumbnail: imageUrl(p),
     unit_price: priceAmount(p),
+    promo_price: promoPrice,
+    promo_base_price: basePrice,
+    promo_text: promotionText(p),
     price_format: priceText(p),
     price_per_unit: ppu?.value ?? null,
     price_per_unit_unit: ppu?.unit ?? null,

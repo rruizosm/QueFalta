@@ -68,8 +68,8 @@ export default function FriendsScreen() {
 
   return (
     <OnboardingLayout
-      step={6}
-      totalSteps={7}
+      step={7}
+      totalSteps={8}
       eyebrow={t('onboarding.optional')}
       title={t('onboarding.friendsTitle')}
       subtitle={t('onboarding.friendsSubtitle')}
@@ -134,6 +134,7 @@ const themedStyles = () => StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
     paddingHorizontal: 13, paddingVertical: 12,
+    borderRadius: 18,
   },
   at: { fontSize: 15, fontFamily: fonts.bold, color: colors.inkFaint },
   input: { flex: 1, fontSize: 14.5, fontFamily: fonts.medium, color: colors.ink, padding: 0 },
@@ -145,11 +146,12 @@ const themedStyles = () => StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
     paddingHorizontal: 14, paddingVertical: 11,
+    borderRadius: 18,
   },
   info: { flex: 1, minWidth: 0 },
   name: { fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
   username: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.accent, marginTop: 1 },
-  addBtn: { backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 9, minWidth: 76, alignItems: 'center' },
+  addBtn: { backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 9, minWidth: 76, alignItems: 'center', borderRadius: 15 },
   addBtnText: { fontSize: 13, fontFamily: fonts.bold, color: colors.white },
   sentBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   sentText: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.ok },

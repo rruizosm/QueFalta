@@ -25,6 +25,9 @@
 //   5. Normalizar + upsert en Supabase (soft-delete de lo ausente vía markStale).
 //
 // Notas:
+//  - Ofertas: la ruta /es/ofertas usa `soloOfertas=true`, pero el catálogo
+//    general ya trae oferta/textoOferta/ofertaEnVigor/fechas. Se normalizan tipo
+//    bilingüe, condiciones, precio anterior y vigencia sin un segundo crawl.
 //  - Precio del envase: pvpoferta si hay oferta viva (>0), si no pvp.
 //  - precioUnidadMedida + unidadMedida ("K"|"L"|"U") → €/unidad canónica (kg/l/ud).
 //  - marca es un OBJETO ({idMarca, descripcion}); se guarda descripcion.
@@ -42,6 +45,7 @@
 //      DRY_RUN=1           (no escribe en Supabase; imprime resumen)
 //      MAX_PAGES=N         (limita nº de páginas por pasada, para pruebas)
 import { chromium } from 'playwright-core';
+import { pathToFileURL } from 'node:url';
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 
@@ -198,6 +202,70 @@ function nutriScoreGrade(product) {
   return ['A', 'B', 'C', 'D', 'E'].includes(grade) ? grade : null;
 }
 
+const cleanText = (value) => typeof value === 'string' ? value.trim() || null : null;
+const dateOnly = (value) => cleanText(value)?.slice(0, 10) ?? null;
+
+function compactSorliOfferName(product, ca = false) {
+  const detail = [
+    ca ? product.descripcionOfertaCat : product.descripcionOferta,
+    product.textoOferta,
+    product.descripcionOferta,
+  ].map(cleanText).find(Boolean) ?? '';
+
+  const secondUnit = detail.match(/2\s*[ªa]\s*(?:UN(?:IDAD|ITAT)?|U(?:D)?\.?)?\s*(?:AL|A)?\s*(\d{1,3})\s*%/i);
+  if (secondUnit) return ca
+    ? `2a unitat al ${secondUnit[1]}%`
+    : `2ª unidad al ${secondUnit[1]}%`;
+
+  // "2x1 €" y "3 x 3,99 €" son lotes a precio fijo, no promociones 2x1/3x3.
+  const fixedDecimal = detail.match(/\b(\d+)\s*(?:U(?:D|N)?\.?\s*)?(?:X|POR|PER)\s*(\d+[.,]\d+)\s*€?/i);
+  const fixedWithX = detail.match(/\b(\d+)\s*(?:U(?:D|N)?\.?\s*)?(?:X|POR|PER)\s*(\d+(?:[.,]\d+)?)\s*€/i);
+  const fixedUnits = detail.match(/\b(\d+)\s*(?:U|UD|UNIDADES?|UNITATS?)\s+(\d+(?:[.,]\d+)?)\s*€/i);
+  const fixed = fixedDecimal ?? fixedWithX ?? fixedUnits;
+  if (fixed) {
+    const amount = fixed[2].replace('.', ',');
+    return ca ? `${fixed[1]} u. per ${amount} €` : `${fixed[1]} uds. por ${amount} €`;
+  }
+
+  const multiBuy = detail.match(/\b(\d+)\s*[xX]\s*(\d+)\b(?![.,]\d|\s*€)/);
+  if (multiBuy) return `${multiBuy[1]}x${multiBuy[2]}`;
+  if (/\b(regalo|regal)\b/i.test(detail)) return ca ? 'Regal' : 'Regalo';
+
+  const structured = cleanText(ca ? product.oferta?.descripcionCat : product.oferta?.descripcion);
+  const key = cleanText(product.oferta?.descripcion)?.toLowerCase();
+  if (key === 'precio') return ca ? 'Preu rebaixat' : 'Precio rebajado';
+  if (key === 'lote fijo') return ca ? 'Lot a preu fix' : 'Lote a precio fijo';
+  if (key === 'lote variable') return ca ? 'Lot combinat' : 'Lote combinado';
+  if (key === '2ª 50%') return ca ? '2a unitat al 50%' : '2ª unidad al 50%';
+  if (key === '2ª 70%') return ca ? '2a unitat al 70%' : '2ª unidad al 70%';
+  return structured ?? (ca ? 'Oferta' : 'Oferta');
+}
+
+/** Señal explícita que usa la ruta oficial `/ofertas` de Sorliclic. La API
+ * incluye estos campos también en el catálogo general, por lo que no hace falta
+ * un segundo crawl ni inferir promociones desde el histórico de precios. */
+function sorliOfferColumns(product) {
+  if (product?.ofertaEnVigor !== true) return null;
+  const pvp = num(product.pvp);
+  const offerPrice = num(product.pvpoferta);
+  const complex = product.ofertaCompleja === true;
+  return {
+    promo_name: compactSorliOfferName(product, false),
+    promo_name_ca: compactSorliOfferName(product, true),
+    promo_text: complex
+      ? cleanText(product.descripcionOferta) ?? cleanText(product.textoOferta)
+      : null,
+    promo_text_ca: complex
+      ? cleanText(product.descripcionOfertaCat) ?? cleanText(product.textoOferta)
+      : null,
+    promo_base_price: pvp != null && offerPrice != null && offerPrice > 0 && pvp > offerPrice
+      ? pvp
+      : null,
+    promo_start: dateOnly(product.fechaInicioOferta),
+    promo_end: dateOnly(product.fechaFinOferta),
+  };
+}
+
 // El listado da la imagen en 135x135, que estirada en la ficha (260pt) se ve
 // borrosa. El CDN tiene la misma imagen en 300x300 (misma ruta, otra carpeta;
 // cobertura verificada en todo el catálogo) → se reescribe la URL.
@@ -207,7 +275,8 @@ const thumbnailUrl = (url) =>
 function normalize(p) {
   const pvp = num(p.pvp);
   const pvpof = num(p.pvpoferta);
-  const price = pvpof && pvpof > 0 ? pvpof : pvp;
+  const offer = sorliOfferColumns(p);
+  const price = offer && pvpof && pvpof > 0 ? pvpof : pvp;
   const ppu = canonicalPricePerUnit(p.precioUnidadMedida, UM_MAP[(p.unidadMedida || '').toUpperCase()] ?? p.unidadMedida);
   return {
     id: String(p.idArticulo),
@@ -221,6 +290,13 @@ function normalize(p) {
     price_format: price != null ? `${eurStr(price)} €` : null,
     price_per_unit: ppu?.value ?? null,
     price_per_unit_unit: ppu?.unit ?? null,
+    promo_name: offer?.promo_name ?? null,
+    promo_name_ca: offer?.promo_name_ca ?? null,
+    promo_text: offer?.promo_text ?? null,
+    promo_text_ca: offer?.promo_text_ca ?? null,
+    promo_base_price: offer?.promo_base_price ?? null,
+    promo_start: offer?.promo_start ?? null,
+    promo_end: offer?.promo_end ?? null,
     nutri_score: nutriScoreGrade(p),
     available: p.desactivado !== true,
     published: true,
@@ -340,13 +416,17 @@ async function main() {
       console.log(`  ${r.id}  ${r.display_name}  [ca: ${r.display_name_ca ?? '—'}]  [${r.brand ?? '—'}]  ${r.price_format}  ${r.price_per_unit != null ? r.price_per_unit + ' €/' + r.price_per_unit_unit : '—'}  cat=${r.category_name ?? '—'}`);
     }
     if (rows[0]) console.log('category_ids[0]:', rows[0].category_ids.join(', '));
+    console.log('ofertas (6):');
+    for (const r of rows.filter((row) => row.promo_name).slice(0, 6)) {
+      console.log(`  ${r.id}  ${r.promo_name}  ${r.promo_text ?? '—'}  ${r.promo_base_price != null ? `antes ${eurStr(r.promo_base_price)} €` : ''}`);
+    }
     console.log('nulos →', {
       sin_precio: rows.filter((r) => r.unit_price == null).length,
       sin_ppu: rows.filter((r) => r.price_per_unit == null).length,
       sin_img: rows.filter((r) => !r.thumbnail).length,
       sin_ca: rows.filter((r) => !r.display_name_ca).length,
       sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
-      con_oferta: rows.filter((r) => num(r.raw.pvpoferta) > 0).length,
+      con_oferta: rows.filter((r) => r.promo_name != null).length,
     });
     return;
   }
@@ -359,4 +439,8 @@ async function main() {
   console.log('[sorli] OK');
 }
 
-main().catch((e) => { console.error('[sorli] ERROR', e); process.exit(1); });
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+  main().catch((e) => { console.error('[sorli] ERROR', e); process.exit(1); });
+}
+
+export { compactSorliOfferName, sorliOfferColumns };

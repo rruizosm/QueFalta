@@ -114,6 +114,14 @@ if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
 }
 
 const HOME = 'https://www.dia.es';
+// DIA puede publicar este BFF bajo /api/v1/ o, tras un cambio de despliegue,
+// bajo /api/. Mantener el prefijo versionado primero y probar el alternativo
+// solo ante 404 evita ocultar errores transitorios.
+const API_PREFIXES = [...new Set([
+  process.env.DIA_API_PREFIX,
+  '/api/v1',
+  '/api',
+].filter(Boolean).map((prefix) => prefix.replace(/\/$/, '')))];
 const runStart = new Date().toISOString();
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 
@@ -282,24 +290,28 @@ async function getPageContext(path, { tries = 4 } = {}) {
 // obligatorio ("navigation in query is required") y devuelve el catálogo entero
 // DE LA ZONA fijada en la sesión del `jar` (ver setPostalCode).
 async function getApi(path, { tries = 4, jar } = {}) {
-  const url = `${HOME}/api/v1/${path}`;
-  for (let t = 0; t < tries; t++) {
-    try {
-      const res = await fetch(url, {
-        headers: {
-          'User-Agent': UA, Accept: 'application/json',
-          Origin: HOME, Referer: `${HOME}/`, 'Accept-Language': 'es-ES,es;q=0.9',
-          ...(jar ? { Cookie: cookieHeader(jar) } : {}),
-        },
-        signal: AbortSignal.timeout(40000),
-      });
-      if (jar) mergeSetCookies(jar, res);
-      if (res.ok) return await res.json();
-      console.warn(`[dia] API ${path} → ${res.status} (intento ${t + 1})`);
-    } catch (e) {
-      console.warn(`[dia] API ${path} falló: ${e.message} (intento ${t + 1})`);
+  for (const prefix of API_PREFIXES) {
+    const url = `${HOME}${prefix}/${path}`;
+    for (let t = 0; t < tries; t++) {
+      try {
+        const res = await fetch(url, {
+          headers: {
+            'User-Agent': UA, Accept: 'application/json',
+            Origin: HOME, Referer: `${HOME}/`, 'Accept-Language': 'es-ES,es;q=0.9',
+            ...(jar ? { Cookie: cookieHeader(jar) } : {}),
+          },
+          signal: AbortSignal.timeout(40000),
+        });
+        if (jar) mergeSetCookies(jar, res);
+        if (res.ok) return await res.json();
+        console.warn(`[dia] API ${prefix}/${path} → ${res.status} (intento ${t + 1})`);
+        // No consumir los cuatro reintentos si el prefijo ya no existe.
+        if (res.status === 404) break;
+      } catch (e) {
+        console.warn(`[dia] API ${prefix}/${path} falló: ${e.message} (intento ${t + 1})`);
+      }
+      await sleep(800 * (t + 1));
     }
-    await sleep(800 * (t + 1));
   }
   throw new Error(`no se pudo GET api/${path}`);
 }
@@ -313,9 +325,80 @@ const catSlugOfLink = (link) => (link || '').replace(/\/c\/[^/]+\/?$/, '').split
 // ── Normalización de un plp_item ─────────────────────────────────────────────
 const eurStr = (n) => (typeof n === 'number' ? n.toFixed(2).replace('.', ',') : null);
 
+const promotionDescriptions = (p) => (Array.isArray(p?.promotions) ? p.promotions : [])
+  .map((promotion) => typeof promotion?.description === 'string' ? promotion.description.trim() : '')
+  .filter(Boolean);
+
+function compactPromotionName(description, promotion, prices) {
+  if (description) {
+    const multiBuy = description.match(/\b(\d+)\s*[xX]\s*(\d+)\b/);
+    if (multiBuy) return `${multiBuy[1]}x${multiBuy[2]}`;
+
+    const unitDiscount = description.match(/\b(\d+)[ªa]?\s*(?:UD(?:\.|S)?|UNIDAD(?:ES)?)\s+(?:AL\s+)?(\d+)\s*%/i);
+    if (unitDiscount) return `${unitDiscount[1]}ª unidad al ${unitDiscount[2]}%`;
+
+    const fixedBundle = description.match(/\b(\d+)\s*UD(?:\.|S)?\s+POR\s+([0-9]+(?:[.,][0-9]+)?)\s*EUROS?\b/i);
+    if (fixedBundle) return `${fixedBundle[1]} uds. por ${fixedBundle[2].replace('.', ',')} €`;
+
+    return promotion?.exclusive_online ? 'Oferta online' : 'Promoción CLUB Dia';
+  }
+
+  const discount = Number(prices?.discount_percentage);
+  if (Number.isFinite(discount) && discount > 0) {
+    return prices?.is_club_price ? `CLUB Dia · ${discount}%` : `Oferta · ${discount}%`;
+  }
+  return prices?.is_club_price ? 'Oferta CLUB Dia' : 'Oferta';
+}
+
+/** Normaliza la señal explícita de oferta que Dia incluye también en el PLP
+ * general. Cubre tanto rebajas directas (precio tachado + porcentaje) como
+ * promociones de lote/online (promotions[].description: 3x2, 2ª unidad, etc.). */
+function diaOfferColumns(p) {
+  const prices = p?.prices ?? {};
+  const price = typeof prices.price === 'number' ? prices.price : null;
+  const strikethrough = typeof prices.strikethrough_price === 'number'
+    ? prices.strikethrough_price
+    : null;
+  const descriptions = promotionDescriptions(p);
+  const promotion = Array.isArray(p?.promotions) ? p.promotions[0] : null;
+  const hasDirectDiscount = Boolean(prices.is_promo_price)
+    || (price != null && strikethrough != null && strikethrough > price);
+  const hasBundlePromotion = descriptions.length > 0;
+  const hasOfferHeadband = p?.headband_promotion === 'exclusive_offer'
+    || p?.headband_promotion === 'exclusive_online';
+  if (!hasDirectDiscount && !hasBundlePromotion && !hasOfferHeadband) return null;
+
+  const promoText = descriptions.join(' · ') || null;
+  return {
+    promo_name: compactPromotionName(descriptions[0] ?? null, promotion, prices),
+    promo_text: promoText,
+    promo_base_price: price != null && strikethrough != null && strikethrough > price
+      ? strikethrough
+      : null,
+  };
+}
+
+function diaOfferSnapshot(p) {
+  const offer = diaOfferColumns(p);
+  if (!offer) return null;
+  const prices = p?.prices ?? {};
+  const price = typeof prices.price === 'number' ? prices.price : null;
+  const ppu = canonicalPricePerUnit(prices.price_per_unit, (prices.measure_unit || '').toLowerCase());
+  return {
+    n: offer.promo_name,
+    t: offer.promo_text,
+    bp: offer.promo_base_price,
+    p: price,
+    pf: price != null ? `${eurStr(price)} €` : null,
+    ppu: ppu?.value ?? null,
+    ppuu: ppu?.unit ?? null,
+  };
+}
+
 function normalize(p) {
   const prices = p.prices ?? {};
   const price = typeof prices.price === 'number' ? prices.price : null;
+  const offer = diaOfferColumns(p);
   // measure_unit en castellano ("KILO"/"LITRO"/"UNIDAD") → lib/price.mjs ya
   // reconoce kilo(s)/litro(s)/unidad(es) en minúsculas.
   const ppu = canonicalPricePerUnit(prices.price_per_unit, (prices.measure_unit || '').toLowerCase());
@@ -330,6 +413,11 @@ function normalize(p) {
     price_format: price != null ? `${eurStr(price)} €` : null,
     price_per_unit: ppu?.value ?? null,
     price_per_unit_unit: ppu?.unit ?? null,
+    promo_name: offer?.promo_name ?? null,
+    promo_text: offer?.promo_text ?? null,
+    promo_base_price: offer?.promo_base_price ?? null,
+    offer_regions: offer ? null : [],
+    regional_offers: {},
     available: typeof p.units_in_stock === 'number' ? p.units_in_stock > 0 : true,
     published: true,
     raw: p,
@@ -531,6 +619,7 @@ async function main() {
   const products = new Map();        // object_id → producto normalizado (datos de la 1ª zona que lo trae)
   const membership = new Map();      // object_id → Set<id N2>
   const zonesOfProduct = new Map();  // object_id → Set<physical_store_id>
+  const offersOfProduct = new Map(); // object_id → Map<physical_store_id, oferta normalizada>
   const sweptZones = new Set();      // zonas que fijaron CP y barrieron (para allCommunities)
 
   for (const zone of zones) {
@@ -582,6 +671,12 @@ async function main() {
         let zs = zonesOfProduct.get(id);
         if (!zs) zonesOfProduct.set(id, (zs = new Set()));
         zs.add(zone);
+        const offer = diaOfferSnapshot(p);
+        if (offer) {
+          let byZone = offersOfProduct.get(id);
+          if (!byZone) offersOfProduct.set(id, (byZone = new Map()));
+          byZone.set(zone, offer);
+        }
         // Categoría por la url del producto (N2 del árbol). Si no mapea, sin categoría.
         const n2 = slugToN2.get(catSlugOfUrl(p.url));
         if (n2) {
@@ -621,11 +716,41 @@ async function main() {
   const allCommunities = new Set();
   for (const zone of sweptZones) for (const c of zoneCommunities.get(zone) ?? []) allCommunities.add(c);
   let regionalCount = 0;
+  let offerCount = 0;
+  let regionalOfferCount = 0;
   for (const [id, det] of products) {
     det.regions = computeRegions(zonesOfProduct.get(id) ?? new Set(), zoneCommunities, allCommunities);
     if (det.regions) regionalCount++;
+
+    // La promoción puede variar por zona aunque el producto sea nacional. Se
+    // conserva un snapshot por CCAA para que la app muestre tanto la etiqueta
+    // como el precio de oferta de la región seleccionada.
+    const regionalOffers = {};
+    for (const [zone, offer] of offersOfProduct.get(id) ?? []) {
+      for (const community of zoneCommunities.get(zone) ?? []) {
+        if (!regionalOffers[community]) regionalOffers[community] = offer;
+      }
+    }
+    const offerRegions = Object.keys(regionalOffers);
+    if (offerRegions.length > 0) {
+      const baseOffer = regionalOffers['Comunidad de Madrid'] ?? regionalOffers[offerRegions[0]];
+      det.promo_name = baseOffer.n;
+      det.promo_text = baseOffer.t;
+      det.promo_base_price = baseOffer.bp;
+      det.offer_regions = offerRegions.length === allCommunities.size ? null : offerRegions;
+      det.regional_offers = regionalOffers;
+      offerCount++;
+      if (det.offer_regions) regionalOfferCount++;
+    } else {
+      det.promo_name = null;
+      det.promo_text = null;
+      det.promo_base_price = null;
+      det.offer_regions = [];
+      det.regional_offers = {};
+    }
   }
   console.log(`[dia] ${allCommunities.size} CCAA con servicio · ${regionalCount} productos con disponibilidad regional limitada`);
+  console.log(`[dia] ${offerCount} productos en oferta · ${regionalOfferCount} con oferta limitada por CCAA`);
 
   // category_ids = N2 observadas + su N1 (árbol de 2 niveles, como Bonpreu).
   const catCount = new Map();
@@ -659,7 +784,7 @@ async function main() {
       sin_ppu: rows.filter((r) => r.price_per_unit == null).length,
       sin_img: rows.filter((r) => !r.thumbnail).length,
       sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
-      con_promo: rows.filter((r) => r.raw.prices?.is_promo_price).length,
+      con_oferta: rows.filter((r) => r.promo_name).length,
     });
     const unidades = new Set(rows.map((r) => r.raw.prices?.measure_unit).filter(Boolean));
     console.log('measure_units vistas:', [...unidades].join(', '));
@@ -702,4 +827,4 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   main().catch((e) => { console.error('[dia] ERROR', e); process.exit(1); });
 }
 
-export { diaDetailColumns, findProductObj, nutritionText, htmlToText };
+export { diaDetailColumns, diaOfferColumns, diaOfferSnapshot, findProductObj, nutritionText, htmlToText };

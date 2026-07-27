@@ -48,8 +48,8 @@ export default function RegionScreen() {
 
   return (
     <OnboardingLayout
-      step={3}
-      totalSteps={7}
+      step={4}
+      totalSteps={8}
       eyebrow={t('onboarding.required')}
       title={t('onboarding.regionTitle')}
       subtitle={t('onboarding.regionSubtitle')}

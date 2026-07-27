@@ -20,6 +20,8 @@ import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { fetchPurchases, fetchPurchaseItems, type Purchase } from '../api/purchases';
 import PaywallModal from '../components/PaywallModal';
 import type { NewListItem } from '../api/lists';
+import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
+import { glassAvailable } from '../components/GlassSurface';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -36,7 +38,7 @@ export default function HistoryScreen() {
   const locale = lang === 'ca' ? 'ca-ES' : 'es-ES';
   const navigation = useNavigation<any>();
   const { loadItemsIntoGroupCart } = useCart();
-  const { isPremium } = useProfile();
+  const { isPremium, loading: profileLoading } = useProfile();
   const toast = useToast();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,6 +48,9 @@ export default function HistoryScreen() {
   const [itemsCache, setItemsCache] = useState<Record<string, NewListItem[]>>({});
   const [itemsLoadingId, setItemsLoadingId] = useState<string | null>(null);
   const [paywallVisible, setPaywallVisible] = useState(false);
+  const [headerH, setHeaderH] = useState(0);
+  const glassInset = glassAvailable ? headerH : 0;
+  const historyLocked = !profileLoading && limitsApply(isPremium);
 
   // Gate free (Fase 2 MONETIZACION.md): ver el historial es libre, pero solo se
   // pueden REPETIR las N compras más recientes (vienen ordenadas desc).
@@ -57,11 +62,16 @@ export default function HistoryScreen() {
     limitsApply(isPremium) && !repeatableIds.has(p.id);
 
   const load = useCallback(() => {
+    if (historyLocked) {
+      setPurchases([]);
+      setLoading(false);
+      return Promise.resolve();
+    }
     return fetchPurchases()
       .then(setPurchases)
       .catch(() => setPurchases([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [historyLocked]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
@@ -133,18 +143,22 @@ export default function HistoryScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      <View style={[styles.header, { paddingTop: headerTop }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color={colors.ink} />
-        </TouchableOpacity>
-        <Text style={styles.title}>{t('profile.purchaseHistory')}</Text>
-        <View style={{ width: 38 }} />
-      </View>
+      <ProfileSubscreenHeader title={t('profile.purchaseHistory')} icon="receipt-outline" headerTop={headerTop} onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)} />
 
       {loading ? (
-        <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 60 }} />
+        <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: glassInset + 60 }} />
+      ) : historyLocked ? (
+        <View style={[styles.centerBox, glassInset ? { paddingTop: glassInset } : null]}>
+          <View style={styles.lockIcon}><Ionicons name="lock-closed" size={24} color={colors.accent} /></View>
+          <Text style={styles.emptyTitle}>{t('history.lockedTitle')}</Text>
+          <Text style={styles.emptyText}>{t('history.lockedText')}</Text>
+          <TouchableOpacity style={styles.unlockBtn} onPress={() => setPaywallVisible(true)} activeOpacity={0.85}>
+            <Ionicons name="sparkles" size={16} color={colors.white} />
+            <Text style={styles.unlockText}>{t('history.unlock')}</Text>
+          </TouchableOpacity>
+        </View>
       ) : purchases.length === 0 ? (
-        <View style={styles.centerBox}>
+        <View style={[styles.centerBox, glassInset ? { paddingTop: glassInset } : null]}>
           <Ionicons name="receipt-outline" size={48} color={colors.inkFaint} />
           <Text style={styles.emptyTitle}>{t('history.emptyTitle')}</Text>
           <Text style={styles.emptyText}>{t('history.emptyText')}</Text>
@@ -152,7 +166,7 @@ export default function HistoryScreen() {
       ) : (
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad }]}
+          contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad, paddingTop: glassInset ? glassInset + 8 : 0 }]}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} colors={[colors.accent]} />
           }
@@ -261,7 +275,7 @@ export default function HistoryScreen() {
       <PaywallModal
         visible={paywallVisible}
         onClose={() => setPaywallVisible(false)}
-        subtitle={t('history.paywallSubtitle', { n: FREE_LIMITS.maxRepeatableHistory })}
+        subtitle={t('history.paywallSubtitle')}
       />
     </View>
   );
@@ -270,22 +284,9 @@ export default function HistoryScreen() {
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
-  header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingBottom: 10, gap: 12,
-    // paddingTop inline (useHeaderTopPadding)
-  },
-  backBtn: {
-    width: 38, height: 38,
-    backgroundColor: colors.white,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border,
-  },
-  title: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
-
   scroll: { paddingHorizontal: 16, paddingBottom: 40 },
 
-  monthBlock: { marginTop: 16 },
+  monthBlock: { marginTop: 18 },
   monthHeader: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline',
     marginBottom: 8,
@@ -296,14 +297,14 @@ const themedStyles = () => StyleSheet.create({
   section: {
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
-    paddingHorizontal: 14,
+    paddingHorizontal: 14, borderRadius: 18, overflow: 'hidden',
   },
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, gap: 12 },
   rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
   rowIcon: {
     width: 34, height: 34,
     backgroundColor: colors.accentLight,
-    alignItems: 'center', justifyContent: 'center',
+    borderRadius: 11, alignItems: 'center', justifyContent: 'center',
   },
   rowInfo: { flex: 1, minWidth: 0 },
   rowName: { fontSize: 14, fontFamily: fonts.semibold, color: colors.ink },
@@ -328,7 +329,7 @@ const themedStyles = () => StyleSheet.create({
   noDetail: { fontSize: 13, fontFamily: fonts.medium, color: colors.inkSoft, paddingVertical: 12 },
   repeatBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.accent, borderRadius: 14,
     paddingVertical: 11, marginTop: 8, marginBottom: 4,
   },
   repeatText: { fontSize: 13.5, fontFamily: fonts.bold, color: colors.white },
@@ -336,11 +337,20 @@ const themedStyles = () => StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
     backgroundColor: colors.accentLight,
     borderWidth: 1, borderColor: colors.accent,
-    paddingVertical: 11, marginTop: 8, marginBottom: 4,
+    paddingVertical: 11, marginTop: 8, marginBottom: 4, borderRadius: 14,
   },
   repeatLockedText: { fontSize: 13.5, fontFamily: fonts.bold, color: colors.accent },
 
   centerBox: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40, gap: 10 },
   emptyTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink, textAlign: 'center' },
   emptyText: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'center', lineHeight: 20 },
+  lockIcon: {
+    width: 52, height: 52, borderRadius: 18, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.accentLight,
+  },
+  unlockBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 8,
+    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 15, backgroundColor: colors.accent,
+  },
+  unlockText: { fontSize: 13.5, fontFamily: fonts.bold, color: colors.white },
 });

@@ -124,7 +124,7 @@ const themedStyles = () => StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
-    paddingHorizontal: 14, paddingVertical: 14,
+    paddingHorizontal: 14, paddingVertical: 14, borderRadius: 18,
   },
   inputBoxOn: { borderColor: colors.accent },
   inputBoxError: { borderColor: colors.red },
@@ -137,7 +137,7 @@ const themedStyles = () => StyleSheet.create({
   detected: {
     backgroundColor: colors.accentLight,
     borderWidth: 1, borderColor: colors.accent,
-    paddingHorizontal: 14, paddingVertical: 12, gap: 2,
+    paddingHorizontal: 14, paddingVertical: 12, gap: 2, borderRadius: 16,
   },
   detectedLabel: {
     fontSize: 10.5, fontFamily: fonts.bold, color: colors.accent,
@@ -153,7 +153,7 @@ const themedStyles = () => StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
-    paddingHorizontal: 14, paddingVertical: 14,
+    paddingHorizontal: 14, paddingVertical: 14, borderRadius: 18,
   },
   cardOn: { borderColor: colors.accent, backgroundColor: colors.accentLight },
   iconWrap: {

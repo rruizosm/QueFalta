@@ -1,15 +1,14 @@
-/**
- * OnboardingLayout — chrome compartido por todas las pantallas del asistente de
- * bienvenida: barra de progreso arriba, título grande, cuerpo y, abajo, el botón
- * primario (accent) + un "Omitir" opcional para los pasos no obligatorios.
- *
- * Mantiene la estética del resto de la app (papel crema plano, sin radios,
- * Space Grotesk) y respeta el patrón useThemedStyles (accent mutable).
- */
 import type { ReactNode } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  StatusBar, ActivityIndicator, Platform,
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  StatusBar,
+  ActivityIndicator,
+  Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,14 +18,12 @@ import { useThemedStyles } from '../../context/ThemeContext';
 import { useTranslation } from '../../context/LanguageContext';
 import { useHeaderTopPadding } from '../../hooks/useHeaderTopPadding';
 import ProgressBar from '../../components/ProgressBar';
+import GlassSurface, { glassAvailable } from '../../components/GlassSurface';
 
 interface Props {
-  /** Paso 1-based. Si se pasa junto a totalSteps, pinta la barra de progreso. */
   step?: number;
   totalSteps?: number;
-  /** Etiqueta pequeña sobre el título (ej. "OBLIGATORIO" / "OPCIONAL"). */
   eyebrow?: string;
-  /** String o nodo (p. ej. con un tramo resaltado en color). */
   title: ReactNode;
   subtitle?: string;
   children?: ReactNode;
@@ -35,7 +32,6 @@ interface Props {
   continueLabel?: string;
   continueDisabled?: boolean;
   continueLoading?: boolean;
-  /** Si se pasa, muestra el botón de texto "Omitir" bajo el principal. */
   onSkip?: () => void;
   skipLabel?: string;
 }
@@ -58,42 +54,74 @@ export default function OnboardingLayout({
   const styles = useThemedStyles(themedStyles);
   const topBarTop = useHeaderTopPadding(54);
   const insets = useSafeAreaInsets();
-  // Android edge-to-edge: el footer (Continuar/Omitir) debe quedar por encima
-  // de la barra de navegación del sistema (3 botones ≈48dp, opaca). En iOS el
-  // 30 calibrado ya salva el home indicator → no cambia.
+  const { width } = useWindowDimensions();
   const footerBottom = Platform.OS === 'android' ? Math.max(insets.bottom + 12, 30) : 30;
   const { t } = useTranslation();
   const continueText = continueLabel ?? t('onboarding.continue');
   const skipText = skipLabel ?? t('onboarding.skipDefault');
   const showProgress = typeof step === 'number' && typeof totalSteps === 'number';
+  const shellWidth = Math.min(width - 32, 560);
+
+  const topBar = (
+    <View style={[styles.topBar, { paddingTop: topBarTop }]}>
+      {onBack ? (
+        <TouchableOpacity onPress={onBack} style={styles.backBtn} hitSlop={8} activeOpacity={0.82}>
+          <Ionicons name="arrow-back" size={20} color={colors.ink} />
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.backBtnGhost} />
+      )}
+
+      {showProgress ? (
+        <View style={styles.progressCol}>
+          <ProgressBar progress={step! / totalSteps!} height={5} />
+          <Text style={styles.progressText}>{t('onboarding.step', { step: step!, total: totalSteps! })}</Text>
+        </View>
+      ) : (
+        <View style={{ flex: 1 }} />
+      )}
+
+      <View style={styles.backBtnGhost} />
+    </View>
+  );
+
+  const footer = (onContinue || onSkip) ? (
+    <View style={[styles.footerInner, { paddingBottom: footerBottom }]}>
+      {onContinue ? (
+        <TouchableOpacity
+          style={[styles.primaryBtn, (continueDisabled || continueLoading) && styles.primaryBtnDisabled]}
+          onPress={onContinue}
+          disabled={continueDisabled || continueLoading}
+          activeOpacity={0.85}
+        >
+          {continueLoading ? (
+            <ActivityIndicator color={colors.white} />
+          ) : (
+            <>
+              <Text style={styles.primaryBtnText}>{continueText}</Text>
+              <Ionicons name="arrow-forward" size={17} color={colors.white} />
+            </>
+          )}
+        </TouchableOpacity>
+      ) : null}
+
+      {onSkip ? (
+        <TouchableOpacity onPress={onSkip} style={styles.skipBtn} hitSlop={8} activeOpacity={0.75}>
+          <Text style={styles.skipText}>{skipText}</Text>
+        </TouchableOpacity>
+      ) : null}
+    </View>
+  ) : null;
 
   return (
-    // Sin KeyboardAvoidingView a propósito: el footer (Continuar / Omitir) queda
-    // anclado abajo y el teclado simplemente lo tapa; al cerrarlo reaparece, en
-    // vez de subir con el teclado. El cuerpo es scroll y `on-drag` cierra el
-    // teclado al arrastrar para volver a ver el footer.
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      {/* Top bar: back + progreso */}
-      <View style={[styles.topBar, { paddingTop: topBarTop }]}>
-        {onBack ? (
-          <TouchableOpacity onPress={onBack} style={styles.backBtn} hitSlop={8}>
-            <Ionicons name="arrow-back" size={20} color={colors.ink} />
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.backBtn} />
-        )}
-        {showProgress ? (
-          <View style={styles.progressCol}>
-            <ProgressBar progress={step! / totalSteps!} height={6} />
-            <Text style={styles.progressText}>{t('onboarding.step', { step: step!, total: totalSteps! })}</Text>
-          </View>
-        ) : (
-          <View style={{ flex: 1 }} />
-        )}
-        <View style={styles.backBtn} />
-      </View>
+      {glassAvailable ? (
+        <GlassSurface fallbackColor={colors.paper} style={styles.chromeGlass}>
+          {topBar}
+        </GlassSurface>
+      ) : topBar}
 
       <ScrollView
         style={{ flex: 1 }}
@@ -102,34 +130,28 @@ export default function OnboardingLayout({
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
-        {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
-        <Text style={styles.title}>{title}</Text>
-        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
-        {children ? <View style={styles.body}>{children}</View> : null}
+        <View style={[styles.shell, { width: shellWidth }]}>
+          {eyebrow ? (
+            <View style={styles.eyebrowPill}>
+              <View style={styles.eyebrowDot} />
+              <Text style={styles.eyebrow}>{eyebrow}</Text>
+            </View>
+          ) : null}
+          <Text style={styles.title}>{title}</Text>
+          {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+          {children ? <View style={styles.body}>{children}</View> : null}
+        </View>
       </ScrollView>
 
-      {/* Footer: botón principal + omitir */}
-      {(onContinue || onSkip) && (
-        <View style={[styles.footer, { paddingBottom: footerBottom }]}>
-          {onContinue && (
-            <TouchableOpacity
-              style={[styles.primaryBtn, (continueDisabled || continueLoading) && styles.primaryBtnDisabled]}
-              onPress={onContinue}
-              disabled={continueDisabled || continueLoading}
-              activeOpacity={0.85}
-            >
-              {continueLoading
-                ? <ActivityIndicator color={colors.white} />
-                : <Text style={styles.primaryBtnText}>{continueText}</Text>}
-            </TouchableOpacity>
-          )}
-          {onSkip && (
-            <TouchableOpacity onPress={onSkip} style={styles.skipBtn} hitSlop={8}>
-              <Text style={styles.skipText}>{skipText}</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
+      {footer ? (
+        glassAvailable ? (
+          <GlassSurface fallbackColor={colors.paper} style={styles.footerGlass}>
+            {footer}
+          </GlassSurface>
+        ) : (
+          <View style={styles.footer}>{footer}</View>
+        )
+      ) : null}
     </View>
   );
 }
@@ -137,40 +159,107 @@ export default function OnboardingLayout({
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
-  topBar: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingBottom: 10,
-    // paddingTop inline (useHeaderTopPadding)
+  chromeGlass: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
   },
-  backBtn: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center' },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  backBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  backBtnGhost: { width: 38, height: 38 },
   progressCol: { flex: 1, gap: 6 },
   progressText: {
-    fontSize: 10.5, fontFamily: fonts.bold, color: colors.inkSoft,
-    textTransform: 'uppercase', letterSpacing: 1.2, textAlign: 'center',
+    fontSize: 10.5,
+    fontFamily: fonts.bold,
+    color: colors.inkSoft,
+    textTransform: 'uppercase',
+    textAlign: 'center',
   },
 
-  scroll: { paddingHorizontal: 24, paddingTop: 18, paddingBottom: 24, flexGrow: 1 },
-  eyebrow: {
-    fontSize: 11, fontFamily: fonts.bold, color: colors.accent,
-    textTransform: 'uppercase', letterSpacing: 1.6, marginBottom: 10,
+  scroll: {
+    paddingHorizontal: 16,
+    paddingTop: 22,
+    paddingBottom: 24,
+    flexGrow: 1,
+    alignItems: 'center',
   },
-  title: { fontSize: 27, lineHeight: 32, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.5 },
-  subtitle: { fontSize: 14.5, lineHeight: 21, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 10 },
+  shell: { flexGrow: 1 },
+  eyebrowPill: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: colors.accentLight,
+    marginBottom: 12,
+  },
+  eyebrowDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.accent },
+  eyebrow: {
+    fontSize: 11,
+    fontFamily: fonts.bold,
+    color: colors.accent,
+    textTransform: 'uppercase',
+  },
+  title: {
+    fontSize: 29,
+    lineHeight: 34,
+    fontFamily: fonts.bold,
+    color: colors.ink,
+  },
+  subtitle: {
+    fontSize: 14.5,
+    lineHeight: 21,
+    fontFamily: fonts.medium,
+    color: colors.inkSoft,
+    marginTop: 10,
+  },
   body: { marginTop: 22 },
 
+  footerGlass: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
+  },
   footer: {
-    paddingHorizontal: 24, paddingTop: 10,
-    // paddingBottom inline: iOS 30 (como antes); Android, sobre el inset del sistema.
-    gap: 4,
-    borderTopWidth: 1, borderTopColor: colors.border,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
     backgroundColor: colors.paper,
   },
+  footerInner: {
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    gap: 4,
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 560,
+  },
   primaryBtn: {
+    minHeight: 52,
     backgroundColor: colors.accent,
-    paddingVertical: 15, alignItems: 'center', justifyContent: 'center',
+    paddingVertical: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 7,
+    borderRadius: 18,
   },
   primaryBtnDisabled: { opacity: 0.4 },
-  primaryBtnText: { fontSize: 15, fontFamily: fonts.bold, color: colors.white, letterSpacing: 0.2 },
+  primaryBtnText: { fontSize: 15, fontFamily: fonts.bold, color: colors.white },
   skipBtn: { paddingVertical: 13, alignItems: 'center' },
   skipText: { fontSize: 13.5, fontFamily: fonts.semibold, color: colors.inkSoft },
 });

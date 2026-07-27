@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  View, Text, Image, FlatList, TouchableOpacity, TextInput,
-  StyleSheet, StatusBar, Modal, Pressable, Keyboard, TouchableWithoutFeedback,
+  View, Text, FlatList, TouchableOpacity, TextInput,
+  StyleSheet, StatusBar, Keyboard, TouchableWithoutFeedback,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -13,14 +12,15 @@ import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useFavoriteCategoryOpener } from '../hooks/useFavoriteCategoryOpener';
+import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { favoriteToUI } from '../lib/productAdapters';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import type { FavoriteCategory } from '../types';
 import StoreProductList from '../components/StoreProductList';
+import StoreDropdown from '../components/StoreDropdown';
 import { type ViewMode } from '../components/ViewModeToggle';
 import ActionSheet from '../components/ActionSheet';
-import ActiveCartBanner from '../components/ActiveCartBanner';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import SlidingSegments from '../components/SlidingSegments';
 
@@ -42,7 +42,7 @@ export default function FavoritesScreen() {
   const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
+  const headerTop = useHeaderTopPadding(52);
   const { categories: favCategories, products: favProducts, toggleCategoryFavorite } = useFavorites();
   const { openFavCategory } = useFavoriteCategoryOpener();
   const bottomPad = useTabBarBottomPadding(20);
@@ -57,7 +57,6 @@ export default function FavoritesScreen() {
 
   // Selector de súper: chip redondo con el logo → panel a pantalla completa
   // (rejilla en 2 columnas, mismo diseño que el catálogo).
-  const [storeMenuOpen, setStoreMenuOpen] = useState(false);
 
   // Liquid Glass (F3): chrome en franja de cristal flotante; la lista pasa por
   // debajo con topInset = altura medida. En fallback, chrome en flujo normal.
@@ -75,7 +74,6 @@ export default function FavoritesScreen() {
     () => CATALOG_STORES.filter((s) => favStoreKeys.includes(s.key)),
     [favStoreKeys],
   );
-  const activeStore = CATALOG_STORES.find((s) => s.key === store) ?? favStores[0];
 
   // Si la tienda activa deja de tener favoritos, salta a la primera disponible.
   useEffect(() => {
@@ -205,28 +203,12 @@ export default function FavoritesScreen() {
 
   // Selector de súper compacto: chip redondo con solo el logo del súper activo,
   // como bloque aparte en la fila de pestañas (igual que el catálogo).
-  const storeSelectorBlock = favStores.length > 1 && (
-    <TouchableOpacity
-      style={styles.selector}
-      onPress={() => setStoreMenuOpen((o) => !o)}
-      activeOpacity={0.8}
-    >
-      {activeStore?.icon ? (
-        <Image source={activeStore.icon} style={styles.selectorLogo} resizeMode="cover" />
-      ) : (
-        <Ionicons name="storefront" size={22} color={colors.accent} />
-      )}
-    </TouchableOpacity>
-  );
-
-  // Chrome de la pantalla (banner + cabecera + pestañas/selector + buscador),
+  // Chrome de la pantalla (cabecera + pestañas/selector + buscador),
   // idéntico en ambos modos; en glass va dentro de la franja de cristal.
   const chrome = (
     <>
-      <ActiveCartBanner topInset />
-
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: headerTop }]}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={glassAvailable ? styles.backBtnGlass : styles.backBtn}
@@ -234,8 +216,12 @@ export default function FavoritesScreen() {
         >
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
-        <Text style={styles.title}>{t('home.yourFavorites')}</Text>
-        <View style={{ width: 38 }} />
+        <Text style={styles.title} numberOfLines={1}>{t('home.yourFavorites')}</Text>
+        {favStores.length > 0 ? (
+          <StoreDropdown stores={favStores} value={store} onChange={setStore} labeled />
+        ) : (
+          <View style={styles.headerSpacer} />
+        )}
       </View>
 
       {/* Fila única: pestañas Productos/Categorías (flex) + selector de súper
@@ -271,7 +257,6 @@ export default function FavoritesScreen() {
             </TouchableOpacity>
           </View>
         )}
-        {storeSelectorBlock}
       </View>
 
       {/* Buscador de la pestaña activa. */}
@@ -340,61 +325,6 @@ export default function FavoritesScreen() {
 
       {/* Panel de tiendas: rejilla a pantalla completa en DOS COLUMNAS, mismo
           diseño que el catálogo (solo súpers con favoritos). */}
-      <Modal
-        visible={storeMenuOpen}
-        animationType="slide"
-        statusBarTranslucent
-        onRequestClose={() => setStoreMenuOpen(false)}
-      >
-        <View style={[styles.storeSheet, { paddingTop: insets.top }]}>
-          <View style={styles.storeSheetHeader}>
-            <Text style={styles.storeSheetTitle}>{t('storePicker.title')}</Text>
-            <TouchableOpacity style={styles.storeCloseBtn} onPress={() => setStoreMenuOpen(false)} hitSlop={8}>
-              <Ionicons name="close" size={22} color={colors.ink} />
-            </TouchableOpacity>
-          </View>
-
-          <FlatList
-            data={favStores}
-            keyExtractor={(s) => s.key}
-            numColumns={2}
-            extraData={store}
-            columnWrapperStyle={styles.storeGridRow}
-            contentContainerStyle={[styles.storeGrid, { paddingBottom: insets.bottom + 24 }]}
-            showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => {
-              const on = item.key === store;
-              return (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.storeCard,
-                    on && styles.storeCardActive,
-                    pressed && styles.storeCardPressed,
-                  ]}
-                  onPress={() => { setStore(item.key); setStoreMenuOpen(false); }}
-                >
-                  {on && (
-                    <View style={styles.storeCardCheck}>
-                      <Ionicons name="checkmark" size={14} color={colors.white} />
-                    </View>
-                  )}
-                  <View style={styles.storeCardLogoWrap}>
-                    {item.icon ? (
-                      <Image source={item.icon} style={styles.storeCardLogo} resizeMode="cover" />
-                    ) : (
-                      <Ionicons name="storefront" size={30} color={colors.accent} />
-                    )}
-                  </View>
-                  <Text style={[styles.storeCardName, on && styles.storeCardNameActive]} numberOfLines={2}>
-                    {item.name}
-                  </Text>
-                </Pressable>
-              );
-            }}
-          />
-        </View>
-      </Modal>
-
       {sheetCat && (
         <ActionSheet
           visible
@@ -418,11 +348,11 @@ const themedStyles = () => StyleSheet.create({
   // ── Header ────────────────────────────────────────────────────
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingTop: 4, paddingBottom: 10, gap: 12,
+    paddingHorizontal: 16, paddingBottom: 10, gap: 10,
   },
   backBtn: {
-    width: 38, height: 38,
-    backgroundColor: colors.white,
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: colors.surfaceAlt,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: colors.border,
   },
@@ -431,90 +361,42 @@ const themedStyles = () => StyleSheet.create({
     width: 38, height: 38,
     alignItems: 'center', justifyContent: 'center',
   },
-  title: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3, textAlign: 'center' },
+  title: { flex: 1, minWidth: 0, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
+  headerSpacer: { width: 38, height: 38 },
 
   // ── Fila de pestañas + selector de súper (un bloque aparte) ───
   controlsRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    marginHorizontal: 16, marginBottom: 10,
+    marginHorizontal: 16, marginBottom: 8,
   },
 
   // ── Segmentado Productos/Categorías (pastilla blanca, Claude Design) ─
   seg: {
     flex: 1, flexDirection: 'row',
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: 16, padding: 5, gap: 6,
+    backgroundColor: colors.surfaceAlt, borderRadius: 18, padding: 4, gap: 3,
   },
   segBtn: {
     flex: 1, flexDirection: 'row',
     alignItems: 'center', justifyContent: 'center', gap: 8,
-    paddingVertical: 11, borderRadius: 12,
+    height: 36, borderRadius: 14,
   },
   segBtnOn: {
-    backgroundColor: colors.white,
-    shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
+    backgroundColor: colors.accent,
+    shadowColor: colors.accent, shadowOpacity: 0.4, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
   segTxt: { fontSize: 14 },
-  segTxtOn: { fontFamily: fonts.bold, color: colors.accent },
+  segTxtOn: { fontFamily: fonts.bold, color: colors.white },
   segTxtOff: { fontFamily: fonts.semibold, color: colors.inkSoft },
 
   // ── Store selector (avatar redondo con logo, sin anillo) ───────
-  selector: {
-    width: 48, height: 48, borderRadius: 24, overflow: 'hidden',
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.accentLight,
-  },
-  selectorLogo: { width: '100%', height: '100%' },
-
   // ── Panel de tiendas: rejilla a pantalla completa (2 columnas) ─
-  storeSheet: { flex: 1, backgroundColor: colors.paper },
-  storeSheetHeader: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingVertical: 14,
-    borderBottomWidth: 1, borderBottomColor: colors.border,
-  },
-  storeSheetTitle: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
-  storeCloseBtn: {
-    width: 38, height: 38, borderRadius: 19,
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.surfaceAlt,
-  },
-  storeGrid: { padding: 16 },
-  storeGridRow: { gap: 12, marginBottom: 12 },
-  storeCard: {
-    flex: 1, aspectRatio: 1,
-    alignItems: 'center', justifyContent: 'center', gap: 10,
-    paddingHorizontal: 10,
-    backgroundColor: colors.white,
-    borderRadius: 20,
-    borderWidth: 1, borderColor: colors.border,
-  },
-  storeCardActive: { borderColor: colors.accent, backgroundColor: colors.accentLight },
-  storeCardPressed: { transform: [{ scale: 0.96 }], opacity: 0.9 },
-  storeCardCheck: {
-    position: 'absolute', top: 8, right: 8,
-    width: 22, height: 22, borderRadius: 11,
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.accent,
-  },
-  storeCardLogoWrap: {
-    width: 56, height: 56, borderRadius: 28, overflow: 'hidden',
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.white,
-  },
-  storeCardLogo: { width: '100%', height: '100%' },
-  storeCardName: { fontSize: 14, fontFamily: fonts.semibold, color: colors.ink, textAlign: 'center' },
-  storeCardNameActive: { color: colors.accent },
-
   // ── Toggle lista/cuadrícula (pastilla redondeada, Claude Design) ─
   viewToggle: {
-    flexDirection: 'row', gap: 5,
-    backgroundColor: colors.surfaceAlt,
-    padding: 5, borderRadius: 14,
+    flexDirection: 'row', gap: 3,
+    backgroundColor: colors.surfaceAlt, padding: 4, borderRadius: 18,
   },
   viewBtn: {
-    width: 40, height: 40, borderRadius: 10,
+    width: 36, height: 36, borderRadius: 14,
     alignItems: 'center', justifyContent: 'center',
   },
   viewBtnOn: {
@@ -528,11 +410,10 @@ const themedStyles = () => StyleSheet.create({
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: colors.white,
     marginHorizontal: 16, marginBottom: 8,
-    paddingHorizontal: 16, paddingVertical: 13,
+    height: glassAvailable ? 40 : 44, paddingHorizontal: 16,
     gap: 11,
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1, borderColor: colors.border,
-    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
   },
   searchInput: { flex: 1, fontSize: 14, color: colors.ink, padding: 0, fontFamily: fonts.medium },
   // Fila de búsqueda de productos: barra (flex) + toggle lista/cuadrícula.
@@ -568,5 +449,5 @@ const themedStyles = () => StyleSheet.create({
 
   // ── Chrome de cristal (solo glassAvailable, F3) ───────────────
   chrome: { position: 'absolute', top: 0, left: 0, right: 0 },
-  chromeGlass: { paddingBottom: 2 },
+  chromeGlass: { paddingBottom: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
 });

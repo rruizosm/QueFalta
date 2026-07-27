@@ -73,6 +73,12 @@ create table if not exists public.condis_products (
   category_ids        text[] not null default '{}',  -- N2 + su N1 (navegación por cualquier nivel)
   unit_price          numeric,            -- precio del envase en € (price.current, ya con oferta aplicada)
   price_format        text,               -- texto mostrado ("0,87 €")
+  promo_name          text,               -- etiqueta explícita de Condis
+  promo_text          text,               -- condiciones publicadas (2ª unidad, lote...)
+  promo_price         numeric,            -- price.current cuando regular > current
+  promo_base_price    numeric,            -- price.regular tachado
+  promo_start         date,
+  promo_end           date,
   price_per_unit      numeric,            -- € por unidad CANÓNICA (l/kg/ud), parseado de pum
   price_per_unit_unit text,               -- 'l' | 'kg' | 'ud'
   available           boolean not null default true,  -- state === 'ACTIVE'

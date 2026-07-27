@@ -1,11 +1,11 @@
 # Monetización — "QuéFalta Plus"
 
 > Spec por fases del modelo freemium. Decisiones cerradas en junio 2026.
-> Estado premium en código desde Fase 1; el paywall NO se enciende hasta Fase 4.
+> Estado premium en código desde Fase 1; el paywall queda actualmente desactivado para poder reactivarlo más adelante.
 
 ## Decisiones cerradas
 
-- **Plan:** suscripción "QuéFalta Plus" — **1,99 €/mes** y **12,99 €/año** (con prueba
+- **Plan:** suscripción "QuéFalta Plus" — **1,99 €/mes** y **11,99 €/año** (con prueba
   gratis de 7 días en el anual como oferta introductoria).
 - **Premium es por usuario, no por grupo.** Si en una pareja paga uno, el otro sigue
   en free. El paywall habla de "tu cuenta", no de "tu grupo".
@@ -18,7 +18,7 @@
 
 | | Free | Plus |
 |---|---|---|
-| Catálogo, búsqueda, favoritos, novedades | ✅ completo | ✅ |
+| Catálogo, búsqueda, favoritos, novedades | ✅ por supermercado | ✅ todos a la vez |
 | Unirse a grupos (enlace de invitación) | ✅ **ilimitado, siempre** | ✅ |
 | Crear grupos | 1 | Ilimitados |
 | Comparador "Más barato en otros súper" | Teaser: muestra que existe y en qué súper, precio/producto bloqueados 🔒 | Completo |
@@ -104,11 +104,10 @@ apaga del todo en free: el teaser es a la vez la feature y su propio anuncio.
 
 ### Fase 4 — Encendido y lanzamiento (runbook)
 
-Preparado en código/SQL: `PAYWALL_ENABLED = true` ya fijado en limits.ts (cliente
-ENCENDIDO), `migrations/paywall_on.sql` (encendido servidor) y
+Preparado en código/SQL: `PAYWALL_ENABLED = false` en limits.ts (cliente
+APAGADO), `migrations/paywall_on.sql` (encendido servidor) y
 `ops/grant_plus_testers.sql` (regalo a testers). ⚠️ Mientras el servidor siga
-apagado, los gates de cliente (grupos/historial/tarjeta Perfil) están ACTIVOS en
-cualquier build nuevo — regalar Plus a los testers ANTES de repartir builds.
+apagado, los gates de cliente permanecen desactivados en cualquier build nuevo.
 
 **Prerrequisitos (bloqueantes, en orden):**
 - [ ] Migraciones base ejecutadas: `profile_premium.sql` → `paywall_gates.sql` →

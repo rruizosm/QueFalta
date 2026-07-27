@@ -34,6 +34,9 @@ create table if not exists public.bonpreu_products (
   category_name       text,
   category_ids        text[] not null default '{}',  -- TODAS las categorías que listan el producto
   unit_price          numeric,            -- price.current.amount
+  promo_price         numeric,            -- promoPrice.amount (precio final si Bonpreu lo publica)
+  promo_base_price    numeric,            -- precio anterior de una rebaja real
+  promo_text          text,               -- condición publicada de la promoción
   price_format        text,               -- texto tipo "1,50 €/kg"
   available           boolean not null default true,
   is_new              boolean not null default false,
@@ -50,6 +53,9 @@ alter table public.bonpreu_products add column if not exists supplier_name text;
 alter table public.bonpreu_products add column if not exists ingredients text;
 alter table public.bonpreu_products add column if not exists nutrition text;
 alter table public.bonpreu_products add column if not exists detail_synced_at timestamptz;
+alter table public.bonpreu_products add column if not exists promo_price numeric;
+alter table public.bonpreu_products add column if not exists promo_base_price numeric;
+alter table public.bonpreu_products add column if not exists promo_text text;
 
 create index if not exists bonpreu_products_category_idx
   on public.bonpreu_products (category_id);

@@ -33,10 +33,8 @@ const TERMS_URL = 'https://quefalta.es/condiciones';
 const PRIVACY_URL = 'https://quefalta.es/privacidad';
 
 const BENEFITS: { icon: IoniconName; key: string }[] = [
-  { icon: 'people', key: 'groups' },
-  { icon: 'pricetags', key: 'comparator' },
+  { icon: 'apps', key: 'stores' },
   { icon: 'receipt', key: 'history' },
-  { icon: 'notifications', key: 'soon' },
 ];
 
 type Plan = 'annual' | 'monthly';
@@ -67,7 +65,7 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
   }, [visible]);
 
   // Precio localizado de la tienda si existe; si no, el estático de MONETIZACION.md.
-  const annualPrice = offerings?.annual?.product.priceString ?? '12,99 €';
+  const annualPrice = offerings?.annual?.product.priceString ?? '11,99 €';
   const monthlyPrice = offerings?.monthly?.product.priceString ?? '1,99 €';
 
   const handleSubscribe = async () => {
@@ -120,23 +118,21 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         <View style={[styles.sheet, { paddingBottom: Platform.OS === 'ios' ? 30 : Math.max(insets.bottom, 20) }]}>
           <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
-            {/* Cabecera */}
+            {/* Hero */}
             <View style={styles.header}>
-              <View style={styles.iconBox}>
-                <Ionicons name="sparkles" size={22} color={colors.white} />
+              <View style={styles.heroMark}>
+                <Ionicons name="sparkles" size={24} color={colors.white} />
               </View>
-              <View style={{ flex: 1 }}>
+              <View style={styles.heroCopy}>
                 <Text style={styles.title}>QuéFalta Plus</Text>
-                <Text style={styles.subtitle}>
-                  {subtitle ?? t('paywall.defaultSubtitle')}
-                </Text>
+                <Text style={styles.subtitle}>{subtitle ?? t('paywall.defaultSubtitle')}</Text>
               </View>
               <TouchableOpacity style={styles.closeBtn} onPress={onClose} hitSlop={8}>
                 <Ionicons name="close" size={18} color={colors.inkSoft} />
               </TouchableOpacity>
             </View>
 
-            {/* Beneficios */}
+            {/* Dos ventajas concretas, sin promesas ni extras. */}
             <View style={styles.benefits}>
               {BENEFITS.map((b) => (
                 <View key={b.key} style={styles.benefitRow}>
@@ -158,9 +154,7 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
                 onPress={() => setPlan('annual')}
                 activeOpacity={0.85}
               >
-                <View style={styles.planBadge}>
-                  <Text style={styles.planBadgeText}>{t('paywall.freeTrialBadge')}</Text>
-                </View>
+                <View style={styles.planBadge}><Text style={styles.planBadgeText}>{t('paywall.freeTrialBadge')}</Text></View>
                 <Text style={styles.planName}>{t('paywall.annual')}</Text>
                 <Text style={styles.planPrice}>{annualPrice}</Text>
                 <Text style={styles.planPer}>{t('paywall.annualPer')}</Text>
@@ -220,70 +214,74 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
 }
 
 const themedStyles = () => StyleSheet.create({
-  root: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.45)' },
+  root: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(18, 31, 28, 0.5)' },
   sheet: {
     backgroundColor: colors.paper,
-    borderTopWidth: 1, borderTopColor: colors.ink,
-    maxHeight: '88%',
+    borderTopLeftRadius: 28, borderTopRightRadius: 28,
+    overflow: 'hidden', maxHeight: '86%',
     // paddingBottom inline: iOS 30 (como antes); Android, el inset del sistema.
   },
 
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 20, paddingTop: 20, paddingBottom: 16,
-    borderBottomWidth: 1, borderBottomColor: colors.border,
+    flexDirection: 'row', alignItems: 'center', gap: 13,
+    marginHorizontal: 16, marginTop: 16, padding: 16,
+    borderRadius: 22, backgroundColor: colors.accentLight,
   },
-  iconBox: {
-    width: 44, height: 44,
+  heroMark: {
+    width: 48, height: 48, borderRadius: 16,
     backgroundColor: colors.accent,
     alignItems: 'center', justifyContent: 'center',
   },
-  title: { fontSize: 19, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.2 },
-  subtitle: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
+  heroCopy: { flex: 1 },
+  title: { fontSize: 21, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4 },
+  subtitle: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 3, lineHeight: 18 },
   closeBtn: {
-    width: 32, height: 32, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white,
+    width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.white,
   },
 
-  benefits: { paddingHorizontal: 20, paddingTop: 16, gap: 12 },
-  benefitRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  benefits: { flexDirection: 'row', paddingHorizontal: 16, paddingTop: 16, gap: 10 },
+  benefitRow: {
+    flex: 1, minHeight: 116, padding: 13, gap: 10,
+    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, borderRadius: 18,
+  },
   benefitIcon: {
-    width: 34, height: 34,
+    width: 36, height: 36, borderRadius: 12,
     backgroundColor: colors.accentLight,
     alignItems: 'center', justifyContent: 'center',
   },
-  benefitTitle: { fontSize: 14, fontFamily: fonts.bold, color: colors.ink },
-  benefitText: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
+  benefitTitle: { fontSize: 13, fontFamily: fonts.bold, color: colors.ink, lineHeight: 17 },
+  benefitText: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2, lineHeight: 15 },
 
-  plans: { flexDirection: 'row', gap: 10, paddingHorizontal: 20, paddingTop: 18 },
+  plans: { flexDirection: 'row', gap: 10, paddingHorizontal: 16, paddingTop: 18 },
   planCard: {
     flex: 1,
     backgroundColor: colors.white,
-    borderWidth: 1, borderColor: colors.border,
-    padding: 14, gap: 2,
+    borderWidth: 1, borderColor: colors.border, borderRadius: 18,
+    padding: 14, gap: 3,
   },
-  planCardActive: { borderColor: colors.accent, borderWidth: 2 },
+  planCardActive: { borderColor: colors.accent, borderWidth: 2, backgroundColor: colors.accentLight },
   planBadge: {
     alignSelf: 'flex-start',
     backgroundColor: colors.accentLight,
-    paddingHorizontal: 7, paddingVertical: 3, marginBottom: 4,
+    borderRadius: 8, paddingHorizontal: 7, paddingVertical: 3, marginBottom: 4,
   },
   planBadgeText: { fontSize: 10, fontFamily: fonts.bold, color: colors.accent },
   planName: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.inkSoft, textTransform: 'uppercase', letterSpacing: 0.6 },
-  planPrice: { fontSize: 21, fontFamily: fonts.bold, color: colors.ink },
+  planPrice: { fontSize: 22, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4 },
   planPer: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft },
 
-  ctaWrap: { paddingHorizontal: 20, marginTop: 18 },
+  ctaWrap: { paddingHorizontal: 16, marginTop: 18 },
   ctaBtn: {
     backgroundColor: colors.accent,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 7, paddingVertical: 15,
+    borderRadius: 16, gap: 7, paddingVertical: 16,
   },
   ctaText: { fontSize: 15, fontFamily: fonts.bold, color: colors.white },
 
   footer: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, marginTop: 16,
+    gap: 8, marginTop: 17,
   },
   footerLink: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, textDecorationLine: 'underline' },
   footerDot: { fontSize: 12, color: colors.inkFaint },

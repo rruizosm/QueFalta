@@ -22,6 +22,8 @@ import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { updateProfile } from '../api/profile';
 import RegionPicker, { type RegionSelection } from '../components/RegionPicker';
+import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
+import { glassAvailable } from '../components/GlassSurface';
 
 export default function RegionSettingsScreen() {
   const styles = useThemedStyles(themedStyles);
@@ -33,6 +35,8 @@ export default function RegionSettingsScreen() {
   const { profile, applyProfile } = useProfile();
   const toast = useToast();
   const userId = session?.user.id ?? '';
+  const [headerH, setHeaderH] = useState(0);
+  const glassInset = glassAvailable ? headerH : 0;
 
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
@@ -59,16 +63,9 @@ export default function RegionSettingsScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: headerTop }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color={colors.ink} />
-        </TouchableOpacity>
-        <Text style={styles.title}>{t('region.title')}</Text>
-        <View style={{ width: 38 }} />
-      </View>
+      <ProfileSubscreenHeader title={t('region.title')} icon="location-outline" headerTop={headerTop} onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)} />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad }]}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad, paddingTop: glassInset ? glassInset + 12 : 6 }]}>
         <Text style={styles.hint}>{t('region.hint')}</Text>
         <RegionPicker key={pickerKey} region={region} postalCode={postalCode} onChange={handleChange} />
       </ScrollView>
@@ -79,23 +76,10 @@ export default function RegionSettingsScreen() {
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
-  header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingBottom: 10, gap: 12,
-    // paddingTop inline (useHeaderTopPadding)
-  },
-  backBtn: {
-    width: 38, height: 38,
-    backgroundColor: colors.white,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border,
-  },
-  title: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
-
   scroll: { paddingHorizontal: 16, paddingBottom: 40 },
 
   hint: {
     fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft,
-    marginTop: 6, marginBottom: 14, lineHeight: 17,
+    marginBottom: 14, lineHeight: 18,
   },
 });

@@ -26,8 +26,7 @@ interface Props {
   target: ProductRef | null;
   /** Vuelve al producto anterior (cierra solo este nivel). */
   onClose: () => void;
-  /** Pantalla completa, sin hueco superior (cesta). Por defecto es una hoja que
-   *  arranca bajo el banner del carrito activo (catálogo/categorías/comparativa). */
+  /** Pantalla completa, sin borde ni sombra de hoja (cesta). */
   fullScreen?: boolean;
 }
 
@@ -38,10 +37,7 @@ interface Props {
 export default function StoreProductModal({ target, onClose, fullScreen = false }: Props) {
   const styles = useThemedStyles(themedStyles);
   const fullScreenTop = useHeaderTopPadding(56);
-  // Alto reservado arriba para el banner del carrito activo (ActiveCartBanner
-  // con topInset, marginTop useHeaderTopPadding(52) + ~48 de banner): la hoja
-  // arranca justo debajo de él. Si cambia el banner, ajustar.
-  const sheetTop = useHeaderTopPadding(52) + 48;
+  const sheetTop = useHeaderTopPadding(56);
   const toast = useToast();
   const { t, lang } = useTranslation();
   const { profile } = useProfile();
@@ -143,11 +139,8 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      {/* fullScreen (cesta): cubre toda la pantalla, sin hueco arriba. Si no, la
-          hoja NO cubre todo: empieza bajo el banner del carrito activo, que sigue
-          visible arriba (lo pinta la pantalla de debajo —subcategoría/catálogo/
-          favoritos—). Los modales internos son overlays absolute-fill → rellenan
-          el contenedor en ambos casos. */}
+      {/* fullScreen (cesta) cubre toda la pantalla. El detalle anidado conserva
+          el formato de hoja y despeja la barra de estado. */}
       <View style={fullScreen ? styles.sheetFull : [styles.sheet, { top: sheetTop }]}>{content}</View>
     </Modal>
   );
@@ -157,7 +150,7 @@ const themedStyles = () => StyleSheet.create({
   sheet: {
     position: 'absolute',
     left: 0, right: 0, bottom: 0,
-    // top inline (sheetTop): bajo el banner del carrito activo
+    // top inline (sheetTop): despeja la barra de estado
     backgroundColor: colors.paper,
     borderTopWidth: 1, borderTopColor: colors.border,
     shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 8,

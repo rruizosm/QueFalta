@@ -62,5 +62,6 @@ const themedStyles = () => StyleSheet.create({
     width: 120, height: 120, borderRadius: 60,
     backgroundColor: colors.ok,
     alignItems: 'center', justifyContent: 'center',
+    borderWidth: 8, borderColor: colors.accentLight,
   },
 });

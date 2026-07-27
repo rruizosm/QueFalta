@@ -12,8 +12,6 @@ import {
   ActivityIndicator,
   Modal,
   Pressable,
-  Animated,
-  Easing,
   LayoutAnimation,
   Platform,
   UIManager,
@@ -67,7 +65,6 @@ import { useToast } from '../context/ToastContext';
 import { useProfile } from '../context/ProfileContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { useGuidedTour, useTourAnchor } from '../context/GuidedTourContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
@@ -79,16 +76,19 @@ import {
   type UIProduct,
 } from '../lib/productAdapters';
 import { sortByName } from '../lib/sort';
+import { createMultiStorePager, type MultiStorePager } from '../lib/multiStorePager';
 import ActionSheet from '../components/ActionSheet';
 import StoreProductList from '../components/StoreProductList';
 import { type ViewMode } from '../components/ViewModeToggle';
-import ActiveCartBanner from '../components/ActiveCartBanner';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
-import SlidingSegments from '../components/SlidingSegments';
+import SlidingSegments, { type Segment } from '../components/SlidingSegments';
+import StoreDropdown, { type StoreSelection } from '../components/StoreDropdown';
+import PaywallModal from '../components/PaywallModal';
+import { limitsApply } from '../constants/limits';
 
 // Las tiendas y sus metadatos viven en constants/stores.ts (fuente única
 // compartida con la preferencia de perfil "Supermercados").
-type StoreKey = CatalogStore;
+type StoreKey = StoreSelection;
 
 // Primera página por súper/contexto durante la sesión. El catálogo se
 // sincroniza semanalmente, pero un TTL corto permite mostrar al instante una
@@ -101,7 +101,7 @@ interface BrowseCacheEntry {
 const browsePageCache = new Map<string, BrowseCacheEntry>();
 
 function browseCacheKey(
-  store: CatalogStore,
+  store: StoreKey,
   lang: string,
   region: RegionValue | null,
   postalCode: string | null,
@@ -190,24 +190,85 @@ async function loadBrowsePage(
   postalCode: string | null,
   signal?: AbortSignal,
   order: 'priceAsc' | 'priceDesc' = 'priceAsc',
+  limit = 50,
+): Promise<BrowsePage<UIProduct>> {
+  try {
+    return await loadBrowsePageWithOrder(store, cursor, region, postalCode, signal, order, limit);
+  } catch (error) {
+    // Algunas tablas antiguas de producción aún no tienen el índice para
+    // `unit_price`. No permitimos que una sola consulta lenta deje vacío el
+    // catálogo combinado: recuperamos su primera página alfabética y la mezcla
+    // la ordena en cliente. Las cancelaciones sí deben propagarse.
+    if (signal?.aborted || (order !== 'priceAsc' && order !== 'priceDesc')) throw error;
+    return loadBrowsePageWithOrder(store, cursor, region, postalCode, signal, false, limit);
+  }
+}
+
+async function loadBrowsePageWithOrder(
+  store: CatalogStore,
+  cursor: BrowseCursor | null,
+  region: RegionValue | null,
+  postalCode: string | null,
+  signal?: AbortSignal,
+  order: 'priceAsc' | 'priceDesc' | boolean = 'priceAsc',
+  limit = 50,
 ): Promise<BrowsePage<UIProduct>> {
   switch (store) {
-    case 'mercadona': { const { items, nextCursor } = await browseProducts(cursor, region, 50, signal, order as never); return { items: items.map((p) => mercadonaToUI(p)), nextCursor }; }
-    case 'esclat':    { const { items, nextCursor } = await browseBonpreuProducts(cursor, 50, signal, order as never); return { items: items.map(bonpreuToUI), nextCursor }; }
-    case 'carrefour': { const { items, nextCursor } = await browseCarrefourProducts(cursor, region, 50, signal, order as never); return { items: items.map(carrefourToUI), nextCursor }; }
-    case 'bonarea':   { const { items, nextCursor } = await browseBonareaProducts(cursor, 50, signal, order as never); return { items: items.map(bonareaToUI), nextCursor }; }
-    case 'consum':    { const { items, nextCursor } = await browseConsumProducts(cursor, region, postalCode, 50, signal, order as never); return { items: items.map(consumToUI), nextCursor }; }
-    case 'dia':       { const { items, nextCursor } = await browseDiaProducts(cursor, region, 50, signal, order as never); return { items: items.map(diaToUI), nextCursor }; }
-    case 'sorli':     { const { items, nextCursor } = await browseSorliProducts(cursor, 50, signal, order as never); return { items: items.map(sorliToUI), nextCursor }; }
-    case 'eroski':    { const { items, nextCursor } = await browseEroskiProducts(cursor, 50, signal, order as never); return { items: items.map(eroskiToUI), nextCursor }; }
-    case 'caprabo':   { const { items, nextCursor } = await browseCapraboProducts(cursor, 50, signal, order as never); return { items: items.map(capraboToUI), nextCursor }; }
-    case 'condis':    { const { items, nextCursor } = await browseCondisProducts(cursor, 50, signal, order as never); return { items: items.map(condisToUI), nextCursor }; }
-    case 'ametller':  { const { items, nextCursor } = await browseAmetllerProducts(cursor, 50, signal, order as never); return { items: items.map(ametllerToUI), nextCursor }; }
-    case 'aldi':      { const { items, nextCursor } = await browseAldiProducts(cursor, 50, signal, order as never); return { items: items.map(aldiToUI), nextCursor }; }
-    case 'hiperdino': { const { items, nextCursor } = await browseHiperdinoProducts(cursor, 50, signal, order as never); return { items: items.map(hiperdinoToUI), nextCursor }; }
-    case 'alcampo':   { const { items, nextCursor } = await browseAlcampoProducts(cursor, 50, signal, order as never); return { items: items.map(alcampoToUI), nextCursor }; }
-    case 'plusfresc': { const { items, nextCursor } = await browsePlusfrescProducts(cursor, postalCode, 50, signal, order as never); return { items: items.map(plusfrescToUI), nextCursor }; }
+    case 'mercadona': { const { items, nextCursor } = await browseProducts(cursor, region, limit, signal, order as never); return { items: items.map((p) => mercadonaToUI(p)), nextCursor }; }
+    case 'esclat':    { const { items, nextCursor } = await browseBonpreuProducts(cursor, limit, signal, order as never); return { items: items.map(bonpreuToUI), nextCursor }; }
+    case 'carrefour': { const { items, nextCursor } = await browseCarrefourProducts(cursor, region, limit, signal, order as never); return { items: items.map(carrefourToUI), nextCursor }; }
+    case 'bonarea':   { const { items, nextCursor } = await browseBonareaProducts(cursor, limit, signal, order as never); return { items: items.map(bonareaToUI), nextCursor }; }
+    case 'consum':    { const { items, nextCursor } = await browseConsumProducts(cursor, region, postalCode, limit, signal, order as never); return { items: items.map(consumToUI), nextCursor }; }
+    case 'dia':       { const { items, nextCursor } = await browseDiaProducts(cursor, region, limit, signal, order as never); return { items: items.map(diaToUI), nextCursor }; }
+    case 'sorli':     { const { items, nextCursor } = await browseSorliProducts(cursor, limit, signal, order as never); return { items: items.map(sorliToUI), nextCursor }; }
+    case 'eroski':    { const { items, nextCursor } = await browseEroskiProducts(cursor, limit, signal, order as never); return { items: items.map(eroskiToUI), nextCursor }; }
+    case 'caprabo':   { const { items, nextCursor } = await browseCapraboProducts(cursor, limit, signal, order as never); return { items: items.map(capraboToUI), nextCursor }; }
+    case 'condis':    { const { items, nextCursor } = await browseCondisProducts(cursor, limit, signal, order as never); return { items: items.map(condisToUI), nextCursor }; }
+    case 'ametller':  { const { items, nextCursor } = await browseAmetllerProducts(cursor, limit, signal, order as never); return { items: items.map(ametllerToUI), nextCursor }; }
+    case 'aldi':      { const { items, nextCursor } = await browseAldiProducts(cursor, limit, signal, order as never); return { items: items.map(aldiToUI), nextCursor }; }
+    case 'hiperdino': { const { items, nextCursor } = await browseHiperdinoProducts(cursor, limit, signal, order as never); return { items: items.map(hiperdinoToUI), nextCursor }; }
+    case 'alcampo':   { const { items, nextCursor } = await browseAlcampoProducts(cursor, limit, signal, order as never); return { items: items.map(alcampoToUI), nextCursor }; }
+    case 'plusfresc': { const { items, nextCursor } = await browsePlusfrescProducts(cursor, postalCode, limit, signal, order as never); return { items: items.map(plusfrescToUI), nextCursor }; }
   }
+}
+
+async function loadStoreSearch(
+  store: CatalogStore,
+  query: string,
+  region: RegionValue | null,
+  postalCode: string | null,
+  signal?: AbortSignal,
+): Promise<UIProduct[]> {
+  switch (store) {
+    case 'mercadona': return (await searchProducts(query, region, 50, signal)).map((product) => mercadonaToUI(product));
+    case 'esclat': return (await searchBonpreuProducts(query, 50, signal)).map(bonpreuToUI);
+    case 'carrefour': return (await searchCarrefourProducts(query, region, 50, signal)).map(carrefourToUI);
+    case 'bonarea': return (await searchBonareaProducts(query, 50, signal)).map(bonareaToUI);
+    case 'consum': return (await searchConsumProducts(query, region, postalCode, 50, signal)).map(consumToUI);
+    case 'dia': return (await searchDiaProducts(query, region, 50, signal)).map(diaToUI);
+    case 'sorli': return (await searchSorliProducts(query, 50, signal)).map(sorliToUI);
+    case 'eroski': return (await searchEroskiProducts(query, 50, signal)).map(eroskiToUI);
+    case 'caprabo': return (await searchCapraboProducts(query, 50, signal)).map(capraboToUI);
+    case 'condis': return (await searchCondisProducts(query, 50, signal)).map(condisToUI);
+    case 'ametller': return (await searchAmetllerProducts(query, 50, signal)).map(ametllerToUI);
+    case 'aldi': return (await searchAldiProducts(query, 50, signal)).map(aldiToUI);
+    case 'hiperdino': return (await searchHiperdinoProducts(query, 50, signal)).map(hiperdinoToUI);
+    case 'alcampo': return (await searchAlcampoProducts(query, 50, signal)).map(alcampoToUI);
+    case 'plusfresc': return (await searchPlusfrescProducts(query, postalCode, 50, signal)).map(plusfrescToUI);
+  }
+}
+
+function compareProductsByPrice(order: 'asc' | 'desc') {
+  return (a: UIProduct, b: UIProduct) => {
+    if (a.unitPrice == null && b.unitPrice != null) return 1;
+    if (a.unitPrice != null && b.unitPrice == null) return -1;
+    const priceDiff = (a.unitPrice ?? 0) - (b.unitPrice ?? 0);
+    if (priceDiff !== 0) return order === 'asc' ? priceDiff : -priceDiff;
+    const nameDiff = a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
+    if (nameDiff !== 0) return nameDiff;
+    const storeDiff = CATALOG_STORE_KEYS.indexOf(a.store) - CATALOG_STORE_KEYS.indexOf(b.store);
+    return storeDiff !== 0 ? storeDiff : a.id.localeCompare(b.id);
+  };
 }
 
 export default function CatalogScreen() {
@@ -219,12 +280,15 @@ export default function CatalogScreen() {
   const insets = useSafeAreaInsets();
   const { isCategoryFavorite, toggleCategoryFavorite } = useFavorites();
   const toast = useToast();
-  const { notify: tourNotify, stepId: tourStepId, setStoreMenuOpen: tourSetStoreMenuOpen } = useGuidedTour();
-  const storeAnchor = useTourAnchor('storeSelector');
-  const firstCatAnchor = useTourAnchor('firstCategory');
   const [sheetCat, setSheetCat] = useState<CatRow | null>(null);
   const [store, setStore] = useState<StoreKey>('mercadona');
   const [tab, setTab] = useState<'categorias' | 'productos'>('productos');
+  const isAllStores = store === 'all';
+
+  const handleStoreChange = (nextStore: StoreKey) => {
+    setStore(nextStore);
+    if (nextStore === 'all') setTab('productos');
+  };
   // Vista lista/cuadrícula compartida por los listados de búsqueda de productos
   // (la controla la fila de búsqueda, no el toolbar interno de StoreProductList).
   const [prodViewMode, setProdViewMode] = useState<ViewMode>('list');
@@ -258,10 +322,7 @@ export default function CatalogScreen() {
   // redondo); al tocar se abre a pantalla completa la rejilla de súpers en 2
   // columnas (mismo diseño que Ofertas/Novedades/Cambios de precios).
   const [storeMenuOpen, setStoreMenuOpen] = useState(false);
-
-  // Resetea el aviso del tour al desmontar. (El efecto que informa de apertura
-  // + nº de supers vive más abajo, tras calcular `visibleStores`.)
-  useEffect(() => () => tourSetStoreMenuOpen(false), [tourSetStoreMenuOpen]);
+  const [paywallVisible, setPaywallVisible] = useState(false);
 
   // Solo se muestran los supermercados elegidos en el perfil ∩ los disponibles
   // en su comunidad autónoma (regionales solo en su zona; con region 'ES' o
@@ -269,56 +330,28 @@ export default function CatalogScreen() {
   // los súpers de fuera solo dejan de mostrarse y reaparecen si vuelve. Si la
   // intersección queda vacía (eligió solo súpers de otra región), cae a todos
   // los de la región — nunca un catálogo vacío (los nacionales están en todas).
-  const { profile } = useProfile();
+  const { profile, isPremium, loading: profileLoading } = useProfile();
+  const allLocked = !profileLoading && limitsApply(isPremium);
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
   const prefStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
   const prefInRegion = prefStores.filter((k) => storeInRegion(k, region));
   const enabledStores = prefInRegion.length > 0 ? prefInRegion : storesForRegion(region);
   const visibleStores = CATALOG_STORES.filter((s) => enabledStores.includes(s.key));
-  const activeStore = CATALOG_STORES.find((s) => s.key === store) ?? visibleStores[0];
-
-  // Informa al tour de si el desplegable está abierto y de cuántos supers hay
-  // (para que el paso 3 diga "el segundo" o, con uno solo, "el primero").
-  useEffect(() => {
-    tourSetStoreMenuOpen(storeMenuOpen, visibleStores.length);
-  }, [storeMenuOpen, visibleStores.length, tourSetStoreMenuOpen]);
-
-  // Al activarse el paso 3, re-mide el selector en pantalla (el ancla pudo
-  // medirse tarde/obsoleta, o el selector se acaba de forzar visible). Sin esto,
-  // la fase 1 no tendría objetivo y no saldrían anillo/chevron.
-  useEffect(() => {
-    if (tourStepId === 'store') storeAnchor.onLayout();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tourStepId]);
-
-  // Súper a iluminar en el desplegable durante el paso 3: el 2º (para enseñar a
-  // cambiar) o el 1º si el usuario solo tiene uno.
-  const tourTargetIdx = visibleStores.length >= 2 ? 1 : 0;
-
-  // Anillo que pulsa sobre el súper objetivo (mismo lenguaje que el resto del
-  // tour, pero SIN chevron: el menú es un Modal). "Respira" (opacidad ida/vuelta,
-  // siempre visible). Solo corre con el menú abierto durante el paso 3.
-  const menuPulse = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    if (!(tourStepId === 'store' && storeMenuOpen)) return;
-    menuPulse.setValue(0);
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(menuPulse, { toValue: 1, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        Animated.timing(menuPulse, { toValue: 0, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [tourStepId, storeMenuOpen, menuPulse]);
 
   // Si la tienda activa deja de estar permitida, salta a la primera visible.
   useEffect(() => {
-    if (enabledStores.length > 0 && !enabledStores.includes(store)) {
+    if (store !== 'all' && enabledStores.length > 0 && !enabledStores.includes(store)) {
       setStore(enabledStores[0]);
     }
   }, [enabledStores, store]);
+
+  useEffect(() => {
+    if (allLocked && store === 'all' && enabledStores[0]) {
+      setStore(enabledStores[0]);
+      setTab('productos');
+    }
+  }, [allLocked, enabledStores, store]);
 
   const [categories, setCategories] = useState<N1Category[]>([]);
   const [catLoading, setCatLoading] = useState(false);
@@ -330,6 +363,12 @@ export default function CatalogScreen() {
   const [prodResults, setProdResults] = useState<MercadonaProduct[]>([]);
   const [prodLoading, setProdLoading] = useState(false);
   const [prodError, setProdError] = useState(false);
+
+  // BÃºsqueda conjunta cuando el selector estÃ¡ en "Todos".
+  const [allSearch, setAllSearch] = useState('');
+  const [allResults, setAllResults] = useState<UIProduct[]>([]);
+  const [allLoading, setAllLoading] = useState(false);
+  const [allError, setAllError] = useState(false);
 
   // Búsqueda de productos BonpreuEsclat (espejo)
   const [bpSearch, setBpSearch] = useState('');
@@ -493,15 +532,22 @@ export default function CatalogScreen() {
   const browseInitialController = useRef<AbortController | null>(null);
   const browseMoreController = useRef<AbortController | null>(null);
   // Texto de búsqueda del súper activo: con <2 letras estamos en modo navegación.
-  const prodQuery = { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch, condis: coSearch, ametller: amSearch, aldi: alSearch, hiperdino: hdSearch, alcampo: acSearch, plusfresc: pfSearch }[store];
+  const prodQuery = store === 'all'
+    ? allSearch
+    : { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch, condis: coSearch, ametller: amSearch, aldi: alSearch, hiperdino: hdSearch, alcampo: acSearch, plusfresc: pfSearch }[store];
   // Setter de búsqueda de productos del súper activo (para la fila de búsqueda
   // única que ahora vive en el chrome, en vez de una por bloque de súper).
-  const setProdQuery = { mercadona: setProdSearch, esclat: setBpSearch, carrefour: setCfSearch, bonarea: setBaSearch, consum: setCsSearch, dia: setDdSearch, sorli: setSoSearch, eroski: setEkSearch, caprabo: setCbSearch, condis: setCoSearch, ametller: setAmSearch, aldi: setAlSearch, hiperdino: setHdSearch, alcampo: setAcSearch, plusfresc: setPfSearch }[store];
+  const setProdQuery = store === 'all'
+    ? setAllSearch
+    : { mercadona: setProdSearch, esclat: setBpSearch, carrefour: setCfSearch, bonarea: setBaSearch, consum: setCsSearch, dia: setDdSearch, sorli: setSoSearch, eroski: setEkSearch, caprabo: setCbSearch, condis: setCoSearch, ametller: setAmSearch, aldi: setAlSearch, hiperdino: setHdSearch, alcampo: setAcSearch, plusfresc: setPfSearch }[store];
   const browseMode = tab === 'productos' && prodQuery.trim().length < 2;
   const browseOrder = productOrder === 'desc' ? 'priceDesc' : 'priceAsc';
+  const enabledStoresKey = enabledStores.join(',');
   const activeBrowseKey = browseCacheKey(
     store, lang, region, postalCode, productOrder,
-  );
+  ) + (store === 'all' ? `:${enabledStoresKey}` : '');
+  const allBrowsePager = useRef<MultiStorePager<UIProduct> | null>(null);
+  const allBrowseRequestKey = useRef<string | null>(null);
   const activeBrowseKeyRef = useRef(activeBrowseKey);
   activeBrowseKeyRef.current = activeBrowseKey;
 
@@ -521,6 +567,47 @@ export default function CatalogScreen() {
     }
 
     const requestKey = activeBrowseKey;
+    if (store === 'all') {
+      setBrowse([]);
+      setBrowseCursor(null);
+      setBrowseError(false);
+      setBrowseMore(false);
+      setBrowseLoading(true);
+      setBrowseRefreshing(false);
+
+      let cancelled = false;
+      const controller = new AbortController();
+      browseInitialController.current = controller;
+      const pager = createMultiStorePager({
+        stores: enabledStores,
+        loadPage: (selectedStore, cursor, limit, signal) =>
+          loadBrowsePage(selectedStore, cursor, region, postalCode, signal, browseOrder, limit),
+        compare: compareProductsByPrice(productOrder),
+      });
+      allBrowsePager.current = pager;
+      allBrowseRequestKey.current = requestKey;
+      pager.nextPage(50, controller.signal)
+        .then((items) => {
+          if (cancelled || activeBrowseKeyRef.current !== requestKey) return;
+          setBrowse(items);
+          setBrowseCursor(pager.hasMore() ? { name: 0, id: 'all' } : null);
+        })
+        .catch(() => {
+          if (!cancelled) setBrowseError(true);
+        })
+        .finally(() => {
+          if (cancelled) return;
+          if (browseInitialController.current === controller) browseInitialController.current = null;
+          setBrowseLoading(false);
+        });
+      return () => {
+        cancelled = true;
+        controller.abort();
+      };
+    }
+
+    allBrowsePager.current = null;
+    allBrowseRequestKey.current = null;
     const cached = browsePageCache.get(requestKey);
     const hasCachedPage = cached != null;
     if (cached) {
@@ -568,12 +655,33 @@ export default function CatalogScreen() {
   // Siguiente página keyset al llegar al final de la lista.
   const loadMoreBrowse = () => {
     if (browseLoading || browseRefreshing || browseMore || browseCursor == null) return;
-    const cursor = browseCursor;
     const requestKey = activeBrowseKey;
     const controller = new AbortController();
     browseMoreController.current?.abort();
     browseMoreController.current = controller;
     setBrowseMore(true);
+
+    if (store === 'all') {
+      const pager = allBrowseRequestKey.current === requestKey ? allBrowsePager.current : null;
+      if (!pager) {
+        setBrowseMore(false);
+        return;
+      }
+      pager.nextPage(50, controller.signal)
+        .then((items) => {
+          if (activeBrowseKeyRef.current !== requestKey) return;
+          setBrowse((prev) => [...prev, ...items]);
+          setBrowseCursor(pager.hasMore() ? { name: 0, id: 'all' } : null);
+        })
+        .catch(() => { /* conserva lo ya cargado */ })
+        .finally(() => {
+          if (browseMoreController.current === controller) browseMoreController.current = null;
+          if (activeBrowseKeyRef.current === requestKey) setBrowseMore(false);
+        });
+      return;
+    }
+
+    const cursor = browseCursor;
     loadBrowsePage(store, cursor, region, postalCode, controller.signal, browseOrder)
       .then(({ items, nextCursor }) => {
         if (activeBrowseKeyRef.current !== requestKey) return;
@@ -773,6 +881,26 @@ export default function CatalogScreen() {
     return startProductSearch(pfSearch, (q, signal) => searchPlusfrescProducts(q, postalCode, 50, signal), setPfResults, setPfLoading, setPfError);
   }, [store, pfSearch, lang, postalCode]);
 
+  // "Todos": lanza la misma bÃºsqueda en los sÃºpers permitidos, mezcla por
+  // precio y conserva un mÃ¡ximo global de 50 resultados.
+  useEffect(() => {
+    if (store !== 'all') return;
+    return startProductSearch(
+      allSearch,
+      async (q, signal) => {
+        const pages = await Promise.all(
+          enabledStores.map((selectedStore) =>
+            loadStoreSearch(selectedStore, q, region, postalCode, signal),
+          ),
+        );
+        return pages.flat().sort(compareProductsByPrice(productOrder)).slice(0, 50);
+      },
+      setAllResults,
+      setAllLoading,
+      setAllError,
+    );
+  }, [store, allSearch, lang, region, postalCode, productOrder, enabledStoresKey]);
+
   // Filtro de categorías por texto (cliente). Compartido por los 6 súpers: en la
   // pestaña de categorías solo se ve un súper a la vez, así que un único `catSearch` basta.
   const matchesCatSearch = (name: string) =>
@@ -820,15 +948,11 @@ export default function CatalogScreen() {
 
   // Fila de categoría común a los 6 súpers: navega al tocar, ⋯ abre el ActionSheet
   // (ver subcategorías + marcar/quitar favorita) y estrella si ya es favorita.
-  const renderCatRow = (c: CatRow, isFirst = false) => {
+  const renderCatRow = (c: CatRow) => {
     const { emoji, color } = getMeta(c.name);
     const fav = isCategoryFavorite(c.store, c.refId);
     return (
-      <View
-        ref={isFirst ? firstCatAnchor.ref : undefined}
-        onLayout={isFirst ? firstCatAnchor.onLayout : undefined}
-        style={styles.row}
-      >
+      <GlassSurface style={styles.row} fallbackColor={colors.white}>
         <TouchableOpacity style={styles.rowBody} onPress={c.onOpen} activeOpacity={0.8}>
           <View style={[styles.thumbnail, { backgroundColor: color + '1e' }]}>
             <Text style={styles.thumbnailEmoji}>{emoji}</Text>
@@ -842,54 +966,54 @@ export default function CatalogScreen() {
         <TouchableOpacity onPress={() => setSheetCat(c)} hitSlop={8} style={styles.moreBtn} activeOpacity={0.7}>
           <Ionicons name="ellipsis-horizontal" size={18} color={colors.inkSoft} />
         </TouchableOpacity>
-      </View>
+      </GlassSurface>
     );
   };
 
-  const renderCategory = ({ item, index }: { item: N1Category; index: number }) =>
-    renderCatRow({ store: 'mercadona', refId: String(item.id), name: item.name, subcount: item.categories.length, onOpen: () => goToSubcategories(item) }, index === 0);
+  const renderCategory = ({ item }: { item: N1Category }) =>
+    renderCatRow({ store: 'mercadona', refId: String(item.id), name: item.name, subcount: item.categories.length, onOpen: () => goToSubcategories(item) });
 
-  const renderBpCategory = ({ item, index }: { item: BonpreuCategory; index: number }) =>
-    renderCatRow({ store: 'esclat', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('esclat', item) }, index === 0);
+  const renderBpCategory = ({ item }: { item: BonpreuCategory }) =>
+    renderCatRow({ store: 'esclat', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('esclat', item) });
 
-  const renderCfCategory = ({ item, index }: { item: CarrefourCategory; index: number }) =>
-    renderCatRow({ store: 'carrefour', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('carrefour', item) }, index === 0);
+  const renderCfCategory = ({ item }: { item: CarrefourCategory }) =>
+    renderCatRow({ store: 'carrefour', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('carrefour', item) });
 
-  const renderBaCategory = ({ item, index }: { item: BonareaCategory; index: number }) =>
-    renderCatRow({ store: 'bonarea', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('bonarea', item) }, index === 0);
+  const renderBaCategory = ({ item }: { item: BonareaCategory }) =>
+    renderCatRow({ store: 'bonarea', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('bonarea', item) });
 
-  const renderCsCategory = ({ item, index }: { item: ConsumCategory; index: number }) =>
-    renderCatRow({ store: 'consum', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('consum', item) }, index === 0);
+  const renderCsCategory = ({ item }: { item: ConsumCategory }) =>
+    renderCatRow({ store: 'consum', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('consum', item) });
 
-  const renderDdCategory = ({ item, index }: { item: DiaCategory; index: number }) =>
-    renderCatRow({ store: 'dia', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('dia', item) }, index === 0);
+  const renderDdCategory = ({ item }: { item: DiaCategory }) =>
+    renderCatRow({ store: 'dia', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('dia', item) });
 
-  const renderSoCategory = ({ item, index }: { item: SorliCategory; index: number }) =>
-    renderCatRow({ store: 'sorli', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('sorli', item) }, index === 0);
+  const renderSoCategory = ({ item }: { item: SorliCategory }) =>
+    renderCatRow({ store: 'sorli', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('sorli', item) });
 
-  const renderEkCategory = ({ item, index }: { item: TapestryCategory; index: number }) =>
-    renderCatRow({ store: 'eroski', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('eroski', item) }, index === 0);
+  const renderEkCategory = ({ item }: { item: TapestryCategory }) =>
+    renderCatRow({ store: 'eroski', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('eroski', item) });
 
-  const renderCbCategory = ({ item, index }: { item: TapestryCategory; index: number }) =>
-    renderCatRow({ store: 'caprabo', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('caprabo', item) }, index === 0);
+  const renderCbCategory = ({ item }: { item: TapestryCategory }) =>
+    renderCatRow({ store: 'caprabo', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('caprabo', item) });
 
-  const renderCoCategory = ({ item, index }: { item: CondisCategory; index: number }) =>
-    renderCatRow({ store: 'condis', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('condis', item) }, index === 0);
+  const renderCoCategory = ({ item }: { item: CondisCategory }) =>
+    renderCatRow({ store: 'condis', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('condis', item) });
 
-  const renderAmCategory = ({ item, index }: { item: AmetllerCategory; index: number }) =>
-    renderCatRow({ store: 'ametller', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('ametller', item) }, index === 0);
+  const renderAmCategory = ({ item }: { item: AmetllerCategory }) =>
+    renderCatRow({ store: 'ametller', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('ametller', item) });
 
-  const renderAlCategory = ({ item, index }: { item: AldiCategory; index: number }) =>
-    renderCatRow({ store: 'aldi', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('aldi', item) }, index === 0);
+  const renderAlCategory = ({ item }: { item: AldiCategory }) =>
+    renderCatRow({ store: 'aldi', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('aldi', item) });
 
-  const renderHdCategory = ({ item, index }: { item: HiperdinoCategory; index: number }) =>
-    renderCatRow({ store: 'hiperdino', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('hiperdino', item) }, index === 0);
+  const renderHdCategory = ({ item }: { item: HiperdinoCategory }) =>
+    renderCatRow({ store: 'hiperdino', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('hiperdino', item) });
 
-  const renderAcCategory = ({ item, index }: { item: AlcampoCategory; index: number }) =>
-    renderCatRow({ store: 'alcampo', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('alcampo', item) }, index === 0);
+  const renderAcCategory = ({ item }: { item: AlcampoCategory }) =>
+    renderCatRow({ store: 'alcampo', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('alcampo', item) });
 
-  const renderPfCategory = ({ item, index }: { item: PlusfrescCategory; index: number }) =>
-    renderCatRow({ store: 'plusfresc', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('plusfresc', item) }, index === 0);
+  const renderPfCategory = ({ item }: { item: PlusfrescCategory }) =>
+    renderCatRow({ store: 'plusfresc', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('plusfresc', item) });
 
   // Estados de un listado de búsqueda de productos (compartido).
   const renderSearchStates = (search: string, loading: boolean, error: boolean, empty: boolean, list: React.ReactNode) => {
@@ -925,6 +1049,7 @@ export default function CatalogScreen() {
           hideToolbar viewMode={prodViewMode} onViewModeChange={setProdViewMode}
           keepOrder
           roundedCards
+          showStoreLogo={store === 'all'}
           topInset={glassInset}
           onScrollBeginDrag={() => setProductSearchFocus(false)}
         />,
@@ -937,6 +1062,7 @@ export default function CatalogScreen() {
         products={browse}
         hideToolbar viewMode={prodViewMode} onViewModeChange={setProdViewMode}
         roundedCards
+        showStoreLogo={store === 'all'}
         keepOrder
         onEndReached={loadMoreBrowse}
         loadingMore={browseMore}
@@ -1027,25 +1153,25 @@ export default function CatalogScreen() {
     </View>
   );
 
-  // Selector de súper compacto: chip REDONDO con solo el logo del súper activo,
-  // como bloque aparte en la misma fila que las pestañas. Al tocar abre el panel
-  // de cristal centrado (ya no un desplegable anclado), así que no necesita medir
-  // su rect; el wrapper conserva el ancla del tutorial (ring sobre el selector).
-  const storeSelectorBlock = (visibleStores.length > 1 || tourStepId === 'store') && (
-    <View ref={storeAnchor.ref} collapsable={false} onLayout={storeAnchor.onLayout}>
-      <TouchableOpacity
-        style={styles.selector}
-        onPress={() => setStoreMenuOpen((o) => !o)}
-        activeOpacity={0.8}
-      >
-        {activeStore?.icon ? (
-          <Image source={activeStore.icon} style={styles.selectorLogo} resizeMode="cover" />
-        ) : (
-          <Ionicons name="storefront" size={22} color={colors.accent} />
-        )}
-      </TouchableOpacity>
-    </View>
+  // Mismo selector con logo y chevrón que Novedades.
+  const storeSelectorBlock = visibleStores.length > 0 && (
+    <StoreDropdown
+      stores={visibleStores}
+      value={store}
+      onChange={handleStoreChange}
+      includeAll
+      labeled
+      modal={false}
+      open={storeMenuOpen}
+      onOpenChange={setStoreMenuOpen}
+    />
   );
+  const tabSegments: Segment<'productos' | 'categorias'>[] = [
+    { key: 'productos', label: t('catalog.tabProducts'), icon: 'cube-outline' },
+  ];
+  if (!isAllStores) {
+    tabSegments.push({ key: 'categorias', label: t('catalog.tabCategories'), icon: 'grid-outline' });
+  }
 
   // Chrome de la pantalla (cabecera + fila de pestañas/selector + buscador),
   // rediseñado según el panel de Claude Design (segmentado de pastilla blanca,
@@ -1055,7 +1181,7 @@ export default function CatalogScreen() {
     <>
       <View style={[styles.headerArea, { paddingTop: headerTop }]}>
         <Text style={styles.title}>{t('catalog.title')}</Text>
-        <ActiveCartBanner compact />
+        {storeSelectorBlock}
       </View>
 
       {/* Fila única: pestañas Productos/Categorías (flex) + selector de súper
@@ -1066,10 +1192,7 @@ export default function CatalogScreen() {
         {glassAvailable ? (
           <SlidingSegments
             style={{ flex: 1 }}
-            segments={[
-              { key: 'productos', label: t('catalog.tabProducts'), icon: 'cube-outline' },
-              { key: 'categorias', label: t('catalog.tabCategories'), icon: 'grid-outline' },
-            ]}
+            segments={tabSegments}
             value={tab}
             onChange={setTab}
           />
@@ -1083,17 +1206,18 @@ export default function CatalogScreen() {
               <Ionicons name="cube-outline" size={16} color={tab === 'productos' ? colors.accent : colors.inkSoft} />
               <Text style={[styles.segTxt, tab === 'productos' ? styles.segTxtOn : styles.segTxtOff]}>{t('catalog.tabProducts')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.segBtn, tab === 'categorias' && styles.segBtnOn]}
-              onPress={() => setTab('categorias')}
-              activeOpacity={0.85}
-            >
-              <Ionicons name="grid-outline" size={16} color={tab === 'categorias' ? colors.accent : colors.inkSoft} />
-              <Text style={[styles.segTxt, tab === 'categorias' ? styles.segTxtOn : styles.segTxtOff]}>{t('catalog.tabCategories')}</Text>
-            </TouchableOpacity>
+            {!isAllStores && (
+              <TouchableOpacity
+                style={[styles.segBtn, tab === 'categorias' && styles.segBtnOn]}
+                onPress={() => setTab('categorias')}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="grid-outline" size={16} color={tab === 'categorias' ? colors.accent : colors.inkSoft} />
+                <Text style={[styles.segTxt, tab === 'categorias' ? styles.segTxtOn : styles.segTxtOff]}>{t('catalog.tabCategories')}</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
-        {storeSelectorBlock}
       </View>
 
       {/* Buscador de la pestaña activa (categorías compartido; productos por súper). */}
@@ -1108,6 +1232,37 @@ export default function CatalogScreen() {
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       {!glassAvailable && chrome}
+
+      {store === 'all' && tab === 'categorias' && (
+        <FlatList
+          data={visibleStores}
+          keyExtractor={(item) => item.key}
+          contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]}
+          showsVerticalScrollIndicator={false}
+          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.categoryStoreRow}
+              onPress={() => handleStoreChange(item.key)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.categoryStoreLogoWrap}>
+                {item.icon ? (
+                  <Image source={item.icon} style={styles.categoryStoreLogo} resizeMode="cover" />
+                ) : (
+                  <Ionicons name="storefront" size={22} color={colors.accent} />
+                )}
+              </View>
+              <Text style={styles.categoryStoreName}>{item.name}</Text>
+              <Ionicons name="chevron-forward" size={19} color={colors.inkSoft} />
+            </TouchableOpacity>
+          )}
+        />
+      )}
+
+      {store === 'all' && tab === 'productos' && (
+        <>{renderProductsTab(allSearch, allLoading, allError, allResults)}</>
+      )}
 
       {/* ── Mercadona ───────────────────────────────────────────── */}
       {store === 'mercadona' && tab === 'categorias' && (
@@ -1655,25 +1810,54 @@ export default function CatalogScreen() {
             data={visibleStores}
             keyExtractor={(s) => s.key}
             numColumns={2}
-            extraData={[store, tourStepId, storeMenuOpen]}
+            extraData={store}
             columnWrapperStyle={styles.storeGridRow}
             contentContainerStyle={[styles.storeGrid, { paddingBottom: insets.bottom + 24 }]}
             showsVerticalScrollIndicator={false}
-            renderItem={({ item, index }) => {
+            ListHeaderComponent={(
+              <Pressable
+                style={({ pressed }) => [
+                  styles.storeAllCard,
+                  store === 'all' && styles.storeCardActive,
+                  allLocked && styles.storeAllCardLocked,
+                  pressed && styles.storeCardPressed,
+                ]}
+                onPress={() => {
+                  if (allLocked) {
+                    setStoreMenuOpen(false);
+                    setPaywallVisible(true);
+                    return;
+                  }
+                  handleStoreChange('all');
+                  setStoreMenuOpen(false);
+                }}
+                accessibilityRole="button"
+                accessibilityState={{ selected: store === 'all', disabled: allLocked }}
+              >
+                {store === 'all' && (
+                  <View style={styles.storeCardCheck}>
+                    <Ionicons name="checkmark" size={14} color={colors.white} />
+                  </View>
+                )}
+                <View style={styles.storeAllIconWrap}>
+                  <Ionicons name="apps" size={24} color={colors.accent} />
+                </View>
+                <Text style={[styles.storeCardName, store === 'all' && styles.storeCardNameActive]}>
+                  {t('common.all')}
+                </Text>
+                {allLocked && <Ionicons name="lock-closed" size={17} color={colors.inkSoft} />}
+              </Pressable>
+            )}
+            renderItem={({ item }) => {
               const on = item.key === store;
-              // Tutorial (paso 3): resalta el súper objetivo (el 2º para enseñar a
-              // cambiar; el 1º si solo hay uno) y atenúa el resto.
-              const tourActive = tourStepId === 'store' && storeMenuOpen;
-              const dimmed = tourActive && index !== tourTargetIdx;
               return (
                 <Pressable
                   style={({ pressed }) => [
                     styles.storeCard,
                     on && styles.storeCardActive,
                     pressed && styles.storeCardPressed,
-                    dimmed && styles.storeCardDim,
                   ]}
-                  onPress={() => { setStore(item.key); setStoreMenuOpen(false); tourNotify('storeSelect'); }}
+                  onPress={() => { handleStoreChange(item.key); setStoreMenuOpen(false); }}
                 >
                   {on && (
                     <View style={styles.storeCardCheck}>
@@ -1690,21 +1874,18 @@ export default function CatalogScreen() {
                   <Text style={[styles.storeCardName, on && styles.storeCardNameActive]} numberOfLines={2}>
                     {item.name}
                   </Text>
-                  {/* Anillo de acento que "respira" sobre el súper objetivo. */}
-                  {tourActive && index === tourTargetIdx && (
-                    <Animated.View
-                      pointerEvents="none"
-                      style={[styles.storeCardRing, {
-                        opacity: menuPulse.interpolate({ inputRange: [0, 1], outputRange: [1, 0.3] }),
-                      }]}
-                    />
-                  )}
                 </Pressable>
               );
             }}
           />
         </View>
       </Modal>
+
+      <PaywallModal
+        visible={paywallVisible}
+        onClose={() => setPaywallVisible(false)}
+        subtitle={t('paywall.allStoresSubtitle')}
+      />
 
       {sheetCat && (
         <ActionSheet
@@ -1734,7 +1915,7 @@ const themedStyles = () => StyleSheet.create({
     // paddingTop inline (useHeaderTopPadding)
   },
   title: {
-    fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3,
+    flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3,
   },
 
   // ── Store selector (avatar redondo con logo, sin anillo) ───────
@@ -1760,6 +1941,21 @@ const themedStyles = () => StyleSheet.create({
   },
   storeGrid: { padding: 16 },
   storeGridRow: { gap: 12, marginBottom: 12 },
+  storeAllCard: {
+    height: 78,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
+    marginBottom: 12,
+    paddingHorizontal: 16,
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    borderWidth: 1, borderColor: colors.border,
+  },
+  storeAllCardLocked: { backgroundColor: colors.surfaceAlt },
+  storeAllIconWrap: {
+    width: 42, height: 42, borderRadius: 21,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.white,
+  },
   storeCard: {
     flex: 1, aspectRatio: 1,
     alignItems: 'center', justifyContent: 'center', gap: 10,
@@ -1770,7 +1966,6 @@ const themedStyles = () => StyleSheet.create({
   },
   storeCardActive: { borderColor: colors.accent, backgroundColor: colors.accentLight },
   storeCardPressed: { transform: [{ scale: 0.96 }], opacity: 0.9 },
-  storeCardDim: { opacity: 0.3 },
   storeCardCheck: {
     position: 'absolute', top: 8, right: 8,
     width: 22, height: 22, borderRadius: 11,
@@ -1785,12 +1980,6 @@ const themedStyles = () => StyleSheet.create({
   storeCardLogo: { width: '100%', height: '100%' },
   storeCardName: { fontSize: 14, fontFamily: fonts.semibold, color: colors.ink, textAlign: 'center' },
   storeCardNameActive: { color: colors.accent },
-  // Tutorial: anillo de acento que "respira" sobre el súper objetivo.
-  storeCardRing: {
-    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-    borderRadius: 20, borderWidth: 3, borderColor: colors.accent,
-  },
-
   // ── Fila de pestañas + selector de súper (un bloque aparte) ───
   controlsRow: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
@@ -1864,11 +2053,29 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.white,
     padding: 11, gap: 12,
     borderWidth: 1, borderColor: colors.border,
+    borderRadius: 18,
+    overflow: 'hidden',
   },
+  categoryStoreRow: {
+    minHeight: 64,
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 12, paddingVertical: 10,
+    backgroundColor: colors.white,
+    borderWidth: 1, borderColor: colors.border,
+    borderRadius: 18,
+  },
+  categoryStoreLogoWrap: {
+    width: 42, height: 42, borderRadius: 21, overflow: 'hidden',
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.accentLight,
+  },
+  categoryStoreLogo: { width: '100%', height: '100%' },
+  categoryStoreName: { flex: 1, fontSize: 14, fontFamily: fonts.semibold, color: colors.ink },
   rowBody: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  moreBtn: { padding: 2 },
+  moreBtn: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceAlt },
   thumbnail: {
     width: 42, height: 42,
+    borderRadius: 14,
     alignItems: 'center', justifyContent: 'center',
   },
   thumbnailEmoji: { fontSize: 21 },

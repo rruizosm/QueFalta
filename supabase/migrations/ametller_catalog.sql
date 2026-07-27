@@ -72,6 +72,12 @@ create table if not exists public.ametller_products (
   category_ids        text[] not null default '{}',  -- hoja + TODOS sus ancestros (navegación por cualquier nivel)
   unit_price          numeric,            -- precio del envase en € (price)
   price_format        text,               -- texto mostrado ("1,49 €")
+  promo_name          text,               -- productPromotions.calloutMsg limpio
+  promo_text          text,
+  promo_price         numeric,            -- productPromotions.promotionalPrice
+  promo_base_price    numeric,            -- price ordinario cuando hay rebaja directa
+  promo_start         date,
+  promo_end           date,
   price_per_unit      numeric,            -- € por unidad CANÓNICA (l/kg/ud), de pricePerUnit + unitMeasure
   price_per_unit_unit text,               -- 'l' | 'kg' | 'ud'
   available           boolean not null default true,

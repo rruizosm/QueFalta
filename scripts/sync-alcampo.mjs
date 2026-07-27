@@ -58,6 +58,7 @@
 //      DETAIL_CONCURRENCY=4 · DETAIL_TTL_DAYS=30 · DETAIL_MAX=N (tope de fichas/run)
 //      UPSERT_BATCH_SIZE=50  (lote pequeño para no exceder statement_timeout)
 import { canonicalPricePerUnit } from './lib/price.mjs';
+import { normalizeAlcampoOffer } from './lib/retailer-offers.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -225,6 +226,7 @@ function normalize(p, { n1, n2 }, catName) {
   const ppu = p.unitPrice?.price?.amount != null
     ? canonicalPricePerUnit(p.unitPrice.price.amount, p.unitPrice.unit)
     : null;
+  const offer = normalizeAlcampoOffer(p);
   return {
     id: String(p.productId),                       // UUID estable del producto
     retailer_product_id: p.retailerProductId ?? null, // id corto (OC####) → PDP y ficha
@@ -237,6 +239,12 @@ function normalize(p, { n1, n2 }, catName) {
     category_ids: [...new Set([n1, n2].filter(Boolean))],
     unit_price: price,
     price_format: price != null ? `${eurStr(price)} €` : null,
+    promo_name: offer?.promo_name ?? null,
+    promo_text: offer?.promo_text ?? null,
+    promo_price: offer?.promo_price ?? null,
+    promo_base_price: offer?.promo_base_price ?? null,
+    promo_start: offer?.promo_start ?? null,
+    promo_end: offer?.promo_end ?? null,
     price_per_unit: ppu?.value ?? null,
     price_per_unit_unit: ppu?.unit ?? null,
     available: p.available !== false,
@@ -481,6 +489,7 @@ async function main() {
     const withFicha = rows.filter((r) => DETAIL_COLS.some((c) => r[c]));
     console.log('nulos →', {
       sin_precio: rows.filter((r) => r.unit_price == null).length,
+      con_oferta: rows.filter((r) => r.promo_name != null).length,
       sin_ppu: rows.filter((r) => r.price_per_unit == null).length,
       sin_img: rows.filter((r) => !r.thumbnail).length,
       sin_categoria: rows.filter((r) => !r.category_ids.length).length,

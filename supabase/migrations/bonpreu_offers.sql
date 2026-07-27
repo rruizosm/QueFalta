@@ -22,6 +22,39 @@
 
 alter table public.bonpreu_products add column if not exists promo_name    text;
 alter table public.bonpreu_products add column if not exists promo_name_ca text;
+alter table public.bonpreu_products add column if not exists promo_price numeric;
+alter table public.bonpreu_products add column if not exists promo_base_price numeric;
+alter table public.bonpreu_products add column if not exists promo_text text;
+
+-- Recupera la rebaja ya presente en raw para que el detalle no tenga que esperar
+-- al próximo sync. Algunas fichas llevan promoPrice; otras solo "Antes X€".
+with raw_promo as (
+  select
+    id,
+    nullif(raw #>> '{promoPrice,amount}', '')::numeric as promo_price,
+    coalesce(raw #>> '{promotions,description}', raw #>> '{promotions,0,description}') as promo_text
+  from public.bonpreu_products
+), parsed as (
+  select
+    p.id,
+    rp.promo_price,
+    rp.promo_text,
+    case
+      when rp.promo_price is not null and rp.promo_price < p.unit_price then p.unit_price
+      when rp.promo_text ~* '\\mantes\\M\\s*[0-9]+([,.][0-9]{1,2})?\\s*(€|eur)'
+        then replace((regexp_match(rp.promo_text, '\\mantes\\M\\s*([0-9]+(?:[,.][0-9]{1,2})?)\\s*(?:€|eur)', 'i'))[1], ',', '.')::numeric
+      else null
+    end as promo_base_price
+  from public.bonpreu_products p
+  join raw_promo rp on rp.id = p.id
+)
+update public.bonpreu_products p
+set
+  promo_price = case when parsed.promo_price < p.unit_price then parsed.promo_price else null end,
+  promo_base_price = case when parsed.promo_base_price > coalesce(parsed.promo_price, p.unit_price) then parsed.promo_base_price else null end,
+  promo_text = parsed.promo_text
+from parsed
+where p.id = parsed.id;
 
 -- Keyset de la pantalla de Ofertas: solo las filas en promoción, en orden alfabético.
 create index if not exists bonpreu_products_offers_idx

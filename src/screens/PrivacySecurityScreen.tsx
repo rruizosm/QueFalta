@@ -18,6 +18,8 @@ import { updateProfile } from '../api/profile';
 import { deleteAccount } from '../api/account';
 import ProfileRow from '../components/ProfileRow';
 import ConfirmDialog from '../components/ConfirmDialog';
+import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
+import { glassAvailable } from '../components/GlassSurface';
 
 const PRIVACY_POLICY_URL = 'https://quefalta.es/privacidad';
 
@@ -36,6 +38,8 @@ export default function PrivacySecurityScreen() {
   const [deleting, setDeleting] = useState(false);
   const [signOutAllVisible, setSignOutAllVisible] = useState(false);
   const [deleteVisible, setDeleteVisible] = useState(false);
+  const [headerH, setHeaderH] = useState(0);
+  const glassInset = glassAvailable ? headerH : 0;
 
   const handleToggleDiscoverable = async (value: boolean) => {
     if (!profile) return;
@@ -73,16 +77,9 @@ export default function PrivacySecurityScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: headerTop }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color={colors.ink} />
-        </TouchableOpacity>
-        <Text style={styles.title}>{t('profile.privacySecurity')}</Text>
-        <View style={{ width: 38 }} />
-      </View>
+      <ProfileSubscreenHeader title={t('profile.privacySecurity')} icon="shield-checkmark-outline" headerTop={headerTop} onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)} />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad }]}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad, paddingTop: glassInset ? glassInset + 12 : 6 }]}>
 
         {/* PRIVACIDAD */}
         <Text style={styles.sectionLabel}>{t('privacy.sectionPrivacy')}</Text>
@@ -172,34 +169,20 @@ export default function PrivacySecurityScreen() {
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
 
-  header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingBottom: 10, gap: 12,
-    // paddingTop inline (useHeaderTopPadding)
-  },
-  backBtn: {
-    width: 38, height: 38,
-    backgroundColor: colors.white,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border,
-  },
-  title: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
-
   scroll: { paddingHorizontal: 16, paddingBottom: 40 },
 
   sectionLabel: {
-    fontSize: 10.5, fontFamily: fonts.bold, color: colors.inkSoft,
-    textTransform: 'uppercase', letterSpacing: 1.4,
-    marginTop: 18, marginBottom: 4,
+    fontSize: 15, fontFamily: fonts.bold, color: colors.ink,
+    marginTop: 22, marginBottom: 8,
   },
   section: {
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
-    paddingHorizontal: 14,
+    paddingHorizontal: 14, borderRadius: 18, overflow: 'hidden',
   },
   hint: {
-    fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft,
-    marginTop: 6, lineHeight: 16,
+    fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft,
+    marginTop: 7, lineHeight: 17, paddingHorizontal: 2,
   },
 
   deleteBtn: {
@@ -207,7 +190,7 @@ const themedStyles = () => StyleSheet.create({
     gap: 8, marginTop: 4,
     paddingVertical: 13,
     borderWidth: 1, borderColor: 'rgba(214,69,43,0.5)',
-    backgroundColor: 'rgba(214,69,43,0.06)',
+    backgroundColor: 'rgba(214,69,43,0.06)', borderRadius: 18,
   },
   deleteText: { fontSize: 14, fontFamily: fonts.bold, color: '#d6452b' },
 });

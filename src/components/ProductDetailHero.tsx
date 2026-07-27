@@ -11,9 +11,24 @@ import ProductPriceLine from './ProductPriceLine';
 
 const grades: Record<NutriScoreGrade, string> = { A: '#038141', B: '#85bb2a', C: '#fecb02', D: '#ee8100', E: '#e63e11' };
 
-interface Props { imageUri: string | null; name: string; brand?: string | null; price?: string | null; size?: string | null; referencePrice?: string | null; nutriScoreGrade?: string | null; store?: CatalogStore; productId?: string; }
+interface Props {
+  imageUri: string | null;
+  name: string;
+  brand?: string | null;
+  price?: string | null;
+  size?: string | null;
+  referencePrice?: string | null;
+  nutriScoreGrade?: string | null;
+  store?: CatalogStore;
+  productId?: string;
+  promotionPreviousPrice?: string | null;
+  priceTone?: 'default' | 'down' | 'up';
+}
 
-export default function ProductDetailHero({ imageUri, name, brand, price, size, referencePrice, nutriScoreGrade, store, productId }: Props) {
+export default function ProductDetailHero({
+  imageUri, name, brand, price, size, referencePrice, nutriScoreGrade, store, productId,
+  promotionPreviousPrice = null, priceTone = 'default',
+}: Props) {
   const styles = useThemedStyles(themedStyles);
   const grade = nutriScoreGrade?.trim().toUpperCase() as NutriScoreGrade | undefined;
   const validGrade = grade && Object.prototype.hasOwnProperty.call(grades, grade) ? grade : null;
@@ -25,7 +40,14 @@ export default function ProductDetailHero({ imageUri, name, brand, price, size, 
       <Text style={styles.name} numberOfLines={3}>{name}</Text>
       {brand ? <Text style={styles.brand} numberOfLines={1}>{brand}</Text> : null}
       {store && productId ? (
-        <ProductPriceLine store={store} productId={productId} price={price ?? null} size={size} />
+        <ProductPriceLine
+          store={store}
+          productId={productId}
+          price={price ?? null}
+          size={size}
+          promotionPreviousPrice={promotionPreviousPrice}
+          priceTone={priceTone}
+        />
       ) : (
         <View style={styles.priceRow}>{price ? <Text style={styles.price}>{price}</Text> : null}{size ? <Text style={styles.size}>{size}</Text> : null}</View>
       )}
@@ -39,7 +61,7 @@ export default function ProductDetailHero({ imageUri, name, brand, price, size, 
 
 const themedStyles = () => StyleSheet.create({
   hero: { flexDirection: 'row', alignItems: 'flex-start', gap: 14, marginBottom: 22 },
-  imageWrap: { width: '42%', aspectRatio: 1, flexShrink: 0, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border },
+  imageWrap: { width: '42%', aspectRatio: 1, flexShrink: 0, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border, borderRadius: 20 },
   image: { width: '100%', height: '100%' }, info: { flex: 1, minWidth: 0, paddingTop: 2 },
   name: { fontSize: 20, lineHeight: 24, fontFamily: fonts.bold, color: colors.ink }, brand: { fontSize: 13.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 3 },
   priceRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', gap: 8, marginTop: 12 }, price: { fontSize: 25, fontFamily: fonts.bold, color: colors.accent }, size: { fontSize: 13.5, fontFamily: fonts.medium, color: colors.inkSoft }, referencePrice: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },

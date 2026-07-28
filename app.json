@@ -9,7 +9,7 @@
     "icon": "./assets/quefalta-blue.png",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": false,
+      "supportsTablet": true,
       "bundleIdentifier": "com.quefalta.app",
       "usesAppleSignIn": true,
       "associatedDomains": [

@@ -1,19 +1,21 @@
 #!/usr/bin/env node
-// Sincroniza el catálogo de BonpreuEsclat → Supabase (catálogo + búsqueda), 1×/día.
+// Sincroniza el catálogo de BonpreuEsclat → Supabase (catálogo + búsqueda).
 //
 // Bonpreu protege la web con AWS WAF. La SPA, una vez resuelto su challenge,
 // consume un endpoint paginado de productos por categoría. Usamos ese mismo
-// endpoint dentro del navegador para no abrir cientos de documentos protegidos.
+// endpoint dentro del navegador y repartimos el trabajo en ciclos reanudables:
 //   1. GET /v1/categories (abierto, sin WAF) → categorías N2.
 //   2. Navegador: una carga de HOME resuelve el challenge de forma normal.
-//   3. Por cada N2: GET /v6/product-pages y paginación por nextPageToken.
-//   4. Normalizar + upsert en Supabase (soft-delete de lo ausente).
+//   3. Cada ejecución guarda un lote pequeño en staging, sin tocar producción.
+//   4. Al completar ambos idiomas, publica el ciclo y entonces marca ausentes.
 //
 // Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE
 //      PW_CHANNEL=chrome   (usar Chrome del sistema en local; vacío en CI = chromium)
 //      CATEGORY_API_DELAY_MS=100 (pausa entre páginas de la API)
+//      BONPREU_BATCH_SIZE=12 (categorías por ejecución y ciclo)
 //      DRY_RUN=1           (no escribe en Supabase; imprime resumen)
 //      MAX_CATEGORIES=N    (limita nº de categorías, para pruebas)
+import { randomUUID } from 'node:crypto';
 import { chromium } from 'playwright-core';
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
@@ -22,6 +24,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
 const DRY_RUN = process.env.DRY_RUN === '1';
 const MAX_CATEGORIES = process.env.MAX_CATEGORIES ? Number(process.env.MAX_CATEGORIES) : Infinity;
+const BATCH_SIZE = Math.max(1, Number(process.env.BONPREU_BATCH_SIZE || 12));
 const CATEGORY_API_DELAY_MS = Math.max(0, Number(process.env.CATEGORY_API_DELAY_MS || 100));
 const SKIP_DETAIL = process.env.SKIP_DETAIL === '1';
 const DETAIL_CONCURRENCY = Number(process.env.DETAIL_CONCURRENCY || 2);
@@ -211,6 +214,7 @@ function normalize(p) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function upsert(table, rows) {
+  if (!rows.length) return;
   // Lotes pequeños: el catálogo de Bonpreu son ~18k productos con `raw` jsonb
   // grande + índice trigram; a 500/lote el upsert excede el statement_timeout de
   // Supabase (57014). 50/lote mantiene cada statement bien por debajo del límite.
@@ -239,6 +243,67 @@ async function upsert(table, rows) {
     if (!done) throw last;
   }
 }
+
+const restHeaders = (extra = {}) => ({
+  apikey: SERVICE_ROLE,
+  Authorization: `Bearer ${SERVICE_ROLE}`,
+  ...extra,
+});
+
+async function restMutation(table, query, method, body) {
+  let last;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (attempt) await sleep(1500 * 2 ** (attempt - 1));
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query ? `?${query}` : ''}`, {
+        method,
+        headers: restHeaders({
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        }),
+        body: body == null ? undefined : JSON.stringify(body),
+      });
+      if (res.ok) return;
+      last = new Error(`${method} ${table} ${res.status}: ${await res.text()}`);
+    } catch (error) {
+      last = error;
+    }
+    console.warn(`[bonpreu] ${String(last.message).split('\n')[0]} (intento ${attempt + 1}/4)`);
+  }
+  throw last;
+}
+
+async function readAll(table, query, order = '') {
+  const result = [];
+  for (let offset = 0;; offset += 1000) {
+    const separator = query ? '&' : '';
+    const orderQuery = order ? `&order=${encodeURIComponent(order)}` : '';
+    const url = `${SUPABASE_URL}/rest/v1/${table}?${query}${separator}limit=1000&offset=${offset}${orderQuery}`;
+    const res = await fetch(url, { headers: restHeaders() });
+    if (!res.ok) throw new Error(`read ${table} ${res.status}: ${await res.text()}`);
+    const rows = await res.json();
+    result.push(...rows);
+    if (rows.length < 1000) break;
+  }
+  return result;
+}
+
+async function getActiveCycle() {
+  const rows = await readAll(
+    'bonpreu_sync_cycles',
+    'select=*&status=in.(collecting,finalizing)',
+    'created_at.asc',
+  );
+  return rows[0] ?? null;
+}
+
+const updateCycle = (id, values) => restMutation(
+  'bonpreu_sync_cycles',
+  `id=eq.${encodeURIComponent(id)}`,
+  'PATCH',
+  { ...values, updated_at: new Date().toISOString() },
+);
+
 // Soft-delete por lotes con reintentos (lib/stale.mjs): el UPDATE único de toda
 // la tabla moría por statement_timeout (57014) cuando la BD iba cargada.
 const markStale = (table) => markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart });
@@ -568,108 +633,355 @@ async function crawlProductDetails(rows, retailerLinks) {
   } finally { await browser.close(); }
 }
 
-async function main() {
-  console.log(`[bonpreu] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} apiDelay=${CATEGORY_API_DELAY_MS}ms`);
-  const { catRows, n2s, offerIds, offerNames } = await fetchCategoryTree(LANG);
-  // Nombres de categoría en catalán (API abierta, una sola petición) → name_ca.
-  let caCatName = new Map();
-  let offerNamesCa = new Map();
-  try {
-    const caTree = await fetchCategoryTree(LANG_CA);
-    caCatName = new Map(caTree.catRows.map((c) => [c.id, c.name]));
-    offerNamesCa = caTree.offerNames;
-  } catch (e) { console.warn(`[bonpreu] árbol ${LANG_CA} falló: ${e.message}`); }
-  for (const c of catRows) c.name_ca = caCatName.get(c.id) ?? null;
-  console.log(`[bonpreu] ${offerIds.size} categorías de oferta (excluidas del árbol)`);
+const serializeTree = ({ catRows, n2s, offerIds, offerNames }) => ({
+  catRows,
+  n2s,
+  offerIds: [...offerIds],
+  offerNames: Object.fromEntries(offerNames),
+});
 
-  // Ofertas SOLO de alimentación: N2 que cuelgan de una N1 de OFFER_FOOD_N1. Una
-  // oferta se muestra si el producto pertenece (por su categoría real) a alguna.
-  const foodN1Ids = new Set(catRows.filter((c) => c.parent_id == null && OFFER_FOOD_N1.has(c.name)).map((c) => c.id));
-  const foodN2Ids = new Set(catRows.filter((c) => c.parent_id != null && foodN1Ids.has(c.parent_id)).map((c) => c.id));
+const hydrateTree = (tree) => ({
+  catRows: Array.isArray(tree?.catRows) ? tree.catRows : [],
+  n2s: Array.isArray(tree?.n2s) ? tree.n2s : [],
+  offerIds: new Set(Array.isArray(tree?.offerIds) ? tree.offerIds : []),
+  offerNames: new Map(Object.entries(tree?.offerNames ?? {})),
+});
 
-  const cats = n2s.slice(0, MAX_CATEGORIES);
-  console.log(`[bonpreu] ${catRows.length} categorías, ${n2s.length} N2 con productos (proceso ${cats.length})`);
+function buildCatalogRows(treeEs, treeCa, products, membership, caName) {
+  const catRows = treeEs.catRows.map((category) => ({
+    ...category,
+    name_ca: treeCa.catRows.find((candidate) => candidate.id === category.id)?.name ?? null,
+    published: true,
+    synced_at: runStart,
+  }));
+  const catName = new Map(treeEs.n2s.map((category) => [category.id, category.name]));
+  const foodN1Ids = new Set(
+    catRows
+      .filter((category) => category.parent_id == null && OFFER_FOOD_N1.has(category.name))
+      .map((category) => category.id),
+  );
+  const foodN2Ids = new Set(
+    catRows
+      .filter((category) => category.parent_id != null && foodN1Ids.has(category.parent_id))
+      .map((category) => category.id),
+  );
 
-  const catName = new Map(n2s.map((c) => [c.id, c.name]));
-
-  // Pasada primaria (castellano): productos + pertenencia a categorías.
-  const { products, membership, retailerLinks } = await crawlProducts(cats, LANG);
-
-  // 2ª pasada (catalán): solo nombres, casados por id (estable entre idiomas).
-  let caName = new Map();
-  if (!DRY_RUN) {
-    console.log(`[bonpreu] 2ª pasada en ${LANG_CA} (nombres en català)…`);
-    const { products: productsCa } = await crawlProducts(cats, LANG_CA);
-    caName = new Map([...productsCa].map(([id, p]) => [id, p.display_name]).filter(([, n]) => n));
-    console.log(`[bonpreu] ${caName.size} nombres en català`);
-  }
-
-  // Adjuntar a cada producto sus categorías reales (las que le asigna la API)
-  // + el nombre en català (display_name_ca; null → la app cae al castellano).
   const rows = [];
+  const retailerLinks = new Map();
   let onOffer = 0;
-  for (const [id, det] of products) {
-    if (!det.display_name) continue;
-    const mem = [...(membership.get(id) ?? [])];
-    // Separa la pertenencia real (categorías del catálogo) de las de oferta.
-    const offerMem = mem.filter((c) => offerIds.has(c));
-    const realMem = mem.filter((c) => !offerIds.has(c));
-    // Solo se marca como oferta si es alimentación (alguna categoría real de food).
-    const isFood = realMem.some((c) => foodN2Ids.has(c));
-    // Etiqueta de promo = subcategoría de oferta más informativa (promoRank).
+  for (const [id, membershipSet] of membership) {
+    const details = products.get(id);
+    if (!details?.display_name) continue;
+    const memberOf = [...membershipSet];
+    const offerMembership = memberOf.filter((categoryId) => treeEs.offerIds.has(categoryId));
+    const realMembership = memberOf.filter((categoryId) => !treeEs.offerIds.has(categoryId));
+    const isFood = realMembership.some((categoryId) => foodN2Ids.has(categoryId));
     let promoId = null;
-    if (isFood) for (const c of offerMem) {
-      if (promoId == null || promoRank(offerNames.get(c)) < promoRank(offerNames.get(promoId))) promoId = c;
+    if (isFood) for (const categoryId of offerMembership) {
+      if (
+        promoId == null
+        || promoRank(treeEs.offerNames.get(categoryId)) < promoRank(treeEs.offerNames.get(promoId))
+      ) promoId = categoryId;
     }
-    const promo_name = promoId ? offerNames.get(promoId) ?? null : null;
-    const promo_name_ca = promoId ? offerNamesCa.get(promoId) ?? offerNames.get(promoId) ?? null : null;
+    const promo_name = promoId ? treeEs.offerNames.get(promoId) ?? null : null;
+    const promo_name_ca = promoId
+      ? treeCa.offerNames.get(promoId) ?? treeEs.offerNames.get(promoId) ?? null
+      : null;
     if (promo_name) onOffer++;
-    rows.push({
-      ...det,
+    const row = {
+      ...details,
+      synced_at: runStart,
+      published: true,
       display_name_ca: caName.get(id) ?? null,
-      category_ids: realMem,
-      category_id: realMem[0] ?? null,
-      category_name: realMem[0] ? catName.get(realMem[0]) ?? null : null,
+      category_ids: realMembership,
+      category_id: realMembership[0] ?? null,
+      category_name: realMembership[0] ? catName.get(realMembership[0]) ?? null : null,
       promo_name,
       promo_name_ca,
-    });
-  }
-  console.log(`[bonpreu] ${rows.length} productos únicos · ${onOffer} en oferta`);
+    };
+    rows.push(row);
 
-  await crawlProductDetails(rows, retailerLinks);
-  if (DRY_RUN) console.log('[bonpreu] detalle detectado:', {
-    informacion: rows.filter((r) => r.product_info).length,
-    proveedor: rows.filter((r) => r.supplier_name).length,
-    ingredientes: rows.filter((r) => r.ingredients).length,
-    nutricion: rows.filter((r) => r.nutrition).length,
-  });
-
-  if (DRY_RUN) {
-    const perCat = new Map();
-    for (const r of rows) for (const c of r.category_ids) perCat.set(c, (perCat.get(c) ?? 0) + 1);
-    console.log('productos por categoría (las procesadas):');
-    for (const c of cats) console.log(`  ${c.name}: ${perCat.get(c.id) ?? 0}`);
-    console.log('nulos →', {
-      sin_precio: rows.filter((r) => r.unit_price == null).length,
-      sin_ppu: rows.filter((r) => r.price_per_unit == null).length,
-      sin_img: rows.filter((r) => !r.thumbnail).length,
-      sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
-      con_oferta: rows.filter((r) => r.promo_name != null).length,
-    });
-    if (offerNames.size) {
-      const byPromo = new Map();
-      for (const r of rows) if (r.promo_name) byPromo.set(r.promo_name, (byPromo.get(r.promo_name) ?? 0) + 1);
-      console.log('ofertas por tipo:', Object.fromEntries(byPromo));
+    if (row.retailer_product_id != null && row.category_id) {
+      const slug = productSlug(row.display_name) || 'producte';
+      retailerLinks.set(row.retailer_product_id, {
+        href: `${HOME}/products/${slug}/${encodeURIComponent(row.retailer_product_id)}`,
+        categoryUrl: `${HOME}/categories/${row.category_id}`,
+      });
     }
-    return;
   }
-  if (rows.length === 0) throw new Error('0 productos (¿WAF/navegador?)');
-
-  await upsert('bonpreu_categories', catRows);
-  await upsert('bonpreu_products', rows);
-  await markStale('bonpreu_products');
-  await markStale('bonpreu_categories');
-  console.log('[bonpreu] OK');
+  return { catRows, rows, retailerLinks, onOffer };
 }
 
-main().catch((e) => { console.error('[bonpreu] ERROR', e); process.exit(1); });
+async function createCycle() {
+  console.log('[bonpreu] no hay ciclo activo; congelando el árbol de categorías');
+  const [treeEsRaw, treeCaRaw] = await Promise.all([
+    fetchCategoryTree(LANG),
+    fetchCategoryTree(LANG_CA),
+  ]);
+  const caIds = new Set(treeCaRaw.n2s.map((category) => category.id));
+  const missingCa = treeEsRaw.n2s.filter((category) => !caIds.has(category.id));
+  if (missingCa.length) {
+    throw new Error(`${missingCa.length} categorías del árbol español no existen en el catalán`);
+  }
+  const cycle = {
+    id: randomUUID(),
+    status: 'collecting',
+    expected_categories: treeEsRaw.n2s.length,
+    batch_size: BATCH_SIZE,
+    tree_es: serializeTree(treeEsRaw),
+    tree_ca: serializeTree(treeCaRaw),
+    last_error: null,
+  };
+  await upsert('bonpreu_sync_cycles', [cycle]);
+  console.log(`[bonpreu] ciclo ${cycle.id} creado · ${cycle.expected_categories} categorías`);
+  return cycle;
+}
+
+async function completedSnapshots(cycleId) {
+  return readAll(
+    'bonpreu_sync_categories',
+    `select=language,category_id,product_count&cycle_id=eq.${encodeURIComponent(cycleId)}`,
+    'category_id.asc',
+  );
+}
+
+async function stageLanguage(cycle, cats, lang, crawl) {
+  if (!cats.length) return;
+  const now = new Date().toISOString();
+  const productRows = [...crawl.products].map(([productId, payload]) => ({
+    cycle_id: cycle.id,
+    language: lang,
+    product_id: productId,
+    payload: lang === LANG ? payload : { display_name: payload.display_name },
+    updated_at: now,
+  }));
+  await upsert('bonpreu_sync_products', productRows);
+
+  if (lang === LANG) {
+    // Un reintento reemplaza por completo la pertenencia de cada categoría.
+    for (const category of cats) {
+      await restMutation(
+        'bonpreu_sync_memberships',
+        `cycle_id=eq.${encodeURIComponent(cycle.id)}&category_id=eq.${encodeURIComponent(category.id)}`,
+        'DELETE',
+      );
+    }
+    const memberships = [];
+    for (const [productId, categoryIds] of crawl.membership) {
+      for (const categoryId of categoryIds) {
+        memberships.push({ cycle_id: cycle.id, category_id: categoryId, product_id: productId });
+      }
+    }
+    await upsert('bonpreu_sync_memberships', memberships);
+  }
+
+  const checkpoints = cats.map((category) => ({
+    cycle_id: cycle.id,
+    language: lang,
+    category_id: category.id,
+    product_count: [...crawl.membership.values()].filter((ids) => ids.has(category.id)).length,
+    completed_at: now,
+  }));
+  // El checkpoint siempre se escribe al final: una categoría marcada está
+  // garantizada como completa en staging.
+  await upsert('bonpreu_sync_categories', checkpoints);
+  console.log(`[bonpreu:${lang}] staging confirmado · ${cats.length} categorías · ${productRows.length} productos únicos`);
+}
+
+async function finalizeCycle(cycle) {
+  const treeEs = hydrateTree(cycle.tree_es);
+  const treeCa = hydrateTree(cycle.tree_ca);
+  const expectedIds = new Set(treeEs.n2s.map((category) => category.id));
+  const snapshots = await completedSnapshots(cycle.id);
+  const complete = new Set(
+    snapshots
+      .filter((snapshot) => expectedIds.has(snapshot.category_id))
+      .map((snapshot) => `${snapshot.language}:${snapshot.category_id}`),
+  );
+  const missing = [...expectedIds].flatMap((categoryId) => [LANG, LANG_CA]
+    .filter((language) => !complete.has(`${language}:${categoryId}`))
+    .map((language) => `${language}:${categoryId}`));
+  if (missing.length) throw new Error(`ciclo ${cycle.id} incompleto: faltan ${missing.length} snapshots`);
+
+  if (cycle.status !== 'finalizing') {
+    await updateCycle(cycle.id, { status: 'finalizing', last_error: null });
+    cycle.status = 'finalizing';
+  }
+  console.log(`[bonpreu] publicando ciclo completo ${cycle.id}`);
+
+  const [stagedProducts, stagedMemberships] = await Promise.all([
+    readAll(
+      'bonpreu_sync_products',
+      `select=language,product_id,payload&cycle_id=eq.${encodeURIComponent(cycle.id)}`,
+      'product_id.asc',
+    ),
+    readAll(
+      'bonpreu_sync_memberships',
+      `select=category_id,product_id&cycle_id=eq.${encodeURIComponent(cycle.id)}`,
+      'product_id.asc',
+    ),
+  ]);
+  const products = new Map();
+  const caName = new Map();
+  for (const staged of stagedProducts) {
+    if (staged.language === LANG) products.set(staged.product_id, staged.payload);
+    else if (staged.payload?.display_name) caName.set(staged.product_id, staged.payload.display_name);
+  }
+  const membership = new Map();
+  const membershipCount = new Map();
+  for (const staged of stagedMemberships) {
+    let ids = membership.get(staged.product_id);
+    if (!ids) membership.set(staged.product_id, (ids = new Set()));
+    ids.add(staged.category_id);
+    membershipCount.set(staged.category_id, (membershipCount.get(staged.category_id) ?? 0) + 1);
+  }
+
+  const spanishSnapshots = snapshots.filter((snapshot) => snapshot.language === LANG);
+  for (const snapshot of spanishSnapshots) {
+    const stored = membershipCount.get(snapshot.category_id) ?? 0;
+    if (stored !== snapshot.product_count) {
+      throw new Error(
+        `staging inconsistente en ${snapshot.category_id}: checkpoint=${snapshot.product_count}, memberships=${stored}`,
+      );
+    }
+  }
+  const missingProducts = [...membership].filter(([productId]) => !products.has(productId));
+  if (missingProducts.length) {
+    throw new Error(`${missingProducts.length} productos con pertenencia no tienen payload español`);
+  }
+
+  const { catRows, rows, retailerLinks, onOffer } = buildCatalogRows(
+    treeEs,
+    treeCa,
+    products,
+    membership,
+    caName,
+  );
+  if (!rows.length) throw new Error('0 productos en el ciclo completo');
+  console.log(`[bonpreu] publicación preparada · ${rows.length} productos · ${onOffer} en oferta`);
+
+  await crawlProductDetails(rows, retailerLinks);
+  await upsert('bonpreu_categories', catRows);
+  await upsert('bonpreu_products', rows);
+  // No se retira nada hasta que todos los upserts del ciclo hayan terminado.
+  await markStale('bonpreu_products');
+  await markStale('bonpreu_categories');
+  await updateCycle(cycle.id, {
+    status: 'completed',
+    completed_at: new Date().toISOString(),
+    last_error: null,
+  });
+  try {
+    await restMutation(
+      'bonpreu_sync_cycles',
+      `status=eq.completed&id=neq.${encodeURIComponent(cycle.id)}`,
+      'DELETE',
+    );
+  } catch (error) {
+    console.warn(`[bonpreu] no se pudieron limpiar ciclos antiguos: ${error.message}`);
+  }
+  console.log(`[bonpreu] OK · ciclo ${cycle.id} publicado`);
+}
+
+async function runDry() {
+  const [treeEs, treeCa] = await Promise.all([fetchCategoryTree(LANG), fetchCategoryTree(LANG_CA)]);
+  const limit = Number.isFinite(MAX_CATEGORIES) ? MAX_CATEGORIES : BATCH_SIZE;
+  const cats = treeEs.n2s.slice(0, limit);
+  console.log(`[bonpreu] DRY RUN · ${treeEs.catRows.length} categorías, ${treeEs.n2s.length} N2 (proceso ${cats.length})`);
+  const crawl = await crawlProducts(cats, LANG);
+  const result = buildCatalogRows(treeEs, treeCa, crawl.products, crawl.membership, new Map());
+  await crawlProductDetails(result.rows, crawl.retailerLinks);
+
+  const perCat = new Map();
+  for (const row of result.rows) {
+    for (const categoryId of row.category_ids) {
+      perCat.set(categoryId, (perCat.get(categoryId) ?? 0) + 1);
+    }
+  }
+  console.log('productos por categoría (las procesadas):');
+  for (const category of cats) console.log(`  ${category.name}: ${perCat.get(category.id) ?? 0}`);
+  console.log('nulos →', {
+    sin_precio: result.rows.filter((row) => row.unit_price == null).length,
+    sin_ppu: result.rows.filter((row) => row.price_per_unit == null).length,
+    sin_img: result.rows.filter((row) => !row.thumbnail).length,
+    sin_categoria: result.rows.filter((row) => row.category_ids.length === 0).length,
+    con_oferta: result.rows.filter((row) => row.promo_name != null).length,
+  });
+}
+
+let activeCycleId = null;
+
+async function main() {
+  console.log(
+    `[bonpreu] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} `
+    + `apiDelay=${CATEGORY_API_DELAY_MS}ms batch=${BATCH_SIZE}`,
+  );
+  if (DRY_RUN) {
+    await runDry();
+    return;
+  }
+
+  let cycle = await getActiveCycle();
+  if (!cycle) cycle = await createCycle();
+  activeCycleId = cycle.id;
+  if (cycle.status === 'finalizing') {
+    await finalizeCycle(cycle);
+    return;
+  }
+
+  const treeEs = hydrateTree(cycle.tree_es);
+  const treeCa = hydrateTree(cycle.tree_ca);
+  const snapshots = await completedSnapshots(cycle.id);
+  const completed = new Set(snapshots.map((snapshot) => `${snapshot.language}:${snapshot.category_id}`));
+  const batch = treeEs.n2s
+    .filter((category) => (
+      !completed.has(`${LANG}:${category.id}`)
+      || !completed.has(`${LANG_CA}:${category.id}`)
+    ))
+    .slice(0, cycle.batch_size || BATCH_SIZE);
+
+  if (!batch.length) {
+    await finalizeCycle(cycle);
+    return;
+  }
+  const completePairs = treeEs.n2s.filter((category) => (
+    completed.has(`${LANG}:${category.id}`) && completed.has(`${LANG_CA}:${category.id}`)
+  )).length;
+  console.log(
+    `[bonpreu] ciclo ${cycle.id} · ${completePairs}/${treeEs.n2s.length} completas `
+    + `· lote de ${batch.length}`,
+  );
+
+  const esCats = batch.filter((category) => !completed.has(`${LANG}:${category.id}`));
+  if (esCats.length) {
+    await stageLanguage(cycle, esCats, LANG, await crawlProducts(esCats, LANG));
+  }
+  const caNameById = new Map(treeCa.n2s.map((category) => [category.id, category.name]));
+  const caCats = batch
+    .filter((category) => !completed.has(`${LANG_CA}:${category.id}`))
+    .map((category) => ({ ...category, name: caNameById.get(category.id) ?? category.name }));
+  if (caCats.length) {
+    await stageLanguage(cycle, caCats, LANG_CA, await crawlProducts(caCats, LANG_CA));
+  }
+
+  const after = await completedSnapshots(cycle.id);
+  const afterSet = new Set(after.map((snapshot) => `${snapshot.language}:${snapshot.category_id}`));
+  const allDone = treeEs.n2s.every((category) => (
+    afterSet.has(`${LANG}:${category.id}`) && afterSet.has(`${LANG_CA}:${category.id}`)
+  ));
+  if (allDone) await finalizeCycle(cycle);
+  else {
+    const pairs = treeEs.n2s.filter((category) => (
+      afterSet.has(`${LANG}:${category.id}`) && afterSet.has(`${LANG_CA}:${category.id}`)
+    )).length;
+    console.log(`[bonpreu] OK · lote guardado · ciclo ${pairs}/${treeEs.n2s.length}`);
+  }
+}
+
+main().catch(async (error) => {
+  if (!DRY_RUN && activeCycleId) {
+    await updateCycle(activeCycleId, { last_error: String(error.message).slice(0, 2000) }).catch(() => {});
+  }
+  console.error('[bonpreu] ERROR', error);
+  process.exit(1);
+});

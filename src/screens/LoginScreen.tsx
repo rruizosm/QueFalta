@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { type ComponentProps, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -22,6 +22,20 @@ import { useTranslation } from '../context/LanguageContext';
 import HardShadow from '../components/HardShadow';
 
 const LOGO = require('../../assets/quefalta-logo-blue.png');
+
+const FEATURES: Array<{
+  icon: ComponentProps<typeof Ionicons>['name'];
+  labelKey:
+    | 'login.sharedCartTitle'
+    | 'login.newTitle'
+    | 'login.offersTitle'
+    | 'login.pricesTitle';
+}> = [
+  { icon: 'people-outline', labelKey: 'login.sharedCartTitle' },
+  { icon: 'sparkles-outline', labelKey: 'login.newTitle' },
+  { icon: 'pricetag-outline', labelKey: 'login.offersTitle' },
+  { icon: 'swap-vertical-outline', labelKey: 'login.pricesTitle' },
+];
 
 export default function LoginScreen() {
   const styles = useThemedStyles(themedStyles);
@@ -79,16 +93,35 @@ export default function LoginScreen() {
             <Text style={styles.brandName}>QuéFalta</Text>
           </View>
 
-          <View style={styles.hero}>
-            <Text style={styles.title}>{t('login.title')}</Text>
+          <View style={styles.heroCard}>
+            <View pointerEvents="none" style={styles.heroOrbLarge} />
+            <View pointerEvents="none" style={styles.heroOrbSmall} />
+
+            <View style={styles.heroHeading}>
+              <Text style={styles.title}>{t('login.title')}</Text>
+              <View style={styles.heroIcon}>
+                <Ionicons name="basket-outline" size={30} color="#ffffff" />
+              </View>
+            </View>
+
+            <View style={styles.featurePanel}>
+              {FEATURES.map((feature) => (
+                <View key={feature.labelKey} style={styles.featureItem}>
+                  <View style={styles.featureIcon}>
+                    <Ionicons name={feature.icon} size={17} color="#ffffff" />
+                  </View>
+                  <Text style={styles.featureLabel}>{t(feature.labelKey)}</Text>
+                </View>
+              ))}
+            </View>
           </View>
 
           <View style={styles.storeCard}>
-            <View style={styles.storeCopy}>
+            <View style={styles.storeHeader}>
               <Text style={styles.storeTitle}>{t('login.storesTitle')}</Text>
-              <Text style={styles.storeText}>
-                {t('login.storesText', { count: CATALOG_STORES.length })}
-              </Text>
+              <View style={styles.storeCount}>
+                <Text style={styles.storeCountText}>{CATALOG_STORES.length}</Text>
+              </View>
             </View>
 
             <View style={styles.storeLogos}>
@@ -103,8 +136,6 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.actions}>
-            <Text style={styles.actionTitle}>{t('login.actionTitle')}</Text>
-
             {appleAvailable && (
               <TouchableOpacity
                 onPress={handleAppleSignIn}
@@ -177,6 +208,7 @@ const themedStyles = () => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    paddingHorizontal: 2,
   },
   logoBox: {
     width: 44,
@@ -196,62 +228,140 @@ const themedStyles = () => StyleSheet.create({
     color: colors.ink,
     letterSpacing: -0.3,
   },
-  hero: {
-    marginTop: 24,
+  heroCard: {
+    position: 'relative',
+    overflow: 'hidden',
+    marginTop: 18,
+    padding: 18,
+    borderRadius: 26,
+    backgroundColor: colors.blue,
   },
-  eyebrow: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontFamily: fonts.bold,
-    color: colors.accent,
-    textTransform: 'uppercase',
-    letterSpacing: 0.7,
-    marginBottom: 7,
+  heroOrbLarge: {
+    position: 'absolute',
+    top: -54,
+    right: -34,
+    width: 156,
+    height: 156,
+    borderRadius: 78,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+  },
+  heroOrbSmall: {
+    position: 'absolute',
+    top: 57,
+    right: 55,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  heroHeading: {
+    minHeight: 68,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 14,
   },
   title: {
-    maxWidth: 440,
-    fontSize: 26,
-    lineHeight: 31,
+    flex: 1,
+    maxWidth: 310,
+    fontSize: 29,
+    lineHeight: 33,
     fontFamily: fonts.bold,
-    color: colors.ink,
-    letterSpacing: -0.7,
+    color: '#ffffff',
+    letterSpacing: -0.9,
+  },
+  heroIcon: {
+    width: 58,
+    height: 58,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.28)',
+    backgroundColor: 'rgba(255,255,255,0.16)',
+  },
+  featurePanel: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 17,
+    padding: 11,
+    rowGap: 10,
+    columnGap: 8,
+    borderRadius: 19,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.20)',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+  },
+  featureItem: {
+    width: '48%',
+    minHeight: 31,
+    flexGrow: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  featureIcon: {
+    width: 29,
+    height: 29,
+    flexShrink: 0,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.17)',
+  },
+  featureLabel: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 15,
+    fontFamily: fonts.semibold,
+    color: '#ffffff',
   },
   storeCard: {
-    marginTop: 20,
-    padding: 15,
+    marginTop: 14,
+    padding: 14,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.white,
-    alignItems: 'center',
   },
-  storeCopy: {
-    gap: 2,
+  storeHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
   storeTitle: {
     fontSize: 15,
     fontFamily: fonts.bold,
     color: colors.ink,
   },
-  storeText: {
-    fontSize: 12.5,
-    lineHeight: 17,
-    fontFamily: fonts.medium,
-    color: colors.inkSoft,
+  storeCount: {
+    minWidth: 27,
+    height: 22,
+    paddingHorizontal: 7,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.accentLight,
+  },
+  storeCountText: {
+    fontSize: 11,
+    lineHeight: 14,
+    fontFamily: fonts.bold,
+    color: colors.accent,
   },
   storeLogos: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 13,
-    gap: 8,
+    marginTop: 11,
+    gap: 7,
   },
   storeLogoBox: {
-    width: 39,
-    height: 39,
-    borderRadius: 13,
+    width: 37,
+    height: 37,
+    borderRadius: 12,
     padding: 5,
     alignItems: 'center',
     justifyContent: 'center',
@@ -265,14 +375,7 @@ const themedStyles = () => StyleSheet.create({
   },
   actions: {
     gap: 10,
-    marginTop: 24,
-  },
-  actionTitle: {
-    marginBottom: 2,
-    textAlign: 'center',
-    fontSize: 13,
-    fontFamily: fonts.bold,
-    color: colors.ink,
+    marginTop: 16,
   },
   googleButton: {
     minHeight: 54,

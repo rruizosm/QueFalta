@@ -632,7 +632,7 @@ const es: TranslationTree = {
     noProds: 'Aún no tienes productos favoritos.',
   },
   login: {
-    title: 'Compra mejor, ahorra más y organízate en equipo',
+    title: 'Tu compra, más fácil',
     subtitle: 'Compara, comparte y descubre qué merece la pena antes de ir al supermercado.',
     storesTitle: 'Tus supermercados favoritos',
     storesText: '{{count}} catálogos con productos y precios reales',
@@ -1322,7 +1322,7 @@ const ca: TranslationTree = {
     noProds: 'Encara no tens productes preferits.',
   },
   login: {
-    title: 'Compra millor, estalvia més i organitza’t en equip',
+    title: 'La teva compra, més fàcil',
     subtitle: 'Compara, comparteix i descobreix què val la pena abans d’anar al supermercat.',
     storesTitle: 'Els teus supermercats preferits',
     storesText: '{{count}} catàlegs amb productes i preus reals',

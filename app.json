@@ -70,6 +70,7 @@
       "en": "./locales/ios/en.json"
     },
     "plugins": [
+      "./plugins/withPhoneOnlyAndroid",
       "expo-secure-store",
       "expo-apple-authentication",
       [

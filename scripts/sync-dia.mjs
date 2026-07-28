@@ -8,9 +8,9 @@
 // raspar el SSR (versionada /api/v1/, ~20 KB JSON/página vs ~150 KB de HTML) — la
 // lección de Eroski (retiraron ?pageNumber=N y rompió el scraper) empuja a ello.
 //
-//   GET /api/v1/plp-back/plp?navigation=L1                (Origin/Referer de dia.es)
+//   GET /api/v1/plp-back/products?navigation=L1           (Origin/Referer de dia.es)
 //   → { category_data.categories: árbol N1→N2 COMPLETO (31 N1, ~296 N2, con id+link+name),
-//       plp_items[]: productos estructurados de la página (object_id, sku_id, display_name,
+//       products[]: productos estructurados de la página (object_id, sku_id, display_name,
 //         brand, image, prices{price, price_per_unit, measure_unit, strikethrough_price,
 //         is_promo_price, discount_percentage}, units_in_stock, url),
 //       pagination.pagination.total_pages }
@@ -38,7 +38,7 @@
 //   3. PUT /api/v1/common-aggregator/save-shipping-address?new_postal_code=CP
 //      → 204, fija el CP en la sesión (rota session_id; hay que seguir
 //        actualizando cookies de las respuestas).
-//   4. GET plp-back/plp?navigation=L1 con esa misma cookie → catálogo de la zona.
+//   4. GET plp-back/products?navigation=L1 con esa misma cookie → catálogo de la zona.
 // Este sync barre un CP por provincia (01–52, igual que sync-catalog.mjs de
 // Mercadona), deduplica por `physical_store_id` (varias provincias pueden
 // compartir tienda/zona) y une los productos por `object_id` (id GLOBAL: un id
@@ -62,7 +62,7 @@
 //      deduplicado. Madrid primero solo para que sus datos (precio/nombre) sean
 //      los "por defecto" de los productos nacionales.
 //   2. Por cada zona: sesión nueva, fijar su CP, paginar el catálogo entero
-//      (page=1..total_pages) → todos los plp_items, acumulando en qué zonas
+//      (page=1..total_pages) → todos los products, acumulando en qué zonas
 //      aparece cada producto (para `regions`). El árbol de categorías se toma
 //      solo de la primera zona (taxonomía nacional, no varía por zona).
 //   3. Normalizar + calcular `regions` + upsert en Supabase (soft-delete de lo
@@ -122,6 +122,7 @@ const API_PREFIXES = [...new Set([
   '/api/v1',
   '/api',
 ].filter(Boolean).map((prefix) => prefix.replace(/\/$/, '')))];
+const DIA_PLP_PATH = process.env.DIA_PLP_PATH || 'plp-back/products';
 const runStart = new Date().toISOString();
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 
@@ -164,7 +165,7 @@ async function checkService(jar, cp) {
 }
 
 // Fija el CP en la sesión del jar (lo que hace el modal de "código postal" de
-// la web). Tras esto, plp-back/plp?navigation=L1 con las mismas cookies
+// la web). Tras esto, plp-back/products?navigation=L1 con las mismas cookies
 // devuelve el catálogo de esa zona.
 async function setPostalCode(jar, cp) {
   try {
@@ -593,12 +594,14 @@ const markStale = (table) => markStaleBatched({ url: SUPABASE_URL, key: SERVICE_
 // Una página del catálogo entero (navigation=L1) de la zona del `jar`. Devuelve
 // { items, totalPages }.
 async function catalogPage(page, jar) {
-  const j = await getApi(`plp-back/plp?navigation=L1${page > 1 ? `&page=${page}` : ''}`, { jar });
+  const j = await getApi(`${DIA_PLP_PATH}?navigation=L1${page > 1 ? `&page=${page}` : ''}`, { jar });
   // La API devuelve pagination.total_pages PLANO (el SSR lo anidaba en
   // pagination.pagination; no confundir). Tolera ambas por si acaso.
   const pg = j.pagination ?? {};
   return {
-    items: j.plp_items ?? [],
+    // El BFF antiguo devolvía plp_items; el endpoint /products actual devuelve
+    // products. Aceptar ambos facilita una vuelta atrás del despliegue de DIA.
+    items: j.products ?? j.plp_items ?? j.items ?? [],
     totalPages: pg.total_pages ?? pg.pagination?.total_pages ?? 1,
     tree: j.category_data?.categories ?? null,
   };

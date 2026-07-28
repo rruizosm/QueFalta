@@ -28,7 +28,7 @@ Flujo de sesión (anónima, por cookie):
    no responden con id**, se saltan).
 3. `PUT /api/v1/common-aggregator/save-shipping-address?new_postal_code=CP` → 204,
    fija el CP en la sesión (**rota `session_id`** → hay que ir actualizando cookies).
-4. `GET plp-back/plp?navigation=L1` con esa cookie → catálogo **de esa zona**.
+4. `GET plp-back/products?navigation=L1` con esa cookie → catálogo **de esa zona**.
 
 La columna `regions` (ver `dia_regions.sql`) guarda la(s) CCAA donde cada producto
 está disponible (NULL = nacional, aparece en todas las CCAA con servicio). **HOY
@@ -37,12 +37,12 @@ se implementará más adelante (ver `src/constants/regions.ts`).
 
 ## Cómo funciona (API JSON, reescrito 2026-07-11)
 
-- **Endpoint:** `GET https://www.dia.es/api/v1/plp-back/plp?navigation=L1&page=N`
+- **Endpoint:** `GET https://www.dia.es/api/v1/plp-back/products?navigation=L1&page=N`
   con cabeceras `Origin`/`Referer` de dia.es (si no, 403) **+ la cookie de sesión
   con el CP fijado** (ver "Multi-zona"). `navigation=L1` es obligatorio y **NO
   filtra por categoría: devuelve el CATÁLOGO ENTERO de la zona** paginado
   (~204–314 páginas de 20 según la zona). De la respuesta se usa:
-  - `plp_items[]`: productos (`object_id`, `sku_id`, `display_name`, `brand`,
+  - `products[]` (el sync también acepta el antiguo `plp_items[]`): productos (`object_id`, `sku_id`, `display_name`, `brand`,
     `image`, `prices`, `units_in_stock`, `url`).
   - `category_data.categories`: **árbol N1→N2 completo** (31 N1, ~296 N2, con
     `id`/`name`/`link`) — llega en cada página, de ahí sale la taxonomía.
@@ -129,6 +129,7 @@ categoría (0,3 %), ~60 sin €/unidad, 1.816 con disponibilidad regional limita
 | `MAX_ZONES` | ∞ | limita nº de zonas (provincias) a barrer (pruebas) |
 | `MAX_PAGES` | ∞ | limita nº de páginas por zona (pruebas; alias viejo `MAX_CATEGORIES`) |
 | `DIA_API_PREFIX` | autodetecta `/api/v1` y luego `/api` ante 404 | fuerza el prefijo del BFF de DIA |
+| `DIA_PLP_PATH` | `plp-back/products` | fuerza el recurso de listado del BFF |
 | `SKIP_N1` | `L128` | N1 a excluir (CSV). Por defecto solo "Novedades y recomendados" |
 | `SKIP_DETAIL` | — | `1` = no toca la ficha (preserva la guardada) |
 | `DETAIL_TTL_DAYS` | `30` | refresca la ficha si su `detail_synced_at` es más viejo que esto |

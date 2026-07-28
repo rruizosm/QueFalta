@@ -46,6 +46,9 @@ se implementará más adelante (ver `src/constants/regions.ts`).
     `image`, `prices`, `units_in_stock`, `url`).
   - `category_data.categories`: **árbol N1→N2 completo** (31 N1, ~296 N2, con
     `id`/`name`/`link`) — llega en cada página, de ahí sale la taxonomía.
+- **Fallback SSR:** si DIA devuelve 404 para el BFF JSON, el sync obtiene el
+  árbol del `vike_pageContext` y recorre las páginas SSR de cada categoría N2,
+  conservando la cookie del código postal.
   - `pagination.total_pages` (PLANO; el SSR lo anidaba en `pagination.pagination`).
 - **Categoría de cada producto:** se deriva de su `url`
   (`/frutas/platanos-y-bananas/p/42070` → N2 "platanos-y-bananas") casada contra

@@ -1,18 +1,17 @@
 #!/usr/bin/env node
 // Sincroniza el catálogo de BonpreuEsclat → Supabase (catálogo + búsqueda), 1×/día.
 //
-// Bonpreu protege su API de productos con AWS WAF y el endpoint de hidratación
-// (PUT /v6/products) solo acepta IDs "activados" por el page-view. Así que la vía
-// fiable es: navegador headless que carga cada categoría y hace scroll, mientras
-// capturamos las RESPUESTAS de los PUT que la propia web dispara.
+// Bonpreu protege la web con AWS WAF. La SPA, una vez resuelto su challenge,
+// consume un endpoint paginado de productos por categoría. Usamos ese mismo
+// endpoint dentro del navegador para no abrir cientos de documentos protegidos.
 //   1. GET /v1/categories (abierto, sin WAF) → categorías N2.
-//   2. Navegador (un contexto = token WAF compartido) con varias pestañas en paralelo.
-//   3. Por cada N2: goto + scroll hasta el fondo, capturando productos de los PUT.
+//   2. Navegador: una carga de HOME resuelve el challenge de forma normal.
+//   3. Por cada N2: GET /v6/product-pages y paginación por nextPageToken.
 //   4. Normalizar + upsert en Supabase (soft-delete de lo ausente).
 //
 // Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE
 //      PW_CHANNEL=chrome   (usar Chrome del sistema en local; vacío en CI = chromium)
-//      CONCURRENCY=4       (pestañas en paralelo)
+//      CATEGORY_API_DELAY_MS=100 (pausa entre páginas de la API)
 //      DRY_RUN=1           (no escribe en Supabase; imprime resumen)
 //      MAX_CATEGORIES=N    (limita nº de categorías, para pruebas)
 import { chromium } from 'playwright-core';
@@ -22,8 +21,8 @@ import { markStale as markStaleBatched } from './lib/stale.mjs';
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
 const DRY_RUN = process.env.DRY_RUN === '1';
-const CONCURRENCY = Number(process.env.CONCURRENCY || 4);
 const MAX_CATEGORIES = process.env.MAX_CATEGORIES ? Number(process.env.MAX_CATEGORIES) : Infinity;
+const CATEGORY_API_DELAY_MS = Math.max(0, Number(process.env.CATEGORY_API_DELAY_MS || 100));
 const SKIP_DETAIL = process.env.SKIP_DETAIL === '1';
 const DETAIL_CONCURRENCY = Number(process.env.DETAIL_CONCURRENCY || 2);
 const DETAIL_TTL_DAYS = Number(process.env.DETAIL_TTL_DAYS || 30);
@@ -36,9 +35,10 @@ if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
 
 const HOME = 'https://www.compraonline.bonpreuesclat.cat';
 const CATS_API = `${HOME}/api/webproductpagews/v1/categories`;
+const PRODUCT_PAGES_PATH = '/api/webproductpagews/v6/product-pages';
 // El idioma se fija con la cookie `language` (NO con Accept-Language ni con el
 // dominio, que los ignoran), y controla TANTO la API de categorías como la
-// hidratación de productos (PUT /v6/products). La web es bilingüe (es-ES | ca-ES).
+// respuesta de productos. La web es bilingüe (es-ES | ca-ES).
 // Hacemos la app bilingüe (como Mercadona): guardamos los DOS idiomas y la app
 // elige según el idioma activo. Pasada PRIMARIA = castellano (rellena display_name
 // / name); 2ª pasada = catalán (rellena display_name_ca / name_ca, casando por id,
@@ -47,6 +47,44 @@ const LANG = process.env.BONPREU_LANG || 'es-ES';     // primario (castellano)
 const LANG_CA = process.env.BONPREU_LANG_CA || 'ca-ES'; // 2ª pasada (catalán)
 const runStart = new Date().toISOString();
 const chunk = (a, n) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
+
+// AWS WAF empezó a bloquear el fingerprint predeterminado de Playwright
+// (`HeadlessChrome` + navigator.webdriver) aunque el navegador resolviera su
+// challenge y recibiera `aws-waf-token`. Conservamos Chromium headless, pero
+// anunciamos su versión real como Chrome y desactivamos la señal de automatización.
+const browserPlatform = process.platform === 'win32'
+  ? 'Windows NT 10.0; Win64; x64'
+  : process.platform === 'darwin'
+    ? 'Macintosh; Intel Mac OS X 10_15_7'
+    : 'X11; Linux x86_64';
+const chromeUserAgent = (version) =>
+  `Mozilla/5.0 (${browserPlatform}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${version} Safari/537.36`;
+
+async function launchBonpreuBrowser(lang) {
+  const browser = await chromium.launch({
+    channel: process.env.PW_CHANNEL || undefined,
+    headless: true,
+    args: ['--disable-blink-features=AutomationControlled'],
+  });
+  try {
+    const ctx = await browser.newContext({
+      locale: lang,
+      userAgent: chromeUserAgent(browser.version()),
+    });
+    await ctx.addCookies([{ name: 'language', value: lang, domain: new URL(HOME).hostname, path: '/' }]);
+    return { browser, ctx };
+  } catch (error) {
+    await browser.close();
+    throw error;
+  }
+}
+
+async function assertWafPassed(page, label) {
+  const title = await page.title().catch(() => '');
+  if (/human verification|request could not be satisfied/i.test(title)) {
+    throw new Error(`AWS WAF bloqueó ${label} (${title || 'sin título'})`);
+  }
+}
 
 // ── Normalización (forma de producto de Bonpreu) ─────────────────────────────
 const num = (v) => { const n = typeof v === 'string' ? parseFloat(v) : v; return Number.isFinite(n) ? n : null; };
@@ -269,85 +307,124 @@ async function fetchCategoryTree(lang = LANG) {
 }
 
 // ── Procesar una categoría ───────────────────────────────────────────────────
-// Hace scroll capturando las respuestas de los PUT (hidratación). Los productos
-// que la página hidrata SON los de esta categoría → `localIds` = pertenencia.
-// No depende de window.__INITIAL_STATE__ (en CI/headless no está disponible al
-// evaluar; la SPA ya lo consumió). `membership`: Map<productId, Set<categoryId>>.
-async function processCategory(page, cat, products, membership, retailerLinks) {
-  const localIds = new Set();
-  const onResp = async (resp) => {
-    const req = resp.request();
-    if (req.method() === 'PUT' && resp.url().includes('/v6/products')) {
-      try {
-        const d = await resp.json();
-        for (const p of d.products || []) {
-          if (!p?.productId) continue;
-          localIds.add(p.productId);
-          if (!products.has(p.productId)) products.set(p.productId, normalize(p));
-        }
-      } catch {}
+// El endpoint paginado que consume la propia SPA devuelve productos completos
+// con `maxProductsToDecorate=300`.
+function decoratedProducts(data) {
+  const result = [];
+  for (const group of data?.productGroups ?? []) {
+    for (const product of group?.decoratedProducts ?? []) {
+      if (product?.productId) result.push(product);
     }
-  };
-  page.on('response', onResp);
-  try {
-    await page.goto(`${HOME}/categories/${cat.id}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-    let last = -1, stable = 0;
-    for (let i = 0; i < 120 && stable < 4; i++) {
-      await page.mouse.wheel(0, 14000);
-      await page.waitForTimeout(350);
-      if (localIds.size === last) stable++; else { stable = 0; last = localIds.size; }
-    }
-    const links = await page.locator('a[data-test="fop-product-link"][href*="/products/"]').evaluateAll((els) =>
-      els.filter((a) => a.getAttribute('aria-hidden') !== 'true').map((a) => ({ href: a.href })));
-    for (const link of links) {
-      const retailerId = new URL(link.href).pathname.split('/').filter(Boolean).pop();
-      if (retailerId && !retailerLinks.has(retailerId)) {
-        retailerLinks.set(retailerId, { href: link.href, categoryUrl: `${HOME}/categories/${cat.id}` });
-      }
-    }
-  } finally {
-    page.off('response', onResp);
   }
-  // Pertenencia: los productos hidratados por esta categoría son sus productos.
-  for (const id of localIds) {
-    let set = membership.get(id);
-    if (!set) membership.set(id, (set = new Set()));
-    set.add(cat.id);
-  }
+  return result;
 }
 
+async function fetchCategoryProducts(page, cat) {
+  const products = new Map();
+  const seenTokens = new Set();
+  let pageToken = null;
+
+  for (let pageNumber = 1; pageNumber <= 100; pageNumber++) {
+    const params = new URLSearchParams({
+      categoryId: cat.id,
+      maxProductsToDecorate: '300',
+      maxPageSize: '300',
+    });
+    params.append('tag', 'web');
+    params.append('tag', 'category-item');
+    if (pageToken) params.set('pageToken', pageToken);
+    else params.set('includeAdditionalPageInfo', 'true');
+
+    const path = `${PRODUCT_PAGES_PATH}?${params}`;
+    const response = await page.evaluate(async (requestPath) => {
+      const res = await fetch(requestPath, { headers: { Accept: 'application/json' } });
+      return {
+        ok: res.ok,
+        status: res.status,
+        wafAction: res.headers.get('x-amzn-waf-action'),
+        body: await res.text(),
+      };
+    }, path);
+
+    if (response.wafAction || !response.ok) {
+      throw new Error(
+        `product-pages ${response.status}${response.wafAction ? ` WAF=${response.wafAction}` : ''}`,
+      );
+    }
+
+    let data;
+    try {
+      data = JSON.parse(response.body);
+    } catch {
+      throw new Error(`product-pages ${response.status}: respuesta no JSON`);
+    }
+    for (const product of decoratedProducts(data)) products.set(product.productId, product);
+
+    const next = data?.metadata?.nextPageToken ?? data?.nextPageToken ?? null;
+    if (!next) break;
+    if (pageNumber === 100) throw new Error('product-pages superó el límite de 100 páginas');
+    if (seenTokens.has(next)) throw new Error('product-pages repitió nextPageToken');
+    seenTokens.add(next);
+    pageToken = next;
+    if (CATEGORY_API_DELAY_MS) await page.waitForTimeout(CATEGORY_API_DELAY_MS);
+  }
+
+  if (!products.size) throw new Error('product-pages devolvió 0 productos en una categoría con stock');
+  return [...products.values()];
+}
+
+const productSlug = (name) => String(name ?? '')
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .replace(/['’]+/g, '-')
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '');
+
 // Recorre TODAS las categorías N2 en un idioma (cookie `language=lang`) y captura
-// los productos hidratados. Devuelve products (Map id→detalles) y membership
+// los productos paginados. Devuelve products (Map id→detalles) y membership
 // (Map id→Set<categoryId>). En la 2ª pasada (catalán) solo se usa products para leer
 // el display_name en català; el membership/categorías sale de la pasada primaria.
 async function crawlProducts(cats, lang) {
-  const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || undefined, headless: true });
+  const { browser, ctx } = await launchBonpreuBrowser(lang);
   const retailerLinks = new Map();
   const products = new Map();      // productId → detalles
   const membership = new Map();    // productId → Set<categoryId>
   try {
-    const ctx = await browser.newContext({ locale: lang });
-    // Fija el idioma del catálogo (los PUT /v6/products hidratan en este idioma).
-    await ctx.addCookies([{ name: 'language', value: lang, domain: new URL(HOME).hostname, path: '/' }]);
+    // Una única navegación obtiene el token WAF. El resto son peticiones de
+    // datos iguales a las que hace la SPA, dentro del mismo origen y contexto.
+    const page = await ctx.newPage();
+    await page.goto(HOME, { waitUntil: 'networkidle', timeout: 60000 });
+    await assertWafPassed(page, `el calentamiento ${lang}`);
 
-    // Calentar el WAF en una pestaña (token compartido por el contexto).
-    const warm = await ctx.newPage();
-    await warm.goto(`${HOME}/categories/${cats[0].id}`, { waitUntil: 'networkidle', timeout: 60000 });
-    await warm.waitForTimeout(1500);
-
-    // Pool de pestañas que consumen la cola de categorías.
-    const queue = [...cats];
-    let done = 0;
-    const pages = [warm, ...(await Promise.all(Array.from({ length: CONCURRENCY - 1 }, () => ctx.newPage())))];
-    await Promise.all(pages.map(async (pg) => {
-      for (;;) {
-        const cat = queue.shift();
-        if (!cat) break;
-        try { await processCategory(pg, cat, products, membership, retailerLinks); }
-        catch (e) { console.warn(`[bonpreu:${lang}] ${cat.name} falló: ${e.message}`); }
-        if (++done % 10 === 0) console.log(`[bonpreu:${lang}] ${done}/${cats.length} categorías · ${products.size} productos`);
+    for (let index = 0; index < cats.length; index++) {
+      const cat = cats[index];
+      let categoryProducts;
+      try {
+        categoryProducts = await fetchCategoryProducts(page, cat);
+      } catch (error) {
+        throw new Error(`rastreo incompleto en ${cat.name}: ${error.message}`);
       }
-    }));
+      for (const product of categoryProducts) {
+        if (!products.has(product.productId)) products.set(product.productId, normalize(product));
+        let set = membership.get(product.productId);
+        if (!set) membership.set(product.productId, (set = new Set()));
+        set.add(cat.id);
+
+        const retailerId = product.retailerProductId;
+        if (retailerId != null && !retailerLinks.has(retailerId)) {
+          const slug = productSlug(product.name) || 'producte';
+          retailerLinks.set(retailerId, {
+            href: `${HOME}/products/${slug}/${encodeURIComponent(retailerId)}`,
+            categoryUrl: `${HOME}/categories/${cat.id}`,
+          });
+        }
+      }
+      if ((index + 1) % 10 === 0 || index + 1 === cats.length) {
+        console.log(`[bonpreu:${lang}] ${index + 1}/${cats.length} categorías · ${products.size} productos`);
+      }
+      if (CATEGORY_API_DELAY_MS) await page.waitForTimeout(CATEGORY_API_DELAY_MS);
+    }
   } finally {
     await browser.close();
   }
@@ -427,11 +504,18 @@ async function crawlProductDetails(rows, retailerLinks) {
   const pending = [...groups.values()].flat().slice(0, DETAIL_MAX);
   if (!pending.length) { console.log('[bonpreu] fichas: nada pendiente'); return; }
   console.log(`[bonpreu] fichas: ${pending.length} pendientes (lÃ­mite ${DETAIL_MAX})`);
-  const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || undefined, headless: true });
+  const { browser, ctx } = await launchBonpreuBrowser(LANG);
   try {
-    const ctx = await browser.newContext({ locale: LANG });
-    await ctx.addCookies([{ name: 'language', value: LANG, domain: new URL(HOME).hostname, path: '/' }]);
     const queue = [...groups.values()].filter((group) => group.some((item) => pending.includes(item)));
+    // El contexto de fichas es independiente del rastreo del catálogo. Resuelve
+    // aquí el challenge una vez para compartir el token con todos sus workers.
+    const warm = await ctx.newPage();
+    try {
+      await warm.goto(pending[0].link.categoryUrl, { waitUntil: 'networkidle', timeout: 60000 });
+      await assertWafPassed(warm, 'el calentamiento de fichas');
+    } finally {
+      await warm.close();
+    }
     const pages = await Promise.all(Array.from({ length: Math.max(1, DETAIL_CONCURRENCY) }, () => ctx.newPage()));
     let attempted = 0, succeeded = 0, failed = 0;
     await Promise.all(pages.map(async (page) => {
@@ -485,7 +569,7 @@ async function crawlProductDetails(rows, retailerLinks) {
 }
 
 async function main() {
-  console.log(`[bonpreu] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} conc=${CONCURRENCY}`);
+  console.log(`[bonpreu] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} apiDelay=${CATEGORY_API_DELAY_MS}ms`);
   const { catRows, n2s, offerIds, offerNames } = await fetchCategoryTree(LANG);
   // Nombres de categoría en catalán (API abierta, una sola petición) → name_ca.
   let caCatName = new Map();
@@ -520,7 +604,7 @@ async function main() {
     console.log(`[bonpreu] ${caName.size} nombres en català`);
   }
 
-  // Adjuntar a cada producto sus categorías reales (las que lo listan en su SSR)
+  // Adjuntar a cada producto sus categorías reales (las que le asigna la API)
   // + el nombre en català (display_name_ca; null → la app cae al castellano).
   const rows = [];
   let onOffer = 0;

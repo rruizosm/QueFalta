@@ -9,7 +9,7 @@
     "icon": "./assets/quefalta-blue.png",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.quefalta.app",
       "usesAppleSignIn": true,
       "associatedDomains": [
@@ -70,6 +70,7 @@
       "en": "./locales/ios/en.json"
     },
     "plugins": [
+      "./plugins/withPhoneOnlyAndroid",
       "expo-secure-store",
       "expo-apple-authentication",
       [

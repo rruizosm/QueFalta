@@ -6,7 +6,7 @@
 >
 > ASC tiene DOS páginas distintas:
 > 1. **App Information** (datos generales, no cambian por versión).
-> 2. **Versión 1.0** (textos, capturas y datos que se revisan en cada envío).
+> 2. **Versión 1.2** (textos, capturas y datos que se revisan en cada envío).
 
 ---
 
@@ -33,52 +33,100 @@
 
 ---
 
-## 2) Versión 1.0  (datos de la versión que se revisa)
+## 2) Versión 1.2  (datos de la versión que se revisa)
 
 ### Promotional text (≤170, se puede cambiar sin revisión)
 **es-ES:**
 ```
-Organiza la compra con tu grupo en tiempo real: una sola lista compartida, catálogo real de Mercadona y de tus súpers, y la cesta ordenada por pasillos.
+Compara precios en 15 supermercados, descubre ofertas, novedades y cambios de precio, consulta el Índice alimentario con Open Food Facts y comparte tu cesta.
 ```
 **ca:**
 ```
-Organitza la compra amb el teu grup en temps real: una sola llista compartida, catàleg real de Mercadona i dels teus súpers, i el cistell ordenat per passadissos.
+Compara preus en 15 supermercats, descobreix ofertes, novetats i canvis de preu, consulta l’Índex alimentari amb Open Food Facts i comparteix la cistella.
 ```
 
 ### Description
 **es-ES:**
 ```
-QuéFalta es la forma más fácil de organizar la compra en grupo.
+QuéFalta reúne tu lista compartida y los catálogos de tus supermercados en un solo lugar para ayudarte a organizar la compra y encontrar mejores precios.
 
-Crea una lista compartida con tu pareja, tu familia o tus compañeros de piso y mantenla sincronizada en tiempo real: lo que añade uno lo ven todos al instante.
+COMPRA EN EQUIPO
 
-• Lista compartida en grupo, en tiempo real.
-• Catálogo real de Mercadona y de otros supermercados, con fotos y precios.
-• Busca productos y añádelos a la cesta con un toque.
-• Cesta ordenada por pasillos del súper para que no des vueltas.
-• Notificaciones cuando alguien cambia la lista.
-• Disponible en español y catalán.
+Crea una cesta compartida con tu pareja, familia, amigos o compañeros de piso. Los cambios se sincronizan para que todos sepáis qué falta.
 
-Inicia sesión con Apple, Google o tu correo. Tus datos están protegidos y puedes borrar tu cuenta cuando quieras.
+COMPARA Y DESCUBRE
 
-QuéFalta no está afiliada a Mercadona ni a ningún supermercado; los precios y la información de producto son orientativos.
+Consulta productos y precios de 15 supermercados, busca por categorías y cambia entre vista de lista o cuadrícula.
+
+AHORRA EN CADA COMPRA
+
+• Descubre ofertas disponibles por supermercado.
+• Consulta los productos recién incorporados.
+• Revisa subidas y bajadas de precio.
+• Consulta el Índice alimentario, calculado con los datos nutricionales disponibles y la API de Open Food Facts.
+• Guarda tus productos favoritos.
+• Añade productos a tu cesta con un toque.
+
+TODO ORGANIZADO
+
+Ordena la compra por supermercado y zonas, reutiliza listas anteriores y mantén tus grupos al día con notificaciones.
+
+Inicia sesión con Apple o Google. Puedes gestionar tus datos y eliminar tu cuenta desde la aplicación.
+
+QuéFalta es una aplicación independiente y no está afiliada a los supermercados mostrados. Los precios y datos de producto son informativos y pueden variar según la tienda, la región o el momento de consulta. La información de Open Food Facts depende de los datos disponibles para cada producto.
 ```
 **ca:**
 ```
-QuèFalta és la manera més fàcil d'organitzar la compra en grup.
+QuèFalta reuneix la teva llista compartida i els catàlegs dels teus supermercats en un sol lloc per ajudar-te a organitzar la compra i trobar millors preus.
 
-Crea una llista compartida amb la teva parella, la teva família o els teus companys de pis i mantén-la sincronitzada en temps real: el que afegeix un, ho veuen tots a l'instant.
+COMPRA EN EQUIP
 
-• Llista compartida en grup, en temps real.
-• Catàleg real de Mercadona i d'altres supermercats, amb fotos i preus.
-• Cerca productes i afegeix-los al cistell amb un toc.
-• Cistell ordenat per passadissos del súper perquè no donis voltes.
-• Notificacions quan algú canvia la llista.
-• Disponible en català i castellà.
+Crea una cistella compartida amb la teva parella, família, amics o companys de pis. Els canvis se sincronitzen perquè tothom sàpiga què falta.
 
-Inicia la sessió amb Apple, Google o el teu correu. Les teves dades estan protegides i pots esborrar el teu compte quan vulguis.
+COMPARA I DESCOBREIX
 
-QuèFalta no està afiliada a Mercadona ni a cap supermercat; els preus i la informació de producte són orientatius.
+Consulta productes i preus de 15 supermercats, cerca per categories i canvia entre la vista de llista o quadrícula.
+
+ESTALVIA EN CADA COMPRA
+
+• Descobreix ofertes disponibles per supermercat.
+• Consulta els productes acabats d'incorporar.
+• Revisa pujades i baixades de preu.
+• Consulta l’Índex alimentari, calculat amb les dades nutricionals disponibles i l’API d’Open Food Facts.
+• Desa els teus productes preferits.
+• Afegeix productes a la cistella amb un toc.
+
+TOT ORGANITZAT
+
+Ordena la compra per supermercat i zones, reutilitza llistes anteriors i mantén els teus grups al dia amb notificacions.
+
+Inicia la sessió amb Apple o Google. Pots gestionar les teves dades i eliminar el teu compte des de l'aplicació.
+
+QuèFalta és una aplicació independent i no està afiliada als supermercats mostrats. Els preus i les dades de producte són informatius i poden variar segons la botiga, la regió o el moment de consulta. La informació d’Open Food Facts depèn de les dades disponibles per a cada producte.
+```
+
+### What's New in This Version
+**es-ES:**
+```
+Esta versión hace que encontrar y organizar tu compra sea más fácil:
+
+• Nuevo catálogo multitienda con búsqueda, filtros y vistas de lista o cuadrícula.
+• Nuevas secciones de Ofertas, Novedades y Cambios de precio.
+• Nuevo Índice alimentario con información nutricional obtenida mediante la API de Open Food Facts.
+• Fichas de producto y favoritos rediseñados.
+• Mejoras en las cestas compartidas, los grupos y la navegación.
+• Correcciones de estabilidad y rendimiento.
+```
+**ca:**
+```
+Aquesta versió fa que trobar i organitzar la compra sigui més fàcil:
+
+• Nou catàleg multibotiga amb cerca, filtres i vistes de llista o quadrícula.
+• Noves seccions d'Ofertes, Novetats i Canvis de preu.
+• Nou Índex alimentari amb informació nutricional obtinguda mitjançant l’API d’Open Food Facts.
+• Fitxes de producte i preferits redissenyats.
+• Millores en les cistelles compartides, els grups i la navegació.
+• Correccions d'estabilitat i rendiment.
 ```
 
 ### Keywords (≤100 caracteres, separadas por comas, sin espacios tras la coma)
@@ -100,9 +148,9 @@ llista compra,supermercat,mercadona,compra grup,llista compartida,cistell,estalv
 ### Otros
 | Campo | Valor |
 |---|---|
-| **Version** | `1.0.0` |
+| **Version** | `1.2.0` |
 | **Copyright** | `© 2026 Rubén Ruiz` |
-| **What's New** (1.0) | No aplica en el primer envío (o "Primera versión de QuéFalta.") |
+| **What's New** (1.2) | Ver el texto localizado de esta sección. |
 
 ---
 

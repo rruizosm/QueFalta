@@ -107,8 +107,8 @@ Añadir en `app.json`:
   `quefalta-web` (p. ej. `quefalta.es/eliminar-cuenta`) que explique el flujo o
   reciba solicitudes.
 - Política de privacidad: URL ya existente del App Store sirve.
-- **Ficha**: reutilizar `APP-STORE-LISTING.md` (es + ca; Play permite ficha por
-  idioma). Capturas: las 1290×2796 del generador (`marketing/appstore`) están
+- **Ficha**: utilizar `PLAY-STORE-LISTING.md` (es + ca), adaptada a los límites
+  y al formato específico de Google Play. Capturas: las 1290×2796 del generador (`marketing/appstore`) están
   dentro de los límites de Play (320–3840 px) → valen tal cual, aunque el marco
   sea de iPhone; opcional regenerar con marco Android. **Falta el feature
   graphic 1024×500 (obligatorio)** — se puede hacer con el mismo generador.
@@ -278,7 +278,7 @@ conviene un vistazo rápido en el simulador iOS antes del build 34.
       *(2026-07-08: página CREADA —`src/pages/eliminar-cuenta.astro`, enlazada
       en ambos pies, build verde, verificada en preview; promete respuesta al
       borrado por email en ≤30 días; falta push/deploy.)*
-- [ ] Ficha completa: textos de `APP-STORE-LISTING.md` (es+ca), capturas del
+- [ ] Ficha completa: textos de `PLAY-STORE-LISTING.md` (es+ca), capturas del
       generador (valen tal cual), **feature graphic 1024×500**, data safety,
       content rating, cuenta de Google de prueba para el equipo de revisión.
       *(2026-07-08: feature graphic GENERADO es+ca —solo marca, sin capturas—

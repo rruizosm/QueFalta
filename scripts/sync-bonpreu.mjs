@@ -16,6 +16,7 @@
 //      DRY_RUN=1           (no escribe en Supabase; imprime resumen)
 //      MAX_CATEGORIES=N    (limita nº de categorías, para pruebas)
 import { randomUUID } from 'node:crypto';
+import { appendFileSync } from 'node:fs';
 import { chromium } from 'playwright-core';
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
@@ -50,6 +51,12 @@ const LANG = process.env.BONPREU_LANG || 'es-ES';     // primario (castellano)
 const LANG_CA = process.env.BONPREU_LANG_CA || 'ca-ES'; // 2ª pasada (catalán)
 const runStart = new Date().toISOString();
 const chunk = (a, n) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
+
+function setGithubOutput(name, value) {
+  if (process.env.GITHUB_OUTPUT) {
+    appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${value}\n`, 'utf8');
+  }
+}
 
 // AWS WAF empezó a bloquear el fingerprint predeterminado de Playwright
 // (`HeadlessChrome` + navigator.webdriver) aunque el navegador resolviera su
@@ -871,6 +878,7 @@ async function finalizeCycle(cycle) {
     completed_at: new Date().toISOString(),
     last_error: null,
   });
+  setGithubOutput('continue_sync', 'false');
   try {
     await restMutation(
       'bonpreu_sync_cycles',
@@ -974,6 +982,7 @@ async function main() {
     const pairs = treeEs.n2s.filter((category) => (
       afterSet.has(`${LANG}:${category.id}`) && afterSet.has(`${LANG_CA}:${category.id}`)
     )).length;
+    setGithubOutput('continue_sync', 'true');
     console.log(`[bonpreu] OK · lote guardado · ciclo ${pairs}/${treeEs.n2s.length}`);
   }
 }

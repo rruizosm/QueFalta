@@ -256,7 +256,7 @@ function computeRegions(zoneSet, zoneCommunities, allCommunities) {
 }
 
 // GET una página y devuelve su vike_pageContext parseado (el estado SSR completo).
-async function getPageContext(path, { tries = 4 } = {}) {
+async function getPageContext(path, { tries = 4, jar } = {}) {
   const url = `${HOME}${path}`;
   for (let t = 0; t < tries; t++) {
     try {
@@ -267,6 +267,7 @@ async function getPageContext(path, { tries = 4 } = {}) {
           'User-Agent': UA,
           Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Accept-Language': 'es-ES,es;q=0.9',
+          ...(jar ? { Cookie: cookieHeader(jar) } : {}),
         },
         signal: AbortSignal.timeout(40000),
       });
@@ -607,6 +608,19 @@ async function catalogPage(page, jar) {
   };
 }
 
+// DIA sigue embebiendo el catálogo en SSR aunque retire el BFF JSON. La ruta
+// de categoría devuelve el mismo plp_item estructurado dentro de l2.
+async function ssrCategoryPage(path, page, jar) {
+  const ctx = await getPageContext(`${path}${page > 1 ? `?page=${page}` : ''}`, { jar });
+  const st = ctx.INITIAL_STATE ?? {};
+  return {
+    items: st.l2?.plp_items ?? st.l2?.products ?? [],
+    totalPages: st.pagination?.pagination?.total_pages ?? st.pagination?.total_pages ?? 1,
+  };
+}
+
+const SSR_BOOT_CATEGORY = '/congelados/pescado-y-marisco/c/L2132';
+
 async function main() {
   console.log(`[dia] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} conc=${CONCURRENCY}`);
 
@@ -632,7 +646,23 @@ async function main() {
     if (!ok) { console.warn(`[dia] zona ${zone} (CP ${cp}): no se pudo fijar el CP, se salta`); continue; }
     sweptZones.add(zone);
 
-    const first = await catalogPage(1, jar);
+    let first;
+    let ssrMode = false;
+    try {
+      first = await catalogPage(1, jar);
+    } catch (e) {
+      // DIA ha retirado temporalmente el BFF JSON; continuar con el SSR de
+      // categorías evita perder toda la ejecución por un 404 del microservicio.
+      console.warn(`[dia] BFF no disponible (${e.message}); se usa catálogo SSR`);
+      const ctx = await getPageContext(SSR_BOOT_CATEGORY, { jar });
+      const st = ctx.INITIAL_STATE ?? {};
+      first = {
+        items: st.l2?.plp_items ?? st.l2?.products ?? [],
+        totalPages: st.pagination?.pagination?.total_pages ?? st.pagination?.total_pages ?? 1,
+        tree: st.header?.categoriesData?.categories ?? [],
+      };
+      ssrMode = true;
+    }
 
     if (!catRows) {
       // Árbol de categorías (category_data): N1→N2 (con id, name, link). Se
@@ -691,20 +721,55 @@ async function main() {
     };
     ingest(first.items);
 
-    // Resto de páginas de esta zona, en paralelo (pool de workers).
-    const pages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
-    let done = 1;
-    await Promise.all(Array.from({ length: CONCURRENCY }, async () => {
-      for (;;) {
-        const page = pages.shift();
-        if (page == null) break;
-        try { ingest((await catalogPage(page, jar)).items); }
-        catch (e) { console.warn(`[dia] zona ${zone} página ${page} falló: ${e.message}`); }
-        if (++done % 50 === 0) console.log(`[dia] zona ${zone}: ${done}/${totalPages} páginas`);
-        await sleep(80);
-      }
-    }));
-    console.log(`[dia] zona ${zone} (CP ${cp}): ${totalPages} páginas · ${products.size} productos acumulados`);
+    if (ssrMode) {
+      // El SSR pagina por N2, no por catálogo global. Primero obtenemos la
+      // primera página de cada categoría para descubrir sus totales y después
+      // procesamos el resto con el mismo pool de concurrencia.
+      const categoryPaths = catRows.filter((c) => c.parent_id && c.url).map((c) => c.url);
+      const categoryPages = [];
+      let categoryDone = 0;
+      await Promise.all(Array.from({ length: CONCURRENCY }, async () => {
+        for (;;) {
+          const path = categoryPaths.shift();
+          if (path == null) break;
+          try {
+            const page = await ssrCategoryPage(path, 1, jar);
+            ingest(page.items);
+            for (let n = 2; n <= Math.min(page.totalPages, MAX_PAGES); n++) categoryPages.push({ path, page: n });
+          } catch (e) {
+            console.warn(`[dia] zona ${zone} categoría ${path} falló: ${e.message}`);
+          }
+          if (++categoryDone % 25 === 0) console.log(`[dia] zona ${zone}: ${categoryDone}/${catRows.length} categorías SSR`);
+        }
+      }));
+      let done = 0;
+      await Promise.all(Array.from({ length: CONCURRENCY }, async () => {
+        for (;;) {
+          const job = categoryPages.shift();
+          if (job == null) break;
+          try { ingest((await ssrCategoryPage(job.path, job.page, jar)).items); }
+          catch (e) { console.warn(`[dia] zona ${zone} categoría ${job.path} página ${job.page} falló: ${e.message}`); }
+          if (++done % 50 === 0) console.log(`[dia] zona ${zone}: ${done}/${categoryPages.length + done} páginas SSR`);
+          await sleep(80);
+        }
+      }));
+      console.log(`[dia] zona ${zone} (CP ${cp}): catálogo SSR · ${products.size} productos acumulados`);
+    } else {
+      // Resto de páginas de esta zona, en paralelo (pool de workers).
+      const pages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
+      let done = 1;
+      await Promise.all(Array.from({ length: CONCURRENCY }, async () => {
+        for (;;) {
+          const page = pages.shift();
+          if (page == null) break;
+          try { ingest((await catalogPage(page, jar)).items); }
+          catch (e) { console.warn(`[dia] zona ${zone} página ${page} falló: ${e.message}`); }
+          if (++done % 50 === 0) console.log(`[dia] zona ${zone}: ${done}/${totalPages} páginas`);
+          await sleep(80);
+        }
+      }));
+      console.log(`[dia] zona ${zone} (CP ${cp}): ${totalPages} páginas · ${products.size} productos acumulados`);
+    }
   }
 
   if (!catRows) throw new Error('ninguna zona barrió con éxito (¿fallaron todos los save-shipping-address?)');

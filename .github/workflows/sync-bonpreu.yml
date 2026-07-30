@@ -34,6 +34,11 @@ jobs:
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
           BONPREU_BATCH_SIZE: '12'
           CATEGORY_API_DELAY_MS: '500'
+          # La publicación visible también se reparte entre Actions. Cada una
+          # confirma como máximo 20 micro-lotes y conserva su cursor en Supabase.
+          BONPREU_PUBLICATION_LIMIT: '1000'
+          BONPREU_PUBLICATION_BATCH_SIZE: '50'
+          BONPREU_PUBLICATION_DELAY_MS: '250'
           # Las fichas abren documentos protegidos uno a uno. Conservamos las
           # columnas existentes y pausamos su backfill hasta migrarlo a una API.
           SKIP_DETAIL: '1'

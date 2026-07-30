@@ -63,7 +63,7 @@ brazo por tabla). Estado al 2026-07-15:
 | # | Súper | Backend del sync | Commit | Migración ejecutada | Notas |
 |---|-------|------------------|--------|---------------------|-------|
 | 1 | Mercadona | API pública en vivo | ✅ | — | Publicado. Multi-almacén (~48 wh). Bilingüe `lang=ca`. |
-| 2 | Bonpreu | Navegador headless (WAF) | ✅ | — | Único espejo con ficha AÚN sin implementar (1 nav/producto). `fix_bonpreu_prices.sql` pendiente. |
+| 2 | Bonpreu | Navegador headless (WAF) | ✅ | ⚠️ publicación reanudable | Staging bilingüe por Actions; falta desplegar `20260729184317_bonpreu_resumable_publication.sql` junto al script que recupera el cursor. |
 | 3 | bonÀrea | API JSON propia (ShoppingBody) | ✅ (col `ean`) | ⚠️ ficha/off pend. | Ficha bilingüe es/ca. `off_code`↔OFF listo pero SIN ejecutar. |
 | 4 | Carrefour | fetch SSR `__INITIAL_STATE__` | parcial | ⚠️ regions/offers | Ficha más rica. Multi-zona + ofertas LOCAL. Corre en local (Cloudflare). |
 | 5 | Consum | API REST abierta | ✅ | ⚠️ | EAN + marca estructurados. Sin ficha (no la expone). |
@@ -99,6 +99,7 @@ La lista **completa y anotada** está en CONTEXTO.md. Aquí, lo esencial y el OR
 
 **Órdenes que importan:**
 - `fix_bonpreu_prices.sql` **ANTES** de `catalog_price_changes.sql` (si no, cambios de precio falsos).
+- Bonpreu: `20260728182501_bonpreu_sync_staging.sql` → `20260729184317_bonpreu_resumable_publication.sql`; desplegar la segunda junto al sync actualizado, nunca con el script antiguo.
 - `profile_premium.sql` → `paywall_gates.sql` → (re)`similar_products.sql`.
 - `carrefour_offers.sql` y `carrefour_regions.sql` **ANTES** del próximo sync de Carrefour (el `upsert` las incluye).
 - Cada `bonarea/dia/carrefour_product_detail.sql` antes del sync de su súper (pasada de ficha).

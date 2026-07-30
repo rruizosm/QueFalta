@@ -13,10 +13,16 @@
 //      PW_CHANNEL=chrome   (usar Chrome del sistema en local; vacío en CI = chromium)
 //      CATEGORY_API_DELAY_MS=100 (pausa entre páginas de la API)
 //      BONPREU_BATCH_SIZE=12 (categorías por ejecución y ciclo)
+//      BONPREU_PUBLICATION_LIMIT=1000 (productos visibles por ejecución)
+//      BONPREU_PUBLICATION_BATCH_SIZE=50 (productos por upsert confirmado)
+//      BONPREU_PUBLICATION_DELAY_MS=250 (pausa entre upserts visibles)
 //      DRY_RUN=1           (no escribe en Supabase; imprime resumen)
 //      MAX_CATEGORIES=N    (limita nº de categorías, para pruebas)
 import { randomUUID } from 'node:crypto';
+import { appendFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright-core';
+import { planPublication, publishWindow } from './lib/bonpreu-publication.mjs';
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 
@@ -26,12 +32,19 @@ const DRY_RUN = process.env.DRY_RUN === '1';
 const MAX_CATEGORIES = process.env.MAX_CATEGORIES ? Number(process.env.MAX_CATEGORIES) : Infinity;
 const BATCH_SIZE = Math.max(1, Number(process.env.BONPREU_BATCH_SIZE || 12));
 const CATEGORY_API_DELAY_MS = Math.max(0, Number(process.env.CATEGORY_API_DELAY_MS || 100));
+const PUBLICATION_LIMIT = Math.max(1, Number(process.env.BONPREU_PUBLICATION_LIMIT || 1000));
+const PUBLICATION_BATCH_SIZE = Math.min(
+  50,
+  Math.max(1, Number(process.env.BONPREU_PUBLICATION_BATCH_SIZE || 50)),
+);
+const PUBLICATION_DELAY_MS = Math.max(0, Number(process.env.BONPREU_PUBLICATION_DELAY_MS || 250));
 const SKIP_DETAIL = process.env.SKIP_DETAIL === '1';
 const DETAIL_CONCURRENCY = Number(process.env.DETAIL_CONCURRENCY || 2);
 const DETAIL_TTL_DAYS = Number(process.env.DETAIL_TTL_DAYS || 30);
 const DETAIL_MAX = process.env.DETAIL_MAX ? Number(process.env.DETAIL_MAX) : 500;
+const isMain = process.argv[1] != null && import.meta.url === pathToFileURL(process.argv[1]).href;
 
-if (!DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
+if (isMain && !DRY_RUN && (!SUPABASE_URL || !SERVICE_ROLE)) {
   console.error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE (o usa DRY_RUN=1)');
   process.exit(1);
 }
@@ -50,6 +63,12 @@ const LANG = process.env.BONPREU_LANG || 'es-ES';     // primario (castellano)
 const LANG_CA = process.env.BONPREU_LANG_CA || 'ca-ES'; // 2ª pasada (catalán)
 const runStart = new Date().toISOString();
 const chunk = (a, n) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
+
+function setGithubOutput(name, value) {
+  if (process.env.GITHUB_OUTPUT) {
+    appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${value}\n`, 'utf8');
+  }
+}
 
 // AWS WAF empezó a bloquear el fingerprint predeterminado de Playwright
 // (`HeadlessChrome` + navigator.webdriver) aunque el navegador resolviera su
@@ -292,7 +311,7 @@ async function getActiveCycle() {
   const rows = await readAll(
     'bonpreu_sync_cycles',
     'select=*&status=in.(collecting,finalizing)',
-    'created_at.asc',
+    'created_at.asc,id.asc',
   );
   return rows[0] ?? null;
 }
@@ -304,9 +323,118 @@ const updateCycle = (id, values) => restMutation(
   { ...values, updated_at: new Date().toISOString() },
 );
 
+async function readCyclePublicationState(id) {
+  const rows = await readAll(
+    'bonpreu_sync_cycles',
+    'select=id,status,publication_phase,publication_started_at,publication_cursor,publication_total,publication_published'
+      + `&id=eq.${encodeURIComponent(id)}`,
+  );
+  if (rows.length !== 1) throw new Error(`no se encontró el ciclo ${id}`);
+  return rows[0];
+}
+
+async function patchCycleCompareAndSet(id, filters, values, acceptCurrent) {
+  const query = [`id=eq.${encodeURIComponent(id)}`, ...filters].join('&');
+  let last;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (attempt) await sleep(1500 * 2 ** (attempt - 1));
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/bonpreu_sync_cycles?${query}`, {
+        method: 'PATCH',
+        headers: restHeaders({
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+        }),
+        body: JSON.stringify({ ...values, updated_at: new Date().toISOString() }),
+      });
+      if (res.ok) {
+        const changed = await res.json();
+        if (changed.length === 1) return changed[0];
+        const current = await readCyclePublicationState(id);
+        if (acceptCurrent(current)) return current;
+        const conflict = new Error(`checkpoint concurrente inesperado en el ciclo ${id}`);
+        conflict.retryable = false;
+        throw conflict;
+      }
+      const error = new Error(`PATCH bonpreu_sync_cycles ${res.status}: ${await res.text()}`);
+      if (res.status < 500 && ![408, 429].includes(res.status)) error.retryable = false;
+      throw error;
+    } catch (error) {
+      if (error.retryable === false) throw error;
+      last = error;
+    }
+    console.warn(`[bonpreu] ${String(last.message).split('\n')[0]} (intento ${attempt + 1}/4)`);
+  }
+  throw last;
+}
+
+const cursorFilter = (cursor) => cursor == null
+  ? 'publication_cursor=is.null'
+  : `publication_cursor=eq.${encodeURIComponent(cursor)}`;
+
+const compareAndSetPublication = (
+  id,
+  { previousCursor, previousPublished, cursor, published },
+) => patchCycleCompareAndSet(
+  id,
+  [
+    `publication_published=eq.${previousPublished}`,
+    cursorFilter(previousCursor),
+  ],
+  {
+    publication_cursor: cursor,
+    publication_published: published,
+    last_error: null,
+  },
+  (current) => (
+    current.publication_cursor === cursor
+    && Number(current.publication_published) === published
+  ),
+);
+
+const PUBLICATION_PHASES = ['products', 'categories', 'stale_products', 'stale_categories', 'done'];
+
+async function advancePublicationPhase(id, previousPhase, nextPhase) {
+  const expectedIndex = PUBLICATION_PHASES.indexOf(nextPhase);
+  if (expectedIndex < 0) throw new Error(`fase de publicación desconocida: ${nextPhase}`);
+  const current = await patchCycleCompareAndSet(
+    id,
+    [`publication_phase=eq.${encodeURIComponent(previousPhase)}`],
+    { publication_phase: nextPhase, last_error: null },
+    (state) => PUBLICATION_PHASES.indexOf(state.publication_phase) >= expectedIndex,
+  );
+  return current.publication_phase;
+}
+
+const initializePublicationCycle = (id, publicationStartedAt, publicationTotal) =>
+  patchCycleCompareAndSet(
+    id,
+    ['status=eq.collecting', 'publication_phase=is.null'],
+    {
+      status: 'finalizing',
+      publication_phase: 'products',
+      publication_started_at: publicationStartedAt,
+      publication_cursor: null,
+      publication_total: publicationTotal,
+      publication_published: 0,
+      last_error: null,
+    },
+    (current) => (
+      ['finalizing', 'completed'].includes(current.status)
+      && current.publication_phase != null
+      && current.publication_started_at != null
+      && current.publication_total != null
+    ),
+  );
+
 // Soft-delete por lotes con reintentos (lib/stale.mjs): el UPDATE único de toda
 // la tabla moría por statement_timeout (57014) cuando la BD iba cargada.
-const markStale = (table) => markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart });
+const markStale = (table, publicationStartedAt) => markStaleBatched({
+  url: SUPABASE_URL,
+  key: SERVICE_ROLE,
+  table,
+  runStart: publicationStartedAt,
+});
 
 // La N1 "Ofertas" (bilingüe: "Ofertes") NO es taxonomía real: agrupa productos
 // que ya están en su categoría de verdad (Lácteos, Bebidas…) pero en promoción.
@@ -647,12 +775,12 @@ const hydrateTree = (tree) => ({
   offerNames: new Map(Object.entries(tree?.offerNames ?? {})),
 });
 
-function buildCatalogRows(treeEs, treeCa, products, membership, caName) {
+function buildCatalogRows(treeEs, treeCa, products, membership, caName, publicationStartedAt) {
   const catRows = treeEs.catRows.map((category) => ({
     ...category,
     name_ca: treeCa.catRows.find((candidate) => candidate.id === category.id)?.name ?? null,
     published: true,
-    synced_at: runStart,
+    synced_at: publicationStartedAt,
   }));
   const catName = new Map(treeEs.n2s.map((category) => [category.id, category.name]));
   const foodN1Ids = new Set(
@@ -671,7 +799,7 @@ function buildCatalogRows(treeEs, treeCa, products, membership, caName) {
   let onOffer = 0;
   for (const [id, membershipSet] of membership) {
     const details = products.get(id);
-    if (!details?.display_name) continue;
+    if (typeof details?.display_name !== 'string' || !details.display_name.trim()) continue;
     const memberOf = [...membershipSet];
     const offerMembership = memberOf.filter((categoryId) => treeEs.offerIds.has(categoryId));
     const realMembership = memberOf.filter((categoryId) => !treeEs.offerIds.has(categoryId));
@@ -690,7 +818,7 @@ function buildCatalogRows(treeEs, treeCa, products, membership, caName) {
     if (promo_name) onOffer++;
     const row = {
       ...details,
-      synced_at: runStart,
+      synced_at: publicationStartedAt,
       published: true,
       display_name_ca: caName.get(id) ?? null,
       category_ids: realMembership,
@@ -741,7 +869,7 @@ async function completedSnapshots(cycleId) {
   return readAll(
     'bonpreu_sync_categories',
     `select=language,category_id,product_count&cycle_id=eq.${encodeURIComponent(cycleId)}`,
-    'category_id.asc',
+    'category_id.asc,language.asc',
   );
 }
 
@@ -788,6 +916,25 @@ async function stageLanguage(cycle, cats, lang, crawl) {
   console.log(`[bonpreu:${lang}] staging confirmado · ${cats.length} categorías · ${productRows.length} productos únicos`);
 }
 
+async function verifyPublishedProducts(rows, publicationStartedAt) {
+  const live = await readAll(
+    'bonpreu_products',
+    `select=id&published=eq.true&synced_at=eq.${encodeURIComponent(publicationStartedAt)}`,
+    'id.asc',
+  );
+  const expectedIds = new Set(rows.map((row) => String(row.id)));
+  const liveIds = new Set(live.map((row) => String(row.id)));
+  const missing = [...expectedIds].find((id) => !liveIds.has(id));
+  const unexpected = [...liveIds].find((id) => !expectedIds.has(id));
+  if (liveIds.size !== expectedIds.size || missing || unexpected) {
+    throw new Error(
+      `verificación visible fallida: esperados=${expectedIds.size}, publicados=${liveIds.size}`
+      + `${missing ? `, falta=${missing}` : ''}${unexpected ? `, ajeno=${unexpected}` : ''}`,
+    );
+  }
+  console.log(`[bonpreu] verificación visible OK · ${liveIds.size} productos`);
+}
+
 async function finalizeCycle(cycle) {
   const treeEs = hydrateTree(cycle.tree_es);
   const treeCa = hydrateTree(cycle.tree_ca);
@@ -803,22 +950,18 @@ async function finalizeCycle(cycle) {
     .map((language) => `${language}:${categoryId}`));
   if (missing.length) throw new Error(`ciclo ${cycle.id} incompleto: faltan ${missing.length} snapshots`);
 
-  if (cycle.status !== 'finalizing') {
-    await updateCycle(cycle.id, { status: 'finalizing', last_error: null });
-    cycle.status = 'finalizing';
-  }
   console.log(`[bonpreu] publicando ciclo completo ${cycle.id}`);
 
   const [stagedProducts, stagedMemberships] = await Promise.all([
     readAll(
       'bonpreu_sync_products',
       `select=language,product_id,payload&cycle_id=eq.${encodeURIComponent(cycle.id)}`,
-      'product_id.asc',
+      'product_id.asc,language.asc',
     ),
     readAll(
       'bonpreu_sync_memberships',
       `select=category_id,product_id&cycle_id=eq.${encodeURIComponent(cycle.id)}`,
-      'product_id.asc',
+      'product_id.asc,category_id.asc',
     ),
   ]);
   const products = new Map();
@@ -850,27 +993,97 @@ async function finalizeCycle(cycle) {
     throw new Error(`${missingProducts.length} productos con pertenencia no tienen payload español`);
   }
 
-  const { catRows, rows, retailerLinks, onOffer } = buildCatalogRows(
+  let publicationStartedAt = cycle.publication_started_at ?? runStart;
+  let catalog = buildCatalogRows(
     treeEs,
     treeCa,
     products,
     membership,
     caName,
+    publicationStartedAt,
   );
-  if (!rows.length) throw new Error('0 productos en el ciclo completo');
+  if (!catalog.rows.length) throw new Error('0 productos en el ciclo completo');
+
+  if (cycle.status !== 'finalizing') {
+    const initialized = await initializePublicationCycle(
+      cycle.id,
+      publicationStartedAt,
+      catalog.rows.length,
+    );
+    Object.assign(cycle, initialized);
+    const persistedStartedAt = cycle.publication_started_at;
+    if (Date.parse(persistedStartedAt) !== Date.parse(publicationStartedAt)) {
+      publicationStartedAt = persistedStartedAt;
+      catalog = buildCatalogRows(
+        treeEs,
+        treeCa,
+        products,
+        membership,
+        caName,
+        publicationStartedAt,
+      );
+    }
+  }
+  if (
+    !['finalizing', 'completed'].includes(cycle.status)
+    || !cycle.publication_phase
+    || !cycle.publication_started_at
+    || cycle.publication_total == null
+  ) {
+    throw new Error(`el ciclo ${cycle.id} no tiene checkpoint de publicación; aplica la migración pendiente`);
+  }
+  const { catRows, rows, retailerLinks, onOffer } = catalog;
   console.log(`[bonpreu] publicación preparada · ${rows.length} productos · ${onOffer} en oferta`);
 
-  await crawlProductDetails(rows, retailerLinks);
-  await upsert('bonpreu_categories', catRows);
-  await upsert('bonpreu_products', rows);
-  // No se retira nada hasta que todos los upserts del ciclo hayan terminado.
-  await markStale('bonpreu_products');
-  await markStale('bonpreu_categories');
+  let phase = cycle.publication_phase;
+  if (phase === 'products') {
+    const state = {
+      cursor: cycle.publication_cursor,
+      published: Number(cycle.publication_published),
+      total: Number(cycle.publication_total),
+    };
+    const plan = planPublication(rows, { ...state, limit: PUBLICATION_LIMIT });
+    await crawlProductDetails(plan.rows, retailerLinks);
+    const progress = await publishWindow(rows, state, {
+      limit: PUBLICATION_LIMIT,
+      batchSize: PUBLICATION_BATCH_SIZE,
+      upsertBatch: (batch) => upsert('bonpreu_products', batch),
+      checkpointBatch: (checkpoint) => compareAndSetPublication(cycle.id, checkpoint),
+      afterBatch: PUBLICATION_DELAY_MS ? () => sleep(PUBLICATION_DELAY_MS) : undefined,
+    });
+    console.log(
+      `[bonpreu] productos publicados ${progress.published}/${progress.total}`
+      + ` · ${progress.written} en esta ejecución`,
+    );
+    if (!progress.complete) {
+      setGithubOutput('continue_sync', 'true');
+      console.log(`[bonpreu] OK · publicación parcial guardada · cursor ${progress.cursor}`);
+      return;
+    }
+    await verifyPublishedProducts(rows, publicationStartedAt);
+    phase = await advancePublicationPhase(cycle.id, 'products', 'categories');
+  }
+
+  if (phase === 'categories') {
+    await upsert('bonpreu_categories', catRows);
+    phase = await advancePublicationPhase(cycle.id, 'categories', 'stale_products');
+  }
+  if (phase === 'stale_products') {
+    await markStale('bonpreu_products', publicationStartedAt);
+    phase = await advancePublicationPhase(cycle.id, 'stale_products', 'stale_categories');
+  }
+  if (phase === 'stale_categories') {
+    await markStale('bonpreu_categories', publicationStartedAt);
+    phase = await advancePublicationPhase(cycle.id, 'stale_categories', 'done');
+  }
+  if (phase !== 'done') throw new Error(`fase de publicación inesperada: ${phase}`);
+
   await updateCycle(cycle.id, {
     status: 'completed',
     completed_at: new Date().toISOString(),
     last_error: null,
   });
+  setGithubOutput('continue_sync', 'false');
   try {
     await restMutation(
       'bonpreu_sync_cycles',
@@ -889,7 +1102,7 @@ async function runDry() {
   const cats = treeEs.n2s.slice(0, limit);
   console.log(`[bonpreu] DRY RUN · ${treeEs.catRows.length} categorías, ${treeEs.n2s.length} N2 (proceso ${cats.length})`);
   const crawl = await crawlProducts(cats, LANG);
-  const result = buildCatalogRows(treeEs, treeCa, crawl.products, crawl.membership, new Map());
+  const result = buildCatalogRows(treeEs, treeCa, crawl.products, crawl.membership, new Map(), runStart);
   await crawlProductDetails(result.rows, crawl.retailerLinks);
 
   const perCat = new Map();
@@ -974,14 +1187,19 @@ async function main() {
     const pairs = treeEs.n2s.filter((category) => (
       afterSet.has(`${LANG}:${category.id}`) && afterSet.has(`${LANG_CA}:${category.id}`)
     )).length;
+    setGithubOutput('continue_sync', 'true');
     console.log(`[bonpreu] OK · lote guardado · ciclo ${pairs}/${treeEs.n2s.length}`);
   }
 }
 
-main().catch(async (error) => {
-  if (!DRY_RUN && activeCycleId) {
-    await updateCycle(activeCycleId, { last_error: String(error.message).slice(0, 2000) }).catch(() => {});
-  }
-  console.error('[bonpreu] ERROR', error);
-  process.exit(1);
-});
+export { buildCatalogRows };
+
+if (isMain) {
+  main().catch(async (error) => {
+    if (!DRY_RUN && activeCycleId) {
+      await updateCycle(activeCycleId, { last_error: String(error.message).slice(0, 2000) }).catch(() => {});
+    }
+    console.error('[bonpreu] ERROR', error);
+    process.exit(1);
+  });
+}

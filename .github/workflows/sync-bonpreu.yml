@@ -2,10 +2,14 @@ name: Sync BonpreuEsclat catalog
 
 on:
   schedule:
-    # Un lote cada 12 horas. Un ciclo normal de 142 categorías termina en
-    # 12 ejecuciones (unos 6 días), sin concentrar todo el tráfico en una sesión.
+    # Inicia un ciclo o reintenta uno interrumpido. Cada lote correcto encadena
+    # el siguiente con una pausa; este cron queda como red de seguridad.
     - cron: '30 4,16 * * *'
   workflow_dispatch: {}
+
+permissions:
+  contents: read
+  actions: write
 
 concurrency:
   group: sync-bonpreu
@@ -23,14 +27,33 @@ jobs:
       # Bonpreu exige navegador real (AWS WAF). El lockfile fija Playwright y
       # Chromium para evitar que un `npm install playwright` cambie el fingerprint.
       - run: npm ci && npx playwright install --with-deps chromium
-      - run: node scripts/sync-bonpreu.mjs
+      - id: sync
+        run: node scripts/sync-bonpreu.mjs
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
           BONPREU_BATCH_SIZE: '12'
           CATEGORY_API_DELAY_MS: '500'
+          # La publicación visible también se reparte entre Actions. Cada una
+          # confirma como máximo 20 micro-lotes y conserva su cursor en Supabase.
+          BONPREU_PUBLICATION_LIMIT: '1000'
+          BONPREU_PUBLICATION_BATCH_SIZE: '50'
+          BONPREU_PUBLICATION_DELAY_MS: '250'
           # Las fichas abren documentos protegidos uno a uno. Conservamos las
           # columnas existentes y pausamos su backfill hasta migrarlo a una API.
           SKIP_DETAIL: '1'
           DETAIL_CONCURRENCY: '2'
           DETAIL_MAX: '500'
+      # Mientras el ciclo siga incompleto, espera para no presionar el WAF y
+      # vuelve a lanzar este mismo workflow. workflow_dispatch sí genera una
+      # nueva ejecución cuando se autentica con GITHUB_TOKEN.
+      - name: Lanzar el siguiente lote
+        if: success() && steps.sync.outputs.continue_sync == 'true'
+        run: |
+          echo "Ciclo incompleto: el siguiente lote se lanzará en 10 minutos."
+          sleep 600
+          gh workflow run sync-bonpreu.yml \
+            --ref "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY"
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -35,6 +35,21 @@ import { parseTapestryOfferBlock } from './retailer-offers.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
+const DEFAULT_HOME_RETRY_DELAYS_MS = [60_000, 180_000, 360_000];
+
+const compactResponse = (value) => value.replace(/\s+/g, ' ').trim().slice(0, 180);
+const positiveInteger = (value, fallback) => {
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : fallback;
+};
+const homeRetryDelays = (value) => {
+  if (!value) return DEFAULT_HOME_RETRY_DELAYS_MS;
+  const parsed = value.split(',')
+    .map((part) => Number(part.trim()))
+    .filter((seconds) => Number.isFinite(seconds) && seconds > 0)
+    .map((seconds) => Math.min(seconds * 1000, 15 * 60_000));
+  return parsed.length > 0 ? parsed : DEFAULT_HOME_RETRY_DELAYS_MS;
+};
 
 // N1 no-alimentación que se excluyen (bazar/electro/textil): mantenemos el
 // espejo como un catálogo de súper, como el resto de tiendas.
@@ -70,6 +85,8 @@ function makeJar() {
 
 async function fetchText(url, { tries = 4, jar = null } = {}) {
   let lastStatus = null;
+  let lastResponse = null;
+  let lastError = null;
   for (let t = 0; t < tries; t++) {
     try {
       const res = await fetch(url, {
@@ -87,7 +104,12 @@ async function fetchText(url, { tries = 4, jar = null } = {}) {
       // 404/redirect a error = categoría vacía/inexistente: no reintentar.
       if (res.status === 404) return '';
       lastStatus = res.status;
-      console.warn(`[fetch] HTTP ${res.status} ${url} (intento ${t + 1}/${tries})`);
+      lastResponse = {
+        finalUrl: res.url,
+        retryAfter: res.headers.get('retry-after'),
+        sample: compactResponse(await res.text()),
+      };
+      console.warn(`[fetch] HTTP ${res.status} ${res.url} (intento ${t + 1}/${tries})`);
       // 429 = rate limit: backoff largo (Retry-After si viene; si no 5s·10s·15s),
       // en vez del genérico de abajo. Visto en vivo el 2026-07-11 al encadenar
       // crawls desde una misma IP.
@@ -97,7 +119,7 @@ async function fetchText(url, { tries = 4, jar = null } = {}) {
         continue;
       }
     } catch (e) {
-      if (t === tries - 1) throw e;
+      lastError = e;
       console.warn(`[fetch] ${e.name}: ${e.message} ${url} (intento ${t + 1}/${tries})`);
     }
     await sleep(600 * (t + 1));
@@ -105,13 +127,38 @@ async function fetchText(url, { tries = 4, jar = null } = {}) {
   // Estado no-OK persistente (403 = bloqueo de IP/bot, 429/503 = carga…): lanzar
   // con el código para que el fallo diga QUÉ pasó (antes devolvía '' y el error
   // de la home era mudo). fetchTilesRetry ya captura y lo trata como página vacía.
-  throw new Error(`HTTP ${lastStatus} en ${url} tras ${tries} intentos`);
+  const details = lastStatus == null
+    ? `${lastError?.name ?? 'Error'}: ${lastError?.message ?? 'sin respuesta'}`
+    : `HTTP ${lastStatus}${lastResponse?.retryAfter ? ` · Retry-After=${lastResponse.retryAfter}` : ''}${lastResponse?.sample ? ` · ${lastResponse.sample}` : ''}`;
+  const error = new Error(`${details} en ${lastResponse?.finalUrl ?? url} tras ${tries} intentos`);
+  error.fetchInfo = { url, status: lastStatus, ...lastResponse };
+  throw error;
 }
 
 // ── Árbol de categorías desde el mega-menú de la home ────────────────────────
 // Devuelve { catRows:[{id,name,parent_id}], leaves:[pathArray], catName, parentOf }.
 // `path` es el array de ids [n1,n2,n3…]; la URL de la hoja se reconstruye con los
 // slugs, que también se guardan (los necesita el GET de la categoría).
+async function fetchHomeWithRetry(base, { rounds, delaysMs, log }) {
+  const url = `${base}/es/`;
+  let lastError;
+  for (let round = 0; round < rounds; round++) {
+    try {
+      const home = await fetchText(url, { tries: 6 });
+      if (home) return home;
+      throw new Error('respuesta vacía o 404');
+    } catch (error) {
+      lastError = error;
+      if (round === rounds - 1) break;
+      const delay = delaysMs[Math.min(round, delaysMs.length - 1)];
+      const jitter = Math.floor(Math.random() * 5000);
+      log(`home falló (${round + 1}/${rounds}): ${error.message}; reintento en ~${Math.ceil((delay + jitter) / 1000)} s`);
+      await sleep(delay + jitter);
+    }
+  }
+  throw new Error(`home no disponible tras ${rounds} rondas: ${lastError?.message ?? 'sin detalle'}`, { cause: lastError });
+}
+
 export function parseCategoryTree(homeHtml, { skipN1 = NON_FOOD_N1 } = {}) {
   // Cada enlace de categoría: /{locale}/supermercado/{seg}/{seg}/…  seg = id-slug
   const segRe = /\/(?:es|ca)\/supermercado\/((?:\d+-[a-z0-9-]+\/)+)/g;
@@ -358,11 +405,14 @@ async function fetchLoadpage(base, urlPath, n, jar) {
 // normalize(item, { leafId, categoryPath }) → fila para la tabla *_products.
 export async function crawlCatalog({
   base, normalize, concurrency = 5, maxPagesPerLeaf = 60, maxLeaves = Infinity,
-  skipN1 = NON_FOOD_N1, log = () => {}, ctxExtra = {},
+  skipN1 = NON_FOOD_N1, log = () => {}, ctxExtra = {}, homeRetryRounds = 1,
+  homeRetryDelaysMs = DEFAULT_HOME_RETRY_DELAYS_MS,
 }) {
   // La home es la petición crítica (de ella sale todo el árbol): más reintentos
   // que una página de categoría. Si falla, fetchText lanza ya con el estado HTTP.
-  const home = await fetchText(`${base}/es/`, { tries: 6 });
+  const home = await fetchHomeWithRetry(base, {
+    rounds: positiveInteger(homeRetryRounds, 1), delaysMs: homeRetryDelaysMs, log,
+  });
   if (!home) throw new Error('home vacía (404 o 200 sin cuerpo)');
   const { catRows, leaves, catName, parentOf } = parseCategoryTree(home, { skipN1 });
   log(`${catRows.length} categorías · ${leaves.length} hojas`);
@@ -514,6 +564,11 @@ export async function runSync({ base, store, table, catTable }) {
   const DETAIL_TTL_DAYS = Math.max(1, Number(process.env.DETAIL_TTL_DAYS || 90));
   const DETAIL_MAX = process.env.DETAIL_MAX ? Number(process.env.DETAIL_MAX) : 1000;
   const DRY_DETAIL_MAX = Math.max(0, Number(process.env.DRY_DETAIL_MAX || 3));
+  const HOME_RETRY_DELAYS_MS = homeRetryDelays(process.env.HOME_RETRY_DELAYS_SECONDS);
+  const HOME_RETRY_ROUNDS = positiveInteger(
+    process.env.HOME_RETRY_ROUNDS,
+    HOME_RETRY_DELAYS_MS.length + 1,
+  );
   const runStart = new Date().toISOString();
   const tag = `[${store}]`;
   const log = (m) => console.log(`${tag} ${m}`);
@@ -625,6 +680,8 @@ export async function runSync({ base, store, table, catTable }) {
   const { products, catRows, noTileLeaves, shadowedLeaves, totalLeaves } = await crawlCatalog({
     base, normalize: makeNormalize(base, runStart),
     concurrency: CONCURRENCY, maxLeaves: MAX_LEAVES, log,
+    homeRetryRounds: HOME_RETRY_ROUNDS,
+    homeRetryDelaysMs: HOME_RETRY_DELAYS_MS,
   });
   const rows = [...products.values()];
   const catOut = catRows.map((c) => ({ ...c, published: true, synced_at: runStart }));

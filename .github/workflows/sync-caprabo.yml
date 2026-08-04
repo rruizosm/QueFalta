@@ -24,5 +24,8 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
           CONCURRENCY: '6'
+          # Ante una caída/bloqueo breve de la home, el script reintenta durante ~10 min.
+          HOME_RETRY_ROUNDS: '4'
+          HOME_RETRY_DELAYS_SECONDS: '60,180,360'
           DETAIL_CONCURRENCY: '3'
           DETAIL_MAX: '1000'

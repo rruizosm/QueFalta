@@ -406,7 +406,7 @@ async function fetchLoadpage(base, urlPath, n, jar) {
 export async function crawlCatalog({
   base, normalize, concurrency = 5, maxPagesPerLeaf = 60, maxLeaves = Infinity,
   skipN1 = NON_FOOD_N1, log = () => {}, ctxExtra = {}, homeRetryRounds = 1,
-  homeRetryDelaysMs = DEFAULT_HOME_RETRY_DELAYS_MS,
+  homeRetryDelaysMs = DEFAULT_HOME_RETRY_DELAYS_MS, leafDelayMs = 0,
 }) {
   // La home es la petición crítica (de ella sale todo el árbol): más reintentos
   // que una página de categoría. Si falla, fetchText lanza ya con el estado HTTP.
@@ -500,6 +500,7 @@ export async function crawlCatalog({
       if (!segs) break;
       try { await crawlLeaf(segs); }
       catch (e) { log(`hoja ${segs.join('/')} falló: ${e.message}`); }
+      if (leafDelayMs > 0) await sleep(leafDelayMs);
       if (++doneLeaves % 100 === 0) log(`${doneLeaves}/${leaves.length} hojas · ${products.size} productos`);
     }
   }));
@@ -569,6 +570,7 @@ export async function runSync({ base, store, table, catTable }) {
     process.env.HOME_RETRY_ROUNDS,
     HOME_RETRY_DELAYS_MS.length + 1,
   );
+  const LEAF_DELAY_MS = Math.max(0, Number(process.env.LEAF_DELAY_MS || 0));
   const runStart = new Date().toISOString();
   const tag = `[${store}]`;
   const log = (m) => console.log(`${tag} ${m}`);
@@ -682,6 +684,7 @@ export async function runSync({ base, store, table, catTable }) {
     concurrency: CONCURRENCY, maxLeaves: MAX_LEAVES, log,
     homeRetryRounds: HOME_RETRY_ROUNDS,
     homeRetryDelaysMs: HOME_RETRY_DELAYS_MS,
+    leafDelayMs: LEAF_DELAY_MS,
   });
   const rows = [...products.values()];
   const catOut = catRows.map((c) => ({ ...c, published: true, synced_at: runStart }));

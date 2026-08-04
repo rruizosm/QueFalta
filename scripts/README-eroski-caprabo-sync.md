@@ -56,6 +56,8 @@ backfill incremental de las fichas existentes.
 
 - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE` — destino de la escritura.
 - `CONCURRENCY=6` — hojas rastreadas en paralelo.
+- `LEAF_DELAY_MS=0` — pausa opcional después de cada hoja; el wrapper local de
+  Caprabo usa 700 ms y concurrencia 2 para respetar su rate limit.
 - `HOME_RETRY_ROUNDS=4` — rondas completas para la petición crítica `GET /es/`.
 - `HOME_RETRY_DELAYS_SECONDS=60,180,360` — esperas entre rondas de la home
   (unos 10 min en total). Cada ronda conserva seis intentos cortos y deja en el
@@ -91,8 +93,13 @@ paginación stateful) por la retirada de `?pageNumber`.
 
 ## Ejecutar
 
-- **GitHub Actions:** `sync-eroski.yml` (lunes 09:00 UTC) y `sync-caprabo.yml`
-  (lunes 09:30 UTC), o botón *Run workflow*. Solo `node` (sin navegador).
+- **Ejecución productiva local:** `run-eroski-sync.ps1` y
+  `run-caprabo-sync.ps1`. El backend bloquea las IPs de GitHub Actions con 403,
+  por lo que los workflows ya no se programan. Los wrappers leen `.env.local`,
+  guardan logs en `scripts/logs/` y conservan los últimos 14.
+- **Programación semanal:** crear tareas de Windows el lunes a las 10:00 (Eroski)
+  y 10:30 (Caprabo), ejecutando los wrappers anteriores. El `workflow_dispatch`
+  permanece solo para diagnóstico manual.
 - **Prueba en seco:** `DRY_RUN=1 MAX_LEAVES=10 node scripts/sync-eroski.mjs`
   (o `sync-caprabo.mjs`). Al final imprime hasta 3 fichas reales con los campos
   extraídos.

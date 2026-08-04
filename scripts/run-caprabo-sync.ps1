@@ -29,7 +29,9 @@ $env:SUPABASE_URL = $url
 $env:SUPABASE_SERVICE_ROLE = $role
 $env:CONCURRENCY = '1'
 $env:LEAF_DELAY_MS = '1200'
-$env:DETAIL_CONCURRENCY = '3'
+$env:DETAIL_CONCURRENCY = '1'
+$env:DETAIL_DELAY_MS = '2000'
+$env:DETAIL_THROTTLE_LIMIT = '1'
 if (-not $env:DETAIL_MAX) { $env:DETAIL_MAX = '1000' }
 
 Set-Location $repo

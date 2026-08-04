@@ -562,6 +562,8 @@ export async function runSync({ base, store, table, catTable }) {
   const MAX_LEAVES = process.env.MAX_LEAVES ? Number(process.env.MAX_LEAVES) : Infinity;
   const SKIP_DETAIL = process.env.SKIP_DETAIL === '1';
   const DETAIL_CONCURRENCY = Math.max(1, Number(process.env.DETAIL_CONCURRENCY || 3));
+  const DETAIL_DELAY_MS = Math.max(0, Number(process.env.DETAIL_DELAY_MS || 120));
+  const DETAIL_THROTTLE_LIMIT = Math.max(1, Number(process.env.DETAIL_THROTTLE_LIMIT || 5));
   const DETAIL_TTL_DAYS = Math.max(1, Number(process.env.DETAIL_TTL_DAYS || 90));
   const DETAIL_MAX = process.env.DETAIL_MAX ? Number(process.env.DETAIL_MAX) : 1000;
   const DRY_DETAIL_MAX = Math.max(0, Number(process.env.DRY_DETAIL_MAX || 3));
@@ -644,9 +646,12 @@ export async function runSync({ base, store, table, catTable }) {
     let done = 0;
     let withDetails = 0;
     let withoutDetails = 0;
+    let throttled = 0;
+    let pausedForThrottle = false;
     log(`ficha: ${batch.length} productos a descargar · ${stale.length - batch.length} pospuestos`);
     await Promise.all(Array.from({ length: DETAIL_CONCURRENCY }, async () => {
       for (;;) {
+        if (pausedForThrottle) break;
         const row = queue.shift();
         if (!row) break;
         try {
@@ -669,12 +674,19 @@ export async function runSync({ base, store, table, catTable }) {
           }
         } catch (e) {
           log(`ficha ${row.id} falló: ${e.message.split('\n')[0]}`);
+          if (e?.fetchInfo?.status === 429 || e?.fetchInfo?.status === 403) {
+            throttled++;
+            if (throttled >= DETAIL_THROTTLE_LIMIT) {
+              pausedForThrottle = true;
+              log(`ficha: pausa por rate limit tras ${throttled} respuesta${throttled === 1 ? '' : 's'} HTTP`);
+            }
+          }
         }
         if (++done % 100 === 0) log(`ficha ${done}/${batch.length}`);
-        await sleep(120);
+        if (!pausedForThrottle) await sleep(DETAIL_DELAY_MS);
       }
     }));
-    log(`ficha: ${withDetails} con datos · ${withoutDetails} sin datos · ${updated.length} comprobadas`);
+    log(`ficha: ${withDetails} con datos · ${withoutDetails} sin datos · ${updated.length} comprobadas${pausedForThrottle ? ' · pendiente por rate limit' : ''}`);
     return updated;
   }
 

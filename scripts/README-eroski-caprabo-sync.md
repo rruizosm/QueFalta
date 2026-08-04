@@ -57,7 +57,7 @@ backfill incremental de las fichas existentes.
 - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE` — destino de la escritura.
 - `CONCURRENCY=6` — hojas rastreadas en paralelo.
 - `LEAF_DELAY_MS=0` — pausa opcional después de cada hoja; el wrapper local de
-  Caprabo usa 700 ms y concurrencia 2 para respetar su rate limit.
+  Caprabo usa 1.200 ms y concurrencia 1 para respetar su rate limit.
 - `HOME_RETRY_ROUNDS=4` — rondas completas para la petición crítica `GET /es/`.
 - `HOME_RETRY_DELAYS_SECONDS=60,180,360` — esperas entre rondas de la home
   (unos 10 min en total). Cada ronda conserva seis intentos cortos y deja en el

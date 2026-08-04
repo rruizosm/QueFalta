@@ -27,8 +27,8 @@ if (-not $role) { throw 'Falta SUPABASE_SERVICE_ROLE en .env.local' }
 
 $env:SUPABASE_URL = $url
 $env:SUPABASE_SERVICE_ROLE = $role
-$env:CONCURRENCY = '2'
-$env:LEAF_DELAY_MS = '700'
+$env:CONCURRENCY = '1'
+$env:LEAF_DELAY_MS = '1200'
 $env:DETAIL_CONCURRENCY = '3'
 if (-not $env:DETAIL_MAX) { $env:DETAIL_MAX = '1000' }
 

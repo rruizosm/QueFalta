@@ -238,23 +238,24 @@ async function loadStoreSearch(
   region: RegionValue | null,
   postalCode: string | null,
   signal?: AbortSignal,
+  limit = 50,
 ): Promise<UIProduct[]> {
   switch (store) {
-    case 'mercadona': return (await searchProducts(query, region, 50, signal)).map((product) => mercadonaToUI(product));
-    case 'esclat': return (await searchBonpreuProducts(query, 50, signal)).map(bonpreuToUI);
-    case 'carrefour': return (await searchCarrefourProducts(query, region, 50, signal)).map(carrefourToUI);
-    case 'bonarea': return (await searchBonareaProducts(query, 50, signal)).map(bonareaToUI);
-    case 'consum': return (await searchConsumProducts(query, region, postalCode, 50, signal)).map(consumToUI);
-    case 'dia': return (await searchDiaProducts(query, region, 50, signal)).map(diaToUI);
-    case 'sorli': return (await searchSorliProducts(query, 50, signal)).map(sorliToUI);
-    case 'eroski': return (await searchEroskiProducts(query, 50, signal)).map(eroskiToUI);
-    case 'caprabo': return (await searchCapraboProducts(query, 50, signal)).map(capraboToUI);
-    case 'condis': return (await searchCondisProducts(query, 50, signal)).map(condisToUI);
-    case 'ametller': return (await searchAmetllerProducts(query, 50, signal)).map(ametllerToUI);
-    case 'aldi': return (await searchAldiProducts(query, 50, signal)).map(aldiToUI);
-    case 'hiperdino': return (await searchHiperdinoProducts(query, 50, signal)).map(hiperdinoToUI);
-    case 'alcampo': return (await searchAlcampoProducts(query, 50, signal)).map(alcampoToUI);
-    case 'plusfresc': return (await searchPlusfrescProducts(query, postalCode, 50, signal)).map(plusfrescToUI);
+    case 'mercadona': return (await searchProducts(query, region, limit, signal)).map((product) => mercadonaToUI(product));
+    case 'esclat': return (await searchBonpreuProducts(query, limit, signal)).map(bonpreuToUI);
+    case 'carrefour': return (await searchCarrefourProducts(query, region, limit, signal)).map(carrefourToUI);
+    case 'bonarea': return (await searchBonareaProducts(query, limit, signal)).map(bonareaToUI);
+    case 'consum': return (await searchConsumProducts(query, region, postalCode, limit, signal)).map(consumToUI);
+    case 'dia': return (await searchDiaProducts(query, region, limit, signal)).map(diaToUI);
+    case 'sorli': return (await searchSorliProducts(query, limit, signal)).map(sorliToUI);
+    case 'eroski': return (await searchEroskiProducts(query, limit, signal)).map(eroskiToUI);
+    case 'caprabo': return (await searchCapraboProducts(query, limit, signal)).map(capraboToUI);
+    case 'condis': return (await searchCondisProducts(query, limit, signal)).map(condisToUI);
+    case 'ametller': return (await searchAmetllerProducts(query, limit, signal)).map(ametllerToUI);
+    case 'aldi': return (await searchAldiProducts(query, limit, signal)).map(aldiToUI);
+    case 'hiperdino': return (await searchHiperdinoProducts(query, limit, signal)).map(hiperdinoToUI);
+    case 'alcampo': return (await searchAlcampoProducts(query, limit, signal)).map(alcampoToUI);
+    case 'plusfresc': return (await searchPlusfrescProducts(query, postalCode, limit, signal)).map(plusfrescToUI);
   }
 }
 
@@ -367,7 +368,10 @@ export default function CatalogScreen() {
   // BÃºsqueda conjunta cuando el selector estÃ¡ en "Todos".
   const [allSearch, setAllSearch] = useState('');
   const [allResults, setAllResults] = useState<UIProduct[]>([]);
+  const [allSearchLimit, setAllSearchLimit] = useState(50);
+  const [allSearchMore, setAllSearchMore] = useState(false);
   const [allLoading, setAllLoading] = useState(false);
+  const allSearchMoreController = useRef<AbortController | null>(null);
   const [allError, setAllError] = useState(false);
 
   // Búsqueda de productos BonpreuEsclat (espejo)
@@ -883,14 +887,42 @@ export default function CatalogScreen() {
 
   // "Todos": lanza la misma bÃºsqueda en los sÃºpers permitidos, mezcla por
   // precio y conserva un mÃ¡ximo global de 50 resultados.
+  const loadMoreAllSearch = () => {
+    if (store !== 'all' || allSearch.trim().length < 2 || allLoading || allSearchMore) return;
+    const nextLimit = allSearchLimit + 50;
+    const controller = new AbortController();
+    allSearchMoreController.current?.abort();
+    allSearchMoreController.current = controller;
+    setAllSearchMore(true);
+    Promise.all(enabledStores.map((selectedStore) =>
+      loadStoreSearch(selectedStore, allSearch, region, postalCode, controller.signal, nextLimit),
+    ))
+      .then((pages) => {
+        const nextItems = pages.flat().sort(compareProductsByPrice(productOrder)).slice(0, nextLimit);
+        setAllResults((current) => {
+          if (nextItems.length <= current.length) return current;
+          setAllSearchLimit(nextLimit);
+          return nextItems;
+        });
+      })
+      .catch(() => { /* conserva los resultados ya cargados */ })
+      .finally(() => {
+        if (allSearchMoreController.current === controller) allSearchMoreController.current = null;
+        setAllSearchMore(false);
+      });
+  };
+
   useEffect(() => {
     if (store !== 'all') return;
-    return startProductSearch(
+    setAllSearchLimit(50);
+    setAllSearchMore(false);
+    allSearchMoreController.current?.abort();
+    const cleanup = startProductSearch(
       allSearch,
       async (q, signal) => {
         const pages = await Promise.all(
           enabledStores.map((selectedStore) =>
-            loadStoreSearch(selectedStore, q, region, postalCode, signal),
+            loadStoreSearch(selectedStore, q, region, postalCode, signal, 50),
           ),
         );
         return pages.flat().sort(compareProductsByPrice(productOrder)).slice(0, 50);
@@ -899,6 +931,11 @@ export default function CatalogScreen() {
       setAllLoading,
       setAllError,
     );
+    return () => {
+      cleanup?.();
+      allSearchMoreController.current?.abort();
+      setAllSearchMore(false);
+    };
   }, [store, allSearch, lang, region, postalCode, productOrder, enabledStoresKey]);
 
   // Filtro de categorías por texto (cliente). Compartido por los 6 súpers: en la
@@ -1047,6 +1084,8 @@ export default function CatalogScreen() {
           products={orderedSearchItems}
           searchQuery={undefined}
           hideToolbar viewMode={prodViewMode} onViewModeChange={setProdViewMode}
+          onEndReached={store === 'all' ? loadMoreAllSearch : undefined}
+          loadingMore={store === 'all' && allSearchMore}
           keepOrder
           roundedCards
           showStoreLogo={store === 'all'}

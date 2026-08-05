@@ -2111,6 +2111,11 @@ const weekAgoISO = () => new Date(Date.now() - WEEK_WINDOW_DAYS * 86_400_000).to
 // de la tabla (súper recién estrenado o backfill) → se oculta el lote entero.
 const NEW_INITIAL_FILL_CAP = 400;
 
+export interface WeeklyNewProductsPage {
+  items: UIProduct[];
+  nextOffset: number | null;
+}
+
 /** Novedades de la semana de un súper. Mercadona usa su endpoint oficial de
  *  novedades (curado por ellos, en vivo, disponible desde ya); el resto, la
  *  columna first_seen_at del espejo: los productos que APARECIERON en el
@@ -2119,14 +2124,18 @@ export async function fetchWeeklyNewProducts(
   store: CatalogStore,
   region: RegionValue | null,
   postalCode: string | null,
-  limit = 100,
-): Promise<UIProduct[]> {
+  limit = 50,
+  offset = 0,
+): Promise<WeeklyNewProductsPage> {
   if (store === 'mercadona') {
     // El raw de new-arrivals no trae `categories` → categoryName null y el
     // producto cae en la zona "Otros" al añadirlo (igual que los favoritos).
     const warehouse = await resolveWarehouseForPostalCode(postalCode);
     const items = await fetchNewArrivals(warehouse ?? undefined);
-    return items.slice(0, limit).map((p) => mercadonaToUI(p));
+    return {
+      items: items.slice(offset, offset + limit).map((p) => mercadonaToUI(p)),
+      nextOffset: items.length > offset + limit ? offset + limit : null,
+    };
   }
   const m = MIRROR_QUERY[store];
   const { data, error, count } = await filterMirrorLocation(supabase
@@ -2136,10 +2145,13 @@ export async function fetchWeeklyNewProducts(
     .gte('first_seen_at', weekAgoISO())
     .order('first_seen_at', { ascending: false })
     .order('display_name', { ascending: true }), store, region, postalCode)
-    .limit(limit);
+    .range(offset, offset + limit - 1);
   if (error) throw error;
-  if ((count ?? 0) > NEW_INITIAL_FILL_CAP) return [];
-  return (data ?? []).map((r: any) => mirrorToUIAtLocation(store, r, region, postalCode));
+  if ((count ?? 0) > NEW_INITIAL_FILL_CAP) return { items: [], nextOffset: null };
+  return {
+    items: (data ?? []).map((r: any) => mirrorToUIAtLocation(store, r, region, postalCode)),
+    nextOffset: (count ?? 0) > offset + limit ? offset + limit : null,
+  };
 }
 
 /** Un cambio de precio detectado por el trigger del espejo (catalog_price_changes.sql). */
@@ -2149,6 +2161,11 @@ export interface PriceChangeProduct {
   newPrice: number;
   /** Variación en % (negativa = bajada), redondeada a 1 decimal en la BD. */
   deltaPct: number;
+}
+
+export interface PriceChangesPage {
+  items: PriceChangeProduct[];
+  nextOffset: number | null;
 }
 
 function locationForPriceHistory(
@@ -2169,7 +2186,8 @@ async function fetchLocationPriceChanges(
   region: RegionValue | null,
   postalCode: string | null,
   limit: number,
-): Promise<PriceChangeProduct[]> {
+  offset: number,
+): Promise<PriceChangesPage> {
   const down = direction === 'down';
   let changesQuery = supabase
     .from('catalog_location_price_changes')
@@ -2181,7 +2199,8 @@ async function fetchLocationPriceChanges(
   const { data: changes, error: changesError } = await changesQuery
     .order('price_delta_pct', { ascending: down })
     .order('changed_at', { ascending: false })
-    .limit(limit);
+    .order('product_id', { ascending: true })
+    .range(offset, offset + limit - 1);
   if (changesError) throw changesError;
 
   // A product can change twice in one week. Preserve the current behavior of
@@ -2191,7 +2210,9 @@ async function fetchLocationPriceChanges(
     if (!latestByProduct.has(change.product_id)) latestByProduct.set(change.product_id, change);
   }
   const productIds = [...latestByProduct.keys()];
-  if (productIds.length === 0) return [];
+  if (productIds.length === 0) {
+    return { items: [], nextOffset: (changes ?? []).length === limit ? offset + limit : null };
+  }
 
   const m = MIRROR_QUERY[store];
   const { data: products, error: productsError } = await filterMirrorLocation(supabase
@@ -2202,7 +2223,7 @@ async function fetchLocationPriceChanges(
   if (productsError) throw productsError;
   const productById = new Map((products ?? []).map((product: any) => [product.id, product]));
 
-  return [...latestByProduct.values()].flatMap((change: any) => {
+  const items = [...latestByProduct.values()].flatMap((change: any) => {
     const product = productById.get(change.product_id);
     if (!product) return [];
     return [{
@@ -2212,6 +2233,10 @@ async function fetchLocationPriceChanges(
       deltaPct: Number(change.price_delta_pct),
     }];
   });
+  return {
+    items: items.slice(0, limit),
+    nextOffset: (changes ?? []).length === limit ? offset + limit : null,
+  };
 }
 
 /** Cambios de precio de la última semana en un súper, con la mayor bajada o
@@ -2222,11 +2247,12 @@ export async function fetchPriceChanges(
   direction: 'down' | 'up',
   region: RegionValue | null,
   postalCode: string | null,
-  limit = 100,
-): Promise<PriceChangeProduct[]> {
+  limit = 50,
+  offset = 0,
+): Promise<PriceChangesPage> {
   const locationId = locationForPriceHistory(store, postalCode);
   if (locationId && (store === 'consum' || store === 'plusfresc')) {
-    return fetchLocationPriceChanges(store, locationId, direction, region, postalCode, limit);
+    return fetchLocationPriceChanges(store, locationId, direction, region, postalCode, limit, offset);
   }
   const m = MIRROR_QUERY[store];
   const down = direction === 'down';
@@ -2240,9 +2266,10 @@ export async function fetchPriceChanges(
     // Bajadas: el % más negativo primero (asc); subidas: el más positivo (desc).
     .order('price_delta_pct', { ascending: down })
     .order('display_name', { ascending: true })
-    .limit(limit);
+    .order('id', { ascending: true })
+    .range(offset, offset + limit - 1);
   if (error) throw error;
-  return (data ?? [])
+  const items = (data ?? [])
     .filter((r: any) => r.unit_price != null && r.prev_unit_price != null && r.price_delta_pct != null)
     .map((r: any) => ({
       product: mirrorToUIAtLocation(store, r, region, postalCode),
@@ -2250,6 +2277,10 @@ export async function fetchPriceChanges(
       newPrice: Number(r.unit_price),
       deltaPct: Number(r.price_delta_pct),
     }));
+  return {
+    items: items.slice(0, limit),
+    nextOffset: (data ?? []).length === limit ? offset + limit : null,
+  };
 }
 
 // ─── Ofertas (acceso del Home) ───────────────────────────────────────────────

@@ -40,6 +40,12 @@ const es: TranslationTree = {
   nav: {
     joinedGroup: '¡Te has unido al grupo! 🎉',
   },
+  review: {
+    title: '¿Te está gustando QuèFalta?',
+    message: 'Si te está gustando la app, una reseña nos ayuda mucho a seguir mejorando.',
+    rate: 'Valorar la app',
+    later: 'Ahora no',
+  },
   appearance: {
     title: 'Apariencia',
     hint: 'Ajusta el aspecto de la app. Se aplica al instante y se recuerda en este dispositivo.',
@@ -735,6 +741,12 @@ const ca: TranslationTree = {
   },
   nav: {
     joinedGroup: "T'has unit al grup! 🎉",
+  },
+  review: {
+    title: "T'està agradant QuèFalta?",
+    message: "Si t'està agradant l'app, una ressenya ens ajuda molt a continuar millorant.",
+    rate: "Valorar l'app",
+    later: 'Ara no',
   },
   appearance: {
     title: 'Aparença',

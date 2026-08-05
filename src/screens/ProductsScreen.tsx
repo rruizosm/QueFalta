@@ -59,7 +59,7 @@ export default function ProductsScreen() {
         </View>
       </View>
 
-      <StoreProductList products={uiProducts} loading={loading} error={error} emoji={emoji} searchable roundedCards />
+      <StoreProductList products={uiProducts} pageSize={50} loading={loading} error={error} emoji={emoji} searchable roundedCards />
     </View>
   );
 }

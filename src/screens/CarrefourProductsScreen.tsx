@@ -58,6 +58,7 @@ export default function CarrefourProductsScreen() {
 
       <StoreProductList
         products={uiProducts}
+        pageSize={50}
         loading={loading}
         error={error}
         emoji={getMeta(parentName ?? categoryName).emoji}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,7 +8,7 @@ import { useProfile } from '../context/ProfileContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
-import { fetchPriceChanges, type PriceChangeProduct } from '../api/catalog';
+import { fetchPriceChanges, type PriceChangesPage } from '../api/catalog';
 import type { UIProduct } from '../lib/productAdapters';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import { storeInRegion, storesForRegion } from '../constants/regions';
@@ -19,6 +19,7 @@ import SlidingSegments from '../components/SlidingSegments';
 import { type ViewMode } from '../components/ViewModeToggle';
 
 type Direction = 'down' | 'up';
+const PRICE_CHANGES_PAGE_SIZE = 50;
 
 const euro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 // "−8,5 %" / "+3,2 %" (el % ya viene redondeado a 1 decimal de la BD).
@@ -53,8 +54,10 @@ export default function PriceChangesScreen() {
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
   const preferredStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
-  const enabledKeys = preferredStores.filter((store) => storeInRegion(store, region));
-  const allowedStores = enabledKeys.length > 0 ? enabledKeys : storesForRegion(region);
+  const allowedStores = useMemo(() => {
+    const enabledKeys = preferredStores.filter((store) => storeInRegion(store, region));
+    return enabledKeys.length > 0 ? enabledKeys : storesForRegion(region);
+  }, [preferredStores, region]);
   const stores = useMemo(
     () => CATALOG_STORES.filter((s) => allowedStores.includes(s.key)),
     [allowedStores],
@@ -76,12 +79,15 @@ export default function PriceChangesScreen() {
   // Caché por súper+dirección para no repetir consultas al alternar.
   const cacheKeyFor = (storeKey: CatalogStore) =>
     `${storeKey}:${direction}:${region ?? 'none'}:${postalCode ?? 'none'}`;
-  const [cache, setCache] = useState<Record<string, PriceChangeProduct[]>>({});
+  const [cache, setCache] = useState<Record<string, PriceChangesPage>>({});
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(PRICE_CHANGES_PAGE_SIZE);
 
   useEffect(() => {
     const requestedStores = store === 'all' ? stores.map((item) => item.key) : [store];
+    setVisibleCount(PRICE_CHANGES_PAGE_SIZE);
     const missingStores = requestedStores.filter((storeKey) => !cache[cacheKeyFor(storeKey)]);
     if (missingStores.length === 0) { setLoading(false); setError(false); return; }
     let cancelled = false;
@@ -89,12 +95,12 @@ export default function PriceChangesScreen() {
     setError(false);
     Promise.all(missingStores.map(async (storeKey) => ({
       storeKey,
-      items: await fetchPriceChanges(storeKey, direction, region, postalCode, 50),
+      page: await fetchPriceChanges(storeKey, direction, region, postalCode, PRICE_CHANGES_PAGE_SIZE),
     })))
       .then((results) => {
         if (!cancelled) setCache((current) => ({
           ...current,
-          ...Object.fromEntries(results.map(({ storeKey, items }) => [cacheKeyFor(storeKey), items])),
+          ...Object.fromEntries(results.map(({ storeKey, page }) => [cacheKeyFor(storeKey), page])),
         }));
       })
       .catch(() => { if (!cancelled) setError(true); })
@@ -104,20 +110,57 @@ export default function PriceChangesScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, stores, direction, region, postalCode]);
 
+  const allChanges = useMemo(() => {
+    const changes = store === 'all'
+      ? stores.flatMap((item) => cache[cacheKeyFor(item.key)]?.items ?? [])
+      : cache[cacheKeyFor(store)]?.items ?? [];
+    return store === 'all'
+      ? [...changes].sort((a, b) => direction === 'down'
+        ? a.deltaPct - b.deltaPct || a.product.name.localeCompare(b.product.name)
+        : b.deltaPct - a.deltaPct || a.product.name.localeCompare(b.product.name))
+      : changes;
+  }, [cache, store, stores, direction, region, postalCode]);
+
+  const loadMore = useCallback(() => {
+    if (loading || loadingMore) return;
+    const requestedStores = store === 'all' ? stores.map((item) => item.key) : [store];
+    const storesWithMore = requestedStores.filter((storeKey) =>
+      cache[cacheKeyFor(storeKey)]?.nextOffset != null,
+    );
+    if (storesWithMore.length === 0) {
+      if (visibleCount < allChanges.length) {
+        setVisibleCount((count) => count + PRICE_CHANGES_PAGE_SIZE);
+      }
+      return;
+    }
+    setLoadingMore(true);
+    Promise.all(storesWithMore.map(async (storeKey) => {
+      const previous = cache[cacheKeyFor(storeKey)]!;
+      const page = await fetchPriceChanges(
+        storeKey, direction, region, postalCode, PRICE_CHANGES_PAGE_SIZE, previous.nextOffset!,
+      );
+      return { storeKey, previous, page };
+    }))
+      .then((results) => {
+        setCache((current) => ({
+          ...current,
+          ...Object.fromEntries(results.map(({ storeKey, previous, page }) => [cacheKeyFor(storeKey), {
+            items: [...previous.items, ...page.items],
+            nextOffset: page.nextOffset,
+          }])),
+        }));
+        setVisibleCount((count) => count + PRICE_CHANGES_PAGE_SIZE);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingMore(false));
+  }, [allChanges.length, cache, direction, loading, loadingMore, postalCode, region, store, stores, visibleCount]);
+
   // La línea de precio de la fila pasa a "anterior tachado · actual en
   // verde/rojo · (%)" vía priceChange (lo pinta StoreProductList) →
   // StoreProductList se reutiliza tal cual, con stepper/cesta/favoritos/ficha.
   const products: UIProduct[] = useMemo(
     () => {
-      const changes = store === 'all'
-        ? stores.flatMap((item) => cache[cacheKeyFor(item.key)] ?? [])
-        : cache[cacheKeyFor(store)] ?? [];
-      const ordered = store === 'all'
-        ? [...changes].sort((a, b) => direction === 'down'
-          ? a.deltaPct - b.deltaPct
-          : b.deltaPct - a.deltaPct).slice(0, 50)
-        : changes;
-      return ordered.map((c) => ({
+      return allChanges.slice(0, visibleCount).map((c) => ({
       ...c.product,
       priceChange: {
         prevLabel: euro(c.prevPrice),
@@ -128,7 +171,7 @@ export default function PriceChangesScreen() {
       pricePerUnitLabel: null,
       }));
     },
-    [cache, store, stores, direction, region, postalCode],
+    [allChanges, direction, visibleCount],
   );
 
   // Chrome de la pantalla (cabecera + selector + pestañas), idéntico
@@ -234,6 +277,8 @@ export default function PriceChangesScreen() {
         emptyText={t('priceChanges.empty')}
         errorText={t('priceChanges.error')}
         keepOrder
+        onEndReached={loadMore}
+        loadingMore={loadingMore}
         topInset={glassAvailable ? chromeH : 0}
         hideToolbar
         viewMode={viewMode}

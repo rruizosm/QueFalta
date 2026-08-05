@@ -13,7 +13,7 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 60   # multi-almacén: barre ~48 almacenes (uno por provincia)
+    timeout-minutes: 75   # multi-almacén: barre ~48 almacenes (uno por provincia)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

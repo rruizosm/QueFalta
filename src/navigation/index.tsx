@@ -74,6 +74,7 @@ import OnboardingNavigator from '../screens/onboarding/OnboardingNavigator';
 import RegionGateScreen from '../screens/onboarding/RegionGateScreen';
 import RegionSettingsScreen from '../screens/RegionSettingsScreen';
 import BootLoader       from '../components/BootLoader';
+import ReviewPrompt     from '../components/ReviewPrompt';
 import { glassAvailable } from '../components/GlassSurface';
 import LiquidGlassTabBar, {
   LIQUID_TABBAR_HEIGHT, liquidTabBarBottom,
@@ -325,7 +326,7 @@ export default function Navigation() {
     );
   }
 
-  return (
+  return (<>
     <NavigationContainer ref={navigationRef} theme={theme}>
       <Tab.Navigator
         tabBar={(props) => <AppTabBar {...props} />}
@@ -383,5 +384,6 @@ export default function Navigation() {
         <Tab.Screen name="Groups"    component={GroupsNavigator}   options={{ title: t('tabs.groups') }} />
       </Tab.Navigator>
     </NavigationContainer>
-  );
+    <ReviewPrompt />
+  </>);
 }

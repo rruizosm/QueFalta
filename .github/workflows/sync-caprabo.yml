@@ -1,9 +1,7 @@
 name: Sync Caprabo catalog
 
 on:
-  schedule:
-    - cron: '30 9 * * 1'   # lunes 09:30 UTC (tras Eroski), semanal
-  workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
+  workflow_dispatch: {}     # Solo diagnóstico manual: el sync productivo se ejecuta localmente.
 
 concurrency:
   group: sync-caprabo

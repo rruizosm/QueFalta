@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,7 +7,7 @@ import { fonts } from '../constants/typography';
 import { useProfile } from '../context/ProfileContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { fetchWeeklyNewProducts } from '../api/catalog';
+import { fetchWeeklyNewProducts, type WeeklyNewProductsPage } from '../api/catalog';
 import type { UIProduct } from '../lib/productAdapters';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import { storeInRegion, storesForRegion } from '../constants/regions';
@@ -22,6 +22,8 @@ import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 // Misma normalización que la búsqueda del catálogo (insensible a acentos/mayúsculas).
 const stripAccents = (s: string) =>
   s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+const NEW_ARRIVALS_PAGE_SIZE = 50;
 
 /**
  * NewArrivalsScreen — "Novedades" (botón de la cabecera del Home).
@@ -71,9 +73,12 @@ export default function NewArrivalsScreen() {
   }, [stores, store]);
 
   // Caché por súper para no repetir la consulta al alternar en el selector.
-  const [cache, setCache] = useState<Record<string, UIProduct[]>>({});
+  const [cache, setCache] = useState<Record<string, WeeklyNewProductsPage>>({});
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(NEW_ARRIVALS_PAGE_SIZE);
+  const loadSeq = useRef(0);
 
   // Búsqueda y filtros (locales: las novedades ya están enteras en memoria).
   const [query, setQuery] = useState('');
@@ -94,6 +99,8 @@ export default function NewArrivalsScreen() {
 
   const cacheKeyFor = (storeKey: CatalogStore) => `${storeKey}:${region ?? 'none'}:${postalCode ?? 'none'}`;
   useEffect(() => {
+    const seq = ++loadSeq.current;
+    setVisibleCount(NEW_ARRIVALS_PAGE_SIZE);
     const requestedStores = store === 'all' ? stores.map((item) => item.key) : [store];
     const missingStores = requestedStores.filter((storeKey) => !cache[cacheKeyFor(storeKey)]);
     if (missingStores.length === 0) { setLoading(false); setError(false); return; }
@@ -102,24 +109,24 @@ export default function NewArrivalsScreen() {
     setError(false);
     Promise.all(missingStores.map(async (storeKey) => ({
       storeKey,
-      items: await fetchWeeklyNewProducts(storeKey, region, postalCode, 50),
+      page: await fetchWeeklyNewProducts(storeKey, region, postalCode, NEW_ARRIVALS_PAGE_SIZE),
     })))
       .then((results) => {
-        if (!cancelled) setCache((current) => ({
+        if (!cancelled && loadSeq.current === seq) setCache((current) => ({
           ...current,
-          ...Object.fromEntries(results.map(({ storeKey, items }) => [cacheKeyFor(storeKey), items])),
+          ...Object.fromEntries(results.map(({ storeKey, page }) => [cacheKeyFor(storeKey), page])),
         }));
       })
-      .catch(() => { if (!cancelled) setError(true); })
-      .finally(() => { if (!cancelled) setLoading(false); });
+      .catch(() => { if (!cancelled && loadSeq.current === seq) setError(true); })
+      .finally(() => { if (!cancelled && loadSeq.current === seq) setLoading(false); });
     return () => { cancelled = true; };
     // cache a propósito fuera de deps: solo dispara al cambiar de súper.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, stores, region, postalCode]);
 
   const base = useMemo(() => {
-    if (store !== 'all') return cache[cacheKeyFor(store)] ?? [];
-    return stores.flatMap((item) => cache[cacheKeyFor(item.key)] ?? []);
+    if (store !== 'all') return cache[cacheKeyFor(store)]?.items ?? [];
+    return stores.flatMap((item) => cache[cacheKeyFor(item.key)]?.items ?? []);
   }, [store, stores, cache, region, postalCode]);
 
   // Categorías disponibles en las novedades del súper activo (únicas, ordenadas).
@@ -133,7 +140,7 @@ export default function NewArrivalsScreen() {
     if (store !== 'all') return [];
     return stores.map((item) => {
       const values = new Set<string>();
-      (cache[cacheKeyFor(item.key)] ?? []).forEach((product) => {
+      (cache[cacheKeyFor(item.key)]?.items ?? []).forEach((product) => {
         if (product.categoryName) values.add(product.categoryName);
       });
       return {
@@ -149,7 +156,7 @@ export default function NewArrivalsScreen() {
 
   // Búsqueda + filtros + orden. Sin orden elegido se respeta el orden en que
   // llegan (curado en Mercadona); con orden por precio, los sin precio al final.
-  const products = useMemo(() => {
+  const filteredProducts = useMemo(() => {
     const words = stripAccents(query).trim().split(/\s+/).filter((w) => w.length >= 2);
     const range = priceRange != null ? PRICE_RANGES[priceRange] : null;
     const categoryStores = new Set(category.map((value) => value.split('\u001f')[0] as CatalogStore));
@@ -183,8 +190,50 @@ export default function NewArrivalsScreen() {
         return sort === 'asc' ? pa - pb : pb - pa;
       });
     }
-    return store === 'all' ? out.slice(0, 50) : out;
+    return out;
   }, [base, query, category, filterStores, priceRange, sort, store]);
+
+  const products = useMemo(
+    () => filteredProducts.slice(0, visibleCount),
+    [filteredProducts, visibleCount],
+  );
+
+  const loadMore = useCallback(() => {
+    if (loading || loadingMore) return;
+    if (visibleCount < filteredProducts.length) {
+      setVisibleCount((count) => count + NEW_ARRIVALS_PAGE_SIZE);
+      return;
+    }
+
+    const requestedStores = store === 'all' ? stores.map((item) => item.key) : [store];
+    const storesWithMore = requestedStores.filter((storeKey) =>
+      cache[cacheKeyFor(storeKey)]?.nextOffset != null,
+    );
+    if (storesWithMore.length === 0) return;
+
+    const seq = loadSeq.current;
+    setLoadingMore(true);
+    Promise.all(storesWithMore.map(async (storeKey) => {
+      const previous = cache[cacheKeyFor(storeKey)]!;
+      const page = await fetchWeeklyNewProducts(
+        storeKey, region, postalCode, NEW_ARRIVALS_PAGE_SIZE, previous.nextOffset!,
+      );
+      return { storeKey, previous, page };
+    }))
+      .then((results) => {
+        if (loadSeq.current !== seq) return;
+        setCache((current) => ({
+          ...current,
+          ...Object.fromEntries(results.map(({ storeKey, previous, page }) => [cacheKeyFor(storeKey), {
+            items: [...previous.items, ...page.items],
+            nextOffset: page.nextOffset,
+          }])),
+        }));
+        setVisibleCount((count) => count + NEW_ARRIVALS_PAGE_SIZE);
+      })
+      .catch(() => {})
+      .finally(() => { if (loadSeq.current === seq) setLoadingMore(false); });
+  }, [cache, filteredProducts.length, loading, loadingMore, postalCode, region, store, stores, visibleCount]);
 
   // Chrome de la pantalla (cabecera + selector + fila de búsqueda),
   // idéntico en ambos modos salvo el back sin caja sobre el cristal y el toggle
@@ -281,6 +330,8 @@ export default function NewArrivalsScreen() {
         emptyText={filtersActive || query.trim().length > 0 ? t('filters.noMatches') : t('newArrivals.empty')}
         errorText={t('newArrivals.error')}
         keepOrder
+        onEndReached={loadMore}
+        loadingMore={loadingMore}
         topInset={glassAvailable ? chromeH : 0}
         hideToolbar
         viewMode={viewMode}

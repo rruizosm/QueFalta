@@ -406,7 +406,7 @@ async function fetchLoadpage(base, urlPath, n, jar) {
 export async function crawlCatalog({
   base, normalize, concurrency = 5, maxPagesPerLeaf = 60, maxLeaves = Infinity,
   skipN1 = NON_FOOD_N1, log = () => {}, ctxExtra = {}, homeRetryRounds = 1,
-  homeRetryDelaysMs = DEFAULT_HOME_RETRY_DELAYS_MS,
+  homeRetryDelaysMs = DEFAULT_HOME_RETRY_DELAYS_MS, leafDelayMs = 0,
 }) {
   // La home es la petición crítica (de ella sale todo el árbol): más reintentos
   // que una página de categoría. Si falla, fetchText lanza ya con el estado HTTP.
@@ -500,6 +500,7 @@ export async function crawlCatalog({
       if (!segs) break;
       try { await crawlLeaf(segs); }
       catch (e) { log(`hoja ${segs.join('/')} falló: ${e.message}`); }
+      if (leafDelayMs > 0) await sleep(leafDelayMs);
       if (++doneLeaves % 100 === 0) log(`${doneLeaves}/${leaves.length} hojas · ${products.size} productos`);
     }
   }));
@@ -561,6 +562,8 @@ export async function runSync({ base, store, table, catTable }) {
   const MAX_LEAVES = process.env.MAX_LEAVES ? Number(process.env.MAX_LEAVES) : Infinity;
   const SKIP_DETAIL = process.env.SKIP_DETAIL === '1';
   const DETAIL_CONCURRENCY = Math.max(1, Number(process.env.DETAIL_CONCURRENCY || 3));
+  const DETAIL_DELAY_MS = Math.max(0, Number(process.env.DETAIL_DELAY_MS || 120));
+  const DETAIL_THROTTLE_LIMIT = Math.max(1, Number(process.env.DETAIL_THROTTLE_LIMIT || 5));
   const DETAIL_TTL_DAYS = Math.max(1, Number(process.env.DETAIL_TTL_DAYS || 90));
   const DETAIL_MAX = process.env.DETAIL_MAX ? Number(process.env.DETAIL_MAX) : 1000;
   const DRY_DETAIL_MAX = Math.max(0, Number(process.env.DRY_DETAIL_MAX || 3));
@@ -569,6 +572,7 @@ export async function runSync({ base, store, table, catTable }) {
     process.env.HOME_RETRY_ROUNDS,
     HOME_RETRY_DELAYS_MS.length + 1,
   );
+  const LEAF_DELAY_MS = Math.max(0, Number(process.env.LEAF_DELAY_MS || 0));
   const runStart = new Date().toISOString();
   const tag = `[${store}]`;
   const log = (m) => console.log(`${tag} ${m}`);
@@ -642,9 +646,12 @@ export async function runSync({ base, store, table, catTable }) {
     let done = 0;
     let withDetails = 0;
     let withoutDetails = 0;
+    let throttled = 0;
+    let pausedForThrottle = false;
     log(`ficha: ${batch.length} productos a descargar · ${stale.length - batch.length} pospuestos`);
     await Promise.all(Array.from({ length: DETAIL_CONCURRENCY }, async () => {
       for (;;) {
+        if (pausedForThrottle) break;
         const row = queue.shift();
         if (!row) break;
         try {
@@ -667,12 +674,19 @@ export async function runSync({ base, store, table, catTable }) {
           }
         } catch (e) {
           log(`ficha ${row.id} falló: ${e.message.split('\n')[0]}`);
+          if (e?.fetchInfo?.status === 429 || e?.fetchInfo?.status === 403) {
+            throttled++;
+            if (throttled >= DETAIL_THROTTLE_LIMIT) {
+              pausedForThrottle = true;
+              log(`ficha: pausa por rate limit tras ${throttled} respuesta${throttled === 1 ? '' : 's'} HTTP`);
+            }
+          }
         }
         if (++done % 100 === 0) log(`ficha ${done}/${batch.length}`);
-        await sleep(120);
+        if (!pausedForThrottle) await sleep(DETAIL_DELAY_MS);
       }
     }));
-    log(`ficha: ${withDetails} con datos · ${withoutDetails} sin datos · ${updated.length} comprobadas`);
+    log(`ficha: ${withDetails} con datos · ${withoutDetails} sin datos · ${updated.length} comprobadas${pausedForThrottle ? ' · pendiente por rate limit' : ''}`);
     return updated;
   }
 
@@ -682,6 +696,7 @@ export async function runSync({ base, store, table, catTable }) {
     concurrency: CONCURRENCY, maxLeaves: MAX_LEAVES, log,
     homeRetryRounds: HOME_RETRY_ROUNDS,
     homeRetryDelaysMs: HOME_RETRY_DELAYS_MS,
+    leafDelayMs: LEAF_DELAY_MS,
   });
   const rows = [...products.values()];
   const catOut = catRows.map((c) => ({ ...c, published: true, synced_at: runStart }));

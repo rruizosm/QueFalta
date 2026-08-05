@@ -56,6 +56,8 @@ backfill incremental de las fichas existentes.
 
 - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE` — destino de la escritura.
 - `CONCURRENCY=6` — hojas rastreadas en paralelo.
+- `LEAF_DELAY_MS=0` — pausa opcional después de cada hoja; el wrapper local de
+  Caprabo usa 1.200 ms y concurrencia 1 para respetar su rate limit.
 - `HOME_RETRY_ROUNDS=4` — rondas completas para la petición crítica `GET /es/`.
 - `HOME_RETRY_DELAYS_SECONDS=60,180,360` — esperas entre rondas de la home
   (unos 10 min en total). Cada ronda conserva seis intentos cortos y deja en el
@@ -65,6 +67,11 @@ backfill incremental de las fichas existentes.
 - `EMPTY_ABORT_PCT=20` — umbral del guardarraíl (ver abajo).
 - `SKIP_DETAIL=1` — omite la pasada de ficha y conserva lo ya almacenado.
 - `DETAIL_CONCURRENCY=3` — fichas descargadas en paralelo.
+- `DETAIL_DELAY_MS=120` — pausa entre fichas de cada worker. El wrapper de
+  Caprabo usa un único worker y 2.000 ms.
+- `DETAIL_THROTTLE_LIMIT=5` — tras este número de respuestas 403/429, detiene
+  sólo la pasada de fichas y deja el catálogo ya publicado intacto. Caprabo usa
+  1 para no insistir cuando su rate limit se activa.
 - `DETAIL_TTL_DAYS=90` — tiempo antes de volver a comprobar una ficha.
 - `DETAIL_MAX=1000` — máximo de fichas por ejecución; permite un backfill
   progresivo sin exceder el tiempo del workflow.
@@ -91,8 +98,13 @@ paginación stateful) por la retirada de `?pageNumber`.
 
 ## Ejecutar
 
-- **GitHub Actions:** `sync-eroski.yml` (lunes 09:00 UTC) y `sync-caprabo.yml`
-  (lunes 09:30 UTC), o botón *Run workflow*. Solo `node` (sin navegador).
+- **Ejecución productiva local:** `run-eroski-sync.ps1` y
+  `run-caprabo-sync.ps1`. El backend bloquea las IPs de GitHub Actions con 403,
+  por lo que los workflows ya no se programan. Los wrappers leen `.env.local`,
+  guardan logs en `scripts/logs/` y conservan los últimos 14.
+- **Programación semanal:** crear tareas de Windows el lunes a las 10:00 (Eroski)
+  y 10:30 (Caprabo), ejecutando los wrappers anteriores. El `workflow_dispatch`
+  permanece solo para diagnóstico manual.
 - **Prueba en seco:** `DRY_RUN=1 MAX_LEAVES=10 node scripts/sync-eroski.mjs`
   (o `sync-caprabo.mjs`). Al final imprime hasta 3 fichas reales con los campos
   extraídos.

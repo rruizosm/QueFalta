@@ -20,6 +20,7 @@ import { type ViewMode } from '../components/ViewModeToggle';
 
 type Direction = 'down' | 'up';
 const PRICE_CHANGES_PAGE_SIZE = 50;
+const PRICE_CHANGES_INITIAL_FETCH_SIZE = 100;
 
 const euro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 // "−8,5 %" / "+3,2 %" (el % ya viene redondeado a 1 decimal de la BD).
@@ -95,7 +96,7 @@ export default function PriceChangesScreen() {
     setError(false);
     Promise.all(missingStores.map(async (storeKey) => ({
       storeKey,
-      page: await fetchPriceChanges(storeKey, direction, region, postalCode, PRICE_CHANGES_PAGE_SIZE),
+      page: await fetchPriceChanges(storeKey, direction, region, postalCode, PRICE_CHANGES_INITIAL_FETCH_SIZE),
     })))
       .then((results) => {
         if (!cancelled) setCache((current) => ({

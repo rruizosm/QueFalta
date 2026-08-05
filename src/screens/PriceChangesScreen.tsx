@@ -20,7 +20,6 @@ import { type ViewMode } from '../components/ViewModeToggle';
 
 type Direction = 'down' | 'up';
 const PRICE_CHANGES_PAGE_SIZE = 50;
-const PRICE_CHANGES_INITIAL_FETCH_SIZE = 100;
 
 const euro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 // "−8,5 %" / "+3,2 %" (el % ya viene redondeado a 1 decimal de la BD).
@@ -84,11 +83,9 @@ export default function PriceChangesScreen() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(PRICE_CHANGES_PAGE_SIZE);
 
   useEffect(() => {
     const requestedStores = store === 'all' ? stores.map((item) => item.key) : [store];
-    setVisibleCount(PRICE_CHANGES_PAGE_SIZE);
     const missingStores = requestedStores.filter((storeKey) => !cache[cacheKeyFor(storeKey)]);
     if (missingStores.length === 0) { setLoading(false); setError(false); return; }
     let cancelled = false;
@@ -96,7 +93,7 @@ export default function PriceChangesScreen() {
     setError(false);
     Promise.all(missingStores.map(async (storeKey) => ({
       storeKey,
-      page: await fetchPriceChanges(storeKey, direction, region, postalCode, PRICE_CHANGES_INITIAL_FETCH_SIZE),
+      page: await fetchPriceChanges(storeKey, direction, region, postalCode, PRICE_CHANGES_PAGE_SIZE),
     })))
       .then((results) => {
         if (!cancelled) setCache((current) => ({
@@ -128,12 +125,7 @@ export default function PriceChangesScreen() {
     const storesWithMore = requestedStores.filter((storeKey) =>
       cache[cacheKeyFor(storeKey)]?.nextOffset != null,
     );
-    if (storesWithMore.length === 0) {
-      if (visibleCount < allChanges.length) {
-        setVisibleCount((count) => count + PRICE_CHANGES_PAGE_SIZE);
-      }
-      return;
-    }
+    if (storesWithMore.length === 0) return;
     setLoadingMore(true);
     Promise.all(storesWithMore.map(async (storeKey) => {
       const previous = cache[cacheKeyFor(storeKey)]!;
@@ -150,18 +142,17 @@ export default function PriceChangesScreen() {
             nextOffset: page.nextOffset,
           }])),
         }));
-        setVisibleCount((count) => count + PRICE_CHANGES_PAGE_SIZE);
       })
       .catch(() => {})
       .finally(() => setLoadingMore(false));
-  }, [allChanges.length, cache, direction, loading, loadingMore, postalCode, region, store, stores, visibleCount]);
+  }, [cache, direction, loading, loadingMore, postalCode, region, store, stores]);
 
   // La línea de precio de la fila pasa a "anterior tachado · actual en
   // verde/rojo · (%)" vía priceChange (lo pinta StoreProductList) →
   // StoreProductList se reutiliza tal cual, con stepper/cesta/favoritos/ficha.
   const products: UIProduct[] = useMemo(
     () => {
-      return allChanges.slice(0, visibleCount).map((c) => ({
+      return allChanges.map((c) => ({
       ...c.product,
       priceChange: {
         prevLabel: euro(c.prevPrice),
@@ -172,7 +163,7 @@ export default function PriceChangesScreen() {
       pricePerUnitLabel: null,
       }));
     },
-    [allChanges, direction, visibleCount],
+    [allChanges, direction],
   );
 
   // Chrome de la pantalla (cabecera + selector + pestañas), idéntico

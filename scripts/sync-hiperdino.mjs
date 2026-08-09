@@ -24,8 +24,8 @@
 //  - Precio = price_range.minimum_price.final_price.value. HiperDino trae también
 //    regular_price (tachado de promo): se persiste como oferta SOLO cuando es
 //    mayor que el final, nunca se deduce de cambios entre syncs.
-//  - SIN EAN (el sku es un código interno de 18 dígitos, no código de barras) →
-//    el comparador casa por nombre. SIN €/unidad (Magento no lo expone aquí).
+//  - El sku es interno (18 dígitos), pero GraphQL expone también `ean`: se
+//    conserva solo con longitud GTIN estándar y checksum válido. SIN €/unidad.
 //    SIN ficha (ingredientes/nutrición). El nombre ya incluye marca y formato.
 //  - Imagen: image.url (cdn.hiperdino.es), ya lista para usar.
 //  - GUARDARRAÍL: si el nº de productos únicos cae por debajo de MIN_PRODUCTS
@@ -37,6 +37,7 @@
 //      MIN_PRODUCTS=5000   (suelo del guardarraíl)
 //      UPSERT_BATCH_SIZE=100 (filas por sentencia REST; bajar si Supabase está cargado)
 import { markStale as markStaleBatched } from './lib/stale.mjs';
+import { validGlobalGtin } from './lib/gtin.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -111,7 +112,7 @@ async function gql(query, { tries = 4 } = {}) {
 // nombre de TODA la cadena de ancestros → el árbol N1→N2 se reconstruye sin una
 // segunda fase de red.
 const PROD_FIELDS = `
-  sku name url_key
+  sku name url_key ean
   price_range { minimum_price { final_price { value } regular_price { value } } }
   categories { id name path }`;
 
@@ -149,6 +150,7 @@ function normalize(it) {
   return {
     id: String(it.sku),
     retailer_product_id: String(it.sku),          // código interno HiperDino (NO EAN)
+    ean: validGlobalGtin(it.ean),
     display_name: (it.name || '').trim(),
     brand: null,                                   // Magento no expone marca aparte; va en el nombre
     packaging: null,                               // el formato ("380 g") va en el nombre
@@ -283,6 +285,8 @@ async function main() {
       sin_precio: rows.filter((r) => r.unit_price == null).length,
       sin_img: rows.filter((r) => !r.thumbnail).length,
       sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
+      ean_publicado: rows.filter((r) => String(r.raw?.ean ?? '').trim()).length,
+      ean_valido: rows.filter((r) => r.ean).length,
       con_tachado: rows.filter((r) => num(r.raw?.price_range?.minimum_price?.regular_price?.value) != null
         && r.raw.price_range.minimum_price.regular_price.value > (r.unit_price ?? 0)).length,
     });

@@ -13,7 +13,7 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
-import ProductImage from '../components/ProductImage';
+import ProductDetailImage from '../components/ProductDetailImage';
 import ProductInfoSections from '../components/ProductInfoSections';
 import SimilarProductsSection from '../components/SimilarProductsSection';
 import ProductPriceLine from '../components/ProductPriceLine';
@@ -25,11 +25,12 @@ interface Props {
   /** Padding superior de la cabecera (lo fija StoreProductModal): 56 a pantalla
    *  completa (cesta), 16 dentro de la hoja (catálogo). */
   topInset?: number;
+  badgeLabel?: string;
 }
 
 /** Detalle de un producto de bonÀrea. Pinta los datos ya cargados (no hay fetch:
  *  el catálogo de bonÀrea va por el espejo en Supabase). */
-export default function BonareaProductModal({ product, onClose, topInset = 16 }: Props) {
+export default function BonareaProductModal({ product, onClose, topInset = 16, badgeLabel }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { activeCart, addToActiveCart } = useCart();
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
@@ -103,13 +104,7 @@ export default function BonareaProductModal({ product, onClose, topInset = 16 }:
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        {product.thumbnail ? (
-          <ProductImage uri={product.thumbnail} style={styles.photo} />
-        ) : (
-          <View style={[styles.photo, styles.photoPlaceholder]}>
-            <Ionicons name="image-outline" size={48} color={colors.inkFaint} />
-          </View>
-        )}
+        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} />
 
         <Text style={styles.name}>{product.displayName}</Text>
 
@@ -117,7 +112,7 @@ export default function BonareaProductModal({ product, onClose, topInset = 16 }:
         {product.pricePerUnit ? <Text style={styles.refPrice}>{product.pricePerUnit}</Text> : null}
 
         {/* Comparativa: más barato en otros súper */}
-        <SimilarProductsSection productName={product.displayName} excludeStore="bonarea" />
+        <SimilarProductsSection productId={product.id} excludeStore="bonarea" />
 
         {/* Características del producto (de la página de bonÀrea; null si aún no rastreada) */}
         <ProductInfoSections

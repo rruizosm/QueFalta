@@ -2,9 +2,9 @@ name: Sync BonpreuEsclat catalog
 
 on:
   schedule:
-    # Inicia un ciclo o reintenta uno interrumpido. Cada lote correcto encadena
-    # el siguiente con una pausa; este cron queda como red de seguridad.
-    - cron: '30 4,16 * * *'
+    # Cada martes a las 09:00, hora peninsular española (07:00 UTC en verano).
+    # Cada lote correcto puede encadenar el siguiente si el ciclo queda incompleto.
+    - cron: '0 7 * * 2'
   workflow_dispatch: {}
 
 permissions:

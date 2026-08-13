@@ -132,9 +132,9 @@ function abortable<T>(query: T, signal?: AbortSignal): T {
 // ni saltar filas aunque cambie el catálogo entre páginas.
 
 /** Cursor keyset: valor de orden + id (clave primaria) como desempate. */
-export interface BrowseCursor { name: string | number; id: string }
+export interface BrowseCursor { name: string | number | null; id: string }
 export interface BrowsePage<T> { items: T[]; nextCursor: BrowseCursor | null }
-type BrowseOrder = boolean | 'priceAsc' | 'priceDesc';
+type BrowseOrder = boolean | 'priceAsc' | 'priceDesc' | 'pricePerUnitAsc' | 'pricePerUnitDesc';
 
 // Una página keyset ordenada por (orderCol, id). El desempate por id es
 // imprescindible: `orderCol` (el nombre normalizado) NO es único, así que un
@@ -154,40 +154,66 @@ async function keysetPage(
   order: BrowseOrder = false,
   signal?: AbortSignal,
 ): Promise<{ rows: any[]; nextCursor: BrowseCursor | null }> {
-  const priceOrder = order === 'priceAsc' || order === 'priceDesc';
-  const desc = order === true || order === 'priceDesc';
-  const activeOrderCol = priceOrder ? 'unit_price' : orderCol;
-  // Las proyecciones ligeras ya contienen normalmente `unit_price` y la
+  const unitPriceOrder = order === 'priceAsc' || order === 'priceDesc';
+  const pricePerUnitOrder = order === 'pricePerUnitAsc' || order === 'pricePerUnitDesc';
+  const priceOrder = unitPriceOrder || pricePerUnitOrder;
+  const desc = order === true || order === 'priceDesc' || order === 'pricePerUnitDesc';
+  const activeOrderCol = pricePerUnitOrder ? 'price_per_unit' : unitPriceOrder ? 'unit_price' : orderCol;
+  // Las proyecciones ligeras ya contienen normalmente las columnas de precio y la
   // columna de nombre. Repetirla en el select provoca un 500 de PostgREST al
   // mezclar supermercados y pedir el orden por precio.
   const selectCols = cols.split(',').some((column) => column.trim() === activeOrderCol)
     ? cols
     : `${cols}, ${activeOrderCol}`;
-  let q = supabase
-    .from(table)
-    .select(selectCols)
-    .eq('published', true)
-    .order(activeOrderCol, { ascending: !desc })
-    .order('id', { ascending: true })
-    .limit(limit);
-  if (apply) q = apply(q);
-  // El cursor por precio no puede atravesar valores nulos. En la práctica son
-  // artículos sin precio publicable, que tampoco deben mezclarse en este orden.
-  if (priceOrder) q = q.not('unit_price', 'is', null);
-  if (cursor) {
-    // Valores entrecomillados (JSON) para que comas/paréntesis del nombre no
-    // rompan la sintaxis del filtro `or` de PostgREST.
-    const n = JSON.stringify(cursor.name);
-    const i = JSON.stringify(cursor.id);
-    const cmp = desc ? 'lt' : 'gt';
-    q = q.or(`${activeOrderCol}.${cmp}.${n},and(${activeOrderCol}.eq.${n},id.gt.${i})`);
-  }
-  if (signal) q = q.abortSignal(signal);
-  const { data, error } = await q;
+  const buildQuery = (
+    nullPhase: boolean,
+    pageLimit: number,
+    pageCursor: BrowseCursor | null,
+  ) => {
+    let q: any = supabase
+      .from(table)
+      .select(selectCols)
+      .eq('published', true);
+    if (nullPhase) {
+      q = q.order('id', { ascending: true });
+    } else {
+      q = q
+        .order(activeOrderCol, { ascending: !desc, nullsFirst: false })
+        .order('id', { ascending: true });
+    }
+    q = q.limit(pageLimit);
+    if (apply) q = apply(q);
+    if (priceOrder) {
+      q = nullPhase
+        ? q.is(activeOrderCol, null)
+        : q.not(activeOrderCol, 'is', null);
+    }
+    if (pageCursor) {
+      if (nullPhase) {
+        q = q.gt('id', pageCursor.id);
+      } else {
+        // Valores entrecomillados (JSON) para que comas/paréntesis del nombre no
+        // rompan la sintaxis del filtro `or` de PostgREST.
+        const n = JSON.stringify(pageCursor.name);
+        const i = JSON.stringify(pageCursor.id);
+        const cmp = desc ? 'lt' : 'gt';
+        q = q.or(`${activeOrderCol}.${cmp}.${n},and(${activeOrderCol}.eq.${n},id.gt.${i})`);
+      }
+    }
+    return signal ? q.abortSignal(signal) : q;
+  };
+
+  const nullPhase = pricePerUnitOrder && cursor != null && cursor.name == null;
+  const { data, error } = await buildQuery(nullPhase, limit, cursor);
   if (error) throw error;
   // El select dinámico (`${cols}, ${orderCol}`) impide a supabase-js inferir la
   // forma de la fila; se trata como any[] (lo consume el map de cada súper).
-  const rows = (data ?? []) as any[];
+  const rows = [...((data ?? []) as any[])];
+  if (pricePerUnitOrder && !nullPhase && rows.length < limit) {
+    const { data: nullData, error: nullError } = await buildQuery(true, limit - rows.length, null);
+    if (nullError) throw nullError;
+    rows.push(...((nullData ?? []) as any[]));
+  }
   // Solo hay más páginas si esta vino llena; si no, el cursor es null (fin).
   const last = rows.length === limit ? rows[rows.length - 1] : null;
   const nextCursor = last ? { name: last[activeOrderCol], id: String(last.id) } : null;
@@ -2026,18 +2052,31 @@ export interface SimilarProduct {
   priceTotal: number | null;      // precio del envase
   pricePerUnit: number | null;    // € por unidad canónica
   pricePerUnitUnit: 'l' | 'kg' | 'ud' | null;
+  matchKind: 'exact_gtin' | 'semantic';
+  matchScore: number | null;
+  vectorScore: number | null;
+  lexicalScore: number | null;
+  quantityRatio: number | null;
+  isCheaper: boolean;
   /** Teaser free (paywall activo): existe más barato en `store`, sin detalle. */
   locked: boolean;
 }
 
-/** El equivalente MÁS BARATO por €/unidad en cada tienda de `stores` (1 por tienda).
- *  Excluye la tienda del propio producto pasándola fuera de `stores`. */
+/** Hasta dos equivalentes fiables por cada tienda de `stores`. Se ordenan por
+ *  precio total en Caprabo, Eroski e HiperDino (no publican precio por unidad)
+ *  y por precio unitario canónico en el resto. La RPC autenticada aplica GTIN
+ *  exacto o el umbral híbrido validado; nunca completa el cupo con matches dudosos. */
 export async function fetchSimilarProducts(
-  name: string,
+  sourceStore: CatalogStore,
+  sourceProductId: string,
   stores: CatalogStore[],
 ): Promise<SimilarProduct[]> {
-  if (!name?.trim() || stores.length === 0) return [];
-  const { data, error } = await supabase.rpc('similar_products', { p_name: name, p_stores: stores });
+  if (!sourceProductId?.trim() || stores.length === 0) return [];
+  const { data, error } = await supabase.rpc('catalog_cheaper_products_v4', {
+    p_source_store: sourceStore,
+    p_source_product_id: sourceProductId,
+    p_stores: stores,
+  });
   if (error) throw error;
   return (data ?? []).map((r: any) => ({
     store: r.store,
@@ -2047,7 +2086,13 @@ export async function fetchSimilarProducts(
     priceTotal: r.price_total != null ? Number(r.price_total) : null,
     pricePerUnit: r.price_per_unit != null ? Number(r.price_per_unit) : null,
     pricePerUnitUnit: r.price_per_unit_unit ?? null,
-    locked: !!r.locked, // tolera el RPC viejo sin la columna (→ false)
+    matchKind: r.match_kind === 'exact_gtin' ? 'exact_gtin' : 'semantic',
+    matchScore: r.match_score != null ? Number(r.match_score) : null,
+    vectorScore: r.vector_score != null ? Number(r.vector_score) : null,
+    lexicalScore: r.lexical_score != null ? Number(r.lexical_score) : null,
+    quantityRatio: r.quantity_ratio != null ? Number(r.quantity_ratio) : null,
+    isCheaper: r.is_cheaper === true,
+    locked: false,
   }));
 }
 

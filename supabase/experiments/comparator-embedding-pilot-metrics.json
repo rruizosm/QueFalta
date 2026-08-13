@@ -1,0 +1,109 @@
+{
+  "generated_at": "2026-08-09T12:27:44.572Z",
+  "evaluated_pairs": 400,
+  "vector_dimensions": 512,
+  "selected": {
+    "vector_weight": 0.25,
+    "lexical_weight": 0.75,
+    "lexical_floor": 0,
+    "threshold": 0.44,
+    "accuracy": 0.875,
+    "comparable_precision": 0.9848,
+    "comparable_recall": 0.7303,
+    "predicted_comparable": 132
+  },
+  "at_baseline_precision": {
+    "vector_weight": 0.75,
+    "lexical_weight": 0.25,
+    "lexical_floor": 0,
+    "threshold": 0.62,
+    "accuracy": 0.875,
+    "comparable_precision": 0.9923,
+    "comparable_recall": 0.7247,
+    "predicted_comparable": 130
+  },
+  "conservative": {
+    "vector_weight": 0.5,
+    "lexical_weight": 0.5,
+    "lexical_floor": 0,
+    "threshold": 0.58,
+    "accuracy": 0.875,
+    "comparable_precision": 1,
+    "comparable_recall": 0.7191,
+    "predicted_comparable": 128
+  },
+  "recommended": {
+    "vector_weight": 0.5,
+    "lexical_weight": 0.5,
+    "lexical_floor": 0,
+    "threshold": 0.58,
+    "accuracy": 0.875,
+    "comparable_precision": 1,
+    "comparable_recall": 0.7191,
+    "predicted_comparable": 128
+  },
+  "baseline_reference": {
+    "comparable_precision": 0.992,
+    "predicted_comparable": 125,
+    "accuracy": 0.8625
+  },
+  "improves_coverage_at_quality_gate": true,
+  "improves_coverage_at_baseline_precision": true,
+  "improves_coverage_at_100_precision": true,
+  "selected_false_positives": [
+    {
+      "source": "sorli:246456",
+      "source_name": "Gel-champú-acondicionador Toy Story",
+      "target": "esclat:54f5427a-5d7d-4891-b44b-a8f3fc97f9ea",
+      "target_name": "Taza Toy Story 33cl",
+      "human_label": "no_relacionado",
+      "vector_score": 0.6952,
+      "lexical_score": 0.4571,
+      "review_reason": "Diferente producto"
+    },
+    {
+      "source": "condis:491881",
+      "source_name": "COLA DE RAPE  ENTERA Y LIMPIA 200 G",
+      "target": "alcampo:9df8e2be-4c84-4475-b629-e95ad6d416b8",
+      "target_name": "Sardina de asar - Entera limpia",
+      "human_label": "no_relacionado",
+      "vector_score": 0.6482,
+      "lexical_score": 0.5086,
+      "review_reason": "Diferente producto"
+    }
+  ],
+  "baseline_precision_false_positives": [
+    {
+      "source": "sorli:246456",
+      "source_name": "Gel-champú-acondicionador Toy Story",
+      "target": "esclat:54f5427a-5d7d-4891-b44b-a8f3fc97f9ea",
+      "target_name": "Taza Toy Story 33cl",
+      "human_label": "no_relacionado",
+      "vector_score": 0.6952,
+      "lexical_score": 0.4571,
+      "review_reason": "Diferente producto"
+    }
+  ],
+  "conservative_false_positives": [],
+  "vector_score_by_human_label": {
+    "identico": {
+      "count": 122,
+      "min": 0.689,
+      "median": 0.8746,
+      "max": 0.9605
+    },
+    "comparable": {
+      "count": 178,
+      "min": 0.6427,
+      "median": 0.8503,
+      "max": 0.9804
+    },
+    "no_relacionado": {
+      "count": 100,
+      "min": 0.4854,
+      "median": 0.6863,
+      "max": 0.8993
+    }
+  },
+  "eligible_configurations": 938
+}

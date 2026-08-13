@@ -39,6 +39,7 @@ export default function ProfileScreen() {
   const { session, signOut } = useAuth();
   const { profile, loading, isPremium } = useProfile();
   const historyLocked = !loading && limitsApply(isPremium);
+  const statisticsLocked = !loading && limitsApply(isPremium);
   const email = session?.user.email ?? '';
   const appVersion = `v${Constants.expoConfig?.version ?? '1.0.0'}`;
 
@@ -234,6 +235,19 @@ export default function ProfileScreen() {
               rounded
             />
             <ProfileRow
+              icon="pie-chart-outline"
+              label={t('profile.statistics')}
+              locked={statisticsLocked}
+              onPress={() => {
+                if (statisticsLocked) {
+                  setPaywallVisible(true);
+                  return;
+                }
+                navigation.navigate('Statistics');
+              }}
+              rounded
+            />
+            <ProfileRow
               icon="shield-checkmark-outline"
               label={t('profile.privacySecurity')}
               onPress={() => navigation.navigate('PrivacySecurity')}
@@ -291,6 +305,12 @@ export default function ProfileScreen() {
           {/* SOPORTE */}
           <Text style={styles.sectionLabel}>{t('profile.sectionSupport')}</Text>
           <View style={styles.section}>
+            <ProfileRow
+              icon="logo-instagram"
+              label={t('profile.instagram')}
+              onPress={() => Linking.openURL('https://www.instagram.com/quefalta.app/')}
+              rounded
+            />
             <ProfileRow
               icon="help-circle-outline"
               label={t('profile.help')}

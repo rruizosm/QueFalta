@@ -44,6 +44,7 @@ import crypto from 'node:crypto';
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { normalizeAmetllerOffer } from './lib/retailer-offers.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
+import { validGlobalGtin } from './lib/gtin.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -225,7 +226,7 @@ function normalizeEs(p) {
     brand: clean(p.brand),
     packaging: null, // el formato ya va en el nombre ("… 150 g")
     thumbnail: imageOf(p),
-    ean: clean(p.ean),
+    ean: validGlobalGtin(p.ean),
     unit_price: price,
     price_format: price != null ? `${eurStr(price)} €` : null,
     promo_name: offer?.promo_name ?? null,

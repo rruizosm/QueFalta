@@ -71,7 +71,7 @@ TODO ORGANIZADO
 
 Ordena la compra por supermercado y zonas, reutiliza listas anteriores y mantén tus grupos al día con notificaciones.
 
-Inicia sesión con Apple o Google. Puedes gestionar tus datos y eliminar tu cuenta desde la aplicación.
+Inicia sesión con Apple, Google o un enlace enviado a tu correo. Puedes gestionar tus datos y eliminar tu cuenta desde la aplicación.
 
 QuéFalta es una aplicación independiente y no está afiliada a los supermercados mostrados. Los precios y datos de producto son informativos y pueden variar según la tienda, la región o el momento de consulta. La información de Open Food Facts depende de los datos disponibles para cada producto.
 ```
@@ -100,7 +100,7 @@ TOT ORGANITZAT
 
 Ordena la compra per supermercat i zones, reutilitza llistes anteriors i mantén els teus grups al dia amb notificacions.
 
-Inicia la sessió amb Apple o Google. Pots gestionar les teves dades i eliminar el teu compte des de l'aplicació.
+Inicia la sessió amb Apple, Google o un enllaç enviat al teu correu. Pots gestionar les teves dades i eliminar el teu compte des de l'aplicació.
 
 QuèFalta és una aplicació independent i no està afiliada als supermercats mostrats. Els preus i les dades de producte són informatius i poden variar segons la botiga, la regió o el moment de consulta. La informació d’Open Food Facts depèn de les dades disponibles per a cada producte.
 ```
@@ -159,9 +159,10 @@ llista compra,supermercat,mercadona,compra grup,llista compartida,cistell,estalv
 ⚠️ **CRÍTICO**: la app exige inicio de sesión → Apple **rechaza** si no le das una
 cuenta de prueba que funcione y con datos dentro (un grupo con lista).
 
-⚠️ **El login es SOLO Google + Apple** (no hay email/contraseña). Una cuenta creada
-a mano en Supabase NO sirve. La forma de dar acceso al revisor es una **cuenta de
-Google real** (con 2FA desactivado) cuyas credenciales puedes compartir.
+⚠️ **El login ofrece Google, Apple y enlace mágico por correo**. Para App Review
+sigue siendo preferible una **cuenta de Google real** (con 2FA desactivado) cuyas
+credenciales puedas compartir: el enlace mágico exigiría acceso al buzón durante
+la revisión.
 
 | Campo | Valor |
 |---|---|

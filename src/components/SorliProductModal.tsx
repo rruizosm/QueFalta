@@ -13,7 +13,6 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
-import ProductImage from '../components/ProductImage';
 import ProductDetailHero from '../components/ProductDetailHero';
 import ProductInfoSections from '../components/ProductInfoSections';
 import SimilarProductsSection from '../components/SimilarProductsSection';
@@ -25,12 +24,13 @@ interface Props {
   /** Padding superior de la cabecera (lo fija StoreProductModal): 56 a pantalla
    *  completa (cesta), 16 dentro de la hoja (catálogo). */
   topInset?: number;
+  badgeLabel?: string;
 }
 
 /** Detalle de un producto de Sorli. Pinta los datos ya cargados (no hay fetch:
  *  el catálogo de Sorli va por el espejo en Supabase). Como Consum, muestra marca
  *  (cuando la hay) y categoría; el nombre ya viene en el idioma activo del map. */
-export default function SorliProductModal({ product, onClose, topInset = 16 }: Props) {
+export default function SorliProductModal({ product, onClose, topInset = 16, badgeLabel }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { activeCart, addToActiveCart } = useCart();
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
@@ -116,6 +116,7 @@ export default function SorliProductModal({ product, onClose, topInset = 16 }: P
           price={price}
           store="sorli"
           productId={product.id}
+          badgeLabel={badgeLabel}
           referencePrice={product.pricePerUnit}
           nutriScoreGrade={product.nutriScoreGrade}
           promotionPreviousPrice={previousPromoPrice}
@@ -133,7 +134,7 @@ export default function SorliProductModal({ product, onClose, topInset = 16 }: P
         ) : null}
 
         {/* Comparativa: más barato en otros súper */}
-        <SimilarProductsSection productName={product.displayName} excludeStore="sorli" />
+        <SimilarProductsSection productId={product.id} excludeStore="sorli" />
 
         {/* Características. La API de Sorli no expone ficha (ingredientes/nutrición)
          *  en el listado; se muestra la categoría con el mismo diseño de tarjeta. */}

@@ -26,21 +26,26 @@ const RADIUS = 20;
 const PAD = 3; // padding interno de la pista (la píldora corre dentro de él)
 const PILL_RADIUS = RADIUS - PAD;
 const COMPACT_SEG_W = 42; // ancho fijo de cada segmento en modo icono (compact)
+const DENSE_COMPACT_SEG_W = 32;
 
 export interface Segment<K extends string> {
   key: K;
   /** Etiqueta de texto; omítela para un segmento SOLO icono (modo compact). */
   label?: string;
   icon?: keyof typeof Ionicons.glyphMap;
+  accessibilityLabel?: string;
 }
 
 interface Props<K extends string> {
   segments: Segment<K>[];
-  value: K;
+  value: K | null;
   onChange: (key: K) => void;
   style?: StyleProp<ViewStyle>;
   /** Segmentos cuadrados de ancho fijo y solo icono (p. ej. lista/cuadrícula). */
   compact?: boolean;
+  /** Variante más estrecha para filas con varios controles compactos. */
+  dense?: boolean;
+  activationDirection?: 'fromStart' | 'fromEnd';
 }
 
 function hexToRgba(hex: string, a: number): string {
@@ -51,10 +56,10 @@ function hexToRgba(hex: string, a: number): string {
 }
 
 export default function SlidingSegments<K extends string>({
-  segments, value, onChange, style, compact = false,
+  segments, value, onChange, style, compact = false, dense = false, activationDirection,
 }: Props<K>) {
   const n = segments.length;
-  const active = Math.max(0, segments.findIndex((s) => s.key === value));
+  const active = value == null ? -1 : Math.max(0, segments.findIndex((s) => s.key === value));
 
   // Ancho interno (pista − padding) medido, para la geometría de la píldora.
   const [innerW, setInnerW] = useState(0);
@@ -63,15 +68,29 @@ export default function SlidingSegments<K extends string>({
   const translateX = useRef(new Animated.Value(0)).current;
   const stretch = useRef(new Animated.Value(0)).current;
   const settled = useRef(false); // primer posicionamiento sin animar
+  const wasInactive = useRef(value == null);
 
   useEffect(() => {
-    if (tabW <= 0) return;
-    const target = PAD + tabW * active;
-    if (!settled.current) {
-      translateX.setValue(target); // coloca sin animación al medir
-      settled.current = true;
+    if (active < 0) {
+      wasInactive.current = true;
       return;
     }
+    if (tabW <= 0) return;
+    const target = PAD + tabW * active;
+    const animateActivation = Boolean(activationDirection && wasInactive.current);
+    if (!settled.current) {
+      settled.current = true;
+      if (!animateActivation) {
+        translateX.setValue(target);
+        wasInactive.current = false;
+        return;
+      }
+    }
+    if (animateActivation) {
+      const origin = activationDirection === 'fromStart' ? target - tabW : target + tabW;
+      translateX.setValue(origin);
+    }
+    wasInactive.current = false;
     // Deslizamiento con overshoot + pulso de estiramiento en el eje de viaje
     // (el "líquido"), mismas curvas que la tab bar de cristal.
     Animated.spring(translateX, {
@@ -83,7 +102,7 @@ export default function SlidingSegments<K extends string>({
       Animated.spring(stretch, { toValue: 0, useNativeDriver: true, stiffness: 120, damping: 9, mass: 0.7 }),
     ]).start();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, tabW]);
+  }, [active, tabW, activationDirection]);
 
   const scaleX = stretch.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] });
   const scaleY = stretch.interpolate({ inputRange: [0, 1], outputRange: [1, 0.92] });
@@ -96,7 +115,7 @@ export default function SlidingSegments<K extends string>({
   return (
     <View style={[styles.track, compact && styles.trackCompact, style]} onLayout={onLayout}>
       {/* Píldora deslizante de acento. */}
-      {tabW > 0 && (
+      {tabW > 0 && active >= 0 && (
         <Animated.View
           pointerEvents="none"
           style={[
@@ -119,10 +138,10 @@ export default function SlidingSegments<K extends string>({
         return (
           <Pressable
             key={s.key}
-            style={[styles.seg, compact && styles.segCompact]}
+            style={[styles.seg, compact && styles.segCompact, dense && styles.segDense]}
             accessibilityRole="button"
             accessibilityState={focused ? { selected: true } : {}}
-            accessibilityLabel={s.label}
+            accessibilityLabel={s.accessibilityLabel ?? s.label}
             onPress={() => {
               if (!focused) {
                 Haptics.selectionAsync();
@@ -132,7 +151,7 @@ export default function SlidingSegments<K extends string>({
           >
             {s.icon ? <Ionicons name={s.icon} size={s.label ? 13 : 19} color={color} /> : null}
             {s.label ? (
-              <Text style={[styles.label, { color, fontFamily: focused ? fonts.bold : fonts.semibold }]}>
+              <Text style={[styles.label, dense && styles.labelDense, { color, fontFamily: focused ? fonts.bold : fonts.semibold }]}>
                 {s.label}
               </Text>
             ) : null}
@@ -167,5 +186,7 @@ const styles = StyleSheet.create({
   },
   // Compact: ancho fijo (cuadrado) en vez de repartir el espacio.
   segCompact: { flex: 0, width: COMPACT_SEG_W },
+  segDense: { width: DENSE_COMPACT_SEG_W },
   label: { fontSize: 12.5, letterSpacing: 0.1 },
+  labelDense: { fontSize: 10 },
 });

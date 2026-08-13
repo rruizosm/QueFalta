@@ -36,7 +36,7 @@ const NEW_ARRIVALS_PAGE_SIZE = 50;
  * Bajo la cabecera va la fila buscador + filtros (mismo diseño que la pestaña
  * Productos del catálogo): barra de búsqueda local, botón de filtros (categoría
  * de las disponibles, rango de precio y orden por precio, en hoja inferior
- * ProductFilterSheet) y toggle lista/cuadrícula.
+ * ProductFilterSheet, incluido precio unitario) y toggle lista/cuadrícula.
  * Todo filtra en cliente: las novedades son ~100 filas ya cargadas en memoria.
  *
  * Liquid Glass (F3, solo `glassAvailable`): mismo patrón que Cambios de precios
@@ -87,7 +87,9 @@ export default function NewArrivalsScreen() {
   const [filterStores, setFilterStores] = useState<CatalogStore[]>([]);
   const [priceRange, setPriceRange] = useState<number | null>(null); // índice en PRICE_RANGES
   const [sort, setSort] = useState<PriceSort | null>(null);
-  const filtersActive = category.length > 0 || filterStores.length > 0 || priceRange != null || sort != null;
+  const [pricePerUnitSort, setPricePerUnitSort] = useState<PriceSort | null>(null);
+  const filtersActive = category.length > 0 || filterStores.length > 0
+    || priceRange != null || sort != null || pricePerUnitSort != null;
 
   // Las categorías son de CADA súper → al cambiar de súper el filtro deja de
   // tener sentido y se limpia (precio/orden sí sobreviven, son universales).
@@ -155,7 +157,7 @@ export default function NewArrivalsScreen() {
   }, [store, stores, cache, region, postalCode]);
 
   // Búsqueda + filtros + orden. Sin orden elegido se respeta el orden en que
-  // llegan (curado en Mercadona); con orden por precio, los sin precio al final.
+  // llegan (curado en Mercadona); los productos sin el precio elegido van al final.
   const filteredProducts = useMemo(() => {
     const words = stripAccents(query).trim().split(/\s+/).filter((w) => w.length >= 2);
     const range = priceRange != null ? PRICE_RANGES[priceRange] : null;
@@ -180,18 +182,19 @@ export default function NewArrivalsScreen() {
       }
       return true;
     });
-    if (sort) {
+    const activeSort = pricePerUnitSort ?? sort;
+    if (activeSort) {
       out = [...out].sort((a, b) => {
-        const pa = a.unitPrice ?? Infinity;
-        const pb = b.unitPrice ?? Infinity;
+        const pa = pricePerUnitSort ? (a.pricePerUnit ?? Infinity) : (a.unitPrice ?? Infinity);
+        const pb = pricePerUnitSort ? (b.pricePerUnit ?? Infinity) : (b.unitPrice ?? Infinity);
         if (pa === pb) return 0;
         if (pa === Infinity) return 1;
         if (pb === Infinity) return -1;
-        return sort === 'asc' ? pa - pb : pb - pa;
+        return activeSort === 'asc' ? pa - pb : pb - pa;
       });
     }
     return out;
-  }, [base, query, category, filterStores, priceRange, sort, store]);
+  }, [base, query, category, filterStores, priceRange, sort, pricePerUnitSort, store]);
 
   const products = useMemo(
     () => filteredProducts.slice(0, visibleCount),
@@ -351,7 +354,17 @@ export default function NewArrivalsScreen() {
         priceRange={priceRange}
         onPriceRange={setPriceRange}
         sort={sort}
-        onSort={setSort}
+        onSort={(value) => {
+          setSort(value);
+          if (value) setPricePerUnitSort(null);
+        }}
+        pricePerUnitSort={pricePerUnitSort}
+        onPricePerUnitSort={(value) => {
+          setPricePerUnitSort(value);
+          if (value) setSort(null);
+        }}
+        appearance="plus"
+        showCategoryIcons
         stores={store === 'all' ? stores.map((item) => ({ value: item.key, label: item.name })) : []}
         selectedStores={filterStores}
         onStores={(values) => setFilterStores(values as CatalogStore[])}

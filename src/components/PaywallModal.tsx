@@ -32,9 +32,12 @@ type IoniconName = ComponentProps<typeof Ionicons>['name'];
 const TERMS_URL = 'https://quefalta.es/condiciones';
 const PRIVACY_URL = 'https://quefalta.es/privacidad';
 
-const BENEFITS: { icon: IoniconName; key: string }[] = [
-  { icon: 'apps', key: 'stores' },
-  { icon: 'receipt', key: 'history' },
+const BENEFITS: { icon: IoniconName; key: string; color: string; background: string }[] = [
+  { icon: 'swap-vertical-outline', key: 'unitPrice', color: colors.blue, background: 'rgba(47,108,181,0.13)' },
+  { icon: 'options-outline', key: 'filters', color: colors.orange, background: 'rgba(217,131,36,0.14)' },
+  { icon: 'storefront-outline', key: 'stores', color: colors.teal, background: 'rgba(31,138,143,0.14)' },
+  { icon: 'notifications-outline', key: 'alerts', color: colors.purple, background: 'rgba(122,79,181,0.14)' },
+  { icon: 'pie-chart-outline', key: 'statistics', color: colors.blue, background: 'rgba(47,108,181,0.13)' },
 ];
 
 type Plan = 'annual' | 'monthly';
@@ -42,8 +45,8 @@ type Plan = 'annual' | 'monthly';
 interface Props {
   visible: boolean;
   onClose: () => void;
-  /** Línea contextual bajo el título: cada gate explica su límite. */
-  subtitle?: string;
+  /** Línea contextual bajo el título. null la oculta y compacta la cabecera. */
+  subtitle?: string | null;
 }
 
 export default function PaywallModal({ visible, onClose, subtitle }: Props) {
@@ -55,6 +58,7 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
   const [plan, setPlan] = useState<Plan>('annual');
   const [offerings, setOfferings] = useState<PlusOfferings | null>(null);
   const [busy, setBusy] = useState(false);
+  const headerSubtitle = subtitle ?? null;
 
   // Offerings reales de RevenueCat al abrir; null → modo placeholder.
   useEffect(() => {
@@ -117,61 +121,114 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
       <View style={styles.root}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         <View style={[styles.sheet, { paddingBottom: Platform.OS === 'ios' ? 30 : Math.max(insets.bottom, 20) }]}>
-          <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
-            {/* Hero */}
-            <View style={styles.header}>
-              <View style={styles.heroMark}>
-                <Ionicons name="sparkles" size={24} color={colors.white} />
-              </View>
-              <View style={styles.heroCopy}>
-                <Text style={styles.title}>QuéFalta Plus</Text>
-                <Text style={styles.subtitle}>{subtitle ?? t('paywall.defaultSubtitle')}</Text>
-              </View>
-              <TouchableOpacity style={styles.closeBtn} onPress={onClose} hitSlop={8}>
-                <Ionicons name="close" size={18} color={colors.inkSoft} />
+          <View style={styles.grabber} />
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
+            <View style={[styles.header, !headerSubtitle && styles.headerCompact]}>
+              <View style={styles.heroGlowLarge} />
+              <View style={styles.heroGlowSmall} />
+              <TouchableOpacity
+                style={styles.closeBtn}
+                onPress={onClose}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t('paywall.close')}
+              >
+                <Ionicons name="close" size={19} color={colors.inkSoft} />
               </TouchableOpacity>
+
+              <View style={styles.heroTopline}>
+                <View style={styles.heroMark}>
+                  <Ionicons name="sparkles" size={22} color={colors.white} />
+                </View>
+                <View style={styles.plusBadge}>
+                  <Text style={styles.plusBadgeText}>{t('paywall.heroLead')}</Text>
+                </View>
+              </View>
+
+              <Text style={styles.title}>QuéFalta Plus</Text>
+              {headerSubtitle ? (
+                <View style={styles.contextPill}>
+                  <Ionicons name="checkmark-circle" size={17} color={colors.accent} />
+                  <Text style={styles.subtitle}>{headerSubtitle}</Text>
+                </View>
+              ) : null}
             </View>
 
-            {/* Dos ventajas concretas, sin promesas ni extras. */}
+            <View style={styles.sectionHeadingRow}>
+              <Text style={styles.sectionHeading}>{t('paywall.benefitsHeading')}</Text>
+              <View style={styles.includedBadge}>
+                <Ionicons name="sparkles" size={12} color={colors.accent} />
+                <Text style={styles.includedText}>{t('paywall.included')}</Text>
+              </View>
+            </View>
+
             <View style={styles.benefits}>
               {BENEFITS.map((b) => (
                 <View key={b.key} style={styles.benefitRow}>
-                  <View style={styles.benefitIcon}>
-                    <Ionicons name={b.icon} size={16} color={colors.accent} />
+                  <View style={[styles.benefitIcon, { backgroundColor: b.background }]}>
+                    <Ionicons name={b.icon} size={20} color={b.color} />
                   </View>
-                  <View style={{ flex: 1 }}>
+                  <View style={styles.benefitCopy}>
                     <Text style={styles.benefitTitle}>{t(`paywall.benefits.${b.key}Title`)}</Text>
                     <Text style={styles.benefitText}>{t(`paywall.benefits.${b.key}Text`)}</Text>
                   </View>
+                  <Ionicons name="checkmark-circle" size={20} color={colors.accent} />
                 </View>
               ))}
             </View>
 
-            {/* Planes */}
+            <Text style={styles.planHeading}>{t('paywall.choosePlan')}</Text>
             <View style={styles.plans}>
               <TouchableOpacity
-                style={[styles.planCard, plan === 'annual' && styles.planCardActive]}
+                style={[styles.planCard, styles.annualPlanCard, plan === 'annual' && styles.planCardActive]}
                 onPress={() => setPlan('annual')}
                 activeOpacity={0.85}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: plan === 'annual' }}
               >
-                <View style={styles.planBadge}><Text style={styles.planBadgeText}>{t('paywall.freeTrialBadge')}</Text></View>
-                <Text style={styles.planName}>{t('paywall.annual')}</Text>
-                <Text style={styles.planPrice}>{annualPrice}</Text>
-                <Text style={styles.planPer}>{t('paywall.annualPer')}</Text>
+                <View style={styles.planBadgeAnchor} pointerEvents="none">
+                  <View style={styles.planBadge}>
+                    <Text style={styles.planBadgeText}>{t('paywall.bestValue')}</Text>
+                  </View>
+                </View>
+                <View style={[styles.planRadio, plan === 'annual' && styles.planRadioActive]}>
+                  {plan === 'annual' && <View style={styles.planRadioDot} />}
+                </View>
+                <View style={styles.planCopy}>
+                  <Text style={styles.planName}>{t('paywall.annual')}</Text>
+                  <Text style={styles.planPer}>{t('paywall.annualPer')}</Text>
+                  <Text style={styles.trialText}>{t('paywall.freeTrialBadge')}</Text>
+                </View>
+                <View style={styles.planPriceWrap}>
+                  <Text style={styles.planPrice}>{annualPrice}</Text>
+                  <Text style={styles.planPricePeriod}>{t('paywall.year')}</Text>
+                </View>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[styles.planCard, plan === 'monthly' && styles.planCardActive]}
                 onPress={() => setPlan('monthly')}
                 activeOpacity={0.85}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: plan === 'monthly' }}
               >
-                <Text style={styles.planName}>{t('paywall.monthly')}</Text>
-                <Text style={styles.planPrice}>{monthlyPrice}</Text>
-                <Text style={styles.planPer}>{t('paywall.monthlyPer')}</Text>
+                <View style={[styles.planRadio, plan === 'monthly' && styles.planRadioActive]}>
+                  {plan === 'monthly' && <View style={styles.planRadioDot} />}
+                </View>
+                <View style={styles.planCopy}>
+                  <Text style={styles.planName}>{t('paywall.monthly')}</Text>
+                  <Text style={styles.planPer}>{t('paywall.monthlyPer')}</Text>
+                </View>
+                <View style={styles.planPriceWrap}>
+                  <Text style={styles.planPrice}>{monthlyPrice}</Text>
+                  <Text style={styles.planPricePeriod}>{t('paywall.month')}</Text>
+                </View>
               </TouchableOpacity>
             </View>
 
-            {/* CTA */}
             <TouchableOpacity
               onPress={handleSubscribe}
               activeOpacity={0.85}
@@ -191,8 +248,11 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
                 )}
               </HardShadow>
             </TouchableOpacity>
+            <View style={styles.ctaNoteRow}>
+              <Ionicons name="shield-checkmark-outline" size={14} color={colors.inkSoft} />
+              <Text style={styles.ctaNote}>{t('paywall.ctaNote')}</Text>
+            </View>
 
-            {/* Pie legal */}
             <View style={styles.footer}>
               <TouchableOpacity onPress={handleRestore} hitSlop={6} disabled={busy}>
                 <Text style={styles.footerLink}>{t('paywall.restore')}</Text>
@@ -214,74 +274,127 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
 }
 
 const themedStyles = () => StyleSheet.create({
-  root: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(18, 31, 28, 0.5)' },
+  root: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(18, 24, 29, 0.58)' },
   sheet: {
     backgroundColor: colors.paper,
-    borderTopLeftRadius: 28, borderTopRightRadius: 28,
-    overflow: 'hidden', maxHeight: '86%',
+    borderTopLeftRadius: 30, borderTopRightRadius: 30,
+    overflow: 'hidden', maxHeight: '94%',
     // paddingBottom inline: iOS 30 (como antes); Android, el inset del sistema.
   },
+  grabber: {
+    alignSelf: 'center', width: 38, height: 4, borderRadius: 2,
+    backgroundColor: colors.inkFaint, opacity: 0.55, marginTop: 9, marginBottom: 3,
+  },
+  scrollContent: { paddingBottom: 2 },
 
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 13,
-    marginHorizontal: 16, marginTop: 16, padding: 16,
-    borderRadius: 22, backgroundColor: colors.accentLight,
+    marginHorizontal: 14, marginTop: 8, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 18,
+    borderRadius: 24, backgroundColor: colors.accentLight, overflow: 'hidden',
   },
+  headerCompact: { paddingBottom: 15 },
+  heroGlowLarge: {
+    position: 'absolute', width: 150, height: 150, borderRadius: 75,
+    backgroundColor: colors.accentMid, right: -56, top: -70, opacity: 0.68,
+  },
+  heroGlowSmall: {
+    position: 'absolute', width: 76, height: 76, borderRadius: 38,
+    backgroundColor: colors.white, left: -32, bottom: -42, opacity: 0.5,
+  },
+  heroTopline: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 36 },
   heroMark: {
-    width: 48, height: 48, borderRadius: 16,
-    backgroundColor: colors.accent,
-    alignItems: 'center', justifyContent: 'center',
+    width: 42, height: 42, borderRadius: 14,
+    backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center',
   },
-  heroCopy: { flex: 1 },
-  title: { fontSize: 21, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4 },
-  subtitle: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 3, lineHeight: 18 },
+  plusBadge: {
+    flexShrink: 1,
+    borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6,
+    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
+  },
+  plusBadgeText: { flexShrink: 1, fontSize: 10.5, lineHeight: 14, fontFamily: fonts.bold, color: colors.accent },
+  title: { fontSize: 30, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -1, marginTop: 14 },
+  contextPill: {
+    flexDirection: 'row', alignItems: 'center', gap: 7,
+    alignSelf: 'flex-start', marginTop: 13, paddingHorizontal: 10, paddingVertical: 8,
+    borderRadius: 12, backgroundColor: colors.white,
+  },
+  subtitle: { flexShrink: 1, fontSize: 12.5, fontFamily: fonts.bold, color: colors.ink, lineHeight: 17 },
   closeBtn: {
-    width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.white,
+    position: 'absolute', top: 13, right: 13, zIndex: 2,
+    width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
   },
 
-  benefits: { flexDirection: 'row', paddingHorizontal: 16, paddingTop: 16, gap: 10 },
+  sectionHeadingRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 18, marginTop: 19, marginBottom: 10,
+  },
+  sectionHeading: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.25 },
+  includedBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: colors.accentLight, paddingHorizontal: 8, paddingVertical: 5, borderRadius: 999,
+  },
+  includedText: { fontSize: 10.5, fontFamily: fonts.bold, color: colors.accent },
+  benefits: { paddingHorizontal: 14, gap: 8 },
   benefitRow: {
-    flex: 1, minHeight: 116, padding: 13, gap: 10,
+    flexDirection: 'row', alignItems: 'center', padding: 11, gap: 11,
     backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, borderRadius: 18,
   },
   benefitIcon: {
-    width: 36, height: 36, borderRadius: 12,
-    backgroundColor: colors.accentLight,
-    alignItems: 'center', justifyContent: 'center',
+    width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center',
   },
-  benefitTitle: { fontSize: 13, fontFamily: fonts.bold, color: colors.ink, lineHeight: 17 },
-  benefitText: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2, lineHeight: 15 },
+  benefitCopy: { flex: 1 },
+  benefitTitle: { fontSize: 13.5, fontFamily: fonts.bold, color: colors.ink, lineHeight: 18 },
+  benefitText: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2, lineHeight: 16 },
 
-  plans: { flexDirection: 'row', gap: 10, paddingHorizontal: 16, paddingTop: 18 },
+  planHeading: {
+    fontSize: 17, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.25,
+    paddingHorizontal: 18, marginTop: 20, marginBottom: 10,
+  },
+  plans: { gap: 9, paddingHorizontal: 14 },
   planCard: {
-    flex: 1,
+    position: 'relative', flexDirection: 'row', alignItems: 'center', minHeight: 78,
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border, borderRadius: 18,
-    padding: 14, gap: 3,
+    paddingHorizontal: 13, paddingVertical: 12, gap: 11,
   },
+  annualPlanCard: { marginTop: 8, paddingTop: 16 },
   planCardActive: { borderColor: colors.accent, borderWidth: 2, backgroundColor: colors.accentLight },
-  planBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: colors.accentLight,
-    borderRadius: 8, paddingHorizontal: 7, paddingVertical: 3, marginBottom: 4,
+  planRadio: {
+    width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: colors.inkFaint,
+    alignItems: 'center', justifyContent: 'center', backgroundColor: colors.white,
   },
-  planBadgeText: { fontSize: 10, fontFamily: fonts.bold, color: colors.accent },
-  planName: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.inkSoft, textTransform: 'uppercase', letterSpacing: 0.6 },
-  planPrice: { fontSize: 22, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4 },
-  planPer: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft },
+  planRadioActive: { borderColor: colors.accent },
+  planRadioDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: colors.accent },
+  planCopy: { flex: 1 },
+  planBadgeAnchor: {
+    position: 'absolute', top: -11, left: 0, right: 0, zIndex: 2,
+    alignItems: 'center',
+  },
+  planBadge: {
+    backgroundColor: colors.yellow, borderColor: colors.accent, borderWidth: 1,
+    borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4,
+  },
+  planBadgeText: { fontSize: 9.5, fontFamily: fonts.bold, color: colors.white, letterSpacing: 0.25 },
+  planName: { fontSize: 14, fontFamily: fonts.bold, color: colors.ink },
+  planPer: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 3 },
+  trialText: { fontSize: 11, fontFamily: fonts.bold, color: colors.accent, marginTop: 4 },
+  planPriceWrap: { alignItems: 'flex-end' },
+  planPrice: { fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4 },
+  planPricePeriod: { fontSize: 10.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
 
-  ctaWrap: { paddingHorizontal: 16, marginTop: 18 },
+  ctaWrap: { paddingHorizontal: 14, marginTop: 16 },
   ctaBtn: {
     backgroundColor: colors.accent,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    borderRadius: 16, gap: 7, paddingVertical: 16,
+    borderRadius: 17, gap: 8, paddingVertical: 17,
   },
-  ctaText: { fontSize: 15, fontFamily: fonts.bold, color: colors.white },
+  ctaText: { fontSize: 15.5, fontFamily: fonts.bold, color: colors.white },
+  ctaNoteRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5, marginTop: 10 },
+  ctaNote: { fontSize: 10.5, fontFamily: fonts.medium, color: colors.inkSoft },
 
   footer: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, marginTop: 17,
+    gap: 8, marginTop: 15,
   },
   footerLink: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, textDecorationLine: 'underline' },
   footerDot: { fontSize: 12, color: colors.inkFaint },

@@ -67,7 +67,9 @@ export default function EditProfileScreen() {
     const raw = username.trim().toLowerCase();
     if (!raw) { setUsernameState('idle'); return; }
     if (!USERNAME_RE.test(raw)) { setUsernameState('invalid'); return; }
-    if (raw === (profile?.username ?? '')) { setUsernameState('ok'); return; }
+    // A username that is already saved is not being checked for availability.
+    // Only show the availability status while the user is changing it.
+    if (raw === (profile?.username ?? '')) { setUsernameState('idle'); return; }
 
     setUsernameState('checking');
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -263,10 +265,12 @@ export default function EditProfileScreen() {
                 <Text style={styles.usernameTaken}>{t('editProfile.unavailable')}</Text>
               )}
             </View>
-            <Text style={[styles.helper, helper.ok && styles.helperOk]}>
-              {helper.ok && <Ionicons name="checkmark" size={12} color={colors.ok} />}
-              {' '}{helper.text}
-            </Text>
+            {usernameState !== 'ok' && (
+              <Text style={[styles.helper, helper.ok && styles.helperOk]}>
+                {helper.ok && <Ionicons name="checkmark" size={12} color={colors.ok} />}
+                {' '}{helper.text}
+              </Text>
+            )}
           </View>
 
           {/* Correo (read-only) */}

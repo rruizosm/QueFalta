@@ -60,6 +60,7 @@
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { normalizeAlcampoOffer } from './lib/retailer-offers.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
+import { validGlobalGtin } from './lib/gtin.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -128,8 +129,21 @@ async function getJson(path, { tries = 4 } = {}) {
         headers: { 'User-Agent': UA, Accept: 'application/json', ...(COOKIE ? { Cookie: COOKIE } : {}) },
         signal: AbortSignal.timeout(30000),
       });
-      if (res.ok) return await res.json();
+      const body = await res.text();
+      const contentType = res.headers.get('content-type') || 'sin content-type';
+      const bytes = Buffer.byteLength(body, 'utf8');
+      if (res.ok) {
+        if (!body.trim()) {
+          throw new Error(`respuesta vacía (HTTP ${res.status}; ${contentType}; ${bytes} bytes)`);
+        }
+        try {
+          return JSON.parse(body);
+        } catch {
+          throw new Error(`JSON inválido (HTTP ${res.status}; ${contentType}; ${bytes} bytes)`);
+        }
+      }
       if ((res.status === 429 || res.status >= 500) && t < tries - 1) { await sleep(800 * (t + 1)); continue; }
+      console.warn(`[alcampo] ${path} respondió HTTP ${res.status} (${contentType}; ${bytes} bytes)`);
       return null;
     } catch (e) {
       if (t < tries - 1) { await sleep(700 * (t + 1)); continue; }
@@ -303,8 +317,7 @@ function parseFicha(html) {
   out.operator = [opName, opAddr].filter(Boolean).join('\n') || null;
   out.denomination = car.get('Denominación legal del alimento') || null;
   out.origin = car.get('País de origen') || null;
-  const ean = car.get('EAN');
-  out.ean = ean && /^\d{8,14}$/.test(ean.replace(/\s/g, '')) ? ean.replace(/\s/g, '') : null;
+  out.ean = validGlobalGtin(car.get('EAN')?.replace(/\s/g, ''));
   return out;
 }
 

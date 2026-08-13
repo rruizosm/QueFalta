@@ -28,13 +28,15 @@ interface Props {
   onClose: () => void;
   /** Pantalla completa, sin borde ni sombra de hoja (cesta). */
   fullScreen?: boolean;
+  /** Etiqueta contextual superpuesta en la imagen principal (p. ej. Novedad). */
+  badgeLabel?: string;
 }
 
 /** Abre el detalle de un producto de CUALQUIER súper encima del modal actual
  *  (RN Modal → se apila sobre el detalle abierto y al cerrarse se vuelve a él).
  *  Mercadona delega en ProductDetailModal (que ya hace su propio fetch); para los
  *  espejos se carga el producto por id y se pinta su modal correspondiente. */
-export default function StoreProductModal({ target, onClose, fullScreen = false }: Props) {
+export default function StoreProductModal({ target, onClose, fullScreen = false, badgeLabel }: Props) {
   const styles = useThemedStyles(themedStyles);
   const fullScreenTop = useHeaderTopPadding(56);
   const sheetTop = useHeaderTopPadding(56);
@@ -88,7 +90,7 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
   let content;
   if (target.store === 'mercadona') {
     const ProductDetailModal = require('./ProductDetailModal').default;
-    content = <ProductDetailModal productId={target.id} onClose={onClose} topInset={topInset} />;
+    content = <ProductDetailModal productId={target.id} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
   } else if (!mirror) {
     content = (
       <View style={styles.loading}>
@@ -97,44 +99,44 @@ export default function StoreProductModal({ target, onClose, fullScreen = false 
     );
   } else if (target.store === 'esclat') {
     const BonpreuProductModal = require('./BonpreuProductModal').default;
-    content = <BonpreuProductModal product={mirror} onClose={onClose} topInset={topInset} />;
+    content = <BonpreuProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
   } else if (target.store === 'carrefour') {
     const CarrefourProductModal = require('./CarrefourProductModal').default;
-    content = <CarrefourProductModal product={mirror} onClose={onClose} topInset={topInset} />;
+    content = <CarrefourProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
   } else if (target.store === 'consum') {
     const ConsumProductModal = require('./ConsumProductModal').default;
-    content = <ConsumProductModal product={mirror} onClose={onClose} topInset={topInset} />;
+    content = <ConsumProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
   } else if (target.store === 'dia') {
     const DiaProductModal = require('./DiaProductModal').default;
-    content = <DiaProductModal product={mirror} onClose={onClose} topInset={topInset} />;
+    content = <DiaProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
   } else if (target.store === 'sorli') {
     const SorliProductModal = require('./SorliProductModal').default;
-    content = <SorliProductModal product={mirror} onClose={onClose} topInset={topInset} />;
+    content = <SorliProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
   } else if (target.store === 'eroski' || target.store === 'caprabo') {
     const TapestryProductModal = require('./TapestryProductModal').default;
     const storeLabel = target.store === 'caprabo' ? 'Caprabo' : 'Eroski';
-    content = <TapestryProductModal product={mirror} store={target.store} storeLabel={storeLabel} onClose={onClose} topInset={topInset} />;
+    content = <TapestryProductModal product={mirror} store={target.store} storeLabel={storeLabel} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
   } else if (target.store === 'condis') {
     const CondisProductModal = require('./CondisProductModal').default;
-    content = <CondisProductModal product={mirror} onClose={onClose} topInset={topInset} />;
+    content = <CondisProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
   } else if (target.store === 'ametller') {
     const AmetllerProductModal = require('./AmetllerProductModal').default;
-    content = <AmetllerProductModal product={mirror} onClose={onClose} topInset={topInset} />;
+    content = <AmetllerProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
   } else if (target.store === 'aldi') {
     const AldiProductModal = require('./AldiProductModal').default;
-    content = <AldiProductModal product={mirror} onClose={onClose} topInset={topInset} />;
+    content = <AldiProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
   } else if (target.store === 'hiperdino') {
     const HiperdinoProductModal = require('./HiperdinoProductModal').default;
-    content = <HiperdinoProductModal product={mirror} onClose={onClose} topInset={topInset} />;
+    content = <HiperdinoProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
   } else if (target.store === 'alcampo') {
     const AlcampoProductModal = require('./AlcampoProductModal').default;
-    content = <AlcampoProductModal product={mirror} onClose={onClose} topInset={topInset} />;
+    content = <AlcampoProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
   } else if (target.store === 'plusfresc') {
     const PlusfrescProductModal = require('./PlusfrescProductModal').default;
-    content = <PlusfrescProductModal product={mirror} onClose={onClose} topInset={topInset} />;
+    content = <PlusfrescProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
   } else {
     const BonareaProductModal = require('./BonareaProductModal').default;
-    content = <BonareaProductModal product={mirror} onClose={onClose} topInset={topInset} />;
+    content = <BonareaProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
   }
 
   return (

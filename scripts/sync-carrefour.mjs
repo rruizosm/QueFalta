@@ -46,10 +46,12 @@
 //      DRY_RUN=1           (no escribe en Supabase; imprime resumen)
 //      MAX_CATEGORIES=N    (limita nº de N2, para pruebas)
 //      MAX_ZONES=N         (limita nº de zonas/almacenes a barrer, para pruebas)
+//      ONLY_CATEGORY=catXXX (sync parcial de un N1 completo o una N2; no hace markStale global)
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
+import { validGlobalGtin } from './lib/gtin.mjs';
 const execFileP = promisify(execFile);
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -58,6 +60,7 @@ const DRY_RUN = process.env.DRY_RUN === '1';
 const CONCURRENCY = Number(process.env.CONCURRENCY || 4);
 const MAX_CATEGORIES = process.env.MAX_CATEGORIES ? Number(process.env.MAX_CATEGORIES) : Infinity;
 const MAX_ZONES = process.env.MAX_ZONES ? Number(process.env.MAX_ZONES) : Infinity;
+const ONLY_CATEGORY = process.env.ONLY_CATEGORY?.trim() || null;
 
 // Ficha de producto (INGREDIENTES/NUTRICIÓN/ORIGEN…). La ficha cambia poco frente al
 // precio (diario), así que NO se baja la de todos cada día: solo la de productos sin
@@ -78,7 +81,6 @@ const HOME = 'https://www.carrefour.es';
 const PAGE_SIZE = 24;
 const SKIP_N1 = new Set([
   'cat20968591', // "Ofertas": no es taxonomía, duplica productos ya capturados en su N2 real.
-  'cat20005',    // "Droguería y limpieza": excluida del catálogo de QuéFalta.
 ]);
 const runStart = new Date().toISOString();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -279,7 +281,7 @@ function normalize(p) {
     retailer_product_id: p.sku_id ?? null,
     display_name: (p.name || '').trim(),
     thumbnail: p.images?.desktop || p.images?.mobile || null,
-    ean: p.ean13 ?? null,
+    ean: validGlobalGtin(p.ean13),
     unit_price: eurNum(p.price ?? p.app_price),
     price_format: p.price ?? p.app_price ?? null,
     price_per_unit: ppu?.value ?? null,
@@ -361,6 +363,23 @@ function findNutritionInfo(state) {
   return walk(state, 0);
 }
 
+// Conserva el objeto padre de `nutrition_info`, que es donde Carrefour publica
+// el EAN de la variante concreta mostrada en la ficha.
+function findDetailProduct(state) {
+  const seen = new Set();
+  const walk = (value, depth) => {
+    if (!value || typeof value !== 'object' || depth > 9 || seen.has(value)) return null;
+    seen.add(value);
+    if (value.nutrition_info) return value;
+    for (const child of Object.values(value)) {
+      const found = walk(child, depth + 1);
+      if (found) return found;
+    }
+    return null;
+  };
+  return walk(state, 0);
+}
+
 // valorEnergetico + macros → texto (un nutriente por línea, subítems entre paréntesis).
 function nutritionText(ni) {
   const lines = [];
@@ -422,7 +441,11 @@ async function fetchDetail(url) {
       const mi = stdout.lastIndexOf('\n__HTTP__');
       const html = mi >= 0 ? stdout.slice(0, mi) : stdout;
       if (html.includes('window.__INITIAL_STATE__')) {
-        return carrefourDetailColumns(findNutritionInfo(extractInitialState(html) ?? {}));
+        const state = extractInitialState(html) ?? {};
+        const product = findDetailProduct(state);
+        const detail = carrefourDetailColumns(product?.nutrition_info ?? findNutritionInfo(state));
+        const ean = validGlobalGtin(product?.ean);
+        return ean ? { ...detail, ean } : detail;
       }
     } catch (e) {
       if (t === 3) console.warn(`[carrefour] ficha curl ${full} falló: ${e.message.split('\n')[0]}`);
@@ -436,7 +459,7 @@ async function fetchDetail(url) {
 // resto. Paginado por Range (PostgREST corta a 1000).
 async function fetchExistingDetail() {
   const map = new Map();
-  const cols = ['id', 'detail_synced_at', ...DETAIL_COLS].join(',');
+  const cols = ['id', 'ean', 'detail_synced_at', ...DETAIL_COLS].join(',');
   const PAGE = 1000;
   for (let from = 0; ; from += PAGE) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/carrefour_products?select=${cols}`, {
@@ -468,7 +491,11 @@ async function loadExistingDetail(rows) {
   for (const r of rows) {
     const prev = existing.get(r.id);
     const fresh = prev?.detail_synced_at && now - new Date(prev.detail_synced_at).getTime() < ttlMs;
-    if (prev) { for (const c of DETAIL_COLS) r[c] = prev[c] ?? null; r.detail_synced_at = prev.detail_synced_at ?? null; }
+    if (prev) {
+      for (const c of DETAIL_COLS) r[c] = prev[c] ?? null;
+      r.ean = validGlobalGtin(r.ean) ?? validGlobalGtin(prev.ean);
+      r.detail_synced_at = prev.detail_synced_at ?? null;
+    }
     if (!fresh) stale.push(r);
   }
   return stale;
@@ -487,7 +514,7 @@ async function downloadDetail(stale) {
       if (url) {
         try {
           const d = await fetchDetail(url);
-          const got = DETAIL_COLS.some((c) => d[c]);
+          const got = DETAIL_COLS.some((c) => d[c]) || Boolean(d.ean);
           const had = DETAIL_COLS.some((c) => r[c]); // r aún tiene lo previo arrastrado
           // Si no saca nada PERO ya había ficha, NO la pisamos (Cloudflare/cambio de HTML):
           // se conserva y se reintenta otro día. Si nunca tuvo, se marca rastreada igual.
@@ -526,12 +553,12 @@ async function fetchCategoryTree(cookie) {
   const n1s = categoryItems(home, 'firstLevelCategories').filter((it) => !SKIP_N1.has(it.id));
   const catRows = [], n2s = [];
   for (const n1 of n1s) {
-    catRows.push({ id: n1.id, name: n1.display_name, parent_id: null, url: n1.url, product_count: null, published: true, synced_at: runStart });
-    const page = await fetchHtml(n1.url, { cookie });
-    for (const n2 of categoryItems(page, 'secondLevelCategories')) {
-      if (n2s.some((x) => x.id === n2.id)) continue; // una N2 puede colgar de varios N1
-      catRows.push({ id: n2.id, name: n2.display_name, parent_id: n1.id, url: n2.url, product_count: null, published: true, synced_at: runStart });
-      n2s.push({ id: n2.id, name: n2.display_name, url: n2.url });
+      catRows.push({ id: n1.id, name: n1.display_name, parent_id: null, url: n1.url, product_count: null, published: true, synced_at: runStart });
+      const page = await fetchHtml(n1.url, { cookie });
+      for (const n2 of categoryItems(page, 'secondLevelCategories')) {
+        if (n2s.some((x) => x.id === n2.id)) continue; // una N2 puede colgar de varios N1
+        catRows.push({ id: n2.id, name: n2.display_name, parent_id: n1.id, url: n2.url, product_count: null, published: true, synced_at: runStart });
+        n2s.push({ id: n2.id, name: n2.display_name, parent_id: n1.id, url: n2.url });
     }
     await sleep(120);
   }
@@ -587,9 +614,20 @@ async function main() {
   console.log(`[carrefour] ${zones.length} zonas: ${zones.map((z) => `${z.name}[${[...z.ccaas].join('/')}]`).join(', ')}`);
 
   // 1) Árbol de categorías (taxonomía nacional): una vez, con la zona base.
-  const { catRows, n2s } = await fetchCategoryTree(baseCookie);
+  const tree = await fetchCategoryTree(baseCookie);
+  const selectedN2s = ONLY_CATEGORY
+    ? tree.n2s.filter((c) => c.id === ONLY_CATEGORY || c.parent_id === ONLY_CATEGORY)
+    : tree.n2s;
+  if (ONLY_CATEGORY && selectedN2s.length === 0) {
+    throw new Error(`ONLY_CATEGORY no encontrada o sin subcategorías: ${ONLY_CATEGORY}`);
+  }
+  const selectedIds = ONLY_CATEGORY
+    ? new Set([ONLY_CATEGORY, ...selectedN2s.map((c) => c.id)])
+    : null;
+  const catRows = selectedIds ? tree.catRows.filter((c) => selectedIds.has(c.id)) : tree.catRows;
+  const n2s = selectedN2s;
   const cats = n2s.slice(0, MAX_CATEGORIES);
-  console.log(`[carrefour] ${catRows.length} categorías (${n2s.length} N2; proceso ${cats.length})`);
+  console.log(`[carrefour] ${catRows.length} categorías (${n2s.length} N2; proceso ${cats.length})${ONLY_CATEGORY ? ` · parcial ${ONLY_CATEGORY}` : ''}`);
 
   const catName = new Map(n2s.map((c) => [c.id, c.name]));
   const products = new Map();         // product_id → normalizado (datos de la 1ª zona que lo trae)
@@ -682,6 +720,7 @@ async function main() {
         try {
           const d = await fetchDetail(url);
           console.log(`\nficha ${r.id} — ${r.display_name}`);
+          if (d.ean) console.log(`  ean: ${d.ean}`);
           for (const c of DETAIL_COLS) if (d[c]) console.log(`  ${c}: ${d[c].replace(/\n/g, ' / ').slice(0, 140)}`);
         } catch (e) { console.warn(`  ficha falló: ${e.message.split('\n')[0]}`); }
       }
@@ -701,8 +740,12 @@ async function main() {
 
   await upsert('carrefour_categories', catRows);
   await upsert('carrefour_products', rows);
-  await markStale('carrefour_products');
-  await markStale('carrefour_categories');
+  if (!ONLY_CATEGORY) {
+    await markStale('carrefour_products');
+    await markStale('carrefour_categories');
+  } else {
+    console.log(`[carrefour] sync parcial: se omite markStale global (${ONLY_CATEGORY})`);
+  }
   console.log(`[carrefour] catálogo + regions guardados (${rows.length} productos)`);
 
   // Ficha (INGREDIENTES/NUTRICIÓN/ORIGEN…): solo nuevos/caducados (tope DETAIL_MAX); el resto

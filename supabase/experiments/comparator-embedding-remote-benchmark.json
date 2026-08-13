@@ -1,0 +1,76 @@
+{
+  "generated_at": "2026-08-09T15:06:04.618Z",
+  "project_url": "https://auth.quefalta.es",
+  "evaluated_pairs": 400,
+  "configuration": {
+    "vector_weight": 0.5,
+    "lexical_weight": 0.5,
+    "threshold": 0.58,
+    "match_count": 100,
+    "min_vector_score": -1,
+    "rpc": "catalog_embedding_candidates_v2"
+  },
+  "quality": {
+    "accuracy": 0.795,
+    "comparable_precision": 1,
+    "comparable_recall": 0.5393,
+    "predicted_comparable": 96,
+    "false_positive_count": 0,
+    "selected_remote": {
+      "vector_weight": 0.25,
+      "lexical_weight": 0.75,
+      "threshold": 0.3,
+      "accuracy": 0.795,
+      "comparable_precision": 1,
+      "comparable_recall": 0.5393,
+      "predicted_comparable": 96,
+      "false_positive_count": 0
+    },
+    "at_baseline_precision_remote": {
+      "vector_weight": 0.25,
+      "lexical_weight": 0.75,
+      "threshold": 0.3,
+      "accuracy": 0.795,
+      "comparable_precision": 1,
+      "comparable_recall": 0.5393,
+      "predicted_comparable": 96,
+      "false_positive_count": 0
+    },
+    "conservative_remote": {
+      "vector_weight": 0.25,
+      "lexical_weight": 0.75,
+      "threshold": 0.3,
+      "accuracy": 0.795,
+      "comparable_precision": 1,
+      "comparable_recall": 0.5393,
+      "predicted_comparable": 96,
+      "false_positive_count": 0
+    }
+  },
+  "retrieval": {
+    "retrieved_pairs": 136,
+    "comparable_top_1": 79,
+    "comparable_top_5": 95,
+    "comparable_top_20": 96,
+    "comparable_top_100": 96,
+    "comparable_total": 178,
+    "not_retrieved_by_label": {
+      "identico": 82,
+      "comparable": 82,
+      "no_relacionado": 100
+    }
+  },
+  "score_parity": {
+    "compared_pairs": 136,
+    "max_vector_absolute_difference": 0.08563211026372708,
+    "max_lexical_absolute_difference": 4.951456311630409e-7
+  },
+  "latency_ms": {
+    "first": 669.64,
+    "mean": 218.56,
+    "p50": 214.82,
+    "p95": 374.79,
+    "max": 763.89
+  },
+  "false_positives": []
+}

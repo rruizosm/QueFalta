@@ -1,0 +1,76 @@
+{
+  "generated_at": "2026-08-09T16:26:23.961Z",
+  "project_url": "https://auth.quefalta.es",
+  "evaluated_pairs": 400,
+  "configuration": {
+    "vector_weight": 0.5,
+    "lexical_weight": 0.5,
+    "threshold": 0.6,
+    "match_count": 20,
+    "min_vector_score": -1,
+    "rpc": "catalog_embedding_candidates_v3"
+  },
+  "quality": {
+    "accuracy": 0.8575,
+    "comparable_precision": 1,
+    "comparable_recall": 0.6798,
+    "predicted_comparable": 121,
+    "false_positive_count": 0,
+    "selected_remote": {
+      "vector_weight": 0.25,
+      "lexical_weight": 0.75,
+      "threshold": 0.3,
+      "accuracy": 0.855,
+      "comparable_precision": 0.9839,
+      "comparable_recall": 0.6854,
+      "predicted_comparable": 124,
+      "false_positive_count": 2
+    },
+    "at_baseline_precision_remote": {
+      "vector_weight": 0.5,
+      "lexical_weight": 0.5,
+      "threshold": 0.6,
+      "accuracy": 0.8575,
+      "comparable_precision": 1,
+      "comparable_recall": 0.6798,
+      "predicted_comparable": 121,
+      "false_positive_count": 0
+    },
+    "conservative_remote": {
+      "vector_weight": 0.5,
+      "lexical_weight": 0.5,
+      "threshold": 0.6,
+      "accuracy": 0.8575,
+      "comparable_precision": 1,
+      "comparable_recall": 0.6798,
+      "predicted_comparable": 121,
+      "false_positive_count": 0
+    }
+  },
+  "retrieval": {
+    "retrieved_pairs": 246,
+    "comparable_top_1": 100,
+    "comparable_top_5": 120,
+    "comparable_top_20": 122,
+    "comparable_within_returned_candidates": 122,
+    "comparable_total": 178,
+    "not_retrieved_by_label": {
+      "identico": 0,
+      "comparable": 56,
+      "no_relacionado": 98
+    }
+  },
+  "score_parity": {
+    "compared_pairs": 246,
+    "max_vector_absolute_difference": 0.1174992562785876,
+    "max_lexical_absolute_difference": 4.951456311630409e-7
+  },
+  "latency_ms": {
+    "first": 1086.84,
+    "mean": 478.03,
+    "p50": 475.87,
+    "p95": 734.22,
+    "max": 1154.32
+  },
+  "false_positives": []
+}

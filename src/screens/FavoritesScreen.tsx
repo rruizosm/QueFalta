@@ -366,12 +366,18 @@ const themedStyles = () => StyleSheet.create({
 
   // ── Fila de pestañas + selector de súper (un bloque aparte) ───
   controlsRow: {
+    // Android puede medir esta fila como 0 durante el primer layout si su
+    // único hijo es flex. Reservamos explícitamente la altura del segmentado
+    // para que el buscador de abajo nunca se pinte encima.
+    flexDirection: 'row', alignItems: 'center',
+    minHeight: 44,
     marginHorizontal: 16, marginBottom: 8,
   },
 
   // ── Segmentado Productos/Categorías (pastilla blanca, Claude Design) ─
   seg: {
     flex: 1, flexDirection: 'row',
+    minHeight: 44,
     backgroundColor: colors.surfaceAlt, borderRadius: 18, padding: 4, gap: 3,
   },
   segBtn: {
@@ -422,7 +428,7 @@ const themedStyles = () => StyleSheet.create({
     marginHorizontal: 16, marginBottom: 8,
   },
   // La barra dentro de la fila no lleva márgenes propios (los pone la fila).
-  prodSearchBox: { flex: 1, marginHorizontal: 0, marginBottom: 0 },
+  prodSearchBox: { flex: 1, minWidth: 0, marginHorizontal: 0, marginBottom: 0 },
 
   // ── Category rows ─────────────────────────────────────────────
   list: { paddingHorizontal: 16, paddingBottom: 20, paddingTop: 4 },

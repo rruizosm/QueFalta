@@ -461,7 +461,12 @@ export default function StoreProductList({
         </View>
       )}
 
-      <StoreProductModal target={detail} onClose={() => setDetail(null)} fullScreen />
+      <StoreProductModal
+        target={detail}
+        onClose={() => setDetail(null)}
+        fullScreen
+        badgeLabel={badgeLabel}
+      />
     </View>
   );
 }

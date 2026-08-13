@@ -84,12 +84,18 @@ export function normalizeAmetllerOffer(product) {
 }
 
 export function normalizeAlcampoOffer(product) {
-  const promotions = Array.isArray(product?.promotions)
-    ? product.promotions.filter((promotion) => promotion?.limitReached !== true)
-    : [];
+  // El endpoint JSON usa `promotions`; el SSR de Playwright usa `offers` y, en
+  // algunos productos, además deja una oferta singular en `offer`.
+  const rawPromotions = Array.isArray(product?.promotions)
+    ? product.promotions
+    : [
+      ...(Array.isArray(product?.offers) ? product.offers : []),
+      ...(product?.offer ? [product.offer] : []),
+    ];
+  const promotions = rawPromotions.filter((promotion) => promotion?.limitReached !== true);
   const descriptions = unique(promotions.map((promotion) => cleanOfferText(promotion?.description)));
-  const regular = num(product?.price?.amount);
-  const candidate = num(product?.promoPrice?.amount);
+  const regular = num(product?.price?.amount ?? product?.price?.current?.amount);
+  const candidate = num(product?.promoPrice?.amount ?? product?.promoPrice?.current?.amount);
   const promoPrice = candidate != null && regular != null && candidate > 0 && candidate < regular
     ? candidate
     : null;

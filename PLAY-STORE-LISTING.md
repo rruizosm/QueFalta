@@ -52,7 +52,7 @@ TODO ORGANIZADO
 
 Ordena la compra por supermercado y zonas, reutiliza listas anteriores y mantén tus grupos al día con notificaciones.
 
-Inicia sesión con Google. Puedes gestionar tus datos y eliminar tu cuenta desde la aplicación.
+Inicia sesión con Google o un enlace enviado a tu correo. Puedes gestionar tus datos y eliminar tu cuenta desde la aplicación.
 
 Disponible en español y catalán.
 
@@ -84,7 +84,7 @@ TOT ORGANITZAT
 
 Ordena la compra per supermercat i zones, reutilitza llistes anteriors i mantén els teus grups al dia amb notificacions.
 
-Inicia la sessió amb Google. Pots gestionar les teves dades i eliminar el teu compte des de l’aplicació.
+Inicia la sessió amb Google o un enllaç enviat al teu correu. Pots gestionar les teves dades i eliminar el teu compte des de l’aplicació.
 
 Disponible en català i castellà.
 

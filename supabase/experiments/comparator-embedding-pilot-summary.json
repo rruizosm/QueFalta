@@ -1,0 +1,27 @@
+{
+  "generated_at": "2026-08-09T12:27:15.061Z",
+  "reviewed_pairs": 400,
+  "unique_products": 683,
+  "model": "text-embedding-3-small",
+  "dimensions": 512,
+  "content_version": "catalog_embedding_content_v1",
+  "missing_canonical_unit": 91,
+  "missing_quantity_base": 211,
+  "by_store": {
+    "alcampo": 68,
+    "aldi": 22,
+    "ametller": 16,
+    "bonarea": 20,
+    "caprabo": 13,
+    "carrefour": 139,
+    "condis": 26,
+    "consum": 137,
+    "dia": 22,
+    "eroski": 11,
+    "esclat": 44,
+    "hiperdino": 66,
+    "mercadona": 31,
+    "plusfresc": 28,
+    "sorli": 40
+  }
+}

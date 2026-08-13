@@ -26,7 +26,9 @@ create extension if not exists pg_trgm;
 -- cartón" debe casar con "leche entera Hacendado" — si "cartón" queda en el needle,
 -- el filtro todas-las-palabras lo veta y la comparativa sale vacía.
 create or replace function public.catalog_clean_name(p text)
-returns text language sql immutable as $$
+returns text language sql immutable
+set search_path = pg_catalog, public, extensions
+as $$
   select nullif(
     regexp_replace(
       btrim(
@@ -54,7 +56,9 @@ $$;
 -- Da precisión sin taxonomía común: "leche entera" exige "leche" Y "entera"
 -- → fuera "café con leche", "leche perro", "gel de leche y miel".
 create or replace function public.catalog_has_all_words(p_name text, p_needle text)
-returns boolean language sql immutable as $$
+returns boolean language sql immutable
+set search_path = pg_catalog, public, extensions
+as $$
   select coalesce(bool_and(p_name like '%' || w || '%'), false)
   from unnest(string_to_array(coalesce(p_needle, ''), ' ')) as w
   where length(w) >= 3;
@@ -73,7 +77,9 @@ $$;
 -- sigue eligiendo el mejor candidato. Si aparecen falsos positivos, el siguiente
 -- dial es un suelo de similarity o el match semántico por embeddings (Fase 3).
 create or replace function public.catalog_family_match(p_name text, p_needle text)
-returns boolean language sql immutable as $$
+returns boolean language sql immutable
+set search_path = pg_catalog, public, extensions
+as $$
   with words as (
     select w
     from unnest(string_to_array(coalesce(p_needle, ''), ' ')) as w
@@ -105,7 +111,9 @@ returns table (
   price_per_unit_unit text,     -- 'l' | 'kg' | 'ud'
   locked              boolean   -- teaser free: existe más barato, sin detalle
 )
-language sql stable as $$
+language sql stable
+set search_path = pg_catalog, public, extensions
+as $$
   with q as (select public.catalog_clean_name(p_name) as needle),
   gate as (
     select public.paywall_enabled() and not public.is_premium(auth.uid()) as locked

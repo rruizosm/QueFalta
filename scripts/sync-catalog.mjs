@@ -25,6 +25,7 @@
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { PROVINCE_COMMUNITY } from './lib/province-community.mjs';
+import { validGlobalGtin } from './lib/gtin.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -369,7 +370,8 @@ async function main() {
         try {
           const d = await merca(`/products/${r.id}/`, 'es', r.source_wh);
           const nutrition = mercadonaNutrition(d);
-          if (d?.ean && !withEan.has(r.id)) eanRows.push({ id: r.id, display_name: r.display_name, raw: r.raw, ean: String(d.ean) });
+      const ean = validGlobalGtin(d?.ean);
+      if (ean && !withEan.has(r.id)) eanRows.push({ id: r.id, display_name: r.display_name, raw: r.raw, ean });
           if (nutrition && !withNutrition.has(r.id)) nutritionRows.push({ id: r.id, display_name: r.display_name, raw: r.raw, nutrition });
         } catch { /* 404 puntual (producto retirado entre pasadas): se reintenta otro run */ }
         if (++done % 500 === 0) console.log(`[sync] detalle ${done}/${batch.length} · ${eanRows.length} ean · ${nutritionRows.length} nutrition`);

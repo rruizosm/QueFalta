@@ -1,0 +1,12 @@
+{
+  "generated_at": "2026-08-09T12:27:25.949Z",
+  "model": "text-embedding-3-small",
+  "dimensions": 512,
+  "corpus_products": 683,
+  "embedded_products": 683,
+  "generated_this_run": 9,
+  "requests_this_run": 1,
+  "input_tokens_this_run": 359,
+  "estimated_cost_usd_this_run": 0.000007,
+  "complete": true
+}

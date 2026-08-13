@@ -1,0 +1,34 @@
+{
+  "generated_at": "2026-08-09T10:10:04.966Z",
+  "catalog_products": 172076,
+  "candidate_pairs": 400,
+  "human_labels": 0,
+  "by_bucket": {
+    "exact_gtin": 122,
+    "hard_negative": 140,
+    "lexical_compatible": 138
+  },
+  "by_source_store": {
+    "alcampo": 46,
+    "aldi": 23,
+    "ametller": 23,
+    "bonarea": 22,
+    "caprabo": 10,
+    "carrefour": 79,
+    "condis": 23,
+    "consum": 53,
+    "dia": 23,
+    "eroski": 6,
+    "esclat": 20,
+    "hiperdino": 13,
+    "mercadona": 21,
+    "plusfresc": 22,
+    "sorli": 16
+  },
+  "by_automated_suggestion": {
+    "comparable": 121,
+    "identico": 122,
+    "no_relacionado": 140,
+    "revisar": 17
+  }
+}

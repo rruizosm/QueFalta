@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 import { Session } from '@supabase/supabase-js';
 import * as WebBrowser from 'expo-web-browser';
@@ -19,8 +19,12 @@ interface AuthContextValue {
   session: Session | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
+  /** Envía un enlace de acceso de un solo uso. Crea la cuenta si no existe. */
+  signInWithEmail: (email: string) => Promise<void>;
   /** Solo iOS (Sign in with Apple). En el resto resuelve sin hacer nada. */
   signInWithApple: () => Promise<void>;
+  authCallbackError: boolean;
+  clearAuthCallbackError: () => void;
   /** scope 'global' cierra la sesión en TODOS los dispositivos. */
   signOut: (scope?: 'global' | 'local' | 'others') => Promise<void>;
 }
@@ -29,13 +33,54 @@ const AuthContext = createContext<AuthContextValue>({
   session: null,
   loading: true,
   signInWithGoogle: async () => {},
+  signInWithEmail: async () => {},
   signInWithApple: async () => {},
+  authCallbackError: false,
+  clearAuthCallbackError: () => {},
   signOut: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authCallbackError, setAuthCallbackError] = useState(false);
+  const processedAuthCallbacks = useRef(new Set<string>());
+  const clearAuthCallbackError = useCallback(() => setAuthCallbackError(false), []);
+
+  const exchangeAuthCodeFromUrl = useCallback(async (url: string) => {
+    const { queryParams } = Linking.parse(url);
+    const findUrlParam = (name: string) => {
+      const match = url.match(new RegExp(`[?#&]${name}=([^&#]*)`));
+      return match ? decodeURIComponent(match[1].replace(/\+/g, ' ')) : null;
+    };
+    const code = typeof queryParams?.code === 'string'
+      ? queryParams.code
+      : findUrlParam('code');
+    const accessToken = findUrlParam('access_token');
+    const refreshToken = findUrlParam('refresh_token');
+    const callbackKey = code ?? (accessToken && refreshToken ? accessToken : null);
+
+    // Los errores de Auth llegan en el fragmento de la URL cuando el enlace ha
+    // caducado o ya se ha usado. No deben confundirse con enlaces de invitación.
+    if (!callbackKey) {
+      if (findUrlParam('error') || findUrlParam('error_code')) setAuthCallbackError(true);
+      return;
+    }
+    if (processedAuthCallbacks.current.has(callbackKey)) return;
+
+    // Un enlace puede llegar a la vez al listener de Linking y al navegador de
+    // OAuth. Se marca antes del await para no intentar canjear el mismo PKCE dos
+    // veces (el código es de un solo uso).
+    processedAuthCallbacks.current.add(callbackKey);
+    const { error } = code
+      ? await supabase.auth.exchangeCodeForSession(code)
+      : await supabase.auth.setSession({
+          access_token: accessToken!,
+          refresh_token: refreshToken!,
+        });
+    if (error) setAuthCallbackError(true);
+    else setAuthCallbackError(false);
+  }, []);
 
   useEffect(() => {
     // Si el refresh token guardado ya no existe (p. ej. tras un signOut global
@@ -43,12 +88,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Found": purga la sesión local en silencio y sigue al login.
     supabase.auth
       .getSession()
-      .then(({ data: { session }, error }) => {
+      .then(async ({ data: { session }, error }) => {
         if (error) {
-          supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+          await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
           setSession(null);
         } else {
           setSession(session);
+        }
+
+        // Evita que getSession(null) compita con el canje del enlace durante un
+        // arranque en frío: primero se resuelve el storage y después el callback.
+        if (Platform.OS !== 'web') {
+          const initialUrl = await Linking.getInitialURL().catch(() => null);
+          if (initialUrl) await exchangeAuthCodeFromUrl(initialUrl);
         }
       })
       .catch(() => {
@@ -62,7 +114,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [exchangeAuthCodeFromUrl]);
+
+  // Los enlaces mágicos abren la app fuera del navegador interno de OAuth.
+  // El arranque en frío se procesa después de leer el storage en el efecto
+  // superior; aquí cubrimos el enlace recibido con la app ya abierta.
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      exchangeAuthCodeFromUrl(url).catch(() => setAuthCallbackError(true));
+    });
+    return () => subscription.remove();
+  }, [exchangeAuthCodeFromUrl]);
 
   // RevenueCat: liga el appUserID al uid de Supabase (el webhook escribe
   // premium_until por ese id). No-op en Expo Go o sin API key (lib/purchases).
@@ -101,10 +165,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (result.type === 'success') {
       // exchangeCodeForSession espera SOLO el `code`, no la URL completa.
-      const { queryParams } = Linking.parse(result.url);
-      const code = typeof queryParams?.code === 'string' ? queryParams.code : null;
-      if (code) await supabase.auth.exchangeCodeForSession(code);
+      await exchangeAuthCodeFromUrl(result.url);
     }
+  };
+
+  const signInWithEmail = async (email: string) => {
+    const redirectTo = Platform.OS === 'web'
+      ? window.location.origin
+      : Linking.createURL('auth/callback');
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: {
+        emailRedirectTo: redirectTo,
+        shouldCreateUser: true,
+      },
+    });
+    if (error) throw error;
   };
 
   // Sign in with Apple (flujo NATIVO, solo iOS). Apple devuelve un identityToken
@@ -162,7 +239,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ session, loading, signInWithGoogle, signInWithApple, signOut }}>
+    <AuthContext.Provider
+      value={{
+        session,
+        loading,
+        signInWithGoogle,
+        signInWithEmail,
+        signInWithApple,
+        authCallbackError,
+        clearAuthCallbackError,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

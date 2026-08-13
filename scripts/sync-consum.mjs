@@ -39,6 +39,7 @@
 //      SKIP_N1=csv         (ids de N1 a excluir; por defecto "99999" = Ahora más barato)
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
+import { validGlobalGtin } from './lib/gtin.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -149,7 +150,7 @@ function normalize(p) {
     brand: (pd.brand?.name || '').trim() || null,
     packaging,
     thumbnail: pickThumbnail(p),
-    ean: p.ean || null,
+    ean: validGlobalGtin(p.ean),
     unit_price: price,
     price_format: price != null ? `${eurStr(price)} €` : null,
     promo_base_price: promoBasePrice,

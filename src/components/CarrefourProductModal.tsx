@@ -13,7 +13,7 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
-import ProductImage from '../components/ProductImage';
+import ProductDetailImage from '../components/ProductDetailImage';
 import FoodIndexSummary from '../components/FoodIndexSummary';
 import ProductInfoSections from '../components/ProductInfoSections';
 import { useNutritionInfoDisclosure } from '../components/NutritionInfoButton';
@@ -27,11 +27,12 @@ interface Props {
   /** Padding superior de la cabecera (lo fija StoreProductModal): 56 a pantalla
    *  completa (cesta), 16 dentro de la hoja (catálogo). */
   topInset?: number;
+  badgeLabel?: string;
 }
 
 /** Detalle de un producto de Carrefour. Pinta los datos ya cargados (no hay fetch:
  *  la API de Carrefour va por el espejo en Supabase). */
-export default function CarrefourProductModal({ product, onClose, topInset = 16 }: Props) {
+export default function CarrefourProductModal({ product, onClose, topInset = 16, badgeLabel }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { activeCart, addToActiveCart } = useCart();
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
@@ -123,13 +124,7 @@ export default function CarrefourProductModal({ product, onClose, topInset = 16 
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        {product.thumbnail ? (
-          <ProductImage uri={product.thumbnail} style={styles.photo} />
-        ) : (
-          <View style={[styles.photo, styles.photoPlaceholder]}>
-            <Ionicons name="image-outline" size={48} color={colors.inkFaint} />
-          </View>
-        )}
+        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} />
 
         <Text style={styles.name}>{product.displayName}</Text>
 
@@ -164,7 +159,7 @@ export default function CarrefourProductModal({ product, onClose, topInset = 16 
         ) : null}
 
         {/* Comparativa: más barato en otros súper */}
-        <SimilarProductsSection productName={product.displayName} excludeStore="carrefour" />
+        <SimilarProductsSection productId={product.id} excludeStore="carrefour" />
 
         {/* Características del producto (del __INITIAL_STATE__ de Carrefour; null si aún no rastreada) */}
         <ProductInfoSections

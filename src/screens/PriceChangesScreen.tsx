@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -83,8 +83,16 @@ export default function PriceChangesScreen() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(false);
+  // Igual que Catálogo/Novedades: FlatList puede disparar onEndReached más de
+  // una vez antes de que React pinte loadingMore. El ref cierra esa ventana y
+  // loadSeq evita que una respuesta de una pestaña anterior altere la actual.
+  const loadingMoreRef = useRef(false);
+  const loadSeq = useRef(0);
 
   useEffect(() => {
+    const seq = ++loadSeq.current;
+    loadingMoreRef.current = false;
+    setLoadingMore(false);
     const requestedStores = store === 'all' ? stores.map((item) => item.key) : [store];
     const missingStores = requestedStores.filter((storeKey) => !cache[cacheKeyFor(storeKey)]);
     if (missingStores.length === 0) { setLoading(false); setError(false); return; }
@@ -96,13 +104,13 @@ export default function PriceChangesScreen() {
       page: await fetchPriceChanges(storeKey, direction, region, postalCode, PRICE_CHANGES_PAGE_SIZE),
     })))
       .then((results) => {
-        if (!cancelled) setCache((current) => ({
+        if (!cancelled && loadSeq.current === seq) setCache((current) => ({
           ...current,
           ...Object.fromEntries(results.map(({ storeKey, page }) => [cacheKeyFor(storeKey), page])),
         }));
       })
-      .catch(() => { if (!cancelled) setError(true); })
-      .finally(() => { if (!cancelled) setLoading(false); });
+      .catch(() => { if (!cancelled && loadSeq.current === seq) setError(true); })
+      .finally(() => { if (!cancelled && loadSeq.current === seq) setLoading(false); });
     return () => { cancelled = true; };
     // cache a propósito fuera de deps: solo dispara al cambiar súper/dirección.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -120,12 +128,14 @@ export default function PriceChangesScreen() {
   }, [cache, store, stores, direction, region, postalCode]);
 
   const loadMore = useCallback(() => {
-    if (loading || loadingMore) return;
+    if (loading || loadingMoreRef.current) return;
     const requestedStores = store === 'all' ? stores.map((item) => item.key) : [store];
     const storesWithMore = requestedStores.filter((storeKey) =>
       cache[cacheKeyFor(storeKey)]?.nextOffset != null,
     );
     if (storesWithMore.length === 0) return;
+    const seq = loadSeq.current;
+    loadingMoreRef.current = true;
     setLoadingMore(true);
     Promise.all(storesWithMore.map(async (storeKey) => {
       const previous = cache[cacheKeyFor(storeKey)]!;
@@ -135,6 +145,7 @@ export default function PriceChangesScreen() {
       return { storeKey, previous, page };
     }))
       .then((results) => {
+        if (loadSeq.current !== seq) return;
         setCache((current) => ({
           ...current,
           ...Object.fromEntries(results.map(({ storeKey, previous, page }) => [cacheKeyFor(storeKey), {
@@ -144,8 +155,12 @@ export default function PriceChangesScreen() {
         }));
       })
       .catch(() => {})
-      .finally(() => setLoadingMore(false));
-  }, [cache, direction, loading, loadingMore, postalCode, region, store, stores]);
+      .finally(() => {
+        if (loadSeq.current !== seq) return;
+        loadingMoreRef.current = false;
+        setLoadingMore(false);
+      });
+  }, [cache, direction, loading, postalCode, region, store, stores]);
 
   // La línea de precio de la fila pasa a "anterior tachado · actual en
   // verde/rojo · (%)" vía priceChange (lo pinta StoreProductList) →

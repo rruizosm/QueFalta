@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { NewListItem } from './lists';
+import { storeOfItem } from '../constants/stores';
 
 export interface Purchase {
   id: string;
@@ -9,6 +10,34 @@ export interface Purchase {
   itemCount: number;
   completedAt: string;
 }
+
+export interface PurchaseStatisticItem {
+  key?: string;
+  label?: string;
+  imageUrl?: string;
+  icon?: string;
+  quantity: number;
+  purchases: number;
+}
+
+export interface PurchaseStatistics {
+  purchaseCount: number;
+  stores: PurchaseStatisticItem[];
+  categories: PurchaseStatisticItem[];
+  products: PurchaseStatisticItem[];
+}
+
+const statisticItems = (rows: unknown): PurchaseStatisticItem[] =>
+  Array.isArray(rows)
+    ? rows.map((row: any) => ({
+      key: typeof row?.key === 'string' ? row.key : undefined,
+      label: typeof row?.label === 'string' ? row.label : undefined,
+      imageUrl: typeof row?.image_url === 'string' ? row.image_url : undefined,
+      icon: typeof row?.icon === 'string' ? row.icon : undefined,
+      quantity: Number(row?.quantity ?? 0),
+      purchases: Number(row?.purchases ?? 0),
+    }))
+    : [];
 
 /** Archives a completed shopping trip, with its item detail (for "repeat"). */
 export async function recordPurchase(
@@ -34,12 +63,27 @@ export async function recordPurchase(
       category_name: it.categoryName ?? null,
       mercadona_product_id: it.mercadonaProductId ?? null,
       store_product_id: it.storeProductId ?? null,
+      store_key: storeOfItem(it),
       unit_price: it.unitPrice ?? null,
       image_url: it.imageUrl ?? null,
     }));
     const { error: itemsError } = await supabase.from('purchase_items').insert(rows);
     if (itemsError) throw itemsError;
   }
+}
+
+/** Personal purchase trends. The database function restricts results to auth.uid(). */
+export async function fetchPurchaseStatistics(): Promise<PurchaseStatistics> {
+  const { data, error } = await supabase.rpc('my_purchase_statistics_visuals');
+  if (error) throw error;
+
+  const raw = (data ?? {}) as any;
+  return {
+    purchaseCount: Number(raw.purchase_count ?? 0),
+    stores: statisticItems(raw.stores),
+    categories: statisticItems(raw.categories),
+    products: statisticItems(raw.products),
+  };
 }
 
 /** The products of an archived purchase, shaped for re-adding to a cart. */

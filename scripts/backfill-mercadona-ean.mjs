@@ -16,6 +16,7 @@
 //      CONCURRENCY=6   detalles en paralelo
 //      LIMIT=N         tope de productos a resolver (debug)
 import { readFileSync } from 'node:fs';
+import { validGlobalGtin } from './lib/gtin.mjs';
 
 function loadEnvLocal() {
   try {
@@ -99,7 +100,8 @@ async function main() {
     await sleep(20 + Math.random() * 40);
     try {
       const d = await merca(`/products/${r.id}/`, r.source_wh);
-      if (d?.ean) eanRows.push({ id: r.id, display_name: r.display_name, raw: r.raw, ean: String(d.ean) });
+      const ean = validGlobalGtin(d?.ean);
+      if (ean) eanRows.push({ id: r.id, display_name: r.display_name, raw: r.raw, ean });
       else notfound++;
     } catch { notfound++; } // 404/403 persistente: se reintenta al relanzar (sigue con ean null)
     if (++done % 500 === 0) console.log(`[ean-backfill] ${done}/${todo.length} · ${eanRows.length} con ean`);

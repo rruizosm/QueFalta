@@ -1,0 +1,36 @@
+{
+  "generated_at": "2026-08-09T11:59:46.829Z",
+  "total_rows": 400,
+  "reviewed_rows": 400,
+  "pending_rows": 0,
+  "invalid_labels": 0,
+  "contract_conflicts_same_gtin": 0,
+  "automated_accuracy": 0.8375,
+  "precision": {
+    "exact_gtin_as_identico": 1,
+    "automated_comparable": 0.9917,
+    "automated_no_relacionado": 0.6643
+  },
+  "by_human_label": {
+    "comparable": 178,
+    "identico": 122,
+    "no_relacionado": 100
+  },
+  "confusion": {
+    "identico -> identico": 122,
+    "comparable -> no_relacionado": 1,
+    "comparable -> comparable": 120,
+    "revisar -> comparable": 11,
+    "revisar -> no_relacionado": 6,
+    "no_relacionado -> comparable": 47,
+    "no_relacionado -> no_relacionado": 93
+  },
+  "gates": {
+    "enough_rows": true,
+    "complete_review": true,
+    "no_invalid_labels": true,
+    "no_gtin_conflicts": true,
+    "exact_gtin_precision_100": true
+  },
+  "conflict_keys": []
+}

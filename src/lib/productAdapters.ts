@@ -20,6 +20,8 @@ export interface UIProduct {
   priceLabel: string;
   /** Precio numérico del envase (para el carrito). */
   unitPrice: number | null;
+  /** Precio numérico por unidad canónica, usado para ordenar el catálogo. */
+  pricePerUnit?: number | null;
   /** Línea secundaria: tamaño/formato del envase ("1 L", "250 Gr"), o null. */
   metaLabel: string | null;
   /** Precio por unidad de medida ya formateado ("3,90 €/L", "1,50 €/kg"), o null.
@@ -36,6 +38,14 @@ export interface UIProduct {
   /** Categoría del retailer (para que la Lista agrupe por zona al añadir). */
   categoryName: string | null;
 }
+
+const numericPricePerUnit = (value: string | null | undefined): number | null => {
+  if (!value) return null;
+  const match = value.replace(',', '.').match(/\d+(?:\.\d+)?/);
+  if (!match) return null;
+  const parsed = Number(match[0]);
+  return Number.isFinite(parsed) ? parsed : null;
+};
 
 const euro = (n: number | null | undefined): string =>
   n != null ? `${n.toFixed(2).replace('.', ',')} €` : '';
@@ -54,6 +64,7 @@ export function mercadonaToUI(
     imageUrl: p.thumbnail ?? null,
     priceLabel: formatPrice(p),
     unitPrice: parseFloat(p.price_instructions.unit_price),
+    pricePerUnit: numericPricePerUnit(p.price_instructions.reference_price),
     metaLabel: formatSize(p) || null,
     pricePerUnitLabel: formatReferencePrice(p),
     categoryName,
@@ -64,6 +75,7 @@ export function bonpreuToUI(p: BonpreuProduct): UIProduct {
   return {
     id: p.id, store: 'esclat', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit,
     categoryName: p.categoryName,
   };
@@ -73,6 +85,7 @@ export function carrefourToUI(p: CarrefourProduct): UIProduct {
   return {
     id: p.id, store: 'carrefour', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
   };
 }
@@ -81,6 +94,7 @@ export function bonareaToUI(p: BonareaProduct): UIProduct {
   return {
     id: p.id, store: 'bonarea', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
   };
 }
@@ -89,6 +103,7 @@ export function consumToUI(p: ConsumProduct): UIProduct {
   return {
     id: p.id, store: 'consum', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit,
     categoryName: p.categoryName,
   };
@@ -98,6 +113,7 @@ export function diaToUI(p: DiaProduct): UIProduct {
   return {
     id: p.id, store: 'dia', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
     offerTag: p.promoName,
   };
@@ -107,6 +123,7 @@ export function sorliToUI(p: SorliProduct): UIProduct {
   return {
     id: p.id, store: 'sorli', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     // El formato ya va en el nombre ("Naranja Bolsa 2kg") → sin metaLabel.
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
     nutriScoreGrade: p.nutriScoreGrade,
@@ -120,6 +137,7 @@ export function condisToUI(p: CondisProduct): UIProduct {
   return {
     id: p.id, store: 'condis', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
   };
 }
@@ -130,6 +148,7 @@ export function ametllerToUI(p: AmetllerProduct): UIProduct {
   return {
     id: p.id, store: 'ametller', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
   };
 }
@@ -139,6 +158,7 @@ export function aldiToUI(p: AldiProduct): UIProduct {
   return {
     id: p.id, store: 'aldi', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
   };
 }
@@ -148,6 +168,7 @@ export function hiperdinoToUI(p: HiperdinoProduct): UIProduct {
   return {
     id: p.id, store: 'hiperdino', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
   };
 }
@@ -158,6 +179,7 @@ export function alcampoToUI(p: AlcampoProduct): UIProduct {
   return {
     id: p.id, store: 'alcampo', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
   };
 }
@@ -168,6 +190,7 @@ export function plusfrescToUI(p: PlusfrescProduct): UIProduct {
   return {
     id: p.id, store: 'plusfresc', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
   };
 }
@@ -179,6 +202,7 @@ function tapestryToUI(p: TapestryProduct, store: CatalogStore): UIProduct {
   return {
     id: p.id, store, name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: null,
     metaLabel: null, pricePerUnitLabel: null, categoryName: p.categoryName,
   };
 }
@@ -197,6 +221,7 @@ export function favoriteToUI(p: FavoriteProduct): UIProduct {
     imageUrl: p.imageUrl ?? null,
     priceLabel: euro(unitPrice),
     unitPrice,
+    pricePerUnit: null,
     metaLabel: null,
     pricePerUnitLabel: null,
     categoryName: null,

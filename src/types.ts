@@ -254,6 +254,7 @@ export type HomeStackParamList = {
   Appearance: undefined;
   Language: undefined;
   History: undefined;
+  Statistics: undefined;
   Friends: undefined;
   Help: undefined;
   About: undefined;

@@ -136,7 +136,9 @@ filtro por comunidad (`src/constants/regions.ts`). Hoy solo se GUARDA, para no r
 el barrido después. Madrid se barre primero (sus datos = los "por defecto").
 
 Variables útiles: `MAX_ZONES=N` (limita nº de almacenes; para pruebas o para partir el
-barrido) y `MAX_CATEGORIES=N` (limita nº de N2).
+barrido), `MAX_CATEGORIES=N` (limita nº de N2) y `ONLY_CATEGORY=catXXX` (procesa
+solo un N1 completo o una N2). El modo `ONLY_CATEGORY` es parcial y omite el
+`markStale` global para no despublicar categorías no incluidas en la ejecución.
 
 **Orden a prueba de cortes + tope de ficha.** El sync guarda el **catálogo + `regions`/
 `regional_prices` PRIMERO** (log `[carrefour] catálogo + regions guardados`) y descarga la
@@ -158,10 +160,8 @@ incremental, `DETAIL_TTL_DAYS=30`). Si amplías `-ExecutionTimeLimit`, sube o qu
   para ejecutarlo completo, `node scripts/backfill-carrefour-ean.mjs`. Es
   reanudable: al relanzarlo solo procesa las filas cuyo `ean` continúe siendo
   `NULL`.
-- **Rama excluida:** el sync omite por completo “Droguería y limpieza” (N1
-  `cat20005`) y sus subcategorías; no se incorpora ningún producto al recorrer
-  esa rama. La retirada inicial de los datos existentes está documentada en
-  [`supabase/migrations/carrefour_exclude_drogueria_limpieza.sql`](../supabase/migrations/carrefour_exclude_drogueria_limpieza.sql).
+- **Droguería y limpieza:** el sync incluye la rama N1 `cat20005` y sus
+  subcategorías, incorporando sus productos al catálogo de Carrefour.
 - Tope de Carrefour: ~1008 productos por categoría N2; las secciones enormes
   (Alimentación, Desayuno, Conservas…) quedan truncadas ahí.
 - Si algún día Cloudflare empieza a bloquear también tu IP residencial, las

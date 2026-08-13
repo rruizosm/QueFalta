@@ -217,6 +217,7 @@ export default function ListScreen() {
         categoryEmoji: it.categoryEmoji,
         categoryName: it.categoryName,
         mercadonaProductId: it.mercadonaProductId,
+        storeProductId: it.storeProductId,
         unitPrice: it.unitPrice,
         imageUrl: it.imageUrl,
       }));

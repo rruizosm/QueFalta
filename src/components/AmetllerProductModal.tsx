@@ -13,7 +13,7 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
-import ProductImage from '../components/ProductImage';
+import ProductDetailImage from '../components/ProductDetailImage';
 import FoodIndexSummary from '../components/FoodIndexSummary';
 import ProductInfoSections from '../components/ProductInfoSections';
 import { useNutritionInfoDisclosure } from '../components/NutritionInfoButton';
@@ -27,13 +27,14 @@ interface Props {
   /** Padding superior de la cabecera (lo fija StoreProductModal): 56 a pantalla
    *  completa (cesta), 16 dentro de la hoja (catálogo). */
   topInset?: number;
+  badgeLabel?: string;
 }
 
 /** Detalle de un producto de Ametller Origen. Pinta los datos ya cargados (el
  *  catálogo va por el espejo en Supabase). Ficha bilingüe es/ca (ingredientes/
  *  nutrición/conservación/origen); los alérgenos no se muestran (SFCC solo da
  *  códigos numéricos sin leyenda). */
-export default function AmetllerProductModal({ product, onClose, topInset = 16 }: Props) {
+export default function AmetllerProductModal({ product, onClose, topInset = 16, badgeLabel }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { activeCart, addToActiveCart } = useCart();
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
@@ -117,13 +118,7 @@ export default function AmetllerProductModal({ product, onClose, topInset = 16 }
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        {product.thumbnail ? (
-          <ProductImage uri={product.thumbnail} style={styles.photo} />
-        ) : (
-          <View style={[styles.photo, styles.photoPlaceholder]}>
-            <Ionicons name="image-outline" size={48} color={colors.inkFaint} />
-          </View>
-        )}
+        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} />
 
         <Text style={styles.name}>{product.displayName}</Text>
 
@@ -141,7 +136,7 @@ export default function AmetllerProductModal({ product, onClose, topInset = 16 }
         ) : null}
 
         {/* Comparativa: más barato en otros súper */}
-        <SimilarProductsSection productName={product.displayName} excludeStore="ametller" />
+        <SimilarProductsSection productId={product.id} excludeStore="ametller" />
 
         {/* Características del producto (de la SCAPI de Ametller; null si sin dato) */}
         <ProductInfoSections

@@ -1,12 +1,16 @@
-import React, { type ComponentProps, useEffect, useState } from 'react';
+import React, { type ComponentProps, useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Linking,
   Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -22,6 +26,8 @@ import { useTranslation } from '../context/LanguageContext';
 import HardShadow from '../components/HardShadow';
 
 const LOGO = require('../../assets/quefalta-logo-blue.png');
+const TERMS_URL = 'https://quefalta.es/condiciones';
+const PRIVACY_URL = 'https://quefalta.es/privacidad';
 
 const FEATURES: Array<{
   icon: ComponentProps<typeof Ionicons>['name'];
@@ -44,9 +50,30 @@ export default function LoginScreen() {
     ? Math.max(insets.bottom + 12, 28)
     : Math.max(insets.bottom + 10, 24);
   const { t } = useTranslation();
-  const { signInWithGoogle, signInWithApple } = useAuth();
-  const [busy, setBusy] = useState<null | 'google' | 'apple'>(null);
+  const {
+    signInWithGoogle,
+    signInWithEmail,
+    signInWithApple,
+    authCallbackError,
+    clearAuthCallbackError,
+  } = useAuth();
+  const [busy, setBusy] = useState<null | 'google' | 'apple' | 'email'>(null);
   const [appleAvailable, setAppleAvailable] = useState(false);
+  const [emailExpanded, setEmailExpanded] = useState(false);
+  const [email, setEmail] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailError, setEmailError] = useState<null | 'invalid' | 'rate' | 'generic' | 'link'>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const emailInputRef = useRef<TextInput>(null);
+
+  const revealEmailInput = useCallback(() => {
+    // Espera a que el panel se haya montado y a la animaciÃ³n del teclado: asÃ­
+    // el campo queda por encima del teclado tanto en iOS como en Android.
+    requestAnimationFrame(() => {
+      emailInputRef.current?.focus();
+      setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 180);
+    });
+  }, []);
 
   useEffect(() => {
     if (Platform.OS !== 'ios') return;
@@ -54,6 +81,13 @@ export default function LoginScreen() {
       .then(setAppleAvailable)
       .catch(() => setAppleAvailable(false));
   }, []);
+
+  useEffect(() => {
+    if (!authCallbackError) return;
+    setEmailExpanded(true);
+    setEmailError('link');
+    clearAuthCallbackError();
+  }, [authCallbackError, clearAuthCallbackError]);
 
   const handleGoogleSignIn = async () => {
     setBusy('google');
@@ -73,13 +107,59 @@ export default function LoginScreen() {
     }
   };
 
+  const handleEmailSignIn = async () => {
+    const normalizedEmail = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setEmailError('invalid');
+      return;
+    }
+
+    setBusy('email');
+    setEmailError(null);
+    try {
+      await signInWithEmail(normalizedEmail);
+      Keyboard.dismiss();
+      setEmailSent(true);
+    } catch (error: unknown) {
+      const status = typeof error === 'object' && error != null && 'status' in error
+        ? Number((error as { status?: unknown }).status)
+        : null;
+      const message = error instanceof Error ? error.message : '';
+      setEmailError(status === 429 || /rate limit|60 seconds|security purposes/i.test(message)
+        ? 'rate'
+        : 'generic');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const emailErrorText = emailError === 'invalid'
+    ? t('login.emailInvalid')
+    : emailError === 'rate'
+      ? t('login.emailRateLimit')
+      : emailError === 'link'
+        ? t('login.emailLinkError')
+        : emailError === 'generic'
+          ? t('login.emailSendError')
+          : null;
+
+  const openLegalUrl = (url: string) => {
+    Linking.openURL(url).catch(() => {});
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
       <ScrollView
+        ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
         bounces={false}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={[
           styles.scrollContent,
           { paddingTop: insets.top + 10, paddingBottom: bottomPad },
@@ -182,10 +262,130 @@ export default function LoginScreen() {
               </HardShadow>
             </TouchableOpacity>
 
-            <Text style={styles.legal}>{t('login.legal')}</Text>
+            <TouchableOpacity
+              onPress={() => {
+                if (emailExpanded) {
+                  Keyboard.dismiss();
+                  setEmailExpanded(false);
+                } else {
+                  setEmailExpanded(true);
+                  revealEmailInput();
+                }
+                setEmailError(null);
+              }}
+              disabled={busy !== null}
+              activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityState={{ expanded: emailExpanded }}
+            >
+              <HardShadow
+                style={busy !== null
+                  ? { ...styles.emailToggleButton, ...styles.buttonDisabled }
+                  : styles.emailToggleButton}
+              >
+                <Ionicons name="mail-outline" size={19} color={colors.blue} />
+                <Text style={styles.emailToggleText}>{t('login.continueEmail')}</Text>
+                <Ionicons
+                  name={emailExpanded ? 'chevron-up' : 'chevron-down'}
+                  size={17}
+                  color={colors.inkSoft}
+                />
+              </HardShadow>
+            </TouchableOpacity>
+
+            {emailExpanded && (
+              <View style={styles.emailPanel}>
+                <Text style={styles.emailHint}>{t('login.emailHint')}</Text>
+                <TextInput
+                  ref={emailInputRef}
+                  value={email}
+                  onChangeText={(value) => {
+                    setEmail(value);
+                    setEmailSent(false);
+                    setEmailError(null);
+                  }}
+                  onSubmitEditing={() => {
+                    if (busy === null && !emailSent) handleEmailSignIn();
+                  }}
+                  onFocus={() => {
+                    setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 180);
+                  }}
+                  editable={busy === null}
+                  placeholder={t('login.emailPlaceholder')}
+                  placeholderTextColor={colors.inkSoft}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  autoComplete="email"
+                  textContentType="emailAddress"
+                  returnKeyType="send"
+                  style={[styles.emailInput, emailErrorText ? styles.emailInputError : null]}
+                  accessibilityLabel={t('login.emailPlaceholder')}
+                />
+
+                {emailErrorText && (
+                  <View style={styles.emailFeedbackRow}>
+                    <Ionicons name="alert-circle-outline" size={16} color={colors.red} />
+                    <Text style={styles.emailErrorText}>{emailErrorText}</Text>
+                  </View>
+                )}
+
+                {emailSent ? (
+                  <View style={styles.emailSuccess}>
+                    <Ionicons name="checkmark-circle" size={21} color={colors.ok} />
+                    <View style={styles.emailSuccessCopy}>
+                      <Text style={styles.emailSuccessTitle}>{t('login.emailSentTitle')}</Text>
+                      <Text style={styles.emailSuccessText}>
+                        {t('login.emailSentText', { email: email.trim() })}
+                      </Text>
+                    </View>
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    onPress={handleEmailSignIn}
+                    disabled={busy !== null}
+                    activeOpacity={0.85}
+                    accessibilityRole="button"
+                  >
+                    <HardShadow
+                      style={busy !== null
+                        ? { ...styles.emailButton, ...styles.buttonDisabled }
+                        : styles.emailButton}
+                    >
+                      {busy === 'email' ? (
+                        <ActivityIndicator color="#ffffff" size="small" />
+                      ) : (
+                        <Text style={styles.emailButtonText}>{t('login.sendMagicLink')}</Text>
+                      )}
+                    </HardShadow>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+
+            <Text style={styles.legal}>
+              {t('login.legalPrefix')}
+              <Text
+                style={styles.legalLink}
+                accessibilityRole="link"
+                onPress={() => openLegalUrl(TERMS_URL)}
+              >
+                {t('login.terms')}
+              </Text>
+              {t('login.legalMiddle')}
+              <Text
+                style={styles.legalLink}
+                accessibilityRole="link"
+                onPress={() => openLegalUrl(PRIVACY_URL)}
+              >
+                {t('login.privacyPolicy')}
+              </Text>
+              {t('login.legalSuffix')}
+            </Text>
           </View>
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -194,6 +394,9 @@ const themedStyles = () => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.paper,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
@@ -401,6 +604,103 @@ const themedStyles = () => StyleSheet.create({
     borderColor: '#000000',
     backgroundColor: '#000000',
   },
+  emailToggleButton: {
+    minHeight: 54,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    gap: 10,
+    borderRadius: 17,
+    borderColor: colors.border,
+    backgroundColor: colors.white,
+  },
+  emailToggleText: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 15,
+    fontFamily: fonts.bold,
+    color: colors.ink,
+  },
+  emailPanel: {
+    padding: 13,
+    gap: 10,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.white,
+  },
+  emailHint: {
+    fontSize: 11.5,
+    lineHeight: 16,
+    fontFamily: fonts.medium,
+    color: colors.inkSoft,
+  },
+  emailInput: {
+    minHeight: 50,
+    paddingHorizontal: 15,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.paper,
+    fontSize: 15,
+    fontFamily: fonts.medium,
+    color: colors.ink,
+  },
+  emailInputError: {
+    borderColor: colors.red,
+  },
+  emailFeedbackRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+  },
+  emailErrorText: {
+    flex: 1,
+    fontSize: 11,
+    lineHeight: 15,
+    fontFamily: fonts.medium,
+    color: colors.red,
+  },
+  emailButton: {
+    minHeight: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 13,
+    paddingHorizontal: 20,
+    borderRadius: 15,
+    borderColor: colors.blue,
+    backgroundColor: colors.blue,
+  },
+  emailButtonText: {
+    fontSize: 14,
+    fontFamily: fonts.bold,
+    color: '#ffffff',
+  },
+  emailSuccess: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 9,
+    padding: 11,
+    borderRadius: 14,
+    backgroundColor: 'rgba(63,143,79,0.12)',
+  },
+  emailSuccessCopy: {
+    flex: 1,
+    gap: 2,
+  },
+  emailSuccessTitle: {
+    fontSize: 13,
+    fontFamily: fonts.bold,
+    color: colors.ink,
+  },
+  emailSuccessText: {
+    fontSize: 11,
+    lineHeight: 15,
+    fontFamily: fonts.medium,
+    color: colors.inkSoft,
+  },
   buttonDisabled: {
     opacity: 0.55,
   },
@@ -427,5 +727,10 @@ const themedStyles = () => StyleSheet.create({
     lineHeight: 15,
     fontFamily: fonts.medium,
     color: colors.inkSoft,
+  },
+  legalLink: {
+    color: colors.blue,
+    fontFamily: fonts.semibold,
+    textDecorationLine: 'underline',
   },
 });

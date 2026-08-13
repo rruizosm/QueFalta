@@ -8,6 +8,7 @@ import ProductImage from './ProductImage';
 import GlassSurface from './GlassSurface';
 import type { CatalogStore } from '../constants/stores';
 import ProductPriceLine from './ProductPriceLine';
+import { ProductDetailBadge } from './ProductDetailImage';
 
 const grades: Record<NutriScoreGrade, string> = { A: '#038141', B: '#85bb2a', C: '#fecb02', D: '#ee8100', E: '#e63e11' };
 
@@ -23,11 +24,12 @@ interface Props {
   productId?: string;
   promotionPreviousPrice?: string | null;
   priceTone?: 'default' | 'down' | 'up';
+  badgeLabel?: string;
 }
 
 export default function ProductDetailHero({
   imageUri, name, brand, price, size, referencePrice, nutriScoreGrade, store, productId,
-  promotionPreviousPrice = null, priceTone = 'default',
+  promotionPreviousPrice = null, priceTone = 'default', badgeLabel,
 }: Props) {
   const styles = useThemedStyles(themedStyles);
   const grade = nutriScoreGrade?.trim().toUpperCase() as NutriScoreGrade | undefined;
@@ -35,6 +37,7 @@ export default function ProductDetailHero({
   return <View style={styles.hero}>
     <GlassSurface style={styles.imageWrap} fallbackColor={colors.white}>
       {imageUri ? <ProductImage uri={imageUri} style={styles.image} /> : <Ionicons name="image-outline" size={42} color={colors.inkFaint} />}
+      {badgeLabel ? <ProductDetailBadge label={badgeLabel} /> : null}
     </GlassSurface>
     <View style={styles.info}>
       <Text style={styles.name} numberOfLines={3}>{name}</Text>

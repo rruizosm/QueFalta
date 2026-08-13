@@ -54,3 +54,7 @@ LaCompra/
 
 # Supabase CLI cache local
 supabase/.temp/
+
+# vectores generados del piloto (reproducibles; ~7 MB y no necesarios en Git)
+supabase/experiments/comparator-embedding-pilot-vectors.jsonl
+supabase/experiments/comparator-embedding-pilot-vectors.jsonl.tmp

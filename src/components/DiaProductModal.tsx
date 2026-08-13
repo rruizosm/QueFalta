@@ -13,7 +13,7 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
-import ProductImage from '../components/ProductImage';
+import ProductDetailImage from '../components/ProductDetailImage';
 import ProductInfoSections from '../components/ProductInfoSections';
 import SimilarProductsSection from '../components/SimilarProductsSection';
 import ProductPriceLine from '../components/ProductPriceLine';
@@ -25,12 +25,13 @@ interface Props {
   /** Padding superior de la cabecera (lo fija StoreProductModal): 56 a pantalla
    *  completa (cesta), 16 dentro de la hoja (catálogo). */
   topInset?: number;
+  badgeLabel?: string;
 }
 
 /** Detalle de un producto de Dia. Pinta los datos ya cargados (no hay fetch:
  *  el catálogo de Dia va por el espejo en Supabase). El formato del envase va
  *  dentro del display_name ("... 600 g"); la marca sí viene separada. */
-export default function DiaProductModal({ product, onClose, topInset = 16 }: Props) {
+export default function DiaProductModal({ product, onClose, topInset = 16, badgeLabel }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { activeCart, addToActiveCart } = useCart();
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
@@ -109,13 +110,7 @@ export default function DiaProductModal({ product, onClose, topInset = 16 }: Pro
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        {product.thumbnail ? (
-          <ProductImage uri={product.thumbnail} style={styles.photo} />
-        ) : (
-          <View style={[styles.photo, styles.photoPlaceholder]}>
-            <Ionicons name="image-outline" size={48} color={colors.inkFaint} />
-          </View>
-        )}
+        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} />
 
         <Text style={styles.name}>{product.displayName}</Text>
         {product.brand ? <Text style={styles.brand}>{product.brand}</Text> : null}
@@ -140,7 +135,7 @@ export default function DiaProductModal({ product, onClose, topInset = 16 }: Pro
         ) : null}
 
         {/* Comparativa: más barato en otros súper */}
-        <SimilarProductsSection productName={product.displayName} excludeStore="dia" />
+        <SimilarProductsSection productId={product.id} excludeStore="dia" />
 
         {/* Características del producto (del vike_pageContext de Dia; null si aún no rastreada) */}
         <ProductInfoSections

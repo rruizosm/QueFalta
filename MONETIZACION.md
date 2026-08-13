@@ -1,7 +1,7 @@
 # Monetización — "QuéFalta Plus"
 
 > Spec por fases del modelo freemium. Decisiones cerradas en junio 2026.
-> Estado premium en código desde Fase 1; el paywall queda actualmente desactivado para poder reactivarlo más adelante.
+> Estado premium en código desde Fase 1; el paywall está activado localmente para continuar su desarrollo, con los gates del servidor aún apagados.
 
 ## Decisiones cerradas
 
@@ -23,8 +23,22 @@
 | Crear grupos | 1 | Ilimitados |
 | Comparador "Más barato en otros súper" | Teaser: muestra que existe y en qué súper, precio/producto bloqueados 🔒 | Completo |
 | Repetir compras del historial | Las 3 más recientes | Todo el historial |
-| Futuro: alertas de bajada de precio, histórico de precios, estadísticas de gasto | — | ✅ |
+| Futuro: alertas de bajada de precio, histórico de precios | — | ✅ |
+| Estadísticas personales de compra (supermercados, categorías y productos) | — | ✅ |
 | Extra cosmético: accents exclusivos | — | ✅ |
+
+## Beneficios comunicados en el paywall (2026-08-11)
+
+- Ordenar los productos por precio unitario para comparar por kg, litro o unidad.
+- Aplicar filtros avanzados en Ofertas, Cambios de precio y Novedades.
+- Seleccionar **Todos** los supermercados y consultarlos en una sola vista.
+- Crear notificaciones personalizadas para productos.
+- Consultar estadísticas personales de supermercados, categorías y productos más comprados.
+
+El modal presenta estos beneficios como propuesta comercial principal. El
+plan anual sigue preseleccionado, con 7 días gratis, y el mensual permanece como
+alternativa. Compra, restauración, precios localizados y enlaces legales conservan el
+flujo de RevenueCat existente.
 
 **Regla de oro:** unirse a grupos y colaborar en tiempo real jamás se paywallea — el
 enlace de invitación es el único mecanismo viral de la app. Y el comparador nunca se
@@ -49,7 +63,7 @@ apaga del todo en free: el teaser es a la vez la feature y su propio anuncio.
       `profiles.premium_until timestamptz` + trigger que impide que anon/authenticated
       la modifiquen (sin él, la policy UPDATE de profiles dejaría auto-asignarse premium).
       **Pendiente de ejecutar en Supabase → SQL Editor** (sin ella, fetchProfile falla).
-- [x] `src/constants/limits.ts`: `PAYWALL_ENABLED = false`, `FREE_LIMITS`,
+- [x] `src/constants/limits.ts`: `PAYWALL_ENABLED = true` para desarrollo local, `FREE_LIMITS`,
       `limitsApply(isPremium)` (el gate estándar — NUNCA comprobar isPremium a secas).
 - [x] `UserProfile.premiumUntil` en `src/api/profile.ts`.
 - [x] `isPremium` expuesto por `ProfileContext`.
@@ -104,10 +118,10 @@ apaga del todo en free: el teaser es a la vez la feature y su propio anuncio.
 
 ### Fase 4 — Encendido y lanzamiento (runbook)
 
-Preparado en código/SQL: `PAYWALL_ENABLED = false` en limits.ts (cliente
-APAGADO), `migrations/paywall_on.sql` (encendido servidor) y
-`ops/grant_plus_testers.sql` (regalo a testers). ⚠️ Mientras el servidor siga
-apagado, los gates de cliente permanecen desactivados en cualquier build nuevo.
+Preparado en código/SQL: `PAYWALL_ENABLED = true` en limits.ts para desarrollo
+local, `migrations/paywall_on.sql` (encendido servidor) y
+`ops/grant_plus_testers.sql` (regalo a testers). ⚠️ El servidor continúa apagado;
+no debe activarse hasta completar la configuración externa y las pruebas sandbox.
 
 **Prerrequisitos (bloqueantes, en orden):**
 - [ ] Migraciones base ejecutadas: `profile_premium.sql` → `paywall_gates.sql` →
@@ -140,5 +154,5 @@ caen en el siguiente build con `PAYWALL_ENABLED = false`.
 
 ### Fase 5 — Premium que vende solo (post-lanzamiento)
 - [ ] Histórico de precios por producto + alertas de bajada (el sync diario ya genera el dato).
-- [ ] Estadísticas de gasto mensual (HistoryScreen ya agrupa totales por mes).
+- [x] Estadísticas personales de compra: supermercados, categorías y productos más comprados.
 - [ ] Accents exclusivos Plus en Apariencia.

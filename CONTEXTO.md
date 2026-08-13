@@ -3,7 +3,69 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
+## Estadísticas personales de compra (2026-08-11)
+
+- Perfil → Cuenta incluye **Estadísticas**, una función de QuéFalta Plus. Ordena
+  los supermercados, categorías y productos de las compras finalizadas por el
+  propio usuario, por unidades compradas.
+- La migración `20260811203243_purchase_statistics.sql` añade `store_key` al
+  historial nuevo y el RPC `my_purchase_statistics()`. El RPC conserva RLS,
+  solo usa `completed_by = auth.uid()` y deduce la tienda desde la imagen para
+  compras históricas sin clave. Debe desplegarse antes de publicar la pantalla.
+
+## Filtros visuales de Novedades (2026-08-11)
+
+- Al abrir un producto desde Novedades, su ficha muestra la etiqueta localizada
+  `Novedad`/`Novetat` dentro de la imagen principal, en la esquina inferior
+  derecha. La misma ficha abierta desde otras pantallas no muestra la etiqueta.
+- La hoja de filtros de Novedades usa la misma composición visual del paywall
+  QuéFalta Plus: fondo oscurecido, modal inferior redondeado, cabecera destacada
+  y CTA principal. El resto de pantallas que reutilizan `ProductFilterSheet`
+  conserva su aspecto anterior.
+- La franja superior de Novedades es ahora compacta (sin texto), funciona como
+  asa de arrastre para cerrar deslizando hacia abajo y el CTA no usa el borde
+  oscuro heredado de `HardShadow`.
+- Mantiene el orden por precio del envase y añade un orden independiente por
+  precio unitario (`pricePerUnit`), con los productos sin €/kg, €/l o €/ud al
+  final en ambos sentidos. Elegir uno de los dos órdenes desactiva el otro.
+- Las categorías muestran los emojis de `getSubcategoryEmoji`, el mismo mapa
+  visual utilizado por las subcategorías del catálogo.
+
+## Orden del catálogo por precio por unidad (2026-08-11)
+
+- En la pestaña **Productos**, el buscador queda reducido a una lupa mientras no
+  tiene foco y recupera el campo completo al tocarla. El hueco mantiene visibles
+  los controles existentes de orden por precio de envase, un nuevo par de orden
+  ascendente/descendente por `price_per_unit` y el selector lista/cuadrícula; al
+  expandir la búsqueda se oculta temporalmente este último.
+- La navegación pagina por `(price_per_unit, id)`, conserva los empates y deja al
+  final los productos sin precio por unidad en ambos sentidos. La migración
+  `20260811112706_catalog_price_per_unit_browse_indexes.sql` añade los índices
+  parciales ascendente y descendente necesarios; sigue pendiente de desplegar.
+
+## Inicio de sesión por enlace mágico (2026-08-03)
+
+- `LoginScreen` ofrece correo electrónico además de Google y Apple. Envía un
+  enlace de un solo uso con `supabase.auth.signInWithOtp`; las cuentas nuevas se
+  crean al confirmar el correo y Supabase enlaza automáticamente identidades que
+  compartan el mismo email verificado.
+- En nativo vuelve por `quefalta://auth/callback`. `AuthContext` captura tanto el
+  arranque en frío como la app abierta y acepta callback PKCE (`code`) o tokens
+  del flujo implícito, sin canjear dos veces el mismo enlace. Web conserva el
+  retorno al origen y `detectSessionInUrl`.
+- Para producción, `quefalta://auth/callback` debe figurar en Supabase Auth > URL
+  Configuration. Además hace falta SMTP propio: el SMTP por defecto de Supabase
+  solo entrega a miembros autorizados del proyecto y no sirve para usuarios reales.
+
 ## Catálogo combinado y filtros por supermercado (2026-07-27)
+
+- Con **Todos** activo, la segunda pestaña del Catálogo es **Comparador** en
+  lugar de Categorías. Es una comparación manual: las tarjetas pasan a modo
+  selección, una barra inferior habilita **Comparar** desde dos productos y un
+  panel descendente llega hasta el límite del navegador inferior y muestra
+  producto, supermercado, formato, precio y precio por unidad; la opción con
+  menor precio de envase se marca en dorado. No usa
+  el RPC de similitud ni reactiva `PRICE_COMPARISON_ENABLED`.
 
 - El selector de supermercado de Catálogo, Ofertas, Novedades y Cambios de
   precios incluye **Todos** como fila
@@ -261,7 +323,7 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - ⏳ **Eroski (8º) y Caprabo (9º) añadidos** (2026-07-11): comparten backend (Apache Tapestry) → un scraper compartido `scripts/lib/eroski-tapestry.mjs` (GET de la página de categoría —SSR del 1er lote de 20— y después `POST supermarket:loadpage` con cookies de sesión + Origin/Referer; saca cada producto del JSON `data-metrics` del tile: id/nombre/marca/categoría/precio; ⚠️ la paginación `?pageNumber=N` original DEJÓ de funcionar el 2026-07-11: el server devuelve "No se obtuvieron resultados") y dos syncs mínimos (`sync-eroski.mjs`, `sync-caprabo.mjs`). Solo castellano, SIN €/unidad ni EAN, pero con nutrición de ficha HTML incremental normalizada para el Índice Alimentario. DRY_RUN completo OK (2026-07-11, ya con loadpage): **Eroski 21.073 productos** / 803 hojas / 0% sin tiles; **Caprabo 10.657** / 750 hojas (8% sin tiles por 429 de rate-limit tras encadenar crawls desde la misma IP — en CI no pasa). OJO: los crawls con `?pageNumber` daban 10.694 en Eroski = LA MITAD del catálogo (solo el 1er lote de cada hoja). GUARDARRAÍL anti-throttling: bajo carga el server sirve la página sin productos (o 429, con backoff largo + Retry-After) → reintentos en la pág. 1 + aborta el run si >20% de hojas llegan SIN TILES (para que markStale no despublique productos vivos); las hojas cuyo contenido ya se vio en otras categorías (~60 por súper, solapamiento del árbol) se cuentan APARTE como "solo-duplicados" y no disparan el aborto (la 1ª versión las mezclaba y abortó el run de CI del 2026-07-11 con un falso "56% vacías"). App: tipo/adaptador/modal (`TapestryProductModal`)/pantalla (`TapestryProductsScreen`) COMPARTIDOS por ambos, con funciones de `catalog.ts` por tabla. Migraciones `eroski_catalog.sql`+`caprabo_catalog.sql` (autocontenidas, es-only) + ampliación `20260718133958_eroski_caprabo_nutrition.sql` para tablas ya creadas. Pendientes: ejecutar las migraciones, re-ejecutar `similar_products.sql` (ya con ambos brazos), primer run (`sync-eroski.yml` lunes 09:00 / `sync-caprabo.yml` 09:30) y validar en device. Logos en `assets/stores/{eroski,caprabo}.png`. Ver `scripts/README-eroski-caprabo-sync.md`.
 - ⏳ **Lista agrupada por zonas del súper** (2026-06-12): Lista y cesta de grupo agrupan Tienda → Zona ("pasillo": Fruta y verdura, Congelados al final…) con alfabético dentro. Mapeo de N1 de los 6 supers → ~15 zonas canónicas por keywords en `src/constants/zones.ts` (solo cliente, afinable sin migrar). La categoría se captura al añadir (`list_items.category_name`); manuales/históricos → "Otros". ⚠️ Si se añade un nuevo punto de "añadir a la cesta", pasar `categoryName`. Pendiente: ejecutar `list_items_category.sql`.
 - ⏸️ Comparativa de productos similares entre supers (detalle de producto) — **DESACTIVADA (2026-06-13)** vía `PRICE_COMPARISON_ENABLED = false` en `src/constants/limits.ts`: `SimilarProductsSection` ni consulta ni pinta en ningún modal. El código (componente, `api/catalog.fetchSimilarProducts`, RPC `similar_products`) queda intacto. Spec por fases en `COMPARATIVA.md`. Para reactivar: poner el flag en `true` (y cerrar pendientes: re-lanzar workflow bonÀrea por la base €/unidad, re-ejecutar `similar_products.sql`).
-- Monetización «QuéFalta Plus» (1,99 €/mes · 11,99 €/año): **DESACTIVADA (2026-07-27)**. El código de membresía, RevenueCat, el modal y los gates se conservan intactos para reactivarlos más adelante; el cliente queda con `PAYWALL_ENABLED = false` y el servidor debe quedar con `paywall_enabled() = false` mediante `supabase/migrations/paywall_off.sql`.
+- Monetización «QuéFalta Plus» (1,99 €/mes · 11,99 €/año): **ACTIVADA LOCALMENTE PARA DESARROLLO (2026-08-11)**. El paywall presenta orden por precio unitario, filtros en Ofertas/Cambios/Novedades, selección «Todos» y alertas personalizadas. El cliente usa `PAYWALL_ENABLED = true`; el servidor permanece apagado con `paywall_enabled() = false` hasta completar RevenueCat y las pruebas sandbox.
 - ⏳ **Onboarding de primera vez + demo** (2026-06-16): asistente de bienvenida (obligatorios @usuario + supermercados; opcionales foto/amigos/grupo) + demo con coach marks sobre la app. Código completo y typecheck verde. Gate por `profiles.onboarded_at`. Pendiente: **ejecutar `supabase/migrations/profile_onboarding.sql`** en Supabase y probar el flujo. Ver `ONBOARDING.md`.
 - ❌ No publicar en App Store todavía (solo pruebas en dispositivo propio).
 - ⏳ **Nota de salud estilo Yuka (Plus, solo Mercadona)**: backend incorporado en

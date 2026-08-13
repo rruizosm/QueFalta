@@ -16,7 +16,7 @@ import { useCart } from '../context/CartContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from './QuantityStepper';
-import ProductImage from './ProductImage';
+import ProductDetailImage from './ProductDetailImage';
 import FoodIndexSummary from './FoodIndexSummary';
 import ProductInfoSections from './ProductInfoSections';
 import { useNutritionInfoDisclosure } from './NutritionInfoButton';
@@ -30,6 +30,7 @@ interface Props {
   /** Padding superior de la cabecera. Lo fija StoreProductModal según el contexto:
    *  56 a pantalla completa (cesta, despeja el notch); 16 en la hoja (catálogo). */
   topInset?: number;
+  badgeLabel?: string;
 }
 
 const formatEuro = (s?: string | null): string | null => {
@@ -54,7 +55,7 @@ const clean = (text?: string | null): string | null => {
   return out || null;
 };
 
-export default function ProductDetailModal({ productId, onClose, topInset = 16 }: Props) {
+export default function ProductDetailModal({ productId, onClose, topInset = 16, badgeLabel }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
@@ -224,13 +225,7 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16 }
         ) : (
           <>
           <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-            {photo ? (
-              <ProductImage uri={photo} style={styles.photo} />
-            ) : (
-              <View style={[styles.photo, styles.photoPlaceholder]}>
-                <Ionicons name="image-outline" size={48} color={colors.inkFaint} />
-              </View>
-            )}
+            <ProductDetailImage uri={photo} style={styles.photo} badgeLabel={badgeLabel} />
 
             <Text style={styles.name}>{product.display_name}</Text>
             {brand ? <Text style={styles.brand}>{brand}</Text> : null}
@@ -249,7 +244,7 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16 }
             ) : null}
 
             {/* Comparativa: más barato en otros súper */}
-            <SimilarProductsSection productName={product.display_name} excludeStore="mercadona" />
+            <SimilarProductsSection productId={String(product.id)} excludeStore="mercadona" />
 
             {/* Características del producto */}
             <ProductInfoSections

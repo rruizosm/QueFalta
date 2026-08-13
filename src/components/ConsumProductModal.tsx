@@ -13,7 +13,7 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
-import ProductImage from '../components/ProductImage';
+import ProductDetailImage from '../components/ProductDetailImage';
 import FoodIndexSummary from '../components/FoodIndexSummary';
 import ProductInfoSections from '../components/ProductInfoSections';
 import { useNutritionInfoDisclosure } from '../components/NutritionInfoButton';
@@ -27,12 +27,13 @@ interface Props {
   /** Padding superior de la cabecera (lo fija StoreProductModal): 56 a pantalla
    *  completa (cesta), 16 dentro de la hoja (catálogo). */
   topInset?: number;
+  badgeLabel?: string;
 }
 
 /** Detalle de un producto de Consum. Pinta los datos ya cargados (no hay fetch:
  *  el catálogo de Consum va por el espejo en Supabase). A diferencia de bonÀrea,
  *  Consum da marca y formato del envase → se muestran como en Bonpreu. */
-export default function ConsumProductModal({ product, onClose, topInset = 16 }: Props) {
+export default function ConsumProductModal({ product, onClose, topInset = 16, badgeLabel }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { activeCart, addToActiveCart } = useCart();
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
@@ -112,13 +113,7 @@ export default function ConsumProductModal({ product, onClose, topInset = 16 }: 
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        {product.thumbnail ? (
-          <ProductImage uri={product.thumbnail} style={styles.photo} />
-        ) : (
-          <View style={[styles.photo, styles.photoPlaceholder]}>
-            <Ionicons name="image-outline" size={48} color={colors.inkFaint} />
-          </View>
-        )}
+        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} />
 
         <Text style={styles.name}>{product.displayName}</Text>
         {product.brand ? <Text style={styles.brand}>{product.brand}</Text> : null}
@@ -137,7 +132,7 @@ export default function ConsumProductModal({ product, onClose, topInset = 16 }: 
         ) : null}
 
         {/* Comparativa: más barato en otros súper */}
-        <SimilarProductsSection productName={product.displayName} excludeStore="consum" />
+        <SimilarProductsSection productId={product.id} excludeStore="consum" />
 
         {/* Características del producto. La API de Consum no expone ficha
          *  (ingredientes/nutrición), solo la categoría, pero se pinta con el

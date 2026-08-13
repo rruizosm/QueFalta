@@ -12,10 +12,12 @@
 //      PAGE_SIZE=200  filas de BD por página (máx. 1000)
 //      LIMIT=N        tope de productos para prueba o para repartir el trabajo
 //      PRODUCT_ID=ID  limita la prueba a un producto concreto (acepta R-<id>)
+//      START_AFTER_ID / END_AT_ID  partición lexicográfica reanudable (gt/lte)
 //      DRY_RUN=1      consulta y muestra resultados, sin escribir en Supabase
 import { execFile } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { promisify } from 'node:util';
+import { validGlobalGtin } from './lib/gtin.mjs';
 
 const execFileP = promisify(execFile);
 
@@ -43,6 +45,8 @@ const PAGE_SIZE = Math.min(1000, Math.max(1, Number(process.env.PAGE_SIZE || 200
 const LIMIT = process.env.LIMIT ? Number(process.env.LIMIT) : Infinity;
 const DRY_RUN = process.env.DRY_RUN === '1';
 const PRODUCT_ID = (process.env.PRODUCT_ID || '').trim().replace(/^R-/, '');
+const START_AFTER_ID = (process.env.START_AFTER_ID || '').trim();
+const END_AT_ID = (process.env.END_AT_ID || '').trim();
 
 if (!SUPABASE_URL || !SERVICE_ROLE) {
   console.error('Faltan SUPABASE_URL / SUPABASE_SERVICE_ROLE');
@@ -111,11 +115,6 @@ function findProduct(state, id) {
   return walk(state, 0);
 }
 
-function validEan(value) {
-  const ean = String(value ?? '').trim();
-  return /^\d{8,14}$/.test(ean) ? ean : null;
-}
-
 async function fetchPdpEan(row) {
   const path = row.raw?.url;
   if (typeof path !== 'string' || !path) return { ean: null, reason: 'sin URL de ficha' };
@@ -132,7 +131,7 @@ async function fetchPdpEan(row) {
       const status = marker >= 0 ? Number(stdout.slice(marker + 9).trim()) : 0;
       if (status === 200 && html.includes('window.__INITIAL_STATE__')) {
         const product = findProduct(extractInitialState(html), row.id);
-        const ean = validEan(product?.ean);
+        const ean = validGlobalGtin(product?.ean);
         return ean ? { ean } : { ean: null, reason: product ? 'PDP sin EAN válido' : 'producto no encontrado en PDP' };
       }
       if (status && status < 500 && status !== 429) return { ean: null, reason: `HTTP ${status}` };
@@ -153,7 +152,10 @@ async function fetchPending(afterId, limit) {
     limit: String(limit),
   });
   if (PRODUCT_ID) query.set('id', `eq.${PRODUCT_ID}`);
-  else if (afterId) query.set('id', `gt.${afterId}`);
+  else {
+    if (afterId) query.append('id', `gt.${afterId}`);
+    if (END_AT_ID) query.append('id', `lte.${END_AT_ID}`);
+  }
   const res = await fetch(`${SUPABASE_URL}/rest/v1/carrefour_products?${query}`, {
     headers: { apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}` },
   });
@@ -161,26 +163,27 @@ async function fetchPending(afterId, limit) {
   return res.json();
 }
 
-async function upsert(rows) {
+async function writeEans(rows) {
   if (DRY_RUN || rows.length === 0) return;
-  for (let start = 0; start < rows.length; start += 500) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/carrefour_products`, {
-      method: 'POST',
+  await pool(rows, Math.min(CONCURRENCY, 10), async (row) => {
+    const query = new URLSearchParams({ id: `eq.${row.id}`, ean: 'is.null' });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/carrefour_products?${query}`, {
+      method: 'PATCH',
       headers: {
         apikey: SERVICE_ROLE,
         Authorization: `Bearer ${SERVICE_ROLE}`,
         'Content-Type': 'application/json',
-        Prefer: 'resolution=merge-duplicates,return=minimal',
+        Prefer: 'return=minimal',
       },
-      body: JSON.stringify(rows.slice(start, start + 500)),
+      body: JSON.stringify({ ean: row.ean }),
     });
     if (!res.ok) throw new Error(`escritura de EAN ${res.status}: ${await res.text()}`);
-  }
+  });
 }
 
 async function main() {
   console.log(`[carrefour-ean] inicio ${new Date().toISOString()}${DRY_RUN ? ' (DRY RUN)' : ''} · conc=${CONCURRENCY}`);
-  let afterId = '';
+  let afterId = START_AFTER_ID;
   let remaining = LIMIT;
   let requested = 0, found = 0, withoutEan = 0, withoutUrl = 0;
 
@@ -195,8 +198,13 @@ async function main() {
     await pool(rows, CONCURRENCY, async (row) => {
       const result = await fetchPdpEan(row);
       requested++;
+      if (PRODUCT_ID) {
+        console.log(`[carrefour-ean] ${row.id}: ${result.ean ?? result.reason}`);
+      }
       if (result.ean) {
-        updates.push({ id: row.id, display_name: row.display_name, raw: row.raw, ean: result.ean });
+        // El upsert solo debe tocar la clave y el EAN; nunca reescribir una
+        // instantánea antigua del nombre o del payload raw.
+        updates.push({ id: row.id, ean: result.ean });
         found++;
       } else if (result.reason === 'sin URL de ficha') {
         withoutUrl++;
@@ -207,7 +215,7 @@ async function main() {
       await sleep(120);
     });
 
-    await upsert(updates);
+    await writeEans(updates);
     console.log(`[carrefour-ean] página ${rows.length} · +${updates.length} EAN${DRY_RUN ? ' (sin escribir)' : ''}`);
     if (PRODUCT_ID || rows.length < size) break;
   }

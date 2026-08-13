@@ -45,6 +45,7 @@ import CatalogStoresScreen from '../screens/CatalogStoresScreen';
 import AppearanceScreen from '../screens/AppearanceScreen';
 import LanguageScreen from '../screens/LanguageScreen';
 import HistoryScreen from '../screens/HistoryScreen';
+import StatisticsScreen from '../screens/StatisticsScreen';
 import FriendsScreen from '../screens/FriendsScreen';
 import HelpScreen from '../screens/HelpScreen';
 import AboutScreen from '../screens/AboutScreen';
@@ -124,6 +125,7 @@ function HomeNavigator() {
       <HomeStack.Screen name="Appearance" component={AppearanceScreen} />
       <HomeStack.Screen name="Language" component={LanguageScreen} />
       <HomeStack.Screen name="History" component={HistoryScreen} />
+      <HomeStack.Screen name="Statistics" component={StatisticsScreen} />
       <HomeStack.Screen name="Friends" component={FriendsScreen} />
       <HomeStack.Screen name="Help" component={HelpScreen} />
       <HomeStack.Screen name="About" component={AboutScreen} />

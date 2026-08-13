@@ -197,7 +197,7 @@ export default function StoreDropdown<T extends StoreSelection>({
       <PaywallModal
         visible={paywallVisible}
         onClose={() => setPaywallVisible(false)}
-        subtitle={t('paywall.allStoresSubtitle')}
+        subtitle={null}
       />
     </>
   );

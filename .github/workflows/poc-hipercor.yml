@@ -26,7 +26,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      # Hipercor permite la ejecución desde Chrome local; Chromium de Playwright
+      # recibe una respuesta de Akamai "Access Denied" en GitHub Actions.
+      - name: Comprobar Chrome disponible
+        run: google-chrome --version
       - name: Extraer muestra publica
         run: node scripts/poc-hipercor.mjs
         env:
@@ -34,6 +37,7 @@ jobs:
           MAX_PAGES: ${{ inputs.pages }}
           MIN_PRODUCTS: '60'
           HIPERCOR_OUTPUT: /tmp/hipercor-poc.json
+          PW_CHANNEL: chrome
       - uses: actions/upload-artifact@v4
         with:
           name: hipercor-poc

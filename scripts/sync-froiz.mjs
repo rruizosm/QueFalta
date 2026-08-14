@@ -10,12 +10,20 @@ const DRY_RUN = process.env.DRY_RUN === '1';
 const SIZE = 100;
 const API = 'https://servicios.froiz.com/api/products';
 const IMAGE = 'https://imagedelivery.net/laxGYDNZyT04iZVpzPzryw';
+// El WAF de Froiz rechaza peticiones sin el contexto de su escaparate público;
+// estas cabeceras son las de una navegación normal, no contienen credenciales.
+const FROIZ_HEADERS = {
+  Accept: 'application/json',
+  Origin: 'https://supermercado.froiz.com',
+  Referer: 'https://supermercado.froiz.com/',
+  'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+};
 const runStart = new Date().toISOString();
 if (!DRY_RUN && (!URL || !KEY)) throw new Error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE (o usa DRY_RUN=1)');
 
 const request = async (url) => {
-  const response = await fetch(url, { headers: { Accept: 'application/json' } });
-  if (!response.ok) throw new Error(`${response.status} ${url}`);
+  const response = await fetch(url, { headers: FROIZ_HEADERS });
+  if (!response.ok) throw new Error(`${response.status} ${url}: ${await response.text()}`);
   return response.json();
 };
 const money = (value) => value == null || value === '' ? null : Number(value);
@@ -42,7 +50,7 @@ const normalize = (p) => {
   categories.get(`${category}/${family}`).product_count++;
   const price = money(p.order_price ?? p.offer?.price ?? p.base_price);
   const base = money(p.base_price);
-  const ppu = canonicalPricePerUnit({ value: p.per_unit_weight, unit: p.measurement_unit, perUnit: p.per_unit, ratio: p.measurement_unit_ratio });
+  const ppu = canonicalPricePerUnit(p.per_unit_weight, p.measurement_unit);
   return {
     id: String(p.id), retailer_product_id: String(p.id), display_name: p.description || p.name,
     brand: p.brand_name?.trim() || null, thumbnail: imageUrl(p), category_id: `${category}/${family}`,

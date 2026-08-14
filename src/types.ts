@@ -268,7 +268,7 @@ export type CatalogStackParamList = {
     color?: string;
     /** Subcategorías N2. Mercadona usa ids numéricos; el resto de espejos, ids string. */
     subcategories: { id: string | number; name: string }[];
-    retailer?: 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi' | 'hiperdino' | 'alcampo' | 'plusfresc';
+    retailer?: 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi' | 'hiperdino' | 'alcampo' | 'plusfresc' | 'gadis' | 'froiz';
   };
   Products: {
     subcategoryId: number;
@@ -342,6 +342,11 @@ export type CatalogStackParamList = {
     categoryId: string;
     categoryName: string;
     parentName?: string;
+  };
+  GadisProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentCategoryName?: string;
   };
   /** Productos de una subcategoría de HiperDino (lee del espejo). */
   HiperdinoProducts: {

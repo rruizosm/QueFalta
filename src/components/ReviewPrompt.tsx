@@ -3,10 +3,11 @@ import {
   Linking, Modal, Platform, Pressable, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useTranslation } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import HardShadow from './HardShadow';
@@ -28,6 +29,7 @@ function reviewStateKey(userId: string, state: 'eligible' | 'seen') {
  */
 export default function ReviewPrompt() {
   const styles = useThemedStyles(themedStyles);
+  const reducedMotion = useReducedMotion();
   const { t } = useTranslation();
   const { session } = useAuth();
   const [visible, setVisible] = useState(false);
@@ -77,27 +79,27 @@ export default function ReviewPrompt() {
 
   const content = (
     <>
-      <View style={styles.stars} accessibilityLabel="5 estrellas">
+      <View style={styles.stars} accessibilityRole="image" accessibilityLabel={t('review.stars')}>
         {[0, 1, 2, 3, 4].map((star) => (
           <Ionicons key={star} name="star" size={22} color={colors.accent} />
         ))}
       </View>
       <Text style={styles.title}>{t('review.title')}</Text>
       <Text style={styles.message}>{t('review.message')}</Text>
-      <TouchableOpacity style={styles.primaryButton} onPress={openStore} activeOpacity={0.85}>
+      <TouchableOpacity style={styles.primaryButton} onPress={openStore} activeOpacity={0.85} accessibilityRole="button">
         <Text style={styles.primaryButtonText}>{t('review.rate')}</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.secondaryButton} onPress={close} activeOpacity={0.7}>
+      <TouchableOpacity style={styles.secondaryButton} onPress={close} activeOpacity={0.7} accessibilityRole="button">
         <Text style={styles.secondaryButtonText}>{t('review.later')}</Text>
       </TouchableOpacity>
     </>
   );
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
+    <Modal visible={visible} transparent animationType={reducedMotion ? 'none' : 'fade'} onRequestClose={close}>
       <View style={styles.overlay}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={close} />
-        <HardShadow style={styles.card}>{content}</HardShadow>
+        <Pressable style={StyleSheet.absoluteFill} onPress={close} accessible={false} />
+        <HardShadow style={styles.card} accessibilityViewIsModal>{content}</HardShadow>
       </View>
     </Modal>
   );

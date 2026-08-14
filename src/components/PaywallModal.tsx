@@ -11,7 +11,7 @@ import {
   View, Text, Modal, Pressable, TouchableOpacity,
   ScrollView, StyleSheet, Platform, Linking, ActivityIndicator,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -24,6 +24,7 @@ import {
   refreshProfileSoon, type PlusOfferings,
 } from '../lib/purchases';
 import HardShadow from './HardShadow';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -53,6 +54,7 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
   const styles = useThemedStyles(themedStyles);
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
   const toast = useToast();
   const { refresh } = useProfile();
   const [plan, setPlan] = useState<Plan>('annual');
@@ -117,10 +119,13 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={reducedMotion ? 'none' : 'slide'} onRequestClose={onClose}>
       <View style={styles.root}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View style={[styles.sheet, { paddingBottom: Platform.OS === 'ios' ? 30 : Math.max(insets.bottom, 20) }]}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessible={false} />
+        <View
+          style={[styles.sheet, { paddingBottom: Platform.OS === 'ios' ? 30 : Math.max(insets.bottom, 20) }]}
+          accessibilityViewIsModal
+        >
           <View style={styles.grabber} />
           <ScrollView
             showsVerticalScrollIndicator={false}
@@ -234,6 +239,8 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
               activeOpacity={0.85}
               style={styles.ctaWrap}
               disabled={busy}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: busy, busy }}
             >
               <HardShadow style={styles.ctaBtn}>
                 {busy ? (

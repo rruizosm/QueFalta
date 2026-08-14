@@ -3,6 +3,15 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
+## Gadisline (pendiente de migrar y primer sync, 2026-08-14)
+
+- Añadido el 16º espejo **Gadis**: `gadis_catalog.sql`, `scripts/sync-gadis.mjs`
+  y workflow diario `sync-gadis.yml`. El espejo conserva productos, categorías,
+  ofertas explícitas sin cupón, novedad explícita y el histórico de precio.
+- Gadisline resuelve surtido/precio por código postal. La primera versión usa la
+  tienda pública por defecto; no afirmar precios locales hasta normalizar por
+  tienda/CP y validar el primer run real.
+
 ## Estadísticas personales de compra (2026-08-11)
 
 - Perfil → Cuenta incluye **Estadísticas**, una función de QuéFalta Plus. Ordena
@@ -313,6 +322,18 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - Hay SQL previo en `supabase/` (RLS, policies de groups/group_members/shopping_lists/list_items).
 
 ## Estado / pendientes
+- ✅ **Fase 3 de seguridad y rendimiento de datos (2026-08-14):** auditoría
+  remota actualizada (44 avisos de seguridad y 121 de rendimiento) y migración
+  desplegada para fijar `search_path`, cerrar RPC privilegiados a `anon`,
+  consolidar RLS, evaluar `auth.uid()` una vez por consulta y cubrir 6 claves
+  foráneas con índices. Resultado verificado: 20 avisos de seguridad y 69 de
+  rendimiento; sin avisos RLS por fila, policies solapadas ni claves foráneas
+  sin índice. Si un SQL legacy recrea estas funciones/policies, reauditar antes
+  de desplegarlo. Detalle en
+  `FASE-3-SEGURIDAD-RENDIMIENTO-DATOS.md`.
+- ✅ **Fase 1 de estabilidad y rendimiento inicial (2026-08-14):** ESLint pasa de 82 avisos a cero y CI no admite nuevos; errores de Apple/Google se traducen a UI comprensible; BootLoader baja su mínimo artificial de 2 s a 350 ms; las pestañas se montan bajo demanda; arrays, filtros y efectos de catálogo estabilizados; Release validada en iPhone 17e e iPad mini. Sin cambios remotos ni migraciones. Detalle en `FASE-1-ESTABILIDAD-RENDIMIENTO.md`.
+- ✅ **Fase 2 de accesibilidad, diseño y recursos (2026-08-14):** animaciones y transiciones respetan Reducir movimiento; controles compartidos exponen etiquetas y estados accesibles; contraste secundario y accents cumplen AA; Login se adapta a texto `accessibility-large`; el bundle importa solo Ionicons y los cuatro pesos usados de Space Grotesk. Export iOS: 57→38 recursos, 1.524→1.470 módulos, 6,15→5,81 MB de Hermes y ~35 % menos tamaño exportado. Sin cambios remotos ni migraciones. Detalle en `FASE-2-ACCESIBILIDAD-DISENO.md`.
+- ✅ **Fase 0 de calidad y línea base (2026-08-13):** Node 22.23.2 y npm 10.9.8 fijados; `npm run quality` agrupa TypeScript, ESLint y 27 tests; workflow de CI añadido; Debug/Release verificados en iPhone y iPad simulados. Auditoría remota de Supabase de solo lectura confirma que las columnas críticas y los RPC usados por el cliente existen. No se aplicó ninguna migración. Detalle, medidas y backlog en `FASE-0-LINEA-BASE.md`. Las listas históricas de migraciones pendientes de este documento deben contrastarse con esa auditoría antes de tratar una columna como ausente.
 - ✅ App funcional en Expo Go: auth, grupos, carrito, catálogo, perfil, notificaciones locales, privacidad.
 - ⏳ Desplegar `quefalta-web` en Vercel + DNS de `quefalta.es` (Hostinger: A `@` → IP de Vercel, CNAME `www` → `cname.vercel-dns.com`).
 - ⏳ Primer `eas build` iOS / `expo run:ios` para probar en dispositivo y los Universal Links.

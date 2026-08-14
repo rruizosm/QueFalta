@@ -8,7 +8,7 @@ import {
   createBottomTabNavigator, BottomTabBar, type BottomTabBarProps,
 } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Linking from 'expo-linking';
 import * as Haptics from 'expo-haptics';
@@ -61,6 +61,7 @@ import SorliProductsScreen from '../screens/SorliProductsScreen';
 import CondisProductsScreen from '../screens/CondisProductsScreen';
 import AmetllerProductsScreen from '../screens/AmetllerProductsScreen';
 import AldiProductsScreen from '../screens/AldiProductsScreen';
+import GadisProductsScreen from '../screens/GadisProductsScreen';
 import HiperdinoProductsScreen from '../screens/HiperdinoProductsScreen';
 import AlcampoProductsScreen from '../screens/AlcampoProductsScreen';
 import PlusfrescProductsScreen from '../screens/PlusfrescProductsScreen';
@@ -90,7 +91,7 @@ export const navigationRef = createNavigationContainerRef<RootTabParamList>();
 
 /** Tiempo mínimo que se ve el BootLoader (logo + animación de carga) al aparecer
  *  un usuario: arranque con sesión cacheada y, sobre todo, inicio de sesión. */
-const BOOT_MIN_MS = 2000;
+const BOOT_MIN_MS = 350;
 
 /** Tope del arranque: las llamadas de sesión/perfil van SIN timeout, así que con
  *  la red colgada (típico en Android al abrir la app mientras renegocia Wi-Fi/
@@ -150,6 +151,7 @@ function CatalogNavigator() {
       <CatalogStack.Screen name="CondisProducts" component={CondisProductsScreen} />
       <CatalogStack.Screen name="AmetllerProducts" component={AmetllerProductsScreen} />
       <CatalogStack.Screen name="AldiProducts" component={AldiProductsScreen} />
+      <CatalogStack.Screen name="GadisProducts" component={GadisProductsScreen} />
       <CatalogStack.Screen name="HiperdinoProducts" component={HiperdinoProductsScreen} />
       <CatalogStack.Screen name="AlcampoProducts" component={AlcampoProductsScreen} />
       <CatalogStack.Screen name="PlusfrescProducts" component={PlusfrescProductsScreen} />
@@ -209,10 +211,9 @@ export default function Navigation() {
   // segura, así que NO se vuelve a sumar insets.bottom.
   const glassTabBarHeight = LIQUID_TABBAR_HEIGHT + liquidTabBarBottom(insets.bottom);
 
-  // Tiempo mínimo que se ve el BootLoader (logo + animación de carga): 2 s cada
-  // vez que aparece un usuario. Cubre el arranque en frío con sesión cacheada y,
-  // sobre todo, el inicio de sesión (antes el logo solo parpadeaba lo que tardara
-  // el fetch del perfil). El temporizador se re-arma al cambiar userId (login).
+  // Tiempo mínimo muy corto para evitar un flash del BootLoader sin imponer una
+  // espera artificial: si sesión/perfil tardan más, manda su carga real.
+  // El temporizador se re-arma al cambiar userId (login).
   // Se ancla a userId, así que sin sesión (arranque sin login / logout) no aplica
   // mínimo: se va al login al instante.
   const [minTimePassed, setMinTimePassed] = useState(false);
@@ -248,7 +249,7 @@ export default function Navigation() {
     Linking.getInitialURL().then(handleUrl);
     const sub = Linking.addEventListener('url', (e) => handleUrl(e.url));
     return () => sub.remove();
-  }, [userId]);
+  }, [showToast, t, userId]);
 
   // Tap en una notificación push → abre la pantalla correspondiente. Cubre el
   // arranque en frío (getInitialNotificationData) y la app ya abierta (listener).
@@ -334,10 +335,9 @@ export default function Navigation() {
         tabBar={(props) => <AppTabBar {...props} />}
         screenOptions={({ route }) => ({
           headerShown: false,
-          // Premonta todas las pestañas durante el arranque (no perezosas) y
-          // congela las inactivas: el primer cambio de pestaña ya es instantáneo
-          // (sin el frame de montaje que dejaba imágenes/textos a medias).
-          lazy: false,
+          // Monta cada pestaña al visitarla: evita que Catálogo/Lista/Grupos
+          // ejecuten consultas y construyan árboles durante el arranque de Home.
+          lazy: true,
           freezeOnBlur: true,
           tabBarActiveTintColor:   colors.accent,
           tabBarInactiveTintColor: colors.inkSoft,

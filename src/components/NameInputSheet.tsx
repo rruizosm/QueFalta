@@ -16,13 +16,14 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import HardShadow from './HardShadow';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -63,6 +64,7 @@ export default function NameInputSheet({
   const styles = useThemedStyles(themedStyles);
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
   const labelText = label ?? t('group.nameLabel');
   const placeholderText = placeholder ?? t('group.namePlaceholder');
   const [value, setValue] = useState(initialValue);
@@ -76,15 +78,18 @@ export default function NameInputSheet({
   const close = () => { if (!busy) onClose(); };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
+    <Modal visible={visible} transparent animationType={reducedMotion ? 'none' : 'slide'} onRequestClose={close}>
       {/* 'padding' TAMBIÉN en Android: con edge-to-edge (SDK 54) el adjustResize
           del sistema ya no encoge la ventana y el teclado taparía la hoja. */}
       <KeyboardAvoidingView
         behavior="padding"
         style={styles.root}
       >
-        <Pressable style={StyleSheet.absoluteFill} onPress={close} />
-        <View style={[styles.sheet, { paddingBottom: Platform.OS === 'ios' ? 30 : Math.max(insets.bottom, 20) }]}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={close} accessible={false} />
+        <View
+          style={[styles.sheet, { paddingBottom: Platform.OS === 'ios' ? 30 : Math.max(insets.bottom, 20) }]}
+          accessibilityViewIsModal
+        >
           <View style={styles.header}>
             <View style={styles.iconBox}>
               <Ionicons name={icon} size={22} color={colors.accent} />
@@ -93,7 +98,15 @@ export default function NameInputSheet({
               <Text style={styles.title}>{title}</Text>
               {!!subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
             </View>
-            <TouchableOpacity style={styles.closeBtn} onPress={close} disabled={busy} hitSlop={8}>
+            <TouchableOpacity
+              style={styles.closeBtn}
+              onPress={close}
+              disabled={busy}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.close')}
+              accessibilityState={{ disabled: busy }}
+            >
               <Ionicons name="close" size={18} color={colors.inkSoft} />
             </TouchableOpacity>
           </View>
@@ -113,7 +126,12 @@ export default function NameInputSheet({
                 onSubmitEditing={submit}
               />
               {value.length > 0 && (
-                <TouchableOpacity onPress={() => setValue('')} hitSlop={8}>
+                <TouchableOpacity
+                  onPress={() => setValue('')}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('common.clear')}
+                >
                   <Ionicons name="close-circle" size={18} color={colors.inkFaint} />
                 </TouchableOpacity>
               )}
@@ -125,6 +143,8 @@ export default function NameInputSheet({
               disabled={!canSubmit}
               activeOpacity={0.85}
               style={[styles.submitWrap, !canSubmit && styles.submitDisabled]}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !canSubmit, busy }}
             >
               <HardShadow style={styles.submitBtn}>
                 {busy ? (

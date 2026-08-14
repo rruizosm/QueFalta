@@ -19,7 +19,7 @@ import {
   Animated,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
@@ -40,6 +40,7 @@ import UserAvatar from '../components/UserAvatar';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 import { STORE_META, groupByStore, storeOfItem, type Store } from '../constants/stores';
 import { groupByZone, sortZoneItems, type ShopZone } from '../constants/zones';
@@ -96,6 +97,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 
 export default function ListScreen() {
   const styles = useThemedStyles(themedStyles);
+  const reducedMotion = useReducedMotion();
   const headerTop = useHeaderTopPadding(56);
   // Con tab bar de cristal: eleva las barras fijas (total/completada) por encima
   // del cristal y agranda el paddingBottom de la lista en la misma medida.
@@ -144,7 +146,8 @@ export default function ListScreen() {
     // se vuelve costoso al desplegar una tienda completa.
     setCollapsedStores((prev) => {
       const next = new Set(prev);
-      next.has(store) ? next.delete(store) : next.add(store);
+      if (next.has(store)) next.delete(store);
+      else next.add(store);
       return next;
     });
   }, []);
@@ -154,7 +157,8 @@ export default function ListScreen() {
     // La cabecera responde al instante; SectionList virtualiza las filas nuevas.
     setCollapsedZones((prev) => {
       const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   }, []);
@@ -238,7 +242,7 @@ export default function ListScreen() {
     setConfirmClear(false);
     if (!activeCart) return;
     const prev = items;
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    if (!reducedMotion) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setItems([]);
     try {
       await clearListItems(activeCart.listId);
@@ -253,7 +257,7 @@ export default function ListScreen() {
   const doRemove = useCallback(async (item: MergedCartItem): Promise<boolean> => {
     const ids = new Set(item.ids);
     const prev = items;
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    if (!reducedMotion) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setItems((list) => list.filter((it) => !ids.has(it.id)));
     try {
       await deleteListItems(item.ids);
@@ -263,7 +267,7 @@ export default function ListScreen() {
       toast.show(t('list.removeError'), 'error');
       return false;
     }
-  }, [items, t, toast]);
+  }, [items, reducedMotion, t, toast]);
 
   // Resta una unidad de un producto. Como un artículo fusionado puede abarcar
   // varias filas, opera sobre una fila concreta: si tiene cantidad > 1 la baja en
@@ -276,7 +280,7 @@ export default function ListScreen() {
     if (!target) return;
     const prev = items;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    if (!reducedMotion) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     try {
       if (target.quantity > 1) {
         const newQty = target.quantity - 1;
@@ -290,14 +294,14 @@ export default function ListScreen() {
       setItems(prev);
       toast.show(t('list.updateError'), 'error');
     }
-  }, [items, t, toast]);
+  }, [items, reducedMotion, t, toast]);
 
   const toggle = useCallback(async (item: MergedCartItem) => {
     const next = !item.inCart;
     const ids = new Set(item.ids);
     const prevState = new Map(items.filter((it) => ids.has(it.id)).map((it) => [it.id, it.inCart]));
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    if (!reducedMotion) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setItems((prev) => prev.map((it) => (ids.has(it.id) ? { ...it, inCart: next } : it)));
     try {
       await Promise.all(item.ids.map((id) => setItemInCart(id, next)));
@@ -305,7 +309,7 @@ export default function ListScreen() {
       setItems((prev) => prev.map((it) => (ids.has(it.id) ? { ...it, inCart: prevState.get(it.id) ?? it.inCart } : it)));
       toast.show(t('list.updateError'), 'error');
     }
-  }, [items, t, toast]);
+  }, [items, reducedMotion, t, toast]);
 
   // Clave estable con el CONJUNTO de ids de Mercadona presentes (ordenado). Así
   // marcar "en cesta" (que reemplaza `items` con el mismo conjunto de ids) no
@@ -615,7 +619,7 @@ export default function ListScreen() {
       <Modal
         visible={!!assignItem || assignAllVisible}
         transparent
-        animationType="slide"
+        animationType={reducedMotion ? 'none' : 'slide'}
         onRequestClose={() => { setAssignItem(null); setAssignAllVisible(false); }}
       >
         <View style={styles.sheetRoot}>
@@ -688,7 +692,7 @@ const CartItemRow = memo(function CartItemRow({ item, members, onToggle, onOpenD
   onDecrement: (item: MergedCartItem) => void;
 }) {
   const styles = useThemedStyles(themedStyles);
-  const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
   const [removing, setRemoving] = useState(false);
   const opacity = useRef(new Animated.Value(1)).current;
 
@@ -697,14 +701,20 @@ const CartItemRow = memo(function CartItemRow({ item, members, onToggle, onOpenD
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setRemoving(true);
     // El delay deja ver el tachado un instante antes de desvanecer.
-    Animated.timing(opacity, { toValue: 0, duration: 350, delay: 150, useNativeDriver: true })
-      .start(async () => {
-        const ok = await onRemove(item);
-        if (!ok) {
-          opacity.setValue(1);
-          setRemoving(false);
-        }
-      });
+    const remove = async () => {
+      const ok = await onRemove(item);
+      if (!ok) {
+        opacity.setValue(1);
+        setRemoving(false);
+      }
+    };
+    if (reducedMotion) {
+      opacity.setValue(0);
+      void remove();
+    } else {
+      Animated.timing(opacity, { toValue: 0, duration: 350, delay: 150, useNativeDriver: true })
+        .start(remove);
+    }
   };
 
   const assignee = item.assignedTo ? members.find((m) => m.id === item.assignedTo) : null;

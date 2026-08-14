@@ -13,6 +13,7 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import HardShadow from './HardShadow';
 import GlassSurface, { glassAvailable } from './GlassSurface';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 interface Props {
   visible: boolean;
@@ -38,6 +39,7 @@ export default function ConfirmDialog({
 }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
   const confirmText = confirmLabel ?? t('common.ok');
   const cancelText = cancelLabel ?? t('common.cancel');
 
@@ -46,13 +48,14 @@ export default function ConfirmDialog({
       <Text style={styles.title}>{title}</Text>
       {message ? <Text style={styles.message}>{message}</Text> : null}
       <View style={styles.actions}>
-        <TouchableOpacity style={[styles.btn, styles.btnCancel]} onPress={onCancel} activeOpacity={0.7}>
+        <TouchableOpacity style={[styles.btn, styles.btnCancel]} onPress={onCancel} activeOpacity={0.7} accessibilityRole="button">
           <Text style={styles.btnCancelText}>{cancelText}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.btn, destructive ? styles.btnDanger : styles.btnConfirm]}
           onPress={onConfirm}
           activeOpacity={0.85}
+          accessibilityRole="button"
         >
           <Text style={styles.btnConfirmText}>{confirmText}</Text>
         </TouchableOpacity>
@@ -61,13 +64,13 @@ export default function ConfirmDialog({
   );
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
+    <Modal visible={visible} transparent animationType={reducedMotion ? 'none' : 'fade'} onRequestClose={onCancel}>
       <View style={styles.overlay}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onCancel} />
+        <Pressable style={StyleSheet.absoluteFill} onPress={onCancel} accessible={false} />
         {glassAvailable ? (
-          <GlassSurface style={styles.cardGlass}>{content}</GlassSurface>
+          <GlassSurface style={styles.cardGlass} accessibilityViewIsModal>{content}</GlassSurface>
         ) : (
-          <HardShadow style={styles.card}>{content}</HardShadow>
+          <HardShadow style={styles.card} accessibilityViewIsModal>{content}</HardShadow>
         )}
       </View>
     </Modal>
@@ -86,7 +89,7 @@ const themedStyles = () => StyleSheet.create({
   title: { fontSize: 19, fontFamily: fonts.bold, color: colors.ink },
   message: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, lineHeight: 20 },
   actions: { flexDirection: 'row', gap: 10, marginTop: 4 },
-  btn: { flex: 1, paddingVertical: 13, alignItems: 'center', justifyContent: 'center' },
+  btn: { flex: 1, minHeight: 44, paddingVertical: 13, alignItems: 'center', justifyContent: 'center' },
   btnCancel: { borderWidth: 1, borderColor: colors.border },
   btnCancelText: { fontSize: 14, fontFamily: fonts.semibold, color: colors.inkSoft },
   btnConfirm: { backgroundColor: colors.accent },

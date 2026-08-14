@@ -1,6 +1,6 @@
 # Privacidad y seguridad — Estado y runbook
 
-> Última actualización: 2026-06-15 (revisión de seguridad)
+> Última actualización: 2026-08-14 (Fase 3 preparada localmente)
 
 Pantalla: `src/screens/PrivacySecurityScreen.tsx` (Perfil → "Privacidad y seguridad").
 
@@ -112,6 +112,9 @@ crashearía.
   bloqueos (el rate-limit por ventana no lo cubre).
 - RevenueCat/paywall desactivado en v1 (app gratis). El webhook ya valida el
   token en tiempo constante; su redeploy no hace falta hasta activar Plus.
+- La migración de endurecimiento y rendimiento de RLS de la Fase 3 está
+  desplegada y verificada. Ver `FASE-3-SEGURIDAD-RENDIMIENTO-DATOS.md`.
+- Activar manualmente la protección de contraseñas filtradas en Supabase Auth.
 
 ---
 

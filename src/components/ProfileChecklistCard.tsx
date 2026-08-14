@@ -10,7 +10,7 @@
 import { useCallback, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -59,7 +59,7 @@ export default function ProfileChecklistCard({ groupCount }: { groupCount: numbe
       }
     })();
     return () => { alive = false; };
-  }, [userId]));
+  }, [dismissKey, userId]));
 
   // Espera a conocer ambos estados para no parpadear.
   if (dismissed === null || friendCount === null || !profile) return null;

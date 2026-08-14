@@ -4,7 +4,7 @@ import {
   StyleSheet, StatusBar, Keyboard, TouchableWithoutFeedback,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useFavorites } from '../context/FavoritesContext';

@@ -15,11 +15,11 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import {
-  Animated, Easing, Platform, Pressable, StyleSheet, Text, View,
+  Animated, Easing, Pressable, StyleSheet, Text, View,
   type LayoutChangeEvent,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
@@ -28,6 +28,7 @@ import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useTheme } from '../context/ThemeContext';
 import GlassSurface from './GlassSurface';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 /** Alto de la barra de cristal (sin contar hueco inferior ni área segura). */
 export const LIQUID_TABBAR_HEIGHT = 62;
@@ -60,6 +61,7 @@ export default function LiquidGlassTabBar({
 }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const { scheme } = useTheme();
+  const reducedMotion = useReducedMotion();
   const active = state.index;
   const n = state.routes.length;
 
@@ -78,6 +80,12 @@ export default function LiquidGlassTabBar({
   useEffect(() => {
     if (tabW <= 0) return;
     const target = pillX(active);
+    if (reducedMotion) {
+      translateX.setValue(target);
+      stretch.setValue(0);
+      settled.current = true;
+      return;
+    }
     if (!settled.current) {
       translateX.setValue(target);       // coloca sin animación al medir
       settled.current = true;
@@ -94,7 +102,7 @@ export default function LiquidGlassTabBar({
       Animated.spring(stretch, { toValue: 0, useNativeDriver: true, stiffness: 210, damping: 18, mass: 0.7 }),
     ]).start();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, tabW]);
+  }, [active, tabW, reducedMotion, stretch, translateX]);
 
   const scaleX = stretch.interpolate({ inputRange: [0, 1], outputRange: [1, 1.1] });
   const scaleY = stretch.interpolate({ inputRange: [0, 1], outputRange: [1, 0.96] });
@@ -169,7 +177,7 @@ export default function LiquidGlassTabBar({
                 onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
                 style={styles.tab}
                 accessibilityRole="button"
-                accessibilityState={focused ? { selected: true } : {}}
+                accessibilityState={{ selected: focused }}
                 accessibilityLabel={label}
               >
                 <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>

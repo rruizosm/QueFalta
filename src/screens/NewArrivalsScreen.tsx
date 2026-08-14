@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useProfile } from '../context/ProfileContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { fetchWeeklyNewProducts, type WeeklyNewProductsPage } from '../api/catalog';
-import type { UIProduct } from '../lib/productAdapters';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import { storeInRegion, storesForRegion } from '../constants/regions';
 import StoreProductList from '../components/StoreProductList';
@@ -57,8 +56,10 @@ export default function NewArrivalsScreen() {
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
   const preferredStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
-  const enabledKeys = preferredStores.filter((store) => storeInRegion(store, region));
-  const allowedStores = enabledKeys.length > 0 ? enabledKeys : storesForRegion(region);
+  const allowedStores = useMemo(() => {
+    const enabledKeys = preferredStores.filter((store) => storeInRegion(store, region));
+    return enabledKeys.length > 0 ? enabledKeys : storesForRegion(region);
+  }, [preferredStores, region]);
   const stores = useMemo(
     () => CATALOG_STORES.filter((s) => allowedStores.includes(s.key)),
     [allowedStores],
@@ -99,7 +100,10 @@ export default function NewArrivalsScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [chromeH, setChromeH] = useState(0);
 
-  const cacheKeyFor = (storeKey: CatalogStore) => `${storeKey}:${region ?? 'none'}:${postalCode ?? 'none'}`;
+  const cacheKeyFor = useCallback(
+    (storeKey: CatalogStore) => `${storeKey}:${region ?? 'none'}:${postalCode ?? 'none'}`,
+    [region, postalCode],
+  );
   useEffect(() => {
     const seq = ++loadSeq.current;
     setVisibleCount(NEW_ARRIVALS_PAGE_SIZE);
@@ -129,7 +133,7 @@ export default function NewArrivalsScreen() {
   const base = useMemo(() => {
     if (store !== 'all') return cache[cacheKeyFor(store)]?.items ?? [];
     return stores.flatMap((item) => cache[cacheKeyFor(item.key)]?.items ?? []);
-  }, [store, stores, cache, region, postalCode]);
+  }, [store, stores, cache, cacheKeyFor]);
 
   // Categorías disponibles en las novedades del súper activo (únicas, ordenadas).
   const categories = useMemo(() => {
@@ -154,7 +158,7 @@ export default function NewArrivalsScreen() {
         })),
       };
     }).filter((group) => group.options.length > 0);
-  }, [store, stores, cache, region, postalCode]);
+  }, [store, stores, cache, cacheKeyFor]);
 
   // Búsqueda + filtros + orden. Sin orden elegido se respeta el orden en que
   // llegan (curado en Mercadona); los productos sin el precio elegido van al final.
@@ -236,7 +240,7 @@ export default function NewArrivalsScreen() {
       })
       .catch(() => {})
       .finally(() => { if (loadSeq.current === seq) setLoadingMore(false); });
-  }, [cache, filteredProducts.length, loading, loadingMore, postalCode, region, store, stores, visibleCount]);
+  }, [cache, cacheKeyFor, filteredProducts.length, loading, loadingMore, postalCode, region, store, stores, visibleCount]);
 
   // Chrome de la pantalla (cabecera + selector + fila de búsqueda),
   // idéntico en ambos modos salvo el back sin caja sobre el cristal y el toggle

@@ -15,11 +15,12 @@ import {
   Animated, Easing, Pressable, StyleSheet, Text, View,
   type LayoutChangeEvent, type StyleProp, type ViewStyle,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 const HEIGHT = 40;
 const RADIUS = 20;
@@ -59,6 +60,7 @@ export default function SlidingSegments<K extends string>({
   segments, value, onChange, style, compact = false, dense = false, activationDirection,
 }: Props<K>) {
   const n = segments.length;
+  const reducedMotion = useReducedMotion();
   const active = value == null ? -1 : Math.max(0, segments.findIndex((s) => s.key === value));
 
   // Ancho interno (pista − padding) medido, para la geometría de la píldora.
@@ -77,6 +79,13 @@ export default function SlidingSegments<K extends string>({
     }
     if (tabW <= 0) return;
     const target = PAD + tabW * active;
+    if (reducedMotion) {
+      translateX.setValue(target);
+      stretch.setValue(0);
+      settled.current = true;
+      wasInactive.current = false;
+      return;
+    }
     const animateActivation = Boolean(activationDirection && wasInactive.current);
     if (!settled.current) {
       settled.current = true;
@@ -101,8 +110,7 @@ export default function SlidingSegments<K extends string>({
       Animated.timing(stretch, { toValue: 1, duration: 170, easing: Easing.out(Easing.quad), useNativeDriver: true }),
       Animated.spring(stretch, { toValue: 0, useNativeDriver: true, stiffness: 120, damping: 9, mass: 0.7 }),
     ]).start();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, tabW, activationDirection]);
+  }, [active, tabW, activationDirection, reducedMotion, stretch, translateX]);
 
   const scaleX = stretch.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] });
   const scaleY = stretch.interpolate({ inputRange: [0, 1], outputRange: [1, 0.92] });
@@ -140,7 +148,7 @@ export default function SlidingSegments<K extends string>({
             key={s.key}
             style={[styles.seg, compact && styles.segCompact, dense && styles.segDense]}
             accessibilityRole="button"
-            accessibilityState={focused ? { selected: true } : {}}
+            accessibilityState={{ selected: focused }}
             accessibilityLabel={s.accessibilityLabel ?? s.label}
             onPress={() => {
               if (!focused) {

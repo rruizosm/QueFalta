@@ -7,6 +7,7 @@ import { formatPrice, formatSize, formatReferencePrice } from '../api/mercadona'
 import type {
   BonpreuProduct, CarrefourProduct, BonareaProduct, ConsumProduct, DiaProduct, SorliProduct,
   CondisProduct, AmetllerProduct, AldiProduct, HiperdinoProduct, AlcampoProduct, PlusfrescProduct, TapestryProduct,
+  GadisProduct, FroizProduct,
 } from '../api/catalog';
 
 export type NutriScoreGrade = 'A' | 'B' | 'C' | 'D' | 'E';
@@ -161,6 +162,25 @@ export function aldiToUI(p: AldiProduct): UIProduct {
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
   };
+}
+
+/** Gadisline: la etiqueta de oferta es explícita; el precio publicado puede ser
+ * directo o corresponder a una promoción por unidades. */
+export function gadisToUI(p: GadisProduct): UIProduct {
+  return {
+    id: p.id, store: 'gadis', name: p.displayName, imageUrl: p.thumbnail,
+    priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit),
+    metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit,
+    categoryName: p.categoryName, offerTag: p.promoName,
+  };
+}
+
+export function froizToUI(p: FroizProduct): UIProduct {
+  return { id: p.id, store: 'froiz', name: p.displayName, imageUrl: p.thumbnail,
+    priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit), metaLabel: p.packaging ?? null,
+    pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName, offerTag: p.promoName };
 }
 
 // HiperDino: es-only, sin marca/formato aparte (van en el nombre) ni €/ud.

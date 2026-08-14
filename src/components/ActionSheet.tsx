@@ -7,12 +7,13 @@
 import {
   View, Text, Image, Modal, Pressable, TouchableOpacity, StyleSheet, Platform,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -41,11 +42,15 @@ export default function ActionSheet({ visible, onClose, title, subtitle, leading
   const styles = useThemedStyles(themedStyles);
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={reducedMotion ? 'none' : 'slide'} onRequestClose={onClose}>
       <View style={styles.sheetRoot}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View style={[styles.sheet, { paddingBottom: Platform.OS === 'ios' ? 30 : Math.max(insets.bottom, 20) }]}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessible={false} />
+        <View
+          style={[styles.sheet, { paddingBottom: Platform.OS === 'ios' ? 30 : Math.max(insets.bottom, 20) }]}
+          accessibilityViewIsModal
+        >
           <View style={styles.sheetHeader}>
             {leading?.type === 'emoji' && (
               <View style={[styles.leadingBox, { backgroundColor: leading.color + '1e' }]}>
@@ -73,13 +78,14 @@ export default function ActionSheet({ visible, onClose, title, subtitle, leading
               style={styles.sheetAction}
               activeOpacity={0.7}
               onPress={a.onPress}
+              accessibilityRole="button"
             >
               <Ionicons name={a.icon} size={20} color={a.tint ?? colors.ink} />
               <Text style={[styles.sheetActionText, a.tint ? { color: a.tint } : null]}>{a.label}</Text>
             </TouchableOpacity>
           ))}
 
-          <TouchableOpacity style={styles.sheetCancel} activeOpacity={0.7} onPress={onClose}>
+          <TouchableOpacity style={styles.sheetCancel} activeOpacity={0.7} onPress={onClose} accessibilityRole="button">
             <Text style={styles.sheetCancelText}>{t('common.cancel')}</Text>
           </TouchableOpacity>
         </View>

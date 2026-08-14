@@ -6,11 +6,9 @@
  *  estados completos (CP válido o "Toda España"); un CP a medias no toca nada. */
 import { useState } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity,
+  View, Text, ScrollView,
   StyleSheet, StatusBar,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useAuth } from '../context/AuthContext';
@@ -30,7 +28,6 @@ export default function RegionSettingsScreen() {
   const headerTop = useHeaderTopPadding(52);
   const bottomPad = useTabBarBottomPadding(40);
   const { t } = useTranslation();
-  const navigation = useNavigation<any>();
   const { session } = useAuth();
   const { profile, applyProfile } = useProfile();
   const toast = useToast();

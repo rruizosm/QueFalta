@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   ActivityIndicator, LayoutAnimation, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import type { CatalogStore } from '../constants/stores';
@@ -14,6 +14,7 @@ import {
 } from '../lib/foodIndex';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 interface Props {
   store: CatalogStore;
@@ -84,18 +85,25 @@ function NutritionDisclosureShell({
 }) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
 
   if (inline) {
     return visible ? <View style={styles.inlineBody}>{children}</View> : null;
   }
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={reducedMotion ? 'none' : 'fade'} onRequestClose={onClose}>
       <View style={styles.modalBackdrop}>
         <View style={styles.modalCard}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>{t('nutrition.title')}</Text>
-            <TouchableOpacity style={styles.closeBtn} onPress={onClose} hitSlop={8}>
+            <TouchableOpacity
+              style={styles.closeBtn}
+              onPress={onClose}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.close')}
+            >
               <Ionicons name="close" size={20} color={colors.ink} />
             </TouchableOpacity>
           </View>
@@ -116,6 +124,7 @@ export function useNutritionInfoDisclosure({
 }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { t, lang } = useTranslation();
+  const reducedMotion = useReducedMotion();
   const locale = lang === 'ca' ? 'ca-ES' : 'es-ES';
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -168,16 +177,20 @@ export function useNutritionInfoDisclosure({
   const open = async () => {
     if (!active) return;
     if (inline && visible) {
-      LayoutAnimation.configureNext(
-        LayoutAnimation.create(160, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity),
-      );
+      if (!reducedMotion) {
+        LayoutAnimation.configureNext(
+          LayoutAnimation.create(160, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity),
+        );
+      }
       setVisible(false);
       return;
     }
     if (inline) {
-      LayoutAnimation.configureNext(
-        LayoutAnimation.create(160, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity),
-      );
+      if (!reducedMotion) {
+        LayoutAnimation.configureNext(
+          LayoutAnimation.create(160, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity),
+        );
+      }
     }
     setVisible(true);
     setNotFound(false);
@@ -280,7 +293,7 @@ export function useNutritionInfoDisclosure({
     titleKey: string,
     hintKey: string,
     emptyKey: string,
-    items: Array<{ label: string; detail: string }>,
+    items: { label: string; detail: string }[],
     color: string,
   ) => (
     <View style={styles.pointSection}>

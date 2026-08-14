@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 
 interface Props {
   value: number;
@@ -17,6 +18,7 @@ interface Props {
 
 export default function QuantityStepper({ value, onIncrement, onDecrement, min = 0, vertical = false }: Props) {
   const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
   const atMin = value <= min;
 
   if (vertical) {
@@ -26,15 +28,20 @@ export default function QuantityStepper({ value, onIncrement, onDecrement, min =
           style={styles.vBtn}
           onPress={onIncrement}
           hitSlop={{ top: 6, bottom: 2, left: 12, right: 12 }}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.increaseQuantity')}
         >
           <Text style={styles.vBtnText}>+</Text>
         </TouchableOpacity>
-        <Text style={styles.vValue}>{value}</Text>
+        <Text style={styles.vValue} accessibilityLabel={t('common.quantityValue', { n: value })}>{value}</Text>
         <TouchableOpacity
           style={[styles.vBtn, atMin && styles.vBtnDisabled]}
           onPress={onDecrement}
           disabled={atMin}
           hitSlop={{ top: 2, bottom: 6, left: 12, right: 12 }}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.decreaseQuantity')}
+          accessibilityState={{ disabled: atMin }}
         >
           <Text style={[styles.vBtnText, atMin && styles.vBtnTextDisabled]}>−</Text>
         </TouchableOpacity>
@@ -49,14 +56,19 @@ export default function QuantityStepper({ value, onIncrement, onDecrement, min =
         onPress={onDecrement}
         disabled={atMin}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        accessibilityRole="button"
+        accessibilityLabel={t('common.decreaseQuantity')}
+        accessibilityState={{ disabled: atMin }}
       >
         <Text style={[styles.btnText, atMin && styles.btnTextDisabled]}>−</Text>
       </TouchableOpacity>
-      <Text style={styles.value}>{value}</Text>
+      <Text style={styles.value} accessibilityLabel={t('common.quantityValue', { n: value })}>{value}</Text>
       <TouchableOpacity
         style={styles.btn}
         onPress={onIncrement}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        accessibilityRole="button"
+        accessibilityLabel={t('common.increaseQuantity')}
       >
         <Text style={styles.btnText}>+</Text>
       </TouchableOpacity>

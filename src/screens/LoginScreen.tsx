@@ -12,9 +12,10 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { colors } from '../constants/colors';
@@ -29,14 +30,14 @@ const LOGO = require('../../assets/quefalta-logo-blue.png');
 const TERMS_URL = 'https://quefalta.es/condiciones';
 const PRIVACY_URL = 'https://quefalta.es/privacidad';
 
-const FEATURES: Array<{
+const FEATURES: {
   icon: ComponentProps<typeof Ionicons>['name'];
   labelKey:
     | 'login.sharedCartTitle'
     | 'login.newTitle'
     | 'login.offersTitle'
     | 'login.pricesTitle';
-}> = [
+}[] = [
   { icon: 'people-outline', labelKey: 'login.sharedCartTitle' },
   { icon: 'sparkles-outline', labelKey: 'login.newTitle' },
   { icon: 'pricetag-outline', labelKey: 'login.offersTitle' },
@@ -45,6 +46,8 @@ const FEATURES: Array<{
 
 export default function LoginScreen() {
   const styles = useThemedStyles(themedStyles);
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale >= 1.6;
   const insets = useSafeAreaInsets();
   const bottomPad = Platform.OS === 'android'
     ? Math.max(insets.bottom + 12, 28)
@@ -63,6 +66,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
   const [emailError, setEmailError] = useState<null | 'invalid' | 'rate' | 'generic' | 'link'>(null);
+  const [providerError, setProviderError] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const emailInputRef = useRef<TextInput>(null);
 
@@ -91,8 +95,11 @@ export default function LoginScreen() {
 
   const handleGoogleSignIn = async () => {
     setBusy('google');
+    setProviderError(false);
     try {
       await signInWithGoogle();
+    } catch {
+      setProviderError(true);
     } finally {
       setBusy(null);
     }
@@ -100,8 +107,11 @@ export default function LoginScreen() {
 
   const handleAppleSignIn = async () => {
     setBusy('apple');
+    setProviderError(false);
     try {
       await signInWithApple();
+    } catch {
+      setProviderError(true);
     } finally {
       setBusy(null);
     }
@@ -168,29 +178,29 @@ export default function LoginScreen() {
         <View style={styles.content}>
           <View style={styles.brand}>
             <View style={styles.logoBox}>
-              <Image source={LOGO} resizeMode="contain" style={styles.logo} />
+              <Image source={LOGO} resizeMode="contain" style={styles.logo} accessible={false} />
             </View>
-            <Text style={styles.brandName}>QuéFalta</Text>
+            <Text style={styles.brandName} maxFontSizeMultiplier={2}>QuéFalta</Text>
           </View>
 
           <View style={styles.heroCard}>
             <View pointerEvents="none" style={styles.heroOrbLarge} />
             <View pointerEvents="none" style={styles.heroOrbSmall} />
 
-            <View style={styles.heroHeading}>
-              <Text style={styles.title}>{t('login.title')}</Text>
-              <View style={styles.heroIcon}>
+            <View style={[styles.heroHeading, largeText && styles.heroHeadingLarge]}>
+              <Text style={styles.title} maxFontSizeMultiplier={2}>{t('login.title')}</Text>
+              {!largeText && <View style={styles.heroIcon}>
                 <Ionicons name="basket-outline" size={30} color="#ffffff" />
-              </View>
+              </View>}
             </View>
 
-            <View style={styles.featurePanel}>
+            <View style={[styles.featurePanel, largeText && styles.featurePanelLarge]}>
               {FEATURES.map((feature) => (
-                <View key={feature.labelKey} style={styles.featureItem}>
+                <View key={feature.labelKey} style={[styles.featureItem, largeText && styles.featureItemLarge]}>
                   <View style={styles.featureIcon}>
                     <Ionicons name={feature.icon} size={17} color="#ffffff" />
                   </View>
-                  <Text style={styles.featureLabel}>{t(feature.labelKey)}</Text>
+                  <Text style={styles.featureLabel} maxFontSizeMultiplier={2}>{t(feature.labelKey)}</Text>
                 </View>
               ))}
             </View>
@@ -198,7 +208,7 @@ export default function LoginScreen() {
 
           <View style={styles.storeCard}>
             <View style={styles.storeHeader}>
-              <Text style={styles.storeTitle}>{t('login.storesTitle')}</Text>
+              <Text style={styles.storeTitle} maxFontSizeMultiplier={2}>{t('login.storesTitle')}</Text>
               <View style={styles.storeCount}>
                 <Text style={styles.storeCountText}>{CATALOG_STORES.length}</Text>
               </View>
@@ -208,7 +218,7 @@ export default function LoginScreen() {
               {CATALOG_STORES.map((store) => (
                 <View key={store.key} style={styles.storeLogoBox}>
                   {store.icon != null && (
-                    <Image source={store.icon} resizeMode="contain" style={styles.storeLogo} />
+                    <Image source={store.icon} resizeMode="contain" style={styles.storeLogo} accessible={false} />
                   )}
                 </View>
               ))}
@@ -216,6 +226,13 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.actions}>
+            {providerError && (
+              <View style={styles.providerFeedback} accessibilityRole="alert">
+                <Ionicons name="alert-circle-outline" size={17} color={colors.red} />
+                <Text style={styles.providerFeedbackText}>{t('login.providerError')}</Text>
+              </View>
+            )}
+
             {appleAvailable && (
               <TouchableOpacity
                 onPress={handleAppleSignIn}
@@ -400,6 +417,7 @@ const themedStyles = () => StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    justifyContent: 'center',
     paddingHorizontal: 16,
   },
   content: {
@@ -464,6 +482,7 @@ const themedStyles = () => StyleSheet.create({
     justifyContent: 'space-between',
     gap: 14,
   },
+  heroHeadingLarge: { minHeight: 0, alignItems: 'flex-start' },
   title: {
     flex: 1,
     maxWidth: 310,
@@ -495,6 +514,7 @@ const themedStyles = () => StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.20)',
     backgroundColor: 'rgba(255,255,255,0.12)',
   },
+  featurePanelLarge: { flexDirection: 'column' },
   featureItem: {
     width: '48%',
     minHeight: 31,
@@ -503,6 +523,7 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  featureItemLarge: { width: '100%', minHeight: 44 },
   featureIcon: {
     width: 29,
     height: 29,
@@ -534,6 +555,9 @@ const themedStyles = () => StyleSheet.create({
     gap: 8,
   },
   storeTitle: {
+    flex: 1,
+    minWidth: 0,
+    textAlign: 'center',
     fontSize: 15,
     fontFamily: fonts.bold,
     color: colors.ink,
@@ -579,6 +603,24 @@ const themedStyles = () => StyleSheet.create({
   actions: {
     gap: 10,
     marginTop: 16,
+  },
+  providerFeedback: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 7,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(214,69,43,0.30)',
+    backgroundColor: 'rgba(214,69,43,0.08)',
+  },
+  providerFeedbackText: {
+    flex: 1,
+    fontSize: 11.5,
+    lineHeight: 16,
+    fontFamily: fonts.medium,
+    color: colors.red,
   },
   googleButton: {
     minHeight: 54,

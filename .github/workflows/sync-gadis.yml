@@ -1,0 +1,25 @@
+name: Sync Gadis catalog
+
+on:
+  schedule:
+    - cron: '20 5 * * *' # diario, antes de que caduquen las promociones cortas
+  workflow_dispatch: {}
+
+concurrency:
+  group: sync-gadis
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/sync-gadis.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          CONCURRENCY: '4'

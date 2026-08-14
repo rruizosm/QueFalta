@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   View, Text, Image, Modal, Pressable, TouchableOpacity, FlatList, StyleSheet,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -12,6 +12,7 @@ import { useProfile } from '../context/ProfileContext';
 import { limitsApply } from '../constants/limits';
 import type { CatalogStore } from '../constants/stores';
 import PaywallModal from './PaywallModal';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 interface StoreOption { key: CatalogStore; name: string; icon: number | null }
 export type StoreSelection = CatalogStore | 'all';
@@ -46,6 +47,7 @@ export default function StoreDropdown<T extends StoreSelection>({
   const styles = useThemedStyles(themedStyles);
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
   const { isPremium, loading: profileLoading } = useProfile();
   const [internalOpen, setInternalOpen] = useState(false);
   const [paywallVisible, setPaywallVisible] = useState(false);
@@ -78,6 +80,9 @@ export default function StoreDropdown<T extends StoreSelection>({
           pressed && styles.cardPressed,
         ]}
         onPress={() => { onChange(item.key as T); setMenuOpen(false); }}
+        accessibilityRole="button"
+        accessibilityLabel={item.name}
+        accessibilityState={{ selected: on }}
       >
         {on && (
           <View style={styles.cardCheck}>
@@ -145,6 +150,7 @@ export default function StoreDropdown<T extends StoreSelection>({
             pressed && labeled && styles.chipLabeledPressed,
           ]}
           onPress={() => setMenuOpen(true)}
+          hitSlop={4}
           accessibilityRole="button"
           accessibilityLabel={active?.name}
           accessibilityHint={t('storePicker.title')}
@@ -169,14 +175,20 @@ export default function StoreDropdown<T extends StoreSelection>({
       {modal && (
         <Modal
           visible={open}
-          animationType="slide"
+          animationType={reducedMotion ? 'none' : 'slide'}
           statusBarTranslucent
           onRequestClose={() => setMenuOpen(false)}
         >
           <View style={[styles.sheet, { paddingTop: insets.top }]}>
             <View style={styles.sheetHeader}>
               <Text style={styles.sheetTitle}>{t('storePicker.title')}</Text>
-              <TouchableOpacity style={styles.closeBtn} onPress={() => setMenuOpen(false)} hitSlop={8}>
+              <TouchableOpacity
+                style={styles.closeBtn}
+                onPress={() => setMenuOpen(false)}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t('common.close')}
+              >
                 <Ionicons name="close" size={22} color={colors.ink} />
               </TouchableOpacity>
             </View>

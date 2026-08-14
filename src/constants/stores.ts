@@ -5,7 +5,7 @@ import { Image as ExpoImage } from 'expo-image';
 // Fuente ÚNICA del switcher del catálogo, de la preferencia de perfil
 // "Supermercados" y del agrupado de Lista/Cesta por tienda (de aquí salen los
 // nombres e iconos). Para añadir una tienda: súmala aquí, al tipo y a storeOfItem.
-export type CatalogStore = 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi' | 'hiperdino' | 'alcampo' | 'plusfresc';
+export type CatalogStore = 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi' | 'hiperdino' | 'alcampo' | 'plusfresc' | 'gadis' | 'froiz';
 
 /** Metadatos (nombre + icono) en orden de aparición. */
 export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | null }[] = [
@@ -24,6 +24,11 @@ export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | n
   { key: 'hiperdino', name: 'HiperDino',     icon: require('../../assets/stores/hiperdino.jpg') },
   { key: 'alcampo',   name: 'Alcampo',       icon: require('../../assets/stores/alcampo.png') },
   { key: 'plusfresc', name: 'Plusfresc',     icon: require('../../assets/stores/plusfresc.png') },
+  // Gadisline no publica un kit de marca descargable. Se muestra el nombre hasta
+  // que incorporemos un logo autorizado al bundle.
+  { key: 'gadis',     name: 'Gadis',         icon: null },
+  // Se muestra el nombre mientras se incorpora un logotipo con licencia al bundle.
+  { key: 'froiz',     name: 'Froiz',         icon: null },
 ];
 
 /** Orden canónico de las claves (para normalizar/ordenar selecciones). */
@@ -63,7 +68,8 @@ type StoreClue = { imageUrl?: string | null; mercadonaProductId?: string | null 
 // carrefour.es, bonarea.com, cdn-consum.aktiosdigitalservices.com, dia.es,
 // cdn.sorliclic.com, eroski.es, capraboacasa.com, cdn.condis.es, ametllerorigen.com,
 // scene7.com/is/image/aldinord (Aldi), cdn.hiperdino.es (HiperDino),
-// compraonline.alcampo.es (Alcampo), compra.plusfresc.cat (Plusfresc).
+// compraonline.alcampo.es (Alcampo), compra.plusfresc.cat (Plusfresc),
+// storage.gadisline.com (Gadis).
 // Mercadona también se reconoce por su id.
 export function storeOfItem(it: StoreClue): Store {
   const url = it.imageUrl ?? '';
@@ -82,6 +88,8 @@ export function storeOfItem(it: StoreClue): Store {
   if (url.includes('cdn.hiperdino')) return 'hiperdino';
   if (url.includes('alcampo')) return 'alcampo';
   if (url.includes('plusfresc')) return 'plusfresc';
+  if (url.includes('gadisline')) return 'gadis';
+  if (url.includes('imagedelivery.net/laxGYDNZyT04iZVpzPzryw')) return 'froiz';
   return 'otros';
 }
 

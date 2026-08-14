@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useProfile } from '../context/ProfileContext';
@@ -144,7 +144,7 @@ function RankingCard({
   kind: 'stores' | 'categories' | 'products';
   title: string;
   icon: keyof typeof Ionicons.glyphMap;
-  rows: Array<PurchaseStatisticItem & { label?: string; iconSource?: number | null }>;
+  rows: (PurchaseStatisticItem & { label?: string; iconSource?: number | null })[];
   t: (key: string, vars?: Record<string, string | number>) => string;
   styles: ReturnType<typeof themedStyles>;
 }) {

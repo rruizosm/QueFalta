@@ -5,7 +5,7 @@ import {
   LayoutAnimation, Platform, UIManager,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -17,6 +17,7 @@ import { useTranslation } from '../context/LanguageContext';
 import { FREE_LIMITS, limitsApply } from '../constants/limits';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import { fetchPurchases, fetchPurchaseItems, type Purchase } from '../api/purchases';
 import PaywallModal from '../components/PaywallModal';
 import type { NewListItem } from '../api/lists';
@@ -32,6 +33,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function HistoryScreen() {
   const styles = useThemedStyles(themedStyles);
+  const reducedMotion = useReducedMotion();
   const headerTop = useHeaderTopPadding(52);
   const bottomPad = useTabBarBottomPadding(40);
   const { t, lang } = useTranslation();
@@ -82,14 +84,14 @@ export default function HistoryScreen() {
   }, [load]);
 
   const toggleExpand = async (p: Purchase) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    if (!reducedMotion) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     if (expandedId === p.id) { setExpandedId(null); return; }
     setExpandedId(p.id);
     if (!itemsCache[p.id]) {
       setItemsLoadingId(p.id);
       try {
         const items = await fetchPurchaseItems(p.id);
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        if (!reducedMotion) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         setItemsCache((c) => ({ ...c, [p.id]: items }));
       } catch {
         toast.show(t('history.detailError'), 'error');

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
 import { Animated, PanResponder, ScrollView, View, Text, Image, Modal, Pressable, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -9,6 +9,7 @@ import { useTranslation } from '../context/LanguageContext';
 import { CATALOG_STORES } from '../constants/stores';
 import { getSubcategoryEmoji } from '../constants/subcategoryEmojis';
 import HardShadow from './HardShadow';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -85,6 +86,9 @@ export default function ProductFilterSheet({
   const styles = useThemedStyles(themedStyles);
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
+  const reducedMotionRef = useRef(reducedMotion);
+  reducedMotionRef.current = reducedMotion;
 
   const [categoryGroupOpen, setCategoryGroupOpen] = useState<string | null>(null);
   const [offerTypeGroupOpen, setOfferTypeGroupOpen] = useState<string | null>(null);
@@ -98,13 +102,16 @@ export default function ProductFilterSheet({
     },
     onPanResponderRelease: (_, gesture) => {
       if (gesture.dy > 88 || gesture.vy > 1.2) {
-        Animated.timing(dragY, { toValue: 260, duration: 170, useNativeDriver: true }).start(() => onClose());
+        if (reducedMotionRef.current) onClose();
+        else Animated.timing(dragY, { toValue: 260, duration: 170, useNativeDriver: true }).start(() => onClose());
       } else {
-        Animated.spring(dragY, { toValue: 0, useNativeDriver: true, damping: 18, stiffness: 180 }).start();
+        if (reducedMotionRef.current) dragY.setValue(0);
+        else Animated.spring(dragY, { toValue: 0, useNativeDriver: true, damping: 18, stiffness: 180 }).start();
       }
     },
     onPanResponderTerminate: () => {
-      Animated.spring(dragY, { toValue: 0, useNativeDriver: true, damping: 18, stiffness: 180 }).start();
+      if (reducedMotionRef.current) dragY.setValue(0);
+      else Animated.spring(dragY, { toValue: 0, useNativeDriver: true, damping: 18, stiffness: 180 }).start();
     },
   })).current;
   useEffect(() => {
@@ -150,6 +157,8 @@ export default function ProductFilterSheet({
       style={[styles.chip, on && styles.chipOn]}
       onPress={onPress}
       activeOpacity={0.8}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: on }}
     >
       <Text style={[styles.chipText, on && styles.chipTextOn]} numberOfLines={1}>{label}</Text>
     </TouchableOpacity>
@@ -161,6 +170,8 @@ export default function ProductFilterSheet({
       style={[styles.chip, showCategoryIcons && styles.categoryChip, on && styles.chipOn]}
       onPress={onPress}
       activeOpacity={0.8}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: on }}
     >
       {showCategoryIcons ? (
         <View style={[styles.categoryIcon, on && styles.categoryIconOn]}>
@@ -177,6 +188,8 @@ export default function ProductFilterSheet({
       style={[styles.chip, styles.categoryAllChip, on && styles.chipOn]}
       onPress={onPress}
       activeOpacity={0.8}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: on }}
     >
       <Text style={[styles.chipText, on && styles.chipTextOn]}>{t('filters.all')}</Text>
     </TouchableOpacity>
@@ -204,6 +217,8 @@ export default function ProductFilterSheet({
       style={[styles.chip, styles.storeChip, on && styles.chipOn]}
       onPress={onPress}
       activeOpacity={0.8}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: on }}
     >
       {storeIcon(value) ? <Image source={storeIcon(value) as number} style={styles.chipStoreLogo} resizeMode="contain" /> : null}
       <Text style={[styles.chipText, on && styles.chipTextOn]} numberOfLines={1}>{label}</Text>
@@ -238,6 +253,8 @@ export default function ProductFilterSheet({
                     if (!expanded) onOpen?.(group.key);
                   }}
                   activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityState={{ expanded }}
                 >
                   {storeIcon(group.key) ? <Image source={storeIcon(group.key) as number} style={styles.groupStoreLogo} resizeMode="contain" /> : null}
                   <Text style={styles.groupName}>{group.label}</Text>
@@ -278,13 +295,18 @@ export default function ProductFilterSheet({
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
+      animationType={reducedMotion ? 'none' : 'slide'}
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <Pressable style={[styles.backdrop, plusAppearance && styles.backdropPlus]} onPress={onClose} />
+      <Pressable
+        style={[styles.backdrop, plusAppearance && styles.backdropPlus]}
+        onPress={onClose}
+        accessible={false}
+      />
       <Animated.View
         style={[styles.sheet, plusAppearance && styles.sheetPlus, { paddingBottom: insets.bottom + 12 }, { transform: [{ translateY: dragY }] }]}
+        accessibilityViewIsModal
       >
         {plusAppearance ? (
           <View style={styles.dragHandleArea} {...dragResponder.panHandlers}>
@@ -293,7 +315,13 @@ export default function ProductFilterSheet({
         ) : (
           <View style={styles.sheetHeader}>
             <Text style={styles.sheetTitle}>{t('filters.title')}</Text>
-            <TouchableOpacity style={styles.closeBtn} onPress={onClose} hitSlop={8}>
+            <TouchableOpacity
+              style={styles.closeBtn}
+              onPress={onClose}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.close')}
+            >
               <Ionicons name="close" size={22} color={colors.ink} />
             </TouchableOpacity>
           </View>
@@ -389,11 +417,16 @@ export default function ProductFilterSheet({
 
         <View style={styles.footer}>
           {hasFilters ? (
-            <TouchableOpacity onPress={clearAll} hitSlop={8}>
+            <TouchableOpacity onPress={clearAll} hitSlop={8} accessibilityRole="button">
               <Text style={styles.clearText}>{t('filters.clear')}</Text>
             </TouchableOpacity>
           ) : <View />}
-          <TouchableOpacity style={plusAppearance ? styles.doneWrap : styles.doneBtn} onPress={onClose} activeOpacity={0.85}>
+          <TouchableOpacity
+            style={plusAppearance ? styles.doneWrap : styles.doneBtn}
+            onPress={onClose}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+          >
             {plusAppearance ? (
               <HardShadow style={styles.doneBtnPlus}>
                 <Ionicons name="checkmark" size={17} color={colors.white} />
@@ -468,7 +501,8 @@ const themedStyles = () => StyleSheet.create({
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
     paddingHorizontal: 14, paddingVertical: 9,
-    borderRadius: 18, maxWidth: '100%',
+    minHeight: 44, borderRadius: 22, maxWidth: '100%',
+    alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
   },
@@ -532,7 +566,7 @@ const themedStyles = () => StyleSheet.create({
   doneBtn: {
     backgroundColor: colors.accent,
     paddingHorizontal: 24, paddingVertical: 12,
-    borderRadius: 16,
+    minHeight: 44, borderRadius: 16,
   },
   doneWrap: { minWidth: 150 },
   doneBtnPlus: {

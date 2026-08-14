@@ -45,6 +45,7 @@ import { canonicalPricePerUnit } from './lib/price.mjs';
 import { normalizeAmetllerOffer } from './lib/retailer-offers.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { validGlobalGtin } from './lib/gtin.mjs';
+import { recordCatalogSync } from './lib/sync-status.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -366,6 +367,7 @@ async function main() {
   await upsert('ametller_products', rows);
   await markStale('ametller_products');
   await markStale('ametller_categories');
+  await recordCatalogSync({ url: SUPABASE_URL, key: SERVICE_ROLE, store: 'ametller' });
   console.log('[ametller] OK');
 }
 

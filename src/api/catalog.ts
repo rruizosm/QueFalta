@@ -16,7 +16,7 @@ import { fetchNewArrivals, resolveWarehouseForPostalCode } from './mercadona';
 // fichero con `import type`), así que este import NO crea un ciclo en runtime.
 import {
   mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
-  condisToUI, eroskiToUI, capraboToUI, ametllerToUI, aldiToUI, gadisToUI, froizToUI, hiperdinoToUI, alcampoToUI, plusfrescToUI,
+  condisToUI, eroskiToUI, capraboToUI, ametllerToUI, aldiToUI, gadisToUI, froizToUI, ahorramasToUI, hiperdinoToUI, alcampoToUI, plusfrescToUI,
   type UIProduct,
 } from '../lib/productAdapters';
 export { offerTypesForStore } from '../lib/offerTypes';
@@ -32,7 +32,7 @@ const PRICE_CHANGE_TABLE: Record<CatalogStore, string> = {
   bonarea: 'bonarea_products', consum: 'consum_products', dia: 'dia_products', sorli: 'sorli_products',
   eroski: 'eroski_products', caprabo: 'caprabo_products', condis: 'condis_products',
   ametller: 'ametller_products', aldi: 'aldi_products', hiperdino: 'hiperdino_products',
-  alcampo: 'alcampo_products', plusfresc: 'plusfresc_products', gadis: 'gadis_products', froiz: 'froiz_products',
+  alcampo: 'alcampo_products', plusfresc: 'plusfresc_products', gadis: 'gadis_products', froiz: 'froiz_products', ahorramas: 'ahorramas_products',
 };
 
 /** Última variación semanal del precio base de un producto. Si la migración aún
@@ -1648,6 +1648,42 @@ export async function fetchFroizProductsByCategory(categoryId: string, limit = 6
   if (error) throw error; return (data ?? []).map(mapFroiz);
 }
 
+// ─── Ahorramás (Salesforce Commerce Cloud / Demandware) ────────────────────
+// El espejo usa el surtido de referencia sin CP. Ahorramás asigna tienda por CP,
+// por lo que los precios locales se normalizarán en una fase posterior.
+export type AhorramasProduct = GadisProduct;
+export type AhorramasCategory = GadisCategory;
+const mapAhorramas = (r: any): AhorramasProduct => ({
+  id: r.id, displayName: r.display_name, brand: r.brand ?? null, packaging: r.packaging ?? null,
+  thumbnail: r.thumbnail ?? null, unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
+  priceFormat: r.price_format ?? null, pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
+  categoryName: r.category_name ?? null, promoName: r.promo_name ?? null,
+});
+const AHORRAMAS_COLS = 'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name';
+const AHORRAMAS_OFFER_COLS = `${AHORRAMAS_COLS}, promo_text, promo_price, promo_base_price, promo_start, promo_end`;
+export async function searchAhorramasProducts(query: string, limit = 50, signal?: AbortSignal): Promise<AhorramasProduct[]> {
+  const q = query.trim(); if (q.length < 2) return [];
+  const { data, error } = await abortable(filterByNameWords(supabase.from('ahorramas_products').select(AHORRAMAS_COLS).eq('published', true), q).limit(limit), signal);
+  if (error) throw error; return (data ?? []).map(mapAhorramas);
+}
+export async function browseAhorramasProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<AhorramasProduct>> {
+  const { rows, nextCursor } = await keysetPage('ahorramas_products', AHORRAMAS_COLS, 'display_name_norm', cursor, limit, undefined, descending, signal);
+  return { items: rows.map(mapAhorramas), nextCursor };
+}
+export async function fetchAhorramasProduct(id: string): Promise<AhorramasProduct | null> {
+  const { data, error } = await supabase.from('ahorramas_products').select(AHORRAMAS_COLS).eq('id', id).maybeSingle();
+  if (error) throw error; return data ? mapAhorramas(data) : null;
+}
+export async function fetchAhorramasCategoryTree(signal?: AbortSignal): Promise<AhorramasCategory[]> {
+  const { data, error } = await abortable(supabase.from('ahorramas_categories').select('id, name, parent_id, product_count').eq('published', true).order('name'), signal);
+  if (error) throw error; const rows = data ?? [];
+  return rows.filter((r: any) => r.parent_id == null).map((n: any) => ({ id:n.id, name:n.name, children:rows.filter((c:any)=>c.parent_id===n.id && (c.product_count ?? 0)>0).map((c:any)=>({id:c.id,name:c.name})) })).filter((n) => n.children.length > 0);
+}
+export async function fetchAhorramasProductsByCategory(categoryId: string, limit = 600): Promise<AhorramasProduct[]> {
+  const { data, error } = await supabase.from('ahorramas_products').select(AHORRAMAS_COLS).eq('published', true).contains('category_ids', [categoryId]).order('display_name').limit(limit);
+  if (error) throw error; return (data ?? []).map(mapAhorramas);
+}
+
 // ─── HiperDino (tabla hiperdino_products, espejo aparte) ─────────────────────
 // Mismo modelo que Aldi (espejo + category_ids, con category_name), pero SOLO
 // castellano (hiperdino.es no es bilingüe), SIN ficha, SIN EAN y SIN €/unidad
@@ -2203,6 +2239,7 @@ const MIRROR_QUERY: Record<CatalogStore, { table: string; cols: string; toUI: (r
   plusfresc: { table: 'plusfresc_products',  cols: PLUSFRESC_COLS, toUI: (r) => plusfrescToUI(mapPlusfresc(r)) },
   gadis:     { table: 'gadis_products',      cols: GADIS_COLS,     toUI: (r) => gadisToUI(mapGadis(r)) },
   froiz:     { table: 'froiz_products',      cols: FROIZ_COLS,     toUI: (r) => froizToUI(mapFroiz(r)) },
+  ahorramas: { table: 'ahorramas_products',  cols: AHORRAMAS_COLS, toUI: (r) => ahorramasToUI(mapAhorramas(r)) },
 };
 
 /** Aplica la disponibilidad que cada espejo conoce. Los catálogos sin columnas
@@ -2420,10 +2457,10 @@ export async function fetchPriceChanges(
  *  esta lista, así que añadir un súper aquí + su fetch lo estrena en la UI. */
 export const OFFER_STORES: CatalogStore[] = [
   'carrefour', 'esclat', 'consum', 'dia', 'sorli', 'eroski', 'caprabo',
-  'condis', 'ametller', 'aldi', 'hiperdino', 'alcampo', 'plusfresc', 'gadis',
+  'condis', 'ametller', 'aldi', 'hiperdino', 'alcampo', 'plusfresc', 'gadis', 'ahorramas',
 ];
 
-type NormalizedOfferStore = 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'alcampo' | 'gadis';
+type NormalizedOfferStore = 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'alcampo' | 'gadis' | 'ahorramas';
 
 const NORMALIZED_OFFER_CONFIG: Record<NormalizedOfferStore, {
   table: string;
@@ -2465,11 +2502,15 @@ const NORMALIZED_OFFER_CONFIG: Record<NormalizedOfferStore, {
     table: 'gadis_products', columns: GADIS_OFFER_COLS, bilingual: false,
     toUI: (row) => gadisToUI(mapGadis(row)),
   },
+  ahorramas: {
+    table: 'ahorramas_products', columns: AHORRAMAS_OFFER_COLS, bilingual: false,
+    toUI: (row) => ahorramasToUI(mapAhorramas(row)),
+  },
 };
 
 const isNormalizedOfferStore = (store: CatalogStore): store is NormalizedOfferStore =>
   store === 'eroski' || store === 'caprabo' || store === 'condis'
-  || store === 'ametller' || store === 'alcampo' || store === 'gadis';
+  || store === 'ametller' || store === 'alcampo' || store === 'gadis' || store === 'ahorramas';
 
 export interface CarrefourOffer {
   product: UIProduct;        // con el precio ACTUAL (rebajado si es descuento directo)
@@ -2598,6 +2639,11 @@ export async function fetchOfferCategories(
         q = supabase.from('gadis_products').select('id, category_name')
           .eq('published', true).not('category_name', 'is', null)
           .not('promo_name', 'is', null).eq('promo_is_coupon', false)
+          .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`);
+      } else if (store === 'ahorramas') {
+        q = supabase.from('ahorramas_products').select('id, category_name')
+          .eq('published', true).not('category_name', 'is', null)
+          .not('promo_name', 'is', null)
           .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`);
       } else if (isNormalizedOfferStore(store)) {
         const config = NORMALIZED_OFFER_CONFIG[store];

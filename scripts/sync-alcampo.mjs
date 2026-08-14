@@ -61,6 +61,7 @@ import { canonicalPricePerUnit } from './lib/price.mjs';
 import { normalizeAlcampoOffer } from './lib/retailer-offers.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { validGlobalGtin } from './lib/gtin.mjs';
+import { recordCatalogSync } from './lib/sync-status.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -521,6 +522,7 @@ async function main() {
   await upsert('alcampo_products', rows);
   await markStale('alcampo_products');
   await markStale('alcampo_categories');
+  await recordCatalogSync({ url: SUPABASE_URL, key: SERVICE_ROLE, store: 'alcampo' });
   console.log('[alcampo] OK');
 }
 

@@ -26,6 +26,7 @@ import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { PROVINCE_COMMUNITY } from './lib/province-community.mjs';
 import { validGlobalGtin } from './lib/gtin.mjs';
+import { recordCatalogSync } from './lib/sync-status.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -382,6 +383,7 @@ async function main() {
     } catch (e) { console.warn(`[sync] detalle: pasada omitida (${e.message.split('\n')[0]})`); }
   }
 
+  await recordCatalogSync({ url: SUPABASE_URL, key: SERVICE_ROLE, store: 'mercadona' });
   console.log('[sync] OK');
 }
 

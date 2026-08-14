@@ -38,14 +38,14 @@ import {
   searchCondisProducts, fetchCondisCategoryTree,
   searchAmetllerProducts, fetchAmetllerCategoryTree,
   searchAldiProducts, fetchAldiCategoryTree,
-  searchGadisProducts, fetchGadisCategoryTree, searchFroizProducts,
+  searchGadisProducts, fetchGadisCategoryTree, searchFroizProducts, searchAhorramasProducts, fetchAhorramasCategoryTree,
   searchHiperdinoProducts, fetchHiperdinoCategoryTree,
   searchAlcampoProducts, fetchAlcampoCategoryTree,
   searchPlusfrescProducts, fetchPlusfrescCategoryTree,
   browseProducts, browseBonpreuProducts, browseCarrefourProducts,
   browseBonareaProducts, browseConsumProducts, browseDiaProducts, browseSorliProducts,
   browseEroskiProducts, browseCapraboProducts, browseCondisProducts, browseAmetllerProducts,
-  browseAldiProducts, browseGadisProducts, browseFroizProducts, browseHiperdinoProducts, browseAlcampoProducts, browsePlusfrescProducts,
+  browseAldiProducts, browseGadisProducts, browseFroizProducts, browseAhorramasProducts, browseHiperdinoProducts, browseAlcampoProducts, browsePlusfrescProducts,
   type BonpreuProduct, type BonpreuCategory,
   type CarrefourProduct, type CarrefourCategory,
   type BonareaProduct, type BonareaCategory,
@@ -56,6 +56,7 @@ import {
   type AmetllerProduct, type AmetllerCategory,
   type AldiProduct, type AldiCategory,
   type GadisProduct, type GadisCategory,
+  type AhorramasProduct, type AhorramasCategory,
   type HiperdinoProduct, type HiperdinoCategory,
   type AlcampoProduct, type AlcampoCategory,
   type PlusfrescProduct, type PlusfrescCategory,
@@ -74,7 +75,7 @@ import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../consta
 import { storeInRegion, storesForRegion, type RegionValue } from '../constants/regions';
 import {
   mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
-  eroskiToUI, capraboToUI, condisToUI, ametllerToUI, aldiToUI, gadisToUI, froizToUI, hiperdinoToUI, alcampoToUI,
+  eroskiToUI, capraboToUI, condisToUI, ametllerToUI, aldiToUI, gadisToUI, froizToUI, ahorramasToUI, hiperdinoToUI, alcampoToUI,
   plusfrescToUI,
   type UIProduct,
 } from '../lib/productAdapters';
@@ -235,6 +236,7 @@ async function loadBrowsePageWithOrder(
     case 'aldi':      { const { items, nextCursor } = await browseAldiProducts(cursor, limit, signal, order as never); return { items: items.map(aldiToUI), nextCursor }; }
     case 'gadis':     { const { items, nextCursor } = await browseGadisProducts(cursor, limit, signal, order as never); return { items: items.map(gadisToUI), nextCursor }; }
     case 'froiz':     { const { items, nextCursor } = await browseFroizProducts(cursor, limit, signal, order as never); return { items: items.map(froizToUI), nextCursor }; }
+    case 'ahorramas': { const { items, nextCursor } = await browseAhorramasProducts(cursor, limit, signal, order as never); return { items: items.map(ahorramasToUI), nextCursor }; }
     case 'hiperdino': { const { items, nextCursor } = await browseHiperdinoProducts(cursor, limit, signal, order as never); return { items: items.map(hiperdinoToUI), nextCursor }; }
     case 'alcampo':   { const { items, nextCursor } = await browseAlcampoProducts(cursor, limit, signal, order as never); return { items: items.map(alcampoToUI), nextCursor }; }
     case 'plusfresc': { const { items, nextCursor } = await browsePlusfrescProducts(cursor, postalCode, limit, signal, order as never); return { items: items.map(plusfrescToUI), nextCursor }; }
@@ -264,6 +266,7 @@ async function loadStoreSearch(
     case 'aldi': return (await searchAldiProducts(query, limit, signal)).map(aldiToUI);
     case 'gadis': return (await searchGadisProducts(query, limit, signal)).map(gadisToUI);
     case 'froiz': return (await searchFroizProducts(query, limit, signal)).map(froizToUI);
+    case 'ahorramas': return (await searchAhorramasProducts(query, limit, signal)).map(ahorramasToUI);
     case 'hiperdino': return (await searchHiperdinoProducts(query, limit, signal)).map(hiperdinoToUI);
     case 'alcampo': return (await searchAlcampoProducts(query, limit, signal)).map(alcampoToUI);
     case 'plusfresc': return (await searchPlusfrescProducts(query, postalCode, limit, signal)).map(plusfrescToUI);
@@ -544,6 +547,13 @@ export default function CatalogScreen() {
   const [gaCatsLoading, setGaCatsLoading] = useState(false);
   const [gaCatsError, setGaCatsError] = useState(false);
   const [frSearch, setFrSearch] = useState('');
+  const [ahSearch, setAhSearch] = useState('');
+  const [ahResults, setAhResults] = useState<AhorramasProduct[]>([]);
+  const [ahLoading, setAhLoading] = useState(false);
+  const [ahError, setAhError] = useState(false);
+  const [ahCats, setAhCats] = useState<AhorramasCategory[]>([]);
+  const [ahCatsLoading, setAhCatsLoading] = useState(false);
+  const [ahCatsError, setAhCatsError] = useState(false);
 
   // Búsqueda de productos HiperDino (espejo)
   const [hdSearch, setHdSearch] = useState('');
@@ -592,12 +602,12 @@ export default function CatalogScreen() {
   // Texto de búsqueda del súper activo: con <2 letras estamos en modo navegación.
   const prodQuery = store === 'all'
     ? allSearch
-    : { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch, condis: coSearch, ametller: amSearch, aldi: alSearch, gadis: gaSearch, froiz: frSearch, hiperdino: hdSearch, alcampo: acSearch, plusfresc: pfSearch }[store];
+    : { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch, condis: coSearch, ametller: amSearch, aldi: alSearch, gadis: gaSearch, froiz: frSearch, ahorramas: ahSearch, hiperdino: hdSearch, alcampo: acSearch, plusfresc: pfSearch }[store];
   // Setter de búsqueda de productos del súper activo (para la fila de búsqueda
   // única que ahora vive en el chrome, en vez de una por bloque de súper).
   const setProdQuery = store === 'all'
     ? setAllSearch
-    : { mercadona: setProdSearch, esclat: setBpSearch, carrefour: setCfSearch, bonarea: setBaSearch, consum: setCsSearch, dia: setDdSearch, sorli: setSoSearch, eroski: setEkSearch, caprabo: setCbSearch, condis: setCoSearch, ametller: setAmSearch, aldi: setAlSearch, gadis: setGaSearch, froiz: setFrSearch, hiperdino: setHdSearch, alcampo: setAcSearch, plusfresc: setPfSearch }[store];
+    : { mercadona: setProdSearch, esclat: setBpSearch, carrefour: setCfSearch, bonarea: setBaSearch, consum: setCsSearch, dia: setDdSearch, sorli: setSoSearch, eroski: setEkSearch, caprabo: setCbSearch, condis: setCoSearch, ametller: setAmSearch, aldi: setAlSearch, gadis: setGaSearch, froiz: setFrSearch, ahorramas: setAhSearch, hiperdino: setHdSearch, alcampo: setAcSearch, plusfresc: setPfSearch }[store];
   const browseMode = tab === 'productos' && prodQuery.trim().length < 2;
   const productSortField: ProductSortField = pricePerUnitOrder == null ? 'price' : 'pricePerUnit';
   const activeProductOrder = pricePerUnitOrder ?? productOrder;
@@ -927,6 +937,15 @@ export default function CatalogScreen() {
     return startProductSearch(gaSearch, (q, signal) => searchGadisProducts(q, 50, signal), setGaResults, setGaLoading, setGaError);
   }, [store, gaSearch]);
 
+  useEffect(() => {
+    if (tab !== 'categorias' || store !== 'ahorramas' || ahCats.length > 0) return;
+    return startCategoryLoad(fetchAhorramasCategoryTree, setAhCats, setAhCatsLoading, setAhCatsError);
+  }, [store, tab, ahCats.length]);
+  useEffect(() => {
+    if (store !== 'ahorramas') return;
+    return startProductSearch(ahSearch, (q, signal) => searchAhorramasProducts(q, 50, signal), setAhResults, setAhLoading, setAhError);
+  }, [store, ahSearch]);
+
   // Carga perezosa de categorías HiperDino la primera vez que se entra a esa tienda.
   useEffect(() => {
     if (tab !== 'categorias' || store !== 'hiperdino' || hdCats.length > 0) return;
@@ -1127,6 +1146,9 @@ export default function CatalogScreen() {
 
   const renderGaCategory = ({ item }: { item: GadisCategory }) =>
     renderCatRow({ store: 'gadis', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('gadis', item) });
+
+  const renderAhCategory = ({ item }: { item: AhorramasCategory }) =>
+    renderCatRow({ store: 'ahorramas', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('ahorramas', item) });
 
   const renderHdCategory = ({ item }: { item: HiperdinoCategory }) =>
     renderCatRow({ store: 'hiperdino', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('hiperdino', item) });
@@ -1824,6 +1846,14 @@ export default function CatalogScreen() {
         : <FlatList data={sortedCats(gaCats)} keyExtractor={(item) => item.id} renderItem={renderGaCategory} contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]} showsVerticalScrollIndicator={false} ItemSeparatorComponent={() => <View style={{ height: 8 }} />} />
       )}
       {store === 'gadis' && tab === 'productos' && renderProductsTab(gaSearch, gaLoading, gaError, gaResults.map(gadisToUI))}
+
+      {/* ── Ahorramás ────────────────────────────────────────────── */}
+      {store === 'ahorramas' && tab === 'categorias' && (
+        ahCatsLoading ? <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
+        : ahCatsError ? <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Ahorramás' })}</Text><TouchableOpacity onPress={() => { setAhCatsError(false); setAhCatsLoading(true); fetchAhorramasCategoryTree().then(setAhCats).catch(() => setAhCatsError(true)).finally(() => setAhCatsLoading(false)); }}><Text style={styles.retryText}>{t('common.retry')}</Text></TouchableOpacity></View>
+        : <FlatList data={sortedCats(ahCats)} keyExtractor={(item) => item.id} renderItem={renderAhCategory} contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]} showsVerticalScrollIndicator={false} ItemSeparatorComponent={() => <View style={{ height: 8 }} />}/>
+      )}
+      {store === 'ahorramas' && tab === 'productos' && renderProductsTab(ahSearch, ahLoading, ahError, ahResults.map(ahorramasToUI))}
 
       {/* ── HiperDino ────────────────────────────────────────────── */}
       {store === 'hiperdino' && tab === 'categorias' && (

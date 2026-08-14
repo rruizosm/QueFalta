@@ -3,10 +3,10 @@ import { Modal, View, ActivityIndicator, StyleSheet } from 'react-native';
 import { colors } from '../constants/colors';
 import {
   fetchBonpreuProduct, fetchCarrefourProduct, fetchBonareaProduct, fetchConsumProduct, fetchDiaProduct, fetchSorliProduct,
-  fetchEroskiProduct, fetchCapraboProduct, fetchCondisProduct, fetchAmetllerProduct, fetchAldiProduct, fetchGadisProduct, fetchHiperdinoProduct, fetchAlcampoProduct,
+  fetchEroskiProduct, fetchCapraboProduct, fetchCondisProduct, fetchAmetllerProduct, fetchAldiProduct, fetchGadisProduct, fetchAhorramasProduct, fetchHiperdinoProduct, fetchAlcampoProduct,
   fetchPlusfrescProduct,
   type BonpreuProduct, type CarrefourProduct, type BonareaProduct, type ConsumProduct, type DiaProduct, type SorliProduct,
-  type CondisProduct, type AmetllerProduct, type AldiProduct, type GadisProduct, type HiperdinoProduct, type AlcampoProduct, type PlusfrescProduct, type TapestryProduct,
+  type CondisProduct, type AmetllerProduct, type AldiProduct, type GadisProduct, type AhorramasProduct, type HiperdinoProduct, type AlcampoProduct, type PlusfrescProduct, type TapestryProduct,
 } from '../api/catalog';
 import type { CatalogStore } from '../constants/stores';
 import { useToast } from '../context/ToastContext';
@@ -53,7 +53,7 @@ export default function StoreProductModal({ target, onClose, fullScreen = false,
   // El fetch solo debe reiniciarse cuando cambia el producto o su contexto.
   const feedbackRef = useRef({ onClose, showToast: toast.show, t });
   feedbackRef.current = { onClose, showToast: toast.show, t };
-  const [mirror, setMirror] = useState<BonpreuProduct | CarrefourProduct | BonareaProduct | ConsumProduct | DiaProduct | SorliProduct | CondisProduct | AmetllerProduct | AldiProduct | GadisProduct | HiperdinoProduct | AlcampoProduct | PlusfrescProduct | TapestryProduct | null>(null);
+  const [mirror, setMirror] = useState<BonpreuProduct | CarrefourProduct | BonareaProduct | ConsumProduct | DiaProduct | SorliProduct | CondisProduct | AmetllerProduct | AldiProduct | GadisProduct | AhorramasProduct | HiperdinoProduct | AlcampoProduct | PlusfrescProduct | TapestryProduct | null>(null);
 
   useEffect(() => {
     setMirror(null);
@@ -71,6 +71,7 @@ export default function StoreProductModal({ target, onClose, fullScreen = false,
       : targetStore === 'ametller' ? fetchAmetllerProduct
       : targetStore === 'aldi' ? fetchAldiProduct
       : targetStore === 'gadis' ? fetchGadisProduct
+      : targetStore === 'ahorramas' ? fetchAhorramasProduct
       : targetStore === 'hiperdino' ? fetchHiperdinoProduct
       : targetStore === 'alcampo' ? fetchAlcampoProduct
        : targetStore === 'plusfresc' ? (id: string) => fetchPlusfrescProduct(id, postalCode)
@@ -145,6 +146,9 @@ export default function StoreProductModal({ target, onClose, fullScreen = false,
   } else if (target.store === 'gadis') {
     const GadisProductModal = require('./GadisProductModal').default;
     content = <GadisProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
+  } else if (target.store === 'ahorramas') {
+    const AhorramasProductModal = require('./AhorramasProductModal').default;
+    content = <AhorramasProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
   } else if (target.store === 'hiperdino') {
     const HiperdinoProductModal = require('./HiperdinoProductModal').default;
     content = <HiperdinoProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;

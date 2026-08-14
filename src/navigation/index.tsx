@@ -49,6 +49,7 @@ import StatisticsScreen from '../screens/StatisticsScreen';
 import FriendsScreen from '../screens/FriendsScreen';
 import HelpScreen from '../screens/HelpScreen';
 import AboutScreen from '../screens/AboutScreen';
+import CatalogSyncStatusScreen from '../screens/CatalogSyncStatusScreen';
 import CatalogScreen    from '../screens/CatalogScreen';
 import SubCategoryScreen from '../screens/SubCategoryScreen';
 import ProductsScreen   from '../screens/ProductsScreen';
@@ -62,6 +63,7 @@ import CondisProductsScreen from '../screens/CondisProductsScreen';
 import AmetllerProductsScreen from '../screens/AmetllerProductsScreen';
 import AldiProductsScreen from '../screens/AldiProductsScreen';
 import GadisProductsScreen from '../screens/GadisProductsScreen';
+import AhorramasProductsScreen from '../screens/AhorramasProductsScreen';
 import HiperdinoProductsScreen from '../screens/HiperdinoProductsScreen';
 import AlcampoProductsScreen from '../screens/AlcampoProductsScreen';
 import PlusfrescProductsScreen from '../screens/PlusfrescProductsScreen';
@@ -129,6 +131,7 @@ function HomeNavigator() {
       <HomeStack.Screen name="Statistics" component={StatisticsScreen} />
       <HomeStack.Screen name="Friends" component={FriendsScreen} />
       <HomeStack.Screen name="Help" component={HelpScreen} />
+      <HomeStack.Screen name="CatalogSyncStatus" component={CatalogSyncStatusScreen} />
       <HomeStack.Screen name="About" component={AboutScreen} />
     </HomeStack.Navigator>
   );
@@ -152,6 +155,7 @@ function CatalogNavigator() {
       <CatalogStack.Screen name="AmetllerProducts" component={AmetllerProductsScreen} />
       <CatalogStack.Screen name="AldiProducts" component={AldiProductsScreen} />
       <CatalogStack.Screen name="GadisProducts" component={GadisProductsScreen} />
+      <CatalogStack.Screen name="AhorramasProducts" component={AhorramasProductsScreen} />
       <CatalogStack.Screen name="HiperdinoProducts" component={HiperdinoProductsScreen} />
       <CatalogStack.Screen name="AlcampoProducts" component={AlcampoProductsScreen} />
       <CatalogStack.Screen name="PlusfrescProducts" component={PlusfrescProductsScreen} />

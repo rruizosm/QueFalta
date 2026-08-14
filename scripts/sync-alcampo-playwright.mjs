@@ -6,6 +6,7 @@ import { chromium } from 'playwright';
 import { readFile, writeFile } from 'node:fs/promises';
 import { canonicalPricePerUnit, toNumber } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
+import { recordCatalogSync } from './lib/sync-status.mjs';
 import { normalizeAlcampoOffer } from './lib/retailer-offers.mjs';
 
 const BASE = 'https://www.compraonline.alcampo.es';
@@ -243,6 +244,7 @@ async function main() {
   await upsert('alcampo_products', rows);
   await markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table: 'alcampo_products', runStart });
   await markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table: 'alcampo_categories', runStart });
+  await recordCatalogSync({ url: SUPABASE_URL, key: SERVICE_ROLE, store: 'alcampo' });
   console.log('[alcampo-pw] OK');
 }
 

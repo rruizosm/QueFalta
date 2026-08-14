@@ -39,6 +39,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
+import { recordCatalogSync } from './lib/sync-status.mjs';
 const execFileP = promisify(execFile);
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -543,6 +544,7 @@ async function main() {
       await upsert('bonarea_products', detailRows);
     } catch (e) { console.warn(`[bonarea] ficha: pasada omitida (${e.message.split('\n')[0]})`); }
   }
+  await recordCatalogSync({ url: SUPABASE_URL, key: SERVICE_ROLE, store: 'bonarea' });
   console.log('[bonarea] OK');
 }
 

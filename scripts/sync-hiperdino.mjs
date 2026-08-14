@@ -38,6 +38,7 @@
 //      UPSERT_BATCH_SIZE=100 (filas por sentencia REST; bajar si Supabase está cargado)
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { validGlobalGtin } from './lib/gtin.mjs';
+import { recordCatalogSync } from './lib/sync-status.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -302,6 +303,7 @@ async function main() {
   await upsert('hiperdino_products', rows);
   await markStale('hiperdino_products');
   await markStale('hiperdino_categories');
+  await recordCatalogSync({ url: SUPABASE_URL, key: SERVICE_ROLE, store: 'hiperdino' });
   console.log('[hiperdino] OK');
 }
 

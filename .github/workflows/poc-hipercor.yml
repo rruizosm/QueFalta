@@ -1,0 +1,42 @@
+name: POC Hipercor catalog
+
+on:
+  workflow_dispatch:
+    inputs:
+      path:
+        description: Categoria publica bajo /supermercado/
+        required: false
+        default: /supermercado/alimentacion/
+      pages:
+        description: Paginas consecutivas a comprobar
+        required: false
+        default: '3'
+
+permissions:
+  contents: read
+
+jobs:
+  poc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Extraer muestra publica
+        run: node scripts/poc-hipercor.mjs
+        env:
+          HIPERCOR_PATH: ${{ inputs.path }}
+          MAX_PAGES: ${{ inputs.pages }}
+          MIN_PRODUCTS: '60'
+          HIPERCOR_OUTPUT: /tmp/hipercor-poc.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hipercor-poc
+          path: /tmp/hipercor-poc.json
+          if-no-files-found: error
+          retention-days: 7

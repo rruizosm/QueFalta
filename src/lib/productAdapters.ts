@@ -8,6 +8,7 @@ import type {
   BonpreuProduct, CarrefourProduct, BonareaProduct, ConsumProduct, DiaProduct, SorliProduct,
   CondisProduct, AmetllerProduct, AldiProduct, HiperdinoProduct, AlcampoProduct, PlusfrescProduct, TapestryProduct,
   GadisProduct, FroizProduct,
+  AhorramasProduct,
 } from '../api/catalog';
 
 export type NutriScoreGrade = 'A' | 'B' | 'C' | 'D' | 'E';
@@ -178,6 +179,15 @@ export function gadisToUI(p: GadisProduct): UIProduct {
 
 export function froizToUI(p: FroizProduct): UIProduct {
   return { id: p.id, store: 'froiz', name: p.displayName, imageUrl: p.thumbnail,
+    priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit), metaLabel: p.packaging ?? null,
+    pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName, offerTag: p.promoName };
+}
+
+/** Ahorramás: catálogo Demandware en castellano. El precio tachado y la
+ * vigencia de campaña se conservan para Ofertas; la tarjeta usa el precio final. */
+export function ahorramasToUI(p: AhorramasProduct): UIProduct {
+  return { id: p.id, store: 'ahorramas', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit), metaLabel: p.packaging ?? null,
     pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName, offerTag: p.promoName };

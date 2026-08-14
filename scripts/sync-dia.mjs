@@ -87,6 +87,7 @@
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { PROVINCE_COMMUNITY } from './lib/province-community.mjs';
+import { recordCatalogSync } from './lib/sync-status.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -886,6 +887,7 @@ async function main() {
   await upsert('dia_products', rows);
   await markStale('dia_products');
   await markStale('dia_categories');
+  await recordCatalogSync({ url: SUPABASE_URL, key: SERVICE_ROLE, store: 'dia' });
   console.log('[dia] OK');
 }
 

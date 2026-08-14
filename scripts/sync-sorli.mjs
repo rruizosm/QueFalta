@@ -48,6 +48,7 @@ import { chromium } from 'playwright-core';
 import { pathToFileURL } from 'node:url';
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
+import { recordCatalogSync } from './lib/sync-status.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -436,6 +437,7 @@ async function main() {
   await upsert('sorli_products', rows);
   await markStale('sorli_products');
   await markStale('sorli_categories');
+  await recordCatalogSync({ url: SUPABASE_URL, key: SERVICE_ROLE, store: 'sorli' });
   console.log('[sorli] OK');
 }
 

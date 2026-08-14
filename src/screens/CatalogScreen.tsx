@@ -38,7 +38,7 @@ import {
   searchCondisProducts, fetchCondisCategoryTree,
   searchAmetllerProducts, fetchAmetllerCategoryTree,
   searchAldiProducts, fetchAldiCategoryTree,
-  searchGadisProducts, fetchGadisCategoryTree, searchFroizProducts, fetchFroizCategoryTree,
+  searchGadisProducts, fetchGadisCategoryTree, searchFroizProducts,
   searchHiperdinoProducts, fetchHiperdinoCategoryTree,
   searchAlcampoProducts, fetchAlcampoCategoryTree,
   searchPlusfrescProducts, fetchPlusfrescCategoryTree,
@@ -55,7 +55,7 @@ import {
   type CondisProduct, type CondisCategory,
   type AmetllerProduct, type AmetllerCategory,
   type AldiProduct, type AldiCategory,
-  type GadisProduct, type GadisCategory, type FroizProduct, type FroizCategory,
+  type GadisProduct, type GadisCategory,
   type HiperdinoProduct, type HiperdinoCategory,
   type AlcampoProduct, type AlcampoCategory,
   type PlusfrescProduct, type PlusfrescCategory,
@@ -544,12 +544,6 @@ export default function CatalogScreen() {
   const [gaCatsLoading, setGaCatsLoading] = useState(false);
   const [gaCatsError, setGaCatsError] = useState(false);
   const [frSearch, setFrSearch] = useState('');
-  const [frResults, setFrResults] = useState<FroizProduct[]>([]);
-  const [frLoading, setFrLoading] = useState(false);
-  const [frError, setFrError] = useState(false);
-  const [frCats, setFrCats] = useState<FroizCategory[]>([]);
-  const [frCatsLoading, setFrCatsLoading] = useState(false);
-  const [frCatsError, setFrCatsError] = useState(false);
 
   // Búsqueda de productos HiperDino (espejo)
   const [hdSearch, setHdSearch] = useState('');

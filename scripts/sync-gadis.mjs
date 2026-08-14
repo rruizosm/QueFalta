@@ -10,6 +10,7 @@
 // Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE, DRY_RUN=1,
 //      MAX_CATEGORIES=N, MIN_PRODUCTS=8000, CONCURRENCY=4.
 import { markStale } from './lib/stale.mjs';
+import { recordCatalogSync } from './lib/sync-status.mjs';
 
 const BASE = 'https://www.gadisline.com';
 const URL = process.env.SUPABASE_URL;
@@ -167,6 +168,7 @@ async function main() {
   await upsert('gadis_products', rows);
   await markStale({ url: URL, key: KEY, table: 'gadis_products', runStart });
   await markStale({ url: URL, key: KEY, table: 'gadis_categories', runStart });
+  await recordCatalogSync({ url: URL, key: KEY, store: 'gadis' });
 }
 
 main().catch((error) => { console.error('[gadis] ERROR', error); process.exit(1); });

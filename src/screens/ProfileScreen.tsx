@@ -318,6 +318,12 @@ export default function ProfileScreen() {
               rounded
             />
             <ProfileRow
+              icon="sync-outline"
+              label={t('profile.catalogSyncStatus')}
+              onPress={() => navigation.navigate('CatalogSyncStatus')}
+              rounded
+            />
+            <ProfileRow
               icon="information-circle-outline"
               label={t('profile.about')}
               value={appVersion}

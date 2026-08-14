@@ -21,6 +21,7 @@ const OFFER_TYPE_SUPPORT: Record<string, OfferType[]> = {
   hiperdino: ['discount'],
   alcampo: ALL_OFFER_TYPES,
   gadis: ALL_OFFER_TYPES,
+  ahorramas: ['discount', 'second_unit', 'multibuy', 'other'],
   plusfresc: ['discount', 'second_unit', 'multibuy', 'other'],
 };
 

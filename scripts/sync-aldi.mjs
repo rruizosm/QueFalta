@@ -41,6 +41,7 @@
 //      MIN_PRODUCTS=800    (suelo del guardarraíl)
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
+import { recordCatalogSync } from './lib/sync-status.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -283,6 +284,7 @@ async function main() {
   await upsert('aldi_products', rows);
   await markStale('aldi_products');
   await markStale('aldi_categories');
+  await recordCatalogSync({ url: SUPABASE_URL, key: SERVICE_ROLE, store: 'aldi' });
   console.log('[aldi] OK');
 }
 

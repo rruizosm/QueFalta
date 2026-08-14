@@ -108,6 +108,7 @@ const es: TranslationTree = {
     friends: 'Amigos',
     instagram: 'Instagram',
     help: 'Ayuda',
+    catalogSyncStatus: 'Actualización de catálogos',
     about: 'Sobre QuéFalta',
     storesCount: '{{n}} de {{total}}',
     signOut: 'Cerrar sesión',
@@ -115,6 +116,11 @@ const es: TranslationTree = {
     notifPermTitle: 'Permiso necesario',
     notifPermMsg: 'Activa las notificaciones para QuéFalta en los ajustes de tu dispositivo.',
     openSettings: 'Abrir ajustes',
+  },
+  catalogSyncStatus: {
+    title: 'Actualización de catálogos',
+    hint: 'Consulta cuándo se actualizó por última vez el catálogo de cada supermercado.',
+    never: 'Aún sin datos',
   },
   help: {
     title: 'Ayuda',
@@ -902,6 +908,7 @@ const ca: TranslationTree = {
     friends: 'Amics',
     instagram: 'Instagram',
     help: 'Ajuda',
+    catalogSyncStatus: 'Actualització de catàlegs',
     about: 'Sobre QuéFalta',
     storesCount: '{{n}} de {{total}}',
     signOut: 'Tanca la sessió',
@@ -909,6 +916,11 @@ const ca: TranslationTree = {
     notifPermTitle: 'Permís necessari',
     notifPermMsg: 'Activa les notificacions de QuéFalta als ajustos del teu dispositiu.',
     openSettings: 'Obre els ajustos',
+  },
+  catalogSyncStatus: {
+    title: 'Actualització de catàlegs',
+    hint: 'Consulta quan es va actualitzar per última vegada el catàleg de cada supermercat.',
+    never: 'Encara sense dades',
   },
   help: {
     title: 'Ajuda',

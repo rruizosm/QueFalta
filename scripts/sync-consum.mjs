@@ -40,6 +40,7 @@
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { validGlobalGtin } from './lib/gtin.mjs';
+import { recordCatalogSync } from './lib/sync-status.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -353,6 +354,7 @@ async function main() {
   await markStale('consum_products');
   await markStale('consum_categories');
   await markStale('catalog_location_prices', { filters: 'store=eq.consum' });
+  await recordCatalogSync({ url: SUPABASE_URL, key: SERVICE_ROLE, store: 'consum' });
   console.log('[consum] OK');
 }
 

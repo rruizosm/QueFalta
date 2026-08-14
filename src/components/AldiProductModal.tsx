@@ -6,7 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
-import type { AldiProduct, GadisProduct } from '../api/catalog';
+import type { AldiProduct, GadisProduct, AhorramasProduct } from '../api/catalog';
 import type { CatalogStore } from '../constants/stores';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
@@ -21,8 +21,8 @@ import ProductPriceLine from '../components/ProductPriceLine';
 
 interface Props {
   /** Producto a mostrar (ya cargado de aldi_products). null = oculto. */
-  product: AldiProduct | GadisProduct | null;
-  store?: Extract<CatalogStore, 'aldi' | 'gadis'>;
+  product: AldiProduct | GadisProduct | AhorramasProduct | null;
+  store?: Extract<CatalogStore, 'aldi' | 'gadis' | 'ahorramas'>;
   onClose: () => void;
   /** Padding superior de la cabecera (lo fija StoreProductModal): 56 a pantalla
    *  completa (cesta), 16 dentro de la hoja (catálogo). */
@@ -126,7 +126,7 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
           ]}
         />
 
-        <Text style={styles.note}>{t('product.fromStore', { store: store === 'gadis' ? 'Gadis' : 'Aldi' })}</Text>
+        <Text style={styles.note}>{t('product.fromStore', { store: store === 'gadis' ? 'Gadis' : store === 'ahorramas' ? 'Ahorramás' : 'Aldi' })}</Text>
       </ScrollView>
 
       {/* Pie: cantidad + añadir a la cesta */}

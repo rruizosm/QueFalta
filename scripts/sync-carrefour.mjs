@@ -52,6 +52,7 @@ import { promisify } from 'node:util';
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { validGlobalGtin } from './lib/gtin.mjs';
+import { recordCatalogSync } from './lib/sync-status.mjs';
 const execFileP = promisify(execFile);
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -754,6 +755,7 @@ async function main() {
     try { await downloadDetail(staleDetail); await upsert('carrefour_products', rows); }
     catch (e) { console.warn(`[carrefour] ficha: pasada omitida (${e.message.split('\n')[0]})`); }
   }
+  await recordCatalogSync({ url: SUPABASE_URL, key: SERVICE_ROLE, store: 'carrefour' });
   console.log('[carrefour] OK');
 }
 

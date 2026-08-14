@@ -3,8 +3,29 @@
 // vigencia, novedades y árbol de categorías sin requerir cuenta ni cookies.
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale } from './lib/stale.mjs';
+import { readFileSync } from 'node:fs';
+import { recordCatalogSync } from './lib/sync-status.mjs';
 
-const URL = process.env.SUPABASE_URL;
+// Ejecución local: carga .env.local sin sobrescribir variables ya inyectadas
+// por GitHub Actions. No usa dependencias externas ni expone los secretos.
+function loadEnvLocal() {
+  try {
+    for (const line of readFileSync(new globalThis.URL('../.env.local', import.meta.url), 'utf8').split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const at = trimmed.indexOf('=');
+      if (at < 1) continue;
+      const key = trimmed.slice(0, at).trim();
+      const value = trimmed.slice(at + 1).trim().replace(/^['"]|['"]$/g, '');
+      if (process.env[key] == null) process.env[key] = value;
+    }
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+  }
+}
+loadEnvLocal();
+
+const URL = process.env.SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL;
 const KEY = process.env.SUPABASE_SERVICE_ROLE;
 const DRY_RUN = process.env.DRY_RUN === '1';
 const SIZE = 100;
@@ -82,6 +103,7 @@ async function main() {
   if (!DRY_RUN) {
     await markStale({ url: URL, key: KEY, table: 'froiz_categories', runStart });
     await markStale({ url: URL, key: KEY, table: 'froiz_products', runStart });
+    await recordCatalogSync({ url: URL, key: KEY, store: 'froiz' });
   }
 }
 main().catch((error) => { console.error('[froiz] ERROR', error); process.exit(1); });

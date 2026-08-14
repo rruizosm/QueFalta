@@ -25,6 +25,7 @@ import { chromium } from 'playwright-core';
 import { planPublication, publishWindow } from './lib/bonpreu-publication.mjs';
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
+import { recordCatalogSync } from './lib/sync-status.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -1093,6 +1094,7 @@ async function finalizeCycle(cycle) {
   } catch (error) {
     console.warn(`[bonpreu] no se pudieron limpiar ciclos antiguos: ${error.message}`);
   }
+  await recordCatalogSync({ url: SUPABASE_URL, key: SERVICE_ROLE, store: 'esclat' });
   console.log(`[bonpreu] OK · ciclo ${cycle.id} publicado`);
 }
 

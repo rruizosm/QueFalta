@@ -105,6 +105,10 @@ export default function SubCategoryScreen() {
       navigation.navigate('GadisProducts', {
         categoryId: String(item.id), categoryName: item.name, parentCategoryName: categoryName,
       });
+    } else if (retailer === 'ahorramas') {
+      navigation.navigate('AhorramasProducts', {
+        categoryId: String(item.id), categoryName: item.name, parentCategoryName: categoryName,
+      });
     } else if (retailer === 'hiperdino') {
       navigation.navigate('HiperdinoProducts', {
         categoryId: String(item.id),

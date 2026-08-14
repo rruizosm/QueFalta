@@ -257,6 +257,7 @@ export type HomeStackParamList = {
   Statistics: undefined;
   Friends: undefined;
   Help: undefined;
+  CatalogSyncStatus: undefined;
   About: undefined;
 };
 
@@ -268,7 +269,7 @@ export type CatalogStackParamList = {
     color?: string;
     /** Subcategorías N2. Mercadona usa ids numéricos; el resto de espejos, ids string. */
     subcategories: { id: string | number; name: string }[];
-    retailer?: 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi' | 'hiperdino' | 'alcampo' | 'plusfresc' | 'gadis' | 'froiz';
+    retailer?: 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi' | 'hiperdino' | 'alcampo' | 'plusfresc' | 'gadis' | 'froiz' | 'ahorramas';
   };
   Products: {
     subcategoryId: number;
@@ -344,6 +345,11 @@ export type CatalogStackParamList = {
     parentName?: string;
   };
   GadisProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentCategoryName?: string;
+  };
+  AhorramasProducts: {
     categoryId: string;
     categoryName: string;
     parentCategoryName?: string;

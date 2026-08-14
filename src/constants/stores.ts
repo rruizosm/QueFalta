@@ -5,7 +5,7 @@ import { Image as ExpoImage } from 'expo-image';
 // Fuente ÚNICA del switcher del catálogo, de la preferencia de perfil
 // "Supermercados" y del agrupado de Lista/Cesta por tienda (de aquí salen los
 // nombres e iconos). Para añadir una tienda: súmala aquí, al tipo y a storeOfItem.
-export type CatalogStore = 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi' | 'hiperdino' | 'alcampo' | 'plusfresc' | 'gadis' | 'froiz';
+export type CatalogStore = 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi' | 'hiperdino' | 'alcampo' | 'plusfresc' | 'gadis' | 'froiz' | 'ahorramas';
 
 /** Metadatos (nombre + icono) en orden de aparición. */
 export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | null }[] = [
@@ -29,6 +29,8 @@ export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | n
   { key: 'gadis',     name: 'Gadis',         icon: null },
   // Se muestra el nombre mientras se incorpora un logotipo con licencia al bundle.
   { key: 'froiz',     name: 'Froiz',         icon: null },
+  // Se muestra el nombre mientras se incorpora un logotipo con licencia al bundle.
+  { key: 'ahorramas', name: 'Ahorramás',     icon: null },
 ];
 
 /** Orden canónico de las claves (para normalizar/ordenar selecciones). */
@@ -69,7 +71,7 @@ type StoreClue = { imageUrl?: string | null; mercadonaProductId?: string | null 
 // cdn.sorliclic.com, eroski.es, capraboacasa.com, cdn.condis.es, ametllerorigen.com,
 // scene7.com/is/image/aldinord (Aldi), cdn.hiperdino.es (HiperDino),
 // compraonline.alcampo.es (Alcampo), compra.plusfresc.cat (Plusfresc),
-// storage.gadisline.com (Gadis).
+// storage.gadisline.com (Gadis), ahorramas.com (Ahorramás).
 // Mercadona también se reconoce por su id.
 export function storeOfItem(it: StoreClue): Store {
   const url = it.imageUrl ?? '';
@@ -90,6 +92,7 @@ export function storeOfItem(it: StoreClue): Store {
   if (url.includes('plusfresc')) return 'plusfresc';
   if (url.includes('gadisline')) return 'gadis';
   if (url.includes('imagedelivery.net/laxGYDNZyT04iZVpzPzryw')) return 'froiz';
+  if (url.includes('ahorramas.com')) return 'ahorramas';
   return 'otros';
 }
 

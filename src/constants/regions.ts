@@ -65,6 +65,7 @@ export const STORE_REGIONS: Record<CatalogStore, RegionCode[] | null> = {
   // público completo no lo ocultamos por CCAA: el sync conserva la tienda base.
   gadis: null,
   froiz: null,
+  ahorramas: ['ES-CM', 'ES-MD'],
   condis:    ['ES-CT'],
   bonarea:   ['ES-CT', 'ES-AR', 'ES-CM', 'ES-MD', 'ES-VC', 'ES-RI', 'ES-NC'],
   consum:    ['ES-AN', 'ES-AR', 'ES-CM', 'ES-CT', 'ES-MC', 'ES-VC'],

@@ -5,6 +5,16 @@
 
 ## Gadisline (pendiente de migrar y primer sync, 2026-08-14)
 
+## Estado de sincronización de catálogos (pendiente de migrar, 2026-08-14)
+
+- `20260814170000_catalog_sync_status.sql` crea el registro común de la última
+  sincronización correcta de cada supermercado. La app lo muestra en Perfil →
+  Soporte → Actualización de catálogos.
+- Los scripts solo anotan el estado después de terminar de escribir catálogo y
+  categorías; `DRY_RUN` y ejecuciones fallidas no modifican la fecha. Esto se
+  aplica también a los runners locales de Carrefour, Alcampo, Eroski, Caprabo y
+  Gadis (si se ejecuta localmente), porque escriben directamente en Supabase.
+
 - Añadido el 16º espejo **Gadis**: `gadis_catalog.sql`, `scripts/sync-gadis.mjs`
   y workflow diario `sync-gadis.yml`. El espejo conserva productos, categorías,
   ofertas explícitas sin cupón, novedad explícita y el histórico de precio.

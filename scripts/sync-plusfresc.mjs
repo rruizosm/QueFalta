@@ -45,6 +45,7 @@
 //      PRODUCT_UPSERT_BATCH=50 (filas por escritura de productos en Supabase)
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
+import { recordCatalogSync } from './lib/sync-status.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -497,6 +498,7 @@ async function main() {
   await markStale('plusfresc_products');
   await markStale('plusfresc_categories');
   await markLocationPricesStale();
+  await recordCatalogSync({ url: SUPABASE_URL, key: SERVICE_ROLE, store: 'plusfresc' });
   console.log('[plusfresc] OK');
 }
 

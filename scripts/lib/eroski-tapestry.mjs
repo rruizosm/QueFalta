@@ -32,6 +32,7 @@
 // lang=es → los nombres de producto no se traducen).
 
 import { parseTapestryOfferBlock } from './retailer-offers.mjs';
+import { recordCatalogSync } from './sync-status.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
@@ -750,5 +751,6 @@ export async function runSync({ base, store, table, catTable }) {
     const updated = await downloadDetails(staleDetails);
     if (updated.length > 0) await upsert(table, updated);
   }
+  await recordCatalogSync({ url: SUPABASE_URL, key: SERVICE_ROLE, store });
   log('OK');
 }

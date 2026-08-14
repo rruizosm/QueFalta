@@ -1,10 +1,11 @@
 import React from 'react';
 import { LayoutChangeEvent, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 import GlassSurface, { glassAvailable } from './GlassSurface';
 
 interface Props {
@@ -22,6 +23,7 @@ interface Props {
 export default function ProfileSubscreenHeader({ title, icon, headerTop, onLayout, right }: Props) {
   const navigation = useNavigation<any>();
   const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
 
   const content = (
     <View style={[styles.header, { paddingTop: headerTop }]}>
@@ -30,7 +32,7 @@ export default function ProfileSubscreenHeader({ title, icon, headerTop, onLayou
         style={[styles.backBtn, glassAvailable && styles.backBtnGlass]}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         accessibilityRole="button"
-        accessibilityLabel="Volver"
+        accessibilityLabel={t('common.back')}
       >
         <Ionicons name="arrow-back" size={22} color={colors.ink} />
       </TouchableOpacity>

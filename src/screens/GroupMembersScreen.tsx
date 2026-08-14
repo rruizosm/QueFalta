@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -18,6 +18,7 @@ import { useTranslation } from '../context/LanguageContext';
 import { deleteGroup, fetchGroupDetail, removeGroupMember, renameGroup, transferGroupAdmin, type GroupSummary } from '../api/groups';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import ConfirmDialog from '../components/ConfirmDialog';
 import UserAvatar from '../components/UserAvatar';
 import VerifiedBadge from '../components/VerifiedBadge';
@@ -28,6 +29,7 @@ type MembersRouteProp = RouteProp<GroupsStackParamList, 'GroupMembers'>;
 
 export default function GroupMembersScreen() {
   const styles = useThemedStyles(themedStyles);
+  const reducedMotion = useReducedMotion();
   const headerTop = useHeaderTopPadding(52);
   const bottomPad = useTabBarBottomPadding(40);
   const insets = useSafeAreaInsets();
@@ -291,7 +293,7 @@ export default function GroupMembersScreen() {
       <Modal
         visible={!!actionMember}
         transparent
-        animationType="slide"
+        animationType={reducedMotion ? 'none' : 'slide'}
         onRequestClose={() => setActionMember(null)}
       >
         <View style={styles.sheetRoot}>

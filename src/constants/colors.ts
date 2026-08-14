@@ -43,8 +43,9 @@ interface Palette {
 /** Tema claro original (look cálido tipo papel crema). */
 const LIGHT: Palette = {
   ink:              '#2b2521',
-  inkSoft:          '#8a7f73',
-  inkFaint:         '#c2b8a9',
+  // Contraste AA sobre paper/white incluso en textos secundarios pequeños.
+  inkSoft:          '#74695f',
+  inkFaint:         '#7a6f64',
   paper:            '#fbf6ee',
   white:            '#ffffff',
   surfaceAlt:       '#f6efe3',
@@ -58,7 +59,7 @@ const LIGHT: Palette = {
 const DARK: Palette = {
   ink:              '#f2ebe0',
   inkSoft:          '#b3a895',
-  inkFaint:         '#6f6457',
+  inkFaint:         '#938777',
   paper:            '#1c1815',
   white:            '#262019', // superficie de tarjeta sobre el fondo
   surfaceAlt:       '#2f2820',
@@ -79,11 +80,12 @@ export function applyTheme(scheme: ColorScheme) {
 
 /** Opciones de color principal que se ofrecen en Apariencia. */
 export const ACCENT_OPTIONS = [
-  { key: 'naranja',  name: 'Naranja',  hex: '#df4b2e' },
-  { key: 'verde',    name: 'Verde',    hex: '#3f8f4f' },
+  // Todos mantienen contraste AA con texto blanco en botones y chips activos.
+  { key: 'naranja',  name: 'Naranja',  hex: '#c53f26' },
+  { key: 'verde',    name: 'Verde',    hex: '#347a43' },
   { key: 'azul',     name: 'Azul',     hex: '#2f6cb5' },
   { key: 'morado',   name: 'Morado',   hex: '#7a4fb5' },
-  { key: 'turquesa', name: 'Turquesa', hex: '#1f8a8f' },
+  { key: 'turquesa', name: 'Turquesa', hex: '#17787d' },
   { key: 'rosa',     name: 'Rosa',     hex: '#c2497d' },
 ] as const;
 

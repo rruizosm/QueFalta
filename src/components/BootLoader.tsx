@@ -17,6 +17,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 const LOGO = require('../../assets/quefalta-logo-blue.png');
 
@@ -27,6 +29,8 @@ const BRAND_INK = '#2b2521';
 
 export default function BootLoader() {
   const styles = useThemedStyles(themedStyles);
+  const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
 
   // Aparición del conjunto (fade + leve subida) y latido continuo del logo.
   const enter = useRef(new Animated.Value(0)).current;
@@ -34,14 +38,21 @@ export default function BootLoader() {
   const splashHidden = useRef(false);
 
   useEffect(() => {
-    Animated.timing(enter, {
+    if (reducedMotion) {
+      enter.setValue(1);
+      pulse.setValue(0);
+      return undefined;
+    }
+
+    const entrance = Animated.timing(enter, {
       toValue: 1,
       duration: 320,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
-    }).start();
+    });
+    entrance.start();
 
-    Animated.loop(
+    const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(pulse, {
           toValue: 1,
@@ -56,8 +67,13 @@ export default function BootLoader() {
           useNativeDriver: true,
         }),
       ]),
-    ).start();
-  }, [enter, pulse]);
+    );
+    loop.start();
+    return () => {
+      entrance.stop();
+      loop.stop();
+    };
+  }, [enter, pulse, reducedMotion]);
 
   // Entrega del relevo: oculta el splash nativo una sola vez, ya pintada esta
   // pantalla (onLayout garantiza que hay layout antes de descubrir el nativo).
@@ -71,7 +87,12 @@ export default function BootLoader() {
   const translateY = enter.interpolate({ inputRange: [0, 1], outputRange: [12, 0] });
 
   return (
-    <View style={styles.container} onLayout={hideNativeSplash}>
+    <View
+      style={styles.container}
+      onLayout={hideNativeSplash}
+      accessibilityRole="progressbar"
+      accessibilityLabel={t('common.loading')}
+    >
       <StatusBar barStyle="dark-content" backgroundColor={LOGO_BG} />
 
       <Animated.View style={[styles.content, { opacity: enter, transform: [{ translateY }] }]}>
@@ -79,6 +100,7 @@ export default function BootLoader() {
           source={LOGO}
           resizeMode="contain"
           style={[styles.logo, { transform: [{ scale }] }]}
+          accessible={false}
         />
 
         <Text style={styles.brand}>QuéFalta</Text>

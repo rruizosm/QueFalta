@@ -9,7 +9,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { CatalogStackParamList } from '../types';
 import { getSubcategoryEmoji } from '../constants/subcategoryEmojis';
@@ -100,6 +100,10 @@ export default function SubCategoryScreen() {
         categoryId: String(item.id),
         categoryName: item.name,
         parentName: categoryName,
+      });
+    } else if (retailer === 'gadis') {
+      navigation.navigate('GadisProducts', {
+        categoryId: String(item.id), categoryName: item.name, parentCategoryName: categoryName,
       });
     } else if (retailer === 'hiperdino') {
       navigation.navigate('HiperdinoProducts', {

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
@@ -96,8 +96,10 @@ export default function OffersScreen() {
   const postalCode = profile?.postalCode ?? null;
 
   const preferredStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
-  const enabledInRegion = preferredStores.filter((store) => storeInRegion(store, region));
-  const allowedStores = enabledInRegion.length > 0 ? enabledInRegion : storesForRegion(region);
+  const allowedStores = useMemo(() => {
+    const enabledInRegion = preferredStores.filter((store) => storeInRegion(store, region));
+    return enabledInRegion.length > 0 ? enabledInRegion : storesForRegion(region);
+  }, [preferredStores, region]);
   const stores = useMemo(
     () => CATALOG_STORES.filter((s) => OFFER_STORES.includes(s.key) && allowedStores.includes(s.key)),
     [allowedStores],
@@ -152,18 +154,20 @@ export default function OffersScreen() {
       setStore(stores[0]?.key ?? 'all');
     }
   }, [store, stores, offerStoreKeys]);
-  let filteredOfferStores = store === 'all' && filterStores.length > 0
-    ? offerStoreKeys.filter((key) => filterStores.includes(key))
-    : offerStoreKeys;
-  if (store === 'all' && category.length > 0) {
-    const categoryStores = new Set(category.map((value) => value.split(FACET_SEPARATOR)[0]));
-    filteredOfferStores = filteredOfferStores.filter((key) => categoryStores.has(key));
-  }
-  if (store === 'all' && selectedOfferTypes.length > 0) {
-    const typeStores = new Set(selectedOfferTypes.map((value) => value.split(FACET_SEPARATOR)[0]));
-    filteredOfferStores = filteredOfferStores.filter((key) => typeStores.has(key));
-  }
-  const filteredOfferStoresKey = filteredOfferStores.join(',');
+  const filteredOfferStores = useMemo(() => {
+    let filtered = store === 'all' && filterStores.length > 0
+      ? offerStoreKeys.filter((key) => filterStores.includes(key))
+      : offerStoreKeys;
+    if (store === 'all' && category.length > 0) {
+      const categoryStores = new Set(category.map((value) => value.split(FACET_SEPARATOR)[0]));
+      filtered = filtered.filter((key) => categoryStores.has(key));
+    }
+    if (store === 'all' && selectedOfferTypes.length > 0) {
+      const typeStores = new Set(selectedOfferTypes.map((value) => value.split(FACET_SEPARATOR)[0]));
+      filtered = filtered.filter((key) => typeStores.has(key));
+    }
+    return filtered;
+  }, [store, filterStores, offerStoreKeys, category, selectedOfferTypes]);
   const filtersForStore = useCallback((selectedStore: CatalogStore): OfferFilters => ({
     ...filters,
     categories: store === 'all' ? facetValuesForStore(category, selectedStore) : category,
@@ -292,7 +296,7 @@ export default function OffersScreen() {
     region,
     postalCode,
     sort,
-    filteredOfferStoresKey,
+    filteredOfferStores,
   ]);
 
   // Páginas siguientes al llegar al final (cursor null = no hay más).

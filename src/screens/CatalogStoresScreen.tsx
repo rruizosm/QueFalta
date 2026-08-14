@@ -3,8 +3,7 @@ import {
   View, Text, ScrollView, TouchableOpacity, Image,
   StyleSheet, StatusBar,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -26,7 +25,6 @@ export default function CatalogStoresScreen() {
   const headerTop = useHeaderTopPadding(52);
   const bottomPad = useTabBarBottomPadding(40);
   const { t } = useTranslation();
-  const navigation = useNavigation<any>();
   const { session } = useAuth();
   const { profile, applyProfile } = useProfile();
   const toast = useToast();

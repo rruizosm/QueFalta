@@ -1,11 +1,10 @@
 /** Paso final — Sella el alta (onboarded_at) y deja entrar a la app. El gate de
  *  navegación cambia al ver onboardedAt; los coach marks arrancan solos. */
 import { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, StyleSheet } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../../constants/colors';
-import { fonts } from '../../constants/typography';
 import { useAuth } from '../../context/AuthContext';
 import { useProfile } from '../../context/ProfileContext';
 import { useToast } from '../../context/ToastContext';

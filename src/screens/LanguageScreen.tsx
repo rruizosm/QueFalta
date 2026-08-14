@@ -3,8 +3,7 @@ import {
   View, Text, ScrollView, TouchableOpacity,
   StyleSheet, StatusBar,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -17,7 +16,6 @@ import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
 import { glassAvailable } from '../components/GlassSurface';
 
 export default function LanguageScreen() {
-  const navigation = useNavigation<any>();
   const { lang, setLang, t } = useTranslation();
   const styles = useThemedStyles(themedStyles);
   const headerTop = useHeaderTopPadding(52);

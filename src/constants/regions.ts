@@ -61,6 +61,10 @@ export const STORE_REGIONS: Record<CatalogStore, RegionCode[] | null> = {
   caprabo:   ['ES-CT'],
   ametller:  ['ES-CT'],
   plusfresc: ['ES-CT'],
+  // Gadisline resuelve el surtido por código postal. Hasta disponer de su mapa
+  // público completo no lo ocultamos por CCAA: el sync conserva la tienda base.
+  gadis: null,
+  froiz: null,
   condis:    ['ES-CT'],
   bonarea:   ['ES-CT', 'ES-AR', 'ES-CM', 'ES-MD', 'ES-VC', 'ES-RI', 'ES-NC'],
   consum:    ['ES-AN', 'ES-AR', 'ES-CM', 'ES-CT', 'ES-MC', 'ES-VC'],

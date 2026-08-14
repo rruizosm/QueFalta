@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useProfile } from '../context/ProfileContext';
@@ -77,8 +77,11 @@ export default function PriceChangesScreen() {
   }, [stores, store]);
 
   // Caché por súper+dirección para no repetir consultas al alternar.
-  const cacheKeyFor = (storeKey: CatalogStore) =>
-    `${storeKey}:${direction}:${region ?? 'none'}:${postalCode ?? 'none'}`;
+  const cacheKeyFor = useCallback(
+    (storeKey: CatalogStore) =>
+      `${storeKey}:${direction}:${region ?? 'none'}:${postalCode ?? 'none'}`,
+    [direction, region, postalCode],
+  );
   const [cache, setCache] = useState<Record<string, PriceChangesPage>>({});
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -125,7 +128,7 @@ export default function PriceChangesScreen() {
         ? a.deltaPct - b.deltaPct || a.product.name.localeCompare(b.product.name)
         : b.deltaPct - a.deltaPct || a.product.name.localeCompare(b.product.name))
       : changes;
-  }, [cache, store, stores, direction, region, postalCode]);
+  }, [cache, store, stores, direction, cacheKeyFor]);
 
   const loadMore = useCallback(() => {
     if (loading || loadingMoreRef.current) return;
@@ -160,7 +163,7 @@ export default function PriceChangesScreen() {
         loadingMoreRef.current = false;
         setLoadingMore(false);
       });
-  }, [cache, direction, loading, postalCode, region, store, stores]);
+  }, [cache, cacheKeyFor, direction, loading, postalCode, region, store, stores]);
 
   // La línea de precio de la fila pasa a "anterior tachado · actual en
   // verde/rojo · (%)" vía priceChange (lo pinta StoreProductList) →

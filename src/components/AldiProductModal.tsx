@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator, Alert,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
-import type { AldiProduct } from '../api/catalog';
+import type { AldiProduct, GadisProduct } from '../api/catalog';
+import type { CatalogStore } from '../constants/stores';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useFavorites } from '../context/FavoritesContext';
@@ -20,7 +21,8 @@ import ProductPriceLine from '../components/ProductPriceLine';
 
 interface Props {
   /** Producto a mostrar (ya cargado de aldi_products). null = oculto. */
-  product: AldiProduct | null;
+  product: AldiProduct | GadisProduct | null;
+  store?: Extract<CatalogStore, 'aldi' | 'gadis'>;
   onClose: () => void;
   /** Padding superior de la cabecera (lo fija StoreProductModal): 56 a pantalla
    *  completa (cesta), 16 dentro de la hoja (catálogo). */
@@ -31,7 +33,7 @@ interface Props {
 /** Detalle de un producto de Aldi. Pinta los datos ya cargados (el catálogo va
  *  por el espejo en Supabase). Aldi da marca y formato del envase, pero no ficha
  *  (ingredientes/nutrición) → solo la categoría, como Consum. */
-export default function AldiProductModal({ product, onClose, topInset = 16, badgeLabel }: Props) {
+export default function AldiProductModal({ product, store = 'aldi', onClose, topInset = 16, badgeLabel }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { activeCart, addToActiveCart } = useCart();
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
@@ -45,12 +47,12 @@ export default function AldiProductModal({ product, onClose, topInset = 16, badg
   if (!product) return null;
   const price = product.priceFormat
     ?? (product.unitPrice != null ? `${product.unitPrice.toFixed(2).replace('.', ',')} €` : null);
-  const fav = isProductFavorite('aldi', product.id);
+  const fav = isProductFavorite(store, product.id);
 
   const handleToggleFav = async () => {
     try {
       const added = await toggleProductFavorite({
-        store: 'aldi',
+        store,
         refId: product.id,
         name: product.displayName,
         imageUrl: product.thumbnail,
@@ -110,11 +112,11 @@ export default function AldiProductModal({ product, onClose, topInset = 16, badg
         <Text style={styles.name}>{product.displayName}</Text>
         {product.brand ? <Text style={styles.brand}>{product.brand}</Text> : null}
 
-        <ProductPriceLine store="aldi" productId={product.id} price={price} size={product.packaging} />
+        <ProductPriceLine store={store} productId={product.id} price={price} size={product.packaging} />
         {product.pricePerUnit ? <Text style={styles.refPrice}>{product.pricePerUnit}</Text> : null}
 
         {/* Comparativa: más barato en otros súper */}
-        <SimilarProductsSection productId={product.id} excludeStore="aldi" />
+        <SimilarProductsSection productId={product.id} excludeStore={store} />
 
         {/* Características del producto. Aldi no expone ficha (ingredientes/
          *  nutrición), solo la categoría, con el mismo diseño que el resto. */}
@@ -124,7 +126,7 @@ export default function AldiProductModal({ product, onClose, topInset = 16, badg
           ]}
         />
 
-        <Text style={styles.note}>{t('product.fromStore', { store: 'Aldi' })}</Text>
+        <Text style={styles.note}>{t('product.fromStore', { store: store === 'gadis' ? 'Gadis' : 'Aldi' })}</Text>
       </ScrollView>
 
       {/* Pie: cantidad + añadir a la cesta */}

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { getMeta } from '../constants/categoryMeta';
 import {
@@ -38,13 +38,14 @@ import {
   searchCondisProducts, fetchCondisCategoryTree,
   searchAmetllerProducts, fetchAmetllerCategoryTree,
   searchAldiProducts, fetchAldiCategoryTree,
+  searchGadisProducts, fetchGadisCategoryTree, searchFroizProducts, fetchFroizCategoryTree,
   searchHiperdinoProducts, fetchHiperdinoCategoryTree,
   searchAlcampoProducts, fetchAlcampoCategoryTree,
   searchPlusfrescProducts, fetchPlusfrescCategoryTree,
   browseProducts, browseBonpreuProducts, browseCarrefourProducts,
   browseBonareaProducts, browseConsumProducts, browseDiaProducts, browseSorliProducts,
   browseEroskiProducts, browseCapraboProducts, browseCondisProducts, browseAmetllerProducts,
-  browseAldiProducts, browseHiperdinoProducts, browseAlcampoProducts, browsePlusfrescProducts,
+  browseAldiProducts, browseGadisProducts, browseFroizProducts, browseHiperdinoProducts, browseAlcampoProducts, browsePlusfrescProducts,
   type BonpreuProduct, type BonpreuCategory,
   type CarrefourProduct, type CarrefourCategory,
   type BonareaProduct, type BonareaCategory,
@@ -54,6 +55,7 @@ import {
   type CondisProduct, type CondisCategory,
   type AmetllerProduct, type AmetllerCategory,
   type AldiProduct, type AldiCategory,
+  type GadisProduct, type GadisCategory, type FroizProduct, type FroizCategory,
   type HiperdinoProduct, type HiperdinoCategory,
   type AlcampoProduct, type AlcampoCategory,
   type PlusfrescProduct, type PlusfrescCategory,
@@ -67,11 +69,12 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import { storeInRegion, storesForRegion, type RegionValue } from '../constants/regions';
 import {
   mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
-  eroskiToUI, capraboToUI, condisToUI, ametllerToUI, aldiToUI, hiperdinoToUI, alcampoToUI,
+  eroskiToUI, capraboToUI, condisToUI, ametllerToUI, aldiToUI, gadisToUI, froizToUI, hiperdinoToUI, alcampoToUI,
   plusfrescToUI,
   type UIProduct,
 } from '../lib/productAdapters';
@@ -230,6 +233,8 @@ async function loadBrowsePageWithOrder(
     case 'condis':    { const { items, nextCursor } = await browseCondisProducts(cursor, limit, signal, order as never); return { items: items.map(condisToUI), nextCursor }; }
     case 'ametller':  { const { items, nextCursor } = await browseAmetllerProducts(cursor, limit, signal, order as never); return { items: items.map(ametllerToUI), nextCursor }; }
     case 'aldi':      { const { items, nextCursor } = await browseAldiProducts(cursor, limit, signal, order as never); return { items: items.map(aldiToUI), nextCursor }; }
+    case 'gadis':     { const { items, nextCursor } = await browseGadisProducts(cursor, limit, signal, order as never); return { items: items.map(gadisToUI), nextCursor }; }
+    case 'froiz':     { const { items, nextCursor } = await browseFroizProducts(cursor, limit, signal, order as never); return { items: items.map(froizToUI), nextCursor }; }
     case 'hiperdino': { const { items, nextCursor } = await browseHiperdinoProducts(cursor, limit, signal, order as never); return { items: items.map(hiperdinoToUI), nextCursor }; }
     case 'alcampo':   { const { items, nextCursor } = await browseAlcampoProducts(cursor, limit, signal, order as never); return { items: items.map(alcampoToUI), nextCursor }; }
     case 'plusfresc': { const { items, nextCursor } = await browsePlusfrescProducts(cursor, postalCode, limit, signal, order as never); return { items: items.map(plusfrescToUI), nextCursor }; }
@@ -257,6 +262,8 @@ async function loadStoreSearch(
     case 'condis': return (await searchCondisProducts(query, limit, signal)).map(condisToUI);
     case 'ametller': return (await searchAmetllerProducts(query, limit, signal)).map(ametllerToUI);
     case 'aldi': return (await searchAldiProducts(query, limit, signal)).map(aldiToUI);
+    case 'gadis': return (await searchGadisProducts(query, limit, signal)).map(gadisToUI);
+    case 'froiz': return (await searchFroizProducts(query, limit, signal)).map(froizToUI);
     case 'hiperdino': return (await searchHiperdinoProducts(query, limit, signal)).map(hiperdinoToUI);
     case 'alcampo': return (await searchAlcampoProducts(query, limit, signal)).map(alcampoToUI);
     case 'plusfresc': return (await searchPlusfrescProducts(query, postalCode, limit, signal)).map(plusfrescToUI);
@@ -289,6 +296,7 @@ function compareProductsByPricePerUnit(order: ProductSortDirection) {
 
 export default function CatalogScreen() {
   const styles = useThemedStyles(themedStyles);
+  const reducedMotion = useReducedMotion();
   const headerTop = useHeaderTopPadding(52);
   const bottomPad = useTabBarBottomPadding(20);
   const navigation = useNavigation<any>();
@@ -333,11 +341,13 @@ export default function CatalogScreen() {
 
   const setProductSearchFocus = (expanded: boolean) => {
     if (expanded === productSearchExpanded) return;
-    LayoutAnimation.configureNext({
-      duration: 220,
-      update: { type: LayoutAnimation.Types.easeInEaseOut },
-      delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
-    });
+    if (!reducedMotion) {
+      LayoutAnimation.configureNext({
+        duration: 220,
+        update: { type: LayoutAnimation.Types.easeInEaseOut },
+        delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+      });
+    }
     setProductSearchExpanded(expanded);
   };
 
@@ -365,10 +375,15 @@ export default function CatalogScreen() {
   const allLocked = !profileLoading && limitsApply(isPremium);
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
-  const prefStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
-  const prefInRegion = prefStores.filter((k) => storeInRegion(k, region));
-  const enabledStores = prefInRegion.length > 0 ? prefInRegion : storesForRegion(region);
-  const visibleStores = CATALOG_STORES.filter((s) => enabledStores.includes(s.key));
+  const preferredStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
+  const enabledStores = useMemo(() => {
+    const enabledInRegion = preferredStores.filter((key) => storeInRegion(key, region));
+    return enabledInRegion.length > 0 ? enabledInRegion : storesForRegion(region);
+  }, [preferredStores, region]);
+  const visibleStores = useMemo(
+    () => CATALOG_STORES.filter((item) => enabledStores.includes(item.key)),
+    [enabledStores],
+  );
 
   // Si la tienda activa deja de estar permitida, salta a la primera visible.
   useEffect(() => {
@@ -521,6 +536,21 @@ export default function CatalogScreen() {
   const [alCatsLoading, setAlCatsLoading] = useState(false);
   const [alCatsError, setAlCatsError] = useState(false);
 
+  const [gaSearch, setGaSearch] = useState('');
+  const [gaResults, setGaResults] = useState<GadisProduct[]>([]);
+  const [gaLoading, setGaLoading] = useState(false);
+  const [gaError, setGaError] = useState(false);
+  const [gaCats, setGaCats] = useState<GadisCategory[]>([]);
+  const [gaCatsLoading, setGaCatsLoading] = useState(false);
+  const [gaCatsError, setGaCatsError] = useState(false);
+  const [frSearch, setFrSearch] = useState('');
+  const [frResults, setFrResults] = useState<FroizProduct[]>([]);
+  const [frLoading, setFrLoading] = useState(false);
+  const [frError, setFrError] = useState(false);
+  const [frCats, setFrCats] = useState<FroizCategory[]>([]);
+  const [frCatsLoading, setFrCatsLoading] = useState(false);
+  const [frCatsError, setFrCatsError] = useState(false);
+
   // Búsqueda de productos HiperDino (espejo)
   const [hdSearch, setHdSearch] = useState('');
   const [hdResults, setHdResults] = useState<HiperdinoProduct[]>([]);
@@ -568,12 +598,12 @@ export default function CatalogScreen() {
   // Texto de búsqueda del súper activo: con <2 letras estamos en modo navegación.
   const prodQuery = store === 'all'
     ? allSearch
-    : { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch, condis: coSearch, ametller: amSearch, aldi: alSearch, hiperdino: hdSearch, alcampo: acSearch, plusfresc: pfSearch }[store];
+    : { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch, condis: coSearch, ametller: amSearch, aldi: alSearch, gadis: gaSearch, froiz: frSearch, hiperdino: hdSearch, alcampo: acSearch, plusfresc: pfSearch }[store];
   // Setter de búsqueda de productos del súper activo (para la fila de búsqueda
   // única que ahora vive en el chrome, en vez de una por bloque de súper).
   const setProdQuery = store === 'all'
     ? setAllSearch
-    : { mercadona: setProdSearch, esclat: setBpSearch, carrefour: setCfSearch, bonarea: setBaSearch, consum: setCsSearch, dia: setDdSearch, sorli: setSoSearch, eroski: setEkSearch, caprabo: setCbSearch, condis: setCoSearch, ametller: setAmSearch, aldi: setAlSearch, hiperdino: setHdSearch, alcampo: setAcSearch, plusfresc: setPfSearch }[store];
+    : { mercadona: setProdSearch, esclat: setBpSearch, carrefour: setCfSearch, bonarea: setBaSearch, consum: setCsSearch, dia: setDdSearch, sorli: setSoSearch, eroski: setEkSearch, caprabo: setCbSearch, condis: setCoSearch, ametller: setAmSearch, aldi: setAlSearch, gadis: setGaSearch, froiz: setFrSearch, hiperdino: setHdSearch, alcampo: setAcSearch, plusfresc: setPfSearch }[store];
   const browseMode = tab === 'productos' && prodQuery.trim().length < 2;
   const productSortField: ProductSortField = pricePerUnitOrder == null ? 'price' : 'pricePerUnit';
   const activeProductOrder = pricePerUnitOrder ?? productOrder;
@@ -583,9 +613,12 @@ export default function CatalogScreen() {
   const browseOrder: ProductBrowseOrder = productSortField === 'pricePerUnit'
     ? (activeProductOrder === 'desc' ? 'pricePerUnitDesc' : 'pricePerUnitAsc')
     : (activeProductOrder === 'desc' ? 'priceDesc' : 'priceAsc');
-  const compareActiveProducts = productSortField === 'pricePerUnit'
-    ? compareProductsByPricePerUnit(activeProductOrder)
-    : compareProductsByPrice(activeProductOrder);
+  const compareActiveProducts = useMemo(
+    () => productSortField === 'pricePerUnit'
+      ? compareProductsByPricePerUnit(activeProductOrder)
+      : compareProductsByPrice(activeProductOrder),
+    [productSortField, activeProductOrder],
+  );
   const enabledStoresKey = enabledStores.join(',');
   const activeBrowseKey = browseCacheKey(
     store, lang, region, postalCode, `${productSortField}:${activeProductOrder}`,
@@ -694,7 +727,10 @@ export default function CatalogScreen() {
       cancelled = true;
       controller.abort();
     };
-  }, [store, browseMode, lang, region, postalCode, activeBrowseKey, browseOrder]);
+  }, [
+    store, browseMode, lang, region, postalCode, activeBrowseKey, browseOrder,
+    compareActiveProducts, enabledStores,
+  ]);
 
   // Siguiente página keyset al llegar al final de la lista.
   const loadMoreBrowse = () => {
@@ -741,14 +777,14 @@ export default function CatalogScreen() {
 
   useEffect(() => { setCategories([]); setCatError(false); setCatLoading(false); }, [lang]);
   useEffect(() => {
-    if (tab !== 'categorias' || store !== 'mercadona' || categories.length > 0 || catLoading) return;
+    if (tab !== 'categorias' || store !== 'mercadona' || categories.length > 0) return;
     return startCategoryLoad(fetchCategories, setCategories, setCatLoading, setCatError);
   }, [store, tab, lang, categories.length]);
 
   // Carga perezosa de categorías Bonpreu la primera vez que se entra a esa tienda.
   useEffect(() => { setBpCats([]); }, [lang]);
   useEffect(() => {
-    if (tab !== 'categorias' || store !== 'esclat' || bpCats.length > 0 || bpCatsLoading) return;
+    if (tab !== 'categorias' || store !== 'esclat' || bpCats.length > 0) return;
     return startCategoryLoad(fetchBonpreuCategoryTree, setBpCats, setBpCatsLoading, setBpCatsError);
   }, [store, tab, lang, bpCats.length]);
 
@@ -766,9 +802,9 @@ export default function CatalogScreen() {
 
   // Carga perezosa de categorías Carrefour la primera vez que se entra a esa tienda.
   useEffect(() => {
-    if (tab !== 'categorias' || store !== 'carrefour' || cfCats.length > 0 || cfCatsLoading) return;
+    if (tab !== 'categorias' || store !== 'carrefour' || cfCats.length > 0) return;
     return startCategoryLoad(fetchCarrefourCategoryTree, setCfCats, setCfCatsLoading, setCfCatsError);
-  }, [store, tab]);
+  }, [store, tab, cfCats.length]);
 
   // Carrefour: búsqueda server-side con debounce.
   useEffect(() => {
@@ -779,7 +815,7 @@ export default function CatalogScreen() {
   // Carga perezosa de categorías bonÀrea la primera vez que se entra a esa tienda.
   useEffect(() => { setBaCats([]); }, [lang]);
   useEffect(() => {
-    if (tab !== 'categorias' || store !== 'bonarea' || baCats.length > 0 || baCatsLoading) return;
+    if (tab !== 'categorias' || store !== 'bonarea' || baCats.length > 0) return;
     return startCategoryLoad(fetchBonareaCategoryTree, setBaCats, setBaCatsLoading, setBaCatsError);
   }, [store, tab, lang, baCats.length]);
 
@@ -791,9 +827,9 @@ export default function CatalogScreen() {
 
   // Carga perezosa de categorías Consum la primera vez que se entra a esa tienda.
   useEffect(() => {
-    if (tab !== 'categorias' || store !== 'consum' || csCats.length > 0 || csCatsLoading) return;
+    if (tab !== 'categorias' || store !== 'consum' || csCats.length > 0) return;
     return startCategoryLoad(fetchConsumCategoryTree, setCsCats, setCsCatsLoading, setCsCatsError);
-  }, [store, tab]);
+  }, [store, tab, csCats.length]);
 
   // Consum: búsqueda server-side con debounce.
   useEffect(() => {
@@ -803,9 +839,9 @@ export default function CatalogScreen() {
 
   // Carga perezosa de categorías Dia la primera vez que se entra a esa tienda.
   useEffect(() => {
-    if (tab !== 'categorias' || store !== 'dia' || ddCats.length > 0 || ddCatsLoading) return;
+    if (tab !== 'categorias' || store !== 'dia' || ddCats.length > 0) return;
     return startCategoryLoad(fetchDiaCategoryTree, setDdCats, setDdCatsLoading, setDdCatsError);
-  }, [store, tab]);
+  }, [store, tab, ddCats.length]);
 
   // Dia: búsqueda server-side con debounce.
   useEffect(() => {
@@ -816,7 +852,7 @@ export default function CatalogScreen() {
   // Carga perezosa de categorías Sorli la primera vez que se entra a esa tienda.
   useEffect(() => { setSoCats([]); }, [lang]);
   useEffect(() => {
-    if (tab !== 'categorias' || store !== 'sorli' || soCats.length > 0 || soCatsLoading) return;
+    if (tab !== 'categorias' || store !== 'sorli' || soCats.length > 0) return;
     return startCategoryLoad(fetchSorliCategoryTree, setSoCats, setSoCatsLoading, setSoCatsError);
   }, [store, tab, lang, soCats.length]);
 
@@ -828,9 +864,9 @@ export default function CatalogScreen() {
 
   // Carga perezosa de categorías Eroski la primera vez que se entra a esa tienda.
   useEffect(() => {
-    if (tab !== 'categorias' || store !== 'eroski' || ekCats.length > 0 || ekCatsLoading) return;
+    if (tab !== 'categorias' || store !== 'eroski' || ekCats.length > 0) return;
     return startCategoryLoad(fetchEroskiCategoryTree, setEkCats, setEkCatsLoading, setEkCatsError);
-  }, [store, tab]);
+  }, [store, tab, ekCats.length]);
 
   // Eroski: búsqueda server-side con debounce.
   useEffect(() => {
@@ -840,9 +876,9 @@ export default function CatalogScreen() {
 
   // Carga perezosa de categorías Caprabo la primera vez que se entra a esa tienda.
   useEffect(() => {
-    if (tab !== 'categorias' || store !== 'caprabo' || cbCats.length > 0 || cbCatsLoading) return;
+    if (tab !== 'categorias' || store !== 'caprabo' || cbCats.length > 0) return;
     return startCategoryLoad(fetchCapraboCategoryTree, setCbCats, setCbCatsLoading, setCbCatsError);
-  }, [store, tab]);
+  }, [store, tab, cbCats.length]);
 
   // Caprabo: búsqueda server-side con debounce.
   useEffect(() => {
@@ -853,7 +889,7 @@ export default function CatalogScreen() {
   // Carga perezosa de categorías Condis la primera vez que se entra a esa tienda.
   useEffect(() => { setCoCats([]); }, [lang]);
   useEffect(() => {
-    if (tab !== 'categorias' || store !== 'condis' || coCats.length > 0 || coCatsLoading) return;
+    if (tab !== 'categorias' || store !== 'condis' || coCats.length > 0) return;
     return startCategoryLoad(fetchCondisCategoryTree, setCoCats, setCoCatsLoading, setCoCatsError);
   }, [store, tab, lang, coCats.length]);
 
@@ -866,7 +902,7 @@ export default function CatalogScreen() {
   // Carga perezosa de categorías Ametller la primera vez que se entra a esa tienda.
   useEffect(() => { setAmCats([]); }, [lang]);
   useEffect(() => {
-    if (tab !== 'categorias' || store !== 'ametller' || amCats.length > 0 || amCatsLoading) return;
+    if (tab !== 'categorias' || store !== 'ametller' || amCats.length > 0) return;
     return startCategoryLoad(fetchAmetllerCategoryTree, setAmCats, setAmCatsLoading, setAmCatsError);
   }, [store, tab, lang, amCats.length]);
 
@@ -878,9 +914,9 @@ export default function CatalogScreen() {
 
   // Carga perezosa de categorías Aldi la primera vez que se entra a esa tienda.
   useEffect(() => {
-    if (tab !== 'categorias' || store !== 'aldi' || alCats.length > 0 || alCatsLoading) return;
+    if (tab !== 'categorias' || store !== 'aldi' || alCats.length > 0) return;
     return startCategoryLoad(fetchAldiCategoryTree, setAlCats, setAlCatsLoading, setAlCatsError);
-  }, [store, tab]);
+  }, [store, tab, alCats.length]);
 
   // Aldi: búsqueda server-side con debounce (es-only).
   useEffect(() => {
@@ -888,11 +924,20 @@ export default function CatalogScreen() {
     return startProductSearch(alSearch, (q, signal) => searchAldiProducts(q, 50, signal), setAlResults, setAlLoading, setAlError);
   }, [store, alSearch]);
 
+  useEffect(() => {
+    if (tab !== 'categorias' || store !== 'gadis' || gaCats.length > 0) return;
+    return startCategoryLoad(fetchGadisCategoryTree, setGaCats, setGaCatsLoading, setGaCatsError);
+  }, [store, tab, gaCats.length]);
+  useEffect(() => {
+    if (store !== 'gadis') return;
+    return startProductSearch(gaSearch, (q, signal) => searchGadisProducts(q, 50, signal), setGaResults, setGaLoading, setGaError);
+  }, [store, gaSearch]);
+
   // Carga perezosa de categorías HiperDino la primera vez que se entra a esa tienda.
   useEffect(() => {
-    if (tab !== 'categorias' || store !== 'hiperdino' || hdCats.length > 0 || hdCatsLoading) return;
+    if (tab !== 'categorias' || store !== 'hiperdino' || hdCats.length > 0) return;
     return startCategoryLoad(fetchHiperdinoCategoryTree, setHdCats, setHdCatsLoading, setHdCatsError);
-  }, [store, tab]);
+  }, [store, tab, hdCats.length]);
 
   // HiperDino: búsqueda server-side con debounce (es-only).
   useEffect(() => {
@@ -902,9 +947,9 @@ export default function CatalogScreen() {
 
   // Carga perezosa de categorías Alcampo la primera vez que se entra a esa tienda.
   useEffect(() => {
-    if (tab !== 'categorias' || store !== 'alcampo' || acCats.length > 0 || acCatsLoading) return;
+    if (tab !== 'categorias' || store !== 'alcampo' || acCats.length > 0) return;
     return startCategoryLoad(fetchAlcampoCategoryTree, setAcCats, setAcCatsLoading, setAcCatsError);
-  }, [store, tab]);
+  }, [store, tab, acCats.length]);
 
   // Alcampo: búsqueda server-side con debounce (es-only).
   useEffect(() => {
@@ -915,7 +960,7 @@ export default function CatalogScreen() {
   // Carga perezosa de categorías Plusfresc la primera vez que se entra a esa tienda.
   useEffect(() => { setPfCats([]); }, [lang]);
   useEffect(() => {
-    if (tab !== 'categorias' || store !== 'plusfresc' || pfCats.length > 0 || pfCatsLoading) return;
+    if (tab !== 'categorias' || store !== 'plusfresc' || pfCats.length > 0) return;
     return startCategoryLoad(fetchPlusfrescCategoryTree, setPfCats, setPfCatsLoading, setPfCatsError);
   }, [store, tab, lang, pfCats.length]);
 
@@ -976,7 +1021,10 @@ export default function CatalogScreen() {
       allSearchMoreController.current?.abort();
       setAllSearchMore(false);
     };
-  }, [store, allSearch, lang, region, postalCode, productOrder, pricePerUnitOrder, enabledStoresKey]);
+  }, [
+    store, allSearch, lang, region, postalCode, productOrder, pricePerUnitOrder,
+    enabledStoresKey, enabledStores, compareActiveProducts,
+  ]);
 
   // Filtro de categorías por texto (cliente). Compartido por los 6 súpers: en la
   // pestaña de categorías solo se ve un súper a la vez, así que un único `catSearch` basta.
@@ -1082,6 +1130,9 @@ export default function CatalogScreen() {
 
   const renderAlCategory = ({ item }: { item: AldiCategory }) =>
     renderCatRow({ store: 'aldi', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('aldi', item) });
+
+  const renderGaCategory = ({ item }: { item: GadisCategory }) =>
+    renderCatRow({ store: 'gadis', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('gadis', item) });
 
   const renderHdCategory = ({ item }: { item: HiperdinoCategory }) =>
     renderCatRow({ store: 'hiperdino', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('hiperdino', item) });
@@ -1772,6 +1823,14 @@ export default function CatalogScreen() {
         </>
       )}
 
+      {/* ── Gadis ────────────────────────────────────────────────── */}
+      {store === 'gadis' && tab === 'categorias' && (
+        gaCatsLoading ? <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
+        : gaCatsError ? <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Gadis' })}</Text><TouchableOpacity onPress={() => { setGaCatsError(false); setGaCatsLoading(true); fetchGadisCategoryTree().then(setGaCats).catch(() => setGaCatsError(true)).finally(() => setGaCatsLoading(false)); }}><Text style={styles.retryText}>{t('common.retry')}</Text></TouchableOpacity></View>
+        : <FlatList data={sortedCats(gaCats)} keyExtractor={(item) => item.id} renderItem={renderGaCategory} contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]} showsVerticalScrollIndicator={false} ItemSeparatorComponent={() => <View style={{ height: 8 }} />} />
+      )}
+      {store === 'gadis' && tab === 'productos' && renderProductsTab(gaSearch, gaLoading, gaError, gaResults.map(gadisToUI))}
+
       {/* ── HiperDino ────────────────────────────────────────────── */}
       {store === 'hiperdino' && tab === 'categorias' && (
         <>
@@ -1894,7 +1953,7 @@ export default function CatalogScreen() {
           mismo diseño que Ofertas/Novedades/Cambios de precios. */}
       <Modal
         visible={storeMenuOpen}
-        animationType="slide"
+        animationType={reducedMotion ? 'none' : 'slide'}
         statusBarTranslucent
         onRequestClose={() => setStoreMenuOpen(false)}
       >

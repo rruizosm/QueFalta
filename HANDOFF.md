@@ -12,6 +12,65 @@
 
 ---
 
+## Actualización Fase 3 (2026-08-14)
+
+Desplegada y verificada en Supabase, todavía sin commit local:
+
+- Auditoría real: 44 avisos de seguridad y 121 de rendimiento.
+- Nueva migración `20260814141719_phase_3_security_performance_hardening.sql`:
+  rutas seguras de funciones, RPC privilegiados sin acceso anónimo, RLS
+  consolidada y optimizada, y seis índices de claves foráneas.
+- Resultado: seguridad 44→20 y rendimiento 121→69. Los seis índices nuevos aún
+  figuran «sin uso» porque no han recibido tráfico suficiente.
+- SQL validado, preflight correcto, verificador ejecutado y policies compiladas
+  con rol autenticado. Falta QA manual con cuentas reales en la app.
+- La repetición final de `npm run quality` queda bloqueada por trabajo local
+  concurrente de Froiz/Gadis con errores TypeScript; no pertenece a la Fase 3 y
+  no se modificó durante este despliegue.
+- Debe aplicarse después de scripts legacy que vuelvan a crear estas funciones o
+  policies. No mover `pg_trgm` ni borrar índices «sin uso» sin métricas.
+- Reversión funcional disponible en `supabase/ops/rollback_phase_3_access_changes.sql`.
+- Ajuste manual pendiente: activar leaked-password protection en Supabase Auth.
+
+Detalle: `FASE-3-SEGURIDAD-RENDIMIENTO-DATOS.md`.
+
+## Actualización Fase 2 (2026-08-14)
+
+Implementada localmente, sin commit ni cambios remotos:
+
+- Accesibilidad: animaciones, transiciones y expansiones respetan Reducir movimiento; toast, filtros, cantidades, segmentos, selectores y hojas exponen etiquetas/estados.
+- Diseño: contraste AA reforzado para textos secundarios y los seis accents; objetivos táctiles compartidos de al menos 44 pt.
+- Texto grande: Login se reorganiza en una columna con `accessibility-large` y evita desbordamientos; iPad mantiene la composición completa.
+- Recursos: importación directa de Ionicons y Space Grotesk, Montserrat sin uso eliminada; export iOS 57→38 recursos, 1.524→1.470 módulos y 6,15→5,81 MB de Hermes.
+- `npm run quality` y Xcode Release correctos; 27/27 tests. Falta recorrido VoiceOver/TalkBack autenticado y dispositivo físico.
+
+Detalle: `FASE-2-ACCESIBILIDAD-DISENO.md`.
+
+## Actualización Fase 1 (2026-08-14)
+
+Implementada localmente, sin commit ni cambios remotos:
+
+- ESLint: 82 → 0 avisos; CI exige cero.
+- Arranque: mínimo del BootLoader 2.000 → 350 ms y pestañas bajo demanda.
+- Catálogo/Novedades/Ofertas/Cambios: colecciones, comparadores, cachés y efectos estabilizados para evitar trabajo repetido.
+- Login: fallos de Apple/Google localizados y sin texto técnico; contenido centrado en iPad.
+- `npm run quality`, export iOS y Xcode Debug/Release correctos; Release revisada en iPhone 17e e iPad mini.
+- `ios/.xcode.env.local` (ignorado) se corrigió de Node 24.9.0 a 22.23.2 en esta máquina.
+
+Detalle y pendientes de QA física: `FASE-1-ESTABILIDAD-RENDIMIENTO.md`.
+
+## Actualización Fase 0 (2026-08-13)
+
+Se ha creado una línea base técnica sin cambios funcionales ni mutaciones remotas:
+
+- Node 22.23.2/npm 10.9.8 fijados y controles de calidad reproducibles.
+- CI para typecheck, lint y 27 pruebas existentes.
+- Compilaciones Debug y Release verificadas en Xcode 26.5; login revisado en iPhone 17 Pro, iPhone 17e e iPad mini simulados.
+- Supabase auditado en modo lectura: las columnas críticas y los tres RPC que usa el cliente existen. Las listas de migraciones de este handoff son históricas y no deben interpretarse ya como ausencia de columna sin contrastar el esquema remoto.
+- No se aplicaron migraciones, no se modificó lógica de producto y no se creó commit.
+
+Resultados y pendientes de dispositivo físico/cuenta QA: `FASE-0-LINEA-BASE.md`.
+
 ## Actualizacion CP: Consum y Plusfresc (2026-07-16)
 
 Implementado localmente, sin migrar ni sincronizar en Supabase. Consum barre 5

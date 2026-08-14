@@ -3,8 +3,8 @@ import {
   View, Text, TextInput, ScrollView, TouchableOpacity,
   StyleSheet, StatusBar, ActivityIndicator,
 } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -33,7 +33,6 @@ export default function FriendsScreen() {
   const headerTop = useHeaderTopPadding(52);
   const bottomPad = useTabBarBottomPadding(40);
   const { t } = useTranslation();
-  const navigation = useNavigation<any>();
   const { session } = useAuth();
   const toast = useToast();
   const userId = session?.user.id ?? '';

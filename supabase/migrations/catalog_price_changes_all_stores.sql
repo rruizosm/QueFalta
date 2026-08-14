@@ -27,7 +27,7 @@ begin
     'mercadona_products', 'bonpreu_products', 'carrefour_products', 'bonarea_products',
     'consum_products', 'dia_products', 'sorli_products', 'eroski_products', 'caprabo_products',
     'condis_products', 'ametller_products', 'aldi_products', 'hiperdino_products',
-    'alcampo_products', 'plusfresc_products'
+    'alcampo_products', 'plusfresc_products', 'gadis_products'
   ] loop
     if to_regclass('public.' || tbl) is not null then
       execute format('alter table public.%I add column if not exists prev_unit_price numeric', tbl);

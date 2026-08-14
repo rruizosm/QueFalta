@@ -4,7 +4,7 @@ import {
   StyleSheet, StatusBar, ActivityIndicator, Alert, Linking,
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import Constants from 'expo-constants';

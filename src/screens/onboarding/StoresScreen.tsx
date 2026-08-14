@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, type DimensionValue } from 'react-native';
 import { Image } from 'expo-image';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../../constants/colors';
 import { fonts } from '../../constants/typography';

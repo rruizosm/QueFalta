@@ -6,8 +6,6 @@
 // MercadonaProduct completo.
 import { supabase } from '../lib/supabase';
 import { offerTypesOf, type OfferType } from '../lib/offerTypes';
-export { offerTypesForStore } from '../lib/offerTypes';
-export type { OfferType } from '../lib/offerTypes';
 import { getLanguage } from '../i18n';
 import type { MercadonaProduct } from '../types';
 import type { CatalogStore } from '../constants/stores';
@@ -18,9 +16,11 @@ import { fetchNewArrivals, resolveWarehouseForPostalCode } from './mercadona';
 // fichero con `import type`), así que este import NO crea un ciclo en runtime.
 import {
   mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
-  condisToUI, eroskiToUI, capraboToUI, ametllerToUI, aldiToUI, hiperdinoToUI, alcampoToUI, plusfrescToUI,
+  condisToUI, eroskiToUI, capraboToUI, ametllerToUI, aldiToUI, gadisToUI, froizToUI, hiperdinoToUI, alcampoToUI, plusfrescToUI,
   type UIProduct,
 } from '../lib/productAdapters';
+export { offerTypesForStore } from '../lib/offerTypes';
+export type { OfferType } from '../lib/offerTypes';
 
 export interface ProductPriceChange {
   previousPrice: number;
@@ -32,7 +32,7 @@ const PRICE_CHANGE_TABLE: Record<CatalogStore, string> = {
   bonarea: 'bonarea_products', consum: 'consum_products', dia: 'dia_products', sorli: 'sorli_products',
   eroski: 'eroski_products', caprabo: 'caprabo_products', condis: 'condis_products',
   ametller: 'ametller_products', aldi: 'aldi_products', hiperdino: 'hiperdino_products',
-  alcampo: 'alcampo_products', plusfresc: 'plusfresc_products',
+  alcampo: 'alcampo_products', plusfresc: 'plusfresc_products', gadis: 'gadis_products', froiz: 'froiz_products',
 };
 
 /** Última variación semanal del precio base de un producto. Si la migración aún
@@ -1571,6 +1571,83 @@ export async function fetchAldiProductsByCategory(categoryId: string, limit = 60
   return (data ?? []).map(mapAldi);
 }
 
+// ─── Gadis (tabla gadis_products) ──────────────────────────────────────────
+// Gadisline publica el catálogo SSR y sus promociones explícitas. El surtido se
+// resuelve actualmente con la tienda pública por defecto (ver sync-gadis.mjs).
+export interface GadisProduct {
+  id: string;
+  displayName: string;
+  brand: string | null;
+  packaging: string | null;
+  thumbnail: string | null;
+  unitPrice: number | null;
+  priceFormat: string | null;
+  pricePerUnit: string | null;
+  categoryName: string | null;
+  promoName: string | null;
+}
+const mapGadis = (r: any): GadisProduct => ({
+  id: r.id, displayName: r.display_name, brand: r.brand ?? null, packaging: r.packaging ?? null,
+  thumbnail: r.thumbnail ?? null, unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
+  priceFormat: r.price_format ?? null, pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
+  categoryName: r.category_name ?? null, promoName: r.promo_name ?? null,
+});
+const GADIS_COLS = 'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name';
+const GADIS_OFFER_COLS = `${GADIS_COLS}, promo_text, promo_end, promo_group_id, promo_is_related, promo_is_coupon`;
+export async function searchGadisProducts(query: string, limit = 50, signal?: AbortSignal): Promise<GadisProduct[]> {
+  const q = query.trim(); if (q.length < 2) return [];
+  const { data, error } = await abortable(filterByNameWords(supabase.from('gadis_products').select(GADIS_COLS).eq('published', true), q).limit(limit), signal);
+  if (error) throw error; return (data ?? []).map(mapGadis);
+}
+export async function browseGadisProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<GadisProduct>> {
+  const { rows, nextCursor } = await keysetPage('gadis_products', GADIS_COLS, 'display_name_norm', cursor, limit, undefined, descending, signal);
+  return { items: rows.map(mapGadis), nextCursor };
+}
+export async function fetchGadisProduct(id: string): Promise<GadisProduct | null> {
+  const { data, error } = await supabase.from('gadis_products').select(GADIS_COLS).eq('id', id).maybeSingle();
+  if (error) throw error; return data ? mapGadis(data) : null;
+}
+export interface GadisCategory { id: string; name: string; children: { id: string; name: string }[]; }
+export async function fetchGadisCategoryTree(signal?: AbortSignal): Promise<GadisCategory[]> {
+  const { data, error } = await abortable(supabase.from('gadis_categories').select('id, name, parent_id, product_count').eq('published', true).order('name'), signal);
+  if (error) throw error;
+  const rows = data ?? [];
+  return rows.filter((r: any) => r.parent_id == null).map((n1: any) => ({ id: n1.id, name: n1.name, children: rows.filter((c: any) => c.parent_id === n1.id && (c.product_count ?? 0) > 0).map((c: any) => ({ id: c.id, name: c.name })) })).filter((n1) => n1.children.length > 0);
+}
+export async function fetchGadisProductsByCategory(categoryId: string, limit = 600): Promise<GadisProduct[]> {
+  const { data, error } = await supabase.from('gadis_products').select(GADIS_COLS).eq('published', true).contains('category_ids', [categoryId]).order('display_name').limit(limit);
+  if (error) throw error; return (data ?? []).map(mapGadis);
+}
+
+// ─── Froiz (API pública servicios.froiz.com) ───────────────────────────────
+export type FroizProduct = GadisProduct;
+export type FroizCategory = GadisCategory;
+const mapFroiz = (r: any): FroizProduct => ({
+  id: r.id, displayName: r.display_name, brand: r.brand ?? null, packaging: null,
+  thumbnail: r.thumbnail ?? null, unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
+  priceFormat: r.price_format ?? null, pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
+  categoryName: r.category_name ?? null, promoName: r.promo_name ?? null,
+});
+const FROIZ_COLS = 'id, display_name, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name';
+export async function searchFroizProducts(query: string, limit = 50, signal?: AbortSignal): Promise<FroizProduct[]> {
+  const q = query.trim(); if (q.length < 2) return [];
+  const { data, error } = await abortable(filterByNameWords(supabase.from('froiz_products').select(FROIZ_COLS).eq('published', true), q).limit(limit), signal);
+  if (error) throw error; return (data ?? []).map(mapFroiz);
+}
+export async function browseFroizProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<FroizProduct>> {
+  const { rows, nextCursor } = await keysetPage('froiz_products', FROIZ_COLS, 'display_name_norm', cursor, limit, undefined, descending, signal);
+  return { items: rows.map(mapFroiz), nextCursor };
+}
+export async function fetchFroizCategoryTree(signal?: AbortSignal): Promise<FroizCategory[]> {
+  const { data, error } = await abortable(supabase.from('froiz_categories').select('id, name, parent_id, product_count').eq('published', true).order('name'), signal);
+  if (error) throw error; const rows = data ?? [];
+  return rows.filter((r: any) => r.parent_id == null).map((n: any) => ({ id:n.id, name:n.name, children:rows.filter((c:any)=>c.parent_id===n.id && (c.product_count ?? 0)>0).map((c:any)=>({id:c.id,name:c.name})) })).filter((n) => n.children.length > 0);
+}
+export async function fetchFroizProductsByCategory(categoryId: string, limit = 600): Promise<FroizProduct[]> {
+  const { data, error } = await supabase.from('froiz_products').select(FROIZ_COLS).eq('published', true).contains('category_ids', [categoryId]).order('display_name').limit(limit);
+  if (error) throw error; return (data ?? []).map(mapFroiz);
+}
+
 // ─── HiperDino (tabla hiperdino_products, espejo aparte) ─────────────────────
 // Mismo modelo que Aldi (espejo + category_ids, con category_name), pero SOLO
 // castellano (hiperdino.es no es bilingüe), SIN ficha, SIN EAN y SIN €/unidad
@@ -2124,6 +2201,8 @@ const MIRROR_QUERY: Record<CatalogStore, { table: string; cols: string; toUI: (r
   hiperdino: { table: 'hiperdino_products',  cols: HIPERDINO_COLS, toUI: (r) => hiperdinoToUI(mapHiperdino(r)) },
   alcampo:   { table: 'alcampo_products',    cols: ALCAMPO_COLS,   toUI: (r) => alcampoToUI(mapAlcampo(r)) },
   plusfresc: { table: 'plusfresc_products',  cols: PLUSFRESC_COLS, toUI: (r) => plusfrescToUI(mapPlusfresc(r)) },
+  gadis:     { table: 'gadis_products',      cols: GADIS_COLS,     toUI: (r) => gadisToUI(mapGadis(r)) },
+  froiz:     { table: 'froiz_products',      cols: FROIZ_COLS,     toUI: (r) => froizToUI(mapFroiz(r)) },
 };
 
 /** Aplica la disponibilidad que cada espejo conoce. Los catálogos sin columnas
@@ -2183,16 +2262,21 @@ export async function fetchWeeklyNewProducts(
     };
   }
   const m = MIRROR_QUERY[store];
-  const { data, error, count } = await filterMirrorLocation(supabase
+  let newProductsQuery = filterMirrorLocation(supabase
     .from(m.table)
     .select(m.cols, { count: 'exact' })
-    .eq('published', true)
-    .gte('first_seen_at', weekAgoISO())
+    .eq('published', true), store, region, postalCode);
+  // Gadisline publica una propiedad explícita «Nuevo». La usamos además de la
+  // fecha de primera aparición, así el primer sync no oculta novedades reales.
+  newProductsQuery = store === 'gadis'
+    ? newProductsQuery.or(`first_seen_at.gte.${weekAgoISO()},is_new.eq.true`)
+    : newProductsQuery.gte('first_seen_at', weekAgoISO());
+  const { data, error, count } = await newProductsQuery
     .order('first_seen_at', { ascending: false })
-    .order('display_name', { ascending: true }), store, region, postalCode)
+    .order('display_name', { ascending: true })
     .range(offset, offset + limit - 1);
   if (error) throw error;
-  if ((count ?? 0) > NEW_INITIAL_FILL_CAP) return { items: [], nextOffset: null };
+  if (store !== 'gadis' && (count ?? 0) > NEW_INITIAL_FILL_CAP) return { items: [], nextOffset: null };
   return {
     items: (data ?? []).map((r: any) => mirrorToUIAtLocation(store, r, region, postalCode)),
     nextOffset: (count ?? 0) > offset + limit ? offset + limit : null,
@@ -2336,10 +2420,10 @@ export async function fetchPriceChanges(
  *  esta lista, así que añadir un súper aquí + su fetch lo estrena en la UI. */
 export const OFFER_STORES: CatalogStore[] = [
   'carrefour', 'esclat', 'consum', 'dia', 'sorli', 'eroski', 'caprabo',
-  'condis', 'ametller', 'aldi', 'hiperdino', 'alcampo', 'plusfresc',
+  'condis', 'ametller', 'aldi', 'hiperdino', 'alcampo', 'plusfresc', 'gadis',
 ];
 
-type NormalizedOfferStore = 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'alcampo';
+type NormalizedOfferStore = 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'alcampo' | 'gadis';
 
 const NORMALIZED_OFFER_CONFIG: Record<NormalizedOfferStore, {
   table: string;
@@ -2377,11 +2461,15 @@ const NORMALIZED_OFFER_CONFIG: Record<NormalizedOfferStore, {
     bilingual: false,
     toUI: (row) => alcampoToUI(mapAlcampo(row)),
   },
+  gadis: {
+    table: 'gadis_products', columns: GADIS_OFFER_COLS, bilingual: false,
+    toUI: (row) => gadisToUI(mapGadis(row)),
+  },
 };
 
 const isNormalizedOfferStore = (store: CatalogStore): store is NormalizedOfferStore =>
   store === 'eroski' || store === 'caprabo' || store === 'condis'
-  || store === 'ametller' || store === 'alcampo';
+  || store === 'ametller' || store === 'alcampo' || store === 'gadis';
 
 export interface CarrefourOffer {
   product: UIProduct;        // con el precio ACTUAL (rebajado si es descuento directo)
@@ -2505,6 +2593,11 @@ export async function fetchOfferCategories(
           .eq('published', true)
           .not('category_name', 'is', null)
           .not('promo_base_price', 'is', null)
+          .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`);
+      } else if (store === 'gadis') {
+        q = supabase.from('gadis_products').select('id, category_name')
+          .eq('published', true).not('category_name', 'is', null)
+          .not('promo_name', 'is', null).eq('promo_is_coupon', false)
           .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`);
       } else if (isNormalizedOfferStore(store)) {
         const config = NORMALIZED_OFFER_CONFIG[store];
@@ -2749,7 +2842,8 @@ export async function fetchNormalizedRetailerOffers(
     cursor,
     limit,
     (q) => applyOfferFilters(
-      q.not('promo_name', 'is', null)
+      (store === 'gadis' ? q.eq('promo_is_coupon', false) : q)
+        .not('promo_name', 'is', null)
         .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`),
       filters,
       normCol,

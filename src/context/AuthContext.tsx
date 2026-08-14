@@ -142,10 +142,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     if (Platform.OS === 'web') {
-      await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: window.location.origin },
       });
+      if (error) throw error;
       return;
     }
 
@@ -159,7 +160,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     });
 
-    if (error || !data.url) return;
+    if (error) throw error;
+    if (!data.url) throw new Error('Google OAuth URL missing');
 
     const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
 
@@ -213,7 +215,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       if (error) {
         setPendingProfileName(null);
-        return;
+        throw error;
       }
       // onAuthStateChange recoge la sesión.
 
@@ -222,10 +224,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (credential.authorizationCode) {
         linkAppleCredential(credential.authorizationCode).catch(() => {});
       }
-    } catch (e: any) {
+    } catch (error: unknown) {
       setPendingProfileName(null);
       // El usuario cerró el diálogo: no es un error que mostrar.
-      if (e?.code === 'ERR_REQUEST_CANCELED') return;
+      const code = typeof error === 'object' && error != null && 'code' in error
+        ? String((error as { code?: unknown }).code)
+        : '';
+      if (code === 'ERR_REQUEST_CANCELED') return;
+      throw error;
     }
   };
 

@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -13,6 +13,7 @@ import { useTranslation } from '../context/LanguageContext';
 import { useNotifications, type InboxNotification } from '../context/NotificationsContext';
 import { renderNotification } from '../lib/notificationText';
 import GlassSurface from './GlassSurface';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 interface Props {
   visible: boolean;
@@ -42,6 +43,7 @@ export default function NotificationsSheet({ visible, onClose }: Props) {
   const styles = useThemedStyles(themedStyles);
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
   const { items, remove, clearAll, markAllRead } = useNotifications();
   const navigation = useNavigation<any>();
 
@@ -67,7 +69,7 @@ export default function NotificationsSheet({ visible, onClose }: Props) {
   const headerPad = insets.top + 64;
 
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} animationType={reducedMotion ? 'none' : 'slide'} onRequestClose={onClose}>
       <View style={styles.screen}>
         <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
@@ -123,6 +125,7 @@ export default function NotificationsSheet({ visible, onClose }: Props) {
                     style={styles.rowDelete}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     accessibilityLabel={t('notifications.a11yDelete')}
+                    accessibilityRole="button"
                   >
                     <Ionicons name="close" size={18} color={colors.inkFaint} />
                   </TouchableOpacity>
@@ -136,12 +139,22 @@ export default function NotificationsSheet({ visible, onClose }: Props) {
             y se refracta. Va al final del árbol para renderse ENCIMA. En
             fallback = barra opaca de papel, idéntica a antes. */}
         <GlassSurface style={[styles.header, { paddingTop: insets.top + 6 }]} fallbackColor={colors.paper}>
-          <TouchableOpacity onPress={onClose} style={styles.closeBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <TouchableOpacity
+            onPress={onClose}
+            style={styles.closeBtn}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.close')}
+          >
             <Ionicons name="close" size={22} color={colors.ink} />
           </TouchableOpacity>
           <Text style={styles.title}>{t('notifications.title')}</Text>
           {items.length > 0 ? (
-            <TouchableOpacity onPress={handleClearAll} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <TouchableOpacity
+              onPress={handleClearAll}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityRole="button"
+            >
               <Text style={styles.clearAll}>{t('notifications.clearAll')}</Text>
             </TouchableOpacity>
           ) : (

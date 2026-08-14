@@ -3,12 +3,12 @@ import type { OpenFoodFactsNutrition } from './openFoodFacts';
 
 /** Tabla que guarda el sync de Mercadona en mercadona_products.nutrition. */
 export interface MercadonaNutritionTable {
-  nutrients?: Array<{
+  nutrients?: {
     name?: string | null;
     unit?: string | null;
     amount?: string | number | null;
-    sub_nutrients?: { items?: Array<{ name?: string | null; unit?: string | null; amount?: string | number | null }> | null } | null;
-  }> | null;
+    sub_nutrients?: { items?: { name?: string | null; unit?: string | null; amount?: string | number | null }[] | null } | null;
+  }[] | null;
   per_quantity?: string | null;
   energy_joules?: { amount?: string | number | null; unit?: string | null } | null;
   energy_calories?: { amount?: string | number | null; unit?: string | null } | null;
@@ -84,7 +84,7 @@ export function parseCatalogNutrition(
   const proteins = amountFromText(text, /(?:prote[ií]nas?|prote[iï](?:nes?|na))\s*[:\-]?\s*(\d+(?:[.,]\d+)?)\s*g\b/i);
   const salt = amountFromText(text, /(?:sal)(?:\s+(?:equivalente|equivalent))?\s*[:\-]?\s*(\d+(?:[.,]\d+)?)\s*g\b/i);
 
-  const nutrients: Array<[string, number | null]> = [
+  const nutrients: [string, number | null][] = [
     ['Grasas', fat],
     ['Grasas saturadas', saturatedFat],
     ['Hidratos de carbono', carbohydrates],
@@ -125,7 +125,6 @@ const GENERAL_SUGARS = [3.4, 6.8, 10, 14, 17, 20, 24, 27, 31, 34, 37, 41, 44, 48
 const SALT = Array.from({ length: 20 }, (_, i) => (i + 1) * 0.2);
 const FIBER = [3, 4.1, 5.2, 6.3, 7.4];
 const PROTEINS = [2.4, 4.8, 7.2, 9.6, 12, 14, 17];
-const FVL = [40, 60, 80];
 const BEVERAGE_ENERGY = [30, 90, 150, 210, 240, 270, 300, 330, 360, 390];
 const BEVERAGE_SUGARS = [0.5, 2, 3.5, 5, 6, 7, 8, 9, 10, 11];
 const BEVERAGE_PROTEINS = [1.2, 1.5, 1.8, 2.1, 2.4, 2.7, 3];

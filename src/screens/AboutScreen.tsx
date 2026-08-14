@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, Image, Share,
+  View, Text, ScrollView, Image, Share,
   StyleSheet, StatusBar, Linking,
 } from 'react-native';
 import Constants from 'expo-constants';
-import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
@@ -33,7 +31,6 @@ export default function AboutScreen() {
   const headerTop = useHeaderTopPadding(52);
   const bottomPad = useTabBarBottomPadding(40);
   const { t } = useTranslation();
-  const navigation = useNavigation<any>();
   const [headerH, setHeaderH] = useState(0);
   const glassInset = glassAvailable ? headerH : 0;
 

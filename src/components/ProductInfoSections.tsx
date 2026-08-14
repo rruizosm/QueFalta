@@ -3,11 +3,12 @@ import {
   View, Text, TouchableOpacity, StyleSheet,
   LayoutAnimation, Platform, UIManager,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 import GlassSurface from './GlassSurface';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 // LayoutAnimation necesita habilitarse a mano en Android para animar el desplegado.
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -55,6 +56,7 @@ export default function ProductInfoSections({ items }: { items: ProductInfoItem[
 
 function Row({ item }: { item: ProductInfoItem }) {
   const styles = useThemedStyles(themedStyles);
+  const reducedMotion = useReducedMotion();
   const [expanded, setExpanded] = useState(false);
   const value = item.text?.trim() ?? null;
 
@@ -63,14 +65,21 @@ function Row({ item }: { item: ProductInfoItem }) {
       item.onPress();
       return;
     }
-    LayoutAnimation.configureNext(
-      LayoutAnimation.create(160, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity),
-    );
+    if (!reducedMotion) {
+      LayoutAnimation.configureNext(
+        LayoutAnimation.create(160, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity),
+      );
+    }
     setExpanded((e) => !e);
   };
 
   return (
-    <TouchableOpacity activeOpacity={0.6} onPress={toggle}>
+    <TouchableOpacity
+      activeOpacity={0.6}
+      onPress={toggle}
+      accessibilityRole="button"
+      accessibilityState={item.onPress ? undefined : { expanded }}
+    >
       <View style={styles.row}>
         <View style={styles.iconWrap}>
           <Ionicons name={item.icon} size={20} color={colors.accent} />

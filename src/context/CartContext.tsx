@@ -100,7 +100,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     })();
 
     return () => { cancelled = true; };
-  }, [userId]);
+  }, [cartKey, dgKey, userId]);
 
   const deactivateCart = async () => {
     setActiveCart(null);

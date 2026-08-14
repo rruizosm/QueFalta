@@ -1,4 +1,4 @@
-import { Category, Subcategory, Product, ListItem, ShoppingList, Group } from '../types';
+import { Category, Subcategory, Product, ShoppingList, Group } from '../types';
 
 export const CATEGORIES: Category[] = [
   { id: 'c1', name: 'Frutas y verduras', subcategoryCount: 8, emoji: '🥦', color: '#2f9e44' },

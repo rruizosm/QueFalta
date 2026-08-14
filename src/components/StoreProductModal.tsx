@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Modal, View, ActivityIndicator, StyleSheet } from 'react-native';
 import { colors } from '../constants/colors';
 import {
   fetchBonpreuProduct, fetchCarrefourProduct, fetchBonareaProduct, fetchConsumProduct, fetchDiaProduct, fetchSorliProduct,
-  fetchEroskiProduct, fetchCapraboProduct, fetchCondisProduct, fetchAmetllerProduct, fetchAldiProduct, fetchHiperdinoProduct, fetchAlcampoProduct,
+  fetchEroskiProduct, fetchCapraboProduct, fetchCondisProduct, fetchAmetllerProduct, fetchAldiProduct, fetchGadisProduct, fetchHiperdinoProduct, fetchAlcampoProduct,
   fetchPlusfrescProduct,
   type BonpreuProduct, type CarrefourProduct, type BonareaProduct, type ConsumProduct, type DiaProduct, type SorliProduct,
-  type CondisProduct, type AmetllerProduct, type AldiProduct, type HiperdinoProduct, type AlcampoProduct, type PlusfrescProduct, type TapestryProduct,
+  type CondisProduct, type AmetllerProduct, type AldiProduct, type GadisProduct, type HiperdinoProduct, type AlcampoProduct, type PlusfrescProduct, type TapestryProduct,
 } from '../api/catalog';
 import type { CatalogStore } from '../constants/stores';
 import { useToast } from '../context/ToastContext';
@@ -14,6 +14,7 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useProfile } from '../context/ProfileContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 /** Referencia a un producto de cualquier súper (lo que devuelve la comparativa). */
 export interface ProductRef {
@@ -38,6 +39,7 @@ interface Props {
  *  espejos se carga el producto por id y se pinta su modal correspondiente. */
 export default function StoreProductModal({ target, onClose, fullScreen = false, badgeLabel }: Props) {
   const styles = useThemedStyles(themedStyles);
+  const reducedMotion = useReducedMotion();
   const fullScreenTop = useHeaderTopPadding(56);
   const sheetTop = useHeaderTopPadding(56);
   const toast = useToast();
@@ -45,38 +47,53 @@ export default function StoreProductModal({ target, onClose, fullScreen = false,
   const { profile } = useProfile();
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
-  const [mirror, setMirror] = useState<BonpreuProduct | CarrefourProduct | BonareaProduct | ConsumProduct | DiaProduct | SorliProduct | CondisProduct | AmetllerProduct | AldiProduct | HiperdinoProduct | AlcampoProduct | PlusfrescProduct | TapestryProduct | null>(null);
+  const targetStore = target?.store;
+  const targetId = target?.id;
+  // El cierre y el texto pueden cambiar de identidad al renderizar el padre.
+  // El fetch solo debe reiniciarse cuando cambia el producto o su contexto.
+  const feedbackRef = useRef({ onClose, showToast: toast.show, t });
+  feedbackRef.current = { onClose, showToast: toast.show, t };
+  const [mirror, setMirror] = useState<BonpreuProduct | CarrefourProduct | BonareaProduct | ConsumProduct | DiaProduct | SorliProduct | CondisProduct | AmetllerProduct | AldiProduct | GadisProduct | HiperdinoProduct | AlcampoProduct | PlusfrescProduct | TapestryProduct | null>(null);
 
   useEffect(() => {
     setMirror(null);
-    if (!target || target.store === 'mercadona') return;
+    if (!targetStore || !targetId || targetStore === 'mercadona') return;
     let cancelled = false;
     const fetcher =
-      target.store === 'esclat' ? fetchBonpreuProduct
-      : target.store === 'carrefour' ? (id: string) => fetchCarrefourProduct(id, region)
-       : target.store === 'consum' ? (id: string) => fetchConsumProduct(id, region, postalCode)
-      : target.store === 'dia' ? (id: string) => fetchDiaProduct(id, region)
-      : target.store === 'sorli' ? fetchSorliProduct
-      : target.store === 'eroski' ? fetchEroskiProduct
-      : target.store === 'caprabo' ? fetchCapraboProduct
-      : target.store === 'condis' ? fetchCondisProduct
-      : target.store === 'ametller' ? fetchAmetllerProduct
-      : target.store === 'aldi' ? fetchAldiProduct
-      : target.store === 'hiperdino' ? fetchHiperdinoProduct
-      : target.store === 'alcampo' ? fetchAlcampoProduct
-       : target.store === 'plusfresc' ? (id: string) => fetchPlusfrescProduct(id, postalCode)
+      targetStore === 'esclat' ? fetchBonpreuProduct
+      : targetStore === 'carrefour' ? (id: string) => fetchCarrefourProduct(id, region)
+       : targetStore === 'consum' ? (id: string) => fetchConsumProduct(id, region, postalCode)
+      : targetStore === 'dia' ? (id: string) => fetchDiaProduct(id, region)
+      : targetStore === 'sorli' ? fetchSorliProduct
+      : targetStore === 'eroski' ? fetchEroskiProduct
+      : targetStore === 'caprabo' ? fetchCapraboProduct
+      : targetStore === 'condis' ? fetchCondisProduct
+      : targetStore === 'ametller' ? fetchAmetllerProduct
+      : targetStore === 'aldi' ? fetchAldiProduct
+      : targetStore === 'gadis' ? fetchGadisProduct
+      : targetStore === 'hiperdino' ? fetchHiperdinoProduct
+      : targetStore === 'alcampo' ? fetchAlcampoProduct
+       : targetStore === 'plusfresc' ? (id: string) => fetchPlusfrescProduct(id, postalCode)
       : fetchBonareaProduct;
-    fetcher(target.id)
+    fetcher(targetId)
       .then((p) => {
         if (cancelled) return;
         if (p) setMirror(p);
-        else { toast.show(t('product.loadError'), 'error'); onClose(); }
+        else {
+          const feedback = feedbackRef.current;
+          feedback.showToast(feedback.t('product.loadError'), 'error');
+          feedback.onClose();
+        }
       })
       .catch(() => {
-        if (!cancelled) { toast.show(t('product.loadError'), 'error'); onClose(); }
+        if (!cancelled) {
+          const feedback = feedbackRef.current;
+          feedback.showToast(feedback.t('product.loadError'), 'error');
+          feedback.onClose();
+        }
       });
     return () => { cancelled = true; };
-  }, [target?.store, target?.id, region, postalCode, lang]);
+  }, [targetStore, targetId, region, postalCode, lang]);
 
   if (!target) return null;
 
@@ -125,6 +142,9 @@ export default function StoreProductModal({ target, onClose, fullScreen = false,
   } else if (target.store === 'aldi') {
     const AldiProductModal = require('./AldiProductModal').default;
     content = <AldiProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
+  } else if (target.store === 'gadis') {
+    const GadisProductModal = require('./GadisProductModal').default;
+    content = <GadisProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
   } else if (target.store === 'hiperdino') {
     const HiperdinoProductModal = require('./HiperdinoProductModal').default;
     content = <HiperdinoProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
@@ -140,7 +160,7 @@ export default function StoreProductModal({ target, onClose, fullScreen = false,
   }
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible transparent animationType={reducedMotion ? 'none' : 'slide'} onRequestClose={onClose}>
       {/* fullScreen (cesta) cubre toda la pantalla. El detalle anidado conserva
           el formato de hoja y despeja la barra de estado. */}
       <View style={fullScreen ? styles.sheetFull : [styles.sheet, { top: sheetTop }]}>{content}</View>

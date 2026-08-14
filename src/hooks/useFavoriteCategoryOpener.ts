@@ -7,7 +7,7 @@ import {
   fetchConsumCategoryTree, fetchDiaCategoryTree, fetchSorliCategoryTree,
   fetchEroskiCategoryTree, fetchCapraboCategoryTree, fetchCondisCategoryTree,
   fetchAmetllerCategoryTree, fetchAldiCategoryTree, fetchHiperdinoCategoryTree,
-  fetchAlcampoCategoryTree, fetchPlusfrescCategoryTree,
+  fetchAlcampoCategoryTree, fetchPlusfrescCategoryTree, fetchGadisCategoryTree, fetchFroizCategoryTree,
 } from '../api/catalog';
 import { useFavorites } from '../context/FavoritesContext';
 import type { CatalogStore } from '../constants/stores';
@@ -31,6 +31,8 @@ const TREE_FETCHERS: Record<Exclude<CatalogStore, 'mercadona'>, () => Promise<Mi
   hiperdino: fetchHiperdinoCategoryTree,
   alcampo: fetchAlcampoCategoryTree,
   plusfresc: fetchPlusfrescCategoryTree,
+  gadis: fetchGadisCategoryTree,
+  froiz: fetchFroizCategoryTree,
 };
 
 /**
@@ -58,7 +60,7 @@ export function useFavoriteCategoryOpener() {
     pending.forEach((s) => {
       TREE_FETCHERS[s]().then((tree) => setTrees((prev) => ({ ...prev, [s]: tree }))).catch(() => {});
     });
-  }, [favCategories]);
+  }, [favCategories, trees]);
 
   const goToMercadonaCategory = (cat: N1Category) => {
     const { emoji, color } = getMeta(cat.name);

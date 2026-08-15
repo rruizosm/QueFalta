@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, RefreshControl, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
@@ -59,7 +59,15 @@ export default function CatalogSyncStatusScreen() {
             {CATALOG_STORES.map((store, index) => {
               const timestamp = byStore.get(store.key as CatalogStore);
               return <View key={store.key} style={[styles.row, index < CATALOG_STORES.length - 1 && styles.border]}>
-                <View style={styles.iconBox}><Ionicons name="storefront-outline" size={18} color={colors.accent} /></View>
+                {store.icon ? (
+                  <View style={styles.iconBox}>
+                    <Image source={store.icon} style={styles.storeLogo} resizeMode="contain" accessibilityLabel={store.name} />
+                  </View>
+                ) : (
+                  <View style={[styles.iconBox, styles.iconBoxFallback]}>
+                    <Text style={styles.storeInitials}>{store.name.slice(0, 2).toUpperCase()}</Text>
+                  </View>
+                )}
                 <Text style={styles.storeName}>{store.name}</Text>
                 <Text style={styles.date} numberOfLines={2}>{timestamp ? formatDate(timestamp, locale) : t('catalogSyncStatus.never')}</Text>
               </View>;
@@ -85,6 +93,9 @@ const themedStyles = () => StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 12 },
   border: { borderBottomWidth: 1, borderBottomColor: colors.border },
   iconBox: { width: 34, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accentLight },
+  iconBoxFallback: { borderWidth: 1, borderColor: colors.border },
+  storeLogo: { width: 28, height: 28 },
+  storeInitials: { fontFamily: fonts.bold, fontSize: 11, color: colors.accent },
   storeName: { flex: 1, fontFamily: fonts.semibold, fontSize: 14, color: colors.ink },
   date: { maxWidth: '49%', textAlign: 'right', fontFamily: fonts.medium, fontSize: 12, lineHeight: 17, color: colors.inkSoft },
 });

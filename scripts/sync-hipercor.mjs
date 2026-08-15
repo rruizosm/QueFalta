@@ -210,7 +210,7 @@ async function main() {
     await upsert('hipercor_categories', categories);
     await upsert('hipercor_products', rows);
     await markStale({ url: SUPABASE_URL, key: KEY, table: 'hipercor_categories', runStart });
-    await markStale({ url: SUPABASE_URL, key: KEY, store: 'hipercor' });
+    await markStale({ url: SUPABASE_URL, key: KEY, table: 'hipercor_products', runStart });
     await recordCatalogSync({ url: SUPABASE_URL, key: KEY, store: 'hipercor' });
   } finally {
     await browser.close();

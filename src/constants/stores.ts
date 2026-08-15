@@ -26,7 +26,7 @@ export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | n
   { key: 'plusfresc', name: 'Plusfresc',     icon: require('../../assets/stores/plusfresc.png') },
   // Gadisline no publica un kit de marca descargable. Se muestra el nombre hasta
   // que incorporemos un logo autorizado al bundle.
-  { key: 'gadis',     name: 'Gadis',         icon: null },
+  { key: 'gadis',     name: 'Gadis',         icon: require('../../assets/stores/gadis.webp') },
   // Se muestra el nombre mientras se incorpora un logotipo con licencia al bundle.
   { key: 'froiz',     name: 'Froiz',         icon: null },
   // Se muestra el nombre mientras se incorpora un logotipo con licencia al bundle.

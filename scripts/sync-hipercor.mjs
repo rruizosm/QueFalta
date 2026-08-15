@@ -24,16 +24,17 @@ const runStart = new Date().toISOString();
 // Cada raíz ya incluye todos sus descendientes. Así evitamos recorrer las
 // mismas referencias desde cada subcategoría y mantenemos el crawl estable.
 const ROOT_CATEGORIES = [
-  ['alimentacion', 'Alimentación'],
-  ['desayunos-dulces-y-pan', 'Desayunos, dulces y pan'],
-  ['lacteos', 'Lácteos'],
-  ['congelados', 'Congelados'],
-  ['bebidas', 'Bebidas'],
-  ['frescos', 'Frescos'],
-  ['bebes', 'Bebés'],
-  ['cuidado-personal-y-belleza', 'Cuidado personal y belleza'],
-  ['drogueria-y-limpieza', 'Droguería y limpieza'],
-  ['mascotas', 'Mascotas'],
+  { id: 'alimentacion', path: 'alimentacion', name: 'Alimentación' },
+  // Esta familia usa una ruta de listado distinta de su landing editorial.
+  { id: 'desayunos-dulces-y-pan', path: 'desayunos-dulces-y-pan/desayunos-dulces-y-pan', name: 'Desayunos, dulces y pan' },
+  { id: 'lacteos', path: 'lacteos', name: 'Lácteos' },
+  { id: 'congelados', path: 'congelados', name: 'Congelados' },
+  { id: 'bebidas', path: 'bebidas', name: 'Bebidas' },
+  { id: 'frescos', path: 'frescos', name: 'Frescos' },
+  { id: 'bebes', path: 'bebes', name: 'Bebés' },
+  { id: 'cuidado-personal-y-belleza', path: 'cuidado-personal-y-belleza', name: 'Cuidado personal y belleza' },
+  { id: 'drogueria-y-limpieza', path: 'drogueria-y-limpieza', name: 'Droguería y limpieza' },
+  { id: 'mascotas', path: 'mascotas', name: 'Mascotas' },
 ];
 
 if (!DRY && (!SUPABASE_URL || !KEY)) throw new Error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE (o usa DRY_RUN=1)');
@@ -75,7 +76,11 @@ async function assertCatalogPage(page, label) {
   if (/request could not be satisfied|access denied|human verification/i.test(`${title}\n${body}`)) {
     throw new Error(`Akamai/WAF bloqueo ${label}: ${title || 'respuesta sin titulo'}`);
   }
-  await page.locator('li[data-type="item"][data-pagination]').first().waitFor({ state: 'attached', timeout: NAV_TIMEOUT });
+  try {
+    await page.locator('li[data-type="item"][data-pagination]').first().waitFor({ state: 'attached', timeout: NAV_TIMEOUT });
+  } catch {
+    throw new Error(`no se encontró el listado de productos en ${label}: ${page.url()} (${title || 'sin título'})`);
+  }
 }
 
 async function readPage(page, slug, pageNumber) {
@@ -172,18 +177,19 @@ async function main() {
     const products = new Map();
     const categories = [];
     const centers = new Set();
-    for (const [slug, name] of ROOT_CATEGORIES) {
-      let first = await readPage(page, slug, 1);
+    for (const category of ROOT_CATEGORIES) {
+      const { id, path, name } = category;
+      let first = await readPage(page, path, 1);
       const pages = Math.min(first.totalPages || 1, MAX_PAGES_PER_CATEGORY);
-      categories.push({ id: slug, name, parent_id: null, product_count: 0, published: true, synced_at: runStart });
+      categories.push({ id, name, parent_id: null, product_count: 0, published: true, synced_at: runStart });
       for (const result of [first]) {
         if (result.centerId) centers.add(result.centerId);
-        for (const product of result.products) products.set(product.id, normalize(product, slug, name, result.centerId));
+        for (const product of result.products) products.set(product.id, normalize(product, id, name, result.centerId));
       }
       for (let number = 2; number <= pages; number++) {
-        const result = await readPage(page, slug, number);
+        const result = await readPage(page, path, number);
         if (result.centerId) centers.add(result.centerId);
-        for (const product of result.products) products.set(product.id, normalize(product, slug, name, result.centerId));
+        for (const product of result.products) products.set(product.id, normalize(product, id, name, result.centerId));
       }
       console.log(`[hipercor] ${name}: ${pages} páginas · ${products.size} productos únicos`);
       await sleep(100);

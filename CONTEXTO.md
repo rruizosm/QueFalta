@@ -3,6 +3,23 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
+## Hipercor (pendiente de migrar y primer sync, 2026-08-15)
+
+- Añadido el espejo de catálogo público de **Hipercor**: migración
+  `hipercor_catalog.sql`, `scripts/sync-hipercor.mjs` y workflow diario
+  `sync-hipercor.yml`. Recorre las diez raíces públicas y todas sus páginas SSR
+  con Google Chrome; incluye precio, precio por unidad, disponibilidad, novedades
+  y promociones explícitas, y sólo despublica después del guardarraíl de 10.000
+  productos.
+- Akamai bloquea Chromium de Playwright en GitHub Actions; tanto la POC como el
+  sync usan el canal `PW_CHANNEL=chrome`, ya validado en el runner. El script
+  no inicia sesión ni usa dirección/cesta: guarda el surtido del centro público
+  observado en `raw.centerId`. No presentar estos precios como personalizados
+  por código postal hasta implementar la normalización por centro.
+- Antes del primer sync real: ejecutar `hipercor_catalog.sql` en Supabase. La
+  integración en el cliente y la comparativa se incorporarán después de validar
+  ese primer catálogo completo.
+
 ## Gadisline (pendiente de migrar y primer sync, 2026-08-14)
 
 ## Estado de sincronización de catálogos (pendiente de migrar, 2026-08-14)

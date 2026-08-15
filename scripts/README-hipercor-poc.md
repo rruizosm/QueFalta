@@ -1,7 +1,7 @@
 # POC de Hipercor
 
 `poc-hipercor.mjs` comprueba si el catalogo publico de Hipercor puede leerse de
-forma estable desde Chromium. Es deliberadamente de solo lectura: no usa
+forma estable desde Google Chrome. Es deliberadamente de solo lectura: no usa
 Supabase y no escribe ningun fichero salvo que se pase `HIPERCOR_OUTPUT`.
 
 ## Prueba rapida
@@ -10,8 +10,8 @@ Supabase y no escribe ningun fichero salvo que se pase `HIPERCOR_OUTPUT`.
 PW_CHANNEL=chrome MAX_PAGES=2 MIN_PRODUCTS=40 node scripts/poc-hipercor.mjs
 ```
 
-En CI se instala Chromium de Playwright y no hace falta `PW_CHANNEL`. En local,
-si no se quiere usar Chrome, ejecutar antes `npx playwright install chromium`.
+En CI se usa Google Chrome con `PW_CHANNEL=chrome`: Chromium de Playwright fue
+bloqueado por Akamai. En local se recomienda el mismo canal.
 
 Por defecto recorre `/supermercado/alimentacion/`. Otra categoria:
 

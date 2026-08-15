@@ -13,7 +13,7 @@ import { markStale } from './lib/stale.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
 
 const BASE = 'https://www.hipercor.es';
-const URL = process.env.SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL;
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL;
 const KEY = process.env.SUPABASE_SERVICE_ROLE;
 const DRY = process.env.DRY_RUN === '1';
 const MIN_PRODUCTS = positiveInteger(process.env.MIN_PRODUCTS, 10_000);
@@ -36,7 +36,7 @@ const ROOT_CATEGORIES = [
   ['mascotas', 'Mascotas'],
 ];
 
-if (!DRY && (!URL || !KEY)) throw new Error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE (o usa DRY_RUN=1)');
+if (!DRY && (!SUPABASE_URL || !KEY)) throw new Error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE (o usa DRY_RUN=1)');
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const chunks = (rows, size) => Array.from({ length: Math.ceil(rows.length / size) }, (_, index) => rows.slice(index * size, index * size + size));
@@ -154,7 +154,7 @@ function normalize(product, slug, categoryName, centerId) {
 
 async function upsert(table, rows) {
   for (const batch of chunks(rows, 100)) {
-    const response = await fetch(`${URL}/rest/v1/${table}`, {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
       method: 'POST',
       headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify(batch),
@@ -195,9 +195,9 @@ async function main() {
     if (rows.length < MIN_PRODUCTS) throw new Error(`solo ${rows.length} productos (< ${MIN_PRODUCTS}); posible catálogo parcial`);
     await upsert('hipercor_categories', categories);
     await upsert('hipercor_products', rows);
-    await markStale({ url: URL, key: KEY, table: 'hipercor_categories', runStart });
-    await markStale({ url: URL, key: KEY, table: 'hipercor_products', runStart });
-    await recordCatalogSync({ url: URL, key: KEY, store: 'hipercor' });
+    await markStale({ url: SUPABASE_URL, key: KEY, table: 'hipercor_categories', runStart });
+    await markStale({ url: SUPABASE_URL, key: KEY, store: 'hipercor' });
+    await recordCatalogSync({ url: SUPABASE_URL, key: KEY, store: 'hipercor' });
   } finally {
     await browser.close();
   }

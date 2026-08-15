@@ -1,0 +1,30 @@
+name: Sync Hipercor catalog
+
+on:
+  schedule:
+    - cron: '40 4 * * *'
+  workflow_dispatch: {}
+
+concurrency:
+  group: sync-hipercor
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Comprobar Chrome disponible
+        run: google-chrome --version
+      - run: node scripts/sync-hipercor.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          PW_CHANNEL: chrome
+          MIN_PRODUCTS: '10000'

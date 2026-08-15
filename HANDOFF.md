@@ -12,6 +12,16 @@
 
 ---
 
+## Hipercor (pendiente de migrar y primer sync, 2026-08-15)
+
+- La POC terminó correctamente en GitHub Actions con Google Chrome. El sync
+  completo queda en `scripts/sync-hipercor.mjs`, con workflow diario
+  `sync-hipercor.yml` y esquema `supabase/migrations/hipercor_catalog.sql`.
+- Ejecutar primero la migración y luego el workflow manual. El guardarraíl
+  exige 10.000 productos antes de modificar Supabase. El catálogo representa
+  únicamente el centro público sin CP/dirección; aún no añadir Hipercor al
+  cliente, filtros ni comparativa hasta validar ese primer run.
+
 ## Actualización Fase 3 (2026-08-14)
 
 Desplegada y verificada en Supabase, todavía sin commit local:

@@ -70,7 +70,7 @@ function chromeUserAgent(version) {
   return `Mozilla/5.0 (${platform}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${version} Safari/537.36`;
 }
 
-async function assertCatalogPage(page, label) {
+async function assertCatalogPage(page, label, allowEmpty = false) {
   const title = await page.title().catch(() => '');
   const body = await page.locator('body').innerText().catch(() => '');
   if (/request could not be satisfied|access denied|human verification/i.test(`${title}\n${body}`)) {
@@ -78,7 +78,9 @@ async function assertCatalogPage(page, label) {
   }
   try {
     await page.locator('li[data-type="item"][data-pagination]').first().waitFor({ state: 'attached', timeout: NAV_TIMEOUT });
+    return true;
   } catch {
+    if (allowEmpty) return false;
     throw new Error(`no se encontró el listado de productos en ${label}: ${page.url()} (${title || 'sin título'})`);
   }
 }
@@ -89,7 +91,8 @@ async function readPage(page, slug, pageNumber) {
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded' });
-      await assertCatalogPage(page, `${slug} página ${pageNumber}`);
+      const hasProducts = await assertCatalogPage(page, `${slug} página ${pageNumber}`, pageNumber > 1);
+      if (!hasProducts) return { products: [], centerId: null, declaredCount: null, totalPages: null, empty: true };
       return await page.evaluate(() => {
         const text = document.body.innerText || '';
         const declared = text.match(/\(\s*([\d.]+)\s*\)/)?.[1];
@@ -116,7 +119,7 @@ async function readPage(page, slug, pageNumber) {
             isNew: /\bnovedad\b/i.test(card.innerText),
           };
         }).filter((product) => product.id && product.name);
-        return { products, centerId, declaredCount: declared ? Number(declared.replace(/\./g, '')) : null, totalPages: pagination?.totalPages || null };
+        return { products, centerId, declaredCount: declared ? Number(declared.replace(/\./g, '')) : null, totalPages: pagination?.totalPages || null, empty: false };
       });
     } catch (error) {
       lastError = error;
@@ -188,6 +191,11 @@ async function main() {
       }
       for (let number = 2; number <= pages; number++) {
         const result = await readPage(page, path, number);
+        if (result.empty) {
+          if (number !== pages) throw new Error(`${name}: página ${number}/${pages} sin productos; posible catálogo parcial`);
+          console.warn(`[hipercor] ${name}: Hipercor anuncia una última página vacía (${number}); se omite`);
+          break;
+        }
         if (result.centerId) centers.add(result.centerId);
         for (const product of result.products) products.set(product.id, normalize(product, id, name, result.centerId));
       }

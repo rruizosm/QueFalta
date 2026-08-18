@@ -24,11 +24,8 @@ export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | n
   { key: 'hiperdino', name: 'HiperDino',     icon: require('../../assets/stores/hiperdino.jpg') },
   { key: 'alcampo',   name: 'Alcampo',       icon: require('../../assets/stores/alcampo.png') },
   { key: 'plusfresc', name: 'Plusfresc',     icon: require('../../assets/stores/plusfresc.png') },
-  // Gadisline no publica un kit de marca descargable. Se muestra el nombre hasta
-  // que incorporemos un logo autorizado al bundle.
-  { key: 'gadis',     name: 'Gadis',         icon: require('../../assets/stores/gadis.webp') },
-  // Se muestra el nombre mientras se incorpora un logotipo con licencia al bundle.
-  { key: 'froiz',     name: 'Froiz',         icon: null },
+  { key: 'gadis',     name: 'Gadis',         icon: require('../../assets/stores/gadis.png') },
+  { key: 'froiz',     name: 'Froiz',         icon: require('../../assets/stores/froiz.jpg') },
   // Se muestra el nombre mientras se incorpora un logotipo con licencia al bundle.
   { key: 'ahorramas', name: 'Ahorramás',     icon: null },
 ];

@@ -26,6 +26,7 @@ import { useNotifications } from '../context/NotificationsContext';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
+import { useCart } from '../context/CartContext';
 import { joinGroup } from '../api/groups';
 import {
   addNotificationResponseListener,
@@ -45,6 +46,7 @@ import CatalogStoresScreen from '../screens/CatalogStoresScreen';
 import AppearanceScreen from '../screens/AppearanceScreen';
 import LanguageScreen from '../screens/LanguageScreen';
 import HistoryScreen from '../screens/HistoryScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
 import StatisticsScreen from '../screens/StatisticsScreen';
 import FriendsScreen from '../screens/FriendsScreen';
 import HelpScreen from '../screens/HelpScreen';
@@ -91,10 +93,6 @@ const GroupsStack  = createNativeStackNavigator<GroupsStackParamList>();
 
 export const navigationRef = createNavigationContainerRef<RootTabParamList>();
 
-/** Tiempo mínimo que se ve el BootLoader (logo + animación de carga) al aparecer
- *  un usuario: arranque con sesión cacheada y, sobre todo, inicio de sesión. */
-const BOOT_MIN_MS = 350;
-
 /** Tope del arranque: las llamadas de sesión/perfil van SIN timeout, así que con
  *  la red colgada (típico en Android al abrir la app mientras renegocia Wi-Fi/
  *  datos) `booting` no se apagaría nunca y el logo quedaba clavado hasta matar
@@ -128,6 +126,7 @@ function HomeNavigator() {
       <HomeStack.Screen name="Appearance" component={AppearanceScreen} />
       <HomeStack.Screen name="Language" component={LanguageScreen} />
       <HomeStack.Screen name="History" component={HistoryScreen} />
+      <HomeStack.Screen name="Notifications" component={NotificationsScreen} />
       <HomeStack.Screen name="Statistics" component={StatisticsScreen} />
       <HomeStack.Screen name="Friends" component={FriendsScreen} />
       <HomeStack.Screen name="Help" component={HelpScreen} />
@@ -201,7 +200,15 @@ export default function Navigation() {
   const { show: showToast } = useToast();
   const { profile, loading: profileLoading } = useProfile();
   const { unreadCount } = useNotifications();
+  const { hydrated: cartHydrated } = useCart();
   const userId = session?.user.id;
+  // Si esta instancia ya ha mostrado el login, una sesión nueva procede de ese
+  // flujo. Mientras llega su perfil conservamos la misma pantalla y saltamos
+  // directamente al onboarding/app, sin intercalar el BootLoader de arranque.
+  const [loginWasShown, setLoginWasShown] = useState(false);
+  useEffect(() => {
+    if (!loading && !session) setLoginWasShown(true);
+  }, [loading, session]);
   // Solo Android lo necesita: con edge-to-edge dibuja la barra bajo los botones de
   // navegación y, al fijarle una `height` numérica, BottomTabBar deja de reservar
   // ese hueco solo (de ahí el solape). En iOS la barra ya se veía bien con la
@@ -214,19 +221,6 @@ export default function Navigation() {
   // LiquidGlassTabBar). liquidTabBarBottom ya mete la barra dentro del área
   // segura, así que NO se vuelve a sumar insets.bottom.
   const glassTabBarHeight = LIQUID_TABBAR_HEIGHT + liquidTabBarBottom(insets.bottom);
-
-  // Tiempo mínimo muy corto para evitar un flash del BootLoader sin imponer una
-  // espera artificial: si sesión/perfil tardan más, manda su carga real.
-  // El temporizador se re-arma al cambiar userId (login).
-  // Se ancla a userId, así que sin sesión (arranque sin login / logout) no aplica
-  // mínimo: se va al login al instante.
-  const [minTimePassed, setMinTimePassed] = useState(false);
-  useEffect(() => {
-    if (!userId) return;
-    setMinTimePassed(false);
-    const id = setTimeout(() => setMinTimePassed(true), BOOT_MIN_MS);
-    return () => clearTimeout(id);
-  }, [userId]);
 
   useEffect(() => {
     if (!userId) return;
@@ -277,12 +271,11 @@ export default function Navigation() {
     return () => sub.remove();
   }, [userId]);
 
-  // Arranque: mantén el BootLoader visible mientras se resuelve la sesión y, si
-  // la hay, el primer fetch del perfil (evita parpadear el onboarding antes de
-  // saber si onboarded_at existe), o hasta cumplir el tiempo mínimo. Es lo
-  // primero que se renderiza en cada arranque → es quien oculta el splash nativo.
-  const bootingRaw =
-    loading || (!!session && (profileLoading || !minTimePassed));
+  // Arranque: mantén el BootLoader solo mientras se resuelve la sesión inicial
+  // y, con sesión cacheada, su primer perfil. Tras iniciar sesión desde Login,
+  // la propia portada permanece visible durante ese fetch para que el siguiente
+  // frame sea ya onboarding o app, sin una pantalla de marca intermedia.
+  const bootingRaw = loading || (!!session && (profileLoading || !cartHydrated));
 
   // Tope de arranque: si esta fase no acaba en BOOT_MAX_MS (fetch colgado),
   // fuerza la salida. Sin sesión → login (si el refresh llega después,
@@ -300,7 +293,16 @@ export default function Navigation() {
   }, [bootingRaw]);
 
   const booting = bootingRaw && !bootTimedOut;
-  if (booting) return <BootLoader />;
+  if (booting) {
+    if (session && loginWasShown) {
+      return (
+        <NavigationContainer theme={theme}>
+          <LoginScreen />
+        </NavigationContainer>
+      );
+    }
+    return <BootLoader />;
+  }
 
   if (!session) {
     return (

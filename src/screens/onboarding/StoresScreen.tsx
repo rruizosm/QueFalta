@@ -1,4 +1,4 @@
-/** Paso 4 (OBLIGATORIO) — Elegir supermercados del catálogo. Mínimo uno.
+/** Paso 2 (OBLIGATORIO) — Elegir supermercados del catálogo. Mínimo uno.
  *  El grid solo ofrece los súpers disponibles en la comunidad autónoma elegida
  *  en el paso anterior (storeInRegion; con "Toda España" se ven todos) y
  *  empieza sin ninguna selección. Mínimo uno para continuar. */
@@ -65,10 +65,11 @@ export default function StoresScreen() {
 
   return (
     <OnboardingLayout
-      step={5}
-      totalSteps={8}
-      eyebrow={t('onboarding.required')}
+      step={2}
+      totalSteps={5}
       title={t('onboarding.storesTitle')}
+      titleNumberOfLines={1}
+      titleAdjustsFontSizeToFit
       subtitle={t('onboarding.storesSubtitle')}
       onBack={() => navigation.goBack()}
       continueLabel={t('onboarding.continue')}

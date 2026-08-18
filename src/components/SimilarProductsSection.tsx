@@ -27,7 +27,7 @@ const perUnitLabel = (value: number | null, unit: string | null): string | null 
   return label ? `${euro(value)}/${label}` : euro(value);
 };
 
-/** Comparador v3 bajo demanda. Abrir una ficha no lanza ninguna consulta: el
+/** Comparador v5 bajo demanda. Abrir una ficha no lanza ninguna consulta: el
  * usuario decide cuándo buscar y recibe hasta dos matches estrictos por cada
  * supermercado activo. El servidor usa precio total para Caprabo, Eroski e
  * HiperDino y precio unitario canónico para el resto. */

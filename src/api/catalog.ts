@@ -2155,7 +2155,7 @@ export async function fetchPlusfrescProductsByCategory(categoryId: string, posta
   return (data ?? []).map((r: any) => mapPlusfresc(r, postalCode));
 }
 
-// ─── Comparativa: producto similar más barato entre supers (RPC similar_products) ─
+// ─── Comparativa: producto similar más barato entre supers (RPC v5) ───
 export interface SimilarProduct {
   store: CatalogStore;
   /** null en filas bloqueadas (teaser del plan free). */
@@ -2175,7 +2175,9 @@ export interface SimilarProduct {
   locked: boolean;
 }
 
-/** Hasta dos equivalentes fiables por cada tienda de `stores`. Se ordenan por
+/** Hasta dos equivalentes fiables por cada tienda de `stores`. v5 exige la
+ *  misma familia semántica y las mismas variantes explícitas antes de ordenar.
+ *  Se ordenan por
  *  precio total en Caprabo, Eroski e HiperDino (no publican precio por unidad)
  *  y por precio unitario canónico en el resto. La RPC autenticada aplica GTIN
  *  exacto o el umbral híbrido validado; nunca completa el cupo con matches dudosos. */
@@ -2185,7 +2187,7 @@ export async function fetchSimilarProducts(
   stores: CatalogStore[],
 ): Promise<SimilarProduct[]> {
   if (!sourceProductId?.trim() || stores.length === 0) return [];
-  const { data, error } = await supabase.rpc('catalog_cheaper_products_v4', {
+  const { data, error } = await supabase.rpc('catalog_cheaper_products_v5', {
     p_source_store: sourceStore,
     p_source_product_id: sourceProductId,
     p_stores: stores,

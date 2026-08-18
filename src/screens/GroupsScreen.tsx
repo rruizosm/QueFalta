@@ -29,6 +29,7 @@ import PaywallModal from '../components/PaywallModal';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
+import { peekStartupCache, startupKeys, writeStartupCache } from '../lib/startupCache';
 
 // CTA "crear grupo" del estado vacío, con el ancla del tour (paso 1). Es un
 // componente propio para que el ancla se monte/desmonte CON el botón: al crear
@@ -46,8 +47,9 @@ export default function GroupsScreen() {
   const toast = useToast();
   const [activatingId, setActivatingId] = useState<string | null>(null);
 
-  const [groups, setGroups] = useState<GroupSummary[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cachedGroups = userId ? peekStartupCache<GroupSummary[]>(startupKeys.groups(userId)) : null;
+  const [groups, setGroups] = useState<GroupSummary[]>(cachedGroups ?? []);
+  const [loading, setLoading] = useState(cachedGroups === null);
   const [error, setError] = useState(false);
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -59,11 +61,14 @@ export default function GroupsScreen() {
 
   const load = useCallback(() => {
     setError(false);
-    return fetchMyGroups()
-      .then(setGroups)
+    return fetchMyGroups(userId)
+      .then((next) => {
+        setGroups(next);
+        if (userId) writeStartupCache(startupKeys.groups(userId), next);
+      })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, []);
+  }, [userId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 

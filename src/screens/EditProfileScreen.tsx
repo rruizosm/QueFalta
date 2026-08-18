@@ -38,7 +38,6 @@ export default function EditProfileScreen() {
   const isApple = session?.user.app_metadata?.provider === 'apple';
 
   // Prefill instantly from the cached profile (no empty-field flash).
-  const [name, setName]             = useState(profile?.name ?? '');
   const [username, setUsername]     = useState(profile?.username ?? '');
   const [avatarUri, setAvatarUri]   = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl]   = useState<string | null>(profile?.avatarUrl ?? null);
@@ -57,7 +56,6 @@ export default function EditProfileScreen() {
   useEffect(() => {
     if (hydratedRef.current || !profile) return;
     hydratedRef.current = true;
-    setName(profile.name);
     setUsername(profile.username ?? '');
     setAvatarUrl(profile.avatarUrl);
   }, [profile]);
@@ -104,11 +102,9 @@ export default function EditProfileScreen() {
   };
 
   const handleSave = async () => {
-    const trimmedName = name.trim();
     const trimmedUsername = username.trim().toLowerCase();
 
-    if (!trimmedName) { toast.show(t('editProfile.nameEmpty'), 'error'); return; }
-    if (trimmedUsername && !USERNAME_RE.test(trimmedUsername)) {
+    if (!USERNAME_RE.test(trimmedUsername)) {
       toast.show(t('editProfile.usernameRule'), 'error');
       return;
     }
@@ -128,15 +124,13 @@ export default function EditProfileScreen() {
       }
 
       await updateProfile(userId, {
-        name: trimmedName,
-        username: trimmedUsername || null,
+        username: trimmedUsername,
         avatarUrl: finalAvatarUrl,
       });
 
       // Update the shared cache so Perfil reflects changes without a refetch.
       applyProfile({
-        name: trimmedName,
-        username: trimmedUsername || null,
+        username: trimmedUsername,
         avatarUrl: finalAvatarUrl,
       });
 
@@ -219,21 +213,6 @@ export default function EditProfileScreen() {
                 <Ionicons name="trash-outline" size={13} color={colors.inkSoft} />
                 <Text style={styles.photoActionSecondary}>{t('editProfile.remove')}</Text>
               </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Nombre */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>{t('editProfile.nameLabel')}</Text>
-            <View style={styles.inputBox}>
-              <TextInput
-                style={styles.input}
-                value={name}
-                onChangeText={setName}
-                placeholder={t('editProfile.namePlaceholder')}
-                placeholderTextColor={colors.inkFaint}
-                maxLength={50}
-              />
             </View>
           </View>
 

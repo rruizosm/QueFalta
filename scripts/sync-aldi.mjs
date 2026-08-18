@@ -63,25 +63,51 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const chunk = (a, n) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 
 // ── Descarga + parseo del __NEXT_DATA__ de una página ────────────────────────
+// Aldi devuelve ocasionalmente un HTML 200 intermedio (WAF, despliegue o página
+// de error) que no contiene la hidratación de Next. No es una categoría vacía:
+// reintentamos esos 200 igual que un 5xx y dejamos un diagnóstico útil si se
+// agotan los intentos.
+const nextDataFailures = [];
+const NEXT_DATA_RE = /<script\b(?=[^>]*\bid=["']__NEXT_DATA__["'])[^>]*>([\s\S]*?)<\/script>/i;
+
 async function getNextData(path, { tries = 4 } = {}) {
+  let lastReason = 'respuesta sin datos';
   for (let t = 0; t < tries; t++) {
     try {
       const res = await fetch(`${BASE}${path}`, {
-        headers: { 'User-Agent': UA, Accept: 'text/html' },
+        headers: {
+          'User-Agent': UA,
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'es-ES,es;q=0.9',
+          'Cache-Control': 'no-cache',
+        },
         signal: AbortSignal.timeout(30000),
       });
       if (res.ok) {
         const html = await res.text();
-        const m = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
-        if (m) { try { return JSON.parse(m[1]); } catch { /* html parcial */ } }
-        return null; // 200 sin NEXT_DATA (página no-producto)
+        const m = html.match(NEXT_DATA_RE);
+        if (m) {
+          try { return JSON.parse(m[1]); } catch { lastReason = 'JSON de __NEXT_DATA__ inválido'; }
+        } else {
+          lastReason = `HTTP 200 sin __NEXT_DATA__ (${html.length} bytes)`;
+        }
+        // Un 200 sin hidratación no es una hoja vacía. Puede ser una respuesta
+        // transitoria del WAF o una página a medio desplegar.
+        if (t < tries - 1) { await sleep(800 * (t + 1)); continue; }
+        break;
       }
       if ((res.status === 429 || res.status >= 500) && t < tries - 1) { await sleep(800 * (t + 1)); continue; }
-      return null; // 404 u otros → sin datos
+      lastReason = `HTTP ${res.status}`;
+      break;
     } catch (e) {
+      lastReason = e.message;
       if (t < tries - 1) { await sleep(700 * (t + 1)); continue; }
-      console.warn(`[aldi] ${path} falló: ${e.message}`);
     }
+  }
+  // El CMS referencia fragmentos como /productos/carousel.html que no son
+  // categorías reales; sus 404 son esperados y no deben ensuciar el informe.
+  if (lastReason !== 'HTTP 404' || path === '/productos.html') {
+    nextDataFailures.push({ path, reason: lastReason });
   }
   return null;
 }
@@ -102,7 +128,7 @@ const LEAF_RE = /\/productos\/[a-z0-9-]+\/[a-z0-9-]+(?![\/a-z0-9-])/g;
 
 async function enumerateLeaves() {
   const root = await getNextData('/productos.html');
-  if (!root) throw new Error('no se pudo leer /productos.html');
+  if (!root) throw new Error(`no se pudo leer /productos.html (${nextDataFailures.at(-1)?.reason ?? 'sin detalle'})`);
   const n1s = [...new Set([...JSON.stringify(root).matchAll(N1_RE)].map((x) => x[0]))]
     .filter((p) => (p.match(/\//g) || []).length === 2);
   const leaves = new Set();
@@ -258,6 +284,12 @@ async function main() {
   }));
 
   console.log(`[aldi] ${rows.length} productos únicos · ${catRows.length} categorías · ${emptyLeaves} hojas vacías`);
+
+  if (nextDataFailures.length) {
+    const sample = nextDataFailures.slice(0, 5)
+      .map(({ path, reason }) => `${path}: ${reason}`).join('; ');
+    console.warn(`[aldi] ${nextDataFailures.length} páginas sin datos tras reintentos (${sample})`);
+  }
 
   if (DRY_RUN) {
     console.log('muestra (6):');

@@ -30,7 +30,7 @@ interface Item {
   go: () => void;
 }
 
-export default function ProfileChecklistCard({ groupCount }: { groupCount: number }) {
+export default function ProfileChecklistCard({ groupCount }: { groupCount: number | null }) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
@@ -62,7 +62,7 @@ export default function ProfileChecklistCard({ groupCount }: { groupCount: numbe
   }, [dismissKey, userId]));
 
   // Espera a conocer ambos estados para no parpadear.
-  if (dismissed === null || friendCount === null || !profile) return null;
+  if (dismissed === null || friendCount === null || groupCount === null || !profile) return null;
   if (dismissed) return null;
 
   const items: Item[] = [

@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from './AuthContext';
 import { getOrCreateGroupList, addItemsToList, type NewListItem } from '../api/lists';
 import { fetchMyGroups } from '../api/groups';
+import { primeTabCaches, startupKeys, writeStartupCache } from '../lib/startupCache';
 
 // Clave base. El carrito activo se persiste POR USUARIO (`${KEY}:${userId}`)
 // para que NO se filtre entre cuentas del mismo dispositivo. La clave global
@@ -29,6 +30,8 @@ interface CartContextValue {
   loadItemsIntoGroupCart: (groupId: string, groupName: string, items: NewListItem[]) => Promise<void>;
   isActive: (groupId: string) => boolean;
   busy: boolean;
+  /** AsyncStorage del carrito y snapshots de pestañas ya está hidratado. */
+  hydrated: boolean;
 }
 
 const CartContext = createContext<CartContextValue>({
@@ -39,6 +42,7 @@ const CartContext = createContext<CartContextValue>({
   loadItemsIntoGroupCart: async () => {},
   isActive: () => false,
   busy: false,
+  hydrated: false,
 });
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
@@ -51,6 +55,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const [activeCart, setActiveCart] = useState<ActiveCart | null>(null);
   const [busy, setBusy] = useState(false);
+  const [hydratedUserId, setHydratedUserId] = useState<string | null>(null);
 
   const activateCart = async (groupId: string, groupName: string) => {
     if (!userId) return;
@@ -67,7 +72,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // Restore persisted active cart on launch / login.
   useEffect(() => {
-    if (!userId) { setActiveCart(null); return; }
+    if (!userId) { setActiveCart(null); setHydratedUserId(null); return; }
     let cancelled = false;
 
     (async () => {
@@ -84,11 +89,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       // Optimista (la clave ya es por-usuario → en el caso normal es válida).
       setActiveCart(restoredCart);
 
+      // Antes de montar Home, precarga del disco todo lo que consumen las
+      // pestañas. Es lectura local y evita que cada pantalla nazca vacía.
+      await primeTabCaches(userId, restoredCart);
+      if (cancelled) return;
+      setHydratedUserId(userId);
+
       // Valida que siga apuntando a un grupo REAL del usuario: cubre el grupo
       // borrado o del que se salió. Si la red falla, conserva lo guardado.
       if (restoredCart) {
         try {
-          const groups = await fetchMyGroups();
+          const groups = await fetchMyGroups(userId);
+          writeStartupCache(startupKeys.groups(userId), groups);
           if (cancelled) return;
           const ids = new Set(groups.map((g) => g.id));
           if (!ids.has(restoredCart.groupId)) {
@@ -127,11 +139,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const isActive = (groupId: string) => activeCart?.groupId === groupId;
+  // Al cambiar de cuenta, no reutilices durante un render el estado hidratado
+  // de la anterior: el id resuelto debe coincidir con la sesión actual.
+  const hydrated = !userId || hydratedUserId === userId;
 
   return (
     <CartContext.Provider
       value={{
-        activeCart, activateCart, deactivateCart, addToActiveCart, loadItemsIntoGroupCart, isActive, busy,
+        activeCart, activateCart, deactivateCart, addToActiveCart, loadItemsIntoGroupCart, isActive, busy, hydrated,
       }}
     >
       {children}

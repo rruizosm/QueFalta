@@ -47,9 +47,8 @@ export default function GroupScreen() {
 
   return (
     <OnboardingLayout
-      step={8}
-      totalSteps={8}
-      eyebrow={t('onboarding.optional')}
+      step={5}
+      totalSteps={5}
       title={t('onboarding.groupTitle')}
       subtitle={t('onboarding.groupSubtitle')}
       onBack={() => navigation.goBack()}

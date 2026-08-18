@@ -6,12 +6,13 @@ import type { GroupMember } from '../types';
 const WEB_BASE_URL = 'https://quefalta.es';
 
 /** Columnas de perfil que necesita cualquier avatar de miembro. */
-const MEMBER_COLS = 'id, name, initials, color, avatar_url, verified';
+const MEMBER_COLS = 'id, name, username, initials, color, avatar_url, verified';
 
 /** Fila cruda de profiles → GroupMember (avatar_url → avatarUrl). */
 const toMember = (p: any): GroupMember => ({
   id: p.id,
   name: p.name,
+  username: p.username ?? null,
   initials: p.initials,
   color: p.color,
   avatarUrl: p.avatar_url ?? null,
@@ -44,7 +45,9 @@ export interface GroupItem {
 }
 
 /** Groups the current user belongs to, with their member profiles. */
-export async function fetchMyGroups(): Promise<GroupSummary[]> {
+const groupsRequests = new Map<string, Promise<GroupSummary[]>>();
+
+async function requestMyGroups(): Promise<GroupSummary[]> {
   const { data, error } = await supabase
     .from('groups')
     .select(`id, name, created_by, owner_id, created_at, group_members(profiles(${MEMBER_COLS}))`)
@@ -63,6 +66,19 @@ export async function fetchMyGroups(): Promise<GroupSummary[]> {
       .filter(Boolean)
       .map(toMember),
   }));
+}
+
+export function fetchMyGroups(userId?: string): Promise<GroupSummary[]> {
+  // CartContext, Home y Grupos pueden revalidar a la vez durante el arranque.
+  // Comparten la misma petición en vuelo para no triplicar el SELECT pesado.
+  const requestKey = userId ?? '__current_session__';
+  const pending = groupsRequests.get(requestKey);
+  if (pending) return pending;
+  const request = requestMyGroups().finally(() => {
+    if (groupsRequests.get(requestKey) === request) groupsRequests.delete(requestKey);
+  });
+  groupsRequests.set(requestKey, request);
+  return request;
 }
 
 /** Creates a group and adds the creator as its first member. Returns the new group id. */

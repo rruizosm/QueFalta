@@ -635,6 +635,32 @@ de las tablas de embeddings o caché.
 
 ## Referencias
 
+### Endurecimiento de identidad semántica (17 de agosto de 2026)
+
+Los tests de uso encontraron falsos positivos que compartían sabor, unidad y
+contexto de bebida, pero no la familia esencial (por ejemplo, té de limón frente
+a gaseosa de limón). Subir el umbral global no resuelve bien este problema:
+también elimina equivalentes con nombres diferentes.
+
+La RPC local `catalog_cheaper_products_v5` conserva la recuperación híbrida y
+la caché v3, pero filtra antes de ordenar por precio mediante dos señales
+deterministas:
+
+- familia esencial normalizada (`tea`, `soft_drink`, `juice`, `yogurt`,
+  especies de carne/pescado, limpieza e higiene, entre otras);
+- variantes explícitas normalizadas (sabores, sin azúcar, sin alcohol, sin gas,
+  integral, descafeinado, picante, ahumado, etc.).
+
+Si una sola parte tiene una familia reconocible o las variantes explícitas no
+coinciden, el par no se muestra. GTIN global idéntico y una aprobación humana
+explícita conservan prioridad. La categoría de origen no decide la familia,
+porque los árboles no están homologados y contienen asignaciones inconsistentes.
+La normalización léxica también unifica variantes ortográficas conocidas como
+`burger`/`burguer`/`hamburguesa`, sin convertirlas en una familia global: así un
+pan de hamburguesa puede recuperar panes equivalentes, mientras que salsa,
+queso y carne siguen sujetos a sus filtros de identidad.
+La migración está preparada y probada con `ROLLBACK`, pendiente de despliegue.
+
 - [COMPARATIVA.md](COMPARATIVA.md): especificación actual del comparador.
 - [Supabase: búsqueda semántica](https://supabase.com/docs/guides/ai/semantic-search).
 - [Supabase: pgvector](https://supabase.com/docs/guides/database/extensions/pgvector).

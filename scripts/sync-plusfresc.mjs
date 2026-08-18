@@ -43,6 +43,7 @@
 //      SKIP_DETAIL=1        (no tocar la ficha; preserva la existente)
 //      DETAIL_CONCURRENCY=6 DETAIL_TTL_DAYS=30 DETAIL_MAX=N (tope fichas/run)
 //      PRODUCT_UPSERT_BATCH=50 (filas por escritura de productos en Supabase)
+//      PLUSFRESC_API_TRIES=8 (reintentos para cortes temporales de la API/WAF)
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
@@ -58,6 +59,7 @@ const DETAIL_CONCURRENCY = Number(process.env.DETAIL_CONCURRENCY || 6);
 const DETAIL_TTL_DAYS = Number(process.env.DETAIL_TTL_DAYS || 30);
 const DETAIL_MAX = process.env.DETAIL_MAX ? Number(process.env.DETAIL_MAX) : Infinity;
 const PRODUCT_UPSERT_BATCH = Number(process.env.PRODUCT_UPSERT_BATCH || 50);
+const API_TRIES = Math.max(1, Number(process.env.PLUSFRESC_API_TRIES || 8) || 8);
 
 // GUARDARRAÍL: el catálogo vivo ronda los 7.3k productos; menos de esto = scrape
 // parcial (WAF/API rota) → abortar para que markStale no despublique el catálogo.
@@ -75,6 +77,14 @@ const runStart = new Date().toISOString();
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const chunk = (a, n) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
+const httpError = (message, retryable) => Object.assign(new Error(message), { retryable });
+const retryDelay = (res, attempt) => {
+  const retryAfter = Number(res?.headers?.get('retry-after'));
+  if (Number.isFinite(retryAfter) && retryAfter > 0) return retryAfter * 1000;
+  // Un 522 es Cloudflare esperando al origen: una espera progresiva de hasta
+  // 30 s es más útil que bombardear loginGuest de inmediato.
+  return Math.min(2000 * 2 ** attempt, 30000);
+};
 
 // ── Sesión: JWT de invitado (30 min) ─────────────────────────────────────────
 const tokens = new Map();
@@ -83,7 +93,7 @@ async function login(center) {
     method: 'POST', headers: { 'User-Agent': UA, 'Content-Length': '0' },
     signal: AbortSignal.timeout(30000),
   });
-  if (!res.ok) throw new Error(`loginGuest ${res.status}`);
+  if (!res.ok) throw httpError(`loginGuest ${res.status}`, res.status === 429 || res.status >= 500);
   const j = await res.json(); // el body es el JWT como string JSON
   if (typeof j !== 'string' || !j) throw new Error('loginGuest sin token');
   tokens.set(center, j);
@@ -91,7 +101,7 @@ async function login(center) {
 
 // GET a la API con el token de invitado y reintentos: 401 (token caducado) →
 // re-login; 429/5xx → backoff.
-async function apiGet(path, center = CENTER, { tries = 4, allowNotFound = false } = {}) {
+async function apiGet(path, center = CENTER, { tries = API_TRIES, allowNotFound = false } = {}) {
   for (let t = 0; t < tries; t++) {
     try {
       if (!tokens.get(center)) await login(center);
@@ -104,12 +114,25 @@ async function apiGet(path, center = CENTER, { tries = 4, allowNotFound = false 
       // ausencia permanente, no un error transitorio: no reintentarla ni
       // ensuciar el log del sync.
       if (res.status === 404 && allowNotFound) return null;
-      if (res.status === 401 && t < tries - 1) { tokens.delete(center); await sleep(400); continue; }
-      if ((res.status === 429 || res.status >= 500) && t < tries - 1) { await sleep(1500 * (t + 1)); continue; }
-      throw new Error(`HTTP ${res.status}`);
+      if (res.status === 401 && t < tries - 1) {
+        tokens.delete(center);
+        console.warn(`[plusfresc] GET ${path}: HTTP 401; renovando invitado (intento ${t + 1}/${tries})`);
+        await sleep(400);
+        continue;
+      }
+      if ((res.status === 429 || res.status >= 500) && t < tries - 1) {
+        const delay = retryDelay(res, t);
+        console.warn(`[plusfresc] GET ${path}: HTTP ${res.status}; reintento ${t + 1}/${tries} en ${Math.ceil(delay / 1000)} s`);
+        await sleep(delay);
+        continue;
+      }
+      throw httpError(`HTTP ${res.status}`, false);
     } catch (e) {
+      if (e.retryable === false) throw new Error(`GET ${path}: ${e.message}`);
       if (t === tries - 1) throw new Error(`GET ${path}: ${e.message}`);
-      await sleep(1000 * (t + 1));
+      const delay = retryDelay(null, t);
+      console.warn(`[plusfresc] GET ${path}: ${e.message}; reintento ${t + 1}/${tries} en ${Math.ceil(delay / 1000)} s`);
+      await sleep(delay);
     }
   }
 }

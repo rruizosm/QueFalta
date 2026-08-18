@@ -2270,9 +2270,12 @@ function mirrorToUIAtLocation(store: CatalogStore, row: any, region: RegionValue
 const WEEK_WINDOW_DAYS = 8;
 const weekAgoISO = () => new Date(Date.now() - WEEK_WINDOW_DAYS * 86_400_000).toISOString();
 
-// Más novedades que esto en una semana no son novedades: es el PRIMER llenado
-// de la tabla (súper recién estrenado o backfill) → se oculta el lote entero.
+// Un lote grande puede ser un primer llenado o backfill. El número por sí solo
+// no basta: Aldi puede acumular varios syncs semanales y tener más de 400 altas
+// reales sin que represente todo su catálogo. Solo se oculta si el lote supone
+// prácticamente el catálogo publicado entero.
 const NEW_INITIAL_FILL_CAP = 400;
+const NEW_INITIAL_FILL_CATALOG_RATIO = 0.75;
 
 export interface WeeklyNewProductsPage {
   items: UIProduct[];
@@ -2305,17 +2308,59 @@ export async function fetchWeeklyNewProducts(
     .from(m.table)
     .select(m.cols, { count: 'exact' })
     .eq('published', true), store, region, postalCode);
-  // Gadisline publica una propiedad explícita «Nuevo». La usamos además de la
-  // fecha de primera aparición, así el primer sync no oculta novedades reales.
-  newProductsQuery = store === 'gadis'
+  // Gadisline y Froiz publican una propiedad explícita «Nuevo». La usamos
+  // además de la fecha de primera aparición, así el primer sync no oculta
+  // novedades reales.
+  newProductsQuery = store === 'gadis' || store === 'froiz'
     ? newProductsQuery.or(`first_seen_at.gte.${weekAgoISO()},is_new.eq.true`)
     : newProductsQuery.gte('first_seen_at', weekAgoISO());
-  const { data, error, count } = await newProductsQuery
+  let { data, error, count } = await newProductsQuery
     .order('first_seen_at', { ascending: false })
     .order('display_name', { ascending: true })
     .range(offset, offset + limit - 1);
   if (error) throw error;
-  if (store !== 'gadis' && (count ?? 0) > NEW_INITIAL_FILL_CAP) return { items: [], nextOffset: null };
+
+  // El primer sync de Froiz fechó todo el catálogo a la vez. Mientras ese lote
+  // siga dentro de la ventana semanal, first_seen_at no distingue novedades;
+  // su API sí publica is_new, así que usamos exclusivamente esa señal.
+  if (store === 'froiz') {
+    const [{ count: recentCount, error: recentCountError }, { count: publishedCount, error: publishedCountError }] = await Promise.all([
+      filterMirrorLocation(
+        supabase.from(m.table).select('id', { count: 'exact', head: true })
+          .eq('published', true).gte('first_seen_at', weekAgoISO()),
+        store, region, postalCode,
+      ),
+      filterMirrorLocation(
+        supabase.from(m.table).select('id', { count: 'exact', head: true }).eq('published', true),
+        store, region, postalCode,
+      ),
+    ]);
+    if (recentCountError) throw recentCountError;
+    if (publishedCountError) throw publishedCountError;
+    if (publishedCount != null && ((recentCount ?? 0) / publishedCount) >= NEW_INITIAL_FILL_CATALOG_RATIO) {
+      ({ data, error, count } = await filterMirrorLocation(
+        supabase.from(m.table).select(m.cols, { count: 'exact' }).eq('published', true).eq('is_new', true),
+        store, region, postalCode,
+      )
+        .order('first_seen_at', { ascending: false })
+        .order('display_name', { ascending: true })
+        .range(offset, offset + limit - 1));
+      if (error) throw error;
+    }
+  }
+
+  if (store !== 'gadis' && (count ?? 0) > NEW_INITIAL_FILL_CAP) {
+    const { count: publishedCount, error: publishedCountError } = await filterMirrorLocation(
+      supabase.from(m.table).select('id', { count: 'exact', head: true }).eq('published', true),
+      store,
+      region,
+      postalCode,
+    );
+    if (publishedCountError) throw publishedCountError;
+    if (publishedCount != null && ((count ?? 0) / publishedCount) >= NEW_INITIAL_FILL_CATALOG_RATIO) {
+      return { items: [], nextOffset: null };
+    }
+  }
   return {
     items: (data ?? []).map((r: any) => mirrorToUIAtLocation(store, r, region, postalCode)),
     nextOffset: (count ?? 0) > offset + limit ? offset + limit : null,

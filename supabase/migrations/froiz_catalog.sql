@@ -16,6 +16,7 @@ create table if not exists public.froiz_products (
   brand text, thumbnail text, category_id text, category_name text, category_ids text[] not null default '{}',
   unit_price numeric, price_format text, price_per_unit numeric, price_per_unit_unit text,
   promo_name text, promo_text text, promo_price numeric, promo_base_price numeric, promo_start date, promo_end date,
+  is_new boolean not null default false,
   available boolean not null default true, published boolean not null default true, raw jsonb not null,
   synced_at timestamptz not null default now(), first_seen_at timestamptz not null default now(),
   prev_unit_price numeric, price_changed_at timestamptz, price_delta_pct numeric,

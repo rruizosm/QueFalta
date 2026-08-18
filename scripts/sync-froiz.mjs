@@ -82,6 +82,9 @@ const normalize = (p) => {
     promo_price: p.offer?.price != null ? money(p.offer.price) : null,
     promo_base_price: base != null && price != null && base > price ? base : null,
     promo_start: p.offer?.date_from || null, promo_end: p.offer?.date_to || null,
+    // Froiz publica esta señal de forma explícita; permite mostrar novedades
+    // reales incluso antes de que exista un segundo sync para first_seen_at.
+    is_new: p.is_new === true || Boolean(p.novelty),
     available: p.enabled !== false, published: p.enabled !== false, raw: p, synced_at: runStart,
   };
 };

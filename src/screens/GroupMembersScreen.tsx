@@ -27,6 +27,8 @@ import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 
 type MembersRouteProp = RouteProp<GroupsStackParamList, 'GroupMembers'>;
 
+const memberLabel = (member: GroupMember) => member.username ? `@${member.username}` : member.name;
+
 export default function GroupMembersScreen() {
   const styles = useThemedStyles(themedStyles);
   const reducedMotion = useReducedMotion();
@@ -70,7 +72,7 @@ export default function GroupMembersScreen() {
     try {
       await transferGroupAdmin(groupId, member.id);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show(t('group.transferred', { name: member.name }));
+      toast.show(t('group.transferred', { name: memberLabel(member) }));
       load();
     } catch {
       toast.show(t('group.transferError'), 'error');
@@ -85,7 +87,7 @@ export default function GroupMembersScreen() {
     try {
       await removeGroupMember(groupId, member.id);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show(t('group.removed', { name: member.name }));
+      toast.show(t('group.removed', { name: memberLabel(member) }));
       load();
     } catch {
       toast.show(t('group.removeError'), 'error');
@@ -226,7 +228,7 @@ export default function GroupMembersScreen() {
                   <View style={styles.memberInfo}>
                     <View style={styles.memberNameRow}>
                       <Text style={styles.memberName} numberOfLines={1}>
-                        {m.name}{isMe ? t('group.meSuffix') : ''}
+                        {memberLabel(m)}{isMe ? t('group.meSuffix') : ''}
                       </Text>
                       {m.verified ? <VerifiedBadge size={14} /> : null}
                     </View>
@@ -306,7 +308,7 @@ export default function GroupMembersScreen() {
             >
               <View style={styles.sheetHeader}>
                 <UserAvatar avatarUrl={actionMember.avatarUrl} initials={actionMember.initials} color={actionMember.color} size={40} />
-                <Text style={styles.sheetTitle} numberOfLines={1}>{actionMember.name}</Text>
+                <Text style={styles.sheetTitle} numberOfLines={1}>{memberLabel(actionMember)}</Text>
                 {actionMember.verified ? <VerifiedBadge size={16} /> : null}
               </View>
 

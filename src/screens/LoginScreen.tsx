@@ -1,7 +1,8 @@
-import React, { type ComponentProps, useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Image,
+  Animated,
+  Easing,
   Keyboard,
   KeyboardAvoidingView,
   Linking,
@@ -15,39 +16,64 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { Image } from 'expo-image';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import Svg, { Path } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { colors } from '../constants/colors';
-import { CATALOG_STORES } from '../constants/stores';
+import { CATALOG_STORES, prefetchStoreIcons } from '../constants/stores';
 import { fonts } from '../constants/typography';
 import { useAuth } from '../context/AuthContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import HardShadow from '../components/HardShadow';
 
 const LOGO = require('../../assets/quefalta-logo-blue.png');
 const TERMS_URL = 'https://quefalta.es/condiciones';
 const PRIVACY_URL = 'https://quefalta.es/privacidad';
 
-const FEATURES: {
-  icon: ComponentProps<typeof Ionicons>['name'];
-  labelKey:
-    | 'login.sharedCartTitle'
-    | 'login.newTitle'
-    | 'login.offersTitle'
-    | 'login.pricesTitle';
-}[] = [
-  { icon: 'people-outline', labelKey: 'login.sharedCartTitle' },
-  { icon: 'sparkles-outline', labelKey: 'login.newTitle' },
-  { icon: 'pricetag-outline', labelKey: 'login.offersTitle' },
-  { icon: 'swap-vertical-outline', labelKey: 'login.pricesTitle' },
+const FALLING_STORES = [
+  ...CATALOG_STORES.filter((store) => store.icon != null),
+  { key: 'hipercor', icon: require('../../assets/stores/hipercor.png') },
 ];
+
+const LOGO_SLOTS = [
+  { left: '4%',  top: '4%',  size: 54, rotate: '-8deg' },
+  { left: '27%', top: '1%',  size: 46, rotate: '5deg' },
+  { left: '48%', top: '7%',  size: 58, rotate: '-3deg' },
+  { left: '76%', top: '2%',  size: 48, rotate: '8deg' },
+  { left: '13%', top: '34%', size: 48, rotate: '5deg' },
+  { left: '36%', top: '29%', size: 56, rotate: '-7deg' },
+  { left: '65%', top: '34%', size: 52, rotate: '4deg' },
+  { left: '84%', top: '30%', size: 43, rotate: '-5deg' },
+  { left: '1%',  top: '65%', size: 46, rotate: '7deg' },
+  { left: '21%', top: '62%', size: 55, rotate: '-4deg' },
+  { left: '45%', top: '67%', size: 46, rotate: '6deg' },
+  { left: '65%', top: '61%', size: 57, rotate: '-6deg' },
+  { left: '87%', top: '64%', size: 42, rotate: '4deg' },
+  { left: '7%',  top: '55%', size: 43, rotate: '3deg' },
+  { left: '76%', top: '52%', size: 45, rotate: '-3deg' },
+  { left: '2%',  top: '81%', size: 43, rotate: '-5deg' },
+  { left: '36%', top: '50%', size: 46, rotate: '4deg' },
+  { left: '84%', top: '80%', size: 42, rotate: '-4deg' },
+] as const;
+
+const CLOUD_SLOTS = [
+  { left: '14%', top: '5%', scale: 0.40 },
+  { left: '5%', top: '14%', scale: 0.62 },
+  { left: '72%', top: '17%', scale: 0.46 },
+  { left: '58%', top: '49%', scale: 0.58 },
+  { left: '8%', top: '74%', scale: 0.42 },
+] as const;
 
 export default function LoginScreen() {
   const styles = useThemedStyles(themedStyles);
-  const { fontScale } = useWindowDimensions();
+  const { fontScale, height, width } = useWindowDimensions();
   const largeText = fontScale >= 1.6;
+  const reducedMotion = useReducedMotion();
+  const heroHeight = height < 720 ? 300 : Math.min(370, height * 0.43);
   const insets = useSafeAreaInsets();
   const bottomPad = Platform.OS === 'android'
     ? Math.max(insets.bottom + 12, 28)
@@ -69,9 +95,11 @@ export default function LoginScreen() {
   const [providerError, setProviderError] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const emailInputRef = useRef<TextInput>(null);
+  const logoProgress = useRef(LOGO_SLOTS.map(() => new Animated.Value(0))).current;
+  const logoFloat = useRef(LOGO_SLOTS.map(() => new Animated.Value(0))).current;
 
   const revealEmailInput = useCallback(() => {
-    // Espera a que el panel se haya montado y a la animaciÃ³n del teclado: asÃ­
+    // Espera a que el panel se haya montado y a la animación del teclado: así
     // el campo queda por encima del teclado tanto en iOS como en Android.
     requestAnimationFrame(() => {
       emailInputRef.current?.focus();
@@ -85,6 +113,52 @@ export default function LoginScreen() {
       .then(setAppleAvailable)
       .catch(() => setAppleAvailable(false));
   }, []);
+
+  useEffect(() => {
+    prefetchStoreIcons();
+
+    if (reducedMotion) {
+      logoProgress.forEach((progress) => progress.setValue(1));
+      logoFloat.forEach((float) => float.setValue(0));
+      return;
+    }
+
+    logoProgress.forEach((progress) => progress.setValue(0));
+    logoFloat.forEach((float) => float.setValue(0));
+    const animation = Animated.stagger(
+      65,
+      logoProgress.map((progress) => Animated.spring(progress, {
+        toValue: 1,
+        damping: 14,
+        stiffness: 125,
+        mass: 0.8,
+        useNativeDriver: true,
+      })),
+    );
+    const floatingAnimations = logoFloat.map((float, index) => Animated.loop(
+      Animated.sequence([
+        Animated.delay(index * 85),
+        Animated.timing(float, {
+          toValue: 1,
+          duration: 1650 + (index % 4) * 180,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+        Animated.timing(float, {
+          toValue: 0,
+          duration: 1650 + (index % 4) * 180,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ]),
+    ));
+    animation.start();
+    floatingAnimations.forEach((floatingAnimation) => floatingAnimation.start());
+    return () => {
+      animation.stop();
+      floatingAnimations.forEach((floatingAnimation) => floatingAnimation.stop());
+    };
+  }, [logoFloat, logoProgress, reducedMotion]);
 
   useEffect(() => {
     if (!authCallbackError) return;
@@ -159,249 +233,298 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+      <StatusBar barStyle="light-content" backgroundColor={colors.accent} />
 
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-      <ScrollView
-        ref={scrollViewRef}
-        showsVerticalScrollIndicator={false}
-        bounces={false}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingTop: insets.top + 10, paddingBottom: bottomPad },
-        ]}
-      >
-        <View style={styles.content}>
-          <View style={styles.brand}>
-            <View style={styles.logoBox}>
-              <Image source={LOGO} resizeMode="contain" style={styles.logo} accessible={false} />
-            </View>
-            <Text style={styles.brandName} maxFontSizeMultiplier={2}>QuéFalta</Text>
-          </View>
-
-          <View style={styles.heroCard}>
-            <View pointerEvents="none" style={styles.heroOrbLarge} />
-            <View pointerEvents="none" style={styles.heroOrbSmall} />
-
-            <View style={[styles.heroHeading, largeText && styles.heroHeadingLarge]}>
-              <Text style={styles.title} maxFontSizeMultiplier={2}>{t('login.title')}</Text>
-              {!largeText && <View style={styles.heroIcon}>
-                <Ionicons name="basket-outline" size={30} color="#ffffff" />
-              </View>}
-            </View>
-
-            <View style={[styles.featurePanel, largeText && styles.featurePanelLarge]}>
-              {FEATURES.map((feature) => (
-                <View key={feature.labelKey} style={[styles.featureItem, largeText && styles.featureItemLarge]}>
-                  <View style={styles.featureIcon}>
-                    <Ionicons name={feature.icon} size={17} color="#ffffff" />
+        <ScrollView
+          ref={scrollViewRef}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.scrollContent}
+        >
+          <View style={[styles.hero, { minHeight: heroHeight, paddingTop: insets.top + 10 }]}>
+            <View style={styles.heroInner}>
+              <View style={styles.cloudLayer} pointerEvents="none" accessible={false}>
+                {CLOUD_SLOTS.map((cloud, index) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.cloud,
+                      {
+                        left: cloud.left,
+                        top: cloud.top,
+                        transform: [{ scale: cloud.scale }],
+                      },
+                    ]}
+                  >
+                    <View style={styles.cloudBase} />
+                    <View style={styles.cloudPuffLeft} />
+                    <View style={styles.cloudPuffCenter} />
+                    <View style={styles.cloudPuffRight} />
                   </View>
-                  <Text style={styles.featureLabel} maxFontSizeMultiplier={2}>{t(feature.labelKey)}</Text>
+                ))}
+              </View>
+              <View style={styles.logoStage} pointerEvents="none" accessible={false}>
+                {FALLING_STORES.map((store, index) => {
+                  const slot = LOGO_SLOTS[index];
+                  const progress = logoProgress[index];
+                  return (
+                    <Animated.View
+                      key={store.key}
+                      style={[
+                        styles.fallingLogoCard,
+                        {
+                          left: slot.left,
+                          top: slot.top,
+                          width: slot.size,
+                          height: slot.size,
+                          opacity: progress,
+                          transform: [
+                            {
+                              translateY: progress.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [-220 - (index % 4) * 28, 0],
+                              }),
+                            },
+                            {
+                              translateY: logoFloat[index].interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0, -5 - (index % 3)],
+                              }),
+                            },
+                            { rotate: slot.rotate },
+                            {
+                              scale: progress.interpolate({
+                                inputRange: [0, 0.78, 1],
+                                outputRange: [0.78, 1.04, 1],
+                              }),
+                            },
+                          ],
+                        },
+                      ]}
+                    >
+                      <Image
+                        source={store.icon!}
+                        contentFit="contain"
+                        transition={0}
+                        style={styles.fallingLogo}
+                        accessible={false}
+                      />
+                    </Animated.View>
+                  );
+                })}
+              </View>
+            </View>
+            <Svg
+              pointerEvents="none"
+              width={width}
+              height={96}
+              viewBox={`0 0 ${width} 96`}
+              style={styles.heroCurve}
+            >
+              <Path d={`M 0 96 Q ${width / 2} 0 ${width} 96 L ${width} 96 L 0 96 Z`} fill={colors.paper} />
+            </Svg>
+            <View style={styles.heroBrand}>
+              <View style={styles.brand}>
+                <View style={styles.logoBox}>
+                  <Image source={LOGO} contentFit="contain" style={styles.logo} accessible={false} />
                 </View>
-              ))}
+                <Text style={styles.brandName} maxFontSizeMultiplier={2}>QuéFalta</Text>
+              </View>
             </View>
           </View>
 
-          <View style={styles.storeCard}>
-            <View style={styles.storeHeader}>
-              <Text style={styles.storeTitle} maxFontSizeMultiplier={2}>{t('login.storesTitle')}</Text>
-              <View style={styles.storeCount}>
-                <Text style={styles.storeCountText}>{CATALOG_STORES.length}</Text>
-              </View>
-            </View>
-
-            <View style={styles.storeLogos}>
-              {CATALOG_STORES.map((store) => (
-                <View key={store.key} style={styles.storeLogoBox}>
-                  {store.icon != null && (
-                    <Image source={store.icon} resizeMode="contain" style={styles.storeLogo} accessible={false} />
-                  )}
+          <View style={[styles.authContent, largeText && styles.authContentLarge, { paddingBottom: bottomPad }]}>
+            <Text
+              style={styles.valueTitle}
+              maxFontSizeMultiplier={2}
+              numberOfLines={2}
+              adjustsFontSizeToFit
+              minimumFontScale={0.76}
+            >
+              {t('login.valueTitle')}
+            </Text>
+            <View style={styles.actions}>
+              {providerError && (
+                <View style={styles.providerFeedback} accessibilityRole="alert">
+                  <Ionicons name="alert-circle-outline" size={17} color={colors.red} />
+                  <Text style={styles.providerFeedbackText}>{t('login.providerError')}</Text>
                 </View>
-              ))}
-            </View>
-          </View>
+              )}
 
-          <View style={styles.actions}>
-            {providerError && (
-              <View style={styles.providerFeedback} accessibilityRole="alert">
-                <Ionicons name="alert-circle-outline" size={17} color={colors.red} />
-                <Text style={styles.providerFeedbackText}>{t('login.providerError')}</Text>
-              </View>
-            )}
+              {appleAvailable && (
+                <TouchableOpacity
+                  onPress={handleAppleSignIn}
+                  disabled={busy !== null}
+                  activeOpacity={0.85}
+                  accessibilityRole="button"
+                >
+                  <HardShadow
+                    style={busy !== null
+                      ? { ...styles.appleButton, ...styles.buttonDisabled }
+                      : styles.appleButton}
+                  >
+                    {busy === 'apple' ? (
+                      <ActivityIndicator color="#ffffff" size="small" />
+                    ) : (
+                      <>
+                        <Ionicons name="logo-apple" size={19} color="#ffffff" />
+                        <Text style={styles.appleButtonText}>{t('login.continueApple')}</Text>
+                      </>
+                    )}
+                  </HardShadow>
+                </TouchableOpacity>
+              )}
 
-            {appleAvailable && (
               <TouchableOpacity
-                onPress={handleAppleSignIn}
+                onPress={handleGoogleSignIn}
                 disabled={busy !== null}
                 activeOpacity={0.85}
                 accessibilityRole="button"
               >
                 <HardShadow
                   style={busy !== null
-                    ? { ...styles.appleButton, ...styles.buttonDisabled }
-                    : styles.appleButton}
+                    ? { ...styles.googleButton, ...styles.buttonDisabled }
+                    : styles.googleButton}
                 >
-                  {busy === 'apple' ? (
-                    <ActivityIndicator color="#ffffff" size="small" />
+                  {busy === 'google' ? (
+                    <ActivityIndicator color={colors.ink} size="small" />
                   ) : (
                     <>
-                      <Ionicons name="logo-apple" size={19} color="#ffffff" />
-                      <Text style={styles.appleButtonText}>{t('login.continueApple')}</Text>
+                      <Text style={styles.googleIcon}>G</Text>
+                      <Text style={styles.googleButtonText}>{t('login.continueGoogle')}</Text>
                     </>
                   )}
                 </HardShadow>
               </TouchableOpacity>
-            )}
 
-            <TouchableOpacity
-              onPress={handleGoogleSignIn}
-              disabled={busy !== null}
-              activeOpacity={0.85}
-              accessibilityRole="button"
-            >
-              <HardShadow
-                style={busy !== null
-                  ? { ...styles.googleButton, ...styles.buttonDisabled }
-                  : styles.googleButton}
+              <TouchableOpacity
+                onPress={() => {
+                  if (emailExpanded) {
+                    Keyboard.dismiss();
+                    setEmailExpanded(false);
+                  } else {
+                    setEmailExpanded(true);
+                    revealEmailInput();
+                  }
+                  setEmailError(null);
+                }}
+                disabled={busy !== null}
+                activeOpacity={0.85}
+                accessibilityRole="button"
+                accessibilityState={{ expanded: emailExpanded }}
               >
-                {busy === 'google' ? (
-                  <ActivityIndicator color={colors.ink} size="small" />
-                ) : (
-                  <>
-                    <Text style={styles.googleIcon}>G</Text>
-                    <Text style={styles.googleButtonText}>{t('login.continueGoogle')}</Text>
-                  </>
-                )}
-              </HardShadow>
-            </TouchableOpacity>
+                <HardShadow
+                  style={busy !== null
+                    ? { ...styles.emailToggleButton, ...styles.buttonDisabled }
+                    : styles.emailToggleButton}
+                >
+                  <Ionicons name="mail-outline" size={19} color={colors.accent} />
+                  <Text style={styles.emailToggleText}>{t('login.continueEmail')}</Text>
+                  <Ionicons
+                    name={emailExpanded ? 'chevron-up' : 'chevron-down'}
+                    size={17}
+                    color={colors.inkSoft}
+                  />
+                </HardShadow>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => {
-                if (emailExpanded) {
-                  Keyboard.dismiss();
-                  setEmailExpanded(false);
-                } else {
-                  setEmailExpanded(true);
-                  revealEmailInput();
-                }
-                setEmailError(null);
-              }}
-              disabled={busy !== null}
-              activeOpacity={0.85}
-              accessibilityRole="button"
-              accessibilityState={{ expanded: emailExpanded }}
-            >
-              <HardShadow
-                style={busy !== null
-                  ? { ...styles.emailToggleButton, ...styles.buttonDisabled }
-                  : styles.emailToggleButton}
-              >
-                <Ionicons name="mail-outline" size={19} color={colors.blue} />
-                <Text style={styles.emailToggleText}>{t('login.continueEmail')}</Text>
-                <Ionicons
-                  name={emailExpanded ? 'chevron-up' : 'chevron-down'}
-                  size={17}
-                  color={colors.inkSoft}
-                />
-              </HardShadow>
-            </TouchableOpacity>
+              {emailExpanded && (
+                <View style={styles.emailPanel}>
+                  <Text style={styles.emailHint}>{t('login.emailHint')}</Text>
+                  <TextInput
+                    ref={emailInputRef}
+                    value={email}
+                    onChangeText={(value) => {
+                      setEmail(value);
+                      setEmailSent(false);
+                      setEmailError(null);
+                    }}
+                    onSubmitEditing={() => {
+                      if (busy === null && !emailSent) handleEmailSignIn();
+                    }}
+                    onFocus={() => {
+                      setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 180);
+                    }}
+                    editable={busy === null}
+                    placeholder={t('login.emailPlaceholder')}
+                    placeholderTextColor={colors.inkSoft}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    autoComplete="email"
+                    textContentType="emailAddress"
+                    returnKeyType="send"
+                    style={[styles.emailInput, emailErrorText ? styles.emailInputError : null]}
+                    accessibilityLabel={t('login.emailPlaceholder')}
+                  />
 
-            {emailExpanded && (
-              <View style={styles.emailPanel}>
-                <Text style={styles.emailHint}>{t('login.emailHint')}</Text>
-                <TextInput
-                  ref={emailInputRef}
-                  value={email}
-                  onChangeText={(value) => {
-                    setEmail(value);
-                    setEmailSent(false);
-                    setEmailError(null);
-                  }}
-                  onSubmitEditing={() => {
-                    if (busy === null && !emailSent) handleEmailSignIn();
-                  }}
-                  onFocus={() => {
-                    setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 180);
-                  }}
-                  editable={busy === null}
-                  placeholder={t('login.emailPlaceholder')}
-                  placeholderTextColor={colors.inkSoft}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  autoComplete="email"
-                  textContentType="emailAddress"
-                  returnKeyType="send"
-                  style={[styles.emailInput, emailErrorText ? styles.emailInputError : null]}
-                  accessibilityLabel={t('login.emailPlaceholder')}
-                />
-
-                {emailErrorText && (
-                  <View style={styles.emailFeedbackRow}>
-                    <Ionicons name="alert-circle-outline" size={16} color={colors.red} />
-                    <Text style={styles.emailErrorText}>{emailErrorText}</Text>
-                  </View>
-                )}
-
-                {emailSent ? (
-                  <View style={styles.emailSuccess}>
-                    <Ionicons name="checkmark-circle" size={21} color={colors.ok} />
-                    <View style={styles.emailSuccessCopy}>
-                      <Text style={styles.emailSuccessTitle}>{t('login.emailSentTitle')}</Text>
-                      <Text style={styles.emailSuccessText}>
-                        {t('login.emailSentText', { email: email.trim() })}
-                      </Text>
+                  {emailErrorText && (
+                    <View style={styles.emailFeedbackRow}>
+                      <Ionicons name="alert-circle-outline" size={16} color={colors.red} />
+                      <Text style={styles.emailErrorText}>{emailErrorText}</Text>
                     </View>
-                  </View>
-                ) : (
-                  <TouchableOpacity
-                    onPress={handleEmailSignIn}
-                    disabled={busy !== null}
-                    activeOpacity={0.85}
-                    accessibilityRole="button"
-                  >
-                    <HardShadow
-                      style={busy !== null
-                        ? { ...styles.emailButton, ...styles.buttonDisabled }
-                        : styles.emailButton}
-                    >
-                      {busy === 'email' ? (
-                        <ActivityIndicator color="#ffffff" size="small" />
-                      ) : (
-                        <Text style={styles.emailButtonText}>{t('login.sendMagicLink')}</Text>
-                      )}
-                    </HardShadow>
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
+                  )}
 
-            <Text style={styles.legal}>
-              {t('login.legalPrefix')}
-              <Text
-                style={styles.legalLink}
-                accessibilityRole="link"
-                onPress={() => openLegalUrl(TERMS_URL)}
-              >
-                {t('login.terms')}
+                  {emailSent ? (
+                    <View style={styles.emailSuccess}>
+                      <Ionicons name="checkmark-circle" size={21} color={colors.ok} />
+                      <View style={styles.emailSuccessCopy}>
+                        <Text style={styles.emailSuccessTitle}>{t('login.emailSentTitle')}</Text>
+                        <Text style={styles.emailSuccessText}>
+                          {t('login.emailSentText', { email: email.trim() })}
+                        </Text>
+                      </View>
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={handleEmailSignIn}
+                      disabled={busy !== null}
+                      activeOpacity={0.85}
+                      accessibilityRole="button"
+                    >
+                      <HardShadow
+                        style={busy !== null
+                          ? { ...styles.emailButton, ...styles.buttonDisabled }
+                          : styles.emailButton}
+                      >
+                        {busy === 'email' ? (
+                          <ActivityIndicator color="#ffffff" size="small" />
+                        ) : (
+                          <Text style={styles.emailButtonText}>{t('login.sendMagicLink')}</Text>
+                        )}
+                      </HardShadow>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
+
+              <Text style={styles.legal}>
+                {t('login.legalPrefix')}
+                <Text
+                  style={styles.legalLink}
+                  accessibilityRole="link"
+                  onPress={() => openLegalUrl(TERMS_URL)}
+                >
+                  {t('login.terms')}
+                </Text>
+                {t('login.legalMiddle')}
+                <Text
+                  style={styles.legalLink}
+                  accessibilityRole="link"
+                  onPress={() => openLegalUrl(PRIVACY_URL)}
+                >
+                  {t('login.privacyPolicy')}
+                </Text>
+                {t('login.legalSuffix')}
               </Text>
-              {t('login.legalMiddle')}
-              <Text
-                style={styles.legalLink}
-                accessibilityRole="link"
-                onPress={() => openLegalUrl(PRIVACY_URL)}
-              >
-                {t('login.privacyPolicy')}
-              </Text>
-              {t('login.legalSuffix')}
-            </Text>
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );
@@ -417,192 +540,152 @@ const themedStyles = () => StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 16,
+    backgroundColor: colors.paper,
   },
-  content: {
+  hero: {
+    position: 'relative',
+    overflow: 'visible',
+    paddingHorizontal: 18,
+    backgroundColor: colors.accent,
+  },
+  heroInner: {
+    flex: 1,
     width: '100%',
-    maxWidth: 520,
+    maxWidth: 620,
     alignSelf: 'center',
+    overflow: 'hidden',
   },
   brand: {
+    alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingHorizontal: 2,
+  },
+  heroBrand: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: -19,
+    alignItems: 'center',
+    zIndex: 3,
   },
   logoBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: 42,
+    height: 42,
+    borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.accentLight,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   logo: {
-    width: 38,
-    height: 34,
+    width: 36,
+    height: 32,
   },
   brandName: {
-    fontSize: 20,
+    fontSize: 21,
     fontFamily: fonts.bold,
     color: colors.ink,
     letterSpacing: -0.3,
   },
-  heroCard: {
+  logoStage: {
+    flex: 1,
     position: 'relative',
-    overflow: 'hidden',
-    marginTop: 18,
-    padding: 18,
-    borderRadius: 26,
-    backgroundColor: colors.blue,
+    minHeight: 215,
+    zIndex: 1,
   },
-  heroOrbLarge: {
+  cloudLayer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 0,
+  },
+  cloud: {
     position: 'absolute',
-    top: -54,
-    right: -34,
-    width: 156,
-    height: 156,
-    borderRadius: 78,
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    width: 68,
+    height: 28,
+    opacity: 0.24,
   },
-  heroOrbSmall: {
+  cloudBase: {
     position: 'absolute',
-    top: 57,
-    right: 55,
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-  },
-  heroHeading: {
-    minHeight: 68,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 14,
-  },
-  heroHeadingLarge: { minHeight: 0, alignItems: 'flex-start' },
-  title: {
-    flex: 1,
-    maxWidth: 310,
-    fontSize: 29,
-    lineHeight: 33,
-    fontFamily: fonts.bold,
-    color: '#ffffff',
-    letterSpacing: -0.9,
-  },
-  heroIcon: {
-    width: 58,
-    height: 58,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.28)',
-    backgroundColor: 'rgba(255,255,255,0.16)',
-  },
-  featurePanel: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 17,
-    padding: 11,
-    rowGap: 10,
-    columnGap: 8,
-    borderRadius: 19,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.20)',
-    backgroundColor: 'rgba(255,255,255,0.12)',
-  },
-  featurePanelLarge: { flexDirection: 'column' },
-  featureItem: {
-    width: '48%',
-    minHeight: 31,
-    flexGrow: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  featureItemLarge: { width: '100%', minHeight: 44 },
-  featureIcon: {
-    width: 29,
-    height: 29,
-    flexShrink: 0,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.17)',
-  },
-  featureLabel: {
-    flex: 1,
-    fontSize: 12,
-    lineHeight: 15,
-    fontFamily: fonts.semibold,
-    color: '#ffffff',
-  },
-  storeCard: {
-    marginTop: 14,
-    padding: 14,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
-  },
-  storeHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  storeTitle: {
-    flex: 1,
-    minWidth: 0,
-    textAlign: 'center',
-    fontSize: 15,
-    fontFamily: fonts.bold,
-    color: colors.ink,
-  },
-  storeCount: {
-    minWidth: 27,
-    height: 22,
-    paddingHorizontal: 7,
-    borderRadius: 11,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.accentLight,
-  },
-  storeCountText: {
-    fontSize: 11,
-    lineHeight: 14,
-    fontFamily: fonts.bold,
-    color: colors.accent,
-  },
-  storeLogos: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 11,
-    gap: 7,
-  },
-  storeLogoBox: {
-    width: 37,
-    height: 37,
+    left: 4,
+    bottom: 0,
+    width: 60,
+    height: 16,
     borderRadius: 12,
-    padding: 5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
     backgroundColor: '#ffffff',
   },
-  storeLogo: {
+  cloudPuffLeft: {
+    position: 'absolute',
+    left: 10,
+    bottom: 7,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
+  },
+  cloudPuffCenter: {
+    position: 'absolute',
+    left: 23,
+    bottom: 10,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#ffffff',
+  },
+  cloudPuffRight: {
+    position: 'absolute',
+    left: 43,
+    bottom: 6,
+    width: 21,
+    height: 21,
+    borderRadius: 11,
+    backgroundColor: '#ffffff',
+  },
+  fallingLogoCard: {
+    position: 'absolute',
+    padding: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(43,37,33,0.10)',
+    borderRadius: 16,
+    backgroundColor: '#ffffff',
+  },
+  fallingLogo: {
     width: '100%',
     height: '100%',
   },
+  heroCurve: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+  },
+  authContent: {
+    width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
+    marginTop: 0,
+    paddingTop: 0,
+    paddingHorizontal: 20,
+    zIndex: 2,
+  },
+  authContentLarge: {
+    marginTop: 0,
+  },
+  valueTitle: {
+    maxWidth: 500,
+    alignSelf: 'center',
+    marginTop: 42,
+    fontSize: 27,
+    lineHeight: 31,
+    fontFamily: fonts.bold,
+    color: colors.ink,
+    letterSpacing: -0.8,
+    textAlign: 'center',
+  },
   actions: {
     gap: 10,
-    marginTop: 16,
+    marginTop: 14,
   },
   providerFeedback: {
     flexDirection: 'row',

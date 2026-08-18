@@ -179,6 +179,7 @@ export interface ShoppingList {
 export interface GroupMember {
   id: string;
   name: string;
+  username?: string | null;
   initials: string;
   color: string;
   avatarUrl?: string | null;
@@ -254,6 +255,7 @@ export type HomeStackParamList = {
   Appearance: undefined;
   Language: undefined;
   History: undefined;
+  Notifications: undefined;
   Statistics: undefined;
   Friends: undefined;
   Help: undefined;
@@ -382,14 +384,11 @@ export type GroupsStackParamList = {
 };
 
 /** Asistente de bienvenida (primera vez). Se muestra cuando hay sesión pero el
- *  perfil aún no tiene onboarded_at. Empieza por el idioma (Language), luego
- *  pasos obligatorios (Username, Region, Stores) y opcionales (Avatar, Friends,
- *  Group). Ver src/screens/onboarding/. */
+ *  perfil aún no tiene onboarded_at. Empieza por el @usuario, seguido de los
+ *  pasos obligatorios (Region, Stores) y opcionales (Avatar, Friends, Group).
+ *  Ver src/screens/onboarding/. */
 export type OnboardingStackParamList = {
-  Language: undefined;
-  Name: undefined;
   Username: undefined;
-  Region: undefined;
   Stores: undefined;
   Avatar: undefined;
   Friends: undefined;

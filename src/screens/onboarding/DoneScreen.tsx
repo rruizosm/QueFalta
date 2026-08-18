@@ -17,11 +17,9 @@ export default function DoneScreen() {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
   const { session } = useAuth();
-  const { profile, applyProfile } = useProfile();
+  const { applyProfile } = useProfile();
   const toast = useToast();
   const userId = session?.user.id ?? '';
-  const firstName = profile?.name?.split(' ')[0];
-
   const [saving, setSaving] = useState(false);
 
   const finish = async () => {
@@ -40,7 +38,7 @@ export default function DoneScreen() {
 
   return (
     <OnboardingLayout
-      title={firstName ? t('onboarding.doneTitleNamed', { name: firstName }) : t('onboarding.doneTitle')}
+      title={t('onboarding.doneTitle')}
       subtitle={t('onboarding.doneSubtitle')}
       continueLabel={t('onboarding.doneCta')}
       continueLoading={saving}

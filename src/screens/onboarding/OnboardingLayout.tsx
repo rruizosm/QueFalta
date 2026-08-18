@@ -23,8 +23,10 @@ import GlassSurface, { glassAvailable } from '../../components/GlassSurface';
 interface Props {
   step?: number;
   totalSteps?: number;
-  eyebrow?: string;
   title: ReactNode;
+  hideTitle?: boolean;
+  titleNumberOfLines?: number;
+  titleAdjustsFontSizeToFit?: boolean;
   subtitle?: string;
   children?: ReactNode;
   onBack?: () => void;
@@ -39,8 +41,10 @@ interface Props {
 export default function OnboardingLayout({
   step,
   totalSteps,
-  eyebrow,
   title,
+  hideTitle = false,
+  titleNumberOfLines,
+  titleAdjustsFontSizeToFit = false,
   subtitle,
   children,
   onBack,
@@ -131,13 +135,16 @@ export default function OnboardingLayout({
         keyboardDismissMode="on-drag"
       >
         <View style={[styles.shell, { width: shellWidth }]}>
-          {eyebrow ? (
-            <View style={styles.eyebrowPill}>
-              <View style={styles.eyebrowDot} />
-              <Text style={styles.eyebrow}>{eyebrow}</Text>
-            </View>
+          {!hideTitle ? (
+            <Text
+              style={styles.title}
+              numberOfLines={titleNumberOfLines}
+              adjustsFontSizeToFit={titleAdjustsFontSizeToFit}
+              minimumFontScale={0.72}
+            >
+              {title}
+            </Text>
           ) : null}
-          <Text style={styles.title}>{title}</Text>
           {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
           {children ? <View style={styles.body}>{children}</View> : null}
         </View>
@@ -198,24 +205,6 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'center',
   },
   shell: { flexGrow: 1 },
-  eyebrowPill: {
-    alignSelf: 'flex-start',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: colors.accentLight,
-    marginBottom: 12,
-  },
-  eyebrowDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.accent },
-  eyebrow: {
-    fontSize: 11,
-    fontFamily: fonts.bold,
-    color: colors.accent,
-    textTransform: 'uppercase',
-  },
   title: {
     fontSize: 29,
     lineHeight: 34,

@@ -17,7 +17,9 @@
 //   MERCADONA_WHS           opcional, lista CSV de almacenes a barrer. Si se omite,
 //                           se resuelven dinámicamente (1 CP por provincia).
 //   MERCADONA_MAX_WHS       opcional, recorta la lista de almacenes (debug).
-//   CONCURRENCY             opcional, subcategorías en paralelo por almacén (def 4).
+//   CONCURRENCY             opcional, subcategorías en paralelo por almacén (def 3).
+//   MAX_CATEGORY_FAILURE_RATE opcional, máximo porcentaje de N2 fallidas antes de
+//                           abortar sin escribir ni despublicar (def 3%).
 //   DRY_RUN=1               no escribe en Supabase (solo cuenta e informa).
 //
 // Probar en local:  SUPABASE_URL=... SUPABASE_SERVICE_ROLE=... DRY_RUN=1 MERCADONA_MAX_WHS=3 node scripts/sync-catalog.mjs
@@ -33,6 +35,7 @@ const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
 const WHS_ENV = process.env.MERCADONA_WHS;
 const MAX_WHS = process.env.MERCADONA_MAX_WHS ? Number(process.env.MERCADONA_MAX_WHS) : Infinity;
 const CONCURRENCY = Number(process.env.CONCURRENCY || 3);
+const MAX_CATEGORY_FAILURE_RATE = Number(process.env.MAX_CATEGORY_FAILURE_RATE || 0.03);
 const DRY = process.env.DRY_RUN === '1';
 // Pasada de EAN: el código de barras solo está en el DETALLE por producto
 // (/products/{id}/), no en los listados de categoría → pasada aparte, INCREMENTAL
@@ -214,19 +217,6 @@ async function fetchIdsWhere(filter, label) {
   return ids;
 }
 
-async function fetchDetailState() {
-  const [withEan, withNutrition] = await Promise.all([
-    fetchIdsWhere('ean=not.is.null', 'ean'),
-    fetchIdsWhere('nutrition=not.is.null', 'nutrition'),
-  ]);
-  return { withEan, withNutrition };
-}
-
-function mercadonaNutrition(detail) {
-  const table = detail?.product_information?.nutritional_information;
-  return Array.isArray(table) && table.length ? table : null;
-}
-
 async function main() {
   console.log(`[sync] inicio ${runStart}${DRY ? ' (DRY_RUN)' : ''}`);
 
@@ -252,6 +242,8 @@ async function main() {
   //    que aporta un producto fija su `source_wh` (mad1 va primero → los nacionales
   //    quedan con datos de Madrid; los regionales con su almacén de zona).
   const products = new Map();
+  let categoryRequests = 0;
+  let categoryFailures = 0;
   // id → Set de almacenes donde aparece (para la exclusividad regional). Se acumula
   // aunque los DATOS del producto ya los aportara un almacén anterior.
   const whsOfProduct = new Map();
@@ -260,6 +252,7 @@ async function main() {
     await pool(n2, CONCURRENCY, async (sub) => {
       await sleep(40 + Math.random() * 80); // educado con la API
       try {
+        categoryRequests++;
         const detail = await merca(`/categories/${sub.id}/`, 'es', wh);
         for (const group of detail.categories ?? []) {
           for (const p of group.products ?? []) {
@@ -290,10 +283,17 @@ async function main() {
           }
         }
       } catch (e) {
+        categoryFailures++;
         console.warn(`[sync] ${wh} subcategoría ${sub.id} falló: ${e.message}`);
       }
     });
     console.log(`[sync] almacén ${wh}: +${products.size - before} nuevos (total ${products.size})`);
+  }
+
+  const categoryFailureRate = categoryRequests ? categoryFailures / categoryRequests : 1;
+  console.log(`[sync] categorías: ${categoryRequests - categoryFailures}/${categoryRequests} correctas (${categoryFailures} fallidas)`);
+  if (categoryFailureRate > MAX_CATEGORY_FAILURE_RATE) {
+    throw new Error(`Demasiadas subcategorías fallidas (${categoryFailures}/${categoryRequests}, ${(categoryFailureRate * 100).toFixed(1)}%); se aborta antes de escribir o despublicar`);
   }
 
   // 2b) Segunda pasada en CATALÁN (bilingüe): solo en los almacenes de CA_WHS
@@ -353,33 +353,31 @@ async function main() {
   // 4) EAN (para el enriquecimiento nutricional vía OpenFoodFacts por EAN). Solo está
   //    en el detalle por producto (/products/{id}/), que se pide con el source_wh del
   //    producto (los regionales dan 404 en mad1). INCREMENTAL: solo los que aún no lo
-  //    tienen (backfill único + novedades semanales). Va DESPUÉS del upsert de catálogo
+  //    tienen (backfill único + novedades semanales). La nutrición de Mercadona se
+  //    extrae en su workflow específico desde la foto de etiqueta: NO usar su ausencia
+  //    para reencolar miles de fichas en este sync. Va DESPUÉS del upsert de catálogo
   //    para que un fallo/timeout aquí no tire precios; su upsert reenvía display_name+raw
   //    (NOT NULL sin default) y NO unit_price (no disparar el trigger de precios).
   //    SKIP_EAN=1 la salta; EAN_MAX acota el arranque en frío para caber en el timeout.
   if (!SKIP_EAN) {
     try {
-      const { withEan, withNutrition } = await fetchDetailState();
-      const pending = rows.filter((r) => !withEan.has(r.id) || !withNutrition.has(r.id));
+      const withEan = await fetchIdsWhere('ean=not.is.null', 'ean');
+      const pending = rows.filter((r) => !withEan.has(r.id));
       const batch = pending.slice(0, EAN_MAX);
-      console.log(`[sync] detalle: ${withEan.size} con ean · ${withNutrition.size} con nutrition · ${pending.length} pendientes · ${batch.length} a pedir`);
+      console.log(`[sync] detalle EAN: ${withEan.size} con ean · ${pending.length} pendientes · ${batch.length} a pedir`);
       const eanRows = [];
-      const nutritionRows = [];
       let done = 0;
       await pool(batch, EAN_CONCURRENCY, async (r) => {
         await sleep(30 + Math.random() * 50); // educado con la API
         try {
           const d = await merca(`/products/${r.id}/`, 'es', r.source_wh);
-          const nutrition = mercadonaNutrition(d);
-      const ean = validGlobalGtin(d?.ean);
-      if (ean && !withEan.has(r.id)) eanRows.push({ id: r.id, display_name: r.display_name, raw: r.raw, ean });
-          if (nutrition && !withNutrition.has(r.id)) nutritionRows.push({ id: r.id, display_name: r.display_name, raw: r.raw, nutrition });
+          const ean = validGlobalGtin(d?.ean);
+          if (ean && !withEan.has(r.id)) eanRows.push({ id: r.id, display_name: r.display_name, raw: r.raw, ean });
         } catch { /* 404 puntual (producto retirado entre pasadas): se reintenta otro run */ }
-        if (++done % 500 === 0) console.log(`[sync] detalle ${done}/${batch.length} · ${eanRows.length} ean · ${nutritionRows.length} nutrition`);
+        if (++done % 500 === 0) console.log(`[sync] detalle EAN ${done}/${batch.length} · ${eanRows.length} escritos`);
       });
       if (eanRows.length) await upsert('mercadona_products', eanRows);
-      if (nutritionRows.length) await upsert('mercadona_products', nutritionRows);
-      console.log(`[sync] detalle: ${eanRows.length} ean · ${nutritionRows.length} nutrition escritos (${pending.length - batch.length} quedan para el próximo run)`);
+      console.log(`[sync] detalle EAN: ${eanRows.length} escritos (${pending.length - batch.length} quedan para el próximo run)`);
     } catch (e) { console.warn(`[sync] detalle: pasada omitida (${e.message.split('\n')[0]})`); }
   }
 

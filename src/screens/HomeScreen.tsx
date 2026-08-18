@@ -24,7 +24,8 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { fetchMyGroups, fetchGroupItems, type GroupSummary, type GroupItem } from '../api/groups';
+import { fetchMyGroups, type GroupSummary, type GroupItem } from '../api/groups';
+import { fetchListItems } from '../api/lists';
 import { fetchPurchases, fetchPurchaseItems, type Purchase } from '../api/purchases';
 import { favoriteToUI, type UIProduct } from '../lib/productAdapters';
 import { STORE_META } from '../constants/stores';
@@ -38,6 +39,7 @@ import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import ProductImage from '../components/ProductImage';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
+import { peekStartupCache, startupKeys, writeStartupCache } from '../lib/startupCache';
 
 // Snapshot del carrito activo en disco, por usuario+grupo (la clave incluye el
 // userId para no filtrar datos entre cuentas del mismo móvil). Permite pintar
@@ -65,42 +67,55 @@ export default function HomeScreen() {
 
   const userId = profile?.id ?? null;
 
-  const [groups, setGroups] = useState<GroupSummary[]>([]);
-  const [groupsLoading, setGroupsLoading] = useState(true);
-  const [cartItems, setCartItems] = useState<GroupItem[]>([]);
+  const cachedGroups = userId ? peekStartupCache<GroupSummary[]>(startupKeys.groups(userId)) : null;
+  const cachedCartItems = userId && activeCart
+    ? peekStartupCache<GroupItem[]>(startupKeys.listItems(userId, activeCart.listId))
+    : null;
+  const [groups, setGroups] = useState<GroupSummary[]>(cachedGroups ?? []);
+  const [groupsLoading, setGroupsLoading] = useState(cachedGroups === null);
+  const [cartItems, setCartItems] = useState<GroupItem[]>(cachedCartItems ?? []);
   // Grupo cuyos artículos ya hemos traído frescos de la red. Distingue "aún
   // cargando" de "carrito vacío de verdad" sin un flag que haga parpadear
   // "Cargando…" en cada visita. El ref espeja el estado para leerlo dentro de
   // callbacks asíncronos (evita la carrera caché-vs-red al cambiar de carrito).
-  const [loadedGroup, setLoadedGroup] = useState<string | null>(null);
-  const loadedGroupRef = useRef<string | null>(null);
+  const [loadedGroup, setLoadedGroup] = useState<string | null>(cachedCartItems ? activeCart?.groupId ?? null : null);
+  const loadedGroupRef = useRef<string | null>(cachedCartItems ? activeCart?.groupId ?? null : null);
   const [refreshing, setRefreshing] = useState(false);
-  const [lastPurchase, setLastPurchase] = useState<Purchase | null>(null);
+  const cachedPurchase = userId ? peekStartupCache<Purchase>(startupKeys.lastPurchase(userId)) : null;
+  const [lastPurchase, setLastPurchase] = useState<Purchase | null>(cachedPurchase);
   const [repeating, setRepeating] = useState(false);
   // Favoritos en vuelo hacia el carrito (clave `store:id`): pinta el spinner en
   // su tesela y evita el doble toque, sin bloquear el resto del carrusel.
   const [addingFavs, setAddingFavs] = useState<Record<string, boolean>>({});
 
   const load = useCallback(() => {
-    const groupsP = fetchMyGroups()
-      .then(setGroups)
-      .catch(() => setGroups([]))
+    const groupsP = fetchMyGroups(userId ?? undefined)
+      .then((next) => {
+        setGroups(next);
+        if (userId) writeStartupCache(startupKeys.groups(userId), next);
+      })
+      .catch(() => {})
       .finally(() => setGroupsLoading(false));
 
     const purchasesP = fetchPurchases()
-      .then((list) => setLastPurchase(list[0] ?? null))
+      .then((list) => {
+        const next = list[0] ?? null;
+        setLastPurchase(next);
+        if (userId) writeStartupCache(startupKeys.lastPurchase(userId), next);
+      })
       .catch(() => {});
 
     let cartP: Promise<unknown> = Promise.resolve();
     if (activeCart) {
       const { groupId } = activeCart;
-      cartP = fetchGroupItems(groupId)
+      cartP = fetchListItems(activeCart.listId)
         .then((items) => {
           setCartItems(items);
           loadedGroupRef.current = groupId;
           setLoadedGroup(groupId);
           if (userId) {
             AsyncStorage.setItem(cartCacheKey(userId, groupId), JSON.stringify(items)).catch(() => {});
+            writeStartupCache(startupKeys.listItems(userId, activeCart.listId), items);
           }
         })
         .catch(() => {});
@@ -216,7 +231,6 @@ export default function HomeScreen() {
     }
   };
 
-  const firstName = profile?.name?.trim().split(/\s+/)[0] || '';
   const header = (
     <View style={[styles.header, { paddingTop: headerTop }]}>
       <View style={styles.headerTitleWrap}>
@@ -225,7 +239,7 @@ export default function HomeScreen() {
         </View>
         <View style={styles.headerCopy}>
           <Text style={styles.headerTitle} numberOfLines={1}>
-            {firstName ? t('home.greeting', { name: firstName }) : 'QuéFalta'}
+            QuéFalta
           </Text>
           <Text style={styles.headerSubtitle}>{t('home.subtitle')}</Text>
         </View>
@@ -287,7 +301,7 @@ export default function HomeScreen() {
       >
 
         {/* Checklist de pasos opcionales pendientes (se oculta sola al completarlos) */}
-        <ProfileChecklistCard groupCount={groups.length} />
+        <ProfileChecklistCard groupCount={groupsLoading ? null : groups.length} />
 
         {/* Resumen del carrito activo: conserva la carga instantánea desde caché
             y la revalidación en segundo plano que ya gestiona esta pantalla. */}

@@ -68,9 +68,8 @@ export default function FriendsScreen() {
 
   return (
     <OnboardingLayout
-      step={7}
-      totalSteps={8}
-      eyebrow={t('onboarding.optional')}
+      step={4}
+      totalSteps={5}
       title={t('onboarding.friendsTitle')}
       subtitle={t('onboarding.friendsSubtitle')}
       onBack={() => navigation.goBack()}
@@ -137,7 +136,7 @@ const themedStyles = () => StyleSheet.create({
     borderRadius: 18,
   },
   at: { fontSize: 15, fontFamily: fonts.bold, color: colors.inkFaint },
-  input: { flex: 1, fontSize: 14.5, fontFamily: fonts.medium, color: colors.ink, padding: 0 },
+  input: { flex: 1, fontSize: 14.5, fontFamily: fonts.medium, color: colors.ink, padding: 0, letterSpacing: -0.3 },
 
   results: { marginTop: 14, gap: 8 },
   hint: { fontSize: 13, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 6, lineHeight: 18 },

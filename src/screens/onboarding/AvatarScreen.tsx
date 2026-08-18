@@ -66,9 +66,8 @@ export default function AvatarScreen() {
 
   return (
     <OnboardingLayout
-      step={6}
-      totalSteps={8}
-      eyebrow={t('onboarding.optional')}
+      step={3}
+      totalSteps={5}
       title={t('onboarding.avatarTitle')}
       subtitle={t('onboarding.avatarSubtitle')}
       onBack={() => navigation.goBack()}

@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, StatusBar, ActivityIndicator, Alert, Linking,
+  StyleSheet, StatusBar, ActivityIndicator, Linking,
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -12,11 +12,6 @@ import { useTheme, useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
-import {
-  getNotificationsEnabled, setNotificationsEnabled,
-  hasPermission, requestPermission, sendTestNotification,
-  registerForPushNotificationsAsync, unregisterPushNotificationsAsync,
-} from '../lib/notifications';
 import ProfileRow from '../components/ProfileRow';
 import UserAvatar from '../components/UserAvatar';
 import VerifiedBadge from '../components/VerifiedBadge';
@@ -40,10 +35,8 @@ export default function ProfileScreen() {
   const { profile, loading, isPremium } = useProfile();
   const historyLocked = !loading && limitsApply(isPremium);
   const statisticsLocked = !loading && limitsApply(isPremium);
-  const email = session?.user.email ?? '';
   const appVersion = `v${Constants.expoConfig?.version ?? '1.0.0'}`;
 
-  const [notifications, setNotifications] = useState(false);
   const [signOutVisible, setSignOutVisible] = useState(false);
   const [pendingRequests, setPendingRequests] = useState(0);
   const [paywallVisible, setPaywallVisible] = useState(false);
@@ -64,49 +57,10 @@ export default function ProfileScreen() {
     }, [session?.user.id]),
   );
 
-  // Reflect the saved preference (and revoked OS permission) on mount.
-  useEffect(() => {
-    (async () => {
-      const [pref, granted] = await Promise.all([getNotificationsEnabled(), hasPermission()]);
-      setNotifications(pref && granted);
-    })();
-  }, []);
-
-  const handleToggleNotifications = async (value: boolean) => {
-    const uid = session?.user.id;
-    if (!value) {
-      setNotifications(false);
-      await setNotificationsEnabled(false);
-      // Deja de recibir push en este dispositivo.
-      if (uid) unregisterPushNotificationsAsync(uid).catch(() => {});
-      return;
-    }
-
-    const granted = (await hasPermission()) || (await requestPermission());
-    if (!granted) {
-      Alert.alert(
-        t('profile.notifPermTitle'),
-        t('profile.notifPermMsg'),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('profile.openSettings'), onPress: () => Linking.openSettings() },
-        ],
-      );
-      return;
-    }
-
-    setNotifications(true);
-    await setNotificationsEnabled(true);
-    await sendTestNotification();
-    // Registra el push token (no-op en Expo Go/web): así llegan también las push.
-    if (uid) registerForPushNotificationsAsync(uid).catch(() => {});
-  };
-
   const handleSignOut = () => setSignOutVisible(true);
 
   const initials  = profile?.initials ?? '??';
   const avatarBg  = profile?.color   ?? colors.accent;
-  const name      = profile?.name    ?? '';
   const avatarUrl = profile?.avatarUrl ?? null;
 
 
@@ -159,16 +113,14 @@ export default function ProfileScreen() {
               <UserAvatar avatarUrl={avatarUrl} initials={initials} color={avatarBg} size={60} />
             </View>
 
-            {/* Name + email */}
+            {/* Public identity */}
             <View style={styles.identityText}>
               <View style={styles.identityNameRow}>
-                <Text style={styles.identityName} numberOfLines={1}>{name}</Text>
+                {profile?.username ? (
+                  <Text style={styles.identityName} numberOfLines={1}>@{profile.username}</Text>
+                ) : null}
                 {profile?.verified ? <VerifiedBadge size={17} /> : null}
               </View>
-              <Text style={styles.identityEmail} numberOfLines={1} ellipsizeMode="tail">{email}</Text>
-              {profile?.username ? (
-                <Text style={styles.identityUsername}>@{profile.username}</Text>
-              ) : null}
             </View>
 
             {/* Edit button */}
@@ -216,9 +168,7 @@ export default function ProfileScreen() {
             <ProfileRow
               icon="notifications-outline"
               label={t('profile.notifications')}
-              right="switch"
-              switchValue={notifications}
-              onSwitchChange={handleToggleNotifications}
+              onPress={() => navigation.navigate('Notifications')}
               rounded
             />
             <ProfileRow
@@ -398,8 +348,6 @@ const themedStyles = () => StyleSheet.create({
   identityText: { flex: 1, minWidth: 0 },
   identityNameRow: { flexDirection: 'row', alignItems: 'center' },
   identityName: { flexShrink: 1, fontSize: 18, fontFamily: fonts.bold, color: colors.ink },
-  identityEmail: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
-  identityUsername: { fontSize: 12, fontFamily: fonts.medium, color: colors.accent, marginTop: 1 },
   editBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 11, paddingVertical: 8, borderRadius: 14,

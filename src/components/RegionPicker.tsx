@@ -2,9 +2,9 @@
  * RegionPicker — selector de zona por CÓDIGO POSTAL: input de 5 dígitos que
  * deriva y confirma la comunidad autónoma (provincia = 2 primeros dígitos,
  * regionFromPostalCode), más la opción "Toda España" (sentinel 'ES', sin CP)
- * para quien no quiere darlo. Lo comparten el paso de onboarding
- * (RegionScreen), el gate de usuarios existentes (RegionGateScreen) y Ajustes
- * (RegionSettingsScreen). Ver COMUNIDAD-AUTONOMA.md.
+ * para quien no quiere darlo. Lo comparten el primer paso de onboarding
+ * (UsernameScreen), el gate de usuarios existentes (RegionGateScreen) y
+ * Ajustes (RegionSettingsScreen). Ver COMUNIDAD-AUTONOMA.md.
  *
  * Contrato: emite `{ region, postalCode }`. region null = selección incompleta
  * o CP inválido (el padre deshabilita Continuar / no guarda). "Toda España"
@@ -32,9 +32,12 @@ interface Props {
   postalCode: string | null;
   onChange: (next: RegionSelection) => void;
   autoFocus?: boolean;
+  helperText?: string;
+  /** Ajusta los textos que quedan fuera de las tarjetas para fondos oscuros. */
+  inverse?: boolean;
 }
 
-export default function RegionPicker({ region, postalCode, onChange, autoFocus }: Props) {
+export default function RegionPicker({ region, postalCode, onChange, autoFocus, helperText, inverse = false }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
 
@@ -45,6 +48,7 @@ export default function RegionPicker({ region, postalCode, onChange, autoFocus }
   const cpRegion = regionFromPostalCode(cp);
   const invalid = cp.length === 5 && !cpRegion;
   const allOn = region === REGION_ALL && cp.length === 0;
+  const activeColor = inverse ? colors.blue : colors.accent;
 
   const handleCpChange = (text: string) => {
     const digits = text.replace(/\D/g, '').slice(0, 5);
@@ -69,12 +73,17 @@ export default function RegionPicker({ region, postalCode, onChange, autoFocus }
   return (
     <View style={styles.list}>
       {/* Input de código postal */}
-      <View style={[styles.inputBox, invalid && styles.inputBoxError, !!cpRegion && styles.inputBoxOn]}>
-        <View style={styles.iconWrap}>
-          <Ionicons name="location-outline" size={18} color={cpRegion ? colors.accent : colors.inkSoft} />
+      <View style={[
+        styles.inputBox,
+        inverse && styles.surfaceInverse,
+        invalid && styles.inputBoxError,
+        !!cpRegion && (inverse ? styles.surfaceOnInverse : styles.inputBoxOn),
+      ]}>
+        <View style={[styles.iconWrap, inverse && styles.iconWrapInverse]}>
+          <Ionicons name="location-outline" size={18} color={cpRegion ? activeColor : colors.inkSoft} />
         </View>
         <TextInput
-          style={styles.input}
+          style={[styles.input, inverse && styles.inputInverse]}
           value={cp}
           onChangeText={handleCpChange}
           placeholder={t('region.postalCodePlaceholder')}
@@ -84,33 +93,38 @@ export default function RegionPicker({ region, postalCode, onChange, autoFocus }
           autoFocus={autoFocus}
           returnKeyType="done"
         />
-        {cpRegion ? <Ionicons name="checkmark-circle" size={22} color={colors.accent} /> : null}
+        {cpRegion ? <Ionicons name="checkmark-circle" size={22} color={activeColor} /> : null}
       </View>
+      {helperText ? <Text style={[styles.helperText, inverse && styles.inverseText]}>{helperText}</Text> : null}
       {invalid ? <Text style={styles.errorText}>{t('region.postalCodeInvalid')}</Text> : null}
 
       {/* Comunidad derivada (confirmación) */}
       {cpRegion ? (
-        <View style={styles.detected}>
-          <Text style={styles.detectedLabel}>{t('region.detected')}</Text>
-          <Text style={styles.detectedName}>{t(`region.names.${cpRegion}`)}</Text>
+        <View style={[styles.detected, inverse && styles.detectedInverse]}>
+          <Text style={[styles.detectedLabel, inverse && styles.detectedLabelInverse]}>{t('region.detected')}</Text>
+          <Text style={[styles.detectedName, inverse && styles.inverseText]}>{t(`region.names.${cpRegion}`)}</Text>
         </View>
       ) : null}
 
       {/* Escape: sin CP → toda España (sin filtro) */}
-      <Text style={styles.orAll}>{t('region.orAll')}</Text>
+      <Text style={[styles.orAll, inverse && styles.inverseText]}>{t('region.orAll')}</Text>
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={selectAll}
-        style={[styles.card, allOn && styles.cardOn]}
+        style={[
+          styles.card,
+          inverse && styles.surfaceInverse,
+          allOn && (inverse ? styles.surfaceOnInverse : styles.cardOn),
+        ]}
       >
-        <View style={styles.iconWrap}>
-          <Ionicons name="earth-outline" size={18} color={allOn ? colors.accent : colors.inkSoft} />
+        <View style={[styles.iconWrap, inverse && styles.iconWrapInverse]}>
+          <Ionicons name="earth-outline" size={18} color={allOn ? activeColor : colors.inkSoft} />
         </View>
-        <Text style={styles.cardName} numberOfLines={1}>{t('region.all')}</Text>
+        <Text style={[styles.cardName, inverse && styles.cardNameInverse]} numberOfLines={1}>{t('region.all')}</Text>
         <Ionicons
           name={allOn ? 'checkmark-circle' : 'ellipse-outline'}
           size={22}
-          color={allOn ? colors.accent : colors.inkFaint}
+          color={allOn ? activeColor : colors.inkFaint}
         />
       </TouchableOpacity>
     </View>
@@ -129,10 +143,12 @@ const themedStyles = () => StyleSheet.create({
   inputBoxOn: { borderColor: colors.accent },
   inputBoxError: { borderColor: colors.red },
   input: {
-    flex: 1, fontSize: 18, fontFamily: fonts.semibold, color: colors.ink,
-    padding: 0, letterSpacing: 2,
+    flex: 1, fontSize: 15, fontFamily: fonts.semibold, color: colors.ink,
+    padding: 0,
   },
+  inputInverse: { color: '#2b2521' },
   errorText: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.red, marginTop: -2 },
+  helperText: { fontSize: 12.5, lineHeight: 17, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: -2 },
 
   detected: {
     backgroundColor: colors.accentLight,
@@ -144,6 +160,12 @@ const themedStyles = () => StyleSheet.create({
     textTransform: 'uppercase', letterSpacing: 1.2,
   },
   detectedName: { fontSize: 16, fontFamily: fonts.bold, color: colors.ink },
+  detectedInverse: {
+    backgroundColor: 'rgba(255,255,255,0.13)',
+    borderColor: 'rgba(255,255,255,0.48)',
+  },
+  detectedLabelInverse: { color: '#ffffff' },
+  inverseText: { color: 'rgba(255,255,255,0.9)' },
 
   orAll: {
     fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft,
@@ -156,10 +178,14 @@ const themedStyles = () => StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 14, borderRadius: 18,
   },
   cardOn: { borderColor: colors.accent, backgroundColor: colors.accentLight },
+  surfaceInverse: { backgroundColor: '#ffffff', borderColor: 'rgba(255,255,255,0.72)' },
+  surfaceOnInverse: { backgroundColor: '#edf4fc', borderColor: colors.blue },
   iconWrap: {
     width: 30, height: 30, borderRadius: 15,
     backgroundColor: colors.surfaceAlt,
     alignItems: 'center', justifyContent: 'center',
   },
+  iconWrapInverse: { backgroundColor: '#f6efe3' },
   cardName: { flex: 1, fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
+  cardNameInverse: { color: '#2b2521' },
 });

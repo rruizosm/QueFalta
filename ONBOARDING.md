@@ -8,15 +8,22 @@ del funcionamiento mediante *coach marks* sobre la app real.
 `src/navigation/index.tsx`:
 ```
 !session                                 → LoginScreen
-session && profileLoading                → null (espera el 1er fetch del perfil)
+session && profileLoading tras Login     → mantiene LoginScreen (sin pantalla intermedia)
+session cacheada && profileLoading       → BootLoader de arranque
 session && profile && !profile.onboardedAt → OnboardingNavigator   ← asistente
 resto (onboarded, o perfil falló)        → Tab.Navigator (la app) + CoachMarkProvider
 ```
+- En arranques posteriores se acepta el perfil cacheado por usuario solo si ya
+  tiene `onboarded_at` y `region`. Se revalida en segundo plano sin desmontar el
+  Home; perfiles incompletos esperan siempre la respuesta remota.
 - **Detección:** columna `profiles.onboarded_at timestamptz` (NULL = no completado).
   Migración manual: `supabase/migrations/profile_onboarding.sql`. **SIN backfill**
   → todos los usuarios actuales lo ven una vez.
 - Si `fetchProfile` falla (perfil = null), NO se bloquea: cae a la app (no deja
   pantalla en blanco).
+- Después de autenticar, la portada de acceso permanece montada mientras llega
+  el perfil y da paso directamente al primer paso si `onboarded_at` es NULL. El
+  BootLoader con la marca queda reservado al arranque en frío.
 
 ## Pasos del asistente (`src/screens/onboarding/`)
 Stack propio (`OnboardingNavigator`), chrome común `OnboardingLayout` (barra de

@@ -3,6 +3,95 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
+## Sync Mercadona: guardarraíl anti-bloqueo (2026-08-18)
+
+- El sync semanal separa el catálogo del enriquecimiento nutricional: la tabla
+  nutricional de Mercadona procede de la foto de etiqueta y de
+  `extract-mercadona-nutrition.mjs`, no de la ficha API. Su ausencia no puede
+  reencolar todo el catálogo en el sync principal.
+- La pasada post-catálogo pide como máximo 300 EAN nuevos con concurrencia 2. El
+  backfill intensivo, si hiciera falta, se ejecuta de forma reanudable con
+  `scripts/backfill-mercadona-ean.mjs`.
+- Si fallan más del 3% de subcategorías, se aborta antes de escribir o ejecutar
+  `markStale`; así un 403/rate limit no despublica catálogo válido.
+
+## Comparador: filtro estricto de identidad semántica (2026-08-17)
+
+- Los tests de dispositivo detectaron que el comparador híbrido v4 podía
+  aceptar productos cercanos semánticamente pero no comparables: por ejemplo,
+  un refresco de té con limón frente a una gaseosa de limón. Unidad, cantidad,
+  atributos y score no bastan para preservar la identidad principal.
+- La migración
+  `20260817124758_comparator_semantic_identity_guard.sql` añade familias
+  deterministas y variantes explícitas como filtros duros, y expone
+  `catalog_cheaper_products_v5`. El filtro se aplica **antes** del top-2 barato
+  por tienda; GTIN global idéntico y revisión humana aprobada prevalecen.
+- El cliente ya llama a v5. La migración está validada contra producción dentro
+  de una transacción con `ROLLBACK`, pero **no está desplegada**. Debe aplicarse
+  antes de distribuir este cliente. Verificador reproducible:
+  `supabase/ops/verify_comparator_semantic_identity_guard.sql`.
+- La misma migración normaliza `burger`, `burguer` y `hamburguesa` para el
+  cálculo léxico. Es una equivalencia de términos, no una familia genérica:
+  los filtros de identidad siguen evitando que pan, salsa, queso y carne se
+  comparen entre sí solo por compartir esa palabra.
+
+## Arranque estable y caché de pestañas (2026-08-17)
+
+- Perfil, carrito activo y snapshots de Inicio/Carrito/Grupos se hidratan desde
+  AsyncStorage con claves por usuario antes de entregar la navegación autenticada.
+  Las pantallas pintan el snapshot y revalidan contra Supabase en segundo plano
+  (stale-while-revalidate), sin borrar contenido ni sustituirlo por un loader.
+- Solo un perfil cacheado con `onboarded_at` y `region` ya resueltos puede
+  acelerar el gate. Un onboarding incompleto siempre espera el perfil remoto,
+  para no mostrar pasos antiguos completados desde otro dispositivo.
+- Inicio y Carrito comparten el snapshot de `list_items`; las lecturas simultáneas
+  de grupos se agrupan en una única petición en vuelo por usuario. La checklist
+  de perfil espera a conocer los grupos y no aparece con un conteo provisional.
+- La caché vive en `src/lib/startupCache.ts`. Todo recurso nuevo debe mantener la
+  regla por usuario y seguir revalidándose: nunca usar el snapshot como fuente
+  definitiva de permisos o pertenencia a grupos.
+- Las dos poses raster del primer paso se sirven a 512 px de ancho (su máximo
+  visible es 150 pt): mantienen densidad suficiente para pantallas 3x y bajan
+  juntas de 2,81 MB a unos 568 KB en el bundle.
+
+## Persiana animada en el primer paso del onboarding (2026-08-16)
+
+- El paso inicial de `@usuario` y código postal es una persiana azul a pantalla
+  completa (`#2f6cb5`) que baja desde la parte superior y lleva a la mascota
+  agarrada al borde inferior. No muestra la barra de progreso común: campos,
+  selección de zona y botón Continuar viven dentro de la propia persiana.
+- La pose vive en `assets/mascot/berenjena-persiana.png` y la composición en
+  `src/screens/onboarding/OnboardingShutter.tsx`. La animación se desactiva al
+  activar Reducir movimiento y el formulario aparece después de la bajada.
+- Al terminar la bajada aparece desde arriba una segunda pose, guardada en
+  `assets/mascot/berenjena-sentada-ok.png`: cae con rebote, se sienta sobre
+  «¡Empezamos!» y mantiene el pulgar arriba. Solo entonces recibe el foco el
+  campo de usuario.
+
+## Portada de autenticación (2026-08-16)
+
+- Login usa una composición vertical inspirada en la cesta: cabecera en el
+  color de acento con los logos locales de supermercados cayendo hasta ocupar
+  el espacio, transición SVG con el máximo centrado hacia el contenido y marca
+  dentro de esa curva, antes de la propuesta de valor y de Apple, Google y
+  correo. Los tres flujos de autenticación mantienen su lógica.
+- Las tarjetas blancas de los logos entran una sola vez y después flotan con
+  suavidad sobre pequeñas nubes; las animaciones usan el driver nativo, precargan
+  recursos locales y quedan desactivadas cuando el sistema solicita Reducir
+  movimiento. La pantalla sigue siendo desplazable y compatible con texto grande.
+
+## Identidad pública basada en @usuario (2026-08-15)
+
+- El onboarding ya no solicita idioma ni nombre visible: comienza con un único
+  paso de `@usuario` + código postal y consta de cinco pasos con progreso.
+- Inicio muestra `QuéFalta` como título fijo. La tarjeta de Perfil muestra solo
+  el `@usuario` junto al botón Editar; el nombre y el correo no aparecen allí.
+  Editar perfil conserva el correo de solo lectura, pero ya no permite editar ni
+  muestra el nombre.
+- La pantalla de miembros de un grupo identifica a cada persona por `@usuario`.
+  El cliente sigue leyendo `profiles.name` como dato legacy y fallback para
+  cuentas antiguas sin username; no se ha eliminado la columna de base de datos.
+
 ## Hipercor (pendiente de migrar y primer sync, 2026-08-15)
 
 - Añadido el espejo de catálogo público de **Hipercor**: migración
@@ -370,7 +459,7 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - ⏳ **Sorli añadido como 7º súper** (2026-07-10): código completo — sync (`scripts/sync-sorli.mjs`: la API firma un token de sesión en el navegador, así que arranca con Playwright y pagina con fetch; BILINGÜE es/ca en 2 pasadas; DRY_RUN OK: 9.460 productos, 1.109 categorías), espejo (`sorli_catalog.sql`, autocontenida), app completa (selector, búsqueda, navegación, categorías, ficha `SorliProductModal`, favoritos, zonas) y comparativa. Pendientes: ejecutar la migración, re-ejecutar `similar_products.sql`, primer run del sync (workflow `sync-sorli.yml`, lunes 06:50, tras Dia) y validar en device. Logo en `assets/stores/sorli.png`.
 - ⏳ **Eroski (8º) y Caprabo (9º) añadidos** (2026-07-11): comparten backend (Apache Tapestry) → un scraper compartido `scripts/lib/eroski-tapestry.mjs` (GET de la página de categoría —SSR del 1er lote de 20— y después `POST supermarket:loadpage` con cookies de sesión + Origin/Referer; saca cada producto del JSON `data-metrics` del tile: id/nombre/marca/categoría/precio; ⚠️ la paginación `?pageNumber=N` original DEJÓ de funcionar el 2026-07-11: el server devuelve "No se obtuvieron resultados") y dos syncs mínimos (`sync-eroski.mjs`, `sync-caprabo.mjs`). Solo castellano, SIN €/unidad ni EAN, pero con nutrición de ficha HTML incremental normalizada para el Índice Alimentario. DRY_RUN completo OK (2026-07-11, ya con loadpage): **Eroski 21.073 productos** / 803 hojas / 0% sin tiles; **Caprabo 10.657** / 750 hojas (8% sin tiles por 429 de rate-limit tras encadenar crawls desde la misma IP — en CI no pasa). OJO: los crawls con `?pageNumber` daban 10.694 en Eroski = LA MITAD del catálogo (solo el 1er lote de cada hoja). GUARDARRAÍL anti-throttling: bajo carga el server sirve la página sin productos (o 429, con backoff largo + Retry-After) → reintentos en la pág. 1 + aborta el run si >20% de hojas llegan SIN TILES (para que markStale no despublique productos vivos); las hojas cuyo contenido ya se vio en otras categorías (~60 por súper, solapamiento del árbol) se cuentan APARTE como "solo-duplicados" y no disparan el aborto (la 1ª versión las mezclaba y abortó el run de CI del 2026-07-11 con un falso "56% vacías"). App: tipo/adaptador/modal (`TapestryProductModal`)/pantalla (`TapestryProductsScreen`) COMPARTIDOS por ambos, con funciones de `catalog.ts` por tabla. Migraciones `eroski_catalog.sql`+`caprabo_catalog.sql` (autocontenidas, es-only) + ampliación `20260718133958_eroski_caprabo_nutrition.sql` para tablas ya creadas. Pendientes: ejecutar las migraciones, re-ejecutar `similar_products.sql` (ya con ambos brazos), primer run (`sync-eroski.yml` lunes 09:00 / `sync-caprabo.yml` 09:30) y validar en device. Logos en `assets/stores/{eroski,caprabo}.png`. Ver `scripts/README-eroski-caprabo-sync.md`.
 - ⏳ **Lista agrupada por zonas del súper** (2026-06-12): Lista y cesta de grupo agrupan Tienda → Zona ("pasillo": Fruta y verdura, Congelados al final…) con alfabético dentro. Mapeo de N1 de los 6 supers → ~15 zonas canónicas por keywords en `src/constants/zones.ts` (solo cliente, afinable sin migrar). La categoría se captura al añadir (`list_items.category_name`); manuales/históricos → "Otros". ⚠️ Si se añade un nuevo punto de "añadir a la cesta", pasar `categoryName`. Pendiente: ejecutar `list_items_category.sql`.
-- ⏸️ Comparativa de productos similares entre supers (detalle de producto) — **DESACTIVADA (2026-06-13)** vía `PRICE_COMPARISON_ENABLED = false` en `src/constants/limits.ts`: `SimilarProductsSection` ni consulta ni pinta en ningún modal. El código (componente, `api/catalog.fetchSimilarProducts`, RPC `similar_products`) queda intacto. Spec por fases en `COMPARATIVA.md`. Para reactivar: poner el flag en `true` (y cerrar pendientes: re-lanzar workflow bonÀrea por la base €/unidad, re-ejecutar `similar_products.sql`).
+- 🧪 Comparativa de productos similares entre supers (detalle de producto) — **ACTIVADA PARA TESTERS** con `PRICE_COMPARISON_ENABLED = true`: funciona bajo demanda, usa la capa híbrida/caché y el cliente ya apunta a `catalog_cheaper_products_v5`. Antes de distribuir ese cliente debe desplegarse `20260817124758_comparator_semantic_identity_guard.sql`; la RPC v4 permanece disponible para builds anteriores.
 - Monetización «QuéFalta Plus» (1,99 €/mes · 11,99 €/año): **ACTIVADA LOCALMENTE PARA DESARROLLO (2026-08-11)**. El paywall presenta orden por precio unitario, filtros en Ofertas/Cambios/Novedades, selección «Todos» y alertas personalizadas. El cliente usa `PAYWALL_ENABLED = true`; el servidor permanece apagado con `paywall_enabled() = false` hasta completar RevenueCat y las pruebas sandbox.
 - ⏳ **Onboarding de primera vez + demo** (2026-06-16): asistente de bienvenida (obligatorios @usuario + supermercados; opcionales foto/amigos/grupo) + demo con coach marks sobre la app. Código completo y typecheck verde. Gate por `profiles.onboarded_at`. Pendiente: **ejecutar `supabase/migrations/profile_onboarding.sql`** en Supabase y probar el flujo. Ver `ONBOARDING.md`.
 - ❌ No publicar en App Store todavía (solo pruebas en dispositivo propio).

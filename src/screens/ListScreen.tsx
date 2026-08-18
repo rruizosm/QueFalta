@@ -30,7 +30,7 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { fetchListItems, setItemInCart, assignListItem, clearListItems, deleteListItems, updateListItemQuantity, mergeCartItems, type ListItemRow, type MergedCartItem } from '../api/lists';
 import { fetchMercadonaNames } from '../api/catalog';
-import { fetchGroupMembers } from '../api/groups';
+import { fetchGroupMembers, type GroupSummary } from '../api/groups';
 import { recordPurchase } from '../api/purchases';
 import type { GroupMember } from '../types';
 import ProductImage from '../components/ProductImage';
@@ -41,6 +41,7 @@ import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import { peekStartupCache, startupKeys, writeStartupCache } from '../lib/startupCache';
 
 import { STORE_META, groupByStore, storeOfItem, type Store } from '../constants/stores';
 import { groupByZone, sortZoneItems, type ShopZone } from '../constants/zones';
@@ -111,13 +112,22 @@ export default function ListScreen() {
   const listId = activeCart?.listId;
   const groupId = activeCart?.groupId;
 
-  const [items, setItems] = useState<ListItemRow[]>([]);
+  const cachedItems = listId && userId
+    ? peekStartupCache<ListItemRow[]>(startupKeys.listItems(userId, listId))
+    : null;
+  const cachedMembers = groupId && userId
+    ? peekStartupCache<GroupMember[]>(startupKeys.groupMembers(userId, groupId))
+      ?? peekStartupCache<GroupSummary[]>(startupKeys.groups(userId))
+        ?.find((group) => group.id === groupId)?.members
+        ?? null
+    : null;
+  const [items, setItems] = useState<ListItemRow[]>(cachedItems ?? []);
   // Nombres de Mercadona re-traducidos al idioma activo (id → nombre). El
   // product_name guardado en list_items es un snapshot del idioma con el que se
   // añadió, así que en català se mostraría en castellano sin esto.
   const [nameOverrides, setNameOverrides] = useState<Record<string, string>>({});
-  const [members, setMembers] = useState<GroupMember[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [members, setMembers] = useState<GroupMember[]>(cachedMembers ?? []);
+  const [loading, setLoading] = useState(!!listId && cachedItems === null);
   const [error, setError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [detailTarget, setDetailTarget] = useState<ProductRef | null>(null);
@@ -166,14 +176,28 @@ export default function ListScreen() {
   const load = useCallback(() => {
     if (!listId) { setItems([]); setLoading(false); return Promise.resolve(); }
     setError(false);
-    const itemsP = fetchListItems(listId).then(setItems).catch(() => setError(true));
+    const itemsP = fetchListItems(listId).then((next) => {
+      setItems(next);
+      if (userId) writeStartupCache(startupKeys.listItems(userId, listId), next);
+    }).catch(() => setError(true));
     const membersP = groupId
-      ? fetchGroupMembers(groupId).then(setMembers).catch(() => {})
+      ? fetchGroupMembers(groupId).then((next) => {
+          setMembers(next);
+          if (userId) writeStartupCache(startupKeys.groupMembers(userId, groupId), next);
+        }).catch(() => {})
       : Promise.resolve();
     return Promise.all([itemsP, membersP]).finally(() => setLoading(false));
-  }, [listId, groupId]);
+  }, [listId, groupId, userId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  // Conserva también los cambios optimistas (marcar, asignar, borrar, cantidad)
+  // para que una terminación en frío no recupere el snapshot anterior.
+  useEffect(() => {
+    if (!loading && listId && userId) {
+      writeStartupCache(startupKeys.listItems(userId, listId), items);
+    }
+  }, [items, listId, loading, userId]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

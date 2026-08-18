@@ -23,8 +23,9 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
-          # EAN (detalle por producto): incremental. Tope por run para que el arranque
-          # en frío (~6.400 detalles) quepa en el timeout junto al barrido multi-almacén;
-          # se completa en ~2 runs y luego solo pide el de las novedades.
-          EAN_MAX: '6400'
-          EAN_CONCURRENCY: '6'
+          # EAN (detalle por producto): incremental y deliberadamente pequeño. El
+          # catálogo multi-almacén es prioritario; un backfill masivo de fichas provoca
+          # 403 de Mercadona y puede agotar el job. Para acelerar el histórico usar el
+          # runner reanudable scripts/backfill-mercadona-ean.mjs fuera de este workflow.
+          EAN_MAX: '300'
+          EAN_CONCURRENCY: '2'

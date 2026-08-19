@@ -67,6 +67,29 @@
 4. **Validar tras el update:** la app se ve IDÉNTICA a hoy (nadie usa aún el wrapper) y
    NO crashea en el build de tester actual (prueba de que la guarda funciona).
 
+## Portada gestual del Login ✅ código y simulador 2026-08-19
+
+- La burbuja interactiva de `LoginBubbleIntro` es una superficie flotante y usa
+  el wrapper obligatorio `GlassSurface`, nunca `GlassView` directo. En iOS 26
+  aplica material `clear` sin tinte. Una única lente SVG superpuesta dibuja el
+  doble borde, el reflejo superior amplio y caústicas interiores casi neutras,
+  sin tapar la refracción nativa; el texto se compone detrás del cristal.
+- El arco cromático que aparece al arrastrar no es una imagen ni una animación
+  prerenderizada: `@shopify/react-native-skia@2.2.12` ejecuta un Runtime Shader
+  que calcula en cada frame una curva de aberración cromática con el accent de
+  la app, cian, azul, violeta y rosa. Su posición y opacidad dependen del mismo
+  valor animado que mueve y reduce la esfera. Si Skia no existe en un binario
+  antiguo, la carga perezosa mantiene una versión SVG compatible con OTA.
+- El fallback conserva la esfera translúcida completa en Android, iOS anterior
+  y builds sin el módulo. Los 18 logos que nacen de ella siguen siendo contenido
+  opaco: no hay superficies glass anidadas ni necesidad de `GlassContainer`.
+- `GlassSurface` es solo la capa visual y lleva `pointerEvents="none"`. Darle
+  captación táctil propia hizo competir `GlassView` con el gesto Pan en la prueba
+  inicial; el `GestureDetector` exterior sigue siendo el único dueño del arrastre
+  y ya aporta la respuesta interactiva moviendo y reduciendo la esfera.
+- Validado en iPhone 15 Pro con iOS 26.5: gesto corto vuelve al borde, gesto largo
+  encaja la esfera y despliega los supermercados sin abrir controles subyacentes.
+
 ## F1 — Tab bar ✅ código 2026-07-08 (pendiente de VALIDAR en dispositivo)
 
 Implementado así (todo condicionado a `glassAvailable`; en fallback CERO cambios):

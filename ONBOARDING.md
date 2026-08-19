@@ -26,19 +26,19 @@ resto (onboarded, o perfil falló)        → Tab.Navigator (la app) + CoachMark
   BootLoader con la marca queda reservado al arranque en frío.
 
 ## Pasos del asistente (`src/screens/onboarding/`)
-Stack propio (`OnboardingNavigator`), chrome común `OnboardingLayout` (barra de
-progreso + título + botón accent + "Omitir"). Reutiliza la lógica existente, no
-la reescribe.
+Stack propio (`OnboardingNavigator`). Los cinco pasos comparten la
+persiana azul con lamas y controles claros; el primero aparece directamente,
+sin transición de entrada, y deja la mascota sentada fija en su posición. La
+pantalla terminal Done conserva el chrome común `OnboardingLayout`. La lógica de
+cada paso se reutiliza, no se reescribe.
 
 | Paso | Pantalla | Tipo | Reutiliza |
 |------|----------|------|-----------|
-| 0 | Welcome  | — | — |
-| 1 | Name     | **Obligatorio** | `updateProfile({name, initials})` (nombre visible; se prefija con el del proveedor — Google, o Apple vía `credential.fullName`; iniciales con `initialsFromName`). No avanza vacío |
-| 2 | Username | **Obligatorio** | `isUsernameAvailable` + `updateProfile` (validación en vivo, no avanza sin @ libre) |
-| 3 | Stores   | **Obligatorio** | toggle de `CatalogStoresScreen` → `updateProfile({catalogStores})` (mín. 1) |
-| 4 | Avatar   | Opcional | `expo-image-picker` + `uploadAvatar` |
-| 5 | Friends  | Opcional | `searchUsersByUsername` + `sendFriendRequest` |
-| 6 | Group    | Opcional | `createGroup` |
+| 1 | Username | **Obligatorio** | `isUsernameAvailable` + código postal/CCAA + `updateProfile` |
+| 2 | Stores   | **Obligatorio** | toggle de `CatalogStoresScreen` → `updateProfile({catalogStores})` (mín. 1) |
+| 3 | Avatar   | Opcional | `expo-image-picker` + `uploadAvatar`; cabecera con `berenjena-selfie.png` |
+| 4 | Friends  | Opcional | `useUsernameSearch` (typeahead cancelable) + `sendFriendRequest`; cabecera con `berenjena-amigos.png` |
+| 5 | Group    | Opcional | `createGroup`; cabecera con `berenjena-grupo.png` |
 | — | Done     | — | `completeOnboarding` → sella `onboarded_at`, `applyProfile` cambia el gate |
 
 Los obligatorios bloquean el avance; los opcionales se pueden omitir.

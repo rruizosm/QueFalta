@@ -178,17 +178,24 @@ export interface SearchedUser {
   verified: boolean;
 }
 
-/** Searches discoverable users by @username prefix (for adding to a group). */
-export async function searchUsersByUsername(query: string): Promise<SearchedUser[]> {
+/** Searches discoverable users by @username prefix (for adding to a group).
+ *  `signal` lets typeahead consumers cancel an obsolete request immediately. */
+export async function searchUsersByUsername(
+  query: string,
+  signal?: AbortSignal,
+): Promise<SearchedUser[]> {
   const q = query.trim().toLowerCase().replace(/^@/, '');
   if (q.length < 2) return [];
 
-  const { data, error } = await supabase
+  let request = supabase
     .from('profiles')
     .select('id, name, username, initials, color, avatar_url, verified')
     .eq('discoverable', true)
     .ilike('username', `${q}%`)
     .limit(15);
+  if (signal) request = request.abortSignal(signal);
+
+  const { data, error } = await request;
 
   if (error) throw error;
   return (data ?? []).map((p: any) => ({

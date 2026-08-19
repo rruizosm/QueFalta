@@ -12,6 +12,7 @@ interface Props {
   title: string;
   icon: keyof typeof Ionicons.glyphMap;
   headerTop: number;
+  titleFontSize?: number;
   onLayout?: (event: LayoutChangeEvent) => void;
   right?: React.ReactNode;
 }
@@ -20,7 +21,7 @@ interface Props {
  * Cabecera compartida de los destinos de Perfil. En iOS con Liquid Glass se
  * superpone al contenido; en el resto conserva una cabecera opaca en flujo.
  */
-export default function ProfileSubscreenHeader({ title, icon, headerTop, onLayout, right }: Props) {
+export default function ProfileSubscreenHeader({ title, icon, headerTop, titleFontSize, onLayout, right }: Props) {
   const navigation = useNavigation<any>();
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
@@ -40,7 +41,7 @@ export default function ProfileSubscreenHeader({ title, icon, headerTop, onLayou
         <View style={styles.titleIcon}>
           <Ionicons name={icon} size={18} color={colors.accent} />
         </View>
-        <Text style={styles.title} numberOfLines={1}>{title}</Text>
+        <Text style={[styles.title, titleFontSize ? { fontSize: titleFontSize } : null]} numberOfLines={1}>{title}</Text>
       </View>
       {right ? <View style={styles.right}>{right}</View> : null}
     </View>

@@ -89,9 +89,16 @@ export const ACCENT_OPTIONS = [
   { key: 'rosa',     name: 'Rosa',     hex: '#c2497d' },
 ] as const;
 
-export type AccentKey = (typeof ACCENT_OPTIONS)[number]['key'];
+export type PresetAccentKey = (typeof ACCENT_OPTIONS)[number]['key'];
+/** `custom` conserva un color elegido por una persona suscrita a Plus. */
+export type AccentKey = PresetAccentKey | 'custom';
 
-export const DEFAULT_ACCENT: AccentKey = 'azul';
+export const DEFAULT_ACCENT: PresetAccentKey = 'azul';
+
+/** Comprueba un color RGB hexadecimal completo antes de aplicarlo a la paleta. */
+export function isHexColor(value: string | null | undefined): value is string {
+  return typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value);
+}
 
 function withAlpha(hex: string, alpha: number): string {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -105,11 +112,14 @@ let accentLight = withAlpha(accent, 0.12);
 let accentMid   = withAlpha(accent, 0.30);
 
 /** Cambia el color principal en caliente. Llamar solo desde ThemeContext. */
-export function applyAccent(key: AccentKey) {
-  const opt = ACCENT_OPTIONS.find((o) => o.key === key) ?? ACCENT_OPTIONS[0];
-  accent      = opt.hex;
-  accentLight = withAlpha(opt.hex, 0.12);
-  accentMid   = withAlpha(opt.hex, 0.30);
+export function applyAccent(key: AccentKey, customHex?: string | null) {
+  const preset = ACCENT_OPTIONS.find((o) => o.key === key);
+  const hex = key === 'custom' && isHexColor(customHex)
+    ? customHex
+    : (preset ?? ACCENT_OPTIONS.find((o) => o.key === DEFAULT_ACCENT)!).hex;
+  accent      = hex;
+  accentLight = withAlpha(hex, 0.12);
+  accentMid   = withAlpha(hex, 0.30);
 }
 
 /* ──────────────────────────────── Paleta ────────────────────────────────── */

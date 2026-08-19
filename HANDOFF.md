@@ -10,7 +10,130 @@
 > ⚠️ Fechas y detalles reflejan lo que era cierto el 2026-07-15. **Verifica contra `git log` y
 > contra Supabase antes de fiarte** — algo puede haberse commiteado/ejecutado después.
 
+## Fondo ambiental en Inicio (local, 2026-08-18)
+
+- Implementado localmente en `HomeScreen`: degradado tenue basado en el accent,
+  con formas ambientales amplias y discretas detrás del contenido.
+- Respeta tema claro/oscuro, accent personalizado, gestos y accesibilidad. No
+  incorpora recursos nuevos ni modifica la jerarquía funcional de Inicio.
+
 ---
+
+## Rediseño completo del Login (local, 2026-08-19)
+
+- Sustituida la transición automática `Bouncy Scale Ball` y toda la cabecera
+  azul por una portada interactiva basada en `Wabi & More` del repositorio MIT
+  `ImCitizen13/quattro4maggi`: la burbuja prismática parte del borde inferior,
+  sigue el arrastre, vuelve si el gesto es corto y se encaja con muelle si el
+  deslizamiento supera el umbral.
+- Al encajarse despliega los 18 supermercados de `CATALOG_STORES` y después los
+  accesos de Apple, Google y correo. Los logotipos respetan el área segura y se
+  retiran al abrir correo para no cubrir el formulario.
+- Eliminados el icono del login, del splash nativo y del cargador intermedio.
+  `BootLoader` usa un fondo neutro con un indicador mínimo. App icon/adaptive
+  icon se conservan porque identifican la app instalada, no el arranque.
+- Conservados sin cambios los flujos de autenticación, incluido Google PKCE, el
+  tratamiento de errores de magic links, los enlaces legales y la adaptación a
+  tema, accent, texto grande, accesibilidad y Reducir movimiento.
+- La burbuja usa `GlassSurface` con Liquid Glass `clear` nativo en iOS 26, sin
+  tinte opaco y con una lente SVG neutra (doble borde, reflejos difusos y
+  caústicas suaves); el texto de arrastre queda detrás para refractarse. En el
+  resto conserva el fallback translúcido con la misma óptica. Durante el gesto,
+  un Runtime Shader de `@shopify/react-native-skia@2.2.12` dibuja una retina
+  dinámica cian/azul/violeta/rosa con el accent de la app; baja con el dedo y
+  desaparece al completar el encaje. Skia se carga de forma perezosa y una OTA
+  instalada sobre un binario antiguo usa una retina SVG sin crashear. El
+  cristal no captura eventos: el `GestureDetector` exterior mantiene el
+  arrastre fiable y evita el conflicto observado con `GlassView`.
+- Validado en iPhone 15 Pro simulado: gesto corto con retorno, gesto completo,
+  retina durante el arrastre, despliegue de los 18 logos y apertura del
+  formulario de correo sin solapes. El cliente nativo se recompiló para enlazar
+  Skia y arrancó correctamente en iOS 26.5.
+- `npm run quality` correcto después del shader: typecheck, lint sin warnings y
+  27/27 tests.
+
+## Código postal y comunidad en el primer paso (local, 2026-08-18)
+
+- Al completar un CP válido, la tarjeta del código postal se contrae desde la
+  derecha y la comunidad autónoma aparece a su lado; ambas terminan al 50 % y
+  con la misma altura.
+- La transición respeta Reducir movimiento y solo se activa en el primer paso;
+  Ajustes y el gate existente conservan su composición vertical.
+- `npm run quality` correcto (typecheck, lint y 27/27 tests).
+
+## Primer paso sin transición de entrada (local, 2026-08-19)
+
+- Eliminada la bajada completa de `OnboardingShutter` y la transición entre la
+  mascota agarrada y la sentada. Fondo, contenido y formulario aparecen desde
+  el primer render.
+- `berenjena-sentada-ok.png` queda directamente en su posición final y el campo
+  de usuario conserva el enfoque automático al montar.
+- `npm run quality` correcto (typecheck, lint y 27/27 tests).
+
+## Paso 2 del onboarding con persiana azul (local, 2026-08-18)
+
+- Implementado localmente, sin commit: `Username` navega inmediatamente a
+  `Stores`, que ahora replica el fondo azul con lamas del primer paso.
+- Se eliminaron «Paso 2 de 5» y el subtítulo «Mostraremos sus catálogos y
+  precios…». La mascota con carrito queda fija, completa y
+  adaptada a la altura sobre un grid desplazable; el CTA también permanece
+  visible. El indicador de selección queda fijo en la esquina superior derecha.
+  Recurso: `berenjena-carrito-transicion.png`.
+- El grid usa la comunidad guardada en el paso 1. Se completó la huella de las
+  cadenas regionales nuevas: Plusfresc `ES-CT`/`ES-AR`, Gadis `ES-GA`/`ES-CL`,
+  Froiz `ES-GA`/`ES-CL`/`ES-CM`/`ES-MD` y Ahorramás
+  `ES-CM`/`ES-MD`/`ES-CL`; HiperDino continúa limitado a `ES-CN`.
+- `npm run quality` correcto (typecheck, lint y 27/27 tests).
+- Falta validar la composición visual con una cuenta que tenga el onboarding
+  incompleto en dispositivo o simulador.
+
+## Paso 3 del onboarding con mascota selfie (local, 2026-08-19)
+
+- Generada e integrada `assets/mascot/berenjena-selfie.png` (512×768, RGBA con
+  alfa real): la berenjena aparece completa haciéndose un selfie con un móvil.
+- `AvatarScreen` adopta fondo azul con lamas, volver flotante, título superior
+  sin subtítulo, tarjeta clara de foto y footer fijo con Continuar/Ahora no. La
+  cabecera empieza justo bajo el botón de volver y la mascota aparece entre la
+  tarjeta y el footer, con 50 px adicionales de ancho y alto respecto al primer
+  diseño reducido.
+- Se conserva `expo-image-picker`, el recorte 1:1, la subida existente y la
+  posibilidad de omitir; no hay cambios de backend ni migraciones.
+- `npm run quality` correcto (typecheck, lint y 27/27 tests).
+
+## Paso 4 del onboarding con amistades (local, 2026-08-19)
+
+- Generada e integrada `assets/mascot/berenjena-amigos.png` (1024×1536, PNG
+  RGBA): la berenjena aparece entre las nuevas mascotas plátano y tomate, que
+  le dan una mano cada una.
+- `FriendsScreen` replica la persiana azul con lamas, volver flotante, cabecera
+  superior, composición de mascotas al 50 % de su tamaño inicial, buscador y
+  resultados claros, y footer fijo con Continuar/Ahora no. Conserva la búsqueda
+  y el envío de solicitudes existentes.
+- El buscador queda fijo; la lista de usuarios es la única zona desplazable y
+  muestra el indicador vertical nativo (persistente en Android).
+- Optimizado el typeahead tanto aquí como en Perfil → Amigos: primera consulta
+  válida inmediata, siguientes a 100 ms, cancelación con `AbortController` y
+  filtrado local provisional del prefijo anterior. El `EXPLAIN ANALYZE` remoto
+  con rol autenticado y RLS dio ~5 ms sobre unas 3.900 filas, así que no se tocó
+  el esquema.
+- `npm run quality` correcto (typecheck, lint y 27/27 tests).
+
+## Paso 5 del onboarding con primer grupo (local, 2026-08-19)
+
+- `GroupScreen` deja `OnboardingLayout` y completa el lenguaje visual de la
+  persiana azul: volver flotante, título/subtítulo, mascota con carrito, tarjeta
+  clara para el nombre y sugerencias rápidas sobre el fondo.
+- El footer fijo mantiene visibles Continuar/Crear grupo y Ahora no; al aparecer
+  el teclado, el contenido intermedio es desplazable sin perder la acción.
+- Generada e integrada `assets/mascot/berenjena-grupo.png` (1024×1536, PNG
+  RGBA): la berenjena empuja el carrito, el plátano va dentro y el tomate queda
+  a la derecha; las tres mascotas saludan. `createGroup`, los hápticos, el toast
+  y el carácter opcional del paso se conservan sin cambios de backend.
+- Corregida la máscara alfa de los huecos interiores del carrito: ya no quedan
+  placas blancas entre las barras, bajo la cesta ni alrededor de las ruedas.
+- Igualado al morado de la mano el reflejo casi blanco que ocupaba el dedo
+  central levantado de la berenjena, conservando un brillo pequeño y natural.
+- `npm run quality` correcto (typecheck, lint y 27/27 tests).
 
 ## Hipercor (pendiente de migrar y primer sync, 2026-08-15)
 
@@ -197,9 +320,9 @@ La lista **completa y anotada** está en CONTEXTO.md. Aquí, lo esencial y el OR
   COL PINAR). El sync barre **1 capital por comunidad** (~18 crawls, ~2 h) fijando la cookie `salepoint`.
   Columnas base = Madrid (la app no cambia hasta implementar el filtro). Falta `carrefour_regions.sql` +
   1er run (subir el `-ExecutionTimeLimit` de la tarea de Windows a ~4 h). LOCAL.
-- **Filtro por comunidad (transversal):** `profiles.region` + `src/constants/regions.ts` + onboarding
-  paso 3 (RegionScreen) + gate/filtro de catálogo. Necesario para no enseñar Hiperdino (Canarias) o
-  Plusfresc (Catalunya) fuera de su zona. F0–F5 en local, typecheck verde, sin validar en device. Ver
+- **Filtro por comunidad (transversal):** `profiles.region` + `src/constants/regions.ts` + código postal
+  integrado en el paso 1 + gate/filtro de catálogo. Necesario para no enseñar cadenas regionales fuera
+  de su zona. F0–F5 en local, typecheck verde, sin validar en device. Ver
   `COMUNIDAD-AUTONOMA.md`. **Ejecutar `profile_region.sql` antes de arrancar.**
 - **Alcampo/Condis/Mercadona:** NO multi-zona (Alcampo surtido nacional; Condis 718 = superconjunto;
   Mercadona ya multi-almacén por su cuenta).

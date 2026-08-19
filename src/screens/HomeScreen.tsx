@@ -16,6 +16,7 @@ import {
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../constants/colors';
 import { useCart } from '../context/CartContext';
 import { useProfile } from '../context/ProfileContext';
@@ -49,6 +50,33 @@ const cartCacheKey = (userId: string, groupId: string) => `@homeCart:${userId}:$
 
 const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+/**
+ * Fondo ambiental de Inicio. El lavado superior recoge el accent elegido y
+ * las formas quedan casi fuera del lienzo para aportar profundidad sin crear
+ * un patrón que compita con las tarjetas o el contenido desplazable.
+ */
+function HomeBackdrop({ styles }: { styles: ReturnType<typeof themedStyles> }) {
+  return (
+    <View
+      pointerEvents="none"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={styles.backdrop}
+    >
+      <LinearGradient
+        colors={[colors.accentLight, colors.paper, colors.paper]}
+        locations={[0, 0.42, 1]}
+        start={{ x: 0.08, y: 0 }}
+        end={{ x: 0.82, y: 0.72 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <View style={styles.backdropHalo} />
+      <View style={styles.backdropRing} />
+      <View style={styles.backdropLowerWash} />
+    </View>
+  );
+}
 
 export default function HomeScreen() {
   const styles = useThemedStyles(themedStyles);
@@ -233,18 +261,6 @@ export default function HomeScreen() {
 
   const header = (
     <View style={[styles.header, { paddingTop: headerTop }]}>
-      <View style={styles.headerTitleWrap}>
-        <View style={styles.headerIcon}>
-          <Ionicons name="home-outline" size={18} color={colors.accent} />
-        </View>
-        <View style={styles.headerCopy}>
-          <Text style={styles.headerTitle} numberOfLines={1}>
-            QuéFalta
-          </Text>
-          <Text style={styles.headerSubtitle}>{t('home.subtitle')}</Text>
-        </View>
-      </View>
-
       <View style={styles.headerActions}>
         <TouchableOpacity
           onPress={() => setNotifOpen(true)}
@@ -281,6 +297,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
+      <HomeBackdrop styles={styles} />
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
       {!glassAvailable && header}
       <ScrollView
@@ -583,26 +600,35 @@ export default function HomeScreen() {
 
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  backdropHalo: {
+    position: 'absolute',
+    width: 280, height: 280, borderRadius: 140,
+    top: -190, left: -100,
+    backgroundColor: colors.accentLight,
+  },
+  backdropRing: {
+    position: 'absolute',
+    width: 270, height: 270, borderRadius: 135,
+    top: 105, right: -205,
+    borderWidth: 1.5, borderColor: colors.accentMid,
+    opacity: 0.42,
+  },
+  backdropLowerWash: {
+    position: 'absolute',
+    width: 340, height: 340, borderRadius: 170,
+    top: '62%', left: -270,
+    backgroundColor: colors.accentLight,
+    opacity: 0.38,
+  },
   scroll: { padding: 16, paddingBottom: 32 },
 
   header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center',
     gap: 10, paddingHorizontal: 16, paddingBottom: 12,
-  },
-  headerTitleWrap: {
-    flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 10,
-  },
-  headerIcon: {
-    width: 34, height: 34, borderRadius: 17,
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.accentLight,
-  },
-  headerCopy: { flex: 1, minWidth: 0 },
-  headerTitle: {
-    fontSize: 23, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4,
-  },
-  headerSubtitle: {
-    fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1,
   },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   avatarRing: { borderWidth: 1, borderColor: colors.accent },

@@ -3,6 +3,94 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
+## Fondo ambiental en Inicio (2026-08-18)
+
+- Inicio conserva el papel cálido como base, pero añade un lavado de color muy
+  suave y tres formas amplias, casi fuera de pantalla, para dar profundidad sin
+  competir con las tarjetas. Es una composición nativa, sin recursos raster.
+- El fondo usa los tokens dinámicos `accent*` y `paper`, por lo que responde al
+  color elegido (incluido el personalizado de Plus) y al modo claro/oscuro. Es
+  decorativo, no intercepta gestos y queda oculto al árbol de accesibilidad.
+
+## QuéCocino: nuevo contenido de recetas (2026-08-18)
+
+- **QuéCocino** es una pestaña central del navegador, entre Catálogo y Carrito.
+  Su acceso muestra solo el logo de cocina sobre el botón con reflejo animado;
+  no lleva etiqueta visible y respeta la preferencia Reducir movimiento.
+- QuéCocino prepara dos secciones: recetas
+  oficiales de supermercados (estado «Muy pronto») y recetas de la comunidad.
+  Las recetas comunitarias actuales son datos locales marcados como muestra;
+  todavía no existe persistencia, detalle de receta ni integración remota.
+- La pantalla sigue el tema claro/oscuro, el accent personalizable, Liquid Glass
+  en la cabecera, castellano/catalán y los componentes visuales de la app.
+
+## Paso 2 del onboarding con persiana azul (2026-08-18)
+
+- El cambio de `Username` a `Stores` es inmediato, sin la transición móvil que
+  cruzaba ambos pasos. `Stores` replica la persiana azul del primer paso, con
+  sus lamas, título blanco, tarjetas claras y CTA blanco; no muestra subtítulo.
+- Se eliminó por completo la cabecera común «Paso 2 de 5». Solo queda un botón
+  de volver flotante. La mascota con carrito se muestra completa en una
+  cabecera fija y no desaparece al desplazar la selección: únicamente el grid
+  de supermercados hace scroll y el botón Continuar también permanece fijo.
+- El recurso con alfa real es
+  `assets/mascot/berenjena-carrito-transicion.png`. Su ancho se limita tanto por
+  el ancho como por la altura disponible para evitar recortes en pantallas
+  pequeñas y orientación horizontal.
+- El indicador de selección (`0/14`, según la comunidad) queda fijo en la
+  esquina superior derecha, alineado con el botón de volver y fuera del scroll.
+- Las tarjetas se filtran con `storeInRegion` usando la comunidad derivada del
+  código postal guardado en el paso anterior. La cobertura de los regionales
+  nuevos está declarada en `src/constants/regions.ts`: HiperDino (Canarias),
+  Plusfresc (Cataluña y Aragón), Gadis (Galicia y Castilla y León), Froiz
+  (Galicia, Castilla y León, Castilla-La Mancha y Madrid) y Ahorramás
+  (Castilla-La Mancha, Madrid y Castilla y León).
+
+## Paso 3 del onboarding con mascota selfie (2026-08-19)
+
+- Foto de perfil replica la persiana azul con lamas de los pasos anteriores:
+  volver flotante, título en la línea inmediatamente inferior al botón de
+  volver, tarjeta clara para elegir o cambiar la foto y acciones fijas para
+  continuar u omitir. No lleva subtítulo.
+- La nueva pose `assets/mascot/berenjena-selfie.png` muestra a la mascota
+  haciéndose un selfie con un móvil. Es un PNG RGBA de 512×768 con alfa real y
+  se presenta en tamaño reducido entre la tarjeta de foto y el footer.
+- La lógica no cambia: usa el selector nativo, recorta a 1:1 y solo sube la
+  imagen al continuar; el paso sigue siendo opcional.
+
+## Paso 4 del onboarding con mascotas amigas (2026-08-19)
+
+- Amigos adopta la persiana azul con lamas de los pasos anteriores: botón de
+  volver flotante, título y subtítulo superiores, búsqueda y resultados claros,
+  y acciones fijas para continuar u omitir.
+- El campo de búsqueda permanece fijo bajo las mascotas; solo se desplazan los
+  resultados, con indicador vertical lateral del scroll.
+- `assets/mascot/berenjena-amigos.png` es una composición PNG RGBA de 1024×1536
+  con la berenjena en el centro y dos nuevas mascotas, un plátano y un tomate,
+  dándole una mano cada uno. Se muestra entre la cabecera y la búsqueda al 50 %
+  del tamaño usado en el primer diseño del paso.
+- La lógica sigue intacta: búsqueda con debounce, exclusión del usuario actual,
+  envío de solicitudes, confirmación háptica y paso opcional.
+- La búsqueda incremental se comparte con Perfil → Amigos mediante
+  `useUsernameSearch`: la primera consulta de dos caracteres sale sin espera,
+  las siguientes esperan solo 100 ms, cancelan la petición anterior y filtran
+  localmente el último prefijo resuelto mientras llega la respuesta. La consulta
+  remota medida con rol autenticado y RLS ejecuta en ~5 ms; no se añadió ningún
+  índice ni migración.
+
+## Paso 5 del onboarding con primer grupo (2026-08-19)
+
+- El último paso numerado adopta también la persiana azul con lamas, botón de
+  volver flotante, título y subtítulo superiores, mascota con carrito, campo
+  claro y sugerencias rápidas. El CTA y la acción para omitir permanecen fijos.
+- `assets/mascot/berenjena-grupo.png` reutiliza el diseño de las tres mascotas
+  del paso anterior: la berenjena empuja el carrito, el plátano va sentado
+  dentro y el tomate queda a la derecha; los tres saludan. Es un PNG RGBA de
+  1024×1536 con fondo transparente, también a través de los huecos interiores
+  de la cesta y del bastidor del carrito.
+- La lógica no cambia: el nombre sigue siendo opcional, `createGroup` solo se
+  ejecuta cuando hay texto y después se navega a la pantalla terminal Done.
+
 ## Sync Mercadona: guardarraíl anti-bloqueo (2026-08-18)
 
 - El sync semanal separa el catálogo del enriquecimiento nutricional: la tabla
@@ -14,6 +102,20 @@
   `scripts/backfill-mercadona-ean.mjs`.
 - Si fallan más del 3% de subcategorías, se aborta antes de escribir o ejecutar
   `markStale`; así un 403/rate limit no despublica catálogo válido.
+
+## Color personalizado de QuéFalta Plus (2026-08-18)
+
+- Perfil → Apariencia incluye un selector de color completo (espectro, tono y
+  brillo) para cuentas Plus. Las cuentas gratuitas ven el acceso bloqueado y
+  reciben la hoja de suscripción. Es la primera opción del bloque de colores y
+  se distingue con una tarjeta cuyo borde dorado gira continuamente.
+- El color se guarda localmente con una clave por usuario y dispositivo: dos
+  cuentas que compartan un móvil no heredan el color de la otra. Las claves de
+  tema globales anteriores se migran una única vez a la primera cuenta.
+- Usa `reanimated-color-picker`, `react-native-reanimated` y
+  `react-native-worklets`, compatibles con iOS y Android. Al añadir estos
+  módulos nativos hay que generar un nuevo build de desarrollo/producción; una
+  OTA no los incorpora en instalaciones que no los tengan ya.
 
 ## Comparador: filtro estricto de identidad semántica (2026-08-17)
 
@@ -54,31 +156,52 @@
   visible es 150 pt): mantienen densidad suficiente para pantallas 3x y bajan
   juntas de 2,81 MB a unos 568 KB en el bundle.
 
-## Persiana animada en el primer paso del onboarding (2026-08-16)
+## Persiana estática en el primer paso del onboarding (2026-08-19)
 
-- El paso inicial de `@usuario` y código postal es una persiana azul a pantalla
-  completa (`#2f6cb5`) que baja desde la parte superior y lleva a la mascota
-  agarrada al borde inferior. No muestra la barra de progreso común: campos,
-  selección de zona y botón Continuar viven dentro de la propia persiana.
-- La pose vive en `assets/mascot/berenjena-persiana.png` y la composición en
-  `src/screens/onboarding/OnboardingShutter.tsx`. La animación se desactiva al
-  activar Reducir movimiento y el formulario aparece después de la bajada.
-- Al terminar la bajada aparece desde arriba una segunda pose, guardada en
-  `assets/mascot/berenjena-sentada-ok.png`: cae con rebote, se sienta sobre
-  «¡Empezamos!» y mantiene el pulgar arriba. Solo entonces recibe el foco el
-  campo de usuario.
+- El paso inicial de `@usuario` y código postal usa una persiana azul estática a
+  pantalla completa (`#2f6cb5`). Ya no entra desde arriba ni usa la pose
+  agarrada al borde inferior: contenido y formulario aparecen directamente.
+- `src/screens/onboarding/OnboardingShutter.tsx` muestra desde el primer render
+  `assets/mascot/berenjena-sentada-ok.png` fijada en su posición final sobre
+  «¡Empezamos!». El campo de usuario recibe el foco al montar la pantalla.
+- Al completar un código postal válido, su tarjeta reduce suavemente el ancho
+  desde el borde derecho y revela en la misma fila la comunidad autónoma. Las
+  dos tarjetas terminan con el mismo ancho y alto; Reducir movimiento muestra
+  directamente el estado final.
 
-## Portada de autenticación (2026-08-16)
+## Portada de autenticación gestual (2026-08-19)
 
-- Login usa una composición vertical inspirada en la cesta: cabecera en el
-  color de acento con los logos locales de supermercados cayendo hasta ocupar
-  el espacio, transición SVG con el máximo centrado hacia el contenido y marca
-  dentro de esa curva, antes de la propuesta de valor y de Apple, Google y
-  correo. Los tres flujos de autenticación mantienen su lógica.
-- Las tarjetas blancas de los logos entran una sola vez y después flotan con
-  suavidad sobre pequeñas nubes; las animaciones usan el driver nativo, precargan
-  recursos locales y quedan desactivadas cuando el sistema solicita Reducir
-  movimiento. La pantalla sigue siendo desplazable y compatible con texto grande.
+- La primera apertura sin sesión adapta el experimento open source `Wabi & More`
+  de `ImCitizen13/quattro4maggi` (MIT): una gran burbuja prismática nace bajo el
+  borde inferior y sigue el dedo. Un gesto corto la devuelve a su origen; al
+  superar el umbral se encaja arriba con muelle y respuesta háptica.
+- Desde la burbuja encajada aparecen escalonadamente los 18 supermercados de
+  `CATALOG_STORES`, dentro del área segura y con flotación suave. Después se
+  revelan el texto y los accesos de Apple, Google y correo. No se ha modificado
+  la lógica de autenticación; Google continúa usando PKCE.
+- La antigua cabecera azul, las nubes, la curva SVG y el icono/marca gráfica se
+  eliminaron. El splash nativo es ahora un fondo cálido sin imagen y `BootLoader`
+  es neutro, para que la burbuja sea el primer elemento reconocible del login.
+- La portada admite activación accesible, mantiene el formulario y los textos
+  legales desplazables y respeta Reducir movimiento. Al desplegar correo, la
+  nube se retira para no solaparse con el contenido; al cerrarlo vuelve a su
+  posición. Sigue los tokens dinámicos de tema y color principal.
+- En iOS 26 la esfera usa Liquid Glass nativo mediante el wrapper único
+  `GlassSurface`: material `clear` sin tinte para conservar la transparencia,
+  con una lente SVG neutra que aporta doble borde, reflejo superior difuso y
+  caústicas interiores de muy baja opacidad. Su diámetro inicial se adapta al
+  ancho y el texto queda detrás del cristal para que la refracción sea visible.
+  Al comenzar el arrastre, un Runtime Shader de
+  `@shopify/react-native-skia@2.2.12` genera dentro de la lente una retina curva
+  ligada al progreso del gesto: combina el accent de la app con cian, azul
+  eléctrico, violeta y rosa, desciende al elevar la esfera y se desvanece al
+  encajarla. La carga de Skia es perezosa para que una OTA sobre un binario
+  anterior no crashee; en ese caso se dibuja una versión SVG equivalente.
+  Android, iOS anteriores y builds sin `expo-glass-effect` conservan la esfera
+  translúcida de fallback con la misma óptica. El cristal es solo la superficie
+  visual; el gesto sigue en el contenedor exterior para que el módulo nativo no
+  compita con el reconocedor de arrastre. Los logos no usan glass ni se anidan
+  superficies.
 
 ## Identidad pública basada en @usuario (2026-08-15)
 

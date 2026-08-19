@@ -137,6 +137,7 @@ export default function UsernameScreen() {
           onChange={setRegionSelection}
           helperText={t('onboarding.postalCodeReason')}
           inverse
+          inlineDetected
         />
 
         <TouchableOpacity

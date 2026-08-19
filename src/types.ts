@@ -237,6 +237,7 @@ export interface FavoriteProduct {
 export type RootTabParamList = {
   Home: undefined;
   Catalog: undefined;
+  QueCocino: undefined;
   List: undefined;
   Groups: undefined;
 };

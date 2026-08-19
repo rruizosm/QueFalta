@@ -1,7 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import {
-  Animated,
-  Easing,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -15,9 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../constants/colors';
 import { fonts } from '../../constants/typography';
 import { useTranslation } from '../../context/LanguageContext';
-import { useReducedMotion } from '../../hooks/useReducedMotion';
 
-const MASCOT = require('../../../assets/mascot/berenjena-persiana.png');
 const SEATED_MASCOT = require('../../../assets/mascot/berenjena-sentada-ok.png');
 const SLATS = Array.from({ length: 26 }, (_, index) => index);
 const APP_BLUE = colors.blue;
@@ -28,170 +25,76 @@ interface Props {
 }
 
 /**
- * Persiana a pantalla completa del primer paso. Todo el formulario vive dentro
- * de ella; la mascota viaja agarrada al borde inferior durante la bajada.
+ * Persiana estática a pantalla completa del primer paso. El formulario y la
+ * mascota sentada aparecen directamente en su posición final.
  */
 export default function OnboardingShutter({ children, onSettled }: Props) {
   const { t } = useTranslation();
-  const reducedMotion = useReducedMotion();
   const insets = useSafeAreaInsets();
-  const { height, width } = useWindowDimensions();
-  const shutterY = useRef(new Animated.Value(-height - 40)).current;
-  const mascotLanding = useRef(new Animated.Value(0)).current;
-  const pullingMascotOpacity = useRef(new Animated.Value(1)).current;
+  const { width } = useWindowDimensions();
 
   useEffect(() => {
-    if (reducedMotion) {
-      shutterY.setValue(0);
-      mascotLanding.setValue(1);
-      pullingMascotOpacity.setValue(0);
-      onSettled?.();
-      return undefined;
-    }
-
-    shutterY.setValue(-height - 40);
-    mascotLanding.setValue(0);
-    pullingMascotOpacity.setValue(1);
-    const shutterAnimation = Animated.sequence([
-      Animated.timing(shutterY, {
-        toValue: 9,
-        duration: 980,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.spring(shutterY, {
-        toValue: 0,
-        damping: 12,
-        stiffness: 165,
-        mass: 0.72,
-        useNativeDriver: true,
-      }),
-    ]);
-
-    const landingAnimation = Animated.spring(mascotLanding, {
-      toValue: 1,
-      damping: 10,
-      stiffness: 145,
-      mass: 0.72,
-      useNativeDriver: true,
-    });
-    const mascotTransition = Animated.sequence([
-      Animated.timing(pullingMascotOpacity, {
-        toValue: 0,
-        duration: 130,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
-      landingAnimation,
-    ]);
-
-    shutterAnimation.start(({ finished }) => {
-      if (!finished) return;
-      mascotTransition.start(({ finished: landed }) => {
-        if (landed) onSettled?.();
-      });
-    });
-    return () => {
-      shutterAnimation.stop();
-      mascotTransition.stop();
-    };
-  }, [height, mascotLanding, onSettled, pullingMascotOpacity, reducedMotion, shutterY]);
+    onSettled?.();
+  }, [onSettled]);
 
   const shellWidth = Math.min(width - 40, 560);
-  const mascotWidth = Math.min(150, width * 0.38);
-  const mascotHeight = mascotWidth * 1.5;
   const seatedWidth = Math.min(142, width * 0.36);
   const seatedHeight = seatedWidth * 1.5;
-  const seatedTranslateY = mascotLanding.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-Math.min(height * 0.72, 540), 0],
-  });
-  const seatedScale = mascotLanding.interpolate({
-    inputRange: [0, 0.82, 1],
-    outputRange: [0.92, 1.04, 1],
-  });
 
   return (
     <View style={styles.screen}>
       <StatusBar barStyle="light-content" backgroundColor={APP_BLUE} />
 
-      <Animated.View
-        style={[
-          StyleSheet.absoluteFill,
-          styles.shutter,
-          { transform: [{ translateY: shutterY }] },
-        ]}
-      >
-        <View style={styles.shutterSurface}>
-          <View style={styles.slats} pointerEvents="none">
-            {SLATS.map((slat) => <View key={slat} style={styles.slat} />)}
-          </View>
-
-          <KeyboardAvoidingView
-            style={styles.keyboardAvoider}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          >
-            <ScrollView
-              style={styles.scroll}
-              contentContainerStyle={[
-                styles.scrollContent,
-                {
-                  paddingTop: insets.top + 34,
-                  paddingBottom: Math.max(insets.bottom + 34, 48),
-                },
-              ]}
-              keyboardShouldPersistTaps="handled"
-              keyboardDismissMode="on-drag"
-              showsVerticalScrollIndicator={false}
-            >
-              <View style={[styles.shell, { width: shellWidth }]}>
-                <View
-                  style={styles.intro}
-                  accessible
-                  accessibilityRole="header"
-                  accessibilityLabel={`${t('onboarding.shutterTitle')}. ${t('onboarding.shutterSubtitle')}`}
-                >
-                  <Animated.Image
-                    source={SEATED_MASCOT}
-                    resizeMode="contain"
-                    style={[
-                      styles.seatedMascot,
-                      {
-                        width: seatedWidth,
-                        height: seatedHeight,
-                        transform: [
-                          { translateY: seatedTranslateY },
-                          { scale: seatedScale },
-                        ],
-                      },
-                    ]}
-                    accessible={false}
-                  />
-                  <Text style={styles.title}>{t('onboarding.shutterTitle')}</Text>
-                  <Text style={styles.subtitle}>{t('onboarding.shutterSubtitle')}</Text>
-                </View>
-                <View style={styles.form}>{children}</View>
-              </View>
-            </ScrollView>
-          </KeyboardAvoidingView>
-
+      <View style={styles.shutterSurface}>
+        <View style={styles.slats} pointerEvents="none">
+          {SLATS.map((slat) => <View key={slat} style={styles.slat} />)}
         </View>
-        <View style={styles.bottomRail} pointerEvents="none" />
-        <Animated.Image
-          source={MASCOT}
-          resizeMode="contain"
-          style={[
-            styles.mascot,
-            {
-              width: mascotWidth,
-              height: mascotHeight,
-              bottom: -(mascotHeight - 55),
-              opacity: pullingMascotOpacity,
-            },
-          ]}
-          accessible={false}
-        />
-      </Animated.View>
+
+        <KeyboardAvoidingView
+          style={styles.keyboardAvoider}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={[
+              styles.scrollContent,
+              {
+                paddingTop: insets.top + 34,
+                paddingBottom: Math.max(insets.bottom + 34, 48),
+              },
+            ]}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={[styles.shell, { width: shellWidth }]}>
+              <View
+                style={styles.intro}
+                accessible
+                accessibilityRole="header"
+                accessibilityLabel={`${t('onboarding.shutterTitle')}. ${t('onboarding.shutterSubtitle')}`}
+              >
+                <Image
+                  source={SEATED_MASCOT}
+                  resizeMode="contain"
+                  style={[
+                    styles.seatedMascot,
+                    {
+                      width: seatedWidth,
+                      height: seatedHeight,
+                    },
+                  ]}
+                  accessible={false}
+                />
+                <Text style={styles.title}>{t('onboarding.shutterTitle')}</Text>
+                <Text style={styles.subtitle}>{t('onboarding.shutterSubtitle')}</Text>
+              </View>
+              <View style={styles.form}>{children}</View>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
+      <View style={styles.bottomRail} pointerEvents="none" />
     </View>
   );
 }
@@ -201,9 +104,6 @@ const styles = StyleSheet.create({
     flex: 1,
     overflow: 'hidden',
     backgroundColor: '#fbf6ee',
-  },
-  shutter: {
-    overflow: 'visible',
   },
   shutterSurface: {
     ...StyleSheet.absoluteFillObject,
@@ -275,10 +175,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#255b9c',
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.36)',
-  },
-  mascot: {
-    position: 'absolute',
-    alignSelf: 'center',
-    zIndex: 2,
   },
 });

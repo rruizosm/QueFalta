@@ -15,9 +15,9 @@
 
 ## 1. Contexto y objetivo
 
-QuéFalta es un espejo de catálogos de supermercados españoles. Hoy hay **12
-súpers** implementados (`CatalogStore` en `src/constants/stores.ts:8`) y **Hiperdino
-está en camino como 13º** (Canarias). Muchos son **regionales**: no tiene sentido
+QuéFalta es un espejo de catálogos de supermercados españoles. Hoy hay **18
+súpers** en `CatalogStore` (`src/constants/stores.ts`). Muchos son **regionales**:
+no tiene sentido
 enseñarle Bonpreu/Sorli/Caprabo a un usuario de Sevilla, ni Hiperdino fuera de
 Canarias.
 
@@ -193,7 +193,7 @@ Más el sentinel **`ES` = "Toda España"** (última opción del selector).
 Guardar la **huella de cada súper** (`Record<CatalogStore, RegionCode[] | null>`),
 NO `Record<RegionCode, CatalogStore[]>`. Justificación:
 
-- La lista de súpers es corta y estable (13); la de CCAA es larga (19). Menos
+- La lista de súpers es corta y estable (18); la de CCAA es larga (19). Menos
   entradas, menos duplicación.
 - "En qué comunidades opera este súper" es la unidad natural de conocimiento
   (añadir un súper = 1 línea, como en `CATALOG_STORES`).
@@ -214,23 +214,26 @@ NO `Record<RegionCode, CatalogStore[]>`. Justificación:
 | `sorli`      | Regional | `ES-CT` |
 | `caprabo`    | Regional | `ES-CT` |
 | `ametller`   | Regional | `ES-CT` |
-| `condis`     | Regional | `ES-CT`, `ES-MD` |
-| `bonarea`    | Regional | `ES-CT`, `ES-AR`, `ES-VC` |
-| `consum`     | Regional | `ES-VC`, `ES-MC`, `ES-CM`, `ES-AN`, `ES-CT` |
-| `eroski`     | Regional | `ES-PV`, `ES-NC`, `ES-GA`, `ES-CT`, `ES-IB` |
-| `hiperdino`  | Regional (13º, en camino) | `ES-CN` |
+| `alcampo`    | Nacional | `null` |
+| `gadis`      | Regional | `ES-GA`, `ES-CL` |
+| `froiz`      | Regional | `ES-GA`, `ES-CL`, `ES-CM`, `ES-MD` |
+| `ahorramas`  | Regional | `ES-CM`, `ES-MD`, `ES-CL` |
+| `condis`     | Regional | `ES-CT` |
+| `bonarea`    | Regional | `ES-CT`, `ES-AR`, `ES-CM`, `ES-MD`, `ES-VC`, `ES-RI`, `ES-NC` |
+| `consum`     | Regional | `ES-AN`, `ES-AR`, `ES-CM`, `ES-CT`, `ES-MC`, `ES-VC` |
+| `eroski`     | Regional | `ES-AS`, `ES-AR`, `ES-CB`, `ES-CL`, `ES-CT`, `ES-GA`, `ES-IB`, `ES-NC`, `ES-PV`, `ES-RI` |
+| `hiperdino`  | Regional | `ES-CN` |
+| `plusfresc`  | Regional | `ES-CT`, `ES-AR` |
 
 > Notas:
-> - **Hiperdino** aún NO está en el tipo `CatalogStore` (`stores.ts:8`). Cuando se
->   implemente, se añade allí y su entrada aquí. Mientras tanto, dejar la línea
->   comentada o guardada tras un `// TODO Hiperdino` para no romper el tipo.
 > - Eroski es fuerte en el norte; su presencia en `ES-CT`/`ES-IB` es real pero
 >   menor. La cobertura es afinable sin migrar (es solo cliente), igual que
 >   `zones.ts`.
 > - Consum en Cataluña es limitado; se incluye porque el usuario lo pidió. Ajustar
 >   si se quiere ser más estricto.
+> - Plusfresc incluye `ES-AR` por sus tiendas de la Franja de Ponent.
 
-### Código propuesto
+### Código vigente
 
 ```ts
 // src/constants/regions.ts
@@ -258,15 +261,20 @@ export const STORE_REGIONS: Record<CatalogStore, RegionCode[] | null> = {
   carrefour: null,
   dia:       null,
   aldi:      null,
+  alcampo:   null,
   esclat:    ['ES-CT'],
   sorli:     ['ES-CT'],
   caprabo:   ['ES-CT'],
   ametller:  ['ES-CT'],
-  condis:    ['ES-CT', 'ES-MD'],
-  bonarea:   ['ES-CT', 'ES-AR', 'ES-VC'],
-  consum:    ['ES-VC', 'ES-MC', 'ES-CM', 'ES-AN', 'ES-CT'],
-  eroski:    ['ES-PV', 'ES-NC', 'ES-GA', 'ES-CT', 'ES-IB'],
-  // hiperdino: ['ES-CN'],  // añadir junto con el súper en stores.ts
+  condis:    ['ES-CT'],
+  bonarea:   ['ES-CT', 'ES-AR', 'ES-CM', 'ES-MD', 'ES-VC', 'ES-RI', 'ES-NC'],
+  consum:    ['ES-AN', 'ES-AR', 'ES-CM', 'ES-CT', 'ES-MC', 'ES-VC'],
+  eroski:    ['ES-AS', 'ES-AR', 'ES-CB', 'ES-CL', 'ES-CT', 'ES-GA', 'ES-IB', 'ES-NC', 'ES-PV', 'ES-RI'],
+  hiperdino: ['ES-CN'],
+  plusfresc: ['ES-CT', 'ES-AR'],
+  gadis:     ['ES-GA', 'ES-CL'],
+  froiz:     ['ES-GA', 'ES-CL', 'ES-CM', 'ES-MD'],
+  ahorramas: ['ES-CM', 'ES-MD', 'ES-CL'],
 };
 
 /** ¿Está `store` disponible en `region`?  'ES'/null → todos visibles. */
@@ -278,8 +286,7 @@ export function storeInRegion(store: CatalogStore, region: RegionValue | null): 
 
 /** Súpers disponibles en una CCAA (en el orden canónico de CATALOG_STORE_KEYS). */
 export function storesForRegion(region: RegionValue | null): CatalogStore[] {
-  // usar CATALOG_STORE_KEYS para conservar el orden de aparición
-  return (Object.keys(STORE_REGIONS) as CatalogStore[]).filter((s) => storeInRegion(s, region));
+  return CATALOG_STORE_KEYS.filter((s) => storeInRegion(s, region));
 }
 
 /** Puente a los nombres locales que usa mercadona_products.regions (futuro). */
@@ -727,6 +734,10 @@ necesitarán mañana, sin volver a preguntar.
   Nuevo contrato: `{ region, postalCode }` via `onChange`; `region: null` =
   selección incompleta (el padre deshabilita Continuar / no guarda). El CP en
   edición vive en estado local del picker.
+- En el primer paso, `inlineDetected` hace que un CP válido contraiga suavemente
+  su tarjeta desde la derecha y revele la comunidad en la misma fila. Al
+  finalizar, ambas tarjetas ocupan exactamente la mitad del ancho disponible y
+  comparten altura; las otras pantallas conservan la disposición vertical.
 - Las 3 pantallas (`RegionScreen` 3/7, `RegionGateScreen`, `RegionSettingsScreen`)
   guardan `{ region, postalCode }`. Ajustes solo guarda estados completos
   (CP válido o "Toda España") y re-monta el picker (key) si el guardado

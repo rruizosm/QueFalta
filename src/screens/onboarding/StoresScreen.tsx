@@ -1,11 +1,20 @@
 /** Paso 2 (OBLIGATORIO) — Elegir supermercados del catálogo. Mínimo uno.
- *  El grid solo ofrece los súpers disponibles en la comunidad autónoma elegida
- *  en el paso anterior (storeInRegion; con "Toda España" se ven todos) y
- *  empieza sin ninguna selección. Mínimo uno para continuar. */
+ *  Replica la persiana azul del primer paso, sin indicador de progreso. La
+ *  mascota con carrito permanece fija y completa sobre la selección. */
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, type DimensionValue } from 'react-native';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { Image } from 'expo-image';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../../constants/colors';
@@ -13,16 +22,18 @@ import { fonts } from '../../constants/typography';
 import { useAuth } from '../../context/AuthContext';
 import { useProfile } from '../../context/ProfileContext';
 import { useToast } from '../../context/ToastContext';
-import { useThemedStyles } from '../../context/ThemeContext';
 import { useTranslation } from '../../context/LanguageContext';
 import { updateProfile } from '../../api/profile';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../../constants/stores';
 import { storeInRegion } from '../../constants/regions';
-import OnboardingLayout from './OnboardingLayout';
+
+const CART_MASCOT = require('../../../assets/mascot/berenjena-carrito-transicion.png');
+const SLATS = Array.from({ length: 26 }, (_, index) => index);
+const APP_BLUE = colors.blue;
 
 export default function StoresScreen() {
-  const styles = useThemedStyles(themedStyles);
-  const { width } = useWindowDimensions();
+  const { height, width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { session } = useAuth();
@@ -32,21 +43,30 @@ export default function StoresScreen() {
 
   // Solo los súpers de la CCAA elegida en el paso anterior ('ES' = todos).
   const region = profile?.region ?? null;
-  const shown = CATALOG_STORES.filter((s) => storeInRegion(s.key, region));
+  const shown = CATALOG_STORES.filter((store) => storeInRegion(store.key, region));
 
   // Cada cuenta elige expresamente sus súpers. Una selección vacía no se toma
   // del perfil, porque fuera del onboarding se normaliza como "todos".
   const [selected, setSelected] = useState<CatalogStore[]>([]);
   const [saving, setSaving] = useState(false);
+  const shellWidth = Math.min(width - 40, 560);
   const columns = width >= 620 ? 3 : 2;
   const gap = 10;
-  const cardWidth = `${(100 - ((columns - 1) * gap * 100) / Math.min(width - 32, 560)) / columns}%` as DimensionValue;
+  const cardWidth = (shellWidth - gap * (columns - 1)) / columns;
+  const maxMascotWidthForHeight = height < 500 ? 190 : height < 700 ? 280 : 420;
+  const mascotWidth = Math.min(
+    width - 64,
+    width >= 620 ? 420 : 340,
+    maxMascotWidthForHeight,
+  );
+  const mascotHeight = mascotWidth / 1.5;
+  const compactHeight = height < 700;
 
   const toggle = (key: CatalogStore) => {
     Haptics.selectionAsync();
     const isOn = selected.includes(key);
-    const next = isOn ? selected.filter((s) => s !== key) : [...selected, key];
-    setSelected(CATALOG_STORE_KEYS.filter((k) => next.includes(k)));
+    const next = isOn ? selected.filter((store) => store !== key) : [...selected, key];
+    setSelected(CATALOG_STORE_KEYS.filter((store) => next.includes(store)));
   };
 
   const handleContinue = async () => {
@@ -64,83 +84,287 @@ export default function StoresScreen() {
   };
 
   return (
-    <OnboardingLayout
-      step={2}
-      totalSteps={5}
-      title={t('onboarding.storesTitle')}
-      titleNumberOfLines={1}
-      titleAdjustsFontSizeToFit
-      subtitle={t('onboarding.storesSubtitle')}
-      onBack={() => navigation.goBack()}
-      continueLabel={t('onboarding.continue')}
-      continueDisabled={selected.length === 0}
-      continueLoading={saving}
-      onContinue={handleContinue}
-    >
-      <View style={styles.summary}>
-        <Ionicons name="storefront" size={16} color={colors.accent} />
+    <View style={styles.screen}>
+      <StatusBar barStyle="light-content" backgroundColor={APP_BLUE} />
+
+      <View style={styles.slats} pointerEvents="none">
+        {SLATS.map((slat) => <View key={slat} style={styles.slat} />)}
+      </View>
+
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={[styles.backButton, { top: insets.top + 8 }]}
+        hitSlop={8}
+        activeOpacity={0.82}
+        accessibilityRole="button"
+        accessibilityLabel={t('common.back')}
+      >
+        <Ionicons name="arrow-back" size={20} color={APP_BLUE} />
+      </TouchableOpacity>
+
+      <View
+        style={[styles.summary, { top: insets.top + 8 }]}
+        accessibilityLabel={`${selected.length}/${shown.length}`}
+      >
+        <Ionicons name="storefront" size={16} color="#ffffff" />
         <Text style={styles.summaryText}>{selected.length}/{shown.length}</Text>
       </View>
-      <View style={styles.grid}>
-        {shown.map((s) => {
-          const on = selected.includes(s.key);
-          return (
-            <TouchableOpacity
-              key={s.key}
-              activeOpacity={0.8}
-              onPress={() => toggle(s.key)}
-              style={[styles.card, { width: cardWidth }, on && styles.cardOn]}
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: on }}
-            >
-              {s.icon ? (
-                <Image
-                  source={s.icon}
-                  style={styles.icon}
-                  contentFit="contain"
-                  cachePolicy="memory-disk"
-                  transition={0}
-                />
-              ) : (
-                <View style={[styles.icon, styles.iconEmpty]}>
-                  <Ionicons name="storefront" size={18} color={colors.inkSoft} />
-                </View>
-              )}
-              <Text style={styles.cardName} numberOfLines={1}>{s.name}</Text>
-              <Ionicons
-                name={on ? 'checkmark-circle' : 'ellipse-outline'}
-                size={20}
-                color={on ? colors.accent : colors.inkFaint}
-              />
-            </TouchableOpacity>
-          );
-        })}
+
+      <View
+        style={[
+          styles.header,
+          {
+            paddingTop: insets.top + (compactHeight ? 12 : 18),
+            width: shellWidth,
+          },
+        ]}
+        accessible
+        accessibilityRole="header"
+        accessibilityLabel={t('onboarding.storesTitle')}
+      >
+        <Image
+          source={CART_MASCOT}
+          style={{ width: mascotWidth, height: mascotHeight }}
+          contentFit="contain"
+          transition={0}
+          accessible={false}
+        />
+        <Text
+          style={[styles.title, compactHeight && styles.titleCompact]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.76}
+        >
+          {t('onboarding.storesTitle')}
+        </Text>
       </View>
-    </OnboardingLayout>
+
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { width: shellWidth, paddingBottom: 14 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.grid}>
+          {shown.map((store) => {
+            const selectedStore = selected.includes(store.key);
+            return (
+              <TouchableOpacity
+                key={store.key}
+                activeOpacity={0.8}
+                onPress={() => toggle(store.key)}
+                style={[
+                  styles.card,
+                  { width: cardWidth },
+                  selectedStore && styles.cardSelected,
+                ]}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: selectedStore }}
+              >
+                {store.icon ? (
+                  <Image
+                    source={store.icon}
+                    style={styles.icon}
+                    contentFit="contain"
+                    cachePolicy="memory-disk"
+                    transition={0}
+                  />
+                ) : (
+                  <View style={[styles.icon, styles.iconEmpty]}>
+                    <Ionicons name="storefront" size={18} color="#7a6f64" />
+                  </View>
+                )}
+                <Text style={styles.cardName} numberOfLines={1}>{store.name}</Text>
+                <Ionicons
+                  name={selectedStore ? 'checkmark-circle' : 'ellipse-outline'}
+                  size={20}
+                  color={selectedStore ? APP_BLUE : '#8b8178'}
+                />
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </ScrollView>
+
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom + 14, 24) }]}>
+        <TouchableOpacity
+          style={[
+            styles.continueButton,
+            (selected.length === 0 || saving) && styles.continueButtonDisabled,
+          ]}
+          onPress={handleContinue}
+          disabled={selected.length === 0 || saving}
+          activeOpacity={0.86}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: selected.length === 0 || saving }}
+        >
+          {saving ? (
+            <ActivityIndicator color={APP_BLUE} />
+          ) : (
+            <>
+              <Text style={styles.continueText}>{t('onboarding.continue')}</Text>
+              <Ionicons name="arrow-forward" size={18} color={APP_BLUE} />
+            </>
+          )}
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.bottomRail} pointerEvents="none" />
+    </View>
   );
 }
 
-const themedStyles = () => StyleSheet.create({
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    alignItems: 'center',
+    overflow: 'hidden',
+    backgroundColor: APP_BLUE,
+  },
+  slats: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'space-evenly',
+  },
+  slat: {
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.11)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(13,53,101,0.18)',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 18,
+    zIndex: 4,
+    width: 44,
+    height: 44,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+  },
+  header: {
+    flexShrink: 0,
+    zIndex: 2,
+    alignItems: 'center',
+    paddingHorizontal: 12,
+  },
+  title: {
+    color: '#ffffff',
+    fontSize: 30,
+    lineHeight: 36,
+    fontFamily: fonts.bold,
+    textAlign: 'center',
+    marginTop: 2,
+    marginBottom: 15,
+  },
+  titleCompact: {
+    fontSize: 27,
+    lineHeight: 32,
+    marginBottom: 10,
+  },
+  scroll: {
+    flex: 1,
+    width: '100%',
+    zIndex: 2,
+  },
+  scrollContent: {
+    alignSelf: 'center',
+  },
   summary: {
-    alignSelf: 'flex-start',
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: colors.accentLight,
-    paddingHorizontal: 10, paddingVertical: 7,
+    position: 'absolute',
+    right: 18,
+    zIndex: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.34)',
+    paddingHorizontal: 10,
+    paddingVertical: 7,
     borderRadius: 999,
-    marginBottom: 12,
   },
-  summaryText: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.accent },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  summaryText: {
+    fontSize: 12.5,
+    fontFamily: fonts.bold,
+    color: '#ffffff',
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
   card: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    backgroundColor: colors.white,
-    borderWidth: 1, borderColor: colors.border,
-    paddingHorizontal: 12, paddingVertical: 14,
-    borderRadius: 18,
     minHeight: 58,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+    paddingHorizontal: 11,
+    paddingVertical: 13,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.76)',
+    backgroundColor: '#ffffff',
   },
-  cardOn: { borderColor: colors.accent, backgroundColor: colors.accentLight },
-  icon: { width: 26, height: 26, flexShrink: 0 },
-  iconEmpty: { alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceAlt, borderRadius: 10 },
-  cardName: { flex: 1, fontSize: 13, fontFamily: fonts.semibold, color: colors.ink },
+  cardSelected: {
+    borderColor: '#b8d7ff',
+    backgroundColor: '#eaf3ff',
+  },
+  icon: {
+    width: 26,
+    height: 26,
+    flexShrink: 0,
+  },
+  iconEmpty: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
+    backgroundColor: '#f6efe3',
+  },
+  cardName: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: fonts.semibold,
+    color: '#2b2521',
+  },
+  footer: {
+    width: '100%',
+    zIndex: 3,
+    alignItems: 'center',
+    paddingTop: 12,
+    paddingHorizontal: 20,
+    backgroundColor: APP_BLUE,
+  },
+  continueButton: {
+    width: '100%',
+    maxWidth: 560,
+    minHeight: 54,
+    borderRadius: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#ffffff',
+  },
+  continueButtonDisabled: {
+    opacity: 0.48,
+  },
+  continueText: {
+    fontSize: 15.5,
+    fontFamily: fonts.bold,
+    color: APP_BLUE,
+  },
+  bottomRail: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 4,
+    height: 14,
+    backgroundColor: '#255b9c',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.36)',
+  },
 });

@@ -19,12 +19,12 @@ import { ToastProvider } from './src/context/ToastContext';
 import { configureNotificationHandler } from './src/lib/notifications';
 
 SplashScreen.preventAutoHideAsync();
-// El splash nativo entrega el relevo al BootLoader con un fundido suave (lo
-// oculta BootLoader en su primer layout, no aquí).
+// El splash nativo, ahora sin icono, entrega el relevo al BootLoader neutro con
+// un fundido suave (lo oculta BootLoader en su primer layout, no aquí).
 SplashScreen.setOptions({ duration: 280, fade: true });
 // Red de seguridad (sobre todo Android): si el primer layout del BootLoader no
 // llega (arranque retenido o bug nativo del splash), descubre la app a los 4 s
-// en vez de dejar el icono clavado. No-op si BootLoader ya lo ocultó.
+// en vez de dejar el fondo clavado. No-op si BootLoader ya lo ocultó.
 setTimeout(() => { SplashScreen.hideAsync().catch(() => {}); }, 4000);
 configureNotificationHandler();
 
@@ -45,13 +45,12 @@ export default function App() {
     // navegación de Android, home indicator de iOS) a toda la app, incluida la
     // barra de pestañas, para que nada se solape con los botones del sistema.
     <SafeAreaProvider>
-    {/* LanguageProvider y ThemeProvider primero: retienen el render (splash
-        visible) hasta aplicar idioma y color guardados, para que los textos y los
-        StyleSheet se creen ya con la preferencia correcta (sin flash). */}
+    {/* LanguageProvider retiene el render hasta aplicar el idioma. El tema vive
+        bajo AuthProvider para aislar sus preferencias locales por cuenta. */}
     <LanguageProvider>
-      <ThemeProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <AuthProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <AuthProvider>
+          <ThemeProvider>
             <ProfileProvider>
               <NotificationsProvider>
                 <CartProvider>
@@ -63,9 +62,9 @@ export default function App() {
                 </CartProvider>
               </NotificationsProvider>
             </ProfileProvider>
-          </AuthProvider>
-        </GestureHandlerRootView>
-      </ThemeProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </GestureHandlerRootView>
     </LanguageProvider>
     </SafeAreaProvider>
   );

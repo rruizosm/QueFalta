@@ -35,6 +35,7 @@ import {
 } from '../lib/notifications';
 
 import HomeScreen       from '../screens/HomeScreen';
+import QueCocinoScreen  from '../screens/QueCocinoScreen';
 import FavoritesScreen  from '../screens/FavoritesScreen';
 import NewArrivalsScreen from '../screens/NewArrivalsScreen';
 import PriceChangesScreen from '../screens/PriceChangesScreen';
@@ -81,6 +82,7 @@ import RegionGateScreen from '../screens/onboarding/RegionGateScreen';
 import RegionSettingsScreen from '../screens/RegionSettingsScreen';
 import BootLoader       from '../components/BootLoader';
 import ReviewPrompt     from '../components/ReviewPrompt';
+import QueCocinoTabIcon from '../components/QueCocinoTabIcon';
 import { glassAvailable } from '../components/GlassSurface';
 import LiquidGlassTabBar, {
   LIQUID_TABBAR_HEIGHT, liquidTabBarBottom,
@@ -366,6 +368,9 @@ export default function Navigation() {
             fontFamily:  fonts.bold,
           },
           tabBarIcon: ({ color, focused }) => {
+            if (route.name === 'QueCocino') {
+              return <QueCocinoTabIcon focused={focused} />;
+            }
             const iconMap: Record<string, { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }> = {
               Home:      { active: 'home',   inactive: 'home-outline' },
               Catalog:   { active: 'grid',   inactive: 'grid-outline' },
@@ -388,6 +393,15 @@ export default function Navigation() {
           }}
         />
         <Tab.Screen name="Catalog"   component={CatalogNavigator} options={{ title: t('tabs.catalog') }} />
+        <Tab.Screen
+          name="QueCocino"
+          component={QueCocinoScreen}
+          options={{
+            title: t('queCocino.title'),
+            tabBarShowLabel: false,
+            tabBarAccessibilityLabel: t('queCocino.open'),
+          }}
+        />
         <Tab.Screen name="List"      component={ListScreen}        options={{ title: t('tabs.cart') }} />
         <Tab.Screen name="Groups"    component={GroupsNavigator}   options={{ title: t('tabs.groups') }} />
       </Tab.Navigator>

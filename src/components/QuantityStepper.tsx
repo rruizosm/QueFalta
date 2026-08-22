@@ -82,6 +82,7 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.accent,
+    borderRadius: 17,
     overflow: 'hidden',
   },
   btn: {

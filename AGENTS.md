@@ -19,7 +19,7 @@
 - **Expo SDK 54** · React Native 0.81.5 · TypeScript. **NO es SDK 56.** Docs versionados:
   https://docs.expo.dev/versions/v54.0.0/ (una versión anterior de este fichero decía v56 — era erróneo).
 - Backend **Supabase** (auth + Postgres + storage + edge functions). Catálogo Mercadona = API pública.
-- iOS bundle `com.quefalta.app`, scheme `quefalta`, Apple Team `LX4BLQDZS4`.
+- iOS bundle `com.quefalta.app`, scheme `QuFalta`, Apple Team `LX4BLQDZS4`.
 - App publicada en App Store (build 34). Repos: app `github.com/rruizosm/QueFalta` · web `github.com/rruizosm/QueFalta-Web`.
 
 ## Imprescindible para arrancar en una máquina nueva

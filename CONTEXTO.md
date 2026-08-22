@@ -3,26 +3,631 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
+## Precio unitario de Eroski y Caprabo recuperado (2026-08-22)
+
+- Ambas webs publican en la tarjeta textos como `1 KILO A 18,40 €`, `1 LITRO
+  A ...` y `1 UNIDAD A ...`; el scraper compartido los ignoraba y escribía
+  siempre `price_per_unit = null`.
+- `scripts/lib/eroski-tapestry.mjs` extrae ahora esa etiqueta en los lotes SSR y
+  AJAX, la normaliza a kg/L/ud y el cliente la selecciona y muestra en listados,
+  ofertas, novedades y cambios de precio. No requiere migración: las columnas
+  ya existen; sí requiere relanzar ambos syncs para rellenar producción.
+
+## Apertura estable del índice alimentario y el comparador (2026-08-22)
+
+- Las fichas con datos nutricionales coordinan ahora la resolución del índice
+  y la aparición de «Buscar productos más económicos». Mientras Open Food
+  Facts o el fallback del catálogo responden muestran un estado compacto y,
+  después, revelan ambos elementos juntos con un fundido que respeta Reducir
+  movimiento; el botón deja de pintarse en una posición provisional y saltar.
+- `useNutritionInfoDisclosure` expone `resolved`/`loading` y vincula el resultado
+  a la identidad de la consulta para no reutilizar un producto anterior durante
+  el primer render. `ProductDetailDiscoverySection` centraliza el patrón para
+  las nueve cadenas con índice. Sin cambios de esquema ni consultas adicionales.
+
+## Plegado progresivo de categorías del carrito (2026-08-22)
+
+- Las filas de cada zona del carrito ya no aparecen o desaparecen de golpe:
+  conservan su altura medida y se recortan con una animación escalonada.
+- Al plegar se cierra primero el producto inferior y el recorrido avanza hacia
+  la cabecera; al desplegar se reproduce el orden inverso. El doble toque para
+  aplicar la dirección a toda la tienda se conserva.
+- Plegar una tienda completa usa una transición de layout más suave. Reducir
+  movimiento mantiene todos estos cambios inmediatos y las filas ocultas salen
+  del árbol de accesibilidad. No requiere cambios de datos ni migraciones SQL.
+
+## Estadísticas generales de la comunidad (2026-08-22)
+
+- El botón «Estadísticas generales» permanece visible aunque el usuario no haya
+  finalizado ninguna compra y abre una pantalla independiente.
+- La vista muestra los supermercados seleccionados en las preferencias de la
+  comunidad, los diez productos de catálogo más añadidos y los diez
+  supermercados con más unidades añadidas. Combina carritos activos e historial
+  finalizado y excluye entradas manuales para no publicar texto privado.
+- `public.general_purchase_statistics()` es una frontera `SECURITY INVOKER`;
+  delega la agregación privilegiada en una función del esquema no expuesto
+  `private`. Exige autenticación y Plus, revoca `anon` y devuelve solo recuentos:
+  ningún id de usuario, grupo, lista o compra.
+- Las migraciones `20260822165410_general_statistics.sql` y
+  `20260822171122_general_statistics_private_boundary.sql` están desplegadas en
+  producción como `20260822171009` y `20260822171221`. La llamada autenticada
+  devuelve 17 preferencias, 10 productos y 10 supermercados; los advisors no
+  muestran avisos relacionados.
+
+## Resultados claros en «Buscar productos más económicos» (2026-08-22)
+
+- El comparador bajo demanda presenta las coincidencias en tarjetas agrupadas
+  solo por supermercados con resultados, con mayor jerarquía de imagen, nombre,
+  precio total, precio unitario y un distintivo verde en las opciones mejores.
+- Después de la búsqueda muestra un resumen explícito. Si ninguna fila devuelta
+  por `catalog_cheaper_products_v5` tiene `is_cheaper=true`, informa de que el
+  producto actual ya es la opción más económica; este estado es distinto de no
+  haber encontrado alternativas fiables.
+- Las filas usan miniaturas con caché, objetivos táctiles completos y etiquetas
+  accesibles con producto, supermercado y precio. No requiere cambios de SQL.
+
+## Identidad centrada en Perfil (2026-08-22)
+
+- La tarjeta de identidad ya no contiene el botón promocional QuéFalta Plus;
+  el único acceso vive en Perfil → Cuenta, donde sirve también para gestionar
+  una suscripción activa.
+- El `@usuario` vuelve a su posición horizontal a la derecha del avatar, alineado
+  a la izquierda, y queda centrado verticalmente en el eje Y de la tarjeta.
+
+## Gestión de QuéFalta Plus desde Perfil (2026-08-22)
+
+- Perfil → Cuenta contiene una entrada permanente de QuéFalta Plus cuando el
+  paywall está disponible o la cuenta ya conserva acceso Plus.
+- En free abre el paywall. Para suscripciones de tienda consulta RevenueCat y
+  abre la gestión oficial de App Store/Google Play; refleja plan mensual/anual,
+  prueba o fecha final si se canceló la renovación.
+- Un `premium_until` activo sin entitlement de tienda se presenta como Plus de
+  cortesía y no ofrece una cancelación inexistente. No requiere migración SQL.
+
+## Acceso heredado a «Todos» para cuentas anteriores a 1.3 (2026-08-22)
+
+- Las cuentas registradas antes de QuéFalta 1.3 conservan el selector «Todos»
+  en Catálogo, Novedades, Ofertas y Cambios de precio aunque no tengan Plus.
+- El permiso vive en `profiles.legacy_all_stores_access`, está protegido contra
+  escrituras del cliente y no desbloquea ninguna otra función Plus.
+- La migración `20260822090421_legacy_all_stores_access.sql` debe desplegarse
+  inmediatamente antes de publicar 1.3: marca las cuentas que existan en ese
+  momento y deja el permiso desactivado por defecto para las altas posteriores.
+
+## Icono personalizado por grupo (2026-08-22)
+
+- El administrador dispone en el detalle del grupo de una tarjeta independiente
+  de «Gestionar miembros» para elegir el icono compartido del grupo.
+- El selector se deriva automáticamente de los emojis reales de categorías N1
+  y subcategorías del catálogo de supermercados; no mantiene un listado visual
+  paralelo. Los duplicados se eliminan y el carrito queda como fallback.
+- El icono identifica el carrito activo en la tarjeta de Inicio, la cabecera de
+  Carrito, la barra flotante de selección y los CTA de las fichas de producto.
+  `CartContext` lo persiste por usuario y lo resincroniza al validar los grupos.
+- La migración `20260822071818_add_group_icon.sql` está aplicada en producción
+  como versión remota `20260822073002`: `groups.icon_emoji` es `text` nullable,
+  su restricción está validada y la tabla conserva RLS y la policy del admin.
+
+## Barra flotante para añadir varias unidades (2026-08-22)
+
+- Al seleccionar una o más unidades en un listado de productos, el resumen de
+  selección ya no aparece como la antigua franja oscura de borde a borde. Ahora
+  usa una tarjeta flotante redondeada, con superficie Liquid Glass cuando está
+  disponible y fallback temado, icono de cesta y CTA «Añadir» en cápsula.
+- Se conservan sin cambios el contador total, el grupo de destino, el estado de
+  carga y la compensación de la barra de navegación inferior.
+
+## Consulta visible al desplazar el Catálogo (2026-08-21)
+
+- Al comenzar a desplazar resultados después de escribir en el buscador de
+  Productos, el campo se contrae y la cabecera de Catálogo crece suavemente para
+  mostrar la consulta activa en cursiva debajo del botón circular de la lupa.
+- Al volver a abrir el buscador, cambiar de supermercado o pasar a Categorías,
+  la segunda línea desaparece. Altura, desplazamiento y opacidad usan una curva
+  progresiva independiente; el alto reserva espacio para los descendentes de la
+  cursiva y la transición respeta Reducir movimiento.
+
+## Orden unitario de Novedades, Ofertas y Cambios de precio reservado a Plus (2026-08-21)
+
+- En las hojas de filtros de Novedades, Ofertas y Cambios de precio, únicamente
+  «De menor a mayor» y «De mayor a menor» de la sección «Ordenar por precio
+  unitario» requieren Plus.
+- Una cuenta gratuita ve esos dos botones con candado; al pulsarlos abre el
+  paywall sin cambiar el orden. Si Plus caduca, el orden unitario activo se limpia.
+- La sección «Ordenar por precio» del envase continúa siendo gratuita.
+- Las tarjetas de Ofertas conservan ahora el formato/cantidad y el precio por
+  unidad de Novedades; el precio anterior, cuando existe, aparece después.
+- Cambios de precio conserva su fila de precio anterior, actual y porcentaje, y
+  recupera debajo el formato/cantidad y el precio unitario del producto.
+
+## Producto alternativo en comentarios reservado a Plus (2026-08-21)
+
+- Escribir y editar comentarios de productos en la cesta continúa siendo
+  gratuito. «Asignar producto» y «Cambiar» son funciones QuéFalta Plus.
+- En cuentas gratuitas, intentar abrir el selector muestra el paywall antes de
+  buscar. Una alternativa existente permanece visible, puede conservarse al
+  editar el comentario y puede quitarse sin suscripción.
+- El paywall incluye «Productos en comentarios» entre sus beneficios, también
+  en catalán. No hay cambios de esquema ni de persistencia.
+
+## Historial de compra gratuito e ilimitado (2026-08-21)
+
+- Perfil → Historial de compra está disponible para todas las cuentas, sin
+  candado ni apertura del paywall.
+- Se puede consultar y repetir cualquier compra anterior; se retiraron el gate
+  completo de `HistoryScreen`, el límite de tres compras y los textos Plus.
+- El historial ya no figura entre los beneficios del popup QuéFalta Plus.
+
+## Dorado Plus reservado a «Mejor precio» y la bienvenida (2026-08-22)
+
+- El fondo dorado animado de `PremiumGoldBackground` queda limitado a la
+  etiqueta «Mejor precio» del plan anual. El sello del usuario propio conserva
+  su variante dorada dentro de la cabecera de identidad.
+- El resto de superficies Plus usan el acento normal de la app: accesos de
+  cuenta, color personalizado, alertas, comparador, orden unitario, «Todos» y
+  resto del paywall. Los candados y gates no cambian.
+- Las insignias Plus fuera de la cabecera propia usan el acento de la app. La
+  bienvenida posterior a una compra o restauración confirmada recupera su sello,
+  brillo y partículas dorados sobre el fundido negro.
+- `PremiumGoldBackground` tiene un único consumidor intencionado:
+  `PaywallModal`, exclusivamente en la etiqueta anual «Mejor precio».
+
+## Doble toque en categorías del carrito (2026-08-21)
+
+- El toque simple en una categoría del carrito conserva su comportamiento:
+  contrae o expande solo esa categoría.
+- Dos toques seguidos sobre la misma categoría aplican esa dirección a todas
+  las categorías del mismo supermercado. El primer toque responde al instante
+  y el gesto no afecta a las categorías de otras tiendas.
+
+## Fondo ambiental compartido en Inicio y Carrito (2026-08-21)
+
+- Carrito incorpora las mismas 21 burbujas radiales y lavados ambientales de
+  Inicio en todos sus estados (lista, carga, error y vacío), pero mantiene el
+  fondo plano de papel sin el degradado superior.
+- El fondo vive en `AmbientBubbleBackdrop`, compartido por ambas pestañas: usa
+  un único SVG memoizado, sigue el acento de Apariencia, no intercepta gestos y
+  queda fuera del árbol de accesibilidad.
+- La zona libre a la izquierda de la campana y el avatar en la cabecera de
+  Inicio muestra «¡Prepara la compra!», con su versión catalana. Carrito no
+  muestra este mensaje.
+
+## Comentarios y producto alternativo en el carrito (2026-08-21)
+
+- Cada tarjeta del carrito incorpora un pie compacto unido al bloque principal
+  y separado por un divisor punteado. Vacío muestra «Añade comentarios sobre el
+  producto»; al tocarlo abre un editor multilínea de hasta 280 caracteres.
+- El editor permite además asignar un producto alternativo al comentario. Abre
+  un buscador sobre los supermercados activos del perfil y disponibles en su
+  CCAA/CP; el usuario puede seleccionar, cambiar o quitar la alternativa.
+  El caso esperado es escribir «Si no queda, compra esto:» y enlazar el producto.
+- Si el perfil tiene más de un supermercado disponible, antes de buscar exige
+  elegir uno en la misma hoja mediante una fila de opciones con logotipo y
+  nombre. Con una sola preferencia lo selecciona automáticamente y no muestra
+  ese paso. Cambiar de supermercado limpia consulta y resultados anteriores.
+- La tarjeta muestra la alternativa con nombre, tienda y miniatura.
+- La nota es compartida por todos los miembros del grupo, se aplica a todas las
+  filas fusionadas del mismo producto y se conserva al finalizar o repetir una
+  compra. El producto vinculado sigue el mismo ciclo y ambos se muestran en el
+  resumen del grupo en modo lectura.
+- Restar y eliminar usan círculos de 28 pt, iguales al control de asignación, y
+  aumentan la separación vertical cuando aparecen juntos.
+- Migración `20260821175658_list_item_notes.sql` aplicada y verificada en
+  producción: columnas `note` en `list_items`/`purchase_items`, límites de 280
+  caracteres, permisos existentes intactos y sin nuevos avisos de advisors.
+- Migración `20260821181503_list_item_note_product.sql` aplicada en producción
+  (versión remota `20260821182635`): referencia tienda+id y snapshot de nombre,
+  miniatura y precio en `list_items`/`purchase_items`, constraints validados,
+  RLS y los seis policies existentes intactos.
+
+## Creación ilimitada de grupos (2026-08-21)
+
+- Crear grupos deja de ser una función Plus: el botón «Nuevo» abre siempre el
+  formulario, independientemente del número de grupos o del estado premium.
+- Eliminados el gate local, el manejo de `free_group_limit` y los textos del
+  límite. La migración `20260821175745_allow_unlimited_group_creation.sql`
+  retira el trigger `groups_enforce_limit` y su función si existían.
+
+## Popup redondeado para crear y renombrar grupos (2026-08-21)
+
+- `NameInputSheet` adopta el lenguaje visual actual: esquinas superiores de la
+  hoja a 28 px, icono y cierre circulares, campo con radio 16 y CTA en cápsula.
+- El CTA deja de usar el antiguo borde duro de `HardShadow`. El cambio se aplica
+  tanto al alta de grupos como al renombrado, sin alterar validación ni estados.
+
+## Controles redondeados en el pie de las fichas de producto (2026-08-21)
+
+- El selector horizontal de cantidad adopta una cápsula con radio completo y
+  recorta correctamente sus controles de restar y sumar.
+- «Añadir a la cesta» usa también una cápsula en las fichas de todos los
+  supermercados. No cambia el tamaño táctil ni la lógica de cantidad o alta.
+
+## Acción circular en el estado vacío de Grupos (2026-08-21)
+
+- Cuando el usuario todavía no pertenece a ningún grupo, «Crear grupo» usa
+  ahora un botón circular de acento con el icono de suma y mantiene su etiqueta
+  visible debajo. Se retiró el antiguo CTA rectangular con borde duro.
+- La acción completa conserva un único objetivo táctil y una etiqueta explícita
+  para lectores de pantalla; la lógica de creación y activación no cambia.
+
+## Cabeceras de Catálogo, Carrito y Grupos alineadas (2026-08-21)
+
+- «Mi Lista» y «Grupos» usan la misma tipografía de 20 pt que «Catálogo»;
+  sus iconos y fondos circulares se redujeron proporcionalmente.
+- Catálogo adopta el mismo bloque de icono circular y título que Carrito; el
+  selector de supermercado permanece integrado a la derecha de esa cabecera.
+- El icono exclusivo de biblioteca identifica Catálogo también en la navegación
+  inferior clásica y Liquid Glass.
+
+## Controles actuales en categorías y subcategorías (2026-08-21)
+
+- El selector principal Productos/Categorías de Catálogo conserva una sola
+  superficie Liquid Glass, pero refuerza su geometría con una variante de 44 px:
+  contorno adaptado a claro/oscuro, reflejo superior, sombra exterior no recortada
+  y una píldora activa con mayor presencia. En Catálogo, los controles de orden
+  y lista/cuadrícula adoptan el mismo borde, reflejo, sombra y selección reforzada,
+  pero conservan su altura compacta original de 40 px; el bloque unitario bloqueado
+  replica también esa geometría. El resto de `SlidingSegments` no cambia.
+- El botón Atrás de la pantalla de categoría y de todos los listados de
+  productos por subcategoría vuelve a ser circular (38 px, radio 19).
+- El toolbar compartido de productos usa el lenguaje visual actual: buscador
+  con radio 16 y sombra suave, y selector lista/cuadrícula en pastilla con el
+  modo activo marcado mediante el color de acento. En Liquid Glass reutiliza
+  `SlidingSegments`, incluida la misma transición deslizante de Catálogo →
+  Productos; el fallback comparte también su geometría y estado activo. El
+  glifo de cuadrícula lleva una compensación óptica de 1 pt a la derecha para
+  quedar centrado en la píldora tanto aquí como en Catálogo.
+
+## Entrada estable desde onboarding e Inicio (2026-08-21)
+
+- Eliminada por completo de Inicio la tarjeta «Completa tu perfil», incluido su
+  componente y sus traducciones. Foto, amigos y grupo siguen siendo opcionales.
+- El CTA final del onboarding activa una superficie azul de continuidad. Inicio
+  espera a tener layout, grupos, favoritos y última compra resueltos antes de
+  revelarse con un fundido de 260 ms, con un máximo de espera de 900 ms y soporte
+  para Reducir movimiento.
+- La cabecera Liquid Glass parte de su altura conocida para no desplazar el
+  contenido tras el primer `onLayout`; las cachés distinguen un resultado vacío
+  válido de una lectura todavía pendiente.
+- Favoritos, grupos y última compra ya no muestran estados vacíos falsos durante
+  su carga. Los fallos de grupos ofrecen reintento y la tarjeta de última compra
+  ya no contiene controles táctiles anidados.
+- Las burbujas decorativas de Inicio se dibujan en un solo SVG memoizado y
+  toman el color de acento elegido en Apariencia.
+- Perfil reserva desde el primer frame la altura determinista de su cabecera
+  Liquid Glass y solo actualiza la medida si cambia realmente; al entrar ya no
+  nace colapsado arriba ni desplaza todo el contenido tras `onLayout`.
+- Los builds de simulador que se instalen para probar autenticación deben
+  conservar la firma local de Xcode. Compilar con `CODE_SIGNING_ALLOWED=NO`
+  deja a SecureStore sin acceso al llavero, impide guardar el verificador PKCE
+  de Google y puede producir también errores de persistencia en notificaciones.
+
+## Refuerzo integral del onboarding (2026-08-21)
+
+- Un perfil sin resolver ya no permite entrar en la app: red/timeout muestran
+  una pantalla recuperable con reintento.
+- `profiles.onboarding_step` reanuda Username, Stores, Avatar, Friends o Group;
+  cada guardado avanza el marcador junto con sus datos.
+- La disponibilidad de @usuario vincula la respuesta remota al texto validado,
+  evitando que una respuesta antigua habilite otro valor.
+- `create_group_with_owner` crea grupo y membresía en una transacción y usa
+  `groups.creation_key` para que reintentos o doble tap sean idempotentes.
+- `complete_onboarding()` valida @usuario, región y supermercados y fecha el
+  alta en servidor. Después se muestra una pantalla Done antes de Inicio.
+- VoiceOver, texto grande, errores del selector de fotos y jerarquía de CTA
+  están reforzados. Las lamas usan un SVG compartido.
+- Migración `20260821130300_onboarding_integrity.sql` aplicada en producción y
+  verificada: permisos solo autenticados y 0 perfiles completos desalineados.
+
+## Desplegable de correo integrado en Login (2026-08-21)
+
+- Login muestra el isotipo oficial de QuéFalta centrado sobre el título,
+  reutilizando el PNG transparente empleado en el arranque. El conjunto
+  principal queda desplazado 20 px hacia arriba respecto al centrado base.
+- El fondo incorpora quince burbujas azules radiales, estáticas y de tamaños
+  variados. Son puramente decorativas, no interceptan gestos y quedan fuera del
+  árbol de accesibilidad.
+- La cabecera comunica «Tu compra, más organizada» y resume comparación,
+  ofertas, novedades y cambios de precio; dispone de versión catalana
+  equivalente.
+- «Continuar con correo electrónico» y su formulario forman ahora una sola
+  pieza visual: al abrirse, el bloque nace del borde inferior del botón sin
+  separación ni una segunda tarjeta flotante.
+- La apertura y el cierre animan altura y opacidad con una curva suave. Con
+  Reducir movimiento, el cambio es inmediato y el contenido contraído queda
+  fuera del foco táctil y del árbol de accesibilidad.
+- El `ScrollView` conserva su posición al abrir: título, subtítulo, Apple y
+  Google permanecen fijos y el formulario aumenta exclusivamente hacia abajo.
+  Solo se desplaza cuando el usuario enfoca el campo y aparece el teclado.
+- El panel comienza directamente con el campo de correo; se retiró la
+  explicación redundante sobre el acceso sin contraseña.
+
+## Cierre de auditoría de arranque y Login (2026-08-21)
+
+- El splash nativo ya no puede desembocar en una pantalla vacía mientras cargan
+  las fuentes: `App` muestra una superficie de continuidad y cede al
+  `BootLoader` cuando están listas. Idioma y tema exponen `ready` sin bloquear el
+  montaje, de modo que el watchdog de 10 s cubre también su hidratación. Se
+  conserva un mínimo visual de 350 ms para evitar destellos.
+- `authStorage` trata una lectura no autorizada o corrupta del llavero como
+  sesión ausente (con fallback solo a la sesión legacy ya existente), evitando
+  el error periódico de auto-refresh sin degradar nuevas escrituras a texto
+  plano.
+- Login limita la escala tipográfica de título, subtítulo, botones, campo y
+  legal; con `accessibility-large` se reorganiza, conserva objetivos táctiles y
+  permite desplazarse hasta todo el contenido. El legal vive dentro del área
+  desplazable.
+- El botón de Google usa la G oficial multicolor y Apple reserva su espacio
+  desde el primer frame en iOS, evitando saltos al resolver disponibilidad.
+- Las quince burbujas comparten un único SVG y gradiente. `metro.config.js`
+  activa `inlineRequires`; cuatro imágenes sobredimensionadas se ajustaron a su
+  uso real. El export iOS de esta revisión pasa de 1.868 a 1.828 módulos y de
+  15.236 a 11.532 KiB totales (el bytecode Hermes aislado sube de 7.460.130 a
+  7.597.028 bytes por los cambios funcionales).
+- Xcode toma `CFBundleShortVersionString` y `CFBundleVersion` de los build
+  settings, alineados en 1.3.0 (34). El scheme compartido ya no referencia el
+  target inexistente `QuFaltaTests`.
+- Sin cambios de esquema, migraciones ni configuración remota de Supabase.
+
+## Bienvenida animada a QuéFalta Plus (2026-08-22)
+
+- Los CTA mensual y anual invocan la compra real del paquete seleccionado en
+  RevenueCat. La celebración solo se presenta cuando la respuesta contiene el
+  entitlement activo `plus`; se eliminó el antiguo atajo de vista previa que la
+  mostraba sin comprar.
+- Tras la confirmación de RevenueCat, la expiración se aplica al perfil local
+  para activar los gates inmediatamente. Los reintentos de perfil esperan a que
+  `revenuecat-webhook` persista `premium_until` y `verified` en Supabase.
+- `PlusWelcomeTransition` oscurece el paywall durante 1,5 segundos y después
+  presenta el sello dorado central con su brillo propio, virutas, partículas y
+  los textos de bienvenida. La X, Atrás y el gesto de escape de accesibilidad
+  cierran la experiencia y el paywall. No se dibuja ningún halo detrás del sello.
+- Con Reducir movimiento, el oscurecimiento y la revelación son inmediatos y
+  las partículas permanecen estáticas. El contenido está traducido al castellano
+  y catalán y se anuncia al lector de pantalla una vez completado el fundido.
+
+## Filtros en Cambios de precio (2026-08-21)
+
+- La fila de controles incorpora un botón de filtros independiente a la
+  izquierda de `Bajadas / Subidas`, tanto en Liquid Glass como en fallback. El
+  botón usa el color de acento mientras exista algún filtro activo.
+- La hoja compartida `ProductFilterSheet` permite filtrar este feed por una o
+  varias categorías y por magnitud porcentual absoluta del cambio: hasta 5 %,
+  5–10 %, 10–20 % o más de 20 %. Los mismos rangos sirven para bajadas y
+  subidas. Sin orden unitario activo se conserva la relevancia del servidor.
+- El orden por precio unitario ascendente/descendente pertenece a Plus, pagina
+  por `price_per_unit` y deja al final los productos que no publican ese dato.
+- Con `Todos`, las categorías se agrupan por supermercado y su valor interno
+  incluye la cadena para evitar colisiones entre categorías homónimas. El
+  filtrado se aplica a las páginas ya cargadas y la paginación continúa
+  recuperando resultados al llegar al final.
+- `ProductFilterSheet` no aplica ninguna transformación manual al arrastrar. En
+  cuanto detecta un deslizamiento vertical hacia abajo desde el tirador
+  superior, cambia inmediatamente el estado a cerrado y deja que la única
+  transición nativa del `Modal` complete la salida: no espera a soltar, no se
+  detiene y nunca rebota hacia arriba. Botón, backdrop y Atrás usan el mismo
+  cierre; Reducir movimiento sigue siendo inmediato.
+
+## Buscador ampliado de Catálogo (2026-08-21)
+
+- Al enfocar el buscador de productos, este ocupa toda su fila y oculta los
+  controles de orden y de vista. Al perder el foco, los controles reaparecen.
+- La lupa y su superficie permanecen montadas durante toda la transición: el
+  botón circular se abre lentamente como una cápsula de borde redondo y se
+  contrae hasta su misma posición, sin retraso independiente del icono.
+- El comportamiento es el mismo con Liquid Glass y con el fallback.
+- La fila conserva exactamente su altura al expandirse: 40 px en Liquid Glass
+  y 44 px en fallback. La cabecera ya no crece ni desplaza el catálogo al abrir
+  el campo.
+
+## Orden por precio unitario reservado a Plus (2026-08-21)
+
+- En Catálogo, los controles `€/u↑` y `€/u↓` son una función de
+  QuéFalta Plus. Las cuentas gratuitas los ven en un segundo bloque con
+  tratamiento neutro con tinta de acento, sin candado; al pulsarlos se abre el
+  paywall con la cabecera compacta, sin texto descriptivo contextual, y sin
+  cambiar el orden ni recargar el catálogo. Las flechas de precio total siguen
+  siendo gratuitas.
+- Con Plus activo los dos bloques vuelven a unirse en el selector original de
+  cuatro segmentos y conservan la transición del filtro seleccionado. Si la
+  suscripción caduca mientras estaba activo el orden unitario, Catálogo vuelve
+  al orden gratuito por precio total.
+- El bloque unitario bloqueado replica la geometría del control de precio:
+  pastilla exterior, extremos redondeados y etiquetas centradas en ambos ejes.
+- Novedades y Ofertas exponen orden por precio total y unitario; Cambios de
+  precio conserva su orden de relevancia y añade el unitario. En una cuenta
+  gratuita, solo los botones unitarios muestran candado y abren el paywall sin
+  cambiar el orden. Si Plus caduca con uno activo, lo limpia. El orden por
+  precio total continúa siendo gratuito donde existe.
+
+## Fondo del carrito activo ligado a Apariencia (2026-08-21)
+
+- La tarjeta del carrito activo toma el lenguaje visual de la cabecera del
+  paywall: fondo recortado y dos círculos amplios que asoman desde los bordes.
+- Su base usa el color de acento elegido en Perfil → Apariencia, incluido el
+  personalizado de Plus. El degradado y los dos círculos son luces y sombras
+  neutras sobre ese color; el contenido, la navegación y el estado no cambian.
+
+## Preferencia e información de notificaciones (2026-08-21)
+
+- Perfil → Notificaciones muestra qué avisos puede recibir el usuario: productos
+  añadidos a carritos compartidos, solicitudes de amistad, altas en grupos y
+  alertas personalizadas Plus (bajadas, ofertas y novedades).
+- La misma pantalla incorpora el interruptor de avisos del dispositivo. Parte
+  apagado cuando no existe una preferencia y, al activarlo, solicita permiso,
+  registra el token push y envía una confirmación local. Al apagarlo elimina el
+  token de este dispositivo; los avisos recibidos continúan disponibles desde
+  la campana de Inicio. La pantalla de ajustes no duplica esa bandeja.
+- La preferencia local está separada por cuenta con
+  `@notifications_enabled:${userId}`. El arranque reconcilia esa preferencia y
+  retira tokens antiguos cuando está desactivada, evitando que dos usuarios del
+  mismo dispositivo hereden la configuración.
+
+## Alertas personalizadas Plus — reglas desplegadas, envío pendiente (2026-08-20)
+
+- Implementado localmente el MVP de alertas por producto exacto o por palabras,
+  con uno o varios supermercados, bajada mínima configurable, nueva oferta y
+  vista previa del catálogo. Perfil incorpora «Alertas personalizadas» y todas
+  las fichas muestran «Avísame» dentro de la esquina superior derecha de la
+  imagen mediante `ProductDetailImage`/`ProductDetailHero`, sin duplicar lógica
+  entre los 18 supermercados.
+- El CTA compartido «Avísame» conserva la campana del diseño original. En cuentas
+  gratuitas usa `PremiumGoldBackground`, tinta oscura y candado; con Plus activo
+  recupera el estilo normal de acento y abre directamente el editor. Su acceso
+  al paywall usa la cabecera compacta, sin texto descriptivo contextual.
+- Perfil → Alertas personalizadas abre directamente el paywall en cuentas
+  gratuitas; solo las cuentas Plus entran en la pantalla de reglas. Se eliminó
+  de esa pantalla el antiguo bloque «Tus alertas están pausadas».
+- La migración `20260820162731_personalized_price_alerts.sql` crea reglas con RLS,
+  una proyección interna unificada del catálogo, eventos duraderos de sync y una
+  outbox de entregas con `unique(rule_id,event_id)`. El servidor comprueba
+  `premium_until`: al caducar Plus las reglas se conservan y los eventos quedan
+  registrados como pausados, sin enviarse ni acumularse para una renovación.
+- `process-price-alerts` es independiente de `send-push`: reclama solo mediante
+  un RPC reservado a `service_role`, agrupa todos los productos de la misma
+  regla+actualización, crea atómicamente una única fila en la bandeja y envía
+  push best-effort. Los reintentos reutilizan esa fila y no repiten el push.
+  Si el mismo producto genera bajada y nueva oferta en un lote, se deduplica
+  como oferta. Los taps `price_alert` abren la lista exacta de productos que
+  originó la notificación, y desde cada resultado se puede abrir su ficha.
+- La migración local
+  `20260821210209_price_alert_notification_products.sql` expone esa lista con
+  una RPC `SECURITY DEFINER` que valida `auth.uid()` y mantiene ocultos los
+  eventos internos. El push transporta solo `notificationId`; la bandeja usa
+  directamente el id de su fila. Esta migración aún no está desplegada.
+- Consum y Plusfresc guardan la zona/centro en la regla; sus cambios regionales
+  se cruzan con esa ubicación. La vista previa filtra CCAA y centro cuando el
+  espejo publica esos datos.
+- Al crear una regla por palabras, el selector muestra exclusivamente la
+  intersección entre los supermercados activados en Perfil → Supermercados y
+  los disponibles en la CCAA del usuario. Al editar una regla antigua también
+  se descartan de su selección las cadenas que el usuario haya desactivado. Cada
+  opción muestra el logotipo local de la cadena a la derecha del nombre.
+- Cada regla guarda un emoji inferido automáticamente con
+  `getSubcategoryEmoji`, el mismo clasificador que usa el carrito. El editor lo
+  actualiza mientras se escriben las palabras y la lista lo muestra como icono;
+  si no hay coincidencia usa `🛒`. La alerta inicial «aceite oliva» quedó
+  migrada a `🫒`.
+- El editor ofrece además el modo exclusivo «Novedad» (`new_arrival`). Al
+  activarlo limpia y oculta Palabras, desactiva y oculta bajadas, ofertas y
+  bajada mínima, y marca la vista previa como no disponible. Conserva el
+  selector de supermercados del perfil y usa `🆕`. La migración
+  `20260820170935_personalized_alert_new_arrivals.sql`, desplegada en producción,
+  captura las altas publicadas de los 18 espejos y las cruza solo con reglas de
+  novedades; Postgres impide combinar este modo con los otros disparadores.
+- La migración, sus dos correcciones y el backfill de los 18 catálogos están
+  desplegados en producción. El verificador transaccional pasa, incluido RLS,
+  detección, deduplicación y bandeja. El cliente estabiliza además el valor de
+  `ToastContext` para que un error de carga no reactive la consulta en bucle.
+- **Envío pendiente:** desplegar `process-price-alerts` con
+  `PROCESS_PRICE_ALERTS_SECRET` y programar `ops/schedule_price_alerts.sql`.
+  Hasta entonces se pueden crear, consultar y previsualizar reglas, pero los
+  eventos no se convertirán en bandeja/push. La entrega seguirá limitada por la
+  frecuencia real de cada sincronizador aunque el procesador corra cada 15 min.
+- La ficha genérica de Froiz ya obtiene su producto desde `froiz_products` (no
+  desde el fallback de BonÀrea), por lo que el CTA exacto cubre los 18 catálogos.
+
+## Fondo Plus en el selector conjunto de supermercados (2026-08-20)
+
+- La cabecera del paywall es ahora compacta: reutiliza el sello dorado de
+  `VerifiedBadge` junto a «QuéFalta Plus» y elimina el bloque promocional
+  «Más control para encontrar el mejor precio». No admite subtítulos ni texto
+  descriptivo contextual, independientemente del acceso que lo abra.
+- El paywall ocupa toda la altura y su fondo llega al borde superior, aunque el
+  contenido respeta el notch. No muestra tirador, no se cierra tocando fuera y
+  el descarte por gesto está desactivado; se conserva la X y Atrás del sistema.
+- Los planes del paywall se presentan en una sola fila, Mensual a la izquierda
+  y Anual a la derecha; se retiró la etiqueta redundante «Incluido» del título
+  de beneficios. La tarjeta Anual incorpora el barrido azul difuminado e
+  irregular del antiguo botón QuéCocino; con Reducir movimiento queda estático.
+  Su etiqueta «Mejor precio» conserva el fondo dorado animado y la tinta
+  oscura. Sus filas ya no muestran un check
+  redundante en el extremo derecho. El comparador se presenta en el paywall como «Radar de
+  ahorro»: alternativas similares más baratas en los supermercados del usuario.
+- El realce de selección de Mensual/Anual se dibuja sobre la tarjeta sin cambiar
+  su borde de layout, de modo que alternar planes no desplaza el CTA ni el
+  contenido inferior.
+- El CTA del comparador «Buscar productos más económicos» conserva lupa, carga y
+  confirmación de resultados. Solo en cuentas gratuitas usa
+  `PremiumGoldBackground`, tinta oscura y candado, y abre el paywall sin ejecutar
+  la búsqueda ni llamar a la RPC y sin texto descriptivo contextual; con Plus
+  activo usa el estilo normal de acento.
+- La opción «Todos» del selector de supermercado usa el fondo dorado en
+  movimiento únicamente cuando está bloqueada para una cuenta gratuita. Con
+  Plus activo se presenta como una opción normal. Se aplica en Catálogo, Cambios
+  de precio, Novedades y Ofertas.
+- El efecto vive en `src/components/PremiumGoldBackground.tsx`, usa una opacidad
+  base del 30 %, respeta Reducir movimiento y solo anima mientras el panel está
+  abierto. La etiqueta «Mejor precio» del plan anual conserva el 70 %.
+- La tarjeta de identidad no contiene accesos Plus: el `@usuario` queda a la
+  derecha del avatar y centrado en el eje Y. QuéFalta Plus se abre o gestiona
+  exclusivamente desde su fila en la sección Cuenta.
+- Perfil → Apariencia reutiliza también este fondo en «Color personalizado» solo
+  mientras esté bloqueado; con Plus activo usa una fila normal. El borde dorado
+  giratorio anterior se eliminó por completo.
+- El estado Plus del cliente tiene una sola fuente de verdad:
+  `profiles.premium_until` debe contener una fecha futura. `profiles.verified`
+  es su reflejo booleano público y protegido: muestra la insignia dorada de Plus
+  en Perfil, Amigos y Grupos sin revelar la fecha de vencimiento. El perfil propio
+  deriva la insignia directamente de `isPremium`.
+- Cada instancia genera su propia distribución, fases, trayectorias y duraciones:
+  las virutas y partículas de bloques distintos nunca se mueven sincronizadas.
+- Las partículas caen continuamente de arriba abajo con relojes independientes.
+  Al sobrepasar el borde inferior se desvanecen y reaparecen arriba, sin un
+  reinicio, retroceso o salto conjunto visible.
+- Si el número de supermercados es impar, la última tarjeta conserva exactamente
+  el tamaño de una celda; la segunda celda de esa fila queda vacía.
+
+## Push de solicitudes de amistad fiable (2026-08-20)
+
+- `sendFriendRequest` obtiene el id de la amistad creada y espera a que la Edge
+  Function procese el aviso antes de resolver la acción. El push sigue siendo
+  best-effort: un fallo de notificación no convierte la solicitud ya guardada
+  en un falso error para el usuario.
+- `send-push` valida el id, emisor, destinatario y estado pendiente de la
+  solicitud. La versión 7 está desplegada en producción y conserva un fallback
+  compatible con clientes publicados que todavía no envían `friendshipId`.
+- El tap con `data.type = "friend"` abre directamente `Home → Friends`. Si la
+  sesión, el perfil o el árbol autenticado aún no están listos, el destino se
+  conserva hasta `NavigationContainer.onReady`; la respuesta inicial se consume
+  una sola vez para evitar redirecciones antiguas.
+
+## Valoración nativa en App Store y Google Play (2026-08-20)
+
+- La app usa `expo-store-review` para solicitar el diálogo oficial de
+  valoración sin sacar al usuario de QuéFalta. Ya no existe un modal propio ni
+  un botón previo que redirija a la tienda.
+- La primera apertura autenticada guarda una fecha local por usuario. En una
+  reapertura posterior, una vez transcurridas al menos 24 horas, se realiza un
+  único intento y se guarda también por usuario y dispositivo.
+- Apple y Google deciden si muestran finalmente el diálogo y no informan a la
+  app de la puntuación ni de si se envió. El estado local representa un intento,
+  nunca una valoración confirmada.
+- `expo-store-review` incorpora código nativo: este cambio necesita un nuevo
+  build de iOS y Android y no puede distribuirse solo mediante OTA.
+
 ## Fondo ambiental en Inicio (2026-08-18)
 
 - Inicio conserva el papel cálido como base, pero añade un lavado de color muy
   suave y tres formas amplias, casi fuera de pantalla, para dar profundidad sin
   competir con las tarjetas. Es una composición nativa, sin recursos raster.
+- Sobre ese lavado aparecen veintiuna burbujas del color de acento estáticas de distintos
+  tamaños, algunas grandes, con degradado radial y borde desvanecido. Están
+  repartidas de forma irregular detrás del contenido.
 - El fondo usa los tokens dinámicos `accent*` y `paper`, por lo que responde al
   color elegido (incluido el personalizado de Plus) y al modo claro/oscuro. Es
   decorativo, no intercepta gestos y queda oculto al árbol de accesibilidad.
 
-## QuéCocino: nuevo contenido de recetas (2026-08-18)
+## QuéCocino desactivado temporalmente (2026-08-20)
 
-- **QuéCocino** es una pestaña central del navegador, entre Catálogo y Carrito.
-  Su acceso muestra solo el logo de cocina sobre el botón con reflejo animado;
-  no lleva etiqueta visible y respeta la preferencia Reducir movimiento.
-- QuéCocino prepara dos secciones: recetas
-  oficiales de supermercados (estado «Muy pronto») y recetas de la comunidad.
-  Las recetas comunitarias actuales son datos locales marcados como muestra;
-  todavía no existe persistencia, detalle de receta ni integración remota.
-- La pantalla sigue el tema claro/oscuro, el accent personalizable, Liquid Glass
-  en la cabecera, castellano/catalán y los componentes visuales de la app.
+- **QuéCocino no forma parte actualmente del árbol de navegación** y no deja
+  ningún acceso visible ni accesible en la barra inferior. La app vuelve a
+  mostrar cuatro pestañas: Inicio, Catálogo, Carrito y Grupos.
+- La implementación preliminar se conserva para retomarla más adelante. Su único
+  interruptor es `QUE_COCINO_ENABLED` en `src/constants/limits.ts`; debe seguir
+  apagado hasta que existan recetas reales, persistencia y detalle de receta.
+- No hay integración remota, migraciones ni datos de usuario asociados que sea
+  necesario desactivar o retirar.
 
 ## Paso 2 del onboarding con persiana azul (2026-08-18)
 
@@ -88,8 +693,11 @@
   dentro y el tomate queda a la derecha; los tres saludan. Es un PNG RGBA de
   1024×1536 con fondo transparente, también a través de los huecos interiores
   de la cesta y del bastidor del carrito.
-- La lógica no cambia: el nombre sigue siendo opcional, `createGroup` solo se
-  ejecuta cuando hay texto y después se navega a la pantalla terminal Done.
+- El nombre sigue siendo opcional y `createGroup` solo se ejecuta cuando hay
+  texto. El grupo creado se activa automáticamente mediante `CartContext`; al
+  terminar o al omitir el paso, el servidor valida el alta y abre la pantalla
+  terminal «Todo listo» antes de Inicio. El primer grupo creado desde la pestaña
+  Grupos también se activa automáticamente.
 
 ## Sync Mercadona: guardarraíl anti-bloqueo (2026-08-18)
 
@@ -108,7 +716,8 @@
 - Perfil → Apariencia incluye un selector de color completo (espectro, tono y
   brillo) para cuentas Plus. Las cuentas gratuitas ven el acceso bloqueado y
   reciben la hoja de suscripción. Es la primera opción del bloque de colores y
-  se distingue con una tarjeta cuyo borde dorado gira continuamente.
+  se distingue con el fondo dorado animado mientras está bloqueada; con Plus
+  activo recupera el aspecto normal del resto de preferencias.
 - El color se guarda localmente con una clave por usuario y dispositivo: dos
   cuentas que compartan un móvil no heredan el color de la otra. Las claves de
   tema globales anteriores se migran una única vez a la primera cuenta.
@@ -169,39 +778,13 @@
   dos tarjetas terminan con el mismo ancho y alto; Reducir movimiento muestra
   directamente el estado final.
 
-## Portada de autenticación gestual (2026-08-19)
+## Pantalla de autenticación directa (2026-08-20)
 
-- La primera apertura sin sesión adapta el experimento open source `Wabi & More`
-  de `ImCitizen13/quattro4maggi` (MIT): una gran burbuja prismática nace bajo el
-  borde inferior y sigue el dedo. Un gesto corto la devuelve a su origen; al
-  superar el umbral se encaja arriba con muelle y respuesta háptica.
-- Desde la burbuja encajada aparecen escalonadamente los 18 supermercados de
-  `CATALOG_STORES`, dentro del área segura y con flotación suave. Después se
-  revelan el texto y los accesos de Apple, Google y correo. No se ha modificado
-  la lógica de autenticación; Google continúa usando PKCE.
-- La antigua cabecera azul, las nubes, la curva SVG y el icono/marca gráfica se
-  eliminaron. El splash nativo es ahora un fondo cálido sin imagen y `BootLoader`
-  es neutro, para que la burbuja sea el primer elemento reconocible del login.
-- La portada admite activación accesible, mantiene el formulario y los textos
-  legales desplazables y respeta Reducir movimiento. Al desplegar correo, la
-  nube se retira para no solaparse con el contenido; al cerrarlo vuelve a su
-  posición. Sigue los tokens dinámicos de tema y color principal.
-- En iOS 26 la esfera usa Liquid Glass nativo mediante el wrapper único
-  `GlassSurface`: material `clear` sin tinte para conservar la transparencia,
-  con una lente SVG neutra que aporta doble borde, reflejo superior difuso y
-  caústicas interiores de muy baja opacidad. Su diámetro inicial se adapta al
-  ancho y el texto queda detrás del cristal para que la refracción sea visible.
-  Al comenzar el arrastre, un Runtime Shader de
-  `@shopify/react-native-skia@2.2.12` genera dentro de la lente una retina curva
-  ligada al progreso del gesto: combina el accent de la app con cian, azul
-  eléctrico, violeta y rosa, desciende al elevar la esfera y se desvanece al
-  encajarla. La carga de Skia es perezosa para que una OTA sobre un binario
-  anterior no crashee; en ese caso se dibuja una versión SVG equivalente.
-  Android, iOS anteriores y builds sin `expo-glass-effect` conservan la esfera
-  translúcida de fallback con la misma óptica. El cristal es solo la superficie
-  visual; el gesto sigue en el contenedor exterior para que el módulo nativo no
-  compita con el reconocedor de arrastre. Los logos no usan glass ni se anidan
-  superficies.
+- La app sin sesión abre directamente el formulario actual de acceso, sin
+  portada previa ni gesto obligatorio. Conserva el título, subtítulo, Apple,
+  Google, correo mágico y enlaces legales.
+- La lógica de autenticación no cambia; Google continúa usando PKCE y los
+  errores de magic link abren directamente el panel de correo.
 
 ## Identidad pública basada en @usuario (2026-08-15)
 
@@ -471,7 +1054,7 @@ del surtido nacional canónico.
 - **Nombre:** QuéFalta (antes "MercaApp"/"LaCompra"). La carpeta del repo sigue llamándose `MercaAppMobile`.
 - **Qué es:** app móvil para organizar la compra **en grupo** (lista compartida en tiempo real, carrito por grupos) con catálogo real de **Mercadona**.
 - **Stack app:** Expo **SDK 54**, React Native 0.81.5, TypeScript. Backend **Supabase** (auth + Postgres + storage + edge functions). Catálogo: **API pública de Mercadona** (`https://tienda.mercadona.es/api`).
-- **iOS:** bundle `com.quefalta.app`, scheme `quefalta`, Apple Team ID `LX4BLQDZS4`, EAS projectId `cdae19f5-47a5-4a4c-9f94-2befcada0885`.
+- **iOS:** bundle `com.quefalta.app`, scheme `QuFalta`, Apple Team ID `LX4BLQDZS4`, EAS projectId `cdae19f5-47a5-4a4c-9f94-2befcada0885`.
 - **Dominio:** `quefalta.es` (web Astro, repo aparte).
 - **Repos:** app → `github.com/rruizosm/QueFalta` · web → `github.com/rruizosm/QueFalta-Web` (carpeta hermana `quefalta-web/`, NO está en este repo).
 
@@ -512,9 +1095,29 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - **Tema (color de la app):** Perfil → Apariencia permite elegir el accent (`ACCENT_OPTIONS` en `constants/colors.ts`; persistido en AsyncStorage `@accent_color`). `colors.accent/accentLight/accentMid` son **getters** sobre un valor mutable (`applyAccent`). Los `StyleSheet.create` que usan accent NO pueden ser estáticos: se definen como fábrica `const themedStyles = () => StyleSheet.create({...})` y se consumen con `const styles = useThemedStyles(themedStyles)` (de `ThemeContext`), que los recrea al cambiar el color. Si añades una pantalla/componente nuevo que use `colors.accent*` en su StyleSheet, sigue ese patrón; si solo lo usa inline en JSX basta con que el padre re-renderice (no hay React.memo en el código).
 
 ## Migraciones SQL pendientes en Supabase (ejecutar a mano)
-- ⚠️ **`profiles`: columna `onboarded_at timestamptz`** (`supabase/migrations/profile_onboarding.sql`). IMPRESCINDIBLE antes de arrancar tras el onboarding: `fetchProfile` ya la selecciona y falla si no existe (igual que premium_until). NULL = el usuario ve el asistente de bienvenida. SIN backfill (todos lo ven una vez). Ver `ONBOARDING.md`.
+- ✅ **Estadísticas generales:**
+  `20260822165410_general_statistics.sql` y su frontera privada
+  `20260822171122_general_statistics_private_boundary.sql` desplegadas como
+  versiones remotas `20260822171009` y `20260822171221`.
+- ⚠️ **Acceso heredado a «Todos»:** desplegar
+  `20260822090421_legacy_all_stores_access.sql` inmediatamente antes de publicar
+  la versión 1.3. El backfill concede el selector conjunto a las cuentas que ya
+  existan y el valor por defecto lo mantiene bloqueado para las altas posteriores.
+  El cliente ya selecciona la columna, por lo que la migración debe preceder al build.
+- ✅ **Onboarding robusto:** `profile_onboarding.sql` y
+  `20260821130300_onboarding_integrity.sql` aplicadas. La segunda añade
+  `onboarding_step`, idempotencia de grupos y las RPC transaccionales. Ver
+  `ONBOARDING.md`.
 - ⚠️ **`profiles`: columna `premium_until timestamptz` + trigger de protección** (`supabase/migrations/profile_premium.sql`). IMPRESCINDIBLE antes de arrancar la app: `fetchProfile` ya selecciona la columna y falla si no existe. Ver `MONETIZACION.md`.
-- **Gates del paywall en servidor** (`supabase/migrations/paywall_gates.sql`): `paywall_enabled()` (hoy false), `is_premium()`, trigger de límite de grupos. Ejecutar DESPUÉS de profile_premium.sql y ANTES de re-ejecutar similar_products.sql (el RPC, ya con columna `locked`, usa esas funciones).
+- ✅ **Insignia Plus pública:** migración
+  `20260820163441_sync_plus_verified_badge.sql` aplicada en remoto. `verified`
+  queda derivado y protegido desde `premium_until`; el backfill terminó con 0
+  discrepancias. `revenuecat-webhook` aún no está desplegado y requiere primero
+  configurar `RC_WEBHOOK_TOKEN`.
+- **Gates del paywall en servidor** (`supabase/migrations/paywall_gates.sql`):
+  `paywall_enabled()` (hoy false) e `is_premium()`. Crear grupos es ilimitado y
+  no tiene trigger de monetización. Ejecutar DESPUÉS de profile_premium.sql y
+  ANTES de re-ejecutar similar_products.sql (el RPC usa esas funciones).
 - `profiles`: columnas `username text unique`, `avatar_url text`, `discoverable boolean not null default true`.
 - `profiles`: columna `catalog_stores text[]` (preferencia "Supermercados del catálogo"; NULL/[] = todos). En `supabase/migrations/profile_catalog_stores.sql`.
 - Bucket `avatars` (público) + policies de subida/lectura. Path de avatar: `{userId}/avatar.{ext}`.
@@ -529,7 +1132,7 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - **Catálogo Sorli** (`supabase/migrations/sorli_catalog.sql`): tablas `sorli_products`/`sorli_categories` (7º súper, catalán). Migración AUTOCONTENIDA: incluye ya las columnas que en los otros súpers añadieron migraciones posteriores (`display_name_norm`+`display_name_ca_norm` para búsqueda sin acentos bilingüe, `first_seen_at` para novedades, `prev_unit_price`/`price_changed_at`/`price_delta_pct` + trigger para cambios de precio). Sorli tiene API JSON propia protegida por un token de sesión que firma su SPA → el sync (`scripts/sync-sorli.mjs`) ARRANCA la sesión con navegador headless (Playwright, como Bonpreu) y luego pagina el catálogo entero (~9.460 productos) con fetch, en 2 pasadas es/ca (bilingüe). Tras ejecutarla, lanzar el sync (workflow `sync-sorli.yml` o `scripts/run-sorli-sync.ps1`) y **re-ejecutar `similar_products.sql`** (ya incluye el brazo de Sorli). Ver `scripts/README-sorli-sync.md`.
 - **Catálogo Ametller Origen** (`supabase/migrations/ametller_catalog.sql`): tablas `ametller_products`/`ametller_categories` (11º súper, catalán de frescos). Migración AUTOCONTENIDA (mismas columnas base que Sorli) + columnas de FICHA bilingüe (`ingredients`/`nutrition`/`conservation`/`origin` + sus `_ca`) + `ean`. Ametller corre sobre Salesforce Commerce Cloud → su SCAPI responde con un token de invitado por PKCE que se obtiene 100% con fetch (SIN navegador headless, a diferencia de Sorli/Bonpreu); el sync (`scripts/sync-ametller.mjs`) enumera los ids con product-search (cgid=root, offset) y trae el detalle por lotes de 24 (`/products?ids=`) en 2 pasadas es/ca. DRY_RUN OK: 2.994 productos, 0 sin precio/imagen/EAN, 2.573 con ingredientes, 2.759 con nombre catalán. Único espejo (con Consum) con EAN estructurado. Logo placeholder en `assets/stores/ametller.png` (sustituir por el real). Tras ejecutarla, lanzar el sync (workflow `sync-ametller.yml`) y **re-ejecutar `similar_products.sql`** (ya incluye el brazo de Ametller + su marca en la limpieza del needle).
 - **Catálogo Aldi** (`supabase/migrations/aldi_catalog.sql`): tablas `aldi_products`/`aldi_categories` (12º súper). Migración AUTOCONTENIDA, **SOLO castellano** (aldi.es no es bilingüe), SIN ficha ni EAN. Aldi no vende con reparto pero publica su surtido permanente con precios online: la web es Next.js con Algolia y los productos van RENDERIZADOS EN EL SERVIDOR, embebidos en el `__NEXT_DATA__` (`props.pageProps.algoliaState.initialResults[idx].results[0].hits`) de cada categoría HOJA (`/productos/{n1}/{n2}.html`, hitsPerPage 1000). El sync (`scripts/sync-aldi.mjs`) enumera hojas crawleando las N1 (del sitemap `/.aldi-nord-sitemap.xml` sale la lista de PDPs, pero se usan las hojas) y raspa el JSON embebido — fetch puro sin cookies/navegador (patrón Carrefour/Dia). Precio + €/unidad (basePrice) + imagen Scene7; sin EAN (solo nº de artículo interno → comparador por nombre). GUARDARRAÍL: aborta si <800 productos (scrape parcial) para que markStale no borre el catálogo vivo. Logo placeholder en `assets/stores/aldi.png`. Tras ejecutarla, lanzar el sync (workflow `sync-aldi.yml`, lunes 08:20) y **re-ejecutar `similar_products.sql`** (ya con el brazo de Aldi).
-- **Catálogo HiperDino** (`supabase/migrations/hiperdino_catalog.sql`): tablas `hiperdino_products`/`hiperdino_categories` (13º espejo). Migración AUTOCONTENIDA, **SOLO castellano**, SIN ficha, SIN EAN y SIN €/unidad. HiperDino (cadena líder de **Canarias**) es Magento 2 con **GraphQL abierto** (`POST hiperdino.es/graphql`, sin auth/cookies/navegador): el sync (`scripts/sync-hiperdino.mjs`) enumera los productos por las 13 ramas de súper (anchor, `products(category_id)` agrega el subárbol) con `pageSize` alto y dedup por sku, y reconstruye el árbol N1→N2 desde el `path` embebido de las categorías — fetch puro (patrón Carrefour/Dia). OJO: NO se pide el campo `image` (un producto con imagen rota tira toda la query GraphQL) → la miniatura se DERIVA del sku (`cdn.hiperdino.es/catalog/product/x/{sku}_1.jpg`, patrón determinista verificado). DRY_RUN OK: **14.684 productos · 127 categorías**, 0 sin precio/imagen/categoría (1.073 con precio tachado, guardado en `raw` para futuras ofertas). GUARDARRAÍL: aborta si <10.000 productos. Logo placeholder en `assets/stores/hiperdino.png`. **⚠️ OJO NEGOCIO: HiperDino solo opera en Canarias** (precios con IGIC, no IVA) → solo relevante para usuarios canarios; el filtrado por comunidad autónoma decide si se muestra (ver `COMUNIDAD-AUTONOMA.md`). Tras ejecutarla, lanzar el sync (workflow `sync-hiperdino.yml`, lunes 08:40) y **re-ejecutar `similar_products.sql`** (ya con el brazo de HiperDino).
+- **Catálogo HiperDino** (`supabase/migrations/hiperdino_catalog.sql`): tablas `hiperdino_products`/`hiperdino_categories` (13º espejo). Migración AUTOCONTENIDA, **SOLO castellano** y SIN ficha. HiperDino (cadena líder de **Canarias**) es Magento 2 con **GraphQL abierto** (`POST hiperdino.es/graphql`, sin auth/cookies/navegador): el sync (`scripts/sync-hiperdino.mjs`) enumera los productos por las 13 ramas de súper (anchor, `products(category_id)` agrega el subárbol) con `pageSize` alto y dedup por sku, y reconstruye el árbol N1→N2 desde el `path` embebido de las categorías — fetch puro (patrón Carrefour/Dia). `price_text` aporta el precio de referencia y se normaliza a €/L, €/kg o €/ud; los formatos €/lavado, €/dosis y €/metro quedan en `raw` hasta ampliar las unidades canónicas. El precio total usa `sap_final_price` y el tachado `sap_price`: evitan que un resolver roto de `price_range` invalide una rama completa. OJO: NO se pide el campo `image` (un producto con imagen rota tira toda la query GraphQL) → la miniatura se DERIVA del sku (`cdn.hiperdino.es/catalog/product/x/{sku}_1.jpg`, patrón determinista verificado). DRY_RUN del 2026-08-22 OK: **14.775 productos · 127 categorías**, 0 sin precio/imagen/categoría, **11.357 con precio unitario canónico**, 9.255 EAN válidos y 1.160 con precio tachado. GUARDARRAÍL: aborta si <10.000 productos. Logo en `assets/stores/hiperdino.jpg`. **⚠️ OJO NEGOCIO: HiperDino solo opera en Canarias** (precios con IGIC, no IVA) → solo relevante para usuarios canarios; el filtrado por comunidad autónoma decide si se muestra (ver `COMUNIDAD-AUTONOMA.md`). Las columnas ya existen: tras desplegar el sync actualizado basta relanzarlo para hacer el backfill; después re-ejecutar `similar_products.sql` si su definición remota sigue pendiente.
 - **Catálogo Plusfresc** (`supabase/migrations/plusfresc_catalog.sql`): tablas `plusfresc_products`/`plusfresc_categories` (15º espejo, súper catalán de Lleida — Supsa; 8 centros online, todos en Catalunya → filtrado por comunidad `ES-CT`). Migración AUTOCONTENIDA, **BILINGÜE es/ca nativa** y con FICHA rica (descripción/ingredientes/**ALÉRGENOS legibles**/nutrición/conservación, bilingüe; único espejo con alérgenos junto a Carrefour). API REST ASP.NET abierta (`wscompra.plusfresc.cat/api`) con JWT de INVITADO (`POST loginGuest/{centro}`, 30 min, re-login en 401): fetch puro, sin cookies ni navegador — el sync más simple junto a Condis. El sync (`scripts/sync-plusfresc.mjs`) baja TODO el catálogo en UNA petición (`products/category/Root/{centro}`, centro 12 = Lleida Cap Pont como referencia; ~7.5k filas → dedup por `item_id`), el árbol bilingüe en otra (`categories/tree/{centro}/Root`; ids numéricos jerárquicos por PREFIJO: "09"→"0901"→"090110"→"09011001"; ramas de marketing con id no numérico excluidas) y la ficha INCREMENTAL por producto (`productdetails/files/{item}/{lang}`, es+ca, TTL 30 días, flags `SKIP_DETAIL`/`DETAIL_MAX`, patrón bonÀrea). DRY_RUN OK 2026-07-15: **7.316 productos · 787 categorías**, 0 sin precio/imagen/categoría/nombre-ca, 20 sin €/unidad. Ofertas (copias de "Oferta2" con `new_value_cents`/`end_date`) NO se aplican al precio (rotan entre semana): quedan en `raw.offer` para futuro. Sin EAN. GUARDARRAÍL: aborta si <6.000 productos. Logo real (icono "és") en `assets/stores/plusfresc.png`. Tras ejecutarla, lanzar el sync (workflow `sync-plusfresc.yml`, lunes 10:40) y **re-ejecutar `similar_products.sql`** (ya con el brazo de Plusfresc + su marca en la limpieza del needle).
 - Tras las dos anteriores, **re-ejecutar `similar_products.sql`** (ya incluye los brazos de consum y dia, y sus marcas blancas en la limpieza del needle).
 - **Lista por zonas** (`supabase/migrations/list_items_category.sql`): columna `category_name` en `list_items` Y en `purchase_items` (para que "repetir compra" conserve las zonas). Sin ella, añadir a la cesta falla (el insert incluye la columna).
@@ -583,11 +1186,25 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - ⏳ **Eroski (8º) y Caprabo (9º) añadidos** (2026-07-11): comparten backend (Apache Tapestry) → un scraper compartido `scripts/lib/eroski-tapestry.mjs` (GET de la página de categoría —SSR del 1er lote de 20— y después `POST supermarket:loadpage` con cookies de sesión + Origin/Referer; saca cada producto del JSON `data-metrics` del tile: id/nombre/marca/categoría/precio; ⚠️ la paginación `?pageNumber=N` original DEJÓ de funcionar el 2026-07-11: el server devuelve "No se obtuvieron resultados") y dos syncs mínimos (`sync-eroski.mjs`, `sync-caprabo.mjs`). Solo castellano, SIN €/unidad ni EAN, pero con nutrición de ficha HTML incremental normalizada para el Índice Alimentario. DRY_RUN completo OK (2026-07-11, ya con loadpage): **Eroski 21.073 productos** / 803 hojas / 0% sin tiles; **Caprabo 10.657** / 750 hojas (8% sin tiles por 429 de rate-limit tras encadenar crawls desde la misma IP — en CI no pasa). OJO: los crawls con `?pageNumber` daban 10.694 en Eroski = LA MITAD del catálogo (solo el 1er lote de cada hoja). GUARDARRAÍL anti-throttling: bajo carga el server sirve la página sin productos (o 429, con backoff largo + Retry-After) → reintentos en la pág. 1 + aborta el run si >20% de hojas llegan SIN TILES (para que markStale no despublique productos vivos); las hojas cuyo contenido ya se vio en otras categorías (~60 por súper, solapamiento del árbol) se cuentan APARTE como "solo-duplicados" y no disparan el aborto (la 1ª versión las mezclaba y abortó el run de CI del 2026-07-11 con un falso "56% vacías"). App: tipo/adaptador/modal (`TapestryProductModal`)/pantalla (`TapestryProductsScreen`) COMPARTIDOS por ambos, con funciones de `catalog.ts` por tabla. Migraciones `eroski_catalog.sql`+`caprabo_catalog.sql` (autocontenidas, es-only) + ampliación `20260718133958_eroski_caprabo_nutrition.sql` para tablas ya creadas. Pendientes: ejecutar las migraciones, re-ejecutar `similar_products.sql` (ya con ambos brazos), primer run (`sync-eroski.yml` lunes 09:00 / `sync-caprabo.yml` 09:30) y validar en device. Logos en `assets/stores/{eroski,caprabo}.png`. Ver `scripts/README-eroski-caprabo-sync.md`.
 - ⏳ **Lista agrupada por zonas del súper** (2026-06-12): Lista y cesta de grupo agrupan Tienda → Zona ("pasillo": Fruta y verdura, Congelados al final…) con alfabético dentro. Mapeo de N1 de los 6 supers → ~15 zonas canónicas por keywords en `src/constants/zones.ts` (solo cliente, afinable sin migrar). La categoría se captura al añadir (`list_items.category_name`); manuales/históricos → "Otros". ⚠️ Si se añade un nuevo punto de "añadir a la cesta", pasar `categoryName`. Pendiente: ejecutar `list_items_category.sql`.
 - 🧪 Comparativa de productos similares entre supers (detalle de producto) — **ACTIVADA PARA TESTERS** con `PRICE_COMPARISON_ENABLED = true`: funciona bajo demanda, usa la capa híbrida/caché y el cliente ya apunta a `catalog_cheaper_products_v5`. Antes de distribuir ese cliente debe desplegarse `20260817124758_comparator_semantic_identity_guard.sql`; la RPC v4 permanece disponible para builds anteriores.
-- Monetización «QuéFalta Plus» (1,99 €/mes · 11,99 €/año): **ACTIVADA LOCALMENTE PARA DESARROLLO (2026-08-11)**. El paywall presenta orden por precio unitario, filtros en Ofertas/Cambios/Novedades, selección «Todos» y alertas personalizadas. El cliente usa `PAYWALL_ENABLED = true`; el servidor permanece apagado con `paywall_enabled() = false` hasta completar RevenueCat y las pruebas sandbox.
-- ⏳ **Onboarding de primera vez + demo** (2026-06-16): asistente de bienvenida (obligatorios @usuario + supermercados; opcionales foto/amigos/grupo) + demo con coach marks sobre la app. Código completo y typecheck verde. Gate por `profiles.onboarded_at`. Pendiente: **ejecutar `supabase/migrations/profile_onboarding.sql`** en Supabase y probar el flujo. Ver `ONBOARDING.md`.
+- Monetización «QuéFalta Plus» (3,99 €/mes · 19,99 €/año): **ACTIVADA LOCALMENTE PARA DESARROLLO (2026-08-11)**. El paywall presenta orden por precio unitario, filtros en Ofertas/Cambios/Novedades, selección «Todos» y alertas personalizadas. El cliente usa `PAYWALL_ENABLED = true`; el servidor permanece apagado con `paywall_enabled() = false` hasta completar RevenueCat y las pruebas sandbox.
+- Configuración externa de Plus (2026-08-22): Apple ya tiene los productos
+  `com.quefalta.app.plus.monthly` y `.annual` (3,99/19,99 €, prueba anual de
+  7 días) y RevenueCat ya enlaza Apple/Google/Test Store en `plus` → `default`
+  → `$rc_monthly`/`$rc_annual`. Google tiene creada la suscripción
+  `quefalta_plus`, pero no permitirá guardar los planes `monthly`/`annual` hasta
+  subir una build con Google Play Billing al menos a prueba interna. Ver
+  `MONETIZACION.md` y `HANDOFF.md` para credenciales y pruebas pendientes.
+- 🧪 **Onboarding de primera vez + demo:** flujo robustecido y migraciones
+  aplicadas; pendiente únicamente recorrerlo visualmente con una cuenta de prueba
+  que tenga `onboarded_at` a NULL. Ver `ONBOARDING.md`.
 - ❌ No publicar en App Store todavía (solo pruebas en dispositivo propio).
 - ⏳ **Nota de salud estilo Yuka (Plus, solo Mercadona)**: backend incorporado en
   `scripts/lib/health-score.mjs`, `scripts/extract-mercadona-nutrition.mjs`,
   `supabase/migrations/mercadona_health.sql` y el workflow correspondiente.
   Pendiente: ejecutar la migración, configurar `ANTHROPIC_API_KEY`, lanzar el
   backfill y completar la Fase 3 de UI.
+- ✅ **Icono personalizado por grupo**
+  (`supabase/migrations/20260822071818_add_group_icon.sql`): añade la columna
+  nullable `groups.icon_emoji` y limita su longitud. Aplicada y verificada en
+  producción como `20260822073002`; reutiliza la policy UPDATE existente, por
+  lo que solo el administrador puede cambiarlo.

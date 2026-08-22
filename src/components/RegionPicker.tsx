@@ -135,6 +135,11 @@ export default function RegionPicker({
         maxLength={5}
         autoFocus={autoFocus}
         returnKeyType="done"
+        accessibilityLabel={t('region.postalCodePlaceholder')}
+        accessibilityHint={helperText}
+        accessibilityValue={{
+          text: cpRegion ? `${cp}. ${t(`region.names.${cpRegion}`)}` : cp,
+        }}
       />
       {cpRegion ? <Ionicons name="checkmark-circle" size={22} color={activeColor} /> : null}
     </View>
@@ -142,11 +147,16 @@ export default function RegionPicker({
 
   const detectedRegion = inlineDetected ? displayRegion : cpRegion;
   const detectedCard = detectedRegion ? (
-    <View style={[
-      styles.detected,
-      inlineDetected && styles.detectedInline,
-      inverse && styles.detectedInverse,
-    ]}>
+    <View
+      style={[
+        styles.detected,
+        inlineDetected && styles.detectedInline,
+        inverse && styles.detectedInverse,
+      ]}
+      accessible
+      accessibilityLiveRegion="polite"
+      accessibilityLabel={`${t('region.detected')}: ${t(`region.names.${detectedRegion}`)}`}
+    >
       <Text
         style={[styles.detectedLabel, inverse && styles.detectedLabelInverse]}
         numberOfLines={1}
@@ -209,6 +219,9 @@ export default function RegionPicker({
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={selectAll}
+        accessibilityRole="button"
+        accessibilityLabel={t('region.all')}
+        accessibilityState={{ selected: allOn }}
         style={[
           styles.card,
           inverse && styles.surfaceInverse,

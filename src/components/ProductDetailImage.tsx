@@ -2,16 +2,19 @@ import { View, Text, StyleSheet, type StyleProp, type ViewStyle } from 'react-na
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
+import type { CatalogStore } from '../constants/stores';
 import ProductImage from './ProductImage';
+import ProductAlertButton from './ProductAlertButton';
 
 interface Props {
   uri: string | null | undefined;
   style: StyleProp<ViewStyle>;
   badgeLabel?: string;
+  alertTarget?: { store: CatalogStore; productId: string };
 }
 
 /** Imagen principal de la ficha con una etiqueta contextual dentro del marco. */
-export default function ProductDetailImage({ uri, style, badgeLabel }: Props) {
+export default function ProductDetailImage({ uri, style, badgeLabel, alertTarget }: Props) {
   return (
     <View style={[style, styles.frame]}>
       {uri ? (
@@ -19,6 +22,13 @@ export default function ProductDetailImage({ uri, style, badgeLabel }: Props) {
       ) : (
         <Ionicons name="image-outline" size={48} color={colors.inkFaint} />
       )}
+      {alertTarget ? (
+        <ProductAlertButton
+          store={alertTarget.store}
+          productId={alertTarget.productId}
+          overlay
+        />
+      ) : null}
       {badgeLabel ? <ProductDetailBadge label={badgeLabel} /> : null}
     </View>
   );

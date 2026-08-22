@@ -1,5 +1,5 @@
 /** Paso 5 (OPCIONAL) — Crear el primer grupo. Reutiliza createGroup. */
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -21,12 +21,14 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '../../constants/colors';
 import { fonts } from '../../constants/typography';
 import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 import { useTranslation } from '../../context/LanguageContext';
-import { createGroup } from '../../api/groups';
+import { createGroup, createGroupRequestKey } from '../../api/groups';
+import { completeOnboarding } from '../../api/profile';
+import OnboardingSlats from './OnboardingSlats';
 
 const GROUP_MASCOT = require('../../../assets/mascot/berenjena-grupo.png');
-const SLATS = Array.from({ length: 26 }, (_, index) => index);
 const APP_BLUE = colors.blue;
 
 export default function GroupScreen() {
@@ -35,6 +37,7 @@ export default function GroupScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const { session } = useAuth();
+  const { activateCart } = useCart();
   const toast = useToast();
   const userId = session?.user.id ?? '';
   const suggestions = [
@@ -45,28 +48,53 @@ export default function GroupScreen() {
   ];
 
   const [name, setName] = useState('');
-  const [created, setCreated] = useState(false);
+  const [createdGroup, setCreatedGroup] = useState<{ id: string; name: string } | null>(null);
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const requestKey = useRef(createGroupRequestKey(userId));
 
-  const goNext = () => navigation.navigate('Done');
   const trimmed = name.trim();
 
   const handleContinue = async () => {
-    if (created || !trimmed) {
-      goNext();
-      return;
+    if (savingRef.current) return;
+    savingRef.current = true;
+    setSaving(true);
+    let group = createdGroup;
+    if (!group && trimmed) {
+      try {
+        const id = await createGroup(trimmed, userId, requestKey.current);
+        group = { id, name: trimmed };
+        setCreatedGroup(group);
+        toast.show(t('onboarding.groupCreated', { name: trimmed }));
+      } catch {
+        toast.show(t('onboarding.groupCreateError'), 'error');
+        savingRef.current = false;
+        setSaving(false);
+        return;
+      }
     }
 
-    setSaving(true);
+    if (group) {
+      try {
+        await activateCart(group.id, group.name);
+      } catch {
+        // El grupo ya existe: conservar su id permite reintentar sin duplicarlo.
+        toast.show(t('onboarding.groupActivateError'), 'error');
+        savingRef.current = false;
+        setSaving(false);
+        return;
+      }
+    }
+
     try {
-      await createGroup(trimmed, userId);
-      setCreated(true);
+      const onboardedAt = await completeOnboarding();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show(t('onboarding.groupCreated', { name: trimmed }));
-      goNext();
+      navigation.navigate('Done', { onboardedAt });
+      savingRef.current = false;
+      setSaving(false);
     } catch {
-      toast.show(t('onboarding.groupCreateError'), 'error');
-    } finally {
+      toast.show(t('onboarding.finishError'), 'error');
+      savingRef.current = false;
       setSaving(false);
     }
   };
@@ -84,12 +112,10 @@ export default function GroupScreen() {
     <View style={styles.screen}>
       <StatusBar barStyle="light-content" backgroundColor={APP_BLUE} />
 
-      <View style={styles.slats} pointerEvents="none">
-        {SLATS.map((slat) => <View key={slat} style={styles.slat} />)}
-      </View>
+      <OnboardingSlats />
 
       <TouchableOpacity
-        onPress={() => navigation.goBack()}
+        onPress={() => navigation.navigate('Friends')}
         style={[styles.backButton, { top: insets.top + 8 }]}
         hitSlop={8}
         activeOpacity={0.82}
@@ -107,9 +133,7 @@ export default function GroupScreen() {
       >
         <Text
           style={[styles.title, compactHeight && styles.titleCompact]}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.72}
+          maxFontSizeMultiplier={1.5}
         >
           {t('onboarding.groupTitle')}
         </Text>
@@ -148,7 +172,9 @@ export default function GroupScreen() {
               maxLength={40}
               returnKeyType="done"
               onSubmitEditing={handleContinue}
-              editable={!saving}
+              editable={!saving && !createdGroup}
+              accessibilityLabel={t('onboarding.groupPlaceholder')}
+              accessibilityHint={t('onboarding.groupSubtitle')}
             />
           </View>
 
@@ -164,10 +190,10 @@ export default function GroupScreen() {
                     Haptics.selectionAsync();
                     setName(suggestion);
                   }}
-                  disabled={saving}
+                  disabled={saving || !!createdGroup}
                   activeOpacity={0.82}
                   accessibilityRole="button"
-                  accessibilityState={{ selected, disabled: saving }}
+                  accessibilityState={{ selected, disabled: saving || !!createdGroup }}
                 >
                   <Text style={[styles.suggestionText, selected && styles.suggestionTextSelected]}>
                     {suggestion}
@@ -185,30 +211,19 @@ export default function GroupScreen() {
             disabled={saving}
             activeOpacity={0.86}
             accessibilityRole="button"
-            accessibilityState={{ disabled: saving }}
+            accessibilityState={{ disabled: saving, busy: saving }}
           >
             {saving ? (
               <ActivityIndicator color={APP_BLUE} />
             ) : (
               <>
                 <Text style={styles.continueText}>
-                  {trimmed ? t('onboarding.groupCreateContinue') : t('onboarding.continue')}
+                  {trimmed ? t('onboarding.groupCreateContinue') : t('onboarding.laterSkip')}
                 </Text>
                 <Ionicons name="arrow-forward" size={18} color={APP_BLUE} />
               </>
             )}
           </TouchableOpacity>
-          {!trimmed ? (
-            <TouchableOpacity
-              onPress={goNext}
-              disabled={saving}
-              activeOpacity={0.78}
-              style={styles.skipButton}
-              accessibilityRole="button"
-            >
-              <Text style={styles.skipText}>{t('onboarding.laterSkip')}</Text>
-            </TouchableOpacity>
-          ) : null}
         </View>
       </KeyboardAvoidingView>
 
@@ -223,16 +238,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     overflow: 'hidden',
     backgroundColor: APP_BLUE,
-  },
-  slats: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'space-evenly',
-  },
-  slat: {
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.11)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(13,53,101,0.18)',
   },
   backButton: {
     position: 'absolute',

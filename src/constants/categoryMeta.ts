@@ -180,6 +180,12 @@ const CATEGORY_KEYWORD_RULES: [string, { emoji: string; color: string }][] = [
   ['novetat',         { emoji: '✨', color: colors.yellow }],
 ];
 
+/** Todos los emojis que el catálogo usa para representar categorías N1. */
+export const CATEGORY_EMOJIS = Array.from(new Set([
+  ...Object.values(CATEGORY_META).map((meta) => meta.emoji),
+  ...CATEGORY_KEYWORD_RULES.map(([, meta]) => meta.emoji),
+]));
+
 export function getMeta(name: string) {
   const exact = CATEGORY_META[name];
   if (exact) return exact;

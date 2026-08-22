@@ -19,15 +19,28 @@ export const PAYWALL_ENABLED = true;
 /** Kill-switch del comparador bajo demanda. ACTIVADO para validación en dispositivo. */
 export const PRICE_COMPARISON_ENABLED = true;
 
-/** Límites del plan gratuito (premium = sin límites). */
-export const FREE_LIMITS = {
-  /** Grupos que un usuario free puede CREAR. Unirse a grupos es ilimitado
-   *  SIEMPRE: el enlace de invitación es el mecanismo viral, no se toca. */
-  maxCreatedGroups: 1,
-  /** Compras del historial (las N más recientes) que un free puede repetir. */
-  maxRepeatableHistory: 3,
-} as const;
+/** QuéCocino se conserva para retomarlo más adelante, pero no forma parte del
+ *  árbol de navegación ni es accesible desde la app mientras este flag sea false. */
+export const QUE_COCINO_ENABLED = false;
+
+/** Fuente única para autorizar Plus en el cliente. `verified` es solo el reflejo
+ * público de este estado para pintar la insignia, nunca un gate de acceso. */
+export const hasActivePremium = (
+  premiumUntil: string | null | undefined,
+  now = Date.now(),
+): boolean => {
+  if (!premiumUntil) return false;
+  const expiresAt = new Date(premiumUntil).getTime();
+  return Number.isFinite(expiresAt) && expiresAt > now;
+};
 
 /** true si los límites free aplican a este usuario (gate estándar de Fase 2). */
 export const limitsApply = (isPremium: boolean): boolean =>
   PAYWALL_ENABLED && !isPremium;
+
+/** "Todos" conserva acceso para las cuentas anteriores a la versión 1.3.
+ *  Esta excepción no desbloquea ningún otro beneficio de QuéFalta Plus. */
+export const canUseAllStores = (
+  isPremium: boolean,
+  legacyAllStoresAccess: boolean | null | undefined,
+): boolean => !limitsApply(isPremium) || legacyAllStoresAccess === true;

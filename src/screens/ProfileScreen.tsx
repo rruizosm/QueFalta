@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, StatusBar, ActivityIndicator, Linking,
+  StyleSheet, StatusBar, ActivityIndicator, Linking, Alert, AppState,
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -23,6 +23,11 @@ import { PAYWALL_ENABLED, limitsApply } from '../constants/limits';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { fetchIncomingRequestCount } from '../api/friends';
+import {
+  getPlusSubscriptionManagement,
+  openPlusSubscriptionManagement,
+  type PlusSubscriptionManagement,
+} from '../lib/purchases';
 
 export default function ProfileScreen() {
   const navigation = useNavigation<any>();
@@ -33,14 +38,17 @@ export default function ProfileScreen() {
   const { t, lang } = useTranslation();
   const { session, signOut } = useAuth();
   const { profile, loading, isPremium } = useProfile();
-  const historyLocked = !loading && limitsApply(isPremium);
-  const statisticsLocked = !loading && limitsApply(isPremium);
+  const plusFeaturesLocked = !loading && limitsApply(isPremium);
   const appVersion = `v${Constants.expoConfig?.version ?? '1.0.0'}`;
 
   const [signOutVisible, setSignOutVisible] = useState(false);
   const [pendingRequests, setPendingRequests] = useState(0);
   const [paywallVisible, setPaywallVisible] = useState(false);
-  const [headerH, setHeaderH] = useState(0);
+  const [plusManagement, setPlusManagement] = useState<PlusSubscriptionManagement | null>(null);
+  // La cabecera mide headerTop + botón (38) + padding inferior (10). Reservar
+  // esa altura desde el primer frame evita que el contenido nazca bajo el
+  // cristal y salte cuando onLayout informa de la misma medida.
+  const [headerH, setHeaderH] = useState(glassAvailable ? headerTop + 48 : 0);
   const glassInset = glassAvailable ? headerH : 0;
 
   // Badge de solicitudes de amistad pendientes. Al enfocar (no solo al montar):
@@ -57,7 +65,55 @@ export default function ProfileScreen() {
     }, [session?.user.id]),
   );
 
+  // Al volver de la tienda, consulta de nuevo plan, renovación o cancelación.
+  // Si RevenueCat confirma que no hay entitlement de tienda pero Supabase sí
+  // mantiene Plus, se trata de una concesión de cortesía para testers.
+  useFocusEffect(
+    useCallback(() => {
+      if (!isPremium) {
+        setPlusManagement(null);
+        return;
+      }
+      let cancelled = false;
+      const refreshManagement = (showLoading: boolean) => {
+        if (showLoading) setPlusManagement(null);
+        getPlusSubscriptionManagement().then((result) => {
+          if (!cancelled) setPlusManagement(result);
+        });
+      };
+      refreshManagement(true);
+      const appStateSubscription = AppState.addEventListener('change', (state) => {
+        // Los enlaces de tienda sacan temporalmente la app a segundo plano. Al
+        // volver, recoge una cancelación o cambio de plan sin reabrir Perfil.
+        if (state === 'active') refreshManagement(false);
+      });
+      return () => {
+        cancelled = true;
+        appStateSubscription.remove();
+      };
+    }, [isPremium]),
+  );
+
   const handleSignOut = () => setSignOutVisible(true);
+
+  const handlePlusPress = async () => {
+    if (!isPremium) {
+      setPaywallVisible(true);
+      return;
+    }
+    if (!plusManagement || plusManagement.kind === 'none') return;
+    try {
+      const opened = await openPlusSubscriptionManagement(
+        plusManagement.kind === 'store' ? plusManagement.managementURL : null,
+      );
+      if (!opened) throw new Error('Subscription management unavailable');
+      // La hoja nativa de iOS no siempre cambia AppState; al cerrarla refresca
+      // también aquí. Los enlaces externos se vuelven a consultar al regresar.
+      setPlusManagement(await getPlusSubscriptionManagement());
+    } catch {
+      Alert.alert(t('profile.plusManageErrorTitle'), t('profile.plusManageErrorMessage'));
+    }
+  };
 
   const initials  = profile?.initials ?? '??';
   const avatarBg  = profile?.color   ?? colors.accent;
@@ -71,6 +127,27 @@ export default function ProfileScreen() {
     region === null ? t('region.notSet')
     : region === REGION_ALL ? t('region.all')
     : t(`region.names.${region}`);
+
+  const plusValue = (() => {
+    if (!isPremium) return t('profile.plusDiscover');
+    if (!plusManagement) return t('common.loading');
+    if (plusManagement.kind === 'none') return t('profile.plusCourtesy');
+    if (plusManagement.kind === 'unavailable') return t('profile.plusActiveShort');
+    if (!plusManagement.willRenew && plusManagement.expirationDate) {
+      const date = new Intl.DateTimeFormat(lang === 'ca' ? 'ca-ES' : 'es-ES', {
+        day: 'numeric', month: 'short',
+      }).format(new Date(plusManagement.expirationDate));
+      return t('profile.plusUntil', { date });
+    }
+    if (plusManagement.periodType.toUpperCase() === 'TRIAL') return t('profile.plusTrial');
+    const plan = `${plusManagement.productIdentifier}:${plusManagement.productPlanIdentifier ?? ''}`;
+    if (plan.toLowerCase().includes('annual')) return t('profile.plusAnnual');
+    if (plan.toLowerCase().includes('monthly')) return t('profile.plusMonthly');
+    return t('profile.plusManage');
+  })();
+
+  const plusRowEnabled = !isPremium
+    || (!!plusManagement && plusManagement.kind !== 'none');
 
   const header = (
     <View style={[styles.header, { paddingTop: headerTop }]}>
@@ -117,13 +194,19 @@ export default function ProfileScreen() {
             <View style={styles.identityText}>
               <View style={styles.identityNameRow}>
                 {profile?.username ? (
-                  <Text style={styles.identityName} numberOfLines={1}>@{profile.username}</Text>
+                  <Text
+                    style={styles.identityName}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.78}
+                  >
+                    @{profile.username}
+                  </Text>
                 ) : null}
-                {profile?.verified ? <VerifiedBadge size={17} /> : null}
+                {isPremium ? <VerifiedBadge size={17} tone="gold" /> : null}
               </View>
             </View>
 
-            {/* Edit button */}
             <TouchableOpacity
               style={styles.editBtn}
               onPress={() => navigation.navigate('EditProfile')}
@@ -134,37 +217,19 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* QUÉFALTA PLUS — oculto mientras el paywall esté apagado (Fase 4). */}
-          {PAYWALL_ENABLED && (
-            <TouchableOpacity
-              onPress={() => { if (!isPremium) setPaywallVisible(true); }}
-              activeOpacity={isPremium ? 1 : 0.85}
-              style={{ marginTop: 14 }}
-            >
-              <View style={styles.plusCard}>
-                <View style={styles.plusIcon}>
-                  <Ionicons name="sparkles" size={18} color={colors.white} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.plusTitle}>QuéFalta Plus</Text>
-                  <Text style={styles.plusText}>
-                    {isPremium
-                      ? t('profile.plusActive')
-                      : t('profile.plusInactive')}
-                  </Text>
-                </View>
-                {isPremium ? (
-                  <Ionicons name="checkmark-circle" size={20} color={colors.accent} />
-                ) : (
-                  <Ionicons name="chevron-forward" size={16} color={colors.inkFaint} />
-                )}
-              </View>
-            </TouchableOpacity>
-          )}
-
           {/* CUENTA */}
           <Text style={styles.sectionLabel}>{t('profile.sectionAccount')}</Text>
           <View style={styles.section}>
+            {(PAYWALL_ENABLED || isPremium) && (
+              <ProfileRow
+                icon="sparkles-outline"
+                label={t('profile.plusSubscription')}
+                value={plusValue}
+                onPress={plusRowEnabled ? handlePlusPress : undefined}
+                right={plusRowEnabled ? 'chevron' : 'none'}
+                rounded
+              />
+            )}
             <ProfileRow
               icon="notifications-outline"
               label={t('profile.notifications')}
@@ -172,24 +237,30 @@ export default function ProfileScreen() {
               rounded
             />
             <ProfileRow
-              icon="receipt-outline"
-              label={t('profile.purchaseHistory')}
-              locked={historyLocked}
+              icon="pricetag-outline"
+              label={t('profile.priceAlerts')}
+              locked={plusFeaturesLocked}
               onPress={() => {
-                if (historyLocked) {
+                if (plusFeaturesLocked) {
                   setPaywallVisible(true);
                   return;
                 }
-                navigation.navigate('History');
+                navigation.navigate('PriceAlerts');
               }}
+              rounded
+            />
+            <ProfileRow
+              icon="receipt-outline"
+              label={t('profile.purchaseHistory')}
+              onPress={() => navigation.navigate('History')}
               rounded
             />
             <ProfileRow
               icon="pie-chart-outline"
               label={t('profile.statistics')}
-              locked={statisticsLocked}
+              locked={plusFeaturesLocked}
               onPress={() => {
-                if (statisticsLocked) {
+                if (plusFeaturesLocked) {
                   setPaywallVisible(true);
                   return;
                 }
@@ -293,7 +364,13 @@ export default function ProfileScreen() {
       )}
 
       {glassAvailable && (
-        <View style={styles.chrome} onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)}>
+        <View
+          style={styles.chrome}
+          onLayout={(event) => {
+            const next = event.nativeEvent.layout.height;
+            setHeaderH((current) => Math.abs(current - next) > 0.5 ? next : current);
+          }}
+        >
           <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>
             {header}
           </GlassSurface>
@@ -345,29 +422,15 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
   },
   avatarFrame: { padding: 3, borderRadius: 34, backgroundColor: colors.accentLight },
-  identityText: { flex: 1, minWidth: 0 },
-  identityNameRow: { flexDirection: 'row', alignItems: 'center' },
+  identityText: { flex: 1, minWidth: 0, justifyContent: 'center' },
+  identityNameRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   identityName: { flexShrink: 1, fontSize: 18, fontFamily: fonts.bold, color: colors.ink },
   editBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
     paddingHorizontal: 11, paddingVertical: 8, borderRadius: 14,
     backgroundColor: colors.accent,
   },
   editBtnText: { fontSize: 12, fontFamily: fonts.bold, color: colors.white },
-
-  // ── QuéFalta Plus ─────────────────────────────────────────────
-  plusCard: {
-    flexDirection: 'row', alignItems: 'center',
-    padding: 14, gap: 12, borderRadius: 18,
-    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
-  },
-  plusIcon: {
-    width: 38, height: 38, borderRadius: 13,
-    backgroundColor: colors.accent,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  plusTitle: { fontSize: 15, fontFamily: fonts.bold, color: colors.ink },
-  plusText: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
 
   // ── Sections ──────────────────────────────────────────────────
   sectionLabel: {

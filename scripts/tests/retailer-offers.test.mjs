@@ -7,7 +7,7 @@ import {
   normalizeCondisOffer,
   parseTapestryOfferBlock,
 } from '../lib/retailer-offers.mjs';
-import { parseTiles } from '../lib/eroski-tapestry.mjs';
+import { parseTapestryPricePerUnit, parseTiles } from '../lib/eroski-tapestry.mjs';
 
 test('Condis separa la rebaja directa de una variación ordinaria', () => {
   assert.deepEqual(normalizeCondisOffer({
@@ -133,4 +133,32 @@ test('parseTiles asocia cada promoción con su producto y rechaza tiles ordinari
   assert.equal(rows[0].promo_name, '-32%');
   assert.equal(rows[0].promo_base_price, 5.95);
   assert.equal(rows[1].promo_name, undefined);
+});
+
+test('Eroski y Caprabo normalizan el precio unitario visible del tile', () => {
+  assert.deepEqual(parseTapestryPricePerUnit(`
+    <div class="product-col-50 quantity-price-container">
+      <p class="quantity-text">1 KILO A  18,40&nbsp;€</p>
+    </div>`), { value: 18.4, unit: 'kg' });
+  assert.deepEqual(parseTapestryPricePerUnit(
+    '<div class="quantity-price-container"><p class="quantity-price">1 LITRO A 1,19 €</p></div>',
+  ), { value: 1.19, unit: 'l' });
+  assert.deepEqual(parseTapestryPricePerUnit(
+    '<p class="quantity-text">1 UNIDAD A 0,63&nbsp;€</p>',
+  ), { value: 0.63, unit: 'ud' });
+  assert.equal(parseTapestryPricePerUnit('<p>1 KILO A 18,40 €</p>'), null);
+});
+
+test('parseTiles conserva el precio unitario junto al data-metrics', () => {
+  const metrics = JSON.stringify({
+    event: 'select_item',
+    ecommerce: { items: [{ item_id: 'ppu', item_name: 'Producto con peso', price: 4.6 }] },
+  });
+  const [row] = parseTiles(`
+    <div class="col border-0 product-item-lineal item-type-1">
+      <div data-metrics='${metrics}'></div>
+      <p class="quantity-text">1 KILO A 18,40&nbsp;€</p>
+    </div>`);
+  assert.equal(row.price_per_unit, 18.4);
+  assert.equal(row.price_per_unit_unit, 'kg');
 });

@@ -1,14 +1,20 @@
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
-import { Animated, PanResponder, ScrollView, View, Text, Image, Modal, Pressable, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  PanResponder, ScrollView, View, Text, Image, Modal, Pressable,
+  TouchableOpacity, StyleSheet,
+} from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
+import { useProfile } from '../context/ProfileContext';
 import { CATALOG_STORES } from '../constants/stores';
 import { getSubcategoryEmoji } from '../constants/subcategoryEmojis';
+import { limitsApply } from '../constants/limits';
 import HardShadow from './HardShadow';
+import PaywallModal from './PaywallModal';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
@@ -32,6 +38,14 @@ export const PRICE_RANGES: { min: number; max: number | null }[] = [
   { min: 10, max: null },
 ];
 
+/** Rangos por magnitud del cambio porcentual (min exclusivo, max inclusivo). */
+export const PRICE_CHANGE_RANGES: { min: number; max: number | null }[] = [
+  { min: 0, max: 5 },
+  { min: 5, max: 10 },
+  { min: 10, max: 20 },
+  { min: 20, max: null },
+];
+
 interface Props {
   visible: boolean;
   onClose: () => void;
@@ -45,6 +59,11 @@ interface Props {
   onPriceRange: (i: number | null) => void;
   sort: PriceSort | null;
   onSort: (s: PriceSort | null) => void;
+  /** Oculta precio y orden cuando la pantalla solo necesita otras facetas. */
+  showPriceControls?: boolean;
+  /** Índice en PRICE_CHANGE_RANGES, o null = cualquier magnitud. */
+  priceChangeRange?: number | null;
+  onPriceChangeRange?: (i: number | null) => void;
   /** Orden por precio unitario canónico (€/kg, €/l o €/ud). */
   pricePerUnitSort?: PriceSort | null;
   onPricePerUnitSort?: (s: PriceSort | null) => void;
@@ -77,6 +96,8 @@ export default function ProductFilterSheet({
   categories, category, onCategory,
   priceRange, onPriceRange,
   sort, onSort,
+  showPriceControls = true,
+  priceChangeRange = null, onPriceChangeRange,
   pricePerUnitSort = null, onPricePerUnitSort,
   appearance = 'standard', showCategoryIcons = false,
   offerTypes = [], selectedOfferTypes = [], onOfferTypes,
@@ -86,46 +107,76 @@ export default function ProductFilterSheet({
   const styles = useThemedStyles(themedStyles);
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { isPremium, loading: profileLoading } = useProfile();
   const reducedMotion = useReducedMotion();
-  const reducedMotionRef = useRef(reducedMotion);
-  reducedMotionRef.current = reducedMotion;
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   const [categoryGroupOpen, setCategoryGroupOpen] = useState<string | null>(null);
   const [offerTypeGroupOpen, setOfferTypeGroupOpen] = useState<string | null>(null);
+  const [sortPaywallVisible, setSortPaywallVisible] = useState(false);
   const plusAppearance = appearance === 'plus';
-  const dragY = useRef(new Animated.Value(0)).current;
+  const unitPriceSortLocked = !profileLoading && limitsApply(isPremium);
+  const closingRef = useRef(false);
+  const closeRef = useRef<() => void>(() => {});
+
+  // El cierre cambia el estado inmediatamente y deja toda la transición al
+  // Modal nativo. Así nunca hay dos animaciones ni un callback tardío capaz de
+  // volver a mostrar la hoja.
+  closeRef.current = () => {
+    if (closingRef.current) return;
+    closingRef.current = true;
+    onCloseRef.current();
+  };
+
+  useEffect(() => {
+    if (visible) closingRef.current = false;
+  }, [visible]);
+
+  // El orden unitario es una función Plus. Las pantallas que pasan este control
+  // comparten el gate; si la suscripción caduca mientras estaba activo, se
+  // elimina antes de que pueda seguir afectando a los resultados.
+  useEffect(() => {
+    if (unitPriceSortLocked && pricePerUnitSort != null) {
+      onPricePerUnitSort?.(null);
+    }
+  }, [onPricePerUnitSort, pricePerUnitSort, unitPriceSortLocked]);
+
   const dragResponder = useRef(PanResponder.create({
+    // El tirador adquiere el gesto desde el primer toque. Confiar solo en
+    // onMoveShouldSetPanResponder hacía que algunos árboles nativos no llegaran
+    // a entregarle el desplazamiento.
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: (_, gesture) => gesture.dy > 4 && Math.abs(gesture.dy) > Math.abs(gesture.dx),
+    // En cuanto se reconoce un desplazamiento vertical hacia abajo desde el
+    // tirador, el cierre queda comprometido y continúa solo hasta el final.
+    // No sigue al dedo, no espera a que se suelte y nunca rebota hacia arriba.
     onPanResponderMove: (_, gesture) => {
-      dragY.setValue(Math.max(0, gesture.dy));
-    },
-    onPanResponderRelease: (_, gesture) => {
-      if (gesture.dy > 88 || gesture.vy > 1.2) {
-        if (reducedMotionRef.current) onClose();
-        else Animated.timing(dragY, { toValue: 260, duration: 170, useNativeDriver: true }).start(() => onClose());
-      } else {
-        if (reducedMotionRef.current) dragY.setValue(0);
-        else Animated.spring(dragY, { toValue: 0, useNativeDriver: true, damping: 18, stiffness: 180 }).start();
+      if (gesture.dy > 4 && Math.abs(gesture.dy) > Math.abs(gesture.dx)) {
+        closeRef.current();
       }
     },
-    onPanResponderTerminate: () => {
-      if (reducedMotionRef.current) dragY.setValue(0);
-      else Animated.spring(dragY, { toValue: 0, useNativeDriver: true, damping: 18, stiffness: 180 }).start();
-    },
+    onPanResponderTerminationRequest: () => false,
   })).current;
-  useEffect(() => {
-    if (!visible) dragY.setValue(0);
-  }, [visible, dragY]);
-  const hasFilters = category.length > 0 || priceRange != null || sort != null
+  const hasFilters = category.length > 0 || priceRange != null || sort != null || priceChangeRange != null
     || pricePerUnitSort != null || selectedOfferTypes.length > 0 || selectedStores.length > 0;
   const clearAll = () => {
     onCategory([]);
     onPriceRange(null);
     onSort(null);
+    onPriceChangeRange?.(null);
     onPricePerUnitSort?.(null);
     onOfferTypes?.([]);
     onStores?.([]);
+  };
+
+  const selectPricePerUnitSort = (value: PriceSort) => {
+    if (profileLoading || !onPricePerUnitSort) return;
+    if (unitPriceSortLocked) {
+      setSortPaywallVisible(true);
+      return;
+    }
+    onPricePerUnitSort(pricePerUnitSort === value ? null : value);
   };
 
   // Multiselección: tocar un chip lo añade/quita del conjunto.
@@ -151,6 +202,13 @@ export default function ProductFilterSheet({
         ? t('filters.upTo', { n: r.max })
         : t('filters.between', { a: r.min, b: r.max });
 
+  const changeRangeLabel = (r: { min: number; max: number | null }) =>
+    r.max == null
+      ? t('filters.changeOver', { n: r.min })
+      : r.min === 0
+        ? t('filters.changeUpTo', { n: r.max })
+        : t('filters.changeBetween', { a: r.min, b: r.max });
+
   const chip = (label: string, on: boolean, onPress: () => void) => (
     <TouchableOpacity
       key={label}
@@ -162,6 +220,27 @@ export default function ProductFilterSheet({
     >
       <Text style={[styles.chipText, on && styles.chipTextOn]} numberOfLines={1}>{label}</Text>
     </TouchableOpacity>
+  );
+
+  const lockedUnitPriceChip = (label: string, value: PriceSort) => (
+    <View
+      key={value}
+      style={styles.lockedUnitPriceButtonBackground}
+    >
+      <TouchableOpacity
+        style={[styles.chip, styles.lockedUnitPriceChip]}
+        onPress={() => selectPricePerUnitSort(value)}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel={`${label}, Plus`}
+        accessibilityHint={t('paywall.benefits.unitPriceText')}
+      >
+        <Ionicons name="lock-closed" size={12} color={colors.accent} />
+        <Text style={[styles.chipText, styles.lockedUnitPriceChipText]} numberOfLines={1}>
+          {label}
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
 
   const categoryChip = (value: string, label: string, on: boolean, onPress: () => void) => (
@@ -292,20 +371,21 @@ export default function ProductFilterSheet({
   };
 
   return (
-    <Modal
+    <>
+      <Modal
       visible={visible}
       transparent
       animationType={reducedMotion ? 'none' : 'slide'}
       statusBarTranslucent
-      onRequestClose={onClose}
+      onRequestClose={() => closeRef.current()}
     >
       <Pressable
         style={[styles.backdrop, plusAppearance && styles.backdropPlus]}
-        onPress={onClose}
+        onPress={() => closeRef.current()}
         accessible={false}
       />
-      <Animated.View
-        style={[styles.sheet, plusAppearance && styles.sheetPlus, { paddingBottom: insets.bottom + 12 }, { transform: [{ translateY: dragY }] }]}
+      <View
+        style={[styles.sheet, plusAppearance && styles.sheetPlus, { paddingBottom: insets.bottom + 12 }]}
         accessibilityViewIsModal
       >
         {plusAppearance ? (
@@ -317,7 +397,7 @@ export default function ProductFilterSheet({
             <Text style={styles.sheetTitle}>{t('filters.title')}</Text>
             <TouchableOpacity
               style={styles.closeBtn}
-              onPress={onClose}
+              onPress={() => closeRef.current()}
               hitSlop={8}
               accessibilityRole="button"
               accessibilityLabel={t('common.close')}
@@ -339,20 +419,31 @@ export default function ProductFilterSheet({
               </View>
             </>
           )}
-          {/* Orden por precio (primero) */}
-          {sectionHeading(t('filters.sort'), 'swap-vertical-outline', stores.length <= 1)}
-          <View style={styles.chipWrap}>
-            {chip(t('filters.priceAsc'), sort === 'asc', () => onSort(sort === 'asc' ? null : 'asc'))}
-            {chip(t('filters.priceDesc'), sort === 'desc', () => onSort(sort === 'desc' ? null : 'desc'))}
-          </View>
+          {/* Orden por precio (primero en los listados que lo admiten). */}
+          {showPriceControls ? (
+            <>
+              {sectionHeading(t('filters.sort'), 'swap-vertical-outline', stores.length <= 1)}
+              <View style={styles.chipWrap}>
+                {chip(t('filters.priceAsc'), sort === 'asc', () => onSort(sort === 'asc' ? null : 'asc'))}
+                {chip(t('filters.priceDesc'), sort === 'desc', () => onSort(sort === 'desc' ? null : 'desc'))}
+              </View>
+            </>
+          ) : null}
 
           {onPricePerUnitSort ? (
             <>
-              {sectionHeading(t('filters.unitPriceSort'), 'unitPrice')}
-              <View style={styles.chipWrap}>
-                {chip(t('filters.priceAsc'), pricePerUnitSort === 'asc', () => onPricePerUnitSort(pricePerUnitSort === 'asc' ? null : 'asc'))}
-                {chip(t('filters.priceDesc'), pricePerUnitSort === 'desc', () => onPricePerUnitSort(pricePerUnitSort === 'desc' ? null : 'desc'))}
-              </View>
+              {sectionHeading(t('filters.unitPriceSort'), 'unitPrice', !showPriceControls && stores.length <= 1)}
+              {unitPriceSortLocked ? (
+                <View style={styles.chipWrap}>
+                  {lockedUnitPriceChip(t('filters.priceAsc'), 'asc')}
+                  {lockedUnitPriceChip(t('filters.priceDesc'), 'desc')}
+                </View>
+              ) : (
+                <View style={styles.chipWrap}>
+                  {chip(t('filters.priceAsc'), pricePerUnitSort === 'asc', () => selectPricePerUnitSort('asc'))}
+                  {chip(t('filters.priceDesc'), pricePerUnitSort === 'desc', () => selectPricePerUnitSort('desc'))}
+                </View>
+              )}
             </>
           ) : null}
 
@@ -406,13 +497,32 @@ export default function ProductFilterSheet({
             </>
           )}
 
+          {onPriceChangeRange ? (
+            <>
+              {sectionHeading(t('filters.priceChange'), 'trending-up-outline', !showPriceControls && categories.length <= 1 && categoryGroups.length === 0)}
+              <View style={styles.chipWrap}>
+                {PRICE_CHANGE_RANGES.map((r, i) =>
+                  chip(
+                    changeRangeLabel(r),
+                    priceChangeRange === i,
+                    () => onPriceChangeRange(priceChangeRange === i ? null : i),
+                  ),
+                )}
+              </View>
+            </>
+          ) : null}
+
           {/* Precio */}
-          {sectionHeading(t('filters.price'), 'wallet-outline')}
-          <View style={styles.chipWrap}>
-            {PRICE_RANGES.map((r, i) =>
-              chip(rangeLabel(r), priceRange === i, () => onPriceRange(priceRange === i ? null : i)),
-            )}
-          </View>
+          {showPriceControls ? (
+            <>
+              {sectionHeading(t('filters.price'), 'wallet-outline')}
+              <View style={styles.chipWrap}>
+                {PRICE_RANGES.map((r, i) =>
+                  chip(rangeLabel(r), priceRange === i, () => onPriceRange(priceRange === i ? null : i)),
+                )}
+              </View>
+            </>
+          ) : null}
         </ScrollView>
 
         <View style={styles.footer}>
@@ -423,7 +533,7 @@ export default function ProductFilterSheet({
           ) : <View />}
           <TouchableOpacity
             style={plusAppearance ? styles.doneWrap : styles.doneBtn}
-            onPress={onClose}
+            onPress={() => closeRef.current()}
             activeOpacity={0.85}
             accessibilityRole="button"
           >
@@ -437,8 +547,13 @@ export default function ProductFilterSheet({
             )}
           </TouchableOpacity>
         </View>
-      </Animated.View>
-    </Modal>
+      </View>
+      </Modal>
+      <PaywallModal
+        visible={sortPaywallVisible}
+        onClose={() => setSortPaywallVisible(false)}
+      />
+    </>
   );
 }
 
@@ -509,6 +624,15 @@ const themedStyles = () => StyleSheet.create({
   chipOn: { backgroundColor: colors.accent, borderColor: colors.accent },
   chipText: { flexShrink: 1, fontSize: 13, fontFamily: fonts.semibold, color: colors.ink },
   chipTextOn: { color: colors.white },
+  lockedUnitPriceButtonBackground: {
+    alignSelf: 'flex-start', height: 44, borderRadius: 22,
+  },
+  lockedUnitPriceChip: {
+    flexDirection: 'row', gap: 6,
+    backgroundColor: colors.surfaceAlt,
+    borderColor: colors.border,
+  },
+  lockedUnitPriceChipText: { color: colors.accent },
   categoryChip: {
     minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingLeft: 7, paddingRight: 12, paddingVertical: 6,

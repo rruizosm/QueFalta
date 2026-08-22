@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, Modal, Pressable,
-  StyleSheet, StatusBar, Animated, Easing,
+  StyleSheet, StatusBar,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
-import { LinearGradient } from 'expo-linear-gradient';
 import ColorPicker, { BrightnessSlider, HueSlider, Panel1 } from 'reanimated-color-picker';
 import {
   colors, ACCENT_OPTIONS, type AccentKey,
@@ -33,31 +32,12 @@ export default function AppearanceScreen() {
   const [pickerVisible, setPickerVisible] = useState(false);
   const [paywallVisible, setPaywallVisible] = useState(false);
   const [pendingColor, setPendingColor] = useState(customAccent ?? '#2F6CB5');
-  const premiumSpin = useRef(new Animated.Value(0)).current;
   const glassInset = glassAvailable ? headerH : 0;
-  const customLocked = profileLoading || limitsApply(isPremium);
-
-  const premiumRotation = premiumSpin.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
+  const customLocked = !profileLoading && limitsApply(isPremium);
 
   useEffect(() => {
     if (pickerVisible) setPendingColor(customAccent ?? colors.accent);
   }, [customAccent, pickerVisible]);
-
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.timing(premiumSpin, {
-        toValue: 1,
-        duration: 4200,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-    );
-    animation.start();
-    return () => animation.stop();
-  }, [premiumSpin]);
 
   const selectAccent = (key: AccentKey) => {
     if (key === accentKey) return;
@@ -72,6 +52,7 @@ export default function AppearanceScreen() {
   };
 
   const openCustomPicker = () => {
+    if (profileLoading) return;
     if (customLocked) {
       setPaywallVisible(true);
       return;
@@ -84,6 +65,41 @@ export default function AppearanceScreen() {
     Haptics.selectionAsync();
     setPickerVisible(false);
   };
+
+  const customAccentRow = (
+    <TouchableOpacity
+      activeOpacity={0.78}
+      disabled={profileLoading}
+      onPress={openCustomPicker}
+      style={[styles.premiumRow, customLocked && styles.premiumRowLocked]}
+      accessibilityRole="button"
+      accessibilityLabel={t('appearance.customAccent')}
+      accessibilityHint={customLocked ? t('appearance.customAccentLocked') : t('appearance.customAccentHint')}
+      accessibilityState={{ disabled: profileLoading }}
+    >
+      <View style={[styles.swatch, styles.customSwatch, { backgroundColor: customAccent ?? colors.surfaceAlt }]}>
+        {!customAccent ? <Ionicons name="color-palette-outline" size={16} color={colors.inkSoft} /> : null}
+      </View>
+      <View style={styles.customLabelWrap}>
+        <Text style={styles.rowLabel}>{t('appearance.customAccent')}</Text>
+        <Text style={styles.customHint}>
+          {customLocked ? t('appearance.plusOnly') : t('appearance.customAccentHint')}
+        </Text>
+      </View>
+      {customLocked ? (
+        <View style={styles.plusBadge}>
+          <Ionicons name="lock-closed" size={12} color={styles.plusBadgeText.color} />
+          <Text style={styles.plusBadgeText}>Plus</Text>
+        </View>
+      ) : (
+        <Ionicons
+          name={accentKey === 'custom' ? 'checkmark-circle' : 'ellipse-outline'}
+          size={22}
+          color={accentKey === 'custom' ? colors.accent : colors.inkFaint}
+        />
+      )}
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
@@ -122,48 +138,7 @@ export default function AppearanceScreen() {
 
         <Text style={[styles.sectionLabel, styles.sectionLabelGap]}>{t('appearance.colorSection')}</Text>
         <View style={styles.section}>
-          <View style={styles.premiumBorder}>
-            <Animated.View
-              pointerEvents="none"
-              style={[styles.premiumGlow, { transform: [{ rotate: premiumRotation }] }]}
-            >
-              <LinearGradient
-                colors={['#6F4300', '#D99B16', '#FFF2A6', '#FFFFFF', '#E3A51C', '#805000', '#FFD95A']}
-                locations={[0, 0.18, 0.35, 0.48, 0.64, 0.82, 1]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={StyleSheet.absoluteFill}
-              />
-            </Animated.View>
-            <TouchableOpacity
-              activeOpacity={0.78}
-              onPress={openCustomPicker}
-              style={styles.premiumRow}
-              accessibilityRole="button"
-              accessibilityLabel={t('appearance.customAccent')}
-              accessibilityHint={customLocked ? t('appearance.customAccentLocked') : t('appearance.customAccentHint')}
-            >
-              <View style={[styles.swatch, styles.customSwatch, { backgroundColor: customAccent ?? colors.surfaceAlt }]}>
-                {!customAccent ? <Ionicons name="color-palette-outline" size={16} color={colors.inkSoft} /> : null}
-              </View>
-              <View style={styles.customLabelWrap}>
-                <Text style={styles.rowLabel}>{t('appearance.customAccent')}</Text>
-                <Text style={styles.customHint}>{customLocked ? t('appearance.plusOnly') : t('appearance.customAccentHint')}</Text>
-              </View>
-              {customLocked ? (
-                <View style={styles.plusBadge}>
-                  <Ionicons name="lock-closed" size={12} color={styles.plusBadgeText.color} />
-                  <Text style={styles.plusBadgeText}>Plus</Text>
-                </View>
-              ) : (
-                <Ionicons
-                  name={accentKey === 'custom' ? 'checkmark-circle' : 'ellipse-outline'}
-                  size={22}
-                  color={accentKey === 'custom' ? colors.accent : colors.inkFaint}
-                />
-              )}
-            </TouchableOpacity>
-          </View>
+          <View style={styles.premiumBackground}>{customAccentRow}</View>
 
           {ACCENT_OPTIONS.map((opt, i) => {
             const on = opt.key === accentKey;
@@ -232,7 +207,7 @@ export default function AppearanceScreen() {
         </View>
       </Modal>
 
-      <PaywallModal visible={paywallVisible} onClose={() => setPaywallVisible(false)} subtitle={t('appearance.customAccentLocked')} />
+      <PaywallModal visible={paywallVisible} onClose={() => setPaywallVisible(false)} />
     </View>
   );
 }
@@ -261,20 +236,16 @@ const themedStyles = () => StyleSheet.create({
     paddingVertical: 13, gap: 12,
   },
   rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
-  premiumBorder: {
-    position: 'relative', overflow: 'hidden',
-    borderRadius: 16, padding: 2, marginVertical: 9,
-    backgroundColor: '#D99B16',
-  },
-  premiumGlow: {
-    position: 'absolute', width: 440, height: 440,
-    left: '50%', top: '50%', marginLeft: -220, marginTop: -220,
+  premiumBackground: {
+    borderRadius: 16,
+    marginVertical: 9,
   },
   premiumRow: {
     flexDirection: 'row', alignItems: 'center',
     minHeight: 58, paddingHorizontal: 11, paddingVertical: 10, gap: 12,
-    borderRadius: 14, backgroundColor: colors.white,
+    borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)',
   },
+  premiumRowLocked: { backgroundColor: colors.surfaceAlt },
   themeIcon: {
     width: 26, height: 26, borderRadius: 13,
     backgroundColor: colors.surfaceAlt,
@@ -286,9 +257,9 @@ const themedStyles = () => StyleSheet.create({
   customHint: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
   plusBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 8, paddingVertical: 5, borderRadius: 10, backgroundColor: '#FFF3C4',
+    paddingHorizontal: 8, paddingVertical: 5, borderRadius: 10, backgroundColor: colors.accentLight,
   },
-  plusBadgeText: { fontSize: 11, fontFamily: fonts.bold, color: '#8A5700' },
+  plusBadgeText: { fontSize: 11, fontFamily: fonts.bold, color: colors.accent },
   rowLabel: { flex: 1, fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
   modalRoot: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(24, 19, 15, 0.42)' },
   pickerSheet: {

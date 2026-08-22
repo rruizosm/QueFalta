@@ -35,15 +35,16 @@ const facetValuesForStore = (values: string[], store: CatalogStore) =>
     .filter((value) => value.startsWith(`${store}${FACET_SEPARATOR}`))
     .map((value) => value.slice(value.indexOf(FACET_SEPARATOR) + 1));
 
-function compareOffers(sort: PriceSort | null) {
+function compareOffers(sort: PriceSort | null, pricePerUnitSort: PriceSort | null) {
   return (a: StoreOffer, b: StoreOffer) => {
-    if (sort) {
-      const priceA = a.product.unitPrice;
-      const priceB = b.product.unitPrice;
+    const activeSort = pricePerUnitSort ?? sort;
+    if (activeSort) {
+      const priceA = pricePerUnitSort ? a.product.pricePerUnit : a.product.unitPrice;
+      const priceB = pricePerUnitSort ? b.product.pricePerUnit : b.product.unitPrice;
       if (priceA == null && priceB != null) return 1;
       if (priceA != null && priceB == null) return -1;
       const priceDiff = (priceA ?? 0) - (priceB ?? 0);
-      if (priceDiff !== 0) return sort === 'asc' ? priceDiff : -priceDiff;
+      if (priceDiff !== 0) return activeSort === 'asc' ? priceDiff : -priceDiff;
     }
     const nameDiff = a.product.name.localeCompare(b.product.name, 'es', { sensitivity: 'base' });
     if (nameDiff !== 0) return nameDiff;
@@ -125,8 +126,10 @@ export default function OffersScreen() {
   const [filterStores, setFilterStores] = useState<CatalogStore[]>([]); // [] = todos
   const [priceRange, setPriceRange] = useState<number | null>(null); // índice en PRICE_RANGES
   const [sort, setSort] = useState<PriceSort | null>(null);
+  const [pricePerUnitSort, setPricePerUnitSort] = useState<PriceSort | null>(null);
   const filtersActive = category.length > 0 || selectedOfferTypes.length > 0
-    || priceRange != null || sort != null || (store === 'all' && filterStores.length > 0);
+    || priceRange != null || sort != null || pricePerUnitSort != null
+    || (store === 'all' && filterStores.length > 0);
 
   useEffect(() => {
     const id = setTimeout(() => setDebouncedQuery(query), 300);
@@ -146,7 +149,8 @@ export default function OffersScreen() {
     priceMin: priceRange != null ? PRICE_RANGES[priceRange].min : null,
     priceMax: priceRange != null ? PRICE_RANGES[priceRange].max : null,
     sort,
-  }), [store, debouncedQuery, category, selectedOfferTypes, priceRange, sort]);
+    pricePerUnitSort,
+  }), [store, debouncedQuery, category, selectedOfferTypes, priceRange, sort, pricePerUnitSort]);
 
   const offerStoreKeys = useMemo(() => stores.map((option) => option.key), [stores]);
   useEffect(() => {
@@ -267,7 +271,7 @@ export default function OffersScreen() {
             limit,
             filtersForStore(selectedStore),
           ),
-        compare: compareOffers(sort),
+        compare: compareOffers(sort, pricePerUnitSort),
       });
       allOffersPager.current = pager;
       pager.nextPage(50)
@@ -296,6 +300,7 @@ export default function OffersScreen() {
     region,
     postalCode,
     sort,
+    pricePerUnitSort,
     filteredOfferStores,
   ]);
 
@@ -331,15 +336,22 @@ export default function OffersScreen() {
   }, [store, filtersForStore, region, postalCode, cursor, loading, loadingMore]);
 
   // El TIPO de oferta ("3x2", "2ª ud. -70%"…) se resalta en rojo ARRIBA del
-  // nombre (offerTag); el precio anterior ("Antes 2,95 €") va en la línea gris.
-  // El €/unidad se omite para dejarle todo el ancho (igual que Cambios de precios).
+  // nombre. La línea secundaria conserva formato y precio unitario como en
+  // Novedades; si existe precio anterior se añade después sin ocultarlos.
   const products: UIProduct[] = useMemo(
-    () => items.map((o) => ({
-      ...o.product,
-      offerTag: o.promoName || null,
-      metaLabel: o.prevPrice != null ? t('offers.before', { price: euro(o.prevPrice) }) : null,
-      pricePerUnitLabel: null,
-    })),
+    () => items.map((o) => {
+      const secondaryLabels = [
+        o.product.metaLabel,
+        o.product.pricePerUnitLabel,
+        o.prevPrice != null ? t('offers.before', { price: euro(o.prevPrice) }) : null,
+      ].filter((label): label is string => Boolean(label));
+      return {
+        ...o.product,
+        offerTag: o.promoName || null,
+        metaLabel: secondaryLabels.length > 0 ? secondaryLabels.join('  ·  ') : null,
+        pricePerUnitLabel: null,
+      };
+    }),
     [items, t],
   );
 
@@ -467,7 +479,15 @@ export default function OffersScreen() {
         priceRange={priceRange}
         onPriceRange={setPriceRange}
         sort={sort}
-        onSort={setSort}
+        onSort={(value) => {
+          setSort(value);
+          if (value) setPricePerUnitSort(null);
+        }}
+        pricePerUnitSort={pricePerUnitSort}
+        onPricePerUnitSort={(value) => {
+          setPricePerUnitSort(value);
+          if (value) setSort(null);
+        }}
       />
 
       {/* Chrome de cristal: al FINAL del árbol para pintarse encima; la lista

@@ -1,56 +1,633 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Precio unitario de Eroski y Caprabo recuperado (local, 2026-08-22)
+
+- Verificado en ambas webs que las tarjetas publican `1 KILO A ...`, `1 LITRO
+  A ...` y `1 UNIDAD A ...`; el parser compartido ignoraba el bloque
+  `quantity-text`/`quantity-price` y escribía siempre null.
+- El sync normaliza ya esos valores a kg/L/ud, conserva null cuando la web omite
+  la etiqueta y el cliente vuelve a seleccionarlos y mostrarlos. Las columnas
+  ya existen: no hay migración; falta relanzar los syncs de Eroski y Caprabo
+  para rellenar producción.
+- DRY_RUN real de 3 hojas: Eroski 14/42 y Caprabo 10/31 productos con precio
+  unitario, ambos con 0 hojas sin tiles. Suite 41/41, lint y typecheck correctos.
+
+## Apertura estable de las fichas nutricionales (local, 2026-08-22)
+
+- Corregido el salto por el que el comparador aparecía primero y bajaba al
+  insertarse después el Índice alimentario. Un bloque compartido espera la
+  resolución nutricional y revela índice+comparador en la misma actualización,
+  con loader compacto, fundido y soporte para Reducir movimiento.
+- El hook nutricional diferencia consulta pendiente y resuelta y evita exponer
+  datos de la identidad anterior. Afecta a las nueve cadenas con índice y no
+  modifica el comparador bajo demanda ni las fichas sin fuente nutricional.
+- Añadidas dos pruebas de regresión; 39/39 tests y lint de los archivos tocados
+  correctos. El chequeo global queda bloqueado por trabajo local concurrente en
+  `ListScreen` y `GeneralStatisticsScreen`, ajeno a esta corrección.
+
+## Plegado progresivo de categorías del carrito (local, 2026-08-22)
+
+- `ListScreen` mantiene montadas las tarjetas de una zona al plegarla y anima
+  su altura real con recorte: cierra de abajo hacia arriba y abre en el orden
+  inverso, sin el salto instantáneo anterior.
+- La ventana escalonada está acotada para que las categorías grandes no hagan
+  lenta la interacción. Se conservan el doble toque por supermercado, la
+  respuesta háptica, Reducir movimiento y la ocultación accesible.
+- El plegado de la cabecera de supermercado incorpora también una transición
+  suave de layout. Cambio solo de cliente, sin migración SQL.
+
+## Precio unitario de HiperDino recuperado (local, 2026-08-22)
+
+- La API GraphQL sí publica el precio de referencia en `price_text`; el sync
+  anterior no solicitaba ese campo y escribía siempre `price_per_unit = null`.
+- `scripts/sync-hiperdino.mjs` usa ahora `sap_final_price`/`sap_price` para el
+  precio final y tachado, evitando el fallo actual de un resolver `price_range`,
+  y normaliza kilo, litro, 100 g/ml, unidad y docena a l/kg/ud.
+- Lavado, dosis y metro permanecen solo en `raw` para no mezclarlos con €/ud.
+  DRY_RUN completo: 14.775 productos, 127 categorías, 0 sin precio y 11.357 con
+  precio unitario canónico. Pruebas específicas del parser correctas.
+- No requiere migración: las columnas y el cliente ya estaban preparados.
+  Pendiente desplegar el sync y relanzarlo para rellenar producción.
+
+## Estadísticas generales de la comunidad (local + backend, 2026-08-22)
+
+- «Estadísticas generales» queda disponible también sin compras personales y
+  abre `GeneralStatisticsScreen`, con refresco, errores recuperables, acceso
+  Plus y versiones castellana/catalana.
+- La pantalla ordena supermercados elegidos en preferencias, top 10 de
+  productos de catálogo añadidos y top 10 de supermercados por unidades. Usa
+  logos, miniaturas, barras proporcionales y etiquetas completas de accesibilidad.
+- La implementación privada une `list_items` y `purchase_items`, excluye textos
+  manuales y solo expone agregados. El RPC `public` es `SECURITY INVOKER`, exige
+  sesión y Plus y revoca `anon`; no devuelve ids de usuarios, grupos, listas o
+  compras. La lectura privilegiada vive en el esquema no expuesto `private`.
+- `20260822165410_general_statistics.sql` y
+  `20260822171122_general_statistics_private_boundary.sql` están desplegadas en
+  producción como `20260822171009` y `20260822171221`. Verificación real: 17
+  preferencias, 10 productos y 10 supermercados; sin avisos nuevos en advisors.
+
+## Resultados del comparador rediseñados (local, 2026-08-22)
+
+- «Buscar productos más económicos» muestra ahora una cabecera de resultados,
+  un resumen del veredicto y tarjetas agrupadas únicamente para tiendas con
+  coincidencias. Las filas priorizan miniatura, nombre y precios y marcan en
+  verde las alternativas cuyo `isCheaper` es verdadero.
+- Si hay alternativas fiables pero ninguna mejora el precio, aparece el aviso
+  «Tu opción actual es la más económica». El vacío sin matches conserva su
+  mensaje separado. Textos y accesibilidad están cubiertos en español y catalán.
+- Cambio solo de cliente en `SimilarProductsSection`; no requiere migración SQL.
+- `npm run quality` correcto: TypeScript, ESLint y 33/33 pruebas.
+
+## Identidad centrada en Perfil (local, 2026-08-22)
+
+- Retirado el botón promocional QuéFalta Plus de la tarjeta de identidad; la
+  entrada de Cuenta añadida para compra/gestión es ahora el único acceso.
+- El `@usuario` y su insignia vuelven a quedar a la derecha del avatar en el eje
+  X, alineados a la izquierda, y centrados verticalmente en el eje Y.
+
+## Gestión de suscripción en Perfil (local, 2026-08-22)
+
+- La sección Cuenta incorpora QuéFalta Plus para free y premium: abre el
+  paywall en free y la gestión oficial de App Store/Google Play en suscriptores.
+- Lee `CustomerInfo` de RevenueCat para mostrar mensual, anual, prueba o fecha
+  final. Si Supabase concede Plus sin entitlement (testers), muestra «De
+  cortesía» sin enlazar a una cancelación inexistente.
+- No hay cambios de esquema. Pendiente validar el destino real en las pruebas
+  sandbox de iOS y Android ya previstas para Fase 3.
+
+## Acceso heredado a «Todos» (local, migración pendiente, 2026-08-22)
+
+- Catálogo y el selector compartido de Novedades, Ofertas y Cambios de precio
+  mantienen «Todos» habilitado para cuentas anteriores a QuéFalta 1.3.
+- La excepción usa `profiles.legacy_all_stores_access`; solo afecta a este gate,
+  no a los demás beneficios Plus, y un trigger impide cambiarla desde el cliente.
+- Pendiente desplegar `20260822090421_legacy_all_stores_access.sql` justo antes
+  de publicar 1.3. El despliegue fotografía las cuentas existentes como legacy;
+  las creadas después reciben `false` por defecto. Aplicarla con demasiada
+  antelación dejaría fuera a altas realizadas todavía desde 1.2.1.
+
+## Icono personalizado por grupo (local + backend, 2026-08-22)
+
+- El detalle de grupo incorpora una tarjeta propia, separada por completo de
+  gestionar miembros, desde la que el administrador elige un emoji.
+- El selector reúne y deduplica todos los iconos de categoría y subcategoría ya
+  usados por los catálogos. El icono elegido se refleja en Inicio, la cabecera
+  de Carrito, la barra flotante de selección y todas las fichas de producto.
+- `CartContext` conserva `groupIcon` en la clave por usuario, migra snapshots
+  antiguos sin ese campo y actualiza nombre/icono al revalidar la pertenencia.
+- `20260822071818_add_group_icon.sql` está desplegada en producción como versión
+  remota `20260822073002`. Verificados columna, constraint, RLS y policy UPDATE
+  del administrador. Typecheck, lint y 30/30 pruebas pasan.
+
+## Barra de selección de productos actualizada (local, 2026-08-22)
+
+- La barra que aparece al elegir cantidades en `StoreProductList` adopta una
+  tarjeta flotante redondeada con superficie glass/fallback temado, icono de
+  cesta y botón «Añadir» en cápsula. Sustituye la antigua franja oscura de ancho
+  completo sin modificar la lógica de alta, el grupo de destino ni el offset de
+  la navegación inferior.
+
+## Suscripciones creadas en Apple y RevenueCat (2026-08-22)
+
+- App Store Connect: grupo «QuéFalta Plus», nivel 1, España y localizaciones
+  castellano/catalán. Productos definitivos:
+  `com.quefalta.app.plus.monthly` (Apple ID `6804053263`, 3,99 €/mes) y
+  `com.quefalta.app.plus.annual` (Apple ID `6804054501`, 19,99 €/año, prueba
+  gratuita de una semana). No se enviaron a revisión ni se activó el paywall.
+- Google Play: suscripción `quefalta_plus` creada con ficha ES/CA. Los planes
+  definitivos siguen siendo `monthly` y `annual`, pero Play rechaza guardarlos
+  porque la app aún no tiene ninguna build publicada en un canal (prueba interna
+  figura inactiva, 0/3). Subir primero una build Android con RevenueCat/Google
+  Play Billing; después crear los planes y la prueba anual de 7 días.
+- RevenueCat: apps Apple y Google (`com.quefalta.app`), entitlement `plus`,
+  offering `default` y paquetes `$rc_monthly`/`$rc_annual` configurados. Cada
+  paquete ya enlaza Test Store, Apple y el producto Google futuro
+  (`quefalta_plus:monthly` o `quefalta_plus:annual`). Pendientes: credencial de
+  cuenta de servicio Google, clave App Store Connect para importación automática,
+  API keys públicas en entorno/EAS, webhook y pruebas sandbox.
+
+## Precio de QuéFalta Plus confirmado (2026-08-21)
+
+- Mensual: **3,99 €**, sin periodo de prueba.
+- Anual: **19,99 €**, con **7 días gratis** para usuarios elegibles.
+- El resto de decisiones de producto y configuración propuestas para RevenueCat,
+  Apple y Google quedan confirmadas.
+
+## Consulta visible al desplazar el Catálogo (local, 2026-08-21)
+
+- Tras escribir una búsqueda de Productos y empezar a desplazar sus resultados,
+  el buscador se contrae y la cabecera se amplía con el texto introducido en
+  cursiva, situado debajo del botón circular de la lupa.
+- Reabrir el buscador, cambiar de supermercado o entrar en Categorías retira el
+  resumen; altura, desplazamiento y opacidad usan una curva progresiva más lenta
+  salvo con Reducir movimiento, donde el cambio sigue siendo inmediato.
+
+## Orden unitario de Novedades, Ofertas y Cambios de precio abre Plus (local, 2026-08-21)
+
+- En `ProductFilterSheet`, solo los botones de «Ordenar por precio unitario»
+  de Novedades, Ofertas y Cambios de precio requieren Plus y abren el paywall
+  sin aplicar el orden.
+- «Ordenar por precio» del envase permanece disponible para cuentas gratuitas.
+- Si Plus caduca con un orden unitario activo, la selección se limpia.
+- Ofertas vuelve a mostrar formato/cantidad y precio unitario en la línea
+  secundaria, manteniendo al final el precio anterior cuando está disponible.
+- Cambios de precio mantiene anterior/actual/porcentaje y vuelve a mostrar
+  debajo el formato/cantidad y el precio unitario.
+
+## Producto alternativo de comentarios pasa a Plus (local, 2026-08-21)
+
+- Los comentarios de la cesta siguen abiertos a todas las cuentas, pero
+  «Asignar producto» y «Cambiar» requieren Plus.
+- El gate vive en `ProductNoteSheet`: abre el paywall antes de iniciar una
+  búsqueda y vuelve a validarse al elegir y guardar. Las alternativas existentes
+  se pueden ver, conservar o quitar aun sin suscripción.
+- El beneficio se añadió al paywall en castellano y catalán. Sin cambios de BD.
+
+## Historial de compra abierto (local, 2026-08-21)
+
+- «Historial de compra» deja de pertenecer a QuéFalta Plus: Perfil navega
+  directamente, sin candado ni popup.
+- `HistoryScreen` carga para todas las cuentas y permite repetir cualquier
+  compra, sin límite de antigüedad. Eliminados el gate, el CTA bloqueado, los
+  textos Plus y la antigua constante del límite de tres compras.
+- El beneficio «Historial de compra» se retiró del paywall.
+
+## Dorado Plus en «Mejor precio» (local, actualizado 2026-08-22)
+
+- Retirado el acceso QuéFalta Plus de la tarjeta de identidad. El fondo/tinta
+  dorados de `PremiumGoldBackground` quedan solo en «Mejor precio» del plan
+  anual; el sello propio de la cabecera conserva su variante dorada.
+- Filas bloqueadas, Apariencia, alertas, comparador, orden unitario, selector
+  «Todos» y el resto del paywall usan ahora el acento normal, sin alterar gates,
+  candados ni navegación al paywall.
+- Las insignias públicas y las del paywall usan el acento. La celebración de
+  bienvenida mantiene movimiento y composición, y recupera la paleta y el
+  resplandor dorados después de una compra confirmada.
+- `PremiumGoldBackground` queda usado únicamente por la etiqueta anual de
+  `PaywallModal`.
+
+## Doble toque en categorías del carrito (local, 2026-08-21)
+
+- El toque simple sigue plegando o desplegando solo la categoría pulsada.
+- Un segundo toque sobre la misma categoría dentro de 300 ms extiende la
+  dirección del primero a todas las categorías de ese supermercado, sin retrasar
+  la respuesta del toque simple ni modificar otras tiendas.
+
 > **Snapshot: 2026-07-15.** Este documento consolida el estado NO obvio del repo: qué está
 > commiteado vs. solo en local, qué supers están implementados pero sin migrar, y las features
 > transversales a medias. Todo esto vivía en la memoria de Claude Code (que Codex no ve) y **no
 > está completo en git**. La lista canónica y anotada de migraciones SQL está en
 > [CONTEXTO.md](CONTEXTO.md) §"Migraciones SQL pendientes"; aquí va lo que ESE documento no dice:
 > el estado de commit y el trabajo transversal.
+
+## Burbujas ambientales en Carrito (local, 2026-08-21)
+
+- Carrito comparte ahora con Inicio las 21 burbujas radiales y los lavados
+  ligados al acento elegido en Apariencia, también en estados vacíos, pero no
+  su degradado superior: conserva el fondo plano de papel.
+- La implementación se extrajo a `AmbientBubbleBackdrop`: un único SVG
+  memoizado, decorativo, sin gestos ni exposición a accesibilidad.
+- La cabecera de Inicio aprovecha el espacio a la izquierda de campana y avatar
+  para mostrar «¡Prepara la compra!» (localizado también al catalán). No se
+  muestra en Carrito.
 >
 > ⚠️ Fechas y detalles reflejan lo que era cierto el 2026-07-15. **Verifica contra `git log` y
 > contra Supabase antes de fiarte** — algo puede haberse commiteado/ejecutado después.
+
+## Comentarios y producto alternativo en el carrito (local + backend, 2026-08-21)
+
+- El carrito añade a cada producto una extensión inferior unida a su tarjeta y
+  separada con puntos. El texto vacío es «Añade comentarios sobre el producto»
+  y abre un editor multilínea; una nota existente se muestra directamente.
+- Desde el mismo editor se puede elegir entre los supermercados activos y
+  buscar dentro de uno para asignar, sustituir o quitar un producto alternativo.
+  El buscador respeta CCAA, CP y preferencias del perfil. La extensión muestra
+  nombre, supermercado y miniatura del vínculo.
+- Con varias tiendas disponibles, la hoja obliga primero a seleccionar una
+  mediante su logotipo y nombre; el buscador permanece inactivo hasta hacerlo.
+  Una única tienda se preselecciona sin mostrar este paso y cambiar de opción
+  descarta la búsqueda anterior para no mezclar productos.
+- Comentarios compartidos y optimistas: actualizar un producto fusionado cambia
+  todas sus filas y revierte si falla. Se archivan/restauran con el historial y
+  se muestran también en el detalle del grupo; el producto asociado sigue el
+  mismo ciclo de persistencia.
+- Restar y eliminar miden 28 pt, como Asignar, y tienen más separación vertical.
+- `20260821175658_list_item_notes.sql` está desplegada y verificada en producción:
+  `note` nullable en `list_items` y `purchase_items`, máximo 280 caracteres y
+  privilegios/RLS existentes sin cambios.
+- `20260821181503_list_item_note_product.sql` está desplegada como versión remota
+  `20260821182635`: cinco campos de referencia/snapshot en ambas tablas,
+  constraints validados, RLS activo, privilegios correctos y seis policies sin
+  cambios. `npm run quality` pasa con 30/30 pruebas.
+
+## Grupos ilimitados para todas las cuentas (local + migración, 2026-08-21)
+
+- «Nuevo» ya no consulta Plus ni el número de grupos: siempre abre
+  `NameInputSheet`. Retirados del cliente el paywall y `free_group_limit`.
+- `20260821175745_allow_unlimited_group_creation.sql` elimina el trigger
+  `groups_enforce_limit` y su función. `paywall_gates.sql` ya no los recrea.
+- La creación y la pertenencia a grupos quedan ilimitadas; los demás gates Plus
+  no cambian.
+
+## Popup redondeado de grupos (local, 2026-08-21)
+
+- `NameInputSheet`, compartido por crear y renombrar grupos, redondea la hoja,
+  el icono, el cierre, el campo y el CTA de confirmación.
+- Retirado el borde duro de `HardShadow` del CTA; no cambia la lógica del
+  formulario, su bloqueo durante la petición ni el comportamiento del teclado.
+
+## Pie redondeado en las fichas de producto (local, 2026-08-21)
+
+- El selector horizontal de cantidad y «Añadir a la cesta» pasan a usar
+  geometría de cápsula en las fichas de todos los supermercados.
+- Es un cambio exclusivamente visual; conserva acciones, tamaños táctiles,
+  estados desactivados y color de acento.
+
+## Botón circular al crear el primer grupo (local, 2026-08-21)
+
+- El estado vacío de Grupos sustituye el CTA rectangular con borde duro por
+  una acción circular de acento con el icono de suma y «Crear grupo» debajo.
+- Se mantiene un solo objetivo táctil accesible y no cambia la creación ni la
+  activación automática del primer carrito.
+
+## Cabeceras de Catálogo, Carrito y Grupos (local, 2026-08-21)
+
+- «Mi Lista» y «Grupos» quedaron alineados con los 20 pt de «Catálogo»,
+  incluidos sus iconos y contenedores circulares reducidos proporcionalmente.
+- Catálogo reutiliza ese mismo bloque visual con un icono exclusivo de biblioteca a la
+  izquierda y conserva el selector de supermercado dentro de la fila, a la derecha.
+- La pestaña inferior de Catálogo usa la misma familia library en las barras
+  clásica y Liquid Glass.
+
+## Controles de categorías y subcategorías (local, 2026-08-21)
+
+- El selector Productos/Categorías de Catálogo usa la nueva variante reforzada
+  de `SlidingSegments`: 44 px, borde sensible al tema, reflejo interior, sombra
+  exterior y selección de acento más visible. Orden y lista/cuadrícula aplican el
+  mismo tratamiento dentro de Catálogo sin cambiar su altura original de 40 px;
+  el bloque unitario bloqueado replica esa geometría. No se anida otra superficie
+  de cristal ni se alteran los controles compactos de las demás cabeceras.
+- Redondeado el botón Atrás de la pantalla de categoría y de los listados de
+  productos de todos los supermercados que usan las cabeceras de catálogo.
+- El buscador compartido tiene ahora radio 16, espaciado y sombra acordes al
+  Catálogo actual. El selector lista/cuadrícula usa una pastilla más redondeada
+  y resalta el modo activo con el color de acento; en Liquid Glass reutiliza
+  `SlidingSegments` y su misma transición de Catálogo → Productos. El icono de
+  cuadrícula se compensa 1 pt a la derecha para centrarlo ópticamente en ambos.
+- Typecheck, lint y 30/30 pruebas correctos.
+
+## Transición onboarding → Inicio e Inicio estable (local, 2026-08-21)
+
+- Eliminada por completo la tarjeta «Completa tu perfil» y su código/traducciones.
+- El CTA final marca la entrada desde onboarding e Inicio mantiene una cubierta
+  de continuidad hasta que su layout y datos principales están estables; funde
+  en 260 ms, limita la espera a 900 ms y respeta Reducir movimiento.
+- La cabecera reserva su altura desde el primer frame. Favoritos, grupos y última
+  compra distinguen carga de vacío; grupos muestra reintento ante error.
+- Corregido el control táctil anidado de última compra y consolidado el fondo de
+  21 burbujas en un único SVG memoizado que usa el acento elegido en Apariencia.
+- Perfil parte también de la altura conocida de su cabecera Liquid Glass y
+  descarta mediciones iguales, evitando el salto de todo el bloque al entrar.
+- Validado con `npm run quality` (30/30 pruebas) y compilación Debug completa
+  del scheme `QuFalta` en Xcode (`BUILD SUCCEEDED`).
+- Para ejecutar en simulador se reinstaló un build firmado con «Sign to Run
+  Locally». No usar `CODE_SIGNING_ALLOWED=NO` en pruebas de autenticación: el
+  binario abre, pero SecureStore no puede leer/escribir el llavero y Google PKCE
+  termina mostrando el error genérico de inicio de sesión.
+
+## Refuerzo integral del onboarding (local + backend, 2026-08-21)
+
+- Corregidos los diez hallazgos de la auditoría: gate recuperable, carrera de
+  @usuario, grupo transaccional/idempotente, validación final en servidor,
+  reanudación, accesibilidad/texto grande, error de fototeca, CTA sin duplicados,
+  pantalla Done y fondo SVG compartido.
+- Añadidas pruebas unitarias de progreso y validación de @usuario.
+- `20260821130300_onboarding_integrity.sql` está aplicada en producción. Se
+  verificaron columnas, índice, permisos de RPC y 0 desajustes de progreso.
+- Validado con `npm run quality` (30/30 pruebas), export iOS de producción y
+  compilación Debug en Xcode (`BUILD SUCCEEDED`). Queda únicamente un recorrido
+  visual extremo a extremo cuando haya una cuenta de pruebas cuyo
+  `onboarded_at` sea NULL.
+
+## Desplegable de correo integrado en Login (local, 2026-08-21)
+
+- Añadido el isotipo oficial de QuéFalta sobre el título del formulario,
+  reutilizando `assets/quefalta-logo-blue.png`; todo el bloque principal queda
+  situado 20 px por encima del centrado base.
+- El papel de fondo muestra quince burbujas azules radiales de distintos
+  tamaños, estáticas, no interactivas y ocultas para accesibilidad.
+- Actualizados título y subtítulo para presentar la compra organizada y las
+  funciones de comparación, ofertas, novedades y cambios de precio, también en
+  catalán.
+- El formulario de acceso por correo se despliega como continuación directa del
+  botón que lo abre, compartiendo fondo, borde y radios exteriores.
+- Altura y opacidad se animan al abrir y cerrar; Reducir movimiento mantiene el
+  cambio inmediato. El panel oculto no recibe toques ni se anuncia por
+  accesibilidad.
+- El scroll conserva su offset al abrir: texto y botones superiores permanecen
+  inmóviles y todo el crecimiento visible sucede bajo el botón de correo. Solo
+  se revela la parte inferior al enfocar el campo y aparecer el teclado.
+- Retirado del panel el texto «Sin contraseña…»; el campo de correo es ahora
+  su primer elemento.
+
+## Cierre de auditoría de arranque y Login (local, 2026-08-21)
+
+- Eliminada la pantalla vacía potencial entre splash y fuentes con una vista de
+  continuidad en `App`; `ThemeContext` y `LanguageContext` montan con valores
+  seguros y exponen `ready`, incluidos en el `BootLoader` y su watchdog.
+- `authStorage` captura lecturas fallidas del llavero y las interpreta como
+  sesión vacía/legacy, por lo que Supabase deja de repetir `ERR_KEY_CHAIN` en su
+  auto-refresh. Las escrituras nuevas siguen exigiendo SecureStore.
+- Loader inicial mínimo 350 ms. Login validado en simulador con texto normal y
+  `accessibility-large`; escalas acotadas, legal desplazable y panel de correo
+  unido que abre hacia abajo sin mover cabecera, Apple ni Google.
+- Google usa la G oficial multicolor; Apple reserva su espacio desde el primer
+  frame de iOS. Las 15 burbujas se dibujan con un solo SVG.
+- `inlineRequires` activado en `metro.config.js`; imágenes de mascota y Froiz
+  ajustadas a resolución de uso. Export iOS: 1.868→1.828 módulos y
+  15.236→11.532 KiB totales; Hermes 7.460.130→7.597.028 bytes.
+- Metadatos Xcode alineados en 1.3.0 (34) y referencia huérfana a
+  `QuFaltaTests` retirada del scheme compartido. Sin migraciones ni cambios
+  remotos de Supabase.
+
+## Bienvenida animada a QuéFalta Plus (local, 2026-08-22)
+
+- Añadida `PlusWelcomeTransition`, superposición a pantalla completa del paywall
+  con fundido negro de 1,5 s, sello dorado brillante sin halo, virutas,
+  partículas y mensaje de bienvenida en castellano y catalán.
+- Eliminado el antiguo modo de vista previa: ambos CTA compran ahora el paquete
+  seleccionado y la transición solo aparece si RevenueCat devuelve el
+  entitlement `plus` activo. La expiración validada se refleja inmediatamente en
+  el perfil local mientras el webhook completa la persistencia en Supabase.
+- Respeta Reducir movimiento y puede cerrarse con X, Atrás o escape de
+  accesibilidad; al cerrarla se descarta también el paywall.
+
+## Filtros en Cambios de precio (local, 2026-08-21)
+
+- `PriceChangesScreen` añade un botón independiente a la izquierda del selector
+  `Bajadas / Subidas` en Liquid Glass y fallback. Su estado activo se marca con
+  el acento elegido.
+- Reutiliza `ProductFilterSheet` para multiselección de categorías y rangos de
+  variación absoluta (≤5 %, 5–10 %, 10–20 %, >20 %). En `Todos`, las categorías
+  están agrupadas y cualificadas por supermercado.
+- La hoja oculta los controles de precio/orden que no corresponden a este feed,
+  conserva la paginación y muestra el vacío específico de filtros sin
+  coincidencias. Textos añadidos en castellano y catalán.
+- Corregida la salida de `ProductFilterSheet`: ya no encadena un desplazamiento
+  manual con el `slide` nativo del modal. Al comenzar un gesto vertical hacia
+  abajo desde el tirador, actualiza inmediatamente `visible=false`; la única
+  transición nativa termina el cierre sin esperar a que se suelte ni poder
+  rebotar. Botón, backdrop y Atrás usan exactamente el mismo cierre.
+- Typecheck, lint y 27/27 tests correctos; falta recorrido visual en
+  dispositivo/simulador.
+
+## Buscador ampliado de Catálogo (local, 2026-08-21)
+
+- Al enfocar el buscador de productos, su expansión desplaza y oculta todos los
+  controles de orden y vista de la fila; al perder el foco reaparecen.
+- La superficie y la lupa ya no se sustituyen al cambiar de estado: el mismo
+  botón se transforma lentamente en una cápsula redondeada y vuelve exactamente
+  a su posición circular, eliminando el tirón del icono al contraerse.
+- Se aplica por igual a Liquid Glass y al fallback.
+- Corregido el salto vertical de la cabecera: el campo expandido usa la misma
+  altura que la fila contraída (40 px en Liquid Glass y 44 px en fallback), sin
+  alterar la medida del chrome ni mover el contenido inferior.
+
+## Orden unitario Plus en Catálogo y Novedades (local, 2026-08-21)
+
+- `€/u↑` y `€/u↓` quedan bloqueados para cuentas gratuitas en las variantes
+  Liquid Glass y fallback. Usan un tratamiento neutro con acento, sin candado,
+  y abren el paywall con la cabecera compacta, sin texto descriptivo
+  contextual y sin modificar la consulta ni el orden activo.
+- En cuentas gratuitas, precio total y precio unitario se muestran como dos
+  controles independientes. Con Plus se fusionan en la pastilla original de
+  cuatro segmentos, incluida la transición del filtro seleccionado. Si Plus
+  caduca con el orden unitario activo, se restaura el orden por precio total.
+- La versión bloqueada iguala tamaño, pastilla y laterales redondeados al bloque
+  de precio; las etiquetas quedan centradas en ambos ejes.
+- Novedades y Ofertas exponen orden por precio total y unitario dentro de
+  `ProductFilterSheet`; Cambios de precio conserva relevancia y añade el orden
+  unitario. En free, solo los botones unitarios muestran candado y abren el
+  paywall sin aplicar el orden; una caducidad elimina esa selección. El orden
+  por precio total sigue libre donde existe.
+- Typecheck, lint sin avisos y 30/30 tests correctos.
+
+## Fondo del carrito activo ligado a Apariencia (local, 2026-08-21)
+
+- `HomeScreen` usa el acento elegido en Perfil → Apariencia como base del
+  resumen del carrito activo. Conserva el degradado y los dos círculos
+  recortados mediante luces y sombras neutras, sin una paleta azul fija ni
+  cambios en la lógica.
+
+## Información y control de notificaciones (local, 2026-08-20)
+
+- Perfil → Notificaciones incorpora una tarjeta de activación y explica tres
+  tipos de aviso: carrito compartido, amistad y grupo. Esta pantalla ya no
+  muestra una segunda bandeja: los avisos
+  recibidos se consultan exclusivamente desde la campana de Inicio.
+- El interruptor parte apagado por defecto, pide el permiso del sistema al
+  activarse, registra/elimina el token push al instante y ofrece abrir Ajustes
+  si el permiso fue denegado.
+- La preferencia de AsyncStorage ahora usa
+  `@notifications_enabled:${userId}`. Auth reconcilia el token al iniciar sesión
+  y elimina uno anterior si la cuenta no tiene la preferencia activa.
+- `npm run quality` correcto (typecheck, lint y 27/27 tests). Falta recorrido visual en dispositivo y probar
+  aceptar/denegar el permiso con un build nativo.
+
+## Alertas personalizadas Plus (reglas desplegadas, envío pendiente, 2026-08-20)
+
+- MVP completo en cliente: reglas exactas o por palabras, multi-súper, bajada
+  mínima, oferta, vista previa, gestión/pausa y CTA «Avísame» compartido por
+  todas las fichas, superpuesto en la esquina superior derecha de la imagen
+  mediante `ProductDetailImage`/`ProductDetailHero`.
+- «Avísame» conserva la campana. Solo las cuentas gratuitas ven el fondo dorado,
+  la tinta Plus y el candado; las cuentas Plus usan el estilo normal de acento.
+  Al pulsarlo sin Plus, el paywall abre con la cabecera compacta y sin texto
+  descriptivo contextual.
+- Perfil aplica el mismo gate al acceso «Alertas personalizadas»: las cuentas
+  gratuitas abren el paywall sin navegar a la lista. El banner «Tus alertas
+  están pausadas» y sus traducciones se retiraron de la pantalla interna.
+- Desplegadas en producción la migración
+  `20260820162731_personalized_price_alerts.sql` y sus correcciones de RPC e
+  índices. El backfill contiene los 18 catálogos y el verificador transaccional
+  pasa. La Edge Function `process-price-alerts` y Cron+Vault siguen pendientes.
+- El procesador agrupa por regla y lote de sync y usa la bandeja/push actuales;
+  una RPC transaccional impide duplicar la fila de bandeja o el push al
+  reintentar. No amplía `send-push` ni acepta contenido desde el cliente.
+- Ajuste local pendiente de despliegue: si un producto genera a la vez bajada y
+  oferta, el procesador lo cuenta y comunica solo como oferta. Las novedades
+  tienen textos propios en push y bandeja, sin caer en el texto de ofertas.
+- Cada push `price_alert` lleva el `notificationId` y cada fila de bandeja ya
+  conoce su propio id. Ambos abren `PriceAlertResults`, que consulta mediante la
+  RPC protegida `get_price_alert_notification_products` los productos exactos
+  del aviso y permite abrir sus fichas. La migración local
+  `20260821210209_price_alert_notification_products.sql` debe desplegarse antes
+  de publicar este cliente.
+- El editor de reglas por palabras solo ofrece los supermercados activos en
+  Perfil → Supermercados que además correspondan a la CCAA actual. Al editar,
+  intersecta también la selección guardada con esa lista para no conservar
+  cadenas que el usuario haya desactivado. Cada chip sitúa el logotipo local
+  del supermercado a la derecha de su nombre.
+- Las reglas persisten un emoji de clasificación. Cliente y carrito comparten
+  `getSubcategoryEmoji`; el editor ofrece una vista viva y la tarjeta sustituye
+  el icono genérico por el emoji. La migración
+  `20260820165618_price_alert_rule_emoji.sql` está desplegada y asignó `🫒` a
+  la regla existente de «aceite oliva»; el fallback es `🛒`.
+- Añadido y desplegado el modo exclusivo «Novedad» (`new_arrival`): conserva
+  los supermercados elegidos, usa `🆕` y no admite palabras, bajadas,
+  ofertas, bajada mínima ni vista previa. La migración
+  `20260820170935_personalized_alert_new_arrivals.sql` captura inserciones
+  publicadas de los espejos y el RPC solo las entrega a este tipo de regla.
+- La UI ya puede crear, consultar y previsualizar reglas. Para activar entregas:
+  secreto `PROCESS_PRICE_ALERTS_SECRET` → deploy `--no-verify-jwt` → Cron de
+  `ops/schedule_price_alerts.sql`.
+- Corregido el bucle de «No se pudieron cargar tus alertas»: `ToastContext`
+  conserva un valor estable y un error remoto ya no vuelve a disparar el
+  `useFocusEffect` de la pantalla indefinidamente.
+- Si Plus caduca, el procesador crea solo el registro deduplicador en estado
+  `paused`; no envía y los avisos vencidos no reaparecen al renovar. Las reglas
+  siguen en BD, pero el acceso desde Perfil queda reservado a cuentas Plus.
+
+## Fondo Plus en «Todos» (local, 2026-08-20)
+
+- El paywall abre con una cabecera más baja: sello dorado compartido de
+  `VerifiedBadge` y título en una sola fila, sin el bloque «Más control para
+  encontrar el mejor precio» ni subtítulos contextuales desde ningún acceso.
+- La presentación es ahora de altura completa hasta el borde superior, con zona
+  segura para el contenido. Se retiraron tirador y cierre exterior, y el gesto
+  de descarte está desactivado; solo cierran la X o Atrás del sistema.
+- Mensual y Anual ocupan dos columnas de una misma fila; Anual conserva la
+  preselección y «Mejor precio». La etiqueta «Incluido» se retiró del título
+  «Todo lo que desbloqueas». Anual reutiliza el ritmo del barrido diagonal de
+  QuéCocino con una franja azul difuminada e irregular, estática cuando el
+  sistema solicita Reducir movimiento. «Mejor precio» usa directamente
+  `PremiumGoldBackground`, con su tinta oscura. «Todo lo que desbloqueas» no
+  muestra checks a la derecha de sus filas.
+  El comparador figura como «Radar de
+  ahorro», con una descripción explícita de alternativas similares más baratas.
+- El borde activo de los planes es una superposición absoluta: conserva los 2 px
+  visuales sin alterar la altura de la fila ni mover el CTA al alternar entre
+  Mensual y Anual.
+- «Buscar productos más económicos» mantiene sus iconos de búsqueda, carga y
+  resultado. En cuentas gratuitas reutiliza el fondo dorado, añade un candado y
+  abre el paywall sin texto descriptivo contextual y sin invocar el comparador;
+  con Plus usa el estilo normal.
+- Catálogo y el selector compartido por Cambios de precio, Novedades y Ofertas
+  muestran en «Todos» el fondo dorado animado solo cuando la opción está
+  bloqueada para una cuenta gratuita; con Plus vuelve al diseño normal.
+- El efecto se centralizó en `PremiumGoldBackground`, tiene una opacidad base
+  del 30 %, respeta Reducir movimiento y detiene la animación cuando el panel de
+  supermercados está cerrado. La etiqueta «Mejor precio» del plan anual mantiene
+  una excepción al 70 %.
+- Retirados los accesos Plus de la tarjeta de identidad. `@usuario` queda a la
+  derecha del avatar y centrado solo en el eje Y; la fila de Cuenta es el único
+  acceso al paywall o a la gestión de la suscripción.
+- «Color personalizado» en Apariencia usa el mismo fondo solo cuando está
+  bloqueado; con Plus activo muestra una fila normal.
+- `premium_until` futuro es la única fuente de verdad de Plus. `verified` pasa a
+  ser su reflejo público protegido para la insignia dorada en Perfil, Amigos y
+  Grupos; el trigger lo sincroniza y el cliente no puede editarlo. Migración
+  `20260820163441_sync_plus_verified_badge` aplicada en remoto: 2 cuentas Plus,
+  2 insignias y 0 discrepancias tras el backfill.
+- Cada bloque usa una semilla de movimiento propia para variar posiciones,
+  trayectorias, fases y velocidad; no hay partículas sincronizadas entre ellos.
+- La animación es una caída vertical continua: cada elemento cruza el borde
+  inferior, se oculta durante el retorno y reaparece arriba sin reinicio grupal.
+- Las rejillas añaden una celda invisible cuando el número de supermercados es
+  impar para impedir que la última tarjeta ocupe las dos columnas.
+
+## QuéCocino desactivado (local, 2026-08-20)
+
+- Retirada la pestaña QuéCocino del árbol de navegación mediante
+  `QUE_COCINO_ENABLED = false`; la barra inferior vuelve a tener Inicio,
+  Catálogo, Carrito y Grupos tanto en Liquid Glass como en la variante clásica.
+- La pantalla, el icono y sus traducciones se conservan como implementación
+  preliminar para retomarla más adelante. No existe backend ni dato remoto que
+  haya que migrar o apagar.
+
+## Push de solicitudes de amistad (local + backend desplegado, 2026-08-20)
+
+- La solicitud ahora selecciona su `friendshipId` y espera la invocación
+  best-effort de `send-push`, evitando abandonar la petición remota al terminar
+  inmediatamente la acción del cliente.
+- `send-push` v7 está ACTIVE en producción. Valida la solicitud exacta y mantiene
+  compatibilidad con versiones publicadas que solo mandan `addresseeId`.
+- Los taps de tipo `friend` quedan en cola hasta que el navegador autenticado
+  esté listo y abren directamente Perfil/Inicio → Amigos, también en arranque
+  en frío. Pendiente: validar extremo a extremo con dos dispositivos reales y
+  notificaciones activadas en el receptor.
+
+## Valoración nativa de las tiendas (local, 2026-08-20)
+
+- Sustituido el modal propio de valoración y su redirección por
+  `expo-store-review`, que solicita el cuadro oficial de App Store o Google Play.
+- La primera apertura autenticada arma el plazo local por usuario. Una
+  reapertura posterior tras 24 horas realiza un solo intento; la tienda conserva
+  el control sobre si lo muestra y no devuelve la puntuación ni el resultado.
+- Eliminados el componente, estilos y textos del popup anterior. Requiere nuevo
+  build nativo; pendiente de validar en dispositivo/distribución de pruebas.
 
 ## Fondo ambiental en Inicio (local, 2026-08-18)
 
 - Implementado localmente en `HomeScreen`: degradado tenue basado en el accent,
   con formas ambientales amplias y discretas detrás del contenido.
+- Añadida una prueba visual con veintiuna burbujas del color de acento estáticas, combinando
+  tamaños pequeños, medianos y grandes, difuminadas mediante degradado radial
+  y sin incorporar recursos raster.
 - Respeta tema claro/oscuro, accent personalizado, gestos y accesibilidad. No
   incorpora recursos nuevos ni modifica la jerarquía funcional de Inicio.
 
 ---
 
-## Rediseño completo del Login (local, 2026-08-19)
+## Login directo (local, 2026-08-20)
 
-- Sustituida la transición automática `Bouncy Scale Ball` y toda la cabecera
-  azul por una portada interactiva basada en `Wabi & More` del repositorio MIT
-  `ImCitizen13/quattro4maggi`: la burbuja prismática parte del borde inferior,
-  sigue el arrastre, vuelve si el gesto es corto y se encaja con muelle si el
-  deslizamiento supera el umbral.
-- Al encajarse despliega los 18 supermercados de `CATALOG_STORES` y después los
-  accesos de Apple, Google y correo. Los logotipos respetan el área segura y se
-  retiran al abrir correo para no cubrir el formulario.
-- Eliminados el icono del login, del splash nativo y del cargador intermedio.
-  `BootLoader` usa un fondo neutro con un indicador mínimo. App icon/adaptive
-  icon se conservan porque identifican la app instalada, no el arranque.
-- Conservados sin cambios los flujos de autenticación, incluido Google PKCE, el
-  tratamiento de errores de magic links, los enlaces legales y la adaptación a
-  tema, accent, texto grande, accesibilidad y Reducir movimiento.
-- La burbuja usa `GlassSurface` con Liquid Glass `clear` nativo en iOS 26, sin
-  tinte opaco y con una lente SVG neutra (doble borde, reflejos difusos y
-  caústicas suaves); el texto de arrastre queda detrás para refractarse. En el
-  resto conserva el fallback translúcido con la misma óptica. Durante el gesto,
-  un Runtime Shader de `@shopify/react-native-skia@2.2.12` dibuja una retina
-  dinámica cian/azul/violeta/rosa con el accent de la app; baja con el dedo y
-  desaparece al completar el encaje. Skia se carga de forma perezosa y una OTA
-  instalada sobre un binario antiguo usa una retina SVG sin crashear. El
-  cristal no captura eventos: el `GestureDetector` exterior mantiene el
-  arrastre fiable y evita el conflicto observado con `GlassView`.
-- Validado en iPhone 15 Pro simulado: gesto corto con retorno, gesto completo,
-  retina durante el arrastre, despliegue de los 18 logos y apertura del
-  formulario de correo sin solapes. El cliente nativo se recompiló para enlazar
-  Skia y arrancó correctamente en iOS 26.5.
-- `npm run quality` correcto después del shader: typecheck, lint sin warnings y
-  27/27 tests.
+- Eliminada la portada gestual de la burbuja, junto con su shader, fallback,
+  textos y estado de revelado. La app sin sesión muestra directamente el
+  formulario actual de Apple, Google y correo, con sus enlaces legales.
+- Retirada `@shopify/react-native-skia`, que no tenía otros consumidores. Se
+  conservan Reanimated, Gesture Handler, SVG, Haptics y `expo-glass-effect`
+  porque siguen siendo dependencias activas del resto de la app.
+- Los flujos de autenticación no cambian; Google mantiene PKCE.
 
 ## Código postal y comunidad en el primer paso (local, 2026-08-18)
 
@@ -124,7 +701,10 @@
   persiana azul: volver flotante, título/subtítulo, mascota con carrito, tarjeta
   clara para el nombre y sugerencias rápidas sobre el fondo.
 - El footer fijo mantiene visibles Continuar/Crear grupo y Ahora no; al aparecer
-  el teclado, el contenido intermedio es desplazable sin perder la acción.
+  el teclado, el contenido intermedio es desplazable sin perder la acción. Las
+  dos acciones completan `onboarded_at` y abren directamente Inicio; se eliminó
+  la pantalla terminal «Todo listo». Si se crea el grupo, queda como carrito
+  activo; la misma autoactivación se aplica al primer grupo creado desde Grupos.
 - Generada e integrada `assets/mascot/berenjena-grupo.png` (1024×1536, PNG
   RGBA): la berenjena empuja el carrito, el plátano va dentro y el tomate queda
   a la derecha; las tres mascotas saludan. `createGroup`, los hápticos, el toast
@@ -261,12 +841,12 @@ brazo por tabla). Estado al 2026-07-15:
 | 5 | Consum | API REST abierta | ✅ | ⚠️ | EAN + marca estructurados. Sin ficha (no la expone). |
 | 6 | Dia | SSR Vike `vike_pageContext` | ✅ base | ⚠️ multi-zona local | Ficha es. Multi-zona 48 CP LOCAL. |
 | 7 | Sorli | Playwright bootstrap + fetch | ✅ | ⚠️ | Bilingüe es/ca. nutriScore propio vacío 99%. |
-| 8 | Eroski | Tapestry (`lib/eroski-tapestry.mjs`) | ✅ `6e72611` | ⚠️ nutrición | es-only, sin €/ud/EAN; nutrición PDP incremental local. |
+| 8 | Eroski | Tapestry (`lib/eroski-tapestry.mjs`) | ✅ `6e72611` | ⚠️ nutrición | es-only, €/kg-L-ud desde el tile, sin EAN; nutrición PDP incremental local. |
 | 9 | Caprabo | Tapestry (compartido con Eroski) | ✅ `6e72611` | ⚠️ nutrición | Idem Eroski. |
 | 10 | Condis | Empathy.co API JSON abierta | ⚠️ dudoso | ⚠️ | Bilingüe. Sin ficha v1. "Commit en espera" por Ametller → VERIFICAR. |
 | 11 | Ametller | SCAPI Salesforce (guest PKCE) | ❌ local | ⚠️ | Bilingüe + ficha + EAN. Logo placeholder. |
 | 12 | Aldi | SSR Algolia embebido (`__NEXT_DATA__`) | ❌ local | ⚠️ | es-only, sin EAN. Guardarraíl <800. Logo placeholder. |
-| 13 | Hiperdino | Magento 2 GraphQL abierto | ❌ local | ⚠️ | **SOLO Canarias (IGIC)** → filtrar por comunidad. es-only, sin ficha/EAN/€ud. |
+| 13 | Hiperdino | Magento 2 GraphQL abierto | ❌ local | ⚠️ | **SOLO Canarias (IGIC)** → filtrar por comunidad. es-only, sin ficha; €/ud local pendiente de backfill. |
 | 14 | Alcampo | Ocado, patrón Dia (product-pages) | ❌ local | ⚠️ | es-only CON ficha (EAN/origen/operador). Nacional (no multi-zona). |
 | 15 | Plusfresc | API REST ASP.NET (JWT guest) | ❌ local | ⚠️ | **Solo Catalunya (ES-CT)**. Bilingüe + ficha con ALÉRGENOS legibles. |
 
@@ -359,7 +939,10 @@ La lista **completa y anotada** está en CONTEXTO.md. Aquí, lo esencial y el OR
   (`push_tokens.lang`, es/ca). Faltan `notifications_inbox.sql` + `push_tokens_lang.sql` + redeploy `send-push`.
 - **Sign in with Apple:** flujo nativo iOS funcionando. Revocación de token al borrar cuenta montada, **pendiente
   `.p8` + secrets + deploy**. (Nota: `AGENTS.md`/`AGENTS` viejo decía Expo v56 — el proyecto es SDK 54.)
-- **Insignia verificado** (dorada): `profiles.verified` (marca manual) + `VerifiedBadge`. Falta `profile_verified.sql`.
+- **Insignia Plus** (dorada): `profiles.verified` es un reflejo público protegido
+  de `premium_until` + `VerifiedBadge`. Backfill/trigger desplegados en remoto.
+  `revenuecat-webhook` aún no existe en producción: antes de desplegarlo hay que
+  configurar `RC_WEBHOOK_TOKEN`; el código local ya sincroniza ambos campos.
 - **Ranking de búsqueda:** Nivel 1 (cliente) hecho. BUG conocido: las 6 `search*` con `limit 50` SIN `order` →
   50 filas arbitrarias. Nivel 2 (RPC ranking en servidor + offset) especificado en
   `BUSQUEDA-RANKING-SERVIDOR.txt`, pendiente de implementar.

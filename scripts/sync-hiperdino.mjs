@@ -21,11 +21,13 @@
 //   3. Normalizar + upsert en Supabase (soft-delete de lo ausente vía markStale).
 //
 // Notas:
-//  - Precio = price_range.minimum_price.final_price.value. HiperDino trae también
-//    regular_price (tachado de promo): se persiste como oferta SOLO cuando es
-//    mayor que el final, nunca se deduce de cambios entre syncs.
+//  - Precio = sap_final_price. sap_price es el precio regular tachado: se
+//    persiste como oferta SOLO cuando es mayor que el final, nunca se deduce de
+//    cambios entre syncs. Los escalares SAP evitan que un resolver roto de
+//    price_range invalide una rama completa de 5.000 productos.
 //  - El sku es interno (18 dígitos), pero GraphQL expone también `ean`: se
-//    conserva solo con longitud GTIN estándar y checksum válido. SIN €/unidad.
+//    conserva solo con longitud GTIN estándar y checksum válido. `price_text`
+//    aporta €/kg, €/L y otras bases; se normalizan las comparables a l/kg/ud.
 //    SIN ficha (ingredientes/nutrición). El nombre ya incluye marca y formato.
 //  - Imagen: image.url (cdn.hiperdino.es), ya lista para usar.
 //  - GUARDARRAÍL: si el nº de productos únicos cae por debajo de MIN_PRODUCTS
@@ -38,6 +40,7 @@
 //      UPSERT_BATCH_SIZE=100 (filas por sentencia REST; bajar si Supabase está cargado)
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { validGlobalGtin } from './lib/gtin.mjs';
+import { normalizeHiperdinoPriceData } from './lib/hiperdino-price.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -114,7 +117,7 @@ async function gql(query, { tries = 4 } = {}) {
 // segunda fase de red.
 const PROD_FIELDS = `
   sku name url_key ean
-  price_range { minimum_price { final_price { value } regular_price { value } } }
+  sap_final_price sap_price sap_special_price price_text
   categories { id name path }`;
 
 const CDN = 'https://cdn.hiperdino.es/catalog/product/x';
@@ -143,11 +146,7 @@ const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 const eurStr = (n) => (typeof n === 'number' ? n.toFixed(2).replace('.', ',') : null);
 
 function normalize(it) {
-  const price = num(it.price_range?.minimum_price?.final_price?.value);
-  const regularPrice = num(it.price_range?.minimum_price?.regular_price?.value);
-  const promoBasePrice = regularPrice != null && price != null && regularPrice > price
-    ? regularPrice
-    : null;
+  const price = normalizeHiperdinoPriceData(it);
   return {
     id: String(it.sku),
     retailer_product_id: String(it.sku),          // código interno HiperDino (NO EAN)
@@ -156,11 +155,11 @@ function normalize(it) {
     brand: null,                                   // Magento no expone marca aparte; va en el nombre
     packaging: null,                               // el formato ("380 g") va en el nombre
     thumbnail: imageOf(it.sku),
-    unit_price: price,
-    price_format: price != null ? `${eurStr(price)} €` : null,
-    promo_base_price: promoBasePrice,
-    price_per_unit: null,                          // HiperDino no expone €/ud
-    price_per_unit_unit: null,
+    unit_price: price.unitPrice,
+    price_format: price.unitPrice != null ? `${eurStr(price.unitPrice)} €` : null,
+    promo_base_price: price.promoBasePrice,
+    price_per_unit: price.pricePerUnit,
+    price_per_unit_unit: price.pricePerUnitUnit,
     available: true,
     published: true,
     raw: it,
@@ -279,17 +278,18 @@ async function main() {
   if (DRY_RUN) {
     console.log('muestra (6):');
     for (const r of rows.slice(0, 6)) {
-      console.log(`  ${r.id}  ${r.display_name}  ${r.price_format ?? '—'}  cat=${r.category_name ?? '—'}`);
+      console.log(`  ${r.id}  ${r.display_name}  ${r.price_format ?? '—'}  ${r.price_per_unit != null ? `${r.price_per_unit} €/${r.price_per_unit_unit}` : '—'}  cat=${r.category_name ?? '—'}`);
     }
     if (rows[0]) console.log('category_ids[0]:', rows[0].category_ids.map((c) => catNameById.get(c)).join(' · '));
     console.log('nulos →', {
       sin_precio: rows.filter((r) => r.unit_price == null).length,
+      sin_precio_unitario: rows.filter((r) => r.price_per_unit == null).length,
       sin_img: rows.filter((r) => !r.thumbnail).length,
       sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
       ean_publicado: rows.filter((r) => String(r.raw?.ean ?? '').trim()).length,
       ean_valido: rows.filter((r) => r.ean).length,
-      con_tachado: rows.filter((r) => num(r.raw?.price_range?.minimum_price?.regular_price?.value) != null
-        && r.raw.price_range.minimum_price.regular_price.value > (r.unit_price ?? 0)).length,
+      con_tachado: rows.filter((r) => num(r.raw?.sap_price) != null
+        && r.raw.sap_price > (r.unit_price ?? 0)).length,
     });
     return;
   }

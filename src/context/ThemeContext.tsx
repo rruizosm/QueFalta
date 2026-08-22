@@ -3,9 +3,9 @@
  *   - modo claro/oscuro (`themeMode`: 'light' | 'dark' | 'system')
  *   - color principal (`accentKey`)
  *
- * Carga ambas preferencias de AsyncStorage ANTES de renderizar la app (devuelve
- * null mientras tanto, con la splash aún visible) para que todos los StyleSheet
- * se creen ya con el tema correcto y no haya flash.
+ * Carga las preferencias de AsyncStorage sin bloquear el árbol. Mientras se
+ * hidratan expone los valores por defecto y `ready=false`; Navigation conserva
+ * el BootLoader hasta que la paleta definitiva está aplicada.
  *
  * `useThemedStyles(fábrica)` es el puente para los StyleSheet que dependen del
  * tema: suscribe al componente y recrea los estilos al cambiar modo o color
@@ -32,6 +32,7 @@ function scopedKey(key: string, userId: string | null) {
 }
 
 interface ThemeContextValue {
+  ready: boolean;
   accentKey: AccentKey;
   setAccentKey: (key: AccentKey) => void;
   customAccent: string | null;
@@ -43,6 +44,7 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
+  ready: false,
   accentKey: DEFAULT_ACCENT,
   setAccentKey: () => {},
   customAccent: null,
@@ -163,6 +165,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const scheme: ColorScheme = resolveScheme(themeMode ?? DEFAULT_THEME_MODE, systemScheme);
+  const ready = !authLoading
+    && loadedForUserId === userId
+    && accentKey !== null
+    && themeMode !== null;
 
   const setAccentKey = useCallback((key: AccentKey) => {
     const next = key === 'custom' && !customAccent ? DEFAULT_ACCENT : key;
@@ -196,6 +202,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo(
     () => ({
+      ready,
       accentKey: accentKey ?? DEFAULT_ACCENT,
       setAccentKey,
       customAccent,
@@ -204,10 +211,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setThemeMode,
       scheme,
     }),
-    [accentKey, setAccentKey, customAccent, setCustomAccent, themeMode, setThemeMode, scheme],
+    [ready, accentKey, setAccentKey, customAccent, setCustomAccent, themeMode, setThemeMode, scheme],
   );
-
-  if (authLoading || loadedForUserId !== userId || accentKey === null || themeMode === null) return null;
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

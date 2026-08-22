@@ -23,7 +23,9 @@ categoría, mismo markup, misma paginación. Toda la lógica vive en
    ⚠️ La paginación clásica `?pageNumber=N` (diseño original) **dejó de funcionar
    el 2026-07-11**: el server responde "No se obtuvieron resultados".
 3. Cada "tile" trae un JSON `data-metrics` (evento `select_item`) con **id, nombre,
-   marca, categoría y precio**. El parser tolera comillas simples y dobles +
+   marca, categoría y precio**. El parser extrae además el texto visible de precio
+   unitario (`1 KILO A 18,40 €`, `1 LITRO A ...`, `1 UNIDAD A ...`) y lo
+   normaliza a €/kg, €/L o €/ud. Tolera comillas simples y dobles +
    HTML-escapado. Imagen grande = `/images/{id}_x.jpg`.
 4. Tras guardar el catálogo, descarga incrementalmente la ficha HTML
    `GET /es/productdetail/{id}-{slug}/` y extrae **Ingredientes**, **Condiciones
@@ -35,8 +37,9 @@ categoría, mismo markup, misma paginación. Toda la lógica vive en
 5. Normaliza + **upsert** en `{eroski,caprabo}_products` / `_categories`, con
    soft-delete (`markStale`) de lo ausente.
 
-**Limitaciones:** no hay precio por unidad ni un EAN verificable en el listado o
-en el HTML de ficha, así que `price_per_unit` queda null y no se guarda EAN.
+**Limitaciones:** el sitio omite la etiqueta de precio unitario en algunos
+productos; en esos casos `price_per_unit` queda null. No hay un EAN verificable
+en el listado ni en el HTML de ficha, así que no se guarda EAN.
 Solo castellano (Caprabo `/ca/` redirige y no traduce los nombres de producto).
 
 ## Requisitos previos (una vez)

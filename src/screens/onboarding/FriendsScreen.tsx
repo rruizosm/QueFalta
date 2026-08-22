@@ -23,14 +23,16 @@ import { colors } from '../../constants/colors';
 import { fonts } from '../../constants/typography';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { useProfile } from '../../context/ProfileContext';
 import { useTranslation } from '../../context/LanguageContext';
 import type { SearchedUser } from '../../api/groups';
 import { sendFriendRequest } from '../../api/friends';
 import UserAvatar from '../../components/UserAvatar';
 import { useUsernameSearch } from '../../hooks/useUsernameSearch';
+import OnboardingSlats from './OnboardingSlats';
+import { updateProfile } from '../../api/profile';
 
 const FRIENDS_MASCOT = require('../../../assets/mascot/berenjena-amigos.png');
-const SLATS = Array.from({ length: 26 }, (_, index) => index);
 const APP_BLUE = colors.blue;
 
 export default function FriendsScreen() {
@@ -40,11 +42,13 @@ export default function FriendsScreen() {
   const navigation = useNavigation<any>();
   const { session } = useAuth();
   const toast = useToast();
+  const { applyProfile } = useProfile();
   const userId = session?.user.id ?? '';
 
   const [query, setQuery] = useState('');
   const [sentIds, setSentIds] = useState<string[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const { cleanQuery, results, searching } = useUsernameSearch(query, userId);
 
   const send = async (u: SearchedUser) => {
@@ -61,7 +65,19 @@ export default function FriendsScreen() {
     }
   };
 
-  const goNext = () => navigation.navigate('Group');
+  const goNext = async () => {
+    if (saving || busyId) return;
+    setSaving(true);
+    try {
+      await updateProfile(userId, { onboardingStep: 4 });
+      applyProfile({ onboardingStep: 4 });
+      navigation.navigate('Group');
+    } catch {
+      toast.show(t('onboarding.saveError'), 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
   const someSent = sentIds.length > 0;
   const shellWidth = Math.min(width - 40, 560);
   const compactHeight = height < 700;
@@ -76,12 +92,10 @@ export default function FriendsScreen() {
     <View style={styles.screen}>
       <StatusBar barStyle="light-content" backgroundColor={APP_BLUE} />
 
-      <View style={styles.slats} pointerEvents="none">
-        {SLATS.map((slat) => <View key={slat} style={styles.slat} />)}
-      </View>
+      <OnboardingSlats />
 
       <TouchableOpacity
-        onPress={() => navigation.goBack()}
+        onPress={() => navigation.navigate('Avatar')}
         style={[styles.backButton, { top: insets.top + 8 }]}
         hitSlop={8}
         activeOpacity={0.82}
@@ -105,9 +119,7 @@ export default function FriendsScreen() {
       >
         <Text
           style={[styles.title, compactHeight && styles.titleCompact]}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.72}
+          maxFontSizeMultiplier={1.5}
         >
           {t('onboarding.friendsTitle')}
         </Text>
@@ -137,6 +149,8 @@ export default function FriendsScreen() {
               placeholderTextColor="#7a6f64"
               autoCapitalize="none"
               autoCorrect={false}
+              accessibilityLabel={t('onboarding.friendsPlaceholder')}
+              accessibilityHint={t('onboarding.friendsSubtitle')}
             />
             {searching && <ActivityIndicator size="small" color="#7a6f64" />}
           </View>
@@ -190,6 +204,8 @@ export default function FriendsScreen() {
                         disabled={busyId === u.id}
                         activeOpacity={0.84}
                         accessibilityRole="button"
+                        accessibilityLabel={t('onboarding.addFriendA11y', { name: u.name })}
+                        accessibilityState={{ disabled: busyId === u.id, busy: busyId === u.id }}
                       >
                         {busyId === u.id
                           ? <ActivityIndicator size="small" color="#ffffff" />
@@ -205,24 +221,24 @@ export default function FriendsScreen() {
 
         <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom + 14, 24) }]}>
           <TouchableOpacity
-            style={styles.continueButton}
+            style={[styles.continueButton, (saving || !!busyId) && styles.continueButtonDisabled]}
             onPress={goNext}
+            disabled={saving || !!busyId}
             activeOpacity={0.86}
             accessibilityRole="button"
+            accessibilityState={{ disabled: saving || !!busyId, busy: saving }}
           >
-            <Text style={styles.continueText}>{t('onboarding.continue')}</Text>
-            <Ionicons name="arrow-forward" size={18} color={APP_BLUE} />
+            {saving ? (
+              <ActivityIndicator color={APP_BLUE} />
+            ) : (
+              <>
+                <Text style={styles.continueText}>
+                  {someSent ? t('onboarding.continue') : t('onboarding.laterSkip')}
+                </Text>
+                <Ionicons name="arrow-forward" size={18} color={APP_BLUE} />
+              </>
+            )}
           </TouchableOpacity>
-          {!someSent ? (
-            <TouchableOpacity
-              onPress={goNext}
-              activeOpacity={0.78}
-              style={styles.skipButton}
-              accessibilityRole="button"
-            >
-              <Text style={styles.skipText}>{t('onboarding.laterSkip')}</Text>
-            </TouchableOpacity>
-          ) : null}
         </View>
       </KeyboardAvoidingView>
 
@@ -237,16 +253,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     overflow: 'hidden',
     backgroundColor: APP_BLUE,
-  },
-  slats: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'space-evenly',
-  },
-  slat: {
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.11)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(13,53,101,0.18)',
   },
   backButton: {
     position: 'absolute',
@@ -422,6 +428,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     backgroundColor: '#ffffff',
   },
+  continueButtonDisabled: { opacity: 0.55 },
   continueText: {
     color: APP_BLUE,
     fontSize: 15.5,

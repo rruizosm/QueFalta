@@ -11,6 +11,7 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import StoreProductModal, { type ProductRef } from './StoreProductModal';
 import PaywallModal from './PaywallModal';
+import ProductImage from './ProductImage';
 
 interface Props {
   /** Identificador del producto origen; la RPC carga nombre y unidad en servidor. */
@@ -34,7 +35,7 @@ const perUnitLabel = (value: number | null, unit: string | null): string | null 
 export default function SimilarProductsSection({ productId, excludeStore }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
-  const { profile, loading: profileLoading } = useProfile();
+  const { profile, loading: profileLoading, isPremium } = useProfile();
   const [similars, setSimilars] = useState<SimilarProduct[]>([]);
   const [loading, setLoading] = useState(false);
   const [attempted, setAttempted] = useState(false);
@@ -59,6 +60,10 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
   }, [productId, excludeStore, targetStoresKey]);
 
   const search = useCallback(async () => {
+    if (!isPremium) {
+      setPaywallVisible(true);
+      return;
+    }
     if (!productId || targetStores.length === 0 || loading) return;
     const version = requestVersion.current + 1;
     requestVersion.current = version;
@@ -76,45 +81,58 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
     } finally {
       if (requestVersion.current === version) setLoading(false);
     }
-  }, [excludeStore, loading, productId, targetStores]);
+  }, [excludeStore, isPremium, loading, productId, targetStores]);
 
   const grouped = useMemo(
-    () => targetStores.map((store) => ({
-      store,
-      products: similars.filter((product) => product.store === store).slice(0, 2),
-    })),
+    () => targetStores
+      .map((store) => ({
+        store,
+        products: similars.filter((product) => product.store === store).slice(0, 2),
+      }))
+      .filter(({ products }) => products.length > 0),
     [similars, targetStores],
   );
   const hasResults = attempted && !loading && !error && similars.length > 0;
+  const hasCheaperResults = hasResults && similars.some((product) => product.isCheaper);
+  const currentIsCheapest = hasResults && !hasCheaperResults;
 
   if (!PRICE_COMPARISON_ENABLED || !productId || profileLoading || targetStores.length === 0) return null;
 
+  const buttonInk = isPremium ? colors.white : colors.accent;
+  const searchButton = (
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={hasResults ? t('similar.foundButton') : t('similar.searchButton')}
+      accessibilityHint={!isPremium ? t('similar.unlockTooltip') : undefined}
+      accessibilityState={{ disabled: loading || hasResults }}
+      activeOpacity={0.78}
+      disabled={loading || hasResults}
+      onPress={search}
+      style={[styles.searchButton, isPremium && styles.searchButtonUnlocked]}
+    >
+      {loading ? (
+        <ActivityIndicator size="small" color={buttonInk} />
+      ) : hasResults ? (
+        <Ionicons name="checkmark-circle" size={18} color={buttonInk} />
+      ) : (
+        <Ionicons name="search" size={18} color={buttonInk} />
+      )}
+      <Text style={[styles.searchButtonText, isPremium && styles.searchButtonTextUnlocked]}>
+        {loading
+          ? t('similar.searching')
+          : hasResults
+            ? t('similar.foundButton')
+            : t('similar.searchButton')}
+      </Text>
+      {!isPremium ? <Ionicons name="lock-closed" size={13} color={colors.accent} /> : null}
+    </TouchableOpacity>
+  );
+
   return (
     <View style={styles.compareSection}>
-      <TouchableOpacity
-        accessibilityRole="button"
-        accessibilityLabel={hasResults ? t('similar.foundButton') : t('similar.searchButton')}
-        accessibilityState={{ disabled: loading || hasResults }}
-        activeOpacity={0.78}
-        disabled={loading || hasResults}
-        onPress={search}
-        style={[styles.searchButton, loading && styles.searchButtonDisabled]}
-      >
-        {loading ? (
-          <ActivityIndicator size="small" color={colors.white} />
-        ) : hasResults ? (
-          <Ionicons name="checkmark-circle" size={18} color={colors.white} />
-        ) : (
-          <Ionicons name="search" size={18} color={colors.white} />
-        )}
-        <Text style={styles.searchButtonText}>
-          {loading
-            ? t('similar.searching')
-            : hasResults
-              ? t('similar.foundButton')
-              : t('similar.searchButton')}
-        </Text>
-      </TouchableOpacity>
+      <View style={[styles.searchButtonBackground, loading && styles.searchButtonDisabled]}>
+        {searchButton}
+      </View>
 
       {error ? <Text style={styles.messageError}>{t('similar.searchError')}</Text> : null}
       {attempted && !loading && !error && similars.length === 0 ? (
@@ -123,7 +141,52 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
 
       {hasResults ? (
         <View style={styles.results}>
-          <Text style={styles.sectionTitle}>{t('similar.resultsTitle')}</Text>
+          <View style={styles.resultsHeader}>
+            <View style={styles.resultsTitleIcon}>
+              <Ionicons name="git-compare-outline" size={18} color={colors.accent} />
+            </View>
+            <View style={styles.resultsHeading}>
+              <Text style={styles.sectionTitle}>{t('similar.resultsTitle')}</Text>
+              <Text style={styles.sectionHint}>{t('similar.resultsHint')}</Text>
+            </View>
+            <View style={styles.resultCount}>
+              <Text style={styles.resultCountText}>{similars.length}</Text>
+            </View>
+          </View>
+
+          <View
+            accessible
+            accessibilityLabel={currentIsCheapest
+              ? `${t('similar.currentBestTitle')}. ${t('similar.currentBestBody')}`
+              : `${t('similar.cheaperFoundTitle')}. ${t('similar.cheaperFoundBody')}`}
+            style={[
+              styles.resultSummary,
+              currentIsCheapest ? styles.currentBestSummary : styles.cheaperFoundSummary,
+            ]}
+          >
+            <View style={[
+              styles.resultSummaryIcon,
+              currentIsCheapest ? styles.currentBestIcon : styles.cheaperFoundIcon,
+            ]}>
+              <Ionicons
+                name={currentIsCheapest ? 'shield-checkmark' : 'trending-down'}
+                size={21}
+                color={currentIsCheapest ? colors.ok : colors.accent}
+              />
+            </View>
+            <View style={styles.resultSummaryCopy}>
+              <Text style={[
+                styles.resultSummaryTitle,
+                currentIsCheapest ? styles.currentBestTitle : styles.cheaperFoundTitle,
+              ]}>
+                {currentIsCheapest ? t('similar.currentBestTitle') : t('similar.cheaperFoundTitle')}
+              </Text>
+              <Text style={styles.resultSummaryBody}>
+                {currentIsCheapest ? t('similar.currentBestBody') : t('similar.cheaperFoundBody')}
+              </Text>
+            </View>
+          </View>
+
           {grouped.map(({ store, products }) => {
             const meta = STORE_META[store];
             return (
@@ -137,19 +200,37 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
                     </View>
                   )}
                   <Text style={styles.storeName}>{meta?.name ?? store}</Text>
+                  <View style={styles.storeCount}>
+                    <Text style={styles.storeCountText}>{products.length}</Text>
+                  </View>
                 </View>
 
-                {products.length === 0 ? (
-                  <Text style={styles.storeEmpty}>{t('similar.storeEmpty')}</Text>
-                ) : products.map((product) => {
+                {products.map((product, index) => {
                   const ppu = perUnitLabel(product.pricePerUnit, product.pricePerUnitUnit);
+                  const displayName = product.locked
+                    ? t('similar.cheaperOption')
+                    : (product.displayName ?? t('similar.unnamedProduct'));
+                  const priceLabel = product.priceTotal != null ? euro(product.priceTotal) : null;
+                  const accessibilityPrice = [priceLabel, ppu].filter(Boolean).join(', ');
                   return (
                     <TouchableOpacity
                       key={`${product.store}-${product.id ?? 'locked'}`}
                       style={[
                         styles.compareRow,
+                        index > 0 && styles.compareRowDivider,
                         !product.locked && product.isCheaper && styles.compareRowCheaper,
                       ]}
+                      accessibilityRole="button"
+                      accessibilityLabel={accessibilityPrice
+                        ? t('similar.openProductWithPrice', {
+                          product: displayName,
+                          store: meta?.name ?? store,
+                          price: accessibilityPrice,
+                        })
+                        : t('similar.openProduct', {
+                          product: displayName,
+                          store: meta?.name ?? store,
+                        })}
                       activeOpacity={0.7}
                       onPress={() =>
                         product.locked || !product.id
@@ -157,17 +238,25 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
                           : setTarget({ store: product.store, id: product.id })
                       }
                     >
-                      {product.thumbnail ? (
-                        <Image source={{ uri: product.thumbnail }} style={styles.productImage} resizeMode="contain" />
-                      ) : (
-                        <View style={[styles.productImage, styles.iconEmpty]}>
-                          <Ionicons name="basket-outline" size={18} color={colors.inkSoft} />
-                        </View>
-                      )}
+                      <View style={styles.productImageWrap}>
+                        {product.thumbnail ? (
+                          <ProductImage uri={product.thumbnail} style={styles.productImage} />
+                        ) : (
+                          <View style={[styles.productImage, styles.iconEmpty]}>
+                            <Ionicons name="basket-outline" size={20} color={colors.inkSoft} />
+                          </View>
+                        )}
+                      </View>
                       <View style={styles.compareInfo}>
                         <Text style={styles.compareName} numberOfLines={2}>
-                          {product.locked ? t('similar.cheaperOption') : product.displayName}
+                          {displayName}
                         </Text>
+                        {!product.locked && product.isCheaper ? (
+                          <View style={styles.cheaperBadge}>
+                            <Ionicons name="arrow-down" size={10} color={colors.ok} />
+                            <Text style={styles.cheaperBadgeText}>{t('similar.betterPrice')}</Text>
+                          </View>
+                        ) : null}
                       </View>
                       {product.locked ? (
                         <View style={styles.lockBox}>
@@ -175,13 +264,13 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
                         </View>
                       ) : (
                         <View style={styles.comparePriceBox}>
-                          {product.priceTotal != null ? (
-                            <Text style={styles.comparePrice}>{euro(product.priceTotal)}</Text>
-                          ) : null}
+                          {priceLabel ? <Text style={styles.comparePrice}>{priceLabel}</Text> : null}
                           {ppu ? <Text style={styles.comparePerUnit}>{ppu}</Text> : null}
                         </View>
                       )}
-                      <Ionicons name="chevron-forward" size={15} color={colors.inkFaint} />
+                      <View style={styles.chevronBox}>
+                        <Ionicons name="chevron-forward" size={14} color={colors.inkSoft} />
+                      </View>
                     </TouchableOpacity>
                   );
                 })}
@@ -195,7 +284,6 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
       <PaywallModal
         visible={paywallVisible}
         onClose={() => setPaywallVisible(false)}
-        subtitle={t('similar.unlockTooltip')}
       />
     </View>
   );
@@ -203,35 +291,121 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
 
 const themedStyles = () => StyleSheet.create({
   compareSection: { marginTop: 18 },
+  searchButtonBackground: {
+    borderRadius: 18,
+    backgroundColor: colors.accentLight,
+    borderWidth: 1,
+    borderColor: colors.accentMid,
+  },
   searchButton: {
     minHeight: 48,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 9,
-    backgroundColor: colors.accent,
+    backgroundColor: 'rgba(255,255,255,0.08)',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 18,
     overflow: 'hidden',
   },
+  searchButtonUnlocked: { backgroundColor: colors.accent },
   searchButtonDisabled: { opacity: 0.72 },
   searchButtonText: {
     flexShrink: 1,
     fontSize: 14,
     lineHeight: 18,
     fontFamily: fonts.bold,
-    color: colors.white,
+    color: colors.accent,
     textAlign: 'center',
   },
-  results: { marginTop: 18 },
+  searchButtonTextUnlocked: { color: colors.white },
+  results: { marginTop: 22 },
+  resultsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 13,
+  },
+  resultsTitleIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.accentLight,
+  },
+  resultsHeading: { flex: 1, minWidth: 0 },
   sectionTitle: {
-    fontSize: 10.5,
+    fontSize: 16,
+    lineHeight: 20,
+    fontFamily: fonts.bold,
+    color: colors.ink,
+  },
+  sectionHint: {
+    marginTop: 2,
+    fontSize: 11.5,
+    lineHeight: 15,
+    fontFamily: fonts.medium,
+    color: colors.inkSoft,
+  },
+  resultCount: {
+    minWidth: 28,
+    height: 28,
+    paddingHorizontal: 8,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  resultCountText: {
+    fontSize: 11.5,
     fontFamily: fonts.bold,
     color: colors.inkSoft,
-    textTransform: 'uppercase',
-    letterSpacing: 1.4,
-    marginBottom: 4,
+  },
+  resultSummary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
+    paddingHorizontal: 13,
+    paddingVertical: 12,
+    borderRadius: 18,
+    borderWidth: 1,
+    marginBottom: 2,
+  },
+  currentBestSummary: {
+    backgroundColor: 'rgba(63,143,79,0.10)',
+    borderColor: 'rgba(63,143,79,0.28)',
+  },
+  cheaperFoundSummary: {
+    backgroundColor: colors.accentLight,
+    borderColor: colors.accentMid,
+  },
+  resultSummaryIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  currentBestIcon: { backgroundColor: 'rgba(63,143,79,0.14)' },
+  cheaperFoundIcon: { backgroundColor: colors.white },
+  resultSummaryCopy: { flex: 1, minWidth: 0 },
+  resultSummaryTitle: {
+    fontSize: 13.5,
+    lineHeight: 17,
+    fontFamily: fonts.bold,
+  },
+  currentBestTitle: { color: colors.ok },
+  cheaperFoundTitle: { color: colors.accent },
+  resultSummaryBody: {
+    marginTop: 2,
+    fontSize: 11.5,
+    lineHeight: 15.5,
+    fontFamily: fonts.medium,
+    color: colors.inkSoft,
   },
   messageEmpty: {
     marginTop: 10,
@@ -248,47 +422,86 @@ const themedStyles = () => StyleSheet.create({
     color: colors.red,
   },
   storeGroup: {
-    marginTop: 11,
-    padding: 10,
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: 20,
-  },
-  storeHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 },
-  storeIcon: { width: 22, height: 22 },
-  storeName: { flex: 1, fontSize: 12.5, fontFamily: fonts.bold, color: colors.ink },
-  storeEmpty: {
-    marginTop: 7,
-    marginLeft: 30,
-    fontSize: 11.5,
-    fontFamily: fonts.medium,
-    color: colors.inkFaint,
-  },
-  compareRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+    marginTop: 12,
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.border,
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  storeHeader: {
+    minHeight: 46,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    backgroundColor: colors.surfaceAlt,
+  },
+  storeIcon: { width: 26, height: 26, borderRadius: 7 },
+  storeName: { flex: 1, fontSize: 13, fontFamily: fonts.bold, color: colors.ink },
+  storeCount: {
+    minWidth: 24,
+    height: 24,
+    paddingHorizontal: 7,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.white,
+  },
+  storeCountText: {
+    fontSize: 10.5,
+    fontFamily: fonts.bold,
+    color: colors.inkSoft,
+  },
+  compareRow: {
+    minHeight: 82,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
     paddingHorizontal: 10,
-    paddingVertical: 8,
-    marginTop: 7,
-    borderRadius: 18,
+    paddingVertical: 10,
+    backgroundColor: colors.white,
+  },
+  compareRowDivider: { borderTopWidth: 1, borderTopColor: colors.border },
+  compareRowCheaper: {
+    backgroundColor: 'rgba(63,143,79,0.06)',
+  },
+  productImageWrap: {
+    width: 58,
+    height: 58,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.white,
     overflow: 'hidden',
   },
-  compareRowCheaper: {
-    backgroundColor: 'rgba(201,138,30,0.16)',
-    borderColor: colors.yellow,
-  },
-  productImage: { width: 38, height: 38, borderRadius: 10 },
+  productImage: { width: '100%', height: '100%' },
   iconEmpty: {
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.surfaceAlt,
   },
   compareInfo: { flex: 1, minWidth: 0 },
-  compareName: { fontSize: 11.5, lineHeight: 15, fontFamily: fonts.medium, color: colors.inkSoft },
-  comparePriceBox: { alignItems: 'flex-end' },
+  compareName: { fontSize: 12.5, lineHeight: 16, fontFamily: fonts.semibold, color: colors.ink },
+  cheaperBadge: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginTop: 6,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 9,
+    backgroundColor: 'rgba(63,143,79,0.13)',
+  },
+  cheaperBadgeText: { fontSize: 9.5, fontFamily: fonts.bold, color: colors.ok },
+  comparePriceBox: { alignItems: 'flex-end', minWidth: 66 },
   lockBox: {
     width: 26,
     height: 26,
@@ -297,6 +510,14 @@ const themedStyles = () => StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 13,
   },
-  comparePrice: { fontSize: 14, fontFamily: fonts.bold, color: colors.accent },
+  comparePrice: { fontSize: 15, lineHeight: 18, fontFamily: fonts.bold, color: colors.accent },
   comparePerUnit: { fontSize: 11, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
+  chevronBox: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceAlt,
+  },
 });

@@ -24,9 +24,9 @@ import { useProfile } from '../../context/ProfileContext';
 import { useToast } from '../../context/ToastContext';
 import { useTranslation } from '../../context/LanguageContext';
 import { updateProfile, uploadAvatar } from '../../api/profile';
+import OnboardingSlats from './OnboardingSlats';
 
 const SELFIE_MASCOT = require('../../../assets/mascot/berenjena-selfie.png');
-const SLATS = Array.from({ length: 26 }, (_, index) => index);
 const APP_BLUE = colors.blue;
 
 export default function AvatarScreen() {
@@ -45,27 +45,45 @@ export default function AvatarScreen() {
   const pick = async () => {
     // El selector del sistema (PHPicker/UIImagePickerController) no necesita
     // permiso de fototeca: no pedirlo evita el diálogo de "acceso completo".
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.85,
-    });
-    if (!result.canceled && result.assets[0]) {
-      Haptics.selectionAsync();
-      setPickedUri(result.assets[0].uri);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.85,
+      });
+      if (!result.canceled && result.assets[0]) {
+        Haptics.selectionAsync();
+        setPickedUri(result.assets[0].uri);
+      }
+    } catch {
+      toast.show(t('onboarding.avatarPickerError'), 'error');
     }
   };
 
   const goNext = () => navigation.navigate('Friends');
 
+  const handleSkip = async () => {
+    if (saving) return;
+    setSaving(true);
+    try {
+      await updateProfile(userId, { onboardingStep: 3 });
+      applyProfile({ onboardingStep: 3 });
+      goNext();
+    } catch {
+      toast.show(t('onboarding.saveError'), 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleContinue = async () => {
-    if (!pickedUri) { goNext(); return; }
+    if (!pickedUri) { await handleSkip(); return; }
     setSaving(true);
     try {
       const url = await uploadAvatar(userId, pickedUri);
-      await updateProfile(userId, { avatarUrl: url });
-      applyProfile({ avatarUrl: url });
+      await updateProfile(userId, { avatarUrl: url, onboardingStep: 3 });
+      applyProfile({ avatarUrl: url, onboardingStep: 3 });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       goNext();
     } catch {
@@ -94,12 +112,10 @@ export default function AvatarScreen() {
     <View style={styles.screen}>
       <StatusBar barStyle="light-content" backgroundColor={APP_BLUE} />
 
-      <View style={styles.slats} pointerEvents="none">
-        {SLATS.map((slat) => <View key={slat} style={styles.slat} />)}
-      </View>
+      <OnboardingSlats />
 
       <TouchableOpacity
-        onPress={() => navigation.goBack()}
+        onPress={() => navigation.navigate('Stores')}
         style={[styles.backButton, { top: insets.top + 8 }]}
         hitSlop={8}
         activeOpacity={0.82}
@@ -123,9 +139,7 @@ export default function AvatarScreen() {
       >
         <Text
           style={[styles.title, compactHeight && styles.titleCompact]}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.72}
+          maxFontSizeMultiplier={1.5}
         >
           {t('onboarding.avatarTitle')}
         </Text>
@@ -190,28 +204,35 @@ export default function AvatarScreen() {
           disabled={saving}
           activeOpacity={0.86}
           accessibilityRole="button"
-          accessibilityState={{ disabled: saving }}
+          accessibilityState={{ disabled: saving, busy: saving }}
         >
           {saving ? (
             <ActivityIndicator color={APP_BLUE} />
           ) : (
             <>
               <Text style={styles.continueText}>
-                {pickedUri ? t('onboarding.avatarSaveContinue') : t('onboarding.continue')}
+                {pickedUri
+                  ? t('onboarding.avatarSaveContinue')
+                  : preview
+                    ? t('onboarding.continue')
+                    : t('onboarding.avatarSkip')}
               </Text>
               <Ionicons name="arrow-forward" size={18} color={APP_BLUE} />
             </>
           )}
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={goNext}
-          disabled={saving}
-          activeOpacity={0.78}
-          style={styles.skipButton}
-          accessibilityRole="button"
-        >
-          <Text style={styles.skipText}>{t('onboarding.avatarSkip')}</Text>
-        </TouchableOpacity>
+        {pickedUri ? (
+          <TouchableOpacity
+            onPress={handleSkip}
+            disabled={saving}
+            activeOpacity={0.78}
+            style={styles.skipButton}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: saving }}
+          >
+            <Text style={styles.skipText}>{t('onboarding.avatarSkip')}</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       <View style={styles.bottomRail} pointerEvents="none" />
@@ -225,16 +246,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     overflow: 'hidden',
     backgroundColor: APP_BLUE,
-  },
-  slats: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'space-evenly',
-  },
-  slat: {
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.11)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(13,53,101,0.18)',
   },
   backButton: {
     position: 'absolute',

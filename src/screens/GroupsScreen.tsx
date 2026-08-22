@@ -16,16 +16,12 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { FREE_LIMITS, limitsApply } from '../constants/limits';
 import { fetchMyGroups, createGroup, type GroupSummary } from '../api/groups';
 import MemberAvatars from '../components/MemberAvatars';
-import HardShadow from '../components/HardShadow';
 import NameInputSheet from '../components/NameInputSheet';
-import PaywallModal from '../components/PaywallModal';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
@@ -43,7 +39,6 @@ export default function GroupsScreen() {
   const { session } = useAuth();
   const userId = session?.user.id;
   const { isActive, activateCart, deactivateCart, busy } = useCart();
-  const { isPremium } = useProfile();
   const toast = useToast();
   const [activatingId, setActivatingId] = useState<string | null>(null);
 
@@ -54,7 +49,6 @@ export default function GroupsScreen() {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [paywallVisible, setPaywallVisible] = useState(false);
 
   const [refreshing, setRefreshing] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -83,7 +77,7 @@ export default function GroupsScreen() {
     setActivatingId(group.id);
     try {
       if (wasActive) await deactivateCart();
-      else await activateCart(group.id, group.name);
+      else await activateCart(group.id, group.name, group.iconEmoji);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       toast.show(wasActive ? t('banner.deactivated') : t('banner.activated', { group: group.name }));
     } finally {
@@ -91,38 +85,34 @@ export default function GroupsScreen() {
     }
   };
 
-  // Gate free (Fase 2 MONETIZACION.md): solo cuentan los grupos CREADOS por el
-  // usuario (createdBy, igual que el trigger del servidor); ser miembro de
-  // grupos ajenos no cuenta y unirse por invitación es siempre ilimitado.
-  const handleNewGroup = () => {
-    const createdCount = groups.filter((g) => g.createdBy === userId).length;
-    if (limitsApply(isPremium) && createdCount >= FREE_LIMITS.maxCreatedGroups) {
-      setPaywallVisible(true);
-      return;
-    }
-    setModalVisible(true);
-  };
+  const handleNewGroup = () => setModalVisible(true);
 
   const handleCreate = async (name: string) => {
     if (!userId) return;
+    const normalizedName = name.trim();
+    const shouldActivate = groups.length === 0;
     setCreating(true);
     try {
-      await createGroup(name, userId);
+      const groupId = await createGroup(normalizedName, userId);
       setModalVisible(false);
       setLoading(true);
       load();
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show(t('group.created', { name }));
-    } catch (e: any) {
-      // Trigger groups_enforce_limit (paywall_gates.sql): el estado local iba
-      // por detrás del servidor → paywall en vez de error genérico.
-      if (typeof e?.message === 'string' && e.message.includes('free_group_limit')) {
-        setModalVisible(false);
-        setPaywallVisible(true);
-      } else {
-        setError(true);
-        toast.show(t('group.createError'), 'error');
+
+      if (shouldActivate) {
+        try {
+          await activateCart(groupId, normalizedName, null);
+        } catch {
+          // La creación ya terminó: no mostrar un error que invite a duplicarla.
+          toast.show(t('group.createdActivationError'), 'error');
+          return;
+        }
       }
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show(t('group.created', { name: normalizedName }));
+    } catch {
+      setError(true);
+      toast.show(t('group.createError'), 'error');
     } finally {
       setCreating(false);
     }
@@ -142,11 +132,13 @@ export default function GroupsScreen() {
           <ActivityIndicator size="small" color={active ? colors.white : colors.accent} />
         ) : (
           <>
-            <Ionicons
-              name={active ? 'checkmark' : 'cart-outline'}
-              size={15}
-              color={active ? colors.white : colors.accent}
-            />
+            {active ? (
+              <Ionicons name="checkmark" size={15} color={colors.white} />
+            ) : item.iconEmoji ? (
+              <Text style={styles.activateBtnEmoji}>{item.iconEmoji}</Text>
+            ) : (
+              <Ionicons name="cart-outline" size={15} color={colors.accent} />
+            )}
             <Text style={[styles.activateBtnText, active && styles.activateBtnTextActive]}>
               {active ? t('group.cartActive') : t('group.activate')}
             </Text>
@@ -196,7 +188,7 @@ export default function GroupsScreen() {
     <View style={[styles.header, { paddingTop: headerTop }]}>
       <View style={styles.titleWrap}>
         <View style={styles.titleIcon}>
-          <Ionicons name="people" size={18} color={colors.accent} />
+          <Ionicons name="people" size={15} color={colors.accent} />
         </View>
         <Text style={styles.title}>{t('group.title')}</Text>
       </View>
@@ -235,11 +227,17 @@ export default function GroupsScreen() {
           <Ionicons name="people-outline" size={48} color={colors.inkFaint} />
           <Text style={styles.emptyTitle}>{t('group.emptyTitle')}</Text>
           <Text style={styles.emptyText}>{t('group.emptyText')}</Text>
-          <TouchableOpacity onPress={handleNewGroup} style={{ marginTop: 8 }}>
-            <HardShadow style={{ backgroundColor: colors.accent, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 16, paddingVertical: 11 }}>
-              <Ionicons name="add" size={18} color={colors.white} />
-              <Text style={{ color: colors.white, fontFamily: fonts.bold, fontSize: 13 }}>{t('group.createCta')}</Text>
-            </HardShadow>
+          <TouchableOpacity
+            onPress={handleNewGroup}
+            style={styles.emptyCreateAction}
+            activeOpacity={0.82}
+            accessibilityRole="button"
+            accessibilityLabel={t('group.createCta')}
+          >
+            <View style={styles.emptyCreateButton}>
+              <Ionicons name="add" size={28} color={colors.white} />
+            </View>
+            <Text style={styles.emptyCreateText}>{t('group.createCta')}</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -270,14 +268,6 @@ export default function GroupsScreen() {
         onClose={() => setModalVisible(false)}
       />
 
-      <PaywallModal
-        visible={paywallVisible}
-        onClose={() => setPaywallVisible(false)}
-        subtitle={FREE_LIMITS.maxCreatedGroups === 1
-          ? t('group.paywallLimitOne')
-          : t('group.paywallLimitMany', { n: FREE_LIMITS.maxCreatedGroups })}
-      />
-
       {glassAvailable && (
         <View style={styles.chrome} onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}>
           <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>
@@ -299,11 +289,11 @@ const themedStyles = () => StyleSheet.create({
   },
   titleWrap: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   titleIcon: {
-    width: 34, height: 34, borderRadius: 17,
+    width: 28, height: 28, borderRadius: 14,
     alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.accentLight,
   },
-  title: { fontSize: 25, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4 },
+  title: { fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
   newBtn: {
     minHeight: 34, paddingHorizontal: 11, borderRadius: 17,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
@@ -340,11 +330,19 @@ const themedStyles = () => StyleSheet.create({
   activateBtnActive: { backgroundColor: colors.accent },
   activateBtnText: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.accent },
   activateBtnTextActive: { color: colors.white },
+  activateBtnEmoji: { fontSize: 15, lineHeight: 18 },
 
   // ── States ────────────────────────────────────────────────────
   centerBox: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 40 },
   emptyTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink },
   emptyText: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'center' },
+  emptyCreateAction: { alignItems: 'center', gap: 8, marginTop: 8 },
+  emptyCreateButton: {
+    width: 58, height: 58, borderRadius: 29,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.accent,
+  },
+  emptyCreateText: { fontSize: 13, fontFamily: fonts.bold, color: colors.accent },
   retryText: { fontSize: 14, fontFamily: fonts.bold, color: colors.accent },
 
   chrome: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },

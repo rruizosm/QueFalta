@@ -14,9 +14,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../constants/colors';
 import { fonts } from '../../constants/typography';
 import { useTranslation } from '../../context/LanguageContext';
+import OnboardingSlats from './OnboardingSlats';
 
 const SEATED_MASCOT = require('../../../assets/mascot/berenjena-sentada-ok.png');
-const SLATS = Array.from({ length: 26 }, (_, index) => index);
 const APP_BLUE = colors.blue;
 
 interface Props {
@@ -46,9 +46,7 @@ export default function OnboardingShutter({ children, onSettled }: Props) {
       <StatusBar barStyle="light-content" backgroundColor={APP_BLUE} />
 
       <View style={styles.shutterSurface}>
-        <View style={styles.slats} pointerEvents="none">
-          {SLATS.map((slat) => <View key={slat} style={styles.slat} />)}
-        </View>
+        <OnboardingSlats />
 
         <KeyboardAvoidingView
           style={styles.keyboardAvoider}
@@ -109,16 +107,6 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     overflow: 'hidden',
     backgroundColor: APP_BLUE,
-  },
-  slats: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'space-evenly',
-  },
-  slat: {
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.11)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(13,53,101,0.18)',
   },
   keyboardAvoider: {
     flex: 1,

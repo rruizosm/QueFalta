@@ -104,7 +104,7 @@ export default function GroupMembersScreen() {
       await renameGroup(groupId, name);
       setGroup({ ...group, name });
       // Refrescar el nombre cacheado en el carrito activo.
-      if (activeCart?.groupId === groupId) await activateCart(groupId, name);
+      if (activeCart?.groupId === groupId) await activateCart(groupId, name, group.iconEmoji);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show(t('group.renamed'));
       setRenameVisible(false);

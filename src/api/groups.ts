@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { notifyGroupInvite } from './push';
 import type { GroupMember } from '../types';
+import { linkedNoteProductFromRow, type LinkedNoteProduct } from './lists';
 
 /** Base pública de la web (Universal Links). Ver quefalta-web/. */
 const WEB_BASE_URL = 'https://quefalta.es';
@@ -22,6 +23,7 @@ const toMember = (p: any): GroupMember => ({
 export interface GroupSummary {
   id: string;
   name: string;
+  iconEmoji: string | null;
   /** Who created the group (immutable). */
   createdBy: string | null;
   /** Current admin/owner (changes on transfer). */
@@ -42,6 +44,8 @@ export interface GroupItem {
   imageUrl: string | null;
   mercadonaProductId: string | null;
   storeProductId: string | null;
+  note: string | null;
+  noteProduct: LinkedNoteProduct | null;
 }
 
 /** Groups the current user belongs to, with their member profiles. */
@@ -50,7 +54,7 @@ const groupsRequests = new Map<string, Promise<GroupSummary[]>>();
 async function requestMyGroups(): Promise<GroupSummary[]> {
   const { data, error } = await supabase
     .from('groups')
-    .select(`id, name, created_by, owner_id, created_at, group_members(profiles(${MEMBER_COLS}))`)
+    .select(`id, name, icon_emoji, created_by, owner_id, created_at, group_members(profiles(${MEMBER_COLS}))`)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -58,6 +62,7 @@ async function requestMyGroups(): Promise<GroupSummary[]> {
   return (data ?? []).map((g: any) => ({
     id: g.id,
     name: g.name,
+    iconEmoji: g.icon_emoji ?? null,
     createdBy: g.created_by,
     ownerId: g.owner_id ?? null,
     createdAt: g.created_at,
@@ -81,30 +86,32 @@ export function fetchMyGroups(userId?: string): Promise<GroupSummary[]> {
   return request;
 }
 
-/** Creates a group and adds the creator as its first member. Returns the new group id. */
-export async function createGroup(name: string, userId: string): Promise<string> {
-  const { data, error } = await supabase
-    .from('groups')
-    .insert({ name: name.trim(), created_by: userId, owner_id: userId })
-    .select('id')
-    .single();
+/** Clave estable durante un intento de UI; permite reintentar sin duplicar. */
+export function createGroupRequestKey(userId: string): string {
+  return `${userId}:${Date.now().toString(36)}:${Math.random().toString(36).slice(2)}`;
+}
+
+/** Crea grupo y membresía inicial en una única transacción del servidor. */
+export async function createGroup(
+  name: string,
+  userId: string,
+  requestKey = createGroupRequestKey(userId),
+): Promise<string> {
+  const { data, error } = await supabase.rpc('create_group_with_owner', {
+    group_name: name.trim(),
+    request_key: requestKey,
+  });
 
   if (error) throw error;
-
-  const { error: memberError } = await supabase
-    .from('group_members')
-    .insert({ group_id: data.id, user_id: userId });
-
-  if (memberError) throw memberError;
-
-  return data.id;
+  if (typeof data !== 'string') throw new Error('Invalid group creation response');
+  return data;
 }
 
 /** Full detail for a single group: name, creator and member profiles. */
 export async function fetchGroupDetail(groupId: string): Promise<GroupSummary> {
   const { data, error } = await supabase
     .from('groups')
-    .select(`id, name, created_by, owner_id, created_at, group_members(profiles(${MEMBER_COLS}))`)
+    .select(`id, name, icon_emoji, created_by, owner_id, created_at, group_members(profiles(${MEMBER_COLS}))`)
     .eq('id', groupId)
     .single();
 
@@ -113,6 +120,7 @@ export async function fetchGroupDetail(groupId: string): Promise<GroupSummary> {
   return {
     id: data.id,
     name: data.name,
+    iconEmoji: (data as any).icon_emoji ?? null,
     createdBy: data.created_by,
     ownerId: (data as any).owner_id ?? null,
     createdAt: data.created_at,
@@ -127,7 +135,7 @@ export async function fetchGroupDetail(groupId: string): Promise<GroupSummary> {
 export async function fetchGroupItems(groupId: string): Promise<GroupItem[]> {
   const { data, error } = await supabase
     .from('list_items')
-    .select('id, product_name, quantity, unit, in_cart, category_emoji, category_name, unit_price, image_url, mercadona_product_id, store_product_id, shopping_lists!inner(group_id)')
+    .select('id, product_name, quantity, unit, in_cart, category_emoji, category_name, unit_price, image_url, mercadona_product_id, store_product_id, note, note_product_store, note_product_id, note_product_name, note_product_image_url, note_product_unit_price, shopping_lists!inner(group_id)')
     .eq('shopping_lists.group_id', groupId)
     .order('created_at', { ascending: true });
 
@@ -145,6 +153,8 @@ export async function fetchGroupItems(groupId: string): Promise<GroupItem[]> {
     imageUrl: it.image_url ?? null,
     mercadonaProductId: it.mercadona_product_id ?? null,
     storeProductId: it.store_product_id ?? null,
+    note: it.note ?? null,
+    noteProduct: linkedNoteProductFromRow(it),
   }));
 }
 
@@ -244,6 +254,16 @@ export async function renameGroup(groupId: string, name: string): Promise<void> 
   const { error } = await supabase
     .from('groups')
     .update({ name: name.trim() })
+    .eq('id', groupId);
+
+  if (error) throw error;
+}
+
+/** Cambia el icono compartido del grupo. Solo el admin puede actualizar groups. */
+export async function updateGroupIcon(groupId: string, iconEmoji: string): Promise<void> {
+  const { error } = await supabase
+    .from('groups')
+    .update({ icon_emoji: iconEmoji })
     .eq('id', groupId);
 
   if (error) throw error;

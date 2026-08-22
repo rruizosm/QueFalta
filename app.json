@@ -82,7 +82,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#FBF6EE"
+          "backgroundColor": "#E1EBF7",
+          "image": "./assets/quefalta-logo-blue.png",
+          "imageWidth": 180
         }
       ],
       [

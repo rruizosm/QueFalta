@@ -30,9 +30,14 @@ export interface UserProfile {
   /** Cuándo completó el alta inicial (asistente de bienvenida). NULL = aún no
    *  lo ha hecho → la app muestra el onboarding. Ver profile_onboarding.sql. */
   onboardedAt: string | null;
-  /** Cuenta verificada (insignia dorada). Marca manual desde Supabase.
-   *  Ver profile_verified.sql. */
+  /** Siguiente paso del asistente que debe mostrarse (0–5). */
+  onboardingStep: number;
+  /** Reflejo público de Plus para la insignia dorada. La autorización usa
+   *  premiumUntil; el servidor sincroniza este booleano. */
   verified: boolean;
+  /** Derecho heredado para usar "Todos" en los cuatro listados conjuntos.
+   *  Se concede en servidor a las cuentas existentes antes de la versión 1.3. */
+  legacyAllStoresAccess: boolean;
 }
 
 /** Normaliza la columna catalog_stores: filtra claves desconocidas y, si queda
@@ -47,7 +52,7 @@ function normalizeCatalogStores(value: unknown): CatalogStore[] {
 export async function fetchProfile(userId: string): Promise<UserProfile> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, name, initials, color, username, avatar_url, discoverable, catalog_stores, region, postal_code, premium_until, onboarded_at, verified')
+    .select('id, name, initials, color, username, avatar_url, discoverable, catalog_stores, region, postal_code, premium_until, onboarded_at, onboarding_step, verified, legacy_all_stores_access')
     .eq('id', userId)
     .single();
 
@@ -66,7 +71,9 @@ export async function fetchProfile(userId: string): Promise<UserProfile> {
     postalCode: data.postal_code ?? null,
     premiumUntil: data.premium_until ?? null,
     onboardedAt: data.onboarded_at ?? null,
+    onboardingStep: data.onboarding_step ?? 0,
     verified: data.verified ?? false,
+    legacyAllStoresAccess: data.legacy_all_stores_access ?? false,
   };
 }
 
@@ -81,6 +88,7 @@ export async function updateProfile(
     catalogStores?: CatalogStore[];
     region?: RegionValue | null;
     postalCode?: string | null;
+    onboardingStep?: number;
   },
 ): Promise<void> {
   const updates: Record<string, unknown> = {};
@@ -92,22 +100,25 @@ export async function updateProfile(
   if (fields.catalogStores !== undefined) updates.catalog_stores = fields.catalogStores;
   if (fields.region !== undefined) updates.region = fields.region;
   if (fields.postalCode !== undefined) updates.postal_code = fields.postalCode;
+  if (fields.onboardingStep !== undefined) updates.onboarding_step = fields.onboardingStep;
 
-  const { error } = await supabase.from('profiles').update(updates).eq('id', userId);
+  const { error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', userId)
+    .select('id')
+    .single();
   if (error) throw error;
 }
 
 /** Marca el alta inicial como completada (sella onboarded_at = ahora). A partir
  *  de aquí el gate de navegación deja de mostrar el onboarding. Devuelve el ISO
  *  guardado para refrescar la caché del ProfileContext sin re-fetch. */
-export async function completeOnboarding(userId: string): Promise<string> {
-  const onboardedAt = new Date().toISOString();
-  const { error } = await supabase
-    .from('profiles')
-    .update({ onboarded_at: onboardedAt })
-    .eq('id', userId);
+export async function completeOnboarding(): Promise<string> {
+  const { data, error } = await supabase.rpc('complete_onboarding');
   if (error) throw error;
-  return onboardedAt;
+  if (typeof data !== 'string') throw new Error('Invalid onboarding completion response');
+  return data;
 }
 
 /** Returns true if the username is free (or belongs to this user).

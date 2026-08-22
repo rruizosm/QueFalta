@@ -17,11 +17,11 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from './QuantityStepper';
 import ProductDetailImage from './ProductDetailImage';
-import FoodIndexSummary from './FoodIndexSummary';
 import ProductInfoSections from './ProductInfoSections';
 import { useNutritionInfoDisclosure } from './NutritionInfoButton';
-import SimilarProductsSection from './SimilarProductsSection';
+import ProductDetailDiscoverySection from './ProductDetailDiscoverySection';
 import ProductPriceLine from './ProductPriceLine';
+import ActiveCartIcon from './ActiveCartIcon';
 
 interface Props {
   /** Mercadona product id to show. When null, the modal is hidden. */
@@ -225,7 +225,7 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16, 
         ) : (
           <>
           <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-            <ProductDetailImage uri={photo} style={styles.photo} badgeLabel={badgeLabel} />
+            <ProductDetailImage uri={photo} style={styles.photo} badgeLabel={badgeLabel} alertTarget={{ store: 'mercadona', productId: product.id }} />
 
             <Text style={styles.name}>{product.display_name}</Text>
             {brand ? <Text style={styles.brand}>{brand}</Text> : null}
@@ -233,18 +233,11 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16, 
             <ProductPriceLine store="mercadona" productId={product.id} price={price} size={size} />
             {refPrice ? <Text style={styles.refPrice}>{refPrice}</Text> : null}
 
-            {nutrition.info?.foodIndex ? (
-              <FoodIndexSummary
-                index={nutrition.info.foodIndex}
-                onPress={nutrition.open}
-                expanded={nutrition.expanded}
-              >
-                {nutrition.inlineContent}
-              </FoodIndexSummary>
-            ) : null}
-
-            {/* Comparativa: más barato en otros súper */}
-            <SimilarProductsSection productId={String(product.id)} excludeStore="mercadona" />
+            <ProductDetailDiscoverySection
+              nutrition={nutrition}
+              productId={String(product.id)}
+              excludeStore="mercadona"
+            />
 
             {/* Características del producto */}
             <ProductInfoSections
@@ -277,7 +270,7 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16, 
                 <ActivityIndicator size="small" color={colors.white} />
               ) : (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Ionicons name="cart-outline" size={16} color={colors.white} />
+                  <ActiveCartIcon size={16} color={colors.white} />
                   <Text style={styles.addBtnText}>{t('product.addToCart')}</Text>
                 </View>
               )}
@@ -349,7 +342,7 @@ const themedStyles = () => StyleSheet.create({
   addBtn: {
     flex: 1, backgroundColor: colors.accent,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 14,
+    paddingVertical: 14, borderRadius: 23,
   },
   addBtnText: { color: colors.white, fontFamily: fonts.bold, fontSize: 14 },
 });

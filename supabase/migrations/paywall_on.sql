@@ -1,6 +1,6 @@
 -- Fase 4 de MONETIZACION.md — ENCENDIDO del paywall en SERVIDOR.
--- Activa el recorte del comparador (similar_products → locked) y el límite de
--- grupos creados (trigger groups_enforce_limit) para usuarios sin Plus.
+-- Activa el recorte del comparador (similar_products → locked). Crear y
+-- unirse a grupos permanece ilimitado para todas las cuentas.
 --
 -- Ejecutar en: Supabase → SQL Editor, en el lanzamiento, DESPUÉS de regalar
 -- Plus a los testers (ops/grant_plus_testers.sql) y a la vez que sale el build

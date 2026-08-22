@@ -220,16 +220,21 @@ async function buildTarget(
     }
 
     case 'friend_request': {
+      const friendshipId = String(payload.friendshipId ?? '');
       const addresseeId = String(payload.addresseeId ?? '');
       if (!addresseeId) return null;
 
-      // Debe existir la solicitud que dice haber enviado.
-      const { data: fr } = await admin
+      // Debe existir exactamente la solicitud pendiente que acaba de crear el
+      // actor. Los clientes nuevos mandan su id; el fallback sin id mantiene
+      // compatibles las versiones publicadas mientras reciben la actualización.
+      let friendshipQuery = admin
         .from('friendships')
         .select('id')
         .eq('requester_id', actorId)
         .eq('addressee_id', addresseeId)
-        .maybeSingle();
+        .eq('status', 'pending');
+      if (friendshipId) friendshipQuery = friendshipQuery.eq('id', friendshipId);
+      const { data: fr } = await friendshipQuery.maybeSingle();
       if (!fr) return null;
 
       return {

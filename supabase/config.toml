@@ -9,3 +9,15 @@ entrypoint = "./functions/catalog-embed/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/catalog-embed/*.html" ]
+
+[functions.process-price-alerts]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/process-price-alerts/index.ts"
+
+[functions.revenuecat-webhook]
+enabled = true
+# RevenueCat no envía un JWT de Supabase. La función valida en su lugar el
+# header Authorization contra el secreto RC_WEBHOOK_TOKEN.
+verify_jwt = false
+entrypoint = "./functions/revenuecat-webhook/index.ts"

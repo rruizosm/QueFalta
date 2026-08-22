@@ -18,6 +18,7 @@ import { isUsernameAvailable, updateProfile } from '../../api/profile';
 import { prefetchStoreIcons } from '../../constants/stores';
 import RegionPicker, { type RegionSelection } from '../../components/RegionPicker';
 import OnboardingShutter from './OnboardingShutter';
+import { canSubmitUsername } from '../../lib/onboardingProgress';
 
 const USERNAME_RE = /^[a-z0-9_.]{3,20}$/;
 type UState = 'idle' | 'checking' | 'ok' | 'taken' | 'invalid';
@@ -33,12 +34,13 @@ export default function UsernameScreen() {
 
   const [username, setUsername] = useState(profile?.username ?? '');
   const [state, setState] = useState<UState>(profile?.username ? 'ok' : 'idle');
+  const [validatedUsername, setValidatedUsername] = useState<string | null>(profile?.username ?? null);
   const [regionSelection, setRegionSelection] = useState<RegionSelection>({
     region: profile?.region ?? null,
     postalCode: profile?.postalCode ?? null,
   });
   const [saving, setSaving] = useState(false);
-  const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const validationRequest = useRef(0);
   const usernameInput = useRef<TextInput>(null);
 
   const focusUsername = useCallback(() => {
@@ -51,37 +53,55 @@ export default function UsernameScreen() {
 
   useEffect(() => {
     const raw = username.trim().toLowerCase();
-    if (!raw) { setState('idle'); return; }
-    if (!USERNAME_RE.test(raw)) { setState('invalid'); return; }
-    if (raw === (profile?.username ?? '')) { setState('ok'); return; }
+    const request = ++validationRequest.current;
+    setValidatedUsername(null);
+    if (!raw) { setState('idle'); return undefined; }
+    if (!USERNAME_RE.test(raw)) { setState('invalid'); return undefined; }
+    if (raw === (profile?.username ?? '')) {
+      setValidatedUsername(raw);
+      setState('ok');
+      return undefined;
+    }
 
     setState('checking');
-    if (debounce.current) clearTimeout(debounce.current);
-    debounce.current = setTimeout(async () => {
+    const debounce = setTimeout(async () => {
       try {
         const free = await isUsernameAvailable(raw);
+        if (validationRequest.current !== request) return;
+        setValidatedUsername(free ? raw : null);
         setState(free ? 'ok' : 'taken');
       } catch {
+        if (validationRequest.current !== request) return;
         setState('idle');
       }
     }, 400);
-    return () => { if (debounce.current) clearTimeout(debounce.current); };
+    return () => clearTimeout(debounce);
   }, [username, profile?.username]);
+
+  const rawUsername = username.trim().toLowerCase();
+  const canContinue = canSubmitUsername(
+    state,
+    validatedUsername,
+    rawUsername,
+    !!regionSelection.region,
+  );
 
   const handleContinue = async () => {
     const raw = username.trim().toLowerCase();
-    if (state !== 'ok' || !regionSelection.region) return;
+    if (!canContinue || !regionSelection.region) return;
     setSaving(true);
     try {
       await updateProfile(userId, {
         username: raw,
         region: regionSelection.region,
         postalCode: regionSelection.postalCode,
+        onboardingStep: 1,
       });
       applyProfile({
         username: raw,
         region: regionSelection.region,
         postalCode: regionSelection.postalCode,
+        onboardingStep: 1,
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       navigation.navigate('Stores');
@@ -117,6 +137,8 @@ export default function UsernameScreen() {
             maxLength={20}
             returnKeyType="done"
             onSubmitEditing={handleContinue}
+            accessibilityLabel={t('onboarding.usernameFieldLabel')}
+            accessibilityHint={t('onboarding.usernameHint')}
           />
           {state === 'checking' && <ActivityIndicator size="small" color="#7a6f64" />}
           {state === 'ok' && <Ionicons name="checkmark-circle" size={20} color={colors.ok} />}
@@ -126,7 +148,7 @@ export default function UsernameScreen() {
           styles.helper,
           helper.tone === 'ok' && styles.helperOk,
           helper.tone === 'bad' && styles.helperBad,
-        ]}>
+        ]} accessibilityLiveRegion="polite">
           {helper.text}
         </Text>
 
@@ -143,11 +165,13 @@ export default function UsernameScreen() {
         <TouchableOpacity
           style={[
             styles.continueBtn,
-            (state !== 'ok' || !regionSelection.region || saving) && styles.continueBtnDisabled,
+            (!canContinue || saving) && styles.continueBtnDisabled,
           ]}
           onPress={handleContinue}
-          disabled={state !== 'ok' || !regionSelection.region || saving}
+          disabled={!canContinue || saving}
           activeOpacity={0.86}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !canContinue || saving, busy: saving }}
         >
           {saving ? (
             <ActivityIndicator color={colors.blue} />

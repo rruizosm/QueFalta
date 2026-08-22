@@ -1,10 +1,9 @@
 /**
  * LanguageContext — idioma de la UI (castellà / català) elegido en Apariencia.
  *
- * Mismo patrón que ThemeContext: carga `@app_language` de AsyncStorage ANTES de
- * renderizar (devuelve null mientras tanto, con la splash visible) y aplica el
- * idioma de forma SÍNCRONA con `applyLanguage` antes del setState, para que el
- * `t()` de los componentes lea ya el idioma nuevo en el mismo render.
+ * Carga `@app_language` de AsyncStorage sin bloquear el árbol de React. Hasta
+ * resolverlo expone el idioma por defecto y `ready=false`, para que Navigation
+ * pueda mantener un loader real en pantalla en vez de dejar un frame vacío.
  *
  * `useTranslation()` suscribe al componente: al cambiar de idioma se re-renderiza
  * y sus llamadas a `t` devuelven los textos del idioma activo.
@@ -22,12 +21,14 @@ const LANGUAGE_KEY = '@app_language';
 
 interface LanguageContextValue {
   lang: AppLanguage;
+  ready: boolean;
   setLang: (lang: AppLanguage) => void;
   t: typeof t;
 }
 
 const LanguageContext = createContext<LanguageContextValue>({
   lang: DEFAULT_LANGUAGE,
+  ready: false,
   setLang: () => {},
   t,
 });
@@ -37,7 +38,8 @@ function isLanguage(value: string | null): value is AppLanguage {
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setState] = useState<AppLanguage | null>(null);
+  const [lang, setState] = useState<AppLanguage>(DEFAULT_LANGUAGE);
+  const [ready, setReady] = useState(false);
 
   // Carga la preferencia guardada antes del primer render.
   useEffect(() => {
@@ -46,10 +48,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         const value = isLanguage(raw) ? raw : DEFAULT_LANGUAGE;
         applyLanguage(value);
         setState(value);
+        setReady(true);
       })
       .catch(() => {
         applyLanguage(DEFAULT_LANGUAGE);
         setState(DEFAULT_LANGUAGE);
+        setReady(true);
       });
   }, []);
 
@@ -58,6 +62,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     // este ciclo ya devuelva los textos nuevos.
     applyLanguage(value);
     setState(value);
+    setReady(true);
     AsyncStorage.setItem(LANGUAGE_KEY, value).catch(() => {});
     // Propaga el idioma al token de push de este dispositivo para que las
     // notificaciones del servidor lleguen en el idioma elegido (no-op en Expo
@@ -66,11 +71,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ lang: lang ?? DEFAULT_LANGUAGE, setLang, t }),
-    [lang, setLang],
+    () => ({ lang, ready, setLang, t }),
+    [lang, ready, setLang],
   );
-
-  if (lang === null) return null;
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }

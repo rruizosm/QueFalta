@@ -52,7 +52,7 @@ const PILL_SIDE_INSET = 2;
 /** Iconos (Ionicons outline, el set de la app) por nombre de ruta. */
 const ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   Home:    'home-outline',
-  Catalog: 'grid-outline',
+  Catalog: 'library-outline',
   List:    'basket-outline',
   Groups:  'people-outline',
 };

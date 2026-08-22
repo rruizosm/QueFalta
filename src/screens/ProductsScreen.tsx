@@ -71,7 +71,7 @@ const themedStyles = () => StyleSheet.create({
     gap: 12, paddingHorizontal: 16, paddingTop: 4, paddingBottom: 12,
   },
   backBtn: {
-    width: 38, height: 38, backgroundColor: colors.white,
+    width: 38, height: 38, borderRadius: 19, backgroundColor: colors.white,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: colors.border,
   },

@@ -14,11 +14,11 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductDetailImage from '../components/ProductDetailImage';
-import FoodIndexSummary from '../components/FoodIndexSummary';
 import ProductInfoSections from '../components/ProductInfoSections';
 import { useNutritionInfoDisclosure } from '../components/NutritionInfoButton';
-import SimilarProductsSection from '../components/SimilarProductsSection';
+import ProductDetailDiscoverySection from '../components/ProductDetailDiscoverySection';
 import ProductPriceLine from '../components/ProductPriceLine';
+import ActiveCartIcon from './ActiveCartIcon';
 
 interface Props {
   /** Producto a mostrar (ya cargado de alcampo_products). null = oculto. */
@@ -118,7 +118,7 @@ export default function AlcampoProductModal({ product, onClose, topInset = 16, b
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} />
+        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} alertTarget={{ store: 'alcampo', productId: product.id }} />
 
         <Text style={styles.name}>{product.displayName}</Text>
         {product.brand ? <Text style={styles.brand}>{product.brand}</Text> : null}
@@ -126,18 +126,11 @@ export default function AlcampoProductModal({ product, onClose, topInset = 16, b
         <ProductPriceLine store="alcampo" productId={product.id} price={price} />
         {product.pricePerUnit ? <Text style={styles.refPrice}>{product.pricePerUnit}</Text> : null}
 
-        {nutrition.info?.foodIndex ? (
-          <FoodIndexSummary
-            index={nutrition.info.foodIndex}
-            onPress={nutrition.open}
-            expanded={nutrition.expanded}
-          >
-            {nutrition.inlineContent}
-          </FoodIndexSummary>
-        ) : null}
-
-        {/* Comparativa: más barato en otros súper */}
-        <SimilarProductsSection productId={product.id} excludeStore="alcampo" />
+        <ProductDetailDiscoverySection
+          nutrition={nutrition}
+          productId={product.id}
+          excludeStore="alcampo"
+        />
 
         {/* Ficha (del HTML de la PDP de Alcampo; null si aún no rastreada) */}
         <ProductInfoSections
@@ -169,7 +162,7 @@ export default function AlcampoProductModal({ product, onClose, topInset = 16, b
             <ActivityIndicator size="small" color={colors.white} />
           ) : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Ionicons name="cart-outline" size={16} color={colors.white} />
+              <ActiveCartIcon size={16} color={colors.white} />
               <Text style={styles.addBtnText}>{t('product.addToCart')}</Text>
             </View>
           )}
@@ -227,7 +220,7 @@ const themedStyles = () => StyleSheet.create({
   addBtn: {
     flex: 1, backgroundColor: colors.accent,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 14,
+    paddingVertical: 14, borderRadius: 23,
   },
   addBtnText: { color: colors.white, fontFamily: fonts.bold, fontSize: 14 },
 });

@@ -5,6 +5,17 @@
 > Preferencias (`profiles.catalog_stores`). Documento vivo para agentes y
 > colaboradores. Mantener al día según se avanza por fases.
 
+## Presentación de resultados actual (2026-08-22)
+
+- La búsqueda bajo demanda muestra únicamente los supermercados con matches,
+  agrupados en tarjetas con miniatura, nombre, precio de envase y precio por
+  unidad. Las filas cuyo `is_cheaper` es verdadero llevan un distintivo verde.
+- Si existen matches fiables pero ninguno tiene `is_cheaper=true`, la interfaz
+  explica que el producto de origen ya es la opción más económica. Este caso no
+  se trata como ausencia de equivalentes.
+- Las miniaturas usan la caché compartida del catálogo y cada fila anuncia a
+  accesibilidad el producto, la tienda y su precio. No cambia la RPC v5.
+
 ## Objetivo
 Que al abrir un producto (p.ej. "Tomate frito Hacendado 400 g") el usuario vea su
 **equivalente más parecido** en sus otras tiendas, con precio, para decidir dónde
@@ -97,6 +108,11 @@ en las cuatro tablas — es la señal que ORDENA, no solo se muestra.
 - **Cliente/UI:** sección **"Más barato en…"** en `ProductDetailModal`. Respeta
   `catalogStores`, **excluye la tienda actual**, miniatura + nombre + **€/unidad** +
   precio, abre el detalle al tocar. Estado **"Sin equivalente"**.
+- **Gate Plus actual:** una cuenta gratuita ve el CTA con candado, pero al
+  pulsarlo abre el paywall sin ejecutar la RPC. La redacción `locked` del
+  servidor se conserva como defensa para clientes antiguos.
+- **Nombre comercial en el paywall:** «Radar de ahorro», descrito como la
+  búsqueda de alternativas similares más baratas en los supermercados elegidos.
 - **Se valida cuando:** funciona end-to-end en Mercadona y los matches convencen
   con básicos. **Aquí se prueba la hipótesis de producto.**
 

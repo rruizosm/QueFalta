@@ -1,3 +1,5 @@
+import type { CatalogStore } from '../constants/stores';
+
 export interface Category {
   id: string;
   name: string;
@@ -28,6 +30,14 @@ export interface ListItem {
   unit: string;
   inCart: boolean;
   categoryEmoji: string;
+  note?: string | null;
+  noteProduct?: {
+    store: CatalogStore;
+    id: string;
+    name: string;
+    imageUrl: string | null;
+    unitPrice: number | null;
+  } | null;
 }
 
 export interface ShoppingList {

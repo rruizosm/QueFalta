@@ -1,6 +1,6 @@
 /**
  * NameInputSheet — bottom sheet con un campo de texto y botón de confirmar,
- * mismo lenguaje que ActionSheet (papel, bordes rectos, cabecera con icono).
+ * mismo lenguaje que ActionSheet (papel, superficies redondeadas, cabecera con icono).
  * Usado para crear grupo (GroupsScreen) y renombrar grupo (GroupMembersScreen).
  */
 import { useEffect, useState, type ComponentProps } from 'react';
@@ -22,7 +22,6 @@ import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import HardShadow from './HardShadow';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
@@ -142,20 +141,18 @@ export default function NameInputSheet({
               onPress={submit}
               disabled={!canSubmit}
               activeOpacity={0.85}
-              style={[styles.submitWrap, !canSubmit && styles.submitDisabled]}
+              style={[styles.submitBtn, !canSubmit && styles.submitDisabled]}
               accessibilityRole="button"
               accessibilityState={{ disabled: !canSubmit, busy }}
             >
-              <HardShadow style={styles.submitBtn}>
-                {busy ? (
-                  <ActivityIndicator size="small" color={colors.white} />
-                ) : (
-                  <>
-                    <Ionicons name={submitIcon} size={19} color={colors.white} />
-                    <Text style={styles.submitText}>{submitLabel}</Text>
-                  </>
-                )}
-              </HardShadow>
+              {busy ? (
+                <ActivityIndicator size="small" color={colors.white} />
+              ) : (
+                <>
+                  <Ionicons name={submitIcon} size={19} color={colors.white} />
+                  <Text style={styles.submitText}>{submitLabel}</Text>
+                </>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -168,7 +165,9 @@ const themedStyles = () => StyleSheet.create({
   root: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.45)' },
   sheet: {
     backgroundColor: colors.paper,
-    borderTopWidth: 1, borderTopColor: colors.ink,
+    borderTopWidth: 1, borderTopColor: colors.border,
+    borderTopLeftRadius: 28, borderTopRightRadius: 28,
+    overflow: 'hidden',
     // paddingBottom inline: iOS 30 (como antes); Android, el inset del sistema.
   },
   header: {
@@ -177,7 +176,7 @@ const themedStyles = () => StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: colors.border,
   },
   iconBox: {
-    width: 44, height: 44,
+    width: 44, height: 44, borderRadius: 22,
     backgroundColor: colors.accentLight,
     alignItems: 'center', justifyContent: 'center',
   },
@@ -185,7 +184,8 @@ const themedStyles = () => StyleSheet.create({
   subtitle: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
   closeBtn: {
     width: 32, height: 32, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white,
+    borderWidth: 1, borderColor: colors.border, borderRadius: 16,
+    backgroundColor: colors.white,
   },
   body: { paddingHorizontal: 20, paddingTop: 18 },
   inputLabel: {
@@ -196,19 +196,18 @@ const themedStyles = () => StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.ink,
-    paddingHorizontal: 14,
+    borderRadius: 16, paddingHorizontal: 14,
   },
   input: { flex: 1, paddingVertical: 14, fontSize: 16, fontFamily: fonts.medium, color: colors.ink },
   inputCounter: {
     fontSize: 11, fontFamily: fonts.medium, color: colors.inkFaint,
     alignSelf: 'flex-end', marginTop: 6,
   },
-  submitWrap: { marginTop: 16 },
   submitDisabled: { opacity: 0.45 },
   submitBtn: {
-    backgroundColor: colors.accent,
+    marginTop: 16, backgroundColor: colors.accent,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 7, paddingVertical: 15,
+    gap: 7, minHeight: 50, paddingVertical: 15, borderRadius: 25,
   },
   submitText: { fontSize: 15, fontFamily: fonts.bold, color: colors.white },
 });

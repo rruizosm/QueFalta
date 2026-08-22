@@ -21,6 +21,11 @@ export function peekStartupCache<T>(cacheKey: string): T | null {
   return (memory.get(cacheKey) as T | undefined) ?? null;
 }
 
+/** Distingue "snapshot conocido cuyo valor es null" de "sin snapshot". */
+export function hasStartupCache(cacheKey: string): boolean {
+  return memory.has(cacheKey);
+}
+
 export async function readStartupCache<T>(cacheKey: string): Promise<T | null> {
   if (memory.has(cacheKey)) return peekStartupCache<T>(cacheKey);
   try {

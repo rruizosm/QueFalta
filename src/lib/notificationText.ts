@@ -22,6 +22,20 @@ export function renderNotification(
 ): { title: string; body?: string } {
   const d = n.data ?? {};
 
+  if (n.type === 'price_alert') {
+    const rule = str(d.rule) || n.title;
+    const product = str(d.product) || t('notifications.msg.aProduct');
+    const count = typeof d.count === 'number' ? d.count : 1;
+    const kinds = Array.isArray(d.eventTypes) ? d.eventTypes : [];
+    const hasDrops = kinds.includes('price_drop');
+    const hasOffers = kinds.includes('new_offer');
+    const hasNewArrivals = kinds.includes('new_arrival');
+    const body = count === 1
+      ? t(hasNewArrivals ? 'notifications.msg.alertOneNew' : hasDrops && hasOffers ? 'notifications.msg.alertOneMixed' : hasDrops ? 'notifications.msg.alertOneDrop' : 'notifications.msg.alertOneOffer', { product })
+      : t(hasNewArrivals ? 'notifications.msg.alertManyNew' : hasDrops && hasOffers ? 'notifications.msg.alertManyMixed' : hasDrops ? 'notifications.msg.alertManyDrop' : 'notifications.msg.alertManyOffer', { count });
+    return { title: rule, body };
+  }
+
   // Sin datos estructurados → texto del servidor (filas antiguas / 'general').
   if (d.actor === undefined) return { title: n.title, body: n.body };
 

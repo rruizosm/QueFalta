@@ -15,11 +15,11 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductDetailImage from '../components/ProductDetailImage';
-import FoodIndexSummary from '../components/FoodIndexSummary';
 import ProductInfoSections from '../components/ProductInfoSections';
 import { useNutritionInfoDisclosure } from '../components/NutritionInfoButton';
-import SimilarProductsSection from '../components/SimilarProductsSection';
+import ProductDetailDiscoverySection from '../components/ProductDetailDiscoverySection';
 import ProductPriceLine from '../components/ProductPriceLine';
+import ActiveCartIcon from './ActiveCartIcon';
 
 interface Props {
   /** Producto a mostrar (ya cargado de {eroski,caprabo}_products). null = oculto. */
@@ -34,8 +34,8 @@ interface Props {
 }
 
 /** Detalle de un producto de Eroski/Caprabo (mismo backend Tapestry). Pinta los
- *  datos ya cargados del espejo; muestra marca y categoría (no hay ficha ni
- *  €/unidad en el listado). Compartido por ambas tiendas vía `store`/`storeLabel`. */
+ *  datos ya cargados del espejo, incluido el precio unitario cuando el tile lo
+ *  publica. Compartido por ambas tiendas vía `store`/`storeLabel`. */
 export default function TapestryProductModal({ product, store, storeLabel, onClose, topInset = 16, badgeLabel }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { activeCart, addToActiveCart } = useCart();
@@ -117,25 +117,23 @@ export default function TapestryProductModal({ product, store, storeLabel, onClo
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} />
+        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} alertTarget={{ store, productId: product.id }} />
 
         <Text style={styles.name}>{product.displayName}</Text>
         {product.brand ? <Text style={styles.brand}>{product.brand}</Text> : null}
 
-        <ProductPriceLine store={store} productId={product.id} price={price} />
+        <ProductPriceLine
+          store={store}
+          productId={product.id}
+          price={price}
+          size={product.pricePerUnit}
+        />
 
-        {nutrition.info?.foodIndex ? (
-          <FoodIndexSummary
-            index={nutrition.info.foodIndex}
-            onPress={nutrition.open}
-            expanded={nutrition.expanded}
-          >
-            {nutrition.inlineContent}
-          </FoodIndexSummary>
-        ) : null}
-
-        {/* Comparativa: más barato en otros súper */}
-        <SimilarProductsSection productId={product.id} excludeStore={store} />
+        <ProductDetailDiscoverySection
+          nutrition={nutrition}
+          productId={product.id}
+          excludeStore={store}
+        />
 
         <ProductInfoSections
           items={[
@@ -158,7 +156,7 @@ export default function TapestryProductModal({ product, store, storeLabel, onClo
             <ActivityIndicator size="small" color={colors.white} />
           ) : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Ionicons name="cart-outline" size={16} color={colors.white} />
+              <ActiveCartIcon size={16} color={colors.white} />
               <Text style={styles.addBtnText}>{t('product.addToCart')}</Text>
             </View>
           )}
@@ -215,7 +213,7 @@ const themedStyles = () => StyleSheet.create({
   addBtn: {
     flex: 1, backgroundColor: colors.accent,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 14,
+    paddingVertical: 14, borderRadius: 23,
   },
   addBtnText: { color: colors.white, fontFamily: fonts.bold, fontSize: 14 },
 });

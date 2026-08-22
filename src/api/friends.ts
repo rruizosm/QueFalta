@@ -26,11 +26,17 @@ const toProfile = (p: any) => ({
 });
 
 export async function sendFriendRequest(addresseeId: string, requesterId: string): Promise<void> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('friendships')
-    .insert({ requester_id: requesterId, addressee_id: addresseeId });
+    .insert({ requester_id: requesterId, addressee_id: addresseeId })
+    .select('id')
+    .single();
   if (error) throw error;
-  notifyFriendRequest(addresseeId);
+
+  // La solicitud ya esta guardada. Esperamos solamente a que el servidor haya
+  // procesado el aviso antes de resolver esta accion; notifyFriendRequest es
+  // best-effort y no convierte un fallo de push en un falso fallo de solicitud.
+  await notifyFriendRequest(data.id, addresseeId);
 }
 
 export async function acceptFriendRequest(friendshipId: string): Promise<void> {

@@ -193,7 +193,8 @@ export function ahorramasToUI(p: AhorramasProduct): UIProduct {
     pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName, offerTag: p.promoName };
 }
 
-// HiperDino: es-only, sin marca/formato aparte (van en el nombre) ni €/ud.
+// HiperDino: es-only, sin marca/formato aparte (van en el nombre), con €/unidad
+// canónico extraído de price_text.
 export function hiperdinoToUI(p: HiperdinoProduct): UIProduct {
   return {
     id: p.id, store: 'hiperdino', name: p.displayName, imageUrl: p.thumbnail,
@@ -226,14 +227,14 @@ export function plusfrescToUI(p: PlusfrescProduct): UIProduct {
 }
 
 // Eroski y Caprabo comparten forma (TapestryProduct); el store lo fija el wrapper.
-// Sin €/unidad (no está en el listado) → pricePerUnitLabel null. El nombre ya
-// incluye marca y formato ("Leche entera uht BIZKAIA ESNEA, brik 1 litro").
+// El nombre ya incluye marca y formato ("Leche entera uht BIZKAIA ESNEA, brik
+// 1 litro"); el precio unitario se muestra cuando la tarjeta de origen lo publica.
 function tapestryToUI(p: TapestryProduct, store: CatalogStore): UIProduct {
   return {
     id: p.id, store, name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
-    pricePerUnit: null,
-    metaLabel: null, pricePerUnitLabel: null, categoryName: p.categoryName,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit),
+    metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
   };
 }
 export const eroskiToUI = (p: TapestryProduct): UIProduct => tapestryToUI(p, 'eroski');

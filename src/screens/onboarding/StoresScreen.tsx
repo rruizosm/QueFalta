@@ -26,9 +26,9 @@ import { useTranslation } from '../../context/LanguageContext';
 import { updateProfile } from '../../api/profile';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../../constants/stores';
 import { storeInRegion } from '../../constants/regions';
+import OnboardingSlats from './OnboardingSlats';
 
 const CART_MASCOT = require('../../../assets/mascot/berenjena-carrito-transicion.png');
-const SLATS = Array.from({ length: 26 }, (_, index) => index);
 const APP_BLUE = colors.blue;
 
 export default function StoresScreen() {
@@ -45,9 +45,11 @@ export default function StoresScreen() {
   const region = profile?.region ?? null;
   const shown = CATALOG_STORES.filter((store) => storeInRegion(store.key, region));
 
-  // Cada cuenta elige expresamente sus súpers. Una selección vacía no se toma
-  // del perfil, porque fuera del onboarding se normaliza como "todos".
-  const [selected, setSelected] = useState<CatalogStore[]>([]);
+  // En una entrada nueva empieza vacío. Si el paso ya se guardó y se vuelve
+  // atrás desde una reanudación, recupera exactamente la selección persistida.
+  const [selected, setSelected] = useState<CatalogStore[]>(
+    (profile?.onboardingStep ?? 0) >= 2 ? (profile?.catalogStores ?? []) : [],
+  );
   const [saving, setSaving] = useState(false);
   const shellWidth = Math.min(width - 40, 560);
   const columns = width >= 620 ? 3 : 2;
@@ -72,8 +74,8 @@ export default function StoresScreen() {
   const handleContinue = async () => {
     setSaving(true);
     try {
-      await updateProfile(userId, { catalogStores: selected });
-      applyProfile({ catalogStores: selected });
+      await updateProfile(userId, { catalogStores: selected, onboardingStep: 2 });
+      applyProfile({ catalogStores: selected, onboardingStep: 2 });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       navigation.navigate('Avatar');
     } catch {
@@ -87,12 +89,10 @@ export default function StoresScreen() {
     <View style={styles.screen}>
       <StatusBar barStyle="light-content" backgroundColor={APP_BLUE} />
 
-      <View style={styles.slats} pointerEvents="none">
-        {SLATS.map((slat) => <View key={slat} style={styles.slat} />)}
-      </View>
+      <OnboardingSlats />
 
       <TouchableOpacity
-        onPress={() => navigation.goBack()}
+        onPress={() => navigation.navigate('Username')}
         style={[styles.backButton, { top: insets.top + 8 }]}
         hitSlop={8}
         activeOpacity={0.82}
@@ -131,9 +131,7 @@ export default function StoresScreen() {
         />
         <Text
           style={[styles.title, compactHeight && styles.titleCompact]}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.76}
+          maxFontSizeMultiplier={1.5}
         >
           {t('onboarding.storesTitle')}
         </Text>
@@ -198,7 +196,7 @@ export default function StoresScreen() {
           disabled={selected.length === 0 || saving}
           activeOpacity={0.86}
           accessibilityRole="button"
-          accessibilityState={{ disabled: selected.length === 0 || saving }}
+          accessibilityState={{ disabled: selected.length === 0 || saving, busy: saving }}
         >
           {saving ? (
             <ActivityIndicator color={APP_BLUE} />
@@ -222,16 +220,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     overflow: 'hidden',
     backgroundColor: APP_BLUE,
-  },
-  slats: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'space-evenly',
-  },
-  slat: {
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.11)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(13,53,101,0.18)',
   },
   backButton: {
     position: 'absolute',

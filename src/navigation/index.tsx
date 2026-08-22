@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import {
   NavigationContainer, createNavigationContainerRef,
@@ -14,6 +14,7 @@ import * as Linking from 'expo-linking';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
+import { QUE_COCINO_ENABLED } from '../constants/limits';
 import {
   RootTabParamList,
   HomeStackParamList,
@@ -30,7 +31,7 @@ import { useCart } from '../context/CartContext';
 import { joinGroup } from '../api/groups';
 import {
   addNotificationResponseListener,
-  getInitialNotificationData,
+  consumeInitialNotificationData,
   type PushData,
 } from '../lib/notifications';
 
@@ -48,7 +49,10 @@ import AppearanceScreen from '../screens/AppearanceScreen';
 import LanguageScreen from '../screens/LanguageScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
+import PriceAlertsScreen from '../screens/PriceAlertsScreen';
+import PriceAlertResultsScreen from '../screens/PriceAlertResultsScreen';
 import StatisticsScreen from '../screens/StatisticsScreen';
+import GeneralStatisticsScreen from '../screens/GeneralStatisticsScreen';
 import FriendsScreen from '../screens/FriendsScreen';
 import HelpScreen from '../screens/HelpScreen';
 import AboutScreen from '../screens/AboutScreen';
@@ -80,8 +84,9 @@ import LoginScreen      from '../screens/LoginScreen';
 import OnboardingNavigator from '../screens/onboarding/OnboardingNavigator';
 import RegionGateScreen from '../screens/onboarding/RegionGateScreen';
 import RegionSettingsScreen from '../screens/RegionSettingsScreen';
+import ProfileLoadErrorScreen from '../screens/ProfileLoadErrorScreen';
 import BootLoader       from '../components/BootLoader';
-import ReviewPrompt     from '../components/ReviewPrompt';
+import NativeStoreReviewPrompt from '../components/NativeStoreReviewPrompt';
 import QueCocinoTabIcon from '../components/QueCocinoTabIcon';
 import { glassAvailable } from '../components/GlassSurface';
 import LiquidGlassTabBar, {
@@ -100,6 +105,7 @@ export const navigationRef = createNavigationContainerRef<RootTabParamList>();
  *  datos) `booting` no se apagaría nunca y el logo quedaba clavado hasta matar
  *  la app. Pasado el tope se arranca con lo que haya. */
 const BOOT_MAX_MS = 10000;
+const BOOT_MIN_MS = 350;
 
 function AppTabBar(props: BottomTabBarProps) {
   return glassAvailable ? <LiquidGlassTabBar {...props} /> : <BottomTabBar {...props} />;
@@ -129,7 +135,10 @@ function HomeNavigator() {
       <HomeStack.Screen name="Language" component={LanguageScreen} />
       <HomeStack.Screen name="History" component={HistoryScreen} />
       <HomeStack.Screen name="Notifications" component={NotificationsScreen} />
+      <HomeStack.Screen name="PriceAlerts" component={PriceAlertsScreen} />
+      <HomeStack.Screen name="PriceAlertResults" component={PriceAlertResultsScreen} />
       <HomeStack.Screen name="Statistics" component={StatisticsScreen} />
+      <HomeStack.Screen name="GeneralStatistics" component={GeneralStatisticsScreen} />
       <HomeStack.Screen name="Friends" component={FriendsScreen} />
       <HomeStack.Screen name="Help" component={HelpScreen} />
       <HomeStack.Screen name="CatalogSyncStatus" component={CatalogSyncStatusScreen} />
@@ -195,12 +204,12 @@ function navTheme(scheme: 'light' | 'dark'): Theme {
 export default function Navigation() {
   const { session, loading } = useAuth();
   // Suscribe al tema: re-evalúa screenOptions y el tema del contenedor al cambiar accent/modo.
-  const { scheme } = useTheme();
+  const { scheme, ready: themeReady } = useTheme();
   const theme = navTheme(scheme);
   // Suscribe al idioma: re-renderiza los títulos de las pestañas al cambiarlo.
-  const { t } = useTranslation();
+  const { t, ready: languageReady } = useTranslation();
   const { show: showToast } = useToast();
-  const { profile, loading: profileLoading } = useProfile();
+  const { profile, loading: profileLoading, error: profileError, refresh: refreshProfile } = useProfile();
   const { unreadCount } = useNotifications();
   const { hydrated: cartHydrated } = useCart();
   const userId = session?.user.id;
@@ -208,6 +217,9 @@ export default function Navigation() {
   // flujo. Mientras llega su perfil conservamos la misma pantalla y saltamos
   // directamente al onboarding/app, sin intercalar el BootLoader de arranque.
   const [loginWasShown, setLoginWasShown] = useState(false);
+  // Un tap puede llegar mientras aun se resuelve sesion/perfil o antes de que
+  // React Navigation monte el arbol autenticado. Se conserva hasta onReady.
+  const [pendingPushData, setPendingPushData] = useState<PushData | null>(null);
   useEffect(() => {
     if (!loading && !session) setLoginWasShown(true);
   }, [loading, session]);
@@ -251,39 +263,77 @@ export default function Navigation() {
     return () => sub.remove();
   }, [showToast, t, userId]);
 
+  const openPushDestination = useCallback((data: PushData): boolean => {
+    if (!navigationRef.isReady()) return false;
+    if ((data.type === 'cart' || data.type === 'group_invite') && data.groupId) {
+      (navigationRef.navigate as any)('Groups', {
+        screen: 'GroupDetail',
+        params: { groupId: data.groupId },
+      });
+      return true;
+    }
+    if (data.type === 'friend') {
+      // Amigos vive dentro del stack de Perfil/Inicio.
+      (navigationRef.navigate as any)('Home', { screen: 'Friends' });
+      return true;
+    }
+    if (data.type === 'price_alert') {
+      (navigationRef.navigate as any)('Home', data.notificationId ? {
+        screen: 'PriceAlertResults',
+        params: {
+          notificationId: data.notificationId,
+          ruleId: data.ruleId,
+          title: data.rule,
+        },
+      } : { screen: 'PriceAlerts' });
+      return true;
+    }
+    return false;
+  }, []);
+
+  const flushPendingPush = useCallback(() => {
+    if (pendingPushData && openPushDestination(pendingPushData)) {
+      setPendingPushData(null);
+    }
+  }, [openPushDestination, pendingPushData]);
+
   // Tap en una notificación push → abre la pantalla correspondiente. Cubre el
-  // arranque en frío (getInitialNotificationData) y la app ya abierta (listener).
+  // arranque en frío y la app ya abierta; si el navegador todavía no existe,
+  // deja el destino en cola hasta el onReady del árbol autenticado.
   useEffect(() => {
     if (!userId) return;
 
     const handleData = (data: PushData) => {
-      if (!navigationRef.isReady()) return;
-      if ((data.type === 'cart' || data.type === 'group_invite') && data.groupId) {
-        (navigationRef.navigate as any)('Groups', {
-          screen: 'GroupDetail',
-          params: { groupId: data.groupId },
-        });
-      } else if (data.type === 'friend') {
-        (navigationRef.navigate as any)('Home', { screen: 'Friends' });
-      }
+      if (!openPushDestination(data)) setPendingPushData(data);
     };
 
-    getInitialNotificationData().then((data) => { if (data) handleData(data); });
+    consumeInitialNotificationData().then((data) => { if (data) handleData(data); });
     const sub = addNotificationResponseListener(handleData);
     return () => sub.remove();
-  }, [userId]);
+  }, [openPushDestination, userId]);
 
   // Arranque: mantén el BootLoader solo mientras se resuelve la sesión inicial
   // y, con sesión cacheada, su primer perfil. Tras iniciar sesión desde Login,
   // la propia portada permanece visible durante ese fetch para que el siguiente
   // frame sea ya onboarding o app, sin una pantalla de marca intermedia.
-  const bootingRaw = loading || (!!session && (profileLoading || !cartHydrated));
+  const bootingRaw = !languageReady
+    || loading
+    || !themeReady
+    || (!!session && (profileLoading || !cartHydrated));
+
+  // Evita que el loader animado aparezca y desaparezca dentro de su propia
+  // entrada (320 ms), que producía un flash parcial entre splash y Login.
+  const [bootMinimumElapsed, setBootMinimumElapsed] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setBootMinimumElapsed(true), BOOT_MIN_MS);
+    return () => clearTimeout(id);
+  }, []);
 
   // Tope de arranque: si esta fase no acaba en BOOT_MAX_MS (fetch colgado),
   // fuerza la salida. Sin sesión → login (si el refresh llega después,
-  // onAuthStateChange mete al usuario solo); con sesión y sin perfil → app con
-  // lo cacheado (el gate de onboarding ya tolera profile null). El flag se
-  // re-arma por fase (arranque, login) para no saltarse el mínimo del login.
+  // onAuthStateChange mete al usuario solo); con sesión y sin perfil → pantalla
+  // recuperable de reintento. El flag se re-arma por fase (arranque, login)
+  // para no saltarse el mínimo del login.
   const [bootTimedOut, setBootTimedOut] = useState(false);
   useEffect(() => {
     if (!bootingRaw) {
@@ -294,7 +344,7 @@ export default function Navigation() {
     return () => clearTimeout(id);
   }, [bootingRaw]);
 
-  const booting = bootingRaw && !bootTimedOut;
+  const booting = (bootingRaw || !bootMinimumElapsed) && !bootTimedOut;
   if (booting) {
     if (session && loginWasShown) {
       return (
@@ -314,9 +364,18 @@ export default function Navigation() {
     );
   }
 
+  // Nunca se entra en la app sin haber podido resolver el perfil. Un fallo de
+  // red o el timeout de arranque ofrece recuperación, especialmente importante
+  // para cuentas nuevas que todavía deben pasar por el onboarding.
+  if (!profile && (profileError || bootTimedOut || !profileLoading)) {
+    return (
+      <NavigationContainer theme={theme}>
+        <ProfileLoadErrorScreen onRetry={refreshProfile} />
+      </NavigationContainer>
+    );
+  }
+
   // Primera vez: perfil cargado pero aún sin completar el alta → asistente.
-  // Si el perfil falló al cargar (profile === null) NO bloqueamos: caemos a la
-  // app como hacía antes, en vez de dejar la pantalla en blanco.
   if (profile && !profile.onboardedAt) {
     return (
       <NavigationContainer theme={theme}>
@@ -338,7 +397,7 @@ export default function Navigation() {
   }
 
   return (<>
-    <NavigationContainer ref={navigationRef} theme={theme}>
+    <NavigationContainer ref={navigationRef} theme={theme} onReady={flushPendingPush}>
       <Tab.Navigator
         tabBar={(props) => <AppTabBar {...props} />}
         screenOptions={({ route }) => ({
@@ -373,7 +432,7 @@ export default function Navigation() {
             }
             const iconMap: Record<string, { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }> = {
               Home:      { active: 'home',   inactive: 'home-outline' },
-              Catalog:   { active: 'grid',   inactive: 'grid-outline' },
+              Catalog:   { active: 'library', inactive: 'library-outline' },
               List:      { active: 'basket', inactive: 'basket-outline' },
               Groups:    { active: 'people', inactive: 'people-outline' },
             };
@@ -393,19 +452,21 @@ export default function Navigation() {
           }}
         />
         <Tab.Screen name="Catalog"   component={CatalogNavigator} options={{ title: t('tabs.catalog') }} />
-        <Tab.Screen
-          name="QueCocino"
-          component={QueCocinoScreen}
-          options={{
-            title: t('queCocino.title'),
-            tabBarShowLabel: false,
-            tabBarAccessibilityLabel: t('queCocino.open'),
-          }}
-        />
+        {QUE_COCINO_ENABLED && (
+          <Tab.Screen
+            name="QueCocino"
+            component={QueCocinoScreen}
+            options={{
+              title: t('queCocino.title'),
+              tabBarShowLabel: false,
+              tabBarAccessibilityLabel: t('queCocino.open'),
+            }}
+          />
+        )}
         <Tab.Screen name="List"      component={ListScreen}        options={{ title: t('tabs.cart') }} />
         <Tab.Screen name="Groups"    component={GroupsNavigator}   options={{ title: t('tabs.groups') }} />
       </Tab.Navigator>
     </NavigationContainer>
-    <ReviewPrompt />
+    <NativeStoreReviewPrompt />
   </>);
 }

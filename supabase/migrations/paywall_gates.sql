@@ -24,28 +24,7 @@ as $$
   );
 $$;
 
--- Límite free de grupos CREADOS (espejo de FREE_LIMITS.maxCreatedGroups en
--- limits.ts: mantener ambos en sincronía). Cuenta groups.created_by, NO la
--- pertenencia: unirse a grupos por invitación es siempre ilimitado (es el
--- mecanismo viral de la app, regla de oro de MONETIZACION.md).
--- El cliente reconoce el error por el texto 'free_group_limit' y abre el paywall.
-create or replace function public.enforce_group_limit()
-returns trigger
-language plpgsql security definer
-set search_path = public
-as $$
-begin
-  if public.paywall_enabled()
-     and not public.is_premium(new.created_by)
-     and (select count(*) from public.groups where created_by = new.created_by) >= 1
-  then
-    raise exception 'free_group_limit';
-  end if;
-  return new;
-end;
-$$;
-
+-- Crear y unirse a grupos es ilimitado para todas las cuentas. Estos DROP
+-- hacen el script seguro también si se reejecuta sobre una instalación antigua.
 drop trigger if exists groups_enforce_limit on public.groups;
-create trigger groups_enforce_limit
-  before insert on public.groups
-  for each row execute function public.enforce_group_limit();
+drop function if exists public.enforce_group_limit();

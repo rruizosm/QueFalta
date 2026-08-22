@@ -1,15 +1,18 @@
 # Notificaciones — Estado y hoja de ruta
 
-> Última actualización: 2026-06-23
+> Última actualización: 2026-08-21
 > SDK actual: **Expo SDK 54** · Push real requiere **dev/prod build** (no Expo Go)
 
 Documento de seguimiento para las notificaciones de la app. Resume qué está
 hecho, qué funciona hoy y qué falta para tener notificaciones push completas.
 
-> **Fase 2 (push remotas) implementada en código (2026-06-23).** Falta solo
-> ejecutar los pasos manuales de despliegue (ver §6). Eventos elegidos:
+> **Fase 2 (push remotas) implementada y desplegada.** Eventos elegidos:
 > producto añadido al carrito compartido · solicitud de amistad · invitación a
 > un grupo. (El "carrito activado por otro miembro" se descartó.)
+
+> **Alertas personalizadas Plus: MVP local, pendiente de desplegar.** Añade un
+> cuarto tipo `price_alert`, generado exclusivamente por el procesador servidor
+> `process-price-alerts`; nunca por contenido enviado desde el cliente.
 
 ---
 
@@ -26,6 +29,31 @@ Hay **dos tipos** de notificaciones, no confundir:
 > (`getExpoPushTokenAsync`). Para push reales hace falta un *development build*
 > (EAS Build + `expo-dev-client`).
 
+### Alertas personalizadas de precio/oferta
+
+- `price_alert_rules` guarda reglas exactas o por palabras y aplica RLS por
+  propietario. Activar/crear exige Plus también en servidor.
+- Los triggers de los espejos escriben eventos duraderos; la outbox
+  `price_alert_deliveries` deduplica cada pareja regla+evento.
+- El procesador agrupa por regla y actualización antes de insertar en
+  `notifications` y mandar push. Así «Patata» produce un aviso resumido, no uno
+  por cada producto coincidente. Una RPC transaccional reserva el lote y
+  reutiliza la misma fila de bandeja en reintentos, sin repetir el push.
+- Un producto que genere simultáneamente bajada y nueva oferta se deduplica como
+  oferta. `new_arrival` conserva mensajes específicos de novedad en push y
+  bandeja.
+- El payload estructurado lleva `type=price_alert`, `notificationId`, `ruleId`,
+  `rule`, `product`, `count` y `eventTypes`; la bandeja vuelve a traducirlo al
+  idioma actual. Tanto el push como la bandeja abren `PriceAlertResults` con la
+  lista exacta que originó el aviso.
+- La lista no viaja dentro del push: la resuelve
+  `get_price_alert_notification_products(notificationId)` desde la relación
+  duradera de entregas y eventos. La RPC valida que la fila `notifications`
+  pertenece a `auth.uid()` y aplica prioridad novedad → oferta → bajada por
+  producto.
+- Backend todavía local: ver `CONTEXTO.md` y
+  `supabase/ops/schedule_price_alerts.sql` para el despliegue.
+
 ---
 
 ## 2. FASE 1 — HECHA ✅ (notificaciones locales)
@@ -37,14 +65,23 @@ Funciona y es testeable en Expo Go ahora mismo.
   - `configureNotificationHandler()` — banners visibles con la app abierta.
   - `requestPermission()` / `hasPermission()` — permisos OS + canal Android.
   - `sendTestNotification()` — dispara una notificación local inmediata.
-  - `getNotificationsEnabled()` / `setNotificationsEnabled()` — persiste la
-    preferencia del usuario en **AsyncStorage** (clave `@notifications_enabled`).
+  - `getNotificationsEnabled(userId)` / `setNotificationsEnabled(userId, …)` —
+    persiste la preferencia por cuenta y dispositivo en **AsyncStorage** (clave
+    `@notifications_enabled:${userId}`); si no existe, devuelve `false`.
 - **`App.tsx`** — llama a `configureNotificationHandler()` una vez al arrancar.
-- **`src/screens/ProfileScreen.tsx`** — el toggle "Notificaciones":
+- **`src/screens/NotificationsScreen.tsx`** — información y toggle dentro de
+  Perfil → Notificaciones:
+  - La tarjeta del interruptor muestra solo «Avisos en el dispositivo», sin
+    texto explicativo debajo; el detalle permanece en la tarjeta informativa.
+  - Explica los avisos de carrito compartido, amistad, grupo y alertas Plus, y remite la
+    bandeja interna a la campana de Inicio sin duplicarla dentro de esta pantalla.
   - Al montar refleja la preferencia guardada **y** el permiso real del OS.
   - Activar → pide permiso → guarda preferencia → notificación de prueba.
   - Si el permiso está denegado → ofrece abrir ajustes del sistema.
-  - Desactivar → guarda la preferencia en off.
+  - Desactivar → guarda la preferencia en off y elimina el token del dispositivo.
+- **`src/context/AuthContext.tsx`** — al iniciar sesión reconcilia el token con
+  la preferencia: registra si está activa y elimina un token anterior si está
+  apagada.
 
 ### Cómo probar
 Perfil → Notificaciones → activar switch → aceptar permiso → debe aparecer la
@@ -57,7 +94,7 @@ expo-notifications ~0.32.17   (instalada con: npx expo install expo-notification
 
 ---
 
-## 3. FASE 2 — IMPLEMENTADA ✅ (push remotas) · falta DESPLEGAR
+## 3. FASE 2 — IMPLEMENTADA Y DESPLEGADA ✅ (push remotas)
 
 Avisos que llegan aunque la app esté cerrada. **Requiere dev/prod build** (en
 Expo Go los helpers de push son no-op; las locales siguen funcionando).
@@ -93,13 +130,15 @@ dashboard → todo queda en código y SQL versionado.
   `notifyGroupInvite` (fire-and-forget; nunca lanzan).
 - Cableado de disparo:
   - `src/api/lists.ts` → `addItemsToList` (carrito; no-op si la lista es personal).
-  - `src/api/friends.ts` → `sendFriendRequest`.
+  - `src/api/friends.ts` → `sendFriendRequest`: selecciona el `friendshipId` y
+    espera a que la función termine de procesar el aviso (best-effort).
   - `src/api/groups.ts` → `addMemberToGroup` (no en `joinGroup`/`createGroup`).
 - `src/context/AuthContext.tsx` — registra el token al haber sesión y lo borra
   en `signOut` (antes de cerrar, por la RLS).
 - `src/navigation/index.tsx` — tap en la push → `Groups→GroupDetail` (carrito /
-  invitación) o `Home→Friends` (solicitud).
-- `src/screens/ProfileScreen.tsx` — el toggle registra/borra el token al instante.
+  invitación) o `Home→Friends` (solicitud). En arranque en frío conserva el
+  destino hasta que el navegador autenticado esté listo.
+- `src/screens/NotificationsScreen.tsx` — el toggle registra/borra el token al instante.
 
 ### Eventos y mensajes
 | Evento | Disparo | Destinatarios | Texto | Cooldown |
@@ -119,7 +158,8 @@ dashboard → todo queda en código y SQL versionado.
 
 ## 4. Decisiones y notas
 
-- La preferencia del toggle se guarda **local (AsyncStorage)**, no en Supabase.
+- La preferencia del toggle se guarda **local por usuario y dispositivo
+  (AsyncStorage)**, no en Supabase.
   El push token **solo se registra si la preferencia está ON** → apagar el
   switch borra el token de este dispositivo y dejan de llegar push.
 - El permiso de notificaciones es **por dispositivo** (lo gestiona el OS), por eso
@@ -145,22 +185,17 @@ dashboard → todo queda en código y SQL versionado.
 
 ---
 
-## 6. Pasos manuales pendientes (para activar las push)
+## 6. Estado de despliegue y prueba
 
-Todo el código está escrito y el typecheck pasa. Falta SOLO desplegar:
+SQL, función y soporte nativo ya están desplegados. `send-push` v7 quedó ACTIVE
+el 2026-08-20 y mantiene compatibilidad con las versiones publicadas anteriores.
 
-1. **SQL** — ejecutar `supabase/migrations/push_tokens.sql` en Supabase → SQL Editor.
-2. **Edge Function** — `supabase functions deploy send-push` (usa los secrets
-   que Supabase inyecta por defecto: `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
-   `SUPABASE_SERVICE_ROLE_KEY` → nada extra que configurar).
-3. **Build nuevo** — el plugin `expo-notifications` cambió `app.json`, así que
-   hace falta un build EAS nuevo (no basta OTA):
-   `eas build --profile production --platform ios` (o development para probar).
-4. **(Android) credenciales FCM** — solo si quieres push en Android (ver §5).
-5. **Probar** en el build: Perfil → activar Notificaciones (acepta permiso) →
-   debe crearse una fila en `push_tokens`. Con dos cuentas/dispositivos: añadir
-   un producto a un carrito compartido / enviar solicitud / añadir a un grupo →
-   llega la push y, al tocarla, abre la pantalla correcta.
+Para validar un flujo concreto en dispositivo: Perfil → Notificaciones → activar
+«Avisos en el dispositivo» (aceptar permiso) → debe crearse una fila en
+`push_tokens`. Con dos
+cuentas/dispositivos: añadir un producto a un carrito compartido / enviar
+solicitud / añadir a un grupo → llega la push y, al tocarla, abre la pantalla
+correcta.
 
 ### Checklist
 - [x] Plugin `expo-notifications` en `app.json`
@@ -168,7 +203,7 @@ Todo el código está escrito y el typecheck pasa. Falta SOLO desplegar:
 - [x] Edge Function `send-push` (Expo Push API, 3 eventos, JWT)
 - [x] Disparo de los 3 eventos desde la app
 - [x] Listener de tap → deep-link a la pantalla
-- [ ] Ejecutar `push_tokens.sql` en Supabase
-- [ ] `supabase functions deploy send-push`
-- [ ] Build EAS nuevo (por el plugin)
+- [x] Ejecutar `push_tokens.sql` en Supabase
+- [x] `supabase functions deploy send-push` (v7)
+- [x] Build nativo con el plugin
 - [ ] (Opcional Android) credenciales FCM en Expo

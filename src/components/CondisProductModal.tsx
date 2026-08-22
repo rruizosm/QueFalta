@@ -17,6 +17,7 @@ import ProductDetailImage from '../components/ProductDetailImage';
 import ProductInfoSections from '../components/ProductInfoSections';
 import SimilarProductsSection from '../components/SimilarProductsSection';
 import ProductPriceLine from '../components/ProductPriceLine';
+import ActiveCartIcon from './ActiveCartIcon';
 
 interface Props {
   /** Producto a mostrar (ya cargado de condis_products). null = oculto. */
@@ -104,7 +105,7 @@ export default function CondisProductModal({ product, onClose, topInset = 16, ba
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} />
+        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} alertTarget={{ store: 'condis', productId: product.id }} />
 
         <Text style={styles.name}>{product.displayName}</Text>
         {product.brand ? <Text style={styles.brand}>{product.brand}</Text> : null}
@@ -142,7 +143,7 @@ export default function CondisProductModal({ product, onClose, topInset = 16, ba
             <ActivityIndicator size="small" color={colors.white} />
           ) : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Ionicons name="cart-outline" size={16} color={colors.white} />
+              <ActiveCartIcon size={16} color={colors.white} />
               <Text style={styles.addBtnText}>{t('product.addToCart')}</Text>
             </View>
           )}
@@ -200,7 +201,7 @@ const themedStyles = () => StyleSheet.create({
   addBtn: {
     flex: 1, backgroundColor: colors.accent,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 14,
+    paddingVertical: 14, borderRadius: 23,
   },
   addBtnText: { color: colors.white, fontFamily: fonts.bold, fontSize: 14 },
 });

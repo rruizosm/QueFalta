@@ -1638,6 +1638,10 @@ export async function browseFroizProducts(cursor: BrowseCursor | null, limit = 5
   const { rows, nextCursor } = await keysetPage('froiz_products', FROIZ_COLS, 'display_name_norm', cursor, limit, undefined, descending, signal);
   return { items: rows.map(mapFroiz), nextCursor };
 }
+export async function fetchFroizProduct(id: string): Promise<FroizProduct | null> {
+  const { data, error } = await supabase.from('froiz_products').select(FROIZ_COLS).eq('id', id).maybeSingle();
+  if (error) throw error; return data ? mapFroiz(data) : null;
+}
 export async function fetchFroizCategoryTree(signal?: AbortSignal): Promise<FroizCategory[]> {
   const { data, error } = await abortable(supabase.from('froiz_categories').select('id, name, parent_id, product_count').eq('published', true).order('name'), signal);
   if (error) throw error; const rows = data ?? [];
@@ -1686,9 +1690,9 @@ export async function fetchAhorramasProductsByCategory(categoryId: string, limit
 
 // ─── HiperDino (tabla hiperdino_products, espejo aparte) ─────────────────────
 // Mismo modelo que Aldi (espejo + category_ids, con category_name), pero SOLO
-// castellano (hiperdino.es no es bilingüe), SIN ficha, SIN EAN y SIN €/unidad
-// (Magento no lo expone). Lo puebla scripts/sync-hiperdino.mjs vía GraphQL de
-// Magento. Árbol de 2 niveles (N1 → N2); category_ids incluye el N1.
+// castellano (hiperdino.es no es bilingüe), SIN ficha y con €/unidad canónico
+// desde price_text de Magento. Lo puebla scripts/sync-hiperdino.mjs vía GraphQL.
+// Árbol de 2 niveles (N1 → N2); category_ids incluye el N1.
 // OJO: HiperDino solo opera en Canarias (ver COMUNIDAD-AUTONOMA.md).
 export interface HiperdinoProduct {
   id: string;                  // sku de Magento ("000000000003970669")
@@ -1698,7 +1702,7 @@ export interface HiperdinoProduct {
   thumbnail: string | null;
   unitPrice: number | null;    // precio del envase
   priceFormat: string | null;  // precio mostrado ("1,99 €")
-  pricePerUnit: string | null; // null (HiperDino no expone €/ud)
+  pricePerUnit: string | null; // etiqueta €/unidad canónica ("15,96 €/kg")
   categoryName: string | null;
 }
 
@@ -1920,8 +1924,8 @@ export async function fetchAlcampoProductsByCategory(categoryId: string, limit =
 
 // ─── Eroski + Caprabo (tablas eroski_products / caprabo_products) ────────────
 // Comparten backend (Apache Tapestry): mismo modelo de producto, mismos ids de
-// categoría, mismo scraper (scripts/lib/eroski-tapestry.mjs). Solo castellano y
-// SIN precio por unidad (el €/L no está en el listado, solo en la ficha) → una
+// categoría, mismo scraper (scripts/lib/eroski-tapestry.mjs). Solo castellano;
+// el precio unitario visible del tile se normaliza a €/kg, €/L o €/ud → una
 // forma común `TapestryProduct` y helpers genéricos por tabla; los exports por
 // tienda solo fijan la tabla. `store` en el mapa a UI lo pone cada adaptador.
 export interface TapestryProduct {
@@ -1931,6 +1935,7 @@ export interface TapestryProduct {
   thumbnail: string | null;
   unitPrice: number | null;
   priceFormat: string | null;
+  pricePerUnit: string | null;
   categoryName: string | null;
   nutrition: string | null;
 }
@@ -1942,11 +1947,12 @@ const mapTapestry = (r: any): TapestryProduct => ({
   thumbnail: r.thumbnail ?? null,
   unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
   priceFormat: r.price_format ?? null,
+  pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
   categoryName: r.category_name ?? null,
   nutrition: r.nutrition ?? null,
 });
 
-const TAPESTRY_COLS = 'id, display_name, brand, thumbnail, unit_price, price_format, category_name';
+const TAPESTRY_COLS = 'id, display_name, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit';
 const TAPESTRY_OFFER_COLS =
   `${TAPESTRY_COLS}, promo_name, promo_text, promo_price, promo_base_price, promo_start, promo_end`;
 const TAPESTRY_DETAIL_COLS = `${TAPESTRY_COLS}, nutrition`;
@@ -2158,7 +2164,7 @@ export async function fetchPlusfrescProductsByCategory(categoryId: string, posta
 // ─── Comparativa: producto similar más barato entre supers (RPC v5) ───
 export interface SimilarProduct {
   store: CatalogStore;
-  /** null en filas bloqueadas (teaser del plan free). */
+  /** null en filas bloqueadas por la defensa del RPC para clientes antiguos. */
   id: string | null;
   displayName: string | null;
   thumbnail: string | null;
@@ -2171,15 +2177,14 @@ export interface SimilarProduct {
   lexicalScore: number | null;
   quantityRatio: number | null;
   isCheaper: boolean;
-  /** Teaser free (paywall activo): existe más barato en `store`, sin detalle. */
+  /** Defensa del RPC: oculta el detalle si un cliente free antiguo lo invoca. */
   locked: boolean;
 }
 
 /** Hasta dos equivalentes fiables por cada tienda de `stores`. v5 exige la
  *  misma familia semántica y las mismas variantes explícitas antes de ordenar.
- *  Se ordenan por
- *  precio total en Caprabo, Eroski e HiperDino (no publican precio por unidad)
- *  y por precio unitario canónico en el resto. La RPC autenticada aplica GTIN
+ *  Se ordenan por precio unitario canónico cuando está publicado, con el precio
+ *  total como fallback. La RPC autenticada aplica GTIN
  *  exacto o el umbral híbrido validado; nunca completa el cupo con matches dudosos. */
 export async function fetchSimilarProducts(
   sourceStore: CatalogStore,
@@ -2400,8 +2405,82 @@ async function fetchLocationPriceChanges(
   postalCode: string | null,
   limit: number,
   offset: number,
+  pricePerUnitSort: 'asc' | 'desc' | null,
 ): Promise<PriceChangesPage> {
   const down = direction === 'down';
+  if (pricePerUnitSort) {
+    const allChanges: any[] = [];
+    const batchSize = 1000;
+    for (let batchOffset = 0; ; batchOffset += batchSize) {
+      let allChangesQuery = supabase
+        .from('catalog_location_price_changes')
+        .select('product_id, prev_unit_price, new_unit_price, price_delta_pct, changed_at')
+        .eq('store', store)
+        .eq('location_id', locationId)
+        .gte('changed_at', weekAgoISO());
+      allChangesQuery = down
+        ? allChangesQuery.lt('price_delta_pct', 0)
+        : allChangesQuery.gt('price_delta_pct', 0);
+      const { data, error } = await allChangesQuery
+        .order('price_delta_pct', { ascending: down })
+        .order('changed_at', { ascending: false })
+        .order('product_id', { ascending: true })
+        .range(batchOffset, batchOffset + batchSize - 1);
+      if (error) throw error;
+      allChanges.push(...(data ?? []));
+      if ((data ?? []).length < batchSize) break;
+    }
+
+    const latestByProduct = new Map<string, any>();
+    for (const change of allChanges) {
+      if (!latestByProduct.has(change.product_id)) latestByProduct.set(change.product_id, change);
+    }
+    const productIds = [...latestByProduct.keys()];
+    if (productIds.length === 0) return { items: [], nextOffset: null };
+
+    const m = MIRROR_QUERY[store];
+    const productRows: any[] = [];
+    const productBatchSize = 150;
+    for (let index = 0; index < productIds.length; index += productBatchSize) {
+      const ids = productIds.slice(index, index + productBatchSize);
+      const { data, error } = await filterMirrorLocation(supabase
+        .from(m.table)
+        .select(m.cols)
+        .in('id', ids)
+        .eq('published', true), store, region, postalCode);
+      if (error) throw error;
+      productRows.push(...(data ?? []));
+    }
+    const productById = new Map(productRows.map((product: any) => [
+      product.id,
+      mirrorToUIAtLocation(store, product, region, postalCode),
+    ]));
+    const sortedItems = [...latestByProduct.values()]
+      .flatMap((change: any) => {
+        const product = productById.get(change.product_id);
+        if (!product) return [];
+        return [{
+          product,
+          prevPrice: Number(change.prev_unit_price),
+          newPrice: Number(change.new_unit_price),
+          deltaPct: Number(change.price_delta_pct),
+        }];
+      })
+      .sort((a, b) => {
+        const priceA = a.product.pricePerUnit;
+        const priceB = b.product.pricePerUnit;
+        if (priceA == null && priceB != null) return 1;
+        if (priceA != null && priceB == null) return -1;
+        const priceDiff = (priceA ?? 0) - (priceB ?? 0);
+        if (priceDiff !== 0) return pricePerUnitSort === 'asc' ? priceDiff : -priceDiff;
+        return a.product.name.localeCompare(b.product.name, 'es', { sensitivity: 'base' });
+      });
+    return {
+      items: sortedItems.slice(offset, offset + limit),
+      nextOffset: sortedItems.length > offset + limit ? offset + limit : null,
+    };
+  }
+
   let changesQuery = supabase
     .from('catalog_location_price_changes')
     .select('product_id, prev_unit_price, new_unit_price, price_delta_pct, changed_at')
@@ -2452,9 +2531,9 @@ async function fetchLocationPriceChanges(
   };
 }
 
-/** Cambios de precio de la última semana en un súper, con la mayor bajada o
- *  subida primero. Filtra y ordena por price_delta_pct, que calcula el trigger
- *  junto con prev_unit_price (PostgREST no compara columna contra columna). */
+/** Cambios de precio de la última semana en un súper. Por defecto muestra la
+ *  mayor bajada/subida primero; opcionalmente pagina por precio unitario con
+ *  los productos sin dato al final. */
 export async function fetchPriceChanges(
   store: CatalogStore,
   direction: 'down' | 'up',
@@ -2462,10 +2541,13 @@ export async function fetchPriceChanges(
   postalCode: string | null,
   limit = 50,
   offset = 0,
+  pricePerUnitSort: 'asc' | 'desc' | null = null,
 ): Promise<PriceChangesPage> {
   const locationId = locationForPriceHistory(store, postalCode);
   if (locationId && (store === 'consum' || store === 'plusfresc')) {
-    return fetchLocationPriceChanges(store, locationId, direction, region, postalCode, limit, offset);
+    return fetchLocationPriceChanges(
+      store, locationId, direction, region, postalCode, limit, offset, pricePerUnitSort,
+    );
   }
   const m = MIRROR_QUERY[store];
   const down = direction === 'down';
@@ -2475,9 +2557,11 @@ export async function fetchPriceChanges(
     .eq('published', true)
     .gte('price_changed_at', weekAgoISO()), store, region, postalCode);
   q = down ? q.lt('price_delta_pct', 0) : q.gt('price_delta_pct', 0);
-  const { data, error } = await q
+  const orderedQuery = pricePerUnitSort
+    ? q.order('price_per_unit', { ascending: pricePerUnitSort === 'asc', nullsFirst: false })
     // Bajadas: el % más negativo primero (asc); subidas: el más positivo (desc).
-    .order('price_delta_pct', { ascending: down })
+    : q.order('price_delta_pct', { ascending: down });
+  const { data, error } = await orderedQuery
     .order('display_name', { ascending: true })
     .order('id', { ascending: true })
     .range(offset, offset + limit - 1);
@@ -2581,9 +2665,20 @@ export interface OfferFilters {
   priceMax?: number | null;
   /** Orden por precio; sin él, alfabético. */
   sort?: 'asc' | 'desc' | null;
+  /** Orden por precio unitario canónico; los productos sin dato van al final. */
+  pricePerUnitSort?: 'asc' | 'desc' | null;
   /** Tipos de promoción seleccionados (multi); [] = todos. */
   offerTypes?: OfferType[];
 }
+
+const offerOrderColumn = (filters: OfferFilters | undefined, nameColumn: string) =>
+  filters?.pricePerUnitSort ? 'price_per_unit' : filters?.sort ? 'unit_price' : nameColumn;
+
+const offerBrowseOrder = (filters: OfferFilters | undefined): BrowseOrder => {
+  if (filters?.pricePerUnitSort === 'asc') return 'pricePerUnitAsc';
+  if (filters?.pricePerUnitSort === 'desc') return 'pricePerUnitDesc';
+  return filters?.sort === 'desc';
+};
 
 // Condiciones comunes de OfferFilters sobre una query de espejo (todas se
 // AND-combinan con el filtro de oferta viva y el cursor). Con orden por precio
@@ -2743,11 +2838,11 @@ export async function fetchCarrefourOffers(
   const { rows, nextCursor } = await keysetPage(
     'carrefour_products',
     `${CARREFOUR_COLS}, promo_name, promo_end, strikethrough_price`,
-    filters?.sort ? 'unit_price' : 'display_name_norm',
+    offerOrderColumn(filters, 'display_name_norm'),
     cursor,
     limit,
     (q) => applyOfferFilters(filterRegionalAvailability(q.or(carrefourOfferLiveness()), region), filters, 'display_name_norm'),
-    filters?.sort === 'desc',
+    offerBrowseOrder(filters),
   );
   const items = rows.map((r: any) => ({
     product: carrefourToUI(mapCarrefour(r, region)),
@@ -2774,11 +2869,11 @@ export async function fetchBonpreuOffers(
   const { rows, nextCursor } = await keysetPage(
     'bonpreu_products',
     BONPREU_COLS,
-    filters?.sort ? 'unit_price' : normCol,
+    offerOrderColumn(filters, normCol),
     cursor,
     limit,
     (q) => applyOfferFilters(q.not('promo_name', 'is', null), filters, normCol),
-    filters?.sort === 'desc',
+    offerBrowseOrder(filters),
   );
   const items = rows.map((r: any) => ({
     product: bonpreuToUI(mapBonpreu(r)),
@@ -2815,7 +2910,7 @@ export async function fetchConsumOffers(
   const { rows, nextCursor } = await keysetPage(
     'consum_products',
     CONSUM_OFFER_COLS,
-    filters?.sort ? 'unit_price' : 'display_name_norm',
+    offerOrderColumn(filters, 'display_name_norm'),
     cursor,
     limit,
     (q) => applyOfferFilters(
@@ -2823,7 +2918,7 @@ export async function fetchConsumOffers(
       filters,
       'display_name_norm',
     ),
-    filters?.sort === 'desc',
+    offerBrowseOrder(filters),
   );
   const items = rows.flatMap((row: any) => {
     const offer = consumOfferAt(row, postalCode);
@@ -2853,7 +2948,7 @@ export async function fetchDiaOffers(
   const { rows, nextCursor } = await keysetPage(
     'dia_products',
     DIA_OFFER_COLS,
-    filters?.sort ? 'unit_price' : 'display_name_norm',
+    offerOrderColumn(filters, 'display_name_norm'),
     cursor,
     limit,
     (q) => {
@@ -2864,7 +2959,7 @@ export async function fetchDiaOffers(
       }
       return applyOfferFilters(live, filters, 'display_name_norm');
     },
-    filters?.sort === 'desc',
+    offerBrowseOrder(filters),
   );
   const items = rows.flatMap((row: any) => {
     const product = mapDia(row, region);
@@ -2892,7 +2987,7 @@ export async function fetchSorliOffers(
   const { rows, nextCursor } = await keysetPage(
     'sorli_products',
     SORLI_COLS,
-    filters?.sort ? 'unit_price' : normCol,
+    offerOrderColumn(filters, normCol),
     cursor,
     limit,
     (q) => applyOfferFilters(
@@ -2900,7 +2995,7 @@ export async function fetchSorliOffers(
       filters,
       normCol,
     ),
-    filters?.sort === 'desc',
+    offerBrowseOrder(filters),
   );
   const items = rows.flatMap((row: any) => {
     const product = mapSorli(row);
@@ -2931,7 +3026,7 @@ export async function fetchNormalizedRetailerOffers(
   const { rows, nextCursor } = await keysetPage(
     config.table,
     config.columns,
-    filters?.sort ? 'unit_price' : normCol,
+    offerOrderColumn(filters, normCol),
     cursor,
     limit,
     (q) => applyOfferFilters(
@@ -2941,7 +3036,7 @@ export async function fetchNormalizedRetailerOffers(
       filters,
       normCol,
     ),
-    filters?.sort === 'desc',
+    offerBrowseOrder(filters),
   );
 
   const items = rows.map((row: any) => {
@@ -2977,11 +3072,11 @@ export async function fetchHiperdinoOffers(
   const { rows, nextCursor } = await keysetPage(
     'hiperdino_products',
     HIPERDINO_OFFER_COLS,
-    filters?.sort ? 'unit_price' : 'display_name_norm',
+    offerOrderColumn(filters, 'display_name_norm'),
     cursor,
     limit,
     (q) => applyOfferFilters(q.not('promo_base_price', 'is', null), filters, 'display_name_norm'),
-    filters?.sort === 'desc',
+    offerBrowseOrder(filters),
   );
   const items = rows.flatMap((row: any) => {
     if (row.unit_price == null || row.promo_base_price == null || Number(row.promo_base_price) <= Number(row.unit_price)) return [];
@@ -3004,7 +3099,7 @@ export async function fetchAldiOffers(
   const { rows, nextCursor } = await keysetPage(
     'aldi_products',
     ALDI_OFFER_COLS,
-    filters?.sort ? 'unit_price' : 'display_name_norm',
+    offerOrderColumn(filters, 'display_name_norm'),
     cursor,
     limit,
     (q) => applyOfferFilters(
@@ -3012,7 +3107,7 @@ export async function fetchAldiOffers(
       filters,
       'display_name_norm',
     ),
-    filters?.sort === 'desc',
+    offerBrowseOrder(filters),
   );
   const items = rows.flatMap((row: any) => {
     if (row.unit_price == null || row.promo_base_price == null || Number(row.promo_base_price) <= Number(row.unit_price)) return [];
@@ -3055,7 +3150,7 @@ export async function fetchPlusfrescOffers(
   const { rows, nextCursor } = await keysetPage(
     'plusfresc_products',
     PLUSFRESC_OFFER_COLS,
-    filters?.sort ? 'unit_price' : normCol,
+    offerOrderColumn(filters, normCol),
     cursor,
     limit,
     (q) => applyOfferFilters(
@@ -3066,7 +3161,7 @@ export async function fetchPlusfrescOffers(
       filters,
       normCol,
     ),
-    filters?.sort === 'desc',
+    offerBrowseOrder(filters),
   );
   const items = rows.flatMap((row: any) => {
     const offer = plusfrescOfferAt(row, postalCode);

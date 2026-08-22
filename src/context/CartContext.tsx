@@ -15,19 +15,22 @@ const DEFAULT_GROUP_KEY = 'defaultGroup';
 interface ActiveCart {
   groupId: string;
   groupName: string;
+  groupIcon: string | null;
   listId: string;
 }
 
 interface CartContextValue {
   activeCart: ActiveCart | null;
   /** Marks a group's cart as the active one (only one can be active per user). */
-  activateCart: (groupId: string, groupName: string) => Promise<void>;
+  activateCart: (groupId: string, groupName: string, groupIcon?: string | null) => Promise<void>;
+  /** Actualiza el icono cacheado si el grupo editado es el carrito activo. */
+  updateActiveCartIcon: (groupId: string, groupIcon: string) => Promise<void>;
   /** Clears the active cart selection. */
   deactivateCart: () => Promise<void>;
   /** Adds items to the active cart. Throws if no cart is active. */
   addToActiveCart: (items: NewListItem[]) => Promise<void>;
   /** Activates a group's cart and loads the given items into it (e.g. "repeat purchase"). */
-  loadItemsIntoGroupCart: (groupId: string, groupName: string, items: NewListItem[]) => Promise<void>;
+  loadItemsIntoGroupCart: (groupId: string, groupName: string, items: NewListItem[], groupIcon?: string | null) => Promise<void>;
   isActive: (groupId: string) => boolean;
   busy: boolean;
   /** AsyncStorage del carrito y snapshots de pestañas ya está hidratado. */
@@ -37,6 +40,7 @@ interface CartContextValue {
 const CartContext = createContext<CartContextValue>({
   activeCart: null,
   activateCart: async () => {},
+  updateActiveCartIcon: async () => {},
   deactivateCart: async () => {},
   addToActiveCart: async () => {},
   loadItemsIntoGroupCart: async () => {},
@@ -57,12 +61,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [busy, setBusy] = useState(false);
   const [hydratedUserId, setHydratedUserId] = useState<string | null>(null);
 
-  const activateCart = async (groupId: string, groupName: string) => {
+  const activateCart = async (groupId: string, groupName: string, groupIcon?: string | null) => {
     if (!userId) return;
     setBusy(true);
     try {
       const listId = await getOrCreateGroupList(groupId, groupName, userId);
-      const next = { groupId, groupName, listId };
+      const next = {
+        groupId,
+        groupName,
+        groupIcon: groupIcon === undefined && activeCart?.groupId === groupId
+          ? activeCart.groupIcon ?? null
+          : groupIcon ?? null,
+        listId,
+      };
       setActiveCart(next);
       await AsyncStorage.setItem(cartKey, JSON.stringify(next));
     } finally {
@@ -84,7 +95,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (cancelled) return;
 
       let restoredCart: ActiveCart | null = null;
-      if (cartRaw) { try { restoredCart = JSON.parse(cartRaw); } catch { /* ignore */ } }
+      if (cartRaw) {
+        try {
+          const parsed = JSON.parse(cartRaw) as Partial<ActiveCart>;
+          if (parsed.groupId && parsed.groupName && parsed.listId) {
+            restoredCart = {
+              groupId: parsed.groupId,
+              groupName: parsed.groupName,
+              groupIcon: parsed.groupIcon ?? null,
+              listId: parsed.listId,
+            };
+          }
+        } catch { /* ignore */ }
+      }
 
       // Optimista (la clave ya es por-usuario → en el caso normal es válida).
       setActiveCart(restoredCart);
@@ -102,10 +125,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           const groups = await fetchMyGroups(userId);
           writeStartupCache(startupKeys.groups(userId), groups);
           if (cancelled) return;
-          const ids = new Set(groups.map((g) => g.id));
-          if (!ids.has(restoredCart.groupId)) {
+          const restoredGroup = groups.find((g) => g.id === restoredCart.groupId);
+          if (!restoredGroup) {
             await AsyncStorage.removeItem(cartKey);
             if (!cancelled) setActiveCart(null);
+          } else {
+            const synced = {
+              ...restoredCart,
+              groupName: restoredGroup.name,
+              groupIcon: restoredGroup.iconEmoji ?? null,
+            };
+            if (!cancelled) setActiveCart(synced);
+            await AsyncStorage.setItem(cartKey, JSON.stringify(synced));
           }
         } catch { /* sin red: mantener lo guardado */ }
       }
@@ -119,17 +150,36 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.removeItem(cartKey);
   };
 
+  const updateActiveCartIcon = async (groupId: string, groupIcon: string) => {
+    if (!activeCart || activeCart.groupId !== groupId) return;
+    const next = { ...activeCart, groupIcon };
+    setActiveCart(next);
+    await AsyncStorage.setItem(cartKey, JSON.stringify(next));
+  };
+
   const addToActiveCart = async (items: NewListItem[]) => {
     if (!activeCart || !userId) throw new Error('No hay carrito activo');
     await addItemsToList(activeCart.listId, items, userId);
   };
 
-  const loadItemsIntoGroupCart = async (groupId: string, groupName: string, items: NewListItem[]) => {
+  const loadItemsIntoGroupCart = async (
+    groupId: string,
+    groupName: string,
+    items: NewListItem[],
+    groupIcon?: string | null,
+  ) => {
     if (!userId) return;
     setBusy(true);
     try {
       const listId = await getOrCreateGroupList(groupId, groupName, userId);
-      const next = { groupId, groupName, listId };
+      const next = {
+        groupId,
+        groupName,
+        groupIcon: groupIcon === undefined && activeCart?.groupId === groupId
+          ? activeCart.groupIcon ?? null
+          : groupIcon ?? null,
+        listId,
+      };
       setActiveCart(next);
       await AsyncStorage.setItem(cartKey, JSON.stringify(next));
       await addItemsToList(listId, items, userId);
@@ -146,7 +196,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   return (
     <CartContext.Provider
       value={{
-        activeCart, activateCart, deactivateCart, addToActiveCart, loadItemsIntoGroupCart, isActive, busy, hydrated,
+        activeCart, activateCart, updateActiveCartIcon, deactivateCart, addToActiveCart, loadItemsIntoGroupCart, isActive, busy, hydrated,
       }}
     >
       {children}

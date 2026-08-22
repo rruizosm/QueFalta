@@ -166,6 +166,14 @@ export interface ListItem {
   unit: string;
   inCart: boolean;
   categoryEmoji: string;
+  note?: string | null;
+  noteProduct?: {
+    store: CatalogStore;
+    id: string;
+    name: string;
+    imageUrl: string | null;
+    unitPrice: number | null;
+  } | null;
 }
 
 export interface ShoppingList {
@@ -183,7 +191,7 @@ export interface GroupMember {
   initials: string;
   color: string;
   avatarUrl?: string | null;
-  /** Cuenta verificada (insignia dorada). Ver profile_verified.sql. */
+  /** Insignia pública de una cuenta con QuéFalta Plus activo. */
   verified?: boolean;
 }
 
@@ -237,6 +245,7 @@ export interface FavoriteProduct {
 export type RootTabParamList = {
   Home: undefined;
   Catalog: undefined;
+  QueCocino: undefined;
   List: undefined;
   Groups: undefined;
 };
@@ -256,7 +265,14 @@ export type HomeStackParamList = {
   Language: undefined;
   History: undefined;
   Notifications: undefined;
+  PriceAlerts: undefined;
+  PriceAlertResults: {
+    notificationId: string;
+    ruleId?: string;
+    title?: string;
+  };
   Statistics: undefined;
+  GeneralStatistics: undefined;
   Friends: undefined;
   Help: undefined;
   CatalogSyncStatus: undefined;
@@ -393,5 +409,5 @@ export type OnboardingStackParamList = {
   Avatar: undefined;
   Friends: undefined;
   Group: undefined;
-  Done: undefined;
+  Done: { onboardedAt: string };
 };

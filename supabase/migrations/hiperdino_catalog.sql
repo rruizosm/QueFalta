@@ -1,7 +1,7 @@
 -- Espejo del catálogo de HiperDino (Canarias) en Supabase (CATÁLOGO + BÚSQUEDA).
 -- Lo rellena scripts/sync-hiperdino.mjs 1×/semana. 13º espejo, tabla aparte
 -- (modelo "una tabla por tienda"), como el resto. SOLO castellano (hiperdino.es
--- no es bilingüe), SIN ficha ni EAN ni €/unidad.
+-- no es bilingüe), SIN ficha y con €/unidad canónico desde GraphQL price_text.
 --
 -- HiperDino es la cadena líder de Canarias. Su web es Magento 2 con GraphQL
 -- ABIERTO (POST hiperdino.es/graphql, sin auth/cookies/navegador) → el sync
@@ -71,7 +71,7 @@ create table if not exists public.hiperdino_products (
   category_ids        text[] not null default '{}',  -- N2 + N1 (navegación por cualquier nivel)
   unit_price          numeric,            -- precio en € (final_price)
   price_format        text,               -- texto mostrado ("1,99 €")
-  price_per_unit      numeric,            -- NULL (HiperDino no expone €/ud)
+  price_per_unit      numeric,            -- € por l/kg/ud canónico
   price_per_unit_unit text,
   available           boolean not null default true,
   published           boolean not null default true,
@@ -109,7 +109,7 @@ create trigger track_price_change
   before update of unit_price on public.hiperdino_products
   for each row execute function public.catalog_track_price_change();
 
-comment on column public.hiperdino_products.price_per_unit is '€ por unidad canónica (price_per_unit_unit). NULL = sin dato (HiperDino no lo expone).';
+comment on column public.hiperdino_products.price_per_unit is '€ por unidad canónica (price_per_unit_unit). NULL = sin dato comparable en price_text.';
 
 -- ── RLS: lectura pública, escritura solo service_role ────────────────────────
 alter table public.hiperdino_products   enable row level security;

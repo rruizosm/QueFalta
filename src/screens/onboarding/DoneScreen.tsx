@@ -1,64 +1,136 @@
-/** Paso final — Sella el alta (onboarded_at) y deja entrar a la app. El gate de
- *  navegación cambia al ver onboardedAt; los coach marks arrancan solos. */
-import { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { useEffect, useRef } from 'react';
+import {
+  AccessibilityInfo,
+  Animated,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { Image } from 'expo-image';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../constants/colors';
-import { useAuth } from '../../context/AuthContext';
+import { fonts } from '../../constants/typography';
 import { useProfile } from '../../context/ProfileContext';
-import { useToast } from '../../context/ToastContext';
-import { useThemedStyles } from '../../context/ThemeContext';
 import { useTranslation } from '../../context/LanguageContext';
-import { completeOnboarding } from '../../api/profile';
-import OnboardingLayout from './OnboardingLayout';
+import { useReducedMotion } from '../../hooks/useReducedMotion';
+import { requestHomeTransition } from '../../lib/homeTransition';
+import type { OnboardingStackParamList } from '../../types';
+import OnboardingSlats from './OnboardingSlats';
 
-export default function DoneScreen() {
-  const styles = useThemedStyles(themedStyles);
+const MASCOT = require('../../../assets/mascot/berenjena-sentada-ok.png');
+type Props = NativeStackScreenProps<OnboardingStackParamList, 'Done'>;
+
+export default function DoneScreen({ route }: Props) {
   const { t } = useTranslation();
-  const { session } = useAuth();
+  const insets = useSafeAreaInsets();
   const { applyProfile } = useProfile();
-  const toast = useToast();
-  const userId = session?.user.id ?? '';
-  const [saving, setSaving] = useState(false);
+  const reducedMotion = useReducedMotion();
+  const entrance = useRef(new Animated.Value(reducedMotion ? 1 : 0)).current;
 
-  const finish = async () => {
-    setSaving(true);
-    try {
-      const onboardedAt = await completeOnboarding(userId);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      // Cambiar la caché al final: el gate de navigation/index.tsx re-renderiza
-      // y monta la app (Tab.Navigator + coach marks).
-      applyProfile({ onboardedAt });
-    } catch {
-      toast.show(t('onboarding.doneError'), 'error');
-      setSaving(false);
+  useEffect(() => {
+    AccessibilityInfo.announceForAccessibility(t('onboarding.doneTitle'));
+    if (reducedMotion) {
+      entrance.setValue(1);
+      return;
     }
+    Animated.spring(entrance, {
+      toValue: 1,
+      damping: 16,
+      stiffness: 130,
+      mass: 0.8,
+      useNativeDriver: true,
+    }).start();
+  }, [entrance, reducedMotion, t]);
+
+  const enterApp = () => {
+    requestHomeTransition();
+    applyProfile({ onboardedAt: route.params.onboardedAt, onboardingStep: 5 });
   };
 
   return (
-    <OnboardingLayout
-      title={t('onboarding.doneTitle')}
-      subtitle={t('onboarding.doneSubtitle')}
-      continueLabel={t('onboarding.doneCta')}
-      continueLoading={saving}
-      onContinue={finish}
-    >
-      <View style={styles.center}>
-        <View style={styles.circle}>
-          <Ionicons name="checkmark" size={64} color={colors.white} />
+    <View style={[styles.screen, { paddingTop: insets.top + 28, paddingBottom: insets.bottom + 28 }]}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.blue} />
+      <OnboardingSlats />
+      <Animated.View
+        style={[
+          styles.content,
+          {
+            opacity: entrance,
+            transform: [{ scale: entrance.interpolate({ inputRange: [0, 1], outputRange: [0.88, 1] }) }],
+          },
+        ]}
+      >
+        <View style={styles.successBadge} accessibilityElementsHidden>
+          <Ionicons name="checkmark" size={34} color={colors.blue} />
         </View>
-      </View>
-    </OnboardingLayout>
+        <Image source={MASCOT} style={styles.mascot} contentFit="contain" accessible={false} />
+        <Text style={styles.title} accessibilityRole="header">{t('onboarding.doneTitle')}</Text>
+        <Text style={styles.subtitle}>{t('onboarding.doneSubtitle')}</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={enterApp}
+          accessibilityRole="button"
+          activeOpacity={0.86}
+        >
+          <Text style={styles.buttonText}>{t('onboarding.doneCta')}</Text>
+          <Ionicons name="arrow-forward" size={19} color={colors.blue} />
+        </TouchableOpacity>
+      </Animated.View>
+    </View>
   );
 }
 
-const themedStyles = () => StyleSheet.create({
-  center: { alignItems: 'center', marginTop: 24 },
-  circle: {
-    width: 120, height: 120, borderRadius: 60,
-    backgroundColor: colors.ok,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 8, borderColor: colors.accentLight,
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    overflow: 'hidden',
+    backgroundColor: colors.blue,
   },
+  content: { width: '100%', maxWidth: 520, alignItems: 'center', zIndex: 1 },
+  successBadge: {
+    width: 66,
+    height: 66,
+    borderRadius: 23,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+    marginBottom: 8,
+  },
+  mascot: { width: 150, height: 190 },
+  title: {
+    color: '#ffffff',
+    fontSize: 31,
+    lineHeight: 38,
+    fontFamily: fonts.bold,
+    textAlign: 'center',
+  },
+  subtitle: {
+    maxWidth: 410,
+    marginTop: 10,
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 16,
+    lineHeight: 23,
+    fontFamily: fonts.medium,
+    textAlign: 'center',
+  },
+  button: {
+    width: '100%',
+    minHeight: 58,
+    marginTop: 30,
+    paddingHorizontal: 22,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: '#ffffff',
+  },
+  buttonText: { color: colors.blue, fontSize: 16, fontFamily: fonts.bold },
 });

@@ -1,4 +1,4 @@
-import { Platform, View, StyleSheet } from 'react-native';
+import { Image, Platform, StatusBar, View, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
@@ -18,7 +18,7 @@ import { FavoritesProvider } from './src/context/FavoritesContext';
 import { ToastProvider } from './src/context/ToastContext';
 import { configureNotificationHandler } from './src/lib/notifications';
 
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => {});
 // El splash nativo entrega el relevo al BootLoader con un fundido suave (lo
 // oculta BootLoader en su primer layout, no aquí).
 SplashScreen.setOptions({ duration: 280, fade: true });
@@ -27,6 +27,25 @@ SplashScreen.setOptions({ duration: 280, fade: true });
 // en vez de dejar el icono clavado. No-op si BootLoader ya lo ocultó.
 setTimeout(() => { SplashScreen.hideAsync().catch(() => {}); }, 4000);
 configureNotificationHandler();
+
+const STARTUP_LOGO = require('./assets/quefalta-logo-blue.png');
+
+/** Respaldo pintado por React mientras expo-font termina. Tiene exactamente el
+ * mismo fondo e imagen que el storyboard nativo, así el watchdog nunca descubre
+ * una ventana negra aunque una inicialización tarde más de lo previsto. */
+function FontBootstrapScreen() {
+  return (
+    <View
+      style={startup.container}
+      onLayout={() => SplashScreen.hideAsync().catch(() => {})}
+      accessibilityRole="progressbar"
+      accessibilityLabel="Cargando"
+    >
+      <StatusBar barStyle="dark-content" backgroundColor="#E1EBF7" />
+      <Image source={STARTUP_LOGO} resizeMode="contain" style={startup.logo} accessible={false} />
+    </View>
+  );
+}
 
 export default function App() {
   const [fontsLoaded, fontError] = useFonts({
@@ -38,20 +57,19 @@ export default function App() {
 
   // Si la carga de fuentes FALLA hay que arrancar igualmente (con la fuente del
   // sistema): quedarse en null dejaría el splash nativo en pantalla para siempre.
-  if (!fontsLoaded && !fontError) return null;
+  if (!fontsLoaded && !fontError) return <FontBootstrapScreen />;
 
   const inner = (
     // SafeAreaProvider en la raíz: expone los insets del sistema (barra de
     // navegación de Android, home indicator de iOS) a toda la app, incluida la
     // barra de pestañas, para que nada se solape con los botones del sistema.
     <SafeAreaProvider>
-    {/* LanguageProvider y ThemeProvider primero: retienen el render (splash
-        visible) hasta aplicar idioma y color guardados, para que los textos y los
-        StyleSheet se creen ya con la preferencia correcta (sin flash). */}
+    {/* LanguageProvider retiene el render hasta aplicar el idioma. El tema vive
+        bajo AuthProvider para aislar sus preferencias locales por cuenta. */}
     <LanguageProvider>
-      <ThemeProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <AuthProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <AuthProvider>
+          <ThemeProvider>
             <ProfileProvider>
               <NotificationsProvider>
                 <CartProvider>
@@ -63,9 +81,9 @@ export default function App() {
                 </CartProvider>
               </NotificationsProvider>
             </ProfileProvider>
-          </AuthProvider>
-        </GestureHandlerRootView>
-      </ThemeProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </GestureHandlerRootView>
     </LanguageProvider>
     </SafeAreaProvider>
   );
@@ -99,5 +117,18 @@ const web = StyleSheet.create({
     shadowOffset: { width: 0, height: 24 },
     shadowOpacity: 0.6,
     shadowRadius: 48,
+  },
+});
+
+const startup = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E1EBF7',
+  },
+  logo: {
+    width: 180,
+    height: 150,
   },
 });

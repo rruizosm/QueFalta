@@ -60,12 +60,11 @@ export const STORE_REGIONS: Record<CatalogStore, RegionCode[] | null> = {
   sorli:     ['ES-CT'],
   caprabo:   ['ES-CT'],
   ametller:  ['ES-CT'],
-  plusfresc: ['ES-CT'],
-  // Gadisline resuelve el surtido por código postal. Hasta disponer de su mapa
-  // público completo no lo ocultamos por CCAA: el sync conserva la tienda base.
-  gadis: null,
-  froiz: null,
-  ahorramas: ['ES-CM', 'ES-MD'],
+  // Plusfresc opera en Catalunya y en la Franja de Ponent (Aragón).
+  plusfresc: ['ES-CT', 'ES-AR'],
+  gadis:     ['ES-GA', 'ES-CL'],
+  froiz:     ['ES-GA', 'ES-CL', 'ES-CM', 'ES-MD'],
+  ahorramas: ['ES-CM', 'ES-MD', 'ES-CL'],
   condis:    ['ES-CT'],
   bonarea:   ['ES-CT', 'ES-AR', 'ES-CM', 'ES-MD', 'ES-VC', 'ES-RI', 'ES-NC'],
   consum:    ['ES-AN', 'ES-AR', 'ES-CM', 'ES-CT', 'ES-MC', 'ES-VC'],

@@ -685,6 +685,9 @@ const RULES: [string, string][] = [
   ['rentat',        '🧺'],   // "Rentat de roba"
 ];
 
+/** Todos los emojis que el catálogo usa para representar subcategorías. */
+export const SUBCATEGORY_EMOJIS = Array.from(new Set(RULES.map(([, emoji]) => emoji)));
+
 export function getSubcategoryEmoji(name: string, fallback: string): string {
   const lower = name.toLowerCase();
   for (const [keyword, emoji] of RULES) {

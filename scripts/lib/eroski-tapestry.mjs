@@ -19,18 +19,20 @@
 //     FUNCIONAR el 2026-07-11: con el query param el server devuelve la página
 //     entera con "No se obtuvieron resultados" (también en navegador real).
 //  3. Cada "tile" trae un JSON `data-metrics` (evento select_item) con id, nombre,
-//     marca, categoría (c1>c2>c3) y precio. Es la fuente limpia; el resto del
-//     markup (comillas simples en el fragmento AJAX, dobles + HTML-escapado en la
-//     página completa) se ignora. El parser tolera ambos estilos de comillas.
+//     marca, categoría (c1>c2>c3) y precio. El precio unitario está en el HTML
+//     visible de la misma tarjeta. El parser tolera comillas simples en el
+//     fragmento AJAX y dobles + HTML-escapado en la página completa.
 //  4. La ficha se completa incrementalmente con GET de
 //     /es/productdetail/{id}-{slug}/. Guarda ingredientes, condiciones de
 //     conservación, fabricante y la tabla nutricional normalizada por 100 g/ml.
 //
-// No hay precio por unidad (€/L) ni EAN en los listados; la ficha HTML tampoco
-// expone un EAN verificable. price_per_unit queda null (como en otros súpers).
+// El precio por unidad sí aparece en el tile como texto visible (p. ej.
+// "1 KILO A 18,40 €"); se normaliza a €/kg, €/L o €/ud. La ficha HTML
+// no expone un EAN verificable.
 // Nombres solo en castellano (Caprabo /ca/ redirige; su data-locale=ca pero
 // lang=es → los nombres de producto no se traducen).
 
+import { canonicalPricePerUnit } from './price.mjs';
 import { parseTapestryOfferBlock } from './retailer-offers.mjs';
 import { recordCatalogSync } from './sync-status.mjs';
 
@@ -223,6 +225,22 @@ const ancestorsOf = (parentOf, id) => {
 // ── Parseo de tiles de una página de categoría ───────────────────────────────
 // Extrae los productos del JSON data-metrics (evento select_item). Tolera
 // comillas simples (fragmento AJAX) y dobles + HTML-escapado (página completa).
+export function parseTapestryPricePerUnit(html) {
+  if (typeof html !== 'string' || !html) return null;
+  const element = html.match(
+    /<p[^>]*class=(['"])[^'"]*\bquantity-(?:text|price)\b[^'"]*\1[^>]*>([\s\S]*?)<\/p>/i,
+  );
+  if (!element) return null;
+  const text = htmlUnescape(element[2].replace(/<[^>]+>/g, ' '))
+    .replace(/\s+/g, ' ')
+    .trim();
+  const match = text.match(
+    /([\d.,]+)\s*(KILO(?:GRAMOS?)?|LITROS?|UNIDAD(?:ES)?)\s+A\s+([\d.,]+)\s*€/i,
+  );
+  if (!match) return null;
+  return canonicalPricePerUnit(match[3], `${match[1]} ${match[2]}`);
+}
+
 export function parseTiles(html) {
   const out = [];
   const seen = new Set();
@@ -242,7 +260,13 @@ export function parseTiles(html) {
       if (!it?.item_id || seen.has(it.item_id)) continue;
       seen.add(it.item_id);
       const offer = parseTapestryOfferBlock(chunk, it.price);
-      out.push(offer ? { ...it, ...offer } : it);
+      const ppu = parseTapestryPricePerUnit(chunk);
+      out.push({
+        ...it,
+        ...(offer ?? {}),
+        price_per_unit: ppu?.value ?? null,
+        price_per_unit_unit: ppu?.unit ?? null,
+      });
       break;
     }
   }
@@ -543,8 +567,8 @@ function makeNormalize(base, runStart) {
       promo_base_price: it.promo_base_price ?? null,
       promo_start: it.promo_start ?? null,
       promo_end: it.promo_end ?? null,
-      price_per_unit: null,       // el €/unidad no está en el listado (solo en la ficha)
-      price_per_unit_unit: null,
+      price_per_unit: it.price_per_unit ?? null,
+      price_per_unit_unit: it.price_per_unit_unit ?? null,
       available: true,
       published: true,
       raw: it,
@@ -717,13 +741,14 @@ export async function runSync({ base, store, table, catTable }) {
   if (DRY_RUN) {
     console.log('muestra (6):');
     for (const r of rows.slice(0, 6)) {
-      console.log(`  ${r.id}  ${r.display_name}  [${r.brand ?? '—'}]  ${r.price_format}  cat=${r.category_name ?? '—'}  (${r.category_ids.length} niveles)`);
+      console.log(`  ${r.id}  ${r.display_name}  [${r.brand ?? '—'}]  ${r.price_format}  ${r.price_per_unit != null ? `${r.price_per_unit} €/${r.price_per_unit_unit}` : '—'}  cat=${r.category_name ?? '—'}  (${r.category_ids.length} niveles)`);
     }
     console.log('nulos →', {
       sin_precio: rows.filter((r) => r.unit_price == null).length,
       sin_img: rows.filter((r) => !r.thumbnail).length,
       sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
       sin_marca: rows.filter((r) => !r.brand).length,
+      con_precio_unitario: rows.filter((r) => r.price_per_unit != null).length,
       con_oferta: rows.filter((r) => r.promo_name != null).length,
     });
     if (!SKIP_DETAIL && DRY_DETAIL_MAX > 0) {

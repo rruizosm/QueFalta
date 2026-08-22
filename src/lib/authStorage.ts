@@ -47,6 +47,10 @@ const chunkKey = (key: string, i: number) => `${key}.${i}`;
 /** ¿Debemos usar SecureStore? Solo en nativo y si el módulo cargó. */
 const useSecureStore = Platform.OS !== 'web' && SecureStore != null;
 
+async function readLegacyValue(key: string): Promise<string | null> {
+  return AsyncStorage.getItem(key).catch(() => null);
+}
+
 /** Borra todas las claves-chunk de `key` (hasta `count`, o sondeando). */
 async function clearChunks(key: string, count: number): Promise<void> {
   if (!SecureStore) return;
@@ -59,11 +63,20 @@ const secureAdapter: SupabaseAuthStorage = {
   async getItem(key) {
     if (!SecureStore) return AsyncStorage.getItem(key);
 
-    const countRaw = await SecureStore.getItemAsync(countKey(key));
+    let countRaw: string | null;
+    try {
+      countRaw = await SecureStore.getItemAsync(countKey(key));
+    } catch {
+      // El llavero puede conservar una entrada inaccesible tras reinstalar la
+      // app o no estar autorizado en un build de simulador sin firma. Para una
+      // lectura, equivale a no tener sesión; no debe alimentar el auto-refresh
+      // de Supabase con un rechazo cada 30 segundos.
+      return readLegacyValue(key);
+    }
 
     // Sin datos en SecureStore: intentar migrar desde AsyncStorage (sesión previa).
     if (countRaw == null) {
-      const legacy = await AsyncStorage.getItem(key);
+      const legacy = await readLegacyValue(key);
       if (legacy != null) {
         await secureAdapter.setItem(key, legacy);
         await AsyncStorage.removeItem(key).catch(() => {});
@@ -80,7 +93,13 @@ const secureAdapter: SupabaseAuthStorage = {
 
     const parts: string[] = [];
     for (let i = 0; i < count; i++) {
-      const part = await SecureStore.getItemAsync(chunkKey(key, i));
+      let part: string | null;
+      try {
+        part = await SecureStore.getItemAsync(chunkKey(key, i));
+      } catch {
+        await clearChunks(key, count);
+        return readLegacyValue(key);
+      }
       if (part == null) {
         // Chunk perdido → valor corrupto: limpiar y tratar como ausente.
         await clearChunks(key, count);
@@ -113,7 +132,7 @@ const secureAdapter: SupabaseAuthStorage = {
   async removeItem(key) {
     if (!SecureStore) return AsyncStorage.removeItem(key);
 
-    const countRaw = await SecureStore.getItemAsync(countKey(key));
+    const countRaw = await SecureStore.getItemAsync(countKey(key)).catch(() => null);
     const count = countRaw ? parseInt(countRaw, 10) : 0;
     await clearChunks(key, Number.isFinite(count) ? count : 0);
     // Por si quedó algo del esquema antiguo (sin chunks) en AsyncStorage.

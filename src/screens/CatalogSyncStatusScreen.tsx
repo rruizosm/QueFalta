@@ -1,14 +1,16 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Image, RefreshControl, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { ActivityIndicator, Image, RefreshControl, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
+import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { CATALOG_STORES, type CatalogStore } from '../constants/stores';
 import { fetchCatalogSyncStatuses, type CatalogSyncStatus } from '../api/catalogSyncStatus';
+import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
+import { glassAvailable } from '../components/GlassSurface';
 
 function formatDate(value: string, locale: string): string {
   const date = new Date(value);
@@ -17,13 +19,15 @@ function formatDate(value: string, locale: string): string {
 }
 
 export default function CatalogSyncStatusScreen() {
-  const navigation = useNavigation();
   const styles = useThemedStyles(themedStyles);
   const headerTop = useHeaderTopPadding(52);
+  const bottomPad = useTabBarBottomPadding(40);
   const { t, lang } = useTranslation();
   const [statuses, setStatuses] = useState<CatalogSyncStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [headerH, setHeaderH] = useState(0);
+  const glassInset = glassAvailable ? headerH : 0;
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -40,17 +44,16 @@ export default function CatalogSyncStatusScreen() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
-      <View style={[styles.header, { paddingTop: headerTop }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} hitSlop={8}>
-          <Ionicons name="arrow-back" size={22} color={colors.ink} />
-        </TouchableOpacity>
-        <View style={styles.headerTitleWrap}>
-          <View style={styles.headerIcon}><Ionicons name="sync-outline" size={18} color={colors.accent} /></View>
-          <Text style={styles.title}>{t('catalogSyncStatus.title')}</Text>
-        </View>
-      </View>
+      <ProfileSubscreenHeader
+        title={t('catalogSyncStatus.title')}
+        icon="sync-outline"
+        headerTop={headerTop}
+        titleFontSize={17}
+        onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)}
+      />
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad, paddingTop: glassInset ? glassInset + 12 : 6 }]}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={colors.accent} />}
       >
         <Text style={styles.hint}>{t('catalogSyncStatus.hint')}</Text>
@@ -81,16 +84,11 @@ export default function CatalogSyncStatusScreen() {
 
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingBottom: 10, gap: 12 },
-  backBtn: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
-  headerTitleWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  headerIcon: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accentLight },
-  title: { flex: 1, fontSize: 22, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
   scroll: { padding: 16, paddingBottom: 40 },
-  hint: { fontSize: 14, lineHeight: 20, color: colors.inkSoft, marginBottom: 16 },
+  hint: { fontSize: 12, fontFamily: fonts.medium, lineHeight: 18, color: colors.inkSoft, marginBottom: 14 },
   loader: { marginTop: 42 },
   card: { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, borderRadius: 20, overflow: 'hidden' },
-  row: { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 12 },
+  row: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 12, paddingVertical: 12, gap: 12 },
   border: { borderBottomWidth: 1, borderBottomColor: colors.border },
   iconBox: { width: 34, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accentLight },
   iconBoxFallback: { borderWidth: 1, borderColor: colors.border },

@@ -75,6 +75,8 @@ const resolveNutritionSource = (
   ? openFoodFactsInfo
   : fallbackInfo ?? openFoodFactsInfo;
 
+const AUTO_RESOLUTION_TIMEOUT_MS = 4500;
+
 function NutritionDisclosureShell({
   inline, visible, onClose, children,
 }: {
@@ -146,22 +148,46 @@ export function useNutritionInfoDisclosure({
     [store, fallbackNutrition, fallbackProductName, fallbackCategoryName, fallbackIngredients],
   );
   const active = !!ean || !!fallbackInfo;
+  // Una identidad nueva obliga a considerar pendiente el resultado desde el
+  // propio render, antes de que useEffect pueda limpiar el estado anterior.
+  const requestIdentity = useMemo(
+    () => ({ active, ean, fallbackInfo }),
+    [active, ean, fallbackInfo],
+  );
+  const [resolvedIdentity, setResolvedIdentity] = useState<object | null>(null);
+  const resolved = !active || (!ean && !!fallbackInfo) || resolvedIdentity === requestIdentity;
+  const currentInfo = resolvedIdentity === requestIdentity
+    ? info
+    : (!ean ? fallbackInfo : null);
 
   useEffect(() => {
     setInfo(null);
     setNotFound(false);
     setError(false);
-    setLoading(false);
     setVisible(false);
-    if (!active) return;
+    if (!active) {
+      setLoading(false);
+      setResolvedIdentity(requestIdentity);
+      return;
+    }
     if (!ean) {
+      setLoading(false);
       setInfo(fallbackInfo);
       if (!fallbackInfo) setNotFound(true);
+      setResolvedIdentity(requestIdentity);
       return;
     }
 
     let cancelled = false;
-    fetchOpenFoodFactsNutrition(ean)
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    setLoading(true);
+    // Open Food Facts no debe retener indefinidamente el comparador si la red
+    // está degradada. La petición sigue calentando su caché para una reapertura,
+    // pero la ficha continúa con el fallback (o sin índice) tras este límite.
+    const timeout = new Promise<null>((resolve) => {
+      timeoutId = setTimeout(() => resolve(null), AUTO_RESOLUTION_TIMEOUT_MS);
+    });
+    Promise.race([fetchOpenFoodFactsNutrition(ean), timeout])
       .then((data) => {
         if (cancelled) return;
         const resolved = resolveNutritionSource(data, fallbackInfo);
@@ -169,10 +195,22 @@ export function useNutritionInfoDisclosure({
         else setNotFound(true);
       })
       .catch(() => {
-        if (!cancelled && fallbackInfo) setInfo(fallbackInfo);
+        if (cancelled) return;
+        if (fallbackInfo) setInfo(fallbackInfo);
+        else setError(true);
+      })
+      .finally(() => {
+        if (timeoutId) clearTimeout(timeoutId);
+        if (!cancelled) {
+          setLoading(false);
+          setResolvedIdentity(requestIdentity);
+        }
       });
-    return () => { cancelled = true; };
-  }, [active, ean, fallbackInfo]);
+    return () => {
+      cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [active, ean, fallbackInfo, requestIdentity]);
 
   const open = async () => {
     if (!active) return;
@@ -195,7 +233,7 @@ export function useNutritionInfoDisclosure({
     setVisible(true);
     setNotFound(false);
     setError(false);
-    if (info) {
+    if (currentInfo) {
       setLoading(false);
       return;
     }
@@ -214,18 +252,18 @@ export function useNutritionInfoDisclosure({
     }
   };
 
-  const rows = info ? [
-    [t('nutrition.energy'), fmt(info.nutriments.energyKcal, 'kcal', locale)],
-    [t('nutrition.fat'), fmt(info.nutriments.fat, 'g', locale)],
-    [t('nutrition.saturatedFat'), fmt(info.nutriments.saturatedFat, 'g', locale)],
-    [t('nutrition.carbohydrates'), fmt(info.nutriments.carbohydrates, 'g', locale)],
-    [t('nutrition.sugars'), fmt(info.nutriments.sugars, 'g', locale)],
-    [t('nutrition.fiber'), fmt(info.nutriments.fiber, 'g', locale)],
-    [t('nutrition.proteins'), fmt(info.nutriments.proteins, 'g', locale)],
-    [t('nutrition.salt'), fmt(info.nutriments.salt, 'g', locale)],
+  const rows = currentInfo ? [
+    [t('nutrition.energy'), fmt(currentInfo.nutriments.energyKcal, 'kcal', locale)],
+    [t('nutrition.fat'), fmt(currentInfo.nutriments.fat, 'g', locale)],
+    [t('nutrition.saturatedFat'), fmt(currentInfo.nutriments.saturatedFat, 'g', locale)],
+    [t('nutrition.carbohydrates'), fmt(currentInfo.nutriments.carbohydrates, 'g', locale)],
+    [t('nutrition.sugars'), fmt(currentInfo.nutriments.sugars, 'g', locale)],
+    [t('nutrition.fiber'), fmt(currentInfo.nutriments.fiber, 'g', locale)],
+    [t('nutrition.proteins'), fmt(currentInfo.nutriments.proteins, 'g', locale)],
+    [t('nutrition.salt'), fmt(currentInfo.nutriments.salt, 'g', locale)],
   ].filter((row): row is [string, string] => !!row[1]) : [];
 
-  const index = info?.foodIndex ?? null;
+  const index = currentInfo?.foodIndex ?? null;
   const formula = index?.components
     .map((component) => `${component.weight}% ${t(componentLabelKey[component.id]).toLocaleLowerCase()}`)
     .join(' + ');
@@ -331,9 +369,9 @@ export function useNutritionInfoDisclosure({
               <Text style={styles.message}>{t('nutrition.error')}</Text>
             ) : notFound ? (
               <Text style={styles.message}>{t('nutrition.notFound')}</Text>
-            ) : info ? (
+            ) : currentInfo ? (
               <>
-                {!inline && info.productName ? <Text style={styles.productName}>{info.productName}</Text> : null}
+                {!inline && currentInfo.productName ? <Text style={styles.productName}>{currentInfo.productName}</Text> : null}
 
                 {index ? (
                   <>
@@ -431,13 +469,13 @@ export function useNutritionInfoDisclosure({
                   <Text style={styles.message}>{t('nutrition.index.notAvailable')}</Text>
                 )}
 
-                {info.source === 'openfoodfacts' ? (
+                {currentInfo.source === 'openfoodfacts' ? (
                   <>
                     {renderInfoSection(
                       'nutrition.processing.title',
                       'nutrition.processing.hint',
                       'nutrition.processing.none',
-                      info.novaGroup === 4 ? [{
+                      currentInfo.novaGroup === 4 ? [{
                         label: t('nutrition.processing.ultraProcessedTitle'),
                         detail: t('nutrition.processing.ultraProcessedDetail'),
                       }] : [],
@@ -447,7 +485,7 @@ export function useNutritionInfoDisclosure({
                       'nutrition.additives.title',
                       'nutrition.additives.hint',
                       'nutrition.additives.none',
-                      info.additives.map((additive) => ({
+                      currentInfo.additives.map((additive) => ({
                         label: additive.code,
                         detail: additive.name ?? t('nutrition.additives.itemDetail'),
                       })),
@@ -472,9 +510,9 @@ export function useNutritionInfoDisclosure({
 
                 <Text style={styles.source}>
                   {t(
-                    info.source === 'mercadona'
+                    currentInfo.source === 'mercadona'
                       ? 'nutrition.sourceMercadona'
-                      : info.source === 'catalog'
+                      : currentInfo.source === 'catalog'
                         ? 'nutrition.sourceCatalog'
                         : 'nutrition.source',
                   )}
@@ -487,11 +525,13 @@ export function useNutritionInfoDisclosure({
 
   return {
     active,
+    resolved,
+    loading,
     open,
     modal: inline ? null : disclosure,
     inlineContent: inline ? disclosure : null,
     expanded: visible,
-    info,
+    info: currentInfo,
   };
 }
 

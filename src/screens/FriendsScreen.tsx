@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   View, Text, TextInput, ScrollView, TouchableOpacity,
   StyleSheet, StatusBar, ActivityIndicator,
@@ -12,7 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { searchUsersByUsername, type SearchedUser } from '../api/groups';
+import { useUsernameSearch } from '../hooks/useUsernameSearch';
 import {
   fetchFriends, fetchIncomingRequests, fetchOutgoingRequests,
   sendFriendRequest, acceptFriendRequest, removeFriendship, type FriendProfile,
@@ -44,9 +44,7 @@ export default function FriendsScreen() {
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchedUser[]>([]);
-  const [searching, setSearching] = useState(false);
-  const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { cleanQuery, results, searching } = useUsernameSearch(query, userId);
   const [headerH, setHeaderH] = useState(0);
   const glassInset = glassAvailable ? headerH : 0;
 
@@ -60,22 +58,6 @@ export default function FriendsScreen() {
   }, [userId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
-
-  // Debounced @username search.
-  useEffect(() => {
-    const q = query.trim();
-    if (debounce.current) clearTimeout(debounce.current);
-    if (q.replace(/^@/, '').length < 2) { setResults([]); setSearching(false); return; }
-    setSearching(true);
-    debounce.current = setTimeout(async () => {
-      try {
-        const r = await searchUsersByUsername(q);
-        setResults(r.filter((u) => u.id !== userId));
-      } catch { setResults([]); }
-      finally { setSearching(false); }
-    }, 350);
-    return () => { if (debounce.current) clearTimeout(debounce.current); };
-  }, [query, userId]);
 
   const friendIds = useMemo(() => new Set(friends.map((f) => f.id)), [friends]);
   const outgoingIds = useMemo(() => new Set(outgoing.map((f) => f.id)), [outgoing]);
@@ -98,8 +80,7 @@ export default function FriendsScreen() {
     }
   };
 
-  const cleanQ = query.trim().replace(/^@/, '');
-  const isSearchMode = cleanQ.length >= 2;
+  const isSearchMode = cleanQuery.length >= 2;
 
   return (
     <View style={styles.container}>
@@ -128,7 +109,7 @@ export default function FriendsScreen() {
           {isSearchMode ? (
             // ── Search results ──
             (!searching && results.length === 0) ? (
-              <Text style={styles.empty}>{t('friends.noResults', { q: cleanQ })}</Text>
+              <Text style={styles.empty}>{t('friends.noResults', { q: cleanQuery })}</Text>
             ) : (
               results.map((u) => {
                 const incomingFid = incomingById.get(u.id);

@@ -3,9 +3,9 @@
  *   - modo claro/oscuro (`themeMode`: 'light' | 'dark' | 'system')
  *   - color principal (`accentKey`)
  *
- * Carga ambas preferencias de AsyncStorage ANTES de renderizar la app (devuelve
- * null mientras tanto, con la splash aún visible) para que todos los StyleSheet
- * se creen ya con el tema correcto y no haya flash.
+ * Carga las preferencias de AsyncStorage sin bloquear el árbol. Mientras se
+ * hidratan expone los valores por defecto y `ready=false`; Navigation conserva
+ * el BootLoader hasta que la paleta definitiva está aplicada.
  *
  * `useThemedStyles(fábrica)` es el puente para los StyleSheet que dependen del
  * tema: suscribe al componente y recrea los estilos al cambiar modo o color
@@ -18,15 +18,25 @@ import { Appearance } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   ACCENT_OPTIONS, AccentKey, DEFAULT_ACCENT, applyAccent,
-  THEME_OPTIONS, ThemeMode, ColorScheme, DEFAULT_THEME_MODE, applyTheme,
+  THEME_OPTIONS, ThemeMode, ColorScheme, DEFAULT_THEME_MODE, applyTheme, isHexColor,
 } from '../constants/colors';
+import { useAuth } from './AuthContext';
 
 const ACCENT_KEY = '@accent_color';
+const CUSTOM_ACCENT_KEY = '@custom_accent_color';
 const THEME_KEY  = '@theme_mode';
 
+/** Preferencias locales al dispositivo, aisladas entre las cuentas que lo usan. */
+function scopedKey(key: string, userId: string | null) {
+  return userId ? `${key}:${userId}` : key;
+}
+
 interface ThemeContextValue {
+  ready: boolean;
   accentKey: AccentKey;
   setAccentKey: (key: AccentKey) => void;
+  customAccent: string | null;
+  setCustomAccent: (hex: string) => void;
   themeMode: ThemeMode;
   setThemeMode: (mode: ThemeMode) => void;
   /** Esquema realmente aplicado ('light' | 'dark'), ya resuelto el 'system'. */
@@ -34,15 +44,18 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
+  ready: false,
   accentKey: DEFAULT_ACCENT,
   setAccentKey: () => {},
+  customAccent: null,
+  setCustomAccent: () => {},
   themeMode: DEFAULT_THEME_MODE,
   setThemeMode: () => {},
   scheme: 'light',
 });
 
 function isAccentKey(value: string | null): value is AccentKey {
-  return ACCENT_OPTIONS.some((o) => o.key === value);
+  return value === 'custom' || ACCENT_OPTIONS.some((o) => o.key === value);
 }
 
 function isThemeMode(value: string | null): value is ThemeMode {
@@ -64,36 +77,75 @@ function applyNativeScheme(mode: ThemeMode) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const { session, loading: authLoading } = useAuth();
+  const userId = session?.user.id ?? null;
   const [accentKey, setKey] = useState<AccentKey | null>(null);
+  const [customAccent, setCustomAccentValue] = useState<string | null>(null);
   const [themeMode, setMode] = useState<ThemeMode | null>(null);
+  const [loadedForUserId, setLoadedForUserId] = useState<string | null | undefined>(undefined);
   const [systemScheme, setSystemScheme] = useState<ColorScheme>(
     () => (Appearance.getColorScheme() === 'dark' ? 'dark' : 'light'),
   );
 
-  // Carga las preferencias guardadas antes del primer render.
+  // Carga las preferencias guardadas antes del render. Las claves antiguas sin
+  // sufijo se migran una única vez a la primera cuenta que inicia sesión.
   useEffect(() => {
-    Promise.all([
-      AsyncStorage.getItem(ACCENT_KEY),
-      AsyncStorage.getItem(THEME_KEY),
-    ])
-      .then(([rawAccent, rawMode]) => {
-        const key = isAccentKey(rawAccent) ? rawAccent : DEFAULT_ACCENT;
+    if (authLoading) return;
+    let cancelled = false;
+    setKey(null);
+    setCustomAccentValue(null);
+    setMode(null);
+
+    const keys = [ACCENT_KEY, CUSTOM_ACCENT_KEY, THEME_KEY];
+    const localKeys = keys.map((key) => scopedKey(key, userId));
+    AsyncStorage.multiGet(localKeys)
+      .then(async (entries) => {
+        let values = entries.map(([, value]) => value);
+        const hasLocalValue = values.some((value) => value !== null);
+
+        // La app guardaba estas preferencias con claves globales. Se conserva
+        // la elección existente para la primera cuenta y se borran las claves
+        // legacy, de modo que otra cuenta no pueda heredarla.
+        if (userId && !hasLocalValue) {
+          const legacyValues = (await AsyncStorage.multiGet(keys)).map(([, value]) => value);
+          if (legacyValues.some((value) => value !== null)) {
+            values = legacyValues;
+            await AsyncStorage.multiSet(
+              localKeys.flatMap((key, index) => values[index] === null ? [] : [[key, values[index]!]]),
+            );
+            await AsyncStorage.multiRemove(keys);
+          }
+        }
+
+        if (cancelled) return;
+        const [rawAccent, rawCustomAccent, rawMode] = values;
+        const savedCustomAccent = isHexColor(rawCustomAccent) ? rawCustomAccent : null;
+        const key = isAccentKey(rawAccent) && (rawAccent !== 'custom' || savedCustomAccent)
+          ? rawAccent
+          : DEFAULT_ACCENT;
         const mode = isThemeMode(rawMode) ? rawMode : DEFAULT_THEME_MODE;
-        applyAccent(key);
+        applyAccent(key, savedCustomAccent);
         applyTheme(resolveScheme(mode, systemScheme));
         applyNativeScheme(mode);
         setKey(key);
+        setCustomAccentValue(savedCustomAccent);
         setMode(mode);
+        setLoadedForUserId(userId);
       })
       .catch(() => {
+        if (cancelled) return;
         applyAccent(DEFAULT_ACCENT);
         applyTheme(resolveScheme(DEFAULT_THEME_MODE, systemScheme));
         applyNativeScheme(DEFAULT_THEME_MODE);
         setKey(DEFAULT_ACCENT);
+        setCustomAccentValue(null);
         setMode(DEFAULT_THEME_MODE);
+        setLoadedForUserId(userId);
       });
+    return () => { cancelled = true; };
+    // systemScheme is intentionally read at hydration time only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [authLoading, userId]);
 
   // Ref con el modo vigente para que el listener del sistema (closure estable)
   // sepa si debe re-aplicar la paleta.
@@ -113,12 +165,29 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const scheme: ColorScheme = resolveScheme(themeMode ?? DEFAULT_THEME_MODE, systemScheme);
+  const ready = !authLoading
+    && loadedForUserId === userId
+    && accentKey !== null
+    && themeMode !== null;
 
   const setAccentKey = useCallback((key: AccentKey) => {
-    applyAccent(key);
-    setKey(key);
-    AsyncStorage.setItem(ACCENT_KEY, key).catch(() => {});
-  }, []);
+    const next = key === 'custom' && !customAccent ? DEFAULT_ACCENT : key;
+    applyAccent(next, customAccent);
+    setKey(next);
+    AsyncStorage.setItem(scopedKey(ACCENT_KEY, userId), next).catch(() => {});
+  }, [customAccent, userId]);
+
+  const setCustomAccent = useCallback((hex: string) => {
+    if (!isHexColor(hex)) return;
+    const normalized = hex.toUpperCase();
+    applyAccent('custom', normalized);
+    setCustomAccentValue(normalized);
+    setKey('custom');
+    AsyncStorage.multiSet([
+      [scopedKey(ACCENT_KEY, userId), 'custom'],
+      [scopedKey(CUSTOM_ACCENT_KEY, userId), normalized],
+    ]).catch(() => {});
+  }, [userId]);
 
   const setThemeMode = useCallback((mode: ThemeMode) => {
     // Aplica la paleta de inmediato (antes del re-render) para evitar un frame
@@ -128,21 +197,22 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     applyNativeScheme(mode);
     applyTheme(resolveScheme(mode, Appearance.getColorScheme() === 'dark' ? 'dark' : 'light'));
     setMode(mode);
-    AsyncStorage.setItem(THEME_KEY, mode).catch(() => {});
-  }, []);
+    AsyncStorage.setItem(scopedKey(THEME_KEY, userId), mode).catch(() => {});
+  }, [userId]);
 
   const value = useMemo(
     () => ({
+      ready,
       accentKey: accentKey ?? DEFAULT_ACCENT,
       setAccentKey,
+      customAccent,
+      setCustomAccent,
       themeMode: themeMode ?? DEFAULT_THEME_MODE,
       setThemeMode,
       scheme,
     }),
-    [accentKey, setAccentKey, themeMode, setThemeMode, scheme],
+    [ready, accentKey, setAccentKey, customAccent, setCustomAccent, themeMode, setThemeMode, scheme],
   );
-
-  if (accentKey === null || themeMode === null) return null;
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
@@ -153,7 +223,7 @@ export function useTheme(): ThemeContextValue {
 
 /** Recrea estilos dependientes del tema (modo o color) al cambiar. */
 export function useThemedStyles<T>(factory: () => T): T {
-  const { accentKey, scheme } = useTheme();
+  const { accentKey, customAccent, scheme } = useTheme();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(factory, [accentKey, scheme]);
+  return useMemo(factory, [accentKey, customAccent, scheme]);
 }

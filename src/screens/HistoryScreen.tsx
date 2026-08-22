@@ -10,16 +10,13 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useCart } from '../context/CartContext';
-import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { FREE_LIMITS, limitsApply } from '../constants/limits';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { fetchPurchases, fetchPurchaseItems, type Purchase } from '../api/purchases';
-import PaywallModal from '../components/PaywallModal';
 import type { NewListItem } from '../api/lists';
 import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
 import { glassAvailable } from '../components/GlassSurface';
@@ -40,7 +37,6 @@ export default function HistoryScreen() {
   const locale = lang === 'ca' ? 'ca-ES' : 'es-ES';
   const navigation = useNavigation<any>();
   const { loadItemsIntoGroupCart } = useCart();
-  const { isPremium, loading: profileLoading } = useProfile();
   const toast = useToast();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,31 +45,15 @@ export default function HistoryScreen() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [itemsCache, setItemsCache] = useState<Record<string, NewListItem[]>>({});
   const [itemsLoadingId, setItemsLoadingId] = useState<string | null>(null);
-  const [paywallVisible, setPaywallVisible] = useState(false);
   const [headerH, setHeaderH] = useState(0);
   const glassInset = glassAvailable ? headerH : 0;
-  const historyLocked = !profileLoading && limitsApply(isPremium);
-
-  // Gate free (Fase 2 MONETIZACION.md): ver el historial es libre, pero solo se
-  // pueden REPETIR las N compras más recientes (vienen ordenadas desc).
-  const repeatableIds = useMemo(
-    () => new Set(purchases.slice(0, FREE_LIMITS.maxRepeatableHistory).map((p) => p.id)),
-    [purchases],
-  );
-  const isRepeatLocked = (p: Purchase) =>
-    limitsApply(isPremium) && !repeatableIds.has(p.id);
 
   const load = useCallback(() => {
-    if (historyLocked) {
-      setPurchases([]);
-      setLoading(false);
-      return Promise.resolve();
-    }
     return fetchPurchases()
       .then(setPurchases)
       .catch(() => setPurchases([]))
       .finally(() => setLoading(false));
-  }, [historyLocked]);
+  }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
@@ -110,7 +90,7 @@ export default function HistoryScreen() {
         toast.show(t('history.noDetail'), 'error');
         return;
       }
-      await loadItemsIntoGroupCart(p.groupId, p.groupName ?? t('history.groupFallback'), items);
+      await loadItemsIntoGroupCart(p.groupId, p.groupName ?? t('history.groupFallback'), items, p.groupIcon);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show(t('history.loaded', { n: items.length, group: p.groupName ?? t('history.theGroupFallback') }));
       navigation.navigate('List');
@@ -149,16 +129,6 @@ export default function HistoryScreen() {
 
       {loading ? (
         <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: glassInset + 60 }} />
-      ) : historyLocked ? (
-        <View style={[styles.centerBox, glassInset ? { paddingTop: glassInset } : null]}>
-          <View style={styles.lockIcon}><Ionicons name="lock-closed" size={24} color={colors.accent} /></View>
-          <Text style={styles.emptyTitle}>{t('history.lockedTitle')}</Text>
-          <Text style={styles.emptyText}>{t('history.lockedText')}</Text>
-          <TouchableOpacity style={styles.unlockBtn} onPress={() => setPaywallVisible(true)} activeOpacity={0.85}>
-            <Ionicons name="sparkles" size={16} color={colors.white} />
-            <Text style={styles.unlockText}>{t('history.unlock')}</Text>
-          </TouchableOpacity>
-        </View>
       ) : purchases.length === 0 ? (
         <View style={[styles.centerBox, glassInset ? { paddingTop: glassInset } : null]}>
           <Ionicons name="receipt-outline" size={48} color={colors.inkFaint} />
@@ -233,32 +203,21 @@ export default function HistoryScreen() {
                                   )}
                                 </View>
                               ))}
-                              {isRepeatLocked(p) ? (
-                                <TouchableOpacity
-                                  style={styles.repeatBtnLocked}
-                                  onPress={() => setPaywallVisible(true)}
-                                  activeOpacity={0.85}
-                                >
-                                  <Ionicons name="lock-closed" size={15} color={colors.accent} />
-                                  <Text style={styles.repeatLockedText}>{t('history.repeatPlus')}</Text>
-                                </TouchableOpacity>
-                              ) : (
-                                <TouchableOpacity
-                                  style={styles.repeatBtn}
-                                  onPress={() => handleRepeat(p)}
-                                  disabled={!!repeatingId}
-                                  activeOpacity={0.85}
-                                >
-                                  {repeatingId === p.id ? (
-                                    <ActivityIndicator size="small" color={colors.white} />
-                                  ) : (
-                                    <>
-                                      <Ionicons name="refresh" size={16} color={colors.white} />
-                                      <Text style={styles.repeatText}>{t('history.repeat')}</Text>
-                                    </>
-                                  )}
-                                </TouchableOpacity>
-                              )}
+                              <TouchableOpacity
+                                style={styles.repeatBtn}
+                                onPress={() => handleRepeat(p)}
+                                disabled={!!repeatingId}
+                                activeOpacity={0.85}
+                              >
+                                {repeatingId === p.id ? (
+                                  <ActivityIndicator size="small" color={colors.white} />
+                                ) : (
+                                  <>
+                                    <Ionicons name="refresh" size={16} color={colors.white} />
+                                    <Text style={styles.repeatText}>{t('history.repeat')}</Text>
+                                  </>
+                                )}
+                              </TouchableOpacity>
                             </>
                           ) : (
                             <Text style={styles.noDetail}>{t('history.noDetail')}</Text>
@@ -274,11 +233,6 @@ export default function HistoryScreen() {
         </ScrollView>
       )}
 
-      <PaywallModal
-        visible={paywallVisible}
-        onClose={() => setPaywallVisible(false)}
-        subtitle={t('history.paywallSubtitle')}
-      />
     </View>
   );
 }
@@ -335,24 +289,7 @@ const themedStyles = () => StyleSheet.create({
     paddingVertical: 11, marginTop: 8, marginBottom: 4,
   },
   repeatText: { fontSize: 13.5, fontFamily: fonts.bold, color: colors.white },
-  repeatBtnLocked: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
-    backgroundColor: colors.accentLight,
-    borderWidth: 1, borderColor: colors.accent,
-    paddingVertical: 11, marginTop: 8, marginBottom: 4, borderRadius: 14,
-  },
-  repeatLockedText: { fontSize: 13.5, fontFamily: fonts.bold, color: colors.accent },
-
   centerBox: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40, gap: 10 },
   emptyTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink, textAlign: 'center' },
   emptyText: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'center', lineHeight: 20 },
-  lockIcon: {
-    width: 52, height: 52, borderRadius: 18, alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.accentLight,
-  },
-  unlockBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 8,
-    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 15, backgroundColor: colors.accent,
-  },
-  unlockText: { fontSize: 13.5, fontFamily: fonts.bold, color: colors.white },
 });

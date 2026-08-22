@@ -25,6 +25,7 @@ const TYPE_META: Record<InboxNotification['type'], { icon: keyof typeof Ionicons
   cart: { icon: 'cart', tint: '#2f6cb5' },
   group_invite: { icon: 'people', tint: '#3fa078' },
   friend: { icon: 'person-add', tint: '#7c5cd6' },
+  price_alert: { icon: 'pricetag', tint: '#d98224' },
   general: { icon: 'notifications', tint: '#e0a02c' },
 };
 
@@ -64,6 +65,15 @@ export default function NotificationsSheet({ visible, onClose }: Props) {
     onClose();
     navigation.navigate('Friends');
   };
+  const openPriceAlert = (notification: InboxNotification) => {
+    onClose();
+    const ruleId = typeof notification.data.ruleId === 'string' ? notification.data.ruleId : undefined;
+    navigation.navigate('PriceAlertResults', {
+      notificationId: notification.id,
+      ruleId,
+      title: renderNotification(notification, t).title,
+    });
+  };
 
   // Alto reservado bajo la cabecera flotante (área segura + fila de 38 + aire).
   const headerPad = insets.top + 64;
@@ -92,8 +102,8 @@ export default function NotificationsSheet({ visible, onClose }: Props) {
                 <Pressable
                   key={n.id}
                   style={styles.row}
-                  onPress={n.type === 'friend' ? openFriends : undefined}
-                  disabled={n.type !== 'friend'}
+                  onPress={n.type === 'friend' ? openFriends : n.type === 'price_alert' ? () => openPriceAlert(n) : undefined}
+                  disabled={n.type !== 'friend' && n.type !== 'price_alert'}
                 >
                   <View style={[styles.rowIcon, { backgroundColor: meta.tint + '22' }]}>
                     <Ionicons name={meta.icon} size={18} color={meta.tint} />
@@ -103,16 +113,16 @@ export default function NotificationsSheet({ visible, onClose }: Props) {
                     {body ? <Text style={styles.rowText} numberOfLines={3}>{body}</Text> : null}
                     <Text style={styles.rowTime}>{relTime(n.createdAt, t)}</Text>
                   </View>
-                  {n.type === 'friend' ? (
+                  {n.type === 'friend' || n.type === 'price_alert' ? (
                     <TouchableOpacity
                       onPress={(event) => {
                         event.stopPropagation();
-                        openFriends();
+                        if (n.type === 'friend') openFriends(); else openPriceAlert(n);
                       }}
                       style={styles.rowOpen}
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                       accessibilityRole="button"
-                      accessibilityLabel={t('notifications.a11yOpenFriend')}
+                      accessibilityLabel={t(n.type === 'friend' ? 'notifications.a11yOpenFriend' : 'notifications.a11yOpenPriceAlerts')}
                     >
                       <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
                     </TouchableOpacity>

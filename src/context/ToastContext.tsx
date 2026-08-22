@@ -2,7 +2,9 @@
  * ToastContext — mensajes breves no bloqueantes (en vez de Alert.alert para
  * confirmaciones/avisos). Se muestra sobre toda la app y se oculta solo.
  */
-import { createContext, useCallback, useContext, useRef, useState } from 'react';
+import {
+  createContext, useCallback, useContext, useMemo, useRef, useState,
+} from 'react';
 import { AccessibilityInfo, Animated, StyleSheet, Text, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
@@ -72,8 +74,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     timer.current = setTimeout(hide, 2400);
   }, [opacity, reducedMotion, translateY, hide]);
 
+  const value = useMemo(() => ({ show }), [show]);
+
   return (
-    <ToastContext.Provider value={{ show }}>
+    <ToastContext.Provider value={value}>
       {children}
       {toast && (
         <Animated.View

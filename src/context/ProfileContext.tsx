@@ -10,10 +10,12 @@ import { fetchProfile, updateProfile, type UserProfile } from '../api/profile';
 import { initialsFromName, takePendingProfileName } from '../lib/pendingProfileName';
 import { useAuth } from './AuthContext';
 import { readStartupCache, startupKeys, writeStartupCache } from '../lib/startupCache';
+import { hasActivePremium } from '../constants/limits';
 
 interface ProfileContextValue {
   profile: UserProfile | null;
   loading: boolean;
+  error: boolean;
   /** Suscripción QuéFalta Plus activa (premium_until en el futuro).
    *  Los gates deben combinarlo con limitsApply() de constants/limits.ts. */
   isPremium: boolean;
@@ -26,6 +28,7 @@ interface ProfileContextValue {
 const ProfileContext = createContext<ProfileContextValue>({
   profile: null,
   loading: true,
+  error: false,
   isPremium: false,
   refresh: async () => {},
   applyProfile: () => {},
@@ -37,6 +40,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [resolvedUserId, setResolvedUserId] = useState<string | null>(null);
   const requestId = useRef(0);
   const activeUserId = useRef<string | null>(userId);
@@ -47,6 +51,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     try {
       const p = await fetchProfile(userId);
       if (activeUserId.current !== userId) return;
+      setError(false);
 
       // Nombre que Apple entregó en el primer login (buzón de pendingProfileName).
       // Solo existe justo tras un alta con Apple, cuando el perfil aún tiene el
@@ -69,6 +74,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       if (p.avatarUrl) Image.prefetch(p.avatarUrl).catch(() => {});
     } catch {
       // keep whatever we had cached
+      if (activeUserId.current === userId) setError(true);
     } finally {
       if (activeUserId.current === userId) {
         setResolvedUserId(userId);
@@ -84,9 +90,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       setProfile(null);
       setResolvedUserId(null);
       setLoading(false);
+      setError(false);
       return;
     }
     setLoading(true);
+    setError(false);
     (async () => {
       const cached = await readStartupCache<UserProfile>(startupKeys.profile(userId));
       if (requestId.current !== currentRequest) return;
@@ -116,15 +124,14 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   // Se recalcula en cada render; suficiente, porque expira con horas de margen
   // y cualquier compra/restore refresca el perfil entero.
-  const isPremium =
-    !!profile?.premiumUntil && new Date(profile.premiumUntil).getTime() > Date.now();
+  const isPremium = hasActivePremium(profile?.premiumUntil);
   // Al cambiar la sesión, el efecto de carga se ejecuta después del primer
   // render. Esta comprobación evita que ese render trate como listo el perfil
   // (vacío o perteneciente al usuario anterior) antes de iniciar el fetch.
   const profileLoading = !!userId && (loading || resolvedUserId !== userId);
 
   return (
-    <ProfileContext.Provider value={{ profile, loading: profileLoading, isPremium, refresh, applyProfile }}>
+    <ProfileContext.Provider value={{ profile, loading: profileLoading, error, isPremium, refresh, applyProfile }}>
       {children}
     </ProfileContext.Provider>
   );

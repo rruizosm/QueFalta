@@ -13,6 +13,8 @@ import {
   Modal,
   Pressable,
   LayoutAnimation,
+  Animated,
+  Easing,
   Platform,
   UIManager,
 } from 'react-native';
@@ -38,7 +40,7 @@ import {
   searchCondisProducts, fetchCondisCategoryTree,
   searchAmetllerProducts, fetchAmetllerCategoryTree,
   searchAldiProducts, fetchAldiCategoryTree,
-  searchGadisProducts, fetchGadisCategoryTree, searchFroizProducts, searchAhorramasProducts, fetchAhorramasCategoryTree,
+  searchGadisProducts, fetchGadisCategoryTree, searchAhorramasProducts, fetchAhorramasCategoryTree,
   searchHiperdinoProducts, fetchHiperdinoCategoryTree,
   searchAlcampoProducts, fetchAlcampoCategoryTree,
   searchPlusfrescProducts, fetchPlusfrescCategoryTree,
@@ -66,7 +68,7 @@ import {
 import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../context/ToastContext';
 import { useProfile } from '../context/ProfileContext';
-import { useThemedStyles } from '../context/ThemeContext';
+import { useTheme, useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
@@ -81,6 +83,7 @@ import {
 } from '../lib/productAdapters';
 import { sortByName } from '../lib/sort';
 import { createMultiStorePager, type MultiStorePager } from '../lib/multiStorePager';
+import { searchCatalogStore } from '../lib/catalogSearch';
 import ActionSheet from '../components/ActionSheet';
 import StoreProductList from '../components/StoreProductList';
 import { type ViewMode } from '../components/ViewModeToggle';
@@ -88,7 +91,7 @@ import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import SlidingSegments, { type Segment } from '../components/SlidingSegments';
 import StoreDropdown, { type StoreSelection } from '../components/StoreDropdown';
 import PaywallModal from '../components/PaywallModal';
-import { limitsApply } from '../constants/limits';
+import { canUseAllStores, limitsApply } from '../constants/limits';
 
 // Las tiendas y sus metadatos viven en constants/stores.ts (fuente única
 // compartida con la preferencia de perfil "Supermercados").
@@ -251,26 +254,7 @@ async function loadStoreSearch(
   signal?: AbortSignal,
   limit = 50,
 ): Promise<UIProduct[]> {
-  switch (store) {
-    case 'mercadona': return (await searchProducts(query, region, limit, signal)).map((product) => mercadonaToUI(product));
-    case 'esclat': return (await searchBonpreuProducts(query, limit, signal)).map(bonpreuToUI);
-    case 'carrefour': return (await searchCarrefourProducts(query, region, limit, signal)).map(carrefourToUI);
-    case 'bonarea': return (await searchBonareaProducts(query, limit, signal)).map(bonareaToUI);
-    case 'consum': return (await searchConsumProducts(query, region, postalCode, limit, signal)).map(consumToUI);
-    case 'dia': return (await searchDiaProducts(query, region, limit, signal)).map(diaToUI);
-    case 'sorli': return (await searchSorliProducts(query, limit, signal)).map(sorliToUI);
-    case 'eroski': return (await searchEroskiProducts(query, limit, signal)).map(eroskiToUI);
-    case 'caprabo': return (await searchCapraboProducts(query, limit, signal)).map(capraboToUI);
-    case 'condis': return (await searchCondisProducts(query, limit, signal)).map(condisToUI);
-    case 'ametller': return (await searchAmetllerProducts(query, limit, signal)).map(ametllerToUI);
-    case 'aldi': return (await searchAldiProducts(query, limit, signal)).map(aldiToUI);
-    case 'gadis': return (await searchGadisProducts(query, limit, signal)).map(gadisToUI);
-    case 'froiz': return (await searchFroizProducts(query, limit, signal)).map(froizToUI);
-    case 'ahorramas': return (await searchAhorramasProducts(query, limit, signal)).map(ahorramasToUI);
-    case 'hiperdino': return (await searchHiperdinoProducts(query, limit, signal)).map(hiperdinoToUI);
-    case 'alcampo': return (await searchAlcampoProducts(query, limit, signal)).map(alcampoToUI);
-    case 'plusfresc': return (await searchPlusfrescProducts(query, postalCode, limit, signal)).map(plusfrescToUI);
-  }
+  return searchCatalogStore(store, query, region, postalCode, signal, limit);
 }
 
 function compareProductsByPrice(order: ProductSortDirection) {
@@ -299,6 +283,7 @@ function compareProductsByPricePerUnit(order: ProductSortDirection) {
 
 export default function CatalogScreen() {
   const styles = useThemedStyles(themedStyles);
+  const { scheme } = useTheme();
   const reducedMotion = useReducedMotion();
   const headerTop = useHeaderTopPadding(52);
   const bottomPad = useTabBarBottomPadding(20);
@@ -310,9 +295,11 @@ export default function CatalogScreen() {
   const [sheetCat, setSheetCat] = useState<CatRow | null>(null);
   const [store, setStore] = useState<StoreKey>('mercadona');
   const [tab, setTab] = useState<'categorias' | 'productos'>('productos');
+  const [productQueryInHeader, setProductQueryInHeader] = useState(false);
   const isAllStores = store === 'all';
 
   const handleStoreChange = (nextStore: StoreKey) => {
+    setProductQueryInHeader(false);
     setStore(nextStore);
     if (nextStore === 'all') setTab('productos');
   };
@@ -330,29 +317,30 @@ export default function CatalogScreen() {
     setPricePerUnitOrder(null);
   };
 
-  const selectProductSortSegment = (segment: ProductSortSegment) => {
-    if (segment === 'priceAsc' || segment === 'priceDesc') {
-      selectProductPriceOrder(segment === 'priceAsc' ? 'asc' : 'desc');
-      return;
-    }
-    setPricePerUnitOrder(segment === 'pricePerUnitAsc' ? 'asc' : 'desc');
-  };
-
   useEffect(() => {
     if (Platform.OS === 'android') UIManager.setLayoutAnimationEnabledExperimental?.(true);
   }, []);
 
   const setProductSearchFocus = (expanded: boolean) => {
-    if (expanded === productSearchExpanded) return;
+    const hidesHeaderQuery = expanded && productQueryInHeader;
+    if (expanded === productSearchExpanded && !hidesHeaderQuery) return;
     if (!reducedMotion) {
       LayoutAnimation.configureNext({
-        duration: 220,
+        duration: 360,
+        create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
         update: { type: LayoutAnimation.Types.easeInEaseOut },
         delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
       });
     }
+    if (expanded) setProductQueryInHeader(false);
     setProductSearchExpanded(expanded);
   };
+
+  useEffect(() => {
+    if (tab !== 'productos' && productQueryInHeader) {
+      setProductQueryInHeader(false);
+    }
+  }, [productQueryInHeader, tab]);
 
   // Liquid Glass (F3): igual que Cambios de precios, todo el chrome (cabecera,
   // pestañas + selector de súper y buscador) vive en una franja de cristal
@@ -375,7 +363,34 @@ export default function CatalogScreen() {
   // intersección queda vacía (eligió solo súpers de otra región), cae a todos
   // los de la región — nunca un catálogo vacío (los nacionales están en todas).
   const { profile, isPremium, loading: profileLoading } = useProfile();
-  const allLocked = !profileLoading && limitsApply(isPremium);
+  const allLocked = !profileLoading
+    && !canUseAllStores(isPremium, profile?.legacyAllStoresAccess);
+  const unitPriceSortLocked = !profileLoading && limitsApply(isPremium);
+
+  const openUnitPricePaywall = () => {
+    setPaywallVisible(true);
+  };
+
+  const selectProductSortSegment = (segment: ProductSortSegment) => {
+    if (segment === 'priceAsc' || segment === 'priceDesc') {
+      selectProductPriceOrder(segment === 'priceAsc' ? 'asc' : 'desc');
+      return;
+    }
+    if (profileLoading) return;
+    if (unitPriceSortLocked) {
+      openUnitPricePaywall();
+      return;
+    }
+    setPricePerUnitOrder(segment === 'pricePerUnitAsc' ? 'asc' : 'desc');
+  };
+
+  // Si la suscripción caduca con el orden unitario activo, vuelve al orden
+  // gratuito antes de pedir o comparar otra página del catálogo.
+  useEffect(() => {
+    if (unitPriceSortLocked && pricePerUnitOrder != null) {
+      setPricePerUnitOrder(null);
+    }
+  }, [pricePerUnitOrder, unitPriceSortLocked]);
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
   const preferredStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
@@ -386,6 +401,10 @@ export default function CatalogScreen() {
   const visibleStores = useMemo(
     () => CATALOG_STORES.filter((item) => enabledStores.includes(item.key)),
     [enabledStores],
+  );
+  const storeGridData = useMemo(
+    () => visibleStores.length % 2 === 0 ? visibleStores : [...visibleStores, null],
+    [visibleStores],
   );
 
   // Si la tienda activa deja de estar permitida, salta a la primera visible.
@@ -608,6 +627,42 @@ export default function CatalogScreen() {
   const setProdQuery = store === 'all'
     ? setAllSearch
     : { mercadona: setProdSearch, esclat: setBpSearch, carrefour: setCfSearch, bonarea: setBaSearch, consum: setCsSearch, dia: setDdSearch, sorli: setSoSearch, eroski: setEkSearch, caprabo: setCbSearch, condis: setCoSearch, ametller: setAmSearch, aldi: setAlSearch, gadis: setGaSearch, froiz: setFrSearch, ahorramas: setAhSearch, hiperdino: setHdSearch, alcampo: setAcSearch, plusfresc: setPfSearch }[store];
+  const visibleProductQuery = prodQuery.trim();
+  const showProductQueryInHeader = productQueryInHeader
+    && tab === 'productos'
+    && visibleProductQuery.length > 0;
+  const productQueryReveal = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const target = showProductQueryInHeader ? 1 : 0;
+    if (reducedMotion) {
+      productQueryReveal.setValue(target);
+      return;
+    }
+    const animation = Animated.timing(productQueryReveal, {
+      toValue: target,
+      duration: target === 1 ? 420 : 360,
+      easing: Easing.bezier(0.22, 1, 0.36, 1),
+      useNativeDriver: false,
+    });
+    animation.start();
+    return () => animation.stop();
+  }, [productQueryReveal, reducedMotion, showProductQueryInHeader]);
+
+  const handleProductScrollBegin = () => {
+    const shouldShowHeaderQuery = visibleProductQuery.length > 0;
+    if (!productSearchExpanded && productQueryInHeader === shouldShowHeaderQuery) return;
+    if (!reducedMotion) {
+      LayoutAnimation.configureNext({
+        duration: 360,
+        update: { type: LayoutAnimation.Types.easeInEaseOut },
+        create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+        delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+      });
+    }
+    setProductSearchExpanded(false);
+    setProductQueryInHeader(shouldShowHeaderQuery);
+  };
   const browseMode = tab === 'productos' && prodQuery.trim().length < 2;
   const productSortField: ProductSortField = pricePerUnitOrder == null ? 'price' : 'pricePerUnit';
   const activeProductOrder = pricePerUnitOrder ?? productOrder;
@@ -1188,7 +1243,7 @@ export default function CatalogScreen() {
           roundedCards
           showStoreLogo={store === 'all'}
           topInset={glassInset}
-          onScrollBeginDrag={() => setProductSearchFocus(false)}
+          onScrollBeginDrag={handleProductScrollBegin}
         />,
       );
     }
@@ -1204,7 +1259,7 @@ export default function CatalogScreen() {
         onEndReached={loadMoreBrowse}
         loadingMore={browseMore}
         topInset={glassInset}
-        onScrollBeginDrag={() => setProductSearchFocus(false)}
+        onScrollBeginDrag={handleProductScrollBegin}
       />
     );
   };
@@ -1228,79 +1283,176 @@ export default function CatalogScreen() {
     </View>
   );
 
-  // Fila de búsqueda de productos: conserva el orden por precio de envase y
-  // añade un segundo selector independiente para el precio por unidad.
-  const productSearchRow = (placeholder: string, value: string, onChange: (s: string) => void) => (
-    <View style={styles.prodSearchRow}>
-      {productSearchExpanded ? (
-        <View style={[styles.searchBar, styles.prodSearchBox]}>
-          <Ionicons name="search-outline" size={18} color={colors.inkSoft} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder={placeholder}
-            placeholderTextColor={colors.inkFaint}
-            value={value}
-            onChangeText={onChange}
-            onFocus={() => setProductSearchFocus(true)}
-            onBlur={() => setProductSearchFocus(false)}
-            returnKeyType="search"
-            autoCorrect={false}
-            autoFocus
-          />
-          {value.length > 0 && (
-            <TouchableOpacity onPress={() => onChange('')}>
-              <Ionicons name="close-circle" size={18} color={colors.inkFaint} />
-            </TouchableOpacity>
-          )}
+  const lockedUnitPriceSortButton = (direction: ProductSortDirection) => {
+    const segment: ProductSortSegment = direction === 'asc'
+      ? 'pricePerUnitAsc'
+      : 'pricePerUnitDesc';
+    return (
+      <TouchableOpacity
+        style={[
+          styles.prodUnitSortLockedBtn,
+          glassAvailable ? styles.prodUnitSortLockedBtnGlass : styles.prodUnitSortLockedBtnFallback,
+          direction === 'asc'
+            ? styles.prodUnitSortLockedBtnFirst
+            : styles.prodUnitSortLockedBtnLast,
+        ]}
+        onPress={() => selectProductSortSegment(segment)}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel={t(direction === 'asc'
+          ? 'catalog.sortPricePerUnitAsc'
+          : 'catalog.sortPricePerUnitDesc')}
+        accessibilityHint={t('paywall.benefits.unitPriceText')}
+      >
+        <View pointerEvents="none" style={styles.prodUnitSortLockedTextWrap}>
+          <Text style={styles.prodUnitSortLockedText}>
+            {direction === 'asc' ? '€/u↑' : '€/u↓'}
+          </Text>
         </View>
-      ) : (
-        <TouchableOpacity
-          style={styles.prodSearchButton}
-          onPress={() => setProductSearchFocus(true)}
-          activeOpacity={0.85}
-          accessibilityRole="button"
-          accessibilityLabel={placeholder}
+      </TouchableOpacity>
+    );
+  };
+
+  const lockedUnitPriceSortGroup = (
+    <View
+      style={[
+        glassAvailable
+          ? styles.prodUnitSortLockedBackgroundGlass
+          : styles.prodUnitSortLockedBackgroundFallback,
+        glassAvailable && (scheme === 'dark'
+          ? styles.prodUnitSortLockedBackgroundGlassDark
+          : styles.prodUnitSortLockedBackgroundGlassLight),
+      ]}
+    >
+      {glassAvailable && (
+        <View pointerEvents="none" style={styles.prodUnitSortLockedHighlight} />
+      )}
+      <View style={[
+        styles.prodUnitSortLockedButtons,
+        glassAvailable
+          ? styles.prodUnitSortLockedButtonsGlass
+          : styles.prodUnitSortLockedButtonsFallback,
+      ]}>
+        {lockedUnitPriceSortButton('asc')}
+        {lockedUnitPriceSortButton('desc')}
+      </View>
+    </View>
+  );
+
+  // Fila de búsqueda de productos: una única superficie se transforma de
+  // botón circular a buscador. Mantener la lupa montada durante toda la
+  // transición evita que el glifo se quede atrás al abrir o cerrar.
+  const productSearchRow = (placeholder: string, value: string, onChange: (s: string) => void) => (
+    <View style={styles.prodSearchBlock}>
+      <View style={styles.prodSearchRow}>
+        <View
+          style={[
+            styles.searchBar,
+            styles.prodSearchBox,
+            glassAvailable ? styles.prodSearchBoxGlass : styles.prodSearchBoxFallback,
+            productSearchExpanded
+              ? styles.prodSearchBoxExpanded
+              : styles.prodSearchBoxCollapsed,
+          ]}
         >
           <Ionicons name="search-outline" size={20} color={colors.inkSoft} />
-        </TouchableOpacity>
-      )}
-      <View style={styles.prodSortGroup}>
-        {glassAvailable ? (
-          <SlidingSegments
-            compact
-            dense
-            segments={[
-              { key: 'priceAsc', icon: 'arrow-up', accessibilityLabel: t('catalog.sortPriceAsc') },
-              { key: 'priceDesc', icon: 'arrow-down', accessibilityLabel: t('catalog.sortPriceDesc') },
-              { key: 'pricePerUnitAsc', label: '€/u↑', accessibilityLabel: t('catalog.sortPricePerUnitAsc') },
-              { key: 'pricePerUnitDesc', label: '€/u↓', accessibilityLabel: t('catalog.sortPricePerUnitDesc') },
-            ]}
-            value={activeProductSortSegment}
-            onChange={selectProductSortSegment}
-          />
-        ) : (
-          <View style={[styles.viewToggle, styles.prodToggleDense]}>
-            <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, activeProductSortSegment === 'priceAsc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('priceAsc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPriceAsc')}>
-              <Ionicons name="arrow-up" size={18} color={activeProductSortSegment === 'priceAsc' ? colors.white : colors.inkSoft} />
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, activeProductSortSegment === 'priceDesc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('priceDesc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPriceDesc')}>
-              <Ionicons name="arrow-down" size={18} color={activeProductSortSegment === 'priceDesc' ? colors.white : colors.inkSoft} />
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, activeProductSortSegment === 'pricePerUnitAsc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('pricePerUnitAsc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPricePerUnitAsc')}>
-              <Text style={[styles.prodUnitSortText, { color: activeProductSortSegment === 'pricePerUnitAsc' ? colors.white : colors.inkSoft }]}>€/u↑</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, activeProductSortSegment === 'pricePerUnitDesc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('pricePerUnitDesc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPricePerUnitDesc')}>
-              <Text style={[styles.prodUnitSortText, { color: activeProductSortSegment === 'pricePerUnitDesc' ? colors.white : colors.inkSoft }]}>€/u↓</Text>
-            </TouchableOpacity>
+          {productSearchExpanded ? (
+            <>
+              <TextInput
+                style={styles.searchInput}
+                placeholder={placeholder}
+                placeholderTextColor={colors.inkFaint}
+                value={value}
+                onChangeText={onChange}
+                onFocus={() => setProductSearchFocus(true)}
+                onBlur={() => setProductSearchFocus(false)}
+                returnKeyType="search"
+                autoCorrect={false}
+                autoFocus
+              />
+              {value.length > 0 && (
+                <TouchableOpacity onPress={() => onChange('')}>
+                  <Ionicons name="close-circle" size={18} color={colors.inkFaint} />
+                </TouchableOpacity>
+              )}
+            </>
+          ) : (
+            <TouchableOpacity
+              style={styles.prodSearchActivator}
+              onPress={() => setProductSearchFocus(true)}
+              activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel={placeholder}
+            />
+          )}
+        </View>
+        {!productSearchExpanded && (
+          <View style={styles.prodSortGroup}>
+          {unitPriceSortLocked ? (
+            <>
+              {glassAvailable ? (
+                <SlidingSegments
+                  compact
+                  dense
+                  emphasized
+                  segments={[
+                    { key: 'priceAsc', icon: 'arrow-up', accessibilityLabel: t('catalog.sortPriceAsc') },
+                    { key: 'priceDesc', icon: 'arrow-down', accessibilityLabel: t('catalog.sortPriceDesc') },
+                  ]}
+                  value={productOrder === 'asc' ? 'priceAsc' : 'priceDesc'}
+                  onChange={selectProductSortSegment}
+                />
+              ) : (
+                <View style={[styles.viewToggle, styles.prodToggleDense]}>
+                  <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, activeProductSortSegment === 'priceAsc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('priceAsc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPriceAsc')}>
+                    <Ionicons name="arrow-up" size={18} color={activeProductSortSegment === 'priceAsc' ? colors.white : colors.inkSoft} />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, activeProductSortSegment === 'priceDesc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('priceDesc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPriceDesc')}>
+                    <Ionicons name="arrow-down" size={18} color={activeProductSortSegment === 'priceDesc' ? colors.white : colors.inkSoft} />
+                  </TouchableOpacity>
+                </View>
+              )}
+              {lockedUnitPriceSortGroup}
+            </>
+          ) : glassAvailable ? (
+            <SlidingSegments
+              compact
+              dense
+              emphasized
+              segments={[
+                { key: 'priceAsc', icon: 'arrow-up', accessibilityLabel: t('catalog.sortPriceAsc') },
+                { key: 'priceDesc', icon: 'arrow-down', accessibilityLabel: t('catalog.sortPriceDesc') },
+                { key: 'pricePerUnitAsc', label: '€/u↑', accessibilityLabel: t('catalog.sortPricePerUnitAsc') },
+                { key: 'pricePerUnitDesc', label: '€/u↓', accessibilityLabel: t('catalog.sortPricePerUnitDesc') },
+              ]}
+              value={activeProductSortSegment}
+              onChange={selectProductSortSegment}
+            />
+          ) : (
+            <View style={[styles.viewToggle, styles.prodToggleDense]}>
+              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, activeProductSortSegment === 'priceAsc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('priceAsc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPriceAsc')}>
+                <Ionicons name="arrow-up" size={18} color={activeProductSortSegment === 'priceAsc' ? colors.white : colors.inkSoft} />
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, activeProductSortSegment === 'priceDesc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('priceDesc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPriceDesc')}>
+                <Ionicons name="arrow-down" size={18} color={activeProductSortSegment === 'priceDesc' ? colors.white : colors.inkSoft} />
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, activeProductSortSegment === 'pricePerUnitAsc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('pricePerUnitAsc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPricePerUnitAsc')}>
+                <Text style={[styles.prodUnitSortText, { color: activeProductSortSegment === 'pricePerUnitAsc' ? colors.white : colors.inkSoft }]}>€/u↑</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, activeProductSortSegment === 'pricePerUnitDesc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('pricePerUnitDesc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPricePerUnitDesc')}>
+                <Text style={[styles.prodUnitSortText, { color: activeProductSortSegment === 'pricePerUnitDesc' ? colors.white : colors.inkSoft }]}>€/u↓</Text>
+              </TouchableOpacity>
+            </View>
+          )}
           </View>
         )}
-      </View>
-      {!productSearchExpanded && (
-        <View style={styles.prodViewGroup}>
+        {!productSearchExpanded && (
+          <View style={styles.prodViewGroup}>
           {glassAvailable ? (
             <SlidingSegments
               compact
               dense
+              emphasized
               segments={[{ key: 'list', icon: 'list' }, { key: 'grid', icon: 'grid' }]}
               value={prodViewMode}
               onChange={(value) => setProdViewMode(value as ViewMode)}
@@ -1315,8 +1467,28 @@ export default function CatalogScreen() {
               </TouchableOpacity>
             </View>
           )}
-        </View>
-      )}
+          </View>
+        )}
+      </View>
+      <Animated.View
+        pointerEvents="none"
+        accessibilityElementsHidden={!showProductQueryInHeader}
+        importantForAccessibility={showProductQueryInHeader ? 'auto' : 'no-hide-descendants'}
+        style={[
+          styles.prodSearchQueryClip,
+          {
+            height: productQueryReveal.interpolate({ inputRange: [0, 1], outputRange: [0, 28] }),
+            opacity: productQueryReveal,
+            transform: [{
+              translateY: productQueryReveal.interpolate({ inputRange: [0, 1], outputRange: [-3, 0] }),
+            }],
+          },
+        ]}
+      >
+        <Text style={styles.prodSearchQuery} numberOfLines={1}>
+          {visibleProductQuery}
+        </Text>
+      </Animated.View>
     </View>
   );
 
@@ -1347,7 +1519,12 @@ export default function CatalogScreen() {
   const chrome = (
     <>
       <View style={[styles.headerArea, { paddingTop: headerTop }]}>
-        <Text style={styles.title}>{t('catalog.title')}</Text>
+        <View style={styles.titleWrap}>
+          <View style={styles.titleIcon}>
+            <Ionicons name="library" size={15} color={colors.accent} />
+          </View>
+          <Text style={styles.title}>{t('catalog.title')}</Text>
+        </View>
         {storeSelectorBlock}
       </View>
 
@@ -1359,6 +1536,7 @@ export default function CatalogScreen() {
         {glassAvailable ? (
           <SlidingSegments
             style={{ flex: 1 }}
+            emphasized
             segments={tabSegments}
             value={tab}
             onChange={setTab}
@@ -1392,6 +1570,41 @@ export default function CatalogScreen() {
         ? searchBar(t('catalog.searchCategories'), catSearch, setCatSearch)
         : productSearchRow(t('catalog.searchProducts'), prodQuery, setProdQuery)}
     </>
+  );
+
+  const storeAllCardContent = (
+    <Pressable
+      style={({ pressed }) => [
+        styles.storeAllCard,
+        allLocked ? styles.storeAllCardLocked : styles.storeAllCardUnlocked,
+        store === 'all' && (allLocked ? styles.storeAllCardSelected : styles.storeAllCardUnlockedSelected),
+        pressed && styles.storeCardPressed,
+      ]}
+      onPress={() => {
+        if (allLocked) {
+          setStoreMenuOpen(false);
+          setPaywallVisible(true);
+          return;
+        }
+        handleStoreChange('all');
+        setStoreMenuOpen(false);
+      }}
+      accessibilityRole="button"
+      accessibilityState={{ selected: store === 'all' }}
+    >
+      {store === 'all' && (
+        <View style={styles.storeCardCheck}>
+          <Ionicons name="checkmark" size={14} color={colors.white} />
+        </View>
+      )}
+      <View style={styles.storeAllIconWrap}>
+        <Ionicons name="apps" size={24} color={colors.accent} />
+      </View>
+      <Text style={styles.storeCardName}>
+        {t('common.all')}
+      </Text>
+      {allLocked && <Ionicons name="lock-closed" size={17} color={colors.inkSoft} />}
+    </Pressable>
   );
 
   return (
@@ -1990,48 +2203,28 @@ export default function CatalogScreen() {
           </View>
 
           <FlatList
-            data={visibleStores}
-            keyExtractor={(s) => s.key}
+            data={storeGridData}
+            keyExtractor={(s, index) => s?.key ?? `store-placeholder-${index}`}
             numColumns={2}
             extraData={store}
             columnWrapperStyle={styles.storeGridRow}
             contentContainerStyle={[styles.storeGrid, { paddingBottom: insets.bottom + 24 }]}
             showsVerticalScrollIndicator={false}
             ListHeaderComponent={(
-              <Pressable
-                style={({ pressed }) => [
-                  styles.storeAllCard,
-                  store === 'all' && styles.storeCardActive,
-                  allLocked && styles.storeAllCardLocked,
-                  pressed && styles.storeCardPressed,
-                ]}
-                onPress={() => {
-                  if (allLocked) {
-                    setStoreMenuOpen(false);
-                    setPaywallVisible(true);
-                    return;
-                  }
-                  handleStoreChange('all');
-                  setStoreMenuOpen(false);
-                }}
-                accessibilityRole="button"
-                accessibilityState={{ selected: store === 'all', disabled: allLocked }}
-              >
-                {store === 'all' && (
-                  <View style={styles.storeCardCheck}>
-                    <Ionicons name="checkmark" size={14} color={colors.white} />
-                  </View>
-                )}
-                <View style={styles.storeAllIconWrap}>
-                  <Ionicons name="apps" size={24} color={colors.accent} />
-                </View>
-                <Text style={[styles.storeCardName, store === 'all' && styles.storeCardNameActive]}>
-                  {t('common.all')}
-                </Text>
-                {allLocked && <Ionicons name="lock-closed" size={17} color={colors.inkSoft} />}
-              </Pressable>
+              <View style={styles.storeAllCardBackground}>{storeAllCardContent}</View>
             )}
             renderItem={({ item }) => {
+              if (!item) {
+                return (
+                  <View
+                    style={styles.storeCardPlaceholder}
+                    pointerEvents="none"
+                    accessibilityElementsHidden
+                    importantForAccessibility="no-hide-descendants"
+                  />
+                );
+              }
+
               const on = item.key === store;
               return (
                 <Pressable
@@ -2067,7 +2260,6 @@ export default function CatalogScreen() {
       <PaywallModal
         visible={paywallVisible}
         onClose={() => setPaywallVisible(false)}
-        subtitle={null}
       />
 
       {sheetCat && (
@@ -2097,6 +2289,12 @@ const themedStyles = () => StyleSheet.create({
     paddingHorizontal: 16, paddingBottom: 10,
     // paddingTop inline (useHeaderTopPadding)
   },
+  titleWrap: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  titleIcon: {
+    width: 28, height: 28, borderRadius: 14,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.accentLight,
+  },
   title: {
     flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3,
   },
@@ -2124,20 +2322,32 @@ const themedStyles = () => StyleSheet.create({
   },
   storeGrid: { padding: 16 },
   storeGridRow: { gap: 12, marginBottom: 12 },
-  storeAllCard: {
+  storeAllCardBackground: {
     height: 78,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
     marginBottom: 12,
-    paddingHorizontal: 16,
-    backgroundColor: colors.white,
-    borderRadius: 20,
-    borderWidth: 1, borderColor: colors.border,
   },
+  storeAllCard: {
+    flex: 1,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
+    paddingHorizontal: 16,
+    backgroundColor: 'transparent',
+    borderRadius: 20,
+  },
+  storeAllCardSelected: { backgroundColor: colors.accentLight, borderColor: colors.accent },
   storeAllCardLocked: { backgroundColor: colors.surfaceAlt },
+  storeAllCardUnlocked: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  storeAllCardUnlockedSelected: {
+    backgroundColor: colors.accentLight,
+    borderColor: colors.accent,
+  },
   storeAllIconWrap: {
     width: 42, height: 42, borderRadius: 21,
     alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.white,
+    backgroundColor: colors.accentLight,
   },
   storeCard: {
     flex: 1, aspectRatio: 1,
@@ -2147,6 +2357,7 @@ const themedStyles = () => StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1, borderColor: colors.border,
   },
+  storeCardPlaceholder: { flex: 1, aspectRatio: 1 },
   storeCardActive: { borderColor: colors.accent, backgroundColor: colors.accentLight },
   storeCardPressed: { transform: [{ scale: 0.96 }], opacity: 0.9 },
   storeCardCheck: {
@@ -2166,7 +2377,7 @@ const themedStyles = () => StyleSheet.create({
   // ── Fila de pestañas + selector de súper (un bloque aparte) ───
   controlsRow: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    marginHorizontal: 16, marginBottom: 10,
+    marginHorizontal: 16, marginBottom: 12,
   },
 
   // ── Segmentado Productos/Categorías (pastilla blanca, Claude Design) ─
@@ -2220,25 +2431,89 @@ const themedStyles = () => StyleSheet.create({
     flex: 1, fontSize: 14, color: colors.ink, padding: 0,
     fontFamily: fonts.medium,
   },
+  // Bloque de búsqueda: la consulta activa aparece bajo la lupa al desplazar.
+  prodSearchBlock: {
+    marginHorizontal: 16, marginBottom: 8,
+  },
   // Fila de búsqueda de productos: barra (flex) + orden + lista/cuadrícula.
   prodSearchRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    marginHorizontal: 16, marginBottom: 8,
+  },
+  prodSearchQueryClip: { overflow: 'hidden' },
+  prodSearchQuery: {
+    marginTop: 4,
+    fontSize: 13, lineHeight: 20,
+    fontFamily: fonts.medium, fontStyle: 'italic',
+    color: colors.inkSoft,
   },
   // La barra dentro de la fila no lleva márgenes propios (los pone la fila).
-  prodSearchBox: { flex: 1, marginHorizontal: 0, marginBottom: 0, minWidth: 0 },
-  prodSearchButton: {
-    width: 40, height: 40, borderRadius: 20,
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.white,
-    borderWidth: 1, borderColor: colors.border,
-    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
+  prodSearchBox: {
+    marginHorizontal: 0, marginBottom: 0, minWidth: 0,
+    // La altura debe coincidir con los controles contraídos: si se deja que
+    // padding + tipografía la calculen, el chrome crece al abrir el buscador.
+    paddingVertical: 0,
+    borderRadius: 999,
   },
+  prodSearchBoxExpanded: { flex: 1 },
+  prodSearchBoxCollapsed: {
+    width: 40, height: 40,
+    paddingHorizontal: 0,
+    gap: 0,
+    justifyContent: 'center',
+  },
+  prodSearchBoxGlass: { height: 40 },
+  prodSearchBoxFallback: { height: 44 },
+  prodSearchActivator: { ...StyleSheet.absoluteFillObject },
   prodSortGroup: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   prodViewGroup: { alignItems: 'center', justifyContent: 'center' },
   prodToggleDense: { padding: 3, gap: 3, borderRadius: 12 },
   prodViewBtn: { width: 32, height: 38, borderRadius: 9 },
   prodUnitSortText: { fontSize: 10, fontFamily: fonts.bold },
+  prodUnitSortLockedBackgroundGlass: {
+    width: 72, height: 40, borderRadius: 20,
+    borderWidth: 1,
+    shadowColor: '#000', shadowOpacity: 0.11, shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 }, elevation: 3,
+  },
+  prodUnitSortLockedBackgroundGlassLight: {
+    backgroundColor: 'rgba(255,255,255,0.38)',
+    borderColor: 'rgba(43,37,33,0.10)',
+  },
+  prodUnitSortLockedBackgroundGlassDark: {
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderColor: 'rgba(255,255,255,0.20)',
+  },
+  prodUnitSortLockedHighlight: {
+    position: 'absolute', top: 1, left: 10, right: 10,
+    height: 1, borderRadius: 1,
+    backgroundColor: 'rgba(255,255,255,0.58)',
+  },
+  prodUnitSortLockedBackgroundFallback: {
+    width: 73, height: 44, borderRadius: 12,
+    borderWidth: 1, borderColor: colors.border,
+    backgroundColor: colors.surfaceAlt,
+  },
+  prodUnitSortLockedButtons: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+  },
+  prodUnitSortLockedButtonsGlass: { padding: 3 },
+  prodUnitSortLockedButtonsFallback: { padding: 3, gap: 3 },
+  prodUnitSortLockedBtn: {
+    width: 32, alignItems: 'center', justifyContent: 'center',
+    position: 'relative',
+  },
+  prodUnitSortLockedBtnGlass: { height: 32 },
+  prodUnitSortLockedBtnFallback: { height: 38, borderRadius: 9 },
+  prodUnitSortLockedBtnFirst: { borderTopLeftRadius: 17, borderBottomLeftRadius: 17 },
+  prodUnitSortLockedBtnLast: { borderTopRightRadius: 17, borderBottomRightRadius: 17 },
+  prodUnitSortLockedTextWrap: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  prodUnitSortLockedText: {
+    fontSize: 10, lineHeight: 12, fontFamily: fonts.bold,
+    color: colors.accent, textAlign: 'center', includeFontPadding: false,
+  },
 
   // ── Category rows ─────────────────────────────────────────────
   list: { paddingHorizontal: 16, paddingBottom: 20, paddingTop: 4 },

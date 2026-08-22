@@ -9,6 +9,7 @@ import GlassSurface from './GlassSurface';
 import type { CatalogStore } from '../constants/stores';
 import ProductPriceLine from './ProductPriceLine';
 import { ProductDetailBadge } from './ProductDetailImage';
+import ProductAlertButton from './ProductAlertButton';
 
 const grades: Record<NutriScoreGrade, string> = { A: '#038141', B: '#85bb2a', C: '#fecb02', D: '#ee8100', E: '#e63e11' };
 
@@ -37,6 +38,7 @@ export default function ProductDetailHero({
   return <View style={styles.hero}>
     <GlassSurface style={styles.imageWrap} fallbackColor={colors.white}>
       {imageUri ? <ProductImage uri={imageUri} style={styles.image} /> : <Ionicons name="image-outline" size={42} color={colors.inkFaint} />}
+      {store && productId ? <ProductAlertButton store={store} productId={productId} overlay /> : null}
       {badgeLabel ? <ProductDetailBadge label={badgeLabel} /> : null}
     </GlassSurface>
     <View style={styles.info}>

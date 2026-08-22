@@ -28,6 +28,7 @@ import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useTheme } from '../context/ThemeContext';
 import GlassSurface from './GlassSurface';
+import QueCocinoTabIcon from './QueCocinoTabIcon';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 
 /** Alto de la barra de cristal (sin contar hueco inferior ni área segura). */
@@ -51,7 +52,7 @@ const PILL_SIDE_INSET = 2;
 /** Iconos (Ionicons outline, el set de la app) por nombre de ruta. */
 const ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   Home:    'home-outline',
-  Catalog: 'grid-outline',
+  Catalog: 'library-outline',
   List:    'basket-outline',
   Groups:  'people-outline',
 };
@@ -170,30 +171,37 @@ export default function LiquidGlassTabBar({
             const label = (options.title ?? route.name) as string;
             const badge = options.tabBarBadge;
             const color = focused ? colors.accent : colors.inkSoft;
+            const isQueCocino = route.name === 'QueCocino';
             return (
               <Pressable
                 key={route.key}
                 onPress={() => onPress(route, focused)}
                 onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
-                style={styles.tab}
+                style={[styles.tab, isQueCocino && styles.queCocinoTab]}
                 accessibilityRole="button"
                 accessibilityState={{ selected: focused }}
                 accessibilityLabel={label}
               >
-                <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
-                  <Ionicons name={ICONS[route.name] ?? 'ellipse-outline'} size={23} color={color} />
+                <View style={[styles.iconWrap, focused && !isQueCocino && styles.iconWrapActive]}>
+                  {isQueCocino ? (
+                    <QueCocinoTabIcon focused={focused} />
+                  ) : (
+                    <Ionicons name={ICONS[route.name] ?? 'ellipse-outline'} size={23} color={color} />
+                  )}
                   {badge != null && (
                     <View style={styles.badge}>
                       <Text style={styles.badgeText}>{badge}</Text>
                     </View>
                   )}
                 </View>
-                <Text
-                  numberOfLines={1}
-                  style={[styles.label, { color, fontFamily: focused ? fonts.bold : fonts.semibold }]}
-                >
-                  {label}
-                </Text>
+                {!isQueCocino && (
+                  <Text
+                    numberOfLines={1}
+                    style={[styles.label, { color, fontFamily: focused ? fonts.bold : fonts.semibold }]}
+                  >
+                    {label}
+                  </Text>
+                )}
               </Pressable>
             );
           })}
@@ -235,6 +243,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center', justifyContent: 'center', gap: 3,
   },
+  queCocinoTab: { gap: 0 },
   iconWrap: { alignItems: 'center', justifyContent: 'center' },
   // El activo gana presencia sin cambiar de icono, igual que la barra nativa.
   iconWrapActive: {

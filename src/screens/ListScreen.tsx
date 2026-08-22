@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
@@ -17,6 +17,7 @@ import {
   Modal,
   Pressable,
   Animated,
+  Easing,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -28,7 +29,7 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { fetchListItems, setItemInCart, assignListItem, clearListItems, deleteListItems, updateListItemQuantity, mergeCartItems, type ListItemRow, type MergedCartItem } from '../api/lists';
+import { fetchListItems, setItemInCart, assignListItem, clearListItems, deleteListItems, updateListItemQuantity, updateListItemsComment, mergeCartItems, type LinkedNoteProduct, type ListItemRow, type MergedCartItem } from '../api/lists';
 import { fetchMercadonaNames } from '../api/catalog';
 import { fetchGroupMembers, type GroupSummary } from '../api/groups';
 import { recordPurchase } from '../api/purchases';
@@ -37,6 +38,9 @@ import ProductImage from '../components/ProductImage';
 import StoreProductModal, { type ProductRef } from '../components/StoreProductModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import UserAvatar from '../components/UserAvatar';
+import ProductNoteSheet from '../components/ProductNoteSheet';
+import AmbientBubbleBackdrop from '../components/AmbientBubbleBackdrop';
+import ActiveCartIcon from '../components/ActiveCartIcon';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
@@ -48,7 +52,8 @@ import { groupByZone, sortZoneItems, type ShopZone } from '../constants/zones';
 
 // Sección del SectionList de la cesta. `zone` es null en la sección "tienda
 // plegada" (solo cabecera de tienda, sin productos). Los contadores son sobre
-// el total real; `data` puede ir vacía al plegar zona o tienda.
+// el total real. Una zona conserva sus filas montadas al plegarse para poder
+// recortarlas progresivamente desde el borde inferior.
 type CartSection = {
   key: string;
   store: Store;
@@ -76,6 +81,14 @@ type PreparedCartStore = {
 };
 
 const EMPTY_CART_ITEMS: MergedCartItem[] = [];
+const ZONE_DOUBLE_TAP_MS = 300;
+const ZONE_ROW_ANIMATION_MS = 210;
+const ZONE_STAGGER_WINDOW_MS = 180;
+const zoneRowStyles = StyleSheet.create({
+  clip: { overflow: 'hidden' },
+  hidden: { height: 0, opacity: 0 },
+  measure: { paddingBottom: 10 },
+});
 
 const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 
@@ -132,6 +145,8 @@ export default function ListScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [detailTarget, setDetailTarget] = useState<ProductRef | null>(null);
   const [assignItem, setAssignItem] = useState<MergedCartItem | null>(null);
+  const [noteItem, setNoteItem] = useState<MergedCartItem | null>(null);
+  const [noteSaving, setNoteSaving] = useState(false);
   // Selector "asignar TODA la lista" (botón de la cabecera). Reusa la misma hoja
   // de miembros que el asignar por producto.
   const [assignAllVisible, setAssignAllVisible] = useState(false);
@@ -143,6 +158,13 @@ export default function ListScreen() {
   // zona oculta solo sus productos.
   const [collapsedStores, setCollapsedStores] = useState<Set<string>>(new Set());
   const [collapsedZones, setCollapsedZones] = useState<Set<string>>(new Set());
+  // El primer toque se aplica sin demora. Si el siguiente llega sobre la misma
+  // zona dentro del umbral, extendemos esa misma dirección a toda la tienda.
+  const lastZoneTap = useRef<{
+    key: string;
+    timestamp: number;
+    wasCollapsed: boolean;
+  } | null>(null);
 
   // Liquid Glass (F3): la cabecera vive en una franja de cristal flotante y la
   // lista pasa por debajo refractándose (paddingTop del contenido = altura
@@ -152,19 +174,26 @@ export default function ListScreen() {
 
   const toggleStore = useCallback((store: string) => {
     Haptics.selectionAsync();
-    // Animar aquí fuerza a recalcular el layout de todas las filas visibles y
-    // se vuelve costoso al desplegar una tienda completa.
+    if (!reducedMotion) {
+      LayoutAnimation.configureNext({
+        duration: 280,
+        update: { type: LayoutAnimation.Types.easeInEaseOut },
+        create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+        delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+      });
+    }
     setCollapsedStores((prev) => {
       const next = new Set(prev);
       if (next.has(store)) next.delete(store);
       else next.add(store);
       return next;
     });
-  }, []);
+  }, [reducedMotion]);
 
   const toggleZone = useCallback((key: string) => {
     Haptics.selectionAsync();
-    // La cabecera responde al instante; SectionList virtualiza las filas nuevas.
+    // La cabecera responde al instante; las filas conservan el montaje para
+    // que AnimatedZoneRow pueda plegarlas sin un salto de layout.
     setCollapsedZones((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
@@ -248,6 +277,8 @@ export default function ListScreen() {
         storeProductId: it.storeProductId,
         unitPrice: it.unitPrice,
         imageUrl: it.imageUrl,
+        note: it.note,
+        noteProduct: it.noteProduct,
       }));
       await recordPurchase(activeCart.groupId, totalCost, snapshot, userId);
       await clearListItems(activeCart.listId);
@@ -319,6 +350,39 @@ export default function ListScreen() {
       toast.show(t('list.updateError'), 'error');
     }
   }, [items, reducedMotion, t, toast]);
+
+  const doSaveNote = useCallback(async (
+    note: string | null,
+    noteProduct: LinkedNoteProduct | null,
+  ) => {
+    if (!noteItem || noteSaving) return;
+    const ids = new Set(noteItem.ids);
+    const previous = new Map(
+      items.filter((it) => ids.has(it.id)).map((it) => [it.id, {
+        note: it.note,
+        noteProduct: it.noteProduct,
+      }]),
+    );
+    setNoteSaving(true);
+    setItems((list) => list.map((it) => (
+      ids.has(it.id) ? { ...it, note, noteProduct } : it
+    )));
+    try {
+      await updateListItemsComment(noteItem.ids, note, noteProduct);
+      setNoteItem(null);
+    } catch {
+      setItems((list) => list.map((it) => (
+        ids.has(it.id) ? {
+          ...it,
+          note: previous.get(it.id)?.note ?? null,
+          noteProduct: previous.get(it.id)?.noteProduct ?? null,
+        } : it
+      )));
+      toast.show(t('list.noteError'), 'error');
+    } finally {
+      setNoteSaving(false);
+    }
+  }, [items, noteItem, noteSaving, t, toast]);
 
   const toggle = useCallback(async (item: MergedCartItem) => {
     const next = !item.inCart;
@@ -393,13 +457,46 @@ export default function ListScreen() {
     }))
   ), [merged]);
 
+  const handleZonePress = useCallback((section: CartSection) => {
+    const now = Date.now();
+    const previousTap = lastZoneTap.current;
+    const isDoubleTap = previousTap?.key === section.key
+      && now - previousTap.timestamp <= ZONE_DOUBLE_TAP_MS;
+
+    if (!isDoubleTap || !previousTap) {
+      lastZoneTap.current = {
+        key: section.key,
+        timestamp: now,
+        wasCollapsed: section.zoneCollapsed,
+      };
+      toggleZone(section.key);
+      return;
+    }
+
+    lastZoneTap.current = null;
+    const store = preparedStores.find((group) => group.store === section.store);
+    if (!store) return;
+
+    const shouldCollapse = !previousTap.wasCollapsed;
+    Haptics.selectionAsync();
+    setCollapsedZones((prev) => {
+      const next = new Set(prev);
+      store.zones.forEach(({ zone }) => {
+        const zoneKey = `${section.store}:${zone.key}`;
+        if (shouldCollapse) next.add(zoneKey);
+        else next.delete(zoneKey);
+      });
+      return next;
+    });
+  }, [preparedStores, toggleZone]);
+
   // Agrupado Tienda → Zona del súper (pasillo); dentro de cada zona, pendientes
   // primero y alfabético. Cada par tienda×zona es una sección del SectionList;
   // la cabecera de tienda solo se pinta en la primera zona de esa tienda.
   // Plegado: si la tienda está plegada se emite una única sección con solo su
-  // cabecera (sin zonas ni productos); si una zona está plegada, su cabecera se
-  // mantiene pero `data` va vacía. Los contadores se calculan sobre el total
-  // real (no sobre `data`, que puede quedar vacía al plegar).
+  // cabecera (sin zonas ni productos). Una zona plegada conserva `data`: cada
+  // fila anima y recorta su propia altura, de la última a la primera. Así la
+  // lista no desaparece de golpe y el despliegue puede recorrer el camino inverso.
   const sections = useMemo<CartSection[]>(() => preparedStores.flatMap((group): CartSection[] => {
     if (collapsedStores.has(group.store)) {
       return [{
@@ -430,22 +527,34 @@ export default function ListScreen() {
         zoneCount: zoneGroup.count,
         zoneInCart: zoneGroup.inCart,
         zoneCollapsed,
-        data: zoneCollapsed ? EMPTY_CART_ITEMS : zoneGroup.data,
+        data: zoneGroup.data,
       };
     });
   }), [preparedStores, collapsedStores, collapsedZones]);
 
-  const renderItem = useCallback(({ item }: { item: MergedCartItem }) => (
-    <CartItemRow
-      item={item}
-      members={members}
-      onToggle={toggle}
-      onOpenDetail={setDetailTarget}
-      onAssign={setAssignItem}
-      onRemove={doRemove}
-      onDecrement={doDecrement}
-    />
-  ), [members, toggle, doRemove, doDecrement]);
+  const renderItem = useCallback(({ item, index, section }: {
+    item: MergedCartItem;
+    index: number;
+    section: CartSection;
+  }) => (
+    <AnimatedZoneRow
+      collapsed={section.zoneCollapsed}
+      index={index}
+      itemCount={section.data.length}
+      reducedMotion={reducedMotion}
+    >
+      <CartItemRow
+        item={item}
+        members={members}
+        onToggle={toggle}
+        onOpenDetail={setDetailTarget}
+        onAssign={setAssignItem}
+        onRemove={doRemove}
+        onDecrement={doDecrement}
+        onEditNote={setNoteItem}
+      />
+    </AnimatedZoneRow>
+  ), [members, toggle, doRemove, doDecrement, reducedMotion]);
 
   // ── Shared screen shell ───────────────────────────────────────
   // Cabecera compartida por todos los estados. En glass vive en una franja
@@ -454,9 +563,11 @@ export default function ListScreen() {
     <View style={[styles.header, { paddingTop: headerTop }]}>
       <View style={styles.titleWrap}>
         <View style={styles.titleIcon}>
-          <Ionicons name="basket" size={18} color={colors.accent} />
+          <ActiveCartIcon size={15} color={colors.accent} fallback="basket" />
         </View>
-        <Text style={styles.title}>{activeCart?.groupName ?? t('list.title')}</Text>
+        <Text style={styles.title} numberOfLines={1}>
+          {activeCart?.groupName ?? t('list.title')}
+        </Text>
       </View>
 
       {activeCart && !loading && !error && (
@@ -524,6 +635,7 @@ export default function ListScreen() {
 
   return (
     <View style={styles.container}>
+      <AmbientBubbleBackdrop showGradient={false} />
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       {!glassAvailable && header}
@@ -563,7 +675,7 @@ export default function ListScreen() {
                     <TouchableOpacity
                       style={styles.zoneHeader}
                       activeOpacity={0.6}
-                      onPress={() => toggleZone(section.key)}
+                      onPress={() => handleZonePress(section)}
                     >
                       <Text style={styles.zoneHeaderEmoji}>{section.zone.emoji}</Text>
                       <Text style={styles.zoneHeaderText}>{t(`zones.${section.zone.key}`)}</Text>
@@ -639,6 +751,16 @@ export default function ListScreen() {
         fullScreen
       />
 
+      <ProductNoteSheet
+        visible={!!noteItem}
+        productName={noteItem?.productName ?? ''}
+        initialValue={noteItem?.note ?? null}
+        initialProduct={noteItem?.noteProduct ?? null}
+        busy={noteSaving}
+        onSave={doSaveNote}
+        onClose={() => { if (!noteSaving) setNoteItem(null); }}
+      />
+
       {/* Assign-to-member sheet — un producto (assignItem) o toda la lista (assignAllVisible) */}
       <Modal
         visible={!!assignItem || assignAllVisible}
@@ -702,11 +824,90 @@ export default function ListScreen() {
   );
 }
 
+// Mantiene cada tarjeta montada al plegar una zona y anima su altura dentro de
+// una ventana escalonada. Al cerrar empieza por la última tarjeta (abajo →
+// arriba); al abrir recorre el orden inverso (arriba → abajo). El recorte evita
+// que una tarjeta se pinte encima de la siguiente mientras cambia de altura.
+const AnimatedZoneRow = memo(function AnimatedZoneRow({
+  collapsed,
+  index,
+  itemCount,
+  reducedMotion,
+  children,
+}: PropsWithChildren<{
+  collapsed: boolean;
+  index: number;
+  itemCount: number;
+  reducedMotion: boolean;
+}>) {
+  const progress = useRef(new Animated.Value(collapsed ? 0 : 1)).current;
+  const previousCollapsed = useRef(collapsed);
+  const [contentHeight, setContentHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (previousCollapsed.current === collapsed) {
+      progress.setValue(collapsed ? 0 : 1);
+      return;
+    }
+    previousCollapsed.current = collapsed;
+
+    if (reducedMotion) {
+      progress.setValue(collapsed ? 0 : 1);
+      return;
+    }
+
+    const staggerStep = itemCount > 1
+      ? ZONE_STAGGER_WINDOW_MS / (itemCount - 1)
+      : 0;
+    const staggerIndex = collapsed ? itemCount - 1 - index : index;
+    const animation = Animated.timing(progress, {
+      toValue: collapsed ? 0 : 1,
+      duration: ZONE_ROW_ANIMATION_MS,
+      delay: Math.round(staggerIndex * staggerStep),
+      easing: Easing.bezier(0.22, 0.72, 0.24, 1),
+      useNativeDriver: false,
+    });
+    animation.start();
+    return () => animation.stop();
+  }, [collapsed, index, itemCount, progress, reducedMotion]);
+
+  const animatedStyle = contentHeight == null
+    ? (collapsed ? zoneRowStyles.hidden : null)
+    : {
+        height: progress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, contentHeight],
+        }),
+        opacity: progress,
+      };
+
+  return (
+    <Animated.View
+      style={[zoneRowStyles.clip, animatedStyle]}
+      pointerEvents={collapsed ? 'none' : 'auto'}
+      accessibilityElementsHidden={collapsed}
+      importantForAccessibility={collapsed ? 'no-hide-descendants' : 'auto'}
+    >
+      <View
+        style={zoneRowStyles.measure}
+        onLayout={({ nativeEvent }) => {
+          const nextHeight = nativeEvent.layout.height;
+          setContentHeight((current) => (
+            current == null || Math.abs(current - nextHeight) > 0.5 ? nextHeight : current
+          ));
+        }}
+      >
+        {children}
+      </View>
+    </Animated.View>
+  );
+});
+
 // Fila del carrito. Tres zonas táctiles independientes: el checkbox marca
 // "En cesta", la zona central (foto + nombre) abre el detalle del producto y
 // la papelera elimina en un toque — tacha el artículo, lo desvanece y entonces
 // borra. Si el borrado en servidor falla, la fila reaparece.
-const CartItemRow = memo(function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove, onDecrement }: {
+const CartItemRow = memo(function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove, onDecrement, onEditNote }: {
   item: MergedCartItem;
   members: GroupMember[];
   onToggle: (item: MergedCartItem) => void;
@@ -714,9 +915,11 @@ const CartItemRow = memo(function CartItemRow({ item, members, onToggle, onOpenD
   onAssign: (item: MergedCartItem) => void;
   onRemove: (item: MergedCartItem) => Promise<boolean>;
   onDecrement: (item: MergedCartItem) => void;
+  onEditNote: (item: MergedCartItem) => void;
 }) {
   const styles = useThemedStyles(themedStyles);
   const reducedMotion = useReducedMotion();
+  const { t } = useTranslation();
   const [removing, setRemoving] = useState(false);
   const opacity = useRef(new Animated.Value(1)).current;
 
@@ -746,81 +949,129 @@ const CartItemRow = memo(function CartItemRow({ item, members, onToggle, onOpenD
   const detailTarget = productRefOf(item);
 
   return (
-    <Animated.View style={[styles.itemRow, item.inCart && styles.itemRowDone, { opacity }]}>
-      <TouchableOpacity
-        hitSlop={10}
-        disabled={removing}
-        onPress={() => onToggle(item)}
-      >
-        <View style={[styles.checkbox, item.inCart && styles.checkboxChecked]}>
-          {item.inCart && <Ionicons name="checkmark" size={13} color={colors.white} />}
-        </View>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.itemBody}
-        activeOpacity={0.7}
-        disabled={removing || !detailTarget}
-        onPress={() => detailTarget && onOpenDetail(detailTarget)}
-      >
-        {item.imageUrl ? (
-          <ProductImage uri={item.imageUrl} style={styles.itemThumb} />
-        ) : item.categoryEmoji ? (
-          <View style={styles.itemThumbPlaceholder}>
-            <Text style={styles.itemEmoji}>{item.categoryEmoji}</Text>
+    <Animated.View style={[styles.itemCard, item.inCart && styles.itemCardDone, { opacity }]}>
+      <View style={styles.itemRow}>
+        <TouchableOpacity
+          hitSlop={10}
+          disabled={removing}
+          onPress={() => onToggle(item)}
+        >
+          <View style={[styles.checkbox, item.inCart && styles.checkboxChecked]}>
+            {item.inCart && <Ionicons name="checkmark" size={13} color={colors.white} />}
           </View>
-        ) : null}
-        <View style={styles.itemContent}>
-          <Text style={[styles.itemName, (item.inCart || removing) && styles.itemNameDone]}>
-            {item.productName}
-          </Text>
-          <View style={styles.itemUnitRow}>
-            <Text style={styles.itemUnit}>{item.quantity} {item.unit}</Text>
-            {item.unitPrice != null ? (
-              <Text style={styles.itemPrice}>{formatEuro(item.unitPrice * item.quantity)}</Text>
-            ) : null}
-          </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
 
-      {/* Asignar a + papelera, alineados a la derecha y centrados verticalmente */}
-      <TouchableOpacity
-        style={styles.assignBtn}
-        activeOpacity={0.7}
-        hitSlop={6}
-        disabled={removing}
-        onPress={() => onAssign(item)}
-      >
-        {assignee ? (
-          <UserAvatar avatarUrl={assignee.avatarUrl} initials={assignee.initials} color={assignee.color} size={28} />
-        ) : (
-          <View style={styles.assignEmpty}>
-            <Ionicons name="person-add-outline" size={15} color={colors.inkFaint} />
+        <TouchableOpacity
+          style={styles.itemBody}
+          activeOpacity={0.7}
+          disabled={removing || !detailTarget}
+          onPress={() => detailTarget && onOpenDetail(detailTarget)}
+        >
+          {item.imageUrl ? (
+            <ProductImage uri={item.imageUrl} style={styles.itemThumb} />
+          ) : item.categoryEmoji ? (
+            <View style={styles.itemThumbPlaceholder}>
+              <Text style={styles.itemEmoji}>{item.categoryEmoji}</Text>
+            </View>
+          ) : null}
+          <View style={styles.itemContent}>
+            <Text style={[styles.itemName, (item.inCart || removing) && styles.itemNameDone]}>
+              {item.productName}
+            </Text>
+            <View style={styles.itemUnitRow}>
+              <Text style={styles.itemUnit}>{item.quantity} {item.unit}</Text>
+              {item.unitPrice != null ? (
+                <Text style={styles.itemPrice}>{formatEuro(item.unitPrice * item.quantity)}</Text>
+              ) : null}
+            </View>
           </View>
-        )}
-      </TouchableOpacity>
+        </TouchableOpacity>
 
-      {/* Restar una unidad (solo si hay más de una) y eliminar, apilados y centrados. */}
-      <View style={styles.qtyActions}>
-        {item.quantity > 1 && (
+        <TouchableOpacity
+          style={styles.assignBtn}
+          activeOpacity={0.7}
+          hitSlop={8}
+          disabled={removing}
+          onPress={() => onAssign(item)}
+          accessibilityRole="button"
+          accessibilityLabel={t('list.whoBrings', { product: item.productName })}
+        >
+          {assignee ? (
+            <UserAvatar avatarUrl={assignee.avatarUrl} initials={assignee.initials} color={assignee.color} size={28} />
+          ) : (
+            <View style={styles.assignEmpty}>
+              <Ionicons name="person-add-outline" size={15} color={colors.inkFaint} />
+            </View>
+          )}
+        </TouchableOpacity>
+
+        <View style={styles.qtyActions}>
+          {item.quantity > 1 && (
+            <TouchableOpacity
+              style={styles.qtyBtn}
+              hitSlop={8}
+              disabled={removing}
+              onPress={() => onDecrement(item)}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.decreaseQuantity')}
+            >
+              <Ionicons name="remove" size={16} color={colors.inkFaint} />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={styles.qtyBtn}
-            hitSlop={6}
+            hitSlop={8}
             disabled={removing}
-            onPress={() => onDecrement(item)}
+            onPress={handleDeletePress}
+            accessibilityRole="button"
+            accessibilityLabel={t('list.deleteProduct', { product: item.productName })}
           >
-            <Ionicons name="remove" size={15} color={colors.inkFaint} />
+            <Ionicons name="trash-outline" size={15} color={colors.inkFaint} />
           </TouchableOpacity>
-        )}
-        <TouchableOpacity
-          style={styles.qtyBtn}
-          hitSlop={6}
-          disabled={removing}
-          onPress={handleDeletePress}
-        >
-          <Ionicons name="trash-outline" size={14} color={colors.inkFaint} />
-        </TouchableOpacity>
+        </View>
       </View>
+
+      <TouchableOpacity
+        style={[styles.noteExtension, item.inCart && styles.noteExtensionDone]}
+        activeOpacity={0.7}
+        disabled={removing}
+        onPress={() => onEditNote(item)}
+        accessibilityRole="button"
+        accessibilityLabel={item.note || item.noteProduct
+          ? t('list.noteEditA11y', { note: item.note ?? item.noteProduct?.name ?? '' })
+          : t('list.notePlaceholder')}
+      >
+        <Ionicons
+          name={item.note || item.noteProduct ? 'chatbubble-ellipses' : 'chatbubble-ellipses-outline'}
+          size={14}
+          color={item.note || item.noteProduct ? colors.accent : colors.inkFaint}
+        />
+        <View style={styles.noteContent}>
+          {item.note ? (
+            <Text style={[styles.noteText, styles.noteTextFilled]} numberOfLines={2}>
+              {item.note}
+            </Text>
+          ) : !item.noteProduct ? (
+            <Text style={styles.noteText} numberOfLines={1}>{t('list.notePlaceholder')}</Text>
+          ) : null}
+          {item.noteProduct && (
+            <View style={styles.noteProductRow}>
+              {item.noteProduct.imageUrl ? (
+                <ProductImage uri={item.noteProduct.imageUrl} style={styles.noteProductImage} />
+              ) : (
+                <Ionicons name="link-outline" size={12} color={colors.accent} />
+              )}
+              <Text style={styles.noteProductText} numberOfLines={1}>
+                {t('list.noteLinkedProduct', {
+                  product: item.noteProduct.name,
+                  store: STORE_META[item.noteProduct.store].name,
+                })}
+              </Text>
+            </View>
+          )}
+        </View>
+        <Ionicons name="chevron-forward" size={13} color={colors.inkFaint} />
+      </TouchableOpacity>
     </Animated.View>
   );
 });
@@ -834,11 +1085,11 @@ const themedStyles = () => StyleSheet.create({
   },
   titleWrap: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   titleIcon: {
-    width: 34, height: 34, borderRadius: 17,
+    width: 28, height: 28, borderRadius: 14,
     alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.accentLight,
   },
-  title: { flex: 1, fontSize: 25, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4 },
+  title: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
   // Contador + acciones (esferas) en la misma fila, bajo el título.
   subtitleRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
@@ -891,16 +1142,21 @@ const themedStyles = () => StyleSheet.create({
   zoneHeaderCount: { fontSize: 10.5, fontFamily: fonts.semibold, color: colors.inkFaint },
 
   // ── Item rows ─────────────────────────────────────────────────
-  itemRow: {
-    flexDirection: 'row', alignItems: 'center',
+  itemCard: {
     backgroundColor: colors.white,
-    paddingHorizontal: 13, paddingVertical: 12, marginBottom: 10,
-    borderWidth: 1, borderColor: colors.border, borderRadius: 18,
-    gap: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 18,
+    overflow: 'hidden',
   },
-  itemRowDone: {
+  itemCardDone: {
     backgroundColor: colors.accentLight,
     borderColor: colors.accent,
+  },
+  itemRow: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 13, paddingVertical: 12,
+    gap: 10,
   },
   checkbox: {
     width: 22, height: 22, borderRadius: 11,
@@ -924,12 +1180,11 @@ const themedStyles = () => StyleSheet.create({
   itemUnit: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft },
   itemPrice: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.accent },
 
-  // Acciones de cantidad (restar / eliminar): apiladas en vertical y centradas,
-  // a la derecha del todo. Cada botón es del tamaño del checkbox de "seleccionar"
-  // y con SU MISMO trazo (1.5 inkFaint) para que se vean igual de marcados.
-  qtyActions: { alignItems: 'center', justifyContent: 'center', gap: 6 },
+  // Restar y eliminar igualan los 28 pt del control de asignación. El espacio
+  // mayor evita que se lean como una única acción apretada.
+  qtyActions: { alignItems: 'center', justifyContent: 'center', gap: 10 },
   qtyBtn: {
-    width: 22, height: 22, borderRadius: 11,
+    width: 28, height: 28, borderRadius: 14,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1.5, borderColor: colors.inkFaint,
   },
@@ -946,6 +1201,32 @@ const themedStyles = () => StyleSheet.create({
     width: 28, height: 28, borderRadius: 14,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1.5, borderColor: colors.inkFaint, borderStyle: 'dashed',
+  },
+
+  // Pie unido a la tarjeta. El divisor punteado lo diferencia del bloque
+  // principal sin convertirlo en una segunda tarjeta flotante.
+  noteExtension: {
+    minHeight: 34,
+    flexDirection: 'row', alignItems: 'center', gap: 7,
+    paddingHorizontal: 13, paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    borderStyle: 'dotted',
+  },
+  noteExtensionDone: { borderTopColor: colors.accentMid },
+  noteText: {
+    fontSize: 11.5,
+    lineHeight: 16,
+    fontFamily: fonts.medium,
+    color: colors.inkFaint,
+  },
+  noteTextFilled: { color: colors.inkSoft },
+  noteContent: { flex: 1, gap: 4 },
+  noteProductRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  noteProductImage: { width: 18, height: 18, borderRadius: 5, backgroundColor: colors.white },
+  noteProductText: {
+    flex: 1, fontSize: 10.5, lineHeight: 14,
+    fontFamily: fonts.semibold, color: colors.accent,
   },
 
   // ── Assign sheet ──────────────────────────────────────────────

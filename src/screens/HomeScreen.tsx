@@ -10,12 +10,14 @@ import {
   StyleSheet,
   StatusBar,
   ActivityIndicator,
+  Animated,
   RefreshControl,
   Alert,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../constants/colors';
 import { useCart } from '../context/CartContext';
 import { useProfile } from '../context/ProfileContext';
@@ -32,14 +34,22 @@ import { STORE_META } from '../constants/stores';
 import ProgressBar from '../components/ProgressBar';
 import MemberAvatars from '../components/MemberAvatars';
 import HardShadow from '../components/HardShadow';
-import ProfileChecklistCard from '../components/ProfileChecklistCard';
 import UserAvatar from '../components/UserAvatar';
 import NotificationsSheet from '../components/NotificationsSheet';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import ProductImage from '../components/ProductImage';
+import AmbientBubbleBackdrop from '../components/AmbientBubbleBackdrop';
+import ActiveCartIcon from '../components/ActiveCartIcon';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
-import { peekStartupCache, startupKeys, writeStartupCache } from '../lib/startupCache';
+import { useReducedMotion } from '../hooks/useReducedMotion';
+import { consumeHomeTransition } from '../lib/homeTransition';
+import {
+  hasStartupCache,
+  peekStartupCache,
+  startupKeys,
+  writeStartupCache,
+} from '../lib/startupCache';
 
 // Snapshot del carrito activo en disco, por usuario+grupo (la clave incluye el
 // userId para no filtrar datos entre cuentas del mismo móvil). Permite pintar
@@ -54,25 +64,38 @@ export default function HomeScreen() {
   const styles = useThemedStyles(themedStyles);
   const headerTop = useHeaderTopPadding(56);
   const bottomPad = useTabBarBottomPadding(32);
+  const reducedMotion = useReducedMotion();
   const navigation = useNavigation<any>();
   const { t, lang } = useTranslation();
   const locale = lang === 'ca' ? 'ca-ES' : 'es-ES';
   const { activeCart, addToActiveCart, loadItemsIntoGroupCart } = useCart();
   const { profile } = useProfile();
   const { unreadCount } = useNotifications();
-  const { products: favProducts } = useFavorites();
+  const { products: favProducts, loading: favoritesLoading } = useFavorites();
   const toast = useToast();
   const [notifOpen, setNotifOpen] = useState(false);
-  const [headerH, setHeaderH] = useState(0);
+  // En iOS Liquid Glass la cabecera mide de forma determinista 108 pt
+  // (padding superior 56 + avatar 40 + padding inferior 12). Partir de esa
+  // altura evita que el ScrollView nazca bajo el cristal y salte tras onLayout.
+  const [headerH, setHeaderH] = useState(glassAvailable ? 108 : 0);
+  const enteringFromOnboarding = useRef(consumeHomeTransition()).current;
+  const entryOpacity = useRef(new Animated.Value(enteringFromOnboarding ? 1 : 0)).current;
+  const [entryCoverVisible, setEntryCoverVisible] = useState(enteringFromOnboarding);
+  const [layoutReady, setLayoutReady] = useState(false);
+  const [revealDeadlineReached, setRevealDeadlineReached] = useState(false);
 
   const userId = profile?.id ?? null;
 
-  const cachedGroups = userId ? peekStartupCache<GroupSummary[]>(startupKeys.groups(userId)) : null;
+  const groupsCacheKey = userId ? startupKeys.groups(userId) : null;
+  const cachedGroups = groupsCacheKey ? peekStartupCache<GroupSummary[]>(groupsCacheKey) : null;
   const cachedCartItems = userId && activeCart
     ? peekStartupCache<GroupItem[]>(startupKeys.listItems(userId, activeCart.listId))
     : null;
   const [groups, setGroups] = useState<GroupSummary[]>(cachedGroups ?? []);
-  const [groupsLoading, setGroupsLoading] = useState(cachedGroups === null);
+  const [groupsLoading, setGroupsLoading] = useState(
+    groupsCacheKey ? !hasStartupCache(groupsCacheKey) : true,
+  );
+  const [groupsError, setGroupsError] = useState(false);
   const [cartItems, setCartItems] = useState<GroupItem[]>(cachedCartItems ?? []);
   // Grupo cuyos artículos ya hemos traído frescos de la red. Distingue "aún
   // cargando" de "carrito vacío de verdad" sin un flag que haga parpadear
@@ -81,8 +104,12 @@ export default function HomeScreen() {
   const [loadedGroup, setLoadedGroup] = useState<string | null>(cachedCartItems ? activeCart?.groupId ?? null : null);
   const loadedGroupRef = useRef<string | null>(cachedCartItems ? activeCart?.groupId ?? null : null);
   const [refreshing, setRefreshing] = useState(false);
-  const cachedPurchase = userId ? peekStartupCache<Purchase>(startupKeys.lastPurchase(userId)) : null;
+  const purchaseCacheKey = userId ? startupKeys.lastPurchase(userId) : null;
+  const cachedPurchase = purchaseCacheKey ? peekStartupCache<Purchase>(purchaseCacheKey) : null;
   const [lastPurchase, setLastPurchase] = useState<Purchase | null>(cachedPurchase);
+  const [purchaseLoading, setPurchaseLoading] = useState(
+    purchaseCacheKey ? !hasStartupCache(purchaseCacheKey) : true,
+  );
   const [repeating, setRepeating] = useState(false);
   // Favoritos en vuelo hacia el carrito (clave `store:id`): pinta el spinner en
   // su tesela y evita el doble toque, sin bloquear el resto del carrusel.
@@ -91,10 +118,11 @@ export default function HomeScreen() {
   const load = useCallback(() => {
     const groupsP = fetchMyGroups(userId ?? undefined)
       .then((next) => {
+        setGroupsError(false);
         setGroups(next);
         if (userId) writeStartupCache(startupKeys.groups(userId), next);
       })
-      .catch(() => {})
+      .catch(() => setGroupsError(true))
       .finally(() => setGroupsLoading(false));
 
     const purchasesP = fetchPurchases()
@@ -103,7 +131,8 @@ export default function HomeScreen() {
         setLastPurchase(next);
         if (userId) writeStartupCache(startupKeys.lastPurchase(userId), next);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setPurchaseLoading(false));
 
     let cartP: Promise<unknown> = Promise.resolve();
     if (activeCart) {
@@ -126,6 +155,39 @@ export default function HomeScreen() {
   }, [activeCart, userId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  // El cover solo existe en el salto final del onboarding. Da como máximo
+  // 900 ms para resolver los snapshots; después revela igualmente para que una
+  // red lenta nunca pueda bloquear la entrada.
+  useEffect(() => {
+    if (!entryCoverVisible) return;
+    const id = setTimeout(() => setRevealDeadlineReached(true), 900);
+    return () => clearTimeout(id);
+  }, [entryCoverVisible]);
+
+  const homeDataReady = !groupsLoading && !favoritesLoading && !purchaseLoading;
+  useEffect(() => {
+    if (!entryCoverVisible || !layoutReady || (!homeDataReady && !revealDeadlineReached)) return;
+    if (reducedMotion) {
+      entryOpacity.setValue(0);
+      setEntryCoverVisible(false);
+      return;
+    }
+    Animated.timing(entryOpacity, {
+      toValue: 0,
+      duration: 260,
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (finished) setEntryCoverVisible(false);
+    });
+  }, [
+    entryCoverVisible,
+    entryOpacity,
+    homeDataReady,
+    layoutReady,
+    reducedMotion,
+    revealDeadlineReached,
+  ]);
 
   // Hidrata el contador desde la caché en disco al abrir Home o cambiar de
   // carrito: "Quedan N artículos" aparece al instante mientras load() revalida.
@@ -217,6 +279,7 @@ export default function HomeScreen() {
         lastPurchase.groupId,
         lastPurchase.groupName ?? t('history.groupFallback'),
         items,
+        lastPurchase.groupIcon,
       );
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show(t('history.loaded', {
@@ -233,24 +296,16 @@ export default function HomeScreen() {
 
   const header = (
     <View style={[styles.header, { paddingTop: headerTop }]}>
-      <View style={styles.headerTitleWrap}>
-        <View style={styles.headerIcon}>
-          <Ionicons name="home-outline" size={18} color={colors.accent} />
-        </View>
-        <View style={styles.headerCopy}>
-          <Text style={styles.headerTitle} numberOfLines={1}>
-            QuéFalta
-          </Text>
-          <Text style={styles.headerSubtitle}>{t('home.subtitle')}</Text>
-        </View>
-      </View>
-
+      <Text style={styles.headerPrompt} numberOfLines={1}>
+        {t('home.headerPrompt')}
+      </Text>
       <View style={styles.headerActions}>
         <TouchableOpacity
           onPress={() => setNotifOpen(true)}
           style={styles.bellBtn}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           activeOpacity={0.8}
+          accessibilityRole="button"
           accessibilityLabel={t('notifications.a11yOpen')}
         >
           <View style={styles.bellSurface}>
@@ -266,6 +321,8 @@ export default function HomeScreen() {
           onPress={() => navigation.navigate('Profile')}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={t('profile.title')}
         >
           <UserAvatar
             avatarUrl={profile?.avatarUrl ?? null}
@@ -280,8 +337,12 @@ export default function HomeScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
+    <View style={styles.container} onLayout={() => setLayoutReady(true)}>
+      <AmbientBubbleBackdrop />
+      <StatusBar
+        barStyle={entryCoverVisible ? 'light-content' : colors.statusBar}
+        backgroundColor={entryCoverVisible ? colors.blue : colors.paper}
+      />
       {!glassAvailable && header}
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -299,10 +360,6 @@ export default function HomeScreen() {
           />
         }
       >
-
-        {/* Checklist de pasos opcionales pendientes (se oculta sola al completarlos) */}
-        <ProfileChecklistCard groupCount={groupsLoading ? null : groups.length} />
-
         {/* Resumen del carrito activo: conserva la carga instantánea desde caché
             y la revalidación en segundo plano que ya gestiona esta pantalla. */}
         {activeCart ? (
@@ -312,9 +369,25 @@ export default function HomeScreen() {
             style={styles.cardWrap}
           >
             <HardShadow style={styles.cartCard}>
+              <View
+                pointerEvents="none"
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+                style={styles.cartBackdrop}
+              >
+                <LinearGradient
+                  colors={['rgba(0,0,0,0.18)', 'rgba(255,255,255,0.10)']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={StyleSheet.absoluteFill}
+                />
+                <View style={styles.cartGlowLarge} />
+                <View style={styles.cartGlowSmall} />
+              </View>
+
               <View style={styles.cartHeader}>
                 <View style={styles.cartIconBox}>
-                  <Ionicons name="cart-outline" size={21} color={colors.white} />
+                  <ActiveCartIcon size={21} color={colors.white} />
                 </View>
                 <View style={styles.cartTitleCol}>
                   <View style={styles.cartEyebrowRow}>
@@ -401,7 +474,11 @@ export default function HomeScreen() {
 
         {/* Tus favoritos: carrusel con añadido de un toque. Sin favoritos aún,
             la tarjeta CTA de siempre como puerta de entrada a la pantalla. */}
-        {favTiles.length > 0 ? (
+        {favoritesLoading ? (
+          <View style={styles.favoritesLoading}>
+            <ActivityIndicator color={colors.accent} />
+          </View>
+        ) : favTiles.length > 0 ? (
           <View style={styles.sectionWrap}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>{t('home.yourFavorites')}</Text>
@@ -489,13 +566,16 @@ export default function HomeScreen() {
                 <Text style={styles.seeAll}>{t('home.seeAll')}</Text>
               </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={() => navigation.navigate('History')} activeOpacity={0.85}>
-              <HardShadow style={styles.lastBuyInner}>
-                <View style={styles.lastBuyRow}>
-                  <View style={styles.lastBuyIcon}>
+            <HardShadow style={styles.lastBuyInner}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('History')}
+                activeOpacity={0.85}
+                style={styles.lastBuyRow}
+              >
+                <View style={styles.lastBuyIcon}>
                     <Ionicons name="receipt-outline" size={20} color={colors.accent} />
                   </View>
-                  <View style={styles.lastBuyInfo}>
+                <View style={styles.lastBuyInfo}>
                     <Text style={styles.lastBuyName} numberOfLines={1}>
                       {lastPurchase.groupName ?? t('history.groupFallback')}
                     </Text>
@@ -504,25 +584,24 @@ export default function HomeScreen() {
                       {' · '}{lastPurchase.itemCount} {lastPurchase.itemCount === 1 ? t('history.item') : t('history.items')}
                     </Text>
                   </View>
-                  <Text style={styles.lastBuyTotal}>{formatEuro(lastPurchase.total)}</Text>
-                </View>
-                <TouchableOpacity
-                  style={styles.repeatBtn}
-                  onPress={repeatLastPurchase}
-                  disabled={repeating}
-                  activeOpacity={0.85}
-                >
-                  {repeating ? (
-                    <ActivityIndicator size="small" color={colors.white} />
-                  ) : (
-                    <>
-                      <Ionicons name="refresh" size={15} color={colors.white} />
-                      <Text style={styles.repeatText}>{t('history.repeat')}</Text>
-                    </>
-                  )}
-                </TouchableOpacity>
-              </HardShadow>
-            </TouchableOpacity>
+                <Text style={styles.lastBuyTotal}>{formatEuro(lastPurchase.total)}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.repeatBtn}
+                onPress={repeatLastPurchase}
+                disabled={repeating}
+                activeOpacity={0.85}
+              >
+                {repeating ? (
+                  <ActivityIndicator size="small" color={colors.white} />
+                ) : (
+                  <>
+                    <Ionicons name="refresh" size={15} color={colors.white} />
+                    <Text style={styles.repeatText}>{t('history.repeat')}</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </HardShadow>
           </View>
         )}
 
@@ -536,6 +615,19 @@ export default function HomeScreen() {
         <View style={styles.groupsBlock}>
           {groupsLoading ? (
             <ActivityIndicator color={colors.accent} style={{ marginVertical: 16 }} />
+          ) : groupsError ? (
+            <TouchableOpacity
+              style={styles.groupsRetry}
+              onPress={() => {
+                setGroupsLoading(true);
+                setGroupsError(false);
+                void load();
+              }}
+              accessibilityRole="button"
+            >
+              <Ionicons name="refresh" size={17} color={colors.accent} />
+              <Text style={styles.groupsRetryText}>{t('common.retry')}</Text>
+            </TouchableOpacity>
           ) : groups.length === 0 ? (
             <Text style={styles.noGroups}>{t('home.noGroups')}</Text>
           ) : (
@@ -569,7 +661,13 @@ export default function HomeScreen() {
       </ScrollView>
 
       {glassAvailable && (
-        <View style={styles.chrome} onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)}>
+        <View
+          style={styles.chrome}
+          onLayout={(event) => {
+            const next = event.nativeEvent.layout.height;
+            setHeaderH((current) => Math.abs(current - next) > 0.5 ? next : current);
+          }}
+        >
           <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>
             {header}
           </GlassSurface>
@@ -577,6 +675,16 @@ export default function HomeScreen() {
       )}
 
       <NotificationsSheet visible={notifOpen} onClose={() => setNotifOpen(false)} />
+      {entryCoverVisible && (
+        <Animated.View
+          pointerEvents="auto"
+          style={[styles.entryCover, { opacity: entryOpacity }]}
+          accessibilityViewIsModal
+          accessibilityLabel={t('common.loading')}
+        >
+          <ActivityIndicator color="#ffffff" />
+        </Animated.View>
+      )}
     </View>
   );
 }
@@ -584,25 +692,24 @@ export default function HomeScreen() {
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
   scroll: { padding: 16, paddingBottom: 32 },
+  entryCover: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.blue,
+  },
 
   header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    flexDirection: 'row', alignItems: 'center',
     gap: 10, paddingHorizontal: 16, paddingBottom: 12,
   },
-  headerTitleWrap: {
-    flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 10,
-  },
-  headerIcon: {
-    width: 34, height: 34, borderRadius: 17,
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.accentLight,
-  },
-  headerCopy: { flex: 1, minWidth: 0 },
-  headerTitle: {
-    fontSize: 23, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4,
-  },
-  headerSubtitle: {
-    fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1,
+  headerPrompt: {
+    flex: 1,
+    fontSize: 20,
+    fontFamily: fonts.bold,
+    color: colors.ink,
+    letterSpacing: -0.3,
   },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   avatarRing: { borderWidth: 1, borderColor: colors.accent },
@@ -631,6 +738,15 @@ const themedStyles = () => StyleSheet.create({
     borderColor: colors.accent,
     borderRadius: 18,
     overflow: 'hidden',
+  },
+  cartBackdrop: { ...StyleSheet.absoluteFillObject },
+  cartGlowLarge: {
+    position: 'absolute', width: 172, height: 172, borderRadius: 86,
+    backgroundColor: 'rgba(255,255,255,0.34)', right: -58, top: -92, opacity: 0.5,
+  },
+  cartGlowSmall: {
+    position: 'absolute', width: 88, height: 88, borderRadius: 44,
+    backgroundColor: 'rgba(0,0,0,0.16)', left: -35, bottom: -50, opacity: 0.72,
   },
   cartHeader: { flexDirection: 'row', alignItems: 'center', gap: 11 },
   cartTitleCol: { flex: 1, minWidth: 0 },
@@ -696,6 +812,12 @@ const themedStyles = () => StyleSheet.create({
 
   // ── Sections ──────────────────────────────────────────────────
   sectionWrap: { marginBottom: 20 },
+  favoritesLoading: {
+    minHeight: 72,
+    marginBottom: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   sectionHeader: {
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'center', marginBottom: 10,
@@ -775,6 +897,17 @@ const themedStyles = () => StyleSheet.create({
   // ── Groups ────────────────────────────────────────────────────
   // 16 + los 8 del último groupRow = 24, igual que el hueco entre secciones (sectionWrap).
   groupsBlock: { marginBottom: 16 },
+  groupsRetry: {
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 16,
+    borderRadius: 16,
+    backgroundColor: colors.accentLight,
+  },
+  groupsRetryText: { fontSize: 13, fontFamily: fonts.bold, color: colors.accent },
   noGroups: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, marginBottom: 16 },
   groupRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',

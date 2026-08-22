@@ -1,106 +1,164 @@
-import { useEffect } from 'react';
-import { View, Text, ScrollView, Pressable, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useCallback, useState } from 'react';
+import {
+  Alert,
+  Linking,
+  View,
+  Text,
+  ScrollView,
+  Switch,
+  StyleSheet,
+  StatusBar,
+} from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { useNotifications, type InboxNotification } from '../context/NotificationsContext';
-import { renderNotification } from '../lib/notificationText';
+import { useAuth } from '../context/AuthContext';
+import {
+  getNotificationsEnabled,
+  hasPermission,
+  registerForPushNotificationsAsync,
+  requestPermission,
+  sendTestNotification,
+  setNotificationsEnabled,
+  unregisterPushNotificationsAsync,
+} from '../lib/notifications';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
 
-const TYPE_META: Record<InboxNotification['type'], { icon: keyof typeof Ionicons.glyphMap; tint: string }> = {
-  cart: { icon: 'cart', tint: '#2f6cb5' },
-  group_invite: { icon: 'people', tint: '#3fa078' },
-  friend: { icon: 'person-add', tint: '#7c5cd6' },
-  general: { icon: 'notifications', tint: '#e0a02c' },
-};
-
-type Translate = (key: string, options?: Record<string, string | number>) => string;
-
-function relativeTime(timestamp: number, t: Translate): string {
-  const minutes = Math.floor((Date.now() - timestamp) / 60000);
-  if (minutes < 1) return t('notifications.now');
-  if (minutes < 60) return t('notifications.minutesAgo', { n: minutes });
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return t('notifications.hoursAgo', { n: hours });
-  return t('notifications.daysAgo', { n: Math.floor(hours / 24) });
-}
+const NOTIFICATION_TYPES: {
+  icon: keyof typeof Ionicons.glyphMap;
+  titleKey: string;
+  bodyKey: string;
+}[] = [
+  { icon: 'cart-outline', titleKey: 'notifications.types.cartTitle', bodyKey: 'notifications.types.cartBody' },
+  { icon: 'person-add-outline', titleKey: 'notifications.types.friendTitle', bodyKey: 'notifications.types.friendBody' },
+  { icon: 'people-outline', titleKey: 'notifications.types.groupTitle', bodyKey: 'notifications.types.groupBody' },
+  { icon: 'pricetag-outline', titleKey: 'notifications.types.priceAlertTitle', bodyKey: 'notifications.types.priceAlertBody' },
+];
 
 export default function NotificationsScreen() {
   const styles = useThemedStyles(themedStyles);
   const headerTop = useHeaderTopPadding(52);
   const bottomPad = useTabBarBottomPadding(40);
   const { t } = useTranslation();
-  const navigation = useNavigation<any>();
-  const { items, remove, clearAll, markAllRead } = useNotifications();
+  const { session } = useAuth();
+  const userId = session?.user.id ?? '';
+  const [enabled, setEnabled] = useState(false);
+  const [preferenceLoading, setPreferenceLoading] = useState(true);
 
-  useEffect(() => { markAllRead(); }, [markAllRead]);
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      setPreferenceLoading(true);
+      Promise.all([
+        getNotificationsEnabled(userId),
+        hasPermission(),
+      ])
+        .then(([preferred, permitted]) => {
+          if (active) setEnabled(preferred && permitted);
+        })
+        .catch(() => {
+          if (active) setEnabled(false);
+        })
+        .finally(() => {
+          if (active) setPreferenceLoading(false);
+        });
+      return () => { active = false; };
+    }, [userId]),
+  );
 
-  const openFriends = () => navigation.navigate('Friends');
-  const handleClearAll = () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    clearAll();
+  const handleNotificationToggle = async (nextEnabled: boolean) => {
+    if (!userId || preferenceLoading) return;
+    const previous = enabled;
+    setPreferenceLoading(true);
+
+    try {
+      if (!nextEnabled) {
+        await setNotificationsEnabled(userId, false);
+        setEnabled(false);
+        await unregisterPushNotificationsAsync(userId);
+        Haptics.selectionAsync();
+        return;
+      }
+
+      const permitted = (await hasPermission()) || (await requestPermission());
+      if (!permitted) {
+        await setNotificationsEnabled(userId, false);
+        setEnabled(false);
+        await unregisterPushNotificationsAsync(userId);
+        Alert.alert(
+          t('notifications.permissionTitle'),
+          t('notifications.permissionBody'),
+          [
+            { text: t('common.cancel'), style: 'cancel' },
+            {
+              text: t('notifications.openSettings'),
+              onPress: () => { Linking.openSettings().catch(() => {}); },
+            },
+          ],
+        );
+        return;
+      }
+
+      await setNotificationsEnabled(userId, true);
+      setEnabled(true);
+      await registerForPushNotificationsAsync(userId);
+      sendTestNotification().catch(() => {});
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch {
+      setEnabled(previous);
+      Alert.alert(t('notifications.errorTitle'), t('notifications.errorBody'));
+    } finally {
+      setPreferenceLoading(false);
+    }
   };
 
   return (
     <View style={styles.screen}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
       <ProfileSubscreenHeader title={t('notifications.title')} icon="notifications-outline" headerTop={headerTop} />
-      {items.length === 0 ? (
-        <View style={[styles.empty, { paddingTop: headerTop + 80 }]}>
-          <Ionicons name="notifications-off-outline" size={42} color={colors.inkFaint} />
-          <Text style={styles.emptyTitle}>{t('notifications.empty')}</Text>
-          <Text style={styles.emptySub}>{t('notifications.emptySub')}</Text>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.listContent, { paddingTop: headerTop + 58, paddingBottom: bottomPad }]}
+      >
+        <View style={styles.settingCard}>
+          <View style={styles.settingCopy}>
+            <Text style={styles.settingTitle}>{t('notifications.toggleTitle')}</Text>
+          </View>
+          <Switch
+            value={enabled}
+            disabled={preferenceLoading || !userId}
+            onValueChange={handleNotificationToggle}
+            trackColor={{ false: colors.border, true: colors.accent }}
+            thumbColor={colors.white}
+            accessibilityLabel={t('notifications.toggleA11y')}
+          />
         </View>
-      ) : (
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={[styles.listContent, { paddingTop: headerTop + 58, paddingBottom: bottomPad }]}
-        >
-          {items.map((notification) => {
-            const meta = TYPE_META[notification.type] ?? TYPE_META.general;
-            const { title, body } = renderNotification(notification, t);
-            return (
-              <Pressable
-                key={notification.id}
-                style={styles.row}
-                onPress={notification.type === 'friend' ? openFriends : undefined}
-                disabled={notification.type !== 'friend'}
-              >
-                <View style={[styles.rowIcon, { backgroundColor: meta.tint + '22' }]}>
-                  <Ionicons name={meta.icon} size={18} color={meta.tint} />
-                </View>
-                <View style={styles.rowBody}>
-                  <Text style={styles.rowTitle} numberOfLines={2}>{title}</Text>
-                  {body ? <Text style={styles.rowText} numberOfLines={3}>{body}</Text> : null}
-                  <Text style={styles.rowTime}>{relativeTime(notification.createdAt, t)}</Text>
-                </View>
-                {notification.type === 'friend' ? (
-                  <TouchableOpacity onPress={openFriends} style={styles.actionBtn} accessibilityRole="button" accessibilityLabel={t('notifications.a11yOpenFriend')}>
-                    <Ionicons name="chevron-forward" size={18} color={colors.inkSoft} />
-                  </TouchableOpacity>
-                ) : null}
-                <TouchableOpacity
-                  onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); remove(notification.id); }}
-                  style={styles.actionBtn}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('notifications.a11yDelete')}
-                >
-                  <Ionicons name="close" size={18} color={colors.inkFaint} />
-                </TouchableOpacity>
-              </Pressable>
-            );
-          })}
-          <TouchableOpacity onPress={handleClearAll} style={styles.clearAll} accessibilityRole="button">
-            <Text style={styles.clearAllText}>{t('notifications.clearAll')}</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      )}
+
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>{t('notifications.infoTitle')}</Text>
+          {NOTIFICATION_TYPES.map((type, index) => (
+            <View
+              key={type.titleKey}
+              style={[styles.infoRow, index < NOTIFICATION_TYPES.length - 1 && styles.infoRowBorder]}
+            >
+              <View style={styles.infoIcon}>
+                <Ionicons name={type.icon} size={18} color={colors.accent} />
+              </View>
+              <View style={styles.infoCopy}>
+                <Text style={styles.infoRowTitle}>{t(type.titleKey)}</Text>
+                <Text style={styles.infoRowBody}>{t(type.bodyKey)}</Text>
+              </View>
+            </View>
+          ))}
+          <Text style={styles.infoFootnote}>{t('notifications.infoFootnote')}</Text>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -108,16 +166,24 @@ export default function NotificationsScreen() {
 const themedStyles = () => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.paper },
   listContent: { paddingHorizontal: 14 },
-  row: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 12, marginBottom: 8 },
-  rowIcon: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  rowBody: { flex: 1, minWidth: 0 },
-  rowTitle: { fontSize: 13.5, fontFamily: fonts.semibold, color: colors.ink, lineHeight: 18 },
-  rowText: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2, lineHeight: 17 },
-  rowTime: { fontSize: 11, fontFamily: fonts.medium, color: colors.inkFaint, marginTop: 4 },
-  actionBtn: { width: 26, height: 26, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  clearAll: { alignItems: 'center', paddingVertical: 14 },
-  clearAllText: { fontSize: 13.5, fontFamily: fonts.semibold, color: colors.accent },
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 40, paddingBottom: 60 },
-  emptyTitle: { fontSize: 15, fontFamily: fonts.bold, color: colors.ink, marginTop: 4 },
-  emptySub: { fontSize: 13, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'center' },
+  settingCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
+    borderRadius: 16, padding: 14,
+  },
+  settingCopy: { flex: 1, minWidth: 0 },
+  settingTitle: { fontSize: 15, fontFamily: fonts.bold, color: colors.ink },
+  infoCard: {
+    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
+    borderRadius: 16, paddingHorizontal: 14, paddingTop: 14, paddingBottom: 12,
+    marginTop: 12,
+  },
+  infoTitle: { fontSize: 15, fontFamily: fonts.bold, color: colors.ink },
+  infoRow: { flexDirection: 'row', alignItems: 'center', gap: 11, paddingVertical: 10 },
+  infoRowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
+  infoIcon: { width: 34, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accentLight },
+  infoCopy: { flex: 1, minWidth: 0 },
+  infoRowTitle: { fontSize: 13.5, fontFamily: fonts.semibold, color: colors.ink },
+  infoRowBody: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, lineHeight: 16, marginTop: 1 },
+  infoFootnote: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkFaint, lineHeight: 16, marginTop: 5 },
 });

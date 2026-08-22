@@ -9,6 +9,7 @@ import { setPendingProfileName } from '../lib/pendingProfileName';
 import { linkAppleCredential } from '../api/account';
 import { configurePurchases, logOutPurchases } from '../lib/purchases';
 import {
+  getNotificationsEnabled,
   registerForPushNotificationsAsync,
   unregisterPushNotificationsAsync,
 } from '../lib/notifications';
@@ -134,10 +135,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (session?.user.id) configurePurchases(session.user.id);
   }, [session?.user.id]);
 
-  // Push: registra el Expo push token de este dispositivo para el usuario (si
-  // tiene las notificaciones activadas). No-op en Expo Go/web. Ver lib/notifications.
+  // Push: reconcilia el token de este dispositivo con la preferencia local del
+  // usuario. Una cuenta nueva parte en OFF y retira cualquier token antiguo que
+  // pudiera quedar asociado a este dispositivo. No-op en Expo Go/web.
   useEffect(() => {
-    if (session?.user.id) registerForPushNotificationsAsync(session.user.id).catch(() => {});
+    const userId = session?.user.id;
+    if (!userId) return;
+    getNotificationsEnabled(userId)
+      .then((enabled) => (
+        enabled
+          ? registerForPushNotificationsAsync(userId)
+          : unregisterPushNotificationsAsync(userId)
+      ))
+      .catch(() => {});
   }, [session?.user.id]);
 
   const signInWithGoogle = async () => {

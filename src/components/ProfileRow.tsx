@@ -5,7 +5,7 @@ import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 
-type RightVariant = 'chevron' | 'switch';
+type RightVariant = 'chevron' | 'switch' | 'none';
 
 interface Props {
   icon: keyof typeof Ionicons.glyphMap;
@@ -32,11 +32,14 @@ export default function ProfileRow({
 }: Props) {
   const styles = useThemedStyles(themedStyles);
   const iconColor = danger ? '#d6452b' : colors.accent;
-  const iconBg    = danger ? 'rgba(214,69,43,0.10)' : colors.accentLight;
+  const iconBg = danger ? 'rgba(214,69,43,0.10)' : colors.accentLight;
   const labelColor = danger ? '#d6452b' : colors.ink;
 
   const inner = (
-    <View style={[styles.row, !last && styles.rowBorder]}>
+    <View style={[
+      styles.row,
+      !last && styles.rowBorder,
+    ]}>
       <View style={[styles.iconBox, rounded && styles.iconBoxRounded, { backgroundColor: iconBg }]}>
         <Ionicons name={icon} size={18} color={iconColor} />
       </View>
@@ -54,7 +57,7 @@ export default function ProfileRow({
           trackColor={{ false: colors.border, true: colors.accent }}
           thumbColor={colors.white}
         />
-      ) : locked ? (
+      ) : right === 'none' ? null : locked ? (
         <Ionicons name="lock-closed" size={15} color={colors.inkSoft} />
       ) : !danger ? (
         <Ionicons name="chevron-forward" size={16} color={colors.inkFaint} />
@@ -63,11 +66,12 @@ export default function ProfileRow({
   );
 
   if (onPress) {
-    return (
+    const button = (
       <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
         {inner}
       </TouchableOpacity>
     );
+    return button;
   }
   return inner;
 }

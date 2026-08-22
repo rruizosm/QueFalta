@@ -16,6 +16,7 @@ import QuantityStepper from '../components/QuantityStepper';
 import ProductDetailHero from '../components/ProductDetailHero';
 import ProductInfoSections from '../components/ProductInfoSections';
 import SimilarProductsSection from '../components/SimilarProductsSection';
+import ActiveCartIcon from './ActiveCartIcon';
 
 interface Props {
   /** Producto a mostrar (ya cargado de sorli_products). null = oculto. */
@@ -160,7 +161,7 @@ export default function SorliProductModal({ product, onClose, topInset = 16, bad
             <ActivityIndicator size="small" color={colors.white} />
           ) : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Ionicons name="cart-outline" size={16} color={colors.white} />
+              <ActiveCartIcon size={16} color={colors.white} />
               <Text style={styles.addBtnText}>{t('product.addToCart')}</Text>
             </View>
           )}
@@ -229,7 +230,7 @@ const themedStyles = () => StyleSheet.create({
   addBtn: {
     flex: 1, backgroundColor: colors.accent,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 14,
+    paddingVertical: 14, borderRadius: 23,
   },
   addBtnText: { color: colors.white, fontFamily: fonts.bold, fontSize: 14 },
 });

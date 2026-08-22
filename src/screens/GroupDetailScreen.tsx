@@ -15,15 +15,20 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { GroupsStackParamList } from '../types';
 import {
   fetchGroupDetail,
   fetchGroupItems,
   getInviteLink,
+  updateGroupIcon,
   type GroupSummary,
   type GroupItem,
 } from '../api/groups';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
@@ -36,6 +41,8 @@ import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import { STORE_META, groupByStore, storeOfItem } from '../constants/stores';
 import { groupByZone, sortZoneItems } from '../constants/zones';
 import { mergeCartItems, type MergedCartItem } from '../api/lists';
+import GroupIconPickerSheet from '../components/GroupIconPickerSheet';
+import { DEFAULT_GROUP_ICON } from '../constants/groupIcons';
 
 type GroupDetailRouteProp = RouteProp<GroupsStackParamList, 'GroupDetail'>;
 
@@ -57,6 +64,9 @@ export default function GroupDetailScreen() {
   // cesta expandida) por encima del cristal y agranda los paddingBottom igual.
   const tabBarOffset = useTabBarBottomPadding(0);
   const { t } = useTranslation();
+  const { session } = useAuth();
+  const { updateActiveCartIcon } = useCart();
+  const toast = useToast();
   const navigation = useNavigation<any>();
   const route = useRoute<GroupDetailRouteProp>();
   const { groupId } = route.params;
@@ -69,6 +79,8 @@ export default function GroupDetailScreen() {
   const [detailTarget, setDetailTarget] = useState<ProductRef | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
+  const [iconPickerVisible, setIconPickerVisible] = useState(false);
+  const [savingIcon, setSavingIcon] = useState(false);
 
   const load = useCallback(() => {
     setError(false);
@@ -85,6 +97,23 @@ export default function GroupDetailScreen() {
     await load();
     setRefreshing(false);
   }, [load]);
+
+  const handleSaveIcon = async (iconEmoji: string) => {
+    if (!group || savingIcon) return;
+    setSavingIcon(true);
+    try {
+      await updateGroupIcon(groupId, iconEmoji);
+      setGroup({ ...group, iconEmoji });
+      await updateActiveCartIcon(groupId, iconEmoji);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.show(t('group.iconSaved'));
+      setIconPickerVisible(false);
+    } catch {
+      toast.show(t('group.iconSaveError'), 'error');
+    } finally {
+      setSavingIcon(false);
+    }
+  };
 
   const handleShare = async () => {
     const link = getInviteLink(groupId);
@@ -149,6 +178,24 @@ export default function GroupDetailScreen() {
             {item.productName}
           </Text>
           <Text style={styles.listItemUnit}>{item.quantity} {item.unit}</Text>
+          {!!item.note && (
+            <Text style={styles.listItemNote} numberOfLines={2}>{item.note}</Text>
+          )}
+          {!!item.noteProduct && (
+            <View style={styles.listItemNoteProduct}>
+              {item.noteProduct.imageUrl ? (
+                <ProductImage uri={item.noteProduct.imageUrl} style={styles.listItemNoteProductImage} />
+              ) : (
+                <Ionicons name="link-outline" size={12} color={colors.accent} />
+              )}
+              <Text style={styles.listItemNoteProductText} numberOfLines={1}>
+                {t('list.noteLinkedProduct', {
+                  product: item.noteProduct.name,
+                  store: STORE_META[item.noteProduct.store].name,
+                })}
+              </Text>
+            </View>
+          )}
         </View>
         {lineTotal != null && (
           <Text style={[styles.listItemPrice, item.inCart && styles.listItemPriceDone]}>
@@ -295,6 +342,26 @@ export default function GroupDetailScreen() {
           </View>
         </TouchableOpacity>
 
+        {/* Configuración visual del grupo: tarjeta independiente de miembros. */}
+        {group.ownerId === session?.user.id && (
+          <TouchableOpacity
+            style={[styles.section, styles.iconSection]}
+            activeOpacity={0.72}
+            onPress={() => setIconPickerVisible(true)}
+            accessibilityRole="button"
+            accessibilityLabel={t('group.iconAction')}
+          >
+            <View style={styles.groupIconPreview}>
+              <Text style={styles.groupIconEmoji}>{group.iconEmoji ?? DEFAULT_GROUP_ICON}</Text>
+            </View>
+            <View style={styles.groupIconCopy}>
+              <Text style={styles.groupIconTitle}>{t('group.iconAction')}</Text>
+              <Text style={styles.groupIconSubtitle}>{t('group.iconActionSubtitle')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.accent} />
+          </TouchableOpacity>
+        )}
+
         {/* Cesta del grupo */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -393,6 +460,14 @@ export default function GroupDetailScreen() {
         fullScreen
       />
 
+      <GroupIconPickerSheet
+        visible={iconPickerVisible}
+        selectedIcon={group.iconEmoji}
+        busy={savingIcon}
+        onSave={handleSaveIcon}
+        onClose={() => { if (!savingIcon) setIconPickerVisible(false); }}
+      />
+
       {glassAvailable && !cartExpanded && (
         <View style={styles.chrome} onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}>
           <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>
@@ -449,6 +524,22 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', borderRadius: 15,
   },
   membersSection: { paddingVertical: 11 },
+  iconSection: {
+    minHeight: 64,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
+    paddingVertical: 10,
+  },
+  groupIconPreview: {
+    width: 42, height: 42, borderRadius: 14,
+    backgroundColor: colors.accentLight,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  groupIconEmoji: { fontSize: 24, lineHeight: 30 },
+  groupIconCopy: { flex: 1, minWidth: 0 },
+  groupIconTitle: { fontSize: 13.5, fontFamily: fonts.bold, color: colors.ink },
+  groupIconSubtitle: { marginTop: 2, fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft },
   memberSummaryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   memberAvatarsWrap: {
     minWidth: 38, height: 38, justifyContent: 'center',
@@ -511,6 +602,10 @@ const themedStyles = () => StyleSheet.create({
   listItemNameBig: { fontSize: 15 },
   listItemNameDone: { textDecorationLine: 'line-through', color: colors.inkSoft },
   listItemUnit: { fontSize: 11, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
+  listItemNote: { fontSize: 11, lineHeight: 15, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 3 },
+  listItemNoteProduct: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 4 },
+  listItemNoteProductImage: { width: 18, height: 18, borderRadius: 5, backgroundColor: colors.surfaceAlt },
+  listItemNoteProductText: { flex: 1, fontSize: 10.5, fontFamily: fonts.semibold, color: colors.accent },
   listItemPrice: { fontSize: 13, fontFamily: fonts.bold, color: colors.accent },
   listItemPriceDone: { color: colors.inkFaint },
 

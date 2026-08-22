@@ -1,6 +1,6 @@
 # Privacidad y seguridad — Estado y runbook
 
-> Última actualización: 2026-08-14 (Fase 3 preparada localmente)
+> Última actualización: 2026-08-21
 
 Pantalla: `src/screens/PrivacySecurityScreen.tsx` (Perfil → "Privacidad y seguridad").
 
@@ -105,6 +105,24 @@ crashearía.
   la service-role vive en GitHub Actions secrets / EAS env / Edge Functions.
 - `premium_until` protegido por trigger contra manipulación desde el cliente
   (`supabase/migrations/profile_premium.sql`).
+- Las alertas personalizadas guardan reglas asociadas al usuario y aplican RLS
+  con `user_id = auth.uid()` en SELECT/INSERT/UPDATE/DELETE. Sus eventos de
+  catálogo viven en el esquema no expuesto `price_alerts_internal`; el cliente
+  solo accede a una vista previa acotada que comprueba sesión y Plus.
+- Crear o reactivar una alerta exige `premium_until > now()` en servidor. El RPC
+  de reclamación está revocado para `public`, `anon` y `authenticated`; solo
+  `service_role` puede procesar entregas. El Cron llama a la Edge Function con
+  `PROCESS_PRICE_ALERTS_SECRET` almacenado en Vault, nunca en el repositorio.
+- La inserción de bandeja se hace mediante una RPC transaccional reservada a
+  `service_role`; la clave única regla+lote evita duplicados en reintentos.
+- Los productos de un aviso se obtienen mediante
+  `get_price_alert_notification_products(notificationId)`: es una RPC
+  `SECURITY DEFINER` con `search_path` vacío, exige sesión y comprueba que la
+  notificación pertenece a `auth.uid()`. Para ids inexistentes o ajenos devuelve
+  vacío y no expone el esquema `price_alerts_internal`.
+- `price_alert_rules` y `price_alert_deliveries` referencian `profiles` con
+  `ON DELETE CASCADE`, de modo que eliminar la cuenta también elimina reglas y
+  outbox. Los eventos de catálogo no contienen datos personales.
 
 ## 8. Deuda menor pendiente
 

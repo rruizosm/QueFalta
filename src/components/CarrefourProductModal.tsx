@@ -14,11 +14,11 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductDetailImage from '../components/ProductDetailImage';
-import FoodIndexSummary from '../components/FoodIndexSummary';
 import ProductInfoSections from '../components/ProductInfoSections';
 import { useNutritionInfoDisclosure } from '../components/NutritionInfoButton';
-import SimilarProductsSection from '../components/SimilarProductsSection';
+import ProductDetailDiscoverySection from '../components/ProductDetailDiscoverySection';
 import ProductPriceLine from '../components/ProductPriceLine';
+import ActiveCartIcon from './ActiveCartIcon';
 
 interface Props {
   /** Producto a mostrar (ya cargado de carrefour_products). null = oculto. */
@@ -124,7 +124,7 @@ export default function CarrefourProductModal({ product, onClose, topInset = 16,
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} />
+        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} alertTarget={{ store: 'carrefour', productId: product.id }} />
 
         <Text style={styles.name}>{product.displayName}</Text>
 
@@ -135,16 +135,6 @@ export default function CarrefourProductModal({ product, onClose, topInset = 16,
           fallbackPreviousPrice={prevPrice}
         />
         {product.pricePerUnit ? <Text style={styles.refPrice}>{product.pricePerUnit}</Text> : null}
-
-        {nutrition.info?.foodIndex ? (
-          <FoodIndexSummary
-            index={nutrition.info.foodIndex}
-            onPress={nutrition.open}
-            expanded={nutrition.expanded}
-          >
-            {nutrition.inlineContent}
-          </FoodIndexSummary>
-        ) : null}
 
         {/* Promo de lote ("3x2", "2ª unidad -70%"…) con sus condiciones completas
             (el texto de Carrefour ya incluye la validez: "Válido del … al …"). */}
@@ -158,8 +148,11 @@ export default function CarrefourProductModal({ product, onClose, topInset = 16,
           </View>
         ) : null}
 
-        {/* Comparativa: más barato en otros súper */}
-        <SimilarProductsSection productId={product.id} excludeStore="carrefour" />
+        <ProductDetailDiscoverySection
+          nutrition={nutrition}
+          productId={product.id}
+          excludeStore="carrefour"
+        />
 
         {/* Características del producto (del __INITIAL_STATE__ de Carrefour; null si aún no rastreada) */}
         <ProductInfoSections
@@ -191,7 +184,7 @@ export default function CarrefourProductModal({ product, onClose, topInset = 16,
             <ActivityIndicator size="small" color={colors.white} />
           ) : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Ionicons name="cart-outline" size={16} color={colors.white} />
+              <ActiveCartIcon size={16} color={colors.white} />
               <Text style={styles.addBtnText}>{t('product.addToCart')}</Text>
             </View>
           )}
@@ -265,7 +258,7 @@ const themedStyles = () => StyleSheet.create({
   addBtn: {
     flex: 1, backgroundColor: colors.accent,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 14,
+    paddingVertical: 14, borderRadius: 23,
   },
   addBtnText: { color: colors.white, fontFamily: fonts.bold, fontSize: 14 },
 });

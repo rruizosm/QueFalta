@@ -21,6 +21,7 @@ import ProductImage from './ProductImage';
 import ViewModeToggle, { type ViewMode } from './ViewModeToggle';
 import ProductGridCard from './ProductGridCard';
 import StoreProductModal, { type ProductRef } from './StoreProductModal';
+import ActiveCartIcon from './ActiveCartIcon';
 import GlassSurface from './GlassSurface';
 
 // Cuadrícula: 3 por fila (idéntica a las subcategorías).
@@ -439,25 +440,41 @@ export default function StoreProductList({
       )}
 
       {cartCount > 0 && (
-        <View style={[styles.cartBar, { bottom: tabBarOffset }]}>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={styles.cartLabel}>
-              {t(cartCount === 1 ? 'product.selectedOne' : 'product.selectedMany', { n: cartCount })}
-            </Text>
-            <Text style={styles.cartTarget} numberOfLines={1}>
-              {activeCart ? t('product.toGroup', { group: activeCart.groupName }) : t('product.noCartTitle')}
-            </Text>
-          </View>
-          <TouchableOpacity style={styles.cartBtn} onPress={handleAddToCart} disabled={adding}>
+        <View style={[styles.cartBarWrap, { bottom: tabBarOffset + 8 }]}>
+          <GlassSurface
+            style={styles.cartBar}
+            tintColor={colors.accentLight}
+            fallbackColor={colors.white}
+          >
+            <View style={styles.cartIcon} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+              <ActiveCartIcon size={20} color={colors.accent} fallback="basket-outline" />
+            </View>
+            <View style={styles.cartSummary}>
+              <Text style={styles.cartLabel}>
+                {t(cartCount === 1 ? 'product.selectedOne' : 'product.selectedMany', { n: cartCount })}
+              </Text>
+              <Text style={styles.cartTarget} numberOfLines={1}>
+                {activeCart ? t('product.toGroup', { group: activeCart.groupName }) : t('product.noCartTitle')}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.cartBtn}
+              onPress={handleAddToCart}
+              disabled={adding}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: adding, busy: adding }}
+            >
               {adding ? (
                 <ActivityIndicator size="small" color={colors.white} />
               ) : (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <>
                   <Text style={styles.cartBtnText}>{t('product.add')}</Text>
-                  <Ionicons name="arrow-forward" size={14} color={colors.white} />
-                </View>
+                  <Ionicons name="arrow-forward" size={17} color={colors.white} />
+                </>
               )}
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </GlassSurface>
         </View>
       )}
 
@@ -480,8 +497,11 @@ const themedStyles = () => StyleSheet.create({
   searchBar: {
     flex: 1, flexDirection: 'row', alignItems: 'center', gap: 9,
     backgroundColor: colors.white,
-    paddingHorizontal: 12, paddingVertical: 9,
+    paddingHorizontal: 14, paddingVertical: 11,
+    borderRadius: 16,
     borderWidth: 1, borderColor: colors.border,
+    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 }, elevation: 1,
   },
   searchInput: {
     flex: 1, fontSize: 13.5, color: colors.ink, padding: 0,
@@ -555,14 +575,31 @@ const themedStyles = () => StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 60 },
   emptyText: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'center' },
 
-  cartBar: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: colors.ink,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 14, paddingBottom: 28,
+  cartBarWrap: {
+    position: 'absolute', left: 16, right: 16,
+    borderRadius: 22,
+    shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 14,
+    shadowOffset: { width: 0, height: 5 }, elevation: 5,
   },
-  cartLabel: { fontFamily: fonts.semibold, color: colors.white, fontSize: 13 },
+  cartBar: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    gap: 10, padding: 10,
+    borderWidth: 1, borderColor: colors.border, borderRadius: 22,
+    overflow: 'hidden',
+  },
+  cartIcon: {
+    width: 42, height: 42, borderRadius: 21,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.accentLight,
+  },
+  cartSummary: { flex: 1, minWidth: 0 },
+  cartLabel: { fontFamily: fonts.semibold, color: colors.ink, fontSize: 13.5 },
   cartTarget: { fontFamily: fonts.medium, color: colors.accent, fontSize: 11.5, marginTop: 2 },
-  cartBtn: { backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 10 },
+  cartBtn: {
+    minWidth: 98, minHeight: 44,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 10,
+    borderRadius: 18,
+  },
   cartBtnText: { color: colors.white, fontFamily: fonts.bold, fontSize: 13 },
 });

@@ -1,8 +1,8 @@
 // Edge Function: revenuecat-webhook
 //
 // Recibe los eventos de suscripción de RevenueCat y mantiene
-// profiles.premium_until (la fuente de verdad del estado QuéFalta Plus que
-// leen la app y los gates SQL de paywall_gates.sql).
+// profiles.premium_until (fuente de verdad del acceso QuéFalta Plus) y su
+// reflejo público profiles.verified (insignia dorada).
 //
 // La lógica es deliberadamente simple: para cualquier evento relevante,
 // premium_until = expiration_at_ms del evento. Eso cubre todo el ciclo:
@@ -85,6 +85,7 @@ Deno.serve(async (req) => {
 
     const expirationMs: number | null = event?.expiration_at_ms ?? null;
     const premiumUntil = expirationMs != null ? new Date(expirationMs).toISOString() : null;
+    const verified = expirationMs != null && expirationMs > Date.now();
 
     const admin = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -93,7 +94,7 @@ Deno.serve(async (req) => {
 
     const { error } = await admin
       .from('profiles')
-      .update({ premium_until: premiumUntil })
+      .update({ premium_until: premiumUntil, verified })
       .eq('id', userId);
 
     if (error) {
@@ -101,7 +102,7 @@ Deno.serve(async (req) => {
       return json({ error: error.message }, 500);
     }
 
-    return json({ success: true, type, premium_until: premiumUntil }, 200);
+    return json({ success: true, type, premium_until: premiumUntil, verified }, 200);
   } catch (e) {
     return json({ error: String(e) }, 500);
   }

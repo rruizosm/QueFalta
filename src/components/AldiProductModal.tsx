@@ -6,7 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
-import type { AldiProduct, GadisProduct, AhorramasProduct } from '../api/catalog';
+import type { AldiProduct, GadisProduct, FroizProduct, AhorramasProduct } from '../api/catalog';
 import type { CatalogStore } from '../constants/stores';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
@@ -18,11 +18,12 @@ import ProductDetailImage from '../components/ProductDetailImage';
 import ProductInfoSections from '../components/ProductInfoSections';
 import SimilarProductsSection from '../components/SimilarProductsSection';
 import ProductPriceLine from '../components/ProductPriceLine';
+import ActiveCartIcon from './ActiveCartIcon';
 
 interface Props {
   /** Producto a mostrar (ya cargado de aldi_products). null = oculto. */
-  product: AldiProduct | GadisProduct | AhorramasProduct | null;
-  store?: Extract<CatalogStore, 'aldi' | 'gadis' | 'ahorramas'>;
+  product: AldiProduct | GadisProduct | FroizProduct | AhorramasProduct | null;
+  store?: Extract<CatalogStore, 'aldi' | 'gadis' | 'froiz' | 'ahorramas'>;
   onClose: () => void;
   /** Padding superior de la cabecera (lo fija StoreProductModal): 56 a pantalla
    *  completa (cesta), 16 dentro de la hoja (catálogo). */
@@ -107,7 +108,7 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} />
+        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} alertTarget={{ store, productId: product.id }} />
 
         <Text style={styles.name}>{product.displayName}</Text>
         {product.brand ? <Text style={styles.brand}>{product.brand}</Text> : null}
@@ -126,7 +127,7 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
           ]}
         />
 
-        <Text style={styles.note}>{t('product.fromStore', { store: store === 'gadis' ? 'Gadis' : store === 'ahorramas' ? 'Ahorramás' : 'Aldi' })}</Text>
+        <Text style={styles.note}>{t('product.fromStore', { store: store === 'gadis' ? 'Gadis' : store === 'froiz' ? 'Froiz' : store === 'ahorramas' ? 'Ahorramás' : 'Aldi' })}</Text>
       </ScrollView>
 
       {/* Pie: cantidad + añadir a la cesta */}
@@ -142,7 +143,7 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
             <ActivityIndicator size="small" color={colors.white} />
           ) : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Ionicons name="cart-outline" size={16} color={colors.white} />
+              <ActiveCartIcon size={16} color={colors.white} />
               <Text style={styles.addBtnText}>{t('product.addToCart')}</Text>
             </View>
           )}
@@ -201,7 +202,7 @@ const themedStyles = () => StyleSheet.create({
   addBtn: {
     flex: 1, backgroundColor: colors.accent,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 14,
+    paddingVertical: 14, borderRadius: 23,
   },
   addBtnText: { color: colors.white, fontFamily: fonts.bold, fontSize: 14 },
 });

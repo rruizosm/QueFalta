@@ -15,6 +15,10 @@ import { getLanguage, t } from '../i18n';
 const PREF_KEY = '@notifications_enabled';
 const ANDROID_CHANNEL_ID = 'default';
 
+function preferenceKey(userId: string): string {
+  return `${PREF_KEY}:${userId}`;
+}
+
 /** Show banners/list even when the app is in the foreground. Call once at startup. */
 export function configureNotificationHandler() {
   Notifications.setNotificationHandler({
@@ -63,13 +67,15 @@ export async function sendTestNotification() {
 }
 
 // ── Persisted preference ────────────────────────────────────────────────────
-export async function getNotificationsEnabled(): Promise<boolean> {
-  const raw = await AsyncStorage.getItem(PREF_KEY);
+export async function getNotificationsEnabled(userId: string): Promise<boolean> {
+  if (!userId) return false;
+  const raw = await AsyncStorage.getItem(preferenceKey(userId));
   return raw === 'true';
 }
 
-export async function setNotificationsEnabled(enabled: boolean): Promise<void> {
-  await AsyncStorage.setItem(PREF_KEY, enabled ? 'true' : 'false');
+export async function setNotificationsEnabled(userId: string, enabled: boolean): Promise<void> {
+  if (!userId) return;
+  await AsyncStorage.setItem(preferenceKey(userId), enabled ? 'true' : 'false');
 }
 
 // ── Remote push (Phase 2) ─────────────────────────────────────────────────────
@@ -99,7 +105,7 @@ export async function registerForPushNotificationsAsync(userId: string): Promise
   try {
     // Respeta la preferencia del usuario: si apagó las notificaciones, no
     // registramos el token (y por tanto no recibe push).
-    if (!(await getNotificationsEnabled())) return;
+    if (!(await getNotificationsEnabled(userId))) return;
     if (!(await hasPermission())) return;
 
     await ensureAndroidChannel();
@@ -140,7 +146,7 @@ export async function syncPushTokenLanguageAsync(lang: string): Promise<void> {
     const { data: { session } } = await supabase.auth.getSession();
     const userId = session?.user.id;
     if (!userId) return;
-    if (!(await getNotificationsEnabled())) return;
+    if (!(await getNotificationsEnabled(userId))) return;
     if (!(await hasPermission())) return;
 
     const id = projectId();
@@ -178,8 +184,12 @@ export async function unregisterPushNotificationsAsync(userId: string): Promise<
 /** Payload that `send-push` puts in each notification's `data`, used to
  *  deep-link to the right screen when the user taps it. */
 export type PushData = {
-  type?: 'cart' | 'friend' | 'group_invite';
+  type?: 'cart' | 'friend' | 'group_invite' | 'price_alert';
   groupId?: string;
+  ruleId?: string;
+  rule?: string;
+  /** Fila de bandeja que permite resolver de forma segura sus productos. */
+  notificationId?: string;
 };
 
 function extractData(response: Notifications.NotificationResponse | null): PushData | null {
@@ -195,8 +205,15 @@ export function addNotificationResponseListener(handler: (data: PushData) => voi
   });
 }
 
-/** The tap that cold-launched the app, if any (handled once at startup). */
-export async function getInitialNotificationData(): Promise<PushData | null> {
+/**
+ * The tap that cold-launched the app, if any. It is consumed once so an old
+ * response cannot redirect the user again on a later auth/navigation render.
+ */
+export async function consumeInitialNotificationData(): Promise<PushData | null> {
   const response = await Notifications.getLastNotificationResponseAsync();
-  return extractData(response);
+  const data = extractData(response);
+  if (response) {
+    await Notifications.clearLastNotificationResponseAsync().catch(() => {});
+  }
+  return data;
 }

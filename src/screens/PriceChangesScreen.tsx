@@ -17,9 +17,15 @@ import StoreDropdown, { type StoreSelection } from '../components/StoreDropdown'
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import SlidingSegments from '../components/SlidingSegments';
 import { type ViewMode } from '../components/ViewModeToggle';
+import ProductFilterSheet, {
+  PRICE_CHANGE_RANGES,
+  type FilterGroup,
+  type PriceSort,
+} from '../components/ProductFilterSheet';
 
 type Direction = 'down' | 'up';
 const PRICE_CHANGES_PAGE_SIZE = 50;
+const FACET_SEPARATOR = '\u001f';
 
 const euro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 // "−8,5 %" / "+3,2 %" (el % ya viene redondeado a 1 decimal de la BD).
@@ -28,10 +34,11 @@ const pctLabel = (n: number) =>
 
 /**
  * PriceChangesScreen — "Cambios de precios" (botón de la cabecera del Home).
- * Pestañas Bajadas/Subidas + selector de súper; cada fila muestra el precio
- * NUEVO destacado y "Antes X € (±N %)" en la línea secundaria, ordenado por
- * magnitud del cambio (orden del servidor, keepOrder). Los datos los deja el
- * trigger del sync semanal: ver supabase/migrations/catalog_price_changes.sql
+ * Pestañas Bajadas/Subidas + selector de súper; cada fila muestra precio
+ * anterior, actual y porcentaje, y debajo formato/cantidad y precio unitario.
+ * Por defecto conserva la magnitud del cambio del servidor; el filtro permite
+ * sustituirla por orden unitario ascendente o descendente. Los datos los deja
+ * el trigger del sync semanal: ver supabase/migrations/catalog_price_changes.sql
  * (sin ejecutarla no hay datos y se muestra el vacío).
  *
  * Liquid Glass (F3 piloto, solo `glassAvailable`): TODO el chrome —cabecera,
@@ -65,6 +72,14 @@ export default function PriceChangesScreen() {
   const [store, setStore] = useState<StoreSelection>(stores[0]?.key ?? 'all');
   const [direction, setDirection] = useState<Direction>('down');
 
+  // Filtros locales sobre las páginas cargadas. Las categorías de "Todos" se
+  // identifican también por súper porque dos cadenas pueden reutilizar nombres.
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [category, setCategory] = useState<string[]>([]);
+  const [priceChangeRange, setPriceChangeRange] = useState<number | null>(null);
+  const [pricePerUnitSort, setPricePerUnitSort] = useState<PriceSort | null>(null);
+  const filtersActive = category.length > 0 || priceChangeRange != null || pricePerUnitSort != null;
+
   // View mode controlado: el toggle vive junto a las pestañas en ambos modos.
   // La altura medida solo se usa en glass para que la lista pase por debajo.
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -76,11 +91,13 @@ export default function PriceChangesScreen() {
     }
   }, [stores, store]);
 
+  useEffect(() => { setCategory([]); }, [store]);
+
   // Caché por súper+dirección para no repetir consultas al alternar.
   const cacheKeyFor = useCallback(
     (storeKey: CatalogStore) =>
-      `${storeKey}:${direction}:${region ?? 'none'}:${postalCode ?? 'none'}`,
-    [direction, region, postalCode],
+      `${storeKey}:${direction}:${pricePerUnitSort ?? 'relevance'}:${region ?? 'none'}:${postalCode ?? 'none'}`,
+    [direction, pricePerUnitSort, region, postalCode],
   );
   const [cache, setCache] = useState<Record<string, PriceChangesPage>>({});
   const [loading, setLoading] = useState(true);
@@ -104,7 +121,9 @@ export default function PriceChangesScreen() {
     setError(false);
     Promise.all(missingStores.map(async (storeKey) => ({
       storeKey,
-      page: await fetchPriceChanges(storeKey, direction, region, postalCode, PRICE_CHANGES_PAGE_SIZE),
+      page: await fetchPriceChanges(
+        storeKey, direction, region, postalCode, PRICE_CHANGES_PAGE_SIZE, 0, pricePerUnitSort,
+      ),
     })))
       .then((results) => {
         if (!cancelled && loadSeq.current === seq) setCache((current) => ({
@@ -117,18 +136,74 @@ export default function PriceChangesScreen() {
     return () => { cancelled = true; };
     // cache a propósito fuera de deps: solo dispara al cambiar súper/dirección.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, stores, direction, region, postalCode]);
+  }, [store, stores, direction, region, postalCode, pricePerUnitSort]);
 
   const allChanges = useMemo(() => {
     const changes = store === 'all'
       ? stores.flatMap((item) => cache[cacheKeyFor(item.key)]?.items ?? [])
       : cache[cacheKeyFor(store)]?.items ?? [];
-    return store === 'all'
-      ? [...changes].sort((a, b) => direction === 'down'
-        ? a.deltaPct - b.deltaPct || a.product.name.localeCompare(b.product.name)
-        : b.deltaPct - a.deltaPct || a.product.name.localeCompare(b.product.name))
-      : changes;
-  }, [cache, store, stores, direction, cacheKeyFor]);
+    if (store !== 'all') return changes;
+    return [...changes].sort((a, b) => {
+      if (pricePerUnitSort) {
+        const priceA = a.product.pricePerUnit;
+        const priceB = b.product.pricePerUnit;
+        if (priceA == null && priceB != null) return 1;
+        if (priceA != null && priceB == null) return -1;
+        const priceDiff = (priceA ?? 0) - (priceB ?? 0);
+        if (priceDiff !== 0) return pricePerUnitSort === 'asc' ? priceDiff : -priceDiff;
+      } else {
+        const deltaDiff = direction === 'down'
+          ? a.deltaPct - b.deltaPct
+          : b.deltaPct - a.deltaPct;
+        if (deltaDiff !== 0) return deltaDiff;
+      }
+      return a.product.name.localeCompare(b.product.name);
+    });
+  }, [cache, store, stores, direction, pricePerUnitSort, cacheKeyFor]);
+
+  const categories = useMemo(() => {
+    const values = new Set<string>();
+    allChanges.forEach(({ product }) => {
+      if (product.categoryName) values.add(product.categoryName);
+    });
+    return [...values].sort((a, b) => a.localeCompare(b, 'es'));
+  }, [allChanges]);
+
+  const categoryGroups = useMemo<FilterGroup[]>(() => {
+    if (store !== 'all') return [];
+    return stores.map((item) => {
+      const values = new Set<string>();
+      (cache[cacheKeyFor(item.key)]?.items ?? []).forEach(({ product }) => {
+        if (product.categoryName) values.add(product.categoryName);
+      });
+      return {
+        key: item.key,
+        label: item.name,
+        options: [...values].sort((a, b) => a.localeCompare(b, 'es')).map((value) => ({
+          value: `${item.key}${FACET_SEPARATOR}${value}`,
+          label: value,
+        })),
+      };
+    }).filter((group) => group.options.length > 0);
+  }, [store, stores, cache, cacheKeyFor]);
+
+  const filteredChanges = useMemo(() => {
+    const range = priceChangeRange != null ? PRICE_CHANGE_RANGES[priceChangeRange] : null;
+    return allChanges.filter(({ product, deltaPct }) => {
+      if (category.length > 0) {
+        const categoryKey = store === 'all'
+          ? `${product.store}${FACET_SEPARATOR}${product.categoryName ?? ''}`
+          : product.categoryName;
+        if (categoryKey == null || !category.includes(categoryKey)) return false;
+      }
+      if (range) {
+        const magnitude = Math.abs(deltaPct);
+        if (magnitude <= range.min) return false;
+        if (range.max != null && magnitude > range.max) return false;
+      }
+      return true;
+    });
+  }, [allChanges, category, priceChangeRange, store]);
 
   const loadMore = useCallback(() => {
     if (loading || loadingMoreRef.current) return;
@@ -143,7 +218,8 @@ export default function PriceChangesScreen() {
     Promise.all(storesWithMore.map(async (storeKey) => {
       const previous = cache[cacheKeyFor(storeKey)]!;
       const page = await fetchPriceChanges(
-        storeKey, direction, region, postalCode, PRICE_CHANGES_PAGE_SIZE, previous.nextOffset!,
+        storeKey, direction, region, postalCode, PRICE_CHANGES_PAGE_SIZE,
+        previous.nextOffset!, pricePerUnitSort,
       );
       return { storeKey, previous, page };
     }))
@@ -163,25 +239,23 @@ export default function PriceChangesScreen() {
         loadingMoreRef.current = false;
         setLoadingMore(false);
       });
-  }, [cache, cacheKeyFor, direction, loading, postalCode, region, store, stores]);
+  }, [cache, cacheKeyFor, direction, loading, postalCode, pricePerUnitSort, region, store, stores]);
 
   // La línea de precio de la fila pasa a "anterior tachado · actual en
   // verde/rojo · (%)" vía priceChange (lo pinta StoreProductList) →
   // StoreProductList se reutiliza tal cual, con stepper/cesta/favoritos/ficha.
   const products: UIProduct[] = useMemo(
     () => {
-      return allChanges.map((c) => ({
+      return filteredChanges.map((c) => ({
       ...c.product,
       priceChange: {
         prevLabel: euro(c.prevPrice),
         pctLabel: pctLabel(c.deltaPct),
         direction,
       },
-      metaLabel: null,
-      pricePerUnitLabel: null,
       }));
     },
-    [allChanges, direction],
+    [filteredChanges, direction],
   );
 
   // Chrome de la pantalla (cabecera + selector + pestañas), idéntico
@@ -207,8 +281,17 @@ export default function PriceChangesScreen() {
       </View>
 
       {glassAvailable ? (
-        // Pestañas de píldora deslizante + toggle lista/cuadrícula en la misma fila.
+        // Filtro independiente + pestañas deslizantes + vista en una fila.
         <View style={styles.glassControls}>
+          <TouchableOpacity
+            style={[styles.filterBtn, filtersActive && styles.filterBtnOn]}
+            onPress={() => setFilterOpen(true)}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel={t('priceChanges.filterA11y')}
+          >
+            <Ionicons name="options-outline" size={20} color={filtersActive ? colors.white : colors.inkSoft} />
+          </TouchableOpacity>
           <SlidingSegments
             style={{ flex: 1 }}
             segments={[
@@ -231,6 +314,15 @@ export default function PriceChangesScreen() {
         </View>
       ) : (
         <View style={styles.fallbackControls}>
+          <TouchableOpacity
+            style={[styles.filterBtn, filtersActive && styles.filterBtnOn]}
+            onPress={() => setFilterOpen(true)}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel={t('priceChanges.filterA11y')}
+          >
+            <Ionicons name="options-outline" size={20} color={filtersActive ? colors.white : colors.inkSoft} />
+          </TouchableOpacity>
           <View style={styles.tabs}>
             <TouchableOpacity
               style={[styles.tab, direction === 'down' && styles.tabActive]}
@@ -284,7 +376,7 @@ export default function PriceChangesScreen() {
         products={products}
         loading={loading}
         error={error}
-        emptyText={t('priceChanges.empty')}
+        emptyText={filtersActive ? t('filters.noMatches') : t('priceChanges.empty')}
         errorText={t('priceChanges.error')}
         keepOrder
         onEndReached={loadMore}
@@ -295,6 +387,26 @@ export default function PriceChangesScreen() {
         onViewModeChange={setViewMode}
         roundedCards
         showStoreLogo={store === 'all'}
+      />
+
+      <ProductFilterSheet
+        visible={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        categories={categories}
+        category={category}
+        onCategory={setCategory}
+        priceRange={null}
+        onPriceRange={() => {}}
+        sort={null}
+        onSort={() => {}}
+        showPriceControls={false}
+        pricePerUnitSort={pricePerUnitSort}
+        onPricePerUnitSort={setPricePerUnitSort}
+        priceChangeRange={priceChangeRange}
+        onPriceChangeRange={setPriceChangeRange}
+        appearance="plus"
+        showCategoryIcons
+        categoryGroups={categoryGroups}
       />
 
       {/* Chrome de cristal: al FINAL del árbol para pintarse encima; la lista
@@ -337,6 +449,14 @@ const themedStyles = () => StyleSheet.create({
     flex: 1, minWidth: 0, fontSize: 20, fontFamily: fonts.bold,
     color: colors.ink, letterSpacing: -0.3,
   },
+
+  filterBtn: {
+    width: glassAvailable ? 40 : 44, height: glassAvailable ? 40 : 44, borderRadius: 18,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.surfaceAlt,
+    borderWidth: 1, borderColor: 'transparent',
+  },
+  filterBtnOn: { backgroundColor: colors.accent, borderColor: colors.accent },
 
   // ── Tab switcher (Bajadas / Subidas), SOLO fallback ───────────
   tabs: {

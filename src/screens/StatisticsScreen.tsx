@@ -4,7 +4,7 @@ import {
   ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -29,6 +29,7 @@ const quantityLabel = (quantity: number) =>
     : quantity.toLocaleString('es-ES', { maximumFractionDigits: 1 });
 
 export default function StatisticsScreen() {
+  const navigation = useNavigation<any>();
   const styles = useThemedStyles(themedStyles);
   const headerTop = useHeaderTopPadding(52);
   const bottomPad = useTabBarBottomPadding(40);
@@ -109,6 +110,14 @@ export default function StatisticsScreen() {
           <Ionicons name="pie-chart-outline" size={48} color={colors.inkFaint} />
           <Text style={styles.emptyTitle}>{t('statistics.emptyTitle')}</Text>
           <Text style={styles.emptyText}>{t('statistics.emptyText')}</Text>
+          <TouchableOpacity
+            style={[styles.generalStatisticsButton, styles.emptyGeneralStatisticsButton]}
+            onPress={() => navigation.navigate('GeneralStatistics')}
+            activeOpacity={0.82}
+            accessibilityRole="button"
+          >
+            <Text style={styles.generalStatisticsButtonText}>{t('statistics.general')}</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <ScrollView
@@ -120,9 +129,9 @@ export default function StatisticsScreen() {
             <Text style={styles.heroTitle}>{t('statistics.summary', { n: statistics.purchaseCount })}</Text>
             <TouchableOpacity
               style={styles.generalStatisticsButton}
-              disabled
+              onPress={() => navigation.navigate('GeneralStatistics')}
+              activeOpacity={0.82}
               accessibilityRole="button"
-              accessibilityState={{ disabled: true }}
             >
               <Text style={styles.generalStatisticsButtonText}>{t('statistics.general')}</Text>
             </TouchableOpacity>
@@ -133,7 +142,7 @@ export default function StatisticsScreen() {
         </ScrollView>
       )}
 
-      <PaywallModal visible={paywallVisible} onClose={() => setPaywallVisible(false)} subtitle={t('statistics.paywallSubtitle')} />
+      <PaywallModal visible={paywallVisible} onClose={() => setPaywallVisible(false)} />
     </View>
   );
 }
@@ -195,6 +204,7 @@ const themedStyles = () => StyleSheet.create({
     borderRadius: 12, borderWidth: 1, borderColor: colors.accent, alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.white,
   },
+  emptyGeneralStatisticsButton: { marginTop: 4 },
   generalStatisticsButtonText: { fontSize: 11.5, lineHeight: 15, fontFamily: fonts.semibold, color: colors.accent, textAlign: 'center' },
   cardBlock: { marginTop: 12 },
   sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 9 },

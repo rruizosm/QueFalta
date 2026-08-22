@@ -9,7 +9,7 @@ import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useProfile } from '../context/ProfileContext';
-import { limitsApply } from '../constants/limits';
+import { canUseAllStores } from '../constants/limits';
 import type { CatalogStore } from '../constants/stores';
 import PaywallModal from './PaywallModal';
 import { useReducedMotion } from '../hooks/useReducedMotion';
@@ -48,12 +48,14 @@ export default function StoreDropdown<T extends StoreSelection>({
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
-  const { isPremium, loading: profileLoading } = useProfile();
+  const { profile, isPremium, loading: profileLoading } = useProfile();
   const [internalOpen, setInternalOpen] = useState(false);
   const [paywallVisible, setPaywallVisible] = useState(false);
   const open = controlledOpen ?? internalOpen;
   const allLabel = t('common.all');
-  const allLocked = includeAll && !profileLoading && limitsApply(isPremium);
+  const allLocked = includeAll
+    && !profileLoading
+    && !canUseAllStores(isPremium, profile?.legacyAllStoresAccess);
   const active = value === 'all' && includeAll
     ? { key: 'all' as const, name: allLabel, icon: null }
     : stores.find((s) => s.key === value) ?? stores[0];
@@ -70,7 +72,22 @@ export default function StoreDropdown<T extends StoreSelection>({
     }
   }, [allLocked, onChange, stores, value]);
 
-  const renderItem = ({ item }: { item: StoreOption }) => {
+  const gridStores: (StoreOption | null)[] = stores.length % 2 === 0
+    ? stores
+    : [...stores, null];
+
+  const renderItem = ({ item }: { item: StoreOption | null }) => {
+    if (!item) {
+      return (
+        <View
+          style={styles.cardPlaceholder}
+          pointerEvents="none"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        />
+      );
+    }
+
     const on = item.key === value;
     return (
       <Pressable
@@ -103,12 +120,12 @@ export default function StoreDropdown<T extends StoreSelection>({
     );
   };
 
-  const allRow = includeAll ? (
+  const allCardContent = includeAll ? (
     <Pressable
       style={({ pressed }) => [
         styles.allCard,
-        value === 'all' && styles.cardActive,
-        allLocked && styles.allCardLocked,
+        allLocked ? styles.allCardLocked : styles.allCardUnlocked,
+        value === 'all' && (allLocked ? styles.allCardSelected : styles.allCardUnlockedSelected),
         pressed && styles.cardPressed,
       ]}
       onPress={() => {
@@ -121,7 +138,7 @@ export default function StoreDropdown<T extends StoreSelection>({
         setMenuOpen(false);
       }}
       accessibilityRole="button"
-      accessibilityState={{ selected: value === 'all', disabled: allLocked }}
+      accessibilityState={{ selected: value === 'all' }}
     >
       {value === 'all' && (
         <View style={styles.cardCheck}>
@@ -131,11 +148,15 @@ export default function StoreDropdown<T extends StoreSelection>({
       <View style={styles.allIconWrap}>
         <Ionicons name="apps" size={24} color={colors.accent} />
       </View>
-      <Text style={[styles.cardName, value === 'all' && styles.cardNameActive]}>
+      <Text style={styles.cardName}>
         {allLabel}
       </Text>
       {allLocked && <Ionicons name="lock-closed" size={17} color={colors.inkSoft} />}
     </Pressable>
+  ) : null;
+
+  const allRow = includeAll ? (
+    <View style={styles.allCardBackground}>{allCardContent}</View>
   ) : null;
 
   return (
@@ -194,8 +215,8 @@ export default function StoreDropdown<T extends StoreSelection>({
             </View>
 
             <FlatList
-              data={stores}
-              keyExtractor={(s) => s.key}
+              data={gridStores}
+              keyExtractor={(s, index) => s?.key ?? `store-placeholder-${index}`}
               renderItem={renderItem}
               numColumns={2}
               ListHeaderComponent={allRow}
@@ -209,7 +230,6 @@ export default function StoreDropdown<T extends StoreSelection>({
       <PaywallModal
         visible={paywallVisible}
         onClose={() => setPaywallVisible(false)}
-        subtitle={null}
       />
     </>
   );
@@ -272,20 +292,32 @@ const themedStyles = () => StyleSheet.create({
 
   grid: { padding: 16 },
   gridRow: { gap: 12, marginBottom: 12 },
-  allCard: {
+  allCardBackground: {
     height: 78,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
     marginBottom: 12,
-    paddingHorizontal: 16,
-    backgroundColor: colors.white,
-    borderRadius: 20,
-    borderWidth: 1, borderColor: colors.border,
   },
+  allCard: {
+    flex: 1,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
+    paddingHorizontal: 16,
+    backgroundColor: 'transparent',
+    borderRadius: 20,
+  },
+  allCardSelected: { backgroundColor: colors.accentLight, borderColor: colors.accent },
   allCardLocked: { backgroundColor: colors.surfaceAlt },
+  allCardUnlocked: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  allCardUnlockedSelected: {
+    backgroundColor: colors.accentLight,
+    borderColor: colors.accent,
+  },
   allIconWrap: {
     width: 42, height: 42, borderRadius: 21,
     alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.white,
+    backgroundColor: colors.accentLight,
   },
   card: {
     flex: 1, aspectRatio: 1,
@@ -295,6 +327,7 @@ const themedStyles = () => StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1, borderColor: colors.border,
   },
+  cardPlaceholder: { flex: 1, aspectRatio: 1 },
   cardActive: { borderColor: colors.accent, backgroundColor: colors.accentLight },
   cardPressed: { transform: [{ scale: 0.96 }], opacity: 0.9 },
   cardCheck: {

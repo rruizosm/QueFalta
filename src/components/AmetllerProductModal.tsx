@@ -14,11 +14,11 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductDetailImage from '../components/ProductDetailImage';
-import FoodIndexSummary from '../components/FoodIndexSummary';
 import ProductInfoSections from '../components/ProductInfoSections';
 import { useNutritionInfoDisclosure } from '../components/NutritionInfoButton';
-import SimilarProductsSection from '../components/SimilarProductsSection';
+import ProductDetailDiscoverySection from '../components/ProductDetailDiscoverySection';
 import ProductPriceLine from '../components/ProductPriceLine';
+import ActiveCartIcon from './ActiveCartIcon';
 
 interface Props {
   /** Producto a mostrar (ya cargado de ametller_products, con ficha). null = oculto. */
@@ -118,25 +118,18 @@ export default function AmetllerProductModal({ product, onClose, topInset = 16, 
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} />
+        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} alertTarget={{ store: 'ametller', productId: product.id }} />
 
         <Text style={styles.name}>{product.displayName}</Text>
 
         <ProductPriceLine store="ametller" productId={product.id} price={price} />
         {product.pricePerUnit ? <Text style={styles.refPrice}>{product.pricePerUnit}</Text> : null}
 
-        {nutrition.info?.foodIndex ? (
-          <FoodIndexSummary
-            index={nutrition.info.foodIndex}
-            onPress={nutrition.open}
-            expanded={nutrition.expanded}
-          >
-            {nutrition.inlineContent}
-          </FoodIndexSummary>
-        ) : null}
-
-        {/* Comparativa: más barato en otros súper */}
-        <SimilarProductsSection productId={product.id} excludeStore="ametller" />
+        <ProductDetailDiscoverySection
+          nutrition={nutrition}
+          productId={product.id}
+          excludeStore="ametller"
+        />
 
         {/* Características del producto (de la SCAPI de Ametller; null si sin dato) */}
         <ProductInfoSections
@@ -164,7 +157,7 @@ export default function AmetllerProductModal({ product, onClose, topInset = 16, 
             <ActivityIndicator size="small" color={colors.white} />
           ) : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Ionicons name="cart-outline" size={16} color={colors.white} />
+              <ActiveCartIcon size={16} color={colors.white} />
               <Text style={styles.addBtnText}>{t('product.addToCart')}</Text>
             </View>
           )}
@@ -221,7 +214,7 @@ const themedStyles = () => StyleSheet.create({
   addBtn: {
     flex: 1, backgroundColor: colors.accent,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 14,
+    paddingVertical: 14, borderRadius: 23,
   },
   addBtnText: { color: colors.white, fontFamily: fonts.bold, fontSize: 14 },
 });

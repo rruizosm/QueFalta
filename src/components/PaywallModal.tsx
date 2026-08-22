@@ -6,12 +6,13 @@
  * Compra/restore vía RevenueCat (lib/purchases); sin SDK o sin offerings
  * (Expo Go, API key sin configurar) cae a un toast placeholder.
  */
-import { useEffect, useState, type ComponentProps } from 'react';
+import { useEffect, useRef, useState, type ComponentProps } from 'react';
 import {
-  View, Text, Modal, Pressable, TouchableOpacity,
+  View, Text, Modal, TouchableOpacity, Animated, Easing,
   ScrollView, StyleSheet, Platform, Linking, ActivityIndicator,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -24,6 +25,9 @@ import {
   refreshProfileSoon, type PlusOfferings,
 } from '../lib/purchases';
 import HardShadow from './HardShadow';
+import PremiumGoldBackground, { PREMIUM_GOLD_INK } from './PremiumGoldBackground';
+import VerifiedBadge from './VerifiedBadge';
+import PlusWelcomeTransition from './PlusWelcomeTransition';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
@@ -35,9 +39,11 @@ const PRIVACY_URL = 'https://quefalta.es/privacidad';
 
 const BENEFITS: { icon: IoniconName; key: string; color: string; background: string }[] = [
   { icon: 'swap-vertical-outline', key: 'unitPrice', color: colors.blue, background: 'rgba(47,108,181,0.13)' },
+  { icon: 'search-circle-outline', key: 'savingsRadar', color: '#3f8f4f', background: 'rgba(63,143,79,0.14)' },
   { icon: 'options-outline', key: 'filters', color: colors.orange, background: 'rgba(217,131,36,0.14)' },
   { icon: 'storefront-outline', key: 'stores', color: colors.teal, background: 'rgba(31,138,143,0.14)' },
   { icon: 'notifications-outline', key: 'alerts', color: colors.purple, background: 'rgba(122,79,181,0.14)' },
+  { icon: 'link-outline', key: 'noteProducts', color: colors.teal, background: 'rgba(31,138,143,0.14)' },
   { icon: 'pie-chart-outline', key: 'statistics', color: colors.blue, background: 'rgba(47,108,181,0.13)' },
 ];
 
@@ -46,21 +52,20 @@ type Plan = 'annual' | 'monthly';
 interface Props {
   visible: boolean;
   onClose: () => void;
-  /** Línea contextual bajo el título. null la oculta y compacta la cabecera. */
-  subtitle?: string | null;
 }
 
-export default function PaywallModal({ visible, onClose, subtitle }: Props) {
+export default function PaywallModal({ visible, onClose }: Props) {
   const styles = useThemedStyles(themedStyles);
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
   const toast = useToast();
-  const { refresh } = useProfile();
+  const { refresh, applyProfile } = useProfile();
   const [plan, setPlan] = useState<Plan>('annual');
   const [offerings, setOfferings] = useState<PlusOfferings | null>(null);
   const [busy, setBusy] = useState(false);
-  const headerSubtitle = subtitle ?? null;
+  const [welcomeVisible, setWelcomeVisible] = useState(false);
+  const annualSweep = useRef(new Animated.Value(0)).current;
 
   // Offerings reales de RevenueCat al abrir; null → modo placeholder.
   useEffect(() => {
@@ -70,9 +75,42 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
     return () => { cancelled = true; };
   }, [visible]);
 
+  // Mismo ritmo y desplazamiento diagonal del reflejo de QueCocinoTabIcon,
+  // ampliado para recorrer la tarjeta completa del plan anual.
+  useEffect(() => {
+    annualSweep.stopAnimation();
+    annualSweep.setValue(reducedMotion ? 0.35 : 0);
+    if (!visible || reducedMotion) return;
+
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.delay(650),
+        Animated.timing(annualSweep, {
+          toValue: 1,
+          duration: 1050,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.delay(1700),
+        Animated.timing(annualSweep, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [annualSweep, reducedMotion, visible]);
+
+  const annualSweepTranslateX = annualSweep.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-110, 430],
+  });
+
   // Precio localizado de la tienda si existe; si no, el estático de MONETIZACION.md.
-  const annualPrice = offerings?.annual?.product.priceString ?? '11,99 €';
-  const monthlyPrice = offerings?.monthly?.product.priceString ?? '1,99 €';
+  const annualPrice = offerings?.annual?.product.priceString ?? '19,99 €';
+  const monthlyPrice = offerings?.monthly?.product.priceString ?? '3,99 €';
 
   const handleSubscribe = async () => {
     const pkg = plan === 'annual' ? offerings?.annual : offerings?.monthly;
@@ -82,18 +120,28 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
     }
     setBusy(true);
     try {
-      const ok = await purchasePlus(pkg);
-      if (ok) {
+      const entitlement = await purchasePlus(pkg);
+      if (entitlement) {
+        // RevenueCat ya ha validado la compra. Reflejarla inmediatamente evita
+        // que el usuario cierre la celebración y siga viendo los gates mientras
+        // el webhook termina de persistir premium_until en Supabase.
+        if (entitlement.expirationDate) {
+          applyProfile({ premiumUntil: entitlement.expirationDate, verified: true });
+        }
         // El webhook escribe premium_until en unos segundos; reintenta el perfil.
         refreshProfileSoon(refresh);
-        toast.show(t('paywall.welcome'));
-        onClose();
+        setWelcomeVisible(true);
       }
     } catch {
       toast.show(t('paywall.purchaseError'), 'error');
     } finally {
       setBusy(false);
     }
+  };
+
+  const dismissWelcome = () => {
+    setWelcomeVisible(false);
+    onClose();
   };
 
   const handleRestore = async () => {
@@ -103,8 +151,11 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
     }
     setBusy(true);
     try {
-      const ok = await restorePlus();
-      if (ok) {
+      const entitlement = await restorePlus();
+      if (entitlement) {
+        if (entitlement.expirationDate) {
+          applyProfile({ premiumUntil: entitlement.expirationDate, verified: true });
+        }
         refreshProfileSoon(refresh);
         toast.show(t('paywall.restored'));
         onClose();
@@ -119,19 +170,31 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
   };
 
   return (
-    <Modal visible={visible} transparent animationType={reducedMotion ? 'none' : 'slide'} onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      presentationStyle="overFullScreen"
+      animationType={reducedMotion ? 'none' : 'slide'}
+      allowSwipeDismissal={false}
+      statusBarTranslucent
+      onRequestClose={welcomeVisible ? dismissWelcome : onClose}
+    >
       <View style={styles.root}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessible={false} />
         <View
-          style={[styles.sheet, { paddingBottom: Platform.OS === 'ios' ? 30 : Math.max(insets.bottom, 20) }]}
+          style={[
+            styles.sheet,
+            {
+              paddingTop: insets.top,
+              paddingBottom: Platform.OS === 'ios' ? 30 : Math.max(insets.bottom, 20),
+            },
+          ]}
           accessibilityViewIsModal
         >
-          <View style={styles.grabber} />
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
-            <View style={[styles.header, !headerSubtitle && styles.headerCompact]}>
+            <View style={styles.header}>
               <View style={styles.heroGlowLarge} />
               <View style={styles.heroGlowSmall} />
               <TouchableOpacity
@@ -144,30 +207,14 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
                 <Ionicons name="close" size={19} color={colors.inkSoft} />
               </TouchableOpacity>
 
-              <View style={styles.heroTopline}>
-                <View style={styles.heroMark}>
-                  <Ionicons name="sparkles" size={22} color={colors.white} />
-                </View>
-                <View style={styles.plusBadge}>
-                  <Text style={styles.plusBadgeText}>{t('paywall.heroLead')}</Text>
-                </View>
+              <View style={styles.titleRow}>
+                <VerifiedBadge size={34} marginLeft={0} />
+                <Text style={styles.title}>QuéFalta Plus</Text>
               </View>
-
-              <Text style={styles.title}>QuéFalta Plus</Text>
-              {headerSubtitle ? (
-                <View style={styles.contextPill}>
-                  <Ionicons name="checkmark-circle" size={17} color={colors.accent} />
-                  <Text style={styles.subtitle}>{headerSubtitle}</Text>
-                </View>
-              ) : null}
             </View>
 
             <View style={styles.sectionHeadingRow}>
               <Text style={styles.sectionHeading}>{t('paywall.benefitsHeading')}</Text>
-              <View style={styles.includedBadge}>
-                <Ionicons name="sparkles" size={12} color={colors.accent} />
-                <Text style={styles.includedText}>{t('paywall.included')}</Text>
-              </View>
             </View>
 
             <View style={styles.benefits}>
@@ -180,7 +227,6 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
                     <Text style={styles.benefitTitle}>{t(`paywall.benefits.${b.key}Title`)}</Text>
                     <Text style={styles.benefitText}>{t(`paywall.benefits.${b.key}Text`)}</Text>
                   </View>
-                  <Ionicons name="checkmark-circle" size={20} color={colors.accent} />
                 </View>
               ))}
             </View>
@@ -188,49 +234,82 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
             <Text style={styles.planHeading}>{t('paywall.choosePlan')}</Text>
             <View style={styles.plans}>
               <TouchableOpacity
-                style={[styles.planCard, styles.annualPlanCard, plan === 'annual' && styles.planCardActive]}
-                onPress={() => setPlan('annual')}
-                activeOpacity={0.85}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: plan === 'annual' }}
-              >
-                <View style={styles.planBadgeAnchor} pointerEvents="none">
-                  <View style={styles.planBadge}>
-                    <Text style={styles.planBadgeText}>{t('paywall.bestValue')}</Text>
-                  </View>
-                </View>
-                <View style={[styles.planRadio, plan === 'annual' && styles.planRadioActive]}>
-                  {plan === 'annual' && <View style={styles.planRadioDot} />}
-                </View>
-                <View style={styles.planCopy}>
-                  <Text style={styles.planName}>{t('paywall.annual')}</Text>
-                  <Text style={styles.planPer}>{t('paywall.annualPer')}</Text>
-                  <Text style={styles.trialText}>{t('paywall.freeTrialBadge')}</Text>
-                </View>
-                <View style={styles.planPriceWrap}>
-                  <Text style={styles.planPrice}>{annualPrice}</Text>
-                  <Text style={styles.planPricePeriod}>{t('paywall.year')}</Text>
-                </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity
                 style={[styles.planCard, plan === 'monthly' && styles.planCardActive]}
                 onPress={() => setPlan('monthly')}
                 activeOpacity={0.85}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: plan === 'monthly' }}
               >
-                <View style={[styles.planRadio, plan === 'monthly' && styles.planRadioActive]}>
-                  {plan === 'monthly' && <View style={styles.planRadioDot} />}
-                </View>
-                <View style={styles.planCopy}>
+                <View style={styles.planTopRow}>
+                  <View style={[styles.planRadio, plan === 'monthly' && styles.planRadioActive]}>
+                    {plan === 'monthly' && <View style={styles.planRadioDot} />}
+                  </View>
                   <Text style={styles.planName}>{t('paywall.monthly')}</Text>
-                  <Text style={styles.planPer}>{t('paywall.monthlyPer')}</Text>
                 </View>
                 <View style={styles.planPriceWrap}>
                   <Text style={styles.planPrice}>{monthlyPrice}</Text>
                   <Text style={styles.planPricePeriod}>{t('paywall.month')}</Text>
                 </View>
+                <Text style={styles.planPer}>{t('paywall.monthlyPer')}</Text>
+                {plan === 'monthly' ? <View pointerEvents="none" style={styles.planActiveBorder} /> : null}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.planCard, plan === 'annual' && styles.planCardActive]}
+                onPress={() => setPlan('annual')}
+                activeOpacity={0.85}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: plan === 'annual' }}
+              >
+                <View pointerEvents="none" style={styles.annualSweepClip} accessible={false}>
+                  <Animated.View
+                    style={[
+                      styles.annualSweep,
+                      { transform: [{ translateX: annualSweepTranslateX }, { rotate: '16deg' }] },
+                    ]}
+                  >
+                    <LinearGradient
+                      colors={[
+                        'rgba(47,108,181,0)',
+                        'rgba(47,108,181,0.10)',
+                        'rgba(47,108,181,0.30)',
+                        'rgba(47,108,181,0.14)',
+                        'rgba(47,108,181,0)',
+                      ]}
+                      locations={[0, 0.24, 0.5, 0.72, 1]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    <View style={styles.annualSweepGlowTop} />
+                    <View style={styles.annualSweepGlowBottom} />
+                  </Animated.View>
+                </View>
+                <View style={styles.planBadgeAnchor} pointerEvents="none">
+                  <PremiumGoldBackground
+                    active={visible}
+                    baseOpacity={0.7}
+                    style={styles.planBadgeBackground}
+                  >
+                    <View style={styles.planBadge}>
+                      <Ionicons name="sparkles" size={10} color={PREMIUM_GOLD_INK} />
+                      <Text style={styles.planBadgeText}>{t('paywall.bestValue')}</Text>
+                    </View>
+                  </PremiumGoldBackground>
+                </View>
+                <View style={styles.planTopRow}>
+                  <View style={[styles.planRadio, plan === 'annual' && styles.planRadioActive]}>
+                    {plan === 'annual' && <View style={styles.planRadioDot} />}
+                  </View>
+                  <Text style={styles.planName}>{t('paywall.annual')}</Text>
+                </View>
+                <View style={styles.planPriceWrap}>
+                  <Text style={styles.planPrice}>{annualPrice}</Text>
+                  <Text style={styles.planPricePeriod}>{t('paywall.year')}</Text>
+                </View>
+                <Text style={styles.planPer}>{t('paywall.annualPer')}</Text>
+                <Text style={styles.trialText}>{t('paywall.freeTrialBadge')}</Text>
+                {plan === 'annual' ? <View pointerEvents="none" style={styles.planActiveBorder} /> : null}
               </TouchableOpacity>
             </View>
 
@@ -274,6 +353,7 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
               </TouchableOpacity>
             </View>
           </ScrollView>
+          <PlusWelcomeTransition visible={welcomeVisible} onDismiss={dismissWelcome} />
         </View>
       </View>
     </Modal>
@@ -281,24 +361,17 @@ export default function PaywallModal({ visible, onClose, subtitle }: Props) {
 }
 
 const themedStyles = () => StyleSheet.create({
-  root: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(18, 24, 29, 0.58)' },
+  root: { flex: 1, backgroundColor: colors.paper },
   sheet: {
-    backgroundColor: colors.paper,
-    borderTopLeftRadius: 30, borderTopRightRadius: 30,
-    overflow: 'hidden', maxHeight: '94%',
-    // paddingBottom inline: iOS 30 (como antes); Android, el inset del sistema.
-  },
-  grabber: {
-    alignSelf: 'center', width: 38, height: 4, borderRadius: 2,
-    backgroundColor: colors.inkFaint, opacity: 0.55, marginTop: 9, marginBottom: 3,
+    flex: 1, backgroundColor: colors.paper, overflow: 'hidden',
+    // Insets inline: el fondo llega a los bordes y el contenido respeta las zonas seguras.
   },
   scrollContent: { paddingBottom: 2 },
 
   header: {
-    marginHorizontal: 14, marginTop: 8, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 18,
+    marginHorizontal: 14, marginTop: 8, paddingHorizontal: 18, paddingTop: 14, paddingBottom: 14,
     borderRadius: 24, backgroundColor: colors.accentLight, overflow: 'hidden',
   },
-  headerCompact: { paddingBottom: 15 },
   heroGlowLarge: {
     position: 'absolute', width: 150, height: 150, borderRadius: 75,
     backgroundColor: colors.accentMid, right: -56, top: -70, opacity: 0.68,
@@ -307,24 +380,8 @@ const themedStyles = () => StyleSheet.create({
     position: 'absolute', width: 76, height: 76, borderRadius: 38,
     backgroundColor: colors.white, left: -32, bottom: -42, opacity: 0.5,
   },
-  heroTopline: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 36 },
-  heroMark: {
-    width: 42, height: 42, borderRadius: 14,
-    backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center',
-  },
-  plusBadge: {
-    flexShrink: 1,
-    borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6,
-    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
-  },
-  plusBadgeText: { flexShrink: 1, fontSize: 10.5, lineHeight: 14, fontFamily: fonts.bold, color: colors.accent },
-  title: { fontSize: 30, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -1, marginTop: 14 },
-  contextPill: {
-    flexDirection: 'row', alignItems: 'center', gap: 7,
-    alignSelf: 'flex-start', marginTop: 13, paddingHorizontal: 10, paddingVertical: 8,
-    borderRadius: 12, backgroundColor: colors.white,
-  },
-  subtitle: { flexShrink: 1, fontSize: 12.5, fontFamily: fonts.bold, color: colors.ink, lineHeight: 17 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 9, paddingRight: 38, minHeight: 34 },
+  title: { flexShrink: 1, fontSize: 26, lineHeight: 32, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.8 },
   closeBtn: {
     position: 'absolute', top: 13, right: 13, zIndex: 2,
     width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center',
@@ -332,15 +389,9 @@ const themedStyles = () => StyleSheet.create({
   },
 
   sectionHeadingRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 18, marginTop: 19, marginBottom: 10,
   },
   sectionHeading: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.25 },
-  includedBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: colors.accentLight, paddingHorizontal: 8, paddingVertical: 5, borderRadius: 999,
-  },
-  includedText: { fontSize: 10.5, fontFamily: fonts.bold, color: colors.accent },
   benefits: { paddingHorizontal: 14, gap: 8 },
   benefitRow: {
     flexDirection: 'row', alignItems: 'center', padding: 11, gap: 11,
@@ -357,35 +408,60 @@ const themedStyles = () => StyleSheet.create({
     fontSize: 17, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.25,
     paddingHorizontal: 18, marginTop: 20, marginBottom: 10,
   },
-  plans: { gap: 9, paddingHorizontal: 14 },
+  plans: { flexDirection: 'row', alignItems: 'stretch', gap: 9, paddingHorizontal: 14, marginTop: 8 },
   planCard: {
-    position: 'relative', flexDirection: 'row', alignItems: 'center', minHeight: 78,
+    position: 'relative', flex: 1, minWidth: 0, minHeight: 142,
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border, borderRadius: 18,
-    paddingHorizontal: 13, paddingVertical: 12, gap: 11,
+    paddingHorizontal: 12, paddingTop: 17, paddingBottom: 12,
   },
-  annualPlanCard: { marginTop: 8, paddingTop: 16 },
-  planCardActive: { borderColor: colors.accent, borderWidth: 2, backgroundColor: colors.accentLight },
+  planCardActive: { backgroundColor: colors.accentLight },
+  planActiveBorder: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1,
+    borderWidth: 2,
+    borderColor: colors.accent,
+    borderRadius: 18,
+  },
+  annualSweepClip: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 17,
+    overflow: 'hidden',
+  },
+  annualSweep: {
+    position: 'absolute', top: -58, bottom: -58, left: 0, width: 104,
+  },
+  annualSweepGlowTop: {
+    position: 'absolute', width: 62, height: 62, borderRadius: 31,
+    top: 12, left: 10, backgroundColor: 'rgba(47,108,181,0.10)',
+  },
+  annualSweepGlowBottom: {
+    position: 'absolute', width: 44, height: 44, borderRadius: 22,
+    bottom: 18, right: 4, backgroundColor: 'rgba(47,108,181,0.13)',
+  },
+  planTopRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   planRadio: {
     width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: colors.inkFaint,
     alignItems: 'center', justifyContent: 'center', backgroundColor: colors.white,
   },
   planRadioActive: { borderColor: colors.accent },
   planRadioDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: colors.accent },
-  planCopy: { flex: 1 },
   planBadgeAnchor: {
     position: 'absolute', top: -11, left: 0, right: 0, zIndex: 2,
     alignItems: 'center',
   },
+  planBadgeBackground: { borderRadius: 999 },
   planBadge: {
-    backgroundColor: colors.yellow, borderColor: colors.accent, borderWidth: 1,
+    minHeight: 24,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3,
     borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4,
+    backgroundColor: 'rgba(255,255,255,0.08)',
   },
-  planBadgeText: { fontSize: 9.5, fontFamily: fonts.bold, color: colors.white, letterSpacing: 0.25 },
-  planName: { fontSize: 14, fontFamily: fonts.bold, color: colors.ink },
-  planPer: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 3 },
-  trialText: { fontSize: 11, fontFamily: fonts.bold, color: colors.accent, marginTop: 4 },
-  planPriceWrap: { alignItems: 'flex-end' },
+  planBadgeText: { fontSize: 9.5, fontFamily: fonts.bold, color: PREMIUM_GOLD_INK, letterSpacing: 0.25 },
+  planName: { flexShrink: 1, fontSize: 14, fontFamily: fonts.bold, color: colors.ink },
+  planPer: { fontSize: 11, lineHeight: 15, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 7 },
+  trialText: { fontSize: 11, lineHeight: 15, fontFamily: fonts.bold, color: colors.accent, marginTop: 4 },
+  planPriceWrap: { alignItems: 'flex-start', marginTop: 11 },
   planPrice: { fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4 },
   planPricePeriod: { fontSize: 10.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
 

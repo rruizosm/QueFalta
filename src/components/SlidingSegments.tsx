@@ -21,11 +21,15 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import { useTheme } from '../context/ThemeContext';
 
 const HEIGHT = 40;
 const RADIUS = 20;
+const EMPHASIZED_HEIGHT = 44;
+const EMPHASIZED_RADIUS = 22;
 const PAD = 3; // padding interno de la pista (la píldora corre dentro de él)
 const PILL_RADIUS = RADIUS - PAD;
+const EMPHASIZED_PILL_RADIUS = EMPHASIZED_RADIUS - PAD;
 const COMPACT_SEG_W = 42; // ancho fijo de cada segmento en modo icono (compact)
 const DENSE_COMPACT_SEG_W = 32;
 
@@ -46,6 +50,8 @@ interface Props<K extends string> {
   compact?: boolean;
   /** Variante más estrecha para filas con varios controles compactos. */
   dense?: boolean;
+  /** Refuerza el perímetro para selectores principales sobre Liquid Glass. */
+  emphasized?: boolean;
   activationDirection?: 'fromStart' | 'fromEnd';
 }
 
@@ -57,15 +63,22 @@ function hexToRgba(hex: string, a: number): string {
 }
 
 export default function SlidingSegments<K extends string>({
-  segments, value, onChange, style, compact = false, dense = false, activationDirection,
+  segments, value, onChange, style, compact = false, dense = false, emphasized = false,
+  activationDirection,
 }: Props<K>) {
-  const n = segments.length;
+  const { scheme } = useTheme();
   const reducedMotion = useReducedMotion();
   const active = value == null ? -1 : Math.max(0, segments.findIndex((s) => s.key === value));
 
-  // Ancho interno (pista − padding) medido, para la geometría de la píldora.
-  const [innerW, setInnerW] = useState(0);
-  const tabW = innerW > 0 ? innerW / n : 0;
+  // La píldora usa la geometría REAL del segmento. Inferirla desde el ancho
+  // exterior de la pista desalineaba unos píxeles los controles compactos por
+  // la combinación de padding, borde y redondeo a píxeles del dispositivo.
+  const [segmentLayouts, setSegmentLayouts] = useState<
+    ({ x: number; width: number } | undefined)[]
+  >([]);
+  const activeLayout = active >= 0 ? segmentLayouts[active] : undefined;
+  const activeX = activeLayout?.x;
+  const activeW = activeLayout?.width ?? 0;
 
   const translateX = useRef(new Animated.Value(0)).current;
   const stretch = useRef(new Animated.Value(0)).current;
@@ -77,8 +90,8 @@ export default function SlidingSegments<K extends string>({
       wasInactive.current = true;
       return;
     }
-    if (tabW <= 0) return;
-    const target = PAD + tabW * active;
+    if (activeX == null || activeW <= 0) return;
+    const target = activeX;
     if (reducedMotion) {
       translateX.setValue(target);
       stretch.setValue(0);
@@ -96,7 +109,7 @@ export default function SlidingSegments<K extends string>({
       }
     }
     if (animateActivation) {
-      const origin = activationDirection === 'fromStart' ? target - tabW : target + tabW;
+      const origin = activationDirection === 'fromStart' ? target - activeW : target + activeW;
       translateX.setValue(origin);
     }
     wasInactive.current = false;
@@ -110,29 +123,62 @@ export default function SlidingSegments<K extends string>({
       Animated.timing(stretch, { toValue: 1, duration: 170, easing: Easing.out(Easing.quad), useNativeDriver: true }),
       Animated.spring(stretch, { toValue: 0, useNativeDriver: true, stiffness: 120, damping: 9, mass: 0.7 }),
     ]).start();
-  }, [active, tabW, activationDirection, reducedMotion, stretch, translateX]);
+  }, [active, activeW, activeX, activationDirection, reducedMotion, stretch, translateX]);
 
   const scaleX = stretch.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] });
   const scaleY = stretch.interpolate({ inputRange: [0, 1], outputRange: [1, 0.92] });
 
-  const onLayout = (e: LayoutChangeEvent) =>
-    setInnerW(e.nativeEvent.layout.width - PAD * 2);
+  const onSegmentLayout = (index: number, e: LayoutChangeEvent) => {
+    const { x, width } = e.nativeEvent.layout;
+    setSegmentLayouts((current) => {
+      const previous = current[index];
+      if (previous?.x === x && previous.width === width) return current;
+      const next = [...current];
+      next[index] = { x, width };
+      return next;
+    });
+  };
 
   const accent = colors.accent;
+  const compactTrackWidth = compact
+    ? segments.length * (dense ? DENSE_COMPACT_SEG_W : COMPACT_SEG_W) + PAD * 2 + 2
+    : undefined;
+  const emphasizedTrackColors = scheme === 'dark'
+    ? {
+        backgroundColor: 'rgba(255,255,255,0.12)',
+        borderColor: 'rgba(255,255,255,0.20)',
+      }
+    : {
+        backgroundColor: 'rgba(255,255,255,0.38)',
+        borderColor: 'rgba(43,37,33,0.10)',
+      };
 
-  return (
-    <View style={[styles.track, compact && styles.trackCompact, style]} onLayout={onLayout}>
+  const track = (
+    <View
+      style={[
+        styles.track,
+        compact && styles.trackCompact,
+        emphasized && (compact ? styles.trackEmphasizedCompact : styles.trackEmphasized),
+        emphasized && emphasizedTrackColors,
+        !emphasized && style,
+      ]}
+    >
+      {emphasized && <View pointerEvents="none" style={styles.trackHighlight} />}
+
       {/* Píldora deslizante de acento. */}
-      {tabW > 0 && active >= 0 && (
+      {activeW > 0 && active >= 0 && (
         <Animated.View
           pointerEvents="none"
           style={[
             styles.pill,
-            { width: tabW, transform: [{ translateX }, { scaleX }, { scaleY }] },
+            emphasized && !compact && styles.pillEmphasized,
+            { width: activeW, transform: [{ translateX }, { scaleX }, { scaleY }] },
           ]}
         >
           <LinearGradient
-            colors={[hexToRgba(accent, 0.30), hexToRgba(accent, 0.16)]}
+            colors={emphasized
+              ? [hexToRgba(accent, 0.36), hexToRgba(accent, 0.20)]
+              : [hexToRgba(accent, 0.30), hexToRgba(accent, 0.16)]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.pillFill}
@@ -147,6 +193,7 @@ export default function SlidingSegments<K extends string>({
           <Pressable
             key={s.key}
             style={[styles.seg, compact && styles.segCompact, dense && styles.segDense]}
+            onLayout={(e) => onSegmentLayout(i, e)}
             accessibilityRole="button"
             accessibilityState={{ selected: focused }}
             accessibilityLabel={s.accessibilityLabel ?? s.label}
@@ -157,9 +204,21 @@ export default function SlidingSegments<K extends string>({
               }
             }}
           >
-            {s.icon ? <Ionicons name={s.icon} size={s.label ? 13 : 19} color={color} /> : null}
+            {s.icon ? (
+              <Ionicons
+                name={s.icon}
+                size={s.label ? 13 : 19}
+                color={color}
+                style={s.icon === 'grid' && !s.label ? styles.gridIconOptical : undefined}
+              />
+            ) : null}
             {s.label ? (
-              <Text style={[styles.label, dense && styles.labelDense, { color, fontFamily: focused ? fonts.bold : fonts.semibold }]}>
+              <Text style={[
+                styles.label,
+                dense && styles.labelDense,
+                emphasized && !compact && styles.labelEmphasized,
+                { color, fontFamily: focused ? fonts.bold : fonts.semibold },
+              ]}>
                 {s.label}
               </Text>
             ) : null}
@@ -168,10 +227,26 @@ export default function SlidingSegments<K extends string>({
       })}
     </View>
   );
+
+  if (!emphasized) return track;
+
+  return (
+    <View
+      style={[
+        styles.emphasizedShell,
+        compact && styles.trackCompact,
+        compact ? styles.emphasizedShellCompact : styles.emphasizedShellLarge,
+        compactTrackWidth != null && { width: compactTrackWidth },
+        style,
+      ]}
+    >
+      {track}
+    </View>
+  );
 }
 
-// Velos/bordes blancos fijos (no temados), como en LiquidGlassTabBar: son el
-// lenguaje del material de cristal; los colores de texto sí van temados inline.
+// La variante base conserva los velos blancos de LiquidGlassTabBar. La variante
+// principal refuerza el contorno según el tema; texto y acento se resuelven inline.
 const styles = StyleSheet.create({
   track: {
     height: HEIGHT, borderRadius: RADIUS, padding: PAD,
@@ -182,12 +257,37 @@ const styles = StyleSheet.create({
   },
   // Compact: la pista se ciñe a su contenido (segmentos de ancho fijo).
   trackCompact: { alignSelf: 'center' },
+  emphasizedShell: {
+    shadowColor: '#000',
+    shadowOpacity: 0.11,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
+  },
+  emphasizedShellCompact: { height: HEIGHT, borderRadius: RADIUS },
+  emphasizedShellLarge: { height: EMPHASIZED_HEIGHT, borderRadius: EMPHASIZED_RADIUS },
+  trackEmphasized: {
+    flex: 1,
+    height: EMPHASIZED_HEIGHT,
+    borderRadius: EMPHASIZED_RADIUS,
+  },
+  trackEmphasizedCompact: { flex: 1, height: HEIGHT, borderRadius: RADIUS },
+  trackHighlight: {
+    position: 'absolute',
+    top: 1,
+    left: 10,
+    right: 10,
+    height: 1,
+    borderRadius: 1,
+    backgroundColor: 'rgba(255,255,255,0.58)',
+  },
   pill: {
     position: 'absolute', left: 0, top: PAD, bottom: PAD,
     borderRadius: PILL_RADIUS,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.7)',
     overflow: 'hidden',
   },
+  pillEmphasized: { borderRadius: EMPHASIZED_PILL_RADIUS },
   pillFill: { flex: 1, borderRadius: PILL_RADIUS },
   seg: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5,
@@ -195,6 +295,10 @@ const styles = StyleSheet.create({
   // Compact: ancho fijo (cuadrado) en vez de repartir el espacio.
   segCompact: { flex: 0, width: COMPACT_SEG_W },
   segDense: { width: DENSE_COMPACT_SEG_W },
+  // El contorno de `grid` queda visualmente cargado a la izquierda dentro de
+  // su caja tipográfica; 1 pt lo centra ópticamente en la píldora circular.
+  gridIconOptical: { transform: [{ translateX: 1 }] },
   label: { fontSize: 12.5, letterSpacing: 0.1 },
+  labelEmphasized: { fontSize: 13 },
   labelDense: { fontSize: 10 },
 });

@@ -2,12 +2,16 @@
 BÚSQUEDA DE PRODUCTOS — RANKING EN SERVIDOR + PAGINACIÓN (NIVEL 2)
 ════════════════════════════════════════════════════════════════════════════
 Fecha del análisis : 2026-07-08 (medido contra producción)
-Estado             : PENDIENTE de implementar (decidido NO poner parche
-                     temporal; este documento es la solución definitiva)
-Afecta a           : los 6 súpers (Mercadona, Bonpreu, Carrefour, bonÀrea,
-                     Consum, Dia)
-Requiere           : 1 migración SQL (a mano en Supabase) + cambios pequeños
-                     en la app (nueva build/OTA)
+Estado             : IMPLEMENTADO Y DESPLEGADO el 2026-08-23. Este documento
+                     conserva el análisis histórico; la implementación final
+                     amplía el diseño a los 18 catálogos, FTS + pg_trgm.
+Afecta a           : los 18 supermercados actuales.
+Implementación     : 20260823101900_catalog_search_engine_v1.sql y
+                     20260823103646_catalog_search_language_index_planner.sql y
+                     20260823104120_catalog_search_server_sort_orders.sql.
+Cliente            : catalog.ts + catalogSearch.ts + CatalogScreen.tsx.
+Extensión feeds    : 20260823110039_catalog_feed_search_engine.sql;
+                     NewArrivalsScreen.tsx + OffersScreen.tsx.
 
 
 ──────────────────────────────────────────────────────────────────────────────

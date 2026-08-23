@@ -9,6 +9,7 @@ import { useTranslation } from '../context/LanguageContext';
 import { useProfile } from '../context/ProfileContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { createMultiStorePager, type MultiStorePager } from '../lib/multiStorePager';
+import { relevanceScore } from '../lib/sort';
 import {
   fetchStoreOffers, fetchOfferCategories, offerTypesForStore, OFFER_STORES,
   type BrowseCursor, type StoreOffer, type OfferFilters, type OfferType,
@@ -35,7 +36,7 @@ const facetValuesForStore = (values: string[], store: CatalogStore) =>
     .filter((value) => value.startsWith(`${store}${FACET_SEPARATOR}`))
     .map((value) => value.slice(value.indexOf(FACET_SEPARATOR) + 1));
 
-function compareOffers(sort: PriceSort | null, pricePerUnitSort: PriceSort | null) {
+function compareOffers(sort: PriceSort | null, pricePerUnitSort: PriceSort | null, query = '') {
   return (a: StoreOffer, b: StoreOffer) => {
     const activeSort = pricePerUnitSort ?? sort;
     if (activeSort) {
@@ -45,6 +46,11 @@ function compareOffers(sort: PriceSort | null, pricePerUnitSort: PriceSort | nul
       if (priceA != null && priceB == null) return -1;
       const priceDiff = (priceA ?? 0) - (priceB ?? 0);
       if (priceDiff !== 0) return activeSort === 'asc' ? priceDiff : -priceDiff;
+    }
+    if (!activeSort && query.trim().length >= 2) {
+      const relevanceDifference = relevanceScore(b.product.name, query)
+        - relevanceScore(a.product.name, query);
+      if (relevanceDifference !== 0) return relevanceDifference;
     }
     const nameDiff = a.product.name.localeCompare(b.product.name, 'es', { sensitivity: 'base' });
     if (nameDiff !== 0) return nameDiff;
@@ -116,8 +122,8 @@ export default function OffersScreen() {
   const loadSeq = useRef(0);
   const allOffersPager = useRef<MultiStorePager<StoreOffer> | null>(null);
 
-  // Búsqueda y filtros (server-side; ver OfferFilters). La búsqueda se debouncea
-  // para no lanzar una query por tecla.
+  // Búsqueda FTS/trigram y filtros server-side (ver OfferFilters). La búsqueda
+  // se debouncea para no lanzar una query por tecla.
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
@@ -271,7 +277,7 @@ export default function OffersScreen() {
             limit,
             filtersForStore(selectedStore),
           ),
-        compare: compareOffers(sort, pricePerUnitSort),
+        compare: compareOffers(sort, pricePerUnitSort, debouncedQuery),
       });
       allOffersPager.current = pager;
       pager.nextPage(50)
@@ -301,6 +307,7 @@ export default function OffersScreen() {
     postalCode,
     sort,
     pricePerUnitSort,
+    debouncedQuery,
     filteredOfferStores,
   ]);
 

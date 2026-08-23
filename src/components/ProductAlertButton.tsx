@@ -1,10 +1,16 @@
 import { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { CatalogStore } from '../constants/stores';
-import { PAYWALL_ENABLED } from '../constants/limits';
+import { limitsApply, PAYWALL_ENABLED } from '../constants/limits';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
+import {
+  fetchPriceAlerts,
+  type PriceAlertRule,
+} from '../api/priceAlerts';
+import { freePriceAlertRule } from '../lib/freeTierAllowances';
+import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useThemedStyles } from '../context/ThemeContext';
@@ -21,14 +27,47 @@ export default function ProductAlertButton({ store, productId, overlay = false }
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
   const { isPremium } = useProfile();
+  const { session } = useAuth();
   const [editorVisible, setEditorVisible] = useState(false);
   const [paywallVisible, setPaywallVisible] = useState(false);
+  const [initialRule, setInitialRule] = useState<PriceAlertRule | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [blocked, setBlocked] = useState(false);
 
   if (!PAYWALL_ENABLED) return null;
 
-  const open = () => {
-    if (isPremium) setEditorVisible(true);
-    else setPaywallVisible(true);
+  const open = async () => {
+    if (!limitsApply(isPremium)) {
+      setInitialRule(null);
+      setEditorVisible(true);
+      return;
+    }
+    const userId = session?.user.id;
+    if (!userId || checking) return;
+    setChecking(true);
+    try {
+      const rules = await fetchPriceAlerts(userId);
+      const freeRule = freePriceAlertRule(rules);
+      const exactRule = rules.find((rule) => (
+        rule.kind === 'exact'
+        && rule.exactStore === store
+        && rule.exactProductId === productId
+      ));
+      if (rules.length === 0 || (exactRule && exactRule.id === freeRule?.id)) {
+        setInitialRule(exactRule ?? null);
+        setBlocked(false);
+        setEditorVisible(true);
+      } else {
+        setBlocked(true);
+        setPaywallVisible(true);
+      }
+    } catch {
+      // El guardarraíl del servidor vuelve a validar el cupo al guardar.
+      setInitialRule(null);
+      setEditorVisible(true);
+    } finally {
+      setChecking(false);
+    }
   };
 
   const ink = colors.accent;
@@ -36,13 +75,16 @@ export default function ProductAlertButton({ store, productId, overlay = false }
     <TouchableOpacity
       style={styles.button}
       onPress={open}
+      disabled={checking}
       activeOpacity={0.8}
       accessibilityRole="button"
       accessibilityLabel={t('priceAlerts.exactCta')}
     >
-      <Ionicons name="notifications-outline" size={15} color={ink} />
+      {checking
+        ? <ActivityIndicator size="small" color={ink} />
+        : <Ionicons name="notifications-outline" size={15} color={ink} />}
       <Text style={styles.text}>{t('priceAlerts.exactCta')}</Text>
-      {!isPremium ? <Ionicons name="lock-closed" size={11} color={colors.accent} /> : null}
+      {blocked ? <Ionicons name="lock-closed" size={11} color={colors.accent} /> : null}
     </TouchableOpacity>
   );
 
@@ -55,6 +97,8 @@ export default function ProductAlertButton({ store, productId, overlay = false }
         visible={editorVisible}
         onClose={() => setEditorVisible(false)}
         exactTarget={{ store, productId }}
+        initialRule={initialRule}
+        onSaved={(rule) => setInitialRule(rule)}
       />
       <PaywallModal
         visible={paywallVisible}

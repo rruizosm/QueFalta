@@ -3,6 +3,58 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
+## Motor de búsqueda del catálogo (2026-08-23)
+
+- Los 18 catálogos usan ahora RPC homogéneas `search_*_products` en Supabase:
+  normalizan acentos/mayúsculas, combinan Full Text Search por prefijo con
+  tolerancia a erratas de `pg_trgm`, rankean en servidor y paginan con
+  `limit`/`offset` estable. Las funciones son `SECURITY INVOKER`, respetan RLS
+  y filtran CCAA o centro antes del ranking.
+- La app presenta «Relevancia» por defecto al buscar; precio y precio unitario
+  siguen disponibles y se ordenan en servidor antes de paginar. Un supermercado
+  carga páginas de 50 al llegar al final; «Todos» mezcla las páginas de las
+  tiendas habilitadas y aplica el mismo orden global.
+- Froiz queda conectado por primera vez al flujo de búsqueda y, como no dispone
+  de árbol de categorías, fuerza la pestaña Productos.
+- Novedades y Ofertas reutilizan el mismo motor cuando hay al menos dos letras:
+  relevancia, prefijos, erratas, idioma y ubicación se resuelven antes de
+  paginar. Sus reglas propias (ventana semanal, rellenos iniciales, vigencia y
+  zona de la promoción, categoría y precio) se conservan dentro de las RPC.
+- Migraciones locales `20260823101900_catalog_search_engine_v1.sql`,
+  `20260823103646_catalog_search_language_index_planner.sql` y
+  `20260823104120_catalog_search_server_sort_orders.sql`, desplegadas en
+  producción como `20260823103505`, `20260823103803` y `20260823104828`.
+  Verificación PostgREST anónima: HTTP 200; ES/CA, erratas, caracteres especiales,
+  orden por precio y páginas sin solape.
+  Medición caliente: Mercadona ~26 ms, Carrefour ~69 ms y Alcampo ~28 ms; los
+  índices FTS registran uso real.
+- `20260823110039_catalog_feed_search_engine.sql` está desplegada en producción
+  como `20260823110849`. Verificada por la API anónima con Novedades y Ofertas,
+  errata real, orden por precio y páginas sin solape; Carrefour ronda 51 ms en
+  una búsqueda caliente de 50 ofertas.
+
+## Cupos gratuitos de alertas y radar de ahorro (2026-08-23)
+
+- Una cuenta sin Plus puede crear y mantener una alerta personalizada activa;
+  Plus conserva alertas ilimitadas. Perfil permite entrar a la gestión a todas
+  las cuentas y «Avísame» abre el editor mientras el hueco gratuito esté libre.
+- Una cuenta sin Plus puede ejecutar tres veces «Buscar productos más
+  económicos»; el cuarto intento abre el paywall. Plus mantiene búsquedas
+  ilimitadas.
+- Ambos límites son por cuenta. La alerta se comprueba contra sus reglas en
+  Supabase y el contador del comparador vive en `private.free_tier_usage`, por
+  lo que no se reinicia al reinstalar o cambiar de dispositivo.
+- Estos dos cupos se aplican aunque `paywall_enabled()` continúe apagado durante
+  el pre-lanzamiento; el interruptor comercial sigue controlando los demás gates.
+- `catalog_cheaper_products_v6` reserva el uso y devuelve resultados+cupo en una
+  sola transacción. La v5 queda protegida para clientes anteriores. Las
+  migraciones locales `20260823063529_free_tier_alert_and_comparator_allowances.sql`
+  y `20260823065123_restrict_free_tier_usage_direct_access.sql`, junto con
+  `20260823065448_enforce_free_allowances_before_paywall_launch.sql`, están
+  desplegadas en producción como `20260823064939`, `20260823065153` y
+  `20260823065550`; la prueba transaccional confirmó 3 usos, bloqueo del 4º y
+  bloqueo de una 2ª alerta free con el paywall remoto todavía apagado.
+
 ## Precio unitario de Eroski y Caprabo recuperado (2026-08-22)
 
 - Ambas webs publican en la tarjeta textos como `1 KILO A 18,40 €`, `1 LITRO
@@ -452,7 +504,7 @@
 
 - Perfil → Notificaciones muestra qué avisos puede recibir el usuario: productos
   añadidos a carritos compartidos, solicitudes de amistad, altas en grupos y
-  alertas personalizadas Plus (bajadas, ofertas y novedades).
+  alertas personalizadas (bajadas, ofertas y novedades).
 - La misma pantalla incorpora el interruptor de avisos del dispositivo. Parte
   apagado cuando no existe una preferencia y, al activarlo, solicita permiso,
   registra el token push y envía una confirmación local. Al apagarlo elimina el
@@ -463,7 +515,7 @@
   retira tokens antiguos cuando está desactivada, evitando que dos usuarios del
   mismo dispositivo hereden la configuración.
 
-## Alertas personalizadas Plus — reglas desplegadas, envío pendiente (2026-08-20)
+## Alertas personalizadas — reglas desplegadas, envío pendiente (2026-08-20; cupo actualizado 2026-08-23)
 
 - Implementado localmente el MVP de alertas por producto exacto o por palabras,
   con uno o varios supermercados, bajada mínima configurable, nueva oferta y
@@ -471,18 +523,16 @@
   las fichas muestran «Avísame» dentro de la esquina superior derecha de la
   imagen mediante `ProductDetailImage`/`ProductDetailHero`, sin duplicar lógica
   entre los 18 supermercados.
-- El CTA compartido «Avísame» conserva la campana del diseño original. En cuentas
-  gratuitas usa `PremiumGoldBackground`, tinta oscura y candado; con Plus activo
-  recupera el estilo normal de acento y abre directamente el editor. Su acceso
-  al paywall usa la cabecera compacta, sin texto descriptivo contextual.
-- Perfil → Alertas personalizadas abre directamente el paywall en cuentas
-  gratuitas; solo las cuentas Plus entran en la pantalla de reglas. Se eliminó
-  de esa pantalla el antiguo bloque «Tus alertas están pausadas».
+- El CTA compartido «Avísame» conserva la campana y abre el editor para crear la
+  primera regla gratuita o editar esa misma alerta exacta. Con el hueco ocupado,
+  intentar crear otra regla abre Plus.
+- Perfil → Alertas personalizadas entra en la gestión para todas las cuentas.
+  Free puede conservar una regla; Plus puede crear reglas ilimitadas.
 - La migración `20260820162731_personalized_price_alerts.sql` crea reglas con RLS,
   una proyección interna unificada del catálogo, eventos duraderos de sync y una
   outbox de entregas con `unique(rule_id,event_id)`. El servidor comprueba
-  `premium_until`: al caducar Plus las reglas se conservan y los eventos quedan
-  registrados como pausados, sin enviarse ni acumularse para una renovación.
+  `premium_until`: al caducar Plus las reglas se conservan, la más reciente de
+  las activas ocupa el hueco gratuito y las demás quedan pausadas.
 - `process-price-alerts` es independiente de `send-push`: reclama solo mediante
   un RPC reservado a `service_role`, agrupa todos los productos de la misma
   regla+actualización, crea atómicamente una única fila en la bandeja y envía

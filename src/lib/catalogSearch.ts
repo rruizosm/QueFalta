@@ -17,6 +17,7 @@ import {
   searchHiperdinoProducts,
   searchAlcampoProducts,
   searchPlusfrescProducts,
+  type CatalogSearchOrder,
 } from '../api/catalog';
 import type { CatalogStore } from '../constants/stores';
 import type { RegionValue } from '../constants/regions';
@@ -51,26 +52,28 @@ export async function searchCatalogStore(
   postalCode: string | null,
   signal?: AbortSignal,
   limit = 50,
+  offset = 0,
+  order: CatalogSearchOrder = 'relevance',
 ): Promise<UIProduct[]> {
   switch (store) {
-    case 'mercadona': return (await searchProducts(query, region, limit, signal)).map((product) => mercadonaToUI(product));
-    case 'esclat': return (await searchBonpreuProducts(query, limit, signal)).map(bonpreuToUI);
-    case 'carrefour': return (await searchCarrefourProducts(query, region, limit, signal)).map(carrefourToUI);
-    case 'bonarea': return (await searchBonareaProducts(query, limit, signal)).map(bonareaToUI);
-    case 'consum': return (await searchConsumProducts(query, region, postalCode, limit, signal)).map(consumToUI);
-    case 'dia': return (await searchDiaProducts(query, region, limit, signal)).map(diaToUI);
-    case 'sorli': return (await searchSorliProducts(query, limit, signal)).map(sorliToUI);
-    case 'eroski': return (await searchEroskiProducts(query, limit, signal)).map(eroskiToUI);
-    case 'caprabo': return (await searchCapraboProducts(query, limit, signal)).map(capraboToUI);
-    case 'condis': return (await searchCondisProducts(query, limit, signal)).map(condisToUI);
-    case 'ametller': return (await searchAmetllerProducts(query, limit, signal)).map(ametllerToUI);
-    case 'aldi': return (await searchAldiProducts(query, limit, signal)).map(aldiToUI);
-    case 'gadis': return (await searchGadisProducts(query, limit, signal)).map(gadisToUI);
-    case 'froiz': return (await searchFroizProducts(query, limit, signal)).map(froizToUI);
-    case 'ahorramas': return (await searchAhorramasProducts(query, limit, signal)).map(ahorramasToUI);
-    case 'hiperdino': return (await searchHiperdinoProducts(query, limit, signal)).map(hiperdinoToUI);
-    case 'alcampo': return (await searchAlcampoProducts(query, limit, signal)).map(alcampoToUI);
-    case 'plusfresc': return (await searchPlusfrescProducts(query, postalCode, limit, signal)).map(plusfrescToUI);
+    case 'mercadona': return (await searchProducts(query, region, limit, signal, offset, order)).map((product) => mercadonaToUI(product));
+    case 'esclat': return (await searchBonpreuProducts(query, limit, signal, offset, order)).map(bonpreuToUI);
+    case 'carrefour': return (await searchCarrefourProducts(query, region, limit, signal, offset, order)).map(carrefourToUI);
+    case 'bonarea': return (await searchBonareaProducts(query, limit, signal, offset, order)).map(bonareaToUI);
+    case 'consum': return (await searchConsumProducts(query, region, postalCode, limit, signal, offset, order)).map(consumToUI);
+    case 'dia': return (await searchDiaProducts(query, region, limit, signal, offset, order)).map(diaToUI);
+    case 'sorli': return (await searchSorliProducts(query, limit, signal, offset, order)).map(sorliToUI);
+    case 'eroski': return (await searchEroskiProducts(query, limit, signal, offset, order)).map(eroskiToUI);
+    case 'caprabo': return (await searchCapraboProducts(query, limit, signal, offset, order)).map(capraboToUI);
+    case 'condis': return (await searchCondisProducts(query, limit, signal, offset, order)).map(condisToUI);
+    case 'ametller': return (await searchAmetllerProducts(query, limit, signal, offset, order)).map(ametllerToUI);
+    case 'aldi': return (await searchAldiProducts(query, limit, signal, offset, order)).map(aldiToUI);
+    case 'gadis': return (await searchGadisProducts(query, limit, signal, offset, order)).map(gadisToUI);
+    case 'froiz': return (await searchFroizProducts(query, limit, signal, offset, order)).map(froizToUI);
+    case 'ahorramas': return (await searchAhorramasProducts(query, limit, signal, offset, order)).map(ahorramasToUI);
+    case 'hiperdino': return (await searchHiperdinoProducts(query, limit, signal, offset, order)).map(hiperdinoToUI);
+    case 'alcampo': return (await searchAlcampoProducts(query, limit, signal, offset, order)).map(alcampoToUI);
+    case 'plusfresc': return (await searchPlusfrescProducts(query, postalCode, limit, signal, offset, order)).map(plusfrescToUI);
   }
 }
 

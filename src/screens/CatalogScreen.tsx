@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
@@ -40,7 +40,8 @@ import {
   searchCondisProducts, fetchCondisCategoryTree,
   searchAmetllerProducts, fetchAmetllerCategoryTree,
   searchAldiProducts, fetchAldiCategoryTree,
-  searchGadisProducts, fetchGadisCategoryTree, searchAhorramasProducts, fetchAhorramasCategoryTree,
+  searchGadisProducts, fetchGadisCategoryTree, searchFroizProducts,
+  searchAhorramasProducts, fetchAhorramasCategoryTree,
   searchHiperdinoProducts, fetchHiperdinoCategoryTree,
   searchAlcampoProducts, fetchAlcampoCategoryTree,
   searchPlusfrescProducts, fetchPlusfrescCategoryTree,
@@ -57,13 +58,13 @@ import {
   type CondisProduct, type CondisCategory,
   type AmetllerProduct, type AmetllerCategory,
   type AldiProduct, type AldiCategory,
-  type GadisProduct, type GadisCategory,
+  type GadisProduct, type GadisCategory, type FroizProduct,
   type AhorramasProduct, type AhorramasCategory,
   type HiperdinoProduct, type HiperdinoCategory,
   type AlcampoProduct, type AlcampoCategory,
   type PlusfrescProduct, type PlusfrescCategory,
   type TapestryProduct, type TapestryCategory,
-  type BrowseCursor, type BrowsePage,
+  type BrowseCursor, type BrowsePage, type CatalogSearchOrder,
 } from '../api/catalog';
 import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../context/ToastContext';
@@ -81,7 +82,7 @@ import {
   plusfrescToUI,
   type UIProduct,
 } from '../lib/productAdapters';
-import { sortByName } from '../lib/sort';
+import { sortByName, sortByRelevance } from '../lib/sort';
 import { createMultiStorePager, type MultiStorePager } from '../lib/multiStorePager';
 import { searchCatalogStore } from '../lib/catalogSearch';
 import ActionSheet from '../components/ActionSheet';
@@ -99,12 +100,14 @@ type StoreKey = StoreSelection;
 type ProductSortDirection = 'asc' | 'desc';
 type ProductSortField = 'price' | 'pricePerUnit';
 type ProductBrowseOrder = 'priceAsc' | 'priceDesc' | 'pricePerUnitAsc' | 'pricePerUnitDesc';
-type ProductSortSegment = ProductBrowseOrder;
+type ProductSearchOrder = CatalogSearchOrder;
+type ProductSortSegment = ProductSearchOrder;
 
 // Primera página por súper/contexto durante la sesión. El catálogo se
 // sincroniza semanalmente, pero un TTL corto permite mostrar al instante una
 // revisita y revalidar silenciosamente si la copia ya tiene unos minutos.
 const BROWSE_CACHE_TTL_MS = 5 * 60 * 1000;
+const ALL_SEARCH_MAX_RESULTS = 200;
 interface BrowseCacheEntry {
   page: BrowsePage<UIProduct>;
   cachedAt: number;
@@ -253,8 +256,10 @@ async function loadStoreSearch(
   postalCode: string | null,
   signal?: AbortSignal,
   limit = 50,
+  offset = 0,
+  order: CatalogSearchOrder = 'relevance',
 ): Promise<UIProduct[]> {
-  return searchCatalogStore(store, query, region, postalCode, signal, limit);
+  return searchCatalogStore(store, query, region, postalCode, signal, limit, offset, order);
 }
 
 function compareProductsByPrice(order: ProductSortDirection) {
@@ -301,7 +306,7 @@ export default function CatalogScreen() {
   const handleStoreChange = (nextStore: StoreKey) => {
     setProductQueryInHeader(false);
     setStore(nextStore);
-    if (nextStore === 'all') setTab('productos');
+    if (nextStore === 'all' || nextStore === 'froiz') setTab('productos');
   };
   // Vista lista/cuadrícula compartida por los listados de búsqueda de productos
   // (la controla la fila de búsqueda, no el toolbar interno de StoreProductList).
@@ -310,6 +315,7 @@ export default function CatalogScreen() {
   // un segundo par y solo uno de los dos grupos queda activo a la vez.
   const [productOrder, setProductOrder] = useState<ProductSortDirection>('asc');
   const [pricePerUnitOrder, setPricePerUnitOrder] = useState<ProductSortDirection | null>(null);
+  const [productSearchOrder, setProductSearchOrder] = useState<ProductSearchOrder>('relevance');
   const [productSearchExpanded, setProductSearchExpanded] = useState(false);
 
   const selectProductPriceOrder = (order: ProductSortDirection) => {
@@ -372,13 +378,26 @@ export default function CatalogScreen() {
   };
 
   const selectProductSortSegment = (segment: ProductSortSegment) => {
+    if (segment === 'relevance') {
+      setProductSearchOrder('relevance');
+      return;
+    }
+    const searching = prodQuery.trim().length >= 2;
     if (segment === 'priceAsc' || segment === 'priceDesc') {
+      if (searching) {
+        setProductSearchOrder(segment);
+        return;
+      }
       selectProductPriceOrder(segment === 'priceAsc' ? 'asc' : 'desc');
       return;
     }
     if (profileLoading) return;
     if (unitPriceSortLocked) {
       openUnitPricePaywall();
+      return;
+    }
+    if (searching) {
+      setProductSearchOrder(segment);
       return;
     }
     setPricePerUnitOrder(segment === 'pricePerUnitAsc' ? 'asc' : 'desc');
@@ -391,6 +410,14 @@ export default function CatalogScreen() {
       setPricePerUnitOrder(null);
     }
   }, [pricePerUnitOrder, unitPriceSortLocked]);
+  useEffect(() => {
+    if (unitPriceSortLocked && (
+      productSearchOrder === 'pricePerUnitAsc'
+      || productSearchOrder === 'pricePerUnitDesc'
+    )) {
+      setProductSearchOrder('relevance');
+    }
+  }, [productSearchOrder, unitPriceSortLocked]);
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
   const preferredStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
@@ -437,6 +464,7 @@ export default function CatalogScreen() {
   const [allResults, setAllResults] = useState<UIProduct[]>([]);
   const [allSearchLimit, setAllSearchLimit] = useState(50);
   const [allSearchMore, setAllSearchMore] = useState(false);
+  const [allSearchExhausted, setAllSearchExhausted] = useState(false);
   const allSearchMoreController = useRef<AbortController | null>(null);
   const [allLoading, setAllLoading] = useState(false);
   const [allError, setAllError] = useState(false);
@@ -566,6 +594,9 @@ export default function CatalogScreen() {
   const [gaCatsLoading, setGaCatsLoading] = useState(false);
   const [gaCatsError, setGaCatsError] = useState(false);
   const [frSearch, setFrSearch] = useState('');
+  const [frResults, setFrResults] = useState<FroizProduct[]>([]);
+  const [frLoading, setFrLoading] = useState(false);
+  const [frError, setFrError] = useState(false);
   const [ahSearch, setAhSearch] = useState('');
   const [ahResults, setAhResults] = useState<AhorramasProduct[]>([]);
   const [ahLoading, setAhLoading] = useState(false);
@@ -618,10 +649,19 @@ export default function CatalogScreen() {
   const [browseError, setBrowseError] = useState(false);
   const browseInitialController = useRef<AbortController | null>(null);
   const browseMoreController = useRef<AbortController | null>(null);
+  const [storeSearchExtra, setStoreSearchExtra] = useState<{ key: string; items: UIProduct[] }>(
+    { key: '', items: [] },
+  );
+  const [storeSearchMore, setStoreSearchMore] = useState(false);
+  const [exhaustedStoreSearchKey, setExhaustedStoreSearchKey] = useState<string | null>(null);
+  const storeSearchMoreController = useRef<AbortController | null>(null);
   // Texto de búsqueda del súper activo: con <2 letras estamos en modo navegación.
   const prodQuery = store === 'all'
     ? allSearch
     : { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch, condis: coSearch, ametller: amSearch, aldi: alSearch, gadis: gaSearch, froiz: frSearch, ahorramas: ahSearch, hiperdino: hdSearch, alcampo: acSearch, plusfresc: pfSearch }[store];
+  const activeStoreSearchKey = `${store}:${prodQuery.trim()}:${lang}:${region ?? 'all'}:${postalCode ?? 'none'}:${productSearchOrder}`;
+  const activeStoreSearchKeyRef = useRef(activeStoreSearchKey);
+  activeStoreSearchKeyRef.current = activeStoreSearchKey;
   // Setter de búsqueda de productos del súper activo (para la fila de búsqueda
   // única que ahora vive en el chrome, en vez de una por bloque de súper).
   const setProdQuery = store === 'all'
@@ -632,6 +672,14 @@ export default function CatalogScreen() {
     && tab === 'productos'
     && visibleProductQuery.length > 0;
   const productQueryReveal = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    storeSearchMoreController.current?.abort();
+    storeSearchMoreController.current = null;
+    setStoreSearchMore(false);
+    setExhaustedStoreSearchKey(null);
+    setStoreSearchExtra({ key: activeStoreSearchKey, items: [] });
+  }, [activeStoreSearchKey]);
 
   useEffect(() => {
     const target = showProductQueryInHeader ? 1 : 0;
@@ -669,6 +717,9 @@ export default function CatalogScreen() {
   const activeProductSortSegment: ProductSortSegment = productSortField === 'pricePerUnit'
     ? (activeProductOrder === 'desc' ? 'pricePerUnitDesc' : 'pricePerUnitAsc')
     : (activeProductOrder === 'desc' ? 'priceDesc' : 'priceAsc');
+  const visibleProductSortSegment: ProductSortSegment = browseMode
+    ? activeProductSortSegment
+    : productSearchOrder;
   const browseOrder: ProductBrowseOrder = productSortField === 'pricePerUnit'
     ? (activeProductOrder === 'desc' ? 'pricePerUnitDesc' : 'pricePerUnitAsc')
     : (activeProductOrder === 'desc' ? 'priceDesc' : 'priceAsc');
@@ -678,6 +729,20 @@ export default function CatalogScreen() {
       : compareProductsByPrice(activeProductOrder),
     [productSortField, activeProductOrder],
   );
+  const compareSearchProducts = useMemo(() => {
+    if (productSearchOrder === 'relevance') return null;
+    if (productSearchOrder === 'pricePerUnitAsc' || productSearchOrder === 'pricePerUnitDesc') {
+      return compareProductsByPricePerUnit(
+        productSearchOrder === 'pricePerUnitAsc' ? 'asc' : 'desc',
+      );
+    }
+    return compareProductsByPrice(productSearchOrder === 'priceAsc' ? 'asc' : 'desc');
+  }, [productSearchOrder]);
+  const orderAllSearchProducts = useCallback((items: UIProduct[], query: string) => (
+    productSearchOrder === 'relevance'
+      ? sortByRelevance(items, (product) => product.name, query)
+      : [...items].sort(compareSearchProducts!)
+  ), [compareSearchProducts, productSearchOrder]);
   const enabledStoresKey = enabledStores.join(',');
   const activeBrowseKey = browseCacheKey(
     store, lang, region, postalCode, `${productSortField}:${activeProductOrder}`,
@@ -850,14 +915,14 @@ export default function CatalogScreen() {
   // Mercadona: búsqueda server-side con debounce (antes barría ~100 subcategorías).
   useEffect(() => {
     if (store !== 'mercadona') return;
-    return startProductSearch(prodSearch, (q, signal) => searchProducts(q, region, 50, signal), setProdResults, setProdLoading, setProdError);
-  }, [store, prodSearch, lang, region]);
+    return startProductSearch(prodSearch, (q, signal) => searchProducts(q, region, 50, signal, 0, productSearchOrder), setProdResults, setProdLoading, setProdError);
+  }, [store, prodSearch, lang, region, productSearchOrder]);
 
   // BonpreuEsclat: búsqueda server-side con debounce.
   useEffect(() => {
     if (store !== 'esclat') return;
-    return startProductSearch(bpSearch, (q, signal) => searchBonpreuProducts(q, 50, signal), setBpResults, setBpLoading, setBpError);
-  }, [store, bpSearch, lang]);
+    return startProductSearch(bpSearch, (q, signal) => searchBonpreuProducts(q, 50, signal, 0, productSearchOrder), setBpResults, setBpLoading, setBpError);
+  }, [store, bpSearch, lang, productSearchOrder]);
 
   // Carga perezosa de categorías Carrefour la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -868,8 +933,8 @@ export default function CatalogScreen() {
   // Carrefour: búsqueda server-side con debounce.
   useEffect(() => {
     if (store !== 'carrefour') return;
-    return startProductSearch(cfSearch, (q, signal) => searchCarrefourProducts(q, region, 50, signal), setCfResults, setCfLoading, setCfError);
-  }, [store, cfSearch, region]);
+    return startProductSearch(cfSearch, (q, signal) => searchCarrefourProducts(q, region, 50, signal, 0, productSearchOrder), setCfResults, setCfLoading, setCfError);
+  }, [store, cfSearch, region, productSearchOrder]);
 
   // Carga perezosa de categorías bonÀrea la primera vez que se entra a esa tienda.
   useEffect(() => { setBaCats([]); }, [lang]);
@@ -881,8 +946,8 @@ export default function CatalogScreen() {
   // bonÀrea: búsqueda server-side con debounce.
   useEffect(() => {
     if (store !== 'bonarea') return;
-    return startProductSearch(baSearch, (q, signal) => searchBonareaProducts(q, 50, signal), setBaResults, setBaLoading, setBaError);
-  }, [store, baSearch, lang]);
+    return startProductSearch(baSearch, (q, signal) => searchBonareaProducts(q, 50, signal, 0, productSearchOrder), setBaResults, setBaLoading, setBaError);
+  }, [store, baSearch, lang, productSearchOrder]);
 
   // Carga perezosa de categorías Consum la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -893,8 +958,8 @@ export default function CatalogScreen() {
   // Consum: búsqueda server-side con debounce.
   useEffect(() => {
     if (store !== 'consum') return;
-    return startProductSearch(csSearch, (q, signal) => searchConsumProducts(q, region, postalCode, 50, signal), setCsResults, setCsLoading, setCsError);
-  }, [store, csSearch, region, postalCode]);
+    return startProductSearch(csSearch, (q, signal) => searchConsumProducts(q, region, postalCode, 50, signal, 0, productSearchOrder), setCsResults, setCsLoading, setCsError);
+  }, [store, csSearch, region, postalCode, productSearchOrder]);
 
   // Carga perezosa de categorías Dia la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -905,8 +970,8 @@ export default function CatalogScreen() {
   // Dia: búsqueda server-side con debounce.
   useEffect(() => {
     if (store !== 'dia') return;
-    return startProductSearch(ddSearch, (q, signal) => searchDiaProducts(q, region, 50, signal), setDdResults, setDdLoading, setDdError);
-  }, [store, ddSearch, region]);
+    return startProductSearch(ddSearch, (q, signal) => searchDiaProducts(q, region, 50, signal, 0, productSearchOrder), setDdResults, setDdLoading, setDdError);
+  }, [store, ddSearch, region, productSearchOrder]);
 
   // Carga perezosa de categorías Sorli la primera vez que se entra a esa tienda.
   useEffect(() => { setSoCats([]); }, [lang]);
@@ -918,8 +983,8 @@ export default function CatalogScreen() {
   // Sorli: búsqueda server-side con debounce (bilingüe: re-busca al cambiar idioma).
   useEffect(() => {
     if (store !== 'sorli') return;
-    return startProductSearch(soSearch, (q, signal) => searchSorliProducts(q, 50, signal), setSoResults, setSoLoading, setSoError);
-  }, [store, soSearch, lang]);
+    return startProductSearch(soSearch, (q, signal) => searchSorliProducts(q, 50, signal, 0, productSearchOrder), setSoResults, setSoLoading, setSoError);
+  }, [store, soSearch, lang, productSearchOrder]);
 
   // Carga perezosa de categorías Eroski la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -930,8 +995,8 @@ export default function CatalogScreen() {
   // Eroski: búsqueda server-side con debounce.
   useEffect(() => {
     if (store !== 'eroski') return;
-    return startProductSearch(ekSearch, (q, signal) => searchEroskiProducts(q, 50, signal), setEkResults, setEkLoading, setEkError);
-  }, [store, ekSearch]);
+    return startProductSearch(ekSearch, (q, signal) => searchEroskiProducts(q, 50, signal, 0, productSearchOrder), setEkResults, setEkLoading, setEkError);
+  }, [store, ekSearch, productSearchOrder]);
 
   // Carga perezosa de categorías Caprabo la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -942,8 +1007,8 @@ export default function CatalogScreen() {
   // Caprabo: búsqueda server-side con debounce.
   useEffect(() => {
     if (store !== 'caprabo') return;
-    return startProductSearch(cbSearch, (q, signal) => searchCapraboProducts(q, 50, signal), setCbResults, setCbLoading, setCbError);
-  }, [store, cbSearch]);
+    return startProductSearch(cbSearch, (q, signal) => searchCapraboProducts(q, 50, signal, 0, productSearchOrder), setCbResults, setCbLoading, setCbError);
+  }, [store, cbSearch, productSearchOrder]);
 
   // Carga perezosa de categorías Condis la primera vez que se entra a esa tienda.
   useEffect(() => { setCoCats([]); }, [lang]);
@@ -955,8 +1020,8 @@ export default function CatalogScreen() {
   // Condis: búsqueda server-side con debounce (bilingüe: re-busca al cambiar idioma).
   useEffect(() => {
     if (store !== 'condis') return;
-    return startProductSearch(coSearch, (q, signal) => searchCondisProducts(q, 50, signal), setCoResults, setCoLoading, setCoError);
-  }, [store, coSearch, lang]);
+    return startProductSearch(coSearch, (q, signal) => searchCondisProducts(q, 50, signal, 0, productSearchOrder), setCoResults, setCoLoading, setCoError);
+  }, [store, coSearch, lang, productSearchOrder]);
 
   // Carga perezosa de categorías Ametller la primera vez que se entra a esa tienda.
   useEffect(() => { setAmCats([]); }, [lang]);
@@ -968,8 +1033,8 @@ export default function CatalogScreen() {
   // Ametller: búsqueda server-side con debounce (bilingüe: re-busca al cambiar idioma).
   useEffect(() => {
     if (store !== 'ametller') return;
-    return startProductSearch(amSearch, (q, signal) => searchAmetllerProducts(q, 50, signal), setAmResults, setAmLoading, setAmError);
-  }, [store, amSearch, lang]);
+    return startProductSearch(amSearch, (q, signal) => searchAmetllerProducts(q, 50, signal, 0, productSearchOrder), setAmResults, setAmLoading, setAmError);
+  }, [store, amSearch, lang, productSearchOrder]);
 
   // Carga perezosa de categorías Aldi la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -980,8 +1045,8 @@ export default function CatalogScreen() {
   // Aldi: búsqueda server-side con debounce (es-only).
   useEffect(() => {
     if (store !== 'aldi') return;
-    return startProductSearch(alSearch, (q, signal) => searchAldiProducts(q, 50, signal), setAlResults, setAlLoading, setAlError);
-  }, [store, alSearch]);
+    return startProductSearch(alSearch, (q, signal) => searchAldiProducts(q, 50, signal, 0, productSearchOrder), setAlResults, setAlLoading, setAlError);
+  }, [store, alSearch, productSearchOrder]);
 
   useEffect(() => {
     if (tab !== 'categorias' || store !== 'gadis' || gaCats.length > 0) return;
@@ -989,8 +1054,13 @@ export default function CatalogScreen() {
   }, [store, tab, gaCats.length]);
   useEffect(() => {
     if (store !== 'gadis') return;
-    return startProductSearch(gaSearch, (q, signal) => searchGadisProducts(q, 50, signal), setGaResults, setGaLoading, setGaError);
-  }, [store, gaSearch]);
+    return startProductSearch(gaSearch, (q, signal) => searchGadisProducts(q, 50, signal, 0, productSearchOrder), setGaResults, setGaLoading, setGaError);
+  }, [store, gaSearch, productSearchOrder]);
+
+  useEffect(() => {
+    if (store !== 'froiz') return;
+    return startProductSearch(frSearch, (q, signal) => searchFroizProducts(q, 50, signal, 0, productSearchOrder), setFrResults, setFrLoading, setFrError);
+  }, [store, frSearch, productSearchOrder]);
 
   useEffect(() => {
     if (tab !== 'categorias' || store !== 'ahorramas' || ahCats.length > 0) return;
@@ -998,8 +1068,8 @@ export default function CatalogScreen() {
   }, [store, tab, ahCats.length]);
   useEffect(() => {
     if (store !== 'ahorramas') return;
-    return startProductSearch(ahSearch, (q, signal) => searchAhorramasProducts(q, 50, signal), setAhResults, setAhLoading, setAhError);
-  }, [store, ahSearch]);
+    return startProductSearch(ahSearch, (q, signal) => searchAhorramasProducts(q, 50, signal, 0, productSearchOrder), setAhResults, setAhLoading, setAhError);
+  }, [store, ahSearch, productSearchOrder]);
 
   // Carga perezosa de categorías HiperDino la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -1010,8 +1080,8 @@ export default function CatalogScreen() {
   // HiperDino: búsqueda server-side con debounce (es-only).
   useEffect(() => {
     if (store !== 'hiperdino') return;
-    return startProductSearch(hdSearch, (q, signal) => searchHiperdinoProducts(q, 50, signal), setHdResults, setHdLoading, setHdError);
-  }, [store, hdSearch]);
+    return startProductSearch(hdSearch, (q, signal) => searchHiperdinoProducts(q, 50, signal, 0, productSearchOrder), setHdResults, setHdLoading, setHdError);
+  }, [store, hdSearch, productSearchOrder]);
 
   // Carga perezosa de categorías Alcampo la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -1022,8 +1092,8 @@ export default function CatalogScreen() {
   // Alcampo: búsqueda server-side con debounce (es-only).
   useEffect(() => {
     if (store !== 'alcampo') return;
-    return startProductSearch(acSearch, (q, signal) => searchAlcampoProducts(q, 50, signal), setAcResults, setAcLoading, setAcError);
-  }, [store, acSearch]);
+    return startProductSearch(acSearch, (q, signal) => searchAlcampoProducts(q, 50, signal, 0, productSearchOrder), setAcResults, setAcLoading, setAcError);
+  }, [store, acSearch, productSearchOrder]);
 
   // Carga perezosa de categorías Plusfresc la primera vez que se entra a esa tienda.
   useEffect(() => { setPfCats([]); }, [lang]);
@@ -1035,25 +1105,92 @@ export default function CatalogScreen() {
   // Plusfresc: búsqueda server-side con debounce (bilingüe: re-busca al cambiar idioma).
   useEffect(() => {
     if (store !== 'plusfresc') return;
-    return startProductSearch(pfSearch, (q, signal) => searchPlusfrescProducts(q, postalCode, 50, signal), setPfResults, setPfLoading, setPfError);
-  }, [store, pfSearch, lang, postalCode]);
+    return startProductSearch(pfSearch, (q, signal) => searchPlusfrescProducts(q, postalCode, 50, signal, 0, productSearchOrder), setPfResults, setPfLoading, setPfError);
+  }, [store, pfSearch, lang, postalCode, productSearchOrder]);
 
-  // "Todos": lanza la misma bÃºsqueda en los sÃºpers permitidos, mezcla por
-  // precio y conserva un mÃ¡ximo global de 50 resultados.
+  const loadMoreStoreSearch = (offset: number) => {
+    if (
+      store === 'all'
+      || prodQuery.trim().length < 2
+      || storeSearchMore
+      || storeSearchMoreController.current != null
+      || exhaustedStoreSearchKey === activeStoreSearchKey
+    ) return;
+    const requestKey = activeStoreSearchKey;
+    const selectedStore = store;
+    const controller = new AbortController();
+    storeSearchMoreController.current = controller;
+    setStoreSearchMore(true);
+    loadStoreSearch(
+      selectedStore,
+      prodQuery,
+      region,
+      postalCode,
+      controller.signal,
+      50,
+      offset,
+      productSearchOrder,
+    )
+      .then((page) => {
+        if (requestKey !== activeStoreSearchKeyRef.current) return;
+        if (page.length < 50) setExhaustedStoreSearchKey(requestKey);
+        setStoreSearchExtra((current) => {
+          const previous = current.key === requestKey ? current.items : [];
+          const seen = new Set(previous.map((product) => `${product.store}:${product.id}`));
+          return {
+            key: requestKey,
+            items: [
+              ...previous,
+              ...page.filter((product) => !seen.has(`${product.store}:${product.id}`)),
+            ],
+          };
+        });
+      })
+      .catch(() => { /* conserva las páginas ya cargadas */ })
+      .finally(() => {
+        if (storeSearchMoreController.current === controller) {
+          storeSearchMoreController.current = null;
+        }
+        if (requestKey === activeStoreSearchKeyRef.current) setStoreSearchMore(false);
+      });
+  };
+
+  // "Todos": lanza la misma búsqueda en los súpers permitidos, mezcla con el
+  // orden activo y amplía el máximo global en páginas de 50 resultados.
   const loadMoreAllSearch = () => {
-    if (store !== 'all' || allSearch.trim().length < 2 || allLoading || allSearchMore) return;
-    const nextLimit = allSearchLimit + 50;
+    if (
+      store !== 'all'
+      || allSearch.trim().length < 2
+      || allLoading
+      || allSearchMore
+      || allSearchExhausted
+      || allSearchLimit >= ALL_SEARCH_MAX_RESULTS
+    ) return;
+    const nextLimit = Math.min(allSearchLimit + 50, ALL_SEARCH_MAX_RESULTS);
     const controller = new AbortController();
     allSearchMoreController.current?.abort();
     allSearchMoreController.current = controller;
     setAllSearchMore(true);
     Promise.all(enabledStores.map((selectedStore) =>
-      loadStoreSearch(selectedStore, allSearch, region, postalCode, controller.signal, nextLimit),
+      loadStoreSearch(
+        selectedStore,
+        allSearch,
+        region,
+        postalCode,
+        controller.signal,
+        nextLimit,
+        0,
+        productSearchOrder,
+      ),
     ))
       .then((pages) => {
-        const nextItems = pages.flat().sort(compareActiveProducts).slice(0, nextLimit);
+        const nextItems = orderAllSearchProducts(pages.flat(), allSearch).slice(0, nextLimit);
+        if (nextLimit >= ALL_SEARCH_MAX_RESULTS) setAllSearchExhausted(true);
         setAllResults((current) => {
-          if (nextItems.length <= current.length) return current;
+          if (nextItems.length <= current.length) {
+            setAllSearchExhausted(true);
+            return current;
+          }
           setAllSearchLimit(nextLimit);
           return nextItems;
         });
@@ -1069,16 +1206,26 @@ export default function CatalogScreen() {
     if (store !== 'all') return;
     setAllSearchLimit(50);
     setAllSearchMore(false);
+    setAllSearchExhausted(false);
     allSearchMoreController.current?.abort();
     const cleanup = startProductSearch(
       allSearch,
       async (q, signal) => {
         const pages = await Promise.all(
           enabledStores.map((selectedStore) =>
-            loadStoreSearch(selectedStore, q, region, postalCode, signal, 50),
+            loadStoreSearch(
+              selectedStore,
+              q,
+              region,
+              postalCode,
+              signal,
+              50,
+              0,
+              productSearchOrder,
+            ),
           ),
         );
-        return pages.flat().sort(compareActiveProducts).slice(0, 50);
+        return orderAllSearchProducts(pages.flat(), q).slice(0, 50);
       },
       setAllResults,
       setAllLoading,
@@ -1090,8 +1237,8 @@ export default function CatalogScreen() {
       setAllSearchMore(false);
     };
   }, [
-    store, allSearch, lang, region, postalCode, productOrder, pricePerUnitOrder,
-    enabledStoresKey, enabledStores, compareActiveProducts,
+    store, allSearch, lang, region, postalCode, productSearchOrder,
+    enabledStoresKey, enabledStores, orderAllSearchProducts,
   ]);
 
   // Filtro de categorías por texto (cliente). Compartido por los 6 súpers: en la
@@ -1229,7 +1376,19 @@ export default function CatalogScreen() {
   const renderProductsTab = (
     query: string, searchLoading: boolean, searchError: boolean, searchItems: UIProduct[],
   ) => {
-    const orderedSearchItems = [...searchItems].sort(compareActiveProducts);
+    const extraItems = store !== 'all' && storeSearchExtra.key === activeStoreSearchKey
+      ? storeSearchExtra.items
+      : [];
+    const seen = new Set<string>();
+    const combinedSearchItems = [...searchItems, ...extraItems].filter((product) => {
+      const key = `${product.store}:${product.id}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    const orderedSearchItems = productSearchOrder === 'relevance'
+      ? combinedSearchItems
+      : [...combinedSearchItems].sort(compareSearchProducts!);
     if (query.trim().length >= 2) {
       return renderSearchStates(
         query, searchLoading, searchError, orderedSearchItems.length === 0,
@@ -1237,8 +1396,10 @@ export default function CatalogScreen() {
           products={orderedSearchItems}
           searchQuery={undefined}
           hideToolbar viewMode={prodViewMode} onViewModeChange={setProdViewMode}
-          onEndReached={store === 'all' ? loadMoreAllSearch : undefined}
-          loadingMore={store === 'all' && allSearchMore}
+          onEndReached={store === 'all'
+            ? loadMoreAllSearch
+            : () => loadMoreStoreSearch(combinedSearchItems.length)}
+          loadingMore={store === 'all' ? allSearchMore : storeSearchMore}
           keepOrder
           roundedCards
           showStoreLogo={store === 'all'}
@@ -1396,19 +1557,25 @@ export default function CatalogScreen() {
                   dense
                   emphasized
                   segments={[
+                    ...(!browseMode ? [{ key: 'relevance' as const, icon: 'sparkles-outline' as const, accessibilityLabel: t('catalog.sortRelevance') }] : []),
                     { key: 'priceAsc', icon: 'arrow-up', accessibilityLabel: t('catalog.sortPriceAsc') },
                     { key: 'priceDesc', icon: 'arrow-down', accessibilityLabel: t('catalog.sortPriceDesc') },
                   ]}
-                  value={productOrder === 'asc' ? 'priceAsc' : 'priceDesc'}
+                  value={visibleProductSortSegment}
                   onChange={selectProductSortSegment}
                 />
               ) : (
                 <View style={[styles.viewToggle, styles.prodToggleDense]}>
-                  <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, activeProductSortSegment === 'priceAsc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('priceAsc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPriceAsc')}>
-                    <Ionicons name="arrow-up" size={18} color={activeProductSortSegment === 'priceAsc' ? colors.white : colors.inkSoft} />
+                  {!browseMode && (
+                    <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, visibleProductSortSegment === 'relevance' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('relevance')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortRelevance')}>
+                      <Ionicons name="sparkles-outline" size={17} color={visibleProductSortSegment === 'relevance' ? colors.white : colors.inkSoft} />
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, visibleProductSortSegment === 'priceAsc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('priceAsc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPriceAsc')}>
+                    <Ionicons name="arrow-up" size={18} color={visibleProductSortSegment === 'priceAsc' ? colors.white : colors.inkSoft} />
                   </TouchableOpacity>
-                  <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, activeProductSortSegment === 'priceDesc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('priceDesc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPriceDesc')}>
-                    <Ionicons name="arrow-down" size={18} color={activeProductSortSegment === 'priceDesc' ? colors.white : colors.inkSoft} />
+                  <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, visibleProductSortSegment === 'priceDesc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('priceDesc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPriceDesc')}>
+                    <Ionicons name="arrow-down" size={18} color={visibleProductSortSegment === 'priceDesc' ? colors.white : colors.inkSoft} />
                   </TouchableOpacity>
                 </View>
               )}
@@ -1420,27 +1587,33 @@ export default function CatalogScreen() {
               dense
               emphasized
               segments={[
+                ...(!browseMode ? [{ key: 'relevance' as const, icon: 'sparkles-outline' as const, accessibilityLabel: t('catalog.sortRelevance') }] : []),
                 { key: 'priceAsc', icon: 'arrow-up', accessibilityLabel: t('catalog.sortPriceAsc') },
                 { key: 'priceDesc', icon: 'arrow-down', accessibilityLabel: t('catalog.sortPriceDesc') },
                 { key: 'pricePerUnitAsc', label: '€/u↑', accessibilityLabel: t('catalog.sortPricePerUnitAsc') },
                 { key: 'pricePerUnitDesc', label: '€/u↓', accessibilityLabel: t('catalog.sortPricePerUnitDesc') },
               ]}
-              value={activeProductSortSegment}
+              value={visibleProductSortSegment}
               onChange={selectProductSortSegment}
             />
           ) : (
             <View style={[styles.viewToggle, styles.prodToggleDense]}>
-              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, activeProductSortSegment === 'priceAsc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('priceAsc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPriceAsc')}>
-                <Ionicons name="arrow-up" size={18} color={activeProductSortSegment === 'priceAsc' ? colors.white : colors.inkSoft} />
+              {!browseMode && (
+                <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, visibleProductSortSegment === 'relevance' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('relevance')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortRelevance')}>
+                  <Ionicons name="sparkles-outline" size={17} color={visibleProductSortSegment === 'relevance' ? colors.white : colors.inkSoft} />
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, visibleProductSortSegment === 'priceAsc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('priceAsc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPriceAsc')}>
+                <Ionicons name="arrow-up" size={18} color={visibleProductSortSegment === 'priceAsc' ? colors.white : colors.inkSoft} />
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, activeProductSortSegment === 'priceDesc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('priceDesc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPriceDesc')}>
-                <Ionicons name="arrow-down" size={18} color={activeProductSortSegment === 'priceDesc' ? colors.white : colors.inkSoft} />
+              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, visibleProductSortSegment === 'priceDesc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('priceDesc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPriceDesc')}>
+                <Ionicons name="arrow-down" size={18} color={visibleProductSortSegment === 'priceDesc' ? colors.white : colors.inkSoft} />
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, activeProductSortSegment === 'pricePerUnitAsc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('pricePerUnitAsc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPricePerUnitAsc')}>
-                <Text style={[styles.prodUnitSortText, { color: activeProductSortSegment === 'pricePerUnitAsc' ? colors.white : colors.inkSoft }]}>€/u↑</Text>
+              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, visibleProductSortSegment === 'pricePerUnitAsc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('pricePerUnitAsc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPricePerUnitAsc')}>
+                <Text style={[styles.prodUnitSortText, { color: visibleProductSortSegment === 'pricePerUnitAsc' ? colors.white : colors.inkSoft }]}>€/u↑</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, activeProductSortSegment === 'pricePerUnitDesc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('pricePerUnitDesc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPricePerUnitDesc')}>
-                <Text style={[styles.prodUnitSortText, { color: activeProductSortSegment === 'pricePerUnitDesc' ? colors.white : colors.inkSoft }]}>€/u↓</Text>
+              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, visibleProductSortSegment === 'pricePerUnitDesc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('pricePerUnitDesc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPricePerUnitDesc')}>
+                <Text style={[styles.prodUnitSortText, { color: visibleProductSortSegment === 'pricePerUnitDesc' ? colors.white : colors.inkSoft }]}>€/u↓</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -1508,7 +1681,7 @@ export default function CatalogScreen() {
   const tabSegments: Segment<'productos' | 'categorias'>[] = [
     { key: 'productos', label: t('catalog.tabProducts'), icon: 'cube-outline' },
   ];
-  if (!isAllStores) {
+  if (!isAllStores && store !== 'froiz') {
     tabSegments.push({ key: 'categorias', label: t('catalog.tabCategories'), icon: 'grid-outline' });
   }
 
@@ -1551,7 +1724,7 @@ export default function CatalogScreen() {
               <Ionicons name="cube-outline" size={16} color={tab === 'productos' ? colors.accent : colors.inkSoft} />
               <Text style={[styles.segTxt, tab === 'productos' ? styles.segTxtOn : styles.segTxtOff]}>{t('catalog.tabProducts')}</Text>
             </TouchableOpacity>
-            {!isAllStores && (
+            {!isAllStores && store !== 'froiz' && (
               <TouchableOpacity
                 style={[styles.segBtn, tab === 'categorias' && styles.segBtnOn]}
                 onPress={() => setTab('categorias')}
@@ -2059,6 +2232,9 @@ export default function CatalogScreen() {
         : <FlatList data={sortedCats(gaCats)} keyExtractor={(item) => item.id} renderItem={renderGaCategory} contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]} showsVerticalScrollIndicator={false} ItemSeparatorComponent={() => <View style={{ height: 8 }} />} />
       )}
       {store === 'gadis' && tab === 'productos' && renderProductsTab(gaSearch, gaLoading, gaError, gaResults.map(gadisToUI))}
+
+      {/* ── Froiz (catálogo sin árbol de categorías) ───────────── */}
+      {store === 'froiz' && tab === 'productos' && renderProductsTab(frSearch, frLoading, frError, frResults.map(froizToUI))}
 
       {/* ── Ahorramás ────────────────────────────────────────────── */}
       {store === 'ahorramas' && tab === 'categorias' && (

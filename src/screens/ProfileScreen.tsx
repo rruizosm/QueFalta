@@ -239,14 +239,7 @@ export default function ProfileScreen() {
             <ProfileRow
               icon="pricetag-outline"
               label={t('profile.priceAlerts')}
-              locked={plusFeaturesLocked}
-              onPress={() => {
-                if (plusFeaturesLocked) {
-                  setPaywallVisible(true);
-                  return;
-                }
-                navigation.navigate('PriceAlerts');
-              }}
+              onPress={() => navigation.navigate('PriceAlerts')}
               rounded
             />
             <ProfileRow

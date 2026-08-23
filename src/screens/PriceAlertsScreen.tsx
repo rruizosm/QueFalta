@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -14,6 +14,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
+import { FREE_PRICE_ALERT_LIMIT, limitsApply } from '../constants/limits';
 import { fonts } from '../constants/typography';
 import { CATALOG_STORES } from '../constants/stores';
 import {
@@ -22,6 +23,7 @@ import {
   setPriceAlertActive,
   type PriceAlertRule,
 } from '../api/priceAlerts';
+import { freePriceAlertRule } from '../lib/freeTierAllowances';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { useTranslation } from '../context/LanguageContext';
@@ -47,6 +49,8 @@ export default function PriceAlertsScreen() {
   const [editing, setEditing] = useState<PriceAlertRule | null>(null);
   const [paywallVisible, setPaywallVisible] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const freeLimitsApply = limitsApply(isPremium);
+  const freeRuleId = useMemo(() => freePriceAlertRule(items)?.id ?? null, [items]);
 
   const load = useCallback(async () => {
     const userId = session?.user.id;
@@ -63,13 +67,13 @@ export default function PriceAlertsScreen() {
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const openNew = () => {
-    if (!isPremium) { setPaywallVisible(true); return; }
+    if (freeLimitsApply && items.length >= FREE_PRICE_ALERT_LIMIT) { setPaywallVisible(true); return; }
     setEditing(null);
     setEditorVisible(true);
   };
 
   const openEdit = (rule: PriceAlertRule) => {
-    if (!isPremium) { setPaywallVisible(true); return; }
+    if (freeLimitsApply && rule.id !== freeRuleId) { setPaywallVisible(true); return; }
     setEditing(rule);
     setEditorVisible(true);
   };
@@ -77,7 +81,7 @@ export default function PriceAlertsScreen() {
   const toggle = async (rule: PriceAlertRule, active: boolean) => {
     const userId = session?.user.id;
     if (!userId) return;
-    if (active && !isPremium) { setPaywallVisible(true); return; }
+    if (active && freeLimitsApply && rule.id !== freeRuleId) { setPaywallVisible(true); return; }
     setItems((current) => current.map((item) => item.id === rule.id ? { ...item, active } : item));
     setBusyId(rule.id);
     try {
@@ -136,6 +140,12 @@ export default function PriceAlertsScreen() {
         contentContainerStyle={[styles.content, { paddingTop: headerTop + 66, paddingBottom: bottomPad }]}
       >
         <Text style={styles.intro}>{t('priceAlerts.intro')}</Text>
+        {freeLimitsApply ? (
+          <View style={styles.freeAllowance}>
+            <Ionicons name="gift-outline" size={17} color={colors.accent} />
+            <Text style={styles.freeAllowanceText}>{t('priceAlerts.freeAllowance')}</Text>
+          </View>
+        ) : null}
 
         {loading ? (
           <ActivityIndicator size="large" color={colors.accent} style={styles.loader} />
@@ -152,7 +162,8 @@ export default function PriceAlertsScreen() {
         ) : (
           <View style={styles.list}>
             {items.map((rule) => {
-              const active = isPremium && rule.active;
+              const allowed = !freeLimitsApply || rule.id === freeRuleId;
+              const active = allowed && rule.active;
               const triggerText = rule.kind === 'new_arrival'
                 ? t('priceAlerts.newArrivalSummary')
                 : [
@@ -181,7 +192,7 @@ export default function PriceAlertsScreen() {
                   </View>
                   <Text style={styles.ruleMeta}>{storesText(rule)}</Text>
                   <Text style={styles.ruleMeta}>{triggerText}</Text>
-                  {!isPremium ? <Text style={styles.pausedTag}>{t('priceAlerts.paused')}</Text> : null}
+                  {!allowed ? <Text style={styles.pausedTag}>{t('priceAlerts.paused')}</Text> : null}
                   <TouchableOpacity
                     onPress={(event) => { event.stopPropagation(); remove(rule); }}
                     style={styles.deleteBtn}
@@ -221,6 +232,8 @@ const themedStyles = () => StyleSheet.create({
   content: { paddingHorizontal: 14 },
   headerAdd: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accent },
   intro: { fontSize: 13, lineHeight: 19, fontFamily: fonts.medium, color: colors.inkSoft, marginBottom: 14 },
+  freeAllowance: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 13, paddingHorizontal: 11, paddingVertical: 10, backgroundColor: colors.accentLight, borderWidth: 1, borderColor: colors.accentMid, marginBottom: 14 },
+  freeAllowanceText: { flex: 1, fontSize: 11.5, lineHeight: 16, fontFamily: fonts.semibold, color: colors.accent },
   loader: { marginTop: 70 },
   empty: { alignItems: 'center', paddingHorizontal: 26, paddingTop: 72 },
   emptyIcon: { width: 68, height: 68, borderRadius: 34, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accentLight, marginBottom: 14 },

@@ -40,6 +40,7 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
   const [loading, setLoading] = useState(false);
   const [attempted, setAttempted] = useState(false);
   const [error, setError] = useState(false);
+  const [remainingUses, setRemainingUses] = useState<number | null>(null);
   const [target, setTarget] = useState<ProductRef | null>(null);
   const [paywallVisible, setPaywallVisible] = useState(false);
   const requestVersion = useRef(0);
@@ -57,22 +58,25 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
     setLoading(false);
     setAttempted(false);
     setError(false);
+    setRemainingUses(null);
   }, [productId, excludeStore, targetStoresKey]);
 
   const search = useCallback(async () => {
-    if (!isPremium) {
-      setPaywallVisible(true);
-      return;
-    }
     if (!productId || targetStores.length === 0 || loading) return;
     const version = requestVersion.current + 1;
     requestVersion.current = version;
     setLoading(true);
-    setAttempted(true);
     setError(false);
     try {
-      const results = await fetchSimilarProducts(excludeStore, productId, targetStores);
-      if (requestVersion.current === version) setSimilars(results);
+      const response = await fetchSimilarProducts(excludeStore, productId, targetStores);
+      if (requestVersion.current !== version) return;
+      if (!response.allowed) {
+        setPaywallVisible(true);
+        return;
+      }
+      setAttempted(true);
+      setRemainingUses(response.remainingUses);
+      setSimilars(response.products);
     } catch {
       if (requestVersion.current === version) {
         setSimilars([]);
@@ -81,7 +85,7 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
     } finally {
       if (requestVersion.current === version) setLoading(false);
     }
-  }, [excludeStore, isPremium, loading, productId, targetStores]);
+  }, [excludeStore, loading, productId, targetStores]);
 
   const grouped = useMemo(
     () => targetStores
@@ -98,17 +102,16 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
 
   if (!PRICE_COMPARISON_ENABLED || !productId || profileLoading || targetStores.length === 0) return null;
 
-  const buttonInk = isPremium ? colors.white : colors.accent;
+  const buttonInk = colors.white;
   const searchButton = (
     <TouchableOpacity
       accessibilityRole="button"
       accessibilityLabel={hasResults ? t('similar.foundButton') : t('similar.searchButton')}
-      accessibilityHint={!isPremium ? t('similar.unlockTooltip') : undefined}
       accessibilityState={{ disabled: loading || hasResults }}
       activeOpacity={0.78}
       disabled={loading || hasResults}
       onPress={search}
-      style={[styles.searchButton, isPremium && styles.searchButtonUnlocked]}
+      style={[styles.searchButton, styles.searchButtonUnlocked]}
     >
       {loading ? (
         <ActivityIndicator size="small" color={buttonInk} />
@@ -117,14 +120,13 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
       ) : (
         <Ionicons name="search" size={18} color={buttonInk} />
       )}
-      <Text style={[styles.searchButtonText, isPremium && styles.searchButtonTextUnlocked]}>
+      <Text style={[styles.searchButtonText, styles.searchButtonTextUnlocked]}>
         {loading
           ? t('similar.searching')
           : hasResults
             ? t('similar.foundButton')
             : t('similar.searchButton')}
       </Text>
-      {!isPremium ? <Ionicons name="lock-closed" size={13} color={colors.accent} /> : null}
     </TouchableOpacity>
   );
 
@@ -135,6 +137,15 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
       </View>
 
       {error ? <Text style={styles.messageError}>{t('similar.searchError')}</Text> : null}
+      {!isPremium && attempted && remainingUses != null ? (
+        <Text style={styles.freeUsesText}>
+          {remainingUses === 0
+            ? t('similar.freeUsesNone')
+            : remainingUses === 1
+              ? t('similar.freeUsesOne')
+              : t('similar.freeUsesMany', { n: remainingUses })}
+        </Text>
+      ) : null}
       {attempted && !loading && !error && similars.length === 0 ? (
         <Text style={styles.messageEmpty}>{t('similar.noReliable')}</Text>
       ) : null}
@@ -420,6 +431,14 @@ const themedStyles = () => StyleSheet.create({
     lineHeight: 17,
     fontFamily: fonts.medium,
     color: colors.red,
+  },
+  freeUsesText: {
+    marginTop: 9,
+    fontSize: 11.5,
+    lineHeight: 16,
+    fontFamily: fonts.semibold,
+    color: colors.accent,
+    textAlign: 'center',
   },
   storeGroup: {
     marginTop: 12,

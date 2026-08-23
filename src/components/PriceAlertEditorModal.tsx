@@ -27,6 +27,7 @@ import {
   type PriceAlertRule,
   type PriceAlertPreviewItem,
 } from '../api/priceAlerts';
+import { isFreePriceAlertLimitError } from '../lib/freeTierAllowances';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { useTranslation } from '../context/LanguageContext';
@@ -227,8 +228,10 @@ export default function PriceAlertEditorModal({
       toast.show(t('priceAlerts.saved'));
       onSaved?.(rule);
       onClose();
-    } catch {
-      toast.show(t('priceAlerts.saveError'), 'error');
+    } catch (error) {
+      toast.show(t(isFreePriceAlertLimitError(error)
+        ? 'priceAlerts.freeLimitReached'
+        : 'priceAlerts.saveError'), 'error');
     } finally {
       setSaving(false);
     }

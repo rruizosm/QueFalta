@@ -21,21 +21,21 @@
 | Catálogo, búsqueda, favoritos, novedades | ✅ por supermercado; cuentas anteriores a 1.3 conservan «Todos» | ✅ todos a la vez |
 | Unirse a grupos (enlace de invitación) | ✅ **ilimitado, siempre** | ✅ |
 | Crear grupos | ✅ ilimitados | ✅ ilimitados |
-| Comparador "Más barato en otros súper" | Bloqueado 🔒; abre el paywall sin buscar | Completo |
+| Comparador "Más barato en otros súper" | 3 búsquedas por cuenta; después abre Plus | Ilimitado |
 | Consultar y repetir compras del historial | ✅ ilimitado | ✅ ilimitado |
 | Asignar productos alternativos a comentarios de la cesta | Bloqueado 🔒 | ✅ |
 | Ordenar Novedades por precio unitario | Bloqueado 🔒 | ✅ |
-| Alertas personalizadas de precio y ofertas | — | ✅ |
+| Alertas personalizadas de precio y ofertas | 1 alerta | Ilimitadas |
 | Estadísticas personales de compra (supermercados, categorías y productos) | — | ✅ |
 | Extra cosmético: accents exclusivos | — | ✅ |
 
 ## Beneficios comunicados en el paywall (2026-08-11)
 
 - Ordenar los productos por precio unitario para comparar por kg, litro o unidad.
-- **Radar de ahorro:** encontrar alternativas similares más baratas en los supermercados del usuario.
+- **Radar de ahorro ilimitado:** seguir encontrando alternativas similares después de las 3 búsquedas gratuitas.
 - Aplicar filtros avanzados en Ofertas, Cambios de precio y Novedades.
 - Seleccionar **Todos** los supermercados y consultarlos en una sola vista.
-- Crear notificaciones personalizadas para productos.
+- Crear alertas personalizadas ilimitadas después de la primera gratuita.
 - Asignar productos alternativos a los comentarios de la cesta.
 - Consultar estadísticas personales de supermercados, categorías y productos más comprados.
 
@@ -46,18 +46,17 @@ a «QuéFalta Plus», sin un bloque de eslogan independiente ni la etiqueta
 de una sola fila; el anual sigue preseleccionado, ofrece 7 días gratis y lleva
 un barrido azul difuminado basado en el antiguo botón QuéCocino. Su etiqueta
 «Mejor precio» conserva el fondo dorado animado de `PremiumGoldBackground`.
-El CTA bajo demanda del comparador usa el tratamiento dorado solo mientras está
-bloqueado para una cuenta gratuita: abre directamente el paywall y no ejecuta la
-búsqueda. Con Plus activo usa el estilo normal y ejecuta el flujo de lupa, carga
-y resultado. Compra, restauración, precios
+El CTA bajo demanda del comparador permite tres búsquedas gratuitas por cuenta
+y muestra el cupo restante tras cada uso. El cuarto intento abre el paywall sin
+ejecutar la búsqueda. Con Plus activo el flujo es ilimitado. Compra, restauración, precios
 localizados y enlaces legales conservan el flujo de RevenueCat existente.
 
 No muestra tirador ni admite cierre por arrastre o toque exterior. El contenido
 respeta las zonas seguras y el cierre queda en la X o Atrás del sistema.
 
 **Regla de oro:** crear grupos, unirse a ellos y colaborar en tiempo real jamás
-se paywallea. El comparador es una función Plus: en free solo se muestra su CTA
-bloqueado, que abre el paywall sin consultar alternativas.
+se paywallea. Las cuentas gratuitas conservan una alerta personalizada y tres
+búsquedas del comparador; Plus amplía ambos beneficios sin límite.
 
 ## Fases
 
@@ -98,11 +97,12 @@ bloqueado, que abre el paywall sin consultar alternativas.
 - [x] Grupos: crear y unirse a grupos es ilimitado para todas las cuentas.
       `GroupsScreen` abre siempre el formulario y la migración
       `20260821175745_allow_unlimited_group_creation.sql` retira el antiguo trigger.
-- [x] Comparador: `SimilarProductsSection` bloquea la acción para free y abre el
-      paywall sin invocar la RPC. `similar_products` conserva además la columna
-      `locked` como defensa para clientes antiguos o llamadas directas: tienda
-      visible, producto/precios a NULL. El cliente tolera el RPC viejo sin la
-      columna. ⚠️ Siguen pendientes el fix bonÀrea y la re-ejecución del RPC.
+- [x] Comparador: `SimilarProductsSection` permite tres búsquedas por cuenta
+      gratuita y abre el paywall en la cuarta; Plus es ilimitado. La cuota se
+      reserva en servidor dentro de `catalog_cheaper_products_v6` y v5 queda
+      protegida para clientes anteriores. Las migraciones de cupo y policy
+      privada están desplegadas y verificadas en producción. Estos dos cupos se
+      aplican antes del encendido comercial aunque `paywall_enabled()` sea false.
 - [x] Historial: consultar y repetir cualquier compra es gratuito e ilimitado.
       `HistoryScreen` no contiene gates, límites ni accesos al paywall.
 - [x] Comentarios de la cesta: escribir, editar y borrar comentarios es gratuito.
@@ -205,9 +205,10 @@ caen en el siguiente build con `PAYWALL_ENABLED = false`.
 
 ### Fase 5 — Premium que vende solo (post-lanzamiento)
 - [x] MVP local de alertas personalizadas: producto exacto o palabras,
-      multi-súper, bajada mínima, oferta, vista previa, agrupación y pausa al
-      caducar Plus. ⏳ Pendiente aplicar migración, desplegar procesador/Cron y
-      validar end-to-end; la frecuencia sigue siendo la de cada sync.
+      multi-súper, bajada mínima, oferta y vista previa. Free conserva una regla
+      activa y Plus reglas ilimitadas; al caducar Plus solo la regla free más
+      reciente sigue entregando. El cupo está desplegado y verificado; sigue
+      pendiente desplegar el procesador/Cron y validar las entregas end-to-end.
 - [ ] Histórico de precios por producto visible para el usuario.
 - [x] Estadísticas personales de compra: supermercados, categorías y productos más comprados.
 - [ ] Accents exclusivos Plus en Apariencia.

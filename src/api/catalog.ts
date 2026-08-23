@@ -12,6 +12,7 @@ import type { CatalogStore } from '../constants/stores';
 import { REGION_ALL, REGION_MERCADONA_NAME, type RegionValue } from '../constants/regions';
 import { consumZoneFromPostalCode, plusfrescCenterFromPostalCode } from '../constants/retailerZones';
 import { fetchNewArrivals, resolveWarehouseForPostalCode } from './mercadona';
+import { sortByRelevance } from '../lib/sort';
 // Solo type-only en sentido inverso (productAdapters importa los tipos de este
 // fichero con `import type`), así que este import NO crea un ciclo en runtime.
 import {
@@ -125,6 +126,144 @@ function abortable<T>(query: T, signal?: AbortSignal): T {
   return signal ? (query as any).abortSignal(signal) : query;
 }
 
+type CatalogSearchRpc =
+  | 'search_mercadona_products'
+  | 'search_bonpreu_products'
+  | 'search_carrefour_products'
+  | 'search_bonarea_products'
+  | 'search_consum_products'
+  | 'search_dia_products'
+  | 'search_sorli_products'
+  | 'search_eroski_products'
+  | 'search_caprabo_products'
+  | 'search_condis_products'
+  | 'search_ametller_products'
+  | 'search_aldi_products'
+  | 'search_gadis_products'
+  | 'search_froiz_products'
+  | 'search_ahorramas_products'
+  | 'search_hiperdino_products'
+  | 'search_alcampo_products'
+  | 'search_plusfresc_products';
+
+type CatalogFeedSearchRpc =
+  | 'search_mercadona_feed_products'
+  | 'search_bonpreu_feed_products'
+  | 'search_carrefour_feed_products'
+  | 'search_bonarea_feed_products'
+  | 'search_consum_feed_products'
+  | 'search_dia_feed_products'
+  | 'search_sorli_feed_products'
+  | 'search_eroski_feed_products'
+  | 'search_caprabo_feed_products'
+  | 'search_condis_feed_products'
+  | 'search_ametller_feed_products'
+  | 'search_aldi_feed_products'
+  | 'search_gadis_feed_products'
+  | 'search_froiz_feed_products'
+  | 'search_ahorramas_feed_products'
+  | 'search_hiperdino_feed_products'
+  | 'search_alcampo_feed_products'
+  | 'search_plusfresc_feed_products';
+
+const CATALOG_FEED_SEARCH_RPC: Record<CatalogStore, CatalogFeedSearchRpc> = {
+  mercadona: 'search_mercadona_feed_products',
+  esclat: 'search_bonpreu_feed_products',
+  carrefour: 'search_carrefour_feed_products',
+  bonarea: 'search_bonarea_feed_products',
+  consum: 'search_consum_feed_products',
+  dia: 'search_dia_feed_products',
+  sorli: 'search_sorli_feed_products',
+  eroski: 'search_eroski_feed_products',
+  caprabo: 'search_caprabo_feed_products',
+  condis: 'search_condis_feed_products',
+  ametller: 'search_ametller_feed_products',
+  aldi: 'search_aldi_feed_products',
+  gadis: 'search_gadis_feed_products',
+  froiz: 'search_froiz_feed_products',
+  ahorramas: 'search_ahorramas_feed_products',
+  hiperdino: 'search_hiperdino_feed_products',
+  alcampo: 'search_alcampo_feed_products',
+  plusfresc: 'search_plusfresc_feed_products',
+};
+
+/** Ejecuta una página del motor de búsqueda común. Las RPC comparten firma y
+ * devuelven filas de su tabla original ya ordenadas por relevancia. */
+async function catalogSearchPage(
+  rpc: CatalogSearchRpc,
+  columns: string,
+  query: string,
+  options: {
+    limit: number;
+    offset: number;
+    signal?: AbortSignal;
+    region?: RegionValue | null;
+    center?: string | null;
+    order?: CatalogSearchOrder;
+  },
+): Promise<any[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const region = options.region == null || options.region === REGION_ALL
+    ? null
+    : REGION_MERCADONA_NAME[options.region] ?? null;
+  const request = supabase.rpc(rpc, {
+    p_query: q,
+    p_lang: getLanguage(),
+    p_region: region,
+    p_center: options.center ?? null,
+    p_order: options.order ?? 'relevance',
+    p_limit: options.limit,
+    p_offset: options.offset,
+  }).select(columns);
+  const { data, error } = await abortable(request, options.signal);
+  if (error) throw error;
+  return (data ?? []) as any[];
+}
+
+async function catalogFeedSearchPage(
+  store: CatalogStore,
+  feed: 'new' | 'offer',
+  columns: string,
+  query: string,
+  options: {
+    limit: number;
+    offset: number;
+    region?: RegionValue | null;
+    postalCode?: string | null;
+    categories?: string[];
+    priceMin?: number | null;
+    priceMax?: number | null;
+    order?: CatalogSearchOrder;
+  },
+): Promise<any[]> {
+  const normalizedRegion = options.region == null || options.region === REGION_ALL
+    ? null
+    : REGION_MERCADONA_NAME[options.region] ?? null;
+  const { data, error } = await supabase.rpc(CATALOG_FEED_SEARCH_RPC[store], {
+    p_query: query.trim(),
+    p_feed: feed,
+    p_lang: getLanguage(),
+    p_region: normalizedRegion,
+    p_center: store === 'plusfresc'
+      ? plusfrescCenterFromPostalCode(options.postalCode ?? null) ?? '12'
+      : null,
+    p_zone: store === 'consum'
+      ? consumZoneFromPostalCode(options.postalCode ?? null)
+      : null,
+    p_since: weekAgoISO(),
+    p_today: todayLocalISO(),
+    p_categories: options.categories?.length ? options.categories : null,
+    p_price_min: options.priceMin ?? null,
+    p_price_max: options.priceMax ?? null,
+    p_order: options.order ?? 'relevance',
+    p_limit: options.limit,
+    p_offset: options.offset,
+  }).select(columns);
+  if (error) throw error;
+  return (data ?? []) as any[];
+}
+
 // ─── Navegación del catálogo (pestaña "Productos" sin búsqueda) ──────────────
 // Listado alfabético paginado del catálogo completo de un súper. Pagina por
 // keyset (cursor sobre el nombre normalizado), no por OFFSET: cada "cargar 50
@@ -135,6 +274,7 @@ function abortable<T>(query: T, signal?: AbortSignal): T {
 export interface BrowseCursor { name: string | number | null; id: string }
 export interface BrowsePage<T> { items: T[]; nextCursor: BrowseCursor | null }
 type BrowseOrder = boolean | 'priceAsc' | 'priceDesc' | 'pricePerUnitAsc' | 'pricePerUnitDesc';
+export type CatalogSearchOrder = 'relevance' | Exclude<BrowseOrder, boolean>;
 
 // Una página keyset ordenada por (orderCol, id). El desempate por id es
 // imprescindible: `orderCol` (el nombre normalizado) NO es único, así que un
@@ -262,20 +402,12 @@ function mirrorMercadonaProduct(r: any, ca: boolean): MercadonaProduct {
  *  en català busca y muestra el nombre catalán (columnas display_name_ca[_norm]
  *  del espejo); en castellano, las columnas originales. Si el sync aún no rellenó
  *  el catalán, `display_name_ca` es null → cae al castellano sin romperse. */
-export async function searchProducts(query: string, region: RegionValue | null, limit = 50, signal?: AbortSignal): Promise<MercadonaProduct[]> {
-  const q = query.trim();
-  if (q.length < 2) return [];
+export async function searchProducts(query: string, region: RegionValue | null, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<MercadonaProduct[]> {
   const ca = getLanguage() === 'ca';
-  const { data, error } = await abortable(filterByNameWords(
-    filterRegionalAvailability(
-      supabase.from('mercadona_products').select(MERCADONA_LIST_COLS).eq('published', true),
-      region,
-    ),
-    q,
-    ca ? 'display_name_ca_norm' : 'display_name_norm',
-  ).limit(limit), signal);
-  if (error) throw error;
-  return (data ?? []).map((r: any) => mirrorMercadonaProduct(r, ca));
+  const rows = await catalogSearchPage('search_mercadona_products', MERCADONA_LIST_COLS, query, {
+    region, limit, offset, signal, order,
+  });
+  return rows.map((r: any) => mirrorMercadonaProduct(r, ca));
 }
 
 /** Navegación alfabética del catálogo de Mercadona (sin búsqueda), paginada por
@@ -431,17 +563,11 @@ const BONPREU_COLS =
 
 /** Búsqueda por nombre en el catálogo de BonpreuEsclat (server-side). Bilingüe:
  *  en català busca/muestra por la columna catalana (display_name_ca[_norm]). */
-export async function searchBonpreuProducts(query: string, limit = 50, signal?: AbortSignal): Promise<BonpreuProduct[]> {
-  const q = query.trim();
-  if (q.length < 2) return [];
-  const ca = getLanguage() === 'ca';
-  const { data, error } = await abortable(filterByNameWords(
-    supabase.from('bonpreu_products').select(BONPREU_COLS).eq('published', true),
-    q,
-    ca ? 'display_name_ca_norm' : 'display_name_norm',
-  ).limit(limit), signal);
-  if (error) throw error;
-  return (data ?? []).map(mapBonpreu);
+export async function searchBonpreuProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<BonpreuProduct[]> {
+  const rows = await catalogSearchPage('search_bonpreu_products', BONPREU_COLS, query, {
+    limit, offset, signal, order,
+  });
+  return rows.map(mapBonpreu);
 }
 
 /** Navegación alfabética del catálogo de BonpreuEsclat (sin búsqueda), keyset. */
@@ -583,18 +709,11 @@ const CARREFOUR_DETAIL_COLS =
   + `, ean, ingredients, allergens, nutrition, conservation, preparation, denomination, origin, operator`;
 
 /** Búsqueda por nombre en el catálogo de Carrefour (server-side). */
-export async function searchCarrefourProducts(query: string, region: RegionValue | null, limit = 50, signal?: AbortSignal): Promise<CarrefourProduct[]> {
-  const q = query.trim();
-  if (q.length < 2) return [];
-  const { data, error } = await abortable(filterByNameWords(
-    filterRegionalAvailability(
-      supabase.from('carrefour_products').select(CARREFOUR_COLS).eq('published', true),
-      region,
-    ),
-    q,
-  ).limit(limit), signal);
-  if (error) throw error;
-  return (data ?? []).map((r: any) => mapCarrefour(r, region));
+export async function searchCarrefourProducts(query: string, region: RegionValue | null, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<CarrefourProduct[]> {
+  const rows = await catalogSearchPage('search_carrefour_products', CARREFOUR_COLS, query, {
+    region, limit, offset, signal, order,
+  });
+  return rows.map((r: any) => mapCarrefour(r, region));
 }
 
 /** Navegación alfabética del catálogo de Carrefour (sin búsqueda), keyset. */
@@ -727,17 +846,11 @@ const BONAREA_DETAIL_COLS =
 
 /** Búsqueda por nombre en el catálogo de bonÀrea (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
-export async function searchBonareaProducts(query: string, limit = 50, signal?: AbortSignal): Promise<BonareaProduct[]> {
-  const q = query.trim();
-  if (q.length < 2) return [];
-  const ca = getLanguage() === 'ca';
-  const { data, error } = await abortable(filterByNameWords(
-    supabase.from('bonarea_products').select(BONAREA_COLS).eq('published', true),
-    q,
-    ca ? 'display_name_ca_norm' : 'display_name_norm',
-  ).limit(limit), signal);
-  if (error) throw error;
-  return (data ?? []).map(mapBonarea);
+export async function searchBonareaProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<BonareaProduct[]> {
+  const rows = await catalogSearchPage('search_bonarea_products', BONAREA_COLS, query, {
+    limit, offset, signal, order,
+  });
+  return rows.map(mapBonarea);
 }
 
 /** Navegación alfabética del catálogo de bonÀrea (sin búsqueda), keyset. */
@@ -845,15 +958,11 @@ const CONSUM_DETAIL_COLS = `${CONSUM_COLS}, ean`;
 const CONSUM_OFFER_COLS = `${CONSUM_COLS}, promo_base_price`;
 
 /** Búsqueda por nombre en el catálogo de Consum (server-side). */
-export async function searchConsumProducts(query: string, region: RegionValue | null, postalCode: string | null, limit = 50, signal?: AbortSignal): Promise<ConsumProduct[]> {
-  const q = query.trim();
-  if (q.length < 2) return [];
-  const { data, error } = await abortable(filterByNameWords(
-    filterRegionalAvailability(supabase.from('consum_products').select(CONSUM_COLS).eq('published', true), region),
-    q,
-  ).limit(limit), signal);
-  if (error) throw error;
-  return (data ?? []).map((r: any) => mapConsum(r, postalCode));
+export async function searchConsumProducts(query: string, region: RegionValue | null, postalCode: string | null, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<ConsumProduct[]> {
+  const rows = await catalogSearchPage('search_consum_products', CONSUM_COLS, query, {
+    region, limit, offset, signal, order,
+  });
+  return rows.map((r: any) => mapConsum(r, postalCode));
 }
 
 /** Navegación alfabética del catálogo de Consum (sin búsqueda), keyset. */
@@ -996,18 +1105,11 @@ const DIA_DETAIL_COLS =
   `${DIA_COLS}, description, ingredients, nutrition, conservation, preparation, denomination, operator`;
 
 /** Búsqueda por nombre en el catálogo de Dia (server-side). */
-export async function searchDiaProducts(query: string, region: RegionValue | null, limit = 50, signal?: AbortSignal): Promise<DiaProduct[]> {
-  const q = query.trim();
-  if (q.length < 2) return [];
-  const { data, error } = await abortable(filterByNameWords(
-    filterRegionalAvailability(
-      supabase.from('dia_products').select(DIA_COLS).eq('published', true),
-      region,
-    ),
-    q,
-  ).limit(limit), signal);
-  if (error) throw error;
-  return (data ?? []).map((r: any) => mapDia(r, region));
+export async function searchDiaProducts(query: string, region: RegionValue | null, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<DiaProduct[]> {
+  const rows = await catalogSearchPage('search_dia_products', DIA_COLS, query, {
+    region, limit, offset, signal, order,
+  });
+  return rows.map((r: any) => mapDia(r, region));
 }
 
 /** Navegación alfabética del catálogo de Dia (sin búsqueda), keyset. */
@@ -1136,17 +1238,11 @@ const SORLI_COLS =
 
 /** Búsqueda por nombre en el catálogo de Sorli (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
-export async function searchSorliProducts(query: string, limit = 50, signal?: AbortSignal): Promise<SorliProduct[]> {
-  const q = query.trim();
-  if (q.length < 2) return [];
-  const ca = getLanguage() === 'ca';
-  const { data, error } = await abortable(filterByNameWords(
-    supabase.from('sorli_products').select(SORLI_COLS).eq('published', true),
-    q,
-    ca ? 'display_name_ca_norm' : 'display_name_norm',
-  ).limit(limit), signal);
-  if (error) throw error;
-  return (data ?? []).map(mapSorli);
+export async function searchSorliProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<SorliProduct[]> {
+  const rows = await catalogSearchPage('search_sorli_products', SORLI_COLS, query, {
+    limit, offset, signal, order,
+  });
+  return rows.map(mapSorli);
 }
 
 /** Navegación alfabética del catálogo de Sorli (sin búsqueda), keyset. */
@@ -1259,17 +1355,11 @@ const CONDIS_OFFER_COLS =
 
 /** Búsqueda por nombre en el catálogo de Condis (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
-export async function searchCondisProducts(query: string, limit = 50, signal?: AbortSignal): Promise<CondisProduct[]> {
-  const q = query.trim();
-  if (q.length < 2) return [];
-  const ca = getLanguage() === 'ca';
-  const { data, error } = await abortable(filterByNameWords(
-    supabase.from('condis_products').select(CONDIS_COLS).eq('published', true),
-    q,
-    ca ? 'display_name_ca_norm' : 'display_name_norm',
-  ).limit(limit), signal);
-  if (error) throw error;
-  return (data ?? []).map(mapCondis);
+export async function searchCondisProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<CondisProduct[]> {
+  const rows = await catalogSearchPage('search_condis_products', CONDIS_COLS, query, {
+    limit, offset, signal, order,
+  });
+  return rows.map(mapCondis);
 }
 
 /** Navegación alfabética del catálogo de Condis (sin búsqueda), keyset. */
@@ -1391,17 +1481,11 @@ const AMETLLER_DETAIL_COLS =
 
 /** Búsqueda por nombre en el catálogo de Ametller (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
-export async function searchAmetllerProducts(query: string, limit = 50, signal?: AbortSignal): Promise<AmetllerProduct[]> {
-  const q = query.trim();
-  if (q.length < 2) return [];
-  const ca = getLanguage() === 'ca';
-  const { data, error } = await abortable(filterByNameWords(
-    supabase.from('ametller_products').select(AMETLLER_COLS).eq('published', true),
-    q,
-    ca ? 'display_name_ca_norm' : 'display_name_norm',
-  ).limit(limit), signal);
-  if (error) throw error;
-  return (data ?? []).map(mapAmetller);
+export async function searchAmetllerProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<AmetllerProduct[]> {
+  const rows = await catalogSearchPage('search_ametller_products', AMETLLER_COLS, query, {
+    limit, offset, signal, order,
+  });
+  return rows.map(mapAmetller);
 }
 
 /** Navegación alfabética del catálogo de Ametller (sin búsqueda), keyset. */
@@ -1502,15 +1586,11 @@ const ALDI_COLS =
 const ALDI_OFFER_COLS = `${ALDI_COLS}, promo_name, promo_base_price, promo_end`;
 
 /** Búsqueda por nombre en el catálogo de Aldi (server-side). */
-export async function searchAldiProducts(query: string, limit = 50, signal?: AbortSignal): Promise<AldiProduct[]> {
-  const q = query.trim();
-  if (q.length < 2) return [];
-  const { data, error } = await abortable(filterByNameWords(
-    supabase.from('aldi_products').select(ALDI_COLS).eq('published', true),
-    q,
-  ).limit(limit), signal);
-  if (error) throw error;
-  return (data ?? []).map(mapAldi);
+export async function searchAldiProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<AldiProduct[]> {
+  const rows = await catalogSearchPage('search_aldi_products', ALDI_COLS, query, {
+    limit, offset, signal, order,
+  });
+  return rows.map(mapAldi);
 }
 
 /** Navegación alfabética del catálogo de Aldi (sin búsqueda), keyset. */
@@ -1594,10 +1674,9 @@ const mapGadis = (r: any): GadisProduct => ({
 });
 const GADIS_COLS = 'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name';
 const GADIS_OFFER_COLS = `${GADIS_COLS}, promo_text, promo_end, promo_group_id, promo_is_related, promo_is_coupon`;
-export async function searchGadisProducts(query: string, limit = 50, signal?: AbortSignal): Promise<GadisProduct[]> {
-  const q = query.trim(); if (q.length < 2) return [];
-  const { data, error } = await abortable(filterByNameWords(supabase.from('gadis_products').select(GADIS_COLS).eq('published', true), q).limit(limit), signal);
-  if (error) throw error; return (data ?? []).map(mapGadis);
+export async function searchGadisProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<GadisProduct[]> {
+  const rows = await catalogSearchPage('search_gadis_products', GADIS_COLS, query, { limit, offset, signal, order });
+  return rows.map(mapGadis);
 }
 export async function browseGadisProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<GadisProduct>> {
   const { rows, nextCursor } = await keysetPage('gadis_products', GADIS_COLS, 'display_name_norm', cursor, limit, undefined, descending, signal);
@@ -1629,10 +1708,9 @@ const mapFroiz = (r: any): FroizProduct => ({
   categoryName: r.category_name ?? null, promoName: r.promo_name ?? null,
 });
 const FROIZ_COLS = 'id, display_name, brand, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name';
-export async function searchFroizProducts(query: string, limit = 50, signal?: AbortSignal): Promise<FroizProduct[]> {
-  const q = query.trim(); if (q.length < 2) return [];
-  const { data, error } = await abortable(filterByNameWords(supabase.from('froiz_products').select(FROIZ_COLS).eq('published', true), q).limit(limit), signal);
-  if (error) throw error; return (data ?? []).map(mapFroiz);
+export async function searchFroizProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<FroizProduct[]> {
+  const rows = await catalogSearchPage('search_froiz_products', FROIZ_COLS, query, { limit, offset, signal, order });
+  return rows.map(mapFroiz);
 }
 export async function browseFroizProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<FroizProduct>> {
   const { rows, nextCursor } = await keysetPage('froiz_products', FROIZ_COLS, 'display_name_norm', cursor, limit, undefined, descending, signal);
@@ -1665,10 +1743,9 @@ const mapAhorramas = (r: any): AhorramasProduct => ({
 });
 const AHORRAMAS_COLS = 'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name';
 const AHORRAMAS_OFFER_COLS = `${AHORRAMAS_COLS}, promo_text, promo_price, promo_base_price, promo_start, promo_end`;
-export async function searchAhorramasProducts(query: string, limit = 50, signal?: AbortSignal): Promise<AhorramasProduct[]> {
-  const q = query.trim(); if (q.length < 2) return [];
-  const { data, error } = await abortable(filterByNameWords(supabase.from('ahorramas_products').select(AHORRAMAS_COLS).eq('published', true), q).limit(limit), signal);
-  if (error) throw error; return (data ?? []).map(mapAhorramas);
+export async function searchAhorramasProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<AhorramasProduct[]> {
+  const rows = await catalogSearchPage('search_ahorramas_products', AHORRAMAS_COLS, query, { limit, offset, signal, order });
+  return rows.map(mapAhorramas);
 }
 export async function browseAhorramasProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<AhorramasProduct>> {
   const { rows, nextCursor } = await keysetPage('ahorramas_products', AHORRAMAS_COLS, 'display_name_norm', cursor, limit, undefined, descending, signal);
@@ -1723,15 +1800,11 @@ const HIPERDINO_COLS =
 const HIPERDINO_OFFER_COLS = `${HIPERDINO_COLS}, promo_base_price`;
 
 /** Búsqueda por nombre en el catálogo de HiperDino (server-side). */
-export async function searchHiperdinoProducts(query: string, limit = 50, signal?: AbortSignal): Promise<HiperdinoProduct[]> {
-  const q = query.trim();
-  if (q.length < 2) return [];
-  const { data, error } = await abortable(filterByNameWords(
-    supabase.from('hiperdino_products').select(HIPERDINO_COLS).eq('published', true),
-    q,
-  ).limit(limit), signal);
-  if (error) throw error;
-  return (data ?? []).map(mapHiperdino);
+export async function searchHiperdinoProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<HiperdinoProduct[]> {
+  const rows = await catalogSearchPage('search_hiperdino_products', HIPERDINO_COLS, query, {
+    limit, offset, signal, order,
+  });
+  return rows.map(mapHiperdino);
 }
 
 /** Navegación alfabética del catálogo de HiperDino (sin búsqueda), keyset. */
@@ -1853,15 +1926,11 @@ const ALCAMPO_DETAIL_COLS =
   `${ALCAMPO_COLS}, description, ingredients, nutrition, conservation, preparation, denomination, operator, origin, ean`;
 
 /** Búsqueda por nombre en el catálogo de Alcampo (server-side). */
-export async function searchAlcampoProducts(query: string, limit = 50, signal?: AbortSignal): Promise<AlcampoProduct[]> {
-  const q = query.trim();
-  if (q.length < 2) return [];
-  const { data, error } = await abortable(filterByNameWords(
-    supabase.from('alcampo_products').select(ALCAMPO_COLS).eq('published', true),
-    q,
-  ).limit(limit), signal);
-  if (error) throw error;
-  return (data ?? []).map(mapAlcampo);
+export async function searchAlcampoProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<AlcampoProduct[]> {
+  const rows = await catalogSearchPage('search_alcampo_products', ALCAMPO_COLS, query, {
+    limit, offset, signal, order,
+  });
+  return rows.map(mapAlcampo);
 }
 
 /** Navegación alfabética del catálogo de Alcampo (sin búsqueda), keyset. */
@@ -1957,15 +2026,10 @@ const TAPESTRY_OFFER_COLS =
   `${TAPESTRY_COLS}, promo_name, promo_text, promo_price, promo_base_price, promo_start, promo_end`;
 const TAPESTRY_DETAIL_COLS = `${TAPESTRY_COLS}, nutrition`;
 
-async function searchTapestry(table: string, query: string, limit: number, signal?: AbortSignal): Promise<TapestryProduct[]> {
-  const q = query.trim();
-  if (q.length < 2) return [];
-  const { data, error } = await abortable(filterByNameWords(
-    supabase.from(table).select(TAPESTRY_COLS).eq('published', true),
-    q,
-  ).limit(limit), signal);
-  if (error) throw error;
-  return (data ?? []).map(mapTapestry);
+async function searchTapestry(table: 'eroski_products' | 'caprabo_products', query: string, limit: number, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<TapestryProduct[]> {
+  const rpc = table === 'eroski_products' ? 'search_eroski_products' : 'search_caprabo_products';
+  const rows = await catalogSearchPage(rpc, TAPESTRY_COLS, query, { limit, offset, signal, order });
+  return rows.map(mapTapestry);
 }
 
 async function browseTapestry(table: string, cursor: BrowseCursor | null, limit: number, signal?: AbortSignal, descending = false): Promise<BrowsePage<TapestryProduct>> {
@@ -2014,13 +2078,13 @@ async function fetchTapestryByCategory(table: string, categoryId: string, limit:
 }
 
 // Exports por tienda (solo fijan la tabla; misma forma TapestryProduct).
-export const searchEroskiProducts = (q: string, limit = 50, signal?: AbortSignal) => searchTapestry('eroski_products', q, limit, signal);
+export const searchEroskiProducts = (q: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance') => searchTapestry('eroski_products', q, limit, signal, offset, order);
 export const browseEroskiProducts = (cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false) => browseTapestry('eroski_products', cursor, limit, signal, descending);
 export const fetchEroskiProduct = (id: string) => fetchTapestryProduct('eroski_products', id);
 export const fetchEroskiCategoryTree = (signal?: AbortSignal) => fetchTapestryTree('eroski_categories', signal);
 export const fetchEroskiProductsByCategory = (categoryId: string, limit = 600) => fetchTapestryByCategory('eroski_products', categoryId, limit);
 
-export const searchCapraboProducts = (q: string, limit = 50, signal?: AbortSignal) => searchTapestry('caprabo_products', q, limit, signal);
+export const searchCapraboProducts = (q: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance') => searchTapestry('caprabo_products', q, limit, signal, offset, order);
 export const browseCapraboProducts = (cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false) => browseTapestry('caprabo_products', cursor, limit, signal, descending);
 export const fetchCapraboProduct = (id: string) => fetchTapestryProduct('caprabo_products', id);
 export const fetchCapraboCategoryTree = (signal?: AbortSignal) => fetchTapestryTree('caprabo_categories', signal);
@@ -2087,17 +2151,11 @@ const PLUSFRESC_DETAIL_COLS =
 
 /** Búsqueda por nombre en el catálogo de Plusfresc (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
-export async function searchPlusfrescProducts(query: string, postalCode: string | null, limit = 50, signal?: AbortSignal): Promise<PlusfrescProduct[]> {
-  const q = query.trim();
-  if (q.length < 2) return [];
-  const ca = getLanguage() === 'ca';
-  const { data, error } = await abortable(filterByNameWords(
-    filterCenterAvailability(supabase.from('plusfresc_products').select(PLUSFRESC_COLS).eq('published', true), plusfrescCenterFromPostalCode(postalCode)),
-    q,
-    ca ? 'display_name_ca_norm' : 'display_name_norm',
-  ).limit(limit), signal);
-  if (error) throw error;
-  return (data ?? []).map((r: any) => mapPlusfresc(r, postalCode));
+export async function searchPlusfrescProducts(query: string, postalCode: string | null, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<PlusfrescProduct[]> {
+  const rows = await catalogSearchPage('search_plusfresc_products', PLUSFRESC_COLS, query, {
+    center: plusfrescCenterFromPostalCode(postalCode), limit, offset, signal, order,
+  });
+  return rows.map((r: any) => mapPlusfresc(r, postalCode));
 }
 
 /** Navegación alfabética del catálogo de Plusfresc (sin búsqueda), keyset. */
@@ -2181,6 +2239,14 @@ export interface SimilarProduct {
   locked: boolean;
 }
 
+export interface SimilarProductsSearch {
+  /** false cuando una cuenta gratuita ya consumió sus tres búsquedas. */
+  allowed: boolean;
+  /** null para Plus o cuando el paywall de servidor está apagado. */
+  remainingUses: number | null;
+  products: SimilarProduct[];
+}
+
 /** Hasta dos equivalentes fiables por cada tienda de `stores`. v5 exige la
  *  misma familia semántica y las mismas variantes explícitas antes de ordenar.
  *  Se ordenan por precio unitario canónico cuando está publicado, con el precio
@@ -2190,15 +2256,24 @@ export async function fetchSimilarProducts(
   sourceStore: CatalogStore,
   sourceProductId: string,
   stores: CatalogStore[],
-): Promise<SimilarProduct[]> {
-  if (!sourceProductId?.trim() || stores.length === 0) return [];
-  const { data, error } = await supabase.rpc('catalog_cheaper_products_v5', {
+): Promise<SimilarProductsSearch> {
+  if (!sourceProductId?.trim() || stores.length === 0) {
+    return { allowed: true, remainingUses: null, products: [] };
+  }
+  const { data, error } = await supabase.rpc('catalog_cheaper_products_v6', {
     p_source_store: sourceStore,
     p_source_product_id: sourceProductId,
     p_stores: stores,
   });
   if (error) throw error;
-  return (data ?? []).map((r: any) => ({
+  const response = data && typeof data === 'object' && !Array.isArray(data)
+    ? data as Record<string, unknown>
+    : {};
+  const rows = Array.isArray(response.results) ? response.results : [];
+  return {
+    allowed: response.allowed !== false,
+    remainingUses: response.remaining == null ? null : Number(response.remaining),
+    products: rows.map((r: any) => ({
     store: r.store,
     id: r.id ?? null,
     displayName: r.display_name ?? null,
@@ -2213,7 +2288,8 @@ export async function fetchSimilarProducts(
     quantityRatio: r.quantity_ratio != null ? Number(r.quantity_ratio) : null,
     isCheaper: r.is_cheaper === true,
     locked: false,
-  }));
+    })),
+  };
 }
 
 // ─── Novedades de la semana + cambios de precio (accesos del Home) ───────────
@@ -2287,6 +2363,58 @@ export interface WeeklyNewProductsPage {
   nextOffset: number | null;
 }
 
+export interface NewProductFilters {
+  search?: string;
+  categories?: string[];
+  priceMin?: number | null;
+  priceMax?: number | null;
+  sort?: 'asc' | 'desc' | null;
+  pricePerUnitSort?: 'asc' | 'desc' | null;
+}
+
+const newProductSearchOrder = (filters: NewProductFilters | undefined): CatalogSearchOrder => {
+  if (filters?.pricePerUnitSort === 'asc') return 'pricePerUnitAsc';
+  if (filters?.pricePerUnitSort === 'desc') return 'pricePerUnitDesc';
+  if (filters?.sort === 'asc') return 'priceAsc';
+  if (filters?.sort === 'desc') return 'priceDesc';
+  return 'relevance';
+};
+
+const normalizeFeedSearchText = (value: string) =>
+  value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+
+const oneEditAway = (left: string, right: string) => {
+  if (Math.abs(left.length - right.length) > 1) return false;
+  let leftIndex = 0;
+  let rightIndex = 0;
+  let edits = 0;
+  while (leftIndex < left.length && rightIndex < right.length) {
+    if (left[leftIndex] === right[rightIndex]) {
+      leftIndex += 1;
+      rightIndex += 1;
+      continue;
+    }
+    edits += 1;
+    if (edits > 1) return false;
+    if (left.length > right.length) leftIndex += 1;
+    else if (right.length > left.length) rightIndex += 1;
+    else {
+      leftIndex += 1;
+      rightIndex += 1;
+    }
+  }
+  return edits + Number(leftIndex < left.length || rightIndex < right.length) <= 1;
+};
+
+const matchesFeedSearch = (name: string, query: string) => {
+  const normalizedName = normalizeFeedSearchText(name);
+  const nameWords = normalizedName.split(/\s+/).filter(Boolean);
+  const queryWords = normalizeFeedSearchText(query).split(/\s+/).filter((word) => word.length >= 2);
+  return queryWords.every((word) => normalizedName.includes(word) || nameWords.some((candidate) => (
+    candidate.startsWith(word) || (word.length >= 3 && oneEditAway(candidate, word))
+  )));
+};
+
 /** Novedades de la semana de un súper. Mercadona usa su endpoint oficial de
  *  novedades (curado por ellos, en vivo, disponible desde ya); el resto, la
  *  columna first_seen_at del espejo: los productos que APARECIERON en el
@@ -2297,18 +2425,64 @@ export async function fetchWeeklyNewProducts(
   postalCode: string | null,
   limit = 50,
   offset = 0,
+  filters?: NewProductFilters,
 ): Promise<WeeklyNewProductsPage> {
+  const search = filters?.search?.trim() ?? '';
   if (store === 'mercadona') {
     // El raw de new-arrivals no trae `categories` → categoryName null y el
     // producto cae en la zona "Otros" al añadirlo (igual que los favoritos).
     const warehouse = await resolveWarehouseForPostalCode(postalCode);
-    const items = await fetchNewArrivals(warehouse ?? undefined);
+    let items = (await fetchNewArrivals(warehouse ?? undefined)).map((p) => mercadonaToUI(p));
+    if (search.length >= 2) {
+      items = sortByRelevance(
+        items.filter((product) => matchesFeedSearch(product.name, search)),
+        (product) => product.name,
+        search,
+      );
+    }
+    if (filters?.categories?.length) {
+      const categories = new Set(filters.categories);
+      items = items.filter((product) => product.categoryName != null && categories.has(product.categoryName));
+    }
+    if (filters?.priceMin != null) {
+      items = items.filter((product) => product.unitPrice != null && product.unitPrice > filters.priceMin!);
+    }
+    if (filters?.priceMax != null) {
+      items = items.filter((product) => product.unitPrice != null && product.unitPrice <= filters.priceMax!);
+    }
+    const activeSort = filters?.pricePerUnitSort ?? filters?.sort;
+    if (activeSort) {
+      items = [...items].sort((a, b) => {
+        const priceA = filters?.pricePerUnitSort ? a.pricePerUnit : a.unitPrice;
+        const priceB = filters?.pricePerUnitSort ? b.pricePerUnit : b.unitPrice;
+        if (priceA == null && priceB != null) return 1;
+        if (priceA != null && priceB == null) return -1;
+        const difference = (priceA ?? 0) - (priceB ?? 0);
+        return activeSort === 'asc' ? difference : -difference;
+      });
+    }
     return {
-      items: items.slice(offset, offset + limit).map((p) => mercadonaToUI(p)),
+      items: items.slice(offset, offset + limit),
       nextOffset: items.length > offset + limit ? offset + limit : null,
     };
   }
   const m = MIRROR_QUERY[store];
+  if (search.length >= 2) {
+    const rows = await catalogFeedSearchPage(store, 'new', m.cols, search, {
+      limit,
+      offset,
+      region,
+      postalCode,
+      categories: filters?.categories,
+      priceMin: filters?.priceMin,
+      priceMax: filters?.priceMax,
+      order: newProductSearchOrder(filters),
+    });
+    return {
+      items: rows.map((row) => mirrorToUIAtLocation(store, row, region, postalCode)),
+      nextOffset: rows.length === limit ? offset + limit : null,
+    };
+  }
   let newProductsQuery = filterMirrorLocation(supabase
     .from(m.table)
     .select(m.cols, { count: 'exact' })
@@ -2652,9 +2826,9 @@ export interface CarrefourOffer {
 /** Alias genérico: una oferta cualquiera de la pantalla "Ofertas" (varios súpers). */
 export type StoreOffer = CarrefourOffer;
 
-/** Filtros de la pantalla Ofertas. Nombre/categoría/precio se aplican en
- * PostgREST; el tipo se resuelve sobre la promoción final y recorre páginas
- * keyset completas. Nunca se filtra solo lo ya visible. */
+/** Filtros de la pantalla Ofertas. Con texto, nombre/categoría/precio se aplican
+ * dentro del RPC antes de ranking y paginación; sin texto conservan el listado
+ * keyset. El tipo se resuelve sobre la promoción final. */
 export interface OfferFilters {
   /** Búsqueda por nombre (insensible a acentos, palabras en cualquier orden). */
   search?: string;
@@ -3195,6 +3369,200 @@ export async function fetchPlusfrescOffers(
   return { items, nextCursor };
 }
 
+const offerSearchColumns = (store: CatalogStore): string => {
+  if (store === 'carrefour') return `${CARREFOUR_COLS}, promo_name, promo_end, strikethrough_price`;
+  if (store === 'esclat') return BONPREU_COLS;
+  if (store === 'consum') return CONSUM_OFFER_COLS;
+  if (store === 'dia') return DIA_OFFER_COLS;
+  if (store === 'sorli') return SORLI_COLS;
+  if (store === 'hiperdino') return HIPERDINO_OFFER_COLS;
+  if (store === 'aldi') return ALDI_OFFER_COLS;
+  if (store === 'plusfresc') return PLUSFRESC_OFFER_COLS;
+  if (isNormalizedOfferStore(store)) return NORMALIZED_OFFER_CONFIG[store].columns;
+  return MIRROR_QUERY[store].cols;
+};
+
+/** Convierte filas del RPC de búsqueda a la misma forma que los listados
+ * keyset de Ofertas. Las comprobaciones defensivas se conservan para no pintar
+ * promociones incompletas aunque el feed remoto publique datos incoherentes. */
+function mapOfferSearchRows(
+  store: CatalogStore,
+  rows: any[],
+  region: RegionValue | null,
+  postalCode: string | null,
+): StoreOffer[] {
+  if (store === 'carrefour') return rows.map((row) => ({
+    product: carrefourToUI(mapCarrefour(row, region)),
+    promoName: row.promo_name ?? null,
+    promoEnd: row.promo_end ?? null,
+    prevPrice: row.strikethrough_price != null ? Number(row.strikethrough_price) : null,
+  }));
+  if (store === 'esclat') {
+    const ca = getLanguage() === 'ca';
+    return rows.map((row) => ({
+      product: bonpreuToUI(mapBonpreu(row)),
+      promoName: (ca && row.promo_name_ca ? row.promo_name_ca : row.promo_name) ?? null,
+      promoEnd: null,
+      prevPrice: null,
+    }));
+  }
+  if (store === 'consum') return rows.flatMap((row) => {
+    const offer = consumOfferAt(row, postalCode);
+    return offer ? [{
+      product: consumToUI(mapConsum(row, postalCode)),
+      promoName: 'Oferta',
+      promoEnd: null,
+      prevPrice: offer.basePrice,
+    }] : [];
+  });
+  if (store === 'dia') return rows.flatMap((row) => {
+    const product = mapDia(row, region);
+    return product.promoName ? [{
+      product: diaToUI(product),
+      promoName: product.promoName,
+      promoEnd: null,
+      prevPrice: product.promoBasePrice,
+    }] : [];
+  });
+  if (store === 'sorli') return rows.flatMap((row) => {
+    const product = mapSorli(row);
+    return product.promoName ? [{
+      product: sorliToUI(product),
+      promoName: product.promoName,
+      promoEnd: product.promoEnd,
+      prevPrice: product.promoBasePrice,
+    }] : [];
+  });
+  if (isNormalizedOfferStore(store)) {
+    const config = NORMALIZED_OFFER_CONFIG[store];
+    return rows.map((row) => {
+      const promoPrice = row.promo_price != null ? Number(row.promo_price) : null;
+      const currentPrice = promoPrice != null && promoPrice > 0 ? promoPrice : Number(row.unit_price);
+      const offerRow = promoPrice != null && promoPrice > 0
+        ? { ...row, unit_price: promoPrice, price_format: `${promoPrice.toFixed(2).replace('.', ',')} €` }
+        : row;
+      const basePrice = row.promo_base_price != null ? Number(row.promo_base_price) : null;
+      return {
+        product: config.toUI(offerRow),
+        promoName: row.promo_name ?? null,
+        promoEnd: row.promo_end ?? null,
+        prevPrice: basePrice != null && Number.isFinite(currentPrice) && basePrice > currentPrice
+          ? basePrice
+          : null,
+      };
+    });
+  }
+  if (store === 'hiperdino') return rows.flatMap((row) => (
+    row.unit_price != null
+      && row.promo_base_price != null
+      && Number(row.promo_base_price) > Number(row.unit_price)
+      ? [{
+          product: hiperdinoToUI(mapHiperdino(row)),
+          promoName: 'Oferta',
+          promoEnd: null,
+          prevPrice: Number(row.promo_base_price),
+        }]
+      : []
+  ));
+  if (store === 'aldi') return rows.flatMap((row) => (
+    row.unit_price != null
+      && row.promo_base_price != null
+      && Number(row.promo_base_price) > Number(row.unit_price)
+      ? [{
+          product: aldiToUI(mapAldi(row)),
+          promoName: row.promo_name ?? 'Oferta',
+          promoEnd: row.promo_end ?? null,
+          prevPrice: Number(row.promo_base_price),
+        }]
+      : []
+  ));
+  if (store === 'plusfresc') {
+    const ca = getLanguage() === 'ca';
+    return rows.flatMap((row) => {
+      const offer = plusfrescOfferAt(row, postalCode);
+      if (!offer) return [];
+      const offerRow: any = {
+        ...row,
+        unit_price: offer.offerPrice,
+        price_format: `${offer.offerPrice.toFixed(2).replace('.', ',')} €`,
+      };
+      if (offer.center) {
+        offerRow.center_prices = {
+          ...(row.center_prices ?? {}),
+          [offer.center]: {
+            ...(row.center_prices?.[offer.center] ?? {}),
+            p: offer.offerPrice,
+            pf: offerRow.price_format,
+          },
+        };
+      }
+      return [{
+        product: plusfrescToUI(mapPlusfresc(offerRow, postalCode)),
+        promoName: ca ? offer.promoNameCa : offer.promoName,
+        promoEnd: offer.promoEnd,
+        prevPrice: offer.basePrice != null && Number(offer.basePrice) > offer.offerPrice
+          ? Number(offer.basePrice)
+          : null,
+      }];
+    });
+  }
+  return [];
+}
+
+async function fetchStoreOfferSearchPage(
+  store: CatalogStore,
+  cursor: BrowseCursor | null,
+  region: RegionValue | null,
+  postalCode: string | null,
+  limit: number,
+  filters: OfferFilters,
+): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
+  const selectedTypes = filters.offerTypes?.length ? new Set(filters.offerTypes) : null;
+  const scanLimit = Math.max(limit, 100);
+  let scanOffset = typeof cursor?.name === 'number' ? cursor.name : 0;
+  const items: StoreOffer[] = [];
+  const order: CatalogSearchOrder = filters.pricePerUnitSort === 'asc'
+    ? 'pricePerUnitAsc'
+    : filters.pricePerUnitSort === 'desc'
+      ? 'pricePerUnitDesc'
+      : filters.sort === 'asc'
+        ? 'priceAsc'
+        : filters.sort === 'desc'
+          ? 'priceDesc'
+          : 'relevance';
+
+  for (;;) {
+    const rows = await catalogFeedSearchPage(
+      store,
+      'offer',
+      offerSearchColumns(store),
+      filters.search!,
+      {
+        limit: scanLimit,
+        offset: scanOffset,
+        region,
+        postalCode,
+        categories: filters.categories,
+        priceMin: filters.priceMin,
+        priceMax: filters.priceMax,
+        order,
+      },
+    );
+    const mapped = mapOfferSearchRows(store, rows, region, postalCode);
+    items.push(...(selectedTypes
+      ? mapped.filter((offer) => offerTypesOf(offer).some((type) => selectedTypes.has(type)))
+      : mapped));
+    const nextOffset = rows.length === scanLimit ? scanOffset + scanLimit : null;
+    if (nextOffset == null || items.length >= limit) {
+      return {
+        items,
+        nextCursor: nextOffset == null ? null : { name: nextOffset, id: 'feed-search' },
+      };
+    }
+    scanOffset = nextOffset;
+  }
+}
+
 /** Una página cruda de ofertas del retailer. Los filtros de nombre, categoría y
  * precio ya viajan a PostgREST; el tipo se clasifica sobre la promoción final
  * resuelta (incluidas variantes regionales/bilingües). */
@@ -3229,6 +3597,9 @@ export async function fetchStoreOffers(
   limit = 50,
   filters?: OfferFilters,
 ): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
+  if (filters?.search && filters.search.trim().length >= 2) {
+    return fetchStoreOfferSearchPage(store, cursor, region, postalCode, limit, filters);
+  }
   const selectedTypes = filters?.offerTypes?.length ? new Set(filters.offerTypes) : null;
   if (!selectedTypes) {
     return fetchStoreOfferPage(store, cursor, region, postalCode, limit, filters);

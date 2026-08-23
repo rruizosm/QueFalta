@@ -235,6 +235,13 @@ async function main() {
     }
   } finally { await context.close(); }
   const rows = [...products.values()];
+  // Al reanudar, las filas del checkpoint conservan el `synced_at` del
+  // scrape original. Para que la limpieza final no las considere obsoletas,
+  // se sellan con el inicio de esta publicación antes del upsert.
+  for (const row of rows) {
+    row.published = true;
+    row.synced_at = runStart;
+  }
   const catRows = [...catName.keys()].map((id) => ({ id, name: catName.get(id), parent_id: catParent.get(id) ?? null, product_count: catCount.get(id) || 0, published: true, synced_at: runStart }));
   console.log(`[alcampo-pw] resultado: ${rows.length} productos · ${catRows.length} categorías · ${empty} hojas vacías`);
   for (const row of rows.slice(0, 5)) console.log(`  ${row.display_name} · ${row.unit_price ?? '—'} € · ${row.category_name}`);

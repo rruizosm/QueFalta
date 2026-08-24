@@ -638,7 +638,11 @@ export default function ListScreen() {
       <AmbientBubbleBackdrop showGradient={false} />
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
-      {!glassAvailable && header}
+      {!glassAvailable && (
+        <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>
+          {header}
+        </GlassSurface>
+      )}
 
       {screenState ?? (
         <>

@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Platform, View, TouchableOpacity, StyleSheet } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { useThemedStyles } from '../context/ThemeContext';
@@ -20,11 +20,13 @@ export default function ViewModeToggle({
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
 
-  if (glassAvailable) {
+  if (glassAvailable || Platform.OS === 'android') {
     return (
       <SlidingSegments<ViewMode>
         compact
         dense
+        emphasized={Platform.OS === 'android'}
+        transparentTrack={Platform.OS === 'android'}
         segments={[
           { key: 'list', icon: 'list', accessibilityLabel: t('product.viewList') },
           { key: 'grid', icon: 'grid', accessibilityLabel: t('product.viewGrid') },

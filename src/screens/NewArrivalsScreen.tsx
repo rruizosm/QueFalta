@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
@@ -455,9 +455,12 @@ export default function NewArrivalsScreen() {
             </TouchableOpacity>
           )}
         </View>
-        {glassAvailable ? (
+        {glassAvailable || Platform.OS === 'android' ? (
           <SlidingSegments
             compact
+            dense={Platform.OS === 'android'}
+            emphasized={Platform.OS === 'android'}
+            transparentTrack={Platform.OS === 'android'}
             segments={[
               { key: 'list', icon: 'list' },
               { key: 'grid', icon: 'grid' },

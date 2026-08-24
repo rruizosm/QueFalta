@@ -1480,6 +1480,7 @@ export default function CatalogScreen() {
         glassAvailable
           ? styles.prodUnitSortLockedBackgroundGlass
           : styles.prodUnitSortLockedBackgroundFallback,
+        Platform.OS === 'android' && styles.prodUnitSortLockedBackgroundAndroid,
         glassAvailable && (scheme === 'dark'
           ? styles.prodUnitSortLockedBackgroundGlassDark
           : styles.prodUnitSortLockedBackgroundGlassLight),
@@ -1551,11 +1552,12 @@ export default function CatalogScreen() {
           <View style={styles.prodSortGroup}>
           {unitPriceSortLocked ? (
             <>
-              {glassAvailable ? (
+              {glassAvailable || Platform.OS === 'android' ? (
                 <SlidingSegments
                   compact
                   dense
                   emphasized
+                  transparentTrack={Platform.OS === 'android'}
                   segments={[
                     ...(!browseMode ? [{ key: 'relevance' as const, icon: 'sparkles-outline' as const, accessibilityLabel: t('catalog.sortRelevance') }] : []),
                     { key: 'priceAsc', icon: 'arrow-up', accessibilityLabel: t('catalog.sortPriceAsc') },
@@ -1581,11 +1583,12 @@ export default function CatalogScreen() {
               )}
               {lockedUnitPriceSortGroup}
             </>
-          ) : glassAvailable ? (
+          ) : glassAvailable || Platform.OS === 'android' ? (
             <SlidingSegments
               compact
               dense
               emphasized
+              transparentTrack={Platform.OS === 'android'}
               segments={[
                 ...(!browseMode ? [{ key: 'relevance' as const, icon: 'sparkles-outline' as const, accessibilityLabel: t('catalog.sortRelevance') }] : []),
                 { key: 'priceAsc', icon: 'arrow-up', accessibilityLabel: t('catalog.sortPriceAsc') },
@@ -1621,11 +1624,12 @@ export default function CatalogScreen() {
         )}
         {!productSearchExpanded && (
           <View style={styles.prodViewGroup}>
-          {glassAvailable ? (
+          {glassAvailable || Platform.OS === 'android' ? (
             <SlidingSegments
               compact
               dense
               emphasized
+              transparentTrack={Platform.OS === 'android'}
               segments={[{ key: 'list', icon: 'list' }, { key: 'grid', icon: 'grid' }]}
               value={prodViewMode}
               onChange={(value) => setProdViewMode(value as ViewMode)}
@@ -1702,14 +1706,15 @@ export default function CatalogScreen() {
       </View>
 
       {/* Fila única: pestañas Productos/Categorías (flex) + selector de súper
-          como bloque aparte a la derecha. En glass, píldora de acento deslizante
-          (SlidingSegments) para conservar el efecto al cambiar de pestaña; en
-          fallback, segmentado de pastilla blanca estático (Claude Design). */}
+          como bloque aparte a la derecha. En iOS glass y Android, píldora de
+          acento deslizante (SlidingSegments); Android elimina la pista de fondo.
+          El resto del fallback conserva el segmentado estático. */}
       <View style={styles.controlsRow}>
-        {glassAvailable ? (
+        {glassAvailable || Platform.OS === 'android' ? (
           <SlidingSegments
             style={{ flex: 1 }}
             emphasized
+            transparentTrack={Platform.OS === 'android'}
             segments={tabSegments}
             value={tab}
             onChange={setTab}
@@ -2668,6 +2673,10 @@ const themedStyles = () => StyleSheet.create({
     width: 73, height: 44, borderRadius: 12,
     borderWidth: 1, borderColor: colors.border,
     backgroundColor: colors.surfaceAlt,
+  },
+  prodUnitSortLockedBackgroundAndroid: {
+    borderWidth: 0,
+    backgroundColor: 'transparent',
   },
   prodUnitSortLockedButtons: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',

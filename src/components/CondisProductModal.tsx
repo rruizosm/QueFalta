@@ -11,6 +11,7 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useProductDetailFooterPadding } from '../hooks/useProductDetailFooterPadding';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductDetailImage from '../components/ProductDetailImage';
@@ -33,6 +34,7 @@ interface Props {
  *  Supabase, incluida la ficha enriquecida por el sync. */
 export default function CondisProductModal({ product, onClose, topInset = 16, badgeLabel }: Props) {
   const styles = useThemedStyles(themedStyles);
+  const footerPaddingBottom = useProductDetailFooterPadding();
   const { activeCart, addToActiveCart } = useCart();
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
   const toast = useToast();
@@ -131,7 +133,7 @@ export default function CondisProductModal({ product, onClose, topInset = 16, ba
       </ScrollView>
 
       {/* Pie: cantidad + añadir a la cesta */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: footerPaddingBottom }]}>
         <QuantityStepper
           value={qty}
           min={1}

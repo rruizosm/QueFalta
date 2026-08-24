@@ -14,6 +14,7 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../context/ToastContext';
 import { useCart } from '../context/CartContext';
 import { useThemedStyles } from '../context/ThemeContext';
+import { useProductDetailFooterPadding } from '../hooks/useProductDetailFooterPadding';
 import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from './QuantityStepper';
 import ProductDetailImage from './ProductDetailImage';
@@ -57,6 +58,7 @@ const clean = (text?: string | null): string | null => {
 
 export default function ProductDetailModal({ productId, onClose, topInset = 16, badgeLabel }: Props) {
   const styles = useThemedStyles(themedStyles);
+  const footerPaddingBottom = useProductDetailFooterPadding();
   const { t } = useTranslation();
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
   const { activeCart, addToActiveCart } = useCart();
@@ -258,7 +260,7 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16, 
             ) : null}
           </ScrollView>
 
-          <View style={styles.footer}>
+          <View style={[styles.footer, { paddingBottom: footerPaddingBottom }]}>
             <QuantityStepper
               value={qty}
               min={1}

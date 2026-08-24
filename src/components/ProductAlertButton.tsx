@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { CatalogStore } from '../constants/stores';
 import { limitsApply, PAYWALL_ENABLED } from '../constants/limits';
@@ -90,7 +97,11 @@ export default function ProductAlertButton({ store, productId, overlay = false }
 
   return (
     <>
-      <View style={[styles.buttonBackground, overlay && styles.overlay]}>
+      <View style={[
+        styles.buttonBackground,
+        overlay && styles.overlay,
+        Platform.OS === 'android' && styles.overlayAndroid,
+      ]}>
         {button}
       </View>
       <PriceAlertEditorModal
@@ -125,5 +136,6 @@ const themedStyles = () => StyleSheet.create({
     shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 5,
     shadowOffset: { width: 0, height: 2 }, elevation: 3,
   },
+  overlayAndroid: { shadowOpacity: 0, elevation: 0 },
   text: { fontSize: 11.5, fontFamily: fonts.bold, color: colors.accent },
 });

@@ -52,6 +52,8 @@ interface Props<K extends string> {
   dense?: boolean;
   /** Refuerza el perímetro para selectores principales sobre Liquid Glass. */
   emphasized?: boolean;
+  /** Elimina la pista y su sombra, conservando la píldora animada. */
+  transparentTrack?: boolean;
   activationDirection?: 'fromStart' | 'fromEnd';
 }
 
@@ -64,7 +66,7 @@ function hexToRgba(hex: string, a: number): string {
 
 export default function SlidingSegments<K extends string>({
   segments, value, onChange, style, compact = false, dense = false, emphasized = false,
-  activationDirection,
+  transparentTrack = false, activationDirection,
 }: Props<K>) {
   const { scheme } = useTheme();
   const reducedMotion = useReducedMotion();
@@ -160,10 +162,11 @@ export default function SlidingSegments<K extends string>({
         compact && styles.trackCompact,
         emphasized && (compact ? styles.trackEmphasizedCompact : styles.trackEmphasized),
         emphasized && emphasizedTrackColors,
+        transparentTrack && styles.trackTransparent,
         !emphasized && style,
       ]}
     >
-      {emphasized && <View pointerEvents="none" style={styles.trackHighlight} />}
+      {emphasized && !transparentTrack && <View pointerEvents="none" style={styles.trackHighlight} />}
 
       {/* Píldora deslizante de acento. */}
       {activeW > 0 && active >= 0 && (
@@ -234,6 +237,7 @@ export default function SlidingSegments<K extends string>({
     <View
       style={[
         styles.emphasizedShell,
+        transparentTrack && styles.emphasizedShellTransparent,
         compact && styles.trackCompact,
         compact ? styles.emphasizedShellCompact : styles.emphasizedShellLarge,
         compactTrackWidth != null && { width: compactTrackWidth },
@@ -264,6 +268,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
+  emphasizedShellTransparent: {
+    shadowOpacity: 0,
+    elevation: 0,
+  },
   emphasizedShellCompact: { height: HEIGHT, borderRadius: RADIUS },
   emphasizedShellLarge: { height: EMPHASIZED_HEIGHT, borderRadius: EMPHASIZED_RADIUS },
   trackEmphasized: {
@@ -272,6 +280,10 @@ const styles = StyleSheet.create({
     borderRadius: EMPHASIZED_RADIUS,
   },
   trackEmphasizedCompact: { flex: 1, height: HEIGHT, borderRadius: RADIUS },
+  trackTransparent: {
+    backgroundColor: 'transparent',
+    borderColor: 'transparent',
+  },
   trackHighlight: {
     position: 'absolute',
     top: 1,

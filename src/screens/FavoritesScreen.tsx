@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, TextInput,
-  StyleSheet, StatusBar, Keyboard, TouchableWithoutFeedback,
+  StyleSheet, StatusBar, Keyboard, TouchableWithoutFeedback, Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -153,9 +153,12 @@ export default function FavoritesScreen() {
           </TouchableOpacity>
         )}
       </View>
-      {glassAvailable ? (
+      {glassAvailable || Platform.OS === 'android' ? (
         <SlidingSegments
           compact
+          dense={Platform.OS === 'android'}
+          emphasized={Platform.OS === 'android'}
+          transparentTrack={Platform.OS === 'android'}
           segments={[
             { key: 'list', icon: 'list' },
             { key: 'grid', icon: 'grid' },
@@ -227,9 +230,11 @@ export default function FavoritesScreen() {
       {/* Fila única: pestañas Productos/Categorías (flex) + selector de súper
           como bloque aparte a la derecha (mismo patrón que el catálogo). */}
       <View style={styles.controlsRow}>
-        {glassAvailable ? (
+        {glassAvailable || Platform.OS === 'android' ? (
           <SlidingSegments
             style={{ flex: 1 }}
+            emphasized={Platform.OS === 'android'}
+            transparentTrack={Platform.OS === 'android'}
             segments={[
               { key: 'productos', label: t('catalog.tabProducts'), icon: 'cube-outline' },
               { key: 'categorias', label: t('catalog.tabCategories'), icon: 'grid-outline' },

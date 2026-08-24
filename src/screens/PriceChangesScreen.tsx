@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, StatusBar, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
@@ -280,9 +280,9 @@ export default function PriceChangesScreen() {
         )}
       </View>
 
-      {glassAvailable ? (
+      {glassAvailable || Platform.OS === 'android' ? (
         // Filtro independiente + pestañas deslizantes + vista en una fila.
-        <View style={styles.glassControls}>
+        <View style={[styles.glassControls, Platform.OS === 'android' && styles.glassControlsAndroid]}>
           <TouchableOpacity
             style={[styles.filterBtn, filtersActive && styles.filterBtnOn]}
             onPress={() => setFilterOpen(true)}
@@ -294,6 +294,8 @@ export default function PriceChangesScreen() {
           </TouchableOpacity>
           <SlidingSegments
             style={{ flex: 1 }}
+            emphasized={Platform.OS === 'android'}
+            transparentTrack={Platform.OS === 'android'}
             segments={[
               { key: 'down', label: t('priceChanges.down'), icon: 'arrow-down' },
               { key: 'up', label: t('priceChanges.up'), icon: 'arrow-up' },
@@ -304,6 +306,9 @@ export default function PriceChangesScreen() {
           {/* Mismo toggle lista/cuadrícula que el catálogo (SlidingSegments compacto). */}
           <SlidingSegments
             compact
+            dense={Platform.OS === 'android'}
+            emphasized={Platform.OS === 'android'}
+            transparentTrack={Platform.OS === 'android'}
             segments={[
               { key: 'list', icon: 'list' },
               { key: 'grid', icon: 'grid' },
@@ -503,4 +508,5 @@ const themedStyles = () => StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 10,
     marginHorizontal: 16,
   },
+  glassControlsAndroid: { marginBottom: 10 },
 });

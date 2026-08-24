@@ -2292,6 +2292,36 @@ export async function fetchSimilarProducts(
   };
 }
 
+export interface SimilarProductReportResult {
+  reportId: number;
+  alreadyReported: boolean;
+}
+
+/** Registra de forma idempotente que una coincidencia mostrada por el
+ * comparador no parece correcta. El servidor valida la pareja y genera los
+ * snapshots; el cliente no escribe directamente en la cola privada. */
+export async function reportSimilarProduct(
+  sourceStore: CatalogStore,
+  sourceProductId: string,
+  targetStore: CatalogStore,
+  targetProductId: string,
+): Promise<SimilarProductReportResult> {
+  const { data, error } = await supabase.rpc('report_catalog_product_match', {
+    p_source_store: sourceStore,
+    p_source_product_id: sourceProductId,
+    p_target_store: targetStore,
+    p_target_product_id: targetProductId,
+  });
+  if (error) throw error;
+  const response = data && typeof data === 'object' && !Array.isArray(data)
+    ? data as Record<string, unknown>
+    : {};
+  return {
+    reportId: Number(response.report_id),
+    alreadyReported: response.already_reported === true,
+  };
+}
+
 // ─── Novedades de la semana + cambios de precio (accesos del Home) ───────────
 // Ambas leen el espejo con una config por súper (tabla + columnas de listado +
 // adaptador fila→UIProduct que reutiliza el map* correspondiente). Requieren

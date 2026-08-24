@@ -188,8 +188,9 @@ no debe activarse hasta completar la configuración externa y las pruebas sandbo
       restore, y `premium_until` moviéndose en BD.
 
 **Día de lanzamiento (orden):**
-1. [ ] Aplicar `20260822090421_legacy_all_stores_access.sql` para fotografiar
-       como legacy todas las cuentas registradas antes de 1.3.
+1. [x] Snapshot legacy aplicado y ampliado con
+       `20260824174500_grant_legacy_all_stores_to_pre_1_3_accounts.sql`: las
+       4.032 cuentas existentes antes de 1.3 conservan «Todos».
 2. [ ] Regalar Plus a los testers: `ops/grant_plus_testers.sql` (opción A).
 3. [ ] Encender servidor: `migrations/paywall_on.sql`.
 4. [ ] Build de release (el cliente ya está en true) + subir a App Store Connect.

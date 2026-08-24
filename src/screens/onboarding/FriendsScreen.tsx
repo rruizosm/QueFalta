@@ -453,7 +453,5 @@ const styles = StyleSheet.create({
     zIndex: 4,
     height: 14,
     backgroundColor: '#255b9c',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.36)',
   },
 });

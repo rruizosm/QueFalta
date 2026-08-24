@@ -1,6 +1,12 @@
 import { supabase } from '../lib/supabase';
 import { notifyCartItemAdded } from './push';
-import { CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
+import {
+  CATALOG_STORE_KEYS,
+  normalizeStoreKey,
+  storeOfItem,
+  type CatalogStore,
+  type Store,
+} from '../constants/stores';
 
 export interface LinkedNoteProduct {
   store: CatalogStore;
@@ -39,6 +45,8 @@ export function linkedNoteProductToRow(product: LinkedNoteProduct | null) {
 }
 
 export interface NewListItem {
+  /** Supermercado canónico. Nunca se deduce de la imagen en escrituras nuevas. */
+  storeKey: Store;
   productName: string;
   quantity: number;
   unit?: string;
@@ -98,6 +106,7 @@ export interface ListItemRow {
   imageUrl: string | null;
   mercadonaProductId: string | null;
   storeProductId: string | null;
+  storeKey: Store;
   note: string | null;
   noteProduct: LinkedNoteProduct | null;
   /** User id of the member responsible for bringing this item (or null). */
@@ -108,28 +117,36 @@ export interface ListItemRow {
 export async function fetchListItems(listId: string): Promise<ListItemRow[]> {
   const { data, error } = await supabase
     .from('list_items')
-    .select('id, product_name, quantity, unit, in_cart, category_emoji, category_name, unit_price, image_url, mercadona_product_id, store_product_id, assigned_to, note, note_product_store, note_product_id, note_product_name, note_product_image_url, note_product_unit_price')
+    .select('id, product_name, quantity, unit, in_cart, category_emoji, category_name, unit_price, image_url, mercadona_product_id, store_product_id, store_key, assigned_to, note, note_product_store, note_product_id, note_product_name, note_product_image_url, note_product_unit_price')
     .eq('list_id', listId)
     .order('created_at', { ascending: true });
 
   if (error) throw error;
 
-  return (data ?? []).map((it: any) => ({
-    id: it.id,
-    productName: it.product_name,
-    quantity: Number(it.quantity),
-    unit: it.unit,
-    inCart: it.in_cart,
-    categoryEmoji: it.category_emoji,
-    categoryName: it.category_name ?? null,
-    unitPrice: it.unit_price != null ? Number(it.unit_price) : null,
-    imageUrl: it.image_url ?? null,
-    mercadonaProductId: it.mercadona_product_id ?? null,
-    storeProductId: it.store_product_id ?? null,
-    note: it.note ?? null,
-    noteProduct: linkedNoteProductFromRow(it),
-    assignedTo: it.assigned_to ?? null,
-  }));
+  return (data ?? []).map((it: any) => {
+    const clue = {
+      storeKey: normalizeStoreKey(it.store_key),
+      imageUrl: it.image_url ?? null,
+      mercadonaProductId: it.mercadona_product_id ?? null,
+    };
+    return {
+      id: it.id,
+      productName: it.product_name,
+      quantity: Number(it.quantity),
+      unit: it.unit,
+      inCart: it.in_cart,
+      categoryEmoji: it.category_emoji,
+      categoryName: it.category_name ?? null,
+      unitPrice: it.unit_price != null ? Number(it.unit_price) : null,
+      imageUrl: clue.imageUrl,
+      mercadonaProductId: clue.mercadonaProductId,
+      storeProductId: it.store_product_id ?? null,
+      storeKey: clue.storeKey ?? storeOfItem(clue),
+      note: it.note ?? null,
+      noteProduct: linkedNoteProductFromRow(it),
+      assignedTo: it.assigned_to ?? null,
+    };
+  });
 }
 
 /** Un artículo de la cesta tras fusionar duplicados del mismo producto. */
@@ -146,6 +163,7 @@ export interface MergedCartItem {
   categoryName: string | null;
   mercadonaProductId: string | null;
   storeProductId: string | null;
+  storeKey: Store;
   note: string | null;
   noteProduct: LinkedNoteProduct | null;
   assignedTo: string | null;
@@ -156,21 +174,23 @@ type MergeInput = {
   unitPrice: number | null; imageUrl: string | null; categoryEmoji: string | null;
   mercadonaProductId: string | null; assignedTo?: string | null; categoryName?: string | null;
   storeProductId?: string | null;
+  storeKey: Store;
   note?: string | null;
   noteProduct?: LinkedNoteProduct | null;
 };
 
 /**
- * Fusiona filas del mismo producto sumando unidades. Identidad: id de Mercadona
- * si existe; si no (Bonpreu/manual), nombre + imagen. Conserva el orden de
+ * Fusiona filas del mismo producto sumando unidades. La identidad siempre
+ * incluye supermercado; para manuales usa nombre + imagen. Conserva el orden de
  * primera aparición. inCart = todas en cesta; assignedTo solo si coinciden todas.
  */
 export function mergeCartItems(items: MergeInput[]): MergedCartItem[] {
   const map = new Map<string, MergedCartItem>();
   for (const it of items) {
-    const key = it.mercadonaProductId
-      ? `m:${it.mercadonaProductId}`
-      : `n:${it.productName}|${it.imageUrl ?? ''}`;
+    const productId = it.storeProductId || it.mercadonaProductId;
+    const key = productId
+      ? `${it.storeKey}:${productId}`
+      : `${it.storeKey}:manual:${it.productName.trim().toLocaleLowerCase()}|${it.imageUrl ?? ''}`;
     const ex = map.get(key);
     if (ex) {
       ex.ids.push(it.id);
@@ -194,6 +214,7 @@ export function mergeCartItems(items: MergeInput[]): MergedCartItem[] {
         categoryName: it.categoryName ?? null,
         mercadonaProductId: it.mercadonaProductId,
         storeProductId: it.storeProductId ?? null,
+        storeKey: it.storeKey,
         note: it.note?.trim() || null,
         noteProduct: it.noteProduct ?? null,
         assignedTo: it.assignedTo ?? null,
@@ -203,14 +224,15 @@ export function mergeCartItems(items: MergeInput[]): MergedCartItem[] {
   return [...map.values()];
 }
 
-/** Marks a single item as in the cart (or not). */
-export async function setItemInCart(itemId: string, inCart: boolean): Promise<void> {
-  const { error } = await supabase
-    .from('list_items')
-    .update({ in_cart: inCart })
-    .eq('id', itemId);
-
+/** Marca todas las filas fusionadas en una única transacción del servidor. */
+export async function setListItemsInCart(itemIds: string[], inCart: boolean): Promise<void> {
+  if (itemIds.length === 0) return;
+  const { data, error } = await supabase.rpc('set_list_items_in_cart', {
+    p_item_ids: [...new Set(itemIds)],
+    p_in_cart: inCart,
+  });
   if (error) throw error;
+  if (Number(data) !== new Set(itemIds).size) throw new Error('Not all list items were updated');
 }
 
 /** Sets a single row's quantity (used to add/subtract units of a product). */
@@ -223,14 +245,16 @@ export async function updateListItemQuantity(itemId: string, quantity: number): 
   if (error) throw error;
 }
 
-/** Assigns a list item to a group member (or clears it with null). */
-export async function assignListItem(itemId: string, assignedTo: string | null): Promise<void> {
-  const { error } = await supabase
-    .from('list_items')
-    .update({ assigned_to: assignedTo })
-    .eq('id', itemId);
-
+/** Asigna todas las filas indicadas atómicamente (o las desasigna con null). */
+export async function assignListItems(itemIds: string[], assignedTo: string | null): Promise<void> {
+  if (itemIds.length === 0) return;
+  const ids = [...new Set(itemIds)];
+  const { data, error } = await supabase.rpc('assign_list_items', {
+    p_item_ids: ids,
+    p_assigned_to: assignedTo,
+  });
   if (error) throw error;
+  if (Number(data) !== ids.length) throw new Error('Not all list items were assigned');
 }
 
 /** Updates the shared comment and its optional product on every merged row. */
@@ -285,6 +309,7 @@ export async function addItemsToList(
     category_name: it.categoryName ?? null,
     mercadona_product_id: it.mercadonaProductId ?? null,
     store_product_id: it.storeProductId ?? null,
+    store_key: it.storeKey,
     unit_price: it.unitPrice ?? null,
     image_url: it.imageUrl ?? null,
     added_by: userId,

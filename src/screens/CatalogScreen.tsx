@@ -40,7 +40,7 @@ import {
   searchCondisProducts, fetchCondisCategoryTree,
   searchAmetllerProducts, fetchAmetllerCategoryTree,
   searchAldiProducts, fetchAldiCategoryTree,
-  searchGadisProducts, fetchGadisCategoryTree, searchFroizProducts,
+  searchGadisProducts, fetchGadisCategoryTree, searchFroizProducts, fetchFroizCategoryTree,
   searchAhorramasProducts, fetchAhorramasCategoryTree,
   searchHiperdinoProducts, fetchHiperdinoCategoryTree,
   searchAlcampoProducts, fetchAlcampoCategoryTree,
@@ -58,7 +58,7 @@ import {
   type CondisProduct, type CondisCategory,
   type AmetllerProduct, type AmetllerCategory,
   type AldiProduct, type AldiCategory,
-  type GadisProduct, type GadisCategory, type FroizProduct,
+  type GadisProduct, type GadisCategory, type FroizProduct, type FroizCategory,
   type AhorramasProduct, type AhorramasCategory,
   type HiperdinoProduct, type HiperdinoCategory,
   type AlcampoProduct, type AlcampoCategory,
@@ -82,7 +82,7 @@ import {
   plusfrescToUI,
   type UIProduct,
 } from '../lib/productAdapters';
-import { sortByName, sortByRelevance } from '../lib/sort';
+import { compareByName, relevanceScore, sortByName } from '../lib/sort';
 import { createMultiStorePager, type MultiStorePager } from '../lib/multiStorePager';
 import { searchCatalogStore } from '../lib/catalogSearch';
 import ActionSheet from '../components/ActionSheet';
@@ -306,7 +306,7 @@ export default function CatalogScreen() {
   const handleStoreChange = (nextStore: StoreKey) => {
     setProductQueryInHeader(false);
     setStore(nextStore);
-    if (nextStore === 'all' || nextStore === 'froiz') setTab('productos');
+    if (nextStore === 'all') setTab('productos');
   };
   // Vista lista/cuadrícula compartida por los listados de búsqueda de productos
   // (la controla la fila de búsqueda, no el toolbar interno de StoreProductList).
@@ -462,10 +462,11 @@ export default function CatalogScreen() {
   // BÃºsqueda conjunta cuando el selector estÃ¡ en "Todos".
   const [allSearch, setAllSearch] = useState('');
   const [allResults, setAllResults] = useState<UIProduct[]>([]);
-  const [allSearchLimit, setAllSearchLimit] = useState(50);
   const [allSearchMore, setAllSearchMore] = useState(false);
   const [allSearchExhausted, setAllSearchExhausted] = useState(false);
   const allSearchMoreController = useRef<AbortController | null>(null);
+  const allSearchPager = useRef<MultiStorePager<UIProduct> | null>(null);
+  const allSearchPagerKey = useRef<string | null>(null);
   const [allLoading, setAllLoading] = useState(false);
   const [allError, setAllError] = useState(false);
 
@@ -597,6 +598,9 @@ export default function CatalogScreen() {
   const [frResults, setFrResults] = useState<FroizProduct[]>([]);
   const [frLoading, setFrLoading] = useState(false);
   const [frError, setFrError] = useState(false);
+  const [frCats, setFrCats] = useState<FroizCategory[]>([]);
+  const [frCatsLoading, setFrCatsLoading] = useState(false);
+  const [frCatsError, setFrCatsError] = useState(false);
   const [ahSearch, setAhSearch] = useState('');
   const [ahResults, setAhResults] = useState<AhorramasProduct[]>([]);
   const [ahLoading, setAhLoading] = useState(false);
@@ -738,12 +742,19 @@ export default function CatalogScreen() {
     }
     return compareProductsByPrice(productSearchOrder === 'priceAsc' ? 'asc' : 'desc');
   }, [productSearchOrder]);
-  const orderAllSearchProducts = useCallback((items: UIProduct[], query: string) => (
-    productSearchOrder === 'relevance'
-      ? sortByRelevance(items, (product) => product.name, query)
-      : [...items].sort(compareSearchProducts!)
-  ), [compareSearchProducts, productSearchOrder]);
+  const allSearchComparator = useCallback((query: string) => {
+    if (compareSearchProducts) return compareSearchProducts;
+    return (a: UIProduct, b: UIProduct) => {
+      const scoreDifference = relevanceScore(b.name, query) - relevanceScore(a.name, query);
+      if (scoreDifference !== 0) return scoreDifference;
+      const nameDifference = compareByName(a.name, b.name);
+      if (nameDifference !== 0) return nameDifference;
+      const storeDifference = CATALOG_STORE_KEYS.indexOf(a.store) - CATALOG_STORE_KEYS.indexOf(b.store);
+      return storeDifference !== 0 ? storeDifference : a.id.localeCompare(b.id);
+    };
+  }, [compareSearchProducts]);
   const enabledStoresKey = enabledStores.join(',');
+  const activeAllSearchKey = `${allSearch.trim()}:${lang}:${region ?? 'all'}:${postalCode ?? 'none'}:${productSearchOrder}:${enabledStoresKey}`;
   const activeBrowseKey = browseCacheKey(
     store, lang, region, postalCode, `${productSortField}:${activeProductOrder}`,
   ) + (store === 'all' ? `:${enabledStoresKey}` : '');
@@ -1058,6 +1069,10 @@ export default function CatalogScreen() {
   }, [store, gaSearch, productSearchOrder]);
 
   useEffect(() => {
+    if (tab !== 'categorias' || store !== 'froiz' || frCats.length > 0) return;
+    return startCategoryLoad(fetchFroizCategoryTree, setFrCats, setFrCatsLoading, setFrCatsError);
+  }, [store, tab, frCats.length]);
+  useEffect(() => {
     if (store !== 'froiz') return;
     return startProductSearch(frSearch, (q, signal) => searchFroizProducts(q, 50, signal, 0, productSearchOrder), setFrResults, setFrLoading, setFrError);
   }, [store, frSearch, productSearchOrder]);
@@ -1156,7 +1171,9 @@ export default function CatalogScreen() {
   };
 
   // "Todos": lanza la misma búsqueda en los súpers permitidos, mezcla con el
-  // orden activo y amplía el máximo global en páginas de 50 resultados.
+  // orden activo y amplía el máximo global en páginas de 50 resultados. El
+  // paginador conserva los sobrantes por tienda: no vuelve a descargar desde
+  // offset 0 en cada onEndReached.
   const loadMoreAllSearch = () => {
     if (
       store !== 'all'
@@ -1164,35 +1181,28 @@ export default function CatalogScreen() {
       || allLoading
       || allSearchMore
       || allSearchExhausted
-      || allSearchLimit >= ALL_SEARCH_MAX_RESULTS
+      || allResults.length >= ALL_SEARCH_MAX_RESULTS
     ) return;
-    const nextLimit = Math.min(allSearchLimit + 50, ALL_SEARCH_MAX_RESULTS);
+    const pager = allSearchPagerKey.current === activeAllSearchKey
+      ? allSearchPager.current
+      : null;
+    if (!pager) return;
     const controller = new AbortController();
     allSearchMoreController.current?.abort();
     allSearchMoreController.current = controller;
     setAllSearchMore(true);
-    Promise.all(enabledStores.map((selectedStore) =>
-      loadStoreSearch(
-        selectedStore,
-        allSearch,
-        region,
-        postalCode,
-        controller.signal,
-        nextLimit,
-        0,
-        productSearchOrder,
-      ),
-    ))
-      .then((pages) => {
-        const nextItems = orderAllSearchProducts(pages.flat(), allSearch).slice(0, nextLimit);
-        if (nextLimit >= ALL_SEARCH_MAX_RESULTS) setAllSearchExhausted(true);
+    const remaining = Math.min(50, ALL_SEARCH_MAX_RESULTS - allResults.length);
+    pager.nextPage(remaining, controller.signal)
+      .then((items) => {
+        if (allSearchPagerKey.current !== activeAllSearchKey) return;
         setAllResults((current) => {
-          if (nextItems.length <= current.length) {
+          const seen = new Set(current.map((product) => `${product.store}:${product.id}`));
+          const unique = items.filter((product) => !seen.has(`${product.store}:${product.id}`));
+          const next = [...current, ...unique].slice(0, ALL_SEARCH_MAX_RESULTS);
+          if (unique.length === 0 || next.length >= ALL_SEARCH_MAX_RESULTS || !pager.hasMore()) {
             setAllSearchExhausted(true);
-            return current;
           }
-          setAllSearchLimit(nextLimit);
-          return nextItems;
+          return next;
         });
       })
       .catch(() => { /* conserva los resultados ya cargados */ })
@@ -1204,28 +1214,43 @@ export default function CatalogScreen() {
 
   useEffect(() => {
     if (store !== 'all') return;
-    setAllSearchLimit(50);
     setAllSearchMore(false);
     setAllSearchExhausted(false);
     allSearchMoreController.current?.abort();
+    allSearchPager.current = null;
+    allSearchPagerKey.current = null;
     const cleanup = startProductSearch(
       allSearch,
       async (q, signal) => {
-        const pages = await Promise.all(
-          enabledStores.map((selectedStore) =>
-            loadStoreSearch(
+        const pager = createMultiStorePager<UIProduct, CatalogStore, number>({
+          stores: enabledStores,
+          pageSize: 12,
+          loadPage: async (selectedStore, cursor, limit, pageSignal) => {
+            const offset = cursor ?? 0;
+            const items = await loadStoreSearch(
               selectedStore,
               q,
               region,
               postalCode,
-              signal,
-              50,
-              0,
+              pageSignal,
+              limit,
+              offset,
               productSearchOrder,
-            ),
-          ),
-        );
-        return orderAllSearchProducts(pages.flat(), q).slice(0, 50);
+            );
+            return {
+              items,
+              nextCursor: items.length < limit ? null : offset + items.length,
+            };
+          },
+          compare: allSearchComparator(q),
+        });
+        const items = await pager.nextPage(50, signal);
+        if (!signal.aborted) {
+          allSearchPager.current = pager;
+          allSearchPagerKey.current = activeAllSearchKey;
+          setAllSearchExhausted(!pager.hasMore());
+        }
+        return items;
       },
       setAllResults,
       setAllLoading,
@@ -1234,11 +1259,15 @@ export default function CatalogScreen() {
     return () => {
       cleanup?.();
       allSearchMoreController.current?.abort();
+      if (allSearchPagerKey.current === activeAllSearchKey) {
+        allSearchPager.current = null;
+        allSearchPagerKey.current = null;
+      }
       setAllSearchMore(false);
     };
   }, [
     store, allSearch, lang, region, postalCode, productSearchOrder,
-    enabledStoresKey, enabledStores, orderAllSearchProducts,
+    activeAllSearchKey, allSearchComparator, enabledStoresKey, enabledStores,
   ]);
 
   // Filtro de categorías por texto (cliente). Compartido por los 6 súpers: en la
@@ -1349,6 +1378,9 @@ export default function CatalogScreen() {
   const renderGaCategory = ({ item }: { item: GadisCategory }) =>
     renderCatRow({ store: 'gadis', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('gadis', item) });
 
+  const renderFrCategory = ({ item }: { item: FroizCategory }) =>
+    renderCatRow({ store: 'froiz', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('froiz', item) });
+
   const renderAhCategory = ({ item }: { item: AhorramasCategory }) =>
     renderCatRow({ store: 'ahorramas', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('ahorramas', item) });
 
@@ -1437,7 +1469,11 @@ export default function CatalogScreen() {
         returnKeyType="search"
       />
       {value.length > 0 && (
-        <TouchableOpacity onPress={() => onChange('')}>
+        <TouchableOpacity
+          onPress={() => onChange('')}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.clear')}
+        >
           <Ionicons name="close-circle" size={18} color={colors.inkFaint} />
         </TouchableOpacity>
       )}
@@ -1533,7 +1569,11 @@ export default function CatalogScreen() {
                 autoFocus
               />
               {value.length > 0 && (
-                <TouchableOpacity onPress={() => onChange('')}>
+                <TouchableOpacity
+                  onPress={() => onChange('')}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('common.clear')}
+                >
                   <Ionicons name="close-circle" size={18} color={colors.inkFaint} />
                 </TouchableOpacity>
               )}
@@ -1559,7 +1599,7 @@ export default function CatalogScreen() {
                   emphasized
                   transparentTrack={Platform.OS === 'android'}
                   segments={[
-                    ...(!browseMode ? [{ key: 'relevance' as const, icon: 'sparkles-outline' as const, accessibilityLabel: t('catalog.sortRelevance') }] : []),
+                    ...(!browseMode ? [{ key: 'relevance' as const, icon: 'bulb-outline' as const, accessibilityLabel: t('catalog.sortRelevance') }] : []),
                     { key: 'priceAsc', icon: 'arrow-up', accessibilityLabel: t('catalog.sortPriceAsc') },
                     { key: 'priceDesc', icon: 'arrow-down', accessibilityLabel: t('catalog.sortPriceDesc') },
                   ]}
@@ -1570,7 +1610,7 @@ export default function CatalogScreen() {
                 <View style={[styles.viewToggle, styles.prodToggleDense]}>
                   {!browseMode && (
                     <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, visibleProductSortSegment === 'relevance' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('relevance')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortRelevance')}>
-                      <Ionicons name="sparkles-outline" size={17} color={visibleProductSortSegment === 'relevance' ? colors.white : colors.inkSoft} />
+                      <Ionicons name="bulb-outline" size={17} color={visibleProductSortSegment === 'relevance' ? colors.white : colors.inkSoft} />
                     </TouchableOpacity>
                   )}
                   <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, visibleProductSortSegment === 'priceAsc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('priceAsc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPriceAsc')}>
@@ -1590,7 +1630,7 @@ export default function CatalogScreen() {
               emphasized
               transparentTrack={Platform.OS === 'android'}
               segments={[
-                ...(!browseMode ? [{ key: 'relevance' as const, icon: 'sparkles-outline' as const, accessibilityLabel: t('catalog.sortRelevance') }] : []),
+                ...(!browseMode ? [{ key: 'relevance' as const, icon: 'bulb-outline' as const, accessibilityLabel: t('catalog.sortRelevance') }] : []),
                 { key: 'priceAsc', icon: 'arrow-up', accessibilityLabel: t('catalog.sortPriceAsc') },
                 { key: 'priceDesc', icon: 'arrow-down', accessibilityLabel: t('catalog.sortPriceDesc') },
                 { key: 'pricePerUnitAsc', label: '€/u↑', accessibilityLabel: t('catalog.sortPricePerUnitAsc') },
@@ -1603,7 +1643,7 @@ export default function CatalogScreen() {
             <View style={[styles.viewToggle, styles.prodToggleDense]}>
               {!browseMode && (
                 <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, visibleProductSortSegment === 'relevance' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('relevance')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortRelevance')}>
-                  <Ionicons name="sparkles-outline" size={17} color={visibleProductSortSegment === 'relevance' ? colors.white : colors.inkSoft} />
+                  <Ionicons name="bulb-outline" size={17} color={visibleProductSortSegment === 'relevance' ? colors.white : colors.inkSoft} />
                 </TouchableOpacity>
               )}
               <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, visibleProductSortSegment === 'priceAsc' && styles.viewBtnOn]} onPress={() => selectProductSortSegment('priceAsc')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.sortPriceAsc')}>
@@ -1630,16 +1670,19 @@ export default function CatalogScreen() {
               dense
               emphasized
               transparentTrack={Platform.OS === 'android'}
-              segments={[{ key: 'list', icon: 'list' }, { key: 'grid', icon: 'grid' }]}
+              segments={[
+                { key: 'list', icon: 'list', accessibilityLabel: t('product.viewList') },
+                { key: 'grid', icon: 'grid', accessibilityLabel: t('product.viewGrid') },
+              ]}
               value={prodViewMode}
               onChange={(value) => setProdViewMode(value as ViewMode)}
             />
           ) : (
             <View style={[styles.viewToggle, styles.prodToggleDense]}>
-              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, prodViewMode === 'list' && styles.viewBtnOn]} onPress={() => setProdViewMode('list')} activeOpacity={0.85}>
+              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, prodViewMode === 'list' && styles.viewBtnOn]} onPress={() => setProdViewMode('list')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('product.viewList')} accessibilityState={{ selected: prodViewMode === 'list' }}>
                 <Ionicons name="list" size={19} color={prodViewMode === 'list' ? colors.white : colors.inkSoft} />
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, prodViewMode === 'grid' && styles.viewBtnOn]} onPress={() => setProdViewMode('grid')} activeOpacity={0.85}>
+              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, prodViewMode === 'grid' && styles.viewBtnOn]} onPress={() => setProdViewMode('grid')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('product.viewGrid')} accessibilityState={{ selected: prodViewMode === 'grid' }}>
                 <Ionicons name="grid" size={17} color={prodViewMode === 'grid' ? colors.white : colors.inkSoft} />
               </TouchableOpacity>
             </View>
@@ -1685,7 +1728,7 @@ export default function CatalogScreen() {
   const tabSegments: Segment<'productos' | 'categorias'>[] = [
     { key: 'productos', label: t('catalog.tabProducts'), icon: 'cube-outline' },
   ];
-  if (!isAllStores && store !== 'froiz') {
+  if (!isAllStores) {
     tabSegments.push({ key: 'categorias', label: t('catalog.tabCategories'), icon: 'grid-outline' });
   }
 
@@ -1729,7 +1772,7 @@ export default function CatalogScreen() {
               <Ionicons name="cube-outline" size={16} color={tab === 'productos' ? colors.accent : colors.inkSoft} />
               <Text style={[styles.segTxt, tab === 'productos' ? styles.segTxtOn : styles.segTxtOff]}>{t('catalog.tabProducts')}</Text>
             </TouchableOpacity>
-            {!isAllStores && store !== 'froiz' && (
+            {!isAllStores && (
               <TouchableOpacity
                 style={[styles.segBtn, tab === 'categorias' && styles.segBtnOn]}
                 onPress={() => setTab('categorias')}
@@ -1768,6 +1811,7 @@ export default function CatalogScreen() {
         setStoreMenuOpen(false);
       }}
       accessibilityRole="button"
+      accessibilityLabel={t('common.all')}
       accessibilityState={{ selected: store === 'all' }}
     >
       {store === 'all' && (
@@ -2238,7 +2282,12 @@ export default function CatalogScreen() {
       )}
       {store === 'gadis' && tab === 'productos' && renderProductsTab(gaSearch, gaLoading, gaError, gaResults.map(gadisToUI))}
 
-      {/* ── Froiz (catálogo sin árbol de categorías) ───────────── */}
+      {/* ── Froiz ───────────────────────────────────────────────── */}
+      {store === 'froiz' && tab === 'categorias' && (
+        frCatsLoading ? <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
+        : frCatsError ? <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Froiz' })}</Text><TouchableOpacity onPress={() => { setFrCatsError(false); setFrCatsLoading(true); fetchFroizCategoryTree().then(setFrCats).catch(() => setFrCatsError(true)).finally(() => setFrCatsLoading(false)); }}><Text style={styles.retryText}>{t('common.retry')}</Text></TouchableOpacity></View>
+        : <FlatList data={sortedCats(frCats)} keyExtractor={(item) => item.id} renderItem={renderFrCategory} contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]} showsVerticalScrollIndicator={false} ItemSeparatorComponent={() => <View style={{ height: 8 }} />} />
+      )}
       {store === 'froiz' && tab === 'productos' && renderProductsTab(frSearch, frLoading, frError, frResults.map(froizToUI))}
 
       {/* ── Ahorramás ────────────────────────────────────────────── */}
@@ -2378,7 +2427,13 @@ export default function CatalogScreen() {
         <View style={[styles.storeSheet, { paddingTop: insets.top }]}>
           <View style={styles.storeSheetHeader}>
             <Text style={styles.storeSheetTitle}>{t('storePicker.title')}</Text>
-            <TouchableOpacity style={styles.storeCloseBtn} onPress={() => setStoreMenuOpen(false)} hitSlop={8}>
+            <TouchableOpacity
+              style={styles.storeCloseBtn}
+              onPress={() => setStoreMenuOpen(false)}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.close')}
+            >
               <Ionicons name="close" size={22} color={colors.ink} />
             </TouchableOpacity>
           </View>
@@ -2415,6 +2470,9 @@ export default function CatalogScreen() {
                     pressed && styles.storeCardPressed,
                   ]}
                   onPress={() => { handleStoreChange(item.key); setStoreMenuOpen(false); }}
+                  accessibilityRole="button"
+                  accessibilityLabel={item.name}
+                  accessibilityState={{ selected: on }}
                 >
                   {on && (
                     <View style={styles.storeCardCheck}>

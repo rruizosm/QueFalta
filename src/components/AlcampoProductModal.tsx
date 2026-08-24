@@ -85,6 +85,7 @@ export default function AlcampoProductModal({ product, onClose, topInset = 16, b
     setAdding(true);
     try {
       await addToActiveCart([{
+        storeKey: 'alcampo',
         productName: product.displayName,
         quantity: qty,
         unit: 'ud',

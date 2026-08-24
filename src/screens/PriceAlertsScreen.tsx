@@ -128,6 +128,7 @@ export default function PriceAlertsScreen() {
         title={t('priceAlerts.title')}
         icon="notifications-outline"
         headerTop={headerTop}
+        titleFontSize={17}
         right={(
           <TouchableOpacity onPress={openNew} style={styles.headerAdd} accessibilityRole="button" accessibilityLabel={t('priceAlerts.newTitle')}>
             <Ionicons name="add" size={21} color={colors.white} />
@@ -185,8 +186,10 @@ export default function PriceAlertsScreen() {
                         value={active}
                         onValueChange={(value) => toggle(rule, value)}
                         onTouchEnd={(event) => event.stopPropagation()}
-                        trackColor={{ true: colors.accentMid }}
-                        thumbColor={active ? colors.accent : colors.inkFaint}
+                        trackColor={{ false: colors.border, true: colors.accent }}
+                        thumbColor={colors.white}
+                        ios_backgroundColor={colors.border}
+                        accessibilityState={{ checked: active }}
                       />
                     )}
                   </View>

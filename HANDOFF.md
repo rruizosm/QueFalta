@@ -1,5 +1,155 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Alertas personalizadas: texto y estado visual (local, 2026-08-24)
+
+- La cabecera deja de truncar «Alertas personalizadas» al convivir con Atrás y
+  Añadir; usa el tamaño compacto ya previsto por `ProfileSubscreenHeader`.
+- El switch de una regla activa pasa de `accentMid` translúcido a `accent`
+  sólido, con thumb blanco y estado accesible sincronizado. El estado apagado
+  sigue neutro y no cambia la persistencia ni los límites free/Plus.
+- Regresión cubierta en `scripts/tests/price-alerts-ui.test.mjs`. Sin backend.
+
+## Hallazgos medios de la auditoría corregidos (local, 2026-08-24)
+
+- Accesibilidad cerrada para los controles señalados de Catálogo, Cesta y
+  Grupos: nombres, roles y estados de selección/checkbox/expansión en
+  VoiceOver y TalkBack.
+- `GroupDetailScreen` fusiona y agrupa una sola vez, usa listas virtualizadas y
+  desmonta la vista normal al abrir la cesta completa. No quedan `ScrollView`
+  de productos ni dos copias completas montadas.
+- `ListScreen` elimina la animación JS de altura por producto: una zona plegada
+  no conserva filas en `SectionList` y usa un único `LayoutAnimation` salvo con
+  movimiento reducido.
+- `AddMemberScreen` ya no silencia cargas parciales, ofrece reintento, evita
+  presentar como disponible a un miembro existente y serializa incluso dobles
+  toques mediante un guard síncrono. Su geometría queda alineada con Grupos.
+- Transferir administración y expulsar abren `ConfirmDialog` antes de escribir.
+  La cuadrícula de productos responde al ancho actual con 3/4/5 columnas y las
+  imágenes fallidas conservan un placeholder visible.
+- Regresiones en `scripts/tests/medium-priority-audit.test.mjs`. Validación:
+  `npm run quality` verde (73/73), exports Hermes iOS/Android correctos y build
+  Release iOS instalada y abierta en iPhone 15 Pro con iOS 26.5. No se tocó
+  onboarding ni fue necesaria una migración.
+
+## DAU, WAU y MAU exactos (local + backend, 2026-08-24)
+
+- `AuthContext` registra el arranque autenticado en primer plano y las
+  transiciones reales a `active` mediante `src/lib/appActivity.ts`. La llamada
+  es best-effort y no altera el flujo de sesión si falla.
+- La fecha y el usuario se fijan en Supabase. La app solo envía plataforma y
+  versión; `private.app_daily_activity` agrega una fila por usuario/día de
+  Madrid y cuenta entradas al primer plano sin exponer actividad individual.
+- `private.app_active_user_metrics` calcula DAU, WAU de 7 días y MAU de 30 días.
+  No se mezcló el histórico aproximado de Auth: empezará a poblarse cuando se
+  distribuya este cliente y `tracking_started_on` indica desde cuándo hay datos.
+- Desplegadas `20260824170826_app_active_user_metrics.sql` como
+  `20260824171037` y `20260824171201_app_active_user_metrics_hardening.sql`
+  como `20260824171226`. La escritura autenticada se probó dentro de una
+  transacción revertida; `anon` no ejecuta la RPC y los clientes no leen tabla
+  ni agregados. TypeScript y lint pasan; falta publicar el cambio de cliente.
+
+## Imágenes y categorías de Froiz (local + backend, 2026-08-24)
+
+- `sync-froiz.mjs` usa ahora URLs públicas estables de Cloudflare Images a
+  partir de `image_id`; deja de concatenar la ruta firmada `image` sobre una base
+  que ya incluía la cuenta y generaba 404. Hay tests para el id directo y el
+  fallback extraído de la ruta.
+- Catálogo ofrece la pestaña Categorías de Froiz, carga perezosamente su árbol,
+  admite favoritos y abre `FroizProductsScreen` para cada subcategoría.
+- En producción existen 12 categorías N1, 539 N2 y 6.889 productos categorizados.
+  Se repararon 6.877 miniaturas desde `raw.image_id`; las 12 filas cuyo origen no
+  publica imagen quedan a NULL. Verificación posterior: cero rutas duplicadas y
+  una muestra real responde 200.
+- DRY_RUN completo correcto: 6.893 productos, 551 categorías y 861 ofertas
+  procesados sin escribir. `npm run quality` pasa TypeScript, lint y 66/66 tests.
+
+## Precio unitario de Gadis corregido (local + backend, 2026-08-24)
+
+- El origen publicaba `el kilo`, `el litro`, `la unidad`, `la docena`, `los
+  100 ml` y `los 100 gr.`, pero el cliente reducía todos los textos no
+  canónicos a €/ud. El sync guarda ahora exclusivamente `kg`, `l` o `ud` y
+  convierte las cantidades de referencia.
+- Los frescos sin sufijo usan `weight=P` y quedan en €/kg; los demás productos
+  sin sufijo permanecen en €/ud. Metro y dosis se dejan sin precio unitario
+  canónico para no presentar una equivalencia falsa.
+- Incluida prueba de regresión. La migración local
+  `20260824143104_normalize_gadis_reference_units.sql` está desplegada como
+  `20260824143221`. Verificación remota: 6.065 productos en kg, 3.150 en L,
+  1.638 en ud, cero unidades no canónicas y cero precios con unidad vacía.
+- DRY_RUN real limitado: 150 productos y 112 categorías procesados. `npm run
+  quality` correcto: TypeScript, lint y 66/66 pruebas.
+
+## Comparador Froiz, Gadis y Ahorramás (local + backend, 2026-08-24)
+
+- La acción compartida «Buscar productos más económicos» usa ya Froiz,
+  Gadis y Ahorramás tanto como origen como destino sin cambiar la API v6 del
+  cliente. Se ampliaron materializador, worker, detalle público, candidatos,
+  matches internos y estado de caché.
+- El snapshot contiene 6.889 productos de Froiz, 10.898 de Gadis y 7.453 de
+  Ahorramás. La unidad y la cantidad canónica aceptan las etiquetas comerciales
+  reales; dosis, lavado y metro quedan fuera de las comparaciones kg/L/ud. El
+  backfill final deja 6.889/6.889, 10.898/10.898 y 7.453/7.453 embeddings,
+  respectivamente, con cola y fallos a cero.
+- Desplegadas `20260824140442` como `20260824140836`, `20260824141713` como
+  `20260824141904` y `20260824150548` como `20260824150622`. Edge Function
+  `catalog-embed` activa en v7.
+- Pruebas reales correctas con leches de las tres cadenas como origen: cada RPC
+  devolvió alternativas de las otras dos con match semántico, precio unitario
+  compatible e `is_cheaper`. La validación local pasa TypeScript, lint y 66/66
+  tests; los asesores remotos no añaden incidencias ligadas a este cambio.
+
+## Embeddings enlazados a los syncs (local, 2026-08-24)
+
+- Los 17 workflows de los supermercados admitidos por el comparador ejecutan
+  ahora el materializador transversal para una sola tienda tras un sync
+  correcto. Bonpreu lo hace solo cuando `continue_sync` deja de ser `true`.
+- Los ocho wrappers PowerShell hacen lo mismo tras ejecuciones reales y omiten
+  el postproceso en `DRY_RUN`; así quedan cubiertos también los syncs productivos
+  locales de Carrefour, Eroski y Caprabo.
+- Hipercor no se conecta todavía porque no está admitido por la capa de
+  embeddings. El cron remoto `catalog-embedding-dispatch` queda activo para
+  procesar de forma continua los cambios que materializan los syncs.
+
+## Reportes de resultados del comparador (local + backend, 2026-08-24)
+
+- `SimilarProductsSection` incorpora dentro de cada fila una bandera a la
+  izquierda del producto. Envía el reporte sin abrir la ficha, muestra loader,
+  confirmación y estado completado, y conserva accesibilidad ES/CA.
+- `src/api/catalog.ts` llama a `public.report_catalog_product_match`; la RPC
+  autenticada valida el match y delega la escritura privilegiada. No se expone
+  acceso directo a la cola privada.
+- `private.catalog_match_reports` conserva usuario, pareja, versión, estados de
+  revisión, nota/revisor y snapshots de productos+métricas. Un índice único
+  evita duplicados por usuario y hay índices para pendientes y agrupación por
+  pareja.
+- `20260824140037_catalog_match_reports.sql` está desplegada como
+  `20260824140510`. La prueba real confirmó idempotencia y snapshots; el reporte
+  de prueba fue eliminado. TypeScript, lint y la suite global son correctos.
+
+## Fondo del onboarding sin líneas blancas (local, 2026-08-24)
+
+- Retirados del SVG compartido los reflejos horizontales blancos de la persiana
+  y el borde blanco del remate inferior de los cinco pasos. Se mantienen el
+  fondo azul y las separaciones oscuras; no cambia la lógica del flujo.
+
+## Diseño unificado de filtros en Ofertas y Novedades (local, 2026-08-24)
+
+- `OffersScreen` activa en `ProductFilterSheet` la misma variante visual Plus
+  y los iconos de categoría de Novedades. La lógica y las facetas específicas
+  de Ofertas no cambian.
+
+## Timeout ampliado del comparador (local + backend, 2026-08-24)
+
+- `catalog_cheaper_products_v6` ya no hereda los 8 segundos del rol
+  `authenticated`: usa una excepción de función de 60 segundos, el máximo
+  admitido por la Data API. El resto de consultas conserva 8 segundos y v5 no
+  cambia.
+- `20260824131021_extend_comparator_statement_timeout.sql` está desplegada como
+  `20260824131133`. Verificación real con Mercadona 4717 y caché fría: la
+  consulta terminó y devolvió 20 resultados en vez de HTTP 500.
+- Es un cambio exclusivamente de backend; no hace falta modificar ni publicar
+  el cliente.
+
 ## Logotipo local de Ahorramás (local, 2026-08-23)
 
 - `CATALOG_STORES` enlaza ya `assets/stores/ahorramas.jpg`; desaparece el
@@ -18,8 +168,8 @@
   antes de `limit`/`offset`, por lo que las tiendas individuales cargan páginas
   estables; «Todos» mezcla las cadenas habilitadas con el mismo criterio.
 - Se corrigió el hueco previo de Froiz: existía el texto de búsqueda, pero no
-  había efecto ni render de resultados. Froiz no muestra Categorías porque su
-  espejo actual carece de árbol.
+  había efecto ni render de resultados. Su árbol de categorías, ya presente en
+  el espejo, también queda conectado a la interfaz.
 - El mismo motor queda conectado a Novedades y Ofertas cuando se escribe una
   búsqueda. Novedades deja de buscar solo en las páginas ya descargadas y
   Ofertas sustituye el filtro de palabras sin ranking; ambos aplican categoría,
@@ -154,16 +304,19 @@
 - No hay cambios de esquema. Pendiente validar el destino real en las pruebas
   sandbox de iOS y Android ya previstas para Fase 3.
 
-## Acceso heredado a «Todos» (local, migración pendiente, 2026-08-22)
+## Acceso heredado a «Todos» (local + backend, 2026-08-24)
 
 - Catálogo y el selector compartido de Novedades, Ofertas y Cambios de precio
   mantienen «Todos» habilitado para cuentas anteriores a QuéFalta 1.3.
 - La excepción usa `profiles.legacy_all_stores_access`; solo afecta a este gate,
   no a los demás beneficios Plus, y un trigger impide cambiarla desde el cliente.
-- Pendiente desplegar `20260822090421_legacy_all_stores_access.sql` justo antes
-  de publicar 1.3. El despliegue fotografía las cuentas existentes como legacy;
-  las creadas después reciben `false` por defecto. Aplicarla con demasiada
-  antelación dejaría fuera a altas realizadas todavía desde 1.2.1.
+- La columna, el primer snapshot y el trigger ya estaban en producción, pero 66
+  altas posteriores habían quedado fuera mientras la versión pública seguía en
+  1.2.1. `20260824174500_grant_legacy_all_stores_to_pre_1_3_accounts.sql` está
+  desplegada como `20260824174522` y amplía el permiso a esas cuentas.
+- Verificación remota: 4.032 perfiles, 4.032 con acceso heredado y cero sin él.
+  El valor por defecto continúa en `false` y el trigger protector sigue activo,
+  por lo que las nuevas altas posteriores al snapshot no heredan el permiso.
 
 ## Icono personalizado por grupo (local + backend, 2026-08-22)
 
@@ -318,6 +471,33 @@
   `20260821182635`: cinco campos de referencia/snapshot en ambas tablas,
   constraints validados, RLS activo, privilegios correctos y seis policies sin
   cambios. `npm run quality` pasa con 30/30 pruebas.
+
+## Hallazgos altos de la auditoría corregidos (local + backend, 2026-08-24)
+
+- Cesta guarda `store_key` explícito y fusiona por `tienda:id`; cantidades de
+  Catálogo también usan esa clave compuesta. Se actualizaron todos los puntos de
+  alta y la repetición del historial. El fallback por URL queda solo para datos
+  históricos/builds antiguos.
+- `set_list_items_in_cart`, `assign_list_items` y `finish_list_purchase` son RPC
+  atómicas, invoker y limitadas a `authenticated`. La última archiva detalle y
+  vacía la lista en una transacción serializada. Migración local
+  `20260824165601_high_priority_cart_integrity.sql`, desplegada en producción
+  como versión remota `20260824170527`; backfill con 0 `store_key` nulos.
+- Pruebas remotas bajo RLS ejecutadas dentro de `BEGIN/ROLLBACK`: toggle masivo,
+  asignación, finalización con detalle, limpieza y trigger legacy correctos. Los
+  advisors no señalan ninguna de las tres funciones nuevas.
+- `CartContext` serializa mutaciones y protege la restauración; Inicio invalida
+  peticiones antiguas. Grupos bloquea todas las activaciones mientras hay una en
+  vuelo y separa navegación/activación en objetivos táctiles hermanos.
+- Catálogo conjunto usa paginador por tienda tolerante a fallos, bloques de 12 y
+  buffers persistentes; conserva resultados parciales y deja de repetir descargas.
+- Android: `app.json` registra `withAndroidReleaseHardening`, que elimina la
+  firma debug del release y activa R8/resource shrinking tras cada prebuild;
+  también bloquea `RECORD_AUDIO`, storage heredado y `SYSTEM_ALERT_WINDOW` en el
+  manifest principal (debug conserva el overlay). EAS mantiene firma y versiones
+  remotas. Prebuild comprobado con configuración Firebase ficticia temporal.
+- Validación final: export Hermes correcto para iOS y Android y
+  `npm run quality` verde (TypeScript, ESLint y 69/69 pruebas).
 
 ## Grupos ilimitados para todas las cuentas (local + migración, 2026-08-21)
 

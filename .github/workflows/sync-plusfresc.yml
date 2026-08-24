@@ -27,3 +27,9 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
           DETAIL_CONCURRENCY: '6'
+      - name: Actualizar capa del comparador
+        run: node scripts/sync-comparator-embedding-catalog.mjs
+        env:
+          STORES: plusfresc
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}

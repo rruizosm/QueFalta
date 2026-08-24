@@ -91,6 +91,7 @@ export default function CarrefourProductModal({ product, onClose, topInset = 16,
     setAdding(true);
     try {
       await addToActiveCart([{
+        storeKey: 'carrefour',
         productName: product.displayName,
         quantity: qty,
         unit: 'ud',

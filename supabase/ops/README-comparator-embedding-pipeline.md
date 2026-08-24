@@ -19,6 +19,20 @@ Para pausar sin perder trabajos, ejecutar
 `disable-comparator-embedding-cron.sql`. Los mensajes quedan en
 `catalog_embedding_jobs` y vuelven a estar disponibles al reactivar el cron.
 
+## Integración con los syncs de catálogo
+
+Los workflows de los 17 supermercados compatibles ejecutan, después de un sync
+correcto, `sync-comparator-embedding-catalog.mjs` con `STORES` limitado a la
+tienda actual. Bonpreu/Esclat espera al último lote del ciclo encadenado. Los
+runners PowerShell locales repiten el mismo postproceso y lo omiten en
+`DRY_RUN`; Carrefour se integra por esta vía porque su sync productivo no corre
+en GitHub Actions.
+
+El postproceso materializa e invalida, pero no consume la cola por sí mismo. El
+cron `catalog-embedding-dispatch` debe estar activo para que la Edge Function
+genere los vectores pendientes. Hipercor queda fuera hasta incorporarlo al
+contrato completo del comparador.
+
 Los trabajos fallidos se reintentan mediante el visibility timeout de `pgmq`.
 Tras cinco intentos se archivan y quedan auditados en
 `catalog_embedding_failures`; los errores de saldo de OpenAI permiten veinte

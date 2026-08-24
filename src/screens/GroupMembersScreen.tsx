@@ -26,6 +26,7 @@ import NameInputSheet from '../components/NameInputSheet';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 
 type MembersRouteProp = RouteProp<GroupsStackParamList, 'GroupMembers'>;
+type PendingMemberAction = { type: 'transfer' | 'remove'; member: GroupMember };
 
 const memberLabel = (member: GroupMember) => member.username ? `@${member.username}` : member.name;
 
@@ -47,6 +48,7 @@ export default function GroupMembersScreen() {
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [actionMember, setActionMember] = useState<GroupMember | null>(null);
+  const [pendingMemberAction, setPendingMemberAction] = useState<PendingMemberAction | null>(null);
   const [leaveVisible, setLeaveVisible] = useState(false);
   const [deleteVisible, setDeleteVisible] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -67,7 +69,6 @@ export default function GroupMembersScreen() {
   const isAdmin = !!adminId && adminId === userId;
 
   const doTransfer = async (member: GroupMember) => {
-    setActionMember(null);
     setBusyId(member.id);
     try {
       await transferGroupAdmin(groupId, member.id);
@@ -82,7 +83,6 @@ export default function GroupMembersScreen() {
   };
 
   const doRemove = async (member: GroupMember) => {
-    setActionMember(null);
     setBusyId(member.id);
     try {
       await removeGroupMember(groupId, member.id);
@@ -94,6 +94,19 @@ export default function GroupMembersScreen() {
     } finally {
       setBusyId(null);
     }
+  };
+
+  const requestMemberAction = (type: PendingMemberAction['type'], member: GroupMember) => {
+    setActionMember(null);
+    setPendingMemberAction({ type, member });
+  };
+
+  const confirmPendingMemberAction = () => {
+    const pending = pendingMemberAction;
+    setPendingMemberAction(null);
+    if (!pending) return;
+    if (pending.type === 'transfer') void doTransfer(pending.member);
+    else void doRemove(pending.member);
   };
 
   const confirmRename = async (name: string) => {
@@ -152,6 +165,8 @@ export default function GroupMembersScreen() {
         onPress={() => navigation.goBack()}
         style={glassAvailable ? styles.backBtnGlass : styles.backBtn}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={t('common.back')}
       >
         <Ionicons name="arrow-back" size={22} color={colors.ink} />
       </TouchableOpacity>
@@ -199,7 +214,13 @@ export default function GroupMembersScreen() {
                 </View>
               </View>
               {isAdmin && (
-                <TouchableOpacity onPress={() => setRenameVisible(true)} hitSlop={8} style={styles.renameBtn}>
+                <TouchableOpacity
+                  onPress={() => setRenameVisible(true)}
+                  hitSlop={8}
+                  style={styles.renameBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('group.renameTitle')}
+                >
                   <Ionicons name="create-outline" size={17} color={colors.accent} />
                 </TouchableOpacity>
               )}
@@ -210,6 +231,8 @@ export default function GroupMembersScreen() {
                 style={styles.addBtn}
                 activeOpacity={0.8}
                 onPress={() => navigation.navigate('AddMember', { groupId })}
+                accessibilityRole="button"
+                accessibilityLabel={t('group.addMember')}
               >
                 <Ionicons name="person-add-outline" size={17} color={colors.white} />
                 <Text style={styles.addBtnText}>{t('group.addMember')}</Text>
@@ -243,7 +266,13 @@ export default function GroupMembersScreen() {
                     busyId === m.id ? (
                       <ActivityIndicator size="small" color={colors.inkSoft} />
                     ) : (
-                      <TouchableOpacity onPress={() => setActionMember(m)} hitSlop={8} style={styles.removeBtn}>
+                      <TouchableOpacity
+                        onPress={() => setActionMember(m)}
+                        hitSlop={8}
+                        style={styles.removeBtn}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('group.memberActionsA11y', { name: memberLabel(m) })}
+                      >
                         <Ionicons name="ellipsis-horizontal" size={20} color={colors.inkSoft} />
                       </TouchableOpacity>
                     )
@@ -261,6 +290,8 @@ export default function GroupMembersScreen() {
                 style={styles.leaveBtn}
                 onPress={() => setDeleteVisible(true)}
                 disabled={deleting}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: deleting, busy: deleting }}
               >
                 {deleting ? (
                   <ActivityIndicator size="small" color="#d6452b" />
@@ -277,6 +308,8 @@ export default function GroupMembersScreen() {
               style={styles.leaveBtn}
               onPress={() => setLeaveVisible(true)}
               disabled={busyId === userId}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: busyId === userId, busy: busyId === userId }}
             >
               {busyId === userId ? (
                 <ActivityIndicator size="small" color="#d6452b" />
@@ -315,7 +348,8 @@ export default function GroupMembersScreen() {
               <TouchableOpacity
                 style={styles.sheetAction}
                 activeOpacity={0.7}
-                onPress={() => doTransfer(actionMember)}
+                onPress={() => requestMemberAction('transfer', actionMember)}
+                accessibilityRole="button"
               >
                 <Ionicons name="star-outline" size={20} color={colors.accent} />
                 <Text style={styles.sheetActionText}>{t('group.makeAdmin')}</Text>
@@ -324,7 +358,8 @@ export default function GroupMembersScreen() {
               <TouchableOpacity
                 style={styles.sheetAction}
                 activeOpacity={0.7}
-                onPress={() => doRemove(actionMember)}
+                onPress={() => requestMemberAction('remove', actionMember)}
+                accessibilityRole="button"
               >
                 <Ionicons name="person-remove-outline" size={20} color="#d6452b" />
                 <Text style={[styles.sheetActionText, { color: '#d6452b' }]}>{t('group.removeFromGroup')}</Text>
@@ -334,6 +369,7 @@ export default function GroupMembersScreen() {
                 style={styles.sheetCancel}
                 activeOpacity={0.7}
                 onPress={() => setActionMember(null)}
+                accessibilityRole="button"
               >
                 <Text style={styles.sheetCancelText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
@@ -341,6 +377,24 @@ export default function GroupMembersScreen() {
           )}
         </View>
       </Modal>
+
+      <ConfirmDialog
+        visible={!!pendingMemberAction}
+        title={t(pendingMemberAction?.type === 'transfer'
+          ? 'group.transferTitle'
+          : 'group.removeMemberTitle')}
+        message={t(pendingMemberAction?.type === 'transfer'
+          ? 'group.transferMessage'
+          : 'group.removeMemberMessage', {
+          name: pendingMemberAction ? memberLabel(pendingMemberAction.member) : '',
+        })}
+        confirmLabel={t(pendingMemberAction?.type === 'transfer'
+          ? 'group.transferConfirm'
+          : 'group.removeMemberConfirm')}
+        destructive={pendingMemberAction?.type === 'remove'}
+        onConfirm={confirmPendingMemberAction}
+        onCancel={() => setPendingMemberAction(null)}
+      />
 
       <ConfirmDialog
         visible={leaveVisible}

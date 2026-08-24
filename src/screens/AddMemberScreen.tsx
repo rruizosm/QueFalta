@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   View, Text, TextInput, ScrollView, TouchableOpacity,
   StyleSheet, StatusBar, ActivityIndicator,
@@ -36,19 +36,40 @@ export default function AddMemberScreen() {
   const [friends, setFriends] = useState<FriendProfile[]>([]);
   const [memberIds, setMemberIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [query, setQuery] = useState('');
-  const [addedIds, setAddedIds] = useState<string[]>([]);
   const [addingId, setAddingId] = useState<string | null>(null);
+  const loadRequestRef = useRef(0);
+  const addingRef = useRef(false);
 
-  const load = useCallback(() => {
-    if (!userId) return;
-    Promise.all([
-      fetchFriends(userId).then(setFriends),
-      fetchGroupMembers(groupId).then((ms) => setMemberIds(new Set(ms.map((m) => m.id)))),
-    ]).catch(() => {}).finally(() => setLoading(false));
+  const load = useCallback(async () => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+    const requestId = ++loadRequestRef.current;
+    setLoadError(false);
+    try {
+      // Publica ambos snapshots juntos: si miembros falla, nunca se muestran
+      // amigos como disponibles basándonos en un conjunto incompleto.
+      const [nextFriends, members] = await Promise.all([
+        fetchFriends(userId),
+        fetchGroupMembers(groupId),
+      ]);
+      if (requestId !== loadRequestRef.current) return;
+      setFriends(nextFriends);
+      setMemberIds(new Set(members.map((member) => member.id)));
+    } catch {
+      if (requestId === loadRequestRef.current) setLoadError(true);
+    } finally {
+      if (requestId === loadRequestRef.current) setLoading(false);
+    }
   }, [userId, groupId]);
 
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  useFocusEffect(useCallback(() => {
+    void load();
+    return () => { loadRequestRef.current += 1; };
+  }, [load]));
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase().replace(/^@/, '');
@@ -59,15 +80,18 @@ export default function AddMemberScreen() {
   }, [friends, query]);
 
   const handleAdd = async (f: FriendProfile) => {
+    if (addingRef.current || memberIds.has(f.id)) return;
+    addingRef.current = true;
     setAddingId(f.id);
     try {
       await addMemberToGroup(groupId, f.id);
-      setAddedIds((ids) => [...ids, f.id]);
+      setMemberIds((ids) => new Set(ids).add(f.id));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show(t('group.added', { name: f.name }));
     } catch {
       toast.show(t('group.addError'), 'error');
     } finally {
+      addingRef.current = false;
       setAddingId(null);
     }
   };
@@ -77,7 +101,12 @@ export default function AddMemberScreen() {
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       <View style={[styles.header, { paddingTop: headerTop }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backBtn}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+        >
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
         <Text style={styles.title}>{t('group.addMember')}</Text>
@@ -99,6 +128,18 @@ export default function AddMemberScreen() {
 
       {loading ? (
         <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 60 }} />
+      ) : loadError ? (
+        <View style={styles.centerBox} accessibilityRole="alert">
+          <Ionicons name="cloud-offline-outline" size={44} color={colors.inkFaint} />
+          <Text style={styles.emptyTitle}>{t('group.memberLoadError')}</Text>
+          <TouchableOpacity
+            style={styles.retryBtn}
+            onPress={() => { setLoading(true); void load(); }}
+            accessibilityRole="button"
+          >
+            <Text style={styles.retryText}>{t('common.retry')}</Text>
+          </TouchableOpacity>
+        </View>
       ) : friends.length === 0 ? (
         <View style={styles.centerBox}>
           <Ionicons name="people-outline" size={48} color={colors.inkFaint} />
@@ -111,7 +152,7 @@ export default function AddMemberScreen() {
             <Text style={styles.empty}>{t('group.noFriendMatch')}</Text>
           ) : (
             filtered.map((f) => {
-              const isMember = memberIds.has(f.id) || addedIds.includes(f.id);
+              const isMember = memberIds.has(f.id);
               return (
                 <View key={f.id} style={styles.row}>
                   <UserAvatar avatarUrl={f.avatarUrl} initials={f.initials} color={f.color} size={42} />
@@ -128,7 +169,14 @@ export default function AddMemberScreen() {
                       <Text style={styles.addedText}>{t('group.inGroup')}</Text>
                     </View>
                   ) : (
-                    <TouchableOpacity style={styles.addBtn} onPress={() => handleAdd(f)} disabled={addingId === f.id}>
+                    <TouchableOpacity
+                      style={[styles.addBtn, addingId !== null && styles.addBtnDisabled]}
+                      onPress={() => handleAdd(f)}
+                      disabled={addingId !== null}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('group.addMemberA11y', { name: f.name })}
+                      accessibilityState={{ disabled: addingId !== null, busy: addingId === f.id }}
+                    >
                       {addingId === f.id
                         ? <ActivityIndicator size="small" color={colors.white} />
                         : <Text style={styles.addBtnText}>{t('group.add')}</Text>}
@@ -154,7 +202,7 @@ const themedStyles = () => StyleSheet.create({
   backBtn: {
     width: 38, height: 38, backgroundColor: colors.white,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.border,
+    borderWidth: 1, borderColor: colors.border, borderRadius: 19,
   },
   title: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
 
@@ -163,6 +211,7 @@ const themedStyles = () => StyleSheet.create({
     marginHorizontal: 16, marginTop: 8,
     backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
     paddingHorizontal: 13, paddingVertical: 11,
+    borderRadius: 18,
   },
   input: { flex: 1, fontSize: 14.5, fontFamily: fonts.medium, color: colors.ink, padding: 0 },
 
@@ -173,6 +222,7 @@ const themedStyles = () => StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
     paddingHorizontal: 14, paddingVertical: 11, marginBottom: 8,
+    borderRadius: 18,
   },
   avatar: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontSize: 15, fontFamily: fonts.bold, color: colors.white },
@@ -180,7 +230,8 @@ const themedStyles = () => StyleSheet.create({
   nameRow: { flexDirection: 'row', alignItems: 'center' },
   name: { flexShrink: 1, fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
   username: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.accent, marginTop: 1 },
-  addBtn: { backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 9 },
+  addBtn: { backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 9, borderRadius: 16 },
+  addBtnDisabled: { opacity: 0.55 },
   addBtnText: { fontSize: 13, fontFamily: fonts.bold, color: colors.white },
   addedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   addedText: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.ok },
@@ -188,4 +239,6 @@ const themedStyles = () => StyleSheet.create({
   centerBox: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40, gap: 10 },
   emptyTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink, textAlign: 'center' },
   emptyText: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'center', lineHeight: 20 },
+  retryBtn: { marginTop: 4, paddingHorizontal: 16, paddingVertical: 9, borderRadius: 16, backgroundColor: colors.accentLight },
+  retryText: { fontSize: 13.5, fontFamily: fonts.bold, color: colors.accent },
 });

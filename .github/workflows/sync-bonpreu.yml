@@ -44,6 +44,13 @@ jobs:
           SKIP_DETAIL: '1'
           DETAIL_CONCURRENCY: '2'
           DETAIL_MAX: '500'
+      - name: Actualizar capa del comparador al completar el ciclo
+        if: success() && steps.sync.outputs.continue_sync != 'true'
+        run: node scripts/sync-comparator-embedding-catalog.mjs
+        env:
+          STORES: esclat
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
       # Mientras el ciclo siga incompleto, espera para no presionar el WAF y
       # vuelve a lanzar este mismo workflow. workflow_dispatch sí genera una
       # nueva ejecución cuando se autentica con GITHUB_TOKEN.

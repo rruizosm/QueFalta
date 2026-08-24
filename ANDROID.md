@@ -24,6 +24,14 @@
   Las env vars de EAS (Supabase URL/key) son por perfil, no por plataforma → los
   builds Android las heredan sin tocar nada.
 - SDK 54 compila con target API ≥ 35 → cumple el requisito vigente de Google Play.
+- **Release endurecido (2026-08-24):** el plugin local
+  `plugins/withAndroidReleaseHardening.js` se reaplica en cada prebuild, elimina
+  el fallback a `debug.keystore` del bloque release y activa minificación/R8 y
+  recorte de recursos. EAS inyecta después el keystore de upload real. El
+  manifest de producción bloquea además `RECORD_AUDIO`, permisos de storage
+  heredados y `SYSTEM_ALERT_WINDOW`; los manifests debug conservan el overlay
+  que necesita el dev client. `versionCode` continúa gestionado en remoto con
+  `appVersionSource: remote` + `autoIncrement`.
 
 ## 🔴 Bloqueantes antes del primer build de producción
 

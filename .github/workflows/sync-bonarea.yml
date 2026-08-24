@@ -35,3 +35,9 @@ jobs:
           # en régimen (TTL 30 días) cada semana refresca solo un puñado y el tope no se alcanza.
           DETAIL_MAX: '2500'
           DETAIL_CONCURRENCY: '8'
+      - name: Actualizar capa del comparador
+        run: node scripts/sync-comparator-embedding-catalog.mjs
+        env:
+          STORES: bonarea
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}

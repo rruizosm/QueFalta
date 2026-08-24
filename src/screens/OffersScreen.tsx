@@ -498,6 +498,8 @@ export default function OffersScreen() {
           setPricePerUnitSort(value);
           if (value) setSort(null);
         }}
+        appearance="plus"
+        showCategoryIcons
       />
 
       {/* Chrome de cristal: al FINAL del árbol para pintarse encima; la lista

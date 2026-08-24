@@ -87,6 +87,7 @@ export default function PlusfrescProductModal({ product, onClose, topInset = 16,
     setAdding(true);
     try {
       await addToActiveCart([{
+        storeKey: 'plusfresc',
         productName: product.displayName,
         quantity: qty,
         unit: 'ud',

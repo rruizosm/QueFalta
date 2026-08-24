@@ -1,10 +1,9 @@
 import { supabase } from '../lib/supabase';
 import {
   linkedNoteProductFromRow,
-  linkedNoteProductToRow,
   type NewListItem,
 } from './lists';
-import { storeOfItem } from '../constants/stores';
+import { normalizeStoreKey, storeOfItem } from '../constants/stores';
 
 export interface Purchase {
   id: string;
@@ -69,39 +68,12 @@ const statisticItems = (rows: unknown): PurchaseStatisticItem[] =>
     }))
     : [];
 
-/** Archives a completed shopping trip, with its item detail (for "repeat"). */
-export async function recordPurchase(
-  groupId: string,
-  total: number,
-  items: NewListItem[],
-  userId: string,
-): Promise<void> {
-  const { data, error } = await supabase
-    .from('purchases')
-    .insert({ group_id: groupId, total, item_count: items.length, completed_by: userId })
-    .select('id')
-    .single();
+/** Archiva y vacía una lista en una única transacción del servidor. */
+export async function finishPurchase(listId: string): Promise<string> {
+  const { data, error } = await supabase.rpc('finish_list_purchase', { p_list_id: listId });
   if (error) throw error;
-
-  if (items.length > 0) {
-    const rows = items.map((it) => ({
-      purchase_id: data.id,
-      product_name: it.productName,
-      quantity: it.quantity,
-      unit: it.unit ?? 'ud',
-      note: it.note?.trim() || null,
-      ...linkedNoteProductToRow(it.noteProduct ?? null),
-      category_emoji: it.categoryEmoji ?? null,
-      category_name: it.categoryName ?? null,
-      mercadona_product_id: it.mercadonaProductId ?? null,
-      store_product_id: it.storeProductId ?? null,
-      store_key: storeOfItem(it),
-      unit_price: it.unitPrice ?? null,
-      image_url: it.imageUrl ?? null,
-    }));
-    const { error: itemsError } = await supabase.from('purchase_items').insert(rows);
-    if (itemsError) throw itemsError;
-  }
+  if (typeof data !== 'string') throw new Error('Invalid finish purchase response');
+  return data;
 }
 
 /** Personal purchase trends. The database function restricts results to auth.uid(). */
@@ -154,24 +126,32 @@ export async function fetchGeneralPurchaseStatistics(): Promise<GeneralPurchaseS
 export async function fetchPurchaseItems(purchaseId: string): Promise<NewListItem[]> {
   const { data, error } = await supabase
     .from('purchase_items')
-    .select('product_name, quantity, unit, category_emoji, category_name, mercadona_product_id, store_product_id, unit_price, image_url, note, note_product_store, note_product_id, note_product_name, note_product_image_url, note_product_unit_price')
+    .select('product_name, quantity, unit, category_emoji, category_name, mercadona_product_id, store_product_id, store_key, unit_price, image_url, note, note_product_store, note_product_id, note_product_name, note_product_image_url, note_product_unit_price')
     .eq('purchase_id', purchaseId);
 
   if (error) throw error;
 
-  return (data ?? []).map((it: any) => ({
-    productName: it.product_name,
-    quantity: Number(it.quantity),
-    unit: it.unit ?? 'ud',
-    note: it.note ?? null,
-    noteProduct: linkedNoteProductFromRow(it),
-    categoryEmoji: it.category_emoji ?? null,
-    categoryName: it.category_name ?? null,
-    mercadonaProductId: it.mercadona_product_id ?? null,
-    storeProductId: it.store_product_id ?? null,
-    unitPrice: it.unit_price != null ? Number(it.unit_price) : null,
-    imageUrl: it.image_url ?? null,
-  }));
+  return (data ?? []).map((it: any) => {
+    const clue = {
+      storeKey: normalizeStoreKey(it.store_key),
+      imageUrl: it.image_url ?? null,
+      mercadonaProductId: it.mercadona_product_id ?? null,
+    };
+    return {
+      storeKey: clue.storeKey ?? storeOfItem(clue),
+      productName: it.product_name,
+      quantity: Number(it.quantity),
+      unit: it.unit ?? 'ud',
+      note: it.note ?? null,
+      noteProduct: linkedNoteProductFromRow(it),
+      categoryEmoji: it.category_emoji ?? null,
+      categoryName: it.category_name ?? null,
+      mercadonaProductId: clue.mercadonaProductId,
+      storeProductId: it.store_product_id ?? null,
+      unitPrice: it.unit_price != null ? Number(it.unit_price) : null,
+      imageUrl: clue.imageUrl,
+    };
+  });
 }
 
 /** All purchases of the user's groups, newest first (RLS limits to member groups). */

@@ -70,9 +70,11 @@ test('el servidor ordena antes de paginar por relevancia, precio o precio unitar
 
 test('el catálogo ofrece relevancia y carga páginas adicionales', () => {
   assert.match(catalogScreen, /useState<ProductSearchOrder>\('relevance'\)/);
-  assert.match(catalogScreen, /sortByRelevance/);
+  assert.match(catalogScreen, /relevanceScore/);
   assert.match(catalogScreen, /loadMoreStoreSearch/);
   assert.match(catalogScreen, /allSearchExhausted/);
+  assert.match(catalogScreen, /createMultiStorePager<UIProduct, CatalogStore, number>/);
+  assert.match(catalogScreen, /pageSize: 12/);
   assert.match(catalogScreen, /searchFroizProducts/);
   assert.match(catalogScreen, /sortRelevance/);
 });

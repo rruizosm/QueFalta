@@ -85,6 +85,7 @@ export default function AmetllerProductModal({ product, onClose, topInset = 16, 
     setAdding(true);
     try {
       await addToActiveCart([{
+        storeKey: 'ametller',
         productName: product.displayName,
         quantity: qty,
         unit: 'ud',

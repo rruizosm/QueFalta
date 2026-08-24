@@ -11,6 +11,7 @@
 //      MAX_CATEGORIES=N, MIN_PRODUCTS=8000, CONCURRENCY=4.
 import { markStale } from './lib/stale.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
+import { normalizeGadisPricePerUnit } from './lib/gadis.mjs';
 
 const BASE = 'https://www.gadisline.com';
 const URL = process.env.SUPABASE_URL;
@@ -88,7 +89,7 @@ function normalize(product) {
   const publicOffers = offers.filter((offer) => offer?.is_offer_coupon !== true);
   const primaryOffer = publicOffers[0] ?? null;
   const isNew = (product.properties ?? []).some((property) => /nuevo/i.test(languageValue(property?.description) ?? property?.icon?.name ?? ''));
-  const ppu = Number(product.price_kilo_litre);
+  const ppu = normalizeGadisPricePerUnit(product);
   return {
     id: String(product.id), retailer_product_id: product.product_code != null ? String(product.product_code) : null,
     display_name: languageValue(product.commercial_description)?.trim() ?? '',
@@ -99,8 +100,8 @@ function normalize(product) {
     category_ids: categories.map((category) => String(category.id)).filter(Boolean),
     unit_price: Number.isFinite(Number(product.price)) ? Number(product.price) : null,
     price_format: Number.isFinite(Number(product.price)) ? `${Number(product.price).toFixed(2).replace('.', ',')} €` : null,
-    price_per_unit: Number.isFinite(ppu) ? ppu : null,
-    price_per_unit_unit: languageValue(product.price_kilo_litre_suffix) ?? null,
+    price_per_unit: ppu?.value ?? null,
+    price_per_unit_unit: ppu?.unit ?? null,
     promo_name: primaryOffer?.icon?.name ?? null,
     promo_text: primaryOffer?.description ?? primaryOffer?.title ?? null,
     promo_end: primaryOffer?.end_date ?? null,

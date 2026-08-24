@@ -72,6 +72,7 @@ export default function BonareaProductModal({ product, onClose, topInset = 16, b
     setAdding(true);
     try {
       await addToActiveCart([{
+        storeKey: 'bonarea',
         productName: product.displayName,
         quantity: qty,
         unit: 'ud',

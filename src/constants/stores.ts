@@ -60,7 +60,18 @@ export const STORE_META: Record<Store, { name: string; icon: any }> = {
   otros: { name: 'Otros', icon: null },
 } as Record<Store, { name: string; icon: any }>;
 
-type StoreClue = { imageUrl?: string | null; mercadonaProductId?: string | null };
+type StoreClue = {
+  storeKey?: Store | string | null;
+  imageUrl?: string | null;
+  mercadonaProductId?: string | null;
+};
+
+const STORE_KEY_SET = new Set<string>(STORE_ORDER);
+
+/** Valida una clave procedente de Supabase sin aceptar valores desconocidos. */
+export function normalizeStoreKey(value: unknown): Store | null {
+  return typeof value === 'string' && STORE_KEY_SET.has(value) ? value as Store : null;
+}
 
 // Dominio de la miniatura guardada en list_items: bonpreuesclat.cat, mercadona.es,
 // carrefour.es, bonarea.com, cdn-consum.aktiosdigitalservices.com, dia.es,
@@ -70,6 +81,8 @@ type StoreClue = { imageUrl?: string | null; mercadonaProductId?: string | null 
 // storage.gadisline.com (Gadis), ahorramas.com (Ahorramás).
 // Mercadona también se reconoce por su id.
 export function storeOfItem(it: StoreClue): Store {
+  const explicitStore = normalizeStoreKey(it.storeKey);
+  if (explicitStore) return explicitStore;
   const url = it.imageUrl ?? '';
   if (url.includes('bonpreuesclat')) return 'esclat';
   if (it.mercadonaProductId || url.includes('mercadona')) return 'mercadona';

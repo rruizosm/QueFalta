@@ -3,6 +3,12 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
+## Logotipo local de Ahorramás (2026-08-23)
+
+- Ahorramás usa ya `assets/stores/ahorramas.jpg` en selectores, preferencias,
+  filtros y agrupaciones, en lugar del icono genérico de tienda. No cambia la
+  disponibilidad regional, el catálogo ni el esquema remoto.
+
 ## Motor de búsqueda del catálogo (2026-08-23)
 
 - Los 18 catálogos usan ahora RPC homogéneas `search_*_products` en Supabase:
@@ -515,7 +521,7 @@
   retira tokens antiguos cuando está desactivada, evitando que dos usuarios del
   mismo dispositivo hereden la configuración.
 
-## Alertas personalizadas — reglas desplegadas, envío pendiente (2026-08-20; cupo actualizado 2026-08-23)
+## Alertas personalizadas — evaluación acotada activa (actualizado 2026-08-23)
 
 - Implementado localmente el MVP de alertas por producto exacto o por palabras,
   con uno o varios supermercados, bajada mínima configurable, nueva oferta y
@@ -540,11 +546,12 @@
   Si el mismo producto genera bajada y nueva oferta en un lote, se deduplica
   como oferta. Los taps `price_alert` abren la lista exacta de productos que
   originó la notificación, y desde cada resultado se puede abrir su ficha.
-- La migración local
+- La migración
   `20260821210209_price_alert_notification_products.sql` expone esa lista con
   una RPC `SECURITY DEFINER` que valida `auth.uid()` y mantiene ocultos los
   eventos internos. El push transporta solo `notificationId`; la bandeja usa
-  directamente el id de su fila. Esta migración aún no está desplegada.
+  directamente el id de su fila. Está desplegada en producción como
+  `20260823193941`.
 - Consum y Plusfresc guardan la zona/centro en la regla; sus cambios regionales
   se cruzan con esa ubicación. La vista previa filtra CCAA y centro cuando el
   espejo publica esos datos.
@@ -569,11 +576,26 @@
   desplegados en producción. El verificador transaccional pasa, incluido RLS,
   detección, deduplicación y bandeja. El cliente estabiliza además el valor de
   `ToastContext` para que un error de carga no reactive la consulta en bucle.
-- **Envío pendiente:** desplegar `process-price-alerts` con
-  `PROCESS_PRICE_ALERTS_SECRET` y programar `ops/schedule_price_alerts.sql`.
-  Hasta entonces se pueden crear, consultar y previsualizar reglas, pero los
-  eventos no se convertirán en bandeja/push. La entrega seguirá limitada por la
-  frecuencia real de cada sincronizador aunque el procesador corra cada 15 min.
+- Para evaluar los sync del lunes 24-08-2026, `process-price-alerts` v2 está
+  desplegada con una frontera adicional
+  `claim_price_alert_deliveries_for_user`: este despliegue solo puede reclamar
+  entregas de `@rruizosma`. Reutiliza temporalmente el secreto interno del
+  worker de embeddings sin exponerlo; un futuro
+  `PROCESS_PRICE_ALERTS_SECRET` dedicado tiene precedencia. La migración local
+  `20260823214058_targeted_price_alert_processor.sql` quedó aplicada como
+  `20260823194159` y su corrección de alias como `20260823194414`.
+- El cron de `ops/schedule_rruizosma_price_alert_evaluation.sql` llama al
+  procesador cada 15 minutos y se desprograma automáticamente el 25-08-2026 a
+  las 00:00 UTC. Hay
+  seis reglas `TEST 1` a `TEST 6`: novedades, bajadas sin umbral, bajadas ≥10%,
+  ofertas, mezcla bajada+oferta y producto exacto. La llamada vacía de control
+  devolvió HTTP 200 (`claimed=0`, `groups=0`), por lo que no consumió eventos
+  anteriores a la creación de las reglas.
+- **Despliegue general aún pendiente:** retirar el id acotado de evaluación,
+  configurar un secreto exclusivo y activar `ops/schedule_price_alerts.sql`
+  para todas las cuentas después de valorar el resultado. La entrega seguirá
+  limitada por la frecuencia real de cada sincronizador aunque el procesador
+  corra cada 15 minutos.
 - La ficha genérica de Froiz ya obtiene su producto desde `froiz_products` (no
   desde el fallback de BonÀrea), por lo que el CTA exacto cubre los 18 catálogos.
 

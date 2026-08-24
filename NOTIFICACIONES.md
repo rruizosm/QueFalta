@@ -10,10 +10,11 @@ hecho, qué funciona hoy y qué falta para tener notificaciones push completas.
 > producto añadido al carrito compartido · solicitud de amistad · invitación a
 > un grupo. (El "carrito activado por otro miembro" se descartó.)
 
-> **Alertas personalizadas: MVP local, pendiente de completar el despliegue.** Añade un
+> **Alertas personalizadas: evaluación acotada activa.** Añade un
 > cuarto tipo `price_alert`, generado exclusivamente por el procesador servidor
 > `process-price-alerts`; nunca por contenido enviado desde el cliente. Free
-> dispone de una regla y Plus de reglas ilimitadas.
+> dispone de una regla y Plus de reglas ilimitadas. El 24-08-2026 el procesador
+> está limitado a `@rruizosma` para valorar los sync sin afectar a otras cuentas.
 
 ---
 
@@ -52,8 +53,10 @@ Hay **dos tipos** de notificaciones, no confundir:
   duradera de entregas y eventos. La RPC valida que la fila `notifications`
   pertenece a `auth.uid()` y aplica prioridad novedad → oferta → bajada por
   producto.
-- Backend todavía local: ver `CONTEXTO.md` y
-  `supabase/ops/schedule_price_alerts.sql` para el despliegue.
+- La consulta de resultados y `process-price-alerts` v2 están desplegadas. El
+  cron temporal de `@rruizosma` corre cada 15 minutos durante el 24-08-2026 y
+  se desprograma a las 00:00 UTC del día 25. El despliegue general permanece
+  pendiente hasta valorar esta prueba; ver `CONTEXTO.md`.
 
 ---
 

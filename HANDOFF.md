@@ -1,5 +1,13 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Logotipo local de Ahorramás (local, 2026-08-23)
+
+- `CATALOG_STORES` enlaza ya `assets/stores/ahorramas.jpg`; desaparece el
+  fallback genérico en todos los consumidores de los metadatos compartidos.
+- Las rejillas temporales de tres y cuatro columnas usadas para las capturas
+  fueron restauradas a las dos columnas actuales; no queda ningún cambio de
+  layout en el cliente.
+
 ## Motor de búsqueda del catálogo (local + backend, 2026-08-23)
 
 - Sustituida la búsqueda directa `ILIKE + limit(50)` de los 18 supermercados
@@ -525,7 +533,7 @@
 - `npm run quality` correcto (typecheck, lint y 27/27 tests). Falta recorrido visual en dispositivo y probar
   aceptar/denegar el permiso con un build nativo.
 
-## Alertas personalizadas (reglas desplegadas, envío pendiente; cupo actualizado 2026-08-23)
+## Alertas personalizadas (evaluación acotada activa; actualizado 2026-08-23)
 
 - MVP completo en cliente: reglas exactas o por palabras, multi-súper, bajada
   mínima, oferta, vista previa, gestión/pausa y CTA «Avísame» compartido por
@@ -540,19 +548,19 @@
 - Desplegadas en producción la migración
   `20260820162731_personalized_price_alerts.sql` y sus correcciones de RPC e
   índices. El backfill contiene los 18 catálogos y el verificador transaccional
-  pasa. La Edge Function `process-price-alerts` y Cron+Vault siguen pendientes.
+  pasa. `20260821210209_price_alert_notification_products.sql` está también
+  desplegada como `20260823193941` y permite abrir los resultados exactos de
+  cada aviso.
 - El procesador agrupa por regla y lote de sync y usa la bandeja/push actuales;
   una RPC transaccional impide duplicar la fila de bandeja o el push al
   reintentar. No amplía `send-push` ni acepta contenido desde el cliente.
-- Ajuste local pendiente de despliegue: si un producto genera a la vez bajada y
+- Si un producto genera a la vez bajada y
   oferta, el procesador lo cuenta y comunica solo como oferta. Las novedades
   tienen textos propios en push y bandeja, sin caer en el texto de ofertas.
 - Cada push `price_alert` lleva el `notificationId` y cada fila de bandeja ya
   conoce su propio id. Ambos abren `PriceAlertResults`, que consulta mediante la
   RPC protegida `get_price_alert_notification_products` los productos exactos
-  del aviso y permite abrir sus fichas. La migración local
-  `20260821210209_price_alert_notification_products.sql` debe desplegarse antes
-  de publicar este cliente.
+  del aviso y permite abrir sus fichas.
 - El editor de reglas por palabras solo ofrece los supermercados activos en
   Perfil → Supermercados que además correspondan a la CCAA actual. Al editar,
   intersecta también la selección guardada con esa lista para no conservar
@@ -568,9 +576,18 @@
   ofertas, bajada mínima ni vista previa. La migración
   `20260820170935_personalized_alert_new_arrivals.sql` captura inserciones
   publicadas de los espejos y el RPC solo las entrega a este tipo de regla.
-- La UI ya puede crear, consultar y previsualizar reglas. Para activar entregas:
-  secreto `PROCESS_PRICE_ALERTS_SECRET` → deploy `--no-verify-jwt` → Cron de
-  `ops/schedule_price_alerts.sql`.
+- Evaluación del lunes 24-08-2026: `process-price-alerts` v2 y la nueva RPC
+  `claim_price_alert_deliveries_for_user` están acotadas exclusivamente a
+  `@rruizosma`. Se crearon seis reglas `TEST 1` a `TEST 6` para novedades,
+  bajadas, umbral del 10%, ofertas, mezcla/deduplicación y producto exacto.
+  La RPC acotada se desplegó como `20260823194159` + corrección
+  `20260823194414`.
+  El cron de `ops/schedule_rruizosma_price_alert_evaluation.sql` corre cada 15
+  minutos y se elimina solo el 25-08 a las 00:00 UTC; prueba HTTP 200 con cola
+  inicial vacía.
+- Pendiente tras valorar la prueba: convertir el procesador en general,
+  configurar `PROCESS_PRICE_ALERTS_SECRET` dedicado y activar el cron permanente
+  de `ops/schedule_price_alerts.sql` para todas las cuentas.
 - Corregido el bucle de «No se pudieron cargar tus alertas»: `ToastContext`
   conserva un valor estable y un error remoto ya no vuelve a disparar el
   `useFocusEffect` de la pantalla indefinidamente.

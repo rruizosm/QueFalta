@@ -26,8 +26,7 @@ export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | n
   { key: 'plusfresc', name: 'Plusfresc',     icon: require('../../assets/stores/plusfresc.png') },
   { key: 'gadis',     name: 'Gadis',         icon: require('../../assets/stores/gadis.png') },
   { key: 'froiz',     name: 'Froiz',         icon: require('../../assets/stores/froiz.jpg') },
-  // Se muestra el nombre mientras se incorpora un logotipo con licencia al bundle.
-  { key: 'ahorramas', name: 'Ahorramás',     icon: null },
+  { key: 'ahorramas', name: 'Ahorramás',     icon: require('../../assets/stores/ahorramas.jpg') },
 ];
 
 /** Orden canónico de las claves (para normalizar/ordenar selecciones). */

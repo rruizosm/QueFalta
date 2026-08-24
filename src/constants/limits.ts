@@ -19,6 +19,10 @@ export const PAYWALL_ENABLED = true;
 /** Kill-switch del comparador bajo demanda. ACTIVADO para validación en dispositivo. */
 export const PRICE_COMPARISON_ENABLED = true;
 
+/** Cupos incluidos en una cuenta gratuita; el servidor replica estos valores. */
+export const FREE_PRICE_ALERT_LIMIT = 1;
+export const FREE_COMPARATOR_SEARCH_LIMIT = 3;
+
 /** QuéCocino se conserva para retomarlo más adelante, pero no forma parte del
  *  árbol de navegación ni es accesible desde la app mientras este flag sea false. */
 export const QUE_COCINO_ENABLED = false;

@@ -1,5 +1,64 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Logotipo local de Ahorramás (local, 2026-08-23)
+
+- `CATALOG_STORES` enlaza ya `assets/stores/ahorramas.jpg`; desaparece el
+  fallback genérico en todos los consumidores de los metadatos compartidos.
+- Las rejillas temporales de tres y cuatro columnas usadas para las capturas
+  fueron restauradas a las dos columnas actuales; no queda ningún cambio de
+  layout en el cliente.
+
+## Motor de búsqueda del catálogo (local + backend, 2026-08-23)
+
+- Sustituida la búsqueda directa `ILIKE + limit(50)` de los 18 supermercados
+  por RPC con FTS por prefijo, fallback trigram para erratas, ranking estable y
+  paginación. Mantiene idioma, región, CP/centro, RLS y los adaptadores actuales.
+- Catálogo usa relevancia por defecto durante la búsqueda y conserva precio y
+  precio unitario como órdenes alternativos. El orden se aplica en el servidor
+  antes de `limit`/`offset`, por lo que las tiendas individuales cargan páginas
+  estables; «Todos» mezcla las cadenas habilitadas con el mismo criterio.
+- Se corrigió el hueco previo de Froiz: existía el texto de búsqueda, pero no
+  había efecto ni render de resultados. Froiz no muestra Categorías porque su
+  espejo actual carece de árbol.
+- El mismo motor queda conectado a Novedades y Ofertas cuando se escribe una
+  búsqueda. Novedades deja de buscar solo en las páginas ya descargadas y
+  Ofertas sustituye el filtro de palabras sin ranking; ambos aplican categoría,
+  rango y orden antes de paginar y mantienen sus reglas de feed.
+- `20260823101900_catalog_search_engine_v1.sql`,
+  `20260823103646_catalog_search_language_index_planner.sql` y
+  `20260823104120_catalog_search_server_sort_orders.sql` están desplegadas como
+  `20260823103505`/`20260823103803`/`20260823104828`. Probadas las 18 RPC con rol
+  `anon` y la ruta REST pública (HTTP 200), incluido orden por precio y páginas
+  sin solape. Rendimiento caliente medido: 26–69 ms en Mercadona, Carrefour y
+  Alcampo; suite completa, TypeScript y lint correctos.
+- Backend listo antes del cliente, por lo que una build/OTA posterior no tendrá
+  una ventana en la que falten las RPC.
+- `20260823110039_catalog_feed_search_engine.sql` está desplegada como
+  `20260823110849`: 18 RPC `SECURITY INVOKER`, acceso `anon` verificado,
+  búsqueda con errata y paginación sin solape. Carrefour: ~51 ms/50 ofertas.
+
+## Cupos gratuitos de alertas y comparador (local + backend, 2026-08-23)
+
+- Las cuentas gratuitas pueden gestionar una alerta personalizada; Perfil ya
+  no bloquea la pantalla y «Avísame» permite crearla o editarla. Al ocupar el
+  hueco, intentar crear otra abre Plus. Las cuentas Plus siguen ilimitadas.
+- «Buscar productos más económicos» permite tres ejecuciones gratuitas por
+  cuenta. La cuarta abre el paywall; después de cada búsqueda se muestra el
+  cupo restante. Plus sigue ilimitado.
+- La cuota no usa AsyncStorage: `private.free_tier_usage` persiste el contador y
+  `catalog_cheaper_products_v6` reserva uso+consulta de forma atómica. El
+  procesador de alertas entrega la única regla free y pausa reglas sobrantes de
+  una suscripción caducada.
+- Los dos cupos están desacoplados del encendido comercial: se aplican ya con
+  `paywall_enabled() = false`; los demás gates de servidor siguen apagados.
+- `20260823063529_free_tier_alert_and_comparator_allowances.sql` y la policy
+  defensiva `20260823065123_restrict_free_tier_usage_direct_access.sql` y
+  `20260823065448_enforce_free_allowances_before_paywall_launch.sql` están
+  desplegadas como versiones remotas `20260823064939`, `20260823065153` y
+  `20260823065550`.
+  Verificación transaccional real: usos restantes 2→1→0, 4º bloqueado y segunda
+  alerta free rechazada; advisors sin avisos relacionados.
+
 ## Precio unitario de Eroski y Caprabo recuperado (local, 2026-08-22)
 
 - Verificado en ambas webs que las tarjetas publican `1 KILO A ...`, `1 LITRO
@@ -474,35 +533,34 @@
 - `npm run quality` correcto (typecheck, lint y 27/27 tests). Falta recorrido visual en dispositivo y probar
   aceptar/denegar el permiso con un build nativo.
 
-## Alertas personalizadas Plus (reglas desplegadas, envío pendiente, 2026-08-20)
+## Alertas personalizadas (evaluación acotada activa; actualizado 2026-08-23)
 
 - MVP completo en cliente: reglas exactas o por palabras, multi-súper, bajada
   mínima, oferta, vista previa, gestión/pausa y CTA «Avísame» compartido por
   todas las fichas, superpuesto en la esquina superior derecha de la imagen
   mediante `ProductDetailImage`/`ProductDetailHero`.
-- «Avísame» conserva la campana. Solo las cuentas gratuitas ven el fondo dorado,
-  la tinta Plus y el candado; las cuentas Plus usan el estilo normal de acento.
-  Al pulsarlo sin Plus, el paywall abre con la cabecera compacta y sin texto
-  descriptivo contextual.
-- Perfil aplica el mismo gate al acceso «Alertas personalizadas»: las cuentas
-  gratuitas abren el paywall sin navegar a la lista. El banner «Tus alertas
-  están pausadas» y sus traducciones se retiraron de la pantalla interna.
+- «Avísame» conserva la campana y permite crear la primera regla gratuita o
+  editar la alerta exacta que ocupa ese hueco. Si ya existe otra regla, abre el
+  paywall. Plus mantiene creación ilimitada.
+- Perfil abre «Alertas personalizadas» para todas las cuentas. La pantalla
+  identifica el cupo gratuito y solo bloquea reglas sobrantes procedentes de
+  una suscripción caducada.
 - Desplegadas en producción la migración
   `20260820162731_personalized_price_alerts.sql` y sus correcciones de RPC e
   índices. El backfill contiene los 18 catálogos y el verificador transaccional
-  pasa. La Edge Function `process-price-alerts` y Cron+Vault siguen pendientes.
+  pasa. `20260821210209_price_alert_notification_products.sql` está también
+  desplegada como `20260823193941` y permite abrir los resultados exactos de
+  cada aviso.
 - El procesador agrupa por regla y lote de sync y usa la bandeja/push actuales;
   una RPC transaccional impide duplicar la fila de bandeja o el push al
   reintentar. No amplía `send-push` ni acepta contenido desde el cliente.
-- Ajuste local pendiente de despliegue: si un producto genera a la vez bajada y
+- Si un producto genera a la vez bajada y
   oferta, el procesador lo cuenta y comunica solo como oferta. Las novedades
   tienen textos propios en push y bandeja, sin caer en el texto de ofertas.
 - Cada push `price_alert` lleva el `notificationId` y cada fila de bandeja ya
   conoce su propio id. Ambos abren `PriceAlertResults`, que consulta mediante la
   RPC protegida `get_price_alert_notification_products` los productos exactos
-  del aviso y permite abrir sus fichas. La migración local
-  `20260821210209_price_alert_notification_products.sql` debe desplegarse antes
-  de publicar este cliente.
+  del aviso y permite abrir sus fichas.
 - El editor de reglas por palabras solo ofrece los supermercados activos en
   Perfil → Supermercados que además correspondan a la CCAA actual. Al editar,
   intersecta también la selección guardada con esa lista para no conservar
@@ -518,9 +576,18 @@
   ofertas, bajada mínima ni vista previa. La migración
   `20260820170935_personalized_alert_new_arrivals.sql` captura inserciones
   publicadas de los espejos y el RPC solo las entrega a este tipo de regla.
-- La UI ya puede crear, consultar y previsualizar reglas. Para activar entregas:
-  secreto `PROCESS_PRICE_ALERTS_SECRET` → deploy `--no-verify-jwt` → Cron de
-  `ops/schedule_price_alerts.sql`.
+- Evaluación del lunes 24-08-2026: `process-price-alerts` v2 y la nueva RPC
+  `claim_price_alert_deliveries_for_user` están acotadas exclusivamente a
+  `@rruizosma`. Se crearon seis reglas `TEST 1` a `TEST 6` para novedades,
+  bajadas, umbral del 10%, ofertas, mezcla/deduplicación y producto exacto.
+  La RPC acotada se desplegó como `20260823194159` + corrección
+  `20260823194414`.
+  El cron de `ops/schedule_rruizosma_price_alert_evaluation.sql` corre cada 15
+  minutos y se elimina solo el 25-08 a las 00:00 UTC; prueba HTTP 200 con cola
+  inicial vacía.
+- Pendiente tras valorar la prueba: convertir el procesador en general,
+  configurar `PROCESS_PRICE_ALERTS_SECRET` dedicado y activar el cron permanente
+  de `ops/schedule_price_alerts.sql` para todas las cuentas.
 - Corregido el bucle de «No se pudieron cargar tus alertas»: `ToastContext`
   conserva un valor estable y un error remoto ya no vuelve a disparar el
   `useFocusEffect` de la pantalla indefinidamente.

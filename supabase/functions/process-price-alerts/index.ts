@@ -5,6 +5,9 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send';
+// Evaluación controlada del 24-08-2026. Este despliegue no puede reclamar
+// entregas de ninguna otra cuenta.
+const EVALUATION_USER_ID = '8ab94ac7-e321-4162-8ccc-b6edd8dbe6a6';
 type Lang = 'es' | 'ca';
 
 interface Delivery {
@@ -80,13 +83,23 @@ async function sendExpoPush(tokens: string[], content: { title: string; body: st
 
 Deno.serve(async (req) => {
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
-  const expectedSecret = Deno.env.get('PROCESS_PRICE_ALERTS_SECRET');
-  if (!expectedSecret || req.headers.get('x-alert-secret') !== expectedSecret) return json({ error: 'Unauthorized' }, 401);
+  // Durante el despliegue inicial se puede reutilizar el secreto interno del
+  // worker de embeddings, que ya existe tanto en Edge Secrets como en Vault.
+  // PROCESS_PRICE_ALERTS_SECRET toma precedencia en cuanto se configure uno
+  // dedicado, sin exigir redesplegar la función.
+  const expectedSecret = Deno.env.get('PROCESS_PRICE_ALERTS_SECRET')
+    ?? Deno.env.get('EMBEDDING_WORKER_TOKEN');
+  const providedSecret = req.headers.get('x-alert-secret')
+    ?? req.headers.get('x-embedding-worker-token');
+  if (!expectedSecret || providedSecret !== expectedSecret) return json({ error: 'Unauthorized' }, 401);
 
   const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { data, error } = await admin.rpc('claim_price_alert_deliveries', { p_limit: 200 });
+  const { data, error } = await admin.rpc('claim_price_alert_deliveries_for_user', {
+    p_user_id: EVALUATION_USER_ID,
+    p_limit: 200,
+  });
   if (error) return json({ error: error.message }, 500);
   const deliveries = (data ?? []) as Delivery[];
   if (deliveries.length === 0) return json({ claimed: 0, groups: 0 });

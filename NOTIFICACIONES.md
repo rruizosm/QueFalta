@@ -10,9 +10,11 @@ hecho, qué funciona hoy y qué falta para tener notificaciones push completas.
 > producto añadido al carrito compartido · solicitud de amistad · invitación a
 > un grupo. (El "carrito activado por otro miembro" se descartó.)
 
-> **Alertas personalizadas Plus: MVP local, pendiente de desplegar.** Añade un
+> **Alertas personalizadas: evaluación acotada activa.** Añade un
 > cuarto tipo `price_alert`, generado exclusivamente por el procesador servidor
-> `process-price-alerts`; nunca por contenido enviado desde el cliente.
+> `process-price-alerts`; nunca por contenido enviado desde el cliente. Free
+> dispone de una regla y Plus de reglas ilimitadas. El 24-08-2026 el procesador
+> está limitado a `@rruizosma` para valorar los sync sin afectar a otras cuentas.
 
 ---
 
@@ -32,7 +34,7 @@ Hay **dos tipos** de notificaciones, no confundir:
 ### Alertas personalizadas de precio/oferta
 
 - `price_alert_rules` guarda reglas exactas o por palabras y aplica RLS por
-  propietario. Activar/crear exige Plus también en servidor.
+  propietario. El servidor permite una regla a free y reglas ilimitadas a Plus.
 - Los triggers de los espejos escriben eventos duraderos; la outbox
   `price_alert_deliveries` deduplica cada pareja regla+evento.
 - El procesador agrupa por regla y actualización antes de insertar en
@@ -51,8 +53,10 @@ Hay **dos tipos** de notificaciones, no confundir:
   duradera de entregas y eventos. La RPC valida que la fila `notifications`
   pertenece a `auth.uid()` y aplica prioridad novedad → oferta → bajada por
   producto.
-- Backend todavía local: ver `CONTEXTO.md` y
-  `supabase/ops/schedule_price_alerts.sql` para el despliegue.
+- La consulta de resultados y `process-price-alerts` v2 están desplegadas. El
+  cron temporal de `@rruizosma` corre cada 15 minutos durante el 24-08-2026 y
+  se desprograma a las 00:00 UTC del día 25. El despliegue general permanece
+  pendiente hasta valorar esta prueba; ver `CONTEXTO.md`.
 
 ---
 
@@ -73,7 +77,7 @@ Funciona y es testeable en Expo Go ahora mismo.
   Perfil → Notificaciones:
   - La tarjeta del interruptor muestra solo «Avisos en el dispositivo», sin
     texto explicativo debajo; el detalle permanece en la tarjeta informativa.
-  - Explica los avisos de carrito compartido, amistad, grupo y alertas Plus, y remite la
+  - Explica los avisos de carrito compartido, amistad, grupo y alertas personalizadas, y remite la
     bandeja interna a la campana de Inicio sin duplicarla dentro de esta pantalla.
   - Al montar refleja la preferencia guardada **y** el permiso real del OS.
   - Activar → pide permiso → guarda preferencia → notificación de prueba.

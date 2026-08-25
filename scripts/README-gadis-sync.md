@@ -20,6 +20,13 @@ envía código postal: sincroniza el surtido público por defecto.
 - **Cambios:** el trigger guarda precio anterior y porcentaje al modificar
   `unit_price`.
 
+## Precio por unidad
+
+El sync convierte los sufijos de Gadisline (`el kilo`, `el litro`, `la unidad`,
+`la docena`, `los 100 ml` y `los 100 gr.`) a las bases canónicas `kg`, `l` y
+`ud`. Los frescos vendidos al peso, cuyo sufijo llega vacío, se reconocen por
+`weight=P`. Metro y dosis se omiten porque no son comparables con esas bases.
+
 ## Variables
 
 | Variable | Uso |

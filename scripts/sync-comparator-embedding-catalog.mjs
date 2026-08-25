@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Materializa los 15 catálogos en catalog_product_embeddings.
+// Materializa los 18 catálogos en catalog_product_embeddings.
 // Solo los cambios de content_hash disparan un nuevo trabajo pgmq.
 
 import { createHash } from 'node:crypto';
@@ -33,6 +33,9 @@ const STORES = [
   ['hiperdino', 'hiperdino_products', ['id', 'display_name', 'brand', 'packaging', 'ean', 'category_name', 'price_per_unit_unit']],
   ['alcampo', 'alcampo_products', ['id', 'display_name', 'brand', 'packaging', 'ean', 'category_name', 'price_per_unit_unit']],
   ['plusfresc', 'plusfresc_products', ['id', 'display_name', 'display_name_ca', 'brand', 'category_name', 'price_per_unit_unit']],
+  ['gadis', 'gadis_products', ['id', 'display_name', 'brand', 'packaging', 'category_name', 'price_per_unit_unit']],
+  ['froiz', 'froiz_products', ['id', 'display_name', 'brand', 'category_name', 'price_per_unit_unit']],
+  ['ahorramas', 'ahorramas_products', ['id', 'display_name', 'brand', 'packaging', 'category_name', 'price_per_unit_unit']],
 ];
 
 const ATTRIBUTE_RULES = [

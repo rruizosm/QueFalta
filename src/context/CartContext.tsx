@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from './AuthContext';
 import { getOrCreateGroupList, addItemsToList, type NewListItem } from '../api/lists';
@@ -60,31 +60,55 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [activeCart, setActiveCart] = useState<ActiveCart | null>(null);
   const [busy, setBusy] = useState(false);
   const [hydratedUserId, setHydratedUserId] = useState<string | null>(null);
+  const activeCartRef = useRef<ActiveCart | null>(null);
+  const operationQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const pendingOperationsRef = useRef(0);
+  const cartOperationVersionRef = useRef(0);
 
-  const activateCart = async (groupId: string, groupName: string, groupIcon?: string | null) => {
-    if (!userId) return;
+  const updateActiveCartState = useCallback((next: ActiveCart | null) => {
+    activeCartRef.current = next;
+    setActiveCart(next);
+  }, []);
+
+  /**
+   * Serializa activación, desactivación, repetición y altas de productos. Así
+   * una respuesta lenta nunca puede sobrescribir una selección posterior.
+   */
+  const runCartOperation = useCallback(<T,>(operation: () => Promise<T>): Promise<T> => {
+    cartOperationVersionRef.current += 1;
+    pendingOperationsRef.current += 1;
     setBusy(true);
-    try {
+    const run = operationQueueRef.current.then(operation, operation);
+    operationQueueRef.current = run.then(() => undefined, () => undefined);
+    return run.finally(() => {
+      pendingOperationsRef.current -= 1;
+      if (pendingOperationsRef.current === 0) setBusy(false);
+    });
+  }, []);
+
+  const activateCart = (groupId: string, groupName: string, groupIcon?: string | null) => {
+    if (!userId) return Promise.resolve();
+    return runCartOperation(async () => {
       const listId = await getOrCreateGroupList(groupId, groupName, userId);
+      const current = activeCartRef.current;
       const next = {
         groupId,
         groupName,
-        groupIcon: groupIcon === undefined && activeCart?.groupId === groupId
-          ? activeCart.groupIcon ?? null
+        groupIcon: groupIcon === undefined && current?.groupId === groupId
+          ? current.groupIcon ?? null
           : groupIcon ?? null,
         listId,
       };
-      setActiveCart(next);
+      updateActiveCartState(next);
       await AsyncStorage.setItem(cartKey, JSON.stringify(next));
-    } finally {
-      setBusy(false);
-    }
+    });
   };
 
   // Restore persisted active cart on launch / login.
   useEffect(() => {
-    if (!userId) { setActiveCart(null); setHydratedUserId(null); return; }
+    if (!userId) { updateActiveCartState(null); setHydratedUserId(null); return; }
     let cancelled = false;
+    const restoreOperationVersion = cartOperationVersionRef.current;
 
     (async () => {
       // Limpia las claves globales heredadas (esquema antiguo, compartido entre
@@ -109,8 +133,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         } catch { /* ignore */ }
       }
 
-      // Optimista (la clave ya es por-usuario → en el caso normal es válida).
-      setActiveCart(restoredCart);
+      // Una acción iniciada mientras se leía el disco tiene prioridad sobre la
+      // restauración antigua (p. ej. activar desde un enlace profundo).
+      if (cartOperationVersionRef.current === restoreOperationVersion) {
+        updateActiveCartState(restoredCart);
+      }
 
       // Antes de montar Home, precarga del disco todo lo que consumen las
       // pestañas. Es lectura local y evita que cada pantalla nazca vacía.
@@ -125,17 +152,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           const groups = await fetchMyGroups(userId);
           writeStartupCache(startupKeys.groups(userId), groups);
           if (cancelled) return;
+          const current = activeCartRef.current;
+          if (
+            cartOperationVersionRef.current !== restoreOperationVersion
+            || current?.groupId !== restoredCart.groupId
+            || current.listId !== restoredCart.listId
+          ) return;
           const restoredGroup = groups.find((g) => g.id === restoredCart.groupId);
           if (!restoredGroup) {
             await AsyncStorage.removeItem(cartKey);
-            if (!cancelled) setActiveCart(null);
+            if (!cancelled) updateActiveCartState(null);
           } else {
             const synced = {
               ...restoredCart,
               groupName: restoredGroup.name,
               groupIcon: restoredGroup.iconEmoji ?? null,
             };
-            if (!cancelled) setActiveCart(synced);
+            if (!cancelled) updateActiveCartState(synced);
             await AsyncStorage.setItem(cartKey, JSON.stringify(synced));
           }
         } catch { /* sin red: mantener lo guardado */ }
@@ -143,24 +176,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     })();
 
     return () => { cancelled = true; };
-  }, [cartKey, dgKey, userId]);
+  }, [cartKey, dgKey, updateActiveCartState, userId]);
 
-  const deactivateCart = async () => {
-    setActiveCart(null);
+  const deactivateCart = () => runCartOperation(async () => {
+    updateActiveCartState(null);
     await AsyncStorage.removeItem(cartKey);
-  };
+  });
 
-  const updateActiveCartIcon = async (groupId: string, groupIcon: string) => {
-    if (!activeCart || activeCart.groupId !== groupId) return;
-    const next = { ...activeCart, groupIcon };
-    setActiveCart(next);
+  const updateActiveCartIcon = (groupId: string, groupIcon: string) => runCartOperation(async () => {
+    const current = activeCartRef.current;
+    if (!current || current.groupId !== groupId) return;
+    const next = { ...current, groupIcon };
+    updateActiveCartState(next);
     await AsyncStorage.setItem(cartKey, JSON.stringify(next));
-  };
+  });
 
-  const addToActiveCart = async (items: NewListItem[]) => {
-    if (!activeCart || !userId) throw new Error('No hay carrito activo');
-    await addItemsToList(activeCart.listId, items, userId);
-  };
+  const addToActiveCart = (items: NewListItem[]) => runCartOperation(async () => {
+    const current = activeCartRef.current;
+    if (!current || !userId) throw new Error('No hay carrito activo');
+    await addItemsToList(current.listId, items, userId);
+  });
 
   const loadItemsIntoGroupCart = async (
     groupId: string,
@@ -168,24 +203,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     items: NewListItem[],
     groupIcon?: string | null,
   ) => {
-    if (!userId) return;
-    setBusy(true);
-    try {
+    if (!userId) return Promise.resolve();
+    return runCartOperation(async () => {
       const listId = await getOrCreateGroupList(groupId, groupName, userId);
+      const current = activeCartRef.current;
       const next = {
         groupId,
         groupName,
-        groupIcon: groupIcon === undefined && activeCart?.groupId === groupId
-          ? activeCart.groupIcon ?? null
+        groupIcon: groupIcon === undefined && current?.groupId === groupId
+          ? current.groupIcon ?? null
           : groupIcon ?? null,
         listId,
       };
-      setActiveCart(next);
+      updateActiveCartState(next);
       await AsyncStorage.setItem(cartKey, JSON.stringify(next));
       await addItemsToList(listId, items, userId);
-    } finally {
-      setBusy(false);
-    }
+    });
   };
 
   const isActive = (groupId: string) => activeCart?.groupId === groupId;

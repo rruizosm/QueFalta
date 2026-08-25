@@ -73,6 +73,7 @@ export default function HiperdinoProductModal({ product, onClose, topInset = 16,
     setAdding(true);
     try {
       await addToActiveCart([{
+        storeKey: 'hiperdino',
         productName: product.displayName,
         quantity: qty,
         unit: 'ud',

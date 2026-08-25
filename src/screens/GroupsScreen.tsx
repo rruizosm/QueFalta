@@ -73,6 +73,7 @@ export default function GroupsScreen() {
   }, [load]);
 
   const handleToggleActive = async (group: GroupSummary) => {
+    if (busy) return;
     const wasActive = isActive(group.id);
     setActivatingId(group.id);
     try {
@@ -123,10 +124,12 @@ export default function GroupsScreen() {
     // Activate button — el del PRIMER grupo lleva el ancla del tour (paso 1).
     const activateBtn = (
       <TouchableOpacity
-        style={[styles.activateBtn, active && styles.activateBtnActive]}
+        style={[styles.activateBtn, active && styles.activateBtnActive, busy && styles.activateBtnDisabled]}
         onPress={() => handleToggleActive(item)}
-        disabled={busy && activatingId === item.id}
+        disabled={busy}
         activeOpacity={0.85}
+        accessibilityRole="button"
+        accessibilityLabel={active ? t('group.cartActive') : t('group.activate')}
       >
         {busy && activatingId === item.id ? (
           <ActivityIndicator size="small" color={active ? colors.white : colors.accent} />
@@ -147,11 +150,13 @@ export default function GroupsScreen() {
       </TouchableOpacity>
     );
     return (
-      <TouchableOpacity
-        onPress={() => navigation.navigate('GroupDetail', { groupId: item.id })}
-        activeOpacity={0.85}
-      >
-        <View style={[styles.card, active && styles.cardActive]}>
+      <View style={[styles.card, active && styles.cardActive]}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('GroupDetail', { groupId: item.id })}
+          activeOpacity={0.75}
+          accessibilityRole="button"
+          accessibilityLabel={item.name}
+        >
           {/* Name + badge + chevron */}
           <View style={styles.cardHeader}>
             <View style={styles.cardTitleRow}>
@@ -164,23 +169,27 @@ export default function GroupsScreen() {
             </View>
             <Ionicons name="chevron-forward" size={16} color={colors.inkFaint} />
           </View>
+        </TouchableOpacity>
 
-          <View style={styles.cardFooter}>
-            <View style={styles.memberMeta}>
-              {item.members.length > 0 && (
-                <MemberAvatars members={item.members} maxVisible={3} size={26} />
-              )}
-              <Text style={styles.memberCount}>
-                {item.members.length} {item.members.length === 1 ? t('group.member') : t('group.members')}
-              </Text>
-            </View>
+        <View style={styles.cardFooter}>
+          <TouchableOpacity
+            style={styles.memberMeta}
+            onPress={() => navigation.navigate('GroupDetail', { groupId: item.id })}
+            activeOpacity={0.75}
+            accessibilityRole="button"
+            accessibilityLabel={`${item.name}: ${item.members.length} ${item.members.length === 1 ? t('group.member') : t('group.members')}`}
+          >
+            {item.members.length > 0 && (
+              <MemberAvatars members={item.members} maxVisible={3} size={26} />
+            )}
+            <Text style={styles.memberCount}>
+              {item.members.length} {item.members.length === 1 ? t('group.member') : t('group.members')}
+            </Text>
+          </TouchableOpacity>
 
-            {/* Activate button: el del 1er grupo va envuelto en el ancla del tour
-                (componente propio → clearOnUnmount al borrar el grupo). */}
-            {activateBtn}
-          </View>
+          {activateBtn}
         </View>
-      </TouchableOpacity>
+      </View>
     );
   };
 
@@ -193,7 +202,13 @@ export default function GroupsScreen() {
         <Text style={styles.title}>{t('group.title')}</Text>
       </View>
       {groups.length > 0 && (
-        <TouchableOpacity onPress={handleNewGroup} style={styles.newBtn} activeOpacity={0.8}>
+        <TouchableOpacity
+          onPress={handleNewGroup}
+          style={styles.newBtn}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={t('group.createCta')}
+        >
           <Ionicons name="add" size={18} color={colors.white} />
           <Text style={styles.newBtnText}>{t('group.new')}</Text>
         </TouchableOpacity>
@@ -216,7 +231,11 @@ export default function GroupsScreen() {
       ) : error ? (
         <View style={[styles.centerBox, glassAvailable && { paddingTop: headerHeight }]}>
           <Text style={styles.emptyText}>{t('group.loadError')}</Text>
-          <TouchableOpacity onPress={() => { setLoading(true); load(); }}>
+          <TouchableOpacity
+            onPress={() => { setLoading(true); load(); }}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.retry')}
+          >
             <Text style={styles.retryText}>{t('common.retry')}</Text>
           </TouchableOpacity>
         </View>
@@ -328,6 +347,7 @@ const themedStyles = () => StyleSheet.create({
     borderWidth: 1, borderColor: colors.accent, borderRadius: 15,
   },
   activateBtnActive: { backgroundColor: colors.accent },
+  activateBtnDisabled: { opacity: 0.55 },
   activateBtnText: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.accent },
   activateBtnTextActive: { color: colors.white },
   activateBtnEmoji: { fontSize: 15, lineHeight: 18 },

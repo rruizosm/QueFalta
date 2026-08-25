@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Dimensions, Image,
+  View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Image, useWindowDimensions,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -24,10 +24,7 @@ import StoreProductModal, { type ProductRef } from './StoreProductModal';
 import ActiveCartIcon from './ActiveCartIcon';
 import GlassSurface from './GlassSurface';
 
-// Cuadrícula: 3 por fila (idéntica a las subcategorías).
-const GRID_COLS = 3;
 const GRID_GAP = 8;
-const CARD_W = (Dimensions.get('window').width - 32 - GRID_GAP * (GRID_COLS - 1)) / GRID_COLS;
 
 // Misma normalización que la búsqueda del catálogo (NFD + quitar diacríticos +
 // minúsculas) para que el filtro local sea insensible a acentos y mayúsculas.
@@ -100,6 +97,13 @@ export default function StoreProductList({
   showStoreLogo = false,
 }: Props) {
   const styles = useThemedStyles(themedStyles);
+  const { width: windowWidth } = useWindowDimensions();
+  // Se recalcula en rotación, Split View y ventanas Android redimensionables.
+  // En pantallas amplias aumenta columnas para evitar tarjetas desproporcionadas.
+  const gridColumns = windowWidth >= 840 ? 5 : windowWidth >= 600 ? 4 : 3;
+  const cardWidth = (
+    windowWidth - 32 - GRID_GAP * (gridColumns - 1)
+  ) / gridColumns;
   // Con tab bar de cristal: eleva la barra "Añadir" (cartBar) por encima del
   // cristal y agranda el paddingBottom de lista/cuadrícula en la misma medida.
   const tabBarOffset = useTabBarBottomPadding(0);
@@ -172,11 +176,18 @@ export default function StoreProductList({
     ? <ActivityIndicator size="small" color={colors.accent} style={{ marginVertical: 16 }} />
     : null;
 
-  const increment = (id: string) => setQuantities((p) => ({ ...p, [id]: (p[id] ?? 0) + 1 }));
-  const decrement = (id: string) => setQuantities((p) => ({ ...p, [id]: Math.max(0, (p[id] ?? 0) - 1) }));
+  const quantityKey = (product: UIProduct) => `${product.store}:${product.id}`;
+  const increment = (product: UIProduct) => {
+    const key = quantityKey(product);
+    setQuantities((p) => ({ ...p, [key]: (p[key] ?? 0) + 1 }));
+  };
+  const decrement = (product: UIProduct) => {
+    const key = quantityKey(product);
+    setQuantities((p) => ({ ...p, [key]: Math.max(0, (p[key] ?? 0) - 1) }));
+  };
   // Suma solo sobre los productos visibles: en la búsqueda el componente persiste
   // entre consultas, así que ignoramos cantidades stale de resultados anteriores.
-  const cartCount = products.reduce((n, p) => n + (quantities[p.id] ?? 0), 0);
+  const cartCount = products.reduce((n, p) => n + (quantities[quantityKey(p)] ?? 0), 0);
 
   const handleAddToCart = async () => {
     if (!activeCart) {
@@ -184,14 +195,14 @@ export default function StoreProductList({
       return;
     }
     const items = products
-      .filter((p) => (quantities[p.id] ?? 0) > 0)
+      .filter((p) => (quantities[quantityKey(p)] ?? 0) > 0)
       .map((p) => ({
+        storeKey: p.store,
         productName: p.name,
-        quantity: quantities[p.id],
+        quantity: quantities[quantityKey(p)],
         unit: 'ud',
         categoryEmoji: emoji ?? null,
         categoryName: p.categoryName,
-        // La tienda de la Lista se deduce del id de Mercadona o del dominio de la imagen.
         mercadonaProductId: p.store === 'mercadona' ? p.id : null,
         // Id del producto en su súper, para abrir su ficha desde la cesta.
         storeProductId: p.id,
@@ -239,7 +250,7 @@ export default function StoreProductList({
 
   const renderGridItem = ({ item }: { item: UIProduct }) => (
     <ProductGridCard
-      width={CARD_W}
+      width={cardWidth}
       uri={item.imageUrl}
       name={item.name}
       price={item.priceLabel}
@@ -257,15 +268,15 @@ export default function StoreProductList({
   );
 
   const renderItem = ({ item, index }: { item: UIProduct; index: number }) => {
-    const qty = quantities[item.id] ?? 0;
+    const qty = quantities[quantityKey(item)] ?? 0;
     const active = qty > 0;
     const fav = isProductFavorite(item.store, item.id);
     const stepper = (
       <QuantityStepper
         vertical
         value={qty}
-        onIncrement={() => increment(item.id)}
-        onDecrement={() => decrement(item.id)}
+        onIncrement={() => increment(item)}
+        onDecrement={() => decrement(item)}
       />
     );
     return (
@@ -389,10 +400,10 @@ export default function StoreProductList({
         <View style={[styles.center, topInset > 0 && { marginTop: topInset }]}><Text style={styles.emptyText}>{errorLabel}</Text></View>
       ) : viewMode === 'grid' ? (
         <FlatList
-          key="grid"
+          key={`grid-${gridColumns}`}
           data={visible}
           keyExtractor={(item) => `${item.store}:${item.id}`}
-          numColumns={GRID_COLS}
+          numColumns={gridColumns}
           renderItem={renderGridItem}
           extraData={favList}
           columnWrapperStyle={styles.gridRow}
@@ -404,8 +415,8 @@ export default function StoreProductList({
           // Mantener una ventana pequeña y repartir el trabajo evita bloquear
           // el hilo JS mientras la píldora del selector termina su animación.
           removeClippedSubviews
-          initialNumToRender={GRID_COLS * 3}
-          maxToRenderPerBatch={GRID_COLS * 2}
+          initialNumToRender={gridColumns * 3}
+          maxToRenderPerBatch={gridColumns * 2}
           updateCellsBatchingPeriod={40}
           windowSize={5}
           onScrollBeginDrag={onScrollBeginDrag}

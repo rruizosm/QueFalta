@@ -137,6 +137,7 @@ export default function ProductNoteSheet({
         postalCode,
         controller.signal,
         40,
+        true,
       )
         .then((products) => { if (!cancelled) setResults(products); })
         .catch(() => { if (!cancelled) setSearchError(true); })

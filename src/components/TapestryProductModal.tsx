@@ -84,6 +84,7 @@ export default function TapestryProductModal({ product, store, storeLabel, onClo
     setAdding(true);
     try {
       await addToActiveCart([{
+        storeKey: store,
         productName: product.displayName,
         quantity: qty,
         unit: 'ud',

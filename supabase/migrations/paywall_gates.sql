@@ -9,7 +9,11 @@
 
 -- Interruptor del paywall en servidor. Fase 4: re-ejecutar con `select true`.
 create or replace function public.paywall_enabled()
-returns boolean language sql immutable as $$ select false $$;
+returns boolean
+language sql
+immutable
+set search_path = pg_catalog, public
+as $$ select false $$;
 
 -- ¿Tiene el usuario QuéFalta Plus activo? SECURITY DEFINER para poder leer
 -- profiles desde triggers/RPC sin depender de las policies del llamante.

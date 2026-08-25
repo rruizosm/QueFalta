@@ -70,6 +70,7 @@ import CondisProductsScreen from '../screens/CondisProductsScreen';
 import AmetllerProductsScreen from '../screens/AmetllerProductsScreen';
 import AldiProductsScreen from '../screens/AldiProductsScreen';
 import GadisProductsScreen from '../screens/GadisProductsScreen';
+import FroizProductsScreen from '../screens/FroizProductsScreen';
 import AhorramasProductsScreen from '../screens/AhorramasProductsScreen';
 import HiperdinoProductsScreen from '../screens/HiperdinoProductsScreen';
 import AlcampoProductsScreen from '../screens/AlcampoProductsScreen';
@@ -87,6 +88,7 @@ import RegionSettingsScreen from '../screens/RegionSettingsScreen';
 import ProfileLoadErrorScreen from '../screens/ProfileLoadErrorScreen';
 import BootLoader       from '../components/BootLoader';
 import NativeStoreReviewPrompt from '../components/NativeStoreReviewPrompt';
+import WhatsNewPrompt from '../components/WhatsNewPrompt';
 import QueCocinoTabIcon from '../components/QueCocinoTabIcon';
 import { glassAvailable } from '../components/GlassSurface';
 import LiquidGlassTabBar, {
@@ -165,6 +167,7 @@ function CatalogNavigator() {
       <CatalogStack.Screen name="AmetllerProducts" component={AmetllerProductsScreen} />
       <CatalogStack.Screen name="AldiProducts" component={AldiProductsScreen} />
       <CatalogStack.Screen name="GadisProducts" component={GadisProductsScreen} />
+      <CatalogStack.Screen name="FroizProducts" component={FroizProductsScreen} />
       <CatalogStack.Screen name="AhorramasProducts" component={AhorramasProductsScreen} />
       <CatalogStack.Screen name="HiperdinoProducts" component={HiperdinoProductsScreen} />
       <CatalogStack.Screen name="AlcampoProducts" component={AlcampoProductsScreen} />
@@ -467,6 +470,7 @@ export default function Navigation() {
         <Tab.Screen name="Groups"    component={GroupsNavigator}   options={{ title: t('tabs.groups') }} />
       </Tab.Navigator>
     </NavigationContainer>
+    <WhatsNewPrompt />
     <NativeStoreReviewPrompt />
   </>);
 }

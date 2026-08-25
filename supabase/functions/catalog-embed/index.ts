@@ -7,7 +7,7 @@ const MAX_JOBS = 200;
 const STORES = new Set([
   'alcampo', 'aldi', 'ametller', 'bonarea', 'caprabo', 'carrefour',
   'condis', 'consum', 'dia', 'eroski', 'esclat', 'hiperdino',
-  'mercadona', 'plusfresc', 'sorli',
+  'mercadona', 'plusfresc', 'sorli', 'gadis', 'froiz', 'ahorramas',
 ]);
 
 interface EmbeddingJob {

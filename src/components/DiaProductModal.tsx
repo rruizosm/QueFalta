@@ -78,6 +78,7 @@ export default function DiaProductModal({ product, onClose, topInset = 16, badge
     setAdding(true);
     try {
       await addToActiveCart([{
+        storeKey: 'dia',
         productName: product.displayName,
         quantity: qty,
         unit: 'ud',

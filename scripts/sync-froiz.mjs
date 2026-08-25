@@ -2,6 +2,7 @@
 // Catálogo público de Froiz → Supabase. La API publica precio habitual, oferta,
 // vigencia, novedades y árbol de categorías sin requerir cuenta ni cookies.
 import { canonicalPricePerUnit } from './lib/price.mjs';
+import { froizImageUrl } from './lib/froiz-image.mjs';
 import { markStale } from './lib/stale.mjs';
 import { readFileSync } from 'node:fs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
@@ -30,7 +31,6 @@ const KEY = process.env.SUPABASE_SERVICE_ROLE;
 const DRY_RUN = process.env.DRY_RUN === '1';
 const SIZE = 100;
 const API = 'https://servicios.froiz.com/api/products';
-const IMAGE = 'https://imagedelivery.net/laxGYDNZyT04iZVpzPzryw';
 // El WAF de Froiz rechaza peticiones sin el contexto de su escaparate público;
 // estas cabeceras son las de una navegación normal, no contienen credenciales.
 const FROIZ_HEADERS = {
@@ -48,7 +48,6 @@ const request = async (url) => {
   return response.json();
 };
 const money = (value) => value == null || value === '' ? null : Number(value);
-const imageUrl = (p) => p.image ? `${IMAGE}${p.image}` : p.image_id ? `${IMAGE}/${p.image_id}/desktop` : null;
 const upsert = async (table, rows) => {
   if (DRY_RUN || rows.length === 0) return;
   for (let i = 0; i < rows.length; i += 200) {
@@ -74,7 +73,7 @@ const normalize = (p) => {
   const ppu = canonicalPricePerUnit(p.per_unit_weight, p.measurement_unit);
   return {
     id: String(p.id), retailer_product_id: String(p.id), display_name: p.description || p.name,
-    brand: p.brand_name?.trim() || null, thumbnail: imageUrl(p), category_id: `${category}/${family}`,
+    brand: p.brand_name?.trim() || null, thumbnail: froizImageUrl(p), category_id: `${category}/${family}`,
     category_name: p.category_name || null, category_ids: [category, `${category}/${family}`, section],
     unit_price: price, price_format: price == null ? null : `${price.toFixed(2)} €`,
     price_per_unit: ppu?.value ?? null, price_per_unit_unit: ppu?.unit ?? null,

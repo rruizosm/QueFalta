@@ -161,7 +161,5 @@ const styles = StyleSheet.create({
     height: 14,
     zIndex: 3,
     backgroundColor: '#255b9c',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.36)',
   },
 });

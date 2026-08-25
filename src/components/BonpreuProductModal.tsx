@@ -87,6 +87,7 @@ export default function BonpreuProductModal({ product, onClose, topInset = 16, b
     setAdding(true);
     try {
       await addToActiveCart([{
+        storeKey: 'esclat',
         productName: product.displayName,
         quantity: qty,
         unit: 'ud',

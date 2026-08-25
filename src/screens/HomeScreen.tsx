@@ -114,6 +114,7 @@ export default function HomeScreen() {
   // Favoritos en vuelo hacia el carrito (clave `store:id`): pinta el spinner en
   // su tesela y evita el doble toque, sin bloquear el resto del carrusel.
   const [addingFavs, setAddingFavs] = useState<Record<string, boolean>>({});
+  const cartRequestIdRef = useRef(0);
 
   const load = useCallback(() => {
     const groupsP = fetchMyGroups(userId ?? undefined)
@@ -135,26 +136,33 @@ export default function HomeScreen() {
       .finally(() => setPurchaseLoading(false));
 
     let cartP: Promise<unknown> = Promise.resolve();
+    const cartRequestId = ++cartRequestIdRef.current;
     if (activeCart) {
-      const { groupId } = activeCart;
-      cartP = fetchListItems(activeCart.listId)
+      const { groupId, listId } = activeCart;
+      cartP = fetchListItems(listId)
         .then((items) => {
+          if (cartRequestId !== cartRequestIdRef.current) return;
           setCartItems(items);
           loadedGroupRef.current = groupId;
           setLoadedGroup(groupId);
           if (userId) {
             AsyncStorage.setItem(cartCacheKey(userId, groupId), JSON.stringify(items)).catch(() => {});
-            writeStartupCache(startupKeys.listItems(userId, activeCart.listId), items);
+            writeStartupCache(startupKeys.listItems(userId, listId), items);
           }
         })
         .catch(() => {});
     } else {
       setCartItems([]);
+      loadedGroupRef.current = null;
+      setLoadedGroup(null);
     }
     return Promise.all([groupsP, cartP, purchasesP]);
   }, [activeCart, userId]);
 
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  useFocusEffect(useCallback(() => {
+    void load();
+    return () => { cartRequestIdRef.current += 1; };
+  }, [load]));
 
   // El cover solo existe en el salto final del onboarding. Da como máximo
   // 900 ms para resolver los snapshots; después revela igualmente para que una
@@ -239,6 +247,7 @@ export default function HomeScreen() {
     setAddingFavs((m) => ({ ...m, [k]: true }));
     try {
       await addToActiveCart([{
+        storeKey: p.store,
         productName: p.name,
         quantity: 1,
         unit: 'ud',
@@ -508,7 +517,7 @@ export default function HomeScreen() {
                       {p.imageUrl ? (
                         <ProductImage uri={p.imageUrl} style={styles.favImg} />
                       ) : (
-                        <Ionicons name="image-outline" size={22} color={colors.inkFaint} />
+                        <Ionicons name="basket-outline" size={24} color={colors.accent} />
                       )}
                       {STORE_META[p.store]?.icon ? (
                         <Image source={STORE_META[p.store].icon} style={styles.favStoreIcon} resizeMode="contain" />
@@ -836,7 +845,7 @@ const themedStyles = () => StyleSheet.create({
   },
   favImgWrap: {
     width: '100%', aspectRatio: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.accentLight,
     borderWidth: 1, borderColor: colors.border,
     alignItems: 'center', justifyContent: 'center',
     borderRadius: 12, marginBottom: 6, overflow: 'hidden',

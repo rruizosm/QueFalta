@@ -11,6 +11,11 @@ import { initialsFromName, takePendingProfileName } from '../lib/pendingProfileN
 import { useAuth } from './AuthContext';
 import { readStartupCache, startupKeys, writeStartupCache } from '../lib/startupCache';
 import { hasActivePremium } from '../constants/limits';
+import {
+  createOptimisticPremiumConfirmation,
+  reconcileOptimisticPremium,
+  type OptimisticPremiumConfirmation,
+} from '../lib/optimisticPremium';
 
 interface ProfileContextValue {
   profile: UserProfile | null;
@@ -23,6 +28,8 @@ interface ProfileContextValue {
   refresh: () => Promise<void>;
   /** Patch the cached profile locally (e.g. right after saving). */
   applyProfile: (patch: Partial<UserProfile>) => void;
+  /** Activa un entitlement ya validado por RevenueCat mientras lo confirma el servidor. */
+  applyPremiumEntitlement: (expirationDate: string) => void;
 }
 
 const ProfileContext = createContext<ProfileContextValue>({
@@ -32,6 +39,7 @@ const ProfileContext = createContext<ProfileContextValue>({
   isPremium: false,
   refresh: async () => {},
   applyProfile: () => {},
+  applyPremiumEntitlement: () => {},
 });
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
@@ -44,6 +52,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [resolvedUserId, setResolvedUserId] = useState<string | null>(null);
   const requestId = useRef(0);
   const activeUserId = useRef<string | null>(userId);
+  const optimisticPremium = useRef<OptimisticPremiumConfirmation | null>(null);
   activeUserId.current = userId;
 
   const refresh = useCallback(async () => {
@@ -57,16 +66,20 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       // Solo existe justo tras un alta con Apple, cuando el perfil aún tiene el
       // nombre por defecto del trigger → lo persistimos y lo reflejamos ya.
       const pendingName = takePendingProfileName();
+      let next = p;
       if (pendingName && pendingName !== p.name) {
         const initials = initialsFromName(pendingName);
         updateProfile(userId, { name: pendingName, initials }).catch(() => {});
-        const next = { ...p, name: pendingName, initials };
-        setProfile(next);
-        writeStartupCache(startupKeys.profile(userId), next);
-      } else {
-        setProfile(p);
-        writeStartupCache(startupKeys.profile(userId), p);
+        next = { ...p, name: pendingName, initials };
       }
+
+      // RevenueCat puede terminar la compra antes de que su webhook escriba en
+      // Supabase. Durante esa ventana no dejamos que un fetch antiguo apague el
+      // badge ni vuelva a cerrar los gates locales.
+      const reconciled = reconcileOptimisticPremium(next, optimisticPremium.current);
+      optimisticPremium.current = reconciled.pending;
+      setProfile(reconciled.profile);
+      writeStartupCache(startupKeys.profile(userId), reconciled.profile);
 
       // Calienta la caché en disco de expo-image en cuanto sabemos la URL, así
       // la foto ya está lista la primera vez que el usuario abre Perfil (sin el
@@ -83,10 +96,16 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     }
   }, [userId]);
 
+  // Un entitlement optimista pertenece exclusivamente a la sesión que compró.
+  useEffect(() => {
+    optimisticPremium.current = null;
+  }, [userId]);
+
   // Load once per signed-in user; clear when the session goes away.
   useEffect(() => {
     const currentRequest = ++requestId.current;
     if (!userId) {
+      optimisticPremium.current = null;
       setProfile(null);
       setResolvedUserId(null);
       setLoading(false);
@@ -122,6 +141,13 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const applyPremiumEntitlement = useCallback((expirationDate: string) => {
+    const pending = createOptimisticPremiumConfirmation(expirationDate);
+    if (!pending) return;
+    optimisticPremium.current = pending;
+    applyProfile({ premiumUntil: expirationDate, verified: true });
+  }, [applyProfile]);
+
   // Se recalcula en cada render; suficiente, porque expira con horas de margen
   // y cualquier compra/restore refresca el perfil entero.
   const isPremium = hasActivePremium(profile?.premiumUntil);
@@ -131,7 +157,15 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const profileLoading = !!userId && (loading || resolvedUserId !== userId);
 
   return (
-    <ProfileContext.Provider value={{ profile, loading: profileLoading, error, isPremium, refresh, applyProfile }}>
+    <ProfileContext.Provider value={{
+      profile,
+      loading: profileLoading,
+      error,
+      isPremium,
+      refresh,
+      applyProfile,
+      applyPremiumEntitlement,
+    }}>
       {children}
     </ProfileContext.Provider>
   );

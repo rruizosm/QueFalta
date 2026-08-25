@@ -5,4 +5,5 @@ create or replace function public.paywall_enabled()
 returns boolean
 language sql
 immutable
+set search_path = pg_catalog, public
 as $$ select false $$;

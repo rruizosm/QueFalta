@@ -72,6 +72,7 @@ export default function CondisProductModal({ product, onClose, topInset = 16, ba
     setAdding(true);
     try {
       await addToActiveCart([{
+        storeKey: 'condis',
         productName: product.displayName,
         quantity: qty,
         unit: 'ud',

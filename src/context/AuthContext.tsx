@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import { Session } from '@supabase/supabase-js';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { setPendingProfileName } from '../lib/pendingProfileName';
 import { linkAppleCredential } from '../api/account';
 import { configurePurchases, logOutPurchases } from '../lib/purchases';
+import { recordAppActivity } from '../lib/appActivity';
 import {
   getNotificationsEnabled,
   registerForPushNotificationsAsync,
@@ -133,6 +134,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // premium_until por ese id). No-op en Expo Go o sin API key (lib/purchases).
   useEffect(() => {
     if (session?.user.id) configurePurchases(session.user.id);
+  }, [session?.user.id]);
+
+  // DAU/WAU/MAU de producto: registra el arranque con sesión y cada regreso
+  // real al primer plano. El servidor fija usuario, hora y día de Madrid.
+  useEffect(() => {
+    if (!session?.user.id) return;
+
+    let disposed = false;
+    let recording = false;
+    let previousState = AppState.currentState;
+
+    const record = async () => {
+      if (disposed || recording) return;
+      recording = true;
+      try {
+        await recordAppActivity();
+      } catch {
+        // La analítica es best-effort y nunca bloquea el acceso a la app.
+      } finally {
+        recording = false;
+      }
+    };
+
+    if (previousState === 'active') record();
+
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (previousState !== 'active' && nextState === 'active') record();
+      previousState = nextState;
+    });
+
+    return () => {
+      disposed = true;
+      subscription.remove();
+    };
   }, [session?.user.id]);
 
   // Push: reconcilia el token de este dispositivo con la preferencia local del

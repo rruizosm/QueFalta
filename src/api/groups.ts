@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase';
 import { notifyGroupInvite } from './push';
 import type { GroupMember } from '../types';
 import { linkedNoteProductFromRow, type LinkedNoteProduct } from './lists';
+import { normalizeStoreKey, storeOfItem, type Store } from '../constants/stores';
 
 /** Base pública de la web (Universal Links). Ver quefalta-web/. */
 const WEB_BASE_URL = 'https://quefalta.es';
@@ -44,6 +45,7 @@ export interface GroupItem {
   imageUrl: string | null;
   mercadonaProductId: string | null;
   storeProductId: string | null;
+  storeKey: Store;
   note: string | null;
   noteProduct: LinkedNoteProduct | null;
 }
@@ -135,27 +137,35 @@ export async function fetchGroupDetail(groupId: string): Promise<GroupSummary> {
 export async function fetchGroupItems(groupId: string): Promise<GroupItem[]> {
   const { data, error } = await supabase
     .from('list_items')
-    .select('id, product_name, quantity, unit, in_cart, category_emoji, category_name, unit_price, image_url, mercadona_product_id, store_product_id, note, note_product_store, note_product_id, note_product_name, note_product_image_url, note_product_unit_price, shopping_lists!inner(group_id)')
+    .select('id, product_name, quantity, unit, in_cart, category_emoji, category_name, unit_price, image_url, mercadona_product_id, store_product_id, store_key, note, note_product_store, note_product_id, note_product_name, note_product_image_url, note_product_unit_price, shopping_lists!inner(group_id)')
     .eq('shopping_lists.group_id', groupId)
     .order('created_at', { ascending: true });
 
   if (error) throw error;
 
-  return (data ?? []).map((it: any) => ({
-    id: it.id,
-    productName: it.product_name,
-    quantity: Number(it.quantity),
-    unit: it.unit,
-    inCart: it.in_cart,
-    categoryEmoji: it.category_emoji,
-    categoryName: it.category_name ?? null,
-    unitPrice: it.unit_price != null ? Number(it.unit_price) : null,
-    imageUrl: it.image_url ?? null,
-    mercadonaProductId: it.mercadona_product_id ?? null,
-    storeProductId: it.store_product_id ?? null,
-    note: it.note ?? null,
-    noteProduct: linkedNoteProductFromRow(it),
-  }));
+  return (data ?? []).map((it: any) => {
+    const clue = {
+      storeKey: normalizeStoreKey(it.store_key),
+      imageUrl: it.image_url ?? null,
+      mercadonaProductId: it.mercadona_product_id ?? null,
+    };
+    return {
+      id: it.id,
+      productName: it.product_name,
+      quantity: Number(it.quantity),
+      unit: it.unit,
+      inCart: it.in_cart,
+      categoryEmoji: it.category_emoji,
+      categoryName: it.category_name ?? null,
+      unitPrice: it.unit_price != null ? Number(it.unit_price) : null,
+      imageUrl: clue.imageUrl,
+      mercadonaProductId: clue.mercadonaProductId,
+      storeProductId: it.store_product_id ?? null,
+      storeKey: clue.storeKey ?? storeOfItem(clue),
+      note: it.note ?? null,
+      noteProduct: linkedNoteProductFromRow(it),
+    };
+  });
 }
 
 /** Adds the current user to a group (used by invite links). Idempotent.

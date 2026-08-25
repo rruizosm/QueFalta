@@ -367,6 +367,11 @@ export type CatalogStackParamList = {
     categoryName: string;
     parentCategoryName?: string;
   };
+  FroizProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentCategoryName?: string;
+  };
   AhorramasProducts: {
     categoryId: string;
     categoryName: string;

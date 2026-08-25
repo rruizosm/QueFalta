@@ -29,7 +29,10 @@
       "package": "com.quefalta.app",
       "googleServicesFile": "./google-services.json",
       "blockedPermissions": [
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.SYSTEM_ALERT_WINDOW"
       ],
       "intentFilters": [
         {
@@ -70,6 +73,7 @@
       "en": "./locales/ios/en.json"
     },
     "plugins": [
+      "./plugins/withAndroidReleaseHardening",
       "expo-secure-store",
       "expo-apple-authentication",
       [

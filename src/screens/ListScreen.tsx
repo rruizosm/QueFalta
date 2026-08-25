@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
@@ -17,7 +17,6 @@ import {
   Modal,
   Pressable,
   Animated,
-  Easing,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -29,10 +28,10 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { fetchListItems, setItemInCart, assignListItem, clearListItems, deleteListItems, updateListItemQuantity, updateListItemsComment, mergeCartItems, type LinkedNoteProduct, type ListItemRow, type MergedCartItem } from '../api/lists';
+import { fetchListItems, setListItemsInCart, assignListItems, clearListItems, deleteListItems, updateListItemQuantity, updateListItemsComment, mergeCartItems, type LinkedNoteProduct, type ListItemRow, type MergedCartItem } from '../api/lists';
 import { fetchMercadonaNames } from '../api/catalog';
 import { fetchGroupMembers, type GroupSummary } from '../api/groups';
-import { recordPurchase } from '../api/purchases';
+import { finishPurchase } from '../api/purchases';
 import type { GroupMember } from '../types';
 import ProductImage from '../components/ProductImage';
 import StoreProductModal, { type ProductRef } from '../components/StoreProductModal';
@@ -82,13 +81,6 @@ type PreparedCartStore = {
 
 const EMPTY_CART_ITEMS: MergedCartItem[] = [];
 const ZONE_DOUBLE_TAP_MS = 300;
-const ZONE_ROW_ANIMATION_MS = 210;
-const ZONE_STAGGER_WINDOW_MS = 180;
-const zoneRowStyles = StyleSheet.create({
-  clip: { overflow: 'hidden' },
-  hidden: { height: 0, opacity: 0 },
-  measure: { paddingBottom: 10 },
-});
 
 const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 
@@ -192,15 +184,16 @@ export default function ListScreen() {
 
   const toggleZone = useCallback((key: string) => {
     Haptics.selectionAsync();
-    // La cabecera responde al instante; las filas conservan el montaje para
-    // que AnimatedZoneRow pueda plegarlas sin un salto de layout.
+    // Una sola transición de layout evita animar altura/opacidad en cada fila
+    // desde JavaScript, que generaba trabajo proporcional al tamaño de la zona.
+    if (!reducedMotion) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setCollapsedZones((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
       return next;
     });
-  }, []);
+  }, [reducedMotion]);
 
   const load = useCallback(() => {
     if (!listId) { setItems([]); setLoading(false); return Promise.resolve(); }
@@ -241,7 +234,7 @@ export default function ListScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setItems((list) => list.map((it) => (ids.has(it.id) ? { ...it, assignedTo: memberId } : it)));
     try {
-      await Promise.all(item.ids.map((id) => assignListItem(id, memberId)));
+      await assignListItems(item.ids, memberId);
     } catch {
       setItems((list) => list.map((it) => (ids.has(it.id) ? { ...it, assignedTo: prev.get(it.id) ?? null } : it)));
       toast.show(t('list.assignError'), 'error');
@@ -256,7 +249,7 @@ export default function ListScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setItems((list) => list.map((it) => ({ ...it, assignedTo: memberId })));
     try {
-      await Promise.all(items.map((it) => assignListItem(it.id, memberId)));
+      await assignListItems(items.map((it) => it.id), memberId);
     } catch {
       setItems(prev);
       toast.show(t('list.assignError'), 'error');
@@ -267,21 +260,7 @@ export default function ListScreen() {
     if (!activeCart || finishing || items.length === 0) return;
     setFinishing(true);
     try {
-      const snapshot = merged.map((it) => ({
-        productName: it.productName,
-        quantity: it.quantity,
-        unit: it.unit,
-        categoryEmoji: it.categoryEmoji,
-        categoryName: it.categoryName,
-        mercadonaProductId: it.mercadonaProductId,
-        storeProductId: it.storeProductId,
-        unitPrice: it.unitPrice,
-        imageUrl: it.imageUrl,
-        note: it.note,
-        noteProduct: it.noteProduct,
-      }));
-      await recordPurchase(activeCart.groupId, totalCost, snapshot, userId);
-      await clearListItems(activeCart.listId);
+      await finishPurchase(activeCart.listId);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show(t('list.purchaseDone'));
       setItems([]);
@@ -392,7 +371,7 @@ export default function ListScreen() {
     if (!reducedMotion) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setItems((prev) => prev.map((it) => (ids.has(it.id) ? { ...it, inCart: next } : it)));
     try {
-      await Promise.all(item.ids.map((id) => setItemInCart(id, next)));
+      await setListItemsInCart(item.ids, next);
     } catch {
       setItems((prev) => prev.map((it) => (ids.has(it.id) ? { ...it, inCart: prevState.get(it.id) ?? it.inCart } : it)));
       toast.show(t('list.updateError'), 'error');
@@ -479,6 +458,7 @@ export default function ListScreen() {
 
     const shouldCollapse = !previousTap.wasCollapsed;
     Haptics.selectionAsync();
+    if (!reducedMotion) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setCollapsedZones((prev) => {
       const next = new Set(prev);
       store.zones.forEach(({ zone }) => {
@@ -488,15 +468,14 @@ export default function ListScreen() {
       });
       return next;
     });
-  }, [preparedStores, toggleZone]);
+  }, [preparedStores, reducedMotion, toggleZone]);
 
   // Agrupado Tienda → Zona del súper (pasillo); dentro de cada zona, pendientes
   // primero y alfabético. Cada par tienda×zona es una sección del SectionList;
   // la cabecera de tienda solo se pinta en la primera zona de esa tienda.
-  // Plegado: si la tienda está plegada se emite una única sección con solo su
-  // cabecera (sin zonas ni productos). Una zona plegada conserva `data`: cada
-  // fila anima y recorta su propia altura, de la última a la primera. Así la
-  // lista no desaparece de golpe y el despliegue puede recorrer el camino inverso.
+  // Plegado: una tienda emite solo su cabecera y una zona plegada no conserva
+  // filas montadas. SectionList puede así reciclarlas y el coste no crece con
+  // cada producto oculto.
   const sections = useMemo<CartSection[]>(() => preparedStores.flatMap((group): CartSection[] => {
     if (collapsedStores.has(group.store)) {
       return [{
@@ -527,34 +506,23 @@ export default function ListScreen() {
         zoneCount: zoneGroup.count,
         zoneInCart: zoneGroup.inCart,
         zoneCollapsed,
-        data: zoneGroup.data,
+        data: zoneCollapsed ? EMPTY_CART_ITEMS : zoneGroup.data,
       };
     });
   }), [preparedStores, collapsedStores, collapsedZones]);
 
-  const renderItem = useCallback(({ item, index, section }: {
-    item: MergedCartItem;
-    index: number;
-    section: CartSection;
-  }) => (
-    <AnimatedZoneRow
-      collapsed={section.zoneCollapsed}
-      index={index}
-      itemCount={section.data.length}
-      reducedMotion={reducedMotion}
-    >
-      <CartItemRow
-        item={item}
-        members={members}
-        onToggle={toggle}
-        onOpenDetail={setDetailTarget}
-        onAssign={setAssignItem}
-        onRemove={doRemove}
-        onDecrement={doDecrement}
-        onEditNote={setNoteItem}
-      />
-    </AnimatedZoneRow>
-  ), [members, toggle, doRemove, doDecrement, reducedMotion]);
+  const renderItem = useCallback(({ item }: { item: MergedCartItem }) => (
+    <CartItemRow
+      item={item}
+      members={members}
+      onToggle={toggle}
+      onOpenDetail={setDetailTarget}
+      onAssign={setAssignItem}
+      onRemove={doRemove}
+      onDecrement={doDecrement}
+      onEditNote={setNoteItem}
+    />
+  ), [members, toggle, doRemove, doDecrement]);
 
   // ── Shared screen shell ───────────────────────────────────────
   // Cabecera compartida por todos los estados. En glass vive en una franja
@@ -581,6 +549,8 @@ export default function ListScreen() {
                 onPress={() => setAssignAllVisible(true)}
                 style={({ pressed }) => [styles.headerBtn, styles.headerBtnPrimary, pressed && styles.headerBtnPressed]}
                 hitSlop={10}
+                accessibilityRole="button"
+                accessibilityLabel={t('list.assignAllTitle')}
               >
                 <Ionicons name="person-add-outline" size={17} color={colors.white} />
               </Pressable>
@@ -588,6 +558,8 @@ export default function ListScreen() {
                 onPress={() => setConfirmClear(true)}
                 style={({ pressed }) => [styles.headerBtn, pressed && styles.headerBtnPressed]}
                 hitSlop={10}
+                accessibilityRole="button"
+                accessibilityLabel={t('list.clearConfirm')}
               >
                 <Ionicons name="trash-outline" size={17} color={colors.inkSoft} />
               </Pressable>
@@ -660,6 +632,9 @@ export default function ListScreen() {
                       style={[styles.storeHeader, section.key !== sections[0].key && { marginTop: 18 }]}
                       activeOpacity={0.6}
                       onPress={() => toggleStore(section.store)}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('list.toggleStoreA11y', { store: meta.name })}
+                      accessibilityState={{ expanded: !section.storeCollapsed }}
                     >
                       {meta.icon ? (
                         <Image source={meta.icon} style={styles.storeHeaderIcon} resizeMode="cover" />
@@ -680,6 +655,9 @@ export default function ListScreen() {
                       style={styles.zoneHeader}
                       activeOpacity={0.6}
                       onPress={() => handleZonePress(section)}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('list.toggleZoneA11y', { zone: t(`zones.${section.zone.key}`) })}
+                      accessibilityState={{ expanded: !section.zoneCollapsed }}
                     >
                       <Text style={styles.zoneHeaderEmoji}>{section.zone.emoji}</Text>
                       <Text style={styles.zoneHeaderText}>{t(`zones.${section.zone.key}`)}</Text>
@@ -828,85 +806,6 @@ export default function ListScreen() {
   );
 }
 
-// Mantiene cada tarjeta montada al plegar una zona y anima su altura dentro de
-// una ventana escalonada. Al cerrar empieza por la última tarjeta (abajo →
-// arriba); al abrir recorre el orden inverso (arriba → abajo). El recorte evita
-// que una tarjeta se pinte encima de la siguiente mientras cambia de altura.
-const AnimatedZoneRow = memo(function AnimatedZoneRow({
-  collapsed,
-  index,
-  itemCount,
-  reducedMotion,
-  children,
-}: PropsWithChildren<{
-  collapsed: boolean;
-  index: number;
-  itemCount: number;
-  reducedMotion: boolean;
-}>) {
-  const progress = useRef(new Animated.Value(collapsed ? 0 : 1)).current;
-  const previousCollapsed = useRef(collapsed);
-  const [contentHeight, setContentHeight] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (previousCollapsed.current === collapsed) {
-      progress.setValue(collapsed ? 0 : 1);
-      return;
-    }
-    previousCollapsed.current = collapsed;
-
-    if (reducedMotion) {
-      progress.setValue(collapsed ? 0 : 1);
-      return;
-    }
-
-    const staggerStep = itemCount > 1
-      ? ZONE_STAGGER_WINDOW_MS / (itemCount - 1)
-      : 0;
-    const staggerIndex = collapsed ? itemCount - 1 - index : index;
-    const animation = Animated.timing(progress, {
-      toValue: collapsed ? 0 : 1,
-      duration: ZONE_ROW_ANIMATION_MS,
-      delay: Math.round(staggerIndex * staggerStep),
-      easing: Easing.bezier(0.22, 0.72, 0.24, 1),
-      useNativeDriver: false,
-    });
-    animation.start();
-    return () => animation.stop();
-  }, [collapsed, index, itemCount, progress, reducedMotion]);
-
-  const animatedStyle = contentHeight == null
-    ? (collapsed ? zoneRowStyles.hidden : null)
-    : {
-        height: progress.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0, contentHeight],
-        }),
-        opacity: progress,
-      };
-
-  return (
-    <Animated.View
-      style={[zoneRowStyles.clip, animatedStyle]}
-      pointerEvents={collapsed ? 'none' : 'auto'}
-      accessibilityElementsHidden={collapsed}
-      importantForAccessibility={collapsed ? 'no-hide-descendants' : 'auto'}
-    >
-      <View
-        style={zoneRowStyles.measure}
-        onLayout={({ nativeEvent }) => {
-          const nextHeight = nativeEvent.layout.height;
-          setContentHeight((current) => (
-            current == null || Math.abs(current - nextHeight) > 0.5 ? nextHeight : current
-          ));
-        }}
-      >
-        {children}
-      </View>
-    </Animated.View>
-  );
-});
-
 // Fila del carrito. Tres zonas táctiles independientes: el checkbox marca
 // "En cesta", la zona central (foto + nombre) abre el detalle del producto y
 // la papelera elimina en un toque — tacha el artículo, lo desvanece y entonces
@@ -959,6 +858,11 @@ const CartItemRow = memo(function CartItemRow({ item, members, onToggle, onOpenD
           hitSlop={10}
           disabled={removing}
           onPress={() => onToggle(item)}
+          accessibilityRole="checkbox"
+          accessibilityLabel={t(item.inCart ? 'list.markPendingA11y' : 'list.markPurchasedA11y', {
+            product: item.productName,
+          })}
+          accessibilityState={{ checked: item.inCart, disabled: removing }}
         >
           <View style={[styles.checkbox, item.inCart && styles.checkboxChecked]}>
             {item.inCart && <Ionicons name="checkmark" size={13} color={colors.white} />}

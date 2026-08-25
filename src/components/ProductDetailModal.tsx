@@ -175,6 +175,7 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16, 
     setAdding(true);
     try {
       await addToActiveCart([{
+        storeKey: 'mercadona',
         productName: product.display_name,
         quantity: qty,
         unit: 'ud',

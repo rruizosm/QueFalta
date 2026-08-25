@@ -20,6 +20,7 @@ const feedMigration = readFileSync(new URL(
 ), 'utf8');
 const catalogApi = readFileSync(new URL('../../src/api/catalog.ts', import.meta.url), 'utf8');
 const catalogSearch = readFileSync(new URL('../../src/lib/catalogSearch.ts', import.meta.url), 'utf8');
+const productNoteSheet = readFileSync(new URL('../../src/components/ProductNoteSheet.tsx', import.meta.url), 'utf8');
 const catalogScreen = readFileSync(new URL('../../src/screens/CatalogScreen.tsx', import.meta.url), 'utf8');
 const newArrivalsScreen = readFileSync(new URL('../../src/screens/NewArrivalsScreen.tsx', import.meta.url), 'utf8');
 const offersScreen = readFileSync(new URL('../../src/screens/OffersScreen.tsx', import.meta.url), 'utf8');
@@ -57,7 +58,17 @@ test('el cliente envía idioma, ubicación, orden y página al RPC', () => {
   }
   assert.match(catalogSearch, /offset = 0/);
   assert.match(catalogSearch, /order: CatalogSearchOrder = 'relevance'/);
-  assert.match(catalogSearch, /searchProducts\(query, region, limit, signal, offset, order\)/);
+  assert.match(catalogSearch, /searchProducts\(query, region, limit, signal, offset, order, searchLanguage\)/);
+});
+
+test('Producto asociado busca en castellano y catalán pero muestra el idioma activo', () => {
+  assert.match(catalogApi, /p_lang:\s*options\.language \?\? getLanguage\(\)/);
+  assert.match(catalogSearch, /BILINGUAL_CATALOG_STORES/);
+  assert.match(catalogSearch, /language:\s*'ca'/);
+  assert.match(catalogSearch, /language:\s*'es'/);
+  assert.match(catalogSearch, /productsByKey\.set\(`\$\{product\.store\}:\$\{product\.id\}`/);
+  assert.match(catalogSearch, /searchBothLanguages\s*\? products/);
+  assert.match(productNoteSheet, /searchCatalogStores\([\s\S]+?40,\s*true,/);
 });
 
 test('el servidor ordena antes de paginar por relevancia, precio o precio unitario', () => {
@@ -70,9 +81,11 @@ test('el servidor ordena antes de paginar por relevancia, precio o precio unitar
 
 test('el catálogo ofrece relevancia y carga páginas adicionales', () => {
   assert.match(catalogScreen, /useState<ProductSearchOrder>\('relevance'\)/);
-  assert.match(catalogScreen, /sortByRelevance/);
+  assert.match(catalogScreen, /relevanceScore/);
   assert.match(catalogScreen, /loadMoreStoreSearch/);
   assert.match(catalogScreen, /allSearchExhausted/);
+  assert.match(catalogScreen, /createMultiStorePager<UIProduct, CatalogStore, number>/);
+  assert.match(catalogScreen, /pageSize: 12/);
   assert.match(catalogScreen, /searchFroizProducts/);
   assert.match(catalogScreen, /sortRelevance/);
 });

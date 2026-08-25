@@ -6,7 +6,7 @@
 // MercadonaProduct completo.
 import { supabase } from '../lib/supabase';
 import { offerTypesOf, type OfferType } from '../lib/offerTypes';
-import { getLanguage } from '../i18n';
+import { getLanguage, type AppLanguage } from '../i18n';
 import type { MercadonaProduct } from '../types';
 import type { CatalogStore } from '../constants/stores';
 import { REGION_ALL, REGION_MERCADONA_NAME, type RegionValue } from '../constants/regions';
@@ -200,6 +200,7 @@ async function catalogSearchPage(
     region?: RegionValue | null;
     center?: string | null;
     order?: CatalogSearchOrder;
+    language?: AppLanguage;
   },
 ): Promise<any[]> {
   const q = query.trim();
@@ -209,7 +210,7 @@ async function catalogSearchPage(
     : REGION_MERCADONA_NAME[options.region] ?? null;
   const request = supabase.rpc(rpc, {
     p_query: q,
-    p_lang: getLanguage(),
+    p_lang: options.language ?? getLanguage(),
     p_region: region,
     p_center: options.center ?? null,
     p_order: options.order ?? 'relevance',
@@ -402,10 +403,10 @@ function mirrorMercadonaProduct(r: any, ca: boolean): MercadonaProduct {
  *  en català busca y muestra el nombre catalán (columnas display_name_ca[_norm]
  *  del espejo); en castellano, las columnas originales. Si el sync aún no rellenó
  *  el catalán, `display_name_ca` es null → cae al castellano sin romperse. */
-export async function searchProducts(query: string, region: RegionValue | null, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<MercadonaProduct[]> {
+export async function searchProducts(query: string, region: RegionValue | null, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance', language?: AppLanguage): Promise<MercadonaProduct[]> {
   const ca = getLanguage() === 'ca';
   const rows = await catalogSearchPage('search_mercadona_products', MERCADONA_LIST_COLS, query, {
-    region, limit, offset, signal, order,
+    region, limit, offset, signal, order, language,
   });
   return rows.map((r: any) => mirrorMercadonaProduct(r, ca));
 }
@@ -563,9 +564,9 @@ const BONPREU_COLS =
 
 /** Búsqueda por nombre en el catálogo de BonpreuEsclat (server-side). Bilingüe:
  *  en català busca/muestra por la columna catalana (display_name_ca[_norm]). */
-export async function searchBonpreuProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<BonpreuProduct[]> {
+export async function searchBonpreuProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance', language?: AppLanguage): Promise<BonpreuProduct[]> {
   const rows = await catalogSearchPage('search_bonpreu_products', BONPREU_COLS, query, {
-    limit, offset, signal, order,
+    limit, offset, signal, order, language,
   });
   return rows.map(mapBonpreu);
 }
@@ -846,9 +847,9 @@ const BONAREA_DETAIL_COLS =
 
 /** Búsqueda por nombre en el catálogo de bonÀrea (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
-export async function searchBonareaProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<BonareaProduct[]> {
+export async function searchBonareaProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance', language?: AppLanguage): Promise<BonareaProduct[]> {
   const rows = await catalogSearchPage('search_bonarea_products', BONAREA_COLS, query, {
-    limit, offset, signal, order,
+    limit, offset, signal, order, language,
   });
   return rows.map(mapBonarea);
 }
@@ -1238,9 +1239,9 @@ const SORLI_COLS =
 
 /** Búsqueda por nombre en el catálogo de Sorli (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
-export async function searchSorliProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<SorliProduct[]> {
+export async function searchSorliProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance', language?: AppLanguage): Promise<SorliProduct[]> {
   const rows = await catalogSearchPage('search_sorli_products', SORLI_COLS, query, {
-    limit, offset, signal, order,
+    limit, offset, signal, order, language,
   });
   return rows.map(mapSorli);
 }
@@ -1355,9 +1356,9 @@ const CONDIS_OFFER_COLS =
 
 /** Búsqueda por nombre en el catálogo de Condis (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
-export async function searchCondisProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<CondisProduct[]> {
+export async function searchCondisProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance', language?: AppLanguage): Promise<CondisProduct[]> {
   const rows = await catalogSearchPage('search_condis_products', CONDIS_COLS, query, {
-    limit, offset, signal, order,
+    limit, offset, signal, order, language,
   });
   return rows.map(mapCondis);
 }
@@ -1481,9 +1482,9 @@ const AMETLLER_DETAIL_COLS =
 
 /** Búsqueda por nombre en el catálogo de Ametller (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
-export async function searchAmetllerProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<AmetllerProduct[]> {
+export async function searchAmetllerProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance', language?: AppLanguage): Promise<AmetllerProduct[]> {
   const rows = await catalogSearchPage('search_ametller_products', AMETLLER_COLS, query, {
-    limit, offset, signal, order,
+    limit, offset, signal, order, language,
   });
   return rows.map(mapAmetller);
 }
@@ -2151,9 +2152,9 @@ const PLUSFRESC_DETAIL_COLS =
 
 /** Búsqueda por nombre en el catálogo de Plusfresc (server-side). Bilingüe: en català
  *  busca/muestra por la columna catalana (display_name_ca[_norm]). */
-export async function searchPlusfrescProducts(query: string, postalCode: string | null, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<PlusfrescProduct[]> {
+export async function searchPlusfrescProducts(query: string, postalCode: string | null, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance', language?: AppLanguage): Promise<PlusfrescProduct[]> {
   const rows = await catalogSearchPage('search_plusfresc_products', PLUSFRESC_COLS, query, {
-    center: plusfrescCenterFromPostalCode(postalCode), limit, offset, signal, order,
+    center: plusfrescCenterFromPostalCode(postalCode), limit, offset, signal, order, language,
   });
   return rows.map((r: any) => mapPlusfresc(r, postalCode));
 }
@@ -2219,7 +2220,7 @@ export async function fetchPlusfrescProductsByCategory(categoryId: string, posta
   return (data ?? []).map((r: any) => mapPlusfresc(r, postalCode));
 }
 
-// ─── Comparativa: producto similar más barato entre supers (RPC v5) ───
+// ─── Comparativa: producto similar más barato entre supers (RPC v7) ───
 export interface SimilarProduct {
   store: CatalogStore;
   /** null en filas bloqueadas por la defensa del RPC para clientes antiguos. */
@@ -2260,10 +2261,11 @@ export async function fetchSimilarProducts(
   if (!sourceProductId?.trim() || stores.length === 0) {
     return { allowed: true, remainingUses: null, products: [] };
   }
-  const { data, error } = await supabase.rpc('catalog_cheaper_products_v6', {
+  const { data, error } = await supabase.rpc('catalog_cheaper_products_v7', {
     p_source_store: sourceStore,
     p_source_product_id: sourceProductId,
     p_stores: stores,
+    p_language: getLanguage(),
   });
   if (error) throw error;
   const response = data && typeof data === 'object' && !Array.isArray(data)
@@ -2289,6 +2291,36 @@ export async function fetchSimilarProducts(
     isCheaper: r.is_cheaper === true,
     locked: false,
     })),
+  };
+}
+
+export interface SimilarProductReportResult {
+  reportId: number;
+  alreadyReported: boolean;
+}
+
+/** Registra de forma idempotente que una coincidencia mostrada por el
+ * comparador no parece correcta. El servidor valida la pareja y genera los
+ * snapshots; el cliente no escribe directamente en la cola privada. */
+export async function reportSimilarProduct(
+  sourceStore: CatalogStore,
+  sourceProductId: string,
+  targetStore: CatalogStore,
+  targetProductId: string,
+): Promise<SimilarProductReportResult> {
+  const { data, error } = await supabase.rpc('report_catalog_product_match', {
+    p_source_store: sourceStore,
+    p_source_product_id: sourceProductId,
+    p_target_store: targetStore,
+    p_target_product_id: targetProductId,
+  });
+  if (error) throw error;
+  const response = data && typeof data === 'object' && !Array.isArray(data)
+    ? data as Record<string, unknown>
+    : {};
+  return {
+    reportId: Number(response.report_id),
+    alreadyReported: response.already_reported === true,
   };
 }
 

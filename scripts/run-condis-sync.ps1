@@ -39,6 +39,12 @@ Set-Location $repo
 "=== Condis sync $(Get-Date -Format 'u') ===" | Tee-Object -FilePath $log
 & node scripts/sync-condis.mjs *>&1 | Tee-Object -FilePath $log -Append
 $code = $LASTEXITCODE
+if ($code -eq 0 -and $env:DRY_RUN -ne '1') {
+  "=== Actualizando comparador (condis) ===" | Tee-Object -FilePath $log -Append
+  $env:STORES = 'condis'
+  & node scripts/sync-comparator-embedding-catalog.mjs *>&1 | Tee-Object -FilePath $log -Append
+  $code = $LASTEXITCODE
+}
 "=== fin (exit $code) $(Get-Date -Format 'u') ===" | Tee-Object -FilePath $log -Append
 
 # Conservar solo los últimos 14 logs.

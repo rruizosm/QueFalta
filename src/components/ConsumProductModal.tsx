@@ -80,6 +80,7 @@ export default function ConsumProductModal({ product, onClose, topInset = 16, ba
     setAdding(true);
     try {
       await addToActiveCart([{
+        storeKey: 'consum',
         productName: product.displayName,
         quantity: qty,
         unit: 'ud',

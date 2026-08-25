@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { Alert, View, Text, Image, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
-import { fetchSimilarProducts, type SimilarProduct } from '../api/catalog';
+import { fetchSimilarProducts, reportSimilarProduct, type SimilarProduct } from '../api/catalog';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import { PRICE_COMPARISON_ENABLED } from '../constants/limits';
 import { useProfile } from '../context/ProfileContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
+import { useToast } from '../context/ToastContext';
 import StoreProductModal, { type ProductRef } from './StoreProductModal';
 import PaywallModal from './PaywallModal';
 import ProductImage from './ProductImage';
@@ -28,13 +29,14 @@ const perUnitLabel = (value: number | null, unit: string | null): string | null 
   return label ? `${euro(value)}/${label}` : euro(value);
 };
 
-/** Comparador v5 bajo demanda. Abrir una ficha no lanza ninguna consulta: el
+/** Comparador v7 bajo demanda. Abrir una ficha no lanza ninguna consulta: el
  * usuario decide cuándo buscar y recibe hasta dos matches estrictos por cada
  * supermercado activo. El servidor usa precio total para Caprabo, Eroski e
  * HiperDino y precio unitario canónico para el resto. */
 export default function SimilarProductsSection({ productId, excludeStore }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
+  const toast = useToast();
   const { profile, loading: profileLoading, isPremium } = useProfile();
   const [similars, setSimilars] = useState<SimilarProduct[]>([]);
   const [loading, setLoading] = useState(false);
@@ -43,6 +45,8 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
   const [remainingUses, setRemainingUses] = useState<number | null>(null);
   const [target, setTarget] = useState<ProductRef | null>(null);
   const [paywallVisible, setPaywallVisible] = useState(false);
+  const [reportingKey, setReportingKey] = useState<string | null>(null);
+  const [reportedKeys, setReportedKeys] = useState<Set<string>>(() => new Set());
   const requestVersion = useRef(0);
 
   const targetStores = useMemo(
@@ -59,6 +63,8 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
     setAttempted(false);
     setError(false);
     setRemainingUses(null);
+    setReportingKey(null);
+    setReportedKeys(new Set());
   }, [productId, excludeStore, targetStoresKey]);
 
   const search = useCallback(async () => {
@@ -86,6 +92,42 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
       if (requestVersion.current === version) setLoading(false);
     }
   }, [excludeStore, loading, productId, targetStores]);
+
+  const report = useCallback(async (product: SimilarProduct) => {
+    if (!productId || !product.id || product.locked || reportingKey !== null) return;
+    const key = `${product.store}:${product.id}`;
+    if (reportedKeys.has(key)) return;
+    setReportingKey(key);
+    try {
+      await reportSimilarProduct(excludeStore, productId, product.store, product.id);
+      setReportedKeys((current) => {
+        const next = new Set(current);
+        next.add(key);
+        return next;
+      });
+      toast.show(t('similar.reportThanks'));
+    } catch {
+      toast.show(t('similar.reportError'), 'error');
+    } finally {
+      setReportingKey((current) => current === key ? null : current);
+    }
+  }, [excludeStore, productId, reportedKeys, reportingKey, t, toast]);
+
+  const confirmReport = useCallback((product: SimilarProduct) => {
+    const displayName = product.displayName ?? t('similar.unnamedProduct');
+    const storeName = STORE_META[product.store]?.name ?? product.store;
+    Alert.alert(
+      t('similar.reportConfirmTitle'),
+      t('similar.reportConfirmBody', { product: displayName, store: storeName }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('similar.reportConfirmAction'),
+          onPress: () => { void report(product); },
+        },
+      ],
+    );
+  }, [report, t]);
 
   const grouped = useMemo(
     () => targetStores
@@ -223,66 +265,106 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
                     : (product.displayName ?? t('similar.unnamedProduct'));
                   const priceLabel = product.priceTotal != null ? euro(product.priceTotal) : null;
                   const accessibilityPrice = [priceLabel, ppu].filter(Boolean).join(', ');
+                  const reportKey = product.id ? `${product.store}:${product.id}` : null;
+                  const isReporting = reportKey != null && reportingKey === reportKey;
+                  const isReported = reportKey != null && reportedKeys.has(reportKey);
                   return (
-                    <TouchableOpacity
+                    <View
                       key={`${product.store}-${product.id ?? 'locked'}`}
                       style={[
                         styles.compareRow,
                         index > 0 && styles.compareRowDivider,
                         !product.locked && product.isCheaper && styles.compareRowCheaper,
                       ]}
-                      accessibilityRole="button"
-                      accessibilityLabel={accessibilityPrice
-                        ? t('similar.openProductWithPrice', {
-                          product: displayName,
-                          store: meta?.name ?? store,
-                          price: accessibilityPrice,
-                        })
-                        : t('similar.openProduct', {
-                          product: displayName,
-                          store: meta?.name ?? store,
-                        })}
-                      activeOpacity={0.7}
-                      onPress={() =>
-                        product.locked || !product.id
-                          ? setPaywallVisible(true)
-                          : setTarget({ store: product.store, id: product.id })
-                      }
                     >
-                      <View style={styles.productImageWrap}>
-                        {product.thumbnail ? (
-                          <ProductImage uri={product.thumbnail} style={styles.productImage} />
+                      {product.id && !product.locked ? (
+                        <TouchableOpacity
+                          accessibilityRole="button"
+                          accessibilityLabel={isReporting
+                            ? t('similar.reportSending')
+                            : isReported
+                              ? t('similar.reportSent')
+                              : t('similar.reportProduct', {
+                                product: displayName,
+                                store: meta?.name ?? store,
+                              })}
+                          accessibilityState={{ disabled: isReported || reportingKey !== null }}
+                          activeOpacity={0.68}
+                          disabled={isReported || reportingKey !== null}
+                          hitSlop={7}
+                          onPress={() => confirmReport(product)}
+                          style={[
+                            styles.reportButton,
+                            isReported && styles.reportButtonSent,
+                          ]}
+                        >
+                          {isReporting ? (
+                            <ActivityIndicator size="small" color={colors.accent} />
+                          ) : (
+                            <Ionicons
+                              name={isReported ? 'checkmark' : 'flag-outline'}
+                              size={14}
+                              color={isReported ? colors.ok : colors.inkSoft}
+                            />
+                          )}
+                        </TouchableOpacity>
+                      ) : null}
+
+                      <TouchableOpacity
+                        style={styles.productButton}
+                        accessibilityRole="button"
+                        accessibilityLabel={accessibilityPrice
+                          ? t('similar.openProductWithPrice', {
+                            product: displayName,
+                            store: meta?.name ?? store,
+                            price: accessibilityPrice,
+                          })
+                          : t('similar.openProduct', {
+                            product: displayName,
+                            store: meta?.name ?? store,
+                          })}
+                        activeOpacity={0.7}
+                        onPress={() =>
+                          product.locked || !product.id
+                            ? setPaywallVisible(true)
+                            : setTarget({ store: product.store, id: product.id })
+                        }
+                      >
+                        <View style={styles.productImageWrap}>
+                          {product.thumbnail ? (
+                            <ProductImage uri={product.thumbnail} style={styles.productImage} />
+                          ) : (
+                            <View style={[styles.productImage, styles.iconEmpty]}>
+                              <Ionicons name="basket-outline" size={20} color={colors.inkSoft} />
+                            </View>
+                          )}
+                        </View>
+                        <View style={styles.compareInfo}>
+                          <Text style={styles.compareName} numberOfLines={2}>
+                            {displayName}
+                          </Text>
+                          {!product.locked && product.isCheaper ? (
+                            <View style={styles.cheaperBadge}>
+                              <Ionicons name="arrow-down" size={10} color={colors.ok} />
+                              <Text style={styles.cheaperBadgeText}>{t('similar.betterPrice')}</Text>
+                            </View>
+                          ) : null}
+                        </View>
+                        {product.locked ? (
+                          <View style={styles.lockBox}>
+                            <Ionicons name="lock-closed" size={13} color={colors.accent} />
+                          </View>
                         ) : (
-                          <View style={[styles.productImage, styles.iconEmpty]}>
-                            <Ionicons name="basket-outline" size={20} color={colors.inkSoft} />
+                          <View style={styles.comparePriceBox}>
+                            {priceLabel ? <Text style={styles.comparePrice}>{priceLabel}</Text> : null}
+                            {ppu ? <Text style={styles.comparePerUnit}>{ppu}</Text> : null}
                           </View>
                         )}
-                      </View>
-                      <View style={styles.compareInfo}>
-                        <Text style={styles.compareName} numberOfLines={2}>
-                          {displayName}
-                        </Text>
-                        {!product.locked && product.isCheaper ? (
-                          <View style={styles.cheaperBadge}>
-                            <Ionicons name="arrow-down" size={10} color={colors.ok} />
-                            <Text style={styles.cheaperBadgeText}>{t('similar.betterPrice')}</Text>
-                          </View>
-                        ) : null}
-                      </View>
-                      {product.locked ? (
-                        <View style={styles.lockBox}>
-                          <Ionicons name="lock-closed" size={13} color={colors.accent} />
+                        <View style={styles.chevronBox}>
+                          <Ionicons name="chevron-forward" size={14} color={colors.inkSoft} />
                         </View>
-                      ) : (
-                        <View style={styles.comparePriceBox}>
-                          {priceLabel ? <Text style={styles.comparePrice}>{priceLabel}</Text> : null}
-                          {ppu ? <Text style={styles.comparePerUnit}>{ppu}</Text> : null}
-                        </View>
-                      )}
-                      <View style={styles.chevronBox}>
-                        <Ionicons name="chevron-forward" size={14} color={colors.inkSoft} />
-                      </View>
-                    </TouchableOpacity>
+                      </TouchableOpacity>
+                    </View>
                   );
                 })}
               </View>
@@ -482,7 +564,7 @@ const themedStyles = () => StyleSheet.create({
     minHeight: 82,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 11,
+    gap: 8,
     paddingHorizontal: 10,
     paddingVertical: 10,
     backgroundColor: colors.white,
@@ -490,6 +572,28 @@ const themedStyles = () => StyleSheet.create({
   compareRowDivider: { borderTopWidth: 1, borderTopColor: colors.border },
   compareRowCheaper: {
     backgroundColor: 'rgba(63,143,79,0.06)',
+  },
+  reportButton: {
+    width: 26,
+    height: 26,
+    flexShrink: 0,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  reportButtonSent: {
+    backgroundColor: 'rgba(63,143,79,0.12)',
+    borderColor: 'rgba(63,143,79,0.30)',
+  },
+  productButton: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
   },
   productImageWrap: {
     width: 58,

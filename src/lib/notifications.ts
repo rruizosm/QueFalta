@@ -188,6 +188,7 @@ export type PushData = {
   groupId?: string;
   ruleId?: string;
   rule?: string;
+  emoji?: string;
   /** Fila de bandeja que permite resolver de forma segura sus productos. */
   notificationId?: string;
 };

@@ -1,9 +1,9 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
   Text,
-  ScrollView,
+  SectionList,
   TouchableOpacity,
   StyleSheet,
   StatusBar,
@@ -38,13 +38,22 @@ import ProgressBar from '../components/ProgressBar';
 import ProductImage from '../components/ProductImage';
 import StoreProductModal, { type ProductRef } from '../components/StoreProductModal';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
-import { STORE_META, groupByStore, storeOfItem } from '../constants/stores';
-import { groupByZone, sortZoneItems } from '../constants/zones';
+import { STORE_META, groupByStore, storeOfItem, type Store } from '../constants/stores';
+import { groupByZone, sortZoneItems, type ShopZone } from '../constants/zones';
 import { mergeCartItems, type MergedCartItem } from '../api/lists';
 import GroupIconPickerSheet from '../components/GroupIconPickerSheet';
 import { DEFAULT_GROUP_ICON } from '../constants/groupIcons';
 
 type GroupDetailRouteProp = RouteProp<GroupsStackParamList, 'GroupDetail'>;
+type GroupCartSection = {
+  key: string;
+  store: Store;
+  zone: ShopZone;
+  firstOfStore: boolean;
+  storeCount: number;
+  storeInCart: number;
+  data: MergedCartItem[];
+};
 
 const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 
@@ -132,14 +141,33 @@ export default function GroupDetailScreen() {
     try { await Share.share({ message }); } catch { /* user cancelled */ }
   };
 
-  const merged = mergeCartItems(items);
-  const totalCost = merged
-    .filter((i) => i.unitPrice != null)
-    .reduce((sum, i) => sum + i.unitPrice! * i.quantity, 0);
-  const hasPrices = merged.some((i) => i.unitPrice != null);
-
-  const doneItems = merged.filter((i) => i.inCart).length;
+  // El detalle y la vista expandida comparten una única preparación. Antes se
+  // fusionaba/agrupaba varias veces por render y se mantenían dos copias enteras.
+  const merged = useMemo(() => mergeCartItems(items), [items]);
+  const { totalCost, hasPrices, doneItems } = useMemo(() => ({
+    totalCost: merged.reduce(
+      (sum, item) => sum + (item.unitPrice != null ? item.unitPrice * item.quantity : 0),
+      0,
+    ),
+    hasPrices: merged.some((item) => item.unitPrice != null),
+    doneItems: merged.filter((item) => item.inCart).length,
+  }), [merged]);
   const progress = merged.length > 0 ? doneItems / merged.length : 0;
+
+  const cartSections = useMemo<GroupCartSection[]>(() => (
+    groupByStore(merged).flatMap((storeGroup) => {
+      const storeInCart = storeGroup.data.filter((item) => item.inCart).length;
+      return groupByZone(storeGroup.data).map((zoneGroup, zoneIndex) => ({
+        key: `${storeGroup.store}:${zoneGroup.zone.key}`,
+        store: storeGroup.store,
+        zone: zoneGroup.zone,
+        firstOfStore: zoneIndex === 0,
+        storeCount: storeGroup.data.length,
+        storeInCart,
+        data: sortZoneItems(zoneGroup.data),
+      }));
+    })
+  ), [merged]);
 
   const renderCartItem = (item: MergedCartItem, big = false) => {
     const lineTotal = item.unitPrice != null ? item.unitPrice * item.quantity : null;
@@ -154,6 +182,8 @@ export default function GroupDetailScreen() {
             activeOpacity={0.7}
             disabled={!detailTarget}
             onPress={() => detailTarget && setDetailTarget(detailTarget)}
+            accessibilityRole={detailTarget ? 'button' : undefined}
+            accessibilityLabel={detailTarget ? item.productName : undefined}
           >
             {item.imageUrl ? (
               <ProductImage
@@ -206,14 +236,11 @@ export default function GroupDetailScreen() {
     );
   };
 
-  // Lista de la cesta: fusiona duplicados y agrupa Tienda → Zona del súper
-  // (pasillo); dentro de cada zona, pendientes primero y alfabético.
-  const renderCartList = (its: GroupItem[], big = false) =>
-    groupByStore(mergeCartItems(its)).map((g) => {
-      const meta = STORE_META[g.store];
-      const inCart = g.data.filter((i) => i.inCart).length;
-      return (
-        <View key={g.store}>
+  const renderCartSectionHeader = (section: GroupCartSection) => {
+    const meta = STORE_META[section.store];
+    return (
+      <View style={styles.cartRowsSurface}>
+        {section.firstOfStore && (
           <View style={styles.storeHeader}>
             {meta.icon ? (
               <Image source={meta.icon} style={styles.storeHeaderIcon} resizeMode="cover" />
@@ -221,20 +248,16 @@ export default function GroupDetailScreen() {
               <Ionicons name="pricetag-outline" size={13} color={colors.inkSoft} />
             )}
             <Text style={styles.storeHeaderText}>{meta.name}</Text>
-            <Text style={styles.storeHeaderCount}>{inCart}/{g.data.length}</Text>
+            <Text style={styles.storeHeaderCount}>{section.storeInCart}/{section.storeCount}</Text>
           </View>
-          {groupByZone(g.data).map((z) => (
-            <View key={z.zone.key}>
-              <View style={styles.zoneHeader}>
-                <Text style={styles.zoneHeaderEmoji}>{z.zone.emoji}</Text>
-                <Text style={styles.zoneHeaderText}>{t(`zones.${z.zone.key}`)}</Text>
-              </View>
-              {sortZoneItems(z.data).map((item) => renderCartItem(item, big))}
-            </View>
-          ))}
+        )}
+        <View style={styles.zoneHeader}>
+          <Text style={styles.zoneHeaderEmoji}>{section.zone.emoji}</Text>
+          <Text style={styles.zoneHeaderText}>{t(`zones.${section.zone.key}`)}</Text>
         </View>
-      );
-    });
+      </View>
+    );
+  };
 
   const header = (
     <View style={[styles.header, { paddingTop: headerTop }]}>
@@ -242,6 +265,8 @@ export default function GroupDetailScreen() {
         onPress={() => navigation.goBack()}
         style={glassAvailable ? styles.backBtnGlass : styles.backBtn}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={t('common.back')}
       >
         <Ionicons name="arrow-back" size={22} color={colors.ink} />
       </TouchableOpacity>
@@ -249,7 +274,13 @@ export default function GroupDetailScreen() {
         {group?.name ?? t('group.detailTitle')}
       </Text>
       {group ? (
-        <TouchableOpacity onPress={handleShare} style={styles.shareBtn} activeOpacity={0.75}>
+        <TouchableOpacity
+          onPress={handleShare}
+          style={styles.shareBtn}
+          activeOpacity={0.75}
+          accessibilityRole="button"
+          accessibilityLabel={t('group.shareTitle')}
+        >
           <Ionicons name="share-social-outline" size={19} color={colors.accent} />
         </TouchableOpacity>
       ) : (
@@ -307,101 +338,111 @@ export default function GroupDetailScreen() {
 
       {!glassAvailable && header}
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.scroll,
-          {
-            paddingTop: glassAvailable ? headerHeight + 8 : 0,
-            paddingBottom: 90 + tabBarOffset,
-          },
-        ]}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} colors={[colors.accent]} />
-        }
-      >
-
-        {/* Members */}
-        <TouchableOpacity
-          style={[styles.section, styles.membersSection]}
-          activeOpacity={0.7}
-          onPress={() => navigation.navigate('GroupMembers', { groupId })}
-        >
-          <View style={styles.memberSummaryRow}>
-            <View style={styles.memberAvatarsWrap}>
-              {group.members.length > 0 ? (
-                <MemberAvatars members={group.members} maxVisible={4} size={30} />
-              ) : (
-                <Ionicons name="people-outline" size={20} color={colors.accent} />
-              )}
-            </View>
-            <View style={styles.manageBtn}>
-              <Text style={styles.manageHintText}>{t('group.manage')}</Text>
-              <Ionicons name="chevron-forward" size={17} color={colors.accent} />
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        {/* Configuración visual del grupo: tarjeta independiente de miembros. */}
-        {group.ownerId === session?.user.id && (
-          <TouchableOpacity
-            style={[styles.section, styles.iconSection]}
-            activeOpacity={0.72}
-            onPress={() => setIconPickerVisible(true)}
-            accessibilityRole="button"
-            accessibilityLabel={t('group.iconAction')}
-          >
-            <View style={styles.groupIconPreview}>
-              <Text style={styles.groupIconEmoji}>{group.iconEmoji ?? DEFAULT_GROUP_ICON}</Text>
-            </View>
-            <View style={styles.groupIconCopy}>
-              <Text style={styles.groupIconTitle}>{t('group.iconAction')}</Text>
-              <Text style={styles.groupIconSubtitle}>{t('group.iconActionSubtitle')}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.accent} />
-          </TouchableOpacity>
-        )}
-
-        {/* Cesta del grupo */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionTitleRow}>
-              <View style={styles.sectionIcon}>
-                <Ionicons name="basket-outline" size={16} color={colors.accent} />
-              </View>
-              <Text style={styles.sectionTitle}>{t('group.groupCart')}</Text>
-            </View>
-            {items.length > 0 && (
+      {!cartExpanded && (
+        <SectionList
+          sections={cartSections}
+          keyExtractor={(item) => item.ids[0]}
+          renderItem={({ item }) => (
+            <View style={styles.cartRowsSurface}>{renderCartItem(item)}</View>
+          )}
+          renderSectionHeader={({ section }) => renderCartSectionHeader(section)}
+          stickySectionHeadersEnabled={false}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[
+            styles.scroll,
+            {
+              paddingTop: glassAvailable ? headerHeight + 8 : 0,
+              paddingBottom: 90 + tabBarOffset,
+            },
+          ]}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} colors={[colors.accent]} />
+          }
+          initialNumToRender={10}
+          maxToRenderPerBatch={8}
+          windowSize={7}
+          ListHeaderComponent={(
+            <>
               <TouchableOpacity
-                onPress={() => setCartExpanded(true)}
-                style={styles.expandBtn}
-                hitSlop={8}
+                style={[styles.section, styles.membersSection]}
+                activeOpacity={0.7}
+                onPress={() => navigation.navigate('GroupMembers', { groupId })}
+                accessibilityRole="button"
+                accessibilityLabel={t('group.membersTitle', { n: group.members.length })}
               >
-                <Ionicons name="expand-outline" size={17} color={colors.accent} />
+                <View style={styles.memberSummaryRow}>
+                  <View style={styles.memberAvatarsWrap}>
+                    {group.members.length > 0 ? (
+                      <MemberAvatars members={group.members} maxVisible={4} size={30} />
+                    ) : (
+                      <Ionicons name="people-outline" size={20} color={colors.accent} />
+                    )}
+                  </View>
+                  <View style={styles.manageBtn}>
+                    <Text style={styles.manageHintText}>{t('group.manage')}</Text>
+                    <Ionicons name="chevron-forward" size={17} color={colors.accent} />
+                  </View>
+                </View>
               </TouchableOpacity>
-            )}
-          </View>
 
-          {items.length > 0 && (
-            <View style={styles.progressWrap}>
-              <ProgressBar progress={progress} height={6} />
-              <Text style={styles.progressSub}>
-                {t('group.cartProgress', { done: doneItems, total: merged.length, pct: Math.round(progress * 100) })}
-              </Text>
-            </View>
+              {group.ownerId === session?.user.id && (
+                <TouchableOpacity
+                  style={[styles.section, styles.iconSection]}
+                  activeOpacity={0.72}
+                  onPress={() => setIconPickerVisible(true)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('group.iconAction')}
+                >
+                  <View style={styles.groupIconPreview}>
+                    <Text style={styles.groupIconEmoji}>{group.iconEmoji ?? DEFAULT_GROUP_ICON}</Text>
+                  </View>
+                  <View style={styles.groupIconCopy}>
+                    <Text style={styles.groupIconTitle}>{t('group.iconAction')}</Text>
+                    <Text style={styles.groupIconSubtitle}>{t('group.iconActionSubtitle')}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={colors.accent} />
+                </TouchableOpacity>
+              )}
+
+              <View style={[styles.section, items.length > 0 && styles.cartIntroSection]}>
+                <View style={styles.sectionHeader}>
+                  <View style={styles.sectionTitleRow}>
+                    <View style={styles.sectionIcon}>
+                      <Ionicons name="basket-outline" size={16} color={colors.accent} />
+                    </View>
+                    <Text style={styles.sectionTitle}>{t('group.groupCart')}</Text>
+                  </View>
+                  {items.length > 0 && (
+                    <TouchableOpacity
+                      onPress={() => setCartExpanded(true)}
+                      style={styles.expandBtn}
+                      hitSlop={8}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('group.expandCartA11y')}
+                    >
+                      <Ionicons name="expand-outline" size={17} color={colors.accent} />
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                {items.length > 0 ? (
+                  <View style={styles.progressWrap}>
+                    <ProgressBar progress={progress} height={6} />
+                    <Text style={styles.progressSub}>
+                      {t('group.cartProgress', { done: doneItems, total: merged.length, pct: Math.round(progress * 100) })}
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={styles.emptyCart}>{t('group.emptyCart')}</Text>
+                )}
+              </View>
+            </>
           )}
-
-          {items.length === 0 ? (
-            <Text style={styles.emptyCart}>{t('group.emptyCart')}</Text>
-          ) : (
-            renderCartList(items)
-          )}
-        </View>
-
-      </ScrollView>
+        />
+      )}
 
       {/* Total bar */}
-      {hasPrices && items.length > 0 && (
+      {!cartExpanded && hasPrices && items.length > 0 && (
         <GlassSurface
           style={[styles.totalBar, { bottom: tabBarOffset + 8 }]}
           tintColor={colors.accentLight}
@@ -420,6 +461,8 @@ export default function GroupDetailScreen() {
             <TouchableOpacity
               onPress={() => setCartExpanded(false)}
               style={glassAvailable ? styles.backBtnGlass : styles.backBtn}
+              accessibilityRole="button"
+              accessibilityLabel={t('group.collapseCartA11y')}
             >
               <Ionicons name="contract-outline" size={20} color={colors.ink} />
             </TouchableOpacity>
@@ -434,12 +477,20 @@ export default function GroupDetailScreen() {
             </View>
           )}
 
-          <ScrollView
+          <SectionList
+            sections={cartSections}
+            keyExtractor={(item) => item.ids[0]}
+            renderItem={({ item }) => (
+              <View style={styles.cartRowsSurface}>{renderCartItem(item, true)}</View>
+            )}
+            renderSectionHeader={({ section }) => renderCartSectionHeader(section)}
+            stickySectionHeadersEnabled={false}
             contentContainerStyle={[styles.modalScroll, { paddingBottom: 90 + tabBarOffset }]}
             showsVerticalScrollIndicator={false}
-          >
-            {renderCartList(items, true)}
-          </ScrollView>
+            initialNumToRender={12}
+            maxToRenderPerBatch={8}
+            windowSize={7}
+          />
 
           {hasPrices && (
             <GlassSurface
@@ -509,6 +560,14 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
     padding: 13, marginBottom: 10, gap: 9, borderRadius: 18,
+  },
+  cartIntroSection: { marginBottom: 6 },
+  cartRowsSurface: {
+    backgroundColor: colors.white,
+    paddingHorizontal: 13,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: colors.border,
   },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },

@@ -77,6 +77,7 @@ export default function SorliProductModal({ product, onClose, topInset = 16, bad
     setAdding(true);
     try {
       await addToActiveCart([{
+        storeKey: 'sorli',
         productName: product.displayName,
         quantity: qty,
         unit: 'ud',

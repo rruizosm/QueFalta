@@ -45,6 +45,9 @@ export function canonicalPricePerUnit(amount, rawUnit) {
     .replace(/^fop\.price\.per\./, '')
     .replace(/€|eur/g, '')
     .replace(/^\s*\/\s*/, '')
+    // Algunos catálogos expresan la referencia como "el kilo", "la unidad"
+    // o "los 100 ml". El artículo no forma parte de la unidad.
+    .replace(/^(?:el|la|los|las)\s+/, '')
     .replace(/\.+$/, '')
     .trim();
   if (!u) return null;

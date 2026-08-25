@@ -21,7 +21,7 @@ import { useTranslation } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
 import { useProfile } from '../context/ProfileContext';
 import {
-  getPlusOfferings, purchasePlus, restorePlus, purchasesAvailable,
+  confirmPlusSubscription, getPlusOfferings, purchasePlus, restorePlus, purchasesAvailable,
   refreshProfileSoon, type PlusOfferings,
 } from '../lib/purchases';
 import HardShadow from './HardShadow';
@@ -40,7 +40,6 @@ const PRIVACY_URL = 'https://quefalta.es/privacidad';
 const BENEFITS: { icon: IoniconName; key: string; color: string; background: string }[] = [
   { icon: 'swap-vertical-outline', key: 'unitPrice', color: colors.blue, background: 'rgba(47,108,181,0.13)' },
   { icon: 'search-circle-outline', key: 'savingsRadar', color: '#3f8f4f', background: 'rgba(63,143,79,0.14)' },
-  { icon: 'options-outline', key: 'filters', color: colors.orange, background: 'rgba(217,131,36,0.14)' },
   { icon: 'storefront-outline', key: 'stores', color: colors.teal, background: 'rgba(31,138,143,0.14)' },
   { icon: 'notifications-outline', key: 'alerts', color: colors.purple, background: 'rgba(122,79,181,0.14)' },
   { icon: 'link-outline', key: 'noteProducts', color: colors.teal, background: 'rgba(31,138,143,0.14)' },
@@ -60,7 +59,7 @@ export default function PaywallModal({ visible, onClose }: Props) {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
   const toast = useToast();
-  const { refresh, applyProfile } = useProfile();
+  const { refresh, applyPremiumEntitlement } = useProfile();
   const [plan, setPlan] = useState<Plan>('annual');
   const [offerings, setOfferings] = useState<PlusOfferings | null>(null);
   const [busy, setBusy] = useState(false);
@@ -112,6 +111,17 @@ export default function PaywallModal({ visible, onClose }: Props) {
   const annualPrice = offerings?.annual?.product.priceString ?? '19,99 €';
   const monthlyPrice = offerings?.monthly?.product.priceString ?? '3,99 €';
 
+  const activatePlus = (expirationDate: string | null) => {
+    if (expirationDate) applyPremiumEntitlement(expirationDate);
+
+    // Confirma desde servidor sin retrasar la bienvenida. El webhook queda como
+    // respaldo y los refrescos toleran una lectura antigua durante un minuto.
+    confirmPlusSubscription()
+      .then(() => refresh())
+      .catch(() => {});
+    refreshProfileSoon(refresh);
+  };
+
   const handleSubscribe = async () => {
     const pkg = plan === 'annual' ? offerings?.annual : offerings?.monthly;
     if (!pkg) {
@@ -125,11 +135,7 @@ export default function PaywallModal({ visible, onClose }: Props) {
         // RevenueCat ya ha validado la compra. Reflejarla inmediatamente evita
         // que el usuario cierre la celebración y siga viendo los gates mientras
         // el webhook termina de persistir premium_until en Supabase.
-        if (entitlement.expirationDate) {
-          applyProfile({ premiumUntil: entitlement.expirationDate, verified: true });
-        }
-        // El webhook escribe premium_until en unos segundos; reintenta el perfil.
-        refreshProfileSoon(refresh);
+        activatePlus(entitlement.expirationDate);
         setWelcomeVisible(true);
       }
     } catch {
@@ -153,10 +159,7 @@ export default function PaywallModal({ visible, onClose }: Props) {
     try {
       const entitlement = await restorePlus();
       if (entitlement) {
-        if (entitlement.expirationDate) {
-          applyProfile({ premiumUntil: entitlement.expirationDate, verified: true });
-        }
-        refreshProfileSoon(refresh);
+        activatePlus(entitlement.expirationDate);
         toast.show(t('paywall.restored'));
         onClose();
       } else {
@@ -231,8 +234,9 @@ export default function PaywallModal({ visible, onClose }: Props) {
               ))}
             </View>
 
-            <Text style={styles.planHeading}>{t('paywall.choosePlan')}</Text>
-            <View style={styles.plans}>
+            <View style={styles.bottomSection}>
+              <Text style={styles.planHeading}>{t('paywall.choosePlan')}</Text>
+              <View style={styles.plans}>
               <TouchableOpacity
                 style={[styles.planCard, plan === 'monthly' && styles.planCardActive]}
                 onPress={() => setPlan('monthly')}
@@ -311,46 +315,47 @@ export default function PaywallModal({ visible, onClose }: Props) {
                 <Text style={styles.trialText}>{t('paywall.freeTrialBadge')}</Text>
                 {plan === 'annual' ? <View pointerEvents="none" style={styles.planActiveBorder} /> : null}
               </TouchableOpacity>
-            </View>
+              </View>
 
-            <TouchableOpacity
-              onPress={handleSubscribe}
-              activeOpacity={0.85}
-              style={styles.ctaWrap}
-              disabled={busy}
-              accessibilityRole="button"
-              accessibilityState={{ disabled: busy, busy }}
-            >
-              <HardShadow style={styles.ctaBtn}>
-                {busy ? (
-                  <ActivityIndicator size="small" color={colors.white} />
-                ) : (
-                  <>
-                    <Ionicons name="sparkles" size={17} color={colors.white} />
-                    <Text style={styles.ctaText}>
-                      {plan === 'annual' ? t('paywall.ctaTrial') : t('paywall.ctaContinue')}
-                    </Text>
-                  </>
-                )}
-              </HardShadow>
-            </TouchableOpacity>
-            <View style={styles.ctaNoteRow}>
-              <Ionicons name="shield-checkmark-outline" size={14} color={colors.inkSoft} />
-              <Text style={styles.ctaNote}>{t('paywall.ctaNote')}</Text>
-            </View>
+              <TouchableOpacity
+                onPress={handleSubscribe}
+                activeOpacity={0.85}
+                style={styles.ctaWrap}
+                disabled={busy}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: busy, busy }}
+              >
+                <HardShadow style={styles.ctaBtn}>
+                  {busy ? (
+                    <ActivityIndicator size="small" color={colors.white} />
+                  ) : (
+                    <>
+                      <Ionicons name="sparkles" size={17} color={colors.white} />
+                      <Text style={styles.ctaText}>
+                        {plan === 'annual' ? t('paywall.ctaTrial') : t('paywall.ctaContinue')}
+                      </Text>
+                    </>
+                  )}
+                </HardShadow>
+              </TouchableOpacity>
+              <View style={styles.ctaNoteRow}>
+                <Ionicons name="shield-checkmark-outline" size={14} color={colors.inkSoft} />
+                <Text style={styles.ctaNote}>{t('paywall.ctaNote')}</Text>
+              </View>
 
-            <View style={styles.footer}>
-              <TouchableOpacity onPress={handleRestore} hitSlop={6} disabled={busy}>
-                <Text style={styles.footerLink}>{t('paywall.restore')}</Text>
-              </TouchableOpacity>
-              <Text style={styles.footerDot}>·</Text>
-              <TouchableOpacity onPress={() => Linking.openURL(TERMS_URL)} hitSlop={6}>
-                <Text style={styles.footerLink}>{t('paywall.terms')}</Text>
-              </TouchableOpacity>
-              <Text style={styles.footerDot}>·</Text>
-              <TouchableOpacity onPress={() => Linking.openURL(PRIVACY_URL)} hitSlop={6}>
-                <Text style={styles.footerLink}>{t('paywall.privacy')}</Text>
-              </TouchableOpacity>
+              <View style={styles.footer}>
+                <TouchableOpacity onPress={handleRestore} hitSlop={6} disabled={busy}>
+                  <Text style={styles.footerLink}>{t('paywall.restore')}</Text>
+                </TouchableOpacity>
+                <Text style={styles.footerDot}>·</Text>
+                <TouchableOpacity onPress={() => Linking.openURL(TERMS_URL)} hitSlop={6}>
+                  <Text style={styles.footerLink}>{t('paywall.terms')}</Text>
+                </TouchableOpacity>
+                <Text style={styles.footerDot}>·</Text>
+                <TouchableOpacity onPress={() => Linking.openURL(PRIVACY_URL)} hitSlop={6}>
+                  <Text style={styles.footerLink}>{t('paywall.privacy')}</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </ScrollView>
           <PlusWelcomeTransition visible={welcomeVisible} onDismiss={dismissWelcome} />
@@ -366,7 +371,7 @@ const themedStyles = () => StyleSheet.create({
     flex: 1, backgroundColor: colors.paper, overflow: 'hidden',
     // Insets inline: el fondo llega a los bordes y el contenido respeta las zonas seguras.
   },
-  scrollContent: { paddingBottom: 2 },
+  scrollContent: { flexGrow: 1, paddingBottom: 2 },
 
   header: {
     marginHorizontal: 14, marginTop: 8, paddingHorizontal: 18, paddingTop: 14, paddingBottom: 14,
@@ -389,31 +394,32 @@ const themedStyles = () => StyleSheet.create({
   },
 
   sectionHeadingRow: {
-    paddingHorizontal: 18, marginTop: 19, marginBottom: 10,
+    paddingHorizontal: 18, marginTop: 10, marginBottom: 6,
   },
   sectionHeading: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.25 },
-  benefits: { paddingHorizontal: 14, gap: 8 },
+  benefits: { paddingHorizontal: 14, gap: 6 },
   benefitRow: {
-    flexDirection: 'row', alignItems: 'center', padding: 11, gap: 11,
+    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 7, gap: 10,
     backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, borderRadius: 18,
   },
   benefitIcon: {
-    width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center',
+    width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center',
   },
   benefitCopy: { flex: 1 },
   benefitTitle: { fontSize: 13.5, fontFamily: fonts.bold, color: colors.ink, lineHeight: 18 },
-  benefitText: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2, lineHeight: 16 },
+  benefitText: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1, lineHeight: 15 },
 
+  bottomSection: { marginTop: 'auto', paddingTop: 8 },
   planHeading: {
     fontSize: 17, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.25,
-    paddingHorizontal: 18, marginTop: 20, marginBottom: 10,
+    paddingHorizontal: 18, marginBottom: 6,
   },
-  plans: { flexDirection: 'row', alignItems: 'stretch', gap: 9, paddingHorizontal: 14, marginTop: 8 },
+  plans: { flexDirection: 'row', alignItems: 'stretch', gap: 9, paddingHorizontal: 14, marginTop: 4 },
   planCard: {
-    position: 'relative', flex: 1, minWidth: 0, minHeight: 142,
+    position: 'relative', flex: 1, minWidth: 0, minHeight: 125,
     backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border, borderRadius: 18,
-    paddingHorizontal: 12, paddingTop: 17, paddingBottom: 12,
+    paddingHorizontal: 12, paddingTop: 15, paddingBottom: 10,
   },
   planCardActive: { backgroundColor: colors.accentLight },
   planActiveBorder: {
@@ -465,19 +471,19 @@ const themedStyles = () => StyleSheet.create({
   planPrice: { fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.4 },
   planPricePeriod: { fontSize: 10.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
 
-  ctaWrap: { paddingHorizontal: 14, marginTop: 16 },
+  ctaWrap: { paddingHorizontal: 14, marginTop: 10 },
   ctaBtn: {
     backgroundColor: colors.accent,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    borderRadius: 17, gap: 8, paddingVertical: 17,
+    borderRadius: 17, gap: 8, paddingVertical: 14,
   },
   ctaText: { fontSize: 15.5, fontFamily: fonts.bold, color: colors.white },
-  ctaNoteRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5, marginTop: 10 },
+  ctaNoteRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5, marginTop: 7 },
   ctaNote: { fontSize: 10.5, fontFamily: fonts.medium, color: colors.inkSoft },
 
   footer: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, marginTop: 15,
+    gap: 8, marginTop: 10,
   },
   footerLink: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, textDecorationLine: 'underline' },
   footerDot: { fontSize: 12, color: colors.inkFaint },

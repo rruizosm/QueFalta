@@ -75,6 +75,7 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
     setAdding(true);
     try {
       await addToActiveCart([{
+        storeKey: 'aldi',
         productName: product.displayName,
         quantity: qty,
         unit: 'ud',

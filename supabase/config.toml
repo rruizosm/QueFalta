@@ -21,3 +21,10 @@ enabled = true
 # header Authorization contra el secreto RC_WEBHOOK_TOKEN.
 verify_jwt = false
 entrypoint = "./functions/revenuecat-webhook/index.ts"
+
+[functions.sync-plus-subscription]
+enabled = true
+# Solo usuarios autenticados pueden confirmar su propio appUserID. La función
+# vuelve a validar el JWT antes de consultar RevenueCat y escribir el perfil.
+verify_jwt = true
+entrypoint = "./functions/sync-plus-subscription/index.ts"

@@ -88,6 +88,7 @@ import RegionSettingsScreen from '../screens/RegionSettingsScreen';
 import ProfileLoadErrorScreen from '../screens/ProfileLoadErrorScreen';
 import BootLoader       from '../components/BootLoader';
 import NativeStoreReviewPrompt from '../components/NativeStoreReviewPrompt';
+import WhatsNewPrompt from '../components/WhatsNewPrompt';
 import QueCocinoTabIcon from '../components/QueCocinoTabIcon';
 import { glassAvailable } from '../components/GlassSurface';
 import LiquidGlassTabBar, {
@@ -469,6 +470,7 @@ export default function Navigation() {
         <Tab.Screen name="Groups"    component={GroupsNavigator}   options={{ title: t('tabs.groups') }} />
       </Tab.Navigator>
     </NavigationContainer>
+    <WhatsNewPrompt />
     <NativeStoreReviewPrompt />
   </>);
 }

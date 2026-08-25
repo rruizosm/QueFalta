@@ -1,7 +1,7 @@
 # Monetización — "QuéFalta Plus"
 
 > Spec por fases del modelo freemium. Decisiones cerradas en junio 2026.
-> Estado premium en código desde Fase 1; el paywall está activado localmente para continuar su desarrollo, con los gates del servidor aún apagados.
+> Estado premium en código desde Fase 1; paywall de cliente y gates del servidor activados para la revisión de la versión 1.3 el 2026-08-25.
 
 ## Decisiones cerradas
 
@@ -137,6 +137,11 @@ búsquedas del comparador; Plus amplía ambos beneficios sin límite.
       del perfil con reintentos tras comprar (el webhook tarda unos segundos). La
       bienvenida solo aparece si RevenueCat devuelve el entitlement `plus` activo;
       no existe ya el atajo de vista previa que simulaba la activación.
+- [x] Activación sin carrera: el entitlement validado se conserva localmente un
+      máximo de 60 segundos aunque un primer fetch de Supabase siga antiguo, y la
+      Edge Function autenticada `sync-plus-subscription` consulta RevenueCat con
+      `REVENUECAT_REST_API_KEY` para persistir el acceso sin esperar al webhook.
+      No recibe uid ni expiración del cliente; el webhook mantiene el ciclo futuro.
 - [x] Perfil → Cuenta expone QuéFalta Plus para free y premium: free abre el
       paywall; una suscripción real abre la gestión oficial de la tienda mediante
       `CustomerInfo.managementURL` (con fallback nativo), y el Plus regalado sin
@@ -152,7 +157,8 @@ búsquedas del comparador; Plus amplía ambos beneficios sin límite.
       `com.quefalta.app` creada en RevenueCat.
 - [ ] **RevenueCat — credenciales:** copiar la API key pública iOS y la pública
       Android a `.env.local` y a EAS; añadir la clave App Store Connect para
-      importación/sincronización y el JSON de cuenta de servicio de Google Play.
+      importación/sincronización, el JSON de cuenta de servicio de Google Play y
+      guardar `REVENUECAT_REST_API_KEY` como secret de Supabase.
 - [ ] **Google Play:** la suscripción `quefalta_plus` y sus textos ES/CA están
       creados. Google no permite guardar todavía los planes `monthly` y `annual`:
       primero exige subir a cualquier canal (sirve prueba interna) una build que
@@ -161,16 +167,17 @@ búsquedas del comparador; Plus amplía ambos beneficios sin límite.
 - [ ] **Manual — webhook:** `supabase secrets set RC_WEBHOOK_TOKEN=<token largo>` →
       `supabase functions deploy revenuecat-webhook --no-verify-jwt` → en RevenueCat
       → Integrations → Webhooks poner la URL de la función y ese mismo token en el
-      header Authorization.
+      header Authorization. `sync-plus-subscription` v1 ya está desplegada con
+      verificación JWT; falta guardar `REVENUECAT_REST_API_KEY` para activarla.
 - [ ] Pruebas sandbox vía TestFlight: compra, renovación acelerada, expiración,
       restore en dispositivo nuevo, y verificar que `premium_until` se mueve en BD.
 
 ### Fase 4 — Encendido y lanzamiento (runbook)
 
-Preparado en código/SQL: `PAYWALL_ENABLED = true` en limits.ts para desarrollo
-local, `migrations/paywall_on.sql` (encendido servidor) y
-`ops/grant_plus_testers.sql` (regalo a testers). ⚠️ El servidor continúa apagado;
-no debe activarse hasta completar la configuración externa y las pruebas sandbox.
+Preparado en código/SQL: `PAYWALL_ENABLED = true` en limits.ts,
+`migrations/paywall_on.sql` (encendido servidor) y
+`ops/grant_plus_testers.sql` (regalo a testers). El servidor se encendió y se
+verificó en producción el 2026-08-25 para enviar la versión 1.3 a revisión.
 
 **Prerrequisitos (bloqueantes, en orden):**
 - [ ] Migraciones base ejecutadas: `profile_premium.sql` → `paywall_gates.sql` →
@@ -190,9 +197,11 @@ no debe activarse hasta completar la configuración externa y las pruebas sandbo
 **Día de lanzamiento (orden):**
 1. [x] Snapshot legacy aplicado y ampliado con
        `20260824174500_grant_legacy_all_stores_to_pre_1_3_accounts.sql`: las
-       4.032 cuentas existentes antes de 1.3 conservan «Todos».
+       4.054 cuentas existentes conservan «Todos» tras repetirlo el 2026-08-25.
+       Repetir una última vez justo antes de publicar la 1.3.
 2. [ ] Regalar Plus a los testers: `ops/grant_plus_testers.sql` (opción A).
-3. [ ] Encender servidor: `migrations/paywall_on.sql`.
+3. [x] Encender servidor: `migrations/paywall_on.sql` aplicado y
+       `paywall_enabled() = true` verificado el 2026-08-25.
 4. [ ] Build de release (el cliente ya está en true) + subir a App Store Connect.
 5. [ ] ⚠️ En la página de la versión, seleccionar las 2 suscripciones en "Compras
       dentro de la app y suscripciones" — la PRIMERA suscripción solo pasa revisión

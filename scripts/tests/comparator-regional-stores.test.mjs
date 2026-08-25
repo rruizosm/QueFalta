@@ -15,6 +15,10 @@ const cacheMigration = readFileSync(new URL(
   '../../supabase/migrations/20260824150548_extend_comparator_cache_status_stores.sql',
   import.meta.url,
 ), 'utf8');
+const localizationMigration = readFileSync(new URL(
+  '../../supabase/migrations/20260824213612_localize_comparator_results.sql',
+  import.meta.url,
+), 'utf8');
 const materializer = readFileSync(new URL(
   '../sync-comparator-embedding-catalog.mjs',
   import.meta.url,
@@ -51,9 +55,28 @@ test('la RPC resuelve detalle y admite las tres cadenas como origen o destino', 
   assert.match(cacheMigration, /catalog_product_match_cache_status_target_store_check/i);
 });
 
-test('el cliente conserva el contrato transaccional v6', () => {
-  assert.match(catalogApi, /supabase\.rpc\('catalog_cheaper_products_v6'/);
-  assert.doesNotMatch(catalogApi, /catalog_cheaper_products_v7/);
+test('el cliente usa el contrato transaccional v7 y envía el idioma activo', () => {
+  assert.match(catalogApi, /supabase\.rpc\('catalog_cheaper_products_v7'/);
+  assert.match(catalogApi, /p_language:\s*getLanguage\(\)/);
+  assert.match(localizationMigration, /from private\.claim_free_comparator_use\(\)/i);
+});
+
+test('el comparador devuelve nombres catalanes con fallback al nombre original', () => {
+  assert.match(localizationMigration, /create or replace function comparator_internal\.catalog_localized_product_name_v1/i);
+  assert.match(localizationMigration, /lower\(coalesce\(p_language, 'es'\)\) <> 'ca'/i);
+  for (const table of [
+    'mercadona_products',
+    'bonpreu_products',
+    'bonarea_products',
+    'sorli_products',
+    'condis_products',
+    'ametller_products',
+    'plusfresc_products',
+  ]) {
+    assert.match(localizationMigration, new RegExp(`from public\\.${table}`));
+  }
+  assert.match(localizationMigration, /coalesce\([\s\S]+catalog_localized_product_name_v1[\s\S]+result\.display_name/i);
+  assert.match(localizationMigration, /create or replace function public\.catalog_cheaper_products_v7/i);
 });
 
 test('normaliza las unidades comerciales sin comparar dosis o metros como unidades', () => {

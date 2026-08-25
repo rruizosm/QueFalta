@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Modal,
   Pressable,
   ScrollView,
@@ -241,7 +242,9 @@ export default function PriceAlertEditorModal({
 
   return (
     <Modal visible={visible} transparent animationType={reducedMotion ? 'none' : 'slide'} onRequestClose={onClose}>
-      <View style={styles.root}>
+      {/* Edge-to-edge en Android no siempre aplica adjustResize a los modales;
+          padding mantiene la hoja completa por encima del teclado en ambos SO. */}
+      <KeyboardAvoidingView behavior="padding" style={styles.root}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessible={false} />
         <View style={styles.sheet} accessibilityViewIsModal>
           <View style={styles.grabber} />
@@ -258,7 +261,12 @@ export default function PriceAlertEditorModal({
             </TouchableOpacity>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.content}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+          >
             {kind === 'keyword' && !newArrival ? (
               <>
                 <Text style={styles.label}>{t('priceAlerts.words')}</Text>
@@ -329,7 +337,14 @@ export default function PriceAlertEditorModal({
                     <Text style={styles.optionTitle}>{t('priceAlerts.priceDrop')}</Text>
                     <Text style={styles.optionText}>{t('priceAlerts.priceDropHint')}</Text>
                   </View>
-                  <Switch value={priceDrop} onValueChange={setPriceDrop} trackColor={{ true: colors.accentMid }} thumbColor={priceDrop ? colors.accent : colors.inkFaint} />
+                  <Switch
+                    value={priceDrop}
+                    onValueChange={setPriceDrop}
+                    trackColor={{ false: colors.border, true: colors.accent }}
+                    thumbColor={colors.white}
+                    ios_backgroundColor={colors.border}
+                    accessibilityState={{ checked: priceDrop }}
+                  />
                 </View>
               ) : null}
               {!newArrival && offersSupported ? (
@@ -338,7 +353,14 @@ export default function PriceAlertEditorModal({
                     <Text style={styles.optionTitle}>{t('priceAlerts.newOffer')}</Text>
                     <Text style={styles.optionText}>{t('priceAlerts.newOfferHint')}</Text>
                   </View>
-                  <Switch value={newOffer} onValueChange={setNewOffer} trackColor={{ true: colors.accentMid }} thumbColor={newOffer ? colors.accent : colors.inkFaint} />
+                  <Switch
+                    value={newOffer}
+                    onValueChange={setNewOffer}
+                    trackColor={{ false: colors.border, true: colors.accent }}
+                    thumbColor={colors.white}
+                    ios_backgroundColor={colors.border}
+                    accessibilityState={{ checked: newOffer }}
+                  />
                 </View>
               ) : null}
               {kind === 'keyword' ? (
@@ -350,8 +372,10 @@ export default function PriceAlertEditorModal({
                   <Switch
                     value={newArrival}
                     onValueChange={toggleNewArrival}
-                    trackColor={{ true: colors.accentMid }}
-                    thumbColor={newArrival ? colors.accent : colors.inkFaint}
+                    trackColor={{ false: colors.border, true: colors.accent }}
+                    thumbColor={colors.white}
+                    ios_backgroundColor={colors.border}
+                    accessibilityState={{ checked: newArrival }}
                   />
                 </View>
               ) : null}
@@ -415,7 +439,7 @@ export default function PriceAlertEditorModal({
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

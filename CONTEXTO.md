@@ -3,13 +3,83 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
-## Cabecera y estado de alertas personalizadas corregidos (2026-08-24)
+## Resultados del Radar de ahorro localizados (2026-08-24)
+
+- El cliente envía el idioma activo a `catalog_cheaper_products_v7`. En catalán,
+  Mercadona, Esclat, bonÀrea, Sorli, Condis, Ametller Origen y Plusfresc devuelven
+  `display_name_ca`; si una cadena o producto no publica nombre catalán se usa el
+  nombre original como fallback.
+- La comparación semántica, el orden por precio y el cupo de tres usos gratuitos
+  no cambian. La v6 permanece disponible para clientes publicados.
+- Migración local `20260824213612_localize_comparator_results.sql`, desplegada
+  en producción como `20260824213809`. Una llamada autenticada real a v7 con
+  `ca` devolvió «Galetes Rebuenas Hacendado farcides de xocolata»; la prueba se
+  ejecutó dentro de una transacción revertida para no consumir cupo.
+- El selector de «Producto asociado» consulta en paralelo los índices ES y CA
+  de los siete catálogos bilingües. El texto de búsqueda puede estar en cualquiera
+  de los dos idiomas, pero el nombre mostrado y guardado lo decide siempre el
+  idioma activo de la app; los duplicados ES/CA se fusionan por tienda+producto.
+
+## Beneficios mostrados en QuéFalta Plus (2026-08-24)
+
+- «Filtros avanzados» deja de aparecer entre las funciones que desbloquea Plus
+  en castellano y catalán. Los seis beneficios restantes conservan tipografías
+  e iconos legibles, con descripciones más directas.
+- La composición aprovecha toda la altura disponible: reduce solo separaciones
+  secundarias y ancla «Elige tu plan», planes, CTA y enlaces legales al bloque
+  inferior. En una pantalla habitual se ve todo sin desplazamiento; el scroll
+  sigue disponible como respaldo accesible.
+
+## Teclado del editor de alertas personalizadas corregido (2026-08-24)
+
+- La hoja de crear/editar alertas evita ahora el teclado mediante padding tanto
+  en iOS como en Android edge-to-edge. El bloque se mantiene por encima del
+  teclado y su contenido desplazable conserva visible el campo enfocado.
+- Se puede ocultar el teclado arrastrando y los toques en los controles del
+  formulario siguen respondiendo mientras está abierto. Cambio solo de cliente.
+
+## Popup de novedades para cuentas anteriores a 1.3 (2026-08-24)
+
+- Tras entrar en la app, las cuentas con `legacy_all_stores_access=true` ven una
+  bienvenida compacta a la versión 1.3. Una descarga directa con una cuenta
+  nueva no la muestra; el cierre se guarda por usuario y dispositivo en
+  `@whats_new_seen:1.3.0:${userId}`.
+- El modal es centrado, no ocupa toda la pantalla y puede cerrarse con la X, el
+  fondo, Atrás del sistema o el CTA. Respeta Reducir movimiento, modo
+  claro/oscuro, color de acento, texto grande y castellano/catalán.
+- Comunica cuatro novedades ya listas: 18 supermercados y conservación de
+  «Todos», búsqueda por relevancia con tolerancia a erratas, Radar de ahorro
+  con tres usos gratuitos, y comentarios/iconos/grupos ilimitados.
+- Las alertas personalizadas quedan deliberadamente fuera hasta activar y
+  validar su entrega general. Regresión en
+  `scripts/tests/whats-new-prompt.test.mjs`.
+
+## Activación inmediata y estable de QuéFalta Plus (2026-08-24)
+
+- Una compra o restauración validada por el SDK de RevenueCat activa al momento
+  `isPremium` y la insignia dorada. Durante 60 segundos, una lectura de perfil
+  anterior al webhook no puede pisar ese entitlement optimista; en cuanto
+  Supabase devuelve un Plus activo vuelve a ser la autoridad.
+- `sync-plus-subscription` es una Edge Function autenticada de confirmación:
+  deriva el usuario del JWT, consulta el CustomerInfo v1 de RevenueCat con
+  `REVENUECAT_REST_API_KEY` y escribe `premium_until`/`verified` con service role.
+  No acepta uid ni fecha desde el cliente y nunca revoca ante una respuesta
+  ausente; el webhook conserva renovaciones, cancelaciones y expiraciones.
+- `revenuecat-webhook` v5 y `sync-plus-subscription` v1 constan activos en
+  producción. Pendiente operativo: guardar `REVENUECAT_REST_API_KEY` y completar
+  la prueba sandbox; hasta entonces la confirmación directa responde 503 y el
+  webhook sigue siendo el respaldo. Cambio sin migración SQL.
+
+## Cabecera y estados visuales de alertas personalizadas corregidos (2026-08-24)
 
 - La cabecera de Alertas personalizadas usa un tamaño adaptado para mostrar el
   título completo incluso con los botones Atrás y Añadir en un iPhone estrecho.
 - El interruptor de una alerta activa usa ahora el accent sólido con thumb
   blanco; el estado inactivo conserva el color neutro. El estado accesible del
   control refleja el mismo booleano que se persiste en la regla.
+- Los interruptores de tipos de aviso dentro del editor (bajada, oferta y
+  novedad) comparten exactamente ese mismo diseño activo/inactivo y exponen su
+  estado real a accesibilidad.
 - Cambio solo de cliente, sin migración ni modificación de cupos.
 
 ## Hallazgos medios de Inicio/Catálogo/Cesta/Grupos corregidos (2026-08-24)
@@ -322,9 +392,11 @@
   fuera; `20260824174500_grant_legacy_all_stores_to_pre_1_3_accounts.sql` está
   desplegada en producción como `20260824174522` y amplía el snapshot a todas
   las cuentas existentes antes de 1.3.
-- Verificación remota: 4.032/4.032 perfiles tienen el permiso, ninguna cuenta
-  anterior queda bloqueada, el trigger protector sigue activo y las altas
-  posteriores conservan `false` como valor por defecto.
+- Snapshot operativo repetido el 2026-08-25 antes de enviar la 1.3 a revisión:
+  se habilitaron 22 altas adicionales. Verificación remota: 4.054/4.054 perfiles
+  tienen el permiso y ninguna cuenta actual queda bloqueada. El trigger protector
+  sigue activo y las altas posteriores conservan `false` como valor por defecto;
+  repetir el snapshot justo antes de publicar la versión.
 
 ## Icono personalizado por grupo (2026-08-22)
 
@@ -788,6 +860,31 @@
   ofertas, mezcla bajada+oferta y producto exacto. La llamada vacía de control
   devolvió HTTP 200 (`claimed=0`, `groups=0`), por lo que no consumió eventos
   anteriores a la creación de las reglas.
+- La primera ejecución real descubrió que
+  `create_price_alert_notification` comprobaba la GUC heredada
+  `request.jwt.claim.role`; PostgREST expone el JWT actual mediante
+  `request.jwt.claims`, por lo que las llamadas legítimas de `service_role`
+  fallaban antes de crear la bandeja. La migración
+  `20260824194005_fix_price_alert_service_role_claim.sql` usa ahora
+  `auth.jwt()->>'role'`, conserva `EXECUTE` solo para `service_role` y está
+  desplegada en producción. Desde v3 el procesador serializa además los errores
+  de PostgREST en vez de guardar `[object Object]`.
+- Prueba controlada de producción a las 19:42 UTC: se reabrió solo un lote de
+  `TEST 2`, el procesador devolvió `claimed=1`, `sentGroups=1` y
+  `failedGroups=0`, creó la fila de bandeja y marcó la entrega como `sent`.
+  Una segunda prueba controlada a las 19:51 UTC reabrió un lote de cada una de
+  las otras modalidades con eventos reales: novedad, bajada ≥10 %, oferta y
+  mixta. El procesador devolvió `claimed=11`, `sentGroups=4` y
+  `failedGroups=0`.
+- `process-price-alerts` v4 está ACTIVE. Lee en el momento del envío el nombre y
+  el emoji actuales de la regla, elimina defensivamente prefijos históricos
+  `TEST N ·`, incorpora `emoji` al payload y antepone ese emoji al título push.
+  La bandeja del cliente usa el mismo emoji como icono de la fila en lugar del
+  pictograma genérico. Las cinco filas ya creadas para `@rruizosma` quedaron
+  limpiadas y enriquecidas; una verificación nueva a las 20:04 UTC envió
+  `🍫 Bajadas ≥10% · chocolate` con `sentGroups=1` y cero fallos.
+  Quedan 500 entregas agotadas en `failed`; no se reactivaron
+  para evitar una ráfaga de avisos durante la evaluación.
 - **Despliegue general aún pendiente:** retirar el id acotado de evaluación,
   configurar un secreto exclusivo y activar `ops/schedule_price_alerts.sql`
   para todas las cuentas después de valorar el resultado. La entrega seguirá
@@ -1371,8 +1468,9 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - ✅ **Acceso heredado a «Todos»:** columna, protección y snapshot inicial
   desplegados. El segundo snapshot
   `20260824174500_grant_legacy_all_stores_to_pre_1_3_accounts.sql` está
-  desplegado como `20260824174522`: 4.032/4.032 perfiles anteriores a 1.3
-  habilitados; las altas posteriores siguen recibiendo `false`.
+  desplegado como `20260824174522`. Snapshot operativo repetido el 2026-08-25:
+  4.054/4.054 perfiles actuales habilitados; las altas posteriores siguen
+  recibiendo `false`, por lo que debe repetirse justo antes de publicar la 1.3.
 - ✅ **Onboarding robusto:** `profile_onboarding.sql` y
   `20260821130300_onboarding_integrity.sql` aplicadas. La segunda añade
   `onboarding_step`, idempotencia de grupos y las RPC transaccionales. Ver
@@ -1384,7 +1482,7 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
   discrepancias. `revenuecat-webhook` aún no está desplegado y requiere primero
   configurar `RC_WEBHOOK_TOKEN`.
 - **Gates del paywall en servidor** (`supabase/migrations/paywall_gates.sql`):
-  `paywall_enabled()` (hoy false) e `is_premium()`. Crear grupos es ilimitado y
+  `paywall_enabled()` (activado el 2026-08-25) e `is_premium()`. Crear grupos es ilimitado y
   no tiene trigger de monetización. Ejecutar DESPUÉS de profile_premium.sql y
   ANTES de re-ejecutar similar_products.sql (el RPC usa esas funciones).
 - `profiles`: columnas `username text unique`, `avatar_url text`, `discoverable boolean not null default true`.
@@ -1455,7 +1553,7 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - ⏳ **Eroski (8º) y Caprabo (9º) añadidos** (2026-07-11): comparten backend (Apache Tapestry) → un scraper compartido `scripts/lib/eroski-tapestry.mjs` (GET de la página de categoría —SSR del 1er lote de 20— y después `POST supermarket:loadpage` con cookies de sesión + Origin/Referer; saca cada producto del JSON `data-metrics` del tile: id/nombre/marca/categoría/precio; ⚠️ la paginación `?pageNumber=N` original DEJÓ de funcionar el 2026-07-11: el server devuelve "No se obtuvieron resultados") y dos syncs mínimos (`sync-eroski.mjs`, `sync-caprabo.mjs`). Solo castellano, SIN €/unidad ni EAN, pero con nutrición de ficha HTML incremental normalizada para el Índice Alimentario. DRY_RUN completo OK (2026-07-11, ya con loadpage): **Eroski 21.073 productos** / 803 hojas / 0% sin tiles; **Caprabo 10.657** / 750 hojas (8% sin tiles por 429 de rate-limit tras encadenar crawls desde la misma IP — en CI no pasa). OJO: los crawls con `?pageNumber` daban 10.694 en Eroski = LA MITAD del catálogo (solo el 1er lote de cada hoja). GUARDARRAÍL anti-throttling: bajo carga el server sirve la página sin productos (o 429, con backoff largo + Retry-After) → reintentos en la pág. 1 + aborta el run si >20% de hojas llegan SIN TILES (para que markStale no despublique productos vivos); las hojas cuyo contenido ya se vio en otras categorías (~60 por súper, solapamiento del árbol) se cuentan APARTE como "solo-duplicados" y no disparan el aborto (la 1ª versión las mezclaba y abortó el run de CI del 2026-07-11 con un falso "56% vacías"). App: tipo/adaptador/modal (`TapestryProductModal`)/pantalla (`TapestryProductsScreen`) COMPARTIDOS por ambos, con funciones de `catalog.ts` por tabla. Migraciones `eroski_catalog.sql`+`caprabo_catalog.sql` (autocontenidas, es-only) + ampliación `20260718133958_eroski_caprabo_nutrition.sql` para tablas ya creadas. Pendientes: ejecutar las migraciones, re-ejecutar `similar_products.sql` (ya con ambos brazos), primer run (`sync-eroski.yml` lunes 09:00 / `sync-caprabo.yml` 09:30) y validar en device. Logos en `assets/stores/{eroski,caprabo}.png`. Ver `scripts/README-eroski-caprabo-sync.md`.
 - ⏳ **Lista agrupada por zonas del súper** (2026-06-12): Lista y cesta de grupo agrupan Tienda → Zona ("pasillo": Fruta y verdura, Congelados al final…) con alfabético dentro. Mapeo de N1 de los 6 supers → ~15 zonas canónicas por keywords en `src/constants/zones.ts` (solo cliente, afinable sin migrar). La categoría se captura al añadir (`list_items.category_name`); manuales/históricos → "Otros". ⚠️ Si se añade un nuevo punto de "añadir a la cesta", pasar `categoryName`. Pendiente: ejecutar `list_items_category.sql`.
 - 🧪 Comparativa de productos similares entre supers (detalle de producto) — **ACTIVADA PARA TESTERS** con `PRICE_COMPARISON_ENABLED = true`: funciona bajo demanda, usa la capa híbrida/caché y el cliente ya apunta a `catalog_cheaper_products_v5`. Antes de distribuir ese cliente debe desplegarse `20260817124758_comparator_semantic_identity_guard.sql`; la RPC v4 permanece disponible para builds anteriores.
-- Monetización «QuéFalta Plus» (3,99 €/mes · 19,99 €/año): **ACTIVADA LOCALMENTE PARA DESARROLLO (2026-08-11)**. El paywall presenta orden por precio unitario, filtros en Ofertas/Cambios/Novedades, selección «Todos» y alertas personalizadas. El cliente usa `PAYWALL_ENABLED = true`; el servidor permanece apagado con `paywall_enabled() = false` hasta completar RevenueCat y las pruebas sandbox.
+- Monetización «QuéFalta Plus» (3,99 €/mes · 19,99 €/año): **ACTIVADA PARA REVISIÓN DE LA VERSIÓN 1.3 (2026-08-25)**. El paywall presenta orden por precio unitario, filtros en Ofertas/Cambios/Novedades, selección «Todos» y alertas personalizadas. Cliente `PAYWALL_ENABLED = true` y servidor `paywall_enabled() = true`, verificado en producción tras completar la compra de prueba en TestFlight.
 - Configuración externa de Plus (2026-08-22): Apple ya tiene los productos
   `com.quefalta.app.plus.monthly` y `.annual` (3,99/19,99 €, prueba anual de
   7 días) y RevenueCat ya enlaza Apple/Google/Test Store en `plus` → `default`

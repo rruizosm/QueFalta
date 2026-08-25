@@ -53,10 +53,23 @@ Hay **dos tipos** de notificaciones, no confundir:
   duradera de entregas y eventos. La RPC valida que la fila `notifications`
   pertenece a `auth.uid()` y aplica prioridad novedad → oferta → bajada por
   producto.
-- La consulta de resultados y `process-price-alerts` v2 están desplegadas. El
+- La consulta de resultados y `process-price-alerts` están desplegados. El
   cron temporal de `@rruizosma` corre cada 15 minutos durante el 24-08-2026 y
   se desprograma a las 00:00 UTC del día 25. El despliegue general permanece
   pendiente hasta valorar esta prueba; ver `CONTEXTO.md`.
+- La primera cola real expuso una comprobación obsoleta de la claim
+  `service_role`. Quedó corregida con
+  `20260824194005_fix_price_alert_service_role_claim.sql` y la v3 del
+  procesador. Un reintento acotado de `TEST 2` envió un grupo
+  correctamente (`claimed=1`, `sentGroups=1`, `failedGroups=0`). Una segunda
+  ejecución envió cuatro grupos reales adicionales para novedad, bajada fuerte,
+  oferta y mixta (`claimed=11`, `sentGroups=4`, `failedGroups=0`).
+- `process-price-alerts` v4 toma el nombre y el emoji actuales de la regla,
+  elimina prefijos heredados `TEST N ·`, antepone el emoji al título del push y
+  lo guarda como dato estructurado. La bandeja interna muestra ese emoji como
+  icono de la alerta personalizada. Se limpiaron las cinco entradas anteriores
+  de `@rruizosma` y una sexta prueba con 🍫 confirmó el flujo completo. Las 500
+  entregas agotadas restantes no se reabrieron para evitar una ráfaga.
 
 ---
 

@@ -97,6 +97,11 @@ export default function NotificationsSheet({ visible, onClose }: Props) {
           >
             {items.map((n) => {
               const meta = TYPE_META[n.type] ?? TYPE_META.general;
+              const alertEmoji = n.type === 'price_alert'
+                && typeof n.data.emoji === 'string'
+                && n.data.emoji.trim()
+                ? n.data.emoji.trim()
+                : null;
               const { title, body } = renderNotification(n, t);
               return (
                 <Pressable
@@ -106,7 +111,9 @@ export default function NotificationsSheet({ visible, onClose }: Props) {
                   disabled={n.type !== 'friend' && n.type !== 'price_alert'}
                 >
                   <View style={[styles.rowIcon, { backgroundColor: meta.tint + '22' }]}>
-                    <Ionicons name={meta.icon} size={18} color={meta.tint} />
+                    {alertEmoji
+                      ? <Text style={styles.rowEmoji}>{alertEmoji}</Text>
+                      : <Ionicons name={meta.icon} size={18} color={meta.tint} />}
                   </View>
                   <View style={styles.rowBody}>
                     <Text style={styles.rowTitle} numberOfLines={2}>{title}</Text>
@@ -207,6 +214,7 @@ const themedStyles = () => StyleSheet.create({
     width: 38, height: 38, borderRadius: 11,
     alignItems: 'center', justifyContent: 'center', flexShrink: 0,
   },
+  rowEmoji: { fontSize: 21, lineHeight: 26 },
   rowBody: { flex: 1, minWidth: 0 },
   rowTitle: { fontSize: 13.5, fontFamily: fonts.semibold, color: colors.ink, lineHeight: 18 },
   rowText: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2, lineHeight: 17 },

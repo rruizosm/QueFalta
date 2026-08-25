@@ -29,6 +29,30 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 });
 const normLang = (value: unknown): Lang => value === 'ca' ? 'ca' : 'es';
 
+function errorMessage(cause: unknown): string {
+  if (cause instanceof Error) return cause.message;
+  if (cause && typeof cause === 'object') {
+    try {
+      return JSON.stringify(cause);
+    } catch {
+      return 'Unknown object error';
+    }
+  }
+  return String(cause);
+}
+
+function cleanRuleLabel(value: string): string {
+  return value.replace(/^TEST\s+\d+\s*·\s*/iu, '').trim();
+}
+
+function ruleEmoji(value: unknown): string {
+  return typeof value === 'string' && value.trim() ? value.trim() : '🛒';
+}
+
+function pushTitle(emoji: string, label: string): string {
+  return `${emoji} ${label}`.trim();
+}
+
 /** Un mismo producto puede generar bajada y oferta durante el mismo sync.
  *  Conservamos un solo resultado y la oferta prevalece sobre la bajada. */
 function effectiveDeliveries(group: Delivery[]): Delivery[] {
@@ -43,7 +67,7 @@ function effectiveDeliveries(group: Delivery[]): Delivery[] {
   return [...products.values()];
 }
 
-function render(group: Delivery[], lang: Lang): { title: string; body: string } {
+function render(group: Delivery[], lang: Lang, title: string): { title: string; body: string } {
   const first = group[0];
   const count = new Set(group.map((item) => `${item.store}:${item.product_id}`)).size;
   const hasDrops = group.some((item) => item.event_type === 'price_drop');
@@ -51,21 +75,21 @@ function render(group: Delivery[], lang: Lang): { title: string; body: string } 
   const hasNewArrivals = group.some((item) => item.event_type === 'new_arrival');
   const pct = first.price_delta_pct == null ? null : Math.abs(Number(first.price_delta_pct));
   if (lang === 'ca') {
-    if (hasNewArrivals && count === 1) return { title: first.rule_label, body: `${first.display_name} és una novetat al catàleg` };
-    if (hasNewArrivals) return { title: first.rule_label, body: `${count} productes nous han arribat al catàleg` };
-    if (count === 1 && hasDrops && !hasOffers) return { title: first.rule_label, body: pct == null ? `${first.display_name} ha baixat de preu` : `${first.display_name} ha baixat un ${pct.toFixed(1).replace('.', ',')}%` };
-    if (count === 1 && hasOffers && !hasDrops) return { title: first.rule_label, body: `${first.display_name} té una oferta nova` };
-    if (hasDrops && hasOffers) return { title: first.rule_label, body: `${count} productes tenen baixades o ofertes noves` };
-    if (hasDrops) return { title: first.rule_label, body: `${count} productes han baixat de preu` };
-    return { title: first.rule_label, body: `${count} productes tenen una oferta nova` };
+    if (hasNewArrivals && count === 1) return { title, body: `${first.display_name} és una novetat al catàleg` };
+    if (hasNewArrivals) return { title, body: `${count} productes nous han arribat al catàleg` };
+    if (count === 1 && hasDrops && !hasOffers) return { title, body: pct == null ? `${first.display_name} ha baixat de preu` : `${first.display_name} ha baixat un ${pct.toFixed(1).replace('.', ',')}%` };
+    if (count === 1 && hasOffers && !hasDrops) return { title, body: `${first.display_name} té una oferta nova` };
+    if (hasDrops && hasOffers) return { title, body: `${count} productes tenen baixades o ofertes noves` };
+    if (hasDrops) return { title, body: `${count} productes han baixat de preu` };
+    return { title, body: `${count} productes tenen una oferta nova` };
   }
-  if (hasNewArrivals && count === 1) return { title: first.rule_label, body: `${first.display_name} es una novedad en el catálogo` };
-  if (hasNewArrivals) return { title: first.rule_label, body: `${count} productos nuevos han llegado al catálogo` };
-  if (count === 1 && hasDrops && !hasOffers) return { title: first.rule_label, body: pct == null ? `${first.display_name} ha bajado de precio` : `${first.display_name} ha bajado un ${pct.toFixed(1).replace('.', ',')}%` };
-  if (count === 1 && hasOffers && !hasDrops) return { title: first.rule_label, body: `${first.display_name} tiene una oferta nueva` };
-  if (hasDrops && hasOffers) return { title: first.rule_label, body: `${count} productos tienen bajadas u ofertas nuevas` };
-  if (hasDrops) return { title: first.rule_label, body: `${count} productos han bajado de precio` };
-  return { title: first.rule_label, body: `${count} productos tienen una oferta nueva` };
+  if (hasNewArrivals && count === 1) return { title, body: `${first.display_name} es una novedad en el catálogo` };
+  if (hasNewArrivals) return { title, body: `${count} productos nuevos han llegado al catálogo` };
+  if (count === 1 && hasDrops && !hasOffers) return { title, body: pct == null ? `${first.display_name} ha bajado de precio` : `${first.display_name} ha bajado un ${pct.toFixed(1).replace('.', ',')}%` };
+  if (count === 1 && hasOffers && !hasDrops) return { title, body: `${first.display_name} tiene una oferta nueva` };
+  if (hasDrops && hasOffers) return { title, body: `${count} productos tienen bajadas u ofertas nuevas` };
+  if (hasDrops) return { title, body: `${count} productos han bajado de precio` };
+  return { title, body: `${count} productos tienen una oferta nueva` };
 }
 
 async function sendExpoPush(tokens: string[], content: { title: string; body: string; data: Record<string, unknown> }) {
@@ -116,12 +140,22 @@ Deno.serve(async (req) => {
     const first = group[0];
     const deliveryIds = group.map((item) => item.delivery_id);
     try {
+      const { data: ruleRow, error: ruleError } = await admin
+        .from('price_alert_rules')
+        .select('label, emoji')
+        .eq('id', first.rule_id)
+        .eq('user_id', first.user_id)
+        .single();
+      if (ruleError) throw ruleError;
+      const label = cleanRuleLabel(ruleRow?.label ?? first.rule_label);
+      const emoji = ruleEmoji(ruleRow?.emoji);
+      const title = pushTitle(emoji, label);
       const { data: tokenRows, error: tokenError } = await admin.from('push_tokens').select('token, lang').eq('user_id', first.user_id);
       if (tokenError) throw tokenError;
       const effective = effectiveDeliveries(group);
-      const localized = render(effective, normLang(tokenRows?.[0]?.lang));
+      const localized = render(effective, normLang(tokenRows?.[0]?.lang), title);
       const structuredData = {
-        type: 'price_alert', ruleId: first.rule_id, rule: first.rule_label,
+        type: 'price_alert', ruleId: first.rule_id, rule: label, emoji,
         count: effective.length,
         product: effective[0].display_name,
         eventTypes: [...new Set(effective.map((item) => item.event_type))],
@@ -152,7 +186,7 @@ Deno.serve(async (req) => {
           tokensByLang.set(lang, [...(tokensByLang.get(lang) ?? []), row.token]);
         }
         for (const [lang, tokens] of tokensByLang) {
-          await sendExpoPush(tokens, { ...render(effective, lang), data: pushData });
+          await sendExpoPush(tokens, { ...render(effective, lang, title), data: pushData });
         }
       }
 
@@ -163,7 +197,7 @@ Deno.serve(async (req) => {
       if (deliveryError) throw deliveryError;
       sentGroups += 1;
     } catch (cause) {
-      const message = cause instanceof Error ? cause.message : String(cause);
+      const message = errorMessage(cause);
       await admin.from('price_alert_deliveries').update({
         status: 'failed', last_error: message.slice(0, 500),
         next_retry_at: new Date(Date.now() + 15 * 60_000).toISOString(),

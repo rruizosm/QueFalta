@@ -1,5 +1,74 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Nombres catalanes en el Radar de ahorro (local, 2026-08-24)
+
+- `fetchSimilarProducts` usa la nueva RPC `catalog_cheaper_products_v7` y envía
+  el idioma activo. La RPC conserva el cupo transaccional de v6 y reemplaza el
+  nombre del resultado por `display_name_ca` en los siete catálogos bilingües,
+  con fallback al nombre original.
+- La v6 no se elimina para mantener compatibles las versiones publicadas. La
+  migración `20260824213612_localize_comparator_results.sql` está desplegada en
+  producción como `20260824213809`; una llamada autenticada real a v7 devolvió
+  un nombre catalán y se revirtió para no consumir cupo. Regresión en
+  `comparator-regional-stores.test.mjs`.
+- `ProductNoteSheet` activa búsqueda bilingüe para «Producto asociado»: consulta
+  ES+CA en los siete catálogos bilingües, deduplica los resultados y conserva el
+  mapper del idioma activo. Así una consulta castellana muestra/guarda el nombre
+  catalán cuando la app está en catalán. Sin migración adicional.
+
+## Beneficios del paywall de QuéFalta Plus (local, 2026-08-24)
+
+- Se ha retirado «Filtros avanzados» / «Filtres avançats» de la lista de
+  beneficios. Los seis restantes mantienen tipografías e iconos legibles, con
+  descripciones ES/CA más directas y separaciones verticales ajustadas.
+- El contenedor usa toda la altura de pantalla y el bloque «Elige tu plan»,
+  planes, CTA y enlaces queda anclado abajo mediante `marginTop: 'auto'`. El
+  scroll queda como fallback de accesibilidad, no como recorrido normal.
+- Regresión incluida en `scripts/tests/plus-activation.test.mjs`. Sin backend.
+
+## Teclado del editor de alertas personalizadas (local, 2026-08-24)
+
+- `PriceAlertEditorModal` usa `KeyboardAvoidingView` con padding en iOS y
+  Android, necesario también con edge-to-edge de Expo SDK 54. La hoja deja de
+  quedar tapada al escribir el nombre y el formulario se puede desplazar o
+  cerrar el teclado arrastrando.
+- Regresión incluida en `scripts/tests/price-alerts-ui.test.mjs`. Sin backend.
+
+## Popup de novedades 1.3 (local, 2026-08-24)
+
+- `WhatsNewPrompt` se monta sobre la navegación autenticada y usa
+  `profile.legacyAllStoresAccess` para dirigirse exclusivamente a las cuentas
+  existentes antes de 1.3. El cierre se recuerda con una clave de AsyncStorage
+  versionada y separada por usuario.
+- Es un modal central compacto, desplazable en pantallas pequeñas y cerrable por
+  X, fondo, Atrás o CTA. Incluye castellano/catalán y respeta tema, acento y
+  Reducir movimiento.
+- Resume 18 supermercados+«Todos» heredado, búsqueda inteligente, Radar de
+  ahorro y mejoras de carritos/grupos. No anuncia alertas mientras su procesador
+  general continúe pendiente.
+- Prueba de regresión en `scripts/tests/whats-new-prompt.test.mjs`.
+
+## Activación inmediata de Plus sin carrera (local, 2026-08-24)
+
+- `ProfileContext` conserva durante un máximo de 60 segundos el entitlement que
+  RevenueCat acaba de validar, de modo que un primer refresh todavía antiguo no
+  apaga el badge dorado ni vuelve a cerrar las funciones locales. Se descarta al
+  recibir cualquier Plus activo de servidor, al vencer la ventana o al cambiar
+  de usuario.
+- Nueva Edge Function autenticada `sync-plus-subscription`: obtiene el uid del
+  JWT, consulta a RevenueCat desde servidor y persiste la fecha verificada. No
+  confía en ids ni fechas del dispositivo y no revoca; el webhook sigue siendo
+  la fuente del ciclo de vida posterior.
+- `sync-plus-subscription` v1 está desplegada en producción con verificación JWT.
+  Antes de probar falta guardar `REVENUECAT_REST_API_KEY`; sin ese secret
+  responde 503 de forma segura y el webhook conserva el respaldo. Sin migración SQL.
+- Regresión en `scripts/tests/plus-activation.test.mjs`; TypeScript, lint de los
+  archivos tocados y 77/77 pruebas correctos. El lint global solo queda rojo por
+  un warning preexistente de `WhatsNewPrompt.tsx`, trabajo local concurrente.
+- Supabase confirma que `revenuecat-webhook` v5 también está activo en
+  producción. La confirmación directa real y su prueba sandbox siguen pendientes
+  del secret externo indicado arriba.
+
 ## Alertas personalizadas: texto y estado visual (local, 2026-08-24)
 
 - La cabecera deja de truncar «Alertas personalizadas» al convivir con Atrás y
@@ -7,6 +76,9 @@
 - El switch de una regla activa pasa de `accentMid` translúcido a `accent`
   sólido, con thumb blanco y estado accesible sincronizado. El estado apagado
   sigue neutro y no cambia la persistencia ni los límites free/Plus.
+- Los tres switches de tipo dentro de `PriceAlertEditorModal` usan ya el mismo
+  estilo sólido/neutro y el mismo estado accesible, evitando que una alerta se
+  vea distinta al editarla.
 - Regresión cubierta en `scripts/tests/price-alerts-ui.test.mjs`. Sin backend.
 
 ## Hallazgos medios de la auditoría corregidos (local, 2026-08-24)
@@ -199,8 +271,9 @@
   `catalog_cheaper_products_v6` reserva uso+consulta de forma atómica. El
   procesador de alertas entrega la única regla free y pausa reglas sobrantes de
   una suscripción caducada.
-- Los dos cupos están desacoplados del encendido comercial: se aplican ya con
-  `paywall_enabled() = false`; los demás gates de servidor siguen apagados.
+- Los dos cupos están desacoplados del encendido comercial. El servidor se
+  activó para la revisión de la versión 1.3 el 2026-08-25 y se verificó
+  `paywall_enabled() = true`; los demás gates Plus están ya encendidos.
 - `20260823063529_free_tier_alert_and_comparator_allowances.sql` y la policy
   defensiva `20260823065123_restrict_free_tier_usage_direct_access.sql` y
   `20260823065448_enforce_free_allowances_before_paywall_launch.sql` están
@@ -314,9 +387,10 @@
   altas posteriores habían quedado fuera mientras la versión pública seguía en
   1.2.1. `20260824174500_grant_legacy_all_stores_to_pre_1_3_accounts.sql` está
   desplegada como `20260824174522` y amplía el permiso a esas cuentas.
-- Verificación remota: 4.032 perfiles, 4.032 con acceso heredado y cero sin él.
+- Snapshot operativo repetido el 2026-08-25: 22 altas adicionales habilitadas.
+  Verificación remota: 4.054 perfiles, 4.054 con acceso heredado y cero sin él.
   El valor por defecto continúa en `false` y el trigger protector sigue activo,
-  por lo que las nuevas altas posteriores al snapshot no heredan el permiso.
+  por lo que hay que repetir el snapshot justo antes de publicar la versión 1.3.
 
 ## Icono personalizado por grupo (local + backend, 2026-08-22)
 
@@ -765,6 +839,26 @@
   El cron de `ops/schedule_rruizosma_price_alert_evaluation.sql` corre cada 15
   minutos y se elimina solo el 25-08 a las 00:00 UTC; prueba HTTP 200 con cola
   inicial vacía.
+- La ejecución real fallaba antes de crear la bandeja porque
+  `create_price_alert_notification` leía `request.jwt.claim.role`, una GUC
+  heredada que PostgREST ya no rellena. La migración
+  `20260824194005_fix_price_alert_service_role_claim.sql` está aplicada y
+  valida el rol con `auth.jwt()->>'role'`; la RPC continúa revocada para
+  `anon`/`authenticated`. Desde `process-price-alerts` v3 se conserva el
+  error estructurado si una llamada vuelve a fallar.
+- Prueba remota controlada del 24-08 a las 19:42 UTC: un solo lote de `TEST 2`
+  quedó `sent`, con entrada de bandeja y resultado del procesador
+  `claimed=1`, `sentGroups=1`, `failedGroups=0`. Una segunda ejecución a las
+  19:51 UTC envió cuatro grupos representativos adicionales (novedad, bajada
+  ≥10 %, oferta y mixta): `claimed=11`, `sentGroups=4`, `failedGroups=0`.
+  `process-price-alerts` v4 está ACTIVE: consulta `label, emoji` de la regla,
+  limpia prefijos heredados `TEST N ·`, envía el emoji en `data` y lo muestra
+  delante del título push. `NotificationsSheet` sustituye para `price_alert` el
+  icono genérico por ese mismo emoji. Las cinco notificaciones existentes se
+  actualizaron; prueba adicional a las 20:04 UTC correcta con título
+  `🍫 Bajadas ≥10% · chocolate` (`claimed=3`, `sentGroups=1`, cero
+  fallos). Quedan 500 entregas históricas agotadas en `failed`; no reactivarlas en bloque
+  porque producirían varios avisos por regla y sync.
 - Pendiente tras valorar la prueba: convertir el procesador en general,
   configurar `PROCESS_PRICE_ALERTS_SECRET` dedicado y activar el cron permanente
   de `ops/schedule_price_alerts.sql` para todas las cuentas.

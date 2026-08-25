@@ -4,11 +4,13 @@
  * Degrada con elegancia: sin la clave RevenueCat de la plataforma en el entorno o
  * sin módulo nativo (Expo Go), todo devuelve null/false y PaywallModal cae al
  * comportamiento placeholder. El estado premium REAL lo escribe el webhook de
- * RevenueCat en profiles.premium_until (functions/revenuecat-webhook); aquí
- * solo se configura el SDK y se compra/restaura.
+ * RevenueCat en profiles.premium_until. Tras una compra/restauración, una Edge
+ * Function autenticada confirma el estado al instante; el webhook mantiene el
+ * ciclo posterior de renovación, cancelación y expiración.
  */
 import { Linking, Platform } from 'react-native';
 import type { PurchasesPackage } from 'react-native-purchases';
+import { supabase } from './supabase';
 
 // require en try/catch: en Expo Go no existe el módulo nativo y un import
 // normal rompería el bundle entero (mismo caso que push/Universal Links).
@@ -136,6 +138,27 @@ export async function restorePlus(): Promise<ActivePlusEntitlement | null> {
   if (!Purchases) return null;
   const info = await Purchases.restorePurchases();
   return activePlusEntitlement(info);
+}
+
+/**
+ * Pide al servidor que consulte directamente a RevenueCat para el uid derivado
+ * de la sesión. La fecha nunca procede del cliente, por lo que esta ruta puede
+ * persistir premium_until con seguridad antes de que llegue el webhook.
+ */
+export async function confirmPlusSubscription(): Promise<ActivePlusEntitlement> {
+  const { data, error } = await supabase.functions.invoke('sync-plus-subscription', {
+    method: 'POST',
+  });
+  if (error) throw error;
+
+  const expirationDate = typeof data?.premiumUntil === 'string'
+    ? data.premiumUntil
+    : null;
+  const expirationTime = expirationDate ? new Date(expirationDate).getTime() : NaN;
+  if (!Number.isFinite(expirationTime) || expirationTime <= Date.now()) {
+    throw new Error('Server did not confirm an active Plus entitlement');
+  }
+  return { expirationDate };
 }
 
 /** Consulta RevenueCat para saber si el Plus activo procede de App Store o

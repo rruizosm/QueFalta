@@ -61,7 +61,8 @@ búsquedas del comparador; Plus amplía ambos beneficios sin límite.
 ## Fases
 
 ### Fase 0 — Papeleo (manual, en paralelo) ⏳
-- [ ] Acuerdo de apps de pago en App Store Connect (datos fiscales + bancarios).
+- [x] Acuerdo de apps de pago en App Store Connect activo (confirmado el
+      2026-08-27 tras la revisión de la versión 1.3).
 - [ ] Alta en Apple Small Business Program (15%).
 - [x] Grupo de suscripción "QuéFalta Plus" creado en App Store Connect, ambos
       productos en el nivel 1: `com.quefalta.app.plus.monthly` (3,99 €/mes) y

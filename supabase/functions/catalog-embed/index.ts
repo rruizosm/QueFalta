@@ -80,7 +80,8 @@ export default {
         .in('product_id', productIds);
       if (error) {
         await markFailures(admin, jobs, 'catalog_read_failed', error.message);
-        return result(0, jobs.length, 0);
+        const dispatched = await dispatchNextBatch(admin);
+        return result(0, jobs.length, 0, dispatched);
       }
       for (const row of (data ?? []) as CatalogRow[]) rowsByKey.set(productKey(row.store, row.product_id), row);
     }
@@ -154,7 +155,8 @@ export default {
       if (error) return json({ error: 'queue_delete_failed', detail: error.message }, 500);
     }
 
-    return result(completed, failed, deleteIds.length - completed);
+    const dispatched = await dispatchNextBatch(admin);
+    return result(completed, failed, deleteIds.length - completed, dispatched);
   }),
 };
 
@@ -213,6 +215,17 @@ async function markFailures(admin: any, jobs: EmbeddingJob[], code: string, mess
   }));
 }
 
+async function dispatchNextBatch(admin: any): Promise<number> {
+  const { data, error } = await admin.rpc('catalog_dispatch_embedding_jobs', {
+    p_max_requests: 1,
+  });
+  if (error) {
+    console.warn('embedding_dispatch_failed', { message: error.message });
+    return 0;
+  }
+  return Array.isArray(data) ? data.length : 0;
+}
+
 async function safeEqual(left: string, right: string): Promise<boolean> {
   const key = crypto.getRandomValues(new Uint8Array(32));
   const cryptoKey = await crypto.subtle.importKey('raw', key, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
@@ -231,11 +244,12 @@ async function safeEqual(left: string, right: string): Promise<boolean> {
 const productKey = (store: string, productId: string) => `${store}:${productId}`;
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : String(error);
 
-function result(completed: number, failed: number, stale: number): Response {
-  return json({ completed, failed, stale }, 200, {
+function result(completed: number, failed: number, stale: number, dispatched = 0): Response {
+  return json({ completed, failed, stale, dispatched }, 200, {
     'X-Completed-Jobs': String(completed),
     'X-Failed-Jobs': String(failed),
     'X-Stale-Jobs': String(stale),
+    'X-Dispatched-Batches': String(dispatched),
   });
 }
 

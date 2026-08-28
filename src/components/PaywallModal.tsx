@@ -110,6 +110,9 @@ export default function PaywallModal({ visible, onClose }: Props) {
   // Precio localizado de la tienda si existe; si no, el estático de MONETIZACION.md.
   const annualPrice = offerings?.annual?.product.priceString ?? '19,99 €';
   const monthlyPrice = offerings?.monthly?.product.priceString ?? '3,99 €';
+  // Durante la carga, ante un error o si la tienda devuelve elegibilidad
+  // desconocida se muestra el plan sin prometer una prueba gratuita.
+  const annualFreeTrialEligible = offerings?.annualFreeTrialEligible === true;
 
   const activatePlus = (expirationDate: string | null) => {
     if (expirationDate) applyPremiumEntitlement(expirationDate);
@@ -312,7 +315,9 @@ export default function PaywallModal({ visible, onClose }: Props) {
                   <Text style={styles.planPricePeriod}>{t('paywall.year')}</Text>
                 </View>
                 <Text style={styles.planPer}>{t('paywall.annualPer')}</Text>
-                <Text style={styles.trialText}>{t('paywall.freeTrialBadge')}</Text>
+                {annualFreeTrialEligible ? (
+                  <Text style={styles.trialText}>{t('paywall.freeTrialBadge')}</Text>
+                ) : null}
                 {plan === 'annual' ? <View pointerEvents="none" style={styles.planActiveBorder} /> : null}
               </TouchableOpacity>
               </View>
@@ -332,7 +337,9 @@ export default function PaywallModal({ visible, onClose }: Props) {
                     <>
                       <Ionicons name="sparkles" size={17} color={colors.white} />
                       <Text style={styles.ctaText}>
-                        {plan === 'annual' ? t('paywall.ctaTrial') : t('paywall.ctaContinue')}
+                        {plan === 'annual' && annualFreeTrialEligible
+                          ? t('paywall.ctaTrial')
+                          : t('paywall.ctaContinue')}
                       </Text>
                     </>
                   )}

@@ -67,6 +67,9 @@ export async function logOutPurchases(): Promise<void> {
 export interface PlusOfferings {
   monthly: PurchasesPackage | null;
   annual: PurchasesPackage | null;
+  /** Solo es true cuando la tienda publica una prueba gratuita de una semana
+   *  y RevenueCat confirma que la Cuenta de Apple actual puede canjearla. */
+  annualFreeTrialEligible: boolean;
 }
 
 /** Entitlement Plus que RevenueCat ya ha validado contra la tienda. */
@@ -106,9 +109,36 @@ export async function getPlusOfferings(): Promise<PlusOfferings | null> {
     const offerings = await Purchases.getOfferings();
     const current = offerings.current;
     if (!current) return null;
+    const annual = current.annual ?? null;
+    let annualFreeTrialEligible = false;
+
+    // Apple aplica la oferta introductoria durante la compra, pero no todas las
+    // cuentas pueden canjearla. No prometerla si StoreKit/RevenueCat no pueden
+    // confirmar tanto que existe como que esta cuenta concreta es elegible.
+    if (Platform.OS === 'ios' && annual) {
+      const intro = annual.product.introPrice;
+      const hasSevenDayFreeTrial = intro?.price === 0
+        && (intro.period === 'P1W'
+          || (intro.periodUnit.toUpperCase() === 'WEEK' && intro.periodNumberOfUnits === 1));
+
+      if (hasSevenDayFreeTrial) {
+        try {
+          const eligibility = await Purchases.checkTrialOrIntroductoryPriceEligibility([
+            annual.product.identifier,
+          ]);
+          annualFreeTrialEligible = eligibility[annual.product.identifier]?.status
+            === Purchases.INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE;
+        } catch {
+          // La comprobación de la promoción no debe impedir comprar el plan.
+          // Ante un fallo se mantiene la oferta disponible, pero sin anunciar prueba.
+        }
+      }
+    }
+
     return {
       monthly: current.monthly ?? null,
-      annual: current.annual ?? null,
+      annual,
+      annualFreeTrialEligible,
     };
   } catch {
     return null;

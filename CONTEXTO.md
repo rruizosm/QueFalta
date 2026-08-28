@@ -3,6 +3,58 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
+## Prueba anual condicionada por elegibilidad para la versión 1.3.1 (2026-08-27)
+
+- La versión 1.3 build 46 anuncia siempre siete días gratis en el plan anual;
+  App Review detectó que su cuenta sandbox no recibía la oferta. Apple permite
+  aprobar esa build como bug-fix submission y corregir la presentación después.
+- Para 1.3.1, el cliente comprueba en iOS que el producto anual publica una
+  prueba gratuita de una semana y que RevenueCat/StoreKit devuelve elegibilidad
+  confirmada para la Cuenta de Apple actual. Solo entonces muestra la insignia
+  y el CTA de siete días; `unknown`, no elegible, sin oferta o error usan el CTA
+  normal sin prometer prueba.
+- La oferta de App Store Connect está activa exclusivamente en España del
+  2026-08-21 al 2036-08-21, igual que la disponibilidad prevista de la app, y el
+  Paid Apps Agreement figura activo. `app.json` queda en 1.3.1; EAS conserva el
+  build number remoto con `autoIncrement` (el siguiente esperado es 47).
+
+## Lotes del materializador del comparador limitados a 50 (2026-08-27)
+
+- Los upserts de `sync-comparator-embedding-catalog.mjs` usan lotes fijos de 50
+  productos. Los lotes anteriores de 500 rozaban o superaban los 8 segundos del
+  `statement_timeout` efectivo de la Data API y fallaban con PostgreSQL `57014`.
+- El sync de origen no estaba afectado: el fallo aparecía al materializar
+  `catalog_product_embeddings`. El mismo patrón se observó en Gadis, Esclat y
+  Ahorramás, por lo que la corrección se aplica al materializador compartido.
+- El workflow de Gadis dispone de 60 minutos en vez de 30 para cubrir sus
+  aproximadamente 17 minutos de rastreo más las transacciones cortas del
+  materializador sin agotar el timeout global del job.
+- No cambia la semántica incremental, el disparo por evento ni el tamaño de los
+  lotes del worker de embeddings; solo se acorta cada transacción REST de upsert.
+- Verificación productiva real: Gadis completó 10.885/10.885 productos, lanzó
+  un worker y terminó con cero productos publicados sin embedding, cero
+  embeddings publicados obsoletos, cola vacía y cero fallos. `npm run quality`
+  pasa con 92/92 pruebas.
+
+## Embeddings del comparador sin polling continuo (2026-08-25)
+
+- El materializador de cada catálogo llama al terminar a
+  `catalog_dispatch_embedding_jobs(3)`, una RPC `SECURITY INVOKER` disponible
+  exclusivamente para `service_role`. `DRY_RUN` no arranca ningún worker.
+- El impulso inicial reclama hasta tres lotes de 100 trabajos. Cada instancia
+  de `catalog-embed` reclama solo un lote adicional al terminar, manteniendo la
+  concurrencia acotada hasta vaciar `catalog_embedding_jobs` sin ramificación.
+- El cron remoto `catalog-embedding-dispatch` deja de ejecutarse cada 10
+  segundos y queda como red de seguridad `*/15 * * * *` para impulsos perdidos
+  y reintentos tras el visibility timeout. La Edge Function `catalog-embed` v9
+  y la migración local
+  `20260825174505_event_driven_catalog_embedding_dispatch.sql` están
+  desplegadas en producción; la migración remota es `20260825175141`.
+- Verificación real: `anon`/`authenticated` no pueden ejecutar la RPC,
+  `service_role` sí; un mensaje duplicado controlado se despachó por evento,
+  `catalog-embed` respondió HTTP 200 y la cola volvió a cero. Los advisors no
+  añadieron incidencias y `npm run quality` pasa con 90/90 pruebas.
+
 ## Resultados del Radar de ahorro localizados (2026-08-24)
 
 - El cliente envía el idioma activo a `catalog_cheaper_products_v7`. En catalán,
@@ -194,8 +246,9 @@
   transversal solo encola un embedding nuevo si cambia el contenido semántico,
   la versión o la publicación; un cambio exclusivo de precio reutiliza el vector.
 - Hipercor queda fuera hasta que sus tablas y RPC se incorporen formalmente al
-  comparador. El cron remoto `catalog-embedding-dispatch` mantiene procesados
-  los trabajos nuevos de `catalog_embedding_jobs`.
+  comparador. El materializador arranca el procesamiento de los trabajos nuevos
+  de `catalog_embedding_jobs`; el cron remoto queda solo como respaldo cada 15
+  minutos.
 
 ## Reportes de resultados incorrectos del comparador (2026-08-24)
 

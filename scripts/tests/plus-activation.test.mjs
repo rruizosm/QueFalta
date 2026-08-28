@@ -66,3 +66,17 @@ test('the Plus paywall anchors the plans below its six advertised benefits', () 
   assert.match(paywall, /scrollContent: \{ flexGrow: 1/);
   assert.match(paywall, /bottomSection: \{ marginTop: 'auto'/);
 });
+
+test('the annual free trial is advertised only after store eligibility is confirmed', () => {
+  const purchases = read('src/lib/purchases.ts');
+  const paywall = read('src/components/PaywallModal.tsx');
+
+  assert.match(purchases, /checkTrialOrIntroductoryPriceEligibility/);
+  assert.match(purchases, /INTRO_ELIGIBILITY_STATUS_ELIGIBLE/);
+  assert.match(purchases, /intro\?\.price === 0/);
+  assert.match(purchases, /annualFreeTrialEligible/);
+  assert.match(paywall, /offerings\?\.annualFreeTrialEligible === true/);
+  assert.match(paywall, /annualFreeTrialEligible \? \([\s\S]*paywall\.freeTrialBadge/);
+  assert.match(paywall, /plan === 'annual' && annualFreeTrialEligible[\s\S]*paywall\.ctaTrial/);
+  assert.doesNotMatch(paywall, /plan === 'annual' \? t\('paywall\.ctaTrial'\)/);
+});

@@ -13,7 +13,10 @@ El pipeline permanece apagado hasta completar este orden:
    - `catalog_embed_worker_token`: el mismo token del paso 2.
 5. Desplegar `catalog-embed`, cuya verificación JWT está desactivada porque se
    autentica con el token interno constante enviado por `pg_net`.
-6. Ejecutar `enable-comparator-embedding-cron.sql`.
+6. Desplegar `event_driven_catalog_embedding_dispatch`, que permite a
+   `service_role` arrancar lotes y deja el cron como respaldo cada 15 minutos.
+7. Ejecutar `enable-comparator-embedding-cron.sql` solo si hay que reconstruir
+   manualmente ese cron de respaldo.
 
 Para pausar sin perder trabajos, ejecutar
 `disable-comparator-embedding-cron.sql`. Los mensajes quedan en
@@ -28,10 +31,12 @@ runners PowerShell locales repiten el mismo postproceso y lo omiten en
 `DRY_RUN`; Carrefour se integra por esta vía porque su sync productivo no corre
 en GitHub Actions.
 
-El postproceso materializa e invalida, pero no consume la cola por sí mismo. El
-cron `catalog-embedding-dispatch` debe estar activo para que la Edge Function
-genere los vectores pendientes. Hipercor queda fuera hasta incorporarlo al
-contrato completo del comparador.
+El postproceso materializa, invalida y arranca hasta tres lotes del worker. Cada
+instancia de `catalog-embed` reclama un lote adicional al terminar, por lo que
+mantiene esa concurrencia hasta vaciar la cola sin polling continuo. El cron
+`catalog-embedding-dispatch` queda activo cada 15 minutos únicamente como red de
+seguridad para impulsos fallidos y reintentos. Hipercor queda fuera hasta
+incorporarlo al contrato completo del comparador.
 
 Los trabajos fallidos se reintentan mediante el visibility timeout de `pgmq`.
 Tras cinco intentos se archivan y quedan auditados en

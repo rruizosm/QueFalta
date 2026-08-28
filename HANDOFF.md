@@ -1,5 +1,57 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Paywall 1.3.1: prueba anual solo para cuentas elegibles (local, 2026-08-27)
+
+- App Review permitió que la versión 1.3 build 46 continúe como bug-fix
+  submission, pero señaló que su compra anual no recibía los siete días que
+  el paywall anunciaba incondicionalmente.
+- `getPlusOfferings` valida que Apple publique una prueba gratis de una semana y
+  consulta `checkTrialOrIntroductoryPriceEligibility` para la Cuenta de Apple.
+  La UI solo muestra la insignia y el CTA de prueba si el estado es `eligible`;
+  ante `unknown`, no elegible, ausencia de oferta o error presenta el CTA normal.
+- La oferta remota está activa solo en España, del 21-08-2026 al 21-08-2036, y
+  el Paid Apps Agreement está activo. `app.json` pasa a 1.3.1; el siguiente build
+  de producción usará el auto-incremento remoto de EAS (esperado: 47).
+- Regresión añadida en `scripts/tests/plus-activation.test.mjs`. Pendiente de
+  generar y subir la build de producción.
+
+## Upserts del materializador en lotes de 50 (local, 2026-08-27)
+
+- `sync-comparator-embedding-catalog.mjs` limita ahora cada upsert a 50 filas.
+  El lote anterior de 500 superó repetidamente el `statement_timeout` efectivo
+  de 8 segundos de la Data API (`57014`) tras los syncs de Gadis, Esclat y
+  Ahorramás.
+- El cambio es común a los 17 workflows y ocho runners locales que invocan el
+  materializador. No modifica el sync de origen, la cola, la RPC de dispatch ni
+  los lotes de 100 que procesa `catalog-embed`.
+- `sync-gadis.yml` amplía su timeout global de 30 a 60 minutos: el rastreo tarda
+  unos 17 minutos y los lotes cortos necesitan margen adicional para completar
+  el postproceso.
+- Ejecución productiva completa: 10.885/10.885 productos materializados,
+  dispatch inicial de un worker, cero ausentes, cero obsoletos publicados, cola
+  vacía y cero fallos. Regresión incluida en
+  `scripts/tests/embedding-dispatch.test.mjs`; `npm run quality` pasa 92/92.
+
+## Embeddings por evento en vez de polling continuo (local + backend, 2026-08-25)
+
+- `sync-comparator-embedding-catalog.mjs` llama al terminar a la nueva RPC
+  `catalog_dispatch_embedding_jobs` con hasta tres peticiones. Se omite en
+  `DRY_RUN`, por lo que los 17 workflows y ocho runners ya integrados obtendrán
+  el impulso sin duplicar cambios en cada wrapper.
+- La RPC es `SECURITY INVOKER`, fija lote/timeout en servidor y solo concede
+  ejecución a `service_role`; `anon` y `authenticated` no tienen permiso.
+  `catalog-embed` v9 encadena una sola petición al terminar cada lote para
+  conservar la concurrencia inicial hasta vaciar la cola.
+- El cron de producción `catalog-embedding-dispatch` pasó de 10 segundos a
+  `*/15 * * * *` y queda exclusivamente como recuperación de impulsos fallidos
+  o mensajes que vuelvan a ser visibles. Migración local
+  `20260825174505_event_driven_catalog_embedding_dispatch.sql`, desplegada como
+  `20260825175141`.
+- Prueba remota controlada: el mensaje 212732 se reclamó mediante la RPC,
+  `pg_net` 2047 devolvió HTTP 200 con
+  `completed=0, failed=0, stale=1, dispatched=0` y la cola quedó vacía. Sin
+  advisors nuevos; TypeScript, lint y 90/90 pruebas correctos.
+
 ## Nombres catalanes en el Radar de ahorro (local, 2026-08-24)
 
 - `fetchSimilarProducts` usa la nueva RPC `catalog_cheaper_products_v7` y envía
@@ -179,8 +231,8 @@
   el postproceso en `DRY_RUN`; así quedan cubiertos también los syncs productivos
   locales de Carrefour, Eroski y Caprabo.
 - Hipercor no se conecta todavía porque no está admitido por la capa de
-  embeddings. El cron remoto `catalog-embedding-dispatch` queda activo para
-  procesar de forma continua los cambios que materializan los syncs.
+  embeddings. El materializador da el impulso inicial y los workers encadenan
+  los lotes; el cron remoto queda como respaldo cada 15 minutos.
 
 ## Reportes de resultados del comparador (local + backend, 2026-08-24)
 

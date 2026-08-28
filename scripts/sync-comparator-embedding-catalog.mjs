@@ -9,7 +9,8 @@ import { deriveCatalogUnitQuantity } from './lib/catalog-embedding-unit.mjs';
 
 const ROOT = new URL('../', import.meta.url);
 const PAGE_SIZE = Math.min(1000, Math.max(100, Number(process.env.PAGE_SIZE || 1000)));
-const UPSERT_SIZE = Math.min(1000, Math.max(50, Number(process.env.UPSERT_SIZE || 500)));
+// Mantiene cada escritura holgadamente por debajo del statement_timeout de la Data API.
+const UPSERT_SIZE = 50;
 const REST_MAX_RETRIES = Math.min(8, Math.max(0, Number(process.env.REST_MAX_RETRIES || 5)));
 const REST_RETRY_BASE_MS = Math.min(10000, Math.max(250, Number(process.env.REST_RETRY_BASE_MS || 1000)));
 const DRY_RUN = process.env.DRY_RUN === '1';
@@ -217,6 +218,19 @@ async function markMissingUnpublished(store, seenAt) {
   });
 }
 
+async function dispatchEmbeddingJobs() {
+  const response = await rest('/rest/v1/rpc/catalog_dispatch_embedding_jobs', {
+    method: 'POST',
+    body: JSON.stringify({ p_max_requests: 3 }),
+  });
+  const requestIds = await response.json();
+  if (!Array.isArray(requestIds)) throw new Error('catalog_dispatch_embedding_jobs devolvió una respuesta inválida');
+  console.log(JSON.stringify({
+    event: 'embedding_dispatch',
+    request_count: requestIds.length,
+  }));
+}
+
 const summary = [];
 for (const [store, table, fields] of selectedStores) {
   const seenAt = new Date().toISOString();
@@ -249,5 +263,7 @@ for (const [store, table, fields] of selectedStores) {
   summary.push(item);
   console.log(JSON.stringify(item));
 }
+
+if (!DRY_RUN) await dispatchEmbeddingJobs();
 
 console.log(JSON.stringify({ complete: true, stores: summary.length, products: summary.reduce((sum, item) => sum + item.materialized_products, 0), dry_run: DRY_RUN }, null, 2));

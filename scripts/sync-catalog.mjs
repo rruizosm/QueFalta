@@ -17,7 +17,11 @@
 //   MERCADONA_WHS           opcional, lista CSV de almacenes a barrer. Si se omite,
 //                           se resuelven dinámicamente (1 CP por provincia).
 //   MERCADONA_MAX_WHS       opcional, recorta la lista de almacenes (debug).
-//   CONCURRENCY             opcional, subcategorías en paralelo por almacén (def 3).
+//   CONCURRENCY             opcional, subcategorías en paralelo por almacén (def 2).
+//   CATEGORY_REQUEST_DELAY_MS separación base entre subcategorías por worker (def 250 ms).
+//   MERCADONA_BLOCK_COOLDOWN_MS pausa global mínima ante 403/429 (def 30 s).
+//   CATEGORY_RETRY_PASSES   pasadas finales para recuperar categorías fallidas (def 2).
+//   CATEGORY_RETRY_COOLDOWN_MS pausa antes de cada pasada final (def 60 s).
 //   MAX_CATEGORY_FAILURE_RATE opcional, máximo porcentaje de N2 fallidas antes de
 //                           abortar sin escribir ni despublicar (def 3%).
 //   DRY_RUN=1               no escribe en Supabase (solo cuenta e informa).
@@ -29,12 +33,18 @@ import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { PROVINCE_COMMUNITY } from './lib/province-community.mjs';
 import { validGlobalGtin } from './lib/gtin.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
+import { createSharedCooldown } from './lib/mercadona-rate-limit.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
 const WHS_ENV = process.env.MERCADONA_WHS;
 const MAX_WHS = process.env.MERCADONA_MAX_WHS ? Number(process.env.MERCADONA_MAX_WHS) : Infinity;
-const CONCURRENCY = Number(process.env.CONCURRENCY || 3);
+const CONCURRENCY = Number(process.env.CONCURRENCY || 2);
+const CATEGORY_REQUEST_DELAY_MS = Number(process.env.CATEGORY_REQUEST_DELAY_MS || 250);
+const MERCADONA_BLOCK_COOLDOWN_MS = Number(process.env.MERCADONA_BLOCK_COOLDOWN_MS || 30_000);
+const CATEGORY_RETRY_PASSES = Number(process.env.CATEGORY_RETRY_PASSES || 2);
+const CATEGORY_RETRY_CONCURRENCY = Number(process.env.CATEGORY_RETRY_CONCURRENCY || 1);
+const CATEGORY_RETRY_COOLDOWN_MS = Number(process.env.CATEGORY_RETRY_COOLDOWN_MS || 60_000);
 const MAX_CATEGORY_FAILURE_RATE = Number(process.env.MAX_CATEGORY_FAILURE_RATE || 0.03);
 const DRY = process.env.DRY_RUN === '1';
 // Pasada de EAN: el código de barras solo está en el DETALLE por producto
@@ -66,6 +76,15 @@ const FORCED_WH_PROVINCES = { mad1: '28', bcn1: '08' };
 
 const runStart = new Date().toISOString();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const mercaCooldown = createSharedCooldown({
+  baseCooldownMs: MERCADONA_BLOCK_COOLDOWN_MS,
+  sleep,
+});
+
+const compactDiagnostic = (value, maxLength = 180) => String(value ?? '')
+  .replace(/\s+/g, ' ')
+  .trim()
+  .slice(0, maxLength);
 
 const mercaHeaders = (lang) => ({
   Accept: 'application/json',
@@ -76,15 +95,38 @@ const mercaHeaders = (lang) => ({
 
 async function merca(path, lang = 'es', wh = 'mad1') {
   const url = `${MERCA}${path}${path.includes('?') ? '&' : '?'}lang=${lang}&wh=${wh}`;
-  // Reintentos con backoff: bajo carga (muchos almacenes) Mercadona devuelve 403/429
-  // temporales. Esperar y reintentar recupera la inmensa mayoría.
+  // Reintentos con backoff + cooldown COMPARTIDO: cuando el WAF limita la IP del
+  // runner, todos los workers paran. Sin esta coordinación cada worker agotaba sus
+  // cuatro intentos durante la misma ventana de 403 y dejaba categorías al azar.
   let last;
   for (let attempt = 0; attempt < 4; attempt++) {
     if (attempt > 0) await sleep(500 * 2 ** attempt + Math.random() * 300);
+    await mercaCooldown.wait();
     const res = await fetch(url, { headers: mercaHeaders(lang) });
     if (res.ok) return res.json();
     last = res.status;
-    if (res.status !== 403 && res.status !== 429 && res.status < 500) break; // 404 etc.: no reintentar
+    if (res.status === 403 || res.status === 429) {
+      const retryAfter = res.headers.get('retry-after');
+      const cooldown = mercaCooldown.block(retryAfter);
+      if (cooldown.started) {
+        const headerSummary = [
+          ['retry-after', retryAfter],
+          ['server', res.headers.get('server')],
+          ['x-cache', res.headers.get('x-cache')],
+          ['cf-ray', res.headers.get('cf-ray')],
+          ['x-amz-cf-id', res.headers.get('x-amz-cf-id')],
+        ].filter(([, value]) => value).map(([key, value]) => `${key}=${compactDiagnostic(value, 80)}`).join(' ');
+        let body = '';
+        try { body = compactDiagnostic(await res.text()); } catch { /* diagnóstico opcional */ }
+        console.warn(
+          `[sync] Mercadona ${res.status}: pausa global ${Math.ceil(cooldown.cooldownMs / 1000)}s`
+          + ` (${path}, wh=${wh}, intento=${attempt + 1})`
+          + `${headerSummary ? ` · ${headerSummary}` : ''}${body ? ` · body=${body}` : ''}`,
+        );
+      }
+      continue;
+    }
+    if (res.status < 500) break; // 404 etc.: no reintentar
   }
   throw new Error(`Mercadona ${last} en ${path} (wh=${wh})`);
 }
@@ -243,53 +285,94 @@ async function main() {
   //    quedan con datos de Madrid; los regionales con su almacén de zona).
   const products = new Map();
   let categoryRequests = 0;
-  let categoryFailures = 0;
+  const failedCategories = [];
   // id → Set de almacenes donde aparece (para la exclusividad regional). Se acumula
   // aunque los DATOS del producto ya los aportara un almacén anterior.
   const whsOfProduct = new Map();
+  const whPriority = new Map(whs.map((wh, index) => [wh, index]));
+
+  const collectCategory = async (wh, sub) => {
+    const detail = await merca(`/categories/${sub.id}/`, 'es', wh);
+    for (const group of detail.categories ?? []) {
+      for (const p of group.products ?? []) {
+        if (!p.published) continue;
+        const id = String(p.id);
+        let whSet = whsOfProduct.get(id);
+        if (!whSet) { whSet = new Set(); whsOfProduct.set(id, whSet); }
+        whSet.add(wh);
+        const existing = products.get(id);
+        // En la pasada de recuperación puede llegar tarde una categoría de un
+        // almacén anterior. Debe recuperar también su prioridad como source_wh.
+        if (existing && whPriority.get(existing.source_wh) <= whPriority.get(wh)) continue;
+        const pi = p.price_instructions ?? {};
+        const ppu = canonicalPricePerUnit(pi.reference_price, pi.reference_format);
+        products.set(id, {
+          id,
+          display_name: p.display_name,
+          slug: p.slug ?? null,
+          packaging: p.packaging ?? null,
+          thumbnail: p.thumbnail ?? null,
+          category_id: sub.id,
+          category_name: sub.name,
+          unit_price: pi.unit_price != null ? Number(pi.unit_price) : null,
+          price_per_unit: ppu?.value ?? null,
+          price_per_unit_unit: ppu?.unit ?? null,
+          published: true,
+          source_wh: wh,
+          raw: p,
+          synced_at: runStart,
+        });
+      }
+    }
+  };
+
+  const waitForCategorySlot = () => sleep(CATEGORY_REQUEST_DELAY_MS + Math.random() * 100);
+
   for (const wh of whs) {
     const before = products.size;
     await pool(n2, CONCURRENCY, async (sub) => {
-      await sleep(40 + Math.random() * 80); // educado con la API
+      await waitForCategorySlot();
       try {
         categoryRequests++;
-        const detail = await merca(`/categories/${sub.id}/`, 'es', wh);
-        for (const group of detail.categories ?? []) {
-          for (const p of group.products ?? []) {
-            if (!p.published) continue;
-            const id = String(p.id);
-            let whSet = whsOfProduct.get(id);
-            if (!whSet) { whSet = new Set(); whsOfProduct.set(id, whSet); }
-            whSet.add(wh);
-            if (products.has(id)) continue; // los datos ya los aportó otro almacén
-            const pi = p.price_instructions ?? {};
-            const ppu = canonicalPricePerUnit(pi.reference_price, pi.reference_format);
-            products.set(id, {
-              id,
-              display_name: p.display_name,
-              slug: p.slug ?? null,
-              packaging: p.packaging ?? null,
-              thumbnail: p.thumbnail ?? null,
-              category_id: sub.id,
-              category_name: sub.name,
-              unit_price: pi.unit_price != null ? Number(pi.unit_price) : null,
-              price_per_unit: ppu?.value ?? null,
-              price_per_unit_unit: ppu?.unit ?? null,
-              published: true,
-              source_wh: wh,
-              raw: p,
-              synced_at: runStart,
-            });
-          }
-        }
+        await collectCategory(wh, sub);
       } catch (e) {
-        categoryFailures++;
+        failedCategories.push({ wh, sub });
         console.warn(`[sync] ${wh} subcategoría ${sub.id} falló: ${e.message}`);
       }
     });
     console.log(`[sync] almacén ${wh}: +${products.size - before} nuevos (total ${products.size})`);
   }
 
+  // Segunda oportunidad fuera de la ráfaga original. Se reintentan solo las parejas
+  // almacén/categoría pendientes, primero tras una pausa larga y luego en serie para
+  // no volver a activar el límite de la IP del runner.
+  let pendingCategories = failedCategories;
+  for (let pass = 1; pass <= CATEGORY_RETRY_PASSES && pendingCategories.length; pass++) {
+    const pauseMs = Math.max(CATEGORY_RETRY_COOLDOWN_MS, mercaCooldown.remainingMs());
+    console.log(
+      `[sync] recuperación ${pass}/${CATEGORY_RETRY_PASSES}: ${pendingCategories.length} categorías pendientes`
+      + ` · pausa ${Math.ceil(pauseMs / 1000)}s`,
+    );
+    await sleep(pauseMs);
+
+    const nextPending = [];
+    await pool(pendingCategories, CATEGORY_RETRY_CONCURRENCY, async ({ wh, sub }) => {
+      await waitForCategorySlot();
+      try {
+        await collectCategory(wh, sub);
+      } catch (e) {
+        nextPending.push({ wh, sub });
+        console.warn(`[sync] ${wh} subcategoría ${sub.id} reintento ${pass} falló: ${e.message}`);
+      }
+    });
+    console.log(
+      `[sync] recuperación ${pass}: ${pendingCategories.length - nextPending.length} recuperadas`
+      + ` · ${nextPending.length} pendientes`,
+    );
+    pendingCategories = nextPending;
+  }
+
+  const categoryFailures = pendingCategories.length;
   const categoryFailureRate = categoryRequests ? categoryFailures / categoryRequests : 1;
   console.log(`[sync] categorías: ${categoryRequests - categoryFailures}/${categoryRequests} correctas (${categoryFailures} fallidas)`);
   if (categoryFailureRate > MAX_CATEGORY_FAILURE_RATE) {
@@ -302,7 +385,7 @@ async function main() {
   const caNames = new Map();
   for (const wh of CA_WHS.filter((w) => whs.includes(w))) {
     await pool(n2, CONCURRENCY, async (sub) => {
-      await sleep(40 + Math.random() * 80); // educado con la API
+      await waitForCategorySlot();
       try {
         const detail = await merca(`/categories/${sub.id}/`, 'ca', wh);
         for (const group of detail.categories ?? []) {

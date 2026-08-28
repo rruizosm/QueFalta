@@ -3,6 +3,25 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
+## Sync de Mercadona resistente a ráfagas 403/429 (2026-08-28)
+
+- El run manual `33162575907` abortó con 408/7.399 subcategorías fallidas
+  (5,5%) antes de escribir en Supabase. Los `403` afectaron en distintos
+  momentos a 148 de las 151 categorías y las mismas URLs volvieron a responder
+  200, lo que descarta categorías retiradas y señala limitación temporal de la
+  IP del runner por parte de Mercadona/WAF.
+- `sync-catalog.mjs` reduce la concurrencia de categorías de 3 a 2 y separa las
+  peticiones de cada worker al menos 250 ms. Ante `403/429`, un cooldown global
+  de 30 segundos detiene todos los workers, respeta un `Retry-After` mayor y
+  registra una muestra acotada de cabeceras/cuerpo para futuros diagnósticos.
+- Las parejas almacén/categoría que agotan sus intentos se reintentan en hasta
+  dos pasadas seriales, separadas por 60 segundos, antes de calcular el umbral
+  final. Una recuperación tardía conserva la prioridad original de almacenes
+  para `source_wh` y precios.
+- El cortafuegos continúa en 3% y sigue situado antes de cualquier upsert o
+  despublicación. El workflow dispone de 90 minutos para absorber cooldowns;
+  no se sacrifica integridad por completar el job.
+
 ## Prueba anual condicionada por elegibilidad para la versión 1.3.1 (2026-08-27)
 
 - La versión 1.3 build 46 anuncia siempre siete días gratis en el plan anual;

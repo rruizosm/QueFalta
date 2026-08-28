@@ -13,7 +13,7 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 75   # multi-almacén: barre ~48 almacenes (uno por provincia)
+    timeout-minutes: 90   # incluye cooldowns coordinados y recuperación tras 403/429
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,6 +27,14 @@ jobs:
           # catálogo multi-almacén es prioritario; un backfill masivo de fichas provoca
           # 403 de Mercadona y puede agotar el job. Para acelerar el histórico usar el
           # runner reanudable scripts/backfill-mercadona-ean.mjs fuera de este workflow.
+          # El catálogo prioriza integridad sobre velocidad: dos workers, separación
+          # entre peticiones y una pausa compartida si Mercadona limita la IP.
+          CONCURRENCY: '2'
+          CATEGORY_REQUEST_DELAY_MS: '250'
+          MERCADONA_BLOCK_COOLDOWN_MS: '30000'
+          CATEGORY_RETRY_PASSES: '2'
+          CATEGORY_RETRY_CONCURRENCY: '1'
+          CATEGORY_RETRY_COOLDOWN_MS: '60000'
           EAN_MAX: '300'
           EAN_CONCURRENCY: '2'
       - name: Actualizar capa del comparador

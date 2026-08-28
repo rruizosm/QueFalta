@@ -1,5 +1,24 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Resiliencia del sync de Mercadona ante 403/429 (local, 2026-08-28)
+
+- El run `33162575907` recibió 408 `403` en ráfagas temporales y activó el
+  cortafuegos del 3% antes de escribir. No fallaron categorías concretas: 148
+  de 151 IDs aparecieron al menos una vez y una muestra de URLs volvió a dar
+  HTTP 200 fuera de la ventana de bloqueo.
+- El cliente de Mercadona comparte ahora un cooldown de 30 segundos entre todos
+  los workers, amplía la espera si existe `Retry-After` y deja una muestra
+  diagnóstica de la primera respuesta de cada ráfaga. La concurrencia baja a 2
+  y la separación base sube a 250 ms.
+- Tras el barrido inicial se reintentan únicamente las parejas fallidas en dos
+  pasadas seriales con 60 segundos de enfriamiento. Las recuperaciones respetan
+  el orden original de almacenes para no cambiar `source_wh` o el precio de
+  referencia. El 3% se calcula después y continúa bloqueando cualquier escritura.
+- Workflow ampliado de 75 a 90 minutos. Pruebas nuevas en
+  `scripts/lib/mercadona-rate-limit.test.mjs` y
+  `scripts/tests/sync-mercadona-resilience.test.mjs`. Pendiente de validar la
+  corrección en un sync real de GitHub Actions.
+
 ## Paywall 1.3.1: prueba anual solo para cuentas elegibles (local, 2026-08-27)
 
 - App Review permitió que la versión 1.3 build 46 continúe como bug-fix

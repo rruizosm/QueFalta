@@ -3,7 +3,30 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
-## Preproducción del vídeo promocional de la versión 1.3 (2026-08-28)
+## Froiz y Alcampo pasan a sync productivo local con embeddings (2026-08-29)
+
+- Los workflows `sync-froiz.yml` y `sync-alcampo.yml` dejan de tener `schedule`:
+  conservan solo `workflow_dispatch` para diagnósticos manuales porque ambos
+  orígenes fallan desde las IP de GitHub Actions.
+- Froiz dispone de `scripts/run-froiz-sync.ps1`; Alcampo amplía
+  `scripts/run-alcampo-playwright.ps1`. Tras un sync real con código 0 ejecutan
+  `sync-comparator-embedding-catalog.mjs` con `STORES=froiz|alcampo`, que
+  materializa los cambios y da el impulso inicial a los workers. `DRY_RUN` y
+  Alcampo sin `-Publish` omiten el postproceso.
+- La pantalla Perfil → Soporte → Actualización de catálogos ya queda
+  actualizada por ambos syncs: `recordCatalogSync` se ejecuta después de los
+  upserts y `markStale`, y la app lee `catalog_sync_status` incluyendo ambas
+  cadenas. La fecha representa el catálogo de origen; un fallo posterior del
+  materializador no oculta que el catálogo sí terminó correctamente.
+- Verificación remota de solo lectura: Froiz figura con
+  `synced_at=2026-08-29T11:30:34.814Z`. Alcampo todavía no tiene fila aunque su
+  producto más reciente lleva `synced_at=2026-08-21T09:05:06.908Z`, señal de
+  que aquella ejecución escribió productos pero no alcanzó el final posterior a
+  `markStale`. No se falsea la fecha con un backfill: comprobarla tras el próximo
+  `run-alcampo-playwright.ps1 -Publish` completo.
+- Regresión en `scripts/tests/comparator-sync-integration.test.mjs`.
+
+## Preproducción del vídeo promocional de la versión 1.3 (2026-08-29)
 
 - El concepto parte de un `1.2.1` monumental, viejo, sucio y con telarañas que
   las mascotas intentan desmontar antes de revelar la versión 1.3.
@@ -29,6 +52,15 @@
   escalera por la berenjena. Todas son RGBA 1024 x 1536 con alfa verificado. El
   README del paquete recoge un ritmo provisional de 4,8 segundos para la
   primera animática y la revelación final de `1.3`.
+- La placa vacía del escenario y los dígitos móviles están en
+  `marketing/version-1.3/assets/`. El `2` y el último `1` se extrajeron sobre
+  croma magenta para conservar su pintura azul y son PNG RGBA 941 x 1672 con
+  alfa verificado.
+- `keyframe-ruptura-v1.png` y `keyframe-revelado-1.3-v1.png` completan el arco
+  visual. La primera animática está en
+  `marketing/version-1.3/animatica-1.2.1-a-1.3-v1.mp4`: 5 segundos, 1080 x
+  1920, 30 fps, H.264 y sin sonido. Es una prueba de ritmo con cortes de pose,
+  todavía sin interpolación, partículas animadas ni diseño sonoro final.
 
 ## Alertas personalizadas activas para todas las cuentas (2026-08-28)
 
@@ -318,10 +350,10 @@
   comparador ejecutan `sync-comparator-embedding-catalog.mjs` para su tienda
   después de completar correctamente el sync de origen. Bonpreu/Esclat espera
   expresamente al último lote de su ciclo encadenado.
-- Los ocho runners PowerShell locales aplican el mismo postproceso cuando el
+- Los diez runners PowerShell locales aplican el mismo postproceso cuando el
   sync real termina con código 0 y lo omiten en `DRY_RUN`. Esto cubre en
-  particular Carrefour, Eroski y Caprabo, cuyos procesos productivos son
-  locales por los bloqueos a las IP de GitHub Actions.
+  particular Carrefour, Eroski, Caprabo, Froiz y Alcampo, cuyos procesos
+  productivos son locales por los bloqueos a las IP de GitHub Actions.
 - Cada ejecución limita el materializador con `STORES=<tienda>`. El upsert
   transversal solo encola un embedding nuevo si cambia el contenido semántico,
   la versión o la publicación; un cambio exclusivo de precio reutiliza el vector.

@@ -1,9 +1,7 @@
 name: Sync Alcampo catalog
 
 on:
-  schedule:
-    - cron: '0 11 * * 1'   # lunes 11:00 UTC (tras Aldi; pesado, 25k), semanal
-  workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
+  workflow_dispatch: {} # Solo diagnóstico manual: el sync productivo se ejecuta localmente.
 
 concurrency:
   group: sync-alcampo

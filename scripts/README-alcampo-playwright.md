@@ -17,6 +17,10 @@ Desde `MercaAppMobile`:
 .\scripts\run-alcampo-playwright.ps1 -Publish
 ```
 
+Cuando una publicación completa termina con código 0, el runner actualiza a
+continuación la capa del comparador para Alcampo y arranca el procesamiento de
+los embeddings nuevos. Las validaciones sin `-Publish` omiten este postproceso.
+
 La ejecución completa es deliberadamente larga: mantiene una sola pestaña y
 espera entre categorías para reducir la probabilidad de activar de nuevo la
 verificación. Si el navegador muestra `Human Verification`, hay que resolverla

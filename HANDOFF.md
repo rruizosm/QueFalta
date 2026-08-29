@@ -1,5 +1,24 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Froiz y Alcampo: cron remoto retirado y embeddings locales (2026-08-29)
+
+- `sync-froiz.yml` y `sync-alcampo.yml` ya no tienen programación automática;
+  solo conservan `workflow_dispatch` para diagnóstico manual porque los
+  orígenes fallan desde GitHub Actions.
+- Nuevo `scripts/run-froiz-sync.ps1` y ampliado
+  `scripts/run-alcampo-playwright.ps1`: tras una publicación con código 0
+  ejecutan el materializador limitado a su tienda. Froiz omite el paso con
+  `DRY_RUN=1` y Alcampo cuando falta `-Publish`.
+- Verificado en código y regresión que ambos syncs llaman a
+  `recordCatalogSync` después de upsert+`markStale`; la pantalla
+  «Actualización de catálogos» consulta esa tabla e incluye Froiz y Alcampo.
+  No hizo falta migración ni cambio de cliente.
+- Comprobación remota: Froiz tiene fecha del 29-08 a las 11:30 UTC. Alcampo no
+  tiene aún fila de estado aunque hay productos sellados el 21-08 a las 09:05
+  UTC; esa ejecución no llegó al final posterior a `markStale`. No se hizo un
+  backfill ambiguo: verificar que aparece tras el próximo `-Publish` completo.
+- Pruebas focalizadas de integración y dispatch: 12/12 correctas.
+
 ## Procesador general de alertas personalizadas (local + backend, 2026-08-28)
 
 - `process-price-alerts` v6 está ACTIVE y reclama con la RPC general, sin el id
@@ -273,9 +292,9 @@
 - Los 17 workflows de los supermercados admitidos por el comparador ejecutan
   ahora el materializador transversal para una sola tienda tras un sync
   correcto. Bonpreu lo hace solo cuando `continue_sync` deja de ser `true`.
-- Los ocho wrappers PowerShell hacen lo mismo tras ejecuciones reales y omiten
+- Los diez wrappers PowerShell hacen lo mismo tras ejecuciones reales y omiten
   el postproceso en `DRY_RUN`; así quedan cubiertos también los syncs productivos
-  locales de Carrefour, Eroski y Caprabo.
+  locales de Carrefour, Eroski, Caprabo, Froiz y Alcampo.
 - Hipercor no se conecta todavía porque no está admitido por la capa de
   embeddings. El materializador da el impulso inicial y los workers encadenan
   los lotes; el cron remoto queda como respaldo cada 15 minutos.

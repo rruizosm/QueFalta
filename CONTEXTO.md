@@ -3,6 +3,61 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
+## Preproducción del vídeo promocional de la versión 1.3 (2026-08-28)
+
+- El concepto parte de un `1.2.1` monumental, viejo, sucio y con telarañas que
+  las mascotas intentan desmontar antes de revelar la versión 1.3.
+- El primer style frame vertical 9:16 está en
+  `marketing/version-1.3/style-frame-1.2.1-viejo-v1.png`: el plátano actúa sobre
+  el `2`, el tomate sobre el último `1` y la berenjena entra desde la derecha
+  llevando una escalera.
+- El frame es una referencia de composición, iluminación y materiales, no un
+  fotograma definitivo. Para animar se generarán poses y objetos aislados; así
+  los agarres, tirones, dígitos, telarañas, polvo y escalera podrán componerse
+  de forma determinista sin depender de texto generado dentro del vídeo.
+- Las primeras poses maestras del plátano, tomate y berenjena con escalera están
+  en `marketing/version-1.3/assets/`. Sus direcciones de acción ya son las
+  correctas. Los masters `*-v1.png`, con el damero incrustado por ImageGen, se
+  conservan como referencias RGB. Las versiones finales `*-rgba-v2.png` se
+  regeneraron sobre croma cian y se recortaron localmente; son PNG RGBA de
+  1024 x 1536 px con alfa real verificado y ya están listas para el montaje.
+- `marketing/version-1.3/style-frame-1.2.1-acciones-v2.png` es la nueva
+  referencia de composición: corrige al tomate a la derecha del último `1` y
+  muestra con claridad las fuerzas opuestas de los dos tirones.
+- Se añadieron tres poses intermedias transparentes `*-rgba-v3.png`: agarre
+  inicial del plátano, arranque del último `1` por el tomate y plantado de la
+  escalera por la berenjena. Todas son RGBA 1024 x 1536 con alfa verificado. El
+  README del paquete recoge un ritmo provisional de 4,8 segundos para la
+  primera animática y la revelación final de `1.3`.
+
+## Alertas personalizadas activas para todas las cuentas (2026-08-28)
+
+- `process-price-alerts` v6 ya usa `claim_price_alert_deliveries` y procesa las
+  reglas activas de cualquier cuenta; se retiró el `EVALUATION_USER_ID` que
+  limitaba la prueba a `@rruizosma`.
+- El cron permanente `process-price-alerts-every-15-minutes` (job 18) está
+  activo en producción. Llama cada 15 minutos mediante `pg_net` y conserva el
+  secreto en Vault; reutiliza temporalmente el token interno del worker de
+  embeddings que ya comparten Vault y Edge Secrets.
+- La RPC general solo materializa eventos cuando `catalog_sync_status` confirma
+  que el sync de la tienda terminó. Además omite lotes con más de 400 altas:
+  son llenados/importaciones masivas, no una novedad apta para push. El lote de
+  1.568 altas de Esclat del 25-08 queda por tanto excluido.
+- Migración local `20260828164258_generalize_price_alert_processor.sql`, aplicada
+  directamente en producción. La Edge Function y el SQL siguen autenticando con
+  secreto y `claim_price_alert_deliveries` conserva `EXECUTE` solo para
+  `service_role`.
+- Al activar había 12 reglas: seis de `@rruizosma` (cinco activas) y seis de
+  `@peperuben` (seis activas). Regresión en
+  `scripts/tests/price-alerts-ui.test.mjs`; `npm run quality` pasa 100/100.
+- Primera ejecución permanente verificada a las 17:00 UTC: cron y Edge Function
+  v6 respondieron correctamente, no quedaron entregas `processing` y el lote
+  masivo de Esclat produjo cero entregas. `@rruizosma` recibió 105 entregas
+  agrupadas en cinco notificaciones, incluidas sus 10 novedades de Mercadona;
+  `@peperuben` recibió 21 novedades agrupadas en una entrada de bandeja y sus
+  otras 124 coincidencias quedaron `paused` por el cupo gratuito. Esta cuenta
+  no tiene token push, por lo que su aviso existe solo en la bandeja.
+
 ## Sync de Mercadona resistente a ráfagas 403/429 (2026-08-28)
 
 - El run manual `33162575907` abortó con 408/7.399 subcategorías fallidas
@@ -22,20 +77,26 @@
   despublicación. El workflow dispone de 90 minutos para absorber cooldowns;
   no se sacrifica integridad por completar el job.
 
-## Prueba anual condicionada por elegibilidad para la versión 1.3.1 (2026-08-27)
+## Compra Plus clara y prueba condicionada para la versión 1.3 build 49 (2026-08-28)
 
-- La versión 1.3 build 46 anuncia siempre siete días gratis en el plan anual;
-  App Review detectó que su cuenta sandbox no recibía la oferta. Apple permite
-  aprobar esa build como bug-fix submission y corregir la presentación después.
-- Para 1.3.1, el cliente comprueba en iOS que el producto anual publica una
-  prueba gratuita de una semana y que RevenueCat/StoreKit devuelve elegibilidad
-  confirmada para la Cuenta de Apple actual. Solo entonces muestra la insignia
-  y el CTA de siete días; `unknown`, no elegible, sin oferta o error usan el CTA
-  normal sin prometer prueba.
+- Apple no aceptó continuar con la build 46: App Review señaló bajo 3.1.2(c)
+  que el flujo no explicaba que, tras la prueba, el cobro se inicia
+  automáticamente ni mostraba claramente el importe posterior.
+- El reemplazo conserva la versión comercial 1.3 y comprueba en iOS que el
+  producto anual publica una prueba gratuita de una semana y que
+  RevenueCat/StoreKit devuelve elegibilidad confirmada para la Cuenta de Apple
+  actual. Solo entonces muestra la insignia y el CTA de siete días; `unknown`,
+  no elegible, sin oferta o error usan el CTA normal sin prometer prueba.
+- Debajo del botón de compra se muestran las condiciones del plan seleccionado
+  con el `priceString` localizado de la tienda: duración de la prueba y precio
+  anual posterior cuando corresponda, inicio automático del cobro y renovación
+  anual o mensual hasta la cancelación. Los textos existen en castellano y catalán.
 - La oferta de App Store Connect está activa exclusivamente en España del
   2026-08-21 al 2036-08-21, igual que la disponibilidad prevista de la app, y el
-  Paid Apps Agreement figura activo. `app.json` queda en 1.3.1; EAS conserva el
-  build number remoto con `autoIncrement` (el siguiente esperado es 47).
+  Paid Apps Agreement figura activo. `app.json` permanece en 1.3.0 porque la 1.3
+  aún no se ha publicado. Las builds 47 (1.3.0) y 48 (1.3.1) ya se generaron
+  antes de añadir esta divulgación; EAS conserva el build number remoto con
+  `autoIncrement`, por lo que el reemplazo esperado es la build 49.
 
 ## Lotes del materializador del comparador limitados a 50 (2026-08-27)
 

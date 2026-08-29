@@ -70,13 +70,24 @@ test('the Plus paywall anchors the plans below its six advertised benefits', () 
 test('the annual free trial is advertised only after store eligibility is confirmed', () => {
   const purchases = read('src/lib/purchases.ts');
   const paywall = read('src/components/PaywallModal.tsx');
+  const translations = read('src/i18n/translations.ts');
 
   assert.match(purchases, /checkTrialOrIntroductoryPriceEligibility/);
   assert.match(purchases, /INTRO_ELIGIBILITY_STATUS_ELIGIBLE/);
   assert.match(purchases, /intro\?\.price === 0/);
+  assert.match(purchases, /Platform\.OS === 'android'[\s\S]*defaultOption\?\.freePhase/);
+  assert.match(purchases, /freePhase\?\.price\.amountMicros === 0/);
+  assert.match(purchases, /period\?\.iso8601 === 'P7D'/);
   assert.match(purchases, /annualFreeTrialEligible/);
   assert.match(paywall, /offerings\?\.annualFreeTrialEligible === true/);
   assert.match(paywall, /annualFreeTrialEligible \? \([\s\S]*paywall\.freeTrialBadge/);
   assert.match(paywall, /plan === 'annual' && annualFreeTrialEligible[\s\S]*paywall\.ctaTrial/);
   assert.doesNotMatch(paywall, /plan === 'annual' \? t\('paywall\.ctaTrial'\)/);
+  assert.match(paywall, /paywall\.trialRenewalDisclosure'[\s\S]*price: annualPrice/);
+  assert.match(paywall, /paywall\.annualRenewalDisclosure'[\s\S]*price: annualPrice/);
+  assert.match(paywall, /paywall\.monthlyRenewalDisclosure'[\s\S]*price: monthlyPrice/);
+  assert.match(paywall, /<Text style=\{styles\.ctaNote\}>\{subscriptionDisclosure\}<\/Text>/);
+  assert.match(translations, /7 días gratis\. Después, \{\{price\}\} al año\./);
+  assert.match(translations, /El pago se iniciará automáticamente al finalizar la prueba/);
+  assert.match(translations, /la subscripció es renova automàticament cada any/);
 });

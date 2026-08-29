@@ -268,6 +268,23 @@ conviene un vistazo rápido en el simulador iOS antes del build 34.
 
 **Salida:** app validada en Android de verdad. Requiere F0+F1+F2.
 
+### Validación de QuéFalta Plus en Google Play (2026-08-29)
+
+- El cliente detecta la prueba anual de siete días a partir de
+  `defaultOption.freePhase`: Google Play solo devuelve ofertas elegibles para la
+  cuenta y RevenueCat aplica esa opción automáticamente al comprar el paquete.
+  Si no existe una fase gratuita elegible, el paywall no promete la prueba.
+- Las builds Android de producción 19 (1.3.0) y 20 (1.3.1) ya existen, pero son
+  anteriores al texto final de renovación y a esta detección de ofertas Android.
+  La siguiente build de validación esperada es `versionCode` 21.
+- Los envíos automatizados a la pista interna fallan con
+  `SUBMISSION_SERVICE_ANDROID_SERVICE_ACCOUNT_IS_MISSING_PERMISSIONS`. Hasta
+  corregir los permisos de la cuenta de servicio en Play Console, subir el AAB
+  manualmente o publicar manualmente una release interna/cerrada existente.
+- Validar con un tester de licencia: mensual, anual con prueba, anual sin prueba,
+  restauración, cancelación/expiración y sincronización del entitlement `plus`
+  con `premium_until`. Play Billing Lab permite repetir la prueba introductoria.
+
 ### Fase 4 — Play Console + closed testing ⏱️ (aquí arranca el reloj de 14 días)
 - [ ] Crear la app en Play Console (es + ca como idiomas de ficha).
 - [ ] `eas build --profile production -p android` → `.aab`.

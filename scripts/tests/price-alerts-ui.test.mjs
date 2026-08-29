@@ -18,6 +18,10 @@ const processor = readFileSync(
   new URL('../../supabase/functions/process-price-alerts/index.ts', import.meta.url),
   'utf8',
 );
+const generalProcessorMigration = readFileSync(
+  new URL('../../supabase/migrations/20260828164258_generalize_price_alert_processor.sql', import.meta.url),
+  'utf8',
+);
 
 test('la cabecera de alertas cabe completa y el switch activo usa el accent sólido', () => {
   assert.match(screen, /titleFontSize=\{17\}/);
@@ -51,4 +55,12 @@ test('la notificación personalizada conserva el emoji de la regla y limpia nomb
   assert.match(processor, /pushTitle\(emoji, label\)/);
   assert.match(notificationsSheet, /n\.data\.emoji/);
   assert.match(notificationsSheet, /<Text style=\{styles\.rowEmoji\}>\{alertEmoji\}<\/Text>/);
+});
+
+test('el procesador general no queda acotado a una cuenta y protege los llenados masivos', () => {
+  assert.match(processor, /\.rpc\('claim_price_alert_deliveries'/);
+  assert.doesNotMatch(processor, /EVALUATION_USER_ID|claim_price_alert_deliveries_for_user/);
+  assert.match(generalProcessorMigration, /join public\.catalog_sync_status sync/);
+  assert.match(generalProcessorMigration, /having count\(\*\) > 400/);
+  assert.match(generalProcessorMigration, /process-price-alerts-every-15-minutes/);
 });

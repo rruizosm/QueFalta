@@ -5,9 +5,6 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send';
-// Evaluación controlada del 24-08-2026. Este despliegue no puede reclamar
-// entregas de ninguna otra cuenta.
-const EVALUATION_USER_ID = '8ab94ac7-e321-4162-8ccc-b6edd8dbe6a6';
 type Lang = 'es' | 'ca';
 
 interface Delivery {
@@ -120,9 +117,8 @@ Deno.serve(async (req) => {
   const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { data, error } = await admin.rpc('claim_price_alert_deliveries_for_user', {
-    p_user_id: EVALUATION_USER_ID,
-    p_limit: 200,
+  const { data, error } = await admin.rpc('claim_price_alert_deliveries', {
+    p_limit: 100,
   });
   if (error) return json({ error: error.message }, 500);
   const deliveries = (data ?? []) as Delivery[];

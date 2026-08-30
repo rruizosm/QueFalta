@@ -146,6 +146,16 @@
   con el `priceString` localizado de la tienda: duración de la prueba y precio
   anual posterior cuando corresponda, inicio automático del cobro y renovación
   anual o mensual hasta la cancelación. Los textos existen en castellano y catalán.
+## Prueba anual condicionada por elegibilidad para la versión 1.3.1 (2026-08-27)
+
+- La versión 1.3 build 46 anuncia siempre siete días gratis en el plan anual;
+  App Review detectó que su cuenta sandbox no recibía la oferta. Apple permite
+  aprobar esa build como bug-fix submission y corregir la presentación después.
+- Para 1.3.1, el cliente comprueba en iOS que el producto anual publica una
+  prueba gratuita de una semana y que RevenueCat/StoreKit devuelve elegibilidad
+  confirmada para la Cuenta de Apple actual. Solo entonces muestra la insignia
+  y el CTA de siete días; `unknown`, no elegible, sin oferta o error usan el CTA
+  normal sin prometer prueba.
 - La oferta de App Store Connect está activa exclusivamente en España del
   2026-08-21 al 2036-08-21, igual que la disponibilidad prevista de la app, y el
   Paid Apps Agreement figura activo. `app.json` permanece en 1.3.0 porque la 1.3

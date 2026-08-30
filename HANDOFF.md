@@ -81,6 +81,11 @@
 - App Review no continuó con la versión 1.3 build 46. Además de la elegibilidad,
   señaló bajo 3.1.2(c) que el flujo no aclaraba el cobro automático ni el importe
   aplicable después de los siete días gratis.
+## Paywall 1.3.1: prueba anual solo para cuentas elegibles (local, 2026-08-27)
+
+- App Review permitió que la versión 1.3 build 46 continúe como bug-fix
+  submission, pero señaló que su compra anual no recibía los siete días que
+  el paywall anunciaba incondicionalmente.
 - `getPlusOfferings` valida que Apple publique una prueba gratis de una semana y
   consulta `checkTrialOrIntroductoryPriceEligibility` para la Cuenta de Apple.
   La UI solo muestra la insignia y el CTA de prueba si el estado es `eligible`;

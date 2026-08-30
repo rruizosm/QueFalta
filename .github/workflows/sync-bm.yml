@@ -1,0 +1,30 @@
+name: Sync BM catalog
+
+# Se mantiene manual hasta desplegar la migracion BM y validar la primera carga.
+# La programacion semanal se activara despues de esa comprobacion controlada.
+on:
+  workflow_dispatch: {}
+
+concurrency:
+  group: sync-bm
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Sincronizar catalogo multizona BM
+        run: node scripts/sync-bm.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          CONCURRENCY: '6'
+          REQUEST_DELAY_MS: '80'
+          MIN_LOCATIONS: '7'
+          MIN_PRODUCTS: '6500'
+          MIN_COVERAGE_RATIO: '0.97'

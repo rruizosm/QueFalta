@@ -113,6 +113,11 @@ export default function PaywallModal({ visible, onClose }: Props) {
   // Durante la carga, ante un error o si la tienda devuelve elegibilidad
   // desconocida se muestra el plan sin prometer una prueba gratuita.
   const annualFreeTrialEligible = offerings?.annualFreeTrialEligible === true;
+  const subscriptionDisclosure = plan === 'annual'
+    ? annualFreeTrialEligible
+      ? t('paywall.trialRenewalDisclosure', { price: annualPrice })
+      : t('paywall.annualRenewalDisclosure', { price: annualPrice })
+    : t('paywall.monthlyRenewalDisclosure', { price: monthlyPrice });
 
   const activatePlus = (expirationDate: string | null) => {
     if (expirationDate) applyPremiumEntitlement(expirationDate);
@@ -347,7 +352,7 @@ export default function PaywallModal({ visible, onClose }: Props) {
               </TouchableOpacity>
               <View style={styles.ctaNoteRow}>
                 <Ionicons name="shield-checkmark-outline" size={14} color={colors.inkSoft} />
-                <Text style={styles.ctaNote}>{t('paywall.ctaNote')}</Text>
+                <Text style={styles.ctaNote}>{subscriptionDisclosure}</Text>
               </View>
 
               <View style={styles.footer}>
@@ -485,8 +490,14 @@ const themedStyles = () => StyleSheet.create({
     borderRadius: 17, gap: 8, paddingVertical: 14,
   },
   ctaText: { fontSize: 15.5, fontFamily: fonts.bold, color: colors.white },
-  ctaNoteRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5, marginTop: 7 },
-  ctaNote: { fontSize: 10.5, fontFamily: fonts.medium, color: colors.inkSoft },
+  ctaNoteRow: {
+    flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-start',
+    gap: 6, marginTop: 9, paddingHorizontal: 20,
+  },
+  ctaNote: {
+    flex: 1, fontSize: 12, lineHeight: 16, fontFamily: fonts.medium,
+    color: colors.inkSoft, textAlign: 'center',
+  },
 
   footer: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',

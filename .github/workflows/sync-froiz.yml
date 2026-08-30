@@ -1,9 +1,7 @@
 name: Sync Froiz catalog
 
 on:
-  schedule:
-    - cron: '40 5 * * *' # diario, tras Gadis para evitar picos simultáneos
-  workflow_dispatch: {}
+  workflow_dispatch: {} # Solo diagnóstico manual: el sync productivo se ejecuta localmente.
 
 concurrency:
   group: sync-froiz

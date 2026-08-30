@@ -14,9 +14,16 @@ test('el materializador arranca el pipeline solo fuera de DRY_RUN', () => {
   assert.match(materializer, /if \(!DRY_RUN\) await dispatchEmbeddingJobs\(\)/);
 });
 
-test('el materializador limita cada upsert a 50 productos', () => {
-  assert.match(materializer, /const UPSERT_SIZE = 50/);
+test('el materializador limita cada upsert a 25 productos', () => {
+  assert.match(materializer, /const UPSERT_SIZE = 25/);
   assert.match(materializer, /rows\.slice\(offset, offset \+ UPSERT_SIZE\)/);
+});
+
+test('el materializador reconcilia primero y no reescribe todo el catálogo', () => {
+  assert.match(materializer, /await fetchExisting\(store\)/);
+  assert.match(materializer, /planEmbeddingReconciliation\(rows, existing/);
+  assert.match(materializer, /productIdsToUnpublish/);
+  assert.doesNotMatch(materializer, /source_seen_at.*lt\./);
 });
 
 test('cada worker encadena un único lote y no convierte el fallo del impulso en fallo del lote', () => {

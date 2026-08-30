@@ -46,6 +46,12 @@ a «QuéFalta Plus», sin un bloque de eslogan independiente ni la etiqueta
 de una sola fila; el anual sigue preseleccionado, ofrece 7 días gratis y lleva
 un barrido azul difuminado basado en el antiguo botón QuéCocino. Su etiqueta
 «Mejor precio» conserva el fondo dorado animado de `PremiumGoldBackground`.
+La prueba solo se anuncia cuando la tienda confirma que la cuenta es elegible:
+StoreKit mediante la comprobación explícita de RevenueCat en iOS y, en Android,
+cuando Google Play devuelve una opción elegible con fase gratuita de siete días.
+Debajo del CTA se muestra siempre el precio localizado del plan seleccionado,
+cuándo se inicia el cobro y que la renovación mensual o anual es automática
+hasta la cancelación; con prueba incluye además su duración y el precio posterior.
 El CTA bajo demanda del comparador permite tres búsquedas gratuitas por cuenta
 y muestra el cupo restante tras cada uso. El cuarto intento abre el paywall sin
 ejecutar la búsqueda. Con Plus activo el flujo es ilimitado. Compra, restauración, precios

@@ -1,6 +1,6 @@
 # Notificaciones — Estado y hoja de ruta
 
-> Última actualización: 2026-08-21
+> Última actualización: 2026-08-28
 > SDK actual: **Expo SDK 54** · Push real requiere **dev/prod build** (no Expo Go)
 
 Documento de seguimiento para las notificaciones de la app. Resume qué está
@@ -10,11 +10,11 @@ hecho, qué funciona hoy y qué falta para tener notificaciones push completas.
 > producto añadido al carrito compartido · solicitud de amistad · invitación a
 > un grupo. (El "carrito activado por otro miembro" se descartó.)
 
-> **Alertas personalizadas: evaluación acotada activa.** Añade un
+> **Alertas personalizadas: entrega general activa.** Añade un
 > cuarto tipo `price_alert`, generado exclusivamente por el procesador servidor
 > `process-price-alerts`; nunca por contenido enviado desde el cliente. Free
-> dispone de una regla y Plus de reglas ilimitadas. El 24-08-2026 el procesador
-> está limitado a `@rruizosma` para valorar los sync sin afectar a otras cuentas.
+> dispone de una regla y Plus de reglas ilimitadas. Desde el 28-08-2026 el
+> procesador cubre todas las cuentas mediante un cron permanente cada 15 minutos.
 
 ---
 
@@ -53,10 +53,10 @@ Hay **dos tipos** de notificaciones, no confundir:
   duradera de entregas y eventos. La RPC valida que la fila `notifications`
   pertenece a `auth.uid()` y aplica prioridad novedad → oferta → bajada por
   producto.
-- La consulta de resultados y `process-price-alerts` están desplegados. El
-  cron temporal de `@rruizosma` corre cada 15 minutos durante el 24-08-2026 y
-  se desprograma a las 00:00 UTC del día 25. El despliegue general permanece
-  pendiente hasta valorar esta prueba; ver `CONTEXTO.md`.
+- La consulta de resultados y `process-price-alerts` están desplegados. El cron
+  permanente llama al procesador cada 15 minutos para todas las cuentas. La RPC
+  espera la finalización registrada del sync y omite lotes de más de 400 altas
+  para no convertir un llenado inicial en una notificación masiva.
 - La primera cola real expuso una comprobación obsoleta de la claim
   `service_role`. Quedó corregida con
   `20260824194005_fix_price_alert_service_role_claim.sql` y la v3 del
@@ -70,6 +70,15 @@ Hay **dos tipos** de notificaciones, no confundir:
   icono de la alerta personalizada. Se limpiaron las cinco entradas anteriores
   de `@rruizosma` y una sexta prueba con 🍫 confirmó el flujo completo. Las 500
   entregas agotadas restantes no se reabrieron para evitar una ráfaga.
+- `process-price-alerts` v6 retiró el usuario fijo de evaluación y usa la RPC
+  general. El cron `process-price-alerts-every-15-minutes` está activo desde el
+  28-08-2026; la migración
+  `20260828164258_generalize_price_alert_processor.sql` incorpora las guardas de
+  sync terminado y lote masivo.
+- Primera ejecución general verificada el 28-08 a las 17:00 UTC: función HTTP
+  200, cero grupos atascados y cero entregas para las 1.568 falsas novedades de
+  Esclat. Las 10 novedades de Mercadona aplicables a `@rruizosma` quedaron
+  `sent` dentro de una notificación agrupada.
 
 ---
 

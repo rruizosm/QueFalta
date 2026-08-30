@@ -6,11 +6,17 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { validGlobalGtin } from './lib/gtin.mjs';
 import { deriveCatalogUnitQuantity } from './lib/catalog-embedding-unit.mjs';
+import {
+  planEmbeddingReconciliation,
+  postgrestInFilter,
+} from './lib/catalog-embedding-reconcile.mjs';
 
 const ROOT = new URL('../', import.meta.url);
 const PAGE_SIZE = Math.min(1000, Math.max(100, Number(process.env.PAGE_SIZE || 1000)));
-// Mantiene cada escritura holgadamente por debajo del statement_timeout de la Data API.
-const UPSERT_SIZE = 50;
+// Margen defensivo bajo el statement_timeout de 8 s de la Data API. El filtro
+// incremental hace que normalmente solo haya unos pocos lotes por tienda.
+const UPSERT_SIZE = 25;
+const UNPUBLISH_SIZE = 100;
 const REST_MAX_RETRIES = Math.min(8, Math.max(0, Number(process.env.REST_MAX_RETRIES || 5)));
 const REST_RETRY_BASE_MS = Math.min(10000, Math.max(250, Number(process.env.REST_RETRY_BASE_MS || 1000)));
 const DRY_RUN = process.env.DRY_RUN === '1';
@@ -174,11 +180,14 @@ async function fetchPublished(table, fields) {
   return rows;
 }
 
-async function fetchExistingNormalization(store) {
+async function fetchExisting(store) {
   const rows = [];
   for (let offset = 0; ; offset += PAGE_SIZE) {
     const url = new URL('/rest/v1/catalog_product_embeddings', SUPABASE_URL);
-    url.searchParams.set('select', 'product_id,canonical_unit,quantity_base');
+    url.searchParams.set(
+      'select',
+      'product_id,content_hash,content_version,global_gtin,canonical_unit,quantity_base,published',
+    );
     url.searchParams.set('store', `eq.${store}`);
     url.searchParams.set('order', 'product_id.asc');
     const response = await rest(`${url.pathname}${url.search}`, {
@@ -188,12 +197,7 @@ async function fetchExistingNormalization(store) {
     rows.push(...page);
     if (page.length < PAGE_SIZE) break;
   }
-  return new Map(rows.map((row) => [String(row.product_id), row]));
-}
-
-function sameQuantity(left, right) {
-  if (left == null || right == null) return left == null && right == null;
-  return Number(left) === Number(right);
+  return rows;
 }
 
 async function upsertRows(rows) {
@@ -206,16 +210,21 @@ async function upsertRows(rows) {
   }
 }
 
-async function markMissingUnpublished(store, seenAt) {
-  const url = new URL('/rest/v1/catalog_product_embeddings', SUPABASE_URL);
-  url.searchParams.set('store', `eq.${store}`);
-  url.searchParams.set('published', 'eq.true');
-  url.searchParams.set('source_seen_at', `lt.${seenAt}`);
-  await rest(`${url.pathname}${url.search}`, {
-    method: 'PATCH',
-    headers: { Prefer: 'return=minimal' },
-    body: JSON.stringify({ published: false, updated_at: seenAt }),
-  });
+async function markProductsUnpublished(store, productIds, seenAt) {
+  for (let offset = 0; offset < productIds.length; offset += UNPUBLISH_SIZE) {
+    const url = new URL('/rest/v1/catalog_product_embeddings', SUPABASE_URL);
+    url.searchParams.set('store', `eq.${store}`);
+    url.searchParams.set('published', 'eq.true');
+    url.searchParams.set(
+      'product_id',
+      postgrestInFilter(productIds.slice(offset, offset + UNPUBLISH_SIZE)),
+    );
+    await rest(`${url.pathname}${url.search}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify({ published: false, updated_at: seenAt }),
+    });
+  }
 }
 
 async function dispatchEmbeddingJobs() {
@@ -238,23 +247,25 @@ for (const [store, table, fields] of selectedStores) {
   if (!sourceRows.length && !ALLOW_EMPTY) throw new Error(`${store}: catálogo publicado vacío; se rechaza marcar productos antiguos`);
   const rows = sourceRows.map((row) => makeEmbeddingRow(store, row, seenAt)).filter(Boolean);
   if (rows.length !== sourceRows.length) throw new Error(`${store}: ${sourceRows.length - rows.length} filas carecen de id/nombre`);
-  const existing = NORMALIZATION_ONLY ? await fetchExistingNormalization(store) : null;
-  const rowsToUpsert = existing
-    ? rows.filter((row) => {
-        const current = existing.get(row.product_id);
-        return !current
-          || current.canonical_unit !== row.canonical_unit
-          || !sameQuantity(current.quantity_base, row.quantity_base);
-      })
-    : rows;
+  const existing = await fetchExisting(store);
+  const {
+    rowsToUpsert,
+    productIdsToUnpublish,
+    unchangedRows,
+  } = planEmbeddingReconciliation(rows, existing, {
+    normalizationOnly: NORMALIZATION_ONLY,
+  });
   if (!DRY_RUN) {
     await upsertRows(rowsToUpsert);
-    if (!NORMALIZATION_ONLY) await markMissingUnpublished(store, seenAt);
+    await markProductsUnpublished(store, productIdsToUnpublish, seenAt);
   }
   const item = {
     store,
     source_products: sourceRows.length,
     materialized_products: rows.length,
+    upserted_products: rowsToUpsert.length,
+    unchanged_products: unchangedRows,
+    unpublished_products: productIdsToUnpublish.length,
     with_unit: rows.filter((row) => row.canonical_unit).length,
     normalization_changes: NORMALIZATION_ONLY ? rowsToUpsert.length : null,
     with_global_gtin: rows.filter((row) => row.global_gtin).length,

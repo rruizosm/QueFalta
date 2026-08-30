@@ -68,7 +68,7 @@ export interface PlusOfferings {
   monthly: PurchasesPackage | null;
   annual: PurchasesPackage | null;
   /** Solo es true cuando la tienda publica una prueba gratuita de una semana
-   *  y RevenueCat confirma que la Cuenta de Apple actual puede canjearla. */
+   *  y confirma que la cuenta actual puede canjearla. */
   annualFreeTrialEligible: boolean;
 }
 
@@ -133,6 +133,17 @@ export async function getPlusOfferings(): Promise<PlusOfferings | null> {
           // Ante un fallo se mantiene la oferta disponible, pero sin anunciar prueba.
         }
       }
+    } else if (Platform.OS === 'android' && annual) {
+      // Google Play solo devuelve en subscriptionOptions las ofertas que la
+      // cuenta puede comprar. RevenueCat elige como defaultOption la prueba
+      // gratuita elegible que purchasePackage aplicará automáticamente.
+      const freePhase = annual.product.defaultOption?.freePhase;
+      const period = freePhase?.billingPeriod;
+      annualFreeTrialEligible = freePhase?.price.amountMicros === 0
+        && (period?.iso8601 === 'P7D'
+          || period?.iso8601 === 'P1W'
+          || (period?.unit === 'DAY' && period.value === 7)
+          || (period?.unit === 'WEEK' && period.value === 1));
     }
 
     return {

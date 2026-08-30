@@ -3,6 +3,116 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
+## Materializador incremental del comparador y reparación de Gadis (2026-08-30)
+
+- El sync de Gadis terminó correctamente con 10.901 productos publicados, pero
+  el materializador posterior reescribía el snapshot completo en lotes de 50.
+  El coste de actualizar la tabla y sus índices, incluido HNSW, rozaba el
+  `statement_timeout` de 8 s de la Data API: hubo cancelaciones `57014` y el
+  proceso quedó a medias con 5 productos ausentes y 14 filas huérfanas aún
+  publicadas.
+- `scripts/sync-comparator-embedding-catalog.mjs` reconcilia ahora el estado
+  ligero existente antes de escribir. Solo hace upsert de productos nuevos,
+  modificados o republicados, en lotes de 25, y despublica por identificadores
+  exactos ausentes en lotes de 100. Las filas sin cambios ya no actualizan
+  `source_seen_at`/`updated_at`; `source_seen_at` deja de ser el mecanismo de
+  detección de ausencias.
+- La reparación productiva escribió solo 5 filas, conservó sin tocar 10.896 y
+  despublicó 14. Verificación final: 10.901 productos publicados tanto en
+  `gadis_products` como en `catalog_product_embeddings`, cero faltantes, cero
+  huérfanos, cero vectores pendientes, cola vacía y cero fallos abiertos. No
+  aparecieron nuevos timeouts durante ni después de la ejecución.
+- No requiere migración SQL ni aumento global de timeouts. La regresión vive en
+  `scripts/lib/catalog-embedding-reconcile.test.mjs`; `npm run quality` pasa
+  con 107/107 pruebas.
+
+## Froiz y Alcampo pasan a sync productivo local con embeddings (2026-08-29)
+
+- Los workflows `sync-froiz.yml` y `sync-alcampo.yml` dejan de tener `schedule`:
+  conservan solo `workflow_dispatch` para diagnósticos manuales porque ambos
+  orígenes fallan desde las IP de GitHub Actions.
+- Froiz dispone de `scripts/run-froiz-sync.ps1`; Alcampo amplía
+  `scripts/run-alcampo-playwright.ps1`. Tras un sync real con código 0 ejecutan
+  `sync-comparator-embedding-catalog.mjs` con `STORES=froiz|alcampo`, que
+  materializa los cambios y da el impulso inicial a los workers. `DRY_RUN` y
+  Alcampo sin `-Publish` omiten el postproceso.
+- La pantalla Perfil → Soporte → Actualización de catálogos ya queda
+  actualizada por ambos syncs: `recordCatalogSync` se ejecuta después de los
+  upserts y `markStale`, y la app lee `catalog_sync_status` incluyendo ambas
+  cadenas. La fecha representa el catálogo de origen; un fallo posterior del
+  materializador no oculta que el catálogo sí terminó correctamente.
+- Verificación remota de solo lectura: Froiz figura con
+  `synced_at=2026-08-29T11:30:34.814Z`. Alcampo todavía no tiene fila aunque su
+  producto más reciente lleva `synced_at=2026-08-21T09:05:06.908Z`, señal de
+  que aquella ejecución escribió productos pero no alcanzó el final posterior a
+  `markStale`. No se falsea la fecha con un backfill: comprobarla tras el próximo
+  `run-alcampo-playwright.ps1 -Publish` completo.
+- Regresión en `scripts/tests/comparator-sync-integration.test.mjs`.
+
+## Preproducción del vídeo promocional de la versión 1.3 (2026-08-29)
+
+- El concepto parte de un `1.2.1` monumental, viejo, sucio y con telarañas que
+  las mascotas intentan desmontar antes de revelar la versión 1.3.
+- El primer style frame vertical 9:16 está en
+  `marketing/version-1.3/style-frame-1.2.1-viejo-v1.png`: el plátano actúa sobre
+  el `2`, el tomate sobre el último `1` y la berenjena entra desde la derecha
+  llevando una escalera.
+- El frame es una referencia de composición, iluminación y materiales, no un
+  fotograma definitivo. Para animar se generarán poses y objetos aislados; así
+  los agarres, tirones, dígitos, telarañas, polvo y escalera podrán componerse
+  de forma determinista sin depender de texto generado dentro del vídeo.
+- Las primeras poses maestras del plátano, tomate y berenjena con escalera están
+  en `marketing/version-1.3/assets/`. Sus direcciones de acción ya son las
+  correctas. Los masters `*-v1.png`, con el damero incrustado por ImageGen, se
+  conservan como referencias RGB. Las versiones finales `*-rgba-v2.png` se
+  regeneraron sobre croma cian y se recortaron localmente; son PNG RGBA de
+  1024 x 1536 px con alfa real verificado y ya están listas para el montaje.
+- `marketing/version-1.3/style-frame-1.2.1-acciones-v2.png` es la nueva
+  referencia de composición: corrige al tomate a la derecha del último `1` y
+  muestra con claridad las fuerzas opuestas de los dos tirones.
+- Se añadieron tres poses intermedias transparentes `*-rgba-v3.png`: agarre
+  inicial del plátano, arranque del último `1` por el tomate y plantado de la
+  escalera por la berenjena. Todas son RGBA 1024 x 1536 con alfa verificado. El
+  README del paquete recoge un ritmo provisional de 4,8 segundos para la
+  primera animática y la revelación final de `1.3`.
+- La placa vacía del escenario y los dígitos móviles están en
+  `marketing/version-1.3/assets/`. El `2` y el último `1` se extrajeron sobre
+  croma magenta para conservar su pintura azul y son PNG RGBA 941 x 1672 con
+  alfa verificado.
+- `keyframe-ruptura-v1.png` y `keyframe-revelado-1.3-v1.png` completan el arco
+  visual. La primera animática está en
+  `marketing/version-1.3/animatica-1.2.1-a-1.3-v1.mp4`: 5 segundos, 1080 x
+  1920, 30 fps, H.264 y sin sonido. Es una prueba de ritmo con cortes de pose,
+  todavía sin interpolación, partículas animadas ni diseño sonoro final.
+
+## Alertas personalizadas activas para todas las cuentas (2026-08-28)
+
+- `process-price-alerts` v6 ya usa `claim_price_alert_deliveries` y procesa las
+  reglas activas de cualquier cuenta; se retiró el `EVALUATION_USER_ID` que
+  limitaba la prueba a `@rruizosma`.
+- El cron permanente `process-price-alerts-every-15-minutes` (job 18) está
+  activo en producción. Llama cada 15 minutos mediante `pg_net` y conserva el
+  secreto en Vault; reutiliza temporalmente el token interno del worker de
+  embeddings que ya comparten Vault y Edge Secrets.
+- La RPC general solo materializa eventos cuando `catalog_sync_status` confirma
+  que el sync de la tienda terminó. Además omite lotes con más de 400 altas:
+  son llenados/importaciones masivas, no una novedad apta para push. El lote de
+  1.568 altas de Esclat del 25-08 queda por tanto excluido.
+- Migración local `20260828164258_generalize_price_alert_processor.sql`, aplicada
+  directamente en producción. La Edge Function y el SQL siguen autenticando con
+  secreto y `claim_price_alert_deliveries` conserva `EXECUTE` solo para
+  `service_role`.
+- Al activar había 12 reglas: seis de `@rruizosma` (cinco activas) y seis de
+  `@peperuben` (seis activas). Regresión en
+  `scripts/tests/price-alerts-ui.test.mjs`; `npm run quality` pasa 100/100.
+- Primera ejecución permanente verificada a las 17:00 UTC: cron y Edge Function
+  v6 respondieron correctamente, no quedaron entregas `processing` y el lote
+  masivo de Esclat produjo cero entregas. `@rruizosma` recibió 105 entregas
+  agrupadas en cinco notificaciones, incluidas sus 10 novedades de Mercadona;
+  `@peperuben` recibió 21 novedades agrupadas en una entrada de bandeja y sus
+  otras 124 coincidencias quedaron `paused` por el cupo gratuito. Esta cuenta
+  no tiene token push, por lo que su aviso existe solo en la bandeja.
+
 ## Sync de Mercadona resistente a ráfagas 403/429 (2026-08-28)
 
 - El run manual `33162575907` abortó con 408/7.399 subcategorías fallidas
@@ -22,6 +132,20 @@
   despublicación. El workflow dispone de 90 minutos para absorber cooldowns;
   no se sacrifica integridad por completar el job.
 
+## Compra Plus clara y prueba condicionada para la versión 1.3 build 49 (2026-08-28)
+
+- Apple no aceptó continuar con la build 46: App Review señaló bajo 3.1.2(c)
+  que el flujo no explicaba que, tras la prueba, el cobro se inicia
+  automáticamente ni mostraba claramente el importe posterior.
+- El reemplazo conserva la versión comercial 1.3 y comprueba en iOS que el
+  producto anual publica una prueba gratuita de una semana y que
+  RevenueCat/StoreKit devuelve elegibilidad confirmada para la Cuenta de Apple
+  actual. Solo entonces muestra la insignia y el CTA de siete días; `unknown`,
+  no elegible, sin oferta o error usan el CTA normal sin prometer prueba.
+- Debajo del botón de compra se muestran las condiciones del plan seleccionado
+  con el `priceString` localizado de la tienda: duración de la prueba y precio
+  anual posterior cuando corresponda, inicio automático del cobro y renovación
+  anual o mensual hasta la cancelación. Los textos existen en castellano y catalán.
 ## Prueba anual condicionada por elegibilidad para la versión 1.3.1 (2026-08-27)
 
 - La versión 1.3 build 46 anuncia siempre siete días gratis en el plan anual;
@@ -34,8 +158,10 @@
   normal sin prometer prueba.
 - La oferta de App Store Connect está activa exclusivamente en España del
   2026-08-21 al 2036-08-21, igual que la disponibilidad prevista de la app, y el
-  Paid Apps Agreement figura activo. `app.json` queda en 1.3.1; EAS conserva el
-  build number remoto con `autoIncrement` (el siguiente esperado es 47).
+  Paid Apps Agreement figura activo. `app.json` permanece en 1.3.0 porque la 1.3
+  aún no se ha publicado. Las builds 47 (1.3.0) y 48 (1.3.1) ya se generaron
+  antes de añadir esta divulgación; EAS conserva el build number remoto con
+  `autoIncrement`, por lo que el reemplazo esperado es la build 49.
 
 ## Lotes del materializador del comparador limitados a 50 (2026-08-27)
 
@@ -257,10 +383,10 @@
   comparador ejecutan `sync-comparator-embedding-catalog.mjs` para su tienda
   después de completar correctamente el sync de origen. Bonpreu/Esclat espera
   expresamente al último lote de su ciclo encadenado.
-- Los ocho runners PowerShell locales aplican el mismo postproceso cuando el
+- Los diez runners PowerShell locales aplican el mismo postproceso cuando el
   sync real termina con código 0 y lo omiten en `DRY_RUN`. Esto cubre en
-  particular Carrefour, Eroski y Caprabo, cuyos procesos productivos son
-  locales por los bloqueos a las IP de GitHub Actions.
+  particular Carrefour, Eroski, Caprabo, Froiz y Alcampo, cuyos procesos
+  productivos son locales por los bloqueos a las IP de GitHub Actions.
 - Cada ejecución limita el materializador con `STORES=<tienda>`. El upsert
   transversal solo encola un embedding nuevo si cambia el contenido semántico,
   la versión o la publicación; un cambio exclusivo de precio reutiliza el vector.

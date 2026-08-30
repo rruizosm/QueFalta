@@ -1,5 +1,62 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Timeouts de Gadis resueltos con reconciliación incremental (2026-08-30)
+
+- Causa confirmada en Supabase: el materializador reescribía las 10.901 filas
+  de Gadis aunque no hubieran cambiado. Los upserts sobre
+  `catalog_product_embeddings` y sus índices agotaban el timeout de 8 s y
+  dejaron 5 productos sin snapshot y 14 snapshots huérfanos publicados.
+- El materializador local ya consulta el estado existente y solo escribe filas
+  nuevas, con cambios semánticos/de normalización o republicadas. Usa lotes de
+  25 para upsert y de 100 para despublicar identificadores ausentes exactos; no
+  vuelve a depender de `source_seen_at < seenAt` ni refresca timestamps de las
+  filas sin cambios.
+- Ejecutado en producción para `STORES=gadis`: 5 upserts, 10.896 sin cambios y
+  14 despublicaciones. Estado posterior: fuente=10.901, snapshot publicado=10.901,
+  faltantes=0, huérfanos=0, vectores pendientes=0, mensajes en cola=0 y fallos
+  abiertos=0. No hubo errores Postgres nuevos en la ventana de reparación.
+- No hay migración pendiente. `npm run quality` pasa TypeScript, lint y 107/107
+  pruebas. Archivos centrales: `scripts/sync-comparator-embedding-catalog.mjs`
+  y `scripts/lib/catalog-embedding-reconcile.mjs`.
+
+## Froiz y Alcampo: cron remoto retirado y embeddings locales (2026-08-29)
+
+- `sync-froiz.yml` y `sync-alcampo.yml` ya no tienen programación automática;
+  solo conservan `workflow_dispatch` para diagnóstico manual porque los
+  orígenes fallan desde GitHub Actions.
+- Nuevo `scripts/run-froiz-sync.ps1` y ampliado
+  `scripts/run-alcampo-playwright.ps1`: tras una publicación con código 0
+  ejecutan el materializador limitado a su tienda. Froiz omite el paso con
+  `DRY_RUN=1` y Alcampo cuando falta `-Publish`.
+- Verificado en código y regresión que ambos syncs llaman a
+  `recordCatalogSync` después de upsert+`markStale`; la pantalla
+  «Actualización de catálogos» consulta esa tabla e incluye Froiz y Alcampo.
+  No hizo falta migración ni cambio de cliente.
+- Comprobación remota: Froiz tiene fecha del 29-08 a las 11:30 UTC. Alcampo no
+  tiene aún fila de estado aunque hay productos sellados el 21-08 a las 09:05
+  UTC; esa ejecución no llegó al final posterior a `markStale`. No se hizo un
+  backfill ambiguo: verificar que aparece tras el próximo `-Publish` completo.
+- Pruebas focalizadas de integración y dispatch: 12/12 correctas.
+
+## Procesador general de alertas personalizadas (local + backend, 2026-08-28)
+
+- `process-price-alerts` v6 está ACTIVE y reclama con la RPC general, sin el id
+  fijo de la evaluación de `@rruizosma`.
+- El cron permanente `process-price-alerts-every-15-minutes` (job 18) está
+  activo. Usa `catalog_embed_project_url` y `catalog_embed_worker_token` desde
+  Vault; no guarda valores secretos en el repositorio ni en `cron.job`.
+- La migración `20260828164258_generalize_price_alert_processor.sql`, ya aplicada
+  en producción, exige un `catalog_sync_status` posterior al lote antes de
+  materializarlo y omite lotes `new_arrival` de más de 400 eventos. Así el lote
+  inicial de 1.568 altas de Esclat no genera una notificación masiva.
+- Estado al activar: `@rruizosma` tiene seis reglas (cinco activas) y
+  `@peperuben` seis (todas activas). `npm run quality` pasa 100/100.
+- Primer cron permanente correcto a las 17:00 UTC: HTTP 200, cero entregas en
+  proceso y cero entregas del lote masivo de Esclat. `@rruizosma` terminó con
+  105 entregas `sent` en cinco notificaciones (10 son novedades de Mercadona).
+  `@peperuben` terminó con 21 novedades `sent` en una entrada de bandeja y 124
+  coincidencias `paused` por su cupo gratuito; no tiene token push registrado.
+
 ## Resiliencia del sync de Mercadona ante 403/429 (local, 2026-08-28)
 
 - El run `33162575907` recibió 408 `403` en ráfagas temporales y activó el
@@ -19,6 +76,11 @@
   `scripts/tests/sync-mercadona-resilience.test.mjs`. Pendiente de validar la
   corrección en un sync real de GitHub Actions.
 
+## Paywall 1.3 build 49: términos claros y prueba solo para elegibles (local, 2026-08-28)
+
+- App Review no continuó con la versión 1.3 build 46. Además de la elegibilidad,
+  señaló bajo 3.1.2(c) que el flujo no aclaraba el cobro automático ni el importe
+  aplicable después de los siete días gratis.
 ## Paywall 1.3.1: prueba anual solo para cuentas elegibles (local, 2026-08-27)
 
 - App Review permitió que la versión 1.3 build 46 continúe como bug-fix
@@ -28,9 +90,17 @@
   consulta `checkTrialOrIntroductoryPriceEligibility` para la Cuenta de Apple.
   La UI solo muestra la insignia y el CTA de prueba si el estado es `eligible`;
   ante `unknown`, no elegible, ausencia de oferta o error presenta el CTA normal.
+- El texto situado bajo el CTA cambia con el plan y usa el precio localizado de
+  StoreKit. Para una prueba elegible indica los siete días, el precio anual que
+  se cobrará después y el inicio automático del pago; para mensual y anual sin
+  prueba indica el cobro al confirmar. Los tres casos explican la renovación
+  automática hasta la cancelación en castellano y catalán.
 - La oferta remota está activa solo en España, del 21-08-2026 al 21-08-2036, y
-  el Paid Apps Agreement está activo. `app.json` pasa a 1.3.1; el siguiente build
-  de producción usará el auto-incremento remoto de EAS (esperado: 47).
+  el Paid Apps Agreement está activo. `app.json` permanece en 1.3.0 para sustituir
+  la build rechazada dentro de la misma versión 1.3. Las builds 47 (1.3.0) y 48
+  (1.3.1) ya están generadas con la elegibilidad, pero sin el nuevo texto de
+  renovación exigido por Apple; producción usará el auto-incremento remoto de
+  EAS y se espera que el reemplazo sea la build 49.
 - Regresión añadida en `scripts/tests/plus-activation.test.mjs`. Pendiente de
   generar y subir la build de producción.
 
@@ -246,9 +316,9 @@
 - Los 17 workflows de los supermercados admitidos por el comparador ejecutan
   ahora el materializador transversal para una sola tienda tras un sync
   correcto. Bonpreu lo hace solo cuando `continue_sync` deja de ser `true`.
-- Los ocho wrappers PowerShell hacen lo mismo tras ejecuciones reales y omiten
+- Los diez wrappers PowerShell hacen lo mismo tras ejecuciones reales y omiten
   el postproceso en `DRY_RUN`; así quedan cubiertos también los syncs productivos
-  locales de Carrefour, Eroski y Caprabo.
+  locales de Carrefour, Eroski, Caprabo, Froiz y Alcampo.
 - Hipercor no se conecta todavía porque no está admitido por la capa de
   embeddings. El materializador da el impulso inicial y los workers encadenan
   los lotes; el cron remoto queda como respaldo cada 15 minutos.

@@ -2,7 +2,7 @@ import { validGlobalGtin } from './gtin.mjs';
 
 export const BM_BASE_URL = 'https://www.online.bmsupermercados.es';
 export const BM_API_BASE_URL = `${BM_BASE_URL}/api/rest/V1.0`;
-export const BM_DEFAULT_POSTAL_CODES = [
+export const BM_SUPPORTED_POSTAL_CODES = [
   '20009', // Gipuzkoa
   '48009', // Bizkaia
   '01001', // Araba
@@ -10,6 +10,11 @@ export const BM_DEFAULT_POSTAL_CODES = [
   '31001', // Navarra
   '26001', // La Rioja
   '28008', // Madrid
+];
+
+// El explorador conserva tambien CP sin cobertura para detectar futuras aperturas.
+export const BM_DEFAULT_POSTAL_CODES = [
+  ...BM_SUPPORTED_POSTAL_CODES,
   '05001', // Avila
   '19001', // Guadalajara
   '33001', // Asturias

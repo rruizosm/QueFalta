@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  BM_SUPPORTED_POSTAL_CODES,
   classifyBmOffer,
   bmCatalogOffset,
   compareBmProductSamples,
@@ -51,6 +52,18 @@ function productFixture(overrides = {}) {
 test('parseBmPostalCodes valida y elimina duplicados', () => {
   assert.deepEqual(parseBmPostalCodes('28008, 20009,28008'), ['28008', '20009']);
   assert.throws(() => parseBmPostalCodes('2800X'), /invalidos/);
+});
+
+test('separa las siete zonas productivas de los CP exploratorios sin cobertura', () => {
+  assert.deepEqual(BM_SUPPORTED_POSTAL_CODES, [
+    '20009',
+    '48009',
+    '01001',
+    '39001',
+    '31001',
+    '26001',
+    '28008',
+  ]);
 });
 
 test('calcula el offset real que usa el catalogo BM', () => {

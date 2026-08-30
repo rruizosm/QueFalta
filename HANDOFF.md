@@ -1,5 +1,24 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Timeouts de Gadis resueltos con reconciliación incremental (2026-08-30)
+
+- Causa confirmada en Supabase: el materializador reescribía las 10.901 filas
+  de Gadis aunque no hubieran cambiado. Los upserts sobre
+  `catalog_product_embeddings` y sus índices agotaban el timeout de 8 s y
+  dejaron 5 productos sin snapshot y 14 snapshots huérfanos publicados.
+- El materializador local ya consulta el estado existente y solo escribe filas
+  nuevas, con cambios semánticos/de normalización o republicadas. Usa lotes de
+  25 para upsert y de 100 para despublicar identificadores ausentes exactos; no
+  vuelve a depender de `source_seen_at < seenAt` ni refresca timestamps de las
+  filas sin cambios.
+- Ejecutado en producción para `STORES=gadis`: 5 upserts, 10.896 sin cambios y
+  14 despublicaciones. Estado posterior: fuente=10.901, snapshot publicado=10.901,
+  faltantes=0, huérfanos=0, vectores pendientes=0, mensajes en cola=0 y fallos
+  abiertos=0. No hubo errores Postgres nuevos en la ventana de reparación.
+- No hay migración pendiente. `npm run quality` pasa TypeScript, lint y 107/107
+  pruebas. Archivos centrales: `scripts/sync-comparator-embedding-catalog.mjs`
+  y `scripts/lib/catalog-embedding-reconcile.mjs`.
+
 ## Froiz y Alcampo: cron remoto retirado y embeddings locales (2026-08-29)
 
 - `sync-froiz.yml` y `sync-alcampo.yml` ya no tienen programación automática;

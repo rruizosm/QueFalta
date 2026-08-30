@@ -469,12 +469,13 @@ rollback completo. Los procedimientos operativos están en
 `supabase/ops/README-comparator-embedding-pipeline.md`.
 
 El materializador `scripts/sync-comparator-embedding-catalog.mjs` conecta los
-quince catálogos con esta capa. Descarga primero cada tienda completa, rechaza
-catálogos vacíos o filas sin identidad, hace upsert por `(store, product_id)` y
-solo después marca ausencias como no publicadas mediante `source_seen_at`. Una
-ejecución `DRY_RUN=1` leyó correctamente los 172.076 productos publicados: no
-encontró pérdidas de filas y reprodujo las coberturas auditadas de unidad y
-GTIN, sin efectuar escrituras.
+catálogos con esta capa. Descarga primero cada tienda completa, rechaza
+catálogos vacíos o filas sin identidad y lee el estado ligero del snapshot para
+reconciliarlo. Solo hace upsert por `(store, product_id)` de filas nuevas,
+modificadas o republicadas, en lotes de 25, y despublica por diferencia exacta
+de identificadores en lotes de 100. Las filas sin cambios no se reescriben y
+`source_seen_at` ya no controla la detección de ausencias. Una ejecución
+`DRY_RUN=1` sigue realizando toda la comparación sin efectuar escrituras.
 
 ### Canario de catálogo ampliado
 

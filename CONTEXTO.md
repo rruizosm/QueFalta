@@ -3,6 +3,29 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
+## Materializador incremental del comparador y reparación de Gadis (2026-08-30)
+
+- El sync de Gadis terminó correctamente con 10.901 productos publicados, pero
+  el materializador posterior reescribía el snapshot completo en lotes de 50.
+  El coste de actualizar la tabla y sus índices, incluido HNSW, rozaba el
+  `statement_timeout` de 8 s de la Data API: hubo cancelaciones `57014` y el
+  proceso quedó a medias con 5 productos ausentes y 14 filas huérfanas aún
+  publicadas.
+- `scripts/sync-comparator-embedding-catalog.mjs` reconcilia ahora el estado
+  ligero existente antes de escribir. Solo hace upsert de productos nuevos,
+  modificados o republicados, en lotes de 25, y despublica por identificadores
+  exactos ausentes en lotes de 100. Las filas sin cambios ya no actualizan
+  `source_seen_at`/`updated_at`; `source_seen_at` deja de ser el mecanismo de
+  detección de ausencias.
+- La reparación productiva escribió solo 5 filas, conservó sin tocar 10.896 y
+  despublicó 14. Verificación final: 10.901 productos publicados tanto en
+  `gadis_products` como en `catalog_product_embeddings`, cero faltantes, cero
+  huérfanos, cero vectores pendientes, cola vacía y cero fallos abiertos. No
+  aparecieron nuevos timeouts durante ni después de la ejecución.
+- No requiere migración SQL ni aumento global de timeouts. La regresión vive en
+  `scripts/lib/catalog-embedding-reconcile.test.mjs`; `npm run quality` pasa
+  con 107/107 pruebas.
+
 ## Froiz y Alcampo pasan a sync productivo local con embeddings (2026-08-29)
 
 - Los workflows `sync-froiz.yml` y `sync-alcampo.yml` dejan de tener `schedule`:

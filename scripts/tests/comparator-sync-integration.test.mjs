@@ -62,7 +62,7 @@ test('Bonpreu materializa solo cuando termina el ciclo encadenado', () => {
   );
 });
 
-test('Gadis deja margen para materializar en lotes de 50 tras el rastreo', () => {
+test('Gadis deja margen para materializar en lotes incrementales tras el rastreo', () => {
   const workflow = readWorkflow('sync-gadis.yml');
   assert.match(workflow, /timeout-minutes:\s*60/);
 });

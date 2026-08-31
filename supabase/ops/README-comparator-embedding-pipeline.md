@@ -19,8 +19,53 @@ El pipeline permanece apagado hasta completar este orden:
    manualmente ese cron de respaldo.
 
 Para pausar sin perder trabajos, ejecutar
-`disable-comparator-embedding-cron.sql`. Los mensajes quedan en
-`catalog_embedding_jobs` y vuelven a estar disponibles al reactivar el cron.
+`disable-comparator-embedding-cron.sql`. La Fase 0 instala un interruptor
+central: `paused` bloquea tanto el cron como el impulso del materializador y el
+encadenamiento del worker. Los mensajes quedan en `catalog_embedding_jobs`.
+
+## Control operativo de Fase 0
+
+El estado inicial tras desplegar
+`20260831203004_embedding_pipeline_phase_zero_control.sql` es siempre
+`paused`; la migración no procesa la cola existente. Estados disponibles:
+
+- `paused`: materializa y encola, pero ninguna ruta invoca `catalog-embed`;
+- `canary`: concede un presupuesto global de una sola petición por activación;
+  el primer despacho lo consume y el encadenamiento del worker se detiene;
+- `active`: respeta la concurrencia solicitada, hasta el límite existente.
+
+Estado y cambios manuales, siempre con rol de servicio o desde SQL administrativo:
+
+```sql
+select public.catalog_embedding_pipeline_status();
+select public.catalog_set_embedding_pipeline_mode('paused', 'motivo operativo');
+select public.catalog_set_embedding_pipeline_mode('canary', 'canario supervisado');
+select public.catalog_set_embedding_pipeline_mode('active', 'activacion aprobada');
+```
+
+`enable-comparator-embedding-cron.sql` entra deliberadamente en `canary`, no
+en `active`, y rearma ese único permiso. `disable-comparator-embedding-cron.sql`
+pone el control en `paused` y desactiva el cron, sin eliminarlo.
+
+Cada reconciliación real registra una fila privada en
+`comparator_internal.catalog_embedding_runs`. Si prevé más de 1.000 embeddings
+o más del 10 % de la tienda, pausa automáticamente el pipeline antes de
+escribir el snapshot. El materializador termina de encolar para que el estado
+sea recuperable, pero no despacha. Una carga excepcional ya revisada exige
+`EMBEDDING_ANOMALY_OVERRIDE=1`; el override queda auditado y nunca cambia por sí
+solo un pipeline que ya estuviera pausado.
+
+Diagnóstico de ejecuciones recientes:
+
+```sql
+select store, status, source_products, new_products,
+       semantic_changed_products, metadata_only_products,
+       expected_embedding_jobs, change_ratio, anomaly_blocked,
+       started_at, materialized_at
+from comparator_internal.catalog_embedding_runs
+order by started_at desc
+limit 20;
+```
 
 ## Integración con los syncs de catálogo
 
@@ -31,12 +76,13 @@ runners PowerShell locales repiten el mismo postproceso y lo omiten en
 `DRY_RUN`; Carrefour se integra por esta vía porque su sync productivo no corre
 en GitHub Actions.
 
-El postproceso materializa, invalida y arranca hasta tres lotes del worker. Cada
-instancia de `catalog-embed` reclama un lote adicional al terminar, por lo que
-mantiene esa concurrencia hasta vaciar la cola sin polling continuo. El cron
-`catalog-embedding-dispatch` queda activo cada 15 minutos únicamente como red de
-seguridad para impulsos fallidos y reintentos. Hipercor queda fuera hasta
-incorporarlo al contrato completo del comparador.
+El postproceso materializa e invalida siempre, pero el despacho depende del modo
+central: cero lotes en `paused`, uno en `canary` y hasta tres en `active`. Cada
+instancia de `catalog-embed` reclama un lote adicional al terminar pasando por
+el mismo control. El cron `catalog-embedding-dispatch`, cuando se habilita,
+ejecuta cada 15 minutos únicamente como red de seguridad para impulsos fallidos
+y reintentos. Hipercor queda fuera hasta incorporarlo al contrato completo del
+comparador.
 
 Los trabajos fallidos se reintentan mediante el visibility timeout de `pgmq`.
 Tras cinco intentos se archivan y quedan auditados en

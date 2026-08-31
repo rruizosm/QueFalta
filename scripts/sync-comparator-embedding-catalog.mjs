@@ -22,6 +22,7 @@ const REST_RETRY_BASE_MS = Math.min(10000, Math.max(250, Number(process.env.REST
 const DRY_RUN = process.env.DRY_RUN === '1';
 const ALLOW_EMPTY = process.env.ALLOW_EMPTY === '1';
 const NORMALIZATION_ONLY = process.env.NORMALIZATION_ONLY === '1';
+const ANOMALY_OVERRIDE = process.env.EMBEDDING_ANOMALY_OVERRIDE === '1';
 const CONTENT_VERSION = 'catalog_embedding_content_v1';
 
 const STORES = [
@@ -186,7 +187,7 @@ async function fetchExisting(store) {
     const url = new URL('/rest/v1/catalog_product_embeddings', SUPABASE_URL);
     url.searchParams.set(
       'select',
-      'product_id,content_hash,content_version,global_gtin,canonical_unit,quantity_base,published',
+      'product_id,content_hash,content_version,global_gtin,canonical_unit,quantity_base,published,embedded_at,model',
     );
     url.searchParams.set('store', `eq.${store}`);
     url.searchParams.set('order', 'product_id.asc');
@@ -238,9 +239,56 @@ async function dispatchEmbeddingJobs() {
     event: 'embedding_dispatch',
     request_count: requestIds.length,
   }));
+  return requestIds;
+}
+
+async function beginEmbeddingRun(store, sourceCount, existingCount, plan) {
+  const response = await rest('/rest/v1/rpc/catalog_begin_embedding_run', {
+    method: 'POST',
+    body: JSON.stringify({
+      p_store: store,
+      p_source_products: sourceCount,
+      p_existing_products: existingCount,
+      p_new_products: plan.newRows,
+      p_semantic_changed_products: plan.semanticChangedRows,
+      p_metadata_only_products: plan.metadataOnlyRows,
+      p_republished_products: plan.republishedRows,
+      p_unpublished_products: plan.productIdsToUnpublish.length,
+      p_unchanged_products: plan.unchangedRows,
+      p_expected_embedding_jobs: plan.expectedEmbeddingJobs,
+      p_allow_anomaly: ANOMALY_OVERRIDE,
+    }),
+  });
+  const run = await response.json();
+  if (!run?.runId || typeof run.dispatchAllowed !== 'boolean') {
+    throw new Error('catalog_begin_embedding_run devolvió una respuesta inválida');
+  }
+  return run;
+}
+
+async function completeEmbeddingRun(runId, success, error = null) {
+  await rest('/rest/v1/rpc/catalog_complete_embedding_run', {
+    method: 'POST',
+    body: JSON.stringify({
+      p_run_id: runId,
+      p_success: success,
+      p_error_message: error ? String(error).slice(0, 1000) : null,
+    }),
+  });
+}
+
+async function recordEmbeddingDispatch(runId, requestCount) {
+  await rest('/rest/v1/rpc/catalog_record_embedding_dispatch', {
+    method: 'POST',
+    body: JSON.stringify({
+      p_run_id: runId,
+      p_request_count: requestCount,
+    }),
+  });
 }
 
 const summary = [];
+const completedRuns = [];
 for (const [store, table, fields] of selectedStores) {
   const seenAt = new Date().toISOString();
   const sourceRows = await fetchPublished(table, fields);
@@ -248,16 +296,41 @@ for (const [store, table, fields] of selectedStores) {
   const rows = sourceRows.map((row) => makeEmbeddingRow(store, row, seenAt)).filter(Boolean);
   if (rows.length !== sourceRows.length) throw new Error(`${store}: ${sourceRows.length - rows.length} filas carecen de id/nombre`);
   const existing = await fetchExisting(store);
+  const plan = planEmbeddingReconciliation(rows, existing, {
+    normalizationOnly: NORMALIZATION_ONLY,
+  });
   const {
     rowsToUpsert,
     productIdsToUnpublish,
     unchangedRows,
-  } = planEmbeddingReconciliation(rows, existing, {
-    normalizationOnly: NORMALIZATION_ONLY,
-  });
+    skippedRows,
+    newRows,
+    semanticChangedRows,
+    metadataOnlyRows,
+    republishedRows,
+    expectedEmbeddingJobs,
+  } = plan;
+  let run = null;
   if (!DRY_RUN) {
-    await upsertRows(rowsToUpsert);
-    await markProductsUnpublished(store, productIdsToUnpublish, seenAt);
+    run = await beginEmbeddingRun(store, sourceRows.length, existing.length, plan);
+    try {
+      await upsertRows(rowsToUpsert);
+      await markProductsUnpublished(store, productIdsToUnpublish, seenAt);
+      await completeEmbeddingRun(run.runId, true);
+      completedRuns.push(run);
+    } catch (error) {
+      try {
+        await completeEmbeddingRun(run.runId, false, error);
+      } catch (auditError) {
+        console.error(JSON.stringify({
+          event: 'embedding_run_audit_failed',
+          store,
+          run_id: run.runId,
+          error: String(auditError),
+        }));
+      }
+      throw error;
+    }
   }
   const item = {
     store,
@@ -265,16 +338,41 @@ for (const [store, table, fields] of selectedStores) {
     materialized_products: rows.length,
     upserted_products: rowsToUpsert.length,
     unchanged_products: unchangedRows,
+    skipped_products: skippedRows,
+    new_products: newRows,
+    semantic_changed_products: semanticChangedRows,
+    metadata_only_products: metadataOnlyRows,
+    republished_products: republishedRows,
     unpublished_products: productIdsToUnpublish.length,
+    expected_embedding_jobs: expectedEmbeddingJobs,
     with_unit: rows.filter((row) => row.canonical_unit).length,
     normalization_changes: NORMALIZATION_ONLY ? rowsToUpsert.length : null,
     with_global_gtin: rows.filter((row) => row.global_gtin).length,
+    run_id: run?.runId ?? null,
+    pipeline_mode: run?.pipelineMode ?? null,
+    anomaly_blocked: run?.anomalyBlocked ?? false,
+    anomaly_override: ANOMALY_OVERRIDE,
     dry_run: DRY_RUN,
   };
   summary.push(item);
   console.log(JSON.stringify(item));
 }
 
-if (!DRY_RUN) await dispatchEmbeddingJobs();
+if (!DRY_RUN) {
+  const dispatchableRuns = completedRuns.filter((run) => run.dispatchAllowed);
+  if (dispatchableRuns.length) {
+    const requestIds = await dispatchEmbeddingJobs();
+    await Promise.all(dispatchableRuns.map((run) => (
+      recordEmbeddingDispatch(run.runId, requestIds.length)
+    )));
+  } else {
+    console.log(JSON.stringify({
+      event: 'embedding_dispatch_skipped',
+      reason: completedRuns.some((run) => run.anomalyBlocked)
+        ? 'anomaly_blocked'
+        : 'pipeline_paused',
+    }));
+  }
+}
 
 console.log(JSON.stringify({ complete: true, stores: summary.length, products: summary.reduce((sum, item) => sum + item.materialized_products, 0), dry_run: DRY_RUN }, null, 2));

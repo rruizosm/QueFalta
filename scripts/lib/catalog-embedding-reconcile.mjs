@@ -5,18 +5,35 @@ const sameQuantity = (left, right) => {
   return Number(left) === Number(right);
 };
 
-function sameMaterializedState(current, next) {
-  return current.published === true
-    && current.content_hash === next.content_hash
-    && current.content_version === next.content_version
-    && nullable(current.global_gtin) === nullable(next.global_gtin)
-    && nullable(current.canonical_unit) === nullable(next.canonical_unit)
-    && sameQuantity(current.quantity_base, next.quantity_base);
-}
-
 function sameNormalization(current, next) {
   return nullable(current.canonical_unit) === nullable(next.canonical_unit)
     && sameQuantity(current.quantity_base, next.quantity_base);
+}
+
+function semanticChanged(current, next) {
+  return current.content_hash !== next.content_hash
+    || current.content_version !== next.content_version;
+}
+
+function comparisonMetadataChanged(current, next) {
+  return nullable(current.global_gtin) !== nullable(next.global_gtin)
+    || !sameNormalization(current, next);
+}
+
+function classifyChange(current, next) {
+  if (!current) return 'new';
+  if (current.published !== true) return 'republished';
+  if (semanticChanged(current, next)) return 'semantic';
+  if (comparisonMetadataChanged(current, next)) return 'metadata';
+  return 'unchanged';
+}
+
+function needsEmbeddingJob(current, next, changeKind) {
+  if (changeKind === 'new' || changeKind === 'semantic') return true;
+  if (changeKind !== 'republished') return false;
+  return semanticChanged(current, next)
+    || current.embedded_at == null
+    || current.model == null;
 }
 
 /**
@@ -31,23 +48,40 @@ export function planEmbeddingReconciliation(sourceRows, existingRows, {
     existingRows.map((row) => [String(row.product_id), row]),
   );
   const sourceIds = new Set(sourceRows.map((row) => String(row.product_id)));
-  const rowsToUpsert = sourceRows.filter((row) => {
+  const changes = sourceRows.map((row) => {
     const current = existingById.get(String(row.product_id));
-    if (!current) return true;
-    return normalizationOnly
-      ? !sameNormalization(current, row)
-      : !sameMaterializedState(current, row);
+    return {
+      row,
+      current,
+      kind: classifyChange(current, row),
+    };
   });
+  const selectedChanges = changes.filter(({ current, kind, row }) => {
+    if (!normalizationOnly) return kind !== 'unchanged';
+    return !current || !sameNormalization(current, row);
+  });
+  const rowsToUpsert = selectedChanges.map(({ row }) => row);
   const productIdsToUnpublish = normalizationOnly
     ? []
     : existingRows
       .filter((row) => row.published === true && !sourceIds.has(String(row.product_id)))
       .map((row) => String(row.product_id));
 
+  const countKind = (kind) => changes.filter((change) => change.kind === kind).length;
+  const expectedEmbeddingJobs = selectedChanges.filter(({ current, row, kind }) => (
+    needsEmbeddingJob(current, row, kind)
+  )).length;
+
   return {
     rowsToUpsert,
     productIdsToUnpublish,
-    unchangedRows: sourceRows.length - rowsToUpsert.length,
+    unchangedRows: countKind('unchanged'),
+    skippedRows: sourceRows.length - rowsToUpsert.length - countKind('unchanged'),
+    newRows: countKind('new'),
+    semanticChangedRows: countKind('semantic'),
+    metadataOnlyRows: countKind('metadata'),
+    republishedRows: countKind('republished'),
+    expectedEmbeddingJobs,
   };
 }
 

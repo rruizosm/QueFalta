@@ -14,6 +14,8 @@ const row = (productId, overrides = {}) => ({
   canonical_unit: 'kg',
   quantity_base: 1,
   published: true,
+  embedded_at: '2026-08-01T00:00:00.000Z',
+  model: 'text-embedding-3-small',
   ...overrides,
 });
 
@@ -32,6 +34,11 @@ test('omite filas sin cambios y conserva solo altas o cambios materiales', () =>
 
   assert.deepEqual(plan.rowsToUpsert.map((item) => item.product_id), ['changed', 'new']);
   assert.equal(plan.unchangedRows, 1);
+  assert.equal(plan.newRows, 1);
+  assert.equal(plan.semanticChangedRows, 1);
+  assert.equal(plan.metadataOnlyRows, 0);
+  assert.equal(plan.republishedRows, 0);
+  assert.equal(plan.expectedEmbeddingJobs, 2);
   assert.deepEqual(plan.productIdsToUnpublish, []);
 });
 
@@ -53,6 +60,26 @@ test('republica y actualiza metadatos que afectan a la comparación', () => {
     plan.rowsToUpsert.map((item) => item.product_id),
     ['republished', 'gtin', 'quantity'],
   );
+  assert.equal(plan.republishedRows, 1);
+  assert.equal(plan.metadataOnlyRows, 2);
+  assert.equal(plan.expectedEmbeddingJobs, 0);
+});
+
+test('republicar sin vector genera trabajo y republicar con vector lo reutiliza', () => {
+  const source = [row('embedded'), row('missing-vector')];
+  const existing = [
+    row('embedded', { published: false }),
+    row('missing-vector', {
+      published: false,
+      embedded_at: null,
+      model: null,
+    }),
+  ];
+
+  const plan = planEmbeddingReconciliation(source, existing);
+
+  assert.equal(plan.republishedRows, 2);
+  assert.equal(plan.expectedEmbeddingJobs, 1);
 });
 
 test('despublica solo ausencias que seguían publicadas', () => {
@@ -84,6 +111,10 @@ test('el modo de normalización ignora ausencias y cambios semánticos', () => {
 
   assert.deepEqual(plan.rowsToUpsert.map((item) => item.product_id), ['unit']);
   assert.deepEqual(plan.productIdsToUnpublish, []);
+  assert.equal(plan.semanticChangedRows, 1);
+  assert.equal(plan.metadataOnlyRows, 1);
+  assert.equal(plan.skippedRows, 1);
+  assert.equal(plan.expectedEmbeddingJobs, 0);
 });
 
 test('construye un filtro PostgREST seguro para ids de texto', () => {

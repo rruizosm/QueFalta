@@ -1,5 +1,9 @@
 import '@supabase/functions-js/edge-runtime.d.ts';
 import { withSupabase } from '@supabase/server';
+import {
+  effectiveEmbeddingInputHash,
+  parseEmbeddingJob,
+} from './job-identity.mjs';
 
 const MODEL = 'text-embedding-3-small';
 const DIMENSIONS = 512;
@@ -15,8 +19,9 @@ interface EmbeddingJob {
   readCount: number;
   store: string;
   productId: string;
-  contentHash: string;
+  embeddingInputHash: string;
   contentVersion: string;
+  model: string;
 }
 
 interface CatalogRow {
@@ -24,6 +29,7 @@ interface CatalogRow {
   product_id: string;
   content: string;
   content_hash: string;
+  embedding_input_hash: string | null;
   content_version: string;
   embedding: unknown;
   model: string | null;
@@ -55,7 +61,10 @@ export default {
       if (!Array.isArray(body) || body.length < 1 || body.length > MAX_JOBS) {
         return json({ error: 'invalid_batch_size' }, 400);
       }
-      jobs = body.map(parseJob);
+      jobs = body.map((value) => parseEmbeddingJob(value, {
+        stores: STORES,
+        defaultModel: MODEL,
+      })) as EmbeddingJob[];
     } catch (error) {
       return json({ error: 'invalid_payload', detail: errorMessage(error) }, 400);
     }
@@ -75,7 +84,7 @@ export default {
       const productIds = [...new Set(storeJobs.map((job) => job.productId))];
       const { data, error } = await admin
         .from('catalog_product_embeddings')
-        .select('store,product_id,content,content_hash,content_version,embedding,model,published')
+        .select('store,product_id,content,content_hash,embedding_input_hash,content_version,embedding,model,published')
         .eq('store', store)
         .in('product_id', productIds);
       if (error) {
@@ -90,15 +99,15 @@ export default {
     const work = new Map<string, { row: CatalogRow; jobs: EmbeddingJob[] }>();
     for (const job of jobs) {
       const row = rowsByKey.get(productKey(job.store, job.productId));
-      if (!row || !row.published || row.content_hash !== job.contentHash || row.content_version !== job.contentVersion) {
+      if (!row || !row.published || effectiveEmbeddingInputHash(row) !== job.embeddingInputHash) {
         deleteIds.push(job.msgId);
         continue;
       }
-      if (row.embedding != null && row.model === MODEL) {
+      if (row.embedding != null && row.model === job.model) {
         deleteIds.push(job.msgId);
         continue;
       }
-      const key = `${productKey(job.store, job.productId)}:${job.contentHash}`;
+      const key = `${productKey(job.store, job.productId)}:${job.embeddingInputHash}:${job.model}`;
       const existing = work.get(key);
       if (existing) existing.jobs.push(job);
       else work.set(key, { row, jobs: [job] });
@@ -123,7 +132,6 @@ export default {
             .eq('store', item.row.store)
             .eq('product_id', item.row.product_id)
             .eq('content_hash', item.row.content_hash)
-            .eq('content_version', item.row.content_version)
             .select('product_id')
             .maybeSingle();
 
@@ -160,24 +168,6 @@ export default {
   }),
 };
 
-function parseJob(value: unknown): EmbeddingJob {
-  if (!value || typeof value !== 'object') throw new Error('job_not_object');
-  const job = value as Record<string, unknown>;
-  const parsed: EmbeddingJob = {
-    msgId: Number(job.msgId),
-    readCount: Number(job.readCount),
-    store: String(job.store ?? ''),
-    productId: String(job.productId ?? ''),
-    contentHash: String(job.contentHash ?? ''),
-    contentVersion: String(job.contentVersion ?? ''),
-  };
-  if (!Number.isSafeInteger(parsed.msgId) || parsed.msgId < 1) throw new Error('invalid_msg_id');
-  if (!Number.isInteger(parsed.readCount) || parsed.readCount < 1) throw new Error('invalid_read_count');
-  if (!STORES.has(parsed.store) || !parsed.productId) throw new Error('invalid_product_key');
-  if (!/^[0-9a-f]{64}$/.test(parsed.contentHash) || !parsed.contentVersion) throw new Error('invalid_content_identity');
-  return parsed;
-}
-
 async function createEmbeddings(apiKey: string, inputs: string[]): Promise<number[][]> {
   const response = await fetch('https://api.openai.com/v1/embeddings', {
     method: 'POST',
@@ -206,7 +196,7 @@ async function markFailures(admin: any, jobs: EmbeddingJob[], code: string, mess
       p_msg_id: job.msgId,
       p_store: job.store,
       p_product_id: job.productId,
-      p_content_hash: job.contentHash,
+      p_content_hash: job.embeddingInputHash,
       p_read_count: job.readCount,
       p_error_code: code.slice(0, 100),
       p_error_message: message.slice(0, 1000),

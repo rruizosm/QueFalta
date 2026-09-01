@@ -23,7 +23,7 @@ Para pausar sin perder trabajos, ejecutar
 central: `paused` bloquea tanto el cron como el impulso del materializador y el
 encadenamiento del worker. Los mensajes quedan en `catalog_embedding_jobs`.
 
-## Control operativo de Fase 0
+## Control operativo de Fases 0 y 1
 
 El estado inicial tras desplegar
 `20260831203004_embedding_pipeline_phase_zero_control.sql` es siempre
@@ -50,10 +50,41 @@ pone el control en `paused` y desactiva el cron, sin eliminarlo.
 Cada reconciliación real registra una fila privada en
 `comparator_internal.catalog_embedding_runs`. Si prevé más de 1.000 embeddings
 o más del 10 % de la tienda, pausa automáticamente el pipeline antes de
-escribir el snapshot. El materializador termina de encolar para que el estado
-sea recuperable, pero no despacha. Una carga excepcional ya revisada exige
+escribir el snapshot. Desde Fase 1, el materializador bloquea también upserts,
+despublicaciones y encolado, y detiene el resto de tiendas de esa ejecución.
+Una carga excepcional ya revisada exige
 `EMBEDDING_ANOMALY_OVERRIDE=1`; el override queda auditado y nunca cambia por sí
 solo un pipeline que ya estuviera pausado.
+
+Fase 1 se despliega en este orden: migración
+`20260831214031_embedding_materializer_phase_one_idempotency.sql`, worker
+`catalog-embed` compatible con payload legacy/nuevo y, por último,
+materializador. La migración exige `paused` y cero jobs en vuelo. Añade sin
+backfill tres identidades separadas:
+
+- `embedding_input_hash`: hash del texto exacto enviado al modelo;
+- `semantic_identity_hash`: huella estable para decidir si el input debe
+  cambiar;
+- `match_metadata_hash`: GTIN, unidad, cantidad, publicación y filtros de
+  matching, sin invalidar el vector.
+
+La cola es única por `(store, productId, embeddingInputHash, model)`. Tanto los
+jobs visibles como invisibles suprimen duplicados; un fallo terminal archivado
+suprime reintentos automáticos. `catalog_delete_embedding_jobs` bloquea primero
+los productos, elimina después los mensajes y vuelve a garantizar la identidad
+vigente, cerrando la carrera A→B→A.
+
+Antes de activar un canario:
+
+1. ejecutar `DRY_RUN=1 STORES=<tienda> node scripts/sync-comparator-embedding-catalog.mjs`;
+2. repetir dos runs reales con el pipeline todavía en `paused`;
+3. exigir 0 cambios en la segunda ejecución salvo delta real de la fuente;
+4. comprobar cola, runs, fallos, cron y advisors;
+5. entrar en `canary` solo con un lote revisado y presupuesto explícito.
+
+La verificación SQL reproducible está en
+`supabase/ops/verify-embedding-materializer-phase-one.sql`; siempre termina en
+`ROLLBACK` y debe mostrar `PHASE_ONE_SMOKE_OK`.
 
 Diagnóstico de ejecuciones recientes:
 
@@ -69,7 +100,7 @@ limit 20;
 
 ## Integración con los syncs de catálogo
 
-Los workflows de los 17 supermercados compatibles ejecutan, después de un sync
+Los workflows de los 18 supermercados compatibles ejecutan, después de un sync
 correcto, `sync-comparator-embedding-catalog.mjs` con `STORES` limitado a la
 tienda actual. Bonpreu/Esclat espera al último lote del ciclo encadenado. Los
 runners PowerShell locales repiten el mismo postproceso y lo omiten en

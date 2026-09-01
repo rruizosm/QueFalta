@@ -7,6 +7,7 @@ const migration = read('../../supabase/migrations/20260825174505_event_driven_ca
 const controlMigration = read('../../supabase/migrations/20260831203004_embedding_pipeline_phase_zero_control.sql');
 const controlFixMigration = read('../../supabase/migrations/20260831204445_fix_embedding_phase_zero_special_expressions.sql');
 const canaryBudgetMigration = read('../../supabase/migrations/20260831205518_enforce_single_canary_dispatch_budget.sql');
+const phaseOneMigration = read('../../supabase/migrations/20260831214031_embedding_materializer_phase_one_idempotency.sql');
 const materializer = read('../sync-comparator-embedding-catalog.mjs');
 const worker = read('../../supabase/functions/catalog-embed/index.ts');
 const cronOps = read('../../supabase/ops/enable-comparator-embedding-cron.sql');
@@ -26,6 +27,11 @@ test('el materializador audita el desglose y permite que la base bloquee anomal�
   assert.match(controlMigration, /max_auto_jobs[^\n]+default 1000/i);
   assert.match(controlMigration, /max_auto_ratio[^\n]+default 0\.10/i);
   assert.match(controlMigration, /set mode = 'paused'/i);
+  const anomalyGuard = materializer.indexOf('if (run.anomalyBlocked)');
+  const firstUpsert = materializer.indexOf('await upsertRows(rowsToUpsert)');
+  assert.ok(anomalyGuard >= 0 && anomalyGuard < firstUpsert);
+  assert.match(materializer, /embedding_materialization_blocked/);
+  assert.match(materializer, /if \(materializationBlocked\) break/);
 });
 
 test('el materializador limita cada upsert a 25 productos', () => {
@@ -35,9 +41,53 @@ test('el materializador limita cada upsert a 25 productos', () => {
 
 test('el materializador reconcilia primero y no reescribe todo el catálogo', () => {
   assert.match(materializer, /await fetchExisting\(store\)/);
-  assert.match(materializer, /planEmbeddingReconciliation\(rows, existing/);
+  assert.match(materializer, /planEmbeddingReconciliation\(candidates, existing/);
   assert.match(materializer, /productIdsToUnpublish/);
+  assert.match(materializer, /match_metadata_hash:\s*null/);
   assert.doesNotMatch(materializer, /source_seen_at.*lt\./);
+});
+
+test('fase 1 separa input y metadata sin backfill masivo', () => {
+  assert.match(materializer, /embedding_input_hash:\s*embeddingInput\.embeddingInputHash/);
+  assert.match(materializer, /semantic_identity_hash:\s*identity\.semanticIdentityHash/);
+  assert.match(materializer, /match_metadata_hash:\s*identity\.matchMetadataHash/);
+  assert.match(materializer, /phase_one_semantic_identity_hash/);
+  assert.match(materializer, /buildCatalogEmbeddingProjectionV1/);
+  assert.match(phaseOneMigration, /add column if not exists embedding_input_hash text/i);
+  assert.match(phaseOneMigration, /add column if not exists semantic_identity_hash text/i);
+  assert.match(phaseOneMigration, /add column if not exists match_metadata_hash text/i);
+  assert.doesNotMatch(phaseOneMigration, /update\s+public\.catalog_product_embeddings/i);
+});
+
+test('fase 1 hace única la identidad activa de la cola y mantiene payload legacy', () => {
+  assert.match(phaseOneMigration, /identidades activas duplicadas/i);
+  assert.match(phaseOneMigration, /create unique index if not exists catalog_embedding_jobs_identity_uidx/i);
+  assert.match(phaseOneMigration, /embeddingInputHash[\s\S]+contentHash[\s\S]+model/);
+  assert.match(phaseOneMigration, /when unique_violation[\s\S]+catalog_embedding_jobs_identity_uidx/i);
+  assert.match(worker, /effectiveEmbeddingInputHash\(row\) !== job\.embeddingInputHash/);
+  assert.match(worker, /job\.embeddingInputHash}:\$\{job\.model/);
+});
+
+test('fase 1 repara sin upsert y cierra la carrera A-B-A al borrar', () => {
+  assert.match(materializer, /rpc\/catalog_ensure_embedding_jobs/);
+  assert.match(materializer, /p_repair_products:\s*plan\.repairProducts/);
+  assert.match(phaseOneMigration, /add column if not exists repair_products integer/i);
+  assert.match(phaseOneMigration, /create or replace function comparator_internal\.ensure_catalog_embedding_job/i);
+  assert.match(phaseOneMigration, /create or replace function public\.catalog_delete_embedding_jobs[\s\S]+ensure_catalog_embedding_job/i);
+  assert.match(phaseOneMigration, /failure\.archived_at is not null/i);
+  assert.match(phaseOneMigration, /returns jsonb[\s\S]+jsonb_agg[\s\S]+'activeJobs'[\s\S]+'terminalFailures'/i);
+  assert.match(materializer, /const \{ jobs \} = result/);
+});
+
+test('fase 1 atribuye un despacho global una sola vez', () => {
+  assert.match(materializer, /recordEmbeddingDispatch\(dispatchableRuns\.at\(-1\)\.runId, requestIds\.length\)/);
+  assert.doesNotMatch(materializer, /dispatchableRuns\.map\(\(run\).*recordEmbeddingDispatch/s);
+});
+
+test('un cambio de huella semántica revalida el vector sin invalidarlo', () => {
+  assert.match(phaseOneMigration, /v_semantic_identity_changed[\s\S]+ensure_catalog_embedding_job/i);
+  assert.match(phaseOneMigration, /after update of content_hash, embedding_input_hash, semantic_identity_hash, published/i);
+  assert.doesNotMatch(phaseOneMigration, /before update of[^\n]*semantic_identity_hash/i);
 });
 
 test('cada worker encadena un único lote y no convierte el fallo del impulso en fallo del lote', () => {
@@ -79,6 +129,7 @@ test('las expresiones especiales de PostgreSQL no se prefijan con pg_catalog', (
   assert.match(controlFixMigration, /set dispatch_request_count = greatest\(/i);
   assert.match(controlFixMigration, /then least\(p_max_requests/i);
   assert.doesNotMatch(controlFixMigration, /pg_catalog\.(?:coalesce|nullif|least|greatest)/i);
+  assert.doesNotMatch(phaseOneMigration, /pg_catalog\.(?:coalesce|nullif|least|greatest)\s*\(/i);
 });
 
 test('el cron se conserva solo como respaldo cada 15 minutos', () => {

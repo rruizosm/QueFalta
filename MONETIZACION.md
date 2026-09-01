@@ -18,7 +18,7 @@
 
 | | Free | Plus |
 |---|---|---|
-| Catálogo, búsqueda, favoritos, novedades | ✅ por supermercado; cuentas anteriores a 1.3 conservan «Todos» | ✅ todos a la vez |
+| Catálogo, búsqueda, favoritos, novedades | ✅ incluido; «Todos» disponible | ✅ incluido |
 | Unirse a grupos (enlace de invitación) | ✅ **ilimitado, siempre** | ✅ |
 | Crear grupos | ✅ ilimitados | ✅ ilimitados |
 | Comparador "Más barato en otros súper" | 3 búsquedas por cuenta; después abre Plus | Ilimitado |
@@ -34,7 +34,6 @@
 - Ordenar los productos por precio unitario para comparar por kg, litro o unidad.
 - **Radar de ahorro ilimitado:** seguir encontrando alternativas similares después de las 3 búsquedas gratuitas.
 - Aplicar filtros avanzados en Ofertas, Cambios de precio y Novedades.
-- Seleccionar **Todos** los supermercados y consultarlos en una sola vista.
 - Crear alertas personalizadas ilimitadas después de la primera gratuita.
 - Asignar productos alternativos a los comentarios de la cesta.
 - Consultar estadísticas personales de supermercados, categorías y productos más comprados.
@@ -119,10 +118,10 @@ búsquedas del comparador; Plus amplía ambos beneficios sin límite.
 - [x] Novedades: los dos sentidos del orden por precio unitario requieren Plus.
       En free abren el paywall sin aplicar el orden; una expiración limpia la
       selección unitaria que siguiera activa. El orden por precio total es libre.
-- [x] Selector «Todos»: las cuentas ya registradas antes de 1.3 conservan el
-      acceso en Catálogo, Novedades, Ofertas y Cambios de precio sin desbloquear
-      ningún otro gate. `profiles.legacy_all_stores_access` guarda el permiso y
-      un trigger impide que el cliente se lo autoasigne.
+- [x] Selector «Todos»: desde el despliegue de 1.3 está incluido para cualquier
+      cuenta registrada en Catálogo, Novedades, Ofertas y Cambios de precio.
+      `profiles.legacy_all_stores_access` queda como compatibilidad para el
+      cliente 1.3 publicado, con `DEFAULT true` y escritura protegida.
 - [x] Paywall: `src/components/PaywallModal.tsx` — beneficios, 2 planes (anual
       preseleccionado con "7 días gratis"), CTA placeholder (toast hasta Fase 3),
       "Restaurar compras" y enlaces a quefalta.es/condiciones y /privacidad
@@ -202,10 +201,9 @@ verificó en producción el 2026-08-25 para enviar la versión 1.3 a revisión.
       restore, y `premium_until` moviéndose en BD.
 
 **Día de lanzamiento (orden):**
-1. [x] Snapshot legacy aplicado y ampliado con
-       `20260824174500_grant_legacy_all_stores_to_pre_1_3_accounts.sql`: las
-       4.054 cuentas existentes conservan «Todos» tras repetirlo el 2026-08-25.
-       Repetir una última vez justo antes de publicar la 1.3.
+1. [x] Tras publicar 1.3, «Todos» se abrió a todas las cuentas mediante
+       `20260829124046_grant_all_registered_users_all_stores_access.sql`; el
+       default `true` cubre también las altas futuras.
 2. [ ] Regalar Plus a los testers: `ops/grant_plus_testers.sql` (opción A).
 3. [x] Encender servidor: `migrations/paywall_on.sql` aplicado y
        `paywall_enabled() = true` verificado el 2026-08-25.

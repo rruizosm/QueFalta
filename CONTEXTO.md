@@ -3,6 +3,214 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
+## Fase 4: settlement e invalidación set-based (producción, 2026-09-01)
+
+- Desplegada con las migraciones remotas/locales
+  `20260901103216_embedding_runs_durable_settlement_and_set_based_invalidation.sql`,
+  `20260901104518_phase4_legacy_materializer_compatibility.sql` y
+  `20260901104730_phase4_manifest_revalidate_on_close.sql`. Los triggers legacy
+  por fila se retiraron; insert/update/delete e invalidación de dependencias usan
+  tablas de transición y se ejecutan una vez por sentencia.
+- Cada sync nuevo registra un manifiesto M2M exacto por
+  `expected_dependency_count`. Los runs pasan `running→draining→settled`; solo
+  `completed`, `already_ready`, `superseded` y `terminal_failed` son terminales.
+  El cierre marca `cache_bumped_at` y eleva la generación una única vez por run
+  con impacto. Los fallos posteriores a escrituras también invalidan una sola
+  vez; las escrituras sin run tienen fallback de un bump por tienda/sentencia.
+- La invalidación como origen elimina en bloque solo los estados de caché de los
+  productos realmente modificados. Como destino, la tienda se invalida al
+  cerrar el run. El orden estable run→versión elimina el antiguo `SKIP LOCKED`.
+  El registro acepta chunks de 500, pero revalida el manifiesto completo solo al
+  cerrarlo, evitando el coste cuadrático observado durante la revisión.
+- Los smokes productivos `verify-embedding-run-durable-settlement.sql` y
+  `verify-embedding-run-legacy-compatibility.sql` pasaron con `ROLLBACK`. El
+  canario HTTP 2705 completó 100/100, 0 fallos/stale/deferred, y la generación
+  de HiperDino pasó exactamente 6.905→6.906; durante los primeros 90 resultados
+  permaneció en 6.905 y solo saltó al asentarse el run.
+- `main` todavía contiene el materializador anterior. La compatibilidad temporal
+  adopta automáticamente sus jobs solo si el conteo encolado desde `started_at`
+  coincide exactamente con `expected_embedding_jobs`; cualquier diferencia
+  falla cerrada. El materializador nuevo permanece local y debe publicarse antes
+  de retirar esta compatibilidad.
+- Backlog legacy ya adoptado: los 38 jobs de Gadis están ligados al run durable
+  `1dda9168-c609-48d9-9221-7caff07368c4`; los 3.201 de HiperDino se registraron
+  en siete bloques exactos (6×500 + 201) en el run
+  `fae4f61b-4187-4488-9d8b-4deb55fdd058`. Ambos quedaron `draining`, con todos
+  los enlaces `pending/queued`, equivalencia cola↔manifiesto y sin bump durante
+  la adopción: HiperDino continúa en generación 6.906. Pipeline `paused`, cron
+  17 inactivo, 0 jobs en vuelo y 0 fallos abiertos. El drenaje necesita un
+  canario controlado; no pasar directamente a `active`.
+- El stale-while-revalidate de la petición del comparador sigue pendiente como
+  siguiente bloque; el camino actual ya elimina el fan-out de generación, pero
+  todavía no programa el refresco de caché completamente en segundo plano.
+
+## Fase 3: una sola mutación HNSW por cambio (producción, 2026-09-01)
+
+- Implementada en
+  `20260901094105_phase_three_single_hnsw_mutation.sql`. Añade
+  `embedded_content_hash` sin backfill masivo. Un vector legacy con esa columna
+  a `NULL` se considera ligado al input vigente hasta su primer cambio
+  semántico; entonces el trigger conserva el vector y materializa el hash
+  anterior, dejando la fila lógicamente pendiente.
+- El worker y el materializador solo consideran listo un vector cuando modelo y
+  hash embebido coinciden con el input actual. La finalizadora batch vuelve a
+  validar publicación, `content_hash`, `embedding_input_hash`, versión y modelo,
+  y sustituye `embedding` + `embedded_content_hash` en el mismo `UPDATE` CAS. Un
+  resultado de OpenAI obsoleto se clasifica como `stale` y no puede pisar una
+  versión más reciente.
+- Las recuperaciones vectoriales v1/v2/v3, la reconstrucción de caché y las RPC
+  internas v3/v5 excluyen tanto fuentes como destinos pendientes. El HNSW no
+  incluye el hash en su predicado deliberadamente: hacerlo quitaría y volvería
+  a insertar la fila en cada cambio.
+- La migración quedó registrada en producción con la misma versión local,
+  `20260901094105`. El smoke transaccional
+  `supabase/ops/verify-embedding-phase-three-single-hnsw-mutation.sql`, que
+  valida retención, exclusión de búsqueda, sustitución conjunta y carrera
+  A→B→C con `ROLLBACK`, pasó sin residuos. `catalog-embed` v13 quedó `ACTIVE` y el bundle
+  remoto coincide con `index.ts`, los dos helpers y `deno.json` locales. El
+  smoke HTTP autenticado 2700 devolvió 400 `invalid_batch_size` sin reclamar
+  cola.
+- El canario único 2701 procesó 100/100 trabajos: 0 fallidos, obsoletos,
+  diferidos o encadenados. Las 100 filas terminaron con vector, modelo y
+  `embedded_content_hash = embedding_input_hash`; la cola bajó 3.401→3.301 y
+  HiperDino subió 11.419→11.519 vectores listos. No hubo bloqueos, consultas
+  largas, fallos ni vacuum activo, y el HNSW siguió válido/listo.
+- Estado final: pipeline `paused`, presupuesto canario 0 y cron 17 inactivo.
+  No usar `active` hasta desplegar la invalidación por run de Fase 4: el canario
+  confirmó que el trigger actual todavía incrementa la generación de HiperDino
+  100 veces (6.805→6.905). La separación física de la tabla de vectores queda
+  como evolución posterior para independencia total frente a actualizaciones
+  MVCC del catálogo.
+
+## Hardening batch del worker (despliegue anterior, 2026-09-01)
+
+- Aplicada en producción la migración
+  `embedding_worker_phase_three_batch_writes` (remota `20260901072452`) y
+  desplegado inicialmente `catalog-embed` v12, sustituido después por v13 en la
+  Fase 3 HNSW. La finalizadora
+  `catalog_finalize_embedding_batch(jsonb)` es `SECURITY INVOKER`, tiene
+  `search_path` vacío y solo `service_role` puede ejecutarla; los privilegios
+  mínimos de cola/archivo PGMQ quedaron verificados bajo ese mismo rol.
+- OpenAI recibe bloques de 50 textos. El worker escribe sublotes de 20 productos
+  (la RPC rechaza más de 25) con un único
+  `UPDATE ... FROM jsonb_to_recordset`, CAS de publicación/hash/input/version/
+  modelo y confirmación de PGMQ dentro de la misma transacción. Los fallos se
+  registran por lote; un error determinista se aísla por bisección acotada y un
+  error sistémico detiene el encadenamiento sin perder jobs.
+- El smoke SQL real bajo `service_role` pasó completo y dejó cero residuos:
+  escritura y fallo multi-fila, already-ready sin reescritura, carreras de hash,
+  versión y publicación, identidad de cola incorrecta, fallo terminal a 20
+  intentos y vector inválido con rollback integral. El smoke HTTP autenticado
+  2687 respondió 400 `invalid_batch_size`, confirmando que el bundle v11 cargaba
+  sin reclamar cola.
+- Primer canario request 2688 (v11, sublote 25): 100/100, cuatro RPC, 0 fallos,
+  stale, deferred o encadenamientos; máximo SQL 6,91 s, demasiado próximo al
+  timeout REST de 8 s. Se ajustó a 20 y se desplegó v12. Segundo canario request
+  2690: 100/100, seis RPC, 0 fallos/stale/deferred, ~15,7 s extremo a extremo y
+  ~12,34 s SQL agregados; 0 locks, consultas largas o vacuum activo.
+- Estado final: pipeline `paused`, cron 17 inactivo, 3.401 jobs visibles de
+  HiperDino, 0 en vuelo/duplicados/fallos y 11.419 vectores HiperDino listos.
+  No pasar aún a `active`: puede lanzar tres workers y la invalidación de caché
+  continúa siendo row-level, con una actualización de generación por vector y
+  riesgo de contención/deadlock si coincide con un sync. Antes de un drenaje
+  continuo sigue pendiente la invalidación set-based por sentencia/run. Este
+  hardening redujo las llamadas REST; la Fase 3 HNSW está implementada solo en
+  local y todavía no cambia producción.
+
+## Fase 1: materializador de embeddings idempotente (producción, 2026-09-01)
+
+- Aplicada en producción la migración
+  `20260831214031_embedding_materializer_phase_one_idempotency.sql` y desplegado
+  `catalog-embed` v10. El código quedó fusionado en `main` mediante el PR #48
+  (`11e2c2c`). El pipeline continúa en `paused`, el cron 17 está
+  inactivo y quedan 3.601 jobs visibles de HiperDino, sin trabajos en vuelo ni
+  duplicados.
+- Se congela exactamente `catalog_embedding_content_v1`: las filas existentes
+  conservan su texto/vector. `embedding_input_hash` identifica el input exacto,
+  `semantic_identity_hash` decide si cambió el producto y
+  `match_metadata_hash` separa GTIN/unidad/cantidad/publicación. Las cuatro
+  columnas nuevas, incluida `category_family`, se desplegaron sin backfill.
+- La cola impone unicidad por
+  `(store, product_id, embedding_input_hash, model)`, incluida la compatibilidad
+  con payloads legacy. Las reparaciones por vector ausente/modelo obsoleto son
+  idempotentes; borrar un job obsoleto vuelve a garantizar la identidad vigente
+  en la misma transacción y cierra la carrera A→B→A. Los fallos terminales
+  suprimen el reintento automático hasta que se revisen y limpien.
+- El guardarraíl de anomalías ya bloquea toda la materialización —upserts,
+  despublicaciones y cola— y detiene el resto de tiendas; no se limita al
+  dispatch. El override continúa siendo explícito y auditado.
+- Smoke SQL real con `ROLLBACK` correcto: dedupe legacy/nuevo, job invisible,
+  expected hash obsoleto, A→B→A, semantic-only, modelo obsoleto y fallo
+  terminal. Gadis pasó un `DRY_RUN` y dos runs reales consecutivos con 10.901
+  sin cambios, 0 upserts, 0 despublicaciones y 0 jobs.
+- Dos canarios productivos de Fase 1 completados el 01-09: las peticiones
+  manuales `pg_net` 2682 y 2684 procesaron los jobs legacy
+  239803..239902 y 239903..240002 de HiperDino. Cada lote terminó con HTTP 200,
+  100 completados, 0 fallidos, 0 obsoletos y 0 lotes encadenados. La cola bajó
+  de 3.801 a 3.601 y HiperDino quedó con 11.219 vectores listos; después de ambos
+  lotes seguían en cero los trabajos en vuelo, fallos, duplicados, bloqueos,
+  consultas largas y autovacuum. El control quedó `paused` y el cron 17
+  inactivo.
+- El `DRY_RUN` global revisó 203.073 productos. El delta pendiente es real:
+  7.024 altas, 709 cambios semánticos y 12.624 cambios solo de metadata; no hay
+  regeneración masiva de las ~200k filas. Esclat (1.873 embeddings) y Carrefour
+  (3.864) superan el límite automático, por lo que no se ejecutó el lote global.
+  Mantener el drenaje continuo apagado: los dos canarios simples son sanos, pero
+  antes de usar `active` conviene diseñar un drenaje de varios lotes con límite
+  total explícito y observación entre lotes.
+
+## Fase 0 del control de embeddings (local + backend, 2026-08-31)
+
+- El pipeline tiene ahora un interruptor central en
+  `comparator_internal.catalog_embedding_pipeline_control`: `paused` no
+  despacha, cada activación de `canary` concede un único lote global y `active`
+  conserva la concurrencia solicitada. El primer despacho canario consume el
+  permiso, por lo que el worker no puede encadenar la cola completa.
+- Cada reconciliación real se audita en
+  `comparator_internal.catalog_embedding_runs`, con altas, cambios semánticos,
+  cambios solo de metadatos, republicaciones, ausencias y embeddings previstos.
+  Más de 1.000 trabajos o más del 10 % de la fuente bloquean automáticamente el
+  despacho y dejan el pipeline en `paused`; el override explícito queda
+  registrado.
+- El reconciliador distingue ahora las causas del cambio y solo espera un
+  embedding para altas, contenido semántico modificado o republicaciones sin
+  vector reutilizable. Los cambios de GTIN/unidad/cantidad no regeneran el
+  vector.
+- Aplicadas en producción `embedding_pipeline_phase_zero_control`, su
+  corrección `fix_embedding_phase_zero_special_expressions` y el presupuesto
+  canario `enforce_single_canary_dispatch_budget`. Estado verificado:
+  `paused`, cron 17 inactivo y apuntando a la RPC protegida, 3.901 trabajos
+  visibles, cero en vuelo y cero ejecuciones de prueba persistidas. Las RPC de
+  control son `SECURITY INVOKER` y solo ejecutables por `service_role`.
+- No activar aún la cola completa. Dos canarios supervisados ya se completaron
+  en Fase 1; el siguiente incremento debe conservar un presupuesto total
+  acotado. Consultar primero
+  `supabase/ops/README-comparator-embedding-pipeline.md`.
+
+## Favoritos resilientes y menor fan-out inicial del catálogo (2026-08-31)
+
+- Una incidencia productiva dejó Favoritos vacío y ralentizó Catálogo mientras
+  Postgres acumulaba `statement_timeout` y un autovacuum de más de 2,7 horas
+  sobre el índice HNSW de `catalog_product_embeddings`. La tabla `favorites`
+  estaba sana: columna `store`, unicidad por tienda y 3.878 filas presentes.
+- `FavoritesContext` conserva ahora un snapshot de categorías y productos en
+  `startupCache`, siempre bajo una clave por usuario. Lo pinta antes de la red,
+  revalida en segundo plano y hace dos reintentos acotados; un timeout transitorio
+  ya no sustituye datos válidos por un vacío. El pull-to-refresh de Inicio también
+  vuelve a consultar Favoritos y los toggles actualizan/revierten el snapshot.
+- La carga inicial de Catálogo → «Todos» usaba el tamaño por defecto del
+  paginador y pedía 50 filas a cada supermercado para mostrar 50 globales. Ahora
+  usa lotes de 12, igual que la búsqueda conjunta, conservando los buffers y la
+  tolerancia a fallos por tienda.
+- Supabase no permite al rol del proyecto cancelar el trabajador de autovacuum,
+  que pertenece al superusuario; el intento acotado al PID 1242429 fue
+  rechazado sin modificar datos. No era un vacuum anti-wraparound. Como
+  mitigación reversible se pausó el cron 17 `catalog-embedding-dispatch` para
+  evitar nuevas escrituras de embeddings mientras termina; debe reactivarse al
+  concluir y comprobarse la cola. La guía oficial de pgvector confirma que HNSW
+  puede hacer lento `VACUUM` y recomienda reindexar primero si se programa
+  mantenimiento manual. Regresión en `scripts/tests/favorites-resilience.test.mjs`.
+
 ## Materializador incremental del comparador y reparación de Gadis (2026-08-30)
 
 - El sync de Gadis terminó correctamente con 10.901 productos publicados, pero
@@ -26,6 +234,26 @@
   `scripts/lib/catalog-embedding-reconcile.test.mjs`; `npm run quality` pasa
   con 107/107 pruebas.
 
+## «Todos» incluido para todas las cuentas registradas (2026-08-29)
+
+- Tras desplegar la versión 1.3, el selector «Todos» deja de ser un beneficio
+  Plus: cualquier cuenta registrada puede usarlo en Catálogo, Novedades,
+  Ofertas y Cambios de precio.
+- La 1.3 ya publicada todavía decide el acceso mediante
+  `profiles.legacy_all_stores_access`. La migración
+  `20260829124046_grant_all_registered_users_all_stores_access.sql` cambia su
+  `DEFAULT` a `true`, habilita los perfiles existentes que quedaban a `false` y
+  mantiene el trigger que impide modificar el permiso desde el cliente.
+- Antes del cambio, Supabase tenía 4.211 usuarios Auth con sus 4.211 perfiles:
+  4.051 habilitados y 160 bloqueados. El cliente siguiente elimina el gate y
+  retira «Todos los supermercados» de los beneficios comerciales del paywall.
+- Aplicada en producción como `20260829124046`. Verificación posterior:
+  4.211/4.211 perfiles habilitados, cero bloqueados, `DEFAULT true` y trigger
+  protector activo.
+- El popup de la 1.3 pasa a distinguir las cuentas anteriores por `created_at`,
+  no por el permiso de «Todos», para que las altas posteriores no reciban una
+  bienvenida heredada.
+
 ## Froiz y Alcampo pasan a sync productivo local con embeddings (2026-08-29)
 
 - Los workflows `sync-froiz.yml` y `sync-alcampo.yml` dejan de tener `schedule`:
@@ -41,12 +269,12 @@
   upserts y `markStale`, y la app lee `catalog_sync_status` incluyendo ambas
   cadenas. La fecha representa el catálogo de origen; un fallo posterior del
   materializador no oculta que el catálogo sí terminó correctamente.
-- Verificación remota de solo lectura: Froiz figura con
-  `synced_at=2026-08-29T11:30:34.814Z`. Alcampo todavía no tiene fila aunque su
-  producto más reciente lleva `synced_at=2026-08-21T09:05:06.908Z`, señal de
-  que aquella ejecución escribió productos pero no alcanzó el final posterior a
-  `markStale`. No se falsea la fecha con un backfill: comprobarla tras el próximo
-  `run-alcampo-playwright.ps1 -Publish` completo.
+- Froiz figura con `synced_at=2026-08-29T11:30:34.814Z`. Alcampo no había
+  creado su fila aunque su producto más reciente llevaba
+  `synced_at=2026-08-21T09:05:06.908Z`; a petición operativa se registró esa
+  misma marca comprobada en `catalog_sync_status`, sin presentarla como una
+  ejecución nueva. Verificación posterior: la fila de Alcampo devuelve
+  exactamente `2026-08-21T09:05:06.908+00:00`.
 - Regresión en `scripts/tests/comparator-sync-integration.test.mjs`.
 
 ## Preproducción del vídeo promocional de la versión 1.3 (2026-08-29)
@@ -84,6 +312,14 @@
   `marketing/version-1.3/animatica-1.2.1-a-1.3-v1.mp4`: 5 segundos, 1080 x
   1920, 30 fps, H.264 y sin sonido. Es una prueba de ritmo con cortes de pose,
   todavía sin interpolación, partículas animadas ni diseño sonoro final.
+- La referencia vigente es
+  `marketing/version-1.3/animatica-1.2.1-a-1.3-v4.mp4`: 6 segundos, 1080 x
+  1920, 30 fps, H.264 y AAC estéreo. Ya desplaza y rota el `2` y el último `1`,
+  interpola las poses, hace entrar a la berenjena y plantar la escalera, y
+  añade polvo, estelas, vibración, destello de transformación, celebración y
+  diseño sonoro sincronizado. El render reproducible está en
+  `marketing/version-1.3/render_animatica_v2.py`; la mezcla sin recursos de
+  audio externos está en `marketing/version-1.3/sound-design-v1.ffilter`.
 
 ## Alertas personalizadas activas para todas las cuentas (2026-08-28)
 
@@ -1182,16 +1418,16 @@
   color elegido (incluido el personalizado de Plus) y al modo claro/oscuro. Es
   decorativo, no intercepta gestos y queda oculto al árbol de accesibilidad.
 
-## QuéCocino desactivado temporalmente (2026-08-20)
+## QuéCocino reactivado para desarrollo (2026-08-30)
 
-- **QuéCocino no forma parte actualmente del árbol de navegación** y no deja
-  ningún acceso visible ni accesible en la barra inferior. La app vuelve a
-  mostrar cuatro pestañas: Inicio, Catálogo, Carrito y Grupos.
-- La implementación preliminar se conserva para retomarla más adelante. Su único
-  interruptor es `QUE_COCINO_ENABLED` en `src/constants/limits.ts`; debe seguir
-  apagado hasta que existan recetas reales, persistencia y detalle de receta.
-- No hay integración remota, migraciones ni datos de usuario asociados que sea
-  necesario desactivar o retirar.
+- **QuéCocino vuelve a formar parte del árbol de navegación** y aparece como
+  quinta pestaña entre Catálogo y Carrito. Su interruptor
+  `QUE_COCINO_ENABLED` está activado en `src/constants/limits.ts`.
+- La implementación continúa siendo preliminar: conserva cuatro recetas de
+  muestra locales, el espacio de recetas oficiales, el icono y las traducciones
+  en castellano y catalán.
+- No hay todavía integración remota, persistencia, detalle de receta ni datos de
+  usuario asociados. Esos son los siguientes bloques funcionales que desarrollar.
 
 ## Paso 2 del onboarding con persiana azul (2026-08-18)
 
@@ -1751,7 +1987,7 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - ⏳ **Eroski (8º) y Caprabo (9º) añadidos** (2026-07-11): comparten backend (Apache Tapestry) → un scraper compartido `scripts/lib/eroski-tapestry.mjs` (GET de la página de categoría —SSR del 1er lote de 20— y después `POST supermarket:loadpage` con cookies de sesión + Origin/Referer; saca cada producto del JSON `data-metrics` del tile: id/nombre/marca/categoría/precio; ⚠️ la paginación `?pageNumber=N` original DEJÓ de funcionar el 2026-07-11: el server devuelve "No se obtuvieron resultados") y dos syncs mínimos (`sync-eroski.mjs`, `sync-caprabo.mjs`). Solo castellano, SIN €/unidad ni EAN, pero con nutrición de ficha HTML incremental normalizada para el Índice Alimentario. DRY_RUN completo OK (2026-07-11, ya con loadpage): **Eroski 21.073 productos** / 803 hojas / 0% sin tiles; **Caprabo 10.657** / 750 hojas (8% sin tiles por 429 de rate-limit tras encadenar crawls desde la misma IP — en CI no pasa). OJO: los crawls con `?pageNumber` daban 10.694 en Eroski = LA MITAD del catálogo (solo el 1er lote de cada hoja). GUARDARRAÍL anti-throttling: bajo carga el server sirve la página sin productos (o 429, con backoff largo + Retry-After) → reintentos en la pág. 1 + aborta el run si >20% de hojas llegan SIN TILES (para que markStale no despublique productos vivos); las hojas cuyo contenido ya se vio en otras categorías (~60 por súper, solapamiento del árbol) se cuentan APARTE como "solo-duplicados" y no disparan el aborto (la 1ª versión las mezclaba y abortó el run de CI del 2026-07-11 con un falso "56% vacías"). App: tipo/adaptador/modal (`TapestryProductModal`)/pantalla (`TapestryProductsScreen`) COMPARTIDOS por ambos, con funciones de `catalog.ts` por tabla. Migraciones `eroski_catalog.sql`+`caprabo_catalog.sql` (autocontenidas, es-only) + ampliación `20260718133958_eroski_caprabo_nutrition.sql` para tablas ya creadas. Pendientes: ejecutar las migraciones, re-ejecutar `similar_products.sql` (ya con ambos brazos), primer run (`sync-eroski.yml` lunes 09:00 / `sync-caprabo.yml` 09:30) y validar en device. Logos en `assets/stores/{eroski,caprabo}.png`. Ver `scripts/README-eroski-caprabo-sync.md`.
 - ⏳ **Lista agrupada por zonas del súper** (2026-06-12): Lista y cesta de grupo agrupan Tienda → Zona ("pasillo": Fruta y verdura, Congelados al final…) con alfabético dentro. Mapeo de N1 de los 6 supers → ~15 zonas canónicas por keywords en `src/constants/zones.ts` (solo cliente, afinable sin migrar). La categoría se captura al añadir (`list_items.category_name`); manuales/históricos → "Otros". ⚠️ Si se añade un nuevo punto de "añadir a la cesta", pasar `categoryName`. Pendiente: ejecutar `list_items_category.sql`.
 - 🧪 Comparativa de productos similares entre supers (detalle de producto) — **ACTIVADA PARA TESTERS** con `PRICE_COMPARISON_ENABLED = true`: funciona bajo demanda, usa la capa híbrida/caché y el cliente ya apunta a `catalog_cheaper_products_v5`. Antes de distribuir ese cliente debe desplegarse `20260817124758_comparator_semantic_identity_guard.sql`; la RPC v4 permanece disponible para builds anteriores.
-- Monetización «QuéFalta Plus» (3,99 €/mes · 19,99 €/año): **ACTIVADA PARA REVISIÓN DE LA VERSIÓN 1.3 (2026-08-25)**. El paywall presenta orden por precio unitario, filtros en Ofertas/Cambios/Novedades, selección «Todos» y alertas personalizadas. Cliente `PAYWALL_ENABLED = true` y servidor `paywall_enabled() = true`, verificado en producción tras completar la compra de prueba en TestFlight.
+- Monetización «QuéFalta Plus» (3,99 €/mes · 19,99 €/año): **ACTIVA DESDE LA VERSIÓN 1.3**. El paywall presenta orden por precio unitario, Radar de ahorro ilimitado, alertas personalizadas ilimitadas, productos asociados a comentarios y estadísticas; «Todos» está incluido para cualquier cuenta registrada desde el 2026-08-29. Cliente `PAYWALL_ENABLED = true` y servidor `paywall_enabled() = true`.
 - Configuración externa de Plus (2026-08-22): Apple ya tiene los productos
   `com.quefalta.app.plus.monthly` y `.annual` (3,99/19,99 €, prueba anual de
   7 días) y RevenueCat ya enlaza Apple/Google/Test Store en `plus` → `default`

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  Image, ScrollView, StatusBar, StyleSheet, Text, View,
+  ActivityIndicator, Image, Pressable, ScrollView, StatusBar, StyleSheet, Text, View,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -13,6 +13,12 @@ import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import HardShadow from '../components/HardShadow';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
+import SlidingSegments, { type Segment } from '../components/SlidingSegments';
+import CreateRecipeModal from '../components/CreateRecipeModal';
+import CommunityRecipeDetailModal from '../components/CommunityRecipeDetailModal';
+import { fetchCommunityRecipes, type CommunityRecipe } from '../api/recipes';
+
+type RecipeSource = 'community' | 'supermarkets';
 
 type Recipe = {
   id: string;
@@ -62,13 +68,60 @@ export default function QueCocinoScreen() {
   const headerTop = useHeaderTopPadding(52);
   const bottomPad = useTabBarBottomPadding(40);
   const [headerH, setHeaderH] = useState(0);
+  const [source, setSource] = useState<RecipeSource>('community');
+  const [createVisible, setCreateVisible] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState<CommunityRecipe | null>(null);
+  const [communityRecipes, setCommunityRecipes] = useState<CommunityRecipe[]>([]);
+  const [recipesLoading, setRecipesLoading] = useState(true);
+  const [recipesError, setRecipesError] = useState(false);
+  const loadRecipes = useCallback(async () => {
+    setRecipesLoading(true);
+    setRecipesError(false);
+    try {
+      setCommunityRecipes(await fetchCommunityRecipes());
+    } catch {
+      setRecipesError(true);
+    } finally {
+      setRecipesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (source === 'community') loadRecipes();
+  }, [source, loadRecipes]);
+  const sourceSegments: Segment<RecipeSource>[] = [
+    {
+      key: 'community',
+      label: t('queCocino.sourceCommunity'),
+      icon: 'people-outline',
+    },
+    {
+      key: 'supermarkets',
+      label: t('queCocino.sourceSupermarkets'),
+      icon: 'storefront-outline',
+    },
+  ];
   const glassInset = glassAvailable ? headerH : 0;
   const header = (
     <View style={[styles.header, { paddingTop: headerTop }]}>
-      <View style={styles.headerIcon}>
-        <Ionicons name="restaurant-outline" size={18} color={colors.accent} />
+      <View style={styles.titleWrap}>
+        <View style={styles.headerIcon}>
+          <Ionicons name="restaurant-outline" size={15} color={colors.accent} />
+        </View>
+        <Text style={styles.headerTitle}>{t('queCocino.title')}</Text>
       </View>
-      <Text style={styles.headerTitle}>{t('queCocino.title')}</Text>
+      <Pressable
+        onPress={() => setCreateVisible(true)}
+        style={({ pressed }) => [
+          styles.createButton,
+          pressed && styles.createButtonPressed,
+        ]}
+        accessibilityRole="button"
+        accessibilityLabel={t('queCocino.createRecipe')}
+      >
+        <Ionicons name="add" size={18} color={colors.white} />
+        <Text style={styles.createButtonText}>{t('queCocino.createRecipe')}</Text>
+      </Pressable>
     </View>
   );
 
@@ -84,27 +137,16 @@ export default function QueCocinoScreen() {
           { paddingBottom: bottomPad, paddingTop: glassInset ? glassInset + 12 : 8 },
         ]}
       >
-        <LinearGradient
-          colors={[colors.accent, colors.accent]}
-          style={styles.hero}
-        >
-          <View style={styles.heroGlowLarge} />
-          <View style={styles.heroGlowSmall} />
-          <View style={styles.heroBadge}>
-            <Ionicons name="sparkles" size={12} color={colors.accent} />
-            <Text style={styles.heroBadgeText}>{t('queCocino.newContent')}</Text>
-          </View>
-          <View style={styles.heroBody}>
-            <View style={styles.heroCopy}>
-              <Text style={styles.heroTitle}>{t('queCocino.heroTitle')}</Text>
-              <Text style={styles.heroText}>{t('queCocino.heroText')}</Text>
-            </View>
-            <View style={styles.heroIcon}>
-              <Text style={styles.heroEmoji}>🍳</Text>
-            </View>
-          </View>
-        </LinearGradient>
+        <SlidingSegments
+          style={styles.sourceSelector}
+          emphasized
+          segments={sourceSegments}
+          value={source}
+          onChange={setSource}
+        />
 
+        {source === 'supermarkets' ? (
+          <>
         <SectionHeading
           icon="storefront-outline"
           title={t('queCocino.supermarketsTitle')}
@@ -134,14 +176,87 @@ export default function QueCocinoScreen() {
             ))}
           </View>
         </HardShadow>
-
+          </>
+        ) : (
+          <>
         <SectionHeading
           icon="people-outline"
           title={t('queCocino.communityTitle')}
           subtitle={t('queCocino.communitySubtitle')}
-          badge={t('queCocino.sample')}
+          badge={communityRecipes.length === 0 ? t('queCocino.sample') : undefined}
           styles={styles}
         />
+
+        {recipesLoading ? (
+          <View style={styles.recipeStatus}>
+            <ActivityIndicator color={colors.accent} />
+            <Text style={styles.recipeStatusText}>{t('queCocino.loading')}</Text>
+          </View>
+        ) : null}
+
+        {recipesError ? (
+          <Pressable
+            onPress={loadRecipes}
+            style={({ pressed }) => [styles.recipeStatus, pressed && styles.createButtonPressed]}
+            accessibilityRole="button"
+          >
+            <Ionicons name="refresh" size={18} color={colors.accent} />
+            <Text style={styles.recipeStatusText}>{t('queCocino.loadError')}</Text>
+          </Pressable>
+        ) : null}
+
+        {communityRecipes.length > 0 ? (
+          <View style={styles.recipeList}>
+            {communityRecipes.map((recipe) => (
+              <Pressable
+                key={recipe.id}
+                onPress={() => setSelectedRecipe(recipe)}
+                style={({ pressed }) => [
+                  styles.communityRecipeCard,
+                  pressed && styles.recipeCardPressed,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={t('queCocino.openRecipe', { name: recipe.title })}
+              >
+                <Image source={{ uri: recipe.imageUrl }} style={styles.communityRecipeImage} resizeMode="cover" />
+                <View style={styles.communityRecipeBody}>
+                  <View style={styles.authorRow}>
+                    {recipe.author.avatarUrl ? (
+                      <Image source={{ uri: recipe.author.avatarUrl }} style={styles.realAuthorAvatar} />
+                    ) : (
+                      <View style={[styles.authorAvatar, { backgroundColor: recipe.author.color }]}>
+                        <Text style={styles.realAuthorInitial}>{recipe.author.initials}</Text>
+                      </View>
+                    )}
+                    <Text style={styles.authorName} numberOfLines={1}>
+                      {recipe.author.username ? `@${recipe.author.username}` : recipe.author.name}
+                    </Text>
+                  </View>
+                  <Text style={styles.communityRecipeTitle} numberOfLines={2}>{recipe.title}</Text>
+                  <View style={styles.recipeMeta}>
+                    <View style={styles.metaItem}>
+                      <Ionicons name="basket-outline" size={14} color={colors.inkSoft} />
+                      <Text style={styles.metaText}>{t('queCocino.ingredientsCount', { n: recipe.ingredients.length })}</Text>
+                    </View>
+                    <View style={styles.metaDot} />
+                    <View style={styles.metaItem}>
+                      <Ionicons name="list-outline" size={14} color={colors.inkSoft} />
+                      <Text style={styles.metaText}>{t('queCocino.stepsCount', { n: recipe.steps.length })}</Text>
+                    </View>
+                  </View>
+                </View>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+
+        {communityRecipes.length > 0 ? (
+          <View style={styles.sampleDivider}>
+            <View style={styles.sampleDividerLine} />
+            <Text style={styles.sampleDividerText}>{t('queCocino.sampleIdeas')}</Text>
+            <View style={styles.sampleDividerLine} />
+          </View>
+        ) : null}
 
         <View style={styles.recipeList}>
           {SAMPLE_RECIPES.map((recipe) => (
@@ -185,6 +300,8 @@ export default function QueCocinoScreen() {
           <Ionicons name="information-circle-outline" size={18} color={colors.accent} />
           <Text style={styles.communityNoteText}>{t('queCocino.sampleNotice')}</Text>
         </View>
+          </>
+        )}
       </ScrollView>
 
       {glassAvailable && (
@@ -194,6 +311,19 @@ export default function QueCocinoScreen() {
           </GlassSurface>
         </View>
       )}
+
+      <CreateRecipeModal
+        visible={createVisible}
+        onClose={() => setCreateVisible(false)}
+        onCreated={(recipe) => {
+          setCommunityRecipes((current) => [recipe, ...current.filter((item) => item.id !== recipe.id)]);
+          setSource('community');
+        }}
+      />
+      <CommunityRecipeDetailModal
+        recipe={selectedRecipe}
+        onClose={() => setSelectedRecipe(null)}
+      />
     </View>
   );
 }
@@ -227,61 +357,34 @@ const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
   scroll: { paddingHorizontal: 16 },
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingHorizontal: 16, paddingBottom: 10,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+    paddingHorizontal: 16, paddingBottom: 12,
+  },
+  titleWrap: {
+    flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 10,
   },
   headerIcon: {
-    width: 34, height: 34, borderRadius: 17,
+    width: 28, height: 28, borderRadius: 14,
     backgroundColor: colors.accentLight,
     alignItems: 'center', justifyContent: 'center',
   },
   headerTitle: {
-    flex: 1, fontSize: 21, fontFamily: fonts.bold,
+    flex: 1, fontSize: 20, fontFamily: fonts.bold,
     color: colors.ink, letterSpacing: -0.3,
   },
+  createButton: {
+    minHeight: 34, paddingHorizontal: 11, borderRadius: 17,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
+    backgroundColor: colors.accent,
+  },
+  createButtonPressed: { transform: [{ scale: 0.96 }], opacity: 0.82 },
+  createButtonText: { color: colors.white, fontFamily: fonts.bold, fontSize: 13 },
   chrome: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
   chromeGlass: {
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.border,
   },
-  hero: {
-    padding: 18, minHeight: 172, borderRadius: 22, overflow: 'hidden',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.28)',
-  },
-  heroGlowLarge: {
-    position: 'absolute', width: 170, height: 170, borderRadius: 85,
-    right: -58, top: -90, backgroundColor: 'rgba(255,255,255,0.14)',
-  },
-  heroGlowSmall: {
-    position: 'absolute', width: 90, height: 90, borderRadius: 45,
-    left: -34, bottom: -50, backgroundColor: 'rgba(255,255,255,0.10)',
-  },
-  heroBadge: {
-    alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 8, paddingVertical: 5, borderRadius: 10,
-    backgroundColor: '#ffffff',
-  },
-  heroBadgeText: {
-    fontSize: 9.5, fontFamily: fonts.bold, color: colors.accent,
-    letterSpacing: 0.6, textTransform: 'uppercase',
-  },
-  heroBody: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 15 },
-  heroCopy: { flex: 1, minWidth: 0 },
-  heroTitle: {
-    fontSize: 23, lineHeight: 27, fontFamily: fonts.bold,
-    color: '#ffffff', letterSpacing: -0.5,
-  },
-  heroText: {
-    fontSize: 12.5, lineHeight: 18, fontFamily: fonts.medium,
-    color: 'rgba(255,255,255,0.86)', marginTop: 6,
-  },
-  heroIcon: {
-    width: 68, height: 68, borderRadius: 23,
-    backgroundColor: 'rgba(255,255,255,0.17)',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)',
-    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-  },
-  heroEmoji: { fontSize: 36 },
+  sourceSelector: { marginTop: 2, marginBottom: 2 },
 
   sectionHeading: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
@@ -333,7 +436,32 @@ const themedStyles = () => StyleSheet.create({
   storeLogo: { width: 26, height: 26, borderRadius: 7 },
   storeName: { width: '100%', fontSize: 8.5, fontFamily: fonts.semibold, color: colors.inkSoft, textAlign: 'center' },
 
+  recipeStatus: {
+    minHeight: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    marginBottom: 11, borderRadius: 16, backgroundColor: colors.white,
+    borderWidth: 1, borderColor: colors.border,
+  },
+  recipeStatusText: { fontSize: 12, fontFamily: fonts.semibold, color: colors.inkSoft },
   recipeList: { gap: 11 },
+  communityRecipeCard: {
+    overflow: 'hidden', backgroundColor: colors.white,
+    borderWidth: 1, borderColor: colors.border, borderRadius: 18,
+  },
+  recipeCardPressed: { opacity: 0.86, transform: [{ scale: 0.985 }] },
+  communityRecipeImage: { width: '100%', height: 178, backgroundColor: colors.photoPlaceholder },
+  communityRecipeBody: { padding: 13 },
+  communityRecipeTitle: {
+    fontSize: 17, lineHeight: 21, fontFamily: fonts.bold,
+    color: colors.ink, marginTop: 9,
+  },
+  realAuthorAvatar: { width: 24, height: 24, borderRadius: 9, backgroundColor: colors.photoPlaceholder },
+  realAuthorInitial: { fontSize: 10, fontFamily: fonts.bold, color: '#ffffff' },
+  sampleDivider: { flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 18 },
+  sampleDividerLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: colors.border },
+  sampleDividerText: {
+    fontSize: 9.5, fontFamily: fonts.bold, color: colors.inkSoft,
+    letterSpacing: 0.5, textTransform: 'uppercase',
+  },
   recipeCard: {
     minHeight: 154, flexDirection: 'row', overflow: 'hidden',
     backgroundColor: colors.white,

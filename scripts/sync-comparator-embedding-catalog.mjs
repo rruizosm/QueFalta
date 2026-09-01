@@ -25,6 +25,7 @@ const UPSERT_SIZE = 25;
 const UNPUBLISH_SIZE = 100;
 const REST_MAX_RETRIES = Math.min(8, Math.max(0, Number(process.env.REST_MAX_RETRIES || 5)));
 const REST_RETRY_BASE_MS = Math.min(10000, Math.max(250, Number(process.env.REST_RETRY_BASE_MS || 1000)));
+const SETTLEMENT_RETRY_DELAYS_MS = [50, 150, 300];
 const DRY_RUN = process.env.DRY_RUN === '1';
 const ALLOW_EMPTY = process.env.ALLOW_EMPTY === '1';
 const NORMALIZATION_ONLY = process.env.NORMALIZATION_ONLY === '1';
@@ -209,7 +210,7 @@ async function fetchExisting(store) {
     const url = new URL('/rest/v1/catalog_product_embeddings', SUPABASE_URL);
     url.searchParams.set(
       'select',
-      'product_id,display_name,brand,category,category_family,canonical_unit,quantity_base,global_gtin,attributes,content,content_hash,embedding_input_hash,semantic_identity_hash,match_metadata_hash,content_version,published,embedded_at,model',
+      'product_id,display_name,brand,category,category_family,canonical_unit,quantity_base,global_gtin,attributes,content,content_hash,embedding_input_hash,embedded_content_hash,semantic_identity_hash,match_metadata_hash,content_version,published,embedded_at,model',
     );
     url.searchParams.set('store', `eq.${store}`);
     url.searchParams.set('order', 'product_id.asc');
@@ -262,6 +263,40 @@ async function ensureEmbeddingJobs(jobs) {
     enqueuedJobs += result.enqueuedJobs;
   }
   return enqueuedJobs;
+}
+
+async function registerEmbeddingRunJobs(runId, jobs) {
+  const chunks = [];
+  for (let offset = 0; offset < jobs.length; offset += 500) {
+    chunks.push(jobs.slice(offset, offset + 500));
+  }
+  if (!chunks.length) chunks.push([]);
+
+  let linkedJobs = 0;
+  let pendingJobs = 0;
+  for (let index = 0; index < chunks.length; index += 1) {
+    const response = await rest('/rest/v1/rpc/catalog_register_embedding_run_jobs', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_run_id: runId,
+        p_jobs: chunks[index],
+        p_expected_dependency_count: jobs.length,
+        p_manifest_complete: index === chunks.length - 1,
+      }),
+    });
+    const result = await response.json();
+    if (!result || !Number.isInteger(result.linkedJobs)
+      || !Number.isInteger(result.pendingJobs)
+      || typeof result.manifestComplete !== 'boolean') {
+      throw new Error('catalog_register_embedding_run_jobs devolvió una respuesta inválida');
+    }
+    linkedJobs = result.linkedJobs;
+    pendingJobs = result.pendingJobs;
+  }
+  if (linkedJobs !== jobs.length || pendingJobs < 0 || pendingJobs > linkedJobs) {
+    throw new Error('catalog_register_embedding_run_jobs devolvió contadores incoherentes');
+  }
+  return { linkedJobs, pendingJobs };
 }
 
 async function upsertRows(rows) {
@@ -336,15 +371,37 @@ async function beginEmbeddingRun(store, sourceCount, existingCount, plan) {
   return run;
 }
 
-async function completeEmbeddingRun(runId, success, error = null) {
-  await rest('/rest/v1/rpc/catalog_complete_embedding_run', {
-    method: 'POST',
-    body: JSON.stringify({
-      p_run_id: runId,
-      p_success: success,
-      p_error_message: error ? String(error).slice(0, 1000) : null,
-    }),
-  });
+async function completeEmbeddingRun(
+  runId,
+  success,
+  error = null,
+) {
+  const maxAttempts = success ? SETTLEMENT_RETRY_DELAYS_MS.length + 1 : 1;
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const response = await rest('/rest/v1/rpc/catalog_complete_embedding_run', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_run_id: runId,
+        p_success: success,
+        p_error_message: error ? String(error).slice(0, 1000) : null,
+      }),
+    });
+    const settled = await response.json();
+    if (typeof settled !== 'boolean') {
+      throw new Error('catalog_complete_embedding_run devolvió una respuesta inválida');
+    }
+    if (!success || settled) return settled;
+    const retryDelay = SETTLEMENT_RETRY_DELAYS_MS[attempt];
+    if (retryDelay != null) {
+      await new Promise((resolve) => setTimeout(resolve, retryDelay));
+    }
+  }
+  console.log(JSON.stringify({
+    event: 'embedding_run_draining',
+    run_id: runId,
+    settlement_attempts: maxAttempts,
+  }));
+  return false;
 }
 
 async function recordEmbeddingDispatch(runId, requestCount) {
@@ -384,6 +441,7 @@ for (const [store, table, fields] of selectedStores) {
     republishedRows,
     repairProducts,
     repairJobs,
+    runJobs,
     expectedEmbeddingJobs,
   } = plan;
   // Mantiene el mismo orden global de locks que las RPC de la cola. Es
@@ -410,6 +468,7 @@ for (const [store, table, fields] of selectedStores) {
         await upsertRows(rowsToUpsert);
         await markProductsUnpublished(store, productIdsToUnpublish, seenAt);
         repairJobsEnqueued = await ensureEmbeddingJobs(repairJobs);
+        await registerEmbeddingRunJobs(run.runId, runJobs);
         await completeEmbeddingRun(run.runId, true);
         completedRuns.push(run);
       } catch (error) {

@@ -71,7 +71,11 @@ export default function HomeScreen() {
   const { activeCart, addToActiveCart, loadItemsIntoGroupCart } = useCart();
   const { profile } = useProfile();
   const { unreadCount } = useNotifications();
-  const { products: favProducts, loading: favoritesLoading } = useFavorites();
+  const {
+    products: favProducts,
+    loading: favoritesLoading,
+    refresh: refreshFavorites,
+  } = useFavorites();
   const toast = useToast();
   const [notifOpen, setNotifOpen] = useState(false);
   // En iOS Liquid Glass la cabecera mide de forma determinista 108 pt
@@ -215,9 +219,9 @@ export default function HomeScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await load();
+    await Promise.allSettled([load(), refreshFavorites()]);
     setRefreshing(false);
-  }, [load]);
+  }, [load, refreshFavorites]);
 
   const doneItems = cartItems.filter((item) => item.inCart).length;
   const totalItems = cartItems.length;

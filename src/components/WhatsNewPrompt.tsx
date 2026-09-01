@@ -20,6 +20,7 @@ import { useReducedMotion } from '../hooks/useReducedMotion';
 
 const WHATS_NEW_VERSION = '1.3.0';
 const WHATS_NEW_STORAGE_PREFIX = '@whats_new_seen:';
+const VERSION_1_3_RELEASED_AT = Date.parse('2026-08-29T12:38:05Z');
 
 type FeatureIcon = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -30,10 +31,10 @@ function whatsNewStorageKey(userId: string) {
 /**
  * Bienvenida compacta a la 1.3 para cuentas anteriores a esta versión.
  *
- * `legacyAllStoresAccess` es la señal de servidor que distingue esas cuentas:
- * una instalación nueva no tiene ningún marcador local previo que permita
- * saber si reemplazó a la 1.2. El cierre sí se recuerda por usuario y
- * dispositivo para no compartir estado entre cuentas del mismo móvil.
+ * `createdAt` distingue las cuentas anteriores al despliegue sin reutilizar el
+ * permiso de "Todos", que ahora está incluido para cualquier cuenta registrada.
+ * El cierre se recuerda por usuario y dispositivo para no compartir estado
+ * entre cuentas del mismo móvil.
  */
 export default function WhatsNewPrompt() {
   const { profile } = useProfile();
@@ -43,7 +44,10 @@ export default function WhatsNewPrompt() {
   const { height } = useWindowDimensions();
   const [visible, setVisible] = useState(false);
 
-  const eligibleUserId = profile?.legacyAllStoresAccess ? profile.id : null;
+  const createdAt = profile ? Date.parse(profile.createdAt) : Number.NaN;
+  const eligibleUserId = profile && Number.isFinite(createdAt) && createdAt < VERSION_1_3_RELEASED_AT
+    ? profile.id
+    : null;
   const seenKey = eligibleUserId ? whatsNewStorageKey(eligibleUserId) : null;
 
   useEffect(() => {

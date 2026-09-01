@@ -32,6 +32,19 @@ function storedEmbeddingInputHash(row) {
   return row.embedding_input_hash ?? row.content_hash;
 }
 
+// Las filas anteriores a la Fase 3 no tienen embedded_content_hash. En ellas,
+// un NULL significa "el vector corresponde al input que tenía la fila al
+// migrar". En cuanto cambia el input, el trigger materializa el hash anterior.
+function effectiveEmbeddedContentHash(row) {
+  return row.embedded_content_hash ?? storedEmbeddingInputHash(row);
+}
+
+function hasCurrentEmbedding(row, targetModel) {
+  return row.embedded_at != null
+    && row.model === targetModel
+    && effectiveEmbeddedContentHash(row) === storedEmbeddingInputHash(row);
+}
+
 function effectiveMatchMetadataHash(row) {
   return row.match_metadata_hash
     ?? row.phase_one_match_metadata_hash
@@ -66,9 +79,7 @@ function needsEmbeddingJob(current, entry, changeKind, fallbackModel) {
   if (changeKind !== 'semantic' && changeKind !== 'republished') return false;
   const materialized = rowForChange(entry, current, changeKind);
   return storedEmbeddingInputHash(current) !== storedEmbeddingInputHash(materialized)
-    || current.embedded_at == null
-    || current.model == null
-    || (targetModel != null && current.model !== targetModel);
+    || (targetModel != null && !hasCurrentEmbedding(current, targetModel));
 }
 
 export function embeddingJobIdentityKey(store, productId, embeddingInputHash, model) {
@@ -103,7 +114,7 @@ function needsRepair(current, entry, changeKind, fallbackModel) {
   if (changeKind === 'new' || changeKind === 'semantic' || changeKind === 'republished') return false;
   const targetModel = targetModelOf(entry, fallbackModel);
   if (!targetModel) return false;
-  return current.embedded_at == null || current.model !== targetModel;
+  return !hasCurrentEmbedding(current, targetModel);
 }
 
 function rowForChange(entry, current, changeKind) {
@@ -205,15 +216,15 @@ export function planEmbeddingReconciliation(sourceRows, existingRows, {
     job.embeddingInputHash,
     job.model,
   ));
-  const triggerJobs = normalizationOnly
+  const triggerRunJobs = normalizationOnly
     ? []
     : selectedChanges
       .filter(({ current, entry, kind }) => (
         needsEmbeddingJob(current, entry, kind, targetModel)
       ))
       .map(({ current, entry, kind }) => embeddingJobForChange(entry, current, kind, targetModel))
-      .filter((job) => job && !isSuppressed(job));
-  const repairJobs = normalizationOnly
+      .filter(Boolean);
+  const repairRunJobs = normalizationOnly
     ? []
     : changes
       .filter(({ current, entry, kind }) => needsRepair(current, entry, kind, targetModel))
@@ -224,13 +235,35 @@ export function planEmbeddingReconciliation(sourceRows, existingRows, {
         contentVersion: current.content_version,
         model: targetModelOf(entry, targetModel),
       }))
-      .filter((job) => !isSuppressed(job))
       .sort((left, right) => (
         compareText(left.store, right.store)
         || compareText(left.productId, right.productId)
         || compareText(left.embeddingInputHash, right.embeddingInputHash)
         || compareText(left.model, right.model)
       ));
+  const triggerJobs = triggerRunJobs.filter((job) => !isSuppressed(job));
+  const repairJobs = repairRunJobs.filter((job) => !isSuppressed(job));
+  // El manifiesto del run incluye también una identidad ya activa o con fallo
+  // terminal. No hay que encolarla otra vez, pero el run sí depende de que la
+  // base la clasifique como completed/superseded/terminal_failed.
+  const runJobsByIdentity = new Map();
+  for (const job of [...triggerRunJobs, ...repairRunJobs]) {
+    const key = embeddingJobIdentityKey(
+      job.store,
+      job.productId,
+      job.embeddingInputHash,
+      job.model,
+    );
+    if (!runJobsByIdentity.has(key)) runJobsByIdentity.set(key, job);
+  }
+  const runJobs = [...runJobsByIdentity.values()].sort((left, right) => (
+      compareText(left.store, right.store)
+      || compareText(left.productId, right.productId)
+      || compareText(left.embeddingInputHash, right.embeddingInputHash)
+      || compareText(left.model, right.model)
+  ));
+  // El guardarraíl cuenta solo trabajo nuevo no suprimido. `runJobs` conserva
+  // por separado el manifiesto lógico, incluidas identidades ya activas.
   const expectedEmbeddingJobs = triggerJobs.length + repairJobs.length;
 
   return {
@@ -245,6 +278,7 @@ export function planEmbeddingReconciliation(sourceRows, existingRows, {
     repairProducts: repairJobs.length,
     repairJobs,
     triggerJobs,
+    runJobs,
     expectedEmbeddingJobs,
   };
 }

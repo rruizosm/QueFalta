@@ -361,6 +361,41 @@ test('repara un modelo obsoleto y omite el modelo vigente', () => {
   assert.equal(plan.expectedEmbeddingJobs, 1);
 });
 
+test('fase 3 repara un vector cuyo hash embebido no coincide con el input vigente', () => {
+  const inputHash = 'b'.repeat(64);
+  const current = row('pending-hash', {
+    content_hash: inputHash,
+    embedding_input_hash: inputHash,
+    embedded_content_hash: 'a'.repeat(64),
+  });
+  const plan = planEmbeddingReconciliation([row('pending-hash', {
+    content_hash: inputHash,
+    embedding_input_hash: inputHash,
+  })], [current]);
+
+  assert.deepEqual(plan.rowsToUpsert, []);
+  assert.equal(plan.repairProducts, 1);
+  assert.equal(plan.repairJobs[0].embeddingInputHash, inputHash);
+  assert.equal(plan.expectedEmbeddingJobs, 1);
+});
+
+test('fase 3 considera vigente un vector legacy sin embedded_content_hash', () => {
+  const inputHash = 'c'.repeat(64);
+  const current = row('legacy-current-hash', {
+    content_hash: inputHash,
+    embedding_input_hash: inputHash,
+    embedded_content_hash: null,
+  });
+  const plan = planEmbeddingReconciliation([row('legacy-current-hash', {
+    content_hash: inputHash,
+    embedding_input_hash: inputHash,
+  })], [current]);
+
+  assert.deepEqual(plan.rowsToUpsert, []);
+  assert.equal(plan.repairProducts, 0);
+  assert.equal(plan.expectedEmbeddingJobs, 0);
+});
+
 test('un cambio de metadata y una reparación comparten un solo upsert y un solo job', () => {
   const source = [row('metadata-repair', { quantity_base: 2 })];
   const existing = [row('metadata-repair', {
@@ -390,6 +425,8 @@ test('un trabajo activo suprime la reparación aunque esté invisible o en vuelo
 
   assert.deepEqual(plan.rowsToUpsert, []);
   assert.deepEqual(plan.repairJobs, []);
+  assert.equal(plan.runJobs.length, 1);
+  assert.equal(plan.runJobs[0].productId, 'active');
   assert.equal(plan.repairProducts, 0);
   assert.equal(plan.expectedEmbeddingJobs, 0);
 });
@@ -428,6 +465,8 @@ test('la supresión exacta cubre triggers; otro hash o modelo no suprime el vige
   });
 
   assert.equal(suppressed.expectedEmbeddingJobs, 0);
+  assert.equal(suppressed.runJobs.length, 1);
+  assert.equal(suppressed.runJobs[0].embeddingInputHash, 'new-input-hash');
   assert.equal(notSuppressed.expectedEmbeddingJobs, 1);
 });
 

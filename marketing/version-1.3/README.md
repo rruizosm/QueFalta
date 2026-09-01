@@ -62,11 +62,49 @@ Los tres recursos son PNG de 1024 x 1536 px con alfa real verificado. Junto con
 las poses v2 permiten construir una primera animática sin tener que deformar de
 forma extrema una única ilustración.
 
-## Ritmo provisional de la secuencia
+## Ritmo de la animática con movimiento
 
 1. `0,0–0,8 s`: aparición del `1.2.1` viejo entre polvo y telarañas.
-2. `0,8–1,8 s`: plátano y tomate agarran los dígitos; la berenjena entra.
-3. `1,8–2,8 s`: tirón fuerte, vibración de los dígitos y caída de polvo.
-4. `2,8–3,6 s`: la berenjena planta la escalera mientras el `2` y el último `1`
-   se desprenden.
-5. `3,6–4,8 s`: transición de polvo y golpe visual para revelar `1.3` limpio.
+2. `0,8–2,2 s`: plátano y tomate agarran los dígitos; la berenjena entra.
+3. `2,2–3,2 s`: tirón fuerte, vibración, estelas y caída de polvo; la escalera
+   se planta y el `2` y el último `1` se desprenden.
+4. `3,2–3,6 s`: impacto, destello y transformación al `1.3` limpio.
+5. `3,6–6,0 s`: celebración, destellos y pausa final para leer la versión.
+
+## Elementos móviles y escenario
+
+- `assets/escenario-vacio-v1.png`: placa limpia del escenario, sin personajes,
+  dígitos ni sombras de primer plano.
+- `assets/digito-2-viejo-rgba-v2.png`: `2` envejecido aislado y listo para
+  desplazar, inclinar y rotar.
+- `assets/digito-1-final-viejo-rgba-v2.png`: último `1` envejecido aislado para
+  el tirón del tomate.
+- `assets/punto-viejo-rgba-v1.png`: punto envejecido aislado, usado dos veces
+  para conservar la lectura exacta de `1.2.1` durante el movimiento.
+
+Los dos dígitos son PNG RGBA de 941 x 1672 px con alfa real verificado. Se
+extrajeron desde croma magenta para no dañar la pintura azul; las pruebas sobre
+croma cian se descartaron porque contaminaban el color del metal.
+
+## Keyframes y animáticas
+
+- `keyframe-ruptura-v1.png`: momento de máxima fuerza, separación de los
+  dígitos, polvo y rotura de telarañas.
+- `keyframe-revelado-1.3-v1.png`: cierre luminoso con `1.3` limpio y las tres
+  mascotas celebrando.
+- `animatica-1.2.1-a-1.3-v1.mp4`: montaje vertical de 5 segundos, 1080 x 1920,
+  30 fps y H.264, sin sonido.
+- `animatica-1.2.1-a-1.3-v4.mp4`: referencia actual de 6 segundos, 1080 x 1920,
+  30 fps, H.264 y audio AAC estéreo. Anima de verdad los dígitos, intercala las
+  poses de las mascotas y añade entrada de la berenjena, escalera, polvo,
+  vibración de cámara, estelas, destello de transición y destellos finales.
+- `render_animatica_v2.py`: render reproducible de la composición y el
+  movimiento a partir de los PNG separados.
+- `sound-design-v1.ffilter`: mezcla reproducible de ambiente, tensión,
+  crujidos, impacto, barrido y acorde de celebración, sin archivos de audio
+  externos.
+
+Las versiones `v2` y `v3` son renders intermedios conservados para comparación;
+`v4` es la referencia vigente. Sigue siendo una animática de recortes y poses,
+no una animación esquelética final, pero ya permite evaluar ritmo, claridad de
+las acciones, transición, partículas y diseño sonoro como una pieza continua.

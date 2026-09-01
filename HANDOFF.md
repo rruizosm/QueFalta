@@ -1,5 +1,187 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Fase 4 desplegada; backlog legacy adoptado (2026-09-01)
+
+- Producción tiene las migraciones `20260901103216` (runs durables +
+  invalidación set-based), `20260901104518` (compatibilidad temporal del
+  materializador legacy) y `20260901104730` (revalidación única al cerrar el
+  manifiesto). Los triggers row-level de caché ya no existen.
+- La fuente modificada se invalida individualmente mediante un `DELETE ...
+  USING` por sentencia. La tienda destino incrementa generación una vez al
+  cerrar o fallar el run; escrituras ajenas a runs conservan un fallback de una
+  vez por tienda/sentencia. Locks en orden run→versión, sin `SKIP LOCKED`.
+- Canario productivo 2705: 100 completados, 0 failed/stale/deferred/dispatched.
+  Run `8d5406cc-9b7f-4eae-a61c-615538d2bb6b` quedó `settled` con 100 dependencias
+  `completed`; HiperDino subió 6.905→6.906 exactamente una vez y la cola quedó
+  sin jobs en vuelo. Ambos smokes SQL productivos pasaron con rollback.
+- La compatibilidad para el código actualmente en `main` solo auto-adopta jobs
+  de la misma tienda con `enqueued_at >= started_at` cuando su conteo coincide
+  exactamente con `expected_embedding_jobs`; no adivina manifests ambiguos. El
+  materializador nuevo registra M2M en chunks de 500 y revalida una sola vez en
+  el último bloque, pero sus cambios siguen locales y deben publicarse.
+- Gadis: 38 jobs legacy asociados al run
+  `1dda9168-c609-48d9-9221-7caff07368c4`, actualmente `draining`. Tras
+  autorización explícita, los 3.201 jobs legacy de HiperDino se asociaron al
+  run `fae4f61b-4187-4488-9d8b-4deb55fdd058` en siete bloques de 500/201. El
+  preflight confirmó 3.201 identidades únicas, publicadas, vigentes y realmente
+  pendientes; el fallback `coalesce(embedding_input_hash, content_hash)` cubre
+  sus filas legacy. La verificación posterior dio 0 diferencias cola↔manifiesto,
+  3.201 enlaces `pending/queued` y generación HiperDino todavía en 6.906.
+- Estado operativo: pipeline `paused`, cron 17 inactivo, 0 trabajos en vuelo y
+  0 fallos abiertos. No pasar directamente a `active`: el siguiente paso es un
+  drenaje canario controlado de los runs adoptados. Después queda implementar
+  stale-while-revalidate en segundo plano.
+
+## Fase 3 HNSW desplegada y canario sano (2026-09-01)
+
+- Nueva migración
+  `20260901094105_phase_three_single_hnsw_mutation.sql`: añade
+  `embedded_content_hash` sin backfill, conserva el vector anterior al cambiar
+  el input y usa la desigualdad de hashes como estado pendiente.
+- `catalog-embed` lee el hash embebido y no descarta como listo un vector
+  pendiente. `catalog_finalize_embedding_batch` escribe el vector nuevo y su
+  hash en una única sentencia CAS; un job cuyo hash/contenido/versión ya no son
+  actuales queda `stale` sin sobrescribir la fila.
+- Todas las rutas de candidatos y caché vigentes filtran fuentes y destinos por
+  hash. El materializador también detecta y repara filas con vector/modelo pero
+  hash desfasado; las filas legacy con hash embebido `NULL` siguen listas hasta
+  su primer cambio real.
+- Migración aplicada con versión remota/local `20260901094105`; el smoke SQL
+  con `ROLLBACK` pasó sin residuos. `catalog-embed` v13 está `ACTIVE` y coincide
+  exactamente con el bundle local. El smoke HTTP autenticado 2700 respondió
+  400 `invalid_batch_size` sin reclamar ningún trabajo.
+- Canario 2701: HTTP 200, 100 completados y 0 failed/stale/deferred/dispatched.
+  Las 100 filas escribieron el vector y su hash juntos; hay 0 hashes explícitos
+  desfasados o sin vector. Cola 3.401→3.301, HiperDino 11.419→11.519 listos, 0
+  fallos, duplicados, trabajos en vuelo, bloqueos o vacuum; HNSW válido/listo.
+- Estado operativo final: `paused`, presupuesto 0 y cron 17 inactivo. No pasar
+  a `active`: el trigger row-level aún elevó la generación de HiperDino
+  6.805→6.905 durante el lote. La Fase 4 debe reemplazar ese fan-out por un
+  único cierre e invalidación por run antes del drenaje continuo.
+
+## Hardening batch anterior, canarios sanos (2026-09-01)
+
+- Producción conserva `embedding_worker_phase_three_batch_writes` (versión
+  remota `20260901072452`); su worker v12 fue reemplazado por v13 al desplegar
+  la Fase 3 HNSW. El contrato usa OpenAI 50 y
+  escritura 20; `catalog_finalize_embedding_batch` admite hasta 25, ejecuta
+  `UPDATE ... FROM jsonb_to_recordset`, revalida con CAS y confirma PGMQ en la
+  misma transacción. Fallos agrupados y aislamiento acotado de poison rows.
+- Smoke transaccional bajo `service_role` correcto, incluidos multi-write,
+  multi-failure, archive terminal, hash/versión/publicación concurrentes,
+  identidad incorrecta y rollback por vector inválido. Cero productos, jobs,
+  fallos o archivos sintéticos persistidos. Advisors sin hallazgos nuevos
+  relacionados con la fase.
+- Canario 2688 con tamaño 25: HTTP 200, 100 completados, 0 failed/stale/deferred,
+  cuatro RPC, máximo SQL 6,91 s; se redujo por margen frente a 8 s. Canario 2690
+  con tamaño 20: HTTP 200, 100 completados, 0 failed/stale/deferred, seis RPC,
+  ~15,7 s total y ~12,34 s SQL; 0 locks, consultas largas o vacuum. La cola bajó
+  3.601→3.401 y HiperDino quedó en 11.419 listos.
+- Estado operativo final: `paused`, cron 17 inactivo, 3.401 visibles, 0 en
+  vuelo, duplicados y fallos abiertos. No habilitar `active`: aún puede abrir
+  tres workers y el trigger row-level de caché actualiza la generación una vez
+  por vector. Antes del drenaje continuo implementar invalidación set-based por
+  sentencia/run; mientras tanto, no solapar sync y canario. Este hardening
+  reduce las llamadas REST (100→6 por request); la Fase 3 HNSW posterior sigue
+  pendiente de desplegar.
+
+## Fase 1 de embeddings desplegada y pipeline pausado (2026-09-01)
+
+- Producción tiene aplicada
+  `embedding_materializer_phase_one_idempotency` y `catalog-embed` v10 ACTIVE.
+  El PR #48 está fusionado en `main` (`11e2c2c`). Estado operativo: control
+  `paused`, cron 17 inactivo, 3.601 jobs visibles de
+  HiperDino, 0 en vuelo, 0 duplicados y 0 filas sintéticas del smoke.
+- La migración añadió, sin backfill, `embedding_input_hash`,
+  `semantic_identity_hash`, `match_metadata_hash` y `category_family`; el
+  índice único de PGMQ y las RPC de reparación/eliminación/supresión están
+  desplegados y solo `service_role` puede ejecutarlos.
+- Validación productiva: smoke transaccional A→B→A/legacy/terminal correcto;
+  Gadis tuvo `DRY_RUN` + dos runs reales consecutivos con 0 upserts, 0
+  despublicaciones y 0 jobs. Runs auditados:
+  `1aa1d547-31f0-41c5-94fc-47e7a640770f` y
+  `aae8add6-64a4-40cc-9ed4-79420d2ffd78`.
+- Dos canarios productivos ejecutados manualmente con el cron siempre apagado:
+  request 2682 procesó los jobs 239803..239902 y request 2684 los
+  239903..240002, todos de HiperDino. Ambos devolvieron HTTP 200,
+  `completed=100`, `failed=0`, `stale=0`, `dispatched=0`; cola 3.801→3.601,
+  11.219 vectores HiperDino listos y generación de caché 6.605. La comprobación
+  estabilizada dejó 0 invisibles, fallos, duplicados, bloqueos, consultas largas
+  y autovacuum. El pipeline volvió a `paused` en la misma transacción,
+  `canaryRemainingRequests=0`, y el cron 17 sigue inactivo.
+- El `DRY_RUN` de las 18 tiendas revisó 203.073 productos y proyectó 7.733
+  embeddings: 7.024 altas + 709 cambios semánticos. No es churn de 200k, pero
+  Esclat (1.873) y Carrefour (3.864) activan el límite de 1.000. No ejecutar el
+  materializador global ni usar override: revisar/trocear esos deltas. Mantener
+  el cron apagado. Los dos canarios simples ya son sanos; antes de `active`,
+  implementar o ejecutar un drenaje de varios lotes con presupuesto total
+  explícito, baja concurrencia y observación entre lotes.
+- El guardarraíl local bloquea ahora todas las escrituras y corta el recorrido
+  cuando `anomalyBlocked=true`. `npm run quality` pasa 172/172. Advisors: ningún
+  hallazgo nuevo bloqueante de Fase 1; los avisos relevantes son INFO esperados
+  por RLS sin políticas en tablas privadas y un índice de runs aún sin uso.
+
+## Fase 0 del pipeline de embeddings (local + backend, 2026-08-31)
+
+- Ya están aplicadas en producción las migraciones
+  `embedding_pipeline_phase_zero_control` y
+  `fix_embedding_phase_zero_special_expressions`. La segunda corrige el uso
+  prefijado de expresiones especiales de PostgreSQL detectado por la prueba
+  transaccional. `enforce_single_canary_dispatch_budget` impide además que el
+  encadenamiento convierta el canario en un vaciado serial de toda la cola.
+  Ninguna ejecución de prueba quedó persistida.
+- El control central permanece en `paused`. El cron 17 continúa inactivo, con
+  frecuencia `*/15 * * * *` y comando
+  `select public.catalog_dispatch_embedding_jobs(3);`; aunque alguien invoque
+  materializador, cron o worker, la RPC devuelve cero lotes mientras esté
+  pausado.
+- Estado productivo final: 3.901 trabajos visibles, cero en vuelo y cero filas
+  en `catalog_embedding_runs`. La cola no se vació ni se reescribió. `anon` y
+  `authenticated` no pueden ejecutar la RPC; `service_role` sí.
+- El materializador local audita el desglose, calcula los embeddings esperados
+  y bloquea automáticamente si supera 1.000 o el 10 % de la tienda. Solo altas,
+  cambios semánticos o republicaciones sin vector cuentan como embeddings;
+  cambios de metadatos de comparación no regeneran el vector.
+- El código de Fase 0 está publicado en la rama
+  `codex/catalog-comparator-ui-hardening`. Dos canarios de Fase 1 ya validaron
+  lotes individuales; mantener el cron inactivo y no pasar a drenaje continuo
+  sin un presupuesto total acotado y observación entre lotes. No habilitar
+  directamente el cron antiguo.
+- Validación focalizada y prueba funcional remota correctas. Los advisors solo
+  añaden avisos INFO esperados: tablas internas con RLS sin políticas (acceso
+  exclusivo por `service_role`) e índices de auditoría todavía sin uso.
+
+## Incidencia de Favoritos y carga de Catálogo (local + diagnóstico, 2026-08-31)
+
+- Producción conserva `favorites.store`, la restricción única por
+  usuario+tipo+tienda+referencia y 3.878 favoritos de 684 usuarios. El vacío no
+  procede de una migración ausente: `FavoritesContext` silenciaba cualquier
+  error inicial y, al no tener snapshot ni reintento, dejaba el estado vacío
+  durante toda la sesión.
+- El contexto hidrata ahora un snapshot por usuario mediante `startupCache`,
+  revalida sin ocultarlo, reintenta dos veces y expone un refresh que Inicio
+  ejecuta al arrastrar. Añadir o quitar favoritos mantiene la caché optimista y
+  la revierte junto con el estado si Supabase falla.
+- Catálogo → «Todos» precarga 12 filas por súper en vez de las 50 implícitas.
+  Antes podía descargar hasta 900 filas para componer solo 50 resultados; la
+  búsqueda conjunta ya usaba correctamente el lote de 12.
+- Durante el diagnóstico Postgres mostró una ráfaga de timeouts, conexiones
+  rotas y un autovacuum de `catalog_product_embeddings` atascado en
+  `vacuuming indexes` (5/6) durante más de 2,8 h. El HNSW ocupa ~598 MB y la
+  tabla tenía ~53.900 tuplas muertas tras el trabajo de embeddings. Se intentó
+  cancelar únicamente el PID 1242429, pero Supabase lo rechazó porque el
+  trabajador pertenece al superusuario; no se alteraron datos. No es un vacuum
+  anti-wraparound (`xid_age` 1,17 M frente al límite 200 M).
+- Mitigación productiva activa: el cron `catalog-embedding-dispatch` (job 17)
+  quedó pausado mediante `cron.alter_job(... active := false)` para no generar
+  más escritura mientras termina el vacuum. El cron 18 de alertas continúa
+  activo. Aunque concluya el vacuum, ya no se debe reactivar directamente: la
+  Fase 0 exige pasar primero por `canary`. El mantenimiento posterior debe ser
+  `REINDEX INDEX CONCURRENTLY` del HNSW y después `VACUUM (ANALYZE)` en una
+  ventana de baja actividad.
+- `npm run quality` pasa TypeScript, lint y 132/132 pruebas. Nueva regresión:
+  `scripts/tests/favorites-resilience.test.mjs`.
+
 ## Timeouts de Gadis resueltos con reconciliación incremental (2026-08-30)
 
 - Causa confirmada en Supabase: el materializador reescribía las 10.901 filas
@@ -19,6 +201,22 @@
   pruebas. Archivos centrales: `scripts/sync-comparator-embedding-catalog.mjs`
   y `scripts/lib/catalog-embedding-reconcile.mjs`.
 
+## «Todos» para todas las cuentas registradas (local + backend, 2026-08-29)
+
+- La versión 1.3 ya está desplegada. La regla cambia: Catálogo, Novedades,
+  Ofertas y Cambios de precio permiten seleccionar «Todos» a cualquier cuenta
+  registrada, no solo a Plus o a cuentas anteriores a 1.3.
+- La compatibilidad inmediata con el cliente publicado se resuelve en
+  `profiles.legacy_all_stores_access`: la nueva migración cambia el default a
+  `true` y hace backfill de los `false`. Antes de aplicarla había 4.211/4.211
+  usuarios con perfil, 4.051 habilitados y 160 bloqueados.
+- Aplicada en producción como `20260829124046`: 4.211 perfiles habilitados,
+  cero bloqueados, default `true` y trigger protector activo.
+- El cliente local elimina ambos gates y el beneficio correspondiente del
+  paywall. `WhatsNewPrompt` usa ahora `profiles.created_at` frente al instante
+  de despliegue para no confundir el permiso universal con ser una cuenta
+  anterior a 1.3.
+
 ## Froiz y Alcampo: cron remoto retirado y embeddings locales (2026-08-29)
 
 - `sync-froiz.yml` y `sync-alcampo.yml` ya no tienen programación automática;
@@ -33,9 +231,10 @@
   «Actualización de catálogos» consulta esa tabla e incluye Froiz y Alcampo.
   No hizo falta migración ni cambio de cliente.
 - Comprobación remota: Froiz tiene fecha del 29-08 a las 11:30 UTC. Alcampo no
-  tiene aún fila de estado aunque hay productos sellados el 21-08 a las 09:05
-  UTC; esa ejecución no llegó al final posterior a `markStale`. No se hizo un
-  backfill ambiguo: verificar que aparece tras el próximo `-Publish` completo.
+  había creado la fila de estado aunque sus productos más recientes estaban
+  sellados el 21-08 a las 09:05 UTC. A petición operativa se registró en
+  `catalog_sync_status` esa marca real ya comprobada, sin usar la fecha actual:
+  la fila devuelve `2026-08-21T09:05:06.908+00:00` y la app ya puede mostrarla.
 - Pruebas focalizadas de integración y dispatch: 12/12 correctas.
 
 ## Procesador general de alertas personalizadas (local + backend, 2026-08-28)
@@ -1058,14 +1257,15 @@
 - Las rejillas añaden una celda invisible cuando el número de supermercados es
   impar para impedir que la última tarjeta ocupe las dos columnas.
 
-## QuéCocino desactivado (local, 2026-08-20)
+## QuéCocino reactivado para desarrollo (local, 2026-08-30)
 
-- Retirada la pestaña QuéCocino del árbol de navegación mediante
-  `QUE_COCINO_ENABLED = false`; la barra inferior vuelve a tener Inicio,
-  Catálogo, Carrito y Grupos tanto en Liquid Glass como en la variante clásica.
-- La pantalla, el icono y sus traducciones se conservan como implementación
-  preliminar para retomarla más adelante. No existe backend ni dato remoto que
-  haya que migrar o apagar.
+- La pestaña QuéCocino vuelve al árbol de navegación mediante
+  `QUE_COCINO_ENABLED = true`, tanto en Liquid Glass como en la variante clásica.
+- La pantalla, el icono y sus traducciones siguen siendo una implementación
+  preliminar: muestra cuatro recetas de ejemplo escritas en el cliente y el
+  espacio reservado para recetas oficiales de supermercados.
+- Todavía no existe backend, persistencia ni detalle de receta. El contenido de
+  muestra no debe interpretarse como contenido publicado por usuarios reales.
 
 ## Push de solicitudes de amistad (local + backend desplegado, 2026-08-20)
 

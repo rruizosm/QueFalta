@@ -55,11 +55,12 @@ test('an early stale profile refresh cannot undo a validated purchase', () => {
   assert.match(paywall, /confirmPlusSubscription\(\)[\s\S]*\.then\(\(\) => refresh\(\)\)/);
 });
 
-test('the Plus paywall anchors the plans below its six advertised benefits', () => {
+test('the Plus paywall anchors the plans below its current advertised benefits', () => {
   const paywall = read('src/components/PaywallModal.tsx');
   const translations = read('src/i18n/translations.ts');
 
   assert.doesNotMatch(paywall, /key: 'filters'/);
+  assert.doesNotMatch(paywall, /key: 'stores'/);
   assert.doesNotMatch(translations, /filtersTitle: 'Filtros avanzados'/);
   assert.doesNotMatch(translations, /filtersTitle: 'Filtres avançats'/);
   assert.match(paywall, /<View style=\{styles\.bottomSection\}>[\s\S]*paywall\.choosePlan/);

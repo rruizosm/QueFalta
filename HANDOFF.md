@@ -1,9 +1,41 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
-## Fase 3 HNSW implementada en local, pendiente de desplegar (2026-09-01)
+## Fase 4 desplegada; backlog legacy adoptado (2026-09-01)
+
+- Producción tiene las migraciones `20260901103216` (runs durables +
+  invalidación set-based), `20260901104518` (compatibilidad temporal del
+  materializador legacy) y `20260901104730` (revalidación única al cerrar el
+  manifiesto). Los triggers row-level de caché ya no existen.
+- La fuente modificada se invalida individualmente mediante un `DELETE ...
+  USING` por sentencia. La tienda destino incrementa generación una vez al
+  cerrar o fallar el run; escrituras ajenas a runs conservan un fallback de una
+  vez por tienda/sentencia. Locks en orden run→versión, sin `SKIP LOCKED`.
+- Canario productivo 2705: 100 completados, 0 failed/stale/deferred/dispatched.
+  Run `8d5406cc-9b7f-4eae-a61c-615538d2bb6b` quedó `settled` con 100 dependencias
+  `completed`; HiperDino subió 6.905→6.906 exactamente una vez y la cola quedó
+  sin jobs en vuelo. Ambos smokes SQL productivos pasaron con rollback.
+- La compatibilidad para el código actualmente en `main` solo auto-adopta jobs
+  de la misma tienda con `enqueued_at >= started_at` cuando su conteo coincide
+  exactamente con `expected_embedding_jobs`; no adivina manifests ambiguos. El
+  materializador nuevo registra M2M en chunks de 500 y revalida una sola vez en
+  el último bloque, pero sus cambios siguen locales y deben publicarse.
+- Gadis: 38 jobs legacy asociados al run
+  `1dda9168-c609-48d9-9221-7caff07368c4`, actualmente `draining`. Tras
+  autorización explícita, los 3.201 jobs legacy de HiperDino se asociaron al
+  run `fae4f61b-4187-4488-9d8b-4deb55fdd058` en siete bloques de 500/201. El
+  preflight confirmó 3.201 identidades únicas, publicadas, vigentes y realmente
+  pendientes; el fallback `coalesce(embedding_input_hash, content_hash)` cubre
+  sus filas legacy. La verificación posterior dio 0 diferencias cola↔manifiesto,
+  3.201 enlaces `pending/queued` y generación HiperDino todavía en 6.906.
+- Estado operativo: pipeline `paused`, cron 17 inactivo, 0 trabajos en vuelo y
+  0 fallos abiertos. No pasar directamente a `active`: el siguiente paso es un
+  drenaje canario controlado de los runs adoptados. Después queda implementar
+  stale-while-revalidate en segundo plano.
+
+## Fase 3 HNSW desplegada y canario sano (2026-09-01)
 
 - Nueva migración
-  `20260901075343_phase_three_single_hnsw_mutation.sql`: añade
+  `20260901094105_phase_three_single_hnsw_mutation.sql`: añade
   `embedded_content_hash` sin backfill, conserva el vector anterior al cambiar
   el input y usa la desigualdad de hashes como estado pendiente.
 - `catalog-embed` lee el hash embebido y no descarta como listo un vector
@@ -14,20 +46,24 @@
   hash. El materializador también detecta y repara filas con vector/modelo pero
   hash desfasado; las filas legacy con hash embebido `NULL` siguen listas hasta
   su primer cambio real.
-- Añadido smoke con rollback en
-  `supabase/ops/verify-embedding-phase-three-single-hnsw-mutation.sql`. `npm
-  test`: 189/189. No se pudo compilar contra Supabase local porque esta máquina
-  no tiene Docker/Podman. Falta: typecheck/lint final, aplicar migración en
-  `paused`, ejecutar smoke, desplegar worker y correr un canario único.
-- No activar el pipeline. Producción continúa con worker v12 y el hardening
-  batch descrito debajo. La invalidación set-based de caché sigue siendo el
-  requisito anterior al drenaje continuo, no un requisito para desplegar esta
-  Fase 3 con un canario controlado.
+- Migración aplicada con versión remota/local `20260901094105`; el smoke SQL
+  con `ROLLBACK` pasó sin residuos. `catalog-embed` v13 está `ACTIVE` y coincide
+  exactamente con el bundle local. El smoke HTTP autenticado 2700 respondió
+  400 `invalid_batch_size` sin reclamar ningún trabajo.
+- Canario 2701: HTTP 200, 100 completados y 0 failed/stale/deferred/dispatched.
+  Las 100 filas escribieron el vector y su hash juntos; hay 0 hashes explícitos
+  desfasados o sin vector. Cola 3.401→3.301, HiperDino 11.419→11.519 listos, 0
+  fallos, duplicados, trabajos en vuelo, bloqueos o vacuum; HNSW válido/listo.
+- Estado operativo final: `paused`, presupuesto 0 y cron 17 inactivo. No pasar
+  a `active`: el trigger row-level aún elevó la generación de HiperDino
+  6.805→6.905 durante el lote. La Fase 4 debe reemplazar ese fan-out por un
+  único cierre e invalidación por run antes del drenaje continuo.
 
-## Hardening batch desplegado, canarios sanos y pipeline pausado (2026-09-01)
+## Hardening batch anterior, canarios sanos (2026-09-01)
 
-- Producción tiene `embedding_worker_phase_three_batch_writes` (versión remota
-  `20260901072452`) y `catalog-embed` v12 ACTIVE. El worker usa OpenAI 50 y
+- Producción conserva `embedding_worker_phase_three_batch_writes` (versión
+  remota `20260901072452`); su worker v12 fue reemplazado por v13 al desplegar
+  la Fase 3 HNSW. El contrato usa OpenAI 50 y
   escritura 20; `catalog_finalize_embedding_batch` admite hasta 25, ejecuta
   `UPDATE ... FROM jsonb_to_recordset`, revalida con CAS y confirma PGMQ en la
   misma transacción. Fallos agrupados y aislamiento acotado de poison rows.

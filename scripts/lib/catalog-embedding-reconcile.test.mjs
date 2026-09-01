@@ -425,6 +425,8 @@ test('un trabajo activo suprime la reparación aunque esté invisible o en vuelo
 
   assert.deepEqual(plan.rowsToUpsert, []);
   assert.deepEqual(plan.repairJobs, []);
+  assert.equal(plan.runJobs.length, 1);
+  assert.equal(plan.runJobs[0].productId, 'active');
   assert.equal(plan.repairProducts, 0);
   assert.equal(plan.expectedEmbeddingJobs, 0);
 });
@@ -463,6 +465,8 @@ test('la supresión exacta cubre triggers; otro hash o modelo no suprime el vige
   });
 
   assert.equal(suppressed.expectedEmbeddingJobs, 0);
+  assert.equal(suppressed.runJobs.length, 1);
+  assert.equal(suppressed.runJobs[0].embeddingInputHash, 'new-input-hash');
   assert.equal(notSuppressed.expectedEmbeddingJobs, 1);
 });
 

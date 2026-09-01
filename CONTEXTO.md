@@ -3,10 +3,51 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
-## Fase 3: una sola mutación HNSW por cambio (local, pendiente de desplegar, 2026-09-01)
+## Fase 4: settlement e invalidación set-based (producción, 2026-09-01)
+
+- Desplegada con las migraciones remotas/locales
+  `20260901103216_embedding_runs_durable_settlement_and_set_based_invalidation.sql`,
+  `20260901104518_phase4_legacy_materializer_compatibility.sql` y
+  `20260901104730_phase4_manifest_revalidate_on_close.sql`. Los triggers legacy
+  por fila se retiraron; insert/update/delete e invalidación de dependencias usan
+  tablas de transición y se ejecutan una vez por sentencia.
+- Cada sync nuevo registra un manifiesto M2M exacto por
+  `expected_dependency_count`. Los runs pasan `running→draining→settled`; solo
+  `completed`, `already_ready`, `superseded` y `terminal_failed` son terminales.
+  El cierre marca `cache_bumped_at` y eleva la generación una única vez por run
+  con impacto. Los fallos posteriores a escrituras también invalidan una sola
+  vez; las escrituras sin run tienen fallback de un bump por tienda/sentencia.
+- La invalidación como origen elimina en bloque solo los estados de caché de los
+  productos realmente modificados. Como destino, la tienda se invalida al
+  cerrar el run. El orden estable run→versión elimina el antiguo `SKIP LOCKED`.
+  El registro acepta chunks de 500, pero revalida el manifiesto completo solo al
+  cerrarlo, evitando el coste cuadrático observado durante la revisión.
+- Los smokes productivos `verify-embedding-run-durable-settlement.sql` y
+  `verify-embedding-run-legacy-compatibility.sql` pasaron con `ROLLBACK`. El
+  canario HTTP 2705 completó 100/100, 0 fallos/stale/deferred, y la generación
+  de HiperDino pasó exactamente 6.905→6.906; durante los primeros 90 resultados
+  permaneció en 6.905 y solo saltó al asentarse el run.
+- `main` todavía contiene el materializador anterior. La compatibilidad temporal
+  adopta automáticamente sus jobs solo si el conteo encolado desde `started_at`
+  coincide exactamente con `expected_embedding_jobs`; cualquier diferencia
+  falla cerrada. El materializador nuevo permanece local y debe publicarse antes
+  de retirar esta compatibilidad.
+- Backlog legacy ya adoptado: los 38 jobs de Gadis están ligados al run durable
+  `1dda9168-c609-48d9-9221-7caff07368c4`; los 3.201 de HiperDino se registraron
+  en siete bloques exactos (6×500 + 201) en el run
+  `fae4f61b-4187-4488-9d8b-4deb55fdd058`. Ambos quedaron `draining`, con todos
+  los enlaces `pending/queued`, equivalencia cola↔manifiesto y sin bump durante
+  la adopción: HiperDino continúa en generación 6.906. Pipeline `paused`, cron
+  17 inactivo, 0 jobs en vuelo y 0 fallos abiertos. El drenaje necesita un
+  canario controlado; no pasar directamente a `active`.
+- El stale-while-revalidate de la petición del comparador sigue pendiente como
+  siguiente bloque; el camino actual ya elimina el fan-out de generación, pero
+  todavía no programa el refresco de caché completamente en segundo plano.
+
+## Fase 3: una sola mutación HNSW por cambio (producción, 2026-09-01)
 
 - Implementada en
-  `20260901075343_phase_three_single_hnsw_mutation.sql`. Añade
+  `20260901094105_phase_three_single_hnsw_mutation.sql`. Añade
   `embedded_content_hash` sin backfill masivo. Un vector legacy con esa columna
   a `NULL` se considera ligado al input vigente hasta su primer cambio
   semántico; entonces el trigger conserva el vector y materializa el hash
@@ -21,22 +62,32 @@
   internas v3/v5 excluyen tanto fuentes como destinos pendientes. El HNSW no
   incluye el hash en su predicado deliberadamente: hacerlo quitaría y volvería
   a insertar la fila en cada cambio.
-- Pruebas Node: 189/189. Smoke transaccional nuevo:
-  `supabase/ops/verify-embedding-phase-three-single-hnsw-mutation.sql`; valida
-  retención, exclusión de búsqueda, sustitución conjunta y carrera A→B→C con
-  `ROLLBACK`. Pendiente ejecutarlo contra Supabase después de aplicar la
-  migración; el equipo local no tiene Docker/Podman.
-- Producción sigue en el estado anterior: pipeline `paused`, cron 17 inactivo y
-  worker v12. No activar ni desplegar esta fase sin repetir preflight, migración,
-  smoke SQL, worker y canario en ese orden. La separación física de la tabla de
-  vectores queda como evolución posterior para garantizar independencia total
-  entre actualizaciones MVCC del catálogo y el índice HNSW.
+- La migración quedó registrada en producción con la misma versión local,
+  `20260901094105`. El smoke transaccional
+  `supabase/ops/verify-embedding-phase-three-single-hnsw-mutation.sql`, que
+  valida retención, exclusión de búsqueda, sustitución conjunta y carrera
+  A→B→C con `ROLLBACK`, pasó sin residuos. `catalog-embed` v13 quedó `ACTIVE` y el bundle
+  remoto coincide con `index.ts`, los dos helpers y `deno.json` locales. El
+  smoke HTTP autenticado 2700 devolvió 400 `invalid_batch_size` sin reclamar
+  cola.
+- El canario único 2701 procesó 100/100 trabajos: 0 fallidos, obsoletos,
+  diferidos o encadenados. Las 100 filas terminaron con vector, modelo y
+  `embedded_content_hash = embedding_input_hash`; la cola bajó 3.401→3.301 y
+  HiperDino subió 11.419→11.519 vectores listos. No hubo bloqueos, consultas
+  largas, fallos ni vacuum activo, y el HNSW siguió válido/listo.
+- Estado final: pipeline `paused`, presupuesto canario 0 y cron 17 inactivo.
+  No usar `active` hasta desplegar la invalidación por run de Fase 4: el canario
+  confirmó que el trigger actual todavía incrementa la generación de HiperDino
+  100 veces (6.805→6.905). La separación física de la tabla de vectores queda
+  como evolución posterior para independencia total frente a actualizaciones
+  MVCC del catálogo.
 
-## Hardening batch del worker (producción, 2026-09-01)
+## Hardening batch del worker (despliegue anterior, 2026-09-01)
 
 - Aplicada en producción la migración
   `embedding_worker_phase_three_batch_writes` (remota `20260901072452`) y
-  desplegado `catalog-embed` v12. La finalizadora
+  desplegado inicialmente `catalog-embed` v12, sustituido después por v13 en la
+  Fase 3 HNSW. La finalizadora
   `catalog_finalize_embedding_batch(jsonb)` es `SECURITY INVOKER`, tiene
   `search_path` vacío y solo `service_role` puede ejecutarla; los privilegios
   mínimos de cola/archivo PGMQ quedaron verificados bajo ese mismo rol.

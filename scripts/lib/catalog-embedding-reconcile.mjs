@@ -216,15 +216,15 @@ export function planEmbeddingReconciliation(sourceRows, existingRows, {
     job.embeddingInputHash,
     job.model,
   ));
-  const triggerJobs = normalizationOnly
+  const triggerRunJobs = normalizationOnly
     ? []
     : selectedChanges
       .filter(({ current, entry, kind }) => (
         needsEmbeddingJob(current, entry, kind, targetModel)
       ))
       .map(({ current, entry, kind }) => embeddingJobForChange(entry, current, kind, targetModel))
-      .filter((job) => job && !isSuppressed(job));
-  const repairJobs = normalizationOnly
+      .filter(Boolean);
+  const repairRunJobs = normalizationOnly
     ? []
     : changes
       .filter(({ current, entry, kind }) => needsRepair(current, entry, kind, targetModel))
@@ -235,13 +235,35 @@ export function planEmbeddingReconciliation(sourceRows, existingRows, {
         contentVersion: current.content_version,
         model: targetModelOf(entry, targetModel),
       }))
-      .filter((job) => !isSuppressed(job))
       .sort((left, right) => (
         compareText(left.store, right.store)
         || compareText(left.productId, right.productId)
         || compareText(left.embeddingInputHash, right.embeddingInputHash)
         || compareText(left.model, right.model)
       ));
+  const triggerJobs = triggerRunJobs.filter((job) => !isSuppressed(job));
+  const repairJobs = repairRunJobs.filter((job) => !isSuppressed(job));
+  // El manifiesto del run incluye también una identidad ya activa o con fallo
+  // terminal. No hay que encolarla otra vez, pero el run sí depende de que la
+  // base la clasifique como completed/superseded/terminal_failed.
+  const runJobsByIdentity = new Map();
+  for (const job of [...triggerRunJobs, ...repairRunJobs]) {
+    const key = embeddingJobIdentityKey(
+      job.store,
+      job.productId,
+      job.embeddingInputHash,
+      job.model,
+    );
+    if (!runJobsByIdentity.has(key)) runJobsByIdentity.set(key, job);
+  }
+  const runJobs = [...runJobsByIdentity.values()].sort((left, right) => (
+      compareText(left.store, right.store)
+      || compareText(left.productId, right.productId)
+      || compareText(left.embeddingInputHash, right.embeddingInputHash)
+      || compareText(left.model, right.model)
+  ));
+  // El guardarraíl cuenta solo trabajo nuevo no suprimido. `runJobs` conserva
+  // por separado el manifiesto lógico, incluidas identidades ya activas.
   const expectedEmbeddingJobs = triggerJobs.length + repairJobs.length;
 
   return {
@@ -256,6 +278,7 @@ export function planEmbeddingReconciliation(sourceRows, existingRows, {
     repairProducts: repairJobs.length,
     repairJobs,
     triggerJobs,
+    runJobs,
     expectedEmbeddingJobs,
   };
 }

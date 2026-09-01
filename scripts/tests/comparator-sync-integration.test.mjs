@@ -67,6 +67,11 @@ test('Gadis deja margen para materializar en lotes incrementales tras el rastreo
   assert.match(workflow, /timeout-minutes:\s*60/);
 });
 
+test('Dia deja una hora para completar el rastreo y materializar el comparador', () => {
+  const workflow = readWorkflow('sync-dia.yml');
+  assert.match(workflow, /timeout-minutes:\s*60/);
+});
+
 test('los runners locales materializan tras un sync real correcto', () => {
   for (const [file, { store, sourceScript, realRunGuard }] of localRunnerStores) {
     const runner = readRunner(file);

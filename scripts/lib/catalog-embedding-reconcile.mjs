@@ -32,6 +32,19 @@ function storedEmbeddingInputHash(row) {
   return row.embedding_input_hash ?? row.content_hash;
 }
 
+// Las filas anteriores a la Fase 3 no tienen embedded_content_hash. En ellas,
+// un NULL significa "el vector corresponde al input que tenía la fila al
+// migrar". En cuanto cambia el input, el trigger materializa el hash anterior.
+function effectiveEmbeddedContentHash(row) {
+  return row.embedded_content_hash ?? storedEmbeddingInputHash(row);
+}
+
+function hasCurrentEmbedding(row, targetModel) {
+  return row.embedded_at != null
+    && row.model === targetModel
+    && effectiveEmbeddedContentHash(row) === storedEmbeddingInputHash(row);
+}
+
 function effectiveMatchMetadataHash(row) {
   return row.match_metadata_hash
     ?? row.phase_one_match_metadata_hash
@@ -66,9 +79,7 @@ function needsEmbeddingJob(current, entry, changeKind, fallbackModel) {
   if (changeKind !== 'semantic' && changeKind !== 'republished') return false;
   const materialized = rowForChange(entry, current, changeKind);
   return storedEmbeddingInputHash(current) !== storedEmbeddingInputHash(materialized)
-    || current.embedded_at == null
-    || current.model == null
-    || (targetModel != null && current.model !== targetModel);
+    || (targetModel != null && !hasCurrentEmbedding(current, targetModel));
 }
 
 export function embeddingJobIdentityKey(store, productId, embeddingInputHash, model) {
@@ -103,7 +114,7 @@ function needsRepair(current, entry, changeKind, fallbackModel) {
   if (changeKind === 'new' || changeKind === 'semantic' || changeKind === 'republished') return false;
   const targetModel = targetModelOf(entry, fallbackModel);
   if (!targetModel) return false;
-  return current.embedded_at == null || current.model !== targetModel;
+  return !hasCurrentEmbedding(current, targetModel);
 }
 
 function rowForChange(entry, current, changeKind) {

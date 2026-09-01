@@ -209,7 +209,7 @@ async function fetchExisting(store) {
     const url = new URL('/rest/v1/catalog_product_embeddings', SUPABASE_URL);
     url.searchParams.set(
       'select',
-      'product_id,display_name,brand,category,category_family,canonical_unit,quantity_base,global_gtin,attributes,content,content_hash,embedding_input_hash,semantic_identity_hash,match_metadata_hash,content_version,published,embedded_at,model',
+      'product_id,display_name,brand,category,category_family,canonical_unit,quantity_base,global_gtin,attributes,content,content_hash,embedding_input_hash,embedded_content_hash,semantic_identity_hash,match_metadata_hash,content_version,published,embedded_at,model',
     );
     url.searchParams.set('store', `eq.${store}`);
     url.searchParams.set('order', 'product_id.asc');

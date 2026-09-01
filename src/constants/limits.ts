@@ -23,9 +23,9 @@ export const PRICE_COMPARISON_ENABLED = true;
 export const FREE_PRICE_ALERT_LIMIT = 1;
 export const FREE_COMPARATOR_SEARCH_LIMIT = 3;
 
-/** QuéCocino se conserva para retomarlo más adelante, pero no forma parte del
- *  árbol de navegación ni es accesible desde la app mientras este flag sea false. */
-export const QUE_COCINO_ENABLED = false;
+/** QuéCocino vuelve a formar parte del árbol de navegación mientras se desarrolla
+ *  su contenido real sobre la implementación preliminar existente. */
+export const QUE_COCINO_ENABLED = true;
 
 /** Fuente única para autorizar Plus en el cliente. `verified` es solo el reflejo
  * público de este estado para pintar la insignia, nunca un gate de acceso. */
@@ -41,10 +41,3 @@ export const hasActivePremium = (
 /** true si los límites free aplican a este usuario (gate estándar de Fase 2). */
 export const limitsApply = (isPremium: boolean): boolean =>
   PAYWALL_ENABLED && !isPremium;
-
-/** "Todos" conserva acceso para las cuentas anteriores a la versión 1.3.
- *  Esta excepción no desbloquea ningún otro beneficio de QuéFalta Plus. */
-export const canUseAllStores = (
-  isPremium: boolean,
-  legacyAllStoresAccess: boolean | null | undefined,
-): boolean => !limitsApply(isPremium) || legacyAllStoresAccess === true;

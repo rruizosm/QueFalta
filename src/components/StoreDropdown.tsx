@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   View, Text, Image, Modal, Pressable, TouchableOpacity, FlatList, StyleSheet,
 } from 'react-native';
@@ -8,10 +8,7 @@ import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { useProfile } from '../context/ProfileContext';
-import { canUseAllStores } from '../constants/limits';
 import type { CatalogStore } from '../constants/stores';
-import PaywallModal from './PaywallModal';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 
 interface StoreOption { key: CatalogStore; name: string; icon: number | null }
@@ -48,14 +45,9 @@ export default function StoreDropdown<T extends StoreSelection>({
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
-  const { profile, isPremium, loading: profileLoading } = useProfile();
   const [internalOpen, setInternalOpen] = useState(false);
-  const [paywallVisible, setPaywallVisible] = useState(false);
   const open = controlledOpen ?? internalOpen;
   const allLabel = t('common.all');
-  const allLocked = includeAll
-    && !profileLoading
-    && !canUseAllStores(isPremium, profile?.legacyAllStoresAccess);
   const active = value === 'all' && includeAll
     ? { key: 'all' as const, name: allLabel, icon: null }
     : stores.find((s) => s.key === value) ?? stores[0];
@@ -63,14 +55,6 @@ export default function StoreDropdown<T extends StoreSelection>({
     if (controlledOpen == null) setInternalOpen(nextOpen);
     onOpenChange?.(nextOpen);
   };
-
-  // Si una suscripción vence mientras la pantalla sigue abierta, la selección
-  // combinada no permanece activa para una cuenta gratuita.
-  useEffect(() => {
-    if (allLocked && value === 'all' && stores[0]) {
-      onChange(stores[0].key as T);
-    }
-  }, [allLocked, onChange, stores, value]);
 
   const gridStores: (StoreOption | null)[] = stores.length % 2 === 0
     ? stores
@@ -124,16 +108,11 @@ export default function StoreDropdown<T extends StoreSelection>({
     <Pressable
       style={({ pressed }) => [
         styles.allCard,
-        allLocked ? styles.allCardLocked : styles.allCardUnlocked,
-        value === 'all' && (allLocked ? styles.allCardSelected : styles.allCardUnlockedSelected),
+        styles.allCardUnlocked,
+        value === 'all' && styles.allCardUnlockedSelected,
         pressed && styles.cardPressed,
       ]}
       onPress={() => {
-        if (allLocked) {
-          setMenuOpen(false);
-          setPaywallVisible(true);
-          return;
-        }
         onChange('all' as T);
         setMenuOpen(false);
       }}
@@ -151,7 +130,6 @@ export default function StoreDropdown<T extends StoreSelection>({
       <Text style={styles.cardName}>
         {allLabel}
       </Text>
-      {allLocked && <Ionicons name="lock-closed" size={17} color={colors.inkSoft} />}
     </Pressable>
   ) : null;
 
@@ -227,10 +205,6 @@ export default function StoreDropdown<T extends StoreSelection>({
           </View>
         </Modal>
       )}
-      <PaywallModal
-        visible={paywallVisible}
-        onClose={() => setPaywallVisible(false)}
-      />
     </>
   );
 }

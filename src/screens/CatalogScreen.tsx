@@ -92,7 +92,7 @@ import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import SlidingSegments, { type Segment } from '../components/SlidingSegments';
 import StoreDropdown, { type StoreSelection } from '../components/StoreDropdown';
 import PaywallModal from '../components/PaywallModal';
-import { canUseAllStores, limitsApply } from '../constants/limits';
+import { limitsApply } from '../constants/limits';
 
 // Las tiendas y sus metadatos viven en constants/stores.ts (fuente única
 // compartida con la preferencia de perfil "Supermercados").
@@ -369,8 +369,6 @@ export default function CatalogScreen() {
   // intersección queda vacía (eligió solo súpers de otra región), cae a todos
   // los de la región — nunca un catálogo vacío (los nacionales están en todas).
   const { profile, isPremium, loading: profileLoading } = useProfile();
-  const allLocked = !profileLoading
-    && !canUseAllStores(isPremium, profile?.legacyAllStoresAccess);
   const unitPriceSortLocked = !profileLoading && limitsApply(isPremium);
 
   const openUnitPricePaywall = () => {
@@ -440,13 +438,6 @@ export default function CatalogScreen() {
       setStore(enabledStores[0]);
     }
   }, [enabledStores, store]);
-
-  useEffect(() => {
-    if (allLocked && store === 'all' && enabledStores[0]) {
-      setStore(enabledStores[0]);
-      setTab('productos');
-    }
-  }, [allLocked, enabledStores, store]);
 
   const [categories, setCategories] = useState<N1Category[]>([]);
   const [catLoading, setCatLoading] = useState(false);
@@ -792,6 +783,7 @@ export default function CatalogScreen() {
       browseInitialController.current = controller;
       const pager = createMultiStorePager({
         stores: enabledStores,
+        pageSize: 12,
         loadPage: (selectedStore, cursor, limit, signal) =>
           loadBrowsePage(selectedStore, cursor, region, postalCode, signal, browseOrder, limit),
         compare: compareActiveProducts,
@@ -1797,16 +1789,11 @@ export default function CatalogScreen() {
     <Pressable
       style={({ pressed }) => [
         styles.storeAllCard,
-        allLocked ? styles.storeAllCardLocked : styles.storeAllCardUnlocked,
-        store === 'all' && (allLocked ? styles.storeAllCardSelected : styles.storeAllCardUnlockedSelected),
+        styles.storeAllCardUnlocked,
+        store === 'all' && styles.storeAllCardUnlockedSelected,
         pressed && styles.storeCardPressed,
       ]}
       onPress={() => {
-        if (allLocked) {
-          setStoreMenuOpen(false);
-          setPaywallVisible(true);
-          return;
-        }
         handleStoreChange('all');
         setStoreMenuOpen(false);
       }}
@@ -1825,7 +1812,6 @@ export default function CatalogScreen() {
       <Text style={styles.storeCardName}>
         {t('common.all')}
       </Text>
-      {allLocked && <Ionicons name="lock-closed" size={17} color={colors.inkSoft} />}
     </Pressable>
   );
 

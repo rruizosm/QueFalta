@@ -4,10 +4,19 @@ import {
   effectiveEmbeddingInputHash,
   parseEmbeddingJob,
 } from './job-identity.mjs';
+import {
+  chunkBatch,
+  finalizeBatchMessageIds,
+  parseFinalizeBatchResult,
+  settleBatchWithIsolation,
+  shouldIsolateBatchFinalizeError,
+} from './batch-contract.mjs';
 
 const MODEL = 'text-embedding-3-small';
 const DIMENSIONS = 512;
 const MAX_JOBS = 200;
+const OPENAI_BATCH_SIZE = 50;
+const WRITE_BATCH_SIZE = 20;
 const STORES = new Set([
   'alcampo', 'aldi', 'ametller', 'bonarea', 'caprabo', 'carrefour',
   'condis', 'consum', 'dia', 'eroski', 'esclat', 'hiperdino',
@@ -30,15 +39,47 @@ interface CatalogRow {
   content: string;
   content_hash: string;
   embedding_input_hash: string | null;
+  embedded_content_hash: string | null;
   content_version: string;
   embedding: unknown;
   model: string | null;
   published: boolean;
 }
 
+interface WorkItem {
+  row: CatalogRow;
+  jobs: EmbeddingJob[];
+}
+
+interface FinalizeTotals {
+  completed: number;
+  failed: number;
+  stale: number;
+}
+
+interface EmbeddingWrite {
+  msg_ids: number[];
+  store: string;
+  product_id: string;
+  embedding_input_hash: string;
+  expected_content_hash: string;
+  content_version: string;
+  model: string;
+  embedding: number[];
+}
+
 class OpenAIError extends Error {
   constructor(public status: number, public code: string, message: string) {
     super(message);
+  }
+}
+
+class BatchFinalizeError extends Error {
+  code: string;
+
+  constructor(error: any) {
+    super(`catalog_finalize_embedding_batch: ${error?.message ?? 'unknown error'}`);
+    this.code = typeof error?.code === 'string' ? error.code : '';
   }
 }
 
@@ -84,87 +125,135 @@ export default {
       const productIds = [...new Set(storeJobs.map((job) => job.productId))];
       const { data, error } = await admin
         .from('catalog_product_embeddings')
-        .select('store,product_id,content,content_hash,embedding_input_hash,content_version,embedding,model,published')
+        .select('store,product_id,content,content_hash,embedding_input_hash,embedded_content_hash,content_version,embedding,model,published')
         .eq('store', store)
         .in('product_id', productIds);
       if (error) {
-        await markFailures(admin, jobs, 'catalog_read_failed', error.message);
+        const totals = emptyTotals();
+        try {
+          addFinalizeOutcome(
+            totals,
+            await finalizeFailures(admin, jobs, 'catalog_read_failed', error.message),
+          );
+        } catch (finalizeError) {
+          return finalizeErrorResponse(totals, finalizeError, jobs.length);
+        }
         const dispatched = await dispatchNextBatch(admin);
-        return result(0, jobs.length, 0, dispatched);
+        return result(totals.completed, totals.failed, totals.stale, dispatched, deferredJobs(jobs.length, totals));
       }
       for (const row of (data ?? []) as CatalogRow[]) rowsByKey.set(productKey(row.store, row.product_id), row);
     }
 
-    const deleteIds: number[] = [];
-    const work = new Map<string, { row: CatalogRow; jobs: EmbeddingJob[] }>();
+    const staleIds: number[] = [];
+    const work = new Map<string, WorkItem>();
     for (const job of jobs) {
       const row = rowsByKey.get(productKey(job.store, job.productId));
-      if (!row || !row.published || effectiveEmbeddingInputHash(row) !== job.embeddingInputHash) {
-        deleteIds.push(job.msgId);
+      if (
+        !row
+        || !row.published
+        || effectiveEmbeddingInputHash(row) !== job.embeddingInputHash
+        || row.content_version !== job.contentVersion
+      ) {
+        staleIds.push(job.msgId);
         continue;
       }
-      if (row.embedding != null && row.model === job.model) {
-        deleteIds.push(job.msgId);
+      if (
+        row.embedding != null
+        && row.model === job.model
+        && effectiveEmbeddedContentHash(row) === job.embeddingInputHash
+      ) {
+        staleIds.push(job.msgId);
         continue;
       }
-      const key = `${productKey(job.store, job.productId)}:${job.embeddingInputHash}:${job.model}`;
+      const key = `${productKey(job.store, job.productId)}:${job.embeddingInputHash}:${job.contentVersion}:${job.model}`;
       const existing = work.get(key);
       if (existing) existing.jobs.push(job);
       else work.set(key, { row, jobs: [job] });
     }
 
     const items = [...work.values()];
-    let completed = 0;
-    let failed = 0;
-    if (items.length) {
-      try {
-        const embeddings = await createEmbeddings(openAIKey, items.map((item) => item.row.content));
-        for (let index = 0; index < items.length; index += 1) {
-          const item = items[index];
-          const { data, error } = await admin
-            .from('catalog_product_embeddings')
-            .update({
-              embedding: embeddings[index],
-              model: MODEL,
-              embedded_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            })
-            .eq('store', item.row.store)
-            .eq('product_id', item.row.product_id)
-            .eq('content_hash', item.row.content_hash)
-            .select('product_id')
-            .maybeSingle();
-
-          if (error) {
-            failed += item.jobs.length;
-            await markFailures(admin, item.jobs, 'catalog_update_failed', error.message);
-          } else {
-            // Una fila ausente indica que cambió mientras se generaba el vector:
-            // el trabajo ya es obsoleto y se elimina sin sobrescribir el nuevo hash.
-            deleteIds.push(...item.jobs.map((job) => job.msgId));
-            if (data) {
-              completed += item.jobs.length;
-              await admin.from('catalog_embedding_failures').delete().in('msg_id', item.jobs.map((job) => job.msgId));
-            }
-          }
-        }
-      } catch (error) {
-        const code = error instanceof OpenAIError ? error.code : 'openai_request_failed';
-        const message = errorMessage(error);
-        failed += items.reduce((count, item) => count + item.jobs.length, 0);
-        await markFailures(admin, items.flatMap((item) => item.jobs), code, message);
+    const totals = emptyTotals();
+    try {
+      for (const staleChunk of chunkBatch(staleIds, MAX_JOBS)) {
+        addFinalizeOutcome(totals, await finalizeBatch(admin, {
+          writes: [],
+          stale_msg_ids: staleChunk,
+          failure: null,
+        }));
       }
-    }
 
-    if (deleteIds.length) {
-      const { error } = await admin.rpc('catalog_delete_embedding_jobs', {
-        p_msg_ids: [...new Set(deleteIds)],
-      });
-      if (error) return json({ error: 'queue_delete_failed', detail: error.message }, 500);
+      for (let offset = 0; offset < items.length; offset += OPENAI_BATCH_SIZE) {
+        const openAIBatch = items.slice(offset, offset + OPENAI_BATCH_SIZE);
+        let embeddings: number[][];
+        try {
+          embeddings = await createEmbeddings(
+            openAIKey,
+            openAIBatch.map((item) => item.row.content),
+          );
+        } catch (error) {
+          const code = error instanceof OpenAIError ? error.code : 'openai_request_failed';
+          addFinalizeOutcome(
+            totals,
+            await finalizeFailures(
+              admin,
+              openAIBatch.flatMap((item) => item.jobs),
+              code,
+              errorMessage(error),
+            ),
+          );
+          // Cada sublote reclamado debe tener un intento real: PGMQ incrementa
+          // read_ct al reclamar todo el request, no al llamar a OpenAI.
+          continue;
+        }
+
+        const writes: EmbeddingWrite[] = openAIBatch.map((item, index) => ({
+          msg_ids: item.jobs.map((job) => job.msgId),
+          store: item.row.store,
+          product_id: item.row.product_id,
+          embedding_input_hash: item.jobs[0].embeddingInputHash,
+          expected_content_hash: item.row.content_hash,
+          content_version: item.jobs[0].contentVersion,
+          model: item.jobs[0].model,
+          embedding: embeddings[index],
+        }));
+        const jobsByMsgId = new Map(
+          openAIBatch.flatMap((item) => item.jobs).map((job) => [job.msgId, job]),
+        );
+
+        for (const writeChunk of chunkBatch(writes, WRITE_BATCH_SIZE)) {
+          await settleBatchWithIsolation(writeChunk, {
+            execute: (batch: EmbeddingWrite[]) => finalizeBatch(admin, {
+              writes: batch,
+              stale_msg_ids: [],
+              failure: null,
+            }),
+            onSingletonError: (write: EmbeddingWrite, error: unknown) => {
+              const failedJobs = write.msg_ids.map((msgId) => jobsByMsgId.get(msgId));
+              if (failedJobs.some((job) => !job)) throw new Error('missing_write_job');
+              return finalizeFailures(
+                admin,
+                failedJobs as EmbeddingJob[],
+                'catalog_update_failed',
+                errorMessage(error),
+              );
+            },
+            shouldIsolate: shouldIsolateBatchFinalizeError,
+            onOutcome: (outcome: any) => addFinalizeOutcome(totals, outcome),
+          });
+        }
+      }
+    } catch (error) {
+      return finalizeErrorResponse(totals, error, jobs.length);
     }
 
     const dispatched = await dispatchNextBatch(admin);
-    return result(completed, failed, deleteIds.length - completed, dispatched);
+    return result(
+      totals.completed,
+      totals.failed,
+      totals.stale,
+      dispatched,
+      deferredJobs(jobs.length, totals),
+    );
   }),
 };
 
@@ -189,20 +278,71 @@ async function createEmbeddings(apiKey: string, inputs: string[]): Promise<numbe
   });
 }
 
-async function markFailures(admin: any, jobs: EmbeddingJob[], code: string, message: string): Promise<void> {
-  await Promise.all(jobs.map(async (job) => {
-    const maxAttempts = ['credit_balance_exhausted', 'insufficient_quota'].includes(code) ? 20 : 5;
-    await admin.rpc('catalog_fail_embedding_job', {
-      p_msg_id: job.msgId,
-      p_store: job.store,
-      p_product_id: job.productId,
-      p_content_hash: job.embeddingInputHash,
-      p_read_count: job.readCount,
-      p_error_code: code.slice(0, 100),
-      p_error_message: message.slice(0, 1000),
-      p_max_attempts: maxAttempts,
-    });
-  }));
+async function finalizeFailures(
+  admin: any,
+  jobs: EmbeddingJob[],
+  code: string,
+  message: string,
+): Promise<any> {
+  if (!jobs.length) {
+    return {
+      completedMsgIds: [],
+      failedMsgIds: [],
+      staleMsgIds: [],
+    };
+  }
+  const maxAttempts = ['credit_balance_exhausted', 'insufficient_quota'].includes(code) ? 20 : 5;
+  return finalizeBatch(admin, {
+    writes: [],
+    stale_msg_ids: [],
+    failure: {
+      jobs: jobs.map((job) => ({
+        msg_id: job.msgId,
+        read_count: job.readCount,
+        store: job.store,
+        product_id: job.productId,
+        embedding_input_hash: job.embeddingInputHash,
+        content_version: job.contentVersion,
+        model: job.model,
+      })),
+      code: code.slice(0, 100) || 'unknown_failure',
+      message: message.slice(0, 1000) || 'unknown failure',
+      max_attempts: maxAttempts,
+    },
+  });
+}
+
+async function finalizeBatch(admin: any, batch: Record<string, unknown>): Promise<any> {
+  const expectedMessageIds = finalizeBatchMessageIds(batch);
+  const { data, error } = await admin.rpc('catalog_finalize_embedding_batch', {
+    p_batch: batch,
+  });
+  if (error) throw new BatchFinalizeError(error);
+  return parseFinalizeBatchResult(data, expectedMessageIds);
+}
+
+function emptyTotals(): FinalizeTotals {
+  return { completed: 0, failed: 0, stale: 0 };
+}
+
+function addFinalizeOutcome(totals: FinalizeTotals, outcome: any): void {
+  totals.completed += outcome.completedMsgIds.length;
+  totals.failed += outcome.failedMsgIds.length;
+  totals.stale += outcome.staleMsgIds.length;
+}
+
+function finalizeErrorResponse(totals: FinalizeTotals, error: unknown, totalJobs: number): Response {
+  return json({ error: 'batch_finalize_failed', detail: errorMessage(error) }, 500, {
+    'X-Completed-Jobs': String(totals.completed),
+    'X-Failed-Jobs': String(totals.failed),
+    'X-Stale-Jobs': String(totals.stale),
+    'X-Deferred-Jobs': String(deferredJobs(totalJobs, totals)),
+    'X-Dispatched-Batches': '0',
+  });
+}
+
+function deferredJobs(totalJobs: number, totals: FinalizeTotals): number {
+  return Math.max(0, totalJobs - totals.completed - totals.failed - totals.stale);
 }
 
 async function dispatchNextBatch(admin: any): Promise<number> {
@@ -232,13 +372,23 @@ async function safeEqual(left: string, right: string): Promise<boolean> {
 }
 
 const productKey = (store: string, productId: string) => `${store}:${productId}`;
+const effectiveEmbeddedContentHash = (row: CatalogRow) => (
+  row.embedded_content_hash ?? effectiveEmbeddingInputHash(row)
+);
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : String(error);
 
-function result(completed: number, failed: number, stale: number, dispatched = 0): Response {
-  return json({ completed, failed, stale, dispatched }, 200, {
+function result(
+  completed: number,
+  failed: number,
+  stale: number,
+  dispatched = 0,
+  deferred = 0,
+): Response {
+  return json({ completed, failed, stale, deferred, dispatched }, 200, {
     'X-Completed-Jobs': String(completed),
     'X-Failed-Jobs': String(failed),
     'X-Stale-Jobs': String(stale),
+    'X-Deferred-Jobs': String(deferred),
     'X-Dispatched-Batches': String(dispatched),
   });
 }

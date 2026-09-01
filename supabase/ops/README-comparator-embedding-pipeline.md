@@ -86,6 +86,75 @@ La verificación SQL reproducible está en
 `supabase/ops/verify-embedding-materializer-phase-one.sql`; siempre termina en
 `ROLLBACK` y debe mostrar `PHASE_ONE_SMOKE_OK`.
 
+## Hardening batch del worker (preparatorio)
+
+Desplegada el 01-09-2026 con la migración
+`20260901072452_embedding_worker_phase_three_batch_writes.sql` y
+`catalog-embed` v12. El orden seguro es: pipeline `paused` y cero jobs en vuelo,
+migración, `verify-embedding-worker-phase-three.sql`, despliegue del worker,
+smoke HTTP sin jobs y solo después un canario. El smoke usa `service_role`,
+prueba escritura y fallo multi-fila, CAS de hash/versión/publicación, archivo
+terminal, identidad incorrecta y atomicidad, y termina siempre en `ROLLBACK`.
+
+El worker divide cada request en bloques OpenAI de 50 textos. Cada respuesta se
+finaliza en sublotes de 20 productos mediante una sola RPC
+`catalog_finalize_embedding_batch`; la RPC admite como defensa un máximo de 25.
+Cada llamada ejecuta un `UPDATE ... FROM jsonb_to_recordset(...)`, vuelve a
+validar tienda, producto, publicación, hash efectivo, `content_hash`, versión y
+modelo, y confirma los mensajes PGMQ dentro de la misma transacción. Los fallos
+se auditan también por lote. Si una fila provoca un error determinista, el
+worker la aísla por bisección acotada y deja avanzar las sanas; un error
+sistémico devuelve 500, no encadena otro worker y conserva los jobs pendientes.
+
+Canarios productivos de aceptación:
+
+- request 2688, worker v11 y escritura 25: 100 completados, 0 fallidos/stale/
+  deferred, cuatro RPC; la RPC más lenta alcanzó 6,91 s, demasiado cerca del
+  límite heredado de 8 s;
+- request 2690, worker v12 y escritura 20: 100 completados, 0 fallidos/stale/
+  deferred, seis RPC (20+20+10 por cada bloque OpenAI), unos 15,7 s totales y
+  ~12,34 s SQL agregados; cero locks, consultas largas o vacuum activo.
+
+Estado posterior: `paused`, cron 17 inactivo, 3.401 jobs visibles, cero en
+vuelo, duplicados o fallos abiertos. No usar aún `active`: esa ruta puede abrir
+hasta tres workers y el trigger row-level de generación de caché sigue
+actualizando una vez por vector. Hasta sustituirlo por invalidación set-based
+por sentencia/run, no solapar un drenaje con un sync y usar únicamente canarios
+de una petición. Este paso reduce viajes REST/transacciones; no es la Fase 3
+HNSW.
+
+## Fase 3: una sola sustitución de vector por cambio
+
+Implementada localmente en
+`20260901075343_phase_three_single_hnsw_mutation.sql`, pendiente de producción.
+Añade `embedded_content_hash` sin actualizar en masa las filas existentes. Para
+compatibilidad, un hash embebido `NULL` con vector presente equivale al input
+actual; cuando cambia el input, el trigger fija el hash anterior y conserva el
+vector. La fila queda pendiente porque ambos hashes ya no coinciden.
+
+El materializador y el worker reconocen ese estado. Las búsquedas v1/v2/v3 y
+las rutas de caché v3/v5 excluyen fuentes y candidatos pendientes. Tras OpenAI,
+`catalog_finalize_embedding_batch` revalida la identidad actual y escribe
+`embedding` y `embedded_content_hash` juntos. Si el producto cambió durante la
+petición, confirma el trabajo como obsoleto y garantiza la identidad nueva sin
+pisar el vector conservado.
+
+Orden de despliegue obligatorio:
+
+1. confirmar pipeline `paused`, cron apagado y cero jobs en vuelo;
+2. aplicar `20260901075343_phase_three_single_hnsw_mutation.sql`;
+3. ejecutar `verify-embedding-phase-three-single-hnsw-mutation.sql` y exigir
+   `PHASE_THREE_SINGLE_HNSW_MUTATION_SMOKE_OK`;
+4. desplegar el worker actualizado;
+5. ejecutar un smoke HTTP que no reclame cola;
+6. abrir un único canario con presupuesto explícito, observar y volver a
+   `paused`.
+
+No se modifica el predicado del índice HNSW para incluir la igualdad de hashes:
+eso volvería a sacar y reinsertar la fila en el índice. La separación física
+entre catálogo mutable y tabla mínima de vectores queda como evolución
+posterior.
+
 Diagnóstico de ejecuciones recientes:
 
 ```sql

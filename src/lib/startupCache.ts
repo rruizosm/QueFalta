@@ -11,6 +11,7 @@ const key = (userId: string, resource: string) => `@startup:v1:${userId}:${resou
 
 export const startupKeys = {
   profile: (userId: string) => key(userId, 'profile'),
+  favorites: (userId: string) => key(userId, 'favorites'),
   groups: (userId: string) => key(userId, 'groups'),
   lastPurchase: (userId: string) => key(userId, 'lastPurchase'),
   listItems: (userId: string, listId: string) => key(userId, `listItems:${listId}`),
@@ -49,7 +50,11 @@ export async function primeTabCaches(
   userId: string,
   activeCart: { groupId: string; listId: string } | null,
 ): Promise<void> {
-  const keys = [startupKeys.groups(userId), startupKeys.lastPurchase(userId)];
+  const keys = [
+    startupKeys.favorites(userId),
+    startupKeys.groups(userId),
+    startupKeys.lastPurchase(userId),
+  ];
   if (activeCart) {
     keys.push(
       startupKeys.listItems(userId, activeCart.listId),

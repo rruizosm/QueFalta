@@ -89,7 +89,6 @@ import ProfileLoadErrorScreen from '../screens/ProfileLoadErrorScreen';
 import BootLoader       from '../components/BootLoader';
 import NativeStoreReviewPrompt from '../components/NativeStoreReviewPrompt';
 import WhatsNewPrompt from '../components/WhatsNewPrompt';
-import QueCocinoTabIcon from '../components/QueCocinoTabIcon';
 import { glassAvailable } from '../components/GlassSurface';
 import LiquidGlassTabBar, {
   LIQUID_TABBAR_HEIGHT, liquidTabBarBottom,
@@ -430,12 +429,10 @@ export default function Navigation() {
             fontFamily:  fonts.bold,
           },
           tabBarIcon: ({ color, focused }) => {
-            if (route.name === 'QueCocino') {
-              return <QueCocinoTabIcon focused={focused} />;
-            }
             const iconMap: Record<string, { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }> = {
               Home:      { active: 'home',   inactive: 'home-outline' },
               Catalog:   { active: 'library', inactive: 'library-outline' },
+              QueCocino: { active: 'restaurant', inactive: 'restaurant-outline' },
               List:      { active: 'basket', inactive: 'basket-outline' },
               Groups:    { active: 'people', inactive: 'people-outline' },
             };
@@ -461,7 +458,6 @@ export default function Navigation() {
             component={QueCocinoScreen}
             options={{
               title: t('queCocino.title'),
-              tabBarShowLabel: false,
               tabBarAccessibilityLabel: t('queCocino.open'),
             }}
           />

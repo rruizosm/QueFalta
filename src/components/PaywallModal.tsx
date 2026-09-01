@@ -40,7 +40,6 @@ const PRIVACY_URL = 'https://quefalta.es/privacidad';
 const BENEFITS: { icon: IoniconName; key: string; color: string; background: string }[] = [
   { icon: 'swap-vertical-outline', key: 'unitPrice', color: colors.blue, background: 'rgba(47,108,181,0.13)' },
   { icon: 'search-circle-outline', key: 'savingsRadar', color: '#3f8f4f', background: 'rgba(63,143,79,0.14)' },
-  { icon: 'storefront-outline', key: 'stores', color: colors.teal, background: 'rgba(31,138,143,0.14)' },
   { icon: 'notifications-outline', key: 'alerts', color: colors.purple, background: 'rgba(122,79,181,0.14)' },
   { icon: 'link-outline', key: 'noteProducts', color: colors.teal, background: 'rgba(31,138,143,0.14)' },
   { icon: 'pie-chart-outline', key: 'statistics', color: colors.blue, background: 'rgba(47,108,181,0.13)' },

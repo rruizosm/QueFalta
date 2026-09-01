@@ -9,7 +9,8 @@ const navigation = read('src/navigation/index.tsx');
 const translations = read('src/i18n/translations.ts');
 
 test('el popup 1.3 solo se dirige a cuentas anteriores y recuerda el cierre por usuario', () => {
-  assert.match(prompt, /profile\?\.legacyAllStoresAccess \? profile\.id : null/);
+  assert.match(prompt, /Date\.parse\(profile\.createdAt\)/);
+  assert.match(prompt, /createdAt < VERSION_1_3_RELEASED_AT/);
   assert.match(prompt, /WHATS_NEW_VERSION = '1\.3\.0'/);
   assert.match(prompt, /`\$\{WHATS_NEW_STORAGE_PREFIX\}\$\{WHATS_NEW_VERSION\}:\$\{userId\}`/);
   assert.match(prompt, /AsyncStorage\.getItem\(seenKey\)/);

@@ -5,6 +5,8 @@ import type { RegionValue } from '../constants/regions';
 
 export interface UserProfile {
   id: string;
+  /** Fecha de creación del perfil, usada para mensajes ligados a releases. */
+  createdAt: string;
   name: string;
   initials: string;
   color: string;
@@ -35,8 +37,8 @@ export interface UserProfile {
   /** Reflejo público de Plus para la insignia dorada. La autorización usa
    *  premiumUntil; el servidor sincroniza este booleano. */
   verified: boolean;
-  /** Derecho heredado para usar "Todos" en los cuatro listados conjuntos.
-   *  Se concede en servidor a las cuentas existentes antes de la versión 1.3. */
+  /** Señal de compatibilidad para clientes 1.3 ya publicados. Desde el
+   *  despliegue de 1.3 se concede a todas las cuentas registradas. */
   legacyAllStoresAccess: boolean;
 }
 
@@ -52,7 +54,7 @@ function normalizeCatalogStores(value: unknown): CatalogStore[] {
 export async function fetchProfile(userId: string): Promise<UserProfile> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, name, initials, color, username, avatar_url, discoverable, catalog_stores, region, postal_code, premium_until, onboarded_at, onboarding_step, verified, legacy_all_stores_access')
+    .select('id, created_at, name, initials, color, username, avatar_url, discoverable, catalog_stores, region, postal_code, premium_until, onboarded_at, onboarding_step, verified, legacy_all_stores_access')
     .eq('id', userId)
     .single();
 
@@ -60,6 +62,7 @@ export async function fetchProfile(userId: string): Promise<UserProfile> {
 
   return {
     id: data.id,
+    createdAt: data.created_at,
     name: data.name,
     initials: data.initials,
     color: data.color,

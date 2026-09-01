@@ -223,15 +223,85 @@ durante los sublotes y terminó en 6.906 al asentarse el run: un solo bump para
 adoptaron en siete bloques (6×500 + 201) en el run
 `fae4f61b-4187-4488-9d8b-4deb55fdd058`; el cierre verificó 3.201 enlaces
 `pending/queued`, cero diferencias cola↔manifiesto y ningún bump prematuro.
-Ambos runs permanecen `draining`. Mantener el pipeline `paused` y el cron 17
-inactivo hasta ejecutar un drenaje canario controlado.
+Los drenajes canarios 2709, 2710 y 2712 procesaron después tres peticiones FIFO
+con los IDs HiperDino 240403–240702: las tres terminaron HTTP 200, con 300/300
+`completed` y 0 failed, stale, deferred o dispatched. Los 300 enlaces quedaron
+`completed`, los vectores y hashes son vigentes y no quedan residuos de esos
+rangos en cola, archivo ni fallos. La cola total bajó 3.239→2.939. HiperDino
+continúa `draining` con 2.901 dependencias pendientes y generación 6.906;
+Gadis conserva intactas sus 38 pendientes y la generación 37.484. No hubo
+settlement ni bump. El HNSW permanece válido/listo, con 0,600 % de tuplas
+muertas y sin locks ni vacuum activo. Mantener el pipeline `paused` y el cron
+17 inactivo; continuar solo con drenajes controlados antes de considerar
+`active`.
 
-Mientras `main` conserve el materializador anterior, la migración de
-compatibilidad adopta automáticamente solo los jobs de la misma tienda
-encolados desde `started_at` cuando el total coincide exactamente con
-`expected_embedding_jobs`. El materializador nuevo debe publicarse y, después
-de dos ciclos verificados, se retirará esa compatibilidad. Stale-while-revalidate
-en segundo plano sigue siendo el bloque funcional pendiente de Fase 4.
+El PR #49 publicó el materializador nuevo en `main` (`b8cf096`). La migración de
+compatibilidad sigue adoptando automáticamente solo jobs legacy de la misma
+tienda encolados desde `started_at` cuando el total coincide exactamente con
+`expected_embedding_jobs`; se retirará después de dos ciclos completos
+verificados. Stale-while-revalidate en segundo plano sigue siendo el bloque
+funcional pendiente de Fase 4.
+
+## Fase 5A: mantenimiento preventivo de Postgres
+
+Desplegada como
+`20260901115631_catalog_embedding_postgres_maintenance_baseline.sql`. La
+migración exige pipeline `paused`, presupuesto canario cero, cron 17 inactivo,
+cero jobs en vuelo, ningún vacuum/reindex activo, HNSW válido/listo/vivo y menos
+del 5 % de tuplas muertas. Después configura únicamente:
+
+```sql
+alter table public.catalog_product_embeddings set (
+  autovacuum_vacuum_scale_factor = 0.05,
+  autovacuum_analyze_scale_factor = 0.02
+);
+```
+
+No inicia `VACUUM`, `REINDEX` ni cambia el índice. El estado se consulta como
+rol de servicio:
+
+```sql
+select public.catalog_embedding_maintenance_status();
+```
+
+La respuesta incluye reloptions efectivas, umbrales estimados, dead tuples,
+autoanalyze, tamaños, uso/validez del HNSW y actividad de mantenimiento. Marca
+`requiresAttention` al alcanzar 5 % de tuplas muertas o degradarse el índice.
+`anon` y `authenticated` no pueden ejecutar la RPC.
+
+El smoke reproducible está en
+`supabase/ops/verify-catalog-embedding-postgres-maintenance.sql`, termina en
+`ROLLBACK` y debe devolver `PHASE_FIVE_MAINTENANCE_BASELINE_OK`. En producción
+el despliegue provocó solo el autoanalyze ya pendiente: terminó en segundos con
+201.442 tuplas vivas, 1.208 muertas (0,596 %), cero modificaciones desde
+analyze y sin vacuum. El HNSW seguía válido/listo/vivo y ocupaba 597.745.664
+bytes.
+
+La comprobación diaria está en
+`.github/workflows/catalog-embedding-maintenance.yml`; usa
+`scripts/check-catalog-embedding-maintenance.mjs` con `service_role` y hace
+fallar el workflow si se supera el umbral, cambian los reloptions o el HNSW se
+degrada. El schedule queda activo cuando este archivo está en `main`.
+
+Durante los dos ciclos completos posteriores al baseline, mantener compute
+Medium y registrar como mínimo dead tuples, autoanalyze/autovacuum, tamaño del
+HNSW, latencia e I/O del comparador. `hnsw.iterative_scan = relaxed_order` está
+soportado por pgvector 0.8.0 y pasó la prueba de configuración transaccional,
+pero continúa desactivado: puede mejorar recall con filtros selectivos a cambio
+de explorar más índice, por lo que necesita A/B de resultados y latencia.
+
+No programar un reindex después de cada sync. Solo si las métricas demuestran
+bloat o degradación, pausar dispatcher y syncs, esperar cero jobs en vuelo y
+ejecutar en una ventana de mantenimiento, desde una conexión externa:
+
+```sql
+reindex index concurrently public.catalog_product_embeddings_hnsw_idx;
+vacuum (analyze) public.catalog_product_embeddings;
+```
+
+Ambas sentencias se ejecutan por separado y fuera de una transacción. Volver a
+abrir drenajes únicamente después de verificar HNSW válido/listo, cero locks y
+estado de mantenimiento sano.
 
 Diagnóstico de ejecuciones recientes:
 

@@ -1,5 +1,32 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Fase 5A desplegada; observación de dos ciclos pendiente (2026-09-01)
+
+- Producción tiene
+  `20260901115631_catalog_embedding_postgres_maintenance_baseline.sql`:
+  `catalog_product_embeddings` usa autovacuum 0,05 y autoanalyze 0,02 por
+  tabla. No se ejecutó vacuum, reindex ni una reescritura del snapshot.
+- La RPC `catalog_embedding_maintenance_status()` solo admite `service_role` y
+  marca `requiresAttention` con >= 5 % de tuplas muertas o HNSW no
+  válido/listo/vivo. El smoke productivo con rollback devolvió
+  `PHASE_FIVE_MAINTENANCE_BASELINE_OK`.
+- El cambio disparó únicamente un autoanalyze corto: 201.442 vivas, 1.208
+  muertas (0,596 %), `n_mod_since_analyze = 0`, umbral de vacuum estimado
+  10.123 y HNSW sano de 597.745.664 bytes. Cero locks, vacuum o mantenimiento
+  de índice activo; pipeline `paused`, presupuesto 0 y cron 17 inactivo.
+- Alerta diaria definida en
+  `.github/workflows/catalog-embedding-maintenance.yml`, con script y cinco
+  pruebas; GitHub la ejecuta desde `main`. Detecta 5 %, deriva de reloptions e
+  índice degradado.
+- Pendiente de Fase 5: mantener Medium y observar dos ciclos completos
+  posteriores al baseline; ejecutar un A/B de `hnsw.iterative_scan` off frente
+  a `relaxed_order`. pgvector 0.8.0 acepta la opción, pero sigue desactivada. No
+  hacer `REINDEX` salvo bloat/degradación demostrados, con dispatcher pausado y
+  ventana de mantenimiento.
+- Cola visible actual 2.946, cero en vuelo: HiperDino 2.901, Gadis 38 y un run
+  nuevo de Ahorramás con 7 dependencias. Este último terminó de materializar
+  antes del despliegue y no se solapó con la migración.
+
 ## Fase 4 desplegada; backlog legacy adoptado (2026-09-01)
 
 - Producción tiene las migraciones `20260901103216` (runs durables +
@@ -14,11 +41,12 @@
   Run `8d5406cc-9b7f-4eae-a61c-615538d2bb6b` quedó `settled` con 100 dependencias
   `completed`; HiperDino subió 6.905→6.906 exactamente una vez y la cola quedó
   sin jobs en vuelo. Ambos smokes SQL productivos pasaron con rollback.
-- La compatibilidad para el código actualmente en `main` solo auto-adopta jobs
-  de la misma tienda con `enqueued_at >= started_at` cuando su conteo coincide
-  exactamente con `expected_embedding_jobs`; no adivina manifests ambiguos. El
-  materializador nuevo registra M2M en chunks de 500 y revalida una sola vez en
-  el último bloque, pero sus cambios siguen locales y deben publicarse.
+- La compatibilidad temporal solo auto-adopta jobs legacy de la misma tienda con
+  `enqueued_at >= started_at` cuando su conteo coincide exactamente con
+  `expected_embedding_jobs`; no adivina manifests ambiguos. El materializador
+  nuevo registra M2M en chunks de 500 y revalida una sola vez en el último
+  bloque. El PR #49 ya está fusionado en `main` como `b8cf096`; retirar la
+  compatibilidad solo después de dos ciclos completos verificados.
 - Gadis: 38 jobs legacy asociados al run
   `1dda9168-c609-48d9-9221-7caff07368c4`, actualmente `draining`. Tras
   autorización explícita, los 3.201 jobs legacy de HiperDino se asociaron al
@@ -27,10 +55,18 @@
   pendientes; el fallback `coalesce(embedding_input_hash, content_hash)` cubre
   sus filas legacy. La verificación posterior dio 0 diferencias cola↔manifiesto,
   3.201 enlaces `pending/queued` y generación HiperDino todavía en 6.906.
-- Estado operativo: pipeline `paused`, cron 17 inactivo, 0 trabajos en vuelo y
-  0 fallos abiertos. No pasar directamente a `active`: el siguiente paso es un
-  drenaje canario controlado de los runs adoptados. Después queda implementar
-  stale-while-revalidate en segundo plano.
+- Drenajes canarios 2709, 2710 y 2712: tres peticiones FIFO, IDs HiperDino
+  240403–240702, todas HTTP 200 con 300/300 `completed` y 0
+  failed/stale/deferred/dispatched. Los 300 productos tienen vector, modelo y
+  `embedded_content_hash` vigentes; no quedan residuos de esos rangos en cola,
+  archivo ni fallos. La cola total bajó 3.239→2.939. HiperDino queda
+  `draining` con 300 completados/2.901 pendientes y generación 6.906, sin
+  settlement ni bump; Gadis sigue intacto con 38 pendientes y generación
+  37.484.
+- Estado operativo: pipeline `paused`, cron 17 inactivo, 0 trabajos en vuelo,
+  fallos, bloqueos o vacuum; HNSW válido/listo y 0,600 % de tuplas muertas. No
+  pasar directamente a `active`: continuar con drenajes controlados. Después
+  queda implementar stale-while-revalidate en segundo plano.
 
 ## Fase 3 HNSW desplegada y canario sano (2026-09-01)
 

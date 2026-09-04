@@ -3,11 +3,26 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
-## Main actualizado tras los merges #51 y #52 (2026-09-04)
+## Corrección del primer arranque del barrido Lidl (2026-09-04)
 
-- El checkout local `main` está actualizado por fast-forward hasta `97fe3b8`,
-  incluido el comparador estricto del merge #51 y la integración de Lidl del
-  merge #52.
+- El dispatch manual `33905985690` de `Sync Lidl catalog fleet` falló antes de
+  llamar a Supabase: `const URL` contenía la URL base como texto y ocultaba al
+  constructor global usado por `new URL('./sync-lidl.mjs', import.meta.url)`.
+  La cola quedó vacía y no se modificó ningún catálogo.
+- `scripts/sync-lidl-fleet.mjs` usa ahora los nombres inequívocos
+  `SUPABASE_URL` y `SUPABASE_KEY`. Una prueba de proceso ejecuta realmente
+  `--schedule-only` con `fetch` simulado y valida URL, método, autorización y
+  respuesta de la RPC; la regresión ya no puede pasar solo con sintaxis válida.
+- El primer dispatch del directorio falló porque aún no existía
+  `LIDL_STORES_API_KEY`. El secreto se configuró después y el run
+  `33905697909` terminó correctamente. Esta corrección no relanza el barrido de
+  catálogos.
+
+## Main publicado tras el merge #53 (2026-09-04)
+
+- El checkout local `main` está actualizado hasta `0ec6e32`, incluido el
+  comparador estricto del merge #51, la integración inicial de Lidl del #52 y
+  el catálogo multitienda/orquestador del #53.
 - Las migraciones Lidl `20260904102903` y `20260904104441` ya constan aplicadas
   y verificadas en producción. No se reaplicaron durante esta actualización.
   La cautela inicial de dejar el cron desactivado queda sustituida por la
@@ -36,9 +51,9 @@
 - `scripts/sync-lidl-stores.mjs` cargó el directorio oficial nacional el 04-09
   a las 13:49 UTC: 730 tiendas, 721 abiertas, 652 CP totales y 721 candidatos
   exactos para 645 CP con tienda abierta. La clave rotatoria se obtuvo del
-  cliente web público solo para esta ejecución y no se persistió; el workflow
-  diario sigue necesitando `LIDL_STORES_API_KEY` como secreto y continúa
-  protegido por `LIDL_SYNC_ENABLED`.
+  cliente web público y quedó configurada como secreto GitHub
+  `LIDL_STORES_API_KEY`; el segundo dispatch del workflow diario terminó
+  correctamente.
 - `scripts/sync-lidl.mjs` acepta cualquier `LIDL_STORE_ID`, separa ficha común
   y variante local, comprueba cobertura y marca obsoletos solo dentro de esa
   tienda. Solo `ES3572` sigue actualizando además la tabla legacy.
@@ -90,9 +105,9 @@
   región, búsqueda/browse, categorías, ficha básica, carrito y favoritos. No se
   ha añadido al comparador semántico porque aún no hay EAN fiables.
 - El único workflow nacional programa todas las tiendas cada lunes. El
-  propietario ha autorizado publicar este cambio y configurar
-  `LIDL_SYNC_ENABLED=true` en GitHub; la activación no incluye un dispatch
-  manual del barrido.
+  workflow está publicado y `LIDL_SYNC_ENABLED=true` está activo en GitHub. El
+  primer dispatch manual falló antes de programar la cola por la colisión de
+  nombre local descrita y corregida en la sección superior.
 - Los ids públicos de Product Catalog son internos y no se guardan como EAN.
   `ean` permanece NULL. La masterdata con `barcode` pertenece a Scan&Go y exige
   autenticación; queda fuera de este sync.

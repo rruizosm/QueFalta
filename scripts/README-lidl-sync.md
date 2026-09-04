@@ -58,9 +58,11 @@ programa para consumidores privados y excluyen la participación comercial.
    vez. El sync valida y despublica solo dentro de esa tienda; únicamente
    `ES3572` actualiza también `lidl_products` para clientes legacy. La tienda
    elegida por el usuario no altera el planificador.
-5. Tras la validación y la revisión de autorización, crear la variable de
-   repositorio `LIDL_SYNC_ENABLED=true`. El único barrido queda preparado para
-   cada lunes a las 11:20 UTC; los runs se omiten mientras falte esa variable.
+5. La variable de repositorio `LIDL_SYNC_ENABLED=true` está activa. El barrido
+   queda programado cada lunes a las 11:20 UTC. El primer dispatch manual falló
+   antes de llamar a Supabase porque el nombre local `URL` ocultaba al
+   constructor global; el orquestador usa ahora `SUPABASE_URL` y una prueba de
+   proceso cubre su arranque completo.
 
 La cola usa `pending → running → succeeded`, con `retry` exponencial y `dead`
 tras tres intentos. Cada claim tiene un lease de 45 minutos y usa

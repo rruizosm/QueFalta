@@ -17,7 +17,7 @@ import { sortByRelevance } from '../lib/sort';
 // fichero con `import type`), así que este import NO crea un ciclo en runtime.
 import {
   mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
-  condisToUI, eroskiToUI, capraboToUI, ametllerToUI, aldiToUI, gadisToUI, froizToUI, ahorramasToUI, hiperdinoToUI, alcampoToUI, plusfrescToUI,
+  condisToUI, eroskiToUI, capraboToUI, ametllerToUI, aldiToUI, lidlToUI, gadisToUI, froizToUI, ahorramasToUI, hiperdinoToUI, alcampoToUI, plusfrescToUI,
   type UIProduct,
 } from '../lib/productAdapters';
 export { offerTypesForStore } from '../lib/offerTypes';
@@ -33,6 +33,7 @@ const PRICE_CHANGE_TABLE: Record<CatalogStore, string> = {
   bonarea: 'bonarea_products', consum: 'consum_products', dia: 'dia_products', sorli: 'sorli_products',
   eroski: 'eroski_products', caprabo: 'caprabo_products', condis: 'condis_products',
   ametller: 'ametller_products', aldi: 'aldi_products', hiperdino: 'hiperdino_products',
+  lidl: 'lidl_products',
   alcampo: 'alcampo_products', plusfresc: 'plusfresc_products', gadis: 'gadis_products', froiz: 'froiz_products', ahorramas: 'ahorramas_products',
 };
 
@@ -139,6 +140,7 @@ type CatalogSearchRpc =
   | 'search_condis_products'
   | 'search_ametller_products'
   | 'search_aldi_products'
+  | 'search_lidl_products'
   | 'search_gadis_products'
   | 'search_froiz_products'
   | 'search_ahorramas_products'
@@ -159,6 +161,7 @@ type CatalogFeedSearchRpc =
   | 'search_condis_feed_products'
   | 'search_ametller_feed_products'
   | 'search_aldi_feed_products'
+  | 'search_lidl_feed_products'
   | 'search_gadis_feed_products'
   | 'search_froiz_feed_products'
   | 'search_ahorramas_feed_products'
@@ -179,6 +182,7 @@ const CATALOG_FEED_SEARCH_RPC: Record<CatalogStore, CatalogFeedSearchRpc> = {
   condis: 'search_condis_feed_products',
   ametller: 'search_ametller_feed_products',
   aldi: 'search_aldi_feed_products',
+  lidl: 'search_lidl_feed_products',
   gadis: 'search_gadis_feed_products',
   froiz: 'search_froiz_feed_products',
   ahorramas: 'search_ahorramas_feed_products',
@@ -1652,6 +1656,78 @@ export async function fetchAldiProductsByCategory(categoryId: string, limit = 60
   return (data ?? []).map(mapAldi);
 }
 
+// ─── Lidl (Product Catalog público de Lidl Plus España) ─────────────────────
+// Los ids son internos de Lidl y no se presentan como EAN. El espejo conserva
+// marca, formato, precio por unidad, disponibilidad y promociones Lidl Plus.
+export interface LidlProduct {
+  id: string;
+  displayName: string;
+  brand: string | null;
+  packaging: string | null;
+  thumbnail: string | null;
+  unitPrice: number | null;
+  priceFormat: string | null;
+  pricePerUnit: string | null;
+  categoryName: string | null;
+  promoName: string | null;
+}
+export interface LidlCategory {
+  id: string;
+  name: string;
+  children: { id: string; name: string }[];
+}
+const mapLidl = (r: any): LidlProduct => ({
+  id: r.id,
+  displayName: r.display_name,
+  brand: r.brand ?? null,
+  packaging: r.packaging ?? null,
+  thumbnail: r.thumbnail ?? null,
+  unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
+  priceFormat: r.price_format ?? null,
+  pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
+  categoryName: r.category_name ?? null,
+  promoName: r.promo_name ?? null,
+});
+const LIDL_COLS = 'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name';
+
+export async function searchLidlProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<LidlProduct[]> {
+  const rows = await catalogSearchPage('search_lidl_products', LIDL_COLS, query, { limit, offset, signal, order });
+  return rows.map(mapLidl);
+}
+
+export async function browseLidlProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<LidlProduct>> {
+  const { rows, nextCursor } = await keysetPage('lidl_products', LIDL_COLS, 'display_name_norm', cursor, limit, undefined, descending, signal);
+  return { items: rows.map(mapLidl), nextCursor };
+}
+
+export async function fetchLidlProduct(id: string): Promise<LidlProduct | null> {
+  const { data, error } = await supabase.from('lidl_products').select(LIDL_COLS).eq('id', id).maybeSingle();
+  if (error) throw error;
+  return data ? mapLidl(data) : null;
+}
+
+export async function fetchLidlCategoryTree(signal?: AbortSignal): Promise<LidlCategory[]> {
+  const { data, error } = await abortable(supabase.from('lidl_categories').select('id, name, parent_id, product_count').eq('published', true).order('name'), signal);
+  if (error) throw error;
+  const rows = data ?? [];
+  return rows
+    .filter((row: any) => row.parent_id == null && (row.product_count ?? 0) > 0)
+    .map((root: any) => {
+      const children = rows
+        .filter((child: any) => child.parent_id === root.id && (child.product_count ?? 0) > 0)
+        .map((child: any) => ({ id: child.id, name: child.name }));
+      // Pan, fruta, carne y pescado son raíces-hoja en la API de Lidl. Se
+      // exponen como su propia subcategoría para conservar la navegación común.
+      return { id: root.id, name: root.name, children: children.length ? children : [{ id: root.id, name: root.name }] };
+    });
+}
+
+export async function fetchLidlProductsByCategory(categoryId: string, limit = 600): Promise<LidlProduct[]> {
+  const { data, error } = await supabase.from('lidl_products').select(LIDL_COLS).eq('published', true).contains('category_ids', [categoryId]).order('display_name').limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapLidl);
+}
+
 // ─── Gadis (tabla gadis_products) ──────────────────────────────────────────
 // Gadisline publica el catálogo SSR y sus promociones explícitas. El surtido se
 // resuelve actualmente con la tienda pública por defecto (ver sync-gadis.mjs).
@@ -2349,6 +2425,7 @@ const MIRROR_QUERY: Record<CatalogStore, { table: string; cols: string; toUI: (r
   condis:    { table: 'condis_products',    cols: CONDIS_COLS,    toUI: (r) => condisToUI(mapCondis(r)) },
   ametller:  { table: 'ametller_products',  cols: AMETLLER_COLS,  toUI: (r) => ametllerToUI(mapAmetller(r)) },
   aldi:      { table: 'aldi_products',       cols: ALDI_COLS,      toUI: (r) => aldiToUI(mapAldi(r)) },
+  lidl:      { table: 'lidl_products',       cols: LIDL_COLS,      toUI: (r) => lidlToUI(mapLidl(r)) },
   hiperdino: { table: 'hiperdino_products',  cols: HIPERDINO_COLS, toUI: (r) => hiperdinoToUI(mapHiperdino(r)) },
   alcampo:   { table: 'alcampo_products',    cols: ALCAMPO_COLS,   toUI: (r) => alcampoToUI(mapAlcampo(r)) },
   plusfresc: { table: 'plusfresc_products',  cols: PLUSFRESC_COLS, toUI: (r) => plusfrescToUI(mapPlusfresc(r)) },

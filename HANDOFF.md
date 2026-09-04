@@ -1,5 +1,26 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Lidl: catálogo cargado e integración cliente local (2026-09-04)
+
+- La conclusión histórica de Lidl como «sin espejo» queda superada: Product
+  Catalog de Lidl Plus sí entrega el árbol y los precios para una tienda.
+- El sync productivo de `ES3572` terminó OK: 2.811 productos, 43 categorías,
+  2.811 con precio/imagen, 2.736 con precio por unidad y 2.633 disponibles.
+  «Butifarra fresca de cerdo» está publicada a 3,69 € y la búsqueda RPC la
+  devuelve como primer resultado.
+- El origen de 2.531 frente a 2.811 era Cosmética devolviendo temporalmente 0
+  en una pasada. Se añadieron 3 reintentos exponenciales y bloqueo si no hay
+  40/40 hojas con producto antes de cualquier upsert/mark-stale.
+- No confundir los ids terminados en `_ES` con EAN. El esquema deja `ean=NULL`;
+  Scan&Go expone `barcode` en una masterdata autenticada y no se consulta.
+- Las migraciones de tablas y búsqueda están aplicadas; RLS, lectura anon,
+  búsqueda, índices y `catalog_sync_status` se verificaron en producción. Lidl
+  está integrado localmente en selector, categorías, browse/búsqueda, ficha,
+  carrito y favoritos, pero no en comparador. TypeScript pasa.
+- Workflow semanal listo, aún no publicado: requiere commit/push y la variable
+  GitHub `LIDL_SYNC_ENABLED=true`. Siguen pendientes el contraste multi-tienda
+  y la revisión de autorización comercial. Ver `scripts/README-lidl-sync.md`.
+
 ## Compilación Xcode: caché de React y sesión PIF (local, 2026-09-03)
 
 - Identificados los fallos `Framework 'React' not found` y sesión PIF ocupada.

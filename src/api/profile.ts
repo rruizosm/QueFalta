@@ -48,6 +48,12 @@ function normalizeCatalogStores(value: unknown): CatalogStore[] {
   const valid = Array.isArray(value)
     ? CATALOG_STORE_KEYS.filter((k) => (value as unknown[]).includes(k))
     : [];
+  // Una selección que contenía todos los súpers anteriores significa "todos",
+  // no una exclusión deliberada de una tienda que aún no existía en la app.
+  // Así Lidl aparece automáticamente a quien tenía los 18 catálogos activos;
+  // las selecciones parciales se respetan y pueden activarlo en Preferencias.
+  const allBeforeLidl = CATALOG_STORE_KEYS.filter((key) => key !== 'lidl');
+  if (allBeforeLidl.every((key) => valid.includes(key))) return [...CATALOG_STORE_KEYS];
   return valid.length ? valid : [...CATALOG_STORE_KEYS];
 }
 

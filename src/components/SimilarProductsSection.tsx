@@ -50,7 +50,9 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
   const requestVersion = useRef(0);
 
   const targetStores = useMemo(
-    () => (profile?.catalogStores ?? CATALOG_STORE_KEYS).filter((store) => store !== excludeStore),
+    // Lidl ya está en catálogo, pero permanece fuera del comparador hasta
+    // disponer de EAN/correspondencias fiables y materializar sus embeddings.
+    () => (profile?.catalogStores ?? CATALOG_STORE_KEYS).filter((store) => store !== excludeStore && store !== 'lidl'),
     [excludeStore, profile?.catalogStores],
   );
   const targetStoresKey = targetStores.join(',');
@@ -142,7 +144,7 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
   const hasCheaperResults = hasResults && similars.some((product) => product.isCheaper);
   const currentIsCheapest = hasResults && !hasCheaperResults;
 
-  if (!PRICE_COMPARISON_ENABLED || !productId || profileLoading || targetStores.length === 0) return null;
+  if (!PRICE_COMPARISON_ENABLED || excludeStore === 'lidl' || !productId || profileLoading || targetStores.length === 0) return null;
 
   const buttonInk = colors.white;
   const searchButton = (

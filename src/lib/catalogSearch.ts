@@ -11,6 +11,7 @@ import {
   searchCondisProducts,
   searchAmetllerProducts,
   searchAldiProducts,
+  searchLidlProducts,
   searchGadisProducts,
   searchFroizProducts,
   searchAhorramasProducts,
@@ -35,6 +36,7 @@ import {
   condisToUI,
   ametllerToUI,
   aldiToUI,
+  lidlToUI,
   gadisToUI,
   froizToUI,
   ahorramasToUI,
@@ -74,6 +76,7 @@ export async function searchCatalogStore(
     case 'condis': return (await searchCondisProducts(query, limit, signal, offset, order, searchLanguage)).map(condisToUI);
     case 'ametller': return (await searchAmetllerProducts(query, limit, signal, offset, order, searchLanguage)).map(ametllerToUI);
     case 'aldi': return (await searchAldiProducts(query, limit, signal, offset, order)).map(aldiToUI);
+    case 'lidl': return (await searchLidlProducts(query, limit, signal, offset, order)).map(lidlToUI);
     case 'gadis': return (await searchGadisProducts(query, limit, signal, offset, order)).map(gadisToUI);
     case 'froiz': return (await searchFroizProducts(query, limit, signal, offset, order)).map(froizToUI);
     case 'ahorramas': return (await searchAhorramasProducts(query, limit, signal, offset, order)).map(ahorramasToUI);

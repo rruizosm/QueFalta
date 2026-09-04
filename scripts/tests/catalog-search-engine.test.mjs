@@ -18,6 +18,10 @@ const feedMigration = readFileSync(new URL(
   '../../supabase/migrations/20260823110039_catalog_feed_search_engine.sql',
   import.meta.url,
 ), 'utf8');
+const lidlMigration = readFileSync(new URL(
+  '../../supabase/migrations/20260904104441_lidl_catalog_search.sql',
+  import.meta.url,
+), 'utf8');
 const catalogApi = readFileSync(new URL('../../src/api/catalog.ts', import.meta.url), 'utf8');
 const catalogSearch = readFileSync(new URL('../../src/lib/catalogSearch.ts', import.meta.url), 'utf8');
 const productNoteSheet = readFileSync(new URL('../../src/components/ProductNoteSheet.tsx', import.meta.url), 'utf8');
@@ -28,12 +32,16 @@ const offersScreen = readFileSync(new URL('../../src/screens/OffersScreen.tsx', 
 const stores = [
   'mercadona', 'bonpreu', 'carrefour', 'bonarea', 'consum', 'dia', 'sorli',
   'eroski', 'caprabo', 'condis', 'ametller', 'aldi', 'gadis', 'froiz',
-  'ahorramas', 'hiperdino', 'alcampo', 'plusfresc',
+  'ahorramas', 'hiperdino', 'alcampo', 'plusfresc', 'lidl',
 ];
 
-test('la migración crea una RPC homogénea para los 18 catálogos', () => {
+test('las migraciones crean una RPC homogénea para los 19 catálogos', () => {
   for (const store of stores) {
-    assert.match(migration, new RegExp(`\\('search_${store}_products',\\s+'${store}_products'`));
+    const source = store === 'lidl' ? lidlMigration : migration;
+    const pattern = store === 'lidl'
+      ? new RegExp(`function public\\.search_${store}_products\\(`)
+      : new RegExp(`\\('search_${store}_products',\\s+'${store}_products'`);
+    assert.match(source, pattern);
     assert.match(catalogApi, new RegExp(`'search_${store}_products'`));
   }
   assert.match(migration, /security invoker/i);
@@ -92,7 +100,11 @@ test('el catálogo ofrece relevancia y carga páginas adicionales', () => {
 
 test('Novedades y Ofertas reutilizan el motor antes de paginar', () => {
   for (const store of stores) {
-    assert.match(feedMigration, new RegExp(`\\('search_${store}_feed_products',\\s+'${store}_products'`));
+    const source = store === 'lidl' ? lidlMigration : feedMigration;
+    const pattern = store === 'lidl'
+      ? new RegExp(`function public\\.search_${store}_feed_products\\(`)
+      : new RegExp(`\\('search_${store}_feed_products',\\s+'${store}_products'`);
+    assert.match(source, pattern);
     assert.match(catalogApi, new RegExp(`'search_${store}_feed_products'`));
   }
   assert.match(feedMigration, /security invoker/i);

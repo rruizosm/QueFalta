@@ -6,7 +6,7 @@ import {
   fetchBonpreuCategoryTree, fetchCarrefourCategoryTree, fetchBonareaCategoryTree,
   fetchConsumCategoryTree, fetchDiaCategoryTree, fetchSorliCategoryTree,
   fetchEroskiCategoryTree, fetchCapraboCategoryTree, fetchCondisCategoryTree,
-  fetchAmetllerCategoryTree, fetchAldiCategoryTree, fetchHiperdinoCategoryTree,
+  fetchAmetllerCategoryTree, fetchAldiCategoryTree, fetchLidlCategoryTree, fetchHiperdinoCategoryTree,
   fetchAlcampoCategoryTree, fetchPlusfrescCategoryTree, fetchGadisCategoryTree, fetchFroizCategoryTree, fetchAhorramasCategoryTree,
 } from '../api/catalog';
 import { useFavorites } from '../context/FavoritesContext';
@@ -28,6 +28,7 @@ const TREE_FETCHERS: Record<Exclude<CatalogStore, 'mercadona'>, () => Promise<Mi
   condis: fetchCondisCategoryTree,
   ametller: fetchAmetllerCategoryTree,
   aldi: fetchAldiCategoryTree,
+  lidl: fetchLidlCategoryTree,
   hiperdino: fetchHiperdinoCategoryTree,
   alcampo: fetchAlcampoCategoryTree,
   plusfresc: fetchPlusfrescCategoryTree,
@@ -79,6 +80,12 @@ export function useFavoriteCategoryOpener() {
     } else {
       const node = trees[fav.store]?.find((n) => n.id === fav.refId);
       if (node) {
+        if (fav.store === 'lidl' && node.children.length === 1 && node.children[0].id === node.id) {
+          return navigation.navigate('Catalog', {
+            screen: 'LidlProducts',
+            params: { categoryId: node.id, categoryName: node.name },
+          });
+        }
         const { emoji, color } = getMeta(node.name);
         return navigation.navigate('Catalog', {
           screen: 'SubCategory',

@@ -40,6 +40,7 @@ import {
   searchCondisProducts, fetchCondisCategoryTree,
   searchAmetllerProducts, fetchAmetllerCategoryTree,
   searchAldiProducts, fetchAldiCategoryTree,
+  searchLidlProducts, fetchLidlCategoryTree,
   searchGadisProducts, fetchGadisCategoryTree, searchFroizProducts, fetchFroizCategoryTree,
   searchAhorramasProducts, fetchAhorramasCategoryTree,
   searchHiperdinoProducts, fetchHiperdinoCategoryTree,
@@ -48,7 +49,7 @@ import {
   browseProducts, browseBonpreuProducts, browseCarrefourProducts,
   browseBonareaProducts, browseConsumProducts, browseDiaProducts, browseSorliProducts,
   browseEroskiProducts, browseCapraboProducts, browseCondisProducts, browseAmetllerProducts,
-  browseAldiProducts, browseGadisProducts, browseFroizProducts, browseAhorramasProducts, browseHiperdinoProducts, browseAlcampoProducts, browsePlusfrescProducts,
+  browseAldiProducts, browseLidlProducts, browseGadisProducts, browseFroizProducts, browseAhorramasProducts, browseHiperdinoProducts, browseAlcampoProducts, browsePlusfrescProducts,
   type BonpreuProduct, type BonpreuCategory,
   type CarrefourProduct, type CarrefourCategory,
   type BonareaProduct, type BonareaCategory,
@@ -58,6 +59,7 @@ import {
   type CondisProduct, type CondisCategory,
   type AmetllerProduct, type AmetllerCategory,
   type AldiProduct, type AldiCategory,
+  type LidlProduct, type LidlCategory,
   type GadisProduct, type GadisCategory, type FroizProduct, type FroizCategory,
   type AhorramasProduct, type AhorramasCategory,
   type HiperdinoProduct, type HiperdinoCategory,
@@ -78,7 +80,7 @@ import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../consta
 import { storeInRegion, storesForRegion, type RegionValue } from '../constants/regions';
 import {
   mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
-  eroskiToUI, capraboToUI, condisToUI, ametllerToUI, aldiToUI, gadisToUI, froizToUI, ahorramasToUI, hiperdinoToUI, alcampoToUI,
+  eroskiToUI, capraboToUI, condisToUI, ametllerToUI, aldiToUI, lidlToUI, gadisToUI, froizToUI, ahorramasToUI, hiperdinoToUI, alcampoToUI,
   plusfrescToUI,
   type UIProduct,
 } from '../lib/productAdapters';
@@ -240,6 +242,7 @@ async function loadBrowsePageWithOrder(
     case 'condis':    { const { items, nextCursor } = await browseCondisProducts(cursor, limit, signal, order as never); return { items: items.map(condisToUI), nextCursor }; }
     case 'ametller':  { const { items, nextCursor } = await browseAmetllerProducts(cursor, limit, signal, order as never); return { items: items.map(ametllerToUI), nextCursor }; }
     case 'aldi':      { const { items, nextCursor } = await browseAldiProducts(cursor, limit, signal, order as never); return { items: items.map(aldiToUI), nextCursor }; }
+    case 'lidl':      { const { items, nextCursor } = await browseLidlProducts(cursor, limit, signal, order as never); return { items: items.map(lidlToUI), nextCursor }; }
     case 'gadis':     { const { items, nextCursor } = await browseGadisProducts(cursor, limit, signal, order as never); return { items: items.map(gadisToUI), nextCursor }; }
     case 'froiz':     { const { items, nextCursor } = await browseFroizProducts(cursor, limit, signal, order as never); return { items: items.map(froizToUI), nextCursor }; }
     case 'ahorramas': { const { items, nextCursor } = await browseAhorramasProducts(cursor, limit, signal, order as never); return { items: items.map(ahorramasToUI), nextCursor }; }
@@ -578,6 +581,15 @@ export default function CatalogScreen() {
   const [alCatsLoading, setAlCatsLoading] = useState(false);
   const [alCatsError, setAlCatsError] = useState(false);
 
+  // Búsqueda + categorías Lidl (espejo Product Catalog).
+  const [liSearch, setLiSearch] = useState('');
+  const [liResults, setLiResults] = useState<LidlProduct[]>([]);
+  const [liLoading, setLiLoading] = useState(false);
+  const [liError, setLiError] = useState(false);
+  const [liCats, setLiCats] = useState<LidlCategory[]>([]);
+  const [liCatsLoading, setLiCatsLoading] = useState(false);
+  const [liCatsError, setLiCatsError] = useState(false);
+
   const [gaSearch, setGaSearch] = useState('');
   const [gaResults, setGaResults] = useState<GadisProduct[]>([]);
   const [gaLoading, setGaLoading] = useState(false);
@@ -653,7 +665,7 @@ export default function CatalogScreen() {
   // Texto de búsqueda del súper activo: con <2 letras estamos en modo navegación.
   const prodQuery = store === 'all'
     ? allSearch
-    : { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch, condis: coSearch, ametller: amSearch, aldi: alSearch, gadis: gaSearch, froiz: frSearch, ahorramas: ahSearch, hiperdino: hdSearch, alcampo: acSearch, plusfresc: pfSearch }[store];
+    : { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch, condis: coSearch, ametller: amSearch, aldi: alSearch, lidl: liSearch, gadis: gaSearch, froiz: frSearch, ahorramas: ahSearch, hiperdino: hdSearch, alcampo: acSearch, plusfresc: pfSearch }[store];
   const activeStoreSearchKey = `${store}:${prodQuery.trim()}:${lang}:${region ?? 'all'}:${postalCode ?? 'none'}:${productSearchOrder}`;
   const activeStoreSearchKeyRef = useRef(activeStoreSearchKey);
   activeStoreSearchKeyRef.current = activeStoreSearchKey;
@@ -661,7 +673,7 @@ export default function CatalogScreen() {
   // única que ahora vive en el chrome, en vez de una por bloque de súper).
   const setProdQuery = store === 'all'
     ? setAllSearch
-    : { mercadona: setProdSearch, esclat: setBpSearch, carrefour: setCfSearch, bonarea: setBaSearch, consum: setCsSearch, dia: setDdSearch, sorli: setSoSearch, eroski: setEkSearch, caprabo: setCbSearch, condis: setCoSearch, ametller: setAmSearch, aldi: setAlSearch, gadis: setGaSearch, froiz: setFrSearch, ahorramas: setAhSearch, hiperdino: setHdSearch, alcampo: setAcSearch, plusfresc: setPfSearch }[store];
+    : { mercadona: setProdSearch, esclat: setBpSearch, carrefour: setCfSearch, bonarea: setBaSearch, consum: setCsSearch, dia: setDdSearch, sorli: setSoSearch, eroski: setEkSearch, caprabo: setCbSearch, condis: setCoSearch, ametller: setAmSearch, aldi: setAlSearch, lidl: setLiSearch, gadis: setGaSearch, froiz: setFrSearch, ahorramas: setAhSearch, hiperdino: setHdSearch, alcampo: setAcSearch, plusfresc: setPfSearch }[store];
   const visibleProductQuery = prodQuery.trim();
   const showProductQueryInHeader = productQueryInHeader
     && tab === 'productos'
@@ -1052,6 +1064,15 @@ export default function CatalogScreen() {
   }, [store, alSearch, productSearchOrder]);
 
   useEffect(() => {
+    if (tab !== 'categorias' || store !== 'lidl' || liCats.length > 0) return;
+    return startCategoryLoad(fetchLidlCategoryTree, setLiCats, setLiCatsLoading, setLiCatsError);
+  }, [store, tab, liCats.length]);
+  useEffect(() => {
+    if (store !== 'lidl') return;
+    return startProductSearch(liSearch, (q, signal) => searchLidlProducts(q, 50, signal, 0, productSearchOrder), setLiResults, setLiLoading, setLiError);
+  }, [store, liSearch, productSearchOrder]);
+
+  useEffect(() => {
     if (tab !== 'categorias' || store !== 'gadis' || gaCats.length > 0) return;
     return startCategoryLoad(fetchGadisCategoryTree, setGaCats, setGaCatsLoading, setGaCatsError);
   }, [store, tab, gaCats.length]);
@@ -1366,6 +1387,14 @@ export default function CatalogScreen() {
 
   const renderAlCategory = ({ item }: { item: AldiCategory }) =>
     renderCatRow({ store: 'aldi', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('aldi', item) });
+
+  const renderLiCategory = ({ item }: { item: LidlCategory }) =>
+    renderCatRow({
+      store: 'lidl', refId: item.id, name: item.name, subcount: item.children.length,
+      onOpen: () => item.children.length === 1 && item.children[0].id === item.id
+        ? navigation.navigate('LidlProducts', { categoryId: item.id, categoryName: item.name })
+        : goToMirrorSubcategories('lidl', item),
+    });
 
   const renderGaCategory = ({ item }: { item: GadisCategory }) =>
     renderCatRow({ store: 'gadis', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('gadis', item) });
@@ -2259,6 +2288,14 @@ export default function CatalogScreen() {
           {renderProductsTab(alSearch, alLoading, alError, alResults.map(aldiToUI))}
         </>
       )}
+
+      {/* ── Lidl ─────────────────────────────────────────────────── */}
+      {store === 'lidl' && tab === 'categorias' && (
+        liCatsLoading ? <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
+        : liCatsError ? <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Lidl' })}</Text><TouchableOpacity onPress={() => { setLiCatsError(false); setLiCatsLoading(true); fetchLidlCategoryTree().then(setLiCats).catch(() => setLiCatsError(true)).finally(() => setLiCatsLoading(false)); }}><Text style={styles.retryText}>{t('common.retry')}</Text></TouchableOpacity></View>
+        : <FlatList data={sortedCats(liCats)} keyExtractor={(item) => item.id} renderItem={renderLiCategory} contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]} showsVerticalScrollIndicator={false} ItemSeparatorComponent={() => <View style={{ height: 8 }} />} />
+      )}
+      {store === 'lidl' && tab === 'productos' && renderProductsTab(liSearch, liLoading, liError, liResults.map(lidlToUI))}
 
       {/* ── Gadis ────────────────────────────────────────────────── */}
       {store === 'gadis' && tab === 'categorias' && (

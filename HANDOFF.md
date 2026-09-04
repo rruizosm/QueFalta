@@ -1,5 +1,22 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Corrección del primer run de `Sync Lidl catalog fleet` (2026-09-04)
+
+- El run manual `33905985690` falló en el job `schedule`, antes de ejecutar
+  ninguna RPC: `const URL` ocultaba al constructor global `URL` y
+  `new URL('./sync-lidl.mjs', import.meta.url)` lanzó `TypeError: URL is not a
+  constructor`.
+- La consulta posterior confirmó cero filas en
+  `private.lidl_catalog_sync_queue`; no hubo escrituras de productos ni una
+  ejecución parcial que reconciliar.
+- El orquestador usa ahora `SUPABASE_URL`/`SUPABASE_KEY`. La prueba sucesora
+  arranca un proceso Node real en `--schedule-only`, simula `fetch` sin red y
+  valida endpoint, POST, bearer y respuesta. La comprobación anterior solo
+  inspeccionaba patrones del fichero y no ejecutaba su inicialización.
+- El primer run del directorio (`33905318554`) falló por el secreto ausente;
+  `LIDL_STORES_API_KEY` ya está configurado y el segundo (`33905697909`) pasó.
+  El barrido completo no se relanza automáticamente con esta corrección.
+
 ## Orquestador semanal Lidl desplegado (2026-09-04)
 
 - La primera versión de la cola priorizaba una tienda cuando el usuario la
@@ -20,16 +37,15 @@
   simultáneos para cubrir las 721 tiendas abiertas actuales.
 - Verificación productiva con `ROLLBACK`: cambiar la tienda de un perfil no
   encola nada; el planificador genera exactamente 721 filas; claim, cierre y
-  retry funcionan. El rollback dejó la cola en cero. El propietario ha
-  autorizado publicar el workflow y activar `LIDL_SYNC_ENABLED=true`; no se
-  lanza un barrido manual como parte de la activación.
+  retry funcionan. El rollback dejó la cola en cero. El workflow está publicado
+  y `LIDL_SYNC_ENABLED=true` está activo. El primer dispatch manual falló antes
+  de llamar al planificador por el error de arranque descrito arriba.
   TypeScript, ESLint, YAML, `git diff --check`, advisors y la suite completa
   (**623/623**) pasan.
-- La publicación y activación técnica quedan autorizadas en este cambio. Deben
-  seguir comprobándose los secretos GitHub `SUPABASE_URL`/
-  `SUPABASE_SERVICE_ROLE` (y `LIDL_STORES_API_KEY` para el directorio) y la
-  revisión de autorización comercial. Hasta el primer barrido semanal continúan
-  sin catálogo las otras 720 tiendas abiertas.
+- Los tres secretos GitHub necesarios (`SUPABASE_URL`,
+  `SUPABASE_SERVICE_ROLE` y `LIDL_STORES_API_KEY`) están configurados. La
+  revisión de autorización comercial sigue separada. Hasta ejecutar el primer
+  barrido completo continúan sin catálogo las otras 720 tiendas abiertas.
 
 ## Lidl multitienda y directorio nacional desplegados (2026-09-04)
 
@@ -46,8 +62,8 @@
   Publica por el momento candidatos de CP exacto; las tres tiendas cercanas sin
   coincidencia exacta necesitan todavía un índice de centroides postales.
 - `LIDL_STORES_API_KEY` se resolvió de forma transitoria desde el cliente web
-  público de Lidl y no se persistió. Para que el workflow diario funcione tras
-  publicarlo, aún debe configurarse como secreto rotatorio en GitHub.
+  público de Lidl y se configuró después como secreto rotatorio en GitHub. El
+  segundo dispatch del workflow diario terminó correctamente.
 - El sync de catálogo ya escribe master, productos y categorías por tienda;
   los obsoletos se limitan a la tienda procesada. `ES3572` mantiene en paralelo
   el contrato legacy. El orquestador semanal de las 721 tiendas abiertas ya
@@ -64,8 +80,8 @@
   de un error; fallos de red, permisos u otros códigos no se silencian.
 - Antes de mostrar productos de tiendas adicionales hay que sincronizar sus
   catálogos: ahora todas aparecen en el selector, pero solo `ES3572` tiene
-  productos cargados. La activación solicitada deja el primer barrido para la
-  próxima ejecución programada; no se hace dispatch manual en este cambio.
+  productos cargados. El primer dispatch del barrido falló antes de encolar; la
+  corrección no lo relanza automáticamente.
 
 ## Main sincronizado e integración posterior al merge (2026-09-04)
 
@@ -99,8 +115,8 @@
   búsqueda, índices y `catalog_sync_status` se verificaron en producción. Lidl
   está integrado localmente en selector, categorías, browse/búsqueda, ficha,
   carrito y favoritos, pero no en comparador. TypeScript pasa.
-- Workflow semanal listo para publicarse en este cambio con la variable GitHub
-  `LIDL_SYNC_ENABLED=true`. Siguen pendientes el primer barrido completo, el
+- Workflow semanal publicado con `LIDL_SYNC_ENABLED=true`. Sigue pendiente el
+  primer barrido completo después de corregir su error de arranque, además del
   contraste multi-tienda y la revisión de autorización comercial. Ver
   `scripts/README-lidl-sync.md`.
 - Ofertas implementadas después del merge: fuente pública separada

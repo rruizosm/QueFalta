@@ -26,9 +26,11 @@ if (args.has('--help')) {
   process.exit(0);
 }
 
-const URL = String(process.env.SUPABASE_URL || '').replace(/\/$/, '');
-const KEY = process.env.SUPABASE_SERVICE_ROLE;
-if (!URL || !KEY) throw new Error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE');
+const SUPABASE_URL = String(process.env.SUPABASE_URL || '').replace(/\/$/, '');
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE;
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  throw new Error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE');
+}
 
 function integerEnv(name, fallback, min, max) {
   const raw = process.env[name];
@@ -62,11 +64,11 @@ function workerId() {
 }
 
 async function rpc(name, body) {
-  const response = await fetch(`${URL}/rest/v1/rpc/${name}`, {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
     method: 'POST',
     headers: {
-      apikey: KEY,
-      Authorization: `Bearer ${KEY}`,
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),

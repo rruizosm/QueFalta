@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { promisify } from 'node:util';
+
+const execFileAsync = promisify(execFile);
+const orchestratorPath = fileURLToPath(new URL('../sync-lidl-fleet.mjs', import.meta.url));
+const orchestratorModule = pathToFileURL(orchestratorPath).href;
 
 const migration = await readFile(
   new URL('../../supabase/migrations/20260904141250_lidl_catalog_sync_queue.sql', import.meta.url),
@@ -80,6 +87,40 @@ test('el orquestador reclama una tienda cada vez y delega en el sync aislado por
   assert.doesNotMatch(orchestrator, /MIN_PRIORITY|job_priority|job_source/);
   assert.match(orchestrator, /STORE_TIMEOUT_MINUTES >= LEASE_MINUTES/);
   assert.match(orchestrator, /timeout: STORE_TIMEOUT_MINUTES \* 60_000/);
+});
+
+test('el orquestador arranca y programa el barrido con la RPC esperada', async () => {
+  const bootstrap = `
+    globalThis.fetch = async (input, init) => {
+      const expected = 'https://supabase.invalid/rest/v1/rpc/schedule_all_lidl_catalog_sync_jobs';
+      if (String(input) !== expected) throw new Error('URL RPC inesperada: ' + input);
+      if (init?.method !== 'POST') throw new Error('Método RPC inesperado: ' + init?.method);
+      if (init?.headers?.Authorization !== 'Bearer test-service-role') {
+        throw new Error('Autorización RPC inesperada');
+      }
+      return new Response('0', {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+    process.argv = [process.execPath, ${JSON.stringify(orchestratorPath)}, '--schedule-only'];
+    await import(${JSON.stringify(orchestratorModule)});
+  `;
+  const { stdout, stderr } = await execFileAsync(
+    process.execPath,
+    ['--input-type=module', '--eval', bootstrap],
+    {
+      env: {
+        ...process.env,
+        SUPABASE_URL: 'https://supabase.invalid',
+        SUPABASE_SERVICE_ROLE: 'test-service-role',
+      },
+      timeout: 5_000,
+    },
+  );
+
+  assert.equal(stderr, '');
+  assert.match(stdout, /0 tiendas incluidas en el barrido semanal/);
 });
 
 test('el único workflow ejecuta capacidad para todo el censo cada lunes', () => {

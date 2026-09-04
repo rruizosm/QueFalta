@@ -33,4 +33,13 @@ jobs:
         run: npm run lint
 
       - name: Tests
-        run: npm test
+        run: npm test 2>&1 | tee test-output.log
+
+      - name: Upload test output on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-test-output
+          path: test-output.log
+          if-no-files-found: error
+          retention-days: 3

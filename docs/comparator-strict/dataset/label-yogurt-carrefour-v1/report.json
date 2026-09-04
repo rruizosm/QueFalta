@@ -1,0 +1,173 @@
+{
+  "version": "ce202-yogurt-carrefour-v1",
+  "date": "2026-09-03",
+  "status": "yogurt_source_block_complete_not_complete_equivalence_or_gold",
+  "relationship_contract": "ce202-yogurt-source-review-v1",
+  "relationship_policy": "ce202-yogurt-carrefour-v1",
+  "source_reviewed_products": 545,
+  "reused_unchanged_product_reviews": 431,
+  "yogurt_source_reviews_total": 976,
+  "source_review_depth": {
+    "family_attributes_and_format": 445,
+    "scope_gate_only": 100
+  },
+  "matrix_counts": {
+    "bifidus_unspecified": 32,
+    "cake": 5,
+    "cheese": 4,
+    "cosmetic": 1,
+    "curd": 1,
+    "dairy_drink": 1,
+    "dessert": 48,
+    "fermented_milk": 73,
+    "icecream": 1,
+    "icecream_preparation": 1,
+    "infant_dessert": 1,
+    "infant_yogurt_unresolved": 2,
+    "kefir": 32,
+    "pasteurized_yogurt_unresolved": 1,
+    "pet_food": 2,
+    "plant_fermented": 8,
+    "plant_kefir": 1,
+    "plant_unspecified": 7,
+    "porridge": 1,
+    "protein_drink": 1,
+    "sauce": 1,
+    "yogurt": 318,
+    "yogurt_cream_unresolved": 1,
+    "yogurt_preparation_unresolved": 2
+  },
+  "first_annotations_this_batch": 2011,
+  "previous_first_annotated_corpus_pairs": 1510,
+  "newly_first_annotated_corpus_pairs": 2007,
+  "union_first_annotated_corpus_pairs": 3517,
+  "corpus_pairs_pending_first_annotation": 2483,
+  "pending_by_family": {
+    "drinking_water": 2483
+  },
+  "remaining_yogurt_source_reviews": {},
+  "overlapping_previous_annotations": [
+    {
+      "pair_id": "54b8ac7cd9991c2d7652af8a17e3b755e27c9ecd3df49d0aa6f0c7cca1f55377",
+      "previous_id": "E06",
+      "annotation_id": "80adcf422675312e20efa40203e1f766f51ca1ab46048200f1a531496fdf25b5",
+      "changed_product_dimensions": [
+        "scope",
+        "identity"
+      ],
+      "decision_changed": false
+    },
+    {
+      "pair_id": "99c8fbb90434f0b39d6ef1aba7fcbd38a795296aeb2ea3ae39b6384b2d6edbad",
+      "previous_id": "E05",
+      "annotation_id": "168e035d2124bf8b6934f5d86cc273151752ab643a3464c54b0663f7788982d2",
+      "changed_product_dimensions": [
+        "scope",
+        "identity"
+      ],
+      "decision_changed": false
+    },
+    {
+      "pair_id": "e60d6e824558f31b1733c7b0fbecc34919f0ecf68726e3f19bf17b4a5f31fb09",
+      "previous_id": "E07",
+      "annotation_id": "d2064809490d48cf6a1e54983d9b5339112c0c72381c86c5436d5d738553d88f",
+      "changed_product_dimensions": [
+        "scope",
+        "identity",
+        "variants"
+      ],
+      "decision_changed": true
+    },
+    {
+      "pair_id": "d9b403386e76f61a58a72081447ecec3458047cf5900d97fa293361e93a2332f",
+      "previous_id": "E17",
+      "annotation_id": "c5922664ad0506ea572a47cfdd10ffe092f484c2a3beb789d82cfd92f522d36f",
+      "changed_product_dimensions": [
+        "identity"
+      ],
+      "decision_changed": false
+    }
+  ],
+  "decision_counts": {
+    "abstain": 841,
+    "excluded_scope": 169,
+    "rejected": 1001
+  },
+  "dimension_counts": {
+    "scope": {
+      "compatible": 334,
+      "incompatible": 169,
+      "unknown": 1508
+    },
+    "identity": {
+      "compatible": 1150,
+      "unknown": 861
+    },
+    "variants": {
+      "conflicting": 22,
+      "incompatible": 460,
+      "unknown": 1529
+    },
+    "format": {
+      "compatible": 108,
+      "conflicting": 9,
+      "incompatible": 731,
+      "unknown": 1163
+    }
+  },
+  "editorial_decision_disagreements_requiring_owner_arbitration": [
+    "E07"
+  ],
+  "comparison_against_frozen_drafts_not_motor_quality": {
+    "abstain -> abstain": 841,
+    "abstain -> excluded_scope": 150,
+    "abstain -> rejected": 570,
+    "excluded_scope -> excluded_scope": 1,
+    "rejected -> excluded_scope": 18,
+    "rejected -> rejected": 431
+  },
+  "known_format_products": 264,
+  "semantic_title_only_products": 281,
+  "source_dispute_products": [
+    "carrefour:VC4AECOMM-127708",
+    "carrefour:VC4AECOMM-225693",
+    "carrefour:VC4AECOMM-384263",
+    "carrefour:VC4AECOMM-593780",
+    "carrefour:VC4AECOMM-593783",
+    "carrefour:VC4AECOMM-715028",
+    "carrefour:prod395624",
+    "carrefour:prod64313"
+  ],
+  "source_dispute_pairs": 46,
+  "format_warning_counts": {
+    "assortment_distribution_unknown": 12,
+    "no_commercial_quantity": 1,
+    "suspect_nominal_quantity": 1,
+    "unresolved_quantity_role": 167
+  },
+  "relationship_adjusted_pairs": 1,
+  "corpus_pairs_unchanged": 6000,
+  "corpus_queries_unchanged": 1200,
+  "original_origin_count_unchanged": 600,
+  "independent_pair_by_pair_reviews_this_batch": 0,
+  "independent_reviews": 0,
+  "gold_pairs": 0,
+  "supported_full_positive_equivalences": 0,
+  "eligible_savings": 0,
+  "CE201_complete": false,
+  "CE202_complete": false,
+  "CE203_complete": false,
+  "G2_pass": false,
+  "remote_project_calls": 0,
+  "retailer_calls": 0,
+  "new_integrations": 0,
+  "commercial_ttl_hours": null,
+  "source_manifest_sha256": "15da91ad7ae616199da7a50b53dba2abca4e3c43c1420a4a413b23ad02b9abd7",
+  "specs_sha256": "567e969afa76416bd9c8a0cf3809eb9118527ee87bc15f0160f14bd05b923060",
+  "hashes": {
+    "products": "3bc3f2cdc976a057ef5a33a56aca61a9cf6308ee4a5e765b3981398be87a231a",
+    "annotations": "c1fa947e231ca135ab39b409aba79b9bf6f6b7694f785f210fc5723c845b8443",
+    "index": "6ec5b7b97d5342a3b21d5d6d304fadef7545d72583d7462b1125f89d1a63dee3"
+  },
+  "limitation": "Editorial source review plus deterministic pair composition, not individual human pair review, gold, production quality or evidence that no equivalent exists. All yogurt-block observations registered; complete variants and bilateral commerce remain pending."
+}

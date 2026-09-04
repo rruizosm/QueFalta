@@ -1,0 +1,404 @@
+{
+  "schema_version": 1,
+  "tasks": [
+    "CE-201",
+    "CE-202"
+  ],
+  "status": "in_progress_yogurt_source_block_registered_water_pending",
+  "authority": "adelante",
+  "captured_at": "2026-09-03T14:22:22.598Z",
+  "annotation_date": "2026-09-03",
+  "authorship": "assistant_source_review_with_deterministic_pair_composition",
+  "not_claimed": [
+    "individual human pair-by-pair review",
+    "owner independent review",
+    "gold",
+    "full product equivalence",
+    "production matcher quality",
+    "complete CE-201/202",
+    "G2 PASS"
+  ],
+  "git": {
+    "branch": "codex/phase5-observation",
+    "head": "03b8ba273e17709fd8fc69c20dddb68c147a7e2a",
+    "changes": "Local uncommitted scripts and documentation only; no commit/push/deploy; unrelated work preserved"
+  },
+  "report": {
+    "version": "ce202-yogurt-carrefour-v1",
+    "date": "2026-09-03",
+    "status": "yogurt_source_block_complete_not_complete_equivalence_or_gold",
+    "relationship_contract": "ce202-yogurt-source-review-v1",
+    "relationship_policy": "ce202-yogurt-carrefour-v1",
+    "source_reviewed_products": 545,
+    "reused_unchanged_product_reviews": 431,
+    "yogurt_source_reviews_total": 976,
+    "source_review_depth": {
+      "family_attributes_and_format": 445,
+      "scope_gate_only": 100
+    },
+    "matrix_counts": {
+      "bifidus_unspecified": 32,
+      "cake": 5,
+      "cheese": 4,
+      "cosmetic": 1,
+      "curd": 1,
+      "dairy_drink": 1,
+      "dessert": 48,
+      "fermented_milk": 73,
+      "icecream": 1,
+      "icecream_preparation": 1,
+      "infant_dessert": 1,
+      "infant_yogurt_unresolved": 2,
+      "kefir": 32,
+      "pasteurized_yogurt_unresolved": 1,
+      "pet_food": 2,
+      "plant_fermented": 8,
+      "plant_kefir": 1,
+      "plant_unspecified": 7,
+      "porridge": 1,
+      "protein_drink": 1,
+      "sauce": 1,
+      "yogurt": 318,
+      "yogurt_cream_unresolved": 1,
+      "yogurt_preparation_unresolved": 2
+    },
+    "first_annotations_this_batch": 2011,
+    "previous_first_annotated_corpus_pairs": 1510,
+    "newly_first_annotated_corpus_pairs": 2007,
+    "union_first_annotated_corpus_pairs": 3517,
+    "corpus_pairs_pending_first_annotation": 2483,
+    "pending_by_family": {
+      "drinking_water": 2483
+    },
+    "remaining_yogurt_source_reviews": {},
+    "overlapping_previous_annotations": [
+      {
+        "pair_id": "54b8ac7cd9991c2d7652af8a17e3b755e27c9ecd3df49d0aa6f0c7cca1f55377",
+        "previous_id": "E06",
+        "annotation_id": "80adcf422675312e20efa40203e1f766f51ca1ab46048200f1a531496fdf25b5",
+        "changed_product_dimensions": [
+          "scope",
+          "identity"
+        ],
+        "decision_changed": false
+      },
+      {
+        "pair_id": "99c8fbb90434f0b39d6ef1aba7fcbd38a795296aeb2ea3ae39b6384b2d6edbad",
+        "previous_id": "E05",
+        "annotation_id": "168e035d2124bf8b6934f5d86cc273151752ab643a3464c54b0663f7788982d2",
+        "changed_product_dimensions": [
+          "scope",
+          "identity"
+        ],
+        "decision_changed": false
+      },
+      {
+        "pair_id": "e60d6e824558f31b1733c7b0fbecc34919f0ecf68726e3f19bf17b4a5f31fb09",
+        "previous_id": "E07",
+        "annotation_id": "d2064809490d48cf6a1e54983d9b5339112c0c72381c86c5436d5d738553d88f",
+        "changed_product_dimensions": [
+          "scope",
+          "identity",
+          "variants"
+        ],
+        "decision_changed": true
+      },
+      {
+        "pair_id": "d9b403386e76f61a58a72081447ecec3458047cf5900d97fa293361e93a2332f",
+        "previous_id": "E17",
+        "annotation_id": "c5922664ad0506ea572a47cfdd10ffe092f484c2a3beb789d82cfd92f522d36f",
+        "changed_product_dimensions": [
+          "identity"
+        ],
+        "decision_changed": false
+      }
+    ],
+    "decision_counts": {
+      "abstain": 841,
+      "excluded_scope": 169,
+      "rejected": 1001
+    },
+    "dimension_counts": {
+      "scope": {
+        "compatible": 334,
+        "incompatible": 169,
+        "unknown": 1508
+      },
+      "identity": {
+        "compatible": 1150,
+        "unknown": 861
+      },
+      "variants": {
+        "conflicting": 22,
+        "incompatible": 460,
+        "unknown": 1529
+      },
+      "format": {
+        "compatible": 108,
+        "conflicting": 9,
+        "incompatible": 731,
+        "unknown": 1163
+      }
+    },
+    "editorial_decision_disagreements_requiring_owner_arbitration": [
+      "E07"
+    ],
+    "comparison_against_frozen_drafts_not_motor_quality": {
+      "abstain -> abstain": 841,
+      "abstain -> excluded_scope": 150,
+      "abstain -> rejected": 570,
+      "excluded_scope -> excluded_scope": 1,
+      "rejected -> excluded_scope": 18,
+      "rejected -> rejected": 431
+    },
+    "known_format_products": 264,
+    "semantic_title_only_products": 281,
+    "source_dispute_products": [
+      "carrefour:VC4AECOMM-127708",
+      "carrefour:VC4AECOMM-225693",
+      "carrefour:VC4AECOMM-384263",
+      "carrefour:VC4AECOMM-593780",
+      "carrefour:VC4AECOMM-593783",
+      "carrefour:VC4AECOMM-715028",
+      "carrefour:prod395624",
+      "carrefour:prod64313"
+    ],
+    "source_dispute_pairs": 46,
+    "format_warning_counts": {
+      "assortment_distribution_unknown": 12,
+      "no_commercial_quantity": 1,
+      "suspect_nominal_quantity": 1,
+      "unresolved_quantity_role": 167
+    },
+    "relationship_adjusted_pairs": 1,
+    "corpus_pairs_unchanged": 6000,
+    "corpus_queries_unchanged": 1200,
+    "original_origin_count_unchanged": 600,
+    "independent_pair_by_pair_reviews_this_batch": 0,
+    "independent_reviews": 0,
+    "gold_pairs": 0,
+    "supported_full_positive_equivalences": 0,
+    "eligible_savings": 0,
+    "CE201_complete": false,
+    "CE202_complete": false,
+    "CE203_complete": false,
+    "G2_pass": false,
+    "remote_project_calls": 0,
+    "retailer_calls": 0,
+    "new_integrations": 0,
+    "commercial_ttl_hours": null,
+    "source_manifest_sha256": "15da91ad7ae616199da7a50b53dba2abca4e3c43c1420a4a413b23ad02b9abd7",
+    "specs_sha256": "567e969afa76416bd9c8a0cf3809eb9118527ee87bc15f0160f14bd05b923060",
+    "hashes": {
+      "products": "3bc3f2cdc976a057ef5a33a56aca61a9cf6308ee4a5e765b3981398be87a231a",
+      "annotations": "c1fa947e231ca135ab39b409aba79b9bf6f6b7694f785f210fc5723c845b8443",
+      "index": "6ec5b7b97d5342a3b21d5d6d304fadef7545d72583d7462b1125f89d1a63dee3"
+    },
+    "limitation": "Editorial source review plus deterministic pair composition, not individual human pair review, gold, production quality or evidence that no equivalent exists. All yogurt-block observations registered; complete variants and bilateral commerce remain pending."
+  },
+  "review_scope": {
+    "new_source_observations": 545,
+    "reused_unchanged_source_reviews": 431,
+    "registered_yogurt_block_observations": 976,
+    "source_language": "es",
+    "source_fields": "Title/raw name, denomination, ingredients, allergens, conservation, preparation, nutrition, EAN, sale/measure metadata and original taxonomy; null/absent retained.",
+    "numeric_transcriptions": "Explicit per-SKU editorial table validated against literal count/quantity evidence; not inferred from draft, brand or sell_pack_unit.",
+    "new_unique_pair_decisions": {
+      "rejected": 999,
+      "excluded_scope": 168,
+      "abstain": 840
+    },
+    "overlapping_editorial_ids": [
+      "E05",
+      "E06",
+      "E07",
+      "E17"
+    ],
+    "owner_arbitration_required": [
+      "E07",
+      "carrefour:VC4AECOMM-127708",
+      "carrefour:VC4AECOMM-225693",
+      "carrefour:VC4AECOMM-384263",
+      "carrefour:VC4AECOMM-593780",
+      "carrefour:VC4AECOMM-593783",
+      "carrefour:VC4AECOMM-715028",
+      "carrefour:prod395624",
+      "carrefour:prod64313"
+    ]
+  },
+  "validation": {
+    "focused": {
+      "command": "node --test --test-reporter=spec scripts/lib/comparator-strict-yogurt-carrefour.test.mjs scripts/tests/comparator-strict-yogurt-carrefour-evidence.test.mjs",
+      "exit_code": 0,
+      "tests": 35,
+      "pass": 35,
+      "fail": 0,
+      "skipped": 0
+    },
+    "quality": {
+      "command": "npm run quality",
+      "exit_code": 0,
+      "typecheck": "PASS",
+      "lint": "PASS",
+      "tests": 567,
+      "pass": 567,
+      "fail": 0,
+      "skipped": 0
+    },
+    "integrity": "All product/taxonomy citations resolve; materialized records and annotation hashes regenerate; four previous receipts/artifacts and protected production files unchanged.",
+    "initial_test_correction": "One new test incorrectly expected a full known assortment format from known numeric components; test corrected to retain unknown recipe distribution, without relaxing the rule.",
+    "development_checks": "Literal validation exposed de125 without whitespace. Coverage accounting retained four existing editorials. Frozen draft join uses canonical pair hash rather than draft record ID.",
+    "warnings": [
+      "Preexisting Node MODULE_TYPELESS_PACKAGE_JSON warning; no package.json change"
+    ],
+    "whitespace": "git diff --check and explicit UTF-8/newline/trailing-whitespace checks on all new listed files PASS"
+  },
+  "safety": {
+    "remote_project_calls": 0,
+    "retailer_calls": 0,
+    "supabase_writes": 0,
+    "app_changes": 0,
+    "sql_changes": 0,
+    "cron_changes": 0,
+    "sync_changes": 0,
+    "embedding_changes": 0,
+    "additional_model_api_calls": 0,
+    "new_integrations": 0,
+    "new_contracts": 0,
+    "commercial_ttl_hours": null,
+    "external_documentation_only": "Official Supabase changelog read; no project or retailer requests."
+  },
+  "previous_evidence_preserved": [
+    {
+      "path": "docs/comparator-strict/CE-201-202-corpus-evidence.json",
+      "sha256": "8827df528b9071e75aff0b295e0480e2d76bf0aa0c77f3a6b709ca366531ab76",
+      "bytes": 11760
+    },
+    {
+      "path": "docs/comparator-strict/CE-201-202-potatoes-evidence.json",
+      "sha256": "75c8a111eb5e97d3388d8be7d1933df8f8028c95befede8947cec576c719d11b",
+      "bytes": 9018
+    },
+    {
+      "path": "docs/comparator-strict/CE-201-202-yogurt-evidence.json",
+      "sha256": "938a38a6d379bb5618403e6519bf631df7e5d02de2e0308c9e9271c32025e0ab",
+      "bytes": 8801
+    },
+    {
+      "path": "docs/comparator-strict/CE-201-202-yogurt-plusfresc-evidence.json",
+      "sha256": "ff4c1d4e98039da3e100655a3c18672eaa820adf8c6b0c2d4f3e37490f2dc559",
+      "bytes": 10391
+    }
+  ],
+  "files": [
+    {
+      "path": "scripts/inspect-comparator-strict-carrefour-yogurt.mjs",
+      "sha256": "a6b04155c4330d0d46c109b7829c6e866345eb2cc50cdc6d689cdcc63d7d971e",
+      "bytes": 1725
+    },
+    {
+      "path": "scripts/lib/comparator-strict-yogurt-carrefour-specs.mjs",
+      "sha256": "54d188607f11aa4ea72b466c849bd89dc7253d3151ab4617cc4e4b3612a50b16",
+      "bytes": 40716
+    },
+    {
+      "path": "scripts/lib/comparator-strict-yogurt-carrefour.mjs",
+      "sha256": "7808e4b141d17bb311bc8cba03586518fc7d86e049cae7f5990acc4c3e7964e5",
+      "bytes": 19528
+    },
+    {
+      "path": "scripts/lib/comparator-strict-yogurt-carrefour.test.mjs",
+      "sha256": "692e3013e82a8abaf1607a7299e9f541c116da39ceb8b00ef90c3e26f5cad571",
+      "bytes": 14689
+    },
+    {
+      "path": "scripts/prepare-comparator-strict-yogurt-carrefour.mjs",
+      "sha256": "1837868607b4353caf50c7bd6c8d9bf8635bfc28d512a8bc3ef69f6dcd40cf34",
+      "bytes": 4899
+    },
+    {
+      "path": "scripts/tests/comparator-strict-yogurt-carrefour-evidence.test.mjs",
+      "sha256": "b9807f8172afe2b3055a1c65dff974751ebfbc3eb8c64a7c2015c4376fc0f531",
+      "bytes": 3943
+    },
+    {
+      "path": "docs/comparator-strict/CE-202-yogurt-carrefour-guide.md",
+      "sha256": "245516f75e873029c8833dc704a6cd3db1b0aa197bda0f331ce1b1685e45425a",
+      "bytes": 6383
+    },
+    {
+      "path": "docs/comparator-strict/CE-201-202-yogurt-carrefour-progress.md",
+      "sha256": "8e462563854cd8c633721a76b078017dc0b194b5ee5188b1d8dea2a72c0c21a6",
+      "bytes": 8528
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-yogurt-carrefour-v1/products.json",
+      "sha256": "99abc15528f0c61083e252fedf72be9bff5f5ba461db89c1ac3f745c32c052e8",
+      "bytes": 11540835
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-yogurt-carrefour-v1/index.json",
+      "sha256": "70d249f046de209f44ccbfe0911409c284dc65bfb84e0648a1775bed7ff6b1c5",
+      "bytes": 1188118
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-yogurt-carrefour-v1/report.json",
+      "sha256": "5b0dacf320828ff24ce3d8e0b5b6f7dd4a102675bb9e536a7ec13e1ff7884868",
+      "bytes": 5485
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-yogurt-carrefour-v1/manifest.json",
+      "sha256": "ec5903fb54d307f26566d17d7bd291fcbbdc8e2bdd831f91bcad5b634bf6cc02",
+      "bytes": 6352
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-yogurt-carrefour-v1/review.md",
+      "sha256": "282ebec0e757440cc0014a9a934d622a23a33c010f97597244d2821c142e1167",
+      "bytes": 223943
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-yogurt-carrefour-v1/README.md",
+      "sha256": "7eb9141a93a92581f25af550690313e7130d6885fb99a7a1cc82a93824fafcb7",
+      "bytes": 1273
+    }
+  ],
+  "protected_files": [
+    {
+      "path": "src/components/SimilarProductsSection.tsx",
+      "sha256": "d2e594cfd4ba184e839e13c0fd5e049917a16900dfea4fa2f884992234a1127e",
+      "bytes": 23444
+    },
+    {
+      "path": "src/components/StoreProductModal.tsx",
+      "sha256": "f467d6a7604f797e7b944a543310f1c30bfe3bafc40e3f8fa5cf7d4e696a45c4",
+      "bytes": 14383
+    },
+    {
+      "path": "src/api/catalog.ts",
+      "sha256": "bd35cdc8820661b52993a652ebc3a06b41963981df11183a9ba0880a4058bb05",
+      "bytes": 164988
+    },
+    {
+      "path": "supabase/ops/README-comparator-embedding-pipeline.md",
+      "sha256": "424a293c99b0b843a9c7032da5b813b889da324a05ffddcf3349970e53379f40",
+      "bytes": 19649
+    }
+  ],
+  "mutable_handoff_documents": [
+    "CONTEXTO.md",
+    "HANDOFF.md",
+    "PROYECTO-COMPARADOR-ESTRICTO.md"
+  ],
+  "next_step": {
+    "water_pairs_pending": 2483,
+    "yogurt_source_reviews_pending": 0,
+    "complete_positive_equivalence_evidence_required": true,
+    "preserve_frozen_layers": true,
+    "repeat_CE200": false,
+    "independent_review": "Owner: 20% random sample plus all disputes and E07; not yet drawn or performed",
+    "CE201_complete": false,
+    "CE202_complete": false,
+    "CE203_complete": false,
+    "G2_pass": false
+  }
+}

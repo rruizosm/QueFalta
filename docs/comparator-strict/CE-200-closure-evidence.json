@@ -1,0 +1,426 @@
+{
+  "schema_version": 1,
+  "task": "CE-200",
+  "status": "complete_acquisition_and_sampling_unlabelled",
+  "captured_at": "2026-09-03T11:14:23.414Z",
+  "authority": {
+    "reference": "CE-BU-002",
+    "file": "docs/comparator-strict/CE-BU-002-corpus-authority.md",
+    "request": "Revierte el limite de tiempo, no hay limite, extrae toda la información necesaria para poder completar la tarea CE-200",
+    "additional_approval": "Si: ampliar filas y transferencia solo para completar CE-200 con lotes pequeños y dentro de recursos incluidos, sin nuevos costes",
+    "scope": "CE-200 corpus only; no activation or automatic continuation into another phase"
+  },
+  "git": {
+    "branch": "codex/phase5-observation",
+    "head": "03b8ba273e17709fd8fc69c20dddb68c147a7e2a",
+    "uncommitted": true,
+    "unrelated_changes_preserved": true
+  },
+  "remote_migration": {
+    "project": "gkffvigcnsesbaihycay",
+    "version": "20260903101356",
+    "name": "comparator_strict_ce200_corpus_authority",
+    "applied_success": true,
+    "local_bytes_match_submitted_sql": true,
+    "sha256": "75ffda8b26e2030df058c23fc3873e655284da2fd9b649eb6436a897935f2fcd"
+  },
+  "budget_policy": {
+    "accumulated_sql_time_limit_ms": null,
+    "accumulated_counter_retained": true,
+    "statement_timeout_ms": 5000,
+    "lock_timeout_ms": 500,
+    "job_lease_ms": 1200000,
+    "concurrency": 1,
+    "corpus_read_rows_limit": 50000,
+    "corpus_transfer_reservation_limit": 134217728,
+    "previous_counters_reset": false
+  },
+  "corpus": {
+    "products": 4176,
+    "locations": 5189,
+    "unique_pairs": 6000,
+    "confirmatory_pairs": 4000,
+    "challenge_pairs": 2000,
+    "queries": 1200,
+    "destination_cases": 3600,
+    "confirmatory_eligible_products": 1439,
+    "source_supported_products": 1508,
+    "potential_alias_groups": 33,
+    "supported_family_exposed": 50,
+    "coverage": [
+      {
+        "family": "drinking_water",
+        "store": "carrefour",
+        "source_supported": 295,
+        "new_confirmatory_eligible": 278,
+        "query_origins": 116
+      },
+      {
+        "family": "drinking_water",
+        "store": "consum",
+        "source_supported": 76,
+        "new_confirmatory_eligible": 63,
+        "query_origins": 27
+      },
+      {
+        "family": "drinking_water",
+        "store": "mercadona",
+        "source_supported": 188,
+        "new_confirmatory_eligible": 182,
+        "query_origins": 76
+      },
+      {
+        "family": "drinking_water",
+        "store": "plusfresc",
+        "source_supported": 57,
+        "new_confirmatory_eligible": 51,
+        "query_origins": 22
+      },
+      {
+        "family": "yogurt",
+        "store": "carrefour",
+        "source_supported": 439,
+        "new_confirmatory_eligible": 435,
+        "query_origins": 182
+      },
+      {
+        "family": "yogurt",
+        "store": "consum",
+        "source_supported": 113,
+        "new_confirmatory_eligible": 105,
+        "query_origins": 43
+      },
+      {
+        "family": "yogurt",
+        "store": "mercadona",
+        "source_supported": 66,
+        "new_confirmatory_eligible": 61,
+        "query_origins": 25
+      },
+      {
+        "family": "yogurt",
+        "store": "plusfresc",
+        "source_supported": 219,
+        "new_confirmatory_eligible": 211,
+        "query_origins": 88
+      },
+      {
+        "family": "frozen_potatoes",
+        "store": "carrefour",
+        "source_supported": 32,
+        "new_confirmatory_eligible": 32,
+        "query_origins": 13
+      },
+      {
+        "family": "frozen_potatoes",
+        "store": "consum",
+        "source_supported": 8,
+        "new_confirmatory_eligible": 7,
+        "query_origins": 3
+      },
+      {
+        "family": "frozen_potatoes",
+        "store": "mercadona",
+        "source_supported": 7,
+        "new_confirmatory_eligible": 6,
+        "query_origins": 2
+      },
+      {
+        "family": "frozen_potatoes",
+        "store": "plusfresc",
+        "source_supported": 8,
+        "new_confirmatory_eligible": 8,
+        "query_origins": 3
+      }
+    ],
+    "gold_labels": 0,
+    "holdout_assigned": false,
+    "G2_pass": false,
+    "missing_location_tables_for_pilot": [
+      "carrefour",
+      "mercadona"
+    ],
+    "corpus_ready_for_CE201_CE202": true,
+    "stability": [
+      {
+        "store": "carrefour",
+        "kind": "fingerprints",
+        "rows": 2745,
+        "status": "all_content_fingerprints_match",
+        "atomic_snapshot": false
+      },
+      {
+        "store": "carrefour",
+        "kind": "location-fingerprints",
+        "rows": 0,
+        "status": "all_content_fingerprints_match",
+        "atomic_snapshot": false
+      },
+      {
+        "store": "consum",
+        "kind": "fingerprints",
+        "rows": 488,
+        "status": "all_content_fingerprints_match",
+        "atomic_snapshot": false
+      },
+      {
+        "store": "consum",
+        "kind": "location-fingerprints",
+        "rows": 1988,
+        "status": "all_content_fingerprints_match",
+        "atomic_snapshot": false
+      },
+      {
+        "store": "mercadona",
+        "kind": "fingerprints",
+        "rows": 490,
+        "status": "all_content_fingerprints_match",
+        "atomic_snapshot": false
+      },
+      {
+        "store": "mercadona",
+        "kind": "location-fingerprints",
+        "rows": 0,
+        "status": "all_content_fingerprints_match",
+        "atomic_snapshot": false
+      },
+      {
+        "store": "plusfresc",
+        "kind": "fingerprints",
+        "rows": 453,
+        "status": "all_content_fingerprints_match",
+        "atomic_snapshot": false
+      },
+      {
+        "store": "plusfresc",
+        "kind": "location-fingerprints",
+        "rows": 3201,
+        "status": "all_content_fingerprints_match",
+        "atomic_snapshot": false
+      }
+    ],
+    "source_pages": 118,
+    "quantities_are_sampling_evidence_not_normalized_truth": true,
+    "location_observations_for_target_mapping": 1211,
+    "taxonomy_nodes": 1701,
+    "source_responses": 118,
+    "source_frame_sha256": "0137500d1a4ecd55e17edfb83b8270adac2c82bdf9a3a85edec1a72c6bc7916a",
+    "canonical_hashes": {
+      "pairs": "b9b0ae479a5756911fce0b523dba11973864fc04b5871f3ef3f701939bcb5cb0",
+      "queries": "702a7972ef19461e800618f0ba88827f20a0d847f523cdeafb336bfdaa50cc1c",
+      "pools": "6bbbad74c857413f34e896ef1e6d878fe14d45aa7bcb889e065a427cd0139595",
+      "selection": "8c2aa77cd019f28dd20ccc2567f5d37d472072dd08bc7584c413e8357783154d"
+    },
+    "local_dataset_bytes": 25968380
+  },
+  "resources": {
+    "source_transport_utf8_bytes": 17391429,
+    "measurement_scope": "118 saved acquisition responses, including census and fingerprint rechecks; not billing total or reservation counter",
+    "supabase_usage_panel": {
+      "url": "https://supabase.com/dashboard/org/trnqzlirexddfnowcifm/usage",
+      "plan": "Pro",
+      "billing_period": "2026-08-21/2026-09-21",
+      "egress_observed_gb": 3.917,
+      "egress_included_gb": 250,
+      "egress_overage_gb": 0,
+      "observed_before_and_after": true,
+      "lag_warning": "Up to one hour; not an immediate billing reconciliation",
+      "provisioned_disk_gb": 8
+    },
+    "new_paid_services": 0,
+    "plan_or_compute_or_disk_changes": 0,
+    "retailer_OFF_model_calls": 0,
+    "public_uploads": 0
+  },
+  "remote_closure": {
+    "budget": {
+      "updated_at": "2026-09-03T10:55:06.471463+00:00",
+      "budget_date": "2026-09-03",
+      "bytes_limit": 134217728,
+      "project_ref": "gkffvigcnsesbaihycay",
+      "bytes_reserved": 108246478,
+      "read_rows_limit": 50000,
+      "sql_ms_reserved": 1518920,
+      "approval_reference": "CE-200-corpus-v1",
+      "read_rows_reserved": 34177,
+      "write_rows_reserved": 399
+    },
+    "blocked": 0,
+    "ce200_jobs": [
+      {
+        "count": 119,
+        "status": "succeeded"
+      },
+      {
+        "count": 1,
+        "status": "rolled_back"
+      }
+    ],
+    "captured_at": "2026-09-03T10:55:06.480632+00:00",
+    "control_rows": 0,
+    "unresolved_jobs": 0,
+    "active_older_30s": 0,
+    "test_principal_rows": 0
+  },
+  "changes": {
+    "app_files_modified_this_task": false,
+    "comparator_published_activation": false,
+    "catalog_or_commercial_data_writes": false,
+    "private_execution_ledger_writes": true,
+    "sync_cron_embedding_changes": false,
+    "integrations_installed": [],
+    "production_RLS_or_app_grants_relaxed": false
+  },
+  "verification": {
+    "command": "npm run quality",
+    "exit_code": 0,
+    "typescript": "PASS",
+    "eslint": "PASS",
+    "tests": 404,
+    "passed": 404,
+    "failed": 0,
+    "test_duration_ms": 4622.185125,
+    "quality_terminal_result": {
+      "chunk_id": "d5ca0d",
+      "wall_time_seconds": 0.000211625,
+      "exit_code": 0,
+      "original_token_count": 292,
+      "output": "> mercaappmobile@1.0.0 quality\n> npm run typecheck && npm run lint && npm test\n> mercaappmobile@1.0.0 typecheck\n> tsc --noEmit\n> mercaappmobile@1.0.0 lint\n> expo lint --max-warnings 0\n> mercaappmobile@1.0.0 test\n> node --test scripts/lib/*.test.mjs scripts/tests/*.test.mjs\n# To eliminate this warning, add \"type\": \"module\" to /Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/package.json.\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# To eliminate this warning, add \"type\": \"module\" to /Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/package.json.\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# To eliminate this warning, add \"type\": \"module\" to /Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/package.json.\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# To eliminate this warning, add \"type\": \"module\" to /Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/package.json.\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# tests 404\n# pass 404\n# fail 0\n# duration_ms 4622.185125\n"
+    },
+    "embedded_postgres": {
+      "command": "node scripts/test-comparator-strict-acquisition-local.mjs /private/tmp/quefalta-ce1-tools.Mh399b/node_modules/@electric-sql/pglite/dist/index.js",
+      "status": "PASS",
+      "scope": "CE-BU-002 migration + CE200 reader",
+      "checks": 14,
+      "limitations": "embedded single-process; not a remote concurrency benchmark",
+      "exit_code": 0
+    },
+    "git_diff_check": "PASS",
+    "historical_CE200_files_unchanged": 11,
+    "protected_files_match_pre_task_hashes": true,
+    "corpus_exact_rebuild_and_source_fingerprints": "PASS",
+    "F1_historical_evidence_preserved": true
+  },
+  "protected_files": [
+    {
+      "path": "src/components/SimilarProductsSection.tsx",
+      "sha256": "d2e594cfd4ba184e839e13c0fd5e049917a16900dfea4fa2f884992234a1127e",
+      "bytes": 23444
+    },
+    {
+      "path": "src/components/StoreProductModal.tsx",
+      "sha256": "f467d6a7604f797e7b944a543310f1c30bfe3bafc40e3f8fa5cf7d4e696a45c4",
+      "bytes": 14383
+    },
+    {
+      "path": "src/api/catalog.ts",
+      "sha256": "bd35cdc8820661b52993a652ebc3a06b41963981df11183a9ba0880a4058bb05",
+      "bytes": 164988
+    },
+    {
+      "path": "supabase/ops/README-comparator-embedding-pipeline.md",
+      "sha256": "424a293c99b0b843a9c7032da5b813b889da324a05ffddcf3349970e53379f40",
+      "bytes": 19649
+    }
+  ],
+  "files": [
+    {
+      "path": "supabase/migrations/20260903101356_comparator_strict_ce200_corpus_authority.sql",
+      "sha256": "75ffda8b26e2030df058c23fc3873e655284da2fd9b649eb6436a897935f2fcd",
+      "bytes": 2324
+    },
+    {
+      "path": "scripts/lib/comparator-strict-guard.mjs",
+      "sha256": "713a8c489390bec0f34e96c2cb31f8e45402b48172de9ea8babc6e8c09d444f9",
+      "bytes": 16433
+    },
+    {
+      "path": "scripts/lib/comparator-strict-acquisition.mjs",
+      "sha256": "6229a40336e45451952d592fc93faf6027e3f07f5b974e22e3f68988810047ad",
+      "bytes": 10395
+    },
+    {
+      "path": "scripts/lib/comparator-strict-acquisition.test.mjs",
+      "sha256": "822427d9c753ea5a9d26a26f461563e1c639a7ceb9d8b4384239150bf51fffd8",
+      "bytes": 1494
+    },
+    {
+      "path": "scripts/lib/comparator-strict-corpus.test.mjs",
+      "sha256": "79e7184dc7dda3345297d58c052c31751ca2d7912b54c51c559acc71d9fc1246",
+      "bytes": 3431
+    },
+    {
+      "path": "scripts/audit-comparator-strict-corpus.mjs",
+      "sha256": "2c5d3f01c72e020ad9b30b6452cd99fb7b05a4513d6f8cca940aa3767cbf0ed2",
+      "bytes": 2435
+    },
+    {
+      "path": "scripts/test-comparator-strict-acquisition-local.mjs",
+      "sha256": "c931a77af8881c8774a70166261f76547eea00089aac84de066ee951f125510d",
+      "bytes": 3362
+    },
+    {
+      "path": "scripts/tests/comparator-strict-corpus-evidence.test.mjs",
+      "sha256": "4b3789f24e062e10d46fb43aebb378863b15c62df1d53b5f0a3a7e68e7130281",
+      "bytes": 5340
+    },
+    {
+      "path": "scripts/tests/comparator-strict-atomic-evidence.test.mjs",
+      "sha256": "6ff10a14c3e93225ec31fec6459d1bd1449b32363eae4b9854c7ab38a97d5b1a",
+      "bytes": 4486
+    },
+    {
+      "path": "docs/comparator-strict/CE-200-remote-closure.json",
+      "sha256": "443f3dee86a3e65c6ae3c53cfe9bf7b617401ca0b4619975e262b339f37846b4",
+      "bytes": 3095
+    },
+    {
+      "path": "docs/comparator-strict/CE-200-remote-final.json",
+      "sha256": "3cf7e70834dbbc8f2c2a210299d795004c410d7e07e40b79554131d2e1b9f181",
+      "bytes": 9635
+    },
+    {
+      "path": "docs/comparator-strict/CE-200-data-quality.json",
+      "sha256": "3798e98a7006fbdbf56f6ab2827d64b7435b1039b64640205c8cc89f704c4984",
+      "bytes": 10022
+    },
+    {
+      "path": "docs/comparator-strict/CE-BU-002-runtime-supersession.json",
+      "sha256": "784123a3925b61fbd8faa45384f8985239eff1647441b240d7c24572a78c4ef3",
+      "bytes": 779
+    },
+    {
+      "path": "docs/comparator-strict/fixtures/f1-guard-20260903.mjs.txt",
+      "sha256": "5689b11495c22cad620e035fb31553b7983f40a1a15fc8fa685ecaa624016991",
+      "bytes": 16147
+    },
+    {
+      "path": "docs/comparator-strict/dataset/corpus-v1/manifest.json",
+      "sha256": "15da91ad7ae616199da7a50b53dba2abca4e3c43c1420a4a413b23ad02b9abd7",
+      "bytes": 52195
+    },
+    {
+      "path": "docs/comparator-strict/dataset/corpus-v1/selection.json",
+      "sha256": "98b46883e9969e175fdc08272c26e5cc9df1d9ca2dc63e1076a20aa142c69982",
+      "bytes": 56828
+    },
+    {
+      "path": "docs/comparator-strict/CE-200-closure.md",
+      "sha256": "661aadcd43f506c678a94d4716e19321389ba1759244f5341409c546bf49bc13",
+      "bytes": 12361
+    }
+  ],
+  "limitations": [
+    "Acquisition/sampling complete, not gold labels, equivalence approval, precision, recall, performance acceptance or G2.",
+    "6000 pairs include 4000 stratified and 2000 challenge cases; observations sharing entities are not independent.",
+    "1200 Q are offline contexts for 600 origins at two CP, not 1200 executed comparator requests.",
+    "Family and quantity signals used for sampling are not production matcher/parser truth.",
+    "Two-pass matching content fingerprints do not constitute one globally atomic database snapshot.",
+    "Carrefour/Mercadona local prices absent in the acquired location table; Consum postcode mapping approximate/incomplete and Plusfresc mapping not reverified with retailer.",
+    "One aggregate census timeout reconciled with reservation retained; one lease check failure rolled back before catalog access; neither hidden as success.",
+    "Final protocol successful-operation count is not a 100-window performance certification.",
+    "Usage panel can lag; no new resources purchased or plan changes, but existing subscription is not free or unlimited."
+  ],
+  "next": "CE-201/202: extend the local annotation workflow to corpus-v1, cover hard cases and label with original source citations. CE-203 remains owner review. Do not repeat acquisition or F1 canary.",
+  "G2_pass": false
+}

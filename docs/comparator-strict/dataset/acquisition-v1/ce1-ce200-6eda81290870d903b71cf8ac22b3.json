@@ -1,0 +1,58 @@
+{
+  "plan": {
+    "version": "ce200-read-v3",
+    "kind": "locations",
+    "store": "plusfresc",
+    "cursor": "plusfresc:61:037128",
+    "limit": 200,
+    "round": "initial",
+    "select": "SELECT l.*,md5(to_jsonb(l)::text) AS source_row_md5 FROM public.catalog_location_prices l\n      WHERE l.store='plusfresc' AND l.product_id IN (SELECT id FROM public.plusfresc_products WHERE published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)|b[ií]fidus' OR category_id IN ('020101','020102') OR category_id LIKE '0404%'))\n      AND l.id COLLATE \"C\" > 'plusfresc:61:037128' COLLATE \"C\" ORDER BY l.id COLLATE \"C\" LIMIT 200",
+    "job": "ce1-ce200-6eda81290870d903b71cf8ac22b3",
+    "operationHash": "6eda81290870d903b71cf8ac22b3df9d39533370e6f8c029cce4d96b099dbf85",
+    "maxRows": 200,
+    "maxBytes": 1048576,
+    "sql": "-- ce1-ce200-6eda81290870d903b71cf8ac22b3: locations; CE-BU-002; no app writes.\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $reserve$\nDECLARE job_started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE status IN ('planned','running','halted','unknown'))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-6eda81290870d903b71cf8ac22b3') THEN RAISE EXCEPTION 'ce200_exclusive_or_replay'; END IF;\n  IF EXISTS(SELECT 1 FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid))>0\n    OR (pid<>pg_backend_pid() AND state='active' AND query_start<clock_timestamp()-interval '30 seconds')) THEN RAISE EXCEPTION 'ce200_health_stop'; END IF;\n  UPDATE comparator_strict.execution_budget SET\n    sql_ms_reserved=sql_ms_reserved+10000,read_rows_reserved=read_rows_reserved+200,\n    bytes_reserved=bytes_reserved+1048576,write_rows_reserved=write_rows_reserved+3,updated_at=clock_timestamp()\n    WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03'\n      AND approval_reference='CE-200-corpus-v1' AND bytes_limit=134217728 AND read_rows_limit=50000\n      AND bytes_reserved+1048576<=bytes_limit AND read_rows_reserved+200<=read_rows_limit AND write_rows_reserved+3<=2000;\n  IF NOT FOUND THEN RAISE EXCEPTION 'ce200_budget'; END IF;\n  INSERT INTO comparator_strict.execution_jobs(id,project_ref,operation_key,sql_sha256,status,started_at,deadline_at,job_key,operation_hash,budget_date,reservation)\n    VALUES(gen_random_uuid(),'gkffvigcnsesbaihycay','ce200-locations','04de5be1daa1c9c0515b6b2ffd3a720742a5dcfb6d3a492bb99b385791e64289','running',job_started,job_started+interval '20 minutes','ce1-ce200-6eda81290870d903b71cf8ac22b3','6eda81290870d903b71cf8ac22b3df9d39533370e6f8c029cce4d96b099dbf85',DATE '2026-09-03','{\"sqlMs\":10000,\"readRows\":200,\"writeRows\":3,\"responseBytes\":1048576}'::jsonb);\nEND $reserve$;\nCOMMIT;\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $payload$\nDECLARE payload jsonb; data jsonb; started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR NOT EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-6eda81290870d903b71cf8ac22b3' AND status='running' AND operation_hash='6eda81290870d903b71cf8ac22b3df9d39533370e6f8c029cce4d96b099dbf85' AND deadline_at>clock_timestamp()) THEN RAISE EXCEPTION 'ce200_lease'; END IF;\n  SELECT coalesce(jsonb_agg(to_jsonb(q)),'[]'::jsonb) INTO data FROM (SELECT l.*,md5(to_jsonb(l)::text) AS source_row_md5 FROM public.catalog_location_prices l\n      WHERE l.store='plusfresc' AND l.product_id IN (SELECT id FROM public.plusfresc_products WHERE published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)|b[ií]fidus' OR category_id IN ('020101','020102') OR category_id LIKE '0404%'))\n      AND l.id COLLATE \"C\" > 'plusfresc:61:037128' COLLATE \"C\" ORDER BY l.id COLLATE \"C\" LIMIT 200) q;\n  payload:=jsonb_build_object('job_key','ce1-ce200-6eda81290870d903b71cf8ac22b3','operation_hash','6eda81290870d903b71cf8ac22b3df9d39533370e6f8c029cce4d96b099dbf85',\n    'project_ref','gkffvigcnsesbaihycay','captured_at',started,'kind','locations','store','plusfresc',\n    'cursor','plusfresc:61:037128','rows',data,'row_count',jsonb_array_length(data),'elapsed_ms',extract(epoch FROM clock_timestamp()-started)*1000);\n  IF jsonb_array_length(data)>200 OR octet_length(payload::text)>1040384 THEN RAISE EXCEPTION 'ce200_result_limit'; END IF;\n  UPDATE comparator_strict.execution_jobs SET status='succeeded',finished_at=clock_timestamp(),\n    receipt=jsonb_build_object('payload_sha256',encode(sha256(convert_to(payload::text,'UTF8')),'hex'),'row_count',jsonb_array_length(data),'payload_bytes',octet_length(payload::text),'elapsed_ms',payload->'elapsed_ms') WHERE job_key='ce1-ce200-6eda81290870d903b71cf8ac22b3';\n  PERFORM set_config('comparator_strict.ce200_response',payload::text,true);\nEND $payload$;\nSELECT current_setting('comparator_strict.ce200_response')::jsonb AS evidence;\nCOMMIT;"
+  },
+  "payload": {
+    "kind": "locations",
+    "rows": [
+      {
+        "id": "plusfresc:61:037196",
+        "raw": {},
+        "store": "plusfresc",
+        "is_new": false,
+        "offer_id": null,
+        "available": false,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "product_id": "037196",
+        "promo_name": null,
+        "promo_text": null,
+        "promo_type": null,
+        "unit_price": 1.39,
+        "location_id": "61",
+        "promo_price": null,
+        "promo_start": null,
+        "price_format": null,
+        "promotion_id": null,
+        "first_seen_at": "2000-01-01T00:00:00+00:00",
+        "price_per_unit": 4.63,
+        "promo_discount": null,
+        "source_row_md5": "f64869a2dfeec095ce06773280300c0a",
+        "base_unit_price": null,
+        "promo_base_price": null,
+        "price_per_unit_unit": "kg"
+      }
+    ],
+    "store": "plusfresc",
+    "cursor": "plusfresc:61:037128",
+    "job_key": "ce1-ce200-6eda81290870d903b71cf8ac22b3",
+    "row_count": 1,
+    "elapsed_ms": 52.232,
+    "captured_at": "2026-09-03T10:36:54.497033+00:00",
+    "project_ref": "gkffvigcnsesbaihycay",
+    "operation_hash": "6eda81290870d903b71cf8ac22b3df9d39533370e6f8c029cce4d96b099dbf85"
+  },
+  "transport_bytes": 1835
+}

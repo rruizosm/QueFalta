@@ -1,0 +1,582 @@
+{
+  "schema_version": 3,
+  "task": "CE-005",
+  "date": "2026-09-02",
+  "status": "completed_definition_only",
+  "scope": "FR-02 and QA-01 accepted; G0 closed. Contract and local verification only, no comparator implementation or production evaluation. Separate CE-100 evidence records F1 read-only diagnosis.",
+  "closure_approval": {
+    "date": "2026-09-02",
+    "user_statement": "cierra CE-005 y empieza CE-100",
+    "accepted": ["QA-01", "CE-005", "G0"],
+    "F0": "accepted",
+    "next_task": "CE-100",
+    "quality_targets_achieved": false,
+    "public_activation_authorized": false
+  },
+  "proposed_decisions": {
+    "FR_01": {
+      "status": "superseded_rejected_by_owner",
+      "ttl_seconds": 86400,
+      "lower_age_inclusive_seconds": 0,
+      "upper_age_exclusive_seconds": 86400,
+      "applies_to": [
+        "origin_price",
+        "origin_availability",
+        "destination_price",
+        "destination_availability"
+      ],
+      "superseded_by": "FR-02"
+    },
+    "QA_01": {
+      "status": "confirmed_by_owner",
+      "precision": 0.995,
+      "one_sided_confidence": 0.95,
+      "minimum_lower_bound": 0.995,
+      "minimum_reviewed_emissions_per_published_family": 200,
+      "critical_errors_allowed": 0,
+      "hit_at_50": 0.95,
+      "known_min_price_retrieval": 0.95,
+      "valid_equivalent_retrieval_utility": 0.6,
+      "valid_cheaper_result_utility": 0.6,
+      "hot_and_pending_p95_seconds": 2,
+      "minimum_samples_per_latency_scenario": 100
+    },
+    "G0": {
+      "status": "accepted",
+      "gate": "PASS"
+    },
+    "FR_02": {
+      "status": "confirmed_product_principle",
+      "authority": "Owner correction in this chat: validate against active app products; do not require 24h; reevaluate savings after product updates.",
+      "user_statements": [
+        "Necesitamos validar el producto con los productos activos dentro de la app.",
+        "no debemos exigir 24h, no es necesario"
+      ],
+      "basis": "Latest valid incorporated active catalog revision per product and commercial location.",
+      "commercial_max_age_seconds": null,
+      "invalidation": "Relevant new, changed, unpublished and republished products; source and destination dependencies including cached empty results.",
+      "embedding_policy": "Reconcile representation; regenerate only when effective input changes or the required vector is missing/incompatible. Price/stock changes reevaluate savings independently.",
+      "explicit_promotion_expiry_preserved": true,
+      "realtime_retailer_price_or_stock_guarantee": false,
+      "implementation_status": "not_implemented"
+    }
+  },
+  "historic_source": {
+    "file": "CE-004-evidence.json",
+    "capture_id": "ce004_q5",
+    "captured_at": "2026-09-02T20:23:52.469841+00:00",
+    "sample_method": "First 200 published rows by product_id per selected store/location, not random or family-stratified",
+    "samples": [
+      {
+        "store": "consum",
+        "location_id": "575",
+        "sample_size": 200,
+        "max_synced_at": "2026-09-01T13:10:38.117+00:00",
+        "min_synced_at": "2026-09-01T13:10:38.117+00:00",
+        "available_flag": 200,
+        "positive_price": 200,
+        "age_hours": 31.220653333333335,
+        "passes_proposed_age_gate": false
+      },
+      {
+        "store": "plusfresc",
+        "location_id": "12",
+        "sample_size": 200,
+        "max_synced_at": "2026-09-01T12:49:13.414+00:00",
+        "min_synced_at": "2026-09-01T12:49:13.414+00:00",
+        "available_flag": 196,
+        "positive_price": 200,
+        "age_hours": 31.577515277777778,
+        "passes_proposed_age_gate": false
+      },
+      {
+        "store": "plusfresc",
+        "location_id": "3",
+        "sample_size": 200,
+        "max_synced_at": "2026-09-01T12:49:13.414+00:00",
+        "min_synced_at": "2026-09-01T12:49:13.414+00:00",
+        "available_flag": 195,
+        "positive_price": 200,
+        "age_hours": 31.577515277777778,
+        "passes_proposed_age_gate": false
+      }
+    ],
+    "interpretation": "Captured ages and passes_proposed_age_gate refer only to rejected FR-01. FR-02 has no automatic age exclusion; eligibility under FR-02 was not measured."
+  },
+  "statistical_arithmetic": {
+    "method": "Exact one-sided binomial lower bound, restricted to independent all-success trials.",
+    "alpha": 0.05,
+    "target_lower_bound": 0.995,
+    "formula": "lower = alpha^(1/n); n_min = ceil(log(alpha)/log(target))",
+    "minimum_all_success_independent_trials": 598,
+    "examples": [
+      {
+        "n": 200,
+        "successes": 200,
+        "lower_bound": 0.9851329607687279
+      },
+      {
+        "n": 597,
+        "successes": 597,
+        "lower_bound": 0.9949945920065333
+      },
+      {
+        "n": 598,
+        "successes": 598,
+        "lower_bound": 0.9950029413057535
+      },
+      {
+        "n": 600,
+        "successes": 600,
+        "lower_bound": 0.9950195566196387
+      },
+      {
+        "n": 1000,
+        "successes": 1000,
+        "lower_bound": 0.9970087504549047
+      }
+    ],
+    "does_not_estimate_actual_comparator_precision": true
+  },
+  "scheduling_arithmetic": {
+    "hypothetical_cycle_hours": 168,
+    "ttl_hours": 24,
+    "ideal_fresh_window_fraction": 0.14285714285714285,
+    "assumptions": "One instantaneous observation per weekly cycle; no extra refresh. Time-window illustration, not measured user or catalog coverage.",
+    "status": "historical_arithmetic_for_rejected_FR_01_not_an_active_gate"
+  },
+  "contract_scenarios": {
+    "reference_clock": "2026-09-02T20:00:00.000Z",
+    "scope": "Freshness, explicit availability, publication and earlier expiry only. Other equivalence, zone, price and quota gates remain mandatory and are not implemented or tested here.",
+    "cases": [
+      {
+        "id": "V01",
+        "origin": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "destination": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "expected_freshness_and_stock_gate": true,
+        "calculated_freshness_and_stock_gate": true,
+        "note": "Both references have explicit one-hour observations."
+      },
+      {
+        "id": "V02",
+        "origin": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "destination": {
+          "price_observed_at": "2026-09-01T20:00:00.001Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "expected_freshness_and_stock_gate": true,
+        "calculated_freshness_and_stock_gate": true,
+        "note": "One millisecond before destination price expiry."
+      },
+      {
+        "id": "V03",
+        "origin": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "destination": {
+          "price_observed_at": "2026-09-01T20:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "expected_freshness_and_stock_gate": false,
+        "calculated_freshness_and_stock_gate": false,
+        "note": "Exactly 24 hours is expired."
+      },
+      {
+        "id": "V04",
+        "origin": {
+          "price_observed_at": "2026-09-01T19:59:59.999Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "destination": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "expected_freshness_and_stock_gate": false,
+        "calculated_freshness_and_stock_gate": false,
+        "note": "Stale origin price."
+      },
+      {
+        "id": "V05",
+        "origin": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-01T20:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "destination": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "expected_freshness_and_stock_gate": false,
+        "calculated_freshness_and_stock_gate": false,
+        "note": "Stale origin availability."
+      },
+      {
+        "id": "V06",
+        "origin": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "destination": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-01T20:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "expected_freshness_and_stock_gate": false,
+        "calculated_freshness_and_stock_gate": false,
+        "note": "Stale destination availability."
+      },
+      {
+        "id": "V07",
+        "origin": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "destination": {
+          "price_observed_at": "2026-09-02T20:00:00.001Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "expected_freshness_and_stock_gate": false,
+        "calculated_freshness_and_stock_gate": false,
+        "note": "Future timestamp, even one millisecond."
+      },
+      {
+        "id": "V08",
+        "origin": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "destination": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": null,
+          "availability": "observed_available",
+          "published": true
+        },
+        "expected_freshness_and_stock_gate": false,
+        "calculated_freshness_and_stock_gate": false,
+        "note": "Missing observation timestamp."
+      },
+      {
+        "id": "V09",
+        "origin": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "destination": {
+          "price_observed_at": "invalid",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "expected_freshness_and_stock_gate": false,
+        "calculated_freshness_and_stock_gate": false,
+        "note": "Unparseable observation timestamp."
+      },
+      {
+        "id": "V10",
+        "origin": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "destination": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "unknown",
+          "published": true
+        },
+        "expected_freshness_and_stock_gate": false,
+        "calculated_freshness_and_stock_gate": false,
+        "note": "Implicit/default availability is not observed stock."
+      },
+      {
+        "id": "V11",
+        "origin": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "destination": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_unavailable",
+          "published": true
+        },
+        "expected_freshness_and_stock_gate": false,
+        "calculated_freshness_and_stock_gate": false,
+        "note": "Explicitly unavailable."
+      },
+      {
+        "id": "V12",
+        "origin": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": false
+        },
+        "destination": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "expected_freshness_and_stock_gate": false,
+        "calculated_freshness_and_stock_gate": false,
+        "note": "Unpublished origin."
+      },
+      {
+        "id": "V13",
+        "origin": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "destination": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true,
+          "valid_until": "2026-09-02T20:00:00.000Z"
+        },
+        "expected_freshness_and_stock_gate": false,
+        "calculated_freshness_and_stock_gate": false,
+        "note": "Earlier known validity/promotion end at the boundary."
+      },
+      {
+        "id": "V14",
+        "origin": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "destination": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true,
+          "valid_until": "2026-09-02T20:00:00.001Z"
+        },
+        "expected_freshness_and_stock_gate": true,
+        "calculated_freshness_and_stock_gate": true,
+        "note": "One millisecond before earlier known validity end."
+      },
+      {
+        "id": "V15",
+        "origin": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "destination": {
+          "price_observed_at": "2026-09-01T19:59:59.999Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true,
+          "cache_built_at": "2026-09-02T20:00:00.000Z"
+        },
+        "expected_freshness_and_stock_gate": false,
+        "calculated_freshness_and_stock_gate": false,
+        "note": "Rebuilding the cache never refreshes source observation."
+      },
+      {
+        "id": "V16",
+        "origin": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": true
+        },
+        "destination": {
+          "price_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability_observed_at": "2026-09-02T19:00:00.000Z",
+          "availability": "observed_available",
+          "published": false
+        },
+        "expected_freshness_and_stock_gate": false,
+        "calculated_freshness_and_stock_gate": false,
+        "note": "Unpublished destination."
+      }
+    ],
+    "passed": 16,
+    "total": 16,
+    "status": "superseded_FR_01_design_checks_not_current_acceptance_tests",
+    "active_acceptance_criteria": false
+  },
+  "actions": {
+    "supabase_calls": 0,
+    "retailer_calls": 0,
+    "comparator_rpc_calls": 0,
+    "deployments": 0,
+    "new_integrations": 0,
+    "quota_changes": 0,
+    "source_code_edits": 0
+  },
+  "local_validation": {
+    "existing_helper_tests": {
+      "command": "node --test scripts/lib/catalog-embedding-identity.test.mjs scripts/lib/catalog-embedding-reconcile.test.mjs",
+      "passed": 35,
+      "total": 35,
+      "limits": "Local helpers only, not complete CE-1 savings, sync or production invalidation."
+    },
+    "typecheck": "npx tsc --noEmit: PASS after CE-005 closure and CE-100 start",
+    "diff_check": "git diff --check: PASS after CE-005 closure and CE-100 start",
+    "markdown_documents_with_valid_links_and_fences": 14,
+    "unique_project_tasks": 67,
+    "closed_tasks": [
+      "CE-000",
+      "CE-001",
+      "CE-002",
+      "CE-003",
+      "CE-004",
+      "CE-005"
+    ],
+    "regression_cases_preserved": 35,
+    "product_decisions_preserved": 14,
+    "preexisting_source_and_sql_hashes_unchanged": 8,
+    "production_comparator_tested": false
+  },
+  "limitations": [
+    "No actual CE-1 latency, precision, recall, eligible coverage or marginal cost measured.",
+    "The 600 historical rows are neither equivalents nor independent correctness trials; age alone no longer disqualifies them.",
+    "FR-02, QA-01 and G0 are accepted as definition; this does not establish measured CE-1 quality or accept G1.",
+    "The existing helper tests do not establish deployed workers are active or price/stock cache invalidation is complete.",
+    "Historical FR-01 age-gate arithmetic remains for audit only, not as current requirements."
+  ],
+  "catalog_policy_regressions": {
+    "status": "specified_not_implemented_or_executed",
+    "scope": "FR-02 cases to add within T28/T31/T32/T35, without increasing the 35 top-level regression IDs.",
+    "cases": [
+      {
+        "id": "C01",
+        "scenario": "All data valid and unchanged after 24 hours and seven days",
+        "expected": "No exclusion based solely on age."
+      },
+      {
+        "id": "C02",
+        "scenario": "New cheaper exact equivalent after a previously empty query",
+        "expected": "Invalidate relevant empty-result dependency and recover new equivalent."
+      },
+      {
+        "id": "C03",
+        "scenario": "Destination price drops without semantic input change",
+        "expected": "Reuse compatible vector; recalculate and offer strictly positive savings."
+      },
+      {
+        "id": "C04",
+        "scenario": "Destination price increases to equal/above origin",
+        "expected": "Remove prior saving without requiring a new vector."
+      },
+      {
+        "id": "C05",
+        "scenario": "Origin price changes",
+        "expected": "Recompute savings of all affected offered alternatives."
+      },
+      {
+        "id": "C06",
+        "scenario": "Product unpublished or explicitly unavailable before worker completion",
+        "expected": "Remove affected result immediately from catalog validation."
+      },
+      {
+        "id": "C07",
+        "scenario": "Pack changes from 6x125g to 4x125g",
+        "expected": "Do not reuse previous strict-equivalence approval, regardless of vector reuse."
+      },
+      {
+        "id": "C08",
+        "scenario": "Incremental/partial sync omits an otherwise active product",
+        "expected": "Do not infer a deletion from incomplete traversal; retain valid unchanged revision."
+      },
+      {
+        "id": "C09",
+        "scenario": "Sync fails or leaves conflicting revisions",
+        "expected": "Preserve valid unaffected state; quarantine incoherent affected data, without invented observation timestamps."
+      },
+      {
+        "id": "C10",
+        "scenario": "Old worker result arrives after newer catalog revision",
+        "expected": "Do not overwrite or publish obsolete version."
+      },
+      {
+        "id": "C11",
+        "scenario": "Explicit promotion end arrives without another sync",
+        "expected": "Stop using expired promotional price; no automatic fallback to an unverified regular price."
+      },
+      {
+        "id": "C12",
+        "scenario": "Republished equivalent or product previously outside top-2 becomes cheaper",
+        "expected": "Reconsider it; do not invalidate only previously stored winning pairs."
+      },
+      {
+        "id": "C13",
+        "scenario": "Duplicate event/retry or background evaluation",
+        "expected": "Idempotent technical work; no commercial quota charge."
+      },
+      {
+        "id": "C14",
+        "scenario": "Late/reopened response under different user/CP/catalog revision",
+        "expected": "Revalidate context and revisions before display; no second charge for recovering same operation."
+      }
+    ]
+  },
+  "historical_validation_before_revision": {
+    "typecheck": "npx tsc --noEmit: PASS",
+    "diff_check": "git diff --check: PASS",
+    "markdown_documents_with_valid_links_and_fences": 13,
+    "unique_project_tasks": 67,
+    "closed_tasks": [
+      "CE-000",
+      "CE-001",
+      "CE-002",
+      "CE-003",
+      "CE-004"
+    ],
+    "regression_cases_preserved": 35,
+    "product_decisions_preserved": 14,
+    "preexisting_source_and_sql_hashes_unchanged": 8,
+    "production_comparator_tested": false
+  }
+}

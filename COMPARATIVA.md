@@ -5,6 +5,18 @@
 > Preferencias (`profiles.catalog_stores`). Documento vivo para agentes y
 > colaboradores. Mantener al día según se avanza por fases.
 
+> Nota de evolución (2026-09-02): este documento conserva el diseño histórico.
+> Para la futura versión estricta de «Buscar productos más económicos», usar
+> [PROYECTO-COMPARADOR-ESTRICTO.md](PROYECTO-COMPARADOR-ESTRICTO.md) como plan
+> maestro y [COMPARADOR-ESTRICTO.md](COMPARADOR-ESTRICTO.md) como auditoría.
+> CE-1 exige mismo formato y variantes verificadas; no hereda la equivalencia
+> entre tamaños distintos por €/kg o €/L descrita aquí. Aún no está implementado.
+> El plan v1.1 permite desarrollar en el Supabase actual con controles; no exige
+> backend separado. Aplicar cambios de BD no equivale a activar CE-1 para usuarios.
+> CE-201/202 ya completaron la primera anotación 6.000/6.000 y localizaron un
+> equivalente de producto íntegro. CE-203 ha congelado 1.336 casos ciegos para
+> revisión del propietario, todavía 0/1.336; gold, evaluación y G2 siguen pendientes.
+
 ## Presentación de resultados actual (2026-08-22)
 
 - La búsqueda bajo demanda muestra únicamente los supermercados con matches,

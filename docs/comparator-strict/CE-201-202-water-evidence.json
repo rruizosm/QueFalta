@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "tasks": [
+    "CE-201",
+    "CE-202"
+  ],
+  "status": "complete",
+  "authority": "El propietario indicó «adelante» para continuar con el siguiente bloque de trabajo.",
+  "captured_at": "2026-09-03T19:17:10.965Z",
+  "annotation_date": "2026-09-03",
+  "authorship": {
+    "first_annotation": "Codex, mediante revisión de fuentes congeladas y composición determinista",
+    "independent_owner_review": "pendiente en CE-203",
+    "independent_review_blinding_preserved": true
+  },
+  "not_claimed": [
+    "revisión independiente del propietario",
+    "resolución de disputas",
+    "gold labels",
+    "particiones train, validation y holdout",
+    "calidad del motor de comparación",
+    "ahorro elegible",
+    "superación de G2",
+    "implementación o despliegue en producción"
+  ],
+  "git": {
+    "branch": "codex/phase5-observation",
+    "head": "03b8ba273e17709fd8fc69c20dddb68c147a7e2a",
+    "commit_created": false,
+    "push_performed": false
+  },
+  "report": {
+    "version": "ce202-water-source-review-v1",
+    "source_reviewed_products": 771,
+    "first_annotations_this_batch": 2485,
+    "previous_first_annotated_corpus_pairs": 3517,
+    "newly_first_annotated_corpus_pairs": 2483,
+    "union_first_annotated_corpus_pairs": 6000,
+    "corpus_pairs_pending_first_annotation": 0,
+    "decision_counts": {
+      "abstain": 1480,
+      "excluded_scope": 595,
+      "rejected": 410
+    },
+    "known_format_products": 226,
+    "source_dispute_products": 8,
+    "source_dispute_pairs": 68,
+    "same_valid_global_gtin_pairs": 1,
+    "supported_full_positive_equivalences": 1,
+    "supported_full_positive_pair": {
+      "pair_id": "b974ef4338a479c95f448eac2a05814d500f6c27bb3b3f72216e25258e20a783",
+      "left": "consum:2569879",
+      "right": "mercadona:27232",
+      "format": "1 botella × 1,5 L",
+      "decision": "abstain"
+    },
+    "eligible_savings": 0,
+    "gold_pairs": 0,
+    "CE201_complete": true,
+    "CE202_complete": true,
+    "CE203_complete": false,
+    "G2_pass": false,
+    "commercial_ttl_hours": null,
+    "full_report_path": "docs/comparator-strict/dataset/label-water-v1/report.json"
+  },
+  "validation": {
+    "manifest_reproduced_byte_for_byte": true,
+    "products_sha256": "b0e50b88b54d6d52634bbb9c0de41f6fb949469306fd9e881fce87ee8a52ff5d",
+    "annotations_sha256": "b48ac3c901cf82592c259d786a7a25ca3fd480ef3baee564eceb5859dcaae40f",
+    "index_sha256": "ffa21c1f9a5fad882150f0a10d68112d241e24681a5bd773fa3e8ca0c32f5fb4",
+    "report_object_sha256": "c17bc60c51a824c33b51ac817ee5b9757c83787f9b5c2eed937e07c12a5564f7",
+    "source_manifest_sha256": "15da91ad7ae616199da7a50b53dba2abca4e3c43c1420a4a413b23ad02b9abd7"
+  },
+  "quality": {
+    "command": "npm run quality",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "tests": {
+      "pass": 579,
+      "fail": 0
+    }
+  },
+  "safety": {
+    "supabase_calls": 0,
+    "retailer_calls": 0,
+    "new_integrations": 0,
+    "app_code_changes_in_this_block": 0,
+    "sql_changes_in_this_block": 0,
+    "sync_or_embedding_changes_in_this_block": 0,
+    "deployment": false,
+    "production_data_written": false
+  },
+  "previous_evidence_preserved": [
+    {
+      "path": "docs/comparator-strict/CE-201-202-yogurt-carrefour-evidence.json",
+      "sha256": "6a21151f4ccb05955b70560c30f60d021cc6e36d3be1961777a0e2b432d8fea1",
+      "bytes": 14358
+    }
+  ],
+  "files": [
+    {
+      "path": "scripts/lib/comparator-strict-water-review-specs.mjs",
+      "sha256": "06a0904d18e161c1a1c37be93b50813997001da980692098a08d0b36c1ad19d3",
+      "bytes": 1818
+    },
+    {
+      "path": "scripts/lib/comparator-strict-water-review.mjs",
+      "sha256": "e822674a83fe0327d6ecfc1252c266b5f2b60a6724c14a42379a6b2130c257a2",
+      "bytes": 26139
+    },
+    {
+      "path": "scripts/lib/comparator-strict-water-review.test.mjs",
+      "sha256": "508f590bef15134422cd524b310125d320fc41c5cdec176d0035f822ccd527ea",
+      "bytes": 4015
+    },
+    {
+      "path": "scripts/prepare-comparator-strict-water-review.mjs",
+      "sha256": "bdf763145a9f4406845298a520f51f4ae5a1dfb2ba389bd4e2f54a6d39a820dc",
+      "bytes": 2560
+    },
+    {
+      "path": "scripts/tests/comparator-strict-water-review-evidence.test.mjs",
+      "sha256": "7109d95a55d79341c8c6732b278a1f90ed6383f36c2caaa293ec7f379fdba90d",
+      "bytes": 4487
+    },
+    {
+      "path": "docs/comparator-strict/CE-202-water-source-review-guide.md",
+      "sha256": "04751b5beb06d8500c3d5f80315dab43f1e2fd2f206210af313c0ade4ccf3d0b",
+      "bytes": 6150
+    },
+    {
+      "path": "docs/comparator-strict/CE-201-202-water-closure.md",
+      "sha256": "4433fd0013917b85e84eea8a716cc14a549d2d3f8a794914a0e004e82cce700c",
+      "bytes": 2890
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-water-v1/README.md",
+      "sha256": "35505d11f97aaacb4e2503c6079b51a3648c273ca8678084b5a37c45eef89884",
+      "bytes": 985
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-water-v1/report.json",
+      "sha256": "c508d7b7e11d9bf5ce4121a16a2172df0dad0c316bc8b15d71e4e2b09b567bfd",
+      "bytes": 3422
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-water-v1/manifest.json",
+      "sha256": "54e734cc4538cb97be7b1a344cc88b3167a3cbc4db863a95928ec176f5d53303",
+      "bytes": 4698
+    }
+  ],
+  "protected_files": [
+    {
+      "path": "src/components/SimilarProductsSection.tsx",
+      "sha256": "d2e594cfd4ba184e839e13c0fd5e049917a16900dfea4fa2f884992234a1127e",
+      "bytes": 23444
+    },
+    {
+      "path": "src/components/StoreProductModal.tsx",
+      "sha256": "f467d6a7604f797e7b944a543310f1c30bfe3bafc40e3f8fa5cf7d4e696a45c4",
+      "bytes": 14383
+    },
+    {
+      "path": "src/api/catalog.ts",
+      "sha256": "bd35cdc8820661b52993a652ebc3a06b41963981df11183a9ba0880a4058bb05",
+      "bytes": 164988
+    },
+    {
+      "path": "supabase/ops/README-comparator-embedding-pipeline.md",
+      "sha256": "424a293c99b0b843a9c7032da5b813b889da324a05ffddcf3349970e53379f40",
+      "bytes": 19649
+    }
+  ],
+  "mutable_handoff_documents": [
+    "COMPARATIVA.md",
+    "CONTEXTO.md",
+    "HANDOFF.md",
+    "PROYECTO-COMPARADOR-ESTRICTO.md",
+    "docs/comparator-strict/CE-201-202-progress.md",
+    "docs/comparator-strict/dataset/README.md"
+  ],
+  "next_step": "CE-203: el propietario revisará a ciegas una muestra aleatoria reproducible del 20 % de las 6.000 parejas más todas las disputadas; solo después se resolverán desacuerdos y se podrán crear gold labels."
+}

@@ -1,0 +1,325 @@
+{
+  "capture_end": "2026-09-03T10:41:03.598981+00:00",
+  "transport_bytes": 17391429,
+  "returned_rows": 23133,
+  "by_kind": {
+    "location-fingerprints": 5189,
+    "products": 4101,
+    "census": 2689,
+    "locations": 5189,
+    "taxonomy": 1701,
+    "profile": 12,
+    "fingerprints": 4176,
+    "supplement": 75,
+    "health": 1
+  },
+  "stores": [
+    {
+      "store": "carrefour",
+      "count": 2745,
+      "fields": {
+        "packaging": {
+          "not_selected_or_no_column": 2745,
+          "selected_null": 0,
+          "present": 0
+        },
+        "ean": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 1538,
+          "present": 1207
+        },
+        "ingredients": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 1816,
+          "present": 929
+        },
+        "available": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 0,
+          "present": 2745
+        },
+        "price_per_unit": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 2,
+          "present": 2743
+        },
+        "unit_price": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 0,
+          "present": 2745
+        }
+      },
+      "approximate_weight_flag": 8,
+      "unsupported_or_adjacent_family": 1979,
+      "unresolved_structure": 1931,
+      "availability_false": 0
+    },
+    {
+      "store": "consum",
+      "count": 488,
+      "fields": {
+        "packaging": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 6,
+          "present": 482
+        },
+        "ean": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 0,
+          "present": 488
+        },
+        "ingredients": {
+          "not_selected_or_no_column": 488,
+          "selected_null": 0,
+          "present": 0
+        },
+        "available": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 0,
+          "present": 488
+        },
+        "price_per_unit": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 0,
+          "present": 488
+        },
+        "unit_price": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 0,
+          "present": 488
+        }
+      },
+      "approximate_weight_flag": 0,
+      "unsupported_or_adjacent_family": 291,
+      "unresolved_structure": 351,
+      "availability_false": 0
+    },
+    {
+      "store": "mercadona",
+      "count": 490,
+      "fields": {
+        "packaging": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 176,
+          "present": 314
+        },
+        "ean": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 0,
+          "present": 490
+        },
+        "ingredients": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 490,
+          "present": 0
+        },
+        "available": {
+          "not_selected_or_no_column": 490,
+          "selected_null": 0,
+          "present": 0
+        },
+        "price_per_unit": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 0,
+          "present": 490
+        },
+        "unit_price": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 0,
+          "present": 490
+        }
+      },
+      "approximate_weight_flag": 10,
+      "unsupported_or_adjacent_family": 229,
+      "unresolved_structure": 0,
+      "availability_false": 0
+    },
+    {
+      "store": "plusfresc",
+      "count": 453,
+      "fields": {
+        "packaging": {
+          "not_selected_or_no_column": 453,
+          "selected_null": 0,
+          "present": 0
+        },
+        "ean": {
+          "not_selected_or_no_column": 453,
+          "selected_null": 0,
+          "present": 0
+        },
+        "ingredients": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 116,
+          "present": 337
+        },
+        "available": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 0,
+          "present": 453
+        },
+        "price_per_unit": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 0,
+          "present": 453
+        },
+        "unit_price": {
+          "not_selected_or_no_column": 0,
+          "selected_null": 0,
+          "present": 453
+        }
+      },
+      "approximate_weight_flag": 3,
+      "unsupported_or_adjacent_family": 169,
+      "unresolved_structure": 305,
+      "availability_false": 14
+    }
+  ],
+  "protocol_versions": {
+    "ce200-read-v3": 60,
+    "ce200-read-v2": 32,
+    "ce200-read-v1": 26
+  },
+  "source_example_refs": [
+    {
+      "key": "mercadona:61405",
+      "name": "Patatas prefritas corte grueso Hacendado ultracongeladas",
+      "source": {
+        "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-39b9f346c80bc80e1b43162fd5c0.json",
+        "sha256": "85028a9de246b1e400e97905aee7dbdf505c5459de5372c462642a4a2b605595",
+        "pointer": "/payload/rows/0",
+        "raw_sha256": "ca3570aa536363bee96c8d942d34f417180021ca6dc0dd864f9cbd31310300b4",
+        "source_row_md5": "cb9e965c773309f28132a9163eefe324"
+      },
+      "format_evidence": {
+        "is_pack": false,
+        "unit_size": 2,
+        "pack_size": null,
+        "total_units": null,
+        "size_format": "kg",
+        "approx_size": false,
+        "selling_method": 0
+      },
+      "annotation": "unreviewed; no equivalence or savings conclusion"
+    },
+    {
+      "key": "mercadona:20559",
+      "name": "Yogur griego natural Hacendado",
+      "source": {
+        "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b1cf39dfc08f233dbf20689280e5.json",
+        "sha256": "67c34ebaf8f3df0a6c02d599487a4e0a4cb2544462fe87a2a3240e40b0214bad",
+        "pointer": "/payload/rows/18",
+        "raw_sha256": "d15b55b10ea12deace69e032c36bfcfa03f803c2a0ffbbadf20c35a64e05dca6",
+        "source_row_md5": "bf8174c07c34c94cce289adeedffdb1a"
+      },
+      "format_evidence": {
+        "is_pack": true,
+        "unit_size": 0.75,
+        "pack_size": 0.125,
+        "total_units": 6,
+        "size_format": "kg",
+        "approx_size": false,
+        "selling_method": 0
+      },
+      "annotation": "unreviewed; no equivalence or savings conclusion"
+    },
+    {
+      "key": "mercadona:52441",
+      "name": "Yogur griego natural Hacendado con azúcar de caña",
+      "source": {
+        "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-e9b52d1e0a5d9f5394bceb486cda.json",
+        "sha256": "26266ea93aad8d750b47cdaa0fc520cd90ea97b88f86e20b02fad06642a2fdc0",
+        "pointer": "/payload/rows/71",
+        "raw_sha256": "ac7f83b1f43a73d3e58980139e636bf22a625c1eba2c4db12b8012487bd1c3ed",
+        "source_row_md5": "381ed02988f2b68957b64b5ccc67067a"
+      },
+      "format_evidence": {
+        "is_pack": true,
+        "unit_size": 0.75,
+        "pack_size": 0.125,
+        "total_units": 6,
+        "size_format": "kg",
+        "approx_size": false,
+        "selling_method": 0
+      },
+      "annotation": "unreviewed; no equivalence or savings conclusion"
+    },
+    {
+      "key": "carrefour:VC4AECOMM-621804",
+      "name": "Yogur griego natural Carrefour Extra pack de 6 unidades de 125 g.",
+      "source": {
+        "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-23f4865075aa8518c6c54b3b2343.json",
+        "sha256": "ab5d5cae83f08076d2a3430ec4f55b2516a57515bb6fdf6544c46ea23a9478a8",
+        "pointer": "/payload/rows/12",
+        "raw_sha256": "cadc19e1c05ba643128eeceece44db4f954f0088fff7f5ec7d5467b10a0414bb",
+        "source_row_md5": "43e3bf21bbb897ff7cf8cdfb610ac887"
+      },
+      "format_evidence": {
+        "quantities": [
+          "125 g"
+        ],
+        "packClauses": [
+          "pack de 6"
+        ]
+      },
+      "annotation": "unreviewed; no equivalence or savings conclusion"
+    },
+    {
+      "key": "carrefour:VC4AECOMM-652994",
+      "name": "Yogur griego natural con azúcar de caña Carrefour Extra pack de 6 unidades de 125 g.",
+      "source": {
+        "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-23f4865075aa8518c6c54b3b2343.json",
+        "sha256": "ab5d5cae83f08076d2a3430ec4f55b2516a57515bb6fdf6544c46ea23a9478a8",
+        "pointer": "/payload/rows/80",
+        "raw_sha256": "486eaaea41733031e26cc4df2166674dc8033a1b1f117fa0ec652e6da99712a7",
+        "source_row_md5": "d571a27dbb32f76f3e41fd9388ce908c"
+      },
+      "format_evidence": {
+        "quantities": [
+          "125 g"
+        ],
+        "packClauses": [
+          "pack de 6"
+        ]
+      },
+      "annotation": "unreviewed; no equivalence or savings conclusion"
+    },
+    {
+      "key": "consum:7028475",
+      "name": "Patatas Prefritas Corte Grueso",
+      "source": {
+        "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-7d6dd62106c3afd6ab92109c6fd7.json",
+        "sha256": "ee8366d2bfcb1d9ef5fae019ae233fc0c4a2a7cd2178f422f8891bed97db7bce",
+        "pointer": "/payload/rows/32",
+        "raw_sha256": "efe29773c848732b5da4e510839dbe8dd15e2329af1c23b2e9467e769f8f961f",
+        "source_row_md5": "3aa6a5e2e44218baafbaf9c27baa35f8"
+      },
+      "format_evidence": {
+        "quantities": [
+          "1 Kg",
+          "1 Kg"
+        ],
+        "packClauses": []
+      },
+      "annotation": "unreviewed; no equivalence or savings conclusion"
+    },
+    {
+      "key": "plusfresc:032789",
+      "name": "Patatas fritas \"chef gourmet\" MCCAIN, 500 g",
+      "source": {
+        "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b8e1638016d22c3a49ae447d65c4.json",
+        "sha256": "2018b65234068b0e1d4bb9ec577e0d1877929d58f41d0bdb2b613d144331f960",
+        "pointer": "/payload/rows/12",
+        "raw_sha256": "7737655f9f21cee357bf69bf541982a2657312c3e9075050f89f9a16f3b02729",
+        "source_row_md5": "1e84a57744f077d095a924d84b4aa42f"
+      },
+      "format_evidence": {
+        "quantities": [
+          "500 g"
+        ],
+        "packClauses": []
+      },
+      "annotation": "unreviewed; no equivalence or savings conclusion"
+    }
+  ]
+}

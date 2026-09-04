@@ -1,0 +1,1322 @@
+{
+  "schema_version": 1,
+  "task": "CE-101",
+  "started_local_date": "2026-09-02",
+  "documented_local_date": "2026-09-03",
+  "timezone": "Europe/Madrid",
+  "status": "completed_inventory_and_owner_reported_production_catalog",
+  "authority": {
+    "sequence_exception": "CE-SEQ-001",
+    "user_request": "Empieza con CE-101 y dejamos pendiente cerrar CE-100",
+    "test_account_reply": "si usaré mi cuenta @rruizosma",
+    "scope": "Read-only inventory and local connection verification; preparation only, no feature access granted or activated.",
+    "CE_100_closed": false,
+    "G1_accepted": false
+  },
+  "project": {
+    "id": "gkffvigcnsesbaihycay",
+    "ref": "gkffvigcnsesbaihycay",
+    "organization_id": "trnqzlirexddfnowcifm",
+    "organization_slug": "trnqzlirexddfnowcifm",
+    "name": "QueFalta",
+    "region": "eu-west-1",
+    "status": "ACTIVE_HEALTHY",
+    "database": {
+      "host": "db.gkffvigcnsesbaihycay.supabase.co",
+      "version": "17.6.1.127",
+      "postgres_engine": "17",
+      "release_channel": "ga"
+    },
+    "created_at": "2026-05-31T16:58:55.059749Z"
+  },
+  "execution": {
+    "sql_read_only_calls": 3,
+    "sql_errors": 0,
+    "statement_timeout": "5s",
+    "lock_timeout": "500ms",
+    "application_name": "ce1_ce101_inventory",
+    "transaction_end": "ROLLBACK",
+    "remote_concurrency": 1,
+    "remote_sql_capture_range_utc": ["2026-09-02T21:54:19.099468+00:00", "2026-09-02T21:56:00.237095+00:00"],
+    "sql_time_upper_bound_seconds": 15,
+    "sql_duration_measured": false,
+    "metadata_role": "postgres (administrative; not a client authorization test)",
+    "http_app_requests_successful": 2,
+    "local_network_sandbox_failure": 1,
+    "comparison_rpc_calls": 0,
+    "edge_invocations": 0,
+    "queue_payloads_read": 0,
+    "queue_jobs_executed": 0,
+    "accounts_created": 0,
+    "app_logins_or_token_refreshes": 0,
+    "quota_operations": 0,
+    "push_or_email_sends": 0,
+    "purchases_or_subscription_changes": 0,
+    "data_schema_or_permission_changes": 0,
+    "global_configuration_changes": 0,
+    "deployments": 0,
+    "new_integrations": 0,
+    "new_paid_services": 0,
+    "automatic_background_platform_logging": "Read requests may create normal provider logs; no business data or configuration was intentionally mutated."
+  },
+  "captures": [
+    {
+      "id": "ce101q1",
+      "query": "BEGIN TRANSACTION READ ONLY;\nSET LOCAL statement_timeout='5s';\nSET LOCAL lock_timeout='500ms';\nSET LOCAL application_name='ce1_ce101_inventory';\nSELECT jsonb_build_object(\n 'captured_at',clock_timestamp(),\n 'current_database',current_database(),'read_only',current_setting('transaction_read_only'),\n 'statement_timeout',current_setting('statement_timeout'),'lock_timeout',current_setting('lock_timeout'),\n 'activity',(SELECT jsonb_build_object('client_connections',count(*) FILTER(WHERE backend_type='client backend'),'active',count(*) FILTER(WHERE state='active'),'waiting_lock',count(*) FILTER(WHERE wait_event_type='Lock'),'idle_in_transaction',count(*) FILTER(WHERE state LIKE 'idle in transaction%')) FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid()),\n 'inventory_columns',(SELECT jsonb_agg(jsonb_build_object('schema',table_schema,'table',table_name,'column',column_name,'type',data_type) ORDER BY table_schema,table_name,ordinal_position) FROM information_schema.columns WHERE (table_schema='storage' AND table_name='buckets') OR(table_schema='pgmq' AND table_name='meta') OR(table_schema='cron' AND table_name='job')),\n 'data_api_role_settings',(SELECT jsonb_agg(jsonb_build_object('role',coalesce(r.rolname,'ALL'),'database',coalesce(d.datname,'ALL'),'setting',item)) FROM pg_db_role_setting s LEFT JOIN pg_roles r ON r.oid=s.setrole LEFT JOIN pg_database d ON d.oid=s.setdatabase CROSS JOIN LATERAL unnest(s.setconfig) item WHERE split_part(item,'=',1) IN ('pgrst.db_schemas','pgrst.db_extra_search_path','pgrst.db_pre_request')),\n 'service_relations',(SELECT jsonb_agg(jsonb_build_object('schema',n.nspname,'name',c.relname,'rls',c.relrowsecurity,'kind',c.relkind) ORDER BY n.nspname,c.relname) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind IN('r','p') AND ((n.nspname='public' AND c.relname IN ('profiles','push_tokens','notifications','push_throttle','premium_subscriptions','price_alert_rules')) OR (n.nspname='pgmq' AND (c.relname='meta' OR c.relname LIKE 'q_%' OR c.relname LIKE 'a_%'))))\n) AS evidence;\nROLLBACK;",
+      "result": {
+        "activity": {
+          "active": 0,
+          "waiting_lock": 0,
+          "client_connections": 23,
+          "idle_in_transaction": 0
+        },
+        "read_only": "on",
+        "captured_at": "2026-09-02T21:54:19.099468+00:00",
+        "lock_timeout": "500ms",
+        "current_database": "postgres",
+        "inventory_columns": [
+          {
+            "type": "bigint",
+            "table": "job",
+            "column": "jobid",
+            "schema": "cron"
+          },
+          {
+            "type": "text",
+            "table": "job",
+            "column": "schedule",
+            "schema": "cron"
+          },
+          {
+            "type": "text",
+            "table": "job",
+            "column": "command",
+            "schema": "cron"
+          },
+          {
+            "type": "text",
+            "table": "job",
+            "column": "nodename",
+            "schema": "cron"
+          },
+          {
+            "type": "integer",
+            "table": "job",
+            "column": "nodeport",
+            "schema": "cron"
+          },
+          {
+            "type": "text",
+            "table": "job",
+            "column": "database",
+            "schema": "cron"
+          },
+          {
+            "type": "text",
+            "table": "job",
+            "column": "username",
+            "schema": "cron"
+          },
+          {
+            "type": "boolean",
+            "table": "job",
+            "column": "active",
+            "schema": "cron"
+          },
+          {
+            "type": "text",
+            "table": "job",
+            "column": "jobname",
+            "schema": "cron"
+          },
+          {
+            "type": "character varying",
+            "table": "meta",
+            "column": "queue_name",
+            "schema": "pgmq"
+          },
+          {
+            "type": "boolean",
+            "table": "meta",
+            "column": "is_partitioned",
+            "schema": "pgmq"
+          },
+          {
+            "type": "boolean",
+            "table": "meta",
+            "column": "is_unlogged",
+            "schema": "pgmq"
+          },
+          {
+            "type": "timestamp with time zone",
+            "table": "meta",
+            "column": "created_at",
+            "schema": "pgmq"
+          },
+          {
+            "type": "text",
+            "table": "buckets",
+            "column": "id",
+            "schema": "storage"
+          },
+          {
+            "type": "text",
+            "table": "buckets",
+            "column": "name",
+            "schema": "storage"
+          },
+          {
+            "type": "uuid",
+            "table": "buckets",
+            "column": "owner",
+            "schema": "storage"
+          },
+          {
+            "type": "timestamp with time zone",
+            "table": "buckets",
+            "column": "created_at",
+            "schema": "storage"
+          },
+          {
+            "type": "timestamp with time zone",
+            "table": "buckets",
+            "column": "updated_at",
+            "schema": "storage"
+          },
+          {
+            "type": "boolean",
+            "table": "buckets",
+            "column": "public",
+            "schema": "storage"
+          },
+          {
+            "type": "boolean",
+            "table": "buckets",
+            "column": "avif_autodetection",
+            "schema": "storage"
+          },
+          {
+            "type": "bigint",
+            "table": "buckets",
+            "column": "file_size_limit",
+            "schema": "storage"
+          },
+          {
+            "type": "ARRAY",
+            "table": "buckets",
+            "column": "allowed_mime_types",
+            "schema": "storage"
+          },
+          {
+            "type": "text",
+            "table": "buckets",
+            "column": "owner_id",
+            "schema": "storage"
+          },
+          {
+            "type": "USER-DEFINED",
+            "table": "buckets",
+            "column": "type",
+            "schema": "storage"
+          },
+          {
+            "type": "text",
+            "table": "buckets",
+            "column": "versioning_status",
+            "schema": "storage"
+          }
+        ],
+        "service_relations": [
+          {
+            "rls": false,
+            "kind": "r",
+            "name": "a_catalog_embedding_jobs",
+            "schema": "pgmq"
+          },
+          {
+            "rls": false,
+            "kind": "r",
+            "name": "meta",
+            "schema": "pgmq"
+          },
+          {
+            "rls": false,
+            "kind": "r",
+            "name": "q_catalog_embedding_jobs",
+            "schema": "pgmq"
+          },
+          {
+            "rls": true,
+            "kind": "r",
+            "name": "notifications",
+            "schema": "public"
+          },
+          {
+            "rls": true,
+            "kind": "r",
+            "name": "price_alert_rules",
+            "schema": "public"
+          },
+          {
+            "rls": true,
+            "kind": "r",
+            "name": "profiles",
+            "schema": "public"
+          },
+          {
+            "rls": true,
+            "kind": "r",
+            "name": "push_throttle",
+            "schema": "public"
+          },
+          {
+            "rls": true,
+            "kind": "r",
+            "name": "push_tokens",
+            "schema": "public"
+          }
+        ],
+        "statement_timeout": "5s",
+        "data_api_role_settings": null
+      }
+    },
+    {
+      "id": "ce101q2",
+      "query": "BEGIN TRANSACTION READ ONLY;\nSET LOCAL statement_timeout='5s';\nSET LOCAL lock_timeout='500ms';\nSET LOCAL application_name='ce1_ce101_inventory';\nWITH trigger_inventory AS (\n SELECT n.nspname AS schema,c.relname AS relation,t.tgname AS name,t.tgenabled AS enabled,t.tgtype,\n fn.nspname AS function_schema,p.proname AS function_name,t.tgnargs AS argument_count,\n md5(pg_get_functiondef(p.oid)) AS function_definition_md5,\n (p.proname='http_request' OR pg_get_functiondef(p.oid) ~ 'net[.]http_(post|get)|extensions[.]http') AS direct_http_indicator\n FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace\n JOIN pg_proc p ON p.oid=t.tgfoid JOIN pg_namespace fn ON fn.oid=p.pronamespace\n WHERE NOT t.tgisinternal AND n.nspname IN ('public','auth','storage','comparator_internal','price_alerts_internal')\n), grouped_triggers AS (\n SELECT function_schema,function_name,enabled,direct_http_indicator,function_definition_md5,\n count(*) AS trigger_count,array_agg(DISTINCT schema||'.'||relation ORDER BY schema||'.'||relation) AS relations\n FROM trigger_inventory GROUP BY 1,2,3,4,5\n), queue_access AS (\n SELECT c.relname AS name,c.relrowsecurity AS rls,\n has_schema_privilege('anon',n.oid,'USAGE') AS anon_schema_usage,\n has_schema_privilege('authenticated',n.oid,'USAGE') AS authenticated_schema_usage,\n has_table_privilege('anon',c.oid,'SELECT') AS anon_select,\n has_table_privilege('authenticated',c.oid,'SELECT') AS authenticated_select,\n has_table_privilege('anon',c.oid,'INSERT,UPDATE,DELETE') AS anon_any_write,\n has_table_privilege('authenticated',c.oid,'INSERT,UPDATE,DELETE') AS authenticated_any_write\n FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace\n WHERE n.nspname='pgmq' AND c.relkind='r' AND c.relname IN('meta','q_catalog_embedding_jobs','a_catalog_embedding_jobs')\n)\nSELECT jsonb_build_object('captured_at',clock_timestamp(),\n 'storage_buckets',(SELECT jsonb_agg(jsonb_build_object('id',id,'name',name,'public',public,'file_size_limit',file_size_limit,'allowed_mime_types',allowed_mime_types) ORDER BY id) FROM storage.buckets),\n 'storage_policies',(SELECT jsonb_agg(jsonb_build_object('name',policyname,'relation',tablename,'roles',roles,'command',cmd,'permissive',permissive,'using_md5',md5(qual),'check_md5',md5(with_check),'using_auth_uid',coalesce(qual LIKE '%auth.uid()% ',false) OR coalesce(qual LIKE '%auth.uid()%',false),'check_auth_uid',coalesce(with_check LIKE '%auth.uid()%',false)) ORDER BY tablename,policyname) FROM pg_policies WHERE schemaname='storage'),\n 'cron_jobs',(SELECT jsonb_agg(jsonb_build_object('id',jobid,'name',jobname,'schedule',schedule,'active',active,'database',database,'username',username,'command_md5',md5(command),'http_call_indicator',command ~ 'net[.]http_(post|get)','function_routes',regexp_matches_safe.routes) ORDER BY jobid) FROM cron.job LEFT JOIN LATERAL (SELECT array_agg(m[1]) AS routes FROM regexp_matches(command,'https?://[a-zA-Z0-9.-]+/functions/v1/[a-zA-Z0-9_-]+','g')m)regexp_matches_safe ON true),\n 'queues',(SELECT jsonb_agg(jsonb_build_object('name',queue_name,'partitioned',is_partitioned,'unlogged',is_unlogged,'created_at',created_at) ORDER BY queue_name) FROM pgmq.meta),\n 'queue_access',(SELECT jsonb_agg(to_jsonb(q) ORDER BY name) FROM queue_access q),\n 'trigger_function_groups',(SELECT jsonb_agg(to_jsonb(g) ORDER BY function_schema,function_name) FROM grouped_triggers g),\n 'http_trigger_candidates',(SELECT jsonb_agg(to_jsonb(t) ORDER BY schema,relation,name) FROM trigger_inventory t WHERE direct_http_indicator),\n 'pipeline_mode',(SELECT mode FROM comparator_internal.catalog_embedding_pipeline_control LIMIT 1)\n) AS evidence;\nROLLBACK;",
+      "result": {
+        "queues": [
+          {
+            "name": "catalog_embedding_jobs",
+            "unlogged": false,
+            "created_at": "2026-08-09T12:53:02.323276+00:00",
+            "partitioned": false
+          }
+        ],
+        "cron_jobs": [
+          {
+            "id": 17,
+            "name": "catalog-embedding-dispatch",
+            "active": false,
+            "database": "postgres",
+            "schedule": "*/15 * * * *",
+            "username": "postgres",
+            "command_md5": "43ec45ebeea9cc76560426656cd93693",
+            "function_routes": null,
+            "http_call_indicator": false
+          },
+          {
+            "id": 18,
+            "name": "process-price-alerts-every-15-minutes",
+            "active": true,
+            "database": "postgres",
+            "schedule": "*/15 * * * *",
+            "username": "postgres",
+            "command_md5": "855e52bb6c5d9570f91e1bf12913909a",
+            "function_routes": null,
+            "http_call_indicator": true
+          }
+        ],
+        "captured_at": "2026-09-02T21:55:09.130504+00:00",
+        "queue_access": [
+          {
+            "rls": false,
+            "name": "a_catalog_embedding_jobs",
+            "anon_select": false,
+            "anon_any_write": false,
+            "anon_schema_usage": false,
+            "authenticated_select": false,
+            "authenticated_any_write": false,
+            "authenticated_schema_usage": false
+          },
+          {
+            "rls": false,
+            "name": "meta",
+            "anon_select": false,
+            "anon_any_write": false,
+            "anon_schema_usage": false,
+            "authenticated_select": false,
+            "authenticated_any_write": false,
+            "authenticated_schema_usage": false
+          },
+          {
+            "rls": false,
+            "name": "q_catalog_embedding_jobs",
+            "anon_select": false,
+            "anon_any_write": false,
+            "anon_schema_usage": false,
+            "authenticated_select": false,
+            "authenticated_any_write": false,
+            "authenticated_schema_usage": false
+          }
+        ],
+        "pipeline_mode": "paused",
+        "storage_buckets": [
+          {
+            "id": "avatars",
+            "name": "avatars",
+            "public": true,
+            "file_size_limit": 5242880,
+            "allowed_mime_types": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ]
+          },
+          {
+            "id": "recipe-images",
+            "name": "recipe-images",
+            "public": true,
+            "file_size_limit": 6291456,
+            "allowed_mime_types": [
+              "image/jpeg"
+            ]
+          }
+        ],
+        "storage_policies": [
+          {
+            "name": "Public avatar read",
+            "roles": [
+              "public"
+            ],
+            "command": "SELECT",
+            "relation": "objects",
+            "check_md5": null,
+            "using_md5": "cf8e5fde823d5e06700e67692fa3d29b",
+            "permissive": "PERMISSIVE",
+            "check_auth_uid": false,
+            "using_auth_uid": false
+          },
+          {
+            "name": "Users can update their own avatar",
+            "roles": [
+              "authenticated"
+            ],
+            "command": "UPDATE",
+            "relation": "objects",
+            "check_md5": null,
+            "using_md5": "a4753cf0d7ef6b3b2d4b0a2b6c959088",
+            "permissive": "PERMISSIVE",
+            "check_auth_uid": false,
+            "using_auth_uid": true
+          },
+          {
+            "name": "Users can upload their own avatar",
+            "roles": [
+              "authenticated"
+            ],
+            "command": "INSERT",
+            "relation": "objects",
+            "check_md5": "a4753cf0d7ef6b3b2d4b0a2b6c959088",
+            "using_md5": null,
+            "permissive": "PERMISSIVE",
+            "check_auth_uid": true,
+            "using_auth_uid": false
+          },
+          {
+            "name": "avatars delete own",
+            "roles": [
+              "authenticated"
+            ],
+            "command": "DELETE",
+            "relation": "objects",
+            "check_md5": null,
+            "using_md5": "a53573d1d3d0f1b4bd878e912bfc44f9",
+            "permissive": "PERMISSIVE",
+            "check_auth_uid": false,
+            "using_auth_uid": true
+          },
+          {
+            "name": "avatars insert own",
+            "roles": [
+              "authenticated"
+            ],
+            "command": "INSERT",
+            "relation": "objects",
+            "check_md5": "a53573d1d3d0f1b4bd878e912bfc44f9",
+            "using_md5": null,
+            "permissive": "PERMISSIVE",
+            "check_auth_uid": true,
+            "using_auth_uid": false
+          },
+          {
+            "name": "avatars read",
+            "roles": [
+              "public"
+            ],
+            "command": "SELECT",
+            "relation": "objects",
+            "check_md5": null,
+            "using_md5": "cf8e5fde823d5e06700e67692fa3d29b",
+            "permissive": "PERMISSIVE",
+            "check_auth_uid": false,
+            "using_auth_uid": false
+          },
+          {
+            "name": "avatars update own",
+            "roles": [
+              "authenticated"
+            ],
+            "command": "UPDATE",
+            "relation": "objects",
+            "check_md5": "a53573d1d3d0f1b4bd878e912bfc44f9",
+            "using_md5": "a53573d1d3d0f1b4bd878e912bfc44f9",
+            "permissive": "PERMISSIVE",
+            "check_auth_uid": true,
+            "using_auth_uid": true
+          },
+          {
+            "name": "recipe images delete: own",
+            "roles": [
+              "authenticated"
+            ],
+            "command": "DELETE",
+            "relation": "objects",
+            "check_md5": null,
+            "using_md5": "0df9d508c854a9b1d528957f904ff941",
+            "permissive": "PERMISSIVE",
+            "check_auth_uid": false,
+            "using_auth_uid": true
+          },
+          {
+            "name": "recipe images insert: own folder",
+            "roles": [
+              "authenticated"
+            ],
+            "command": "INSERT",
+            "relation": "objects",
+            "check_md5": "009b46f3a2db906cbb83db9ccb986bae",
+            "using_md5": null,
+            "permissive": "PERMISSIVE",
+            "check_auth_uid": true,
+            "using_auth_uid": false
+          },
+          {
+            "name": "recipe images select: authenticated",
+            "roles": [
+              "authenticated"
+            ],
+            "command": "SELECT",
+            "relation": "objects",
+            "check_md5": null,
+            "using_md5": "c2338aac508e06581dad1c91444a9d25",
+            "permissive": "PERMISSIVE",
+            "check_auth_uid": false,
+            "using_auth_uid": false
+          },
+          {
+            "name": "recipe images update: own",
+            "roles": [
+              "authenticated"
+            ],
+            "command": "UPDATE",
+            "relation": "objects",
+            "check_md5": "009b46f3a2db906cbb83db9ccb986bae",
+            "using_md5": "0df9d508c854a9b1d528957f904ff941",
+            "permissive": "PERMISSIVE",
+            "check_auth_uid": true,
+            "using_auth_uid": true
+          }
+        ],
+        "http_trigger_candidates": null,
+        "trigger_function_groups": [
+          {
+            "enabled": "O",
+            "relations": [
+              "public.catalog_product_embeddings"
+            ],
+            "function_name": "enqueue_catalog_embedding_job",
+            "trigger_count": 2,
+            "function_schema": "comparator_internal",
+            "direct_http_indicator": false,
+            "function_definition_md5": "137fd3aa9e230c0b9178c059f26f7836"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "comparator_internal.catalog_embedding_pipeline_control"
+            ],
+            "function_name": "guard_catalog_embedding_canary_budget",
+            "trigger_count": 1,
+            "function_schema": "comparator_internal",
+            "direct_http_indicator": false,
+            "function_definition_md5": "b71f979cf16167744a0b324f0ed3a6ff"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.catalog_product_embeddings"
+            ],
+            "function_name": "invalidate_catalog_embedding",
+            "trigger_count": 1,
+            "function_schema": "comparator_internal",
+            "direct_http_indicator": false,
+            "function_definition_md5": "1cc74228a408b139ac82c84ceb274881"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.catalog_product_embeddings"
+            ],
+            "function_name": "invalidate_match_cache_after_product_delete",
+            "trigger_count": 1,
+            "function_schema": "comparator_internal",
+            "direct_http_indicator": false,
+            "function_definition_md5": "2e9b8b04b1d0cd405120db14efde497a"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.catalog_product_embeddings"
+            ],
+            "function_name": "invalidate_match_cache_after_product_insert",
+            "trigger_count": 1,
+            "function_schema": "comparator_internal",
+            "direct_http_indicator": false,
+            "function_definition_md5": "5dd935d24202f12d1a696bbe5027b736"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.catalog_product_embeddings"
+            ],
+            "function_name": "invalidate_match_cache_after_product_update",
+            "trigger_count": 1,
+            "function_schema": "comparator_internal",
+            "direct_http_indicator": false,
+            "function_definition_md5": "d472189be826358972c914283e792512"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.catalog_embedding_failures"
+            ],
+            "function_name": "revalidate_embedding_runs_after_failure_change",
+            "trigger_count": 2,
+            "function_schema": "comparator_internal",
+            "direct_http_indicator": false,
+            "function_definition_md5": "46444d88e79cbf455d0c1f4df94598b3"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.catalog_product_embeddings"
+            ],
+            "function_name": "revalidate_embedding_runs_after_product_delete",
+            "trigger_count": 1,
+            "function_schema": "comparator_internal",
+            "direct_http_indicator": false,
+            "function_definition_md5": "95fe58406efd0375dd262b204ad6be9a"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.catalog_product_embeddings"
+            ],
+            "function_name": "revalidate_embedding_runs_after_product_update",
+            "trigger_count": 1,
+            "function_schema": "comparator_internal",
+            "direct_http_indicator": false,
+            "function_definition_md5": "3d90c25f523c734b1178bb380f3c9426"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.ahorramas_products",
+              "public.alcampo_products",
+              "public.aldi_products",
+              "public.ametller_products",
+              "public.bonarea_products",
+              "public.bonpreu_products",
+              "public.caprabo_products",
+              "public.carrefour_products",
+              "public.condis_products",
+              "public.consum_products",
+              "public.dia_products",
+              "public.eroski_products",
+              "public.froiz_products",
+              "public.gadis_products",
+              "public.hiperdino_products",
+              "public.mercadona_products",
+              "public.plusfresc_products",
+              "public.sorli_products"
+            ],
+            "function_name": "capture_catalog_change",
+            "trigger_count": 18,
+            "function_schema": "price_alerts_internal",
+            "direct_http_indicator": false,
+            "function_definition_md5": "3b8b1a133c347f0399681020c8d12055"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.catalog_location_price_changes"
+            ],
+            "function_name": "capture_location_price_change",
+            "trigger_count": 1,
+            "function_schema": "price_alerts_internal",
+            "direct_http_indicator": false,
+            "function_definition_md5": "a26e2e2e19b615983d075cc5265699ed"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.price_alert_deliveries"
+            ],
+            "function_name": "enforce_free_delivery_limit",
+            "trigger_count": 1,
+            "function_schema": "price_alerts_internal",
+            "direct_http_indicator": false,
+            "function_definition_md5": "05526241cff81e256994234218c122b7"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.price_alert_rules"
+            ],
+            "function_name": "enforce_free_rule_limit",
+            "trigger_count": 1,
+            "function_schema": "price_alerts_internal",
+            "direct_http_indicator": false,
+            "function_definition_md5": "ec7b1e58f69d58e1be464f276ca1802b"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.price_alert_rules"
+            ],
+            "function_name": "normalize_rule",
+            "trigger_count": 1,
+            "function_schema": "price_alerts_internal",
+            "direct_http_indicator": false,
+            "function_definition_md5": "0ce25452f0f11c130360a432b520ec71"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.list_items",
+              "public.purchase_items"
+            ],
+            "function_name": "ensure_cart_store_key",
+            "trigger_count": 2,
+            "function_schema": "private",
+            "direct_http_indicator": false,
+            "function_definition_md5": "4d560a1002c4872401d5b24f8e5179e3"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.bm_categories"
+            ],
+            "function_name": "bm_validate_category_depth",
+            "trigger_count": 1,
+            "function_schema": "public",
+            "direct_http_indicator": false,
+            "function_definition_md5": "608c02ad95d78d9993cba44fc4fb36d2"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.catalog_location_prices"
+            ],
+            "function_name": "catalog_track_location_price_change",
+            "trigger_count": 1,
+            "function_schema": "public",
+            "direct_http_indicator": false,
+            "function_definition_md5": "a48beee88d6e32e7608b381414d3961e"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.ahorramas_products",
+              "public.alcampo_products",
+              "public.aldi_products",
+              "public.ametller_products",
+              "public.bonarea_products",
+              "public.bonpreu_products",
+              "public.caprabo_products",
+              "public.carrefour_products",
+              "public.condis_products",
+              "public.consum_products",
+              "public.dia_products",
+              "public.eroski_products",
+              "public.froiz_products",
+              "public.gadis_products",
+              "public.hipercor_products",
+              "public.hiperdino_products",
+              "public.mercadona_products",
+              "public.plusfresc_products",
+              "public.sorli_products"
+            ],
+            "function_name": "catalog_track_price_change",
+            "trigger_count": 19,
+            "function_schema": "public",
+            "direct_http_indicator": false,
+            "function_definition_md5": "5f39958c4ca9a9df10ae4e697cea6894"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.friendships"
+            ],
+            "function_name": "friendships_rate_limit",
+            "trigger_count": 1,
+            "function_schema": "public",
+            "direct_http_indicator": false,
+            "function_definition_md5": "509d1a4b422d0542274dfa165c4842a3"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "auth.users"
+            ],
+            "function_name": "handle_new_user",
+            "trigger_count": 1,
+            "function_schema": "public",
+            "direct_http_indicator": false,
+            "function_definition_md5": "2c1b775e7009329a48632f2ab082e2d3"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.profiles"
+            ],
+            "function_name": "protect_legacy_all_stores_access",
+            "trigger_count": 1,
+            "function_schema": "public",
+            "direct_http_indicator": false,
+            "function_definition_md5": "6a109c4e48d30c935fb7d3166eef0eb8"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.profiles"
+            ],
+            "function_name": "protect_premium_until",
+            "trigger_count": 1,
+            "function_schema": "public",
+            "direct_http_indicator": false,
+            "function_definition_md5": "990c3c9f316ee19f046c5042189616e4"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.catalog_sync_status"
+            ],
+            "function_name": "set_catalog_sync_status_updated_at",
+            "trigger_count": 1,
+            "function_schema": "public",
+            "direct_http_indicator": false,
+            "function_definition_md5": "ac57d4acc6f5548b781c3ec605ca5e8d"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "public.profiles"
+            ],
+            "function_name": "sync_plus_verified",
+            "trigger_count": 1,
+            "function_schema": "public",
+            "direct_http_indicator": false,
+            "function_definition_md5": "76a8845602847060376fbb38dd73d441"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "storage.buckets"
+            ],
+            "function_name": "enforce_bucket_name_length",
+            "trigger_count": 1,
+            "function_schema": "storage",
+            "direct_http_indicator": false,
+            "function_definition_md5": "11b3bd509f6b254ec1cd859e712e8c78"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "storage.buckets",
+              "storage.objects"
+            ],
+            "function_name": "protect_delete",
+            "trigger_count": 2,
+            "function_schema": "storage",
+            "direct_http_indicator": false,
+            "function_definition_md5": "4371ae544fb1ef704f9c5d42265ac324"
+          },
+          {
+            "enabled": "O",
+            "relations": [
+              "storage.objects"
+            ],
+            "function_name": "update_updated_at_column",
+            "trigger_count": 1,
+            "function_schema": "storage",
+            "direct_http_indicator": false,
+            "function_definition_md5": "bfecc08a6034296258f0c3e10193076c"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ce101q3",
+      "query": "BEGIN TRANSACTION READ ONLY;\nSET LOCAL statement_timeout='5s';\nSET LOCAL lock_timeout='500ms';\nSET LOCAL application_name='ce1_ce101_inventory';\nSELECT jsonb_build_object(\n 'captured_at',clock_timestamp(),\n 'selected_test_account',jsonb_build_object('username','rruizosma','exact_case_insensitive_matches',(SELECT count(*) FROM (SELECT 1 FROM public.profiles WHERE lower(username)='rruizosma' LIMIT 2)s),'identity_session_verified',false),\n 'storage_policy_expressions',(SELECT jsonb_agg(jsonb_build_object('name',policyname,'command',cmd,'using',qual,'check',with_check) ORDER BY policyname) FROM pg_policies WHERE schemaname='storage' AND tablename='objects'),\n 'auth_lifecycle_triggers',(SELECT jsonb_agg(jsonb_build_object('trigger',t.tgname,'enabled',t.tgenabled,'function',fn.nspname||'.'||p.proname,'function_md5',md5(pg_get_functiondef(p.oid))) ORDER BY t.tgname) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace JOIN pg_proc p ON p.oid=t.tgfoid JOIN pg_namespace fn ON fn.oid=p.pronamespace WHERE n.nspname='auth' AND c.relname='users' AND NOT t.tgisinternal),\n 'realtime_publication_relations',(SELECT jsonb_agg(jsonb_build_object('publication',pubname,'schema',schemaname,'relation',tablename) ORDER BY schemaname,tablename) FROM pg_publication_tables WHERE pubname='supabase_realtime'),\n 'queue_rpc_privileges',(SELECT jsonb_agg(jsonb_build_object('name',p.proname,'arguments',pg_get_function_identity_arguments(p.oid),'security_definer',p.prosecdef,'anon_execute',has_function_privilege('anon',p.oid,'EXECUTE'),'authenticated_execute',has_function_privilege('authenticated',p.oid,'EXECUTE')) ORDER BY p.proname,pg_get_function_identity_arguments(p.oid)) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='pgmq_public' AND p.prokind='f')\n) AS evidence;\nROLLBACK;",
+      "result": {
+        "captured_at": "2026-09-02T21:56:00.237095+00:00",
+        "queue_rpc_privileges": null,
+        "selected_test_account": {
+          "username": "rruizosma",
+          "identity_session_verified": false,
+          "exact_case_insensitive_matches": 1
+        },
+        "auth_lifecycle_triggers": [
+          {
+            "enabled": "O",
+            "trigger": "on_auth_user_created",
+            "function": "public.handle_new_user",
+            "function_md5": "2c1b775e7009329a48632f2ab082e2d3"
+          }
+        ],
+        "storage_policy_expressions": [
+          {
+            "name": "Public avatar read",
+            "check": null,
+            "using": "(bucket_id = 'avatars'::text)",
+            "command": "SELECT"
+          },
+          {
+            "name": "Users can update their own avatar",
+            "check": null,
+            "using": "((bucket_id = 'avatars'::text) AND ((auth.uid())::text = (storage.foldername(name))[1]))",
+            "command": "UPDATE"
+          },
+          {
+            "name": "Users can upload their own avatar",
+            "check": "((bucket_id = 'avatars'::text) AND ((auth.uid())::text = (storage.foldername(name))[1]))",
+            "using": null,
+            "command": "INSERT"
+          },
+          {
+            "name": "avatars delete own",
+            "check": null,
+            "using": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+            "command": "DELETE"
+          },
+          {
+            "name": "avatars insert own",
+            "check": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+            "using": null,
+            "command": "INSERT"
+          },
+          {
+            "name": "avatars read",
+            "check": null,
+            "using": "(bucket_id = 'avatars'::text)",
+            "command": "SELECT"
+          },
+          {
+            "name": "avatars update own",
+            "check": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+            "using": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+            "command": "UPDATE"
+          },
+          {
+            "name": "recipe images delete: own",
+            "check": null,
+            "using": "((bucket_id = 'recipe-images'::text) AND (owner_id = ( SELECT (auth.uid())::text AS uid)))",
+            "command": "DELETE"
+          },
+          {
+            "name": "recipe images insert: own folder",
+            "check": "((bucket_id = 'recipe-images'::text) AND ((storage.foldername(name))[1] = ( SELECT (auth.uid())::text AS uid)))",
+            "using": null,
+            "command": "INSERT"
+          },
+          {
+            "name": "recipe images select: authenticated",
+            "check": null,
+            "using": "(bucket_id = 'recipe-images'::text)",
+            "command": "SELECT"
+          },
+          {
+            "name": "recipe images update: own",
+            "check": "((bucket_id = 'recipe-images'::text) AND ((storage.foldername(name))[1] = ( SELECT (auth.uid())::text AS uid)))",
+            "using": "((bucket_id = 'recipe-images'::text) AND (owner_id = ( SELECT (auth.uid())::text AS uid)))",
+            "command": "UPDATE"
+          }
+        ],
+        "realtime_publication_relations": null
+      }
+    }
+  ],
+  "development_connection": {
+    "files_inspected": [
+      "src/lib/supabase.ts",
+      "src/lib/authStorage.ts",
+      "src/context/AuthContext.tsx",
+      "src/lib/purchases.ts",
+      "src/api/catalog.ts",
+      "app.config.js",
+      "app.json",
+      "eas.json"
+    ],
+    "credential_handling": "Local public key used in memory only; no token, email, session, secret value or user UUID persisted in evidence.",
+    "node_probe": {
+      "captured_at": "2026-09-02T21:57:22.918Z",
+      "configured_url": "https://auth.quefalta.es",
+      "public_key_role": "anon",
+      "public_key_claimed_ref": "gkffvigcnsesbaihycay",
+      "session_used": false,
+      "network_attempts": 1,
+      "results": [
+        {
+          "method": "HEAD",
+          "path": "/rest/v1/mercadona_products",
+          "status": 200,
+          "duration_ms": 212,
+          "project_ref_header": "gkffvigcnsesbaihycay",
+          "content_range": "0-0/*"
+        }
+      ],
+      "status": 200,
+      "error_code": null,
+      "successful": true,
+      "source": "isolated Node client with local application credentials; not native runtime or login"
+    },
+    "auth_public_settings": {
+      "captured_at": "2026-09-02T21:58:22.701Z",
+      "url": "https://auth.quefalta.es/auth/v1/settings",
+      "status": 200,
+      "project_ref_header": "gkffvigcnsesbaihycay",
+      "response_bytes": 609,
+      "disable_signup": false,
+      "mailer_autoconfirm": false,
+      "phone_autoconfirm": false,
+      "saml_enabled": false,
+      "enabled_providers": [
+        "apple",
+        "email",
+        "google"
+      ],
+      "session_used": false,
+      "accounts_created": 0
+    },
+    "native": {
+      "scheme": "quefalta",
+      "ios_bundle": "com.quefalta.app",
+      "android_package": "com.quefalta.app",
+      "auth_flow": "pkce",
+      "EAS_development": {
+        "developmentClient": true,
+        "distribution": "internal",
+        "environment": "development"
+      },
+      "EAS_remote_environment_verified": false,
+      "native_app_launched": false,
+      "authenticated_session_verified": false,
+      "warning": "Development config uses same app identifiers; do not install/publish over production or assume channel/backend isolation. App startup can record activity, reconcile push tokens and configure RevenueCat."
+    }
+  },
+  "edge_functions": [
+    {
+      "slug": "delete-account",
+      "version": 10,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "deployed_bundle_sha256": "16f61233085cd1569fb70be8a349168539a86f9c151ec566ddaccf292b1b46bd"
+    },
+    {
+      "slug": "apple-link",
+      "version": 8,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "deployed_bundle_sha256": "06ae80d44951a53d542cdf84183a14fb5f0e43e0585eb39e4319f4d62679ead6"
+    },
+    {
+      "slug": "send-push",
+      "version": 13,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "deployed_bundle_sha256": "ffb328360371e7fb17cde95a343e859090e2f19add96d306e037f4b3310009a7"
+    },
+    {
+      "slug": "catalog-embed",
+      "version": 13,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "deployed_bundle_sha256": "7adc1d02c1f4266492a4dfaf14c6d6350f668f1288a09ff57bb7f2ef5d7cd2d8"
+    },
+    {
+      "slug": "revenuecat-webhook",
+      "version": 6,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "deployed_bundle_sha256": "67b17671e258929d0140963bfdea4c1465fb6f38a5531d845399c5eac9e7adaa"
+    },
+    {
+      "slug": "process-price-alerts",
+      "version": 6,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "deployed_bundle_sha256": "95240dc7337813eec2ba7f9ad8fc73906f85f34e6e9d1e752de4c836e6d74f53"
+    },
+    {
+      "slug": "sync-plus-subscription",
+      "version": 2,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "deployed_bundle_sha256": "b55bf565e65181a46492c688921d3312c471fe180236e5ede15853e17198b3a7"
+    }
+  ],
+  "edge_auth_source_review": [
+    {
+      "slug": "catalog-embed",
+      "version": 13,
+      "remote_source_checked": true,
+      "method": "POST",
+      "guard": "Nonempty EMBEDDING_WORKER_TOKEN compared with X-Embedding-Worker-Token using double-HMAC before job processing; withSupabase auth:none.",
+      "secret_value_read": false,
+      "invoked": false
+    },
+    {
+      "slug": "revenuecat-webhook",
+      "version": 6,
+      "remote_source_checked": true,
+      "method": "POST",
+      "guard": "Nonempty RC_WEBHOOK_TOKEN compared with Authorization using double-HMAC before service-role profile update.",
+      "secret_value_read": false,
+      "invoked": false,
+      "external_provider_configuration_verified": false
+    },
+    {
+      "slug": "process-price-alerts",
+      "version": 6,
+      "remote_source_checked": true,
+      "method": "POST",
+      "guard": "PROCESS_PRICE_ALERTS_SECRET falls back to EMBEDDING_WORKER_TOKEN; header x-alert-secret falls back to x-embedding-worker-token; nonempty expected secret required before claim_price_alert_deliveries.",
+      "secret_value_read": false,
+      "invoked": false,
+      "dedicated_secret_configured": "unknown"
+    }
+  ],
+  "dashboard": {
+    "method": "Authenticated dashboard through accessibility tree; exposed-schema checkmarks verified by screenshot; no save/toggle/apply.",
+    "data_api": {
+      "url": "https://supabase.com/dashboard/project/gkffvigcnsesbaihycay/integrations/data_api/settings",
+      "exposed_schemas": [
+        "graphql_public",
+        "public"
+      ],
+      "unselected_schemas_shown": [
+        "comparator_internal",
+        "price_alerts_internal",
+        "private"
+      ],
+      "schema_count_displayed": 5,
+      "tables_exposed": 54,
+      "tables_displayed": 83,
+      "functions_exposed": 88,
+      "functions_displayed": 185,
+      "automatically_expose_new_tables": true,
+      "extra_search_path": [
+        "public",
+        "extensions"
+      ],
+      "max_rows": 1000,
+      "pool_size": "unset (automatic)",
+      "installed_integrations_shown": [
+        "Cron",
+        "Data API",
+        "Queues",
+        "Vault"
+      ]
+    },
+    "auth_urls": {
+      "url": "https://supabase.com/dashboard/project/gkffvigcnsesbaihycay/auth/url-configuration",
+      "site_url": "http://localhost:8081",
+      "redirect_urls": [
+        "quefalta://auth/callback",
+        "quefalta://**",
+        "exp://**",
+        "exp://*.exp.direct/**"
+      ],
+      "save_changes_disabled": true
+    },
+    "auth_hooks": {
+      "url": "https://supabase.com/dashboard/project/gkffvigcnsesbaihycay/auth/hooks",
+      "configured_hooks_shown": 0,
+      "empty_state": "Create an auth hook",
+      "distinction": "SQL trigger on_auth_user_created remains present; Auth Hooks UI is a different mechanism."
+    }
+  },
+  "findings": [
+    {
+      "id": "CE101-R01",
+      "severity": "required_before_schema_write",
+      "finding": "Automatic exposure of new tables enabled. Private-schema naming alone is not a full privilege boundary.",
+      "follow_up": [
+        "CE-102",
+        "CE-103",
+        "CE-105",
+        "CE-106"
+      ]
+    },
+    {
+      "id": "CE101-R02",
+      "severity": "required_before_remote_fixtures",
+      "finding": "Embedding dispatcher paused does not pause price-alert cron or catalog triggers; never seed fake products in published catalogs.",
+      "follow_up": [
+        "CE-104",
+        "CE-106"
+      ]
+    },
+    {
+      "id": "CE101-R03",
+      "severity": "required_before_private_artifacts",
+      "finding": "Both existing Storage buckets public; no CE-1 private evidence/test dataset should be placed there.",
+      "follow_up": [
+        "CE-103",
+        "CE-104"
+      ]
+    },
+    {
+      "id": "CE101-R04",
+      "severity": "follow_up_no_global_change",
+      "finding": "Auth Site URL remains localhost and broad Expo/custom-scheme redirects coexist in shared project. Native PKCE callback is allowlisted; fallback/deep-link behavior requires scoped runtime validation.",
+      "follow_up": [
+        "CE-101"
+      ]
+    },
+    {
+      "id": "CE101-R05",
+      "severity": "required_before_test_access",
+      "finding": "Nominated profile has exactly one match; username existence is not authenticated ownership or immutable authorization. Future server allowlist must bind verified auth.uid, remain deny-by-default, preserve CU-01 and not rely on client flags.",
+      "follow_up": [
+        "CE-101",
+        "CE-103",
+        "CE-105"
+      ]
+    },
+    {
+      "id": "CE101-R06",
+      "severity": "inventory_limitation",
+      "finding": "No direct-HTTP trigger candidates found by bounded name/body heuristic; not a transitive call-graph or external delivery audit. RevenueCat receiver/source verified, provider configuration and secret presence not verified.",
+      "follow_up": [
+        "CE-103",
+        "CE-106"
+      ]
+    },
+    {
+      "id": "CE101-R07",
+      "severity": "defer_out_of_scope",
+      "finding": "Storage avatar policies have semantic duplicates; missing explicit WITH CHECK on an UPDATE is not alone a hole because USING supplies it. Do not alter global policies by carryover.",
+      "follow_up": []
+    },
+    {
+      "id": "CE101-R08",
+      "severity": "future_hardening",
+      "finding": "Price-alert worker permits embedding-secret fallback. Verify dedicated secret presence before any future separation; no rotation/configuration change authorized here.",
+      "follow_up": [
+        "CE-103"
+      ]
+    }
+  ],
+  "test_access_manifest": "CE-101-test-access.json",
+  "limitations": [
+    "No native development build/session test",
+    "No test feature access activated or enforcement implemented",
+    "No complete client-role negative tests",
+    "No whole-project security certification",
+    "No CPU/I/O baseline; CE-100 remains open",
+    "No queue payload/count remeasurement",
+    "No Realtime channels opened; null publication relation inventory does not prove Realtime disabled",
+    "No RevenueCat delivery/replay or Expo push test"
+  ],
+  "completion": {
+    "inventory": "completed_bounded_read_only",
+    "local_endpoint": "verified",
+    "test_principal": "nominated_single_profile_match",
+    "access_preparation": "documented_disabled_manifest",
+    "native_session": "new_development_runtime_not_tested_deferred_until_needed",
+    "CE_101": "completed_under_CE_VAL_001",
+    "CE_100": "open",
+    "CE_102": "completed_local_guard_component",
+    "G1": "not_accepted"
+  },
+  "initial_local_validation_before_owner_confirmation": {
+    "status": "PASS",
+    "typecheck": "npx tsc --noEmit: PASS",
+    "existing_helper_tests": {
+      "command": "node --test scripts/lib/catalog-embedding-identity.test.mjs scripts/lib/catalog-embedding-reconcile.test.mjs",
+      "passed": 35,
+      "total": 35,
+      "production_comparator_tested": false
+    },
+    "diff_check": "git diff --check: PASS",
+    "markdown_documents_with_valid_local_links_and_balanced_fences": 16,
+    "valid_json_documents": 7,
+    "unique_project_tasks": 67,
+    "closed_tasks": ["CE-000", "CE-001", "CE-002", "CE-003", "CE-004", "CE-005"],
+    "regression_cases_preserved": 35,
+    "product_decisions_preserved": 14,
+    "preexisting_source_and_sql_hashes_unchanged": 8,
+    "CE_100_closed": false,
+    "CE_101_closed": false
+  },
+  "conditional_continuation": {
+    "id": "CE-SEQ-002",
+    "date": "2026-09-03",
+    "user_request": "Cuando termines empieza la tarea CE-102 y si todo es correcto empieza la CE-103",
+    "sequence": ["Complete CE-101 native-session/catalog validation", "Implement and verify CE-102", "Start CE-103 if CE-102 passes"],
+    "additional_task_start_approval_required_after_conditions_met": false,
+    "CE_101": "completed_under_CE_VAL_001",
+    "CE_102": "completed_local_guard_component",
+    "CE_103": "in_progress_read_only_reconciliation",
+    "simulator_inventory": {
+      "available": 12,
+      "booted": 0,
+      "apps_built_installed_or_launched": 0,
+      "guidance": "ios-debugger-agent: request an available running simulator; do not boot one automatically."
+    },
+    "owner_question": "Confirm development app profile rruizosma and catalog load; identify mobile or simulator. No comparator call or credential sharing.",
+    "preparatory_read_only_review": ["scripts/import-comparator-embedding-pilot.mjs", "scripts/sync-comparator-embedding-catalog.mjs"],
+    "legacy_script_warning": "Writes are enabled unless DRY_RUN=1; no script was executed or changed.",
+    "remote_changes_this_followup": 0,
+    "CE_100_still_open": true,
+    "constraint": "Missing CE-100/BU-01 baseline still restricts CE-103 to read-only reconciliation and local preparation/testing; no remote DDL or G1/public activation by implication."
+  },
+  "closure": {
+    "decision": "CE-VAL-001",
+    "date": "2026-09-03",
+    "device": "owner_physical_mobile",
+    "application": "production 1.3 (owner identified)",
+    "user_statement": "pues si, se abre el catalogo correctamente confirmado",
+    "catalog_load": "owner_confirmed",
+    "automated_screen_or_token_verification": false,
+    "development_build_tested": false,
+    "rationale": "Existing-app catalog smoke plus verified local client configuration and inventory suffice for CE-101; requiring installation of a new development build was premature. Validate unpublished app code when introduced.",
+    "access_granted": false,
+    "CE_100_closed": false,
+    "CE_101_closed": true
+  },
+  "sources": [
+    {
+      "url": "https://github.com/supabase/auth/blob/master/openapi.yaml",
+      "purpose": "Public GET /settings, no user session required."
+    },
+    {
+      "url": "https://supabase.com/docs/guides/storage/buckets/fundamentals",
+      "purpose": "Public retrieval independent from authenticated storage write policies."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/17/sql-createpolicy.html",
+      "purpose": "UPDATE USING fallback for missing WITH CHECK; permissive policies combined with OR."
+    },
+    {
+      "url": "https://supabase.com/docs/guides/auth/redirect-urls",
+      "purpose": "Redirect allowlist, Site URL fallback and wildcard caution."
+    },
+    {
+      "url": "https://supabase.com/changelog",
+      "purpose": "Current platform notices reviewed; no feature defaults inferred from release notes."
+    }
+  ]
+}

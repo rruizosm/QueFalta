@@ -1,0 +1,179 @@
+{
+  "schema_version": 1,
+  "tasks": [
+    "CE-203"
+  ],
+  "status": "in_progress_selection_ready_owner_review_pending",
+  "authority": "El propietario indicó «adelante» tras el cierre de CE-201/202.",
+  "captured_at": "2026-09-04T06:13:41.085Z",
+  "selection_date": "2026-09-03",
+  "authorship": {
+    "selection_and_packet": "Codex, mediante algoritmo determinista sobre entradas congeladas",
+    "reviewer_pseudonym_reserved": "owner-01",
+    "owner_reviews_submitted": 0,
+    "owner_identity_not_embedded": true
+  },
+  "report": {
+    "version": "ce203-owner-independent-review-v1",
+    "population_pairs": 6000,
+    "random_review_target": 1200,
+    "random_review_fraction": 0.2,
+    "mandatory_disputed_pairs": 175,
+    "random_dispute_overlap": 39,
+    "additional_disputed_pairs": 136,
+    "total_blind_review_cases": 1336,
+    "total_batches_of_25": 54,
+    "selected_by_family": {
+      "drinking_water": 570,
+      "frozen_potatoes": 185,
+      "yogurt": 581
+    },
+    "selected_by_cohort": {
+      "challenge": 450,
+      "confirmatory": 886
+    },
+    "selection_seed": "57eb418dad5f506e53236c211b177425c6c2964b0797fb14988add4435ee81d7",
+    "owner_reviews_completed": 0,
+    "owner_reviews_pending": 1336,
+    "arbitration_completed": 0,
+    "gold_pairs": 0,
+    "CE203_complete": false,
+    "G2_pass": false
+  },
+  "blindness": {
+    "source_facts_included": true,
+    "assistant_first_annotations_exposed": false,
+    "engine_predictions_exposed": false,
+    "selection_reasons_exposed": false,
+    "cohort_or_dispute_flags_exposed": false,
+    "gold_or_expected_results_exposed": false,
+    "review_order_independent_sha256": true
+  },
+  "not_claimed": [
+    "una sola revisión realizada por el propietario",
+    "arbitraje de desacuerdos",
+    "gold labels",
+    "particiones o holdout",
+    "métricas del motor",
+    "ahorros elegibles",
+    "CE-203 completada",
+    "G2 superado",
+    "implementación o despliegue en producción"
+  ],
+  "git": {
+    "branch": "codex/phase5-observation",
+    "head": "03b8ba273e17709fd8fc69c20dddb68c147a7e2a",
+    "commit_created": false,
+    "push_performed": false
+  },
+  "quality": {
+    "command": "npm run quality",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "tests": {
+      "pass": 592,
+      "fail": 0
+    },
+    "workbook_visual_review": "PASS: Inicio, Revisión y Listas; fecha formateada, campos editables diferenciados y sin errores de fórmula"
+  },
+  "safety": {
+    "supabase_calls": 0,
+    "retailer_calls": 0,
+    "model_calls_for_annotation": 0,
+    "new_integrations": 0,
+    "app_code_changes_in_this_block": 0,
+    "sql_changes_in_this_block": 0,
+    "sync_or_embedding_changes_in_this_block": 0,
+    "deployment": false,
+    "production_data_written": false
+  },
+  "previous_evidence_preserved": [
+    {
+      "path": "docs/comparator-strict/CE-201-202-water-evidence.json",
+      "sha256": "4a287019b78979867940c77212e58b811d85544d6212538fe593a7b5fc7eacc6",
+      "bytes": 6458
+    }
+  ],
+  "files": [
+    {
+      "path": "scripts/lib/comparator-strict-owner-review.mjs",
+      "sha256": "8e0ede8b747793331dadc7d0fad04ae66eada5bddd25ce4021cf11a2a002d7b9",
+      "bytes": 19436
+    },
+    {
+      "path": "scripts/lib/comparator-strict-owner-review.test.mjs",
+      "sha256": "e7fb1ee24b4678c7a4760513ae7c457580e953e4d8827a00c0d43e252c9c9fa2",
+      "bytes": 6984
+    },
+    {
+      "path": "scripts/prepare-comparator-strict-owner-review.mjs",
+      "sha256": "8b5acf95a209dc3f1a7eafe56ed29f520aeb7ef62f9be99e7bacccf62caf5718",
+      "bytes": 2908
+    },
+    {
+      "path": "scripts/tests/comparator-strict-owner-review-evidence.test.mjs",
+      "sha256": "5e44ac14bceec42c0fe4d295cd2b4cf7f9ca0091626cb8a267b9a3b6612683cd",
+      "bytes": 4223
+    },
+    {
+      "path": "docs/comparator-strict/CE-203-owner-review-guide.md",
+      "sha256": "b0bfaad32bc4977f4dbd6d6377023f7074244bfe352b3751f9374984ff361e48",
+      "bytes": 5567
+    },
+    {
+      "path": "docs/comparator-strict/CE-203-progress.md",
+      "sha256": "93a737025299a6d33b46eadf945400093d5e2b74cf69f3dc3023f6cee6044527",
+      "bytes": 2958
+    },
+    {
+      "path": "docs/comparator-strict/dataset/owner-review-v1/README.md",
+      "sha256": "7a16ce353a421a902132dd4f31e7f353fa32cfb448123d954b752d955bbe8328",
+      "bytes": 1240
+    },
+    {
+      "path": "docs/comparator-strict/dataset/owner-review-v1/report.json",
+      "sha256": "bce111b53bbc17c9cc8f633ba6e1176749bc72878490e937dfab852596433e26",
+      "bytes": 2397
+    },
+    {
+      "path": "docs/comparator-strict/dataset/owner-review-v1/manifest.json",
+      "sha256": "08a52cc0a579aeb8ca4eb0b926d3e18f98a2303f013e22321f682215c3fad653",
+      "bytes": 3653
+    },
+    {
+      "path": "outputs/ce203-owner-review-v1/CE-203-revision-ciega.xlsx",
+      "sha256": "f6d009ec1b0f1861477ffb08039d6fe251d1bb6f1b822d82000580b991519342",
+      "bytes": 4799661
+    }
+  ],
+  "protected_files": [
+    {
+      "path": "src/components/SimilarProductsSection.tsx",
+      "sha256": "d2e594cfd4ba184e839e13c0fd5e049917a16900dfea4fa2f884992234a1127e",
+      "bytes": 23444
+    },
+    {
+      "path": "src/components/StoreProductModal.tsx",
+      "sha256": "f467d6a7604f797e7b944a543310f1c30bfe3bafc40e3f8fa5cf7d4e696a45c4",
+      "bytes": 14383
+    },
+    {
+      "path": "src/api/catalog.ts",
+      "sha256": "bd35cdc8820661b52993a652ebc3a06b41963981df11183a9ba0880a4058bb05",
+      "bytes": 164988
+    },
+    {
+      "path": "supabase/ops/README-comparator-embedding-pipeline.md",
+      "sha256": "424a293c99b0b843a9c7032da5b813b889da324a05ffddcf3349970e53379f40",
+      "bytes": 19649
+    }
+  ],
+  "mutable_handoff_documents": [
+    "COMPARATIVA.md",
+    "CONTEXTO.md",
+    "HANDOFF.md",
+    "PROYECTO-COMPARADOR-ESTRICTO.md",
+    "docs/comparator-strict/dataset/README.md"
+  ],
+  "next_step": "El propietario abre el libro ciego y completa el lote 1. No mostrar propuestas hasta guardar la respuesta ciega; no iniciar CE-204/205 todavía."
+}

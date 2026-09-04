@@ -1,0 +1,21 @@
+{
+  "rls": true,
+  "budget": {
+    "updated_at": "2026-09-03T08:46:21.625669+00:00",
+    "budget_date": "2026-09-03",
+    "bytes_limit": 23068672,
+    "project_ref": "gkffvigcnsesbaihycay",
+    "bytes_reserved": 22517198,
+    "sql_ms_reserved": 285520,
+    "approval_reference": "CE-100-22MiB-2026-09-03",
+    "read_rows_reserved": 4000,
+    "write_rows_reserved": 22
+  },
+  "blocked": 0,
+  "version": "17.6",
+  "unresolved": 0,
+  "captured_at": "2026-09-03T08:47:01.073736+00:00",
+  "connections": 9,
+  "active_older_30s": 0,
+  "migration_version": "20260903084621"
+}

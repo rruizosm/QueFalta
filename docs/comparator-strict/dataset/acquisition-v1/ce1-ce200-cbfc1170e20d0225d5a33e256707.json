@@ -1,0 +1,546 @@
+{
+  "plan": {
+    "version": "ce200-read-v1",
+    "kind": "census",
+    "store": "carrefour",
+    "cursor": "",
+    "limit": 100,
+    "round": "frame",
+    "select": "SELECT category_id,category_name,count(*)::int AS n,\n      count(*) FILTER (WHERE (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)')))::int AS frame_n\n      FROM public.carrefour_products p WHERE published IS TRUE\n      AND (category_id::text||':'||coalesce(category_name,'')) COLLATE \"C\" > '' COLLATE \"C\"\n      GROUP BY category_id,category_name ORDER BY (category_id::text||':'||coalesce(category_name,'')) COLLATE \"C\" LIMIT 500",
+    "job": "ce1-ce200-cbfc1170e20d0225d5a33e256707",
+    "operationHash": "cbfc1170e20d0225d5a33e25670794ddd3475e9d3cc3f6225795f58ea79e291a",
+    "maxRows": 500,
+    "maxBytes": 131072,
+    "sql": "-- ce1-ce200-cbfc1170e20d0225d5a33e256707: census; CE-BU-002; no app writes.\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $reserve$\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE status IN ('planned','running','halted','unknown'))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-cbfc1170e20d0225d5a33e256707') THEN RAISE EXCEPTION 'ce200_exclusive_or_replay'; END IF;\n  IF EXISTS(SELECT 1 FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid))>0\n    OR (pid<>pg_backend_pid() AND state='active' AND query_start<clock_timestamp()-interval '30 seconds')) THEN RAISE EXCEPTION 'ce200_health_stop'; END IF;\n  UPDATE comparator_strict.execution_budget SET\n    sql_ms_reserved=sql_ms_reserved+10000,read_rows_reserved=read_rows_reserved+500,\n    bytes_reserved=bytes_reserved+131072,write_rows_reserved=write_rows_reserved+3,updated_at=clock_timestamp()\n    WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03'\n      AND approval_reference='CE-200-corpus-v1' AND bytes_limit=134217728 AND read_rows_limit=50000\n      AND bytes_reserved+131072<=bytes_limit AND read_rows_reserved+500<=read_rows_limit AND write_rows_reserved+3<=2000;\n  IF NOT FOUND THEN RAISE EXCEPTION 'ce200_budget'; END IF;\n  INSERT INTO comparator_strict.execution_jobs(id,project_ref,operation_key,sql_sha256,status,started_at,deadline_at,job_key,operation_hash,budget_date,reservation)\n    VALUES(gen_random_uuid(),'gkffvigcnsesbaihycay','ce200-census','d104e9a5626af38098b49af4dfe2f1d5a5187f8e5ee655cafbda4fe3cf3c3e58','running',clock_timestamp(),clock_timestamp()+interval '20 minutes','ce1-ce200-cbfc1170e20d0225d5a33e256707','cbfc1170e20d0225d5a33e25670794ddd3475e9d3cc3f6225795f58ea79e291a',DATE '2026-09-03','{\"sqlMs\":10000,\"readRows\":500,\"writeRows\":3,\"responseBytes\":131072}'::jsonb);\nEND $reserve$;\nCOMMIT;\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $payload$\nDECLARE payload jsonb; data jsonb; started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR NOT EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-cbfc1170e20d0225d5a33e256707' AND status='running' AND operation_hash='cbfc1170e20d0225d5a33e25670794ddd3475e9d3cc3f6225795f58ea79e291a' AND deadline_at>clock_timestamp()) THEN RAISE EXCEPTION 'ce200_lease'; END IF;\n  SELECT coalesce(jsonb_agg(to_jsonb(q)),'[]'::jsonb) INTO data FROM (SELECT category_id,category_name,count(*)::int AS n,\n      count(*) FILTER (WHERE (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)')))::int AS frame_n\n      FROM public.carrefour_products p WHERE published IS TRUE\n      AND (category_id::text||':'||coalesce(category_name,'')) COLLATE \"C\" > '' COLLATE \"C\"\n      GROUP BY category_id,category_name ORDER BY (category_id::text||':'||coalesce(category_name,'')) COLLATE \"C\" LIMIT 500) q;\n  payload:=jsonb_build_object('job_key','ce1-ce200-cbfc1170e20d0225d5a33e256707','operation_hash','cbfc1170e20d0225d5a33e25670794ddd3475e9d3cc3f6225795f58ea79e291a',\n    'project_ref','gkffvigcnsesbaihycay','captured_at',started,'kind','census','store','carrefour',\n    'cursor','','rows',data,'row_count',jsonb_array_length(data),'elapsed_ms',extract(epoch FROM clock_timestamp()-started)*1000);\n  IF jsonb_array_length(data)>500 OR octet_length(payload::text)>122880 THEN RAISE EXCEPTION 'ce200_result_limit'; END IF;\n  UPDATE comparator_strict.execution_jobs SET status='succeeded',finished_at=clock_timestamp(),\n    receipt=jsonb_build_object('payload_sha256',encode(sha256(convert_to(payload::text,'UTF8')),'hex'),'row_count',jsonb_array_length(data),'payload_bytes',octet_length(payload::text),'elapsed_ms',payload->'elapsed_ms') WHERE job_key='ce1-ce200-cbfc1170e20d0225d5a33e256707';\n  PERFORM set_config('comparator_strict.ce200_response',payload::text,true);\nEND $payload$;\nSELECT current_setting('comparator_strict.ce200_response')::jsonb AS evidence;\nCOMMIT;"
+  },
+  "payload": {
+    "kind": "census",
+    "rows": [
+      {
+        "n": 98,
+        "frame_n": 3,
+        "category_id": "cat10928974",
+        "category_name": "Sushi del Día"
+      },
+      {
+        "n": 1456,
+        "frame_n": 12,
+        "category_id": "cat20009",
+        "category_name": "Alimentación"
+      },
+      {
+        "n": 852,
+        "frame_n": 0,
+        "category_id": "cat20011",
+        "category_name": "Lácteos"
+      },
+      {
+        "n": 1334,
+        "frame_n": 31,
+        "category_id": "cat20013",
+        "category_name": "Conservas, Sopas y Precocinados"
+      },
+      {
+        "n": 416,
+        "frame_n": 0,
+        "category_id": "cat20014",
+        "category_name": "Pescado y Marisco"
+      },
+      {
+        "n": 197,
+        "frame_n": 9,
+        "category_id": "cat20016",
+        "category_name": "Comida Preparada"
+      },
+      {
+        "n": 1404,
+        "frame_n": 2,
+        "category_id": "cat20017",
+        "category_name": "Charcutería"
+      },
+      {
+        "n": 829,
+        "frame_n": 2,
+        "category_id": "cat20018",
+        "category_name": "Carne"
+      },
+      {
+        "n": 530,
+        "frame_n": 6,
+        "category_id": "cat20019",
+        "category_name": "Pan y Bollería del Día"
+      },
+      {
+        "n": 1123,
+        "frame_n": 0,
+        "category_id": "cat20020",
+        "category_name": "Quesos"
+      },
+      {
+        "n": 59,
+        "frame_n": 0,
+        "category_id": "cat20021",
+        "category_name": "Huevos"
+      },
+      {
+        "n": 477,
+        "frame_n": 3,
+        "category_id": "cat20022",
+        "category_name": "Alcoholes"
+      },
+      {
+        "n": 537,
+        "frame_n": 0,
+        "category_id": "cat20023",
+        "category_name": "Cerveza"
+      },
+      {
+        "n": 131,
+        "frame_n": 0,
+        "category_id": "cat20024",
+        "category_name": "Cava Champagne y Espumosos"
+      },
+      {
+        "n": 229,
+        "frame_n": 13,
+        "category_id": "cat20025",
+        "category_name": "Licores y Cremas"
+      },
+      {
+        "n": 76,
+        "frame_n": 0,
+        "category_id": "cat20026",
+        "category_name": "Sidra"
+      },
+      {
+        "n": 1850,
+        "frame_n": 0,
+        "category_id": "cat20027",
+        "category_name": "Vinos"
+      },
+      {
+        "n": 1058,
+        "frame_n": 322,
+        "category_id": "cat20028",
+        "category_name": "Baño e Higiene Corporal"
+      },
+      {
+        "n": 72,
+        "frame_n": 4,
+        "category_id": "cat20029",
+        "category_name": "Bienestar Sexual"
+      },
+      {
+        "n": 326,
+        "frame_n": 1,
+        "category_id": "cat20030",
+        "category_name": "Higiene Bucal"
+      },
+      {
+        "n": 977,
+        "frame_n": 15,
+        "category_id": "cat20031",
+        "category_name": "Cuidado del Cabello"
+      },
+      {
+        "n": 1000,
+        "frame_n": 18,
+        "category_id": "cat20032",
+        "category_name": "Cosmética"
+      },
+      {
+        "n": 775,
+        "frame_n": 43,
+        "category_id": "cat20033",
+        "category_name": "Cuidado y Protección Corporal"
+      },
+      {
+        "n": 167,
+        "frame_n": 1,
+        "category_id": "cat20034",
+        "category_name": "Depilación"
+      },
+      {
+        "n": 216,
+        "frame_n": 0,
+        "category_id": "cat20035",
+        "category_name": "Higiene íntima"
+      },
+      {
+        "n": 302,
+        "frame_n": 0,
+        "category_id": "cat20036",
+        "category_name": "Ambientadores"
+      },
+      {
+        "n": 357,
+        "frame_n": 2,
+        "category_id": "cat20037",
+        "category_name": "Bazar"
+      },
+      {
+        "n": 50,
+        "frame_n": 0,
+        "category_id": "cat20038",
+        "category_name": "Calzado"
+      },
+      {
+        "n": 218,
+        "frame_n": 0,
+        "category_id": "cat20039",
+        "category_name": "Conservación de alimentos"
+      },
+      {
+        "n": 1153,
+        "frame_n": 30,
+        "category_id": "cat20041",
+        "category_name": "Menaje"
+      },
+      {
+        "n": 165,
+        "frame_n": 5,
+        "category_id": "cat20042",
+        "category_name": "Limpieza baño y WC"
+      },
+      {
+        "n": 196,
+        "frame_n": 0,
+        "category_id": "cat20043",
+        "category_name": "Limpieza cocina"
+      },
+      {
+        "n": 511,
+        "frame_n": 4,
+        "category_id": "cat20044",
+        "category_name": "Cuidado de la ropa"
+      },
+      {
+        "n": 236,
+        "frame_n": 1,
+        "category_id": "cat20045",
+        "category_name": "Limpieza del hogar"
+      },
+      {
+        "n": 206,
+        "frame_n": 0,
+        "category_id": "cat20046",
+        "category_name": "Papel y Celulosa"
+      },
+      {
+        "n": 363,
+        "frame_n": 0,
+        "category_id": "cat20047",
+        "category_name": "Utensilios de limpieza"
+      },
+      {
+        "n": 356,
+        "frame_n": 19,
+        "category_id": "cat20048",
+        "category_name": "Alimentación infantil"
+      },
+      {
+        "n": 114,
+        "frame_n": 22,
+        "category_id": "cat20049",
+        "category_name": "Cuidado e Higiene Infantil"
+      },
+      {
+        "n": 70,
+        "frame_n": 0,
+        "category_id": "cat20050",
+        "category_name": "Pañales"
+      },
+      {
+        "n": 29,
+        "frame_n": 0,
+        "category_id": "cat20053",
+        "category_name": "Conejos y roedores"
+      },
+      {
+        "n": 493,
+        "frame_n": 3,
+        "category_id": "cat20054",
+        "category_name": "Gatos"
+      },
+      {
+        "n": 28,
+        "frame_n": 0,
+        "category_id": "cat20055",
+        "category_name": "Pájaros"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "cat20056",
+        "category_name": "Peces y tortugas"
+      },
+      {
+        "n": 489,
+        "frame_n": 7,
+        "category_id": "cat20057",
+        "category_name": "Perros"
+      },
+      {
+        "n": 134,
+        "frame_n": 0,
+        "category_id": "cat20060",
+        "category_name": "Cuidado del cabello"
+      },
+      {
+        "n": 168,
+        "frame_n": 0,
+        "category_id": "cat20061",
+        "category_name": "Cuidado corporal"
+      },
+      {
+        "n": 197,
+        "frame_n": 12,
+        "category_id": "cat20062",
+        "category_name": "Cuidado e higiene facial"
+      },
+      {
+        "n": 32,
+        "frame_n": 0,
+        "category_id": "cat20063",
+        "category_name": "Cuidado de manos y pies"
+      },
+      {
+        "n": 201,
+        "frame_n": 0,
+        "category_id": "cat20064",
+        "category_name": "Higiene Bucal"
+      },
+      {
+        "n": 460,
+        "frame_n": 0,
+        "category_id": "cat20065",
+        "category_name": "Suplementos alimenticios"
+      },
+      {
+        "n": 884,
+        "frame_n": 10,
+        "category_id": "cat21319201",
+        "category_name": "Panaderia, Bollería y Pastelería"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "cat21449144",
+        "category_name": "Aves y Carne Congelada"
+      },
+      {
+        "n": 73,
+        "frame_n": 0,
+        "category_id": "cat21449156",
+        "category_name": "Pescados Congelados"
+      },
+      {
+        "n": 127,
+        "frame_n": 0,
+        "category_id": "cat21449161",
+        "category_name": "Mariscos Congelados"
+      },
+      {
+        "n": 24,
+        "frame_n": 0,
+        "category_id": "cat21449164",
+        "category_name": "Pulpo, Calamar y Sepia Congelados"
+      },
+      {
+        "n": 102,
+        "frame_n": 4,
+        "category_id": "cat21449175",
+        "category_name": "Verduras Congeladas"
+      },
+      {
+        "n": 147,
+        "frame_n": 0,
+        "category_id": "cat21449183",
+        "category_name": "Pizzas Congeladas"
+      },
+      {
+        "n": 221,
+        "frame_n": 6,
+        "category_id": "cat21449190",
+        "category_name": "Rebozados y Platos Preparados"
+      },
+      {
+        "n": 22,
+        "frame_n": 1,
+        "category_id": "cat21449194",
+        "category_name": "Salteados Congelados"
+      },
+      {
+        "n": 479,
+        "frame_n": 14,
+        "category_id": "cat21449202",
+        "category_name": "Helados"
+      },
+      {
+        "n": 148,
+        "frame_n": 7,
+        "category_id": "cat220006",
+        "category_name": "Frutas"
+      },
+      {
+        "n": 298,
+        "frame_n": 22,
+        "category_id": "cat220014",
+        "category_name": "Verduras y Hortalizas"
+      },
+      {
+        "n": 314,
+        "frame_n": 0,
+        "category_id": "cat260001",
+        "category_name": "Papelería"
+      },
+      {
+        "n": 1435,
+        "frame_n": 4,
+        "category_id": "cat26100388",
+        "category_name": "Dulce"
+      },
+      {
+        "n": 1349,
+        "frame_n": 10,
+        "category_id": "cat26100390",
+        "category_name": "Desayuno"
+      },
+      {
+        "n": 56,
+        "frame_n": 2,
+        "category_id": "cat31330789",
+        "category_name": "Toallitas"
+      },
+      {
+        "n": 124,
+        "frame_n": 2,
+        "category_id": "cat32105059",
+        "category_name": "Insecticidas"
+      },
+      {
+        "n": 19,
+        "frame_n": 6,
+        "category_id": "cat32238905",
+        "category_name": "Air Fryer"
+      },
+      {
+        "n": 65,
+        "frame_n": 1,
+        "category_id": "cat32482095",
+        "category_name": "Comidas del Mundo"
+      },
+      {
+        "n": 29,
+        "frame_n": 29,
+        "category_id": "cat32544703",
+        "category_name": "Patatas"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "cat32644961",
+        "category_name": "Masas"
+      },
+      {
+        "n": 24,
+        "frame_n": 0,
+        "category_id": "cat32645949",
+        "category_name": "Repostería y Panadería"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "cat32646102",
+        "category_name": "Hielo"
+      },
+      {
+        "n": 157,
+        "frame_n": 10,
+        "category_id": "cat32683499",
+        "category_name": "Parafarmacia para el Bebé"
+      },
+      {
+        "n": 15,
+        "frame_n": 2,
+        "category_id": "cat32705624",
+        "category_name": "Protección Solar"
+      },
+      {
+        "n": 89,
+        "frame_n": 1,
+        "category_id": "cat32968822",
+        "category_name": "Energéticas"
+      },
+      {
+        "n": 409,
+        "frame_n": 1,
+        "category_id": "cat33207691",
+        "category_name": "Aceites y vinagres"
+      },
+      {
+        "n": 74,
+        "frame_n": 1,
+        "category_id": "cat33556281",
+        "category_name": "Afeitado"
+      },
+      {
+        "n": 294,
+        "frame_n": 24,
+        "category_id": "cat33926833",
+        "category_name": "Botiquín"
+      },
+      {
+        "n": 1445,
+        "frame_n": 229,
+        "category_id": "cat390001",
+        "category_name": "Aperitivos"
+      },
+      {
+        "n": 1107,
+        "frame_n": 1107,
+        "category_id": "cat390008",
+        "category_name": "Yogures y Postres"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "cat400001",
+        "category_name": "Embarazo y Lactancia"
+      },
+      {
+        "n": 72,
+        "frame_n": 0,
+        "category_id": "cat400002",
+        "category_name": "Puericultura"
+      },
+      {
+        "n": 125,
+        "frame_n": 0,
+        "category_id": "cat510001",
+        "category_name": "Charcutería y Quesos al Corte"
+      },
+      {
+        "n": 511,
+        "frame_n": 0,
+        "category_id": "cat650001",
+        "category_name": "Refrescos"
+      },
+      {
+        "n": 662,
+        "frame_n": 662,
+        "category_id": "cat650002",
+        "category_name": "Aguas y Zumos"
+      }
+    ],
+    "store": "carrefour",
+    "cursor": "",
+    "job_key": "ce1-ce200-cbfc1170e20d0225d5a33e256707",
+    "row_count": 86,
+    "elapsed_ms": 174.497,
+    "captured_at": "2026-09-03T10:21:08.876154+00:00",
+    "project_ref": "gkffvigcnsesbaihycay",
+    "operation_hash": "cbfc1170e20d0225d5a33e25670794ddd3475e9d3cc3f6225795f58ea79e291a"
+  },
+  "transport_bytes": 11203
+}

@@ -1,0 +1,50 @@
+name: CE-1 isolated SQL (manual)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sql:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: local-ci-only
+          POSTGRES_DB: ce1_tests
+        ports: [5432:5432]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s
+          --health-timeout 5s --health-retries 5
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: local-ci-only
+      PGDATABASE: ce1_tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Install locked test-only client (no app dependency)
+        run: npm ci --ignore-scripts --prefix scripts/comparator-strict-tools
+      - name: Prepare isolated roles, never connect to Supabase
+        run: psql -X -v ON_ERROR_STOP=1 -c 'CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN; CREATE ROLE service_role NOLOGIN BYPASSRLS;'
+      - name: Apply only the CE-103 foundation
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20260903080621_comparator_strict_private_foundation.sql
+      - name: SQL assertions and role denials (rolled back)
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/tests/comparator-strict-foundation.sql
+      - name: Empty foundation rollback
+        run: psql -X -v ON_ERROR_STOP=1 -f supabase/ops/rollback-comparator-strict-foundation.sql
+      - name: Native PG17 transactions, concurrent sessions, cancellation and process crash
+        run: >-
+          node scripts/test-comparator-strict-postgres.mjs
+          --host=localhost --port=5432
+          --pg-module=./scripts/comparator-strict-tools/node_modules/pg/lib/index.js
+          --fixture-clock=true

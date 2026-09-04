@@ -1,0 +1,7002 @@
+[
+  {
+    "id": "3e3a410bda7039da822ea863f3be24c2016d9a0c835d26c22b27fbd01818038b",
+    "left": "carrefour:fprod1340033",
+    "right": "mercadona:21329",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "27604883e97379a327483991b8112417a21dc4f2c997f99dadb6f2f82ae2d3bb",
+    "left": "carrefour:fprod1340033",
+    "right": "plusfresc:015154",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b644b84b93f651ba3833a965a113452ef8d2a082e1054b6941ff0c694742918a",
+    "left": "carrefour:fprod1340033",
+    "right": "plusfresc:030758",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c551c36701e064f7ef8d1808a8601c2e0612012e1b35973622afe996e6630197",
+    "left": "carrefour:fprod1340033",
+    "right": "plusfresc:032117",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f0d0d257fdd2735342f821cbb9fbf91c624dc0326360a50d8d40c4714631c971",
+    "left": "carrefour:fprod1340033",
+    "right": "plusfresc:034564",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "874e8abab1404f5018ab4773f4898e41aed7f8b7c9194d3a2206a17f53260efa",
+    "left": "carrefour:fprod1340034",
+    "right": "consum:7371037",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "07c9708536a1b30a354bb40af5ca93005918e124dc63875fc5147fc541d3a18c",
+    "left": "carrefour:fprod1340034",
+    "right": "consum:7413990",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2d8af8cd0a3bf68caf61a2c7f1cace1d50072d19abcdce9443d4d56178ac7060",
+    "left": "carrefour:fprod1340034",
+    "right": "plusfresc:024113",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c67d0b8a709a5b3c21845297e055afce4edd45c78e5f587e71b886ce544f808a",
+    "left": "carrefour:fprod1350121",
+    "right": "consum:7199776",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c8b9cf6f75b6191e10a0475d42006f8d4a521c79247f655f273947a02a73b0b5",
+    "left": "carrefour:fprod1350121",
+    "right": "consum:7294692",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b1c724f2645acd95364c1ddb5300ce07d1b4fe18071affe8635b1bc1c8dd8542",
+    "left": "carrefour:fprod1350121",
+    "right": "consum:7443968",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "dc64b3fa21f31c50db6449e298b60427459a45a37c8094fc40b685d247a4684a",
+    "left": "carrefour:fprod1350121",
+    "right": "mercadona:20087",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3eeaea5debef97ace161c894bf6c0cfb1f48565d1a8b2e70d854223776a6186f",
+    "left": "carrefour:fprod1350121",
+    "right": "plusfresc:031883",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e5fb2285dc0161a0272ed65bc749fb1751680428c21789211e29a55fba5899ab",
+    "left": "carrefour:fprod1390238",
+    "right": "plusfresc:027336",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "conflicting",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "128caca6f36087d19c18e949622404ce7738261827768f99aa9803f630cc27d2",
+    "left": "carrefour:fprod1390238",
+    "right": "plusfresc:034090",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5b1b1c3806406690b8aa67415dfe3b4207c905a61ca25e8c16fefc605a83f3ab",
+    "left": "carrefour:fprod1390238",
+    "right": "plusfresc:034096",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8e180072f8e853c8686166f66267651a54c730b76ed01fed8b52b9672863efe6",
+    "left": "carrefour:fprod1410046",
+    "right": "mercadona:29406",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d8eee166b1565cadca49e77cec072c52d7231f7ff0281894bef2338b8e7e7404",
+    "left": "carrefour:fprod1420113",
+    "right": "plusfresc:019600",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4946c7f4435ed4e768fe4dcac1d9e6a633c63c81fc3405feff09a008e6c715e4",
+    "left": "carrefour:fprod1420139",
+    "right": "plusfresc:014543",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "cc15d53b50dc1d5c42487c20e0a1cf6531b141fca4590c63f4dc6f5feec812d7",
+    "left": "carrefour:fprod1420152",
+    "right": "mercadona:20512",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "26943ec43fe1431cc4ea663a76758ccee0419ae517e2f12a0de77c20d82329ee",
+    "left": "carrefour:fprod1420163",
+    "right": "plusfresc:037023",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "22a597534c8bb65a6a00966b497f0ce66f3c6918b901289fd11fabfcbeeee46a",
+    "left": "carrefour:fprod1420167",
+    "right": "consum:7147895",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7298926533c76fa1f977e82ed942ed4755d1e52e2e0a14dfa6a87f73a4038186",
+    "left": "carrefour:fprod1420167",
+    "right": "consum:7246320",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8e0c7abd84e8389b98f209999ed7e7aaef461cc1a561f20054be22bf4e29d319",
+    "left": "carrefour:fprod1420167",
+    "right": "consum:7302102",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0d4d83d519c8c1b723a2612f408402ad4c8e3a473d5006f4d3ca3b7564d4d46c",
+    "left": "carrefour:fprod1420167",
+    "right": "consum:7310563",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "875a708f35aa16424654ce265912c835fbbf23480c77b4e1432d95bb0a8f5548",
+    "left": "carrefour:fprod1420167",
+    "right": "mercadona:15631",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b80a9b06ce33d2950816ab1cba4de71bc2babf28d66a40fec69ecf7245335252",
+    "left": "carrefour:fprod1420167",
+    "right": "mercadona:27894",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "870087242dcd49dccdf83d9447ca012bbb63fc54344f7395d6d64f98a50a5a11",
+    "left": "carrefour:fprod1420167",
+    "right": "mercadona:28157",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "dabd3148d9c0d64b248184b244926dc75de9090c2fcbcd02815cfcd29278c7f9",
+    "left": "carrefour:fprod1420167",
+    "right": "mercadona:28523",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0d531a20f6c0e89fbdf55e542fccc2c5c3653729aab9a9ad0d8b6aa82d238363",
+    "left": "carrefour:fprod1420167",
+    "right": "plusfresc:007301",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8e5aeab7da63b82dea4ef6ec9c78766e5c082e02b451a22103a9a5df96de7a84",
+    "left": "carrefour:fprod1420248",
+    "right": "consum:311704",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a4d64fd0b630f69584d4c5d4beb5b9c833b7497e44022439ce29744542ab0a42",
+    "left": "carrefour:fprod1420248",
+    "right": "consum:7061877",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a10de541f7a14ce0c99ee2137a89c019270779fe4509c40806ea7e2b86e81d90",
+    "left": "carrefour:fprod1420248",
+    "right": "consum:7088599",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2ecf3192c6fa38ef6073686b0cf270216becc62b7c7ec0a985e6da7826ce9ffa",
+    "left": "carrefour:fprod1420248",
+    "right": "consum:7347842",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "734b51db05d909af4ec5d9caa7afac457baa9367de36d34eaf81375089db0949",
+    "left": "carrefour:fprod1420248",
+    "right": "mercadona:27213",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "59a5fd31cb4f60deb61817ee06b9336fb5a0dc010a54ca1fffd9dd189941229e",
+    "left": "carrefour:fprod1420248",
+    "right": "mercadona:86305",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "92d754c72720f722f6e623bafd6c14b901d60c0cdf6e77ab0346a616252f724b",
+    "left": "carrefour:fprod1430072",
+    "right": "plusfresc:025509",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9524547671013a0667e449e5937e57113d67505d563562643181f5a85ecd562a",
+    "left": "carrefour:fprod1430072",
+    "right": "plusfresc:036360",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "66442808a1bb07f4c28499045aa9d1dff3579e8cce8787a6dfdd1be45fe4742f",
+    "left": "carrefour:fprod1440004",
+    "right": "mercadona:27277",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "15840bda04109bfd2117149e478055807b826ab5d9190b35c63c08a1ec9334d7",
+    "left": "carrefour:fprod1460473",
+    "right": "plusfresc:024113",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bbd8c2237d80298a02d039ce40a3f254d8b5f9e87bfe751fed9601eb7f2ef096",
+    "left": "carrefour:fprod1460594",
+    "right": "mercadona:12981",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "960b3073bcca51db237dc68f1f009da80ac423fa706ea87696aa1bfbf64cc1c1",
+    "left": "carrefour:fprod1460594",
+    "right": "mercadona:27072",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6f89a42b9ad3754a5ba4c6839afa627f6fecabfce0363a2e08b3d093b2f4722b",
+    "left": "carrefour:fprod1460594",
+    "right": "mercadona:28106",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7c7b2cbf43069f6fd9f7aef17a7c8c61e7313b801877457e5fd8280e7444a8c3",
+    "left": "carrefour:fprod1460594",
+    "right": "mercadona:28296",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c686cc8a07eaf6ebda17d0d4d198f5177389948e858f5b61b6102016979c4040",
+    "left": "carrefour:fprod1460594",
+    "right": "plusfresc:020484",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a5559147e2f166b4716974588f2295ce21339e42b0887e8cf087e499fa49c8f1",
+    "left": "carrefour:fprod1460595",
+    "right": "consum:7315344",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a45ff924fb7289c8daf03cbda5cdebf57a4e3515c85757f04624065bdf01f84f",
+    "left": "carrefour:fprod1460595",
+    "right": "consum:7416394",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7855502cbb7a69044b23a162fa5cfe534a670eeaa441b4aa456ea55aebf40427",
+    "left": "carrefour:fprod1460595",
+    "right": "mercadona:27057",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4bf15817d93542a3c96b75105b5db9e20c927774d9534b5425556599c786b535",
+    "left": "carrefour:fprod1460595",
+    "right": "mercadona:27216",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f82d3fae87340cf43ff5df7829f946c4a269798561000ecb9c29b142fb2acc3c",
+    "left": "carrefour:fprod1460595",
+    "right": "mercadona:27884",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f237b2a436d6511a4c6aac140b50480f72cbdaab4a9a95b31c20255ed7884f2f",
+    "left": "carrefour:fprod1460595",
+    "right": "plusfresc:025363",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "92d9eb2c93bb3f2dad6ae8f19b8a17ffcaa9cd39427ae53a6fd469ffca3d7db7",
+    "left": "carrefour:fprod1460595",
+    "right": "plusfresc:035543",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "43225389320ddbdfeeb1f1d42f0e3b472ae1621f433e38cd7cfc7fc32e0dc2c6",
+    "left": "carrefour:fprod1460596",
+    "right": "mercadona:21390",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f49660bd23f65e7b8b333360d61648da9a4bd667a1a2e18dc8632225c10294c4",
+    "left": "carrefour:fprod1460596",
+    "right": "mercadona:26992",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2bd1a0145b744f7c794224cc76f3d3dd2f9a3a54bc1b1c0405d325a0632d2a54",
+    "left": "carrefour:fprod1460596",
+    "right": "mercadona:27277",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d696d426add1765e1e152b0d4699b9147cfab63ec78fab9201273eb95e7914b8",
+    "left": "carrefour:fprod1460596",
+    "right": "mercadona:28073",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "40b98593a183c21f9fc49ee5268f3acd0ee39ededb8abea8ff8ae7e1d3647583",
+    "left": "carrefour:fprod1460596",
+    "right": "mercadona:28089",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d4be0226d6cf0190dbb639e78f53379f68ac040d540f59a328eae4ac0cfa464f",
+    "left": "carrefour:fprod1460596",
+    "right": "mercadona:28142",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c075fda7461b3f6b5fcf196a885d50e8441de4338204773301fe0df45a162f12",
+    "left": "carrefour:fprod1460596",
+    "right": "mercadona:28567",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "570e3cdaf483a15430c07bc44c04bf4568f43c6f98ff7ffa7c32fbfe493ebdad",
+    "left": "carrefour:fprod1460610",
+    "right": "consum:2569879",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ec0eea4c6dd4b7b3dc7a53ca051cf1e72d85bef004b55c2e3b94b25b167f8255",
+    "left": "carrefour:fprod1460610",
+    "right": "consum:7369176",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ed43a1a32c4b26038fd119b95e79a0a4edfb35014c7865a38b2908e74d06f744",
+    "left": "carrefour:fprod1460610",
+    "right": "consum:7479541",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5ff063c464b0a60785be94f89aa68496ef258f8d882cdd0f2a30c4372a822b76",
+    "left": "carrefour:fprod1460610",
+    "right": "mercadona:27218",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "555db28922dea9eaa3ae894dca669a7f9f99417a4a1228c650be539cef40d611",
+    "left": "carrefour:fprod1490091",
+    "right": "consum:7294692",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "71779007c4af5e1d4d29d7ff7106db876ad89816973865c4b42f5b27e8a13e9e",
+    "left": "carrefour:fprod1490091",
+    "right": "plusfresc:032312",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "283720c7d859573efcc888452e256721724e0285bcd4740637287be844b6452a",
+    "left": "carrefour:prod1000084",
+    "right": "consum:7370419",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "fe030d2b2b746aa4e65fb3a276876490d424ddf593b0d027ed51649f55e4d58d",
+    "left": "carrefour:prod1000084",
+    "right": "plusfresc:019865",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "572e9d4ebec96f0dbb2f2b5c3c887dbd788f331f466f9bb86d8fe4f5049ed57d",
+    "left": "carrefour:prod1000801",
+    "right": "mercadona:28269",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d617086cb9d024e2caf924da82e4c86d00092bf415971fdb709495215fc03fd1",
+    "left": "carrefour:prod1000801",
+    "right": "mercadona:29281",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ca6dc5d6ae4ab48e11914be11884ccfcc4266dee18425526c616df23af448e24",
+    "left": "carrefour:prod1000801",
+    "right": "plusfresc:014934",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3bcedc10987edbedde56abf70e9716489176cac563ca5d26920a1e04e7748a41",
+    "left": "carrefour:prod100306",
+    "right": "mercadona:20382",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ce76bf9ff1454e538a0715bca4140e51a94eb00809e0fc2edf17ba2893d58aa6",
+    "left": "carrefour:prod100306",
+    "right": "mercadona:67977",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "cfdda826004aac15477e0aa2a0abb51b680a44a089ed05e773e321110b5fb862",
+    "left": "carrefour:prod100306",
+    "right": "plusfresc:021895",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8ee304585ccd77242f1af9011034379e04875f9ca66b274e7e0d4e6037d31949",
+    "left": "carrefour:prod1023612",
+    "right": "consum:7057706",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "985a4ae0334c548fe0666a1847f92742928bb8e82b3ff191c13f91f34d43c175",
+    "left": "carrefour:prod1023612",
+    "right": "consum:7255425",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d28101c725044712714872bcd90d7f1796318a7be73b338e488c49d2153fe036",
+    "left": "carrefour:prod1023612",
+    "right": "consum:7370419",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "59bb8313531dec24da75b66c38361551160b3cc7b935be1208327265acbb743f",
+    "left": "carrefour:prod1023612",
+    "right": "consum:7393366",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e47917aae3aa9bb846591be43326f8aacec28bfd7313c047667498849e32d683",
+    "left": "carrefour:prod1023612",
+    "right": "consum:7399462",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "15241ba39d41e4062f14966ed01e3891e06c038150f63eecc797915b52902a5a",
+    "left": "carrefour:prod1023612",
+    "right": "consum:7417413",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e6138b3890615f7b7e9095f9a77d3da3adbd2ed130f934a0e831cf678e59ad53",
+    "left": "carrefour:prod1023612",
+    "right": "consum:7431237",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7055aab9f0eeed401804b2234a4c8cbfc4a27744395b0abc266abbf96e7c979a",
+    "left": "carrefour:prod1023612",
+    "right": "consum:844837",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "30d5950f911875e91463ee3d5d3897955b15e78c93a2ff0f1224763284d679af",
+    "left": "carrefour:prod1023612",
+    "right": "mercadona:17581",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "1d8ef6b7046000a5d0c579a1183e6db2d5a69ea5e4b241350ce37802afd389a5",
+    "left": "carrefour:prod1023612",
+    "right": "mercadona:19904",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "cbf01afbaa3276f1380683d3cb6520031abcb85a043e72a3c0c935f4b16930b0",
+    "left": "carrefour:prod1023612",
+    "right": "mercadona:61405",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "27c12122f507101b3969b56811a6f4a4c7136b7358cc38de7fb68bad34b78085",
+    "left": "carrefour:prod1023612",
+    "right": "mercadona:61416",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a6b449941dd953fdc124a95ecf58662835bb532f189b89db76b4c4542ddaa14c",
+    "left": "carrefour:prod1023612",
+    "right": "mercadona:61421",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b5c5b67715389262c21a641ec2836ba843b8f9ea223eb6ba19835c91303f08a2",
+    "left": "carrefour:prod1023612",
+    "right": "mercadona:7879",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "eb64513f9ea6d55d1c928227c1f345a9b0f9b0c0819e4b610cf4b31be96d845a",
+    "left": "carrefour:prod1023612",
+    "right": "mercadona:8915",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "911b8e98e9962d93a90c587f1ac58ad1f24d77c2753f184f28d0f94dc48cec3f",
+    "left": "carrefour:prod1023612",
+    "right": "plusfresc:010985",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "874c9369274f515aa8d7e1084a7ec75e89346f08a117a694b5a4b40d9e75e16a",
+    "left": "carrefour:prod1023612",
+    "right": "plusfresc:019865",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4bd1744a850ed6f902c940de7ef0f71c477b59d932f9bce11b37c392f1d80c91",
+    "left": "carrefour:prod1023612",
+    "right": "plusfresc:023552",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e3bc9cc9ad4e33ad3ebb73cce733b4965919e99595a16043fbd1eabc8d76525f",
+    "left": "carrefour:prod1023612",
+    "right": "plusfresc:028522",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "009a6f11141ae866921a0ccd34cd3a7504ffefa8bad4cb4fe175ae16c771193c",
+    "left": "carrefour:prod1023612",
+    "right": "plusfresc:032787",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0df2f945453938916abf06c501f34f1255c8d63d5e98adf8019df5457648f010",
+    "left": "carrefour:prod1023612",
+    "right": "plusfresc:032788",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5891f034c3030b0ff388af315e256041b2607a51c1aaede691b367c6acb4809b",
+    "left": "carrefour:prod1023612",
+    "right": "plusfresc:032789",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b09396f5fa0cfe4b017c2c409aa2edeb6f98940975b4d0e099477ab2e1ae83c0",
+    "left": "carrefour:prod1023612",
+    "right": "plusfresc:037023",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d3a5fdc99abe989508ab71401a2a85e8e03c6aa0935ab1cbeb9731626c1ec020",
+    "left": "carrefour:prod1040198",
+    "right": "plusfresc:010650",
+    "cohort": "challenge",
+    "states": {
+      "scope": "incompatible",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "excluded_scope",
+    "editorial_id": null
+  },
+  {
+    "id": "7fb10b1d5f3ec1787dda5a415d0d2796b834a31d53cccb342e466f6ae79d9d40",
+    "left": "carrefour:prod1070551",
+    "right": "plusfresc:010985",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c61240a3c61d979cb7571d5efb596f1c87a6d927ae879828cadfdeda5009db9e",
+    "left": "carrefour:prod1070608",
+    "right": "mercadona:12980",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7123f5c2091a68562ca5d748e37949d4e03b01861034f84d1cbe76c88128a8ae",
+    "left": "carrefour:prod1070608",
+    "right": "mercadona:15760",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ed561ec6a56badb77b1bf38fd7230aa31a59631caaf9330901c007cf4b1203a9",
+    "left": "carrefour:prod1070608",
+    "right": "mercadona:15762",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b86ceef7959bf338b6b10ffaac29b01804ef2a8c5d689d982bb3ddf2a5657154",
+    "left": "carrefour:prod1070608",
+    "right": "mercadona:27283",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "59fc0f70df1bc4f92fd03a1f7526dfa3e264a138b85160d80e3558a22f436d56",
+    "left": "carrefour:prod1070608",
+    "right": "mercadona:27597",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ca6b202276449ab8d0b06402333657f485ba4fffbdcea733a2850deb07feac76",
+    "left": "carrefour:prod1070608",
+    "right": "mercadona:28522",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "594e17f7892e3ced8ef8d581d71e94cb72619e3fbb569445a484b6aab3b91cac",
+    "left": "carrefour:prod1070608",
+    "right": "mercadona:52630",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c55b0739560434f4d99212d36e2fc0fedd2f22394b972cedd60664c73e3b150e",
+    "left": "carrefour:prod1070608",
+    "right": "mercadona:7983",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ad24eebde08d94fd6bcbc9c4fa8517e7479cb0d299f12da8057c42e4ca04498e",
+    "left": "carrefour:prod1070608",
+    "right": "plusfresc:024819",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "94a8be2062a29a95e7a9d3ea36c5cff5df982abda68450acad18caf6f95917ed",
+    "left": "carrefour:prod1070638",
+    "right": "consum:7302875",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9038687c45981d22d71f4926625b99909d21e8b5f68a4451daa4bf2d85802298",
+    "left": "carrefour:prod1070638",
+    "right": "consum:7340784",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "232b90e926f478513f94d8aa08358bad3a04a2322322e3c3eead10594b8b37a9",
+    "left": "carrefour:prod1070638",
+    "right": "consum:7391030",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8b7955e2a5b234bef0f716d101e949251067dbf8788bb7334a8f3399cbff426b",
+    "left": "carrefour:prod1070638",
+    "right": "mercadona:20033",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "25b48cc895c4de68839359b08a0f3072ef6379208a62a2a739fa7e994f3fb694",
+    "left": "carrefour:prod1070638",
+    "right": "mercadona:20395",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5af85c540578c2af0cb7e37a3e6e773d0fbc26f99c9ebdf48a04c3482e56dfc9",
+    "left": "carrefour:prod1070638",
+    "right": "mercadona:20559",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0df07a4d01c6c96f1e7cc463ba1a11bf18b1b8509f93833c396d846c96d04a19",
+    "left": "carrefour:prod1070638",
+    "right": "mercadona:52441",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "adcd54f0a521a456814a09c2299d0edec60a259d4acd458bae8fc6e46fa33977",
+    "left": "carrefour:prod1070638",
+    "right": "plusfresc:014400",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f56fc7899e3ba64a68f8c716a00d533f7b773cf3eeed185d32bbc94c94ed58c6",
+    "left": "carrefour:prod1070638",
+    "right": "plusfresc:014523",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "160fd8358388f2d1c0b5b3ea04029433b6fcff4ae9ea0f8a22f39fdf31b38147",
+    "left": "carrefour:prod1070638",
+    "right": "plusfresc:021597",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c03e82181ee83f3a8a9d694599143f3efc660d8e144de6b3cb039126711665f4",
+    "left": "carrefour:prod1070638",
+    "right": "plusfresc:034084",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c851695a9839cca80ade9543ba9fee2dc7ca4f26ef3bb92db6f496895349c33d",
+    "left": "carrefour:prod1070638",
+    "right": "plusfresc:036225",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c40504cfcca7f8f265bc86b58a555ceb1e9e83ada090772276c4df445433ffc4",
+    "left": "carrefour:prod1090094",
+    "right": "plusfresc:010985",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f6ef46d54d2861d04376461e783d9895c5fec378994c32de9d4ee7ad278277a9",
+    "left": "carrefour:prod1120480",
+    "right": "plusfresc:025509",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3efd69c3e4c72673ee21221442414c8f1ba390eaf236b0cd1b29c2ad1932ba33",
+    "left": "carrefour:prod1120591",
+    "right": "consum:7312015",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "81fc8899c40fd3f4b440337fed59a6b6ab10ff5a276a9a76af4ce26199a5c035",
+    "left": "carrefour:prod1120591",
+    "right": "mercadona:20355",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c38f91945d2e1e2046e8173b7d4da6648402bc73ae2c6a3764b42a53b2449e7e",
+    "left": "carrefour:prod1120591",
+    "right": "mercadona:21329",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2f4f6fedec190ae14b57156e8be3c529d19b870a83ceb70e8cfd05f349c28895",
+    "left": "carrefour:prod1120591",
+    "right": "mercadona:23476",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c91447bd88a943c4299804db7311f0d4c85528aba86ac60bc544b1f6d9d77fa5",
+    "left": "carrefour:prod1120635",
+    "right": "consum:7213742",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f4fba5c1e245f5ffcbb9003e60e574a202a56814a23c57b71061c7930ed29b99",
+    "left": "carrefour:prod1120635",
+    "right": "consum:7294382",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "03edf6592576c61713452b57d965ea393de713dba89920e441251220fe28a349",
+    "left": "carrefour:prod1120635",
+    "right": "consum:7303527",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e7b7982e9eb4a358a678d68513cc006c6289c089d0fa88a430378d30a57fb579",
+    "left": "carrefour:prod1120635",
+    "right": "consum:7473754",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "38dcfa53b3abcaefc0542bd63e9ceb7d349fe3d8fa0ee9ff91358acad85a8eec",
+    "left": "carrefour:prod1120635",
+    "right": "consum:7477003",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "340ba8f7aead91df960c2707631b366deb3fb2089f1e59e1a1727229905fae70",
+    "left": "carrefour:prod1120635",
+    "right": "plusfresc:014523",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6b2cb4de3244234f5f944a87b0074802b40c567ade34e92495e8d106c4423511",
+    "left": "carrefour:prod1120635",
+    "right": "plusfresc:019660",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e8aa3fa3476466d0a2fdeac4ae4d26a9f443b713289833a8ef3096dc6221a28d",
+    "left": "carrefour:prod1120635",
+    "right": "plusfresc:019884",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "02dfbe0a11863920d2780d6d6ee453b6ca6346f2ff1d65f603bc33ed66131aa8",
+    "left": "carrefour:prod1120635",
+    "right": "plusfresc:025509",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "95a34defd5cafc97d8b52e61df38c9fc607487bfb104bd852bd6e62e1fb31735",
+    "left": "carrefour:prod1120635",
+    "right": "plusfresc:034279",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "dd9362c944d5dca1f74a74d7ea86ac6aa9425fd51174045979056dcfe4a75d8e",
+    "left": "carrefour:prod1120656",
+    "right": "consum:7169993",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2951e8a923850d13db568e27067094aa640f466558ddabd8a70b5f77b2fb112f",
+    "left": "carrefour:prod1120656",
+    "right": "consum:7411866",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7efb2511d8e93296e1f7d5ffe5e52f8c763680a34344deb1e5d86539144031b1",
+    "left": "carrefour:prod1120656",
+    "right": "mercadona:18287",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "92c3f13d959dc7f76b3882e512db545fb031cd993e89c63de94ed46f584af164",
+    "left": "carrefour:prod1120656",
+    "right": "mercadona:27242",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d08eb71cdba45ac8823b8199d4512c57f8427e8abc03c3695a9fd286a64a9eec",
+    "left": "carrefour:prod1120656",
+    "right": "mercadona:27284",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "558f380a2e3485d6c42521aa8006138278f5fe8b4d31ac66e524b6eddd9133dd",
+    "left": "carrefour:prod1120656",
+    "right": "mercadona:27514",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2778c20fab40288c42cddd6966cb0670e6a1934e38ed64827c1faa48eb356cbb",
+    "left": "carrefour:prod1120656",
+    "right": "mercadona:28491",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c49790794963c0d7b7d4ecda20bb2b05ea0ec9973ace65fdebf3583f324c60c5",
+    "left": "carrefour:prod1120656",
+    "right": "plusfresc:035615",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0c4363bfdba66661b631ef70b3215a54a516f42a7956140beabda90f1e647a0b",
+    "left": "carrefour:prod1130427",
+    "right": "consum:7458235",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d0f88ed9d9f02129a0d208a5b6967e03ae8d9a55ec6f2887c95068a960677a9e",
+    "left": "carrefour:prod1130427",
+    "right": "plusfresc:012743",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b2c3758aaaea5db27bcc5239c240a9ec559e85eaafd9f3b2618b307696f4cecf",
+    "left": "carrefour:prod1130516",
+    "right": "consum:7302102",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4474a583164ab8f554e2298011aa4640ffb37db9fe35832028095de75a8e17b2",
+    "left": "carrefour:prod1130516",
+    "right": "plusfresc:010650",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "179efcb358163a4380e19b690cadd01fa4d64e209ed0acb5510bae5c7925a86e",
+    "left": "carrefour:prod1161111",
+    "right": "consum:7057706",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f4a00a55ea90885781e4ca56ae3d093887a00e0de6d0618bf6035dd846b011a7",
+    "left": "carrefour:prod1161111",
+    "right": "consum:7255425",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "045bcb8681e77409df6f1bec8f8bd9328d2e4d82caea175b10805d297de9bff2",
+    "left": "carrefour:prod1161111",
+    "right": "consum:7370419",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6ba41d9106935387af9a37bbe04eb5a10dc602e359f2e73f246cc8ea8145fe8a",
+    "left": "carrefour:prod1161111",
+    "right": "consum:7393366",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8d37178df93d5e9b6c60eec7141a0ab092078f1bebe9a801ef267bd58aac9cda",
+    "left": "carrefour:prod1161111",
+    "right": "consum:7417413",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "586f078cd319627b4997526d19db404b2c3138b1b10ccc111d30ff5b2361615b",
+    "left": "carrefour:prod1161111",
+    "right": "consum:7431237",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "95b4a59037f8aca8c9c61c427ddf325a1c0cf7a69d93cb014f2524bb50e7922f",
+    "left": "carrefour:prod1161111",
+    "right": "consum:844837",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e61a94bcf80bda05a576b9b00a46c3176d7867b490c75f7348647933846667af",
+    "left": "carrefour:prod1161111",
+    "right": "mercadona:17581",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "48df8fb2e24915e754cdc734abcfd523e076f35e31b2d97a46a0f87d6e835951",
+    "left": "carrefour:prod1161111",
+    "right": "mercadona:19904",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e724acb506f2d717a92529aec5e2f32d7231144d31328ea60a399ada0944cadd",
+    "left": "carrefour:prod1161111",
+    "right": "mercadona:61405",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ec98055f18d409657b0023b32fdda1cb7ca9115f25fe75c60c6b933b5bfb5000",
+    "left": "carrefour:prod1161111",
+    "right": "mercadona:61416",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "64386b1a21957616a43d4bc0f4c001adda30ec6a2f7d52d75550344a2ac33270",
+    "left": "carrefour:prod1161111",
+    "right": "mercadona:61421",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4283a6e1739a06d139f656e993a569552cbec0a6de046656bbea3aea20d2434f",
+    "left": "carrefour:prod1161111",
+    "right": "mercadona:7879",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0e18ffe1655c6bfe016e1d2ccf1329a693ff9c482db454fcc9a3af0f61b1f1f2",
+    "left": "carrefour:prod1161111",
+    "right": "plusfresc:008505",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6f96cd284d00d7227dc81a08607e2b9686ec7b0478760a98adc63769b25ce5ea",
+    "left": "carrefour:prod1161111",
+    "right": "plusfresc:010985",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a2c328c13561fb3b4bd78dd15270a9cb87418fd0c260f77c718eb5f0e14a02e5",
+    "left": "carrefour:prod1161111",
+    "right": "plusfresc:019865",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "251e9e9248c0f795cb6f6ade37b1ffa671db4d9caaff79d635f98b27e2e5043a",
+    "left": "carrefour:prod1161111",
+    "right": "plusfresc:023552",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4c51ab87963a47b9f4d372ed713ecd6d5f0d5f8b29d6ed2da066d9b2317de9cc",
+    "left": "carrefour:prod1161111",
+    "right": "plusfresc:028522",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e9221f2eddd8109435f21349dec6b1359b89355eba46ae5641ec82563d48cd4e",
+    "left": "carrefour:prod1161111",
+    "right": "plusfresc:032787",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e60aed54d9d68ac81bb5ab6160faa98aeb192c28acb25af5f71d014b00aebd26",
+    "left": "carrefour:prod1161111",
+    "right": "plusfresc:032788",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6baec1ac19ce907380de2587331d9b9cb616012ba9f437753f557f2f9d37f6fd",
+    "left": "carrefour:prod1161111",
+    "right": "plusfresc:032789",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8be3afa128e5754e3333e260d0c647519ff4adc0ecc99647ddaa5184c9a3ceb0",
+    "left": "carrefour:prod1161111",
+    "right": "plusfresc:037023",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "241cc091e7bd55e2899a1c44d535f647356b8e0b66016edf7d7989579ddbe019",
+    "left": "carrefour:prod130189",
+    "right": "mercadona:15759",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "53216abc03d43ff2e5389d07f7a1aedff427aa9b911afd8e730686f967fa5f4f",
+    "left": "carrefour:prod130189",
+    "right": "mercadona:27088",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "096001d61cee76097e089b7db6ff35a42884b178fcfbc6fc8482a501af4f008f",
+    "left": "carrefour:prod130189",
+    "right": "mercadona:27155",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e91db52c3774ea70beb6989afe93e60e5764dd1df66e83ed7380e3baa242b3f6",
+    "left": "carrefour:prod130189",
+    "right": "mercadona:27292",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "11cb8ce23abca8773415be6a4a8b29c93cc4e3d85154f76a2eb22b47998ff85d",
+    "left": "carrefour:prod130189",
+    "right": "plusfresc:018066",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8277c9f87ab5810b8d403de96b2de391e7e67a6ed9a5558aa44fd418b70ac988",
+    "left": "carrefour:prod130333",
+    "right": "mercadona:21388",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "970bf684a95dfaa328b5d8440ca876619d7021aff90b3f9c90f4b23d7f2ab0e2",
+    "left": "carrefour:prod130333",
+    "right": "mercadona:27088",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "19bb0cdcb7d98bb222660b47866ead5840d5cada4ebe2a875404417c6bc82f69",
+    "left": "carrefour:prod130333",
+    "right": "mercadona:27130",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "fdc5869132f4fe80a3998def7fad5622502ed676e5c20f96e938140f0efe47d6",
+    "left": "carrefour:prod130333",
+    "right": "mercadona:27261",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "56342c4d0c3b4b98e7e0fe196d2211a8d66ef475248cd395d66278e816be6f9f",
+    "left": "carrefour:prod130333",
+    "right": "mercadona:28091",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bca765f3aea87e3401f9b5c17173a05653d46f68bca60d94511be0167592f92f",
+    "left": "carrefour:prod130333",
+    "right": "mercadona:28092",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4a5ccafa7f566b04940f26d8990541da6add85e1b74e3eb08ae36279ebb639ca",
+    "left": "carrefour:prod130333",
+    "right": "mercadona:28471",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4d60c906895e879e31b07ccdd77dc08d4408e01ace615321ae9d6b6f9fd9ac43",
+    "left": "carrefour:prod130333",
+    "right": "plusfresc:035615",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6ae7d942c5c6c162f654bbe6751a1824bd59c06d2d47206bdeb3745d0272b9ad",
+    "left": "carrefour:prod170182",
+    "right": "mercadona:27057",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "838102343585a3644b6e5ce66c51e13d717ee02bb120ef12b7e21f2543dbc286",
+    "left": "carrefour:prod170182",
+    "right": "mercadona:28185",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f10ec0e678875601d9515b7330a44e9a2913e75fd6ca6bfe3435550136c96729",
+    "left": "carrefour:prod170182",
+    "right": "plusfresc:024819",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e2a982d6f352a9427a72f65f843c072e380ae2724e28c828109a749cb016fe09",
+    "left": "carrefour:prod170196",
+    "right": "consum:7329121",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f60022d99341a3c759dd8bb2aa07825e3ad4cdbafe00476175be88e42dbf83ee",
+    "left": "carrefour:prod170196",
+    "right": "consum:7433662",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7459911c92ff6899a2de73c023d2cb78598bf2b6b1139fc1e5106e47dcbaa4c7",
+    "left": "carrefour:prod170196",
+    "right": "mercadona:21387",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "406e2b3e39aa17370d01ada558270a49399bd6f28ba3f75d69c6f7df0163ef8a",
+    "left": "carrefour:prod170196",
+    "right": "mercadona:23998",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2018f6f9370900758eea798a5e2066893d524452ee8f595551bfe1ea90b80982",
+    "left": "carrefour:prod170196",
+    "right": "mercadona:27369",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6577e485ae1eb9e4a89710e703f49d6c309e806973336b9795a38b4ccf482b07",
+    "left": "carrefour:prod170196",
+    "right": "mercadona:28572",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d94abb314c6488543ef857e901a357441ee50b554c2d1e8fdf9af48685495f6d",
+    "left": "carrefour:prod170196",
+    "right": "plusfresc:026359",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c4ef1d9109b8351e8612f2e115fffa00c88be3fc3bc07c26dc2276a9098ca9f0",
+    "left": "carrefour:prod180073",
+    "right": "consum:7380223",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ab8edf88f2753b50f79d1ea19fd2723a7bf51d7eeb828dc131a27bc778e8dec2",
+    "left": "carrefour:prod180073",
+    "right": "consum:7411866",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "37239e9ce07964c9517987c41041d75938a98050d41d02338f04efaf38c7c783",
+    "left": "carrefour:prod180073",
+    "right": "consum:7416394",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "dc48869b573883f7848317f812d0c1b5022550119f72f65398b3a3c89295de21",
+    "left": "carrefour:prod180073",
+    "right": "mercadona:15758",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e7f2622f7db32a06ed4b879aca850cde56d725da01070cd69e39d146515fb74a",
+    "left": "carrefour:prod180073",
+    "right": "mercadona:26993",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a52e584a33f9e423f3b37f5bf603ac37f6c9bb5a8367e906dff12745869a9a90",
+    "left": "carrefour:prod180073",
+    "right": "mercadona:27130",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4acc52a17199f113eafc314281845c02c6c7e5b7bd76c234aaa9f996b56260a4",
+    "left": "carrefour:prod180073",
+    "right": "mercadona:27277",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5cfb0e73958dd1047bd0d525181fdc823f5c00925fdb75a67a538d3ef2c06ffd",
+    "left": "carrefour:prod180073",
+    "right": "mercadona:27368",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "80068324c2bb6b5794b6dc8d384aa24eb876e5896547a131d08e690812ecfb85",
+    "left": "carrefour:prod180073",
+    "right": "mercadona:28464",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "af30f3abe3b4ce9a0bb1dfa707c4d9f330ab6cc8596dc458fdf22aa63b4c9c88",
+    "left": "carrefour:prod180073",
+    "right": "mercadona:7981",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "db241756419f20457b40ced0e980787bc212efa9fa729495252c942fc3bdce9c",
+    "left": "carrefour:prod180073",
+    "right": "plusfresc:021864",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2cfc8fd761290936b873811204f0bc689667b60f48f0ababb996e1b71343246d",
+    "left": "carrefour:prod180220",
+    "right": "consum:7340888",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4ac37073bb103d0365df488cb43b1a9cf5f59ab9a13ffaa873bb5cb5736af493",
+    "left": "carrefour:prod180220",
+    "right": "plusfresc:005605",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a7bf4a404d07b0c49e60f1e1e88bbd302f5680d9ee70c957ca4ea5e08b6a4fc2",
+    "left": "carrefour:prod180220",
+    "right": "plusfresc:019661",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c25d11c315c527ac99c50969fb142e59accb7a119a671070994f8f88fbbd1634",
+    "left": "carrefour:prod180220",
+    "right": "plusfresc:028276",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d5c096a2b14aa4e9912917bf7cc0744fed169151e101f3578ed52dc4a4403d09",
+    "left": "carrefour:prod180337",
+    "right": "consum:7290526",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b072ab5fe342233e02db0ed9dafef8392956de51ac67f167686316537ac53b40",
+    "left": "carrefour:prod180337",
+    "right": "consum:7477466",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a6a962593bec66695eaaa8c87ce02ad5772c49d23eee4bf735be6ecdf8cde761",
+    "left": "carrefour:prod180337",
+    "right": "mercadona:19944",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b4a262830e14efa4e041a80c30728506735868d2328df65de028cc735f407430",
+    "left": "carrefour:prod180337",
+    "right": "mercadona:28523",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9ca7f115dc2aa28c3c60e9e291bfb8e86973bc8e0feab52bd3c05cbe0de27d14",
+    "left": "carrefour:prod180400",
+    "right": "mercadona:67977",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0fb010ee343b31e351194e7763865712a551ab6f7d7accac88eb3fce06cf046f",
+    "left": "carrefour:prod180400",
+    "right": "plusfresc:028276",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0d4f33706fa29fecfa96d5f82cab66c2319c3d253f5e4044bd648d9faf725e3b",
+    "left": "carrefour:prod180400",
+    "right": "plusfresc:032996",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ff61544963abe6b1e58245d7f1dc0d32f3af0f54cb842a1da59de312c4f9154d",
+    "left": "carrefour:prod180401",
+    "right": "consum:7302875",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8105da3949cc9c024039ebd72b467bbbfbda476ccdb993c9a4b86e849b41ba03",
+    "left": "carrefour:prod180401",
+    "right": "consum:7414006",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "13922262ff1d895362db86b57f5a274d843a4c637115eae3114fdd28493c27c4",
+    "left": "carrefour:prod180401",
+    "right": "plusfresc:008002",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6712a6560475a33e0f5594c7e30749ee9ec77be2b5423c42c4be7fa47a07d03d",
+    "left": "carrefour:prod180401",
+    "right": "plusfresc:021966",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5ff243c6a2eea1f2aa7a6d41ad4db84b72fd591c642e7f7aa8f8ff4904d8f8a4",
+    "left": "carrefour:prod180401",
+    "right": "plusfresc:034561",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2d4b903d174adb8bb0ec600a4f20612e0149007f9efaa2e1af4f4107092f56f9",
+    "left": "carrefour:prod180401",
+    "right": "plusfresc:034563",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "be5e35c72b3da8fe677caf25de970d455c20a5c4ab124ba17be702a7b3d48e0c",
+    "left": "carrefour:prod180412",
+    "right": "consum:7340792",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d89bd8eda896380c105db8c307a87ddb7b5bb339bab8358c1f75d08df47fc4f8",
+    "left": "carrefour:prod180412",
+    "right": "plusfresc:012251",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0c79bdb42da5e940e0ae6192702df4b903919b3c2291525bed8d4511beef9415",
+    "left": "carrefour:prod180412",
+    "right": "plusfresc:019661",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "fa1423cad67603861403306541de44d62f04e497a57e4491089e55dbbfc1f4b8",
+    "left": "carrefour:prod190440",
+    "right": "plusfresc:032788",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5e2697ed730f1fd477edb8abc3624547040e2778a6254543fc67521aa6312686",
+    "left": "carrefour:prod200105",
+    "right": "consum:311704",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4188e53c8935851cc15aebb9a00c2b543e03dbd23249dbaa8dbc26800ade0c1d",
+    "left": "carrefour:prod200105",
+    "right": "mercadona:27216",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a31780b5f18e75c314c40f00f8c90766625b9db4a3c4b00d0d0188c986f3de6f",
+    "left": "carrefour:prod200105",
+    "right": "mercadona:27258",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "dee85c5ec1f8c88c5f42c986b432a450173a4449b6ee1e4bb37af97b731c4f70",
+    "left": "carrefour:prod200105",
+    "right": "mercadona:27291",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e45794287cf0beb80320d18fea7dd6791d3428893445a6794b0e6f7931ded73f",
+    "left": "carrefour:prod200105",
+    "right": "mercadona:28468",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "23dd0c5c40920d449fba964d4568aaefbe92f836f55762086b1c252c1daddc34",
+    "left": "carrefour:prod200105",
+    "right": "mercadona:60832",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "77aed1bb0bcb35d0691f3ae766ad43261f0c905a3ece53bbda11d97bccc1adba",
+    "left": "carrefour:prod200105",
+    "right": "mercadona:86243",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "899e5fce9c37e821a47c695b8f2ecf1f8ddcc330a548eae5bd0db4bf126350f2",
+    "left": "carrefour:prod200105",
+    "right": "plusfresc:012881",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8cd44da9c2a8afee2141e9e0a928552e7d8294a4e66914767707e47c1097d021",
+    "left": "carrefour:prod200105",
+    "right": "plusfresc:018854",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "aa8ec9a32d693c60aa67b6eef9a44b2da5a4554c02598d8694aee23e638667c7",
+    "left": "carrefour:prod200105",
+    "right": "plusfresc:024087",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b7c63ace6bce426daf5093bccaacdc3e80dab11652fd61d8d97469daad4f01e3",
+    "left": "carrefour:prod200105",
+    "right": "plusfresc:036849",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bc673b68cce58e797cd2bc07bdd92912822a4ef90021d89840838f6a930dedb7",
+    "left": "carrefour:prod200150",
+    "right": "mercadona:23999",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b37bf539604b880cf3f857279e1bddd4adbeabe6f99b3e68e0272af4ab189771",
+    "left": "carrefour:prod200150",
+    "right": "mercadona:27207",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0766b86caa5a9e03a511170d30ee03d1914175cdc5451cfb429c590d28979a13",
+    "left": "carrefour:prod200150",
+    "right": "mercadona:27350",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2b6cb25a79483979bacb0a36858e37d49fc54067d32c6882e5d74c3b55e33492",
+    "left": "carrefour:prod200150",
+    "right": "mercadona:86305",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c727b4cb85417bfb9336fa1bbb649d391d1b5ac4e3ae8d255914ecd791f53836",
+    "left": "carrefour:prod200150",
+    "right": "plusfresc:019507",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0ff4dde05863ac4c0240b22fb136648613d760b1a2be2b1f771341340dccd00b",
+    "left": "carrefour:prod200151",
+    "right": "consum:7188139",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "25c6dc86307f76b8e95df81f650daa4d09776344a2f8de6de4ae56e698e2ab67",
+    "left": "carrefour:prod200151",
+    "right": "consum:7412955",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c060a6a9bcfb41ae0b33d2b037ddbfbd7ffb41de6ce4d26dac7d72711aae9f52",
+    "left": "carrefour:prod200151",
+    "right": "plusfresc:026359",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bfe4e47f6e2dff35512b9bbfba2ff34cee2f6bb92be5f2896e967c78aa471c0a",
+    "left": "carrefour:prod211265",
+    "right": "plusfresc:025087",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4484eac75e326e235e3dcb2f5e865b8a9ebd1d248022a1e9002241986785bd96",
+    "left": "carrefour:prod221308",
+    "right": "plusfresc:031469",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "fe26dc641cfc6d015add5ec12f7bf161d9d5b27fd634d5b03ca734ec3dd759df",
+    "left": "carrefour:prod224981",
+    "right": "mercadona:16347",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d284188d859edd0ffe4a28c7b919d1807a8fda26f9043b48f975d8474add073e",
+    "left": "carrefour:prod224981",
+    "right": "mercadona:18286",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e51e7ef3cafafa3504ec8492563710362ce4949a7f7581fbf382c802d7c981e8",
+    "left": "carrefour:prod224981",
+    "right": "mercadona:27061",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "fe3e9acdd903e38e51cd294c39d801d44b1efb1e460288b0b85c77db46c0c30f",
+    "left": "carrefour:prod224981",
+    "right": "mercadona:27883",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "cf4a688de5766e31398bfe0b72026c62e1e5b4fb800239d1c65d04eb6e358833",
+    "left": "carrefour:prod224981",
+    "right": "mercadona:27884",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a71e189662d35f49214e127348bcd60e5303ac8afe21df4c0507ea4381b3f38f",
+    "left": "carrefour:prod224981",
+    "right": "plusfresc:007307",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "conflicting"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "994a61f0325d8440d54cb6afb76e071e2d859b4dde326801ed537e6091b14e91",
+    "left": "carrefour:prod224981",
+    "right": "plusfresc:020484",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "db7ec27808741cb2b77101ffa1700ef726300d666403d2d3583f3f8a839bd4ef",
+    "left": "carrefour:prod224981",
+    "right": "plusfresc:035524",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "1e70186ac1f9a3b6efbde0c8d161acaeaf28349931c938f5209d78bdaa720572",
+    "left": "carrefour:prod231324",
+    "right": "consum:2808418",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4a42a627d32b8ff3e7f060e780a91266299117b120b4fb9311ecc6b0c9b6f85e",
+    "left": "carrefour:prod231324",
+    "right": "consum:7190499",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ee76b7417db8fe4c3c0150a53e3ce77a51156d91a1626d71b9ad61fc4069f9f3",
+    "left": "carrefour:prod231324",
+    "right": "consum:7379030",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ec753e60b8629b7bc0b40c081bfc21a4f549573f3b94d63b02e5143ea503693b",
+    "left": "carrefour:prod231324",
+    "right": "mercadona:19944",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f8bca5d58961f201d7b8dc9a73b6d70dd9763e24a5c474ba8eafa516b08e748a",
+    "left": "carrefour:prod231324",
+    "right": "plusfresc:024955",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f1a2fbbbe1d64b38a9d49f4fb303c88acc8ec8add213ecf0581a0086e219fef3",
+    "left": "carrefour:prod231331",
+    "right": "consum:7227676",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3344a2cfbd68349435b2f7a2f21509cddc0287949e40222457b173959ec2bf08",
+    "left": "carrefour:prod231331",
+    "right": "consum:7452600",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "fe5d5f5ddebdfe6a4182ef87f659dffa1753af233b50f3eb815207be25864e83",
+    "left": "carrefour:prod231331",
+    "right": "mercadona:15631",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "173ef49d593cff19baaefeb85e531c8639193236cc81fca938080cb48a26b0a2",
+    "left": "carrefour:prod231331",
+    "right": "mercadona:21390",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8b391919ff7b362947d347c9a5a5e217d85105a6133d1ab6c1e0c592a5cc8dae",
+    "left": "carrefour:prod231331",
+    "right": "mercadona:27268",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "015a5aee08fc404aa5e11e80e197a57c74bd044f7b5860de8bbdd5054cc813bf",
+    "left": "carrefour:prod231331",
+    "right": "mercadona:28035",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0819b27626da4d1b38e995ac1494c1e6d96fce197fb7d7e98c2e1065c16d8695",
+    "left": "carrefour:prod231331",
+    "right": "mercadona:28523",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4d56258a1f5c7903c33cd4e6553f75d5cdeb159ef9a1944db19da217747c6cf9",
+    "left": "carrefour:prod231331",
+    "right": "plusfresc:023212",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "131fcba7c6a9b34db781e2e993ddef4c3aa5bd5d4456dd6e2a1e8f71f18c9616",
+    "left": "carrefour:prod231331",
+    "right": "plusfresc:030025",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8b27e2d7d7b7aabf78bd399d44bfce2e89959d9a161724e8f3e41ce72abb7d92",
+    "left": "carrefour:prod231331",
+    "right": "plusfresc:032575",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d49607e39eded3310abef4a133cec6c436fae6bae9bf48803d1e273977180a4c",
+    "left": "carrefour:prod250231",
+    "right": "plusfresc:032787",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "273afe9080d0378dfa884a7485626e9ea4e04bdeaeea8cba8ec164538a36bf8e",
+    "left": "carrefour:prod260701",
+    "right": "mercadona:28185",
+    "cohort": "challenge",
+    "states": {
+      "scope": "incompatible",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "excluded_scope",
+    "editorial_id": null
+  },
+  {
+    "id": "b3517137513497d620bd809773b8c35236a9ffb71467fe2ab4bad14cdef163be",
+    "left": "carrefour:prod261978",
+    "right": "consum:7148203",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "b39fecfa8e55ebdb5fe84df0c3da185d284083c65086d9504eaef133c79f63bc",
+    "left": "carrefour:prod270015",
+    "right": "plusfresc:012881",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9fd8c06b0d9283ebc79c08191fa23db4a1f0cfe599159789c87c3bbae5a9576f",
+    "left": "carrefour:prod270092",
+    "right": "consum:7061869",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c8ed1fddadc7b1c95fba68e0f2a4a02b0341b66a6a584aa483e065d5825444e0",
+    "left": "carrefour:prod270092",
+    "right": "consum:7090814",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "78ac6c0f4b0495cb9f9ec251c0cac0bf3d20ee39f0dd6982e1a6d0f76a232ee2",
+    "left": "carrefour:prod270092",
+    "right": "consum:7331965",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d5b9f6a10df654cc82e53a2dc409c6a73159ec3683daaeb637a75c9c5c840cfc",
+    "left": "carrefour:prod270092",
+    "right": "mercadona:27022",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e4ac0e3c0e8fe539cf97a15ed1f13a7e27a75545b50c837ceb0e949dc2a2d3f8",
+    "left": "carrefour:prod270092",
+    "right": "mercadona:27205",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c767224f0d99fda67bb132ed5e018895b3b13c1dc30996d5fb5b8bc058dc81f8",
+    "left": "carrefour:prod270092",
+    "right": "mercadona:27213",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0db591b60b6c255846f650660ca543a47b5c9afa948a062e4fa04b890493602b",
+    "left": "carrefour:prod270168",
+    "right": "consum:2569879",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6251f499bad832bda7cea5d2346c039048aa433c2dc70da121defd1d0cec88ed",
+    "left": "carrefour:prod270168",
+    "right": "consum:7075299",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5e458262dcc9e379213d4bf22ba47cf72fd19ece2b825fabed1c7620005a2b0b",
+    "left": "carrefour:prod270168",
+    "right": "consum:7308554",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6516490a96244308f9f1b699ab890f5f1eaa99cb227a291fad5c66a0791db728",
+    "left": "carrefour:prod270168",
+    "right": "consum:7369176",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "43141e3a81b591b8c0e12503a054a465f58f0662c01d93f8b81a062aee6ed13d",
+    "left": "carrefour:prod270168",
+    "right": "mercadona:27292",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6d35d2581b9a428a0ccd42aa691e70674ccbe4adf203419d04edac9783480df0",
+    "left": "carrefour:prod270168",
+    "right": "mercadona:28566",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "14164f11b31a566d836c839880cd830c8d69b123907019cb3405a82d445e90e1",
+    "left": "carrefour:prod270168",
+    "right": "plusfresc:016284",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2ed99d4a6a428a0025627f0b4dd7da3d2878c4aba845a97520d971a00533ed59",
+    "left": "carrefour:prod280047",
+    "right": "mercadona:28464",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "80487ede2003c6e9c2f26e56174bc7bf4ffda8d97b56a81ec5c0acc1845c083d",
+    "left": "carrefour:prod300427",
+    "right": "mercadona:20286",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "1f9be44e37bfa447dc8778ace057c062015e710dc16e53d53a9029501be66de7",
+    "left": "carrefour:prod300427",
+    "right": "plusfresc:027119",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "fd6b0f74a4f1810b618ea9fb21f286b7a9db6fa56727ef216582684229b1d8c1",
+    "left": "carrefour:prod300427",
+    "right": "plusfresc:028948",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "192fc628f760d4fee4fb27755f634cc9bed8d3ed83122828f07704024ef24d2b",
+    "left": "carrefour:prod300427",
+    "right": "plusfresc:031469",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ce6c5f8fcb0451d5667febc0ba24a0c5b76a2ac53392e851b3e2356314e4960c",
+    "left": "carrefour:prod300427",
+    "right": "plusfresc:036360",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0896260ec27fc18891b18621e94619f38c15f345aa2e9d1ae1b45c4d6ee5a71f",
+    "left": "carrefour:prod301071",
+    "right": "consum:7370419",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "49f5ef491331b4d25208ca13ae89790fc5d1e2e01e0c7821e94338549bd30e14",
+    "left": "carrefour:prod301226",
+    "right": "consum:2808418",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "683051bdde5b6efcfed447ad4dd300ceecb6cac0ce619b17df7a86614d90877b",
+    "left": "carrefour:prod301226",
+    "right": "consum:7246320",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a6ea0afd1a8e35f63b7b9ef405d157de7a36cc7bc3efdfca514cabfa0b71f98d",
+    "left": "carrefour:prod301226",
+    "right": "mercadona:23448",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "cbea5d4aa0197c17a3619c7b7086456e3fffd8694c4e19eac23a9c0b6792b5fa",
+    "left": "carrefour:prod301226",
+    "right": "mercadona:28469",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d7044391f6513a4b2f3696f38e77680d87c2996010773823acb2512470a61b99",
+    "left": "carrefour:prod301226",
+    "right": "mercadona:28567",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0ab634fc560e94e0953343f23891261fb42aef9382b15eff4080a80d765038b3",
+    "left": "carrefour:prod301226",
+    "right": "mercadona:29281",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c545c27382499cb255b426307d20697e4b703e4a8aca4692c28198767c7a1121",
+    "left": "carrefour:prod301226",
+    "right": "mercadona:29287",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9088a06fe9f0491bb631a8e1f4b25e4e82481cce1a2dd83159715e84c9fed6b3",
+    "left": "carrefour:prod301226",
+    "right": "plusfresc:024087",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5e34319729652c8b0ac7d0984705098b9d662dd683d86e76821b12005f9b5597",
+    "left": "carrefour:prod310230",
+    "right": "consum:7312015",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6ff4b668b36a376b9004b44ca0ebbaf2b9aee47811112a831d99fe78ddc95bdf",
+    "left": "carrefour:prod310230",
+    "right": "plusfresc:021962",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "03f774cd4f2e82ea113d155d3b6efe58a4b0e57ed18a5be291a7e2c519631aad",
+    "left": "carrefour:prod390121",
+    "right": "consum:7300171",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "dd85333ac1c0efc78162cdf288b478821d9fa98efedcd43abc02291b05cade20",
+    "left": "carrefour:prod390121",
+    "right": "plusfresc:031877",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f30f7caa5fad08a5666eed9edcb92b716ebb99967d3985414dac05d220bec9d9",
+    "left": "carrefour:prod390121",
+    "right": "plusfresc:036186",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "53d142c9a09c9e3f3b1f6c8fcb573b1e2208016348254cd65ccc6540b8261010",
+    "left": "carrefour:prod395146",
+    "right": "mercadona:20382",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "d3d1cfbd63eca47ce78a09bdcfa562365c1373920bc2379ee2c61f0af64caa1c",
+    "left": "carrefour:prod395146",
+    "right": "mercadona:21330",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "6266a9afc23c3820764665a31ebaf723402fcca790a733ba18338a571bdc93c6",
+    "left": "carrefour:prod395146",
+    "right": "plusfresc:004449",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "73771787a59a3d199fc08b0035fbafc6615c93790e70abe1976f1ffe4496cc40",
+    "left": "carrefour:prod395146",
+    "right": "plusfresc:019600",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "846e987462f94c10d101dc34ebf7ea657455e03c546ffca76ea8d047bb858b9e",
+    "left": "carrefour:prod395146",
+    "right": "plusfresc:023465",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "96969c5651b5c956cc5e3f6f9773c84c9319fc8969ed238c855e1c30c3c84718",
+    "left": "carrefour:prod395146",
+    "right": "plusfresc:025187",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "1e3aaa59116f7d8c0673cc4105b7a11ce802d289f687f3e9e811e069e669b6f1",
+    "left": "carrefour:prod395146",
+    "right": "plusfresc:035828",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ec6b621fd298f09f110fd2e69c36a99f05873a348c63efc6972460a5b84c725b",
+    "left": "carrefour:prod395624",
+    "right": "consum:7463904",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f6ce739e3818984ff07187663eda9f9f515d9dfe4d7f0273d4cb9adfede05abd",
+    "left": "carrefour:prod410049",
+    "right": "consum:7310563",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ecce9a5c1291b8563b5f8b5453f2929485617963cf2a9480ab61304bb8dc1e09",
+    "left": "carrefour:prod410053",
+    "right": "mercadona:12979",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8782459c5cd355290b6478bbd94beca801cce71680f2c5afe57e66b1784e4c78",
+    "left": "carrefour:prod410271",
+    "right": "plusfresc:019865",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b492e825ea88c7ddd3aaaf95dfced0bec3b22bdfce19355b2b208a1ee578e855",
+    "left": "carrefour:prod410335",
+    "right": "consum:7371029",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "dd3021974c0ea82e0f2db25a5e5f68a370c42a80eaebbac04a4310ad81895f9a",
+    "left": "carrefour:prod410335",
+    "right": "consum:7468528",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bc9380108f4eaaae821952fc3e76b89022fc77b08a8b4ded787b0f173a823ab8",
+    "left": "carrefour:prod410335",
+    "right": "mercadona:20247",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9dc791f3137f169b2e813dd6899267863a417d97686554087a3965bad2ac15ab",
+    "left": "carrefour:prod410335",
+    "right": "plusfresc:031083",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6f58f908c84fec7584b37a66b3b4fc4a3775e1c22c44a205c059b0809284293b",
+    "left": "carrefour:prod420275",
+    "right": "mercadona:20248",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "850c82b579226cc39d74ebf9018abedd52c65197c5dd9bf2e4030064964304c3",
+    "left": "carrefour:prod420275",
+    "right": "plusfresc:025866",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "1870d60a9eff85706eeb96c93f7298b1bd3433275d94f96c867a79b7020950ba",
+    "left": "carrefour:prod420275",
+    "right": "plusfresc:034563",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2f52195105fada847f16d48d63650e19ca7fee9b06438757a7669e094590bff5",
+    "left": "carrefour:prod460430",
+    "right": "consum:7255425",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "60b654dce48841f9573627ae524b5d357cab9ee6de637459123587763ee1bc8d",
+    "left": "carrefour:prod460430",
+    "right": "consum:7417413",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a00493a403cb1259404e7e7e4501a7590c35a42a6b791e8611549b98bdb6c50c",
+    "left": "carrefour:prod460696",
+    "right": "consum:7147895",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9ee2673dc54e575092bb54623816a0f70cce0f0313658cc1a807f53193c38565",
+    "left": "carrefour:prod460696",
+    "right": "mercadona:27155",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "68cd296cf19f24b7c31ccd1927e9e51f15c4c52af3ef1eab0a12e6c30efa7c2d",
+    "left": "carrefour:prod460696",
+    "right": "mercadona:27335",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "591e6921e516b82c4f3edcac8ef39893ee9582dbd492b48b781db11cec663d8d",
+    "left": "carrefour:prod460696",
+    "right": "mercadona:27367",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "97b88210c2fe01093271cbcab33d1b4447e0974bf165ee8977c12df30ee55104",
+    "left": "carrefour:prod460696",
+    "right": "plusfresc:020549",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "89cbb6a3badeeba973ae5c4bb6b9d76c1f9e46bb503b4859e4a562a35f4ee2a8",
+    "left": "carrefour:prod460748",
+    "right": "consum:7290526",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "78fb1c6e597f75e59b05823302ae7f107da4bc312d3614ce684399fc1cdf8348",
+    "left": "carrefour:prod460748",
+    "right": "mercadona:21383",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bb680af5e8b0b5bf76c7a1b67ce148d61680832c71870dba6d74592a11e1ef66",
+    "left": "carrefour:prod460748",
+    "right": "mercadona:28523",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8ee1bad11faf3fd30252c00b3b8fd388a269f195599c47780462d137f73d935a",
+    "left": "carrefour:prod460748",
+    "right": "mercadona:86807",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2ff06734da406c07354a2f6ee549c8892f3f2abe1061d49aab9f3e7c70f349c9",
+    "left": "carrefour:prod460748",
+    "right": "plusfresc:017632",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d54b2269a3c41bc9cf5fb903333a31744ab6aaae343418386d7185e59a714f1f",
+    "left": "carrefour:prod460748",
+    "right": "plusfresc:023212",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "204ba94d89396186f3ffcf925cccf8817e03a9bc86ffc018374681eddc7a3ada",
+    "left": "carrefour:prod460748",
+    "right": "plusfresc:036849",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "edb2ed4fc4618ee47c53eec061fdaf211ea7f07783955a9d22dec300beac3cf4",
+    "left": "carrefour:prod460760",
+    "right": "mercadona:23449",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f014f68746a8b88471cba944aada5e7f96cfddd359cddef9d3477c3e6d7d11c5",
+    "left": "carrefour:prod460760",
+    "right": "mercadona:28464",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b835e0c535c9c6a1e9029dbc7157ca79c25d277053688d413d44776655bdc858",
+    "left": "carrefour:prod460760",
+    "right": "plusfresc:032272",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "43d3675b28f0abec678ba3fb719a6c0fdd1a302fd85a7574b809e5a12db5510f",
+    "left": "carrefour:prod460760",
+    "right": "plusfresc:032575",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ed4d9e6b45ef44702f5e97f16bc43f65b4819d7336ba05881066622a1ae2e072",
+    "left": "carrefour:prod460774",
+    "right": "consum:7401508",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4bcc2414090cb80a778fc5b2e8e8c23ab7b20dc77916c56140ee1d8783fda8b5",
+    "left": "carrefour:prod460774",
+    "right": "mercadona:26992",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "99bdcf718691edfa04e8a12e52d6bfbc6809602aaac227f4ed530f9323150c7b",
+    "left": "carrefour:prod460774",
+    "right": "mercadona:27259",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4ef55f8e44e2e978d1a638e8560511c281308d4fef2e09a9b788f59b1c0522d3",
+    "left": "carrefour:prod460774",
+    "right": "mercadona:28157",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "60731798737898bcdea2ace9c178c601602c8dab61a42491bf889916a661896a",
+    "left": "carrefour:prod490073",
+    "right": "consum:7332229",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d30815b968b0ab9a4b0a2f5aeac6c9c27ecfcc1c11ccbfc2c7e7eb6ae7df9565",
+    "left": "carrefour:prod490073",
+    "right": "mercadona:12982",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b4e01507b65a247c213369eb4a803c23af1d54ba030d109e588641cc5f9cafc4",
+    "left": "carrefour:prod490073",
+    "right": "mercadona:16348",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e350a6c995762640aef66e8f4e7e2a63e59c5b528151bf4c67b83cd73a5322e1",
+    "left": "carrefour:prod490073",
+    "right": "mercadona:16350",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "34579e4d82c5713c5284fa0a10f5f970e45988b350c8dc61ab287d61303effa3",
+    "left": "carrefour:prod490073",
+    "right": "mercadona:27207",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9f8565f8125910c2d8188a0f8e606372f3c6df1d829172e38b46fed0be7b0b66",
+    "left": "carrefour:prod490073",
+    "right": "mercadona:86807",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5492f8237272af89e8aeac9d418f53fbd59ab73bfa14212dba4ac2922cd9de5f",
+    "left": "carrefour:prod490178",
+    "right": "consum:7370984",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "ebc40cd245bac3f2ff5ee233e70923916b299a532d62b6fa0d87d966b07672e3",
+    "left": "carrefour:prod490178",
+    "right": "consum:7468528",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b8be476a9841e1e0b4d1f3b315b12274f585df6e02496407db01d88a4fea9843",
+    "left": "carrefour:prod490178",
+    "right": "mercadona:21307",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "218064b17ead43f1a70b913e9f6796bd27a138e17528241da3ecacc52be260bc",
+    "left": "carrefour:prod490178",
+    "right": "plusfresc:005605",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ee73f61bc897143ad4a38fd8c8c8e0a0ac969aeb051848cbd6d089751e832e49",
+    "left": "carrefour:prod490178",
+    "right": "plusfresc:034564",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e270e32d1def0bf1af87cf1ff08fe2bc0eda7b3b362942d9efb15f989f2986f8",
+    "left": "carrefour:prod490179",
+    "right": "consum:7294387",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "d484ff385278aa1cb3274693213adcfd0cda1e087022df5a32a008a987722af2",
+    "left": "carrefour:prod490179",
+    "right": "consum:7302875",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "09e2a0f9cd273fb3f45a09839a4072e7b9fd6e2d85bebcc849018558746f498f",
+    "left": "carrefour:prod490179",
+    "right": "consum:937110",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "9363dbf0a6621a8bfed0aad468dbcb98f61bf8eec3344af5a5d96576c3a730a6",
+    "left": "carrefour:prod490179",
+    "right": "mercadona:20395",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "7b3930614d09c32c87c87bb87d14049fd75bd0b085bc742d1b6998b569e740fe",
+    "left": "carrefour:prod490179",
+    "right": "plusfresc:034097",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "48266d7edc28285b2155788bb36dc42167f795e0c90bd5628978ad3af5f0c02b",
+    "left": "carrefour:prod490181",
+    "right": "mercadona:20041",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "7ea9c980a46b9ad0c618769d7cd2dcd88af653fcd033f9751536a4e0947b157f",
+    "left": "carrefour:prod490181",
+    "right": "plusfresc:027757",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a2fb3635a49f9533a391bd099ddeb147d9756bfa00ba1702529fcbe86e0fe5e9",
+    "left": "carrefour:prod490185",
+    "right": "mercadona:21199",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "be661d9f43e6cd89f88d11a821e5f63dd5fe33fcc3e68de7b488109143c7fc94",
+    "left": "carrefour:prod490195",
+    "right": "consum:7443968",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "f42d02dd8c49c7e78d02bfeb7afba15ef581e66dbed9674c606c31edede09a96",
+    "left": "carrefour:prod490195",
+    "right": "mercadona:21329",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "9b223dd2e489322e42c77e8b8b6e077a34e1dc89401e394edf16857dda81b111",
+    "left": "carrefour:prod490195",
+    "right": "plusfresc:026483",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3e360a45aa649a9dd9c6addff61ecdafbb275a70f8bea98add116f1239c3af6a",
+    "left": "carrefour:prod490195",
+    "right": "plusfresc:027743",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8c5b56a758b40de8739f503962c6122a81df2b5ed52ae9c369ecdf1d3987196b",
+    "left": "carrefour:prod490198",
+    "right": "consum:7456056",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "845d6934b480596073caa9b808b38981c57bfd25c906b538e7a873f3a12ca6ad",
+    "left": "carrefour:prod490198",
+    "right": "mercadona:20531",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "7b25866a09197da6c5d34391ade59a0b5d534a735b60d5691937ac3f409dab36",
+    "left": "carrefour:prod490198",
+    "right": "plusfresc:011554",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2f45b7d42e94e40bd50788daca3069f9ab858e7629d43044d0eccd53208b75bb",
+    "left": "carrefour:prod490198",
+    "right": "plusfresc:021895",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "086ca957a01329d029ae274e86212f497d78381e3d51ddfd97adb09e7655c146",
+    "left": "carrefour:prod490198",
+    "right": "plusfresc:025084",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "620884b9f7425801b8dbf6d9cc5eef9c4c90afe33204f244227a03d0e0a1cb9b",
+    "left": "carrefour:prod490198",
+    "right": "plusfresc:027336",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "conflicting",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "243a7725c6b20faaf3d5c93fc6bbadfe471039eeb98a9d28d91ef33cd6200471",
+    "left": "carrefour:prod490198",
+    "right": "plusfresc:027737",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4df474006cfe82ae5c0fa23c92a15ed41624f44f49b587fdf51c35172d923b2f",
+    "left": "carrefour:prod490199",
+    "right": "mercadona:20287",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "06990904e20769606c8c19df7815ece2820f5f0667a468a8383f8e381a28ee49",
+    "left": "carrefour:prod490199",
+    "right": "plusfresc:025507",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "84da54d3dfe446a3c520f399a5a179543f0f9e7529f46963ed2c42c7785843ec",
+    "left": "carrefour:prod490199",
+    "right": "plusfresc:035793",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "458aba9a50463fea781c15197d79831065490618c9bc5629c3aee7975b9e699d",
+    "left": "carrefour:prod590387",
+    "right": "consum:7057706",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9e98204aee2e10499b265f7f00ad2e644a1a426a643cb3d45c9613144560d4a1",
+    "left": "carrefour:prod590387",
+    "right": "consum:7255425",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6a3094cceed16f3707f215bb06630c7cdcda5e16b03c243372c8cac5aa54f512",
+    "left": "carrefour:prod590387",
+    "right": "consum:7370419",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d587ecbf2d1a2ad4b36aad652bae1d9f0284d07002e9020b03070d494a62f5e7",
+    "left": "carrefour:prod590387",
+    "right": "consum:7393366",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "30501ba1a896e54ac2d575d06872b196d2a362d7005edc9c390819e2e36c1d5c",
+    "left": "carrefour:prod590387",
+    "right": "consum:7410728",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9a9a1ec51eb87a72c2626664a263e0116221930c5310d7a9061efb58d50bb97c",
+    "left": "carrefour:prod590387",
+    "right": "consum:7417413",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4795da389b7db2fd41452798a237eee9b6cf9e06076459f92f3e681d008c9753",
+    "left": "carrefour:prod590387",
+    "right": "consum:7431237",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ae3325c7242ebe19b06e05c067b489499398f70d3d12610dbe648c16b90d25af",
+    "left": "carrefour:prod590387",
+    "right": "consum:844837",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2f306713f30e73dd4efd203c957bdc3510c3c1e0d73f89af516c35eddd6c7d8b",
+    "left": "carrefour:prod590387",
+    "right": "mercadona:17581",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9763a20b68f83a52d844443de1ffd711bc1977fc84d7659f953fab0e93af6988",
+    "left": "carrefour:prod590387",
+    "right": "mercadona:19904",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b9665c3709102e71e2e4e17e5a1fd5ac6c6dfddeca827c2854b6b212dff5f20d",
+    "left": "carrefour:prod590387",
+    "right": "mercadona:60095",
+    "cohort": "challenge",
+    "states": {
+      "scope": "incompatible",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "excluded_scope",
+    "editorial_id": null
+  },
+  {
+    "id": "2592936a713888f1e65f4ee081879d7d96e213d984ae6852eb0c917a7d9c4b0a",
+    "left": "carrefour:prod590387",
+    "right": "mercadona:61405",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b2b643fe17a609a05f028bb45ea2932bb5d200c9cde3f2e867b1346e26b22ce1",
+    "left": "carrefour:prod590387",
+    "right": "mercadona:61416",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0d9cf1484e1e91de479e0480fc5a573439705272898545337eab1285e770f35e",
+    "left": "carrefour:prod590387",
+    "right": "mercadona:61421",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e36042f3baddcf5aed013ef7c16ab6ec728b95dd51bbd28b1324a4d1602df934",
+    "left": "carrefour:prod590387",
+    "right": "mercadona:7879",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2f6e3b453713aa6165ade7c886b3eea9a8fa6431fd3a301f519cbf24f1f86d65",
+    "left": "carrefour:prod590387",
+    "right": "plusfresc:010985",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3db5aaeec5c8fdbbbf79eab38dad30544605bf54f9ec15187eea27ddb4074993",
+    "left": "carrefour:prod590387",
+    "right": "plusfresc:019865",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b622a954901f9fffb75f67b5fd8e4bc1ac35ccb17bfe796c9ef8f7131a3e065c",
+    "left": "carrefour:prod590387",
+    "right": "plusfresc:023552",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2fcc29990fb5cef2ed94811381346349346b66af38284846343766261ff9fdec",
+    "left": "carrefour:prod590387",
+    "right": "plusfresc:028522",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b076071a3b79830bc590aa7fd62ebdb9e0cc2a54e2c183c6d85f55698db1ad82",
+    "left": "carrefour:prod590387",
+    "right": "plusfresc:032787",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "820ba1fd523cce305c15892c59cf56d145b3099ff96ae173660fdb589edb6114",
+    "left": "carrefour:prod590387",
+    "right": "plusfresc:032788",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4a8877bee70bc4ec5ac8b140b75c1c65df5bfdf57f3d87ae3018c61154222477",
+    "left": "carrefour:prod590387",
+    "right": "plusfresc:032789",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8b4cd9723463882bfa65ae59e644683c10c0fdc35f1da4cab6ce086d2906dcd5",
+    "left": "carrefour:prod590387",
+    "right": "plusfresc:037023",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "1b027351b30eb517bd662dbf9c0817e4e88abd924dbcdb42579619a6e8912957",
+    "left": "carrefour:prod590627",
+    "right": "consum:7379030",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "36a6b03167bdb11a1fafb7ff5bef36314fd2a9e1a456b466b67073b1846050af",
+    "left": "carrefour:prod590627",
+    "right": "mercadona:27204",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2a3c8163464d3adf3a551a364d8e35f5dd3afd3a055fd4c3cf69e06679c6d203",
+    "left": "carrefour:prod590627",
+    "right": "mercadona:27884",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c93d14080f09c0b3175b69beea0eb1bfa50a506be93203faacc629ae094e198b",
+    "left": "carrefour:prod590627",
+    "right": "mercadona:28269",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f407a803699853a71b790743ec7e7332223d73d0ff84d9c039afd90e295ebdf2",
+    "left": "carrefour:prod590627",
+    "right": "mercadona:28573",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c4e0feb245c3ef6efbcd206e03059ec833451d03c4636d6db3f075a3511089f1",
+    "left": "carrefour:prod590627",
+    "right": "plusfresc:018066",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "620817040403a7d5a2525ff24af624c29a4c6258b61afadf9c1c33f9f7f5f112",
+    "left": "carrefour:prod590627",
+    "right": "plusfresc:021864",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0fb338cb2ce022c00d9a53e7d438fbe7b5a84bd55027df9958d31010edcd82e9",
+    "left": "carrefour:prod60155",
+    "right": "plusfresc:016654",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "61aa6b55fecf8df32f91506de2eb569e4a00df502e6545bc8f79028364384190",
+    "left": "carrefour:prod60155",
+    "right": "plusfresc:019600",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "66e91b56757b60232cbe234b5ec5d4312d12e458ed215e77968a69d8a8479d6d",
+    "left": "carrefour:prod60155",
+    "right": "plusfresc:020993",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "76ab74d876fa3785b36b731957c22f1288f603caf770a0aaabb39fd2cfade345",
+    "left": "carrefour:prod60593",
+    "right": "consum:7067788",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "665908d745a1308bc3f03bc095bd23464586a38bbd2e3c9162ee30db5f74e325",
+    "left": "carrefour:prod60593",
+    "right": "consum:7303522",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "96c10266f052f336422f51f02862eedf7f7c34ad78758917352cbe4e64889471",
+    "left": "carrefour:prod60593",
+    "right": "plusfresc:007388",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "40abb5dfd29fd52b4cf8349ba21d45fe2d8ae6cf058e00a0c20b3e215255e069",
+    "left": "carrefour:prod60593",
+    "right": "plusfresc:019600",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b19b59718f62f5c56444d1dd88ca5cef0f3ef0284a364552a03e66e335e9a815",
+    "left": "carrefour:prod60600",
+    "right": "consum:7340888",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "de1250ad6e96fbf999fdd639696259854474eeec137edfc2494228b7f6b5b022",
+    "left": "carrefour:prod60600",
+    "right": "consum:7340953",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "d0d5a7374754012dad4b5b9efd39c95f0eda66ec5d25534e157bdd69efe2b86d",
+    "left": "carrefour:prod60600",
+    "right": "mercadona:20512",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "5f75818e2df28d4596ba6ad912a5f123c937e0c1cf4d1899f0f3006874d0a193",
+    "left": "carrefour:prod60600",
+    "right": "plusfresc:008004",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "f6378131560604b44875b2a8c85a2416109f6920f46e2ecb16a882eb82bf158e",
+    "left": "carrefour:prod60600",
+    "right": "plusfresc:031460",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f53c9d753b22468216c8d2cdcd40d21c177c433999b71c32b7c6084dcc6456fe",
+    "left": "carrefour:prod60600",
+    "right": "plusfresc:034564",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f9411d2f37e5fa308cce90231c814ff5023d51d8140787202e6f35b86e329d07",
+    "left": "carrefour:prod60675",
+    "right": "consum:7027063",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2eb218f7ddbed36f67bbb8009471b5c8a63aac0bfb1cef4015d35ea3a6c55021",
+    "left": "carrefour:prod60675",
+    "right": "consum:7147895",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f648ccff4db9028e2f73c1ce166377ea9b6077b520818e42ee727847a01a06c9",
+    "left": "carrefour:prod60675",
+    "right": "consum:7416394",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ded729cb198ed395d76a3fca3a7d2bf2b2d0d696a37389961e1acada3d1f23b9",
+    "left": "carrefour:prod60675",
+    "right": "mercadona:19944",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "44a2ccd2f37ed012d1637a29765a0f44d14490574751e01e662bb4173b9ab4a5",
+    "left": "carrefour:prod60675",
+    "right": "mercadona:22392",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "739ec800a7b62ea25426aa2d2da6db83287497988e223f610931e552bcfc3c5e",
+    "left": "carrefour:prod60675",
+    "right": "mercadona:27092",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "962c36473a193999ba354bb6b24c80c7265e7a270acfc059c0846fd73dc14319",
+    "left": "carrefour:prod60675",
+    "right": "mercadona:28472",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "665e30c0b359fc95af4bf1a912c1861c3d4970a5166a720e4a80aa94d7620658",
+    "left": "carrefour:prod60675",
+    "right": "plusfresc:019507",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9b2b3a1ea44eb7f63af230f164dd7af0597df62c61aa0c98087edc1e8afeba25",
+    "left": "carrefour:prod60675",
+    "right": "plusfresc:020399",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7ccad48e21e18eb1ef9c77df16fa72cbe1b343ebf0b4a61477df4680b41f0aa2",
+    "left": "carrefour:prod60675",
+    "right": "plusfresc:024955",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ebb50175b6e8f3d9bb6963f95617ca15dc1f26f978225a1311906bca882039d0",
+    "left": "carrefour:prod60684",
+    "right": "mercadona:27169",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3213748f584fd4890d5c8df11a9281c7efad08da07162a528170e2c64a3dd494",
+    "left": "carrefour:prod61001",
+    "right": "consum:7340953",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "96d81f49cbd48dfef64aee51bf3fc137c0b5e79193ea2642bfe56bad5ffa0333",
+    "left": "carrefour:prod61001",
+    "right": "mercadona:20260",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "49334a36793b0c1bb17b5688d3e30dbc0843d7e333a167157ffc315c300afaae",
+    "left": "carrefour:prod61001",
+    "right": "plusfresc:023464",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "997fcf31707a25561e4655c9787799e5dff84d8202c58a7424d13159184e13b1",
+    "left": "carrefour:prod61001",
+    "right": "plusfresc:023692",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6860adf3887de23bc19ab51540e9b7fd0ec2d634ca0fcbbafb11a61777d2dcdf",
+    "left": "carrefour:prod61001",
+    "right": "plusfresc:028277",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6552282cfabbd7a7a7ad6a44e0f81634e6839e1d2585801ab6be07096ed1a3e6",
+    "left": "carrefour:prod61001",
+    "right": "plusfresc:033375",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "fd4749080f63a34e03b158725c23dce0df55ba03671a4fb3ca867d61f566b99e",
+    "left": "carrefour:prod61001",
+    "right": "plusfresc:035826",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "15e84f7ad2d59747cf614555c2f5cc52c7c667ab14f873723e4e57d522d59f86",
+    "left": "carrefour:prod630062",
+    "right": "consum:937177",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "75e6c3422456c03c1c22d0fafc9cd80066ec113d539c730f664737a55234e2f3",
+    "left": "carrefour:prod630062",
+    "right": "mercadona:23476",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "377131f3511b89609015a7175d98bf9cc5e8e4cfd3d8f82505465eab7b932a77",
+    "left": "carrefour:prod630062",
+    "right": "plusfresc:031368",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "a2c3b0bab4d9e9647be0cffcac999a10a04983ab85a6affdf3f9ef15d7e36c87",
+    "left": "carrefour:prod630135",
+    "right": "consum:7192008",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "457862453bba29230fd0d0ef6206279e259c90190efe74fbf75a62ee47c72bea",
+    "left": "carrefour:prod630135",
+    "right": "mercadona:20859",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "50c28449ecd52c4afd711587afb918013b6c308aeb1355f1c1e93f251364c284",
+    "left": "carrefour:prod630135",
+    "right": "plusfresc:016654",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5b36d2d8e8b37e2a53b3ecf786ec906b61c2d26a75187b3da46a42c7e933d1de",
+    "left": "carrefour:prod630135",
+    "right": "plusfresc:022184",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ca2c8cbbecc22b279bb15d68fb79b3868d84daa636c8755ab9e8e4039144a40b",
+    "left": "carrefour:prod630135",
+    "right": "plusfresc:031360",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b45f1ca12c668be64678d2e1ea79d9e37ae614e0e34a406db238cf5d03f9c99a",
+    "left": "carrefour:prod630135",
+    "right": "plusfresc:032317",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8cc4e73a81fc50ac57fc02e8efa1815a4a76fcff884646f879ffff696f1f7e60",
+    "left": "carrefour:prod630135",
+    "right": "plusfresc:033375",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3ae6f93b6246266095630861e3ec6168c3823712e4a87f72d97fc74093b7f1d9",
+    "left": "carrefour:prod630135",
+    "right": "plusfresc:035940",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6804695d649e0bada5a559b364f2e643562f7925a25d770311124cfe0a581179",
+    "left": "carrefour:prod63789",
+    "right": "consum:7294366",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "706501432804c3072be2beea3396ed8368072610df92fbb34c86b4c9398904c5",
+    "left": "carrefour:prod63789",
+    "right": "mercadona:21193",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4d9eecbb9af1511f6be248c58154e2063ba32654dd4082c2ac8c841971954fc4",
+    "left": "carrefour:prod63789",
+    "right": "plusfresc:012260",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3f38f58c2ee4a5f5e54c20563edd62860254d18e84426b2458dbc4a23cd9c949",
+    "left": "carrefour:prod63789",
+    "right": "plusfresc:028948",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a34a1224bd2f6c18fba68a32d584c307baf952496fd9796fe37a3e3d92221ee3",
+    "left": "carrefour:prod64313",
+    "right": "mercadona:21332",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "0faf73f0bffc8de812d1ed3550d0832bcad6a29e0500d1bb44805f9ad136c449",
+    "left": "carrefour:prod64313",
+    "right": "plusfresc:027291",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "053a12487674b99816d4685f016df0021598d03dd4313e55f32b58c8bb64c553",
+    "left": "carrefour:prod64351",
+    "right": "consum:7302875",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "eefae942e3a2783ba74ac5fba06655c16f3e5180b836798c7d50e066e5808419",
+    "left": "carrefour:prod64351",
+    "right": "mercadona:20210",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "b5eb4eb6c9aa8abaec30f80191f3177629368a54b2ca96c228daa6a0eb94f7b5",
+    "left": "carrefour:prod64351",
+    "right": "plusfresc:005605",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b30747bdbefc6e743dc2cfb00caaf0f19f29d6adb5eb10c1ececb99f960b957b",
+    "left": "carrefour:prod64351",
+    "right": "plusfresc:012743",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "9c78579cbb0b5b932ac0c589558a6072e04ae170f8f03ddc1dfc528f017bba95",
+    "left": "carrefour:prod64351",
+    "right": "plusfresc:020622",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "33000f1f1e8c73c6f87e577ba8fa0701e4789e995a71c1e0a89f776d893c3fec",
+    "left": "carrefour:prod64351",
+    "right": "plusfresc:032317",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "5e546976611201b74a7be8e441b0caa1369d77d307727f83272ea07ad82e1773",
+    "left": "carrefour:prod64376",
+    "right": "consum:7340776",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "95c845a33889f63b22aeff3a0ceef2c60693094702824bb2a3508002f78e2f0f",
+    "left": "carrefour:prod64376",
+    "right": "consum:7340870",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e4b61597eceb553662099e4d6c05bafc84bf7a2d3fff043b3fafd8bedec522fb",
+    "left": "carrefour:prod64376",
+    "right": "consum:7443968",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f10966399a2884eb1b71b6feae0f72cb6ac5c3d32e5dd0df0766a94da5cf90f7",
+    "left": "carrefour:prod64376",
+    "right": "plusfresc:019933",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8b32fe2989425616c6991be989b36807d28b7a84616d42e74c6cd22946a98982",
+    "left": "carrefour:prod64376",
+    "right": "plusfresc:031084",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "56a2848dba9daa2322f5c3b433db9180d04a5e61c778dcdb1c2b0dbb1a88a2af",
+    "left": "carrefour:prod64628",
+    "right": "consum:937177",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "201ed0d446a63c4ac2b9df4091ec68ea57d8e394f4eb9e85891eb7818f4dd13d",
+    "left": "carrefour:prod64628",
+    "right": "plusfresc:014523",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a91434e64ac6bb510fc9aebd1ae2ed8a9c10bf7defacbf5301ef2fcfeb5a7575",
+    "left": "carrefour:prod64628",
+    "right": "plusfresc:017600",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "784c3818ccb9b94520c7673443f2709f59acd5cdd77d5f2733f25df90428733d",
+    "left": "carrefour:prod64628",
+    "right": "plusfresc:023692",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e72efb91b6fc15c2d10978fedaee788f11f78d0e4d383fb8fe2986a785b33a26",
+    "left": "carrefour:prod64628",
+    "right": "plusfresc:025401",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "75c9a0dbcbe205d67065adac4fc2a41dbcccafe00f1c0d474ffe4418d2214524",
+    "left": "carrefour:prod65087",
+    "right": "consum:7172344",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "696659b901b7dcdfd3001b042e80a93c44b8cf9b25af0f2355bcfcf4c3f09377",
+    "left": "carrefour:prod65087",
+    "right": "consum:7433431",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2a1887156f19148399ecaf7f2feabf3ae5bf85fa5a76f197e7df1b2b13e79c89",
+    "left": "carrefour:prod65087",
+    "right": "mercadona:27253",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "fbff0a7096bfbe01db84477f0cac290fdc517cb73d65354ef4b729b4aa4f117d",
+    "left": "carrefour:prod65087",
+    "right": "mercadona:27261",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4e3ab5364200ebc6f843d667128cc61c032bbd34b535c0255d091cdeb8b760c7",
+    "left": "carrefour:prod65087",
+    "right": "mercadona:28073",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9116aededacb48a7a9de93c21f363c2b990d3adf6dd14690f9416c083d93d202",
+    "left": "carrefour:prod65087",
+    "right": "mercadona:28499",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e0d2c217b23792e2138af0183ee9157b08eb50c0659c7f95b7c357e8b5010aa2",
+    "left": "carrefour:prod65087",
+    "right": "mercadona:7982",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6f142de4cf248cddebf7726aad21f8ca6d60dc8693c560af0816d5f4fa0a4d84",
+    "left": "carrefour:prod65197",
+    "right": "consum:7172344",
+    "cohort": "challenge",
+    "states": {
+      "scope": "incompatible",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "excluded_scope",
+    "editorial_id": null
+  },
+  {
+    "id": "c8a40af04fcfee4ab2e36d73538535dca2e27f3eb2804db560410e510f03740c",
+    "left": "carrefour:prod66082",
+    "right": "consum:7458243",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "3f348455080acab1f8f42b9e48310ed6dd5ebb9a5e93a05e19208924a652e199",
+    "left": "carrefour:prod66196",
+    "right": "consum:7391063",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2e241fdf9a466b944a25cab3480c632c614765fe58390ed08dbccdcdc080d5e3",
+    "left": "carrefour:prod66389",
+    "right": "plusfresc:025506",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e5924f5264710d91ebc1bc77a421eae31f1c4db499bfe68a81306d16aa1f72b9",
+    "left": "carrefour:prod66978",
+    "right": "mercadona:61405",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f31c302573c9efba30c10c4103c953cbcd147136c264ad6fda873a0797f22f85",
+    "left": "carrefour:prod670269",
+    "right": "plusfresc:032787",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d19218a9171e833ea9d9973973de91319eff12bdb0b135676a58474ed4a89d1f",
+    "left": "carrefour:prod67095",
+    "right": "consum:7354876",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ef7d4f41068d124dadd07272f0367a5e6e969de26e52a147a19168fd6cdb5849",
+    "left": "carrefour:prod67095",
+    "right": "plusfresc:021894",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "44a5aacb4541dc88c0b3e27dea27298ad2fd6867fd8c97ec4cf2b691174c6704",
+    "left": "carrefour:prod67095",
+    "right": "plusfresc:033682",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2b8f83eed8c3e3ae184ba19adcfa5361ef65ed8054c975a90c46c3b983385c94",
+    "left": "carrefour:prod67095",
+    "right": "plusfresc:036726",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "701a6c9dd75b45fb242d4f6b848482f917cb88046700f19fb1dedfb0449ea609",
+    "left": "carrefour:prod67219",
+    "right": "plusfresc:032789",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "20c1a4920b4a084fddd2da7e46ff535e91f685ac2335fa084eaf42d1961d8c49",
+    "left": "carrefour:prod67425",
+    "right": "mercadona:28090",
+    "cohort": "challenge",
+    "states": {
+      "scope": "incompatible",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "excluded_scope",
+    "editorial_id": null
+  },
+  {
+    "id": "e818adcafaa41f5c412168208205b5e3e313298affb79ebc30f41ec5ec339406",
+    "left": "carrefour:prod680008",
+    "right": "consum:7294713",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "79bb4e584dc4be12d258d6d6d435048addfc189e5bbdf160ab3c45111a611b95",
+    "left": "carrefour:prod680008",
+    "right": "plusfresc:021964",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "50124e65ae6fc9ae1ba5138a395008c33df63f078923c21cfed330bcd7f83277",
+    "left": "carrefour:prod680008",
+    "right": "plusfresc:022382",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9468e1636c521211521183f9a5cbf14c92a897bc836764b4148540990be62810",
+    "left": "carrefour:prod680008",
+    "right": "plusfresc:026480",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ad837c66cb36b81a64658f531d46bcde35d6b367ebef6cc4ace46c0ef03ff9c6",
+    "left": "carrefour:prod680008",
+    "right": "plusfresc:031883",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c1853a31c4f832a65ec409d555565036941632782e23171f2eabdc6b676354be",
+    "left": "carrefour:prod680008",
+    "right": "plusfresc:033685",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "14600cf567cc8c252beb3162fb2caef21ce2e74b100e8865c3d091521afd02fa",
+    "left": "carrefour:prod68618",
+    "right": "consum:7294721",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7e914eabb71acc98a314949af26ce0fdf3333d17a4218af4b52dc0f127e1825b",
+    "left": "carrefour:prod68618",
+    "right": "consum:7414006",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "27ea22f5df9e3eedcb92a841d8828232532e56f086ebaef6a9511f1c0ebf6fb6",
+    "left": "carrefour:prod68618",
+    "right": "mercadona:20248",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  }
+]

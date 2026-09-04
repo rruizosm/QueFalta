@@ -1,0 +1,4502 @@
+[
+  {
+    "left": "consum:7452910",
+    "right": "mercadona:21327",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7452910",
+    "right": "plusfresc:014003",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7453590",
+    "right": "plusfresc:027737",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7453590",
+    "right": "plusfresc:033248",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7453590",
+    "right": "plusfresc:034091",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7453590",
+    "right": "plusfresc:036727",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7454374",
+    "right": "mercadona:28464",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7454940",
+    "right": "mercadona:27597",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7454940",
+    "right": "mercadona:28163",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7456056",
+    "right": "mercadona:20031",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|mercadona|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7456056",
+    "right": "plusfresc:019660",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7458172",
+    "right": "plusfresc:028522",
+    "cohort": "challenge",
+    "family": "frozen_potatoes",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7458235",
+    "right": "plusfresc:019618",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7458235",
+    "right": "plusfresc:021894",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7458235",
+    "right": "plusfresc:036736",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7458243",
+    "right": "plusfresc:011548",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7458243",
+    "right": "plusfresc:013245",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|retailer_label_literal|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7460566",
+    "right": "mercadona:15763",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7460566",
+    "right": "mercadona:16350",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7460566",
+    "right": "mercadona:27277",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7460566",
+    "right": "mercadona:28089",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7460566",
+    "right": "mercadona:28142",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7460566",
+    "right": "mercadona:28288",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7460566",
+    "right": "mercadona:29405",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7460566",
+    "right": "plusfresc:024955",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7460566",
+    "right": "plusfresc:035615",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7462039",
+    "right": "mercadona:17581",
+    "cohort": "challenge",
+    "family": "frozen_potatoes",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7463904",
+    "right": "mercadona:20382",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|mercadona|retailer_label_literal|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7463904",
+    "right": "plusfresc:008007",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7463904",
+    "right": "plusfresc:027336",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7465938",
+    "right": "mercadona:21312",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7468338",
+    "right": "mercadona:16588",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7468528",
+    "right": "mercadona:20221",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7468528",
+    "right": "mercadona:21312",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|mercadona|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7468528",
+    "right": "mercadona:21362",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7468528",
+    "right": "plusfresc:017148",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7468528",
+    "right": "plusfresc:021896",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7468528",
+    "right": "plusfresc:034091",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7468528",
+    "right": "plusfresc:035793",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7471444",
+    "right": "mercadona:27894",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7473127",
+    "right": "mercadona:12979",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|mercadona|retailer_label_literal|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7473127",
+    "right": "mercadona:19944",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|mercadona|retailer_label_literal|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7473127",
+    "right": "plusfresc:007307",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7473127",
+    "right": "plusfresc:026385",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7473127",
+    "right": "plusfresc:027625",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7473692",
+    "right": "mercadona:21199",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|mercadona|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7473692",
+    "right": "mercadona:21362",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7473692",
+    "right": "plusfresc:019447",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7473692",
+    "right": "plusfresc:034563",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7473754",
+    "right": "mercadona:21199",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7473754",
+    "right": "plusfresc:031077",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7475775",
+    "right": "mercadona:12982",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7475775",
+    "right": "mercadona:21384",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7475775",
+    "right": "mercadona:27221",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7475775",
+    "right": "mercadona:28482",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7475775",
+    "right": "plusfresc:011232",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7476992",
+    "right": "plusfresc:036725",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7477003",
+    "right": "plusfresc:008002",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7477003",
+    "right": "plusfresc:013618",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7477003",
+    "right": "plusfresc:031878",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7477003",
+    "right": "plusfresc:035828",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7477008",
+    "right": "plusfresc:005608",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7477008",
+    "right": "plusfresc:025506",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7477008",
+    "right": "plusfresc:025866",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7477008",
+    "right": "plusfresc:031084",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7477008",
+    "right": "plusfresc:036360",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7477008",
+    "right": "plusfresc:036735",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7478431",
+    "right": "mercadona:20355",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7478431",
+    "right": "mercadona:21160",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7478431",
+    "right": "plusfresc:021893",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7478451",
+    "right": "plusfresc:028550",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7478907",
+    "right": "mercadona:27335",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7479541",
+    "right": "mercadona:16349",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7479541",
+    "right": "mercadona:21390",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7479541",
+    "right": "mercadona:27099",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7480726",
+    "right": "mercadona:27598",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7480726",
+    "right": "mercadona:28285",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7480726",
+    "right": "plusfresc:014543",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:7480726",
+    "right": "plusfresc:035616",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|consum|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:844837",
+    "right": "mercadona:17581",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|consum|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:844837",
+    "right": "mercadona:19904",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|consum|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:844837",
+    "right": "mercadona:61405",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|consum|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:844837",
+    "right": "mercadona:61416",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|consum|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:844837",
+    "right": "mercadona:61421",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|consum|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:844837",
+    "right": "mercadona:7879",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|consum|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:844837",
+    "right": "plusfresc:010985",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|consum|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:844837",
+    "right": "plusfresc:019865",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|consum|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:844837",
+    "right": "plusfresc:023552",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|consum|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:844837",
+    "right": "plusfresc:028522",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|consum|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:844837",
+    "right": "plusfresc:032787",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|consum|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:844837",
+    "right": "plusfresc:032788",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|consum|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:844837",
+    "right": "plusfresc:032789",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|consum|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:844837",
+    "right": "plusfresc:037023",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|consum|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:937110",
+    "right": "mercadona:20379",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:937110",
+    "right": "plusfresc:004471",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:937110",
+    "right": "plusfresc:028870",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:937110",
+    "right": "plusfresc:032311",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:937151",
+    "right": "plusfresc:027336",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:937151",
+    "right": "plusfresc:036753",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:937177",
+    "right": "plusfresc:016654",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:937177",
+    "right": "plusfresc:025402",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:937185",
+    "right": "mercadona:20382",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|consum|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:937185",
+    "right": "plusfresc:014400",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:937193",
+    "right": "plusfresc:013161",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "consum:937193",
+    "right": "plusfresc:028870",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:12978",
+    "right": "plusfresc:028899",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:12978",
+    "right": "plusfresc:032273",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:12980",
+    "right": "plusfresc:007312",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:12982",
+    "right": "plusfresc:007301",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:12982",
+    "right": "plusfresc:019507",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:12982",
+    "right": "plusfresc:020484",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:12982",
+    "right": "plusfresc:032380",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:14390",
+    "right": "plusfresc:011232",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:14467",
+    "right": "plusfresc:023552",
+    "cohort": "challenge",
+    "family": "frozen_potatoes",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:15631",
+    "right": "plusfresc:032912",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:15759",
+    "right": "plusfresc:020399",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:15760",
+    "right": "plusfresc:021864",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:15760",
+    "right": "plusfresc:029934",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:15760",
+    "right": "plusfresc:032574",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:15761",
+    "right": "plusfresc:020484",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:15761",
+    "right": "plusfresc:030025",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:16347",
+    "right": "plusfresc:032380",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:16350",
+    "right": "plusfresc:011232",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:16350",
+    "right": "plusfresc:021864",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:16387",
+    "right": "plusfresc:032788",
+    "cohort": "challenge",
+    "family": "frozen_potatoes",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:16585",
+    "right": "plusfresc:007307",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:16588",
+    "right": "plusfresc:021864",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:16588",
+    "right": "plusfresc:025363",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:17581",
+    "right": "plusfresc:010985",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:17581",
+    "right": "plusfresc:019865",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:17581",
+    "right": "plusfresc:023552",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:17581",
+    "right": "plusfresc:028522",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:17581",
+    "right": "plusfresc:032787",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:17581",
+    "right": "plusfresc:032788",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:17581",
+    "right": "plusfresc:032789",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:17581",
+    "right": "plusfresc:037023",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:18286",
+    "right": "plusfresc:007301",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:18286",
+    "right": "plusfresc:019507",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:18286",
+    "right": "plusfresc:028899",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:19904",
+    "right": "plusfresc:010985",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:19904",
+    "right": "plusfresc:019849",
+    "cohort": "challenge",
+    "family": "frozen_potatoes",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:19904",
+    "right": "plusfresc:019865",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:19904",
+    "right": "plusfresc:023552",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:19904",
+    "right": "plusfresc:028522",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:19904",
+    "right": "plusfresc:032787",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:19904",
+    "right": "plusfresc:032788",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:19904",
+    "right": "plusfresc:032789",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:19904",
+    "right": "plusfresc:037023",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:19944",
+    "right": "plusfresc:007307",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:19944",
+    "right": "plusfresc:023691",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20031",
+    "right": "plusfresc:025510",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20031",
+    "right": "plusfresc:026484",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20031",
+    "right": "plusfresc:031999",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20031",
+    "right": "plusfresc:035939",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20032",
+    "right": "plusfresc:011554",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20032",
+    "right": "plusfresc:017148",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20032",
+    "right": "plusfresc:021893",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20037",
+    "right": "plusfresc:024581",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|retailer_label_literal|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20037",
+    "right": "plusfresc:034374",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20037",
+    "right": "plusfresc:035392",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20040",
+    "right": "plusfresc:034089",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20040",
+    "right": "plusfresc:036887",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20041",
+    "right": "plusfresc:012251",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20041",
+    "right": "plusfresc:033249",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20041",
+    "right": "plusfresc:036737",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20057",
+    "right": "plusfresc:031462",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20083",
+    "right": "plusfresc:008007",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20083",
+    "right": "plusfresc:025866",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20083",
+    "right": "plusfresc:028550",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20210",
+    "right": "plusfresc:024110",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20210",
+    "right": "plusfresc:032322",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20221",
+    "right": "plusfresc:034279",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20247",
+    "right": "plusfresc:004449",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20247",
+    "right": "plusfresc:004541",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20247",
+    "right": "plusfresc:026484",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20247",
+    "right": "plusfresc:028277",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20247",
+    "right": "plusfresc:034091",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20248",
+    "right": "plusfresc:019884",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20248",
+    "right": "plusfresc:031360",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20260",
+    "right": "plusfresc:013161",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20260",
+    "right": "plusfresc:015937",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20260",
+    "right": "plusfresc:023465",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20260",
+    "right": "plusfresc:031456",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20260",
+    "right": "plusfresc:033681",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20260",
+    "right": "plusfresc:034277",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|retailer_label_literal|unresolved_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20286",
+    "right": "plusfresc:032311",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20355",
+    "right": "plusfresc:017600",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20355",
+    "right": "plusfresc:031368",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20357",
+    "right": "plusfresc:013648",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20357",
+    "right": "plusfresc:019661",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20357",
+    "right": "plusfresc:024113",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20376",
+    "right": "plusfresc:008039",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|single_explicit",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20376",
+    "right": "plusfresc:010871",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|single_explicit",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20376",
+    "right": "plusfresc:032805",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|single_explicit",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20376",
+    "right": "plusfresc:035397",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20379",
+    "right": "plusfresc:020622",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20382",
+    "right": "plusfresc:011548",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20395",
+    "right": "plusfresc:008039",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20395",
+    "right": "plusfresc:022184",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20395",
+    "right": "plusfresc:032117",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20396",
+    "right": "plusfresc:008007",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20396",
+    "right": "plusfresc:025402",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20399",
+    "right": "plusfresc:035392",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20504",
+    "right": "plusfresc:014523",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20512",
+    "right": "plusfresc:025346",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20531",
+    "right": "plusfresc:008009",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20536",
+    "right": "plusfresc:035398",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20559",
+    "right": "plusfresc:025510",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20559",
+    "right": "plusfresc:035393",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20571",
+    "right": "plusfresc:028947",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20571",
+    "right": "plusfresc:031368",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20571",
+    "right": "plusfresc:031469",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20584",
+    "right": "plusfresc:014523",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20584",
+    "right": "plusfresc:032308",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20859",
+    "right": "plusfresc:013245",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|multipack_evidence|single_explicit",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20859",
+    "right": "plusfresc:019809",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|single_explicit",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20859",
+    "right": "plusfresc:036360",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20953",
+    "right": "plusfresc:004449",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20953",
+    "right": "plusfresc:019600",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20953",
+    "right": "plusfresc:020622",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20953",
+    "right": "plusfresc:024581",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:20953",
+    "right": "plusfresc:032805",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21160",
+    "right": "plusfresc:033375",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21193",
+    "right": "plusfresc:026480",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21193",
+    "right": "plusfresc:028005",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21193",
+    "right": "plusfresc:035391",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21199",
+    "right": "plusfresc:019661",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21199",
+    "right": "plusfresc:023692",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21256",
+    "right": "plusfresc:036735",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21307",
+    "right": "plusfresc:021597",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21311",
+    "right": "plusfresc:008017",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21311",
+    "right": "plusfresc:019661",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21311",
+    "right": "plusfresc:035394",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21312",
+    "right": "plusfresc:033249",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21318",
+    "right": "plusfresc:019618",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21318",
+    "right": "plusfresc:021893",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21318",
+    "right": "plusfresc:032311",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21318",
+    "right": "plusfresc:033688",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21321",
+    "right": "plusfresc:021962",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21321",
+    "right": "plusfresc:025510",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21321",
+    "right": "plusfresc:031083",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21327",
+    "right": "plusfresc:015192",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21327",
+    "right": "plusfresc:028005",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21327",
+    "right": "plusfresc:035387",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21329",
+    "right": "plusfresc:008002",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21329",
+    "right": "plusfresc:036186",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21330",
+    "right": "plusfresc:008053",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21330",
+    "right": "plusfresc:021597",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21330",
+    "right": "plusfresc:027737",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21330",
+    "right": "plusfresc:032656",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21331",
+    "right": "plusfresc:014056",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21331",
+    "right": "plusfresc:032805",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21331",
+    "right": "plusfresc:035793",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21332",
+    "right": "plusfresc:023464",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21332",
+    "right": "plusfresc:031460",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21336",
+    "right": "plusfresc:013469",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21336",
+    "right": "plusfresc:024581",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21358",
+    "right": "plusfresc:017148",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|single_explicit",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21358",
+    "right": "plusfresc:034564",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21362",
+    "right": "plusfresc:025401",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21362",
+    "right": "plusfresc:028870",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21377",
+    "right": "plusfresc:005610",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21377",
+    "right": "plusfresc:015154",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21377",
+    "right": "plusfresc:017149",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21377",
+    "right": "plusfresc:021964",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21377",
+    "right": "plusfresc:025084",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21382",
+    "right": "plusfresc:024087",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21382",
+    "right": "plusfresc:024955",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21382",
+    "right": "plusfresc:032598",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21383",
+    "right": "plusfresc:007301",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21383",
+    "right": "plusfresc:026359",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21386",
+    "right": "plusfresc:024087",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21387",
+    "right": "plusfresc:007301",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21387",
+    "right": "plusfresc:020399",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21387",
+    "right": "plusfresc:028899",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21388",
+    "right": "plusfresc:025363",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21389",
+    "right": "plusfresc:024819",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21390",
+    "right": "plusfresc:032912",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21447",
+    "right": "plusfresc:015937",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21447",
+    "right": "plusfresc:031368",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21447",
+    "right": "plusfresc:035397",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:21733",
+    "right": "plusfresc:032912",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:22313",
+    "right": "plusfresc:025402",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:22313",
+    "right": "plusfresc:031469",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:22313",
+    "right": "plusfresc:034563",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:22313",
+    "right": "plusfresc:035944",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:22392",
+    "right": "plusfresc:016284",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:22392",
+    "right": "plusfresc:024819",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:22651",
+    "right": "plusfresc:004470",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:22651",
+    "right": "plusfresc:006995",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:22651",
+    "right": "plusfresc:016654",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:23199",
+    "right": "plusfresc:025363",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:23449",
+    "right": "plusfresc:007312",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:23449",
+    "right": "plusfresc:035538",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:23449",
+    "right": "plusfresc:035543",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:23476",
+    "right": "plusfresc:008016",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:23476",
+    "right": "plusfresc:025510",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:23476",
+    "right": "plusfresc:030344",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:23477",
+    "right": "plusfresc:012746",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:23477",
+    "right": "plusfresc:020991",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:23477",
+    "right": "plusfresc:021894",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:23998",
+    "right": "plusfresc:024955",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:23998",
+    "right": "plusfresc:032273",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:23999",
+    "right": "plusfresc:014543",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:23999",
+    "right": "plusfresc:032912",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:24036",
+    "right": "plusfresc:023691",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:26992",
+    "right": "plusfresc:017632",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:26992",
+    "right": "plusfresc:032574",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:26993",
+    "right": "plusfresc:007302",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27021",
+    "right": "plusfresc:007312",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27022",
+    "right": "plusfresc:014934",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27031",
+    "right": "plusfresc:020549",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27038",
+    "right": "plusfresc:007312",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27038",
+    "right": "plusfresc:035524",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27038",
+    "right": "plusfresc:035538",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27054",
+    "right": "plusfresc:019507",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27061",
+    "right": "plusfresc:032380",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27062",
+    "right": "plusfresc:011232",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27062",
+    "right": "plusfresc:032574",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27063",
+    "right": "plusfresc:023245",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27070",
+    "right": "plusfresc:024087",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27070",
+    "right": "plusfresc:024955",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27076",
+    "right": "plusfresc:018783",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27084",
+    "right": "plusfresc:016284",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27084",
+    "right": "plusfresc:030025",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27084",
+    "right": "plusfresc:035524",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27088",
+    "right": "plusfresc:007311",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27088",
+    "right": "plusfresc:036676",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27092",
+    "right": "plusfresc:016284",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27092",
+    "right": "plusfresc:025889",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27092",
+    "right": "plusfresc:035538",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27095",
+    "right": "plusfresc:007311",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27130",
+    "right": "plusfresc:023245",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27130",
+    "right": "plusfresc:032380",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27201",
+    "right": "plusfresc:007311",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27201",
+    "right": "plusfresc:027787",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27201",
+    "right": "plusfresc:035615",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27202",
+    "right": "plusfresc:007301",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27204",
+    "right": "plusfresc:035616",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27208",
+    "right": "plusfresc:020484",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27208",
+    "right": "plusfresc:035524",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27216",
+    "right": "plusfresc:032574",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27218",
+    "right": "plusfresc:012881",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27218",
+    "right": "plusfresc:027625",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27223",
+    "right": "plusfresc:014543",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27223",
+    "right": "plusfresc:021864",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27230",
+    "right": "plusfresc:014543",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27230",
+    "right": "plusfresc:026359",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27232",
+    "right": "plusfresc:023212",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27232",
+    "right": "plusfresc:035744",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27240",
+    "right": "plusfresc:011232",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27240",
+    "right": "plusfresc:035543",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27242",
+    "right": "plusfresc:014934",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27253",
+    "right": "plusfresc:010650",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27259",
+    "right": "plusfresc:032598",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27260",
+    "right": "plusfresc:011232",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27260",
+    "right": "plusfresc:032575",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27268",
+    "right": "plusfresc:017632",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27277",
+    "right": "plusfresc:030025",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27283",
+    "right": "plusfresc:035616",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27284",
+    "right": "plusfresc:007312",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27284",
+    "right": "plusfresc:032272",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27286",
+    "right": "plusfresc:010650",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27288",
+    "right": "plusfresc:007307",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|single_explicit",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27288",
+    "right": "plusfresc:020549",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27292",
+    "right": "plusfresc:018854",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27314",
+    "right": "plusfresc:012881",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27335",
+    "right": "plusfresc:028899",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27335",
+    "right": "plusfresc:032380",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27350",
+    "right": "plusfresc:020484",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27350",
+    "right": "plusfresc:027011",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27356",
+    "right": "plusfresc:018854",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27356",
+    "right": "plusfresc:024819",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27356",
+    "right": "plusfresc:025889",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27367",
+    "right": "plusfresc:027625",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27369",
+    "right": "plusfresc:019507",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27398",
+    "right": "plusfresc:036676",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27479",
+    "right": "plusfresc:030025",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27514",
+    "right": "plusfresc:007307",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|single_explicit",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27514",
+    "right": "plusfresc:027625",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27514",
+    "right": "plusfresc:032598",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27575",
+    "right": "plusfresc:011232",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27576",
+    "right": "plusfresc:027011",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27576",
+    "right": "plusfresc:032272",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27597",
+    "right": "plusfresc:032575",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27692",
+    "right": "plusfresc:025889",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27700",
+    "right": "plusfresc:017632",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27883",
+    "right": "plusfresc:023212",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27884",
+    "right": "plusfresc:020399",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:27894",
+    "right": "plusfresc:025889",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28035",
+    "right": "plusfresc:023212",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28073",
+    "right": "plusfresc:020549",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28089",
+    "right": "plusfresc:019507",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28089",
+    "right": "plusfresc:024819",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28089",
+    "right": "plusfresc:032912",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28090",
+    "right": "plusfresc:007312",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28091",
+    "right": "plusfresc:024087",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28092",
+    "right": "plusfresc:023245",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28106",
+    "right": "plusfresc:007312",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28158",
+    "right": "plusfresc:018696",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28164",
+    "right": "plusfresc:025889",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28164",
+    "right": "plusfresc:027787",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28185",
+    "right": "plusfresc:020399",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28185",
+    "right": "plusfresc:027787",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28185",
+    "right": "plusfresc:028899",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28287",
+    "right": "plusfresc:020484",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28296",
+    "right": "plusfresc:023691",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28467",
+    "right": "plusfresc:012881",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28467",
+    "right": "plusfresc:030025",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28470",
+    "right": "plusfresc:028899",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28471",
+    "right": "plusfresc:012881",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28471",
+    "right": "plusfresc:027787",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28472",
+    "right": "plusfresc:007311",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28472",
+    "right": "plusfresc:027011",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28482",
+    "right": "plusfresc:015002",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28482",
+    "right": "plusfresc:029934",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28491",
+    "right": "plusfresc:026359",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28491",
+    "right": "plusfresc:032574",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28567",
+    "right": "plusfresc:014934",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28572",
+    "right": "plusfresc:007301",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28572",
+    "right": "plusfresc:014543",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28572",
+    "right": "plusfresc:016284",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:28572",
+    "right": "plusfresc:036676",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:29282",
+    "right": "plusfresc:019507",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:29282",
+    "right": "plusfresc:026385",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:29285",
+    "right": "plusfresc:011232",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:29285",
+    "right": "plusfresc:018854",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:29285",
+    "right": "plusfresc:024819",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:29285",
+    "right": "plusfresc:027625",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:29285",
+    "right": "plusfresc:035524",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:29286",
+    "right": "plusfresc:024955",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:29287",
+    "right": "plusfresc:017632",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:29335",
+    "right": "plusfresc:026359",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:33639",
+    "right": "plusfresc:019865",
+    "cohort": "challenge",
+    "family": "frozen_potatoes",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:3418",
+    "right": "plusfresc:024819",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:46954",
+    "right": "plusfresc:030025",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:52421",
+    "right": "plusfresc:019933",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:52421",
+    "right": "plusfresc:032117",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:52441",
+    "right": "plusfresc:032656",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:52441",
+    "right": "plusfresc:033685",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:52441",
+    "right": "plusfresc:035386",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:52441",
+    "right": "plusfresc:035391",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:52448",
+    "right": "plusfresc:011910",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:52969",
+    "right": "plusfresc:015002",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:52972",
+    "right": "plusfresc:027787",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:52972",
+    "right": "plusfresc:035538",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:60637",
+    "right": "plusfresc:023212",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:60832",
+    "right": "plusfresc:032575",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:60832",
+    "right": "plusfresc:032912",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:60833",
+    "right": "plusfresc:010650",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:60955",
+    "right": "plusfresc:031460",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:60955",
+    "right": "plusfresc:032322",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:60955",
+    "right": "plusfresc:035395",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:60955",
+    "right": "plusfresc:035827",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61405",
+    "right": "plusfresc:010985",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61405",
+    "right": "plusfresc:019865",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61405",
+    "right": "plusfresc:023552",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61405",
+    "right": "plusfresc:028522",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61405",
+    "right": "plusfresc:032787",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61405",
+    "right": "plusfresc:032788",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61405",
+    "right": "plusfresc:032789",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61405",
+    "right": "plusfresc:037023",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61416",
+    "right": "plusfresc:010985",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61416",
+    "right": "plusfresc:019865",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61416",
+    "right": "plusfresc:023552",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61416",
+    "right": "plusfresc:028522",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61416",
+    "right": "plusfresc:032787",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61416",
+    "right": "plusfresc:032788",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61416",
+    "right": "plusfresc:032789",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61416",
+    "right": "plusfresc:037023",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61421",
+    "right": "plusfresc:010985",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61421",
+    "right": "plusfresc:019849",
+    "cohort": "challenge",
+    "family": "frozen_potatoes",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61421",
+    "right": "plusfresc:019865",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61421",
+    "right": "plusfresc:023552",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61421",
+    "right": "plusfresc:028522",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61421",
+    "right": "plusfresc:032787",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61421",
+    "right": "plusfresc:032788",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61421",
+    "right": "plusfresc:032789",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:61421",
+    "right": "plusfresc:037023",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:7878",
+    "right": "plusfresc:023465",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:7878",
+    "right": "plusfresc:031469",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:7878",
+    "right": "plusfresc:034084",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:7878",
+    "right": "plusfresc:036361",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:7879",
+    "right": "plusfresc:010985",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:7879",
+    "right": "plusfresc:019865",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:7879",
+    "right": "plusfresc:023552",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:7879",
+    "right": "plusfresc:028522",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:7879",
+    "right": "plusfresc:032787",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:7879",
+    "right": "plusfresc:032788",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:7879",
+    "right": "plusfresc:032789",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:7879",
+    "right": "plusfresc:037023",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:7982",
+    "right": "plusfresc:032598",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:7982",
+    "right": "plusfresc:035616",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:7983",
+    "right": "plusfresc:010650",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:86243",
+    "right": "plusfresc:023245",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:86243",
+    "right": "plusfresc:026359",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:86305",
+    "right": "plusfresc:023691",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:86305",
+    "right": "plusfresc:027011",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:86838",
+    "right": "plusfresc:033688",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "mercadona:86838",
+    "right": "plusfresc:034374",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  }
+]

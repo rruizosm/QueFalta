@@ -1,0 +1,7002 @@
+[
+  {
+    "id": "453daf103b0541857536fca366f9e8b2d36fc63df97195d78566a8c49d15d0d1",
+    "left": "carrefour:589802506",
+    "right": "mercadona:27258",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "071b184819d3c40ae7ee36d4733ed41f74382d68540ccb6a229a20e494047b70",
+    "left": "carrefour:589802506",
+    "right": "mercadona:27261",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9bb9a8c62231466c555806badc4aef2e5d0c8a684f6c70887a493b75e2fe8d2f",
+    "left": "carrefour:589802506",
+    "right": "mercadona:28288",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d54f5ef09b9c30c7f86d29fed0e33ed0f0798ecc3c795d2147cfeb5a71b85a2d",
+    "left": "carrefour:589802506",
+    "right": "plusfresc:018854",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4e651d7d470e9228652dd8f68fa5aa58ef5fbeb5ecae5d63513b0b24be8886f8",
+    "left": "carrefour:589802746",
+    "right": "consum:7061877",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8dd718af61832c04f984d3089a6c2c7d0d05f0c954b8538348c295bd6d988682",
+    "left": "carrefour:589802746",
+    "right": "mercadona:27212",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "62d89bd0fa75170f8124c3b70d1407251d032824253aaa74726b7dddacf020d2",
+    "left": "carrefour:589802746",
+    "right": "mercadona:86243",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "40b0e68c716ec4c4e8658c139387605c1d3d5e4f108bfb8c0b88399458fd2726",
+    "left": "carrefour:589802746",
+    "right": "plusfresc:010650",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "880952e7e2d3e1681d14d3fea8698b60f0c7ca47f73bbaeff8de3eebb781eec6",
+    "left": "carrefour:589802746",
+    "right": "plusfresc:035543",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6f93a9f3116a3e269761f9f92cb372a0db7ae3d9691137c21c612df9dbeb261c",
+    "left": "carrefour:589802818",
+    "right": "consum:7153369",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5c1ee002fd7d73f674c91d3433de6f2364acfbaab0784a9b66b4ffac814a5f6c",
+    "left": "carrefour:589802818",
+    "right": "consum:7479541",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2dab28fd56e668eead2f7f1790e1d131485075f348d6d0e4177d333e1899a928",
+    "left": "carrefour:589802818",
+    "right": "mercadona:21389",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "afceba9650d40b29dbdc163279930583366b24815e1ed652239d2b7357d00f8c",
+    "left": "carrefour:589802818",
+    "right": "mercadona:27061",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a8bd899c1f7c6eeba849a7c0fa42c7de3514ec06d1c7a23d9e6f774b278b1523",
+    "left": "carrefour:589802818",
+    "right": "mercadona:27314",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9c1609a50831107a17e4278b7050afff8feaa210fcb5cea1db4d722115b3242c",
+    "left": "carrefour:589802818",
+    "right": "mercadona:28060",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "343803da025dde234e39a74a7fb8fe1655b2bca3f3dbc0555558962489f5c6df",
+    "left": "carrefour:589802818",
+    "right": "plusfresc:026385",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f0cd0b2c6f79d5e1fe2312165a31c0d87e07b1e1b5285aac7ec72cf886c945c9",
+    "left": "carrefour:589802818",
+    "right": "plusfresc:027011",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "cfe44094d73cdbc294b0cfaee3b4921a6bbd19849bf32e1074ce7ec593db7e4e",
+    "left": "carrefour:589803146",
+    "right": "mercadona:27021",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "cd258be12327e0cc78b942bcebd3cd8ac32873baf87a20df2f6f133d69c5aeae",
+    "left": "carrefour:589803146",
+    "right": "mercadona:27277",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7763031406828be563fbbc848d7f003b9ddbb33895f2f2bebeff6622bdc089f2",
+    "left": "carrefour:589803146",
+    "right": "mercadona:28035",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e5cffdb8cf5b0faea4f356f1c1aca7cb892b5bb81155432296c7f1c951ee686d",
+    "left": "carrefour:589803146",
+    "right": "mercadona:28482",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "1a88c12261f471bf24eb4612d845aec8c61bad0f6f52d6a901866d741b7843c6",
+    "left": "carrefour:589803146",
+    "right": "mercadona:29335",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ed53238482cc1d6c57658e4c315416a677b58b885fc29bb28c34392556dc195d",
+    "left": "carrefour:589803146",
+    "right": "plusfresc:035615",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ce74b61c6ddef29597147e1576e5bf9434870e7ff836d8b8a7e068e2389787bf",
+    "left": "carrefour:590202485",
+    "right": "plusfresc:004470",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "52ce32fcf9315835e18fbc7a5716da86d9ee8a69063973728346558082012a8a",
+    "left": "carrefour:590202581",
+    "right": "consum:7391030",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "13d3d2ca644b7d6f13aecb099c6ed0980fc9a5304f587bc25bb198ff07aaa5d2",
+    "left": "carrefour:590202581",
+    "right": "consum:7444284",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "51dff26a6b2000d6f7a2df7f975ed5b32687bd54ce4a0340f7106d81aaccfbed",
+    "left": "carrefour:590202581",
+    "right": "mercadona:20087",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e295f5c026e4d75dfcaae4dccf703cf45891610f277470809197f3a6caaa725c",
+    "left": "carrefour:590202581",
+    "right": "plusfresc:007379",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3ac9009b0f532b8e4e5b7a7709ffcfa681f84bf6729737bcd4795f425a283577",
+    "left": "carrefour:590202581",
+    "right": "plusfresc:021597",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "dc4cef014dc67ed187dec683ec654a3bcd02c6bf001d43cb6ee478a086963441",
+    "left": "carrefour:590202581",
+    "right": "plusfresc:021893",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d92ed8854867df85499dd77e3dae3b500a8934c9b3566df300417570f493084c",
+    "left": "carrefour:590202581",
+    "right": "plusfresc:025401",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "3501e776037be9713ff212a1a103b2e3eac7f446f0e12394842f88a7e123a4a8",
+    "left": "carrefour:590202581",
+    "right": "plusfresc:032117",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d2a021ea8137770cc9c5d01212d709644721780c532172f2bfb9fb039b024797",
+    "left": "carrefour:590202581",
+    "right": "plusfresc:036733",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "conflicting"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b5de36368f9b56506a58ad227e073364fe72dbf89934d4fe721c6c5d386dda1f",
+    "left": "carrefour:590202583",
+    "right": "consum:7199776",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c81f73ff09e3708967ed83d5fa80ec6a024797ec4faa95b7a81a5329cdcb0652",
+    "left": "carrefour:590202583",
+    "right": "consum:7282155",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "3e9a7eba45bd2cbb99782820d2e78ac0c0544a79189275bba33354adc59ca5e4",
+    "left": "carrefour:590202583",
+    "right": "mercadona:20037",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "dc764805462eaa64a9e42071fa6c4d58b7c9cbc7da245229e648444cda8da0f1",
+    "left": "carrefour:590202583",
+    "right": "mercadona:21330",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f37ba225130daa0e6e9462d7b0476e37b1f539e7fd2ffbe54593e8b2746c5d80",
+    "left": "carrefour:590202583",
+    "right": "plusfresc:021893",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e70c3c1c1ca2fd1c123cbf9310a68f0178d952655e7541ca3270264272292988",
+    "left": "carrefour:590202585",
+    "right": "consum:7358646",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7968afe1e192509d6fd431ecb00b3d200c00d9ad6142b32093fd82813ad61851",
+    "left": "carrefour:590202585",
+    "right": "plusfresc:022382",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "1fe78373a6d6f3f2eba457ca8a1acee516bb8f98564bd0ce20ed115dfbf10783",
+    "left": "carrefour:590202585",
+    "right": "plusfresc:023692",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b9b76b1127661cda9db408b751b8b812ee9e7c1741f5fc40e789584ed2594b14",
+    "left": "carrefour:590202585",
+    "right": "plusfresc:035395",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "cf22417b535c6a3cd5e78dd9f5998302f9dd3a4b07f6016ebe646ce2a19fa830",
+    "left": "carrefour:590203061",
+    "right": "consum:7294382",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ae58b5ebf46a442094e795389586ab0f7bb0ced37070bef737ec66bc4c72bdb1",
+    "left": "carrefour:590203061",
+    "right": "consum:7340875",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b7ae52a1a5ed58fdb166831cf027c12d7e0e10322070f238a4055001879284b6",
+    "left": "carrefour:590203061",
+    "right": "plusfresc:031878",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "061a2548ca49f68e6b74b965e7254fa4fbb1e3af6833082b26ab228ed3849c54",
+    "left": "carrefour:590203063",
+    "right": "consum:7302875",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4cd61e69a2c42eb016ea40b039f4bec7207e186df3b9974cf424f30189bf1b81",
+    "left": "carrefour:590203063",
+    "right": "consum:7358646",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f2f735d6c38b898cab1cc7f9a8dfd69dbeb61f2632b60f4d0c4781316249bf9b",
+    "left": "carrefour:590203063",
+    "right": "consum:7397669",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ec7e540266c175ad0dfa092e935dcdc2e0bffd02c3305a6f4da8c26d3695a3ce",
+    "left": "carrefour:590203063",
+    "right": "consum:7406440",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bf670da4395e58845c29b7ff1ad8c3a11d386430084eb63e7f30a2a5c5af0046",
+    "left": "carrefour:590203063",
+    "right": "consum:937110",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2ffa9600f9b97ab23e840a184915e2294e1320f2391d608a7bea09fa409ba76b",
+    "left": "carrefour:590203063",
+    "right": "mercadona:20355",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "861e10ce086030ab2e5413a6895e66a036a6fb4e853d506444933bfda2a1019f",
+    "left": "carrefour:590203063",
+    "right": "plusfresc:029990",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "881c04e4909eada20b545ac039d2523f4c75b08c6be0c32d361452df5288dfe6",
+    "left": "carrefour:590203065",
+    "right": "consum:7340953",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6d980269004f2187885f5bd257c4c0777078acb480b8c888ae22988fbd3d7482",
+    "left": "carrefour:590203065",
+    "right": "mercadona:20083",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "da9f6a1b1a2db4ccbf89633bdb21d25bf8dab11757c7a434092db37ad897f331",
+    "left": "carrefour:590203065",
+    "right": "plusfresc:034090",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0238821c22a252a99df4e124a8a719def00d17bb54cc0cba7991066f35b0b10e",
+    "left": "carrefour:590203067",
+    "right": "consum:7294382",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "42623457a4e4ec37a17a06a92e9ba54217a62d004f5d75681d26ef619db266d2",
+    "left": "carrefour:590203067",
+    "right": "consum:7294387",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "1ea43038f87fa80d1f7a27d2eddd44a6bcd886fb5a6491247b83e52e7770bbbd",
+    "left": "carrefour:590203067",
+    "right": "consum:7415461",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "60c481699b326ffde14e3aac938baa60c2971385ee997cf6d6b861cbd9a71fa7",
+    "left": "carrefour:590203067",
+    "right": "mercadona:21318",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5c3ddf7f031e1bcbb83d4dff408b20c3dcf2b3ad2fb8c688f5efb4a8f1aa48ce",
+    "left": "carrefour:590203067",
+    "right": "plusfresc:022184",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "1eef23c10dd67175524cac9fe3cf808c799edf49b7ee48178295b3f2e0048d44",
+    "left": "carrefour:590203067",
+    "right": "plusfresc:025084",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "badb51b84db86de39f375a6931517d884646d908daa441bb49cdc8a3b2d60005",
+    "left": "carrefour:590203067",
+    "right": "plusfresc:028274",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f5448677e03394a00903cd4e476851a0d0487cfda0be93d4e1cb3f8c1de0636b",
+    "left": "carrefour:590203067",
+    "right": "plusfresc:036725",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6fa4100374b8382a05edfe54f15a5556071724154442b56fd7a46c0ef840a9aa",
+    "left": "carrefour:590203071",
+    "right": "consum:7443971",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "62b53cd3d3fe9be73d5545080774cf7d2c86a1af2963232412ef533fb1ce93f8",
+    "left": "carrefour:590203071",
+    "right": "consum:7453590",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2a732b008fbaef151b19739617e06f1403ff63dc69ba6e1b75b93c9a1a8a1c3f",
+    "left": "carrefour:590203071",
+    "right": "plusfresc:021056",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e7e815f5791eacc4f576683bee25ef24594b74bdc316e27c8d73679a9adb971a",
+    "left": "carrefour:590203071",
+    "right": "plusfresc:022382",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "93bcd16d89787703af913f81e2173c01c0487b9229325686483010e2e4c90ce2",
+    "left": "carrefour:590203073",
+    "right": "mercadona:9981",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8dc8793d81959d12a64d37901ebf8f5b6c54119fef3e1f90f2ddd021cf213d81",
+    "left": "carrefour:590203073",
+    "right": "plusfresc:007379",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "61d33f97c816b8de5c8fba22dbfbf6e1ced0eace1236fda92e18716bc560b59e",
+    "left": "carrefour:590203079",
+    "right": "consum:7046514",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "798f90e10ae402d1223cf941910886486fa5e49eefa03b7bbeb5bf88e89db20e",
+    "left": "carrefour:590203079",
+    "right": "consum:7391050",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3647c9efd59f0d4af90c38c089f4b867f55f3cf35a73d717d60950ede4ff99a1",
+    "left": "carrefour:590203079",
+    "right": "mercadona:20248",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "76e39c90c9d9f3acaa8b0673241e5317e9a010c799797dfd3b3e0490ed643f80",
+    "left": "carrefour:590203079",
+    "right": "plusfresc:012251",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "011351b174d559f4ccf9bbf2eccdc7c48567f91892d0831d995b518a6b90dc29",
+    "left": "carrefour:590203079",
+    "right": "plusfresc:013161",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ab17561b6632b553ceaa7d30588503eb889cce6c97a4739c87fc35437d934c6d",
+    "left": "carrefour:590203079",
+    "right": "plusfresc:035388",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "343b84204a1994b8fd558620a83bc53426f604807dd37bea44f594a3406f17f0",
+    "left": "carrefour:590203079",
+    "right": "plusfresc:035793",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0cadcfb5e2655a629b4e00416ee26dd6dbdfc2d1d9492d9704d135befda595a1",
+    "left": "carrefour:590204489",
+    "right": "consum:7481559",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b5425cdc610b610dda84523d56f4173f4c188e58b4d34beb4e553a34de376390",
+    "left": "carrefour:590204489",
+    "right": "mercadona:12980",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "475657b39f6b06325b0f63d4c7d5ce8dcde6937720f5e9f6af67766280a6aea6",
+    "left": "carrefour:590204489",
+    "right": "mercadona:27884",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0f63c8339e1265c1b4f1dfa76c87af5f6294cb804ef366085d406b01741653b2",
+    "left": "carrefour:590204489",
+    "right": "mercadona:29406",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f778e2e26bae313fe4b093cb374209509486c35049d6724149297962fa96d61e",
+    "left": "carrefour:590204489",
+    "right": "plusfresc:035524",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a5afb39816d61493530e4a9dc4bab7b2d7f4c56728742125e97ccd7fd2adb27a",
+    "left": "carrefour:590204573",
+    "right": "mercadona:27253",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "06172ce178b2937282be280db6281aaf92c2de63fbda84325772351b2f92d996",
+    "left": "carrefour:590206223",
+    "right": "mercadona:20248",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "aa4f1718eb51bc12e82635ba540b30350260a4b508faa609c6b5eb5ebf80cae1",
+    "left": "carrefour:590206223",
+    "right": "mercadona:21377",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "f6084c92f4e3a562796247003cbe9fb196901c433693b140c2ae8fb0dc68e56b",
+    "left": "carrefour:590206223",
+    "right": "plusfresc:034084",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "19dc85277f70918cdfe6fcfeb7f001fcbabc900c1cf6f32928b1491e5340ce99",
+    "left": "carrefour:590206223",
+    "right": "plusfresc:036186",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "aadcf1d985210b833941c96465901fb8694685014b7bdeb73b6a8f10cd40af69",
+    "left": "carrefour:590206225",
+    "right": "plusfresc:027291",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a17265bd9be88e5f54689263bbf0540872c5d22b610f95f334e08bcac0755758",
+    "left": "carrefour:590206225",
+    "right": "plusfresc:031469",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9502fd9efdfccbeab62b49a01368e163cde0c6e7933aaf0a27b403402a703cc4",
+    "left": "carrefour:590206233",
+    "right": "mercadona:20953",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "97378c1876cfd86fd23cb11bc1e7dd59d7bd6edbd43144941a8c182ce1c191c5",
+    "left": "carrefour:590206233",
+    "right": "plusfresc:020991",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d07bccbcf2a7cf8602a51655433b53efd55b27696f63ea728fd5a7b2ca0c69c6",
+    "left": "carrefour:590206235",
+    "right": "mercadona:20584",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "87a075fd676f564cf980f5003c5406b8b47e02de2493b37f1d8eb29dda08e148",
+    "left": "carrefour:590206235",
+    "right": "plusfresc:008053",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d914c90365cbcfa854d51407b1e3592f9df9e5ed6955c1b47136408db6834653",
+    "left": "carrefour:590206235",
+    "right": "plusfresc:017600",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0dda58ca97f1edbc6bec01ffc23373d8b389d869ff1a5cb6e6af22345d4ddb21",
+    "left": "carrefour:590206235",
+    "right": "plusfresc:035386",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "a3cfd33d051a481990c79ab190ed7961aeb703f5fe808089282963bf3fdbdea0",
+    "left": "carrefour:590206243",
+    "right": "consum:7260834",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "2888867430bdcb951d3b99f9298b22e81bad2b2cb3be510d95269e8e55433f4c",
+    "left": "carrefour:590206243",
+    "right": "consum:7303522",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "a7a912c9bcd417614cdaa72edcff1d6246dc3e50ce4abba95c4524745e59e0be",
+    "left": "carrefour:590206243",
+    "right": "consum:7443968",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "92c2c5d50b70cdd61006767cca7ad7f8a01591ddfcf74a9cb27cc13275d4c79b",
+    "left": "carrefour:590206243",
+    "right": "plusfresc:014056",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "01edecc9d60cd3ac58569069d05ccd06fb07b157e720c7a5eb4aa4f828ce4e67",
+    "left": "carrefour:590206243",
+    "right": "plusfresc:025087",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "905ce1aaba721a551a2e0eb1c918d016bc2668e3b43ee4169bc4eb685a4871ef",
+    "left": "carrefour:590206243",
+    "right": "plusfresc:025865",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "66b64578639df685982ddfd3379879708876e56f19540a98bbce6ae49551acac",
+    "left": "carrefour:590206243",
+    "right": "plusfresc:036361",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3ba278fb04a4285001b548a721114b5437ab95bafa7ed8215039d9ec564a965f",
+    "left": "carrefour:590206245",
+    "right": "consum:7192008",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "2de2781d0c6399be423658feb485fb3e15e0b83a42959ec6ff14447688641851",
+    "left": "carrefour:590206245",
+    "right": "mercadona:20382",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "b11d9449b4d8671b47d7d608bbe873df34d6c21ea921f78a970913458b64f997",
+    "left": "carrefour:590206245",
+    "right": "mercadona:20571",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "d7db7eb41d4ba8f2ab337fc97077adcf5e17ca1ee41368c96473ae98ba681f10",
+    "left": "carrefour:590206245",
+    "right": "mercadona:21318",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "976c82ca89e413fd3d2865c7ca854d75c2a3559ca2157f12f772b6c213047755",
+    "left": "carrefour:590206247",
+    "right": "consum:7067788",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "6f022af79e9f2b7bc802c58304042477003fd848ead09035f31d87dff8ebee42",
+    "left": "carrefour:590206247",
+    "right": "mercadona:20396",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "d937abb80753afdebb231b5aab7c4e8012baf5f1af8272f659b696f7e5d45d29",
+    "left": "carrefour:590206247",
+    "right": "plusfresc:004471",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e4aed35a622a1b4ce351b155e93a496a6c2b757ba306bf42a9eedf851b1bb7fa",
+    "left": "carrefour:590206247",
+    "right": "plusfresc:013618",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0fb912700989b8e449a7542d94e9d91ca8e07a00788f22650788fd6af5ea09ab",
+    "left": "carrefour:590206247",
+    "right": "plusfresc:034134",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "450f7e65e321393b27582584ebff1237cfd4c8e1846f2330369a834e3ebca19d",
+    "left": "carrefour:590206247",
+    "right": "plusfresc:035397",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "75ddbbab07208f7a7285923e0378f3a7653886fe0c048e17614364ed542b54e4",
+    "left": "carrefour:590206247",
+    "right": "plusfresc:035828",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "f5efd04580f1305f6c49c93b9d7003e2561dbcc68cd20ac99ec29d6dd920e37f",
+    "left": "carrefour:590206249",
+    "right": "mercadona:20087",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "df1d2fe005bfad7e0cd6946ca233d61183a0634667dd0c7ef0cb07fc7ff4c6e0",
+    "left": "carrefour:590206249",
+    "right": "mercadona:7878",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "0a6e07a1c06ea55c302f2991b22c8ffc7768ff741ec9a1a0c5a0600ecc44edce",
+    "left": "carrefour:590206249",
+    "right": "plusfresc:033248",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b2b44c55a35e89f7f6261cfbac628618171d6f1e6c92312d586d49d6ddbb8e2a",
+    "left": "carrefour:590206249",
+    "right": "plusfresc:035393",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b70dfc7833fa15b098897677f0d7cc01ce0b4f6a3588f60b7807833e711d73df",
+    "left": "carrefour:590206499",
+    "right": "consum:7213721",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "1f646e7b2e81a90b1678c6292bdd0a8fc491d5f3b2a4bbc00d08a1df447ed291",
+    "left": "carrefour:590206499",
+    "right": "consum:7337876",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c9c1d30d8b10ff527daa38664c4cfec62783173ac5dbbbaa558988e3a3010aa3",
+    "left": "carrefour:590206499",
+    "right": "consum:7391043",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "16addc93a708120bbfa1334753f369fd0751894e9715813a97b0c954dc791e95",
+    "left": "carrefour:590206499",
+    "right": "consum:7431385",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "38d78598ae616291f7673097b5c2fec46eaa7c5c71bd3d79b58d697ce5f4419e",
+    "left": "carrefour:590206499",
+    "right": "consum:937177",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f8d7951ad7f8ff676bf616c226cdb67f28be7934019c51650b1b4d27c77cf5a8",
+    "left": "carrefour:590206499",
+    "right": "mercadona:21329",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c1a9693b42495fb50adfbf5835126beb4d93c832c19c9fa4c0684de0a8878902",
+    "left": "carrefour:590206499",
+    "right": "plusfresc:022183",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "855f71772d216b3290f99c048bda1f4ada8562d1d2f7132cdfb38ef336559932",
+    "left": "carrefour:590206499",
+    "right": "plusfresc:035826",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9b9eb229b0dc5e5faf1004daa4db586ed03b1b2bd7277c107afd2a993297a0fe",
+    "left": "carrefour:590206501",
+    "right": "consum:7391030",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7d55852509a109bc6eb5934bdd74be2a07c874ea77412b84ee621d7e40ff153f",
+    "left": "carrefour:590206501",
+    "right": "consum:7430312",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "f286d1944e08237ca6b5bdb1c9f5e72303702c637386df9e5762ec27573dd470",
+    "left": "carrefour:590206501",
+    "right": "consum:7456056",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "03045675e9250ae0878b7673c4f1bf80ad7b6943fcf273611366ad97cfe614c0",
+    "left": "carrefour:590206501",
+    "right": "plusfresc:026480",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c2011ed4e57ec7fde1bdc81d4a79feba1e31336b5e11d09ae50f25df5839a8d1",
+    "left": "carrefour:590206501",
+    "right": "plusfresc:031084",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5348da344873d1bf58d6843ab61d5533d49092a1e1eadadc6a5d62af3b0661af",
+    "left": "carrefour:590206909",
+    "right": "plusfresc:020484",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "fa773b07802dc684724a678e33185d3698a3253b98b4574c9920bb3c0dfdd979",
+    "left": "carrefour:590206909",
+    "right": "plusfresc:027625",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c2b23407b43473d3a67d21802277157d197a93ddfe460590e8d928e4097482bb",
+    "left": "carrefour:590206909",
+    "right": "plusfresc:032574",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3471765fe3b197f6a019bdddb6eb63691d1e64681641653fd7d2fa900fb1f5e2",
+    "left": "carrefour:590206911",
+    "right": "consum:7473127",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4325fb14ea994ba0f4d8870e4bbc13185861f5a198672039dfca0194aae21b3a",
+    "left": "carrefour:590206911",
+    "right": "mercadona:21390",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2b32e2dec2af301c387f9793d6923281c4d26f14183e283f10d693fc4e686352",
+    "left": "carrefour:590206911",
+    "right": "mercadona:27212",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a6e6e0b6a238176551254ae4ed90af0f5dc97e2b5a3d6115625eb6bccc4313a0",
+    "left": "carrefour:590206911",
+    "right": "mercadona:27218",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "af3a4205d17327488ab19de95f99b8a663a17716ff39b64946287d8c3f462502",
+    "left": "carrefour:590206911",
+    "right": "mercadona:27230",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9814a6a788d926019648966fa07c032be578cec14b0dd15ac74bc4b2c1322687",
+    "left": "carrefour:590206911",
+    "right": "mercadona:28035",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "08d4c5f4e0fe998cd700cfe68e1a5b0c891851ad0667a730aaf7dbf8de1bc76b",
+    "left": "carrefour:590206911",
+    "right": "mercadona:29406",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bef1ab8f9dcbeef58d95a2ed3fbdc30c51094854d258a6583f437ddd098ca704",
+    "left": "carrefour:590206911",
+    "right": "plusfresc:035615",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "cc195b6ad45fc87f2bc1e03ca36dee78685608f50fd5c54833c5d51755df0e5e",
+    "left": "carrefour:590207595",
+    "right": "consum:7329121",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8024a5ed7d4e4365d9868cfda95506183be2d759d9e1afb57ea29a66f9b1e3c5",
+    "left": "carrefour:590207595",
+    "right": "mercadona:22391",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "819d184c3ae097752c3f6ecb3f95c2369ec0d25431670e9e2376fb4d08685a7a",
+    "left": "carrefour:590207595",
+    "right": "mercadona:28567",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "88ab68098920adaab8a6083097d8606309929ced056c45c758d841c30ff61505",
+    "left": "carrefour:590207937",
+    "right": "mercadona:21330",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c0cd33a088ad3211876dfa39f1c27923ebffd35c66f9375aa62d4922463b713f",
+    "left": "carrefour:590207937",
+    "right": "plusfresc:004470",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2c2f7ab869c63aa3f636a754d851550f94e31e0491f6c424b95ad306acd6bf73",
+    "left": "carrefour:590207937",
+    "right": "plusfresc:017149",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "cd9e618c9b14879503c1d2a6f2efc413d4a33d608b3b4ecafa7ac25f01f125d9",
+    "left": "carrefour:590207937",
+    "right": "plusfresc:033688",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "09a743b5e04351d55160f962f510c9361122c81f52d0f0557539a7128a1f3038",
+    "left": "carrefour:590207939",
+    "right": "plusfresc:005606",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d6de02cca72c14f42984a71fae43083c1c7d52b4d97e0d7328909b78a30e1f7b",
+    "left": "carrefour:590207939",
+    "right": "plusfresc:032310",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8a3b19f52750433e99616045251b287851f2467531a5413b1f1b914d114b435d",
+    "left": "carrefour:590207939",
+    "right": "plusfresc:033682",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "154f7f3732ad558f6fb8933220ca60e09febe6a03c7419d9e75b90e8bf51b365",
+    "left": "carrefour:590209475",
+    "right": "plusfresc:030344",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0d45d44fa10a5fbffea23833bf1ffb9309e500dce0f4caba34f897fc351272f3",
+    "left": "carrefour:590211143",
+    "right": "consum:7315344",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4f73befa4a6bf72670250460d9c982ae6d386f40f0ac176e1e61e5c1bc80cb86",
+    "left": "carrefour:590211143",
+    "right": "consum:7333623",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a6444f6a250d6a18814f40b6e6bf0f4dafcb1ae74e6456bb1c11ad9f5f9d283d",
+    "left": "carrefour:590211143",
+    "right": "mercadona:26992",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7877b589f8843da261416c1a4a497c57166fda609ff13e49834f324c0c996e09",
+    "left": "carrefour:590211143",
+    "right": "mercadona:27099",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b543951013cbf370600463b28a60579ac3f6c39648236c0c02397449e8623b9f",
+    "left": "carrefour:590211143",
+    "right": "mercadona:27259",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "25eafd5c421ad69b4b9f66af9bb70c9f455f47c5c24eba572cd09cdc9ede3664",
+    "left": "carrefour:590211143",
+    "right": "mercadona:27283",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a304b000f93f27bc10a56bc2a5cd8025aa8f947c4fcc4ac0233133689fbb2c82",
+    "left": "carrefour:590211143",
+    "right": "mercadona:27356",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5fdba1b42305a1308619a2bc7c27f647c965e05239d6da159e86cb7826687694",
+    "left": "carrefour:590211143",
+    "right": "mercadona:86243",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0830872214200391895e10a705f230ae94fe3fd0d32e346814e5bd38ff48e44d",
+    "left": "carrefour:590211143",
+    "right": "plusfresc:032273",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0a7213daf189c2b5437a65b113031a13b8bca98f7c5234beb2139f73f58838a1",
+    "left": "carrefour:590212035",
+    "right": "consum:7308554",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8ebe7b2616c0757b7301ca527df50e1c63ac045320c4775b7de29a0ccab9b328",
+    "left": "carrefour:590212035",
+    "right": "consum:7416449",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f9422414344eece0849faa50b6a121004b7031a5b5871324ba66422271fe3705",
+    "left": "carrefour:590212035",
+    "right": "mercadona:21388",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "be5483fe2dfbc90908bf2b91c419d6c02a38a308af8810f6fe820d3e3eb05f70",
+    "left": "carrefour:590212035",
+    "right": "mercadona:26993",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b72268de853a81bab95f79cddaa6a1960ee72320337addec5fa55f605ef0a67e",
+    "left": "carrefour:590212035",
+    "right": "plusfresc:024955",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f62f3bdbbd7af5a03b2476b11ed885ef9a6411a855098b9a73221366e6baf789",
+    "left": "carrefour:590212521",
+    "right": "mercadona:28163",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "12b0b8ab2fca620f591b4d3464318459562f2e64c594b2f62a5448419322cd4f",
+    "left": "carrefour:590212521",
+    "right": "plusfresc:010650",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a0a4a2376fe9abe335d80f2f77e1376e4637d7c1c1644710f16b920405a140d3",
+    "left": "carrefour:590212521",
+    "right": "plusfresc:035524",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "80160310e7f58f7489e134a5d8219c0b91bcb88db389e2c49e5a8c134d80a3b0",
+    "left": "carrefour:590212541",
+    "right": "consum:7380223",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e4f1447f3960b4b6d174bdc72ac9c90729c3898c8f9d5b59bdd21dd9de041fef",
+    "left": "carrefour:590212541",
+    "right": "consum:7416394",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "de33f12f58d5637f394a14af387c15e8a0d2e254e01a1715cae8f36af6746c10",
+    "left": "carrefour:590212541",
+    "right": "mercadona:27213",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a69d57102faa2c4530fc090aaba593a22d5d8d50bfb501ad1bf87c3fc0638557",
+    "left": "carrefour:590212541",
+    "right": "mercadona:27218",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "94a5d73a5cbebfffce9dfe2ec2d9d9eaa4f1782baf11ebf917a88bace368e65f",
+    "left": "carrefour:590212541",
+    "right": "mercadona:28164",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "efc3dfeb304a2ef6b2bb7a66d43e685f775b30007c2cd704e8f55f5f6e716ae8",
+    "left": "carrefour:590212541",
+    "right": "mercadona:29285",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "cb5aa8ae1ecec69c9b0b6e9e5415b7a7991d6b2ea12e0bcf1f6016b9ac03ed3b",
+    "left": "carrefour:590212541",
+    "right": "mercadona:29336",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "72d15ab929ff4c8789c96328d79c217381477794b5368a50b0f0a8aec9e078ec",
+    "left": "carrefour:590212541",
+    "right": "plusfresc:024819",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "902a719bc309cec13507f34c6e72afd7956779c8af442a60583308881e6a0508",
+    "left": "carrefour:590212541",
+    "right": "plusfresc:032273",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bbc9e1ab268c5d5a7e1a1f78d247422cb612965bcc4dae7f66727ad2ae1f58d6",
+    "left": "carrefour:590212543",
+    "right": "mercadona:27061",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "fa80f740f40b5934c32521addb2a727c030c297d875706259e6ceca52e5d34f4",
+    "left": "carrefour:590212543",
+    "right": "mercadona:27291",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "68da00ab2c18c183151768607ff456d498b69c59e919e06ce56f736e335aec19",
+    "left": "carrefour:590212543",
+    "right": "mercadona:29406",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0e6cc011fed6f3a0f48973c01bb41a491fa84db9461efce28b576088ca62ec14",
+    "left": "carrefour:590212543",
+    "right": "mercadona:86806",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f2c9ddd784ff1144d8a50310a7b3f0292563ab976c86a33b3b9f140510bc7792",
+    "left": "carrefour:590212545",
+    "right": "mercadona:21382",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "824c97ba630ad366a70d970ae2077697c87346e6cef629d99e6896d9142681e3",
+    "left": "carrefour:590212545",
+    "right": "mercadona:29287",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7722763456ea7f2b44a1baffedab3e94431c5fbb1ee2e37bd9a39ac8cb8c4c75",
+    "left": "carrefour:590212545",
+    "right": "mercadona:86806",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a13ba23e58ff4f7efd0fa5ea41b7d3834d4b6cf0914f8d29629830eefe59c9af",
+    "left": "carrefour:590212645",
+    "right": "consum:7290526",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "60628319f392daeaeaa2fff9b8aa5dd2d3e6e0fe8bd938adef96e54e155b1c5e",
+    "left": "carrefour:590212645",
+    "right": "mercadona:21382",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "746636023e0df79919bc04eaea0a14d3a8fd9deb7b4900ac27ae75cc22bc3329",
+    "left": "carrefour:590212645",
+    "right": "mercadona:21384",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "cffc2c1438e2da977acf28de50bbc24dd425b02912e20e5e5709bcaad15a2764",
+    "left": "carrefour:590212645",
+    "right": "mercadona:27242",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2a98c91914f1186d70f0f50ea881703cd48012c7b168e220a3b72c1316c5a4d9",
+    "left": "carrefour:590212645",
+    "right": "mercadona:27368",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "27d0748b5e8bf209a6bdaafeb378eaf3f103f316df16bcafcc61551783f2ecc9",
+    "left": "carrefour:590212645",
+    "right": "plusfresc:018854",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5f209124b73d3e4aa342d62561d2f26fafa3123604c8b1c7ab22d13001e23d03",
+    "left": "carrefour:590212645",
+    "right": "plusfresc:024087",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "55809c3d4afc0e91a8934fd045f25b164803147d0ca983dec045a2be8bc049b2",
+    "left": "carrefour:590212887",
+    "right": "consum:7398931",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ee17e69fbcd8aef3cdfc990012f0391d0e5d9629b956be5d727f115a0f1223c0",
+    "left": "carrefour:590212887",
+    "right": "mercadona:22391",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c71b34f6691e6a7094cfd8535d52cc9989d0eab9e0c1c7d5a64119a17e5ff51e",
+    "left": "carrefour:590212887",
+    "right": "mercadona:26992",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2b4000f0783ad82ada17a71cb37552ad4b6a1dc23a88ed7af855c9b3d990b9b1",
+    "left": "carrefour:590212887",
+    "right": "mercadona:27092",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e800c08aab491df299829ebadd851ae3640e21f4ca6373535c4fc68fe4312d51",
+    "left": "carrefour:590212887",
+    "right": "mercadona:60637",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "1e9d1bcfd9f5128e73e436577f91fde57c8363b652e5c2de08d03d10cadd00d5",
+    "left": "carrefour:590214521",
+    "right": "consum:7147895",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b6d441fde64e651507a13c7a37794afa19366ab2003bf223f97e35bb3bf54cac",
+    "left": "carrefour:590214521",
+    "right": "consum:7190499",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e8540a1ddf6e1ad78f01f07957249c6d6f119441de1e62de519c69fa6235d2b1",
+    "left": "carrefour:590214521",
+    "right": "consum:7225709",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bc0f92498abe6c1952efa9f34de1d7d0b64123c133b8e8e8f17f5c37db26a577",
+    "left": "carrefour:590214521",
+    "right": "consum:7308554",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "360a1f0c63fef63c5f54e8a9a953f597f616d5e08690d8ed31b95c82dd0a3290",
+    "left": "carrefour:590214521",
+    "right": "consum:7310563",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bab9dec64e9ef64fcbab1b38e0e8eceaea7e51e3219e57d1c4554a9344125063",
+    "left": "carrefour:590214521",
+    "right": "consum:7380223",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5d0f7c60d04030e312fead4d9a92cf99023c09b33e9a275537f4d762b74acec1",
+    "left": "carrefour:590214521",
+    "right": "mercadona:16585",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e96abe718357bf6f04cae65103505a02a8cb21d68aafe043da2abca7faa86364",
+    "left": "carrefour:590214521",
+    "right": "mercadona:52969",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a6b4ac98960e33161f80f80865cb17435ba0b3d82b356ae96bedde2499fb3bbe",
+    "left": "carrefour:590214521",
+    "right": "plusfresc:020484",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "efa3180779b67a2ecee4b93c35fc8e763001482d7c2242f1574713fbb9489d6e",
+    "left": "carrefour:590215207",
+    "right": "consum:7433431",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6d4263bdd9f24db00ae8b4e8145a08ffe2aece5d2e66656f9a9e0f3f28bd5378",
+    "left": "carrefour:590215207",
+    "right": "mercadona:27057",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "704cf5c2962f15b38e3d29979669f2270baa0622bed591a7231e884a5a1e385c",
+    "left": "carrefour:590215207",
+    "right": "mercadona:27223",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0f2753785368375bc4cff252c63c077ad0322d417bd7a84262e732485458087b",
+    "left": "carrefour:590215207",
+    "right": "mercadona:28090",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c99b1d779a1363f15ee385773d34924cc83200013e7c1fbafc61f67c2ad49bda",
+    "left": "carrefour:590215207",
+    "right": "mercadona:28143",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "88169dcc43ec182b3b841c4e40e76049862c84c0e22f3596cc103eef7faab690",
+    "left": "carrefour:590215207",
+    "right": "mercadona:28157",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5479a1a17f6455157325cc82a8314589ce1969e6109d7b136f3058f3954e9a79",
+    "left": "carrefour:590215207",
+    "right": "mercadona:7981",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7a32af81a1f66948603f1e101809893094ea74a64b80fc1179a99b0575cc2105",
+    "left": "carrefour:590215207",
+    "right": "plusfresc:028899",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "43ea4f7286f7de0433afd9c1b0ac5a3a8fbf0475596d9137e2bead6078125f9c",
+    "left": "carrefour:590215541",
+    "right": "consum:7075299",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "86b9784884bcecb4e6aa90082981aaeb171d35b2f0aebfc1e1e86c3beb4d31f2",
+    "left": "carrefour:590215541",
+    "right": "mercadona:12983",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "44097aaae5e297a3e0fc0258779e45bf22d70506a30aa0d693af2b67c6a9ac1d",
+    "left": "carrefour:590215541",
+    "right": "mercadona:27063",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9d8f4dd843e1474ebebdba830190dde67bbf2dd545770414c092b18afa15d7c4",
+    "left": "carrefour:590215541",
+    "right": "mercadona:27367",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d68af7076ca97607aea9f4564f021a89cca2918bc5f0f43efde651adb23bc589",
+    "left": "carrefour:590215541",
+    "right": "mercadona:28471",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6232192c046c1c57c7132d820da9ccb9f70c0583b6f899bf2fdc3bc0f1d44204",
+    "left": "carrefour:590215541",
+    "right": "mercadona:7983",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9c41fc17a35dd4d2b58605a6628dcf8a918a72edad64395166cb94f2217666cb",
+    "left": "carrefour:590215541",
+    "right": "plusfresc:015002",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b4e899ffaed171dcccbc54554b351d2be5dd57467fb5eece9f7a6edd0c0053c5",
+    "left": "carrefour:590215625",
+    "right": "mercadona:28285",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "38c089b1c7861db96db19c944991bfd3dee9837dc2b8f5991978ac2121b255ec",
+    "left": "carrefour:590215783",
+    "right": "consum:7416449",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5eceaa34147b9e551643e56b44b3a4c9dbf8234a050abb00fefe0b269140cb5f",
+    "left": "carrefour:590215783",
+    "right": "mercadona:15631",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7e0046c95b1165f40a9af6f414555baf0352f2277019f30976adfcc21f0da7c7",
+    "left": "carrefour:590215783",
+    "right": "mercadona:15763",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e519123217fac23619121a2e19855a952ce42ca1d6a8135fe9fd38e6e3f8dbd8",
+    "left": "carrefour:590215783",
+    "right": "mercadona:21382",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3b16825468a9313d41acccb819f86a220e4d5515e7a1395bce6416a7af074eb0",
+    "left": "carrefour:590215783",
+    "right": "mercadona:26992",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "829f8b252265c3dc8482ecfde6d4c87f1b4e1c61202c272749f8102540a30345",
+    "left": "carrefour:590215783",
+    "right": "mercadona:28060",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3b66cdf6aabaa44bf0db438f795d50a2764b729ce61a6205a7b6fc4a89b87f50",
+    "left": "carrefour:590215783",
+    "right": "plusfresc:012881",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4c832368865b8bcabc312ca83c9e1ba3e1ecce6a72460c644429f65e56177b4a",
+    "left": "carrefour:590215785",
+    "right": "consum:7369176",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "296b546d36176a422af52aac864040e5e14211ac0818a060de3865088980b500",
+    "left": "carrefour:590215785",
+    "right": "consum:7401508",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a1f8dd648373a65b87a94080fa5f26c8fae28ba8ef2d8e43a55848dccfe1e210",
+    "left": "carrefour:590215785",
+    "right": "mercadona:15758",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5dd81392acd3b2af3bb2586e50e51533f3eae7d054faefdcf7518f3fb51d2449",
+    "left": "carrefour:590215785",
+    "right": "mercadona:16350",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ab1a2ca4577cf867543fb1882bf8474d6075b2776b5ae0638127f6530cb80963",
+    "left": "carrefour:590215785",
+    "right": "mercadona:19944",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "56e11cd1dd3f04539607af97be58571dcf0c5d21e4cdac538a68af13d22737f2",
+    "left": "carrefour:590215785",
+    "right": "mercadona:27218",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "28057ffbeba7c128ec367d604cfc2b9f369cd47bc215a5b19a8b506cc828df87",
+    "left": "carrefour:590215785",
+    "right": "mercadona:28091",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "42fd9020486174ffdba67c6cda8a983bbd12ad75f1684f8b54c7084bfa00dad1",
+    "left": "carrefour:590215785",
+    "right": "mercadona:7982",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a8b134f08c929aa56fda5e1f288186d853eb768d30a5169cb7fb8459df61b5ae",
+    "left": "carrefour:590215785",
+    "right": "plusfresc:015002",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "07e4d7e8bbd24bef44f30b812b959fd5481fd709008a0138f587a0ca6fbcebfa",
+    "left": "carrefour:590215785",
+    "right": "plusfresc:023245",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4c4dad90ea244d45abf3a2e46b49f8d9fdbc52e4756d6d1d3321dba2c31f40e4",
+    "left": "carrefour:590216049",
+    "right": "consum:7431914",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "1948dcd99490cace026236f22af192e56f708ac09c127cdcde0445dffc61e481",
+    "left": "carrefour:590216049",
+    "right": "mercadona:16587",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "05dfcdba899794b125dee8f3be71d4c42b51329585dbc32735239e61343d7980",
+    "left": "carrefour:590216049",
+    "right": "mercadona:27038",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "858e0bd21f5c2fa5506c71034aff0967a2b22d4c72b3473404c78240f5747207",
+    "left": "carrefour:590216049",
+    "right": "mercadona:27057",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "585fb01aca5f53129877fe40bd5ed7a752ebdf5146e3f4d953c4316b3d09cfba",
+    "left": "carrefour:590216049",
+    "right": "mercadona:27259",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7cdafc21e17275580be7370931a4becd2f79a023f5b26ba7f075fd7396c45098",
+    "left": "carrefour:590216049",
+    "right": "mercadona:27691",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a14d03ebee97d864b2d4455385e163c6a8a15ef028f8127c6b275b769703a176",
+    "left": "carrefour:590216049",
+    "right": "mercadona:28470",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f137943bd9b6845abd478e522da71e3277ce2bc96c36e2ae846955518251fa4a",
+    "left": "carrefour:590216049",
+    "right": "mercadona:29405",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "aafea831e318fb23c87979ce9b33d9e80aaa0b9396c5d117a480a79e5c2182a7",
+    "left": "carrefour:590216049",
+    "right": "plusfresc:032575",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "146b23980b0b67272d5b2cdcdabe3978b1a30bc7c53402550803f4c337097768",
+    "left": "carrefour:590216777",
+    "right": "consum:7075299",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "259e6922d02274123fb2f0b6e03a2be9399d2dfd54f0ad55c099f3fc8c338300",
+    "left": "carrefour:590216777",
+    "right": "consum:7369176",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4b1b92a6cbf29c68da50f348969423c43afe35752a2ad4bf7488808a3c909413",
+    "left": "carrefour:590216777",
+    "right": "mercadona:27061",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9bd1a712683d64a321397b186f508eda5cc076b00a5814bdfa55670ce2208156",
+    "left": "carrefour:590216777",
+    "right": "mercadona:28035",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2aeea883cc668b8c3d6f40600e22e4f515f484ab91ace05ce1835c6008ce9f70",
+    "left": "carrefour:590216777",
+    "right": "mercadona:60637",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "867d54393a628cb3a2cd1d28ac455ebeed31a856307938cd630cf3f68079d503",
+    "left": "carrefour:590216777",
+    "right": "plusfresc:019507",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "26b519f94797d99d5d7a7e6cb27ce8c7fd9405597488d7fc17a29a1c7d03795d",
+    "left": "carrefour:590501510",
+    "right": "plusfresc:006995",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "94b21acff6f26a272f0e1a551d02894025ca70ad1766d3f6776dc0da9d85108a",
+    "left": "carrefour:590501512",
+    "right": "consum:937177",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9f9a47f7cacc865853aa1b90f586ed785c9ecebdc1360485d70faf12f844094b",
+    "left": "carrefour:590504302",
+    "right": "consum:7141542",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "5878c998c41cc24eb0ca1af1bae6ec38ccd0ac97489bda0a2132cd9806855940",
+    "left": "carrefour:590504302",
+    "right": "consum:7213742",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "f65ae27b782dd861e1c88c5ed2f15f14851071799ace8572f8852779bf6a973c",
+    "left": "carrefour:590504302",
+    "right": "consum:7371040",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "617c7d21028868340357425e0d04c0251f76c4951a852065981df13e4641467d",
+    "left": "carrefour:590504302",
+    "right": "plusfresc:035826",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "3189b13c924204da8158ba1be461789779db6c64297987324fede24115bf12f6",
+    "left": "carrefour:590504304",
+    "right": "consum:7280605",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "c8cff708bea5a0107fcc1d4cf084c3a786b3e24aaa88c8374e797d60212173c5",
+    "left": "carrefour:590504304",
+    "right": "consum:7452514",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "236718a838761ba236947966b8b820f8cc6ec8513ce5da873221a0ddbaded439",
+    "left": "carrefour:590504304",
+    "right": "plusfresc:012746",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5e64a449c13010c3b8d822e539f71ab0964c86ace73f0780ed40ac6636f0f811",
+    "left": "carrefour:590504304",
+    "right": "plusfresc:021962",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6f56833abe32322642db1aa2ae0d519bf26f9041aef0366f7bba351bbf2cfddb",
+    "left": "carrefour:590504304",
+    "right": "plusfresc:024110",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "06c2c064e44085d379c071f95903bc377804caaa104f375f1d11a75989b2e4b5",
+    "left": "carrefour:590504304",
+    "right": "plusfresc:036887",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ef1a23c4c10820f351d8e83adfca7a263e7883625479976d71e6488403945ca7",
+    "left": "carrefour:590504308",
+    "right": "consum:7340896",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "f72da95f16b4cf532c8a3ea8740ec49fbf904d40f075d5452408f00ada7179ba",
+    "left": "carrefour:590504308",
+    "right": "plusfresc:031077",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "26b00ca451a2f4a0dacdbfa80115e374ce1f8679c75d7405b33acaf165acee20",
+    "left": "carrefour:590506134",
+    "right": "mercadona:20287",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "db6e5587bc18aa6a529570da7f89c3f829f2213aaf2b5284a76f4991e771c59d",
+    "left": "carrefour:590506134",
+    "right": "plusfresc:019660",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8a22702c71946af07640013c2f0b5875c798a0045bdb7712184c5cfd6f8ab730",
+    "left": "carrefour:590506134",
+    "right": "plusfresc:027336",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "conflicting",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3a0db7aac28f76bd891cd2293690d413af0901a1415ce55ca302acb09873a503",
+    "left": "carrefour:590507676",
+    "right": "consum:7371032",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "783b8d427b0a701f5ffea74ed2b3e55977ae3925d36ce0e996ab3f481e7bff78",
+    "left": "carrefour:590507676",
+    "right": "mercadona:21447",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2de07298b3f0c04d5a3d60fa6d30b59b487807652a048eac011c564e1409149e",
+    "left": "carrefour:590507676",
+    "right": "plusfresc:019933",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "1e9616fcd3a4c6ccebd53aaa8f8fa118ac56ec49c27fc476f85f839f57f58057",
+    "left": "carrefour:590507676",
+    "right": "plusfresc:033681",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b3eebccec8f2a575ff05f78406962f1d13180326048ff4453dfaacebbe602212",
+    "left": "carrefour:590507676",
+    "right": "plusfresc:033688",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "12edc2f6d8e587a24f76191e7f73a30bf8038ae362645afd905360d1a5d31c04",
+    "left": "carrefour:590507676",
+    "right": "plusfresc:035398",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e9a44c4609521d437ce057bdea6967d7c6c886043a6c693f72735d8b2f90b6dc",
+    "left": "carrefour:590507676",
+    "right": "plusfresc:036186",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bdb9934c2d332443283420194c981c5f910dbcd806f36def5680eca82ffd339d",
+    "left": "carrefour:590509366",
+    "right": "plusfresc:034561",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "59cd9f09e7fdca871a069010ada8826a079c42ae13ac4335d9d8b68cbf5b96db",
+    "left": "carrefour:590510306",
+    "right": "consum:7391043",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a89f162092c10da401bd3f3bb3dd8c20d7cad46a7a92667b232b8c28e647b94a",
+    "left": "carrefour:590510306",
+    "right": "consum:7458243",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "212a8355f4f2a7f21d68da7226e2f2997e7738f3b1018535c8a30d86f72bb02e",
+    "left": "carrefour:590510306",
+    "right": "plusfresc:008016",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "f83c65ce120d4303aece23d1ea11a999ae72ab686c72044f986aa789fff916ac",
+    "left": "carrefour:590510306",
+    "right": "plusfresc:024110",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "ab10a8668cf734e2889697a40b21dfacab09b72764ce8f7dbd23978dbb2a1948",
+    "left": "carrefour:590510532",
+    "right": "consum:7452910",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "1c1981c625505b9f2b87b3b3792f3a2a0088fc489168c4c42d5f88595172fe19",
+    "left": "carrefour:590510532",
+    "right": "mercadona:20087",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c63d34f09e0d5c97347de444fd87a1df6170b1317af51ac8a8908984c24d3fee",
+    "left": "carrefour:590510532",
+    "right": "mercadona:20396",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "154baafa5b54fa5d80acc4e83dbe4298d2af3be9cd139e63b05abc0f39338327",
+    "left": "carrefour:590510532",
+    "right": "plusfresc:014056",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7470dde0ea0b8ce355060bbcf05f8676996c1362ae64c53dd32b7a0a58120079",
+    "left": "carrefour:590510532",
+    "right": "plusfresc:033685",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9f72f9c1a33a242c710801c5b1ba2e98baeb1a41bf0287ad09a6d0aa412d10b6",
+    "left": "carrefour:590510532",
+    "right": "plusfresc:034564",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "90f12eb9751faa1332766eb138d90401cac86e9898e7f1ff9929f858c6ec9982",
+    "left": "carrefour:590510586",
+    "right": "plusfresc:036753",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "de2b30879a601cafad448310e6f6834e5c23c37d48f934b032d71e281b941ade",
+    "left": "carrefour:590510988",
+    "right": "consum:7228849",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bf76e9212f93724c921275cc76c2cf8d398ffec943a09ff39edb0a28fdefa57d",
+    "left": "carrefour:590510988",
+    "right": "consum:7340912",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3f61344267a797071e3742f84bd1cd936500821fd32b134dc0175485a316c3fa",
+    "left": "carrefour:590510988",
+    "right": "consum:937193",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "22125a2222346b626b6da44a6f35fce7b2903ccd558f4b0eefe5f1808aa43724",
+    "left": "carrefour:590510988",
+    "right": "plusfresc:035391",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ac4c99f804a2f5d6eea6330c08af60c4d3137e48d64866e97ae5bffc524bc14d",
+    "left": "carrefour:590510992",
+    "right": "plusfresc:032311",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9e083ea9aa8632edd563a8ae90cdd2ae44d8517112b06b2cf9740fb24ec688f0",
+    "left": "carrefour:590510996",
+    "right": "plusfresc:034096",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4bc70f225c98fc2c2d1de88175a97bb41aad63ebd63b86dedf701ee7aa6f80d7",
+    "left": "carrefour:590511936",
+    "right": "consum:4507471",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "186f09d83421ec39d89034a5f033341ffdfcce0e3fdf5102fa8fca17539888d9",
+    "left": "carrefour:590511936",
+    "right": "consum:7391063",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c588a23b0d0faddd7b3304e4a3fc4680fe530a8a1966c4bdf8d8dfe8727e85b7",
+    "left": "carrefour:590511936",
+    "right": "consum:7477003",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "e2e4dc23725736514cc4908364fd004f5e959844905e39b62bd3b93ddd55eb14",
+    "left": "carrefour:590511936",
+    "right": "mercadona:20041",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "fa29b0d4e5ad8c8041c31c3a45e785a9b65b9ed746423d340e65c2c46ed5bd32",
+    "left": "carrefour:590511936",
+    "right": "plusfresc:020850",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4aa53bae7ce9bb35fd2d60de8d346e14118652b4f757add4330da1edbb7cfc88",
+    "left": "carrefour:590511940",
+    "right": "mercadona:20041",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3db90ab72eb84f21603438da0dd1b68b0ad5637af8dff0a176390046d602a4cb",
+    "left": "carrefour:590511940",
+    "right": "mercadona:20536",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "fdbbc3745197e64f9f478bd2320fe2d5562f02ebb7e5e524f051ba15201b18ef",
+    "left": "carrefour:590511940",
+    "right": "plusfresc:024110",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0475915caf50fff6cdfc40f909baef1fec93b4a40c6dc58982a723e61826334f",
+    "left": "carrefour:590511940",
+    "right": "plusfresc:036725",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "f92845e2f1132c3d35dbcb6796149e034f05b6627ad90c59119a48f2747a8cf1",
+    "left": "carrefour:595501545",
+    "right": "consum:7312015",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "65542f191073f935c6f66b917903066d23ce0b4372da1ac6946c2567b08f85c5",
+    "left": "carrefour:595501545",
+    "right": "consum:7456056",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "575bcf0cc37ac6760f3b300eee769ee5b0ee295479168f869021b6a75893a268",
+    "left": "carrefour:595501591",
+    "right": "consum:7430762",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "737d5e788df522ebae752fc42bf3d00073141dd3c4df9305af852f3b638de7f4",
+    "left": "carrefour:595501591",
+    "right": "plusfresc:034084",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4db242ec25613e4ff782f8b1ffedd7d3dd1f699929a2282a8d20754a7506d6aa",
+    "left": "carrefour:595501591",
+    "right": "plusfresc:036726",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "ff128d2a9472a4a835e44907f6f3c9b295dbae708c70e8b0d293df86a407ac9a",
+    "left": "carrefour:595501695",
+    "right": "consum:7453590",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "822dccb84acca9f8911ae5795493f727f53ca55722273a7b3aa95dad3eeba432",
+    "left": "carrefour:595501695",
+    "right": "mercadona:20221",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e2be41702398165780e99b8e8cb8d8967c8abd1cfc3f399f11951d177e019e48",
+    "left": "carrefour:595501695",
+    "right": "plusfresc:008004",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "57c2a611bb9954d458738006b49e434d9fdaf58e3094ce83795671f05d4f612b",
+    "left": "carrefour:595501695",
+    "right": "plusfresc:011548",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "1f2257d3408662195e7cda9625a85495e33be76746e65566031426babb9dd399",
+    "left": "carrefour:595501695",
+    "right": "plusfresc:019600",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2745baa549fbdeaddf49a15bfe3ca9aa5003fd86dc9efb89d5b681f82b537587",
+    "left": "carrefour:595501695",
+    "right": "plusfresc:025187",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "566f41535aa51d3f141fc593c7f3da9d6074bce647d7d50d9bc22cb54e494f7d",
+    "left": "carrefour:595501695",
+    "right": "plusfresc:025401",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9a919a23b656d77521231a1f25310c5e03b0e113460438e6f1ffa61deb09fd8e",
+    "left": "carrefour:595501695",
+    "right": "plusfresc:027291",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "83110eb1c2af87f2a47674faf956fdc2beef2ea7776f11f00804124141a55b6d",
+    "left": "carrefour:595501695",
+    "right": "plusfresc:030344",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "727ef25183ed58f2388501620704ea1324b75b7b520905b7922c4fb5236d1af0",
+    "left": "carrefour:595501729",
+    "right": "consum:7027063",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2334f8e027ff04199dba15fabc21fa6e2fafd22ebd4781fd4cef6666062779bb",
+    "left": "carrefour:595501729",
+    "right": "mercadona:15759",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "400b8b4a3fd5eee2b86d730f7d9de40f4f4d6450916346961f6dda53a86e91b2",
+    "left": "carrefour:595501729",
+    "right": "mercadona:23999",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "35b56303949034e75d049b0dd06e01a6ef90522867892359cdcda68be79321da",
+    "left": "carrefour:595501729",
+    "right": "mercadona:27576",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "57c2ab43bcb63e89dc2c205eef697c23b2847854e632a4a18a145762c7fd6ae3",
+    "left": "carrefour:595501729",
+    "right": "mercadona:27883",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d095eda3afc649057ba20b0fbdc4a0d83ed60b583749b393c9da642d46501334",
+    "left": "carrefour:595501729",
+    "right": "mercadona:29288",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3a9db0a57509d9b8578023d8746e1ad6ec0fd6b99f81038fe7ca43e57b6a01af",
+    "left": "carrefour:595501747",
+    "right": "plusfresc:005605",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "02bec6734b0469f14b4fd292d5c1d6abb996233dbb0139862bc3bb230aeb8456",
+    "left": "carrefour:595501747",
+    "right": "plusfresc:032311",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "da7c1088a48c1c3bdffdcc72b36912e94a6fc3370ef0ae7d190cdc3012228a95",
+    "left": "carrefour:595501747",
+    "right": "plusfresc:033682",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c0cff083fbb104ecfbc1afe0ab2bbf7adc75afba60a3a8fc360c34e459a04c96",
+    "left": "carrefour:595502061",
+    "right": "consum:7206329",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "026c50ba948ec361b2166b7891cdec4fbd394415356d794d597ebc50d89b1cf6",
+    "left": "carrefour:595502061",
+    "right": "mercadona:20087",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bcced539a59085f7cb63f4c95aaaaecb32e817bffb18d08b3150079eb531ff99",
+    "left": "carrefour:595502061",
+    "right": "mercadona:20571",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "3c486f229c1e34ca08efdf55a1e4c30258782d477a9d170e5f7b64da80ffd9de",
+    "left": "carrefour:595502061",
+    "right": "mercadona:21330",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7231bb311f64d6ffe94c99f48f28a843bab258bec6265961f8d0ab207a5f2f09",
+    "left": "carrefour:595502061",
+    "right": "plusfresc:013655",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ce60df0d8bafd0718270c097a3d6204a92cfe02a11a427a64c284802b44323b7",
+    "left": "carrefour:595502061",
+    "right": "plusfresc:024895",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "cd65f754e2141c78d89ac5c021853569047248e4ce9493b53b5796bc54c7800a",
+    "left": "carrefour:595502061",
+    "right": "plusfresc:034097",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ef0501be89941e728b25df2ad1786b5aae43bcc5dee7eea6f839ccf81a819d9c",
+    "left": "carrefour:595502061",
+    "right": "plusfresc:035827",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "29e9a946fd728dd5dde6ff3aea51bf5201b31103259c62bc87c7fedf4fd90599",
+    "left": "carrefour:601400876",
+    "right": "consum:7031974",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d0431ea8fdaf17475d5d1feb56c559f39bd408edac7e42e70a6f82fe189e71ae",
+    "left": "carrefour:601400876",
+    "right": "consum:7263353",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "410f5b2fc18b25d7b53ed2cc0001c7d03bab3643721fa298a2c4276972606e11",
+    "left": "carrefour:601400876",
+    "right": "consum:7391048",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f2dbde3acc3dedae43fd499b04745cd2c991ce9a73bc960a16048561b962649b",
+    "left": "carrefour:601400876",
+    "right": "plusfresc:021298",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "a144785267351f0988fcefc013403a7085cd9b8f7603911c724af32f9b29f1ac",
+    "left": "carrefour:601400876",
+    "right": "plusfresc:036186",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "de9cb2c6df1ace1930c7bb6edad96aeda5ee2a16b7d6b01394e26a1fdf8624d5",
+    "left": "carrefour:606509771",
+    "right": "consum:7226843",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "777a001646297ab36b8e12215de5118ddf1e6e5df57f5b6cb3136d0dd8239867",
+    "left": "carrefour:606509771",
+    "right": "mercadona:16350",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "46ca91b06ff90cbc25c56b8348c2c0b5d9a8658d0bcd143040bcf9cdf0fdc6be",
+    "left": "carrefour:606509771",
+    "right": "mercadona:27366",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4ba333146fef30c83355c26fc672fb1ea4f9167365435c74582a1ceb4eb0f11b",
+    "left": "carrefour:606509771",
+    "right": "plusfresc:011232",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6e0a4766b3d17dbb4f1c863fdb129be88968a1ed2a79252e49c3c844530313f1",
+    "left": "carrefour:609203510",
+    "right": "mercadona:27130",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e5b55da0c2974d3307355c47437213bd1f05696bc29e17b608e44085dbb81f85",
+    "left": "carrefour:611401637",
+    "right": "consum:7057706",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "485b7dec48ee307063e8c40f45b36f8d4ef9e18597652543ae581ba6cb345c38",
+    "left": "carrefour:611401637",
+    "right": "consum:7255425",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "25410d56821da53b0c1392540c63721e1583dee71744c73a23ee6cce0231ded5",
+    "left": "carrefour:611401637",
+    "right": "consum:7370419",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "dc74ce015fe2cba3e595a20067ededc279408b3198a1318dbf4fbf93bbd61b90",
+    "left": "carrefour:611401637",
+    "right": "consum:7393366",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6f4ce39f28cb95ee8f6a85a1b8604f7c7adf0bb5b1976575550bbddb07a7de6a",
+    "left": "carrefour:611401637",
+    "right": "consum:7417413",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "042bc0527842a02d3b3b0c9355003139564e04cad3809250dd8782d7832c28eb",
+    "left": "carrefour:611401637",
+    "right": "consum:7431237",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bffe7891b5d5c042b156155aa3e28715b844b04e7f4f709c0349c070d23a8b8e",
+    "left": "carrefour:611401637",
+    "right": "consum:844837",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "53d080c59170b6bdfb2a6aa7af2fb20f5440f01ac75c62ffecb0f829df28d2bb",
+    "left": "carrefour:611401637",
+    "right": "mercadona:17581",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a678ab98b7251b3f29469923f4345d9db487d694a113de9788aad4f2b9ccce63",
+    "left": "carrefour:611401637",
+    "right": "mercadona:19904",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "11d36a0b78bd9372b2915c9c56b9e3bcf15219856e3de1c9ab8ab1f3912fee53",
+    "left": "carrefour:611401637",
+    "right": "mercadona:61405",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "489bb6b746532197f5fffeb47d6cc1f1d81f003c4593c66081de8157e2dacbe5",
+    "left": "carrefour:611401637",
+    "right": "mercadona:61416",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6d138af16e42e186f46d121a0105131d8be8eec4d9dbbbb74e60196d9752dede",
+    "left": "carrefour:611401637",
+    "right": "mercadona:61421",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c11d4acf09aca015c4904f4edaf9f8bd7c3415bac99d5a928e8a1fc22090376b",
+    "left": "carrefour:611401637",
+    "right": "mercadona:7879",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e1cd2316fd553567781422e87fd00e7ebc2a8f942a07f0b5264ffdfa11b76b9c",
+    "left": "carrefour:611401637",
+    "right": "mercadona:8953",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "822026a5ae1bc52fae26682987dcfac43be1c43290de61e3c3b72ae2d1497dc0",
+    "left": "carrefour:611401637",
+    "right": "plusfresc:010985",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2a6cd66ecd8b06cdd9367f89e15628ab12abd3d1f71880a3cf5b35b85953d996",
+    "left": "carrefour:611401637",
+    "right": "plusfresc:019865",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2e00b3943808d4b4dd0684655a599f6e7726f8b11e937e6a2107f1cd9ec2053b",
+    "left": "carrefour:611401637",
+    "right": "plusfresc:023552",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "45071c3d98bfe2c7ec75c5093b6056d312a870418b454857eadbcbc2fe55b80a",
+    "left": "carrefour:611401637",
+    "right": "plusfresc:028522",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ba1576469f0b572295471092e74442695031b97d3a7de685a3bf436d97b0374e",
+    "left": "carrefour:611401637",
+    "right": "plusfresc:032787",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "af9499c0693a74f7f7671cd47587011a7552eb14187b642dfac802e29f77f586",
+    "left": "carrefour:611401637",
+    "right": "plusfresc:032788",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9f1af2070802dc9eb9560ca8c00e456a2ebcab4377535b11aed04233aad62d0c",
+    "left": "carrefour:611401637",
+    "right": "plusfresc:032789",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9e51a4f467d2d57ebe134c33673b0f40ad02dd7e76dc27f537aa53cdb563d24c",
+    "left": "carrefour:611401637",
+    "right": "plusfresc:037023",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6c3f3aaeee4e5f79fd86b3e6aeb68e43229d963f33ad08e01bce49bbc396e483",
+    "left": "carrefour:618404342",
+    "right": "consum:311530",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "55a34a203e779d134ff930042e5687056829d7dceaccf4e0684df1ccfd8bef98",
+    "left": "carrefour:618404342",
+    "right": "consum:7052017",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4caf157f9dbf6cc9665999633c9fa479aa9f35040c8fd0a66ea77c150d8a6630",
+    "left": "carrefour:618404342",
+    "right": "mercadona:21383",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f858c672945beec2f266f05404615bb59c4f7639602ee6efc4f391f300e26fb5",
+    "left": "carrefour:618404342",
+    "right": "mercadona:29282",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a0a48c3a7c483c08f439bad7ef8eba1e3946016755be77070e376177a24aaad0",
+    "left": "carrefour:618404342",
+    "right": "plusfresc:007307",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "conflicting"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b1733d7bab17ff6021f679dfe9ad26d4c16ea5ab57b269991511253f9fc9644a",
+    "left": "carrefour:618404342",
+    "right": "plusfresc:011232",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c768e0b9984669ba7ff249c1ca88cfa13da29dc53751f2c371900af933d12d23",
+    "left": "carrefour:618404838",
+    "right": "consum:7340909",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "347655284e25d248f3fa6fa010ad5d46dd73549f449a435f92ee5fd568d38321",
+    "left": "carrefour:618404838",
+    "right": "mercadona:21327",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2d96141eeffe85b8bfad055c1f2f807dc9129d2f6a967b344bf1f5d518c03314",
+    "left": "carrefour:618404838",
+    "right": "mercadona:60955",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "964e64ea0d586b73fd432786dd6473f52284a42a275a0981967118066d630c7c",
+    "left": "carrefour:618404838",
+    "right": "plusfresc:014056",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e72268764b697f10685f1d3232c4196c27cff4de0df7be7ef540586072b03c15",
+    "left": "carrefour:618404838",
+    "right": "plusfresc:036359",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f709bb6819139a36a768a5d5f387d7cfd39d7f81a4ceae5f5953e7ea4a119502",
+    "left": "carrefour:618801585",
+    "right": "consum:7169998",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5d92722ad08e20264584b861a3de6b443179c2ee1626eddd8a1d5cfb460a2c61",
+    "left": "carrefour:618801585",
+    "right": "mercadona:21389",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "24659e6f232521562c51f8f77c36d8a35d9e4e5068368c0ecd8050361174e0e4",
+    "left": "carrefour:618801585",
+    "right": "mercadona:27261",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e0f8f9039ee86c8dc780a75c3405c1b90cc72c3a8afa2d2c348a174e5ed60df9",
+    "left": "carrefour:618801585",
+    "right": "mercadona:27288",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "fe9a6f7853310243bdaee926c6037af4918bad68eb0df2bb834077893a0e1af7",
+    "left": "carrefour:618801585",
+    "right": "mercadona:28090",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8d0d9b4f3bd1c0ab6ac2e8905303bf1147db6e2a2526b7cfbafbe0796fe91d5a",
+    "left": "carrefour:618801585",
+    "right": "mercadona:28106",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a68c243295e930084615e629c83d89a39545513c173e658ae57670b0e6be15fd",
+    "left": "carrefour:618801585",
+    "right": "mercadona:28163",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b7bf8d993847278ea88529fdab866964feed6946c68040efc9d8cb238fb76336",
+    "left": "carrefour:618801585",
+    "right": "plusfresc:016284",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f7a38d76402aa4405c1d711978a057a07b71ae7be8e7405af53893a38bf122a1",
+    "left": "carrefour:618801585",
+    "right": "plusfresc:035615",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e034b8f7c6080ae1fb78a4eb3f1dc59799b2116bb18c70c05e1bce5e064d97b0",
+    "left": "carrefour:618801827",
+    "right": "consum:2569861",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2d2af006d8747be4237bb2c721aee97f45580002e509cc39c1451b8a49f2b9c1",
+    "left": "carrefour:618801827",
+    "right": "consum:7061869",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f1c06af711cd6fded17408ecc230426871ee9daba240026adfc5d4cf14df100c",
+    "left": "carrefour:618801827",
+    "right": "consum:7315344",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d8d6dcf2a5d7fce85b6930d21a9aacdbb7c31c2eccd0c695a695d2708a61137e",
+    "left": "carrefour:618801827",
+    "right": "mercadona:15759",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8cdf118ba06a05389f5631785e9aa912d79fa58949dfc48b313d6126f83b0118",
+    "left": "carrefour:618801827",
+    "right": "mercadona:21383",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9bda238f64c7d0454fe88b2c634cbbe1b04d34ee39cb56600e3829f288b7bdc5",
+    "left": "carrefour:618801827",
+    "right": "mercadona:21387",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "71e0d6ad7196bd4b9c5c2ae4d74e07a5051e221153fbd2d18d1e1f6da13121e4",
+    "left": "carrefour:618801827",
+    "right": "mercadona:22392",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "05e080b073e21ab1855cdddd561c2c8f32c14dd102b1854ee30da6f70e2a2597",
+    "left": "carrefour:618801827",
+    "right": "mercadona:24037",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "932c70ce9b13e8e765a56ceb3c3d0480209cba4c0acdfc90aa25a27e70cbffa7",
+    "left": "carrefour:618801827",
+    "right": "mercadona:27250",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ef4fba4e36ab7a3ff854b736e19db76b04e37c9e901a2eb38ac2f40da729bf1e",
+    "left": "carrefour:618801827",
+    "right": "mercadona:28270",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3e5ad8f78f4646cb89484986ad5fe68ba93bd26a29db28d0b75453e58d498c28",
+    "left": "carrefour:618801827",
+    "right": "plusfresc:025363",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bbb99b786565f110f987e919c49547669a83730036d525005a8fb4f312e7e9a8",
+    "left": "carrefour:621101713",
+    "right": "consum:311704",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8400ec389a36e6d05664b2a5bbbb19abb7996644b75c193f61f5edbc86d4a612",
+    "left": "carrefour:627801768",
+    "right": "consum:7226843",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "441b2405e021d1b1f0cfd2f3d290132702df05db2538778df37223294552d787",
+    "left": "carrefour:627801768",
+    "right": "mercadona:28090",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bd43a80b4a4f7e3a3c41b4b00c69872cb9174c734181e4136255ca57664f265f",
+    "left": "carrefour:627801768",
+    "right": "plusfresc:032598",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "660264e0f78675626955ba39772c8a05af7494e42ee0e963bafb76d1997a8b7f",
+    "left": "carrefour:627801770",
+    "right": "consum:7090814",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0ff6c676ff2c49811dda7044dbebc7431e567e696efc8c979e086866a18284b1",
+    "left": "carrefour:627801770",
+    "right": "consum:7369176",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "95217f5905e59a3e7f8866a61f83e0351a8a2e9dd696cb08f25e0aa3d008c5ee",
+    "left": "carrefour:627801770",
+    "right": "mercadona:12982",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7edeb816b372656f1d43c4a4a0613fb60022c3678b557d79c0f282f8aafc10bc",
+    "left": "carrefour:627801770",
+    "right": "mercadona:27061",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e245772c70247eb81d0d9334cdb7d02402f5b8123ad0137272f05d9c1324cdfd",
+    "left": "carrefour:627801770",
+    "right": "mercadona:27095",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5f4ae9ab20222ac0ff95b1af68914b06d91cf84087eeeafe36432217e37afe1d",
+    "left": "carrefour:627801770",
+    "right": "mercadona:27207",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ae0f9f9609f510caa2b620c8f1ae6bcdc85479210abdc8c24480e44cc60d6819",
+    "left": "carrefour:627801772",
+    "right": "mercadona:27038",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "389fe0b358aa47417b912821f186976709cd3e308f687a70443bc36dbae23e33",
+    "left": "carrefour:627801772",
+    "right": "mercadona:28142",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "24f78ab764aee1ea6491f965ffdb600298f1b3cce37e04c00eb5e6379bb30efb",
+    "left": "carrefour:627801772",
+    "right": "mercadona:28269",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "61e9e5c7d59d10ae7bfa591882cbb095c493a853c7ef6a8c3129a4e5e9374507",
+    "left": "carrefour:627801772",
+    "right": "plusfresc:016284",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "fa1a86819bfe4a51f3b7ecfe05e2d974488e99ec1a8a7c36c1d5bdff6680aaed",
+    "left": "carrefour:627801788",
+    "right": "consum:7480726",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "cd9095861faa243ce01f94485f7ed37c60061609be41602dead5b1408ae10d03",
+    "left": "carrefour:627801788",
+    "right": "mercadona:15631",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d7f9c996c139772819aeb01f1cd0ad381665ac60fa200e80e40f2683e8498e68",
+    "left": "carrefour:627801788",
+    "right": "mercadona:27072",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e5e44b48894830faba0108a1bb07944816913b75a701669300c7ef0495a33da1",
+    "left": "carrefour:627801788",
+    "right": "mercadona:28142",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f5c6194fdbae2e9b995d9f754013750e5305019fbd02fe1cb311d032e66bd6bf",
+    "left": "carrefour:627801788",
+    "right": "mercadona:7981",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5bd9081c5092a7300e800f608d41da43c66e7eadcf3f249a6b4092b5ca8ad1fe",
+    "left": "carrefour:627801788",
+    "right": "plusfresc:020399",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "00740fb1f2ff6c3703e87bafca8577cc3f225cecf986e7f9ee9ef5ff2ff1f890",
+    "left": "carrefour:632901988",
+    "right": "consum:7246320",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bdf9aa058c7c24ffec0fd885bd0de4a755cb4a5196afdc98411ab483a0735fcb",
+    "left": "carrefour:632901988",
+    "right": "mercadona:27253",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9d4de1aa3a76afb8673b57fe0c74eccc4419c6bde6ada548c7e2565cd0cd416b",
+    "left": "carrefour:632901988",
+    "right": "mercadona:27350",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c5de29ff5f89be49acc0662241222c9845213a19ce5f6183da39593909e21088",
+    "left": "carrefour:632901988",
+    "right": "mercadona:28465",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "299aa1f22dd2efcc2de60b00ba36282b744bae711f87a3a12ec5f01e7dd0875e",
+    "left": "carrefour:636501709",
+    "right": "mercadona:27155",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c958cc765066fb3ff9a74c70d00ebe9a2ee8182b0b2905a379703481156da844",
+    "left": "carrefour:636501711",
+    "right": "mercadona:23998",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "170f5275a483cc806e32fefa464f1d610bc4ad88418324b12b6eb4b04e8f8030",
+    "left": "carrefour:638301765",
+    "right": "consum:2569879",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e2d87529fc1ba7529bcf3811333da770b5b9f6c99757de35e7b086b3abc5d203",
+    "left": "carrefour:638301861",
+    "right": "mercadona:27021",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "6ba05f53cf9c85d70831dcd8a17f1e73d2703719f6cab2cd4b680efdb0127e7a",
+    "left": "carrefour:638901810",
+    "right": "consum:7391048",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4ac68b8bd2eb29485da0a26ee3a6aabd995f45bc8bc0a74f4f68dd2e4c50ca34",
+    "left": "carrefour:638901810",
+    "right": "mercadona:20976",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "04a92180f6c5841948a62166e2dda97761436f69d23e1119daf00322e6e741a8",
+    "left": "carrefour:638901810",
+    "right": "plusfresc:020990",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0b3819e6827c464ed7eae33bc9b109876c8983c2a60c15b6eca7da7f79b97f71",
+    "left": "carrefour:638901810",
+    "right": "plusfresc:024113",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "aec5e17ac4daa0fcbc47fdc61ea5adec1f6f53e60a3c2f1449dd47dfdf541237",
+    "left": "carrefour:638901810",
+    "right": "plusfresc:025402",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f0ba040728a9cd4fa7389f2d8d46936283a36175e1d5a596fa1d1251fc358318",
+    "left": "carrefour:638901810",
+    "right": "plusfresc:035827",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "85c00bd95fb4fdc6e621fd50afaac491c0c02a2b3769c005bf2931a750d126c0",
+    "left": "carrefour:640001889",
+    "right": "consum:7310563",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "07faba5e34ea85e559b08c1d24859d70c45b50f566ec1008b03f92ec527b7bdc",
+    "left": "carrefour:640001889",
+    "right": "mercadona:15762",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "22b02b162a7f0ddd6c625922df11f03793558beabffdac363e8675f32dd08251",
+    "left": "carrefour:640001889",
+    "right": "mercadona:21388",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e62a063ee04701a213d84a6599538de14c08c7bdd1cc005bc63b96cf6396393a",
+    "left": "carrefour:640001889",
+    "right": "mercadona:28158",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a8740310c095faa8faa5239ae7ac59be9fd04604ff817682d34e7228b13318e1",
+    "left": "carrefour:641302318",
+    "right": "consum:7260834",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f3cdccbedf9624443776c46a14751589b03b67779300b6ec0f212c8c91b8f5b2",
+    "left": "carrefour:641302318",
+    "right": "consum:937177",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "b2ea8d7f0830a6af98dfb75e3f121cbe2c8991dbe3710ac82dc4ba3c5b7e6901",
+    "left": "carrefour:641302318",
+    "right": "mercadona:20287",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "compatible"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0e73cb192a3fd59cda72c99c4a9c6471d023de357312a86f659bbd25cfcedf57",
+    "left": "carrefour:641302318",
+    "right": "plusfresc:032996",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c3d733bc80de0a560433bd81d749b9ab16d91801cf719f8cd9cf1a4869e15d25",
+    "left": "carrefour:642101679",
+    "right": "consum:7199776",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "6b771a8852c1cb8554828769acce2a6cdb021698a53924926f261dab481ec770",
+    "left": "carrefour:642101679",
+    "right": "consum:7280605",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "b06d27156a705e905f3a2084c91c1119101965c77ff68d3bed2b026bb9623c3f",
+    "left": "carrefour:642101679",
+    "right": "consum:937177",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "8667bf395d76b706554e7ad4510443b6f3b0b8bc49dd2a9ac81ce1c6c38f7c56",
+    "left": "carrefour:642101679",
+    "right": "plusfresc:021597",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "097418d79a31fac13df066b8c9f37f5eae23253f4f6e339343334e8fd495d924",
+    "left": "carrefour:642101679",
+    "right": "plusfresc:026484",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "c092898a907064b5bf416b4945f099695cedfe39d3ee7079a94f66b986273592",
+    "left": "carrefour:642101679",
+    "right": "plusfresc:031360",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "284d349410fcc58752199b3967f5329743a2c2d7099f0548b90275ee2b8f12d0",
+    "left": "carrefour:642101679",
+    "right": "plusfresc:034084",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "30f6b434a578f9652c9124f62486e832705b3dcf460b940230755c994ab2745e",
+    "left": "carrefour:646502301",
+    "right": "mercadona:29336",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "439b55616c7afc498d1701187058672ab5f9a3f470e6d04b0f32ca9b4d1f6dcc",
+    "left": "carrefour:646502393",
+    "right": "consum:7412955",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f17324f0acb0d4a134e13a2e6a21ba64c12b7d0fe9875f385e66556ba6c7f4a5",
+    "left": "carrefour:646502393",
+    "right": "mercadona:27208",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "f52b9fb4771831914b9f6b0c08d24c489a58f416aa082f25941a305384da51d9",
+    "left": "carrefour:646502393",
+    "right": "mercadona:52972",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "fba50fecb8eebed4ff53ea229d6957b121904a08388e81d93fc53db356ae5702",
+    "left": "carrefour:646502393",
+    "right": "mercadona:86806",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "28c6798140a249d8a84c26620c3833f00dba8a9bb6f750b31fc3e9512cf0c4c4",
+    "left": "carrefour:646502393",
+    "right": "plusfresc:021864",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e94e97d0b0eebe15cc51d75c493fd4271d868769b81795876339ce2063a85a7e",
+    "left": "carrefour:646502393",
+    "right": "plusfresc:025889",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9fbbb7bb2534aeaa5d80905999d09a0ea5a573e560042c0c364056fb491ea0d3",
+    "left": "carrefour:646502393",
+    "right": "plusfresc:028899",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "0c09602d8a8da9a647131ec678a1aa59253fcc04b5de3f7ef8f4d1a0e97b97a5",
+    "left": "carrefour:647801823",
+    "right": "consum:7340776",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "633c27c792bfe1b6e64e2d20ccd631e19b7ad246114a769744ea15e39208a811",
+    "left": "carrefour:647801823",
+    "right": "mercadona:20357",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "9aa92eaa24196e3938cf2f3c378c48940531994e0dc11b292d28444e47bee2e8",
+    "left": "carrefour:647801823",
+    "right": "plusfresc:011910",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "193dc613813557c535c2f7e6f010355ecc3a582db295292575110f4af6cc0e9d",
+    "left": "carrefour:647801823",
+    "right": "plusfresc:021895",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ef4ff0ba79845d48aee7f6b9d5530b23ff4c0e49bd7ede494f87fbb4916bb9f6",
+    "left": "carrefour:653001929",
+    "right": "plusfresc:011232",
+    "cohort": "challenge",
+    "states": {
+      "scope": "incompatible",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "excluded_scope",
+    "editorial_id": null
+  },
+  {
+    "id": "ce7538a53ec5501f97f75ca98e39fe29bfa85e60e80414deaa88c72367637e97",
+    "left": "carrefour:653301967",
+    "right": "mercadona:60637",
+    "cohort": "challenge",
+    "states": {
+      "scope": "incompatible",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "excluded_scope",
+    "editorial_id": null
+  },
+  {
+    "id": "898f6d4595fdbdc0b3db1ae4b1ed94d196b3efee9ba634fac6e03ec92a833bda",
+    "left": "carrefour:653701722",
+    "right": "consum:7206329",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "bf428f8f815c22df5bce3cf9d0beca20252f0ab54237d07f917386e7809cd96e",
+    "left": "carrefour:653701722",
+    "right": "consum:7302875",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "940aabc366faac201503aa300b8b50bbb7c9c0687eb584be6d1423783bc3ea93",
+    "left": "carrefour:653701722",
+    "right": "consum:7443971",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "80262fef7ff5621f9476f16332921a1b83548cbeea246af81ef23ac35e66bee4",
+    "left": "carrefour:653701722",
+    "right": "mercadona:20057",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "22d10589aee2ab5174c6fe5683e56474bfe6e517caeeb45f44fa9bc2aa2b72f9",
+    "left": "carrefour:653701722",
+    "right": "mercadona:21336",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7a399fe3e448ea7b1efd2ab05a331c0a53545a42cb059e1e5114a7a248b7a34f",
+    "left": "carrefour:653701722",
+    "right": "plusfresc:022183",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "3776a560b86559070a325393266211a795acb1c21fe3dd739cdaf05c77b59363",
+    "left": "carrefour:653701722",
+    "right": "plusfresc:023464",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5b8d87af80f53ccecb292b032248cb7cc71787601f1cf5690b07a116dd17a4c1",
+    "left": "carrefour:653701722",
+    "right": "plusfresc:024113",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ec4fd8e4ce5f61ace02b1771dce9859246a0490ce5f9e56d2202a47a370e2e51",
+    "left": "carrefour:653701812",
+    "right": "mercadona:12978",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ede15aa699f3430cebf718d026ad06cd3e9a3b92deaeef600cbcb92c25dc3534",
+    "left": "carrefour:653701812",
+    "right": "mercadona:28091",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2a3b28c7147c362f2b387934e5308243bedd9fb00fbfc9694589ed3f1d928124",
+    "left": "carrefour:653701812",
+    "right": "mercadona:52630",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "da001ac105ee6fd0a92bd4a867f280d38965fd80d1b40bb07fa60edf3216c869",
+    "left": "carrefour:653701812",
+    "right": "mercadona:60832",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "417248e2dcfb62d9dd21dfe1e4d6da74bab1495b84040e6010e40c78f1b65009",
+    "left": "carrefour:653701812",
+    "right": "mercadona:7983",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "7c7daa3203a258efa80e4fed6b6ce5250869c4115d82492cbecc4b8131c600ac",
+    "left": "carrefour:653901715",
+    "right": "consum:7371037",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "c9c57bb735fcadbd720a10a14cb2b83a6e94b57266dd52bd0ad2578dea5aa9db",
+    "left": "carrefour:653901715",
+    "right": "mercadona:20087",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  },
+  {
+    "id": "7f17c09dee785d94ac59dd9cc90a5a35f974eb0382a33e298afa91306b1fa72e",
+    "left": "carrefour:653901715",
+    "right": "plusfresc:016654",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ef8c36daf44a5984f0736f7b74a16bf25e05a362b2a392842e9d21183ecae0ad",
+    "left": "carrefour:653901715",
+    "right": "plusfresc:025084",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "91da11a5d58fe64fc26c14cb8c000464a8f5659e4455a61cf7c4e2a9b508a5c6",
+    "left": "carrefour:653901715",
+    "right": "plusfresc:028277",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "d3577220a8768e58e6edac3d11b8fb68c97a520344819a8e807f4383e65abca1",
+    "left": "carrefour:658001964",
+    "right": "consum:7431237",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "24c037ec9bbbf0925d76030178021aba9dd3e20be7d0606f65baf3236d54a5aa",
+    "left": "carrefour:665008949",
+    "right": "consum:7088599",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "99a4e9ab7e16ff5758d38584002419155c8ade23b7c710baa953eeade710619c",
+    "left": "carrefour:665008949",
+    "right": "consum:7099682",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8c5a67da6d45392f8713b041ff0db62109bd9150026c8cdc825f46a3b63f9630",
+    "left": "carrefour:665008949",
+    "right": "consum:7347842",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "c3d120e0811d403ed44d4765efd6ca80d5283b6d19591c2208259c44b1555962",
+    "left": "carrefour:665008949",
+    "right": "mercadona:21384",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "1da8bd14d89e1ebde531916a74ab926fa4f99efcbc6c59b8e43eacc926af4dc0",
+    "left": "carrefour:665008949",
+    "right": "mercadona:27213",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "be6ade3de3f459bf2007d5cc6a8ffba5ccfeae65d04c3b4353d65df8cd244dd7",
+    "left": "carrefour:665008949",
+    "right": "mercadona:28482",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "9d55a72383f766d561d6d6b7f35ac30bb7e251b1a1444e0542085b7a47861131",
+    "left": "carrefour:665008949",
+    "right": "plusfresc:007307",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "conflicting"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "8b717de0c37b836b794745191936d95bc45adca93454eafb66ae166265bbe9b1",
+    "left": "carrefour:665008949",
+    "right": "plusfresc:025889",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "4bffeefff2aa64f1597fd1852ae57d9efb805bc0c08d5602b94da1060703d11e",
+    "left": "carrefour:665802122",
+    "right": "mercadona:61416",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "632097c86f12c3faa6b4b334e9a911199785f7f37ab1ec12f56bf888fa8a177e",
+    "left": "carrefour:666701557",
+    "right": "plusfresc:028522",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ef6ae53b1f05cc626c0f01756b218cb3ad987f957b99257d0e0fac1ac343e0cc",
+    "left": "carrefour:667703854",
+    "right": "consum:7303712",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "e1643883eeb69083c29134016151dda1e208ff98c6a24ab58efce4f0187832b0",
+    "left": "carrefour:667703854",
+    "right": "consum:7315344",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2cdc79b557cd166428651ede68aa8e71a941b1b8bcf5e389952cc52cf87e7453",
+    "left": "carrefour:667703854",
+    "right": "consum:7475775",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "2e11aa1d9b567c4c1cd4f101d6e36766ffe7df474a4d2bd0f6781de4309e103c",
+    "left": "carrefour:667703854",
+    "right": "mercadona:27260",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "86e0e9540c34a017c990038d75c92e696c0cc941a92e32db17a81b892cb8ae8e",
+    "left": "carrefour:667703854",
+    "right": "mercadona:60637",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "030b071a4ad51b025e976b3a1b5a71792ec9463ac0e954e5ce1a5ae643d61994",
+    "left": "carrefour:668105631",
+    "right": "consum:7225709",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "ba785b905fe4772a6970d6f5517ebee320a595c1bcd25feb7e2a8081915013fa",
+    "left": "carrefour:668105631",
+    "right": "consum:7433431",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5bb34fc7e32b26b1a201f462fb6db37af212b6887dad02d0eb984178fa88cd56",
+    "left": "carrefour:668105631",
+    "right": "mercadona:23448",
+    "cohort": "confirmatory",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "a33cc7abcff79bc2c960ce98af9eb17acc3e7957984af81b3a283115b0d7e98f",
+    "left": "carrefour:668105631",
+    "right": "mercadona:28142",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown"
+    },
+    "decision_draft": "abstain",
+    "editorial_id": null
+  },
+  {
+    "id": "5e2704b6bc988232141e3a0ba4e93e409707811e4e020bdc3f4f4c48297277da",
+    "left": "carrefour:668105653",
+    "right": "consum:7375004",
+    "cohort": "challenge",
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "incompatible"
+    },
+    "decision_draft": "rejected",
+    "editorial_id": null
+  }
+]

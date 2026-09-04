@@ -1,0 +1,301 @@
+{
+  "schema_version": 1,
+  "tasks": [
+    "CE-201",
+    "CE-202"
+  ],
+  "status": "in_progress_not_complete",
+  "authority": "adelante con las tareas 201 y 202",
+  "captured_at": "2026-09-03T11:43:14.239Z",
+  "annotation_session_date": "2026-09-03",
+  "annotation_authorship": "assistant_editorial_first_annotation; never claimed owner review",
+  "git": {
+    "branch": "codex/phase5-observation",
+    "head": "03b8ba273e17709fd8fc69c20dddb68c147a7e2a",
+    "changes": "local uncommitted; unrelated work preserved"
+  },
+  "scope": "Offline preannotation, source-bound editorial examples and regression tests; no product matcher deployment or truth/gold acceptance.",
+  "report": {
+    "version": "ce202-corpus-v1",
+    "status": "drafts_complete_semantic_annotation_in_progress",
+    "unique_pairs": 6000,
+    "products": 1893,
+    "postcode_assessments": 12000,
+    "unique_CE200_queries_unchanged": 1200,
+    "underlying_origins_unchanged": 600,
+    "product_dimensions": {
+      "scope": {
+        "incompatible": 81,
+        "unknown": 5919
+      },
+      "identity": {
+        "unknown": 6000
+      },
+      "variants": {
+        "conflicting": 12,
+        "incompatible": 13,
+        "unknown": 5975
+      },
+      "format": {
+        "compatible": 160,
+        "conflicting": 24,
+        "incompatible": 822,
+        "unknown": 4994
+      }
+    },
+    "decisions_per_unique_pair": {
+      "abstain": 5085,
+      "excluded_scope": 81,
+      "rejected": 834
+    },
+    "product_format_states": {
+      "conflicting": 2,
+      "known": 818,
+      "unknown": 1073
+    },
+    "products_with_unselected_formats": 18,
+    "positive_format_pairs_not_equivalents": 160,
+    "eligible_savings": 0,
+    "reviewed_gold_pairs": 0,
+    "independent_reviews": 0,
+    "first_semantic_reviews": 7,
+    "CE201_complete": false,
+    "CE202_complete": false,
+    "CE203_complete": false,
+    "G2_pass": false,
+    "unknown_is_not_negative": true,
+    "remote_project_calls": 0,
+    "commercial_ttl_hours": null,
+    "hashes": {
+      "products": "beb8e6d3e412d4d77072d84a7fdd3209dba17827cecd06fcd15ef1b0b96e9fe4",
+      "locations": "153e3a2122d56b82975d00ae0b705655671fc4f850862291a88d8262fa126ece",
+      "annotations": "73604d0489bcbd8b2501c9b09fef3b6d324f81d1b7a5b999dae005913fd4ae3a"
+    },
+    "source_manifest_sha256": "15da91ad7ae616199da7a50b53dba2abca4e3c43c1420a4a413b23ad02b9abd7",
+    "remaining": [
+      "First semantic annotation beyond finite literal drafting rules.",
+      "Real fully supported positive equivalence/commerce cases; format compatibility alone is not a positive.",
+      "CE203 owner review and disputes; partition/holdout and evaluation remain separate."
+    ],
+    "editorial_first_annotations": 20,
+    "drafts_pending_first_semantic_review": 5993,
+    "editorial_within_frozen_corpus": 7,
+    "editorial_supplemental_challenges": 13,
+    "editorial_decisions": {
+      "abstain": 10,
+      "rejected": 7,
+      "excluded_scope": 3
+    },
+    "editorial_supplements_do_not_inflate_CE200": true,
+    "editorial_sha256": "db3d4940e3343edeff115e3aa4f667717adf93ae0288a2265d3d6c563bfb9ae0",
+    "index_sha256": "7ab813b026a80080468fb5db840d02c90909d9b301cd829d369745df5e652c93"
+  },
+  "validation": {
+    "command": "npm run quality",
+    "exit_code": 0,
+    "typescript": "PASS",
+    "eslint": "PASS",
+    "tests": 434,
+    "passed": 434,
+    "failed": 0,
+    "test_duration_ms": 4727.916792,
+    "new_unit_tests": 22,
+    "new_real_corpus_tests": 8,
+    "git_diff_check": "PASS",
+    "protected_files_unchanged": true,
+    "source_manifest_and_historical_seed_pilot_unchanged": true,
+    "full_drafts_hashes_regenerated": true,
+    "editorial_and_index_exact_rebuild": true,
+    "engine_quality_measured": false,
+    "existing_test_warnings": "Node MODULE_TYPELESS_PACKAGE_JSON warnings; no package metadata changed to hide them"
+  },
+  "remote_actions": {
+    "supabase_project_calls": 0,
+    "SQL_queries": 0,
+    "DDL_DML": 0,
+    "retailer_calls": 0,
+    "OFF_calls": 0,
+    "model_provider_calls": 0,
+    "images_downloaded": 0,
+    "integrations_installed": 0,
+    "dependencies_added": 0,
+    "app_or_rpc_changes": 0,
+    "sync_cron_or_budgets_modified": 0,
+    "account_or_quota_changes": 0,
+    "paid_resources_contracted": 0,
+    "public_storage_uploads": 0,
+    "public_documentation_only": "Supabase changelog consulted; markdown response unsupported, HTML fallback read."
+  },
+  "materialization": {
+    "index_files": 12,
+    "index_pairs": 6000,
+    "editorial_records": 20,
+    "full_drafts": "Deterministic stdout generation with source/code hashes; not stored as a duplicate full catalog.",
+    "total_dataset_bytes": 28459059
+  },
+  "corrections_before_freeze": [
+    "Do not interpret 4 units 125g as a 125g total or fabricate a conflict with 4x125g.",
+    "Do not treat mass/volume dual declarations as physically contradictory without density.",
+    "Do not mark unknown selling_method as proven variable weight.",
+    "Assorted packs and unselected service formats remain unresolved.",
+    "Local oversized stdout capture truncated before writing; compact index was captured completely in 500-pair chunks and verified. No source or remote operation involved."
+  ],
+  "limitations": [
+    "6000 rule-assisted drafts are not 6000 first semantic annotations; 5993 frozen-corpus pairs still need that review.",
+    "20 editorial cases are purposeful: 7 overlap the frozen sample, 13 supplementary, not representative additions.",
+    "160 proposed nominal format matches and E01/E02 do not establish positive equivalence or savings.",
+    "All bilateral commercial contexts remain unknown; active catalog, global prices and approximate zone maps cannot certify them.",
+    "Editorial source interpretations are assistant proposals, not independent owner review or gold.",
+    "A parser used for draft assistance is not the F3 production normalization engine.",
+    "No baseline engine evaluation, CE203 random sample, entity partitions, holdout or G2 acceptance."
+  ],
+  "next": "Continue first semantic annotation of the remaining corpus and close real positive/negative/unknown coverage. Preserve evidence limitations. Owner CE203 review remains subsequent; no repeated CE200 extraction.",
+  "files": [
+    {
+      "path": "scripts/lib/comparator-strict-corpus-labels.mjs",
+      "sha256": "dac2bb3d1c072418be97a3e40e47c1ee9ee2e9b46269d3df1005c1686ad56431",
+      "bytes": 27392
+    },
+    {
+      "path": "scripts/lib/comparator-strict-corpus-labels.test.mjs",
+      "sha256": "5c2b2e33374c748cc8a6f35796493cb2589e6f67fd3120998f79dc53f5d161d6",
+      "bytes": 8632
+    },
+    {
+      "path": "scripts/prepare-comparator-strict-corpus-labels.mjs",
+      "sha256": "7d0a61c417b3b27fda747ee972fee378329b9100add4743b1123db210201dcb7",
+      "bytes": 5109
+    },
+    {
+      "path": "scripts/tests/comparator-strict-label-corpus-evidence.test.mjs",
+      "sha256": "abf184e602e23e75eb2e72b2505ec9f503b0ba1eaaa9b5c399097fd42a65679a",
+      "bytes": 5525
+    },
+    {
+      "path": "docs/comparator-strict/CE-201-202-corpus-progress.md",
+      "sha256": "970d42fcca326cb982d4ca513a678ec301e0892676da1e4cf68b9bd8d07afa27",
+      "bytes": 8734
+    },
+    {
+      "path": "docs/comparator-strict/CE-202-corpus-labeling-guide.md",
+      "sha256": "315e91c20061cf1a850e4a622ed1dfbeefb6a0a608c67393338b5673a1069dbb",
+      "bytes": 5154
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/README.md",
+      "sha256": "c50547d2a743be9a3a260d475c84de2c6410bc036ca3e78c24a0563d86ac8d2c",
+      "bytes": 1295
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/editorial-specs.json",
+      "sha256": "0403b9010190777cf1d7a7e74477ed8bdecc37f7fd2ddac389f2da546741f235",
+      "bytes": 24577
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/editorial.json",
+      "sha256": "7c4a65fceae6c1282e388b3033745f4492a87aeff724f41cd724a18bd94cfaad",
+      "bytes": 133419
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-0000.json",
+      "sha256": "fec79624c967b60bf007e3de2d23e0015a3da46f47c89f9765e3d48e53a3fda3",
+      "bytes": 187733
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-0500.json",
+      "sha256": "682f284ca7b3604e668f0e06fdd813f39de025e72a4c1368f9a1a9293d9cb2cc",
+      "bytes": 187306
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-1000.json",
+      "sha256": "3c45b9476c951e4d3a9589304d9794f473a7fa50e8d97849a4ea15092b949600",
+      "bytes": 187422
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-1500.json",
+      "sha256": "1c196005c36a58ca963bd85e0905e6c85cb4c1d2e62b58ba076d078ba438b57b",
+      "bytes": 187495
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-2000.json",
+      "sha256": "3fed85add7b00ce2f0f954b299e77a8e135a35e71c4c37c85b699da10f91ffa4",
+      "bytes": 190452
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-2500.json",
+      "sha256": "deb19fc5fd61b1233008f39c750921492ea74ef16eaeaf116b7cee04f15538dd",
+      "bytes": 191179
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-3000.json",
+      "sha256": "3f45eb30241d100e06e878ff7951b2bd5f2711a2675f82f417ebd8ed6cc3583d",
+      "bytes": 190975
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-3500.json",
+      "sha256": "7b11594c1d83b69fe7189a2f45f8181af946f6195c8c170cea1994b3e0500364",
+      "bytes": 190508
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-4000.json",
+      "sha256": "e2320f4a26a397ef9bf28dc04a16cc36099b42c790d5c35b8b9bc608b7401ef5",
+      "bytes": 187915
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-4500.json",
+      "sha256": "a1cdb8c640bd1b49bbe397e44456b9f3be547a7913b4543e39b419ac5b96b034",
+      "bytes": 187207
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-5000.json",
+      "sha256": "b7fd46eaafa7c01cbf5f743832ac081e767719f1ab80ef3df2dc7db3bee6da0e",
+      "bytes": 185701
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-5500.json",
+      "sha256": "a42c7bf9a9276b47ce8997cf6ce36760787f87e1222fcb5b794570a113295cae",
+      "bytes": 186129
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/manifest.json",
+      "sha256": "b4c2a4b375aff2e5dee767665b51e4d3401db0992a715e29f50c55c75d36d7d9",
+      "bytes": 3701
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/report.json",
+      "sha256": "a5b1b651f7350c5e473dbd86dd47f51dd7a659750e24d0d3a0464b2e85b79f1c",
+      "bytes": 2375
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/review.md",
+      "sha256": "528a6727194fd3a09c3d1d1d7391aeab8d77e0147d35f83de7fd4528ecc03a0e",
+      "bytes": 65059
+    }
+  ],
+  "protected_files": [
+    {
+      "path": "src/components/SimilarProductsSection.tsx",
+      "sha256": "d2e594cfd4ba184e839e13c0fd5e049917a16900dfea4fa2f884992234a1127e",
+      "bytes": 23444
+    },
+    {
+      "path": "src/components/StoreProductModal.tsx",
+      "sha256": "f467d6a7604f797e7b944a543310f1c30bfe3bafc40e3f8fa5cf7d4e696a45c4",
+      "bytes": 14383
+    },
+    {
+      "path": "src/api/catalog.ts",
+      "sha256": "bd35cdc8820661b52993a652ebc3a06b41963981df11183a9ba0880a4058bb05",
+      "bytes": 164988
+    },
+    {
+      "path": "supabase/ops/README-comparator-embedding-pipeline.md",
+      "sha256": "424a293c99b0b843a9c7032da5b813b889da324a05ffddcf3349970e53379f40",
+      "bytes": 19649
+    }
+  ],
+  "CE201_complete": false,
+  "CE202_complete": false,
+  "CE203_complete": false,
+  "G2_pass": false
+}

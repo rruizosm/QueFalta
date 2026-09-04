@@ -1,0 +1,730 @@
+{
+  "plan": {
+    "version": "ce200-read-v3",
+    "kind": "taxonomy",
+    "store": "carrefour",
+    "cursor": "",
+    "limit": 500,
+    "round": "initial",
+    "select": "SELECT id,name,parent_id,published,synced_at FROM public.carrefour_categories\n      WHERE id COLLATE \"C\" > '' COLLATE \"C\" ORDER BY id COLLATE \"C\" LIMIT 500",
+    "job": "ce1-ce200-273fc58031cdddf9009e89e1d9d5",
+    "operationHash": "273fc58031cdddf9009e89e1d9d54061f7e868df0c363ba65701a7e88da33769",
+    "maxRows": 500,
+    "maxBytes": 131072,
+    "sql": "-- ce1-ce200-273fc58031cdddf9009e89e1d9d5: taxonomy; CE-BU-002; no app writes.\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $reserve$\nDECLARE job_started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE status IN ('planned','running','halted','unknown'))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-273fc58031cdddf9009e89e1d9d5') THEN RAISE EXCEPTION 'ce200_exclusive_or_replay'; END IF;\n  IF EXISTS(SELECT 1 FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid))>0\n    OR (pid<>pg_backend_pid() AND state='active' AND query_start<clock_timestamp()-interval '30 seconds')) THEN RAISE EXCEPTION 'ce200_health_stop'; END IF;\n  UPDATE comparator_strict.execution_budget SET\n    sql_ms_reserved=sql_ms_reserved+10000,read_rows_reserved=read_rows_reserved+500,\n    bytes_reserved=bytes_reserved+131072,write_rows_reserved=write_rows_reserved+3,updated_at=clock_timestamp()\n    WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03'\n      AND approval_reference='CE-200-corpus-v1' AND bytes_limit=134217728 AND read_rows_limit=50000\n      AND bytes_reserved+131072<=bytes_limit AND read_rows_reserved+500<=read_rows_limit AND write_rows_reserved+3<=2000;\n  IF NOT FOUND THEN RAISE EXCEPTION 'ce200_budget'; END IF;\n  INSERT INTO comparator_strict.execution_jobs(id,project_ref,operation_key,sql_sha256,status,started_at,deadline_at,job_key,operation_hash,budget_date,reservation)\n    VALUES(gen_random_uuid(),'gkffvigcnsesbaihycay','ce200-taxonomy','1096a0435cbc1530c2d395d148dec51e2d96927dc33de9e1dc6b58ed65fbb805','running',job_started,job_started+interval '20 minutes','ce1-ce200-273fc58031cdddf9009e89e1d9d5','273fc58031cdddf9009e89e1d9d54061f7e868df0c363ba65701a7e88da33769',DATE '2026-09-03','{\"sqlMs\":10000,\"readRows\":500,\"writeRows\":3,\"responseBytes\":131072}'::jsonb);\nEND $reserve$;\nCOMMIT;\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $payload$\nDECLARE payload jsonb; data jsonb; started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR NOT EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-273fc58031cdddf9009e89e1d9d5' AND status='running' AND operation_hash='273fc58031cdddf9009e89e1d9d54061f7e868df0c363ba65701a7e88da33769' AND deadline_at>clock_timestamp()) THEN RAISE EXCEPTION 'ce200_lease'; END IF;\n  SELECT coalesce(jsonb_agg(to_jsonb(q)),'[]'::jsonb) INTO data FROM (SELECT id,name,parent_id,published,synced_at FROM public.carrefour_categories\n      WHERE id COLLATE \"C\" > '' COLLATE \"C\" ORDER BY id COLLATE \"C\" LIMIT 500) q;\n  payload:=jsonb_build_object('job_key','ce1-ce200-273fc58031cdddf9009e89e1d9d5','operation_hash','273fc58031cdddf9009e89e1d9d54061f7e868df0c363ba65701a7e88da33769',\n    'project_ref','gkffvigcnsesbaihycay','captured_at',started,'kind','taxonomy','store','carrefour',\n    'cursor','','rows',data,'row_count',jsonb_array_length(data),'elapsed_ms',extract(epoch FROM clock_timestamp()-started)*1000);\n  IF jsonb_array_length(data)>500 OR octet_length(payload::text)>122880 THEN RAISE EXCEPTION 'ce200_result_limit'; END IF;\n  UPDATE comparator_strict.execution_jobs SET status='succeeded',finished_at=clock_timestamp(),\n    receipt=jsonb_build_object('payload_sha256',encode(sha256(convert_to(payload::text,'UTF8')),'hex'),'row_count',jsonb_array_length(data),'payload_bytes',octet_length(payload::text),'elapsed_ms',payload->'elapsed_ms') WHERE job_key='ce1-ce200-273fc58031cdddf9009e89e1d9d5';\n  PERFORM set_config('comparator_strict.ce200_response',payload::text,true);\nEND $payload$;\nSELECT current_setting('comparator_strict.ce200_response')::jsonb AS evidence;\nCOMMIT;"
+  },
+  "payload": {
+    "kind": "taxonomy",
+    "rows": [
+      {
+        "id": "cat10928974",
+        "name": "Sushi del Día",
+        "parent_id": "cat20002",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20001",
+        "name": "La Despensa",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20002",
+        "name": "Frescos",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20003",
+        "name": "Bebidas",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20004",
+        "name": "Cuidado personal e Higiene",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20005",
+        "name": "Droguería y limpieza",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20006",
+        "name": "Bebé",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20007",
+        "name": "Mascotas",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20008",
+        "name": "Parafarmacia",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20009",
+        "name": "Alimentación",
+        "parent_id": "cat20001",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20011",
+        "name": "Lácteos",
+        "parent_id": "cat20001",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20013",
+        "name": "Conservas, Sopas y Precocinados",
+        "parent_id": "cat20001",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20014",
+        "name": "Pescado y Marisco",
+        "parent_id": "cat20002",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20016",
+        "name": "Comida Preparada",
+        "parent_id": "cat20002",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20017",
+        "name": "Charcutería",
+        "parent_id": "cat20002",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20018",
+        "name": "Carne",
+        "parent_id": "cat20002",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20019",
+        "name": "Pan y Bollería del Día",
+        "parent_id": "cat20002",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20020",
+        "name": "Quesos",
+        "parent_id": "cat20002",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20021",
+        "name": "Huevos",
+        "parent_id": "cat20001",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20022",
+        "name": "Alcoholes",
+        "parent_id": "cat20003",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20023",
+        "name": "Cerveza",
+        "parent_id": "cat20003",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20024",
+        "name": "Cava Champagne y Espumosos",
+        "parent_id": "cat20003",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20025",
+        "name": "Licores y Cremas",
+        "parent_id": "cat20003",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20026",
+        "name": "Sidra",
+        "parent_id": "cat20003",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20027",
+        "name": "Vinos",
+        "parent_id": "cat20003",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20028",
+        "name": "Baño e Higiene Corporal",
+        "parent_id": "cat20004",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20029",
+        "name": "Bienestar Sexual",
+        "parent_id": "cat20004",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20030",
+        "name": "Higiene Bucal",
+        "parent_id": "cat20004",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20031",
+        "name": "Cuidado del Cabello",
+        "parent_id": "cat20004",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20032",
+        "name": "Cosmética",
+        "parent_id": "cat20004",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20033",
+        "name": "Cuidado y Protección Corporal",
+        "parent_id": "cat20004",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20034",
+        "name": "Depilación",
+        "parent_id": "cat20004",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20035",
+        "name": "Higiene íntima",
+        "parent_id": "cat20004",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20036",
+        "name": "Ambientadores",
+        "parent_id": "cat20005",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20037",
+        "name": "Bazar",
+        "parent_id": "cat20005",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20038",
+        "name": "Calzado",
+        "parent_id": "cat20005",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20039",
+        "name": "Conservación de alimentos",
+        "parent_id": "cat20005",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20041",
+        "name": "Menaje",
+        "parent_id": "cat20005",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20042",
+        "name": "Limpieza baño y WC",
+        "parent_id": "cat20005",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20043",
+        "name": "Limpieza cocina",
+        "parent_id": "cat20005",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20044",
+        "name": "Cuidado de la ropa",
+        "parent_id": "cat20005",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20045",
+        "name": "Limpieza del hogar",
+        "parent_id": "cat20005",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20046",
+        "name": "Papel y Celulosa",
+        "parent_id": "cat20005",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20047",
+        "name": "Utensilios de limpieza",
+        "parent_id": "cat20005",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20048",
+        "name": "Alimentación infantil",
+        "parent_id": "cat20006",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20049",
+        "name": "Cuidado e Higiene Infantil",
+        "parent_id": "cat20006",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20050",
+        "name": "Pañales",
+        "parent_id": "cat20006",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20051",
+        "name": "Bebé",
+        "parent_id": "cat20008",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20053",
+        "name": "Conejos y roedores",
+        "parent_id": "cat20007",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20054",
+        "name": "Gatos",
+        "parent_id": "cat20007",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20055",
+        "name": "Pájaros",
+        "parent_id": "cat20007",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20056",
+        "name": "Peces y tortugas",
+        "parent_id": "cat20007",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20057",
+        "name": "Perros",
+        "parent_id": "cat20007",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20059",
+        "name": "Botiquín",
+        "parent_id": "cat20008",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20060",
+        "name": "Cuidado del cabello",
+        "parent_id": "cat20008",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20061",
+        "name": "Cuidado corporal",
+        "parent_id": "cat20008",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20062",
+        "name": "Cuidado e higiene facial",
+        "parent_id": "cat20008",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20063",
+        "name": "Cuidado de manos y pies",
+        "parent_id": "cat20008",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20064",
+        "name": "Higiene Bucal",
+        "parent_id": "cat20008",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat20065",
+        "name": "Suplementos alimenticios",
+        "parent_id": "cat20008",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat21319201",
+        "name": "Panaderia, Bollería y Pastelería",
+        "parent_id": "cat20001",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat21449123",
+        "name": "Congelados",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat21449144",
+        "name": "Aves y Carne Congelada",
+        "parent_id": "cat21449123",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat21449156",
+        "name": "Pescados Congelados",
+        "parent_id": "cat21449123",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat21449161",
+        "name": "Mariscos Congelados",
+        "parent_id": "cat21449123",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat21449164",
+        "name": "Pulpo, Calamar y Sepia Congelados",
+        "parent_id": "cat21449123",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat21449175",
+        "name": "Verduras Congeladas",
+        "parent_id": "cat21449123",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat21449183",
+        "name": "Pizzas Congeladas",
+        "parent_id": "cat21449123",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat21449190",
+        "name": "Rebozados y Platos Preparados",
+        "parent_id": "cat21449123",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat21449194",
+        "name": "Salteados Congelados",
+        "parent_id": "cat21449123",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat21449202",
+        "name": "Helados",
+        "parent_id": "cat21449123",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat220006",
+        "name": "Frutas",
+        "parent_id": "cat20002",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat220014",
+        "name": "Verduras y Hortalizas",
+        "parent_id": "cat20002",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat260001",
+        "name": "Papelería",
+        "parent_id": "cat20005",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat26100388",
+        "name": "Dulce",
+        "parent_id": "cat20001",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat26100390",
+        "name": "Desayuno",
+        "parent_id": "cat20001",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat31330789",
+        "name": "Toallitas",
+        "parent_id": "cat20006",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat32105059",
+        "name": "Insecticidas",
+        "parent_id": "cat20005",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat32238905",
+        "name": "Air Fryer",
+        "parent_id": "cat21449123",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat32482095",
+        "name": "Comidas del Mundo",
+        "parent_id": "cat21449123",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat32544703",
+        "name": "Patatas",
+        "parent_id": "cat21449123",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat32644961",
+        "name": "Masas",
+        "parent_id": "cat21449123",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat32645949",
+        "name": "Repostería y Panadería",
+        "parent_id": "cat21449123",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat32646102",
+        "name": "Hielo",
+        "parent_id": "cat21449123",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat32683499",
+        "name": "Parafarmacia para el Bebé",
+        "parent_id": "cat20006",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat32705624",
+        "name": "Protección Solar",
+        "parent_id": "cat20008",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat32968822",
+        "name": "Energéticas",
+        "parent_id": "cat20003",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat33207691",
+        "name": "Aceites y vinagres",
+        "parent_id": "cat20001",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat33556281",
+        "name": "Afeitado",
+        "parent_id": "cat20004",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat33755675",
+        "name": "Sin Alcohol (NoLo)",
+        "parent_id": "cat20003",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat33926833",
+        "name": "Botiquín",
+        "parent_id": "cat20004",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat33949274",
+        "name": "Especial Mundial",
+        "parent_id": "cat20002",
+        "published": false,
+        "synced_at": "2026-07-21T07:11:05.558+00:00"
+      },
+      {
+        "id": "cat34096823",
+        "name": "Solares",
+        "parent_id": "cat20004",
+        "published": false,
+        "synced_at": "2026-08-24T06:16:09.743+00:00"
+      },
+      {
+        "id": "cat390001",
+        "name": "Aperitivos",
+        "parent_id": "cat20001",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat390008",
+        "name": "Yogures y Postres",
+        "parent_id": "cat20001",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat400001",
+        "name": "Embarazo y Lactancia",
+        "parent_id": "cat20006",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat400002",
+        "name": "Puericultura",
+        "parent_id": "cat20006",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat510001",
+        "name": "Charcutería y Quesos al Corte",
+        "parent_id": "cat20002",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat650001",
+        "name": "Refrescos",
+        "parent_id": "cat20003",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      },
+      {
+        "id": "cat650002",
+        "name": "Aguas y Zumos",
+        "parent_id": "cat20003",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00"
+      }
+    ],
+    "store": "carrefour",
+    "cursor": "",
+    "job_key": "ce1-ce200-273fc58031cdddf9009e89e1d9d5",
+    "row_count": 100,
+    "elapsed_ms": 3.872,
+    "captured_at": "2026-09-03T10:40:39.169485+00:00",
+    "project_ref": "gkffvigcnsesbaihycay",
+    "operation_hash": "273fc58031cdddf9009e89e1d9d54061f7e868df0c363ba65701a7e88da33769"
+  },
+  "transport_bytes": 19135
+}

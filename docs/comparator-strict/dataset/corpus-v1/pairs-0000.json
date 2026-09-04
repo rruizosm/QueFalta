@@ -1,0 +1,4502 @@
+[
+  {
+    "left": "carrefour:2002870135",
+    "right": "mercadona:12981",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:2002870194",
+    "right": "plusfresc:029990",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520660803",
+    "right": "mercadona:27021",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520660916",
+    "right": "mercadona:22392",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520660963",
+    "right": "consum:7227676",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661003",
+    "right": "mercadona:15759",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661025",
+    "right": "consum:200642",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661025",
+    "right": "consum:7329121",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661025",
+    "right": "mercadona:16588",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661025",
+    "right": "mercadona:27242",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661025",
+    "right": "mercadona:27350",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661025",
+    "right": "mercadona:27893",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661025",
+    "right": "mercadona:28499",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661025",
+    "right": "mercadona:60832",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661033",
+    "right": "consum:7333623",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661033",
+    "right": "consum:7369176",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661033",
+    "right": "mercadona:12978",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661037",
+    "right": "mercadona:27088",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661037",
+    "right": "mercadona:27130",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661037",
+    "right": "mercadona:28465",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661043",
+    "right": "consum:7027063",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661043",
+    "right": "mercadona:15631",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661043",
+    "right": "mercadona:16585",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661043",
+    "right": "mercadona:23448",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661043",
+    "right": "mercadona:26992",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661043",
+    "right": "mercadona:27063",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661043",
+    "right": "mercadona:27259",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661043",
+    "right": "plusfresc:020399",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661045",
+    "right": "consum:7088599",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661045",
+    "right": "mercadona:15759",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661045",
+    "right": "mercadona:23448",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661045",
+    "right": "mercadona:27088",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661045",
+    "right": "mercadona:27218",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661045",
+    "right": "mercadona:28092",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661045",
+    "right": "plusfresc:028899",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661045",
+    "right": "plusfresc:032722",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661045",
+    "right": "plusfresc:032912",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661054",
+    "right": "consum:7411866",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661054",
+    "right": "mercadona:15631",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|unresolved_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661054",
+    "right": "mercadona:27088",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|unresolved_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661054",
+    "right": "mercadona:27314",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|unresolved_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661054",
+    "right": "plusfresc:032273",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|plusfresc|named_brand|unresolved_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661058",
+    "right": "consum:7225709",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|named_brand|unresolved_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661058",
+    "right": "mercadona:27092",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|unresolved_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661058",
+    "right": "mercadona:27479",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|unresolved_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661058",
+    "right": "plusfresc:007312",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|plusfresc|named_brand|unresolved_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661058",
+    "right": "plusfresc:032598",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|plusfresc|named_brand|unresolved_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661062",
+    "right": "consum:200642",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661062",
+    "right": "consum:7090814",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661062",
+    "right": "consum:7169993",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661062",
+    "right": "consum:7169998",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661062",
+    "right": "consum:7246320",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661062",
+    "right": "mercadona:19944",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661062",
+    "right": "mercadona:24036",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661062",
+    "right": "mercadona:24037",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661062",
+    "right": "mercadona:29281",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661062",
+    "right": "plusfresc:020549",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661064",
+    "right": "consum:7075299",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661064",
+    "right": "mercadona:27072",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661064",
+    "right": "mercadona:27169",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661064",
+    "right": "mercadona:27288",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661064",
+    "right": "mercadona:27292",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661064",
+    "right": "mercadona:27350",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661064",
+    "right": "mercadona:27884",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661064",
+    "right": "mercadona:28157",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661064",
+    "right": "mercadona:28164",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661064",
+    "right": "plusfresc:032598",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661066",
+    "right": "consum:7380223",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661066",
+    "right": "mercadona:23449",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661066",
+    "right": "mercadona:27242",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661066",
+    "right": "mercadona:86305",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661066",
+    "right": "plusfresc:007302",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661068",
+    "right": "consum:7479541",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661068",
+    "right": "mercadona:27202",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661068",
+    "right": "mercadona:27207",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661068",
+    "right": "mercadona:27258",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661068",
+    "right": "mercadona:27335",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661068",
+    "right": "mercadona:86807",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661074",
+    "right": "consum:7052017",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661074",
+    "right": "consum:7088599",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661074",
+    "right": "consum:7225709",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661074",
+    "right": "consum:7332224",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661074",
+    "right": "mercadona:15760",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661074",
+    "right": "mercadona:21385",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661074",
+    "right": "mercadona:27070",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661074",
+    "right": "mercadona:27268",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661074",
+    "right": "mercadona:28567",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661074",
+    "right": "mercadona:29288",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661076",
+    "right": "consum:7188139",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661076",
+    "right": "mercadona:21385",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661076",
+    "right": "mercadona:27368",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661076",
+    "right": "mercadona:29288",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661076",
+    "right": "mercadona:60637",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661076",
+    "right": "mercadona:86806",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661076",
+    "right": "plusfresc:014934",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661076",
+    "right": "plusfresc:023212",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661082",
+    "right": "consum:2808418",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661082",
+    "right": "mercadona:27072",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661082",
+    "right": "mercadona:28523",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661082",
+    "right": "mercadona:29282",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661082",
+    "right": "plusfresc:020399",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661122",
+    "right": "mercadona:12983",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661122",
+    "right": "mercadona:27095",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661122",
+    "right": "mercadona:27223",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661122",
+    "right": "mercadona:27597",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661122",
+    "right": "mercadona:29406",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661124",
+    "right": "mercadona:16587",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661124",
+    "right": "mercadona:24037",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661124",
+    "right": "mercadona:27213",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661124",
+    "right": "mercadona:28567",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:520661124",
+    "right": "mercadona:52972",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521005869",
+    "right": "mercadona:17581",
+    "cohort": "challenge",
+    "family": "frozen_potatoes",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521007522",
+    "right": "plusfresc:035397",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521007963",
+    "right": "consum:7310563",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521007963",
+    "right": "mercadona:21385",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521007963",
+    "right": "mercadona:21389",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521007963",
+    "right": "mercadona:27078",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521007963",
+    "right": "mercadona:27223",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521007963",
+    "right": "mercadona:27286",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521007963",
+    "right": "plusfresc:024955",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521009163",
+    "right": "consum:7431914",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521009163",
+    "right": "mercadona:28092",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521009163",
+    "right": "plusfresc:026385",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521009490",
+    "right": "mercadona:28164",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521009490",
+    "right": "mercadona:28471",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521009490",
+    "right": "mercadona:29287",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521009490",
+    "right": "plusfresc:007302",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521011768",
+    "right": "plusfresc:036359",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521015027",
+    "right": "consum:7411866",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028175",
+    "right": "mercadona:12980",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028175",
+    "right": "mercadona:28089",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028175",
+    "right": "mercadona:52969",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028175",
+    "right": "plusfresc:017632",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028182",
+    "right": "consum:7332229",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028182",
+    "right": "mercadona:15759",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028182",
+    "right": "mercadona:16585",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028182",
+    "right": "mercadona:27213",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028182",
+    "right": "mercadona:28482",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028182",
+    "right": "plusfresc:017632",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028188",
+    "right": "consum:7090814",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028188",
+    "right": "mercadona:27284",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028188",
+    "right": "mercadona:27292",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028188",
+    "right": "mercadona:27514",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028188",
+    "right": "mercadona:29281",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028188",
+    "right": "mercadona:7981",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028190",
+    "right": "consum:311704",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028190",
+    "right": "consum:7061877",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028190",
+    "right": "consum:7379030",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028190",
+    "right": "mercadona:16348",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028190",
+    "right": "mercadona:16587",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028190",
+    "right": "mercadona:27054",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028190",
+    "right": "mercadona:27242",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028190",
+    "right": "mercadona:27291",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028190",
+    "right": "mercadona:27597",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028190",
+    "right": "mercadona:52969",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028190",
+    "right": "plusfresc:029934",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028194",
+    "right": "consum:7226843",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028194",
+    "right": "mercadona:18287",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028194",
+    "right": "mercadona:27078",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028194",
+    "right": "mercadona:27223",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028194",
+    "right": "mercadona:27240",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028194",
+    "right": "plusfresc:010650",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028200",
+    "right": "consum:7416449",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|consum|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028200",
+    "right": "mercadona:16586",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028200",
+    "right": "mercadona:27130",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028200",
+    "right": "mercadona:27598",
+    "cohort": "confirmatory",
+    "family": "drinking_water",
+    "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521028200",
+    "right": "plusfresc:035615",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029383",
+    "right": "consum:7294721",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029383",
+    "right": "consum:7340875",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|retailer_label_literal|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029383",
+    "right": "mercadona:20376",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029383",
+    "right": "plusfresc:017148",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029383",
+    "right": "plusfresc:019618",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029383",
+    "right": "plusfresc:021298",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029383",
+    "right": "plusfresc:032657",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029387",
+    "right": "consum:7294382",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029387",
+    "right": "consum:7340912",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029387",
+    "right": "consum:7413990",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029387",
+    "right": "plusfresc:021056",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029387",
+    "right": "plusfresc:035939",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029387",
+    "right": "plusfresc:036361",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029387",
+    "right": "plusfresc:036735",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029389",
+    "right": "consum:7340867",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029389",
+    "right": "consum:7397669",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029389",
+    "right": "consum:7473692",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029389",
+    "right": "consum:937177",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029389",
+    "right": "mercadona:20559",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029389",
+    "right": "plusfresc:004471",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029389",
+    "right": "plusfresc:023465",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029389",
+    "right": "plusfresc:036737",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029403",
+    "right": "consum:7369093",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029403",
+    "right": "consum:7391030",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029403",
+    "right": "plusfresc:034562",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029405",
+    "right": "mercadona:20087",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029405",
+    "right": "plusfresc:027291",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029405",
+    "right": "plusfresc:032317",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029405",
+    "right": "plusfresc:032657",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029416",
+    "right": "consum:7199623",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029416",
+    "right": "consum:7206324",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029416",
+    "right": "consum:7477003",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029416",
+    "right": "plusfresc:019600",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029416",
+    "right": "plusfresc:023465",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029416",
+    "right": "plusfresc:025506",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029416",
+    "right": "plusfresc:026477",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029418",
+    "right": "consum:7340792",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029418",
+    "right": "consum:7358646",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029418",
+    "right": "plusfresc:004471",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029418",
+    "right": "plusfresc:011910",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029418",
+    "right": "plusfresc:035386",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029420",
+    "right": "consum:7473692",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029420",
+    "right": "mercadona:20037",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029420",
+    "right": "mercadona:20396",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029420",
+    "right": "plusfresc:020850",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029420",
+    "right": "plusfresc:025506",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029420",
+    "right": "plusfresc:030344",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029420",
+    "right": "plusfresc:031077",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029422",
+    "right": "consum:7375009",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029422",
+    "right": "consum:7391050",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029422",
+    "right": "mercadona:20032",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029422",
+    "right": "mercadona:20396",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029422",
+    "right": "plusfresc:013647",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029422",
+    "right": "plusfresc:034134",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029422",
+    "right": "plusfresc:036887",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029424",
+    "right": "consum:7260834",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029424",
+    "right": "consum:7453590",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029424",
+    "right": "mercadona:20286",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029424",
+    "right": "mercadona:20584",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029424",
+    "right": "plusfresc:021597",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029424",
+    "right": "plusfresc:024581",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029424",
+    "right": "plusfresc:025187",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029424",
+    "right": "plusfresc:027687",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029424",
+    "right": "plusfresc:028277",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029424",
+    "right": "plusfresc:028550",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029424",
+    "right": "plusfresc:028948",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029495",
+    "right": "consum:7391043",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029495",
+    "right": "consum:7391048",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029495",
+    "right": "plusfresc:008017",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029495",
+    "right": "plusfresc:035939",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029497",
+    "right": "mercadona:20033",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029497",
+    "right": "mercadona:21199",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029497",
+    "right": "plusfresc:008039",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029497",
+    "right": "plusfresc:026480",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029497",
+    "right": "plusfresc:031083",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029497",
+    "right": "plusfresc:035940",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029497",
+    "right": "plusfresc:036733",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029499",
+    "right": "consum:7465938",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029499",
+    "right": "plusfresc:031368",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029549",
+    "right": "consum:7199636",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029549",
+    "right": "mercadona:20057",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029549",
+    "right": "plusfresc:005609",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029549",
+    "right": "plusfresc:021896",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029549",
+    "right": "plusfresc:022184",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029549",
+    "right": "plusfresc:035398",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029549",
+    "right": "plusfresc:036725",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029549",
+    "right": "plusfresc:036736",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029551",
+    "right": "consum:7294705",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029551",
+    "right": "plusfresc:004470",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029551",
+    "right": "plusfresc:007388",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029551",
+    "right": "plusfresc:031077",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029562",
+    "right": "plusfresc:015460",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029562",
+    "right": "plusfresc:033248",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029566",
+    "right": "plusfresc:012251",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|retailer_label_literal|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029566",
+    "right": "plusfresc:015155",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029566",
+    "right": "plusfresc:019809",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029566",
+    "right": "plusfresc:025509",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029566",
+    "right": "plusfresc:028005",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029566",
+    "right": "plusfresc:034089",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029566",
+    "right": "plusfresc:034374",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029568",
+    "right": "mercadona:20559",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029568",
+    "right": "plusfresc:034561",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029570",
+    "right": "plusfresc:019809",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029570",
+    "right": "plusfresc:031456",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029574",
+    "right": "plusfresc:035398",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029574",
+    "right": "plusfresc:036725",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029576",
+    "right": "consum:7371032",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029576",
+    "right": "mercadona:21358",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029576",
+    "right": "plusfresc:013618",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029576",
+    "right": "plusfresc:028948",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029576",
+    "right": "plusfresc:034091",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029576",
+    "right": "plusfresc:035391",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029590",
+    "right": "consum:7340904",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029590",
+    "right": "mercadona:20247",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029590",
+    "right": "plusfresc:020315",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029590",
+    "right": "plusfresc:021893",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029590",
+    "right": "plusfresc:022382",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029590",
+    "right": "plusfresc:027457",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029590",
+    "right": "plusfresc:034090",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029594",
+    "right": "consum:7199636",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029594",
+    "right": "consum:7369093",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029594",
+    "right": "consum:7394872",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029594",
+    "right": "consum:7430762",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029594",
+    "right": "plusfresc:024113",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029594",
+    "right": "plusfresc:026477",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029598",
+    "right": "consum:7046514",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029598",
+    "right": "plusfresc:004542",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029598",
+    "right": "plusfresc:007388",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029598",
+    "right": "plusfresc:036186",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029600",
+    "right": "plusfresc:022382",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029600",
+    "right": "plusfresc:024868",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029600",
+    "right": "plusfresc:028274",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029600",
+    "right": "plusfresc:035387",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029600",
+    "right": "plusfresc:036727",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029602",
+    "right": "consum:7391055",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029602",
+    "right": "plusfresc:034091",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029606",
+    "right": "consum:7206316",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029606",
+    "right": "mercadona:21336",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|single_explicit",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029606",
+    "right": "plusfresc:025087",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029606",
+    "right": "plusfresc:026480",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029606",
+    "right": "plusfresc:027336",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029606",
+    "right": "plusfresc:028870",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029606",
+    "right": "plusfresc:036753",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029612",
+    "right": "consum:7263353",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029612",
+    "right": "consum:7391050",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029612",
+    "right": "consum:7458243",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029612",
+    "right": "plusfresc:013618",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029612",
+    "right": "plusfresc:021056",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029612",
+    "right": "plusfresc:031084",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029614",
+    "right": "consum:7300171",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029614",
+    "right": "consum:7394872",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029614",
+    "right": "consum:7443971",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029614",
+    "right": "mercadona:21447",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029614",
+    "right": "plusfresc:013648",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029614",
+    "right": "plusfresc:031084",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029614",
+    "right": "plusfresc:035387",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029633",
+    "right": "consum:7340789",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029633",
+    "right": "consum:7406440",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029633",
+    "right": "mercadona:21362",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029633",
+    "right": "plusfresc:031462",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029633",
+    "right": "plusfresc:034562",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029651",
+    "right": "plusfresc:011554",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029653",
+    "right": "consum:937193",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029683",
+    "right": "plusfresc:024110",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029695",
+    "right": "mercadona:20584",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029785",
+    "right": "consum:7340867",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029785",
+    "right": "consum:7340904",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029785",
+    "right": "consum:7477008",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029787",
+    "right": "consum:7199636",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029787",
+    "right": "consum:7443963",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029787",
+    "right": "consum:7456056",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029787",
+    "right": "plusfresc:017149",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029787",
+    "right": "plusfresc:022184",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029787",
+    "right": "plusfresc:025866",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029787",
+    "right": "plusfresc:027111",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029787",
+    "right": "plusfresc:031084",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029787",
+    "right": "plusfresc:032193",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029787",
+    "right": "plusfresc:032317",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029787",
+    "right": "plusfresc:035398",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029787",
+    "right": "plusfresc:036186",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029807",
+    "right": "consum:7294713",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029807",
+    "right": "plusfresc:008007",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029807",
+    "right": "plusfresc:020991",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029807",
+    "right": "plusfresc:021298",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029807",
+    "right": "plusfresc:035940",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029809",
+    "right": "consum:7294627",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029809",
+    "right": "consum:7370984",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029809",
+    "right": "consum:7394872",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029809",
+    "right": "consum:7444292",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029809",
+    "right": "plusfresc:015460",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029809",
+    "right": "plusfresc:031999",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029813",
+    "right": "consum:7206316",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029819",
+    "right": "consum:7046514",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029819",
+    "right": "consum:7482698",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029819",
+    "right": "mercadona:20953",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029819",
+    "right": "mercadona:7878",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029819",
+    "right": "plusfresc:031883",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029819",
+    "right": "plusfresc:032658",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029821",
+    "right": "plusfresc:008004",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029821",
+    "right": "plusfresc:021963",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029821",
+    "right": "plusfresc:021966",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029821",
+    "right": "plusfresc:035388",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029825",
+    "right": "consum:7391043",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029825",
+    "right": "consum:7394872",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029825",
+    "right": "consum:7413990",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029825",
+    "right": "consum:7476992",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029825",
+    "right": "mercadona:21199",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029825",
+    "right": "plusfresc:013655",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029825",
+    "right": "plusfresc:032308",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029829",
+    "right": "consum:7337876",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029852",
+    "right": "plusfresc:013618",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029856",
+    "right": "plusfresc:032805",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029870",
+    "right": "plusfresc:020850",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029870",
+    "right": "plusfresc:031877",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029874",
+    "right": "plusfresc:031460",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521029894",
+    "right": "plusfresc:031368",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "consum:7057706",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "consum:7255425",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "consum:7370419",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "consum:7393366",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "consum:7417413",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "consum:7431237",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "consum:7461598",
+    "cohort": "challenge",
+    "family": "frozen_potatoes",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "consum:844837",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "mercadona:17581",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "mercadona:19904",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "mercadona:61405",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "mercadona:61416",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "mercadona:61421",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "mercadona:7879",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "plusfresc:010985",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "plusfresc:019865",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "plusfresc:023552",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "plusfresc:028522",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "plusfresc:032787",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "plusfresc:032788",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "plusfresc:032789",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031642",
+    "right": "plusfresc:037023",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "consum:7057706",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "consum:7255425",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "consum:7370419",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "consum:7393366",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "consum:7417413",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "consum:7431237",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "consum:844837",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "mercadona:17581",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "mercadona:19904",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "mercadona:61405",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "mercadona:61416",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "mercadona:61421",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "mercadona:7879",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "plusfresc:010985",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "plusfresc:019865",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "plusfresc:023552",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "plusfresc:028522",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "plusfresc:032787",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "plusfresc:032788",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "plusfresc:032789",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521031644",
+    "right": "plusfresc:037023",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033603",
+    "right": "consum:7141542",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033603",
+    "right": "consum:7280605",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033603",
+    "right": "consum:7303527",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033603",
+    "right": "plusfresc:008002",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033603",
+    "right": "plusfresc:017148",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033603",
+    "right": "plusfresc:019661",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033603",
+    "right": "plusfresc:023692",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033603",
+    "right": "plusfresc:027687",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033603",
+    "right": "plusfresc:034092",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033603",
+    "right": "plusfresc:036727",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "consum:7057706",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "consum:7255425",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "consum:7370419",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "consum:7393366",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "consum:7404887",
+    "cohort": "challenge",
+    "family": "frozen_potatoes",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "consum:7417413",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "consum:7431237",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "consum:844837",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "mercadona:17581",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "mercadona:19904",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "mercadona:61405",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "mercadona:61416",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "mercadona:61421",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "mercadona:7879",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "plusfresc:010985",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "plusfresc:019865",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "plusfresc:023552",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "plusfresc:028522",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "plusfresc:032787",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "plusfresc:032788",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "plusfresc:032789",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521033712",
+    "right": "plusfresc:037023",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521034294",
+    "right": "mercadona:16349",
+    "cohort": "challenge",
+    "family": "drinking_water",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521034442",
+    "right": "consum:7391063",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521034442",
+    "right": "plusfresc:013245",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|retailer_label_literal|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521034442",
+    "right": "plusfresc:024113",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:521035264",
+    "right": "consum:7431385",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "consum:7057706",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "consum:7168651",
+    "cohort": "challenge",
+    "family": "frozen_potatoes",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "consum:7255425",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "consum:7359060",
+    "cohort": "challenge",
+    "family": "frozen_potatoes",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "consum:7370419",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "consum:7393366",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "consum:7411858",
+    "cohort": "challenge",
+    "family": "frozen_potatoes",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "consum:7417413",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "consum:7431237",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "consum:844837",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "mercadona:17581",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "mercadona:19904",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "mercadona:61405",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "mercadona:61416",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "mercadona:61421",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "mercadona:7879",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "plusfresc:010985",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "plusfresc:019865",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "plusfresc:023552",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "plusfresc:028522",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "plusfresc:032787",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "plusfresc:032788",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "plusfresc:032789",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714762",
+    "right": "plusfresc:037023",
+    "cohort": "confirmatory",
+    "family": "frozen_potatoes",
+    "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714819",
+    "right": "consum:7288272",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714819",
+    "right": "consum:7302867",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714819",
+    "right": "consum:7369093",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714819",
+    "right": "plusfresc:013618",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714819",
+    "right": "plusfresc:013648",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714819",
+    "right": "plusfresc:022183",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714819",
+    "right": "plusfresc:022886",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "variant_word_contrast",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522714819",
+    "right": "plusfresc:031999",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "missing_structured_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522715570",
+    "right": "consum:7206316",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "different_format_evidence",
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522715570",
+    "right": "consum:7303527",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522715570",
+    "right": "mercadona:21362",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:522715570",
+    "right": "plusfresc:019661",
+    "cohort": "confirmatory",
+    "family": "yogurt",
+    "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+    "challenge_reason": null,
+    "annotation_status": "unreviewed"
+  },
+  {
+    "left": "carrefour:526501358",
+    "right": "mercadona:23477",
+    "cohort": "challenge",
+    "family": "yogurt",
+    "stratum": null,
+    "challenge_reason": "lexical_confuser_outside_supported_family",
+    "annotation_status": "unreviewed"
+  }
+]

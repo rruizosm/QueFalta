@@ -1,0 +1,145 @@
+{
+  "version": "ce202-yogurt-carrefour-v1",
+  "corpus_manifest_sha256": "15da91ad7ae616199da7a50b53dba2abca4e3c43c1420a4a413b23ad02b9abd7",
+  "code_and_preexisting_evidence": [
+    {
+      "path": "scripts/lib/comparator-strict-yogurt-carrefour-specs.mjs",
+      "sha256": "54d188607f11aa4ea72b466c849bd89dc7253d3151ab4617cc4e4b3612a50b16"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-yogurt-carrefour.mjs",
+      "sha256": "7808e4b141d17bb311bc8cba03586518fc7d86e049cae7f5990acc4c3e7964e5"
+    },
+    {
+      "path": "scripts/prepare-comparator-strict-yogurt-carrefour.mjs",
+      "sha256": "1837868607b4353caf50c7bd6c8d9bf8635bfc28d512a8bc3ef69f6dcd40cf34"
+    },
+    {
+      "path": "scripts/inspect-comparator-strict-carrefour-yogurt.mjs",
+      "sha256": "a6b04155c4330d0d46c109b7829c6e866345eb2cc50cdc6d689cdcc63d7d971e"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-yogurt-review.mjs",
+      "sha256": "c1dbe8ecf2c959da0ec0fa207af81a635d7cf6709a51e04a65c5dc414c0b1f46"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-corpus-labels.mjs",
+      "sha256": "dac2bb3d1c072418be97a3e40e47c1ee9ee2e9b46269d3df1005c1686ad56431"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-corpus.mjs",
+      "sha256": "69dca18c12f1c161d0d726c0d191b92728d4225c16a8b2f1fb17b60a3e5af232"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-dataset.mjs",
+      "sha256": "e83982cc2cbd0cabc972e2fd1fa09ad9186a0580cda31e836fe0538776ad8eae"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-labels.mjs",
+      "sha256": "6ec33dd1564f4f35e33dadc4154b0dee85a7c1283be6cec5d9b253cbdb2182cd"
+    },
+    {
+      "path": "docs/comparator-strict/CE-201-202-corpus-evidence.json",
+      "sha256": "8827df528b9071e75aff0b295e0480e2d76bf0aa0c77f3a6b709ca366531ab76"
+    },
+    {
+      "path": "docs/comparator-strict/CE-201-202-potatoes-evidence.json",
+      "sha256": "75c8a111eb5e97d3388d8be7d1933df8f8028c95befede8947cec576c719d11b"
+    },
+    {
+      "path": "docs/comparator-strict/CE-201-202-yogurt-evidence.json",
+      "sha256": "938a38a6d379bb5618403e6519bf631df7e5d02de2e0308c9e9271c32025e0ab"
+    },
+    {
+      "path": "docs/comparator-strict/CE-201-202-yogurt-plusfresc-evidence.json",
+      "sha256": "ff4c1d4e98039da3e100655a3c18672eaa820adf8c6b0c2d4f3e37490f2dc559"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-yogurt-v1/products.json",
+      "sha256": "02598c45404fac165bd4cda8dabaa20cca7a68a728192ee3471ab37d15770110"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-yogurt-v1/index.json",
+      "sha256": "eb3960e18f69f0cfc6af60079f8fbcd602925eede1fd4eb6ebc0e6f0bd601479"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-yogurt-plusfresc-v1/products.json",
+      "sha256": "b7bc56424c2bade741dab56746ca535293565e1254ad8561cb73982f584dccdb"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-yogurt-plusfresc-v1/index.json",
+      "sha256": "b4ed08a9ebd07b6ec9a7d8f0606bd98bf240913af405c98e64751980aeddf534"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-potatoes-v1/index.json",
+      "sha256": "a5f0f6ba465824800aa5828059033ab39f73e96a9cccd1a4a0a20d6526752f27"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/editorial.json",
+      "sha256": "7c4a65fceae6c1282e388b3033745f4492a87aeff724f41cd724a18bd94cfaad"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-0000.json",
+      "sha256": "fec79624c967b60bf007e3de2d23e0015a3da46f47c89f9765e3d48e53a3fda3"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-0500.json",
+      "sha256": "682f284ca7b3604e668f0e06fdd813f39de025e72a4c1368f9a1a9293d9cb2cc"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-1000.json",
+      "sha256": "3c45b9476c951e4d3a9589304d9794f473a7fa50e8d97849a4ea15092b949600"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-1500.json",
+      "sha256": "1c196005c36a58ca963bd85e0905e6c85cb4c1d2e62b58ba076d078ba438b57b"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-2000.json",
+      "sha256": "3fed85add7b00ce2f0f954b299e77a8e135a35e71c4c37c85b699da10f91ffa4"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-2500.json",
+      "sha256": "deb19fc5fd61b1233008f39c750921492ea74ef16eaeaf116b7cee04f15538dd"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-3000.json",
+      "sha256": "3f45eb30241d100e06e878ff7951b2bd5f2711a2675f82f417ebd8ed6cc3583d"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-3500.json",
+      "sha256": "7b11594c1d83b69fe7189a2f45f8181af946f6195c8c170cea1994b3e0500364"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-4000.json",
+      "sha256": "e2320f4a26a397ef9bf28dc04a16cc36099b42c790d5c35b8b9bc608b7401ef5"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-4500.json",
+      "sha256": "a1cdb8c640bd1b49bbe397e44456b9f3be547a7913b4543e39b419ac5b96b034"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-5000.json",
+      "sha256": "b7fd46eaafa7c01cbf5f743832ac081e767719f1ab80ef3df2dc7db3bee6da0e"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/index-5500.json",
+      "sha256": "a42c7bf9a9276b47ce8997cf6ce36760787f87e1222fcb5b794570a113295cae"
+    },
+    {
+      "path": "docs/comparator-strict/CE-202-yogurt-carrefour-guide.md",
+      "sha256": "245516f75e873029c8833dc704a6cd3db1b0aa197bda0f331ce1b1685e45425a"
+    }
+  ],
+  "hashes": {
+    "products": "3bc3f2cdc976a057ef5a33a56aca61a9cf6308ee4a5e765b3981398be87a231a",
+    "annotations": "c1fa947e231ca135ab39b409aba79b9bf6f6b7694f785f210fc5723c845b8443",
+    "index": "6ec5b7b97d5342a3b21d5d6d304fadef7545d72583d7462b1125f89d1a63dee3"
+  },
+  "report_sha256": "a246076e42a9cbe387b9673e2ef045cc4e209c7fab817ec5354728cd6493bcdf",
+  "materialization": "545 new source reviews and compact index stored; 431 previous product reviews byte-identical. Full annotations stdout-reproducible and pinned. Source block complete, not full equivalence, owner review or gold.",
+  "CE201_complete": false,
+  "CE202_complete": false,
+  "CE203_complete": false,
+  "G2_pass": false
+}

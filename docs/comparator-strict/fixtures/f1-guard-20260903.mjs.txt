@@ -1,0 +1,282 @@
+// CE-102: frontera de ejecución para operaciones CE-1 registradas por código.
+// No importa clientes de red, carga secretos ni modifica procesos legacy.
+// El adaptador transaccional y el coordinador de presupuesto son de confianza;
+// no confundir este contrato con permisos RLS o un sandbox para SQL arbitrario.
+import { createHash } from 'node:crypto';
+import { f1CapacityException } from './comparator-strict-f1-contract.mjs';
+
+export const CE1_REF = 'gkffvigcnsesbaihycay';
+export const CE1_LIMITS = Object.freeze({
+  statementMs: 5000,
+  lockMs: 500,
+  jobMs: 20 * 60 * 1000,
+  daySqlMs: 5 * 60 * 1000,
+  pageRows: 500,
+  dayReadRows: 5000,
+  canaryRows: 5,
+  batchWriteRows: 50,
+  jobWriteRows: 500,
+  dayWriteRows: 2000,
+  dayBytes: 10 * 1024 * 1024,
+  targetEvidenceMs: 5 * 60 * 1000,
+});
+const ORIGINS = new Set([
+  `https://${CE1_REF}.supabase.co`,
+  'https://auth.quefalta.es',
+]);
+// Lista exacta, no comodines ni un startsWith("comparator"). Objetos propuestos
+// de infraestructura CE-1: su existencia/despliegue no se afirma aquí.
+const WRITE_OBJECTS = new Set([
+  'comparator_strict',
+  'comparator_strict.execution_control',
+  'comparator_strict.execution_jobs',
+  'comparator_strict.execution_budget',
+  'comparator_strict.test_principals',
+]);
+const REQUEST_KEYS = new Set([
+  'operation', 'projectRef', 'supabaseUrl', 'mode', 'jobId',
+  'operationHash', 'confirmProduction',
+]);
+const BUDGET_FIELDS = [
+  'sqlMsReserved', 'readRowsReserved', 'writeRowsReserved', 'bytesReserved',
+  'jobWriteRowsReserved', 'consecutiveTimeouts',
+];
+
+function fail(code) {
+  const error = new Error(code);
+  error.code = code;
+  throw error;
+}
+
+function integer(value, max, code, min = 0) {
+  if (!Number.isSafeInteger(value) || value < min || value > max) fail(code);
+  return value;
+}
+
+function freeze(value) {
+  if (value && typeof value === 'object') {
+    for (const child of Object.values(value)) freeze(child);
+    Object.freeze(value);
+  }
+  return value;
+}
+
+export function strictOperationHash(operation) {
+  // Hash del descriptor completo: SQL, objetos y presupuestos, no solo el nombre.
+  function canonical(value) {
+    if (Array.isArray(value)) return value.map(canonical);
+    if (value && typeof value === 'object') {
+      return Object.fromEntries(Object.keys(value).sort().map((key) => [key, canonical(value[key])]));
+    }
+    return value;
+  }
+  return createHash('sha256').update(JSON.stringify(canonical(operation))).digest('hex');
+}
+
+export function validateStrictTarget(projectRef, supabaseUrl) {
+  if (projectRef !== CE1_REF) fail('ce1_wrong_project');
+  let url;
+  try { url = new URL(supabaseUrl); } catch { fail('ce1_invalid_url'); }
+  if (!ORIGINS.has(url.origin) || url.username || url.password
+    || url.pathname !== '/' || url.search || url.hash) fail('ce1_wrong_endpoint');
+  return url.origin;
+}
+
+function checkOperation(operation) {
+  if (!operation || !['diagnostic', 'read', 'write', 'ddl'].includes(operation.kind)) fail('ce1_unknown_operation');
+  if (typeof operation.sql !== 'string' || !operation.sql.trim()) fail('ce1_missing_sql');
+  if (!Array.isArray(operation.objects) || !operation.objects.length
+    || new Set(operation.objects).size !== operation.objects.length
+    || operation.objects.some((name) => typeof name !== 'string' || !/^[a-z_][a-z0-9_]*(\.[a-z_][a-z0-9_]*)?$/.test(name))) {
+    fail('ce1_invalid_objects');
+  }
+  const writes = operation.kind === 'write' || operation.kind === 'ddl';
+  if (writes && operation.objects.some((name) => !WRITE_OBJECTS.has(name))) fail('ce1_write_scope');
+  integer(operation.maxReadRows, CE1_LIMITS.pageRows, 'ce1_read_limit');
+  integer(operation.maxWriteRows, CE1_LIMITS.batchWriteRows, 'ce1_write_limit');
+  // Cuenta todas las filas inducidas, no solo el rowCount del objeto principal.
+  integer(operation.maxInducedRows, CE1_LIMITS.batchWriteRows, 'ce1_induced_rows_unknown');
+  if (operation.maxWriteRows + operation.maxInducedRows > CE1_LIMITS.batchWriteRows) fail('ce1_write_limit');
+  if (!writes && (operation.maxWriteRows || operation.maxInducedRows)) fail('ce1_read_has_writes');
+  integer(operation.maxResponseBytes, CE1_LIMITS.dayBytes, 'ce1_response_limit', 1);
+  integer(operation.maxSqlMs, CE1_LIMITS.statementMs, 'ce1_sql_limit', 1);
+  if (operation.externalCalls !== 0 || operation.queueJobs !== 0
+    || operation.commercialQuotaUses !== 0 || operation.globalChanges !== false) fail('ce1_side_effects');
+  if (!Array.isArray(operation.rowKeys) || new Set(operation.rowKeys).size !== operation.rowKeys.length
+    || operation.rowKeys.some((key) => typeof key !== 'string' || !key || key.length > 200)) fail('ce1_invalid_row_scope');
+  if (operation.kind === 'write' && operation.rowKeys.length !== operation.maxWriteRows) fail('ce1_missing_row_scope');
+  if (operation.kind !== 'write' && operation.rowKeys.length) fail('ce1_unexpected_row_scope');
+  if (operation.kind === 'ddl' && operation.maxWriteRows !== 0) fail('ce1_ddl_contains_data');
+  if (writes && operation.reviewed !== true) fail('ce1_unreviewed_operation');
+  return writes;
+}
+
+function checkReadiness(readiness, now, writes, operationId, operationHash) {
+  if (!writes) return;
+  if (f1CapacityException(readiness, now, operationId, operationHash, strictOperationHash)) return;
+  if (readiness?.CE100 !== 'accepted' || readiness?.baseline?.complete !== true) fail('ce1_capacity_pending');
+  const baseline = readiness.baseline;
+  if (!Number.isFinite(baseline.durationMs) || baseline.durationMs < 15 * 60 * 1000
+    || !Number.isFinite(baseline.endedAtMs) || baseline.endedAtMs > now
+    || now - baseline.endedAtMs > CE1_LIMITS.targetEvidenceMs) fail('ce1_baseline_invalid');
+  // Valores/ventanas ya agregados por la fuente de métricas, nunca ausencia=0.
+  for (const field of ['cpuMaxFiveMinutePercent', 'connectionsMaxPercent']) {
+    if (!Number.isFinite(baseline[field]) || baseline[field] < 0 || baseline[field] > 100) fail('ce1_baseline_invalid');
+  }
+  if (baseline.cpuMaxFiveMinutePercent >= 70 || baseline.connectionsMaxPercent >= 80
+    || baseline.memoryPressure !== false || baseline.ioPressure !== false
+    || baseline.clientBlocking !== false || baseline.latencyRegression !== false
+    || baseline.errorRegression !== false) fail('ce1_unhealthy_baseline');
+  if (readiness.rollbackReviewed !== true || readiness.scopeReviewed !== true) fail('ce1_review_pending');
+}
+
+/** Comprobación pura; plan es siempre el modo por defecto y no autoriza red. */
+export function prepareStrictOperation(request, operations, context = {}) {
+  if (!request || Object.keys(request).some((key) => !REQUEST_KEYS.has(key))) fail('ce1_unknown_argument');
+  const origin = validateStrictTarget(request.projectRef, request.supabaseUrl);
+  if (!Object.hasOwn(operations, request.operation)) fail('ce1_unknown_operation');
+  const operation = structuredClone(operations[request.operation]);
+  const writes = checkOperation(operation);
+  const operationHash = strictOperationHash(operation);
+  const mode = request.mode ?? 'plan';
+  if (!['plan', 'read', 'apply'].includes(mode)) fail('ce1_invalid_mode');
+  if (mode === 'read' && writes) fail('ce1_apply_required');
+  if (mode === 'apply' && !writes) fail('ce1_read_mode_required');
+  if (mode !== 'plan' && request.operationHash !== operationHash) fail('ce1_operation_changed');
+  if (mode === 'apply' && request.confirmProduction !== CE1_REF) fail('ce1_explicit_confirmation_required');
+  if (typeof request.jobId !== 'string' || !/^ce1-[a-z0-9-]{1,72}$/.test(request.jobId)) fail('ce1_invalid_job_id');
+
+  const reservation = {
+    sqlMs: operation.maxSqlMs,
+    readRows: operation.maxReadRows,
+    writeRows: operation.maxWriteRows + operation.maxInducedRows,
+    responseBytes: operation.maxResponseBytes,
+  };
+  if (mode !== 'plan') {
+    const { nowMs, verifiedTarget, budget, readiness, jobStartedAtMs } = context;
+    if (!Number.isFinite(nowMs)) fail('ce1_clock_required');
+    if (verifiedTarget?.projectRef !== CE1_REF || verifiedTarget?.origin !== origin
+      || verifiedTarget?.status !== 'ACTIVE_HEALTHY') fail('ce1_target_unverified');
+    if (!Number.isFinite(verifiedTarget.verifiedAtMs) || verifiedTarget.verifiedAtMs > nowMs
+      || nowMs - verifiedTarget.verifiedAtMs > CE1_LIMITS.targetEvidenceMs) fail('ce1_target_stale');
+    if (!Number.isFinite(jobStartedAtMs) || jobStartedAtMs > nowMs
+      || nowMs - jobStartedAtMs + operation.maxSqlMs > CE1_LIMITS.jobMs) fail('ce1_job_expired');
+    if (budget?.projectRef !== CE1_REF || budget?.utcDay !== new Date(nowMs).toISOString().slice(0, 10)) fail('ce1_budget_unverified');
+    for (const field of BUDGET_FIELDS) integer(budget[field], Number.MAX_SAFE_INTEGER, 'ce1_invalid_budget');
+    // Atomic F1 performs an optimistic proposal only here; its SQL reservation
+    // must acquire exclusivity before any write. Never label an absent lease held.
+    const atomicProposal = context.leasePhase === 'atomic_proposal'
+      && f1CapacityException(readiness, nowMs, request.operation, operationHash, strictOperationHash);
+    if (budget.activeJobs !== (atomicProposal ? 0 : 1) || budget.jobId !== request.jobId) fail('ce1_exclusive_lease_required');
+    if (budget.consecutiveTimeouts >= 2 || budget.halted !== false) fail('ce1_execution_halted');
+    const dayBytes = f1CapacityException(readiness, nowMs, request.operation, operationHash, strictOperationHash)
+      && budget.bytesLimit === 23068672 && budget.approvalReference === 'CE-100-22MiB-2026-09-03'
+      ? 23068672 : CE1_LIMITS.dayBytes;
+    if (budget.sqlMsReserved + reservation.sqlMs > CE1_LIMITS.daySqlMs
+      || budget.readRowsReserved + reservation.readRows > CE1_LIMITS.dayReadRows
+      || budget.writeRowsReserved + reservation.writeRows > CE1_LIMITS.dayWriteRows
+      || budget.jobWriteRowsReserved + reservation.writeRows > CE1_LIMITS.jobWriteRows
+      || budget.bytesReserved + reservation.responseBytes > dayBytes) fail('ce1_budget_exceeded');
+    checkReadiness(readiness, nowMs, writes, request.operation, operationHash);
+    if (writes && readiness.canaryAccepted !== true && reservation.writeRows > CE1_LIMITS.canaryRows) fail('ce1_canary_limit');
+  }
+  return freeze({
+    mode, projectRef: CE1_REF, origin, operationId: request.operation, operationHash,
+    jobId: request.jobId, operation, reservation,
+    transaction: { readOnly: !writes, statementTimeoutMs: operation.maxSqlMs, lockTimeoutMs: CE1_LIMITS.lockMs },
+  });
+}
+
+/**
+ * Punto único de ejecución para futuros adaptadores CE-1.
+ * coordinator.withProjectLease debe ser exclusivo/atómico POR PROYECTO y
+ * conservar reservas incluso si hay fallo/timeout. No hay fallback en memoria.
+ * transport debe estar ligado a target, usar una sesión transaccional y devolver
+ * filas afectadas/inducidas reales ANTES del COMMIT. No vale REST auto-commit.
+ * CE-103/106 deben implementar/probar esos adaptadores antes de escrituras.
+ */
+export function createStrictRunner({ operations, transport, coordinator, now = Date.now }) {
+  const registry = freeze(structuredClone(operations));
+  let inFlight = false;
+  return async function run(request, readiness = {}) {
+    // Captura inmutable antes de cualquier await para evitar cambios concurrentes.
+    const input = freeze(structuredClone(request));
+    const ready = freeze(structuredClone(readiness));
+    const preview = prepareStrictOperation({ ...input, mode: 'plan' }, registry);
+    if ((input.mode ?? 'plan') === 'plan') return { status: 'planned', plan: preview };
+    if (!['read', 'apply'].includes(input.mode)) fail('ce1_invalid_mode');
+    if (inFlight) fail('ce1_operation_in_flight');
+    if (!transport || !coordinator || typeof coordinator.withProjectLease !== 'function') fail('ce1_adapter_required');
+    // Comprobaciones de modo/hash antes de cualquier interacción con el adaptador.
+    if (input.operationHash !== preview.operationHash) fail('ce1_operation_changed');
+    if (input.mode === 'apply' && input.confirmProduction !== CE1_REF) fail('ce1_explicit_confirmation_required');
+    if (preview.transaction.readOnly !== (input.mode === 'read')) fail('ce1_mode_mismatch');
+    checkReadiness(ready, now(), !preview.transaction.readOnly, preview.operationId, preview.operationHash);
+    inFlight = true;
+    try {
+      return await coordinator.withProjectLease(CE1_REF, input.jobId, async (lease) => {
+        if (typeof lease?.reserve !== 'function' || typeof lease?.recordOutcome !== 'function') fail('ce1_invalid_coordinator');
+        const budgetBeforeReservation = freeze(structuredClone(lease.budget));
+        const target = await transport.inspectTarget();
+        const plan = prepareStrictOperation(input, registry, {
+          nowMs: now(), verifiedTarget: target, budget: budgetBeforeReservation,
+          jobStartedAtMs: lease.jobStartedAtMs, readiness: ready,
+        });
+        // Reserva duradera ANTES de BEGIN; no se devuelve automáticamente en error.
+        await lease.reserve(plan.reservation);
+        let begun = false;
+        let commitAttempted = false;
+        try {
+          // La reserva también puede esperar: revalidar reloj/día/gates sin
+          // sumar otra reserva al snapshot previo.
+          prepareStrictOperation(input, registry, {
+            nowMs: now(), verifiedTarget: target, budget: budgetBeforeReservation,
+            jobStartedAtMs: lease.jobStartedAtMs, readiness: ready,
+          });
+          const transactionStartedAt = now();
+          begun = true;
+          await transport.begin(plan.transaction);
+          const result = await transport.execute(plan);
+          integer(result?.readRows, plan.reservation.readRows, 'ce1_result_read_limit');
+          integer(result?.writeRows, plan.reservation.writeRows, 'ce1_result_write_limit');
+          integer(result?.responseBytes, plan.reservation.responseBytes, 'ce1_result_byte_limit');
+          if (!Number.isFinite(result?.sqlMs) || result.sqlMs < 0 || result.sqlMs > plan.reservation.sqlMs) fail('ce1_result_sql_limit');
+          if (!plan.transaction.readOnly) {
+            if (!Array.isArray(result.touchedObjects) || !result.touchedObjects.length
+              || result.touchedObjects.some((object) => !plan.operation.objects.includes(object))) fail('ce1_result_object_scope');
+            if (!Array.isArray(result.directWriteRowKeys)
+              || new Set(result.directWriteRowKeys).size !== result.directWriteRowKeys.length
+              || result.directWriteRowKeys.some((key) => !plan.operation.rowKeys.includes(key))) fail('ce1_result_row_scope');
+            integer(result.inducedWriteRows, plan.operation.maxInducedRows, 'ce1_result_induced_limit');
+            if (result.writeRows !== result.directWriteRowKeys.length + result.inducedWriteRows) fail('ce1_result_row_accounting');
+          }
+          const finishedAt = now();
+          if (!Number.isFinite(finishedAt) || finishedAt < transactionStartedAt
+            || finishedAt - lease.jobStartedAtMs > CE1_LIMITS.jobMs
+            || new Date(finishedAt).toISOString().slice(0, 10) !== budgetBeforeReservation.utcDay) fail('ce1_job_expired');
+          if (plan.transaction.readOnly) await transport.rollback();
+          else {
+            commitAttempted = true;
+            await transport.commit();
+          }
+          begun = false;
+          await lease.recordOutcome({ status: 'completed', sqlTimeout: false, halt: false });
+          return { status: 'completed', operationId: plan.operationId, operationHash: plan.operationHash, result };
+        } catch (error) {
+          let rollbackFailed = false;
+          if (begun) {
+            try { await transport.rollback(); } catch { rollbackFailed = true; }
+          }
+          // Resultado de COMMIT perdido = estado incierto; no repetir ni devolver cuota.
+          const sqlTimeout = error?.code === '57014';
+          await lease.recordOutcome({
+            status: commitAttempted ? 'commit_unknown' : 'failed', sqlTimeout,
+            halt: commitAttempted || rollbackFailed || !sqlTimeout
+              || budgetBeforeReservation.consecutiveTimeouts + 1 >= 2,
+          });
+          throw error;
+        }
+      });
+    } finally { inFlight = false; }
+  };
+}

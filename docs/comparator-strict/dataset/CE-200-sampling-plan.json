@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "task": "CE-200",
+  "status": "in_progress_local_preparation",
+  "date": "2026-09-03",
+  "authority": "Continua con la tarea CE-200",
+  "project_ref": "gkffvigcnsesbaihycay",
+  "size_targets": {
+    "minimum_unique_commercial_pairs": 5000,
+    "target_unique_commercial_pairs": 6000,
+    "maximum_unique_commercial_pairs": 10000,
+    "minimum_logical_queries": 1000,
+    "target_logical_queries": 1200,
+    "maximum_postcodes_per_origin_in_this_design": 2,
+    "minimum_distinct_origins_for_target_with_both_postcodes": 600
+  },
+  "scope": {
+    "stores": ["carrefour", "consum", "mercadona", "plusfresc"],
+    "postcodes": ["08006", "25001"],
+    "families": ["drinking_water", "yogurt", "frozen_potatoes"],
+    "selling_mode": "fixed_nominal_package",
+    "quarantined": ["meat", "cold_cuts", "variable_weight", "bulk"],
+    "coverage_of_stores_at_postcodes": "not_certified_by_scope_membership"
+  },
+  "sampling": {
+    "seed": "ce1-ce200-v1-2026-09-03",
+    "design_state": "provisional_until_sampling_frame_and_feasibility_are_frozen_before_new_labels",
+    "frame": "active pilot commercial references from a versioned source snapshot; not current comparator outputs",
+    "initial_confirmatory_pair_target": 4000,
+    "initial_challenge_pair_target": 2000,
+    "strata": ["family", "origin_store", "destination_store", "brand", "nominal_package_structure"],
+    "allocation": "freeze stratum population counts and quotas before labels; representative sample reports inclusion probabilities and population weights",
+    "rare_strata": "report shortages; no duplicate padding, synthetic substitution or retrospective weights",
+    "selection": "seeded sampling without replacement from the frozen frame; record selected IDs and algorithm version",
+    "challenge_selection": "predeclared confusing families, formats, sweetening and missing/conflicting data; not the population metric",
+    "excluded_from_new_confirmatory_counts": ["CE-104 exploratory seed", "legacy August corpus", "synthetic fixtures", "retries", "reciprocal pairs", "copies of the same source file"],
+    "not_claimed": ["representative of all app traffic", "independent Bernoulli trials", "holdout split already assigned", "sampling algorithm for the full frame already implemented"]
+  },
+  "counting": {
+    "commercial_product_key": "store + original product ID, preserved as text",
+    "pair_key": "unordered pair of distinct cross-store commercial product keys",
+    "observation_key": "product key + observed source snapshot/version; observations do not inflate unique pair count",
+    "query_key": "origin observation + requested destination store set + postcode + channel + fixed reference clock",
+    "destinations": "all three other selected pilot stores, once per query",
+    "destination_case_R": "query plus one destination store; R is not counted as a separate Q",
+    "repeated_CP_or_version": "correlated context observations; not new identity evidence",
+    "GTIN": "preserve raw value and namespace/evidence; no automatic pack identity or independence claim"
+  },
+  "acquisition": {
+    "execution_enabled": false,
+    "reason_disabled": "2026-09-03 CE-1 SQL reservation is 299920 of 300000 ms; no further remote work today",
+    "next_window": "explicit new reviewed read-only operation after daily budget and target/health/permissions are revalidated; no automatic scheduling",
+    "maximum_rows_per_page": 500,
+    "maximum_exported_product_location_rows_per_UTC_day": 5000,
+    "normal_maximum_response_bytes_per_UTC_day": 10485760,
+    "maximum_initial_commercial_references": 6000,
+    "maximum_initial_location_observations": 12000,
+    "maximum_local_evidence_bytes": 262144000,
+    "pagination": "stable keyset with recorded cursors and snapshot/revision coherence; never ORDER BY random() on the full remote catalog",
+    "provenance": ["query/projection and selection rule", "source table/store/product ID", "raw source fields with missing-versus-unselected distinction", "source revision or explicit unknown", "capture clock separate from retailer observation clock", "location/channel evidence or explicit unverified state", "source-file SHA-256"],
+    "raw_fields_to_inventory": ["display name", "brand", "EAN/GTIN and identifier scope", "category hierarchy", "nominal quantity", "pack count and per-unit content", "variants/ingredients/claims if present", "publication flag", "price and its basis/currency", "availability", "warehouse/zone/center", "sync/revision and observation timestamps"],
+    "missing_data": "retain unknowns and conflicts; do not infer false, one unit, stock or local price",
+    "new_retailer_OFF_AI_calls": 0,
+    "new_paid_integrations": 0,
+    "legacy_comparator_RPC_calls": 0,
+    "personal_data_export": false,
+    "public_storage_upload": false
+  },
+  "completion_checks_CE200": [
+    "5000-10000 unique commercial pairs from documented acquisition and sampling",
+    "at least 1000 distinct query cases with real origin references and explicit fixed contexts",
+    "three pilot families, all four origin/destination stores and format/brand coverage reported with shortages",
+    "sampling frame, selection, inclusion probabilities/weights and evidence hashes recorded",
+    "exploratory, synthetic, legacy and challenge cohorts separated from confirmatory evidence",
+    "no duplicate inflation or invented equivalence/current commerce",
+    "case inventory ready for CE-201/202, not falsely marked as already reviewed"
+  ],
+  "later_tasks_not_completed": ["CE-201", "CE-202", "CE-203", "CE-204", "CE-205", "CE-206", "CE-207", "CE-208"],
+  "owner_second_review": "CE-203: all disputed cases plus random 20 percent; not requested or performed in this step",
+  "G2_pass": false
+}

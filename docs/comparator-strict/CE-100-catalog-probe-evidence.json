@@ -1,0 +1,262 @@
+{
+  "schema_version": 1,
+  "task": "CE-100",
+  "test_id": "CE-100-CATALOG-READ-001",
+  "date": "2026-09-03",
+  "status": "prepared_not_executed",
+  "user_preparation_approval": "si",
+  "approval_does_not_waive_BU01": true,
+  "production_catalog_http_attempts": 0,
+  "new_metrics_window_started": false,
+  "commercial_comparator_calls": 0,
+  "application_writes": 0,
+  "global_config_changes": 0,
+  "files": {
+    "manifest": "CE-100-catalog-probe-manifest.json",
+    "report": "CE-100-catalog-probe.md",
+    "cli": "../../scripts/probe-comparator-strict-catalog.mjs",
+    "helper": "../../scripts/lib/comparator-catalog-probe.mjs",
+    "tests": "../../scripts/lib/comparator-catalog-probe.test.mjs"
+  },
+  "captures": [
+    {
+      "id": "catalog_probe_metadata",
+      "query": "BEGIN TRANSACTION READ ONLY;\nSET LOCAL statement_timeout='5s';\nSET LOCAL lock_timeout='500ms';\nSET LOCAL application_name='ce1_ce100_probe_preflight';\nSELECT jsonb_build_object(\n 'captured_at',clock_timestamp(),\n 'roles',(SELECT jsonb_agg(jsonb_build_object('role',r.rolname,'bypass_rls',r.rolbypassrls,'settings',(SELECT jsonb_agg(c) FROM unnest(r.rolconfig) c WHERE c ~ '^(statement_timeout|lock_timeout|pgrst.db_pre_request|pgrst.db_tx_end)='))) FROM pg_roles r WHERE r.rolname IN ('anon','authenticated','authenticator')),\n 'database_role_settings',(SELECT coalesce(jsonb_agg(jsonb_build_object('role',coalesce(r.rolname,'all'),'database',coalesce(d.datname,'all'),'setting',c)),'[]'::jsonb) FROM pg_db_role_setting s LEFT JOIN pg_roles r ON r.oid=s.setrole LEFT JOIN pg_database d ON d.oid=s.setdatabase CROSS JOIN LATERAL unnest(s.setconfig)c WHERE c ~ '^(statement_timeout|lock_timeout|pgrst.db_pre_request|pgrst.db_tx_end)=' AND (d.datname=current_database() OR s.setdatabase=0) AND (r.rolname IN ('anon','authenticated','authenticator') OR s.setrole=0)),\n 'relation',(SELECT jsonb_build_object('kind',c.relkind,'rls',c.relrowsecurity,'anon_select',has_table_privilege('anon',c.oid,'SELECT'),'authenticated_select',has_table_privilege('authenticated',c.oid,'SELECT')) FROM pg_class c WHERE c.oid='public.mercadona_products'::regclass),\n 'policies',(SELECT jsonb_agg(jsonb_build_object('name',policyname,'roles',roles,'command',cmd,'qual',qual)) FROM pg_policies WHERE schemaname='public' AND tablename='mercadona_products'),\n 'indexes',(SELECT jsonb_agg(jsonb_build_object('name',indexname,'definition',indexdef)) FROM pg_indexes WHERE schemaname='public' AND tablename='mercadona_products' AND indexdef ~ '(display_name_norm|id|published)'),\n 'client_connections',(SELECT count(*) FROM pg_stat_activity WHERE backend_type='client backend' AND pid<>pg_backend_pid()),\n 'blocked_clients',(SELECT count(*) FROM pg_stat_activity WHERE backend_type='client backend' AND cardinality(pg_blocking_pids(pid))>0 AND pid<>pg_backend_pid())\n) AS evidence;\nROLLBACK;",
+      "result": [
+        {
+          "evidence": {
+            "roles": [
+              {
+                "role": "anon",
+                "settings": [
+                  "statement_timeout=3s"
+                ],
+                "bypass_rls": false
+              },
+              {
+                "role": "authenticated",
+                "settings": [
+                  "statement_timeout=8s"
+                ],
+                "bypass_rls": false
+              },
+              {
+                "role": "authenticator",
+                "settings": [
+                  "statement_timeout=8s",
+                  "lock_timeout=8s"
+                ],
+                "bypass_rls": false
+              }
+            ],
+            "indexes": [
+              {
+                "name": "mercadona_products_pkey",
+                "definition": "CREATE UNIQUE INDEX mercadona_products_pkey ON public.mercadona_products USING btree (id)"
+              },
+              {
+                "name": "mercadona_products_is_new_idx",
+                "definition": "CREATE INDEX mercadona_products_is_new_idx ON public.mercadona_products USING btree (is_new) WHERE is_new"
+              },
+              {
+                "name": "mercadona_products_price_decreased_idx",
+                "definition": "CREATE INDEX mercadona_products_price_decreased_idx ON public.mercadona_products USING btree (price_decreased) WHERE price_decreased"
+              },
+              {
+                "name": "mercadona_products_category_idx",
+                "definition": "CREATE INDEX mercadona_products_category_idx ON public.mercadona_products USING btree (category_id)"
+              },
+              {
+                "name": "mercadona_products_name_trgm_idx",
+                "definition": "CREATE INDEX mercadona_products_name_trgm_idx ON public.mercadona_products USING gin (display_name gin_trgm_ops)"
+              },
+              {
+                "name": "mercadona_health_score_idx",
+                "definition": "CREATE INDEX mercadona_health_score_idx ON public.mercadona_products USING btree (health_score) WHERE (health_score IS NOT NULL)"
+              },
+              {
+                "name": "mercadona_products_norm_trgm_idx",
+                "definition": "CREATE INDEX mercadona_products_norm_trgm_idx ON public.mercadona_products USING gin (display_name_norm gin_trgm_ops)"
+              },
+              {
+                "name": "mercadona_products_ca_norm_trgm_idx",
+                "definition": "CREATE INDEX mercadona_products_ca_norm_trgm_idx ON public.mercadona_products USING gin (display_name_ca_norm gin_trgm_ops)"
+              },
+              {
+                "name": "mercadona_products_first_seen_idx",
+                "definition": "CREATE INDEX mercadona_products_first_seen_idx ON public.mercadona_products USING btree (first_seen_at DESC)"
+              },
+              {
+                "name": "mercadona_products_price_changed_idx",
+                "definition": "CREATE INDEX mercadona_products_price_changed_idx ON public.mercadona_products USING btree (price_changed_at DESC) WHERE (price_changed_at IS NOT NULL)"
+              },
+              {
+                "name": "mercadona_products_display_name_norm_browse_idx",
+                "definition": "CREATE INDEX mercadona_products_display_name_norm_browse_idx ON public.mercadona_products USING btree (display_name_norm, id) WHERE (published = true)"
+              },
+              {
+                "name": "mercadona_products_display_name_ca_norm_browse_idx",
+                "definition": "CREATE INDEX mercadona_products_display_name_ca_norm_browse_idx ON public.mercadona_products USING btree (display_name_ca_norm, id) WHERE (published = true)"
+              },
+              {
+                "name": "mercadona_products_price_browse_idx",
+                "definition": "CREATE INDEX mercadona_products_price_browse_idx ON public.mercadona_products USING btree (unit_price, id) WHERE ((published = true) AND (unit_price IS NOT NULL))"
+              },
+              {
+                "name": "mercadona_products_search_fts_idx",
+                "definition": "CREATE INDEX mercadona_products_search_fts_idx ON public.mercadona_products USING gin (to_tsvector('simple'::regconfig, display_name_norm)) WHERE published"
+              },
+              {
+                "name": "mercadona_products_search_ca_fts_idx",
+                "definition": "CREATE INDEX mercadona_products_search_ca_fts_idx ON public.mercadona_products USING gin (to_tsvector('simple'::regconfig, display_name_ca_norm)) WHERE published"
+              }
+            ],
+            "policies": [
+              {
+                "name": "catalog read",
+                "qual": "true",
+                "roles": [
+                  "anon",
+                  "authenticated"
+                ],
+                "command": "SELECT"
+              }
+            ],
+            "relation": {
+              "rls": true,
+              "kind": "r",
+              "anon_select": true,
+              "authenticated_select": true
+            },
+            "captured_at": "2026-09-03T06:35:13.901287+00:00",
+            "blocked_clients": 0,
+            "client_connections": 11,
+            "database_role_settings": [
+              {
+                "role": "anon",
+                "setting": "statement_timeout=3s",
+                "database": "all"
+              },
+              {
+                "role": "authenticated",
+                "setting": "statement_timeout=8s",
+                "database": "all"
+              },
+              {
+                "role": "authenticator",
+                "setting": "statement_timeout=8s",
+                "database": "all"
+              },
+              {
+                "role": "authenticator",
+                "setting": "lock_timeout=8s",
+                "database": "all"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "catalog_probe_explain",
+      "query": "BEGIN TRANSACTION READ ONLY;\nSET LOCAL statement_timeout='5s';\nSET LOCAL lock_timeout='500ms';\nSET LOCAL ROLE anon;\nEXPLAIN (FORMAT JSON)\nSELECT id,display_name,display_name_ca,slug,packaging,thumbnail,unit_price,price_per_unit,price_per_unit_unit,category_name,category_id,display_name_norm\nFROM public.mercadona_products\nWHERE published=true AND (regions IS NULL OR regions='{}'::text[] OR regions @> ARRAY['Catalunya']::text[])\nORDER BY display_name_norm ASC NULLS LAST,id ASC\nLIMIT 50;\nROLLBACK;",
+      "result": [
+        {
+          "QUERY PLAN": [
+            {
+              "Plan": {
+                "Node Type": "Limit",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Startup Cost": 0.28,
+                "Total Cost": 40.62,
+                "Plan Rows": 50,
+                "Plan Width": 310,
+                "Plans": [
+                  {
+                    "Node Type": "Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Scan Direction": "Forward",
+                    "Index Name": "mercadona_products_display_name_norm_browse_idx",
+                    "Relation Name": "mercadona_products",
+                    "Alias": "mercadona_products",
+                    "Startup Cost": 0.28,
+                    "Total Cost": 3468.98,
+                    "Plan Rows": 4300,
+                    "Plan Width": 310,
+                    "Filter": "((regions IS NULL) OR (regions = '{}'::text[]) OR (regions @> '{Catalunya}'::text[]))"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "analyze": false,
+      "product_rows_read_for_execution": false
+    }
+  ],
+  "remote_sql": {
+    "calls": 2,
+    "errors": 0,
+    "read_only": true,
+    "statement_timeout_ms": 5000,
+    "lock_timeout_ms": 500,
+    "direct_statement_time_upper_bound_ms": 10000,
+    "actual_server_sql_time_not_measured": true
+  },
+  "reviewed_facts": {
+    "role_anon_statement_timeout_ms": 3000,
+    "connection_role_lock_timeout_ms": 8000,
+    "anon_specific_lock_override_observed": false,
+    "actual_http_runtime_timeouts_verified": false,
+    "rls_enabled": true,
+    "select_policy_qual": "true",
+    "roles": [
+      "anon",
+      "authenticated"
+    ],
+    "table": "public.mercadona_products",
+    "plan_node": "Index Scan",
+    "index": "mercadona_products_display_name_norm_browse_idx",
+    "product_limit": 50,
+    "query_plan_is_not_latency_evidence": true,
+    "client_source_sha256": "bd35cdc8820661b52993a652ebc3a06b41963981df11183a9ba0880a4058bb05"
+  },
+  "pending_authorizations": {
+    "today_transfer_limit_22_MiB": {
+      "requested_async": true,
+      "approved": false
+    },
+    "existing_http_lock_policy_for_this_probe": {
+      "approved": false,
+      "does_not_modify_global_roles": true
+    }
+  },
+  "verification": {
+    "command": "npm run quality",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "tests_passed": 326,
+    "tests_total": 326,
+    "new_tests": 18,
+    "real_http_transport_executed": false,
+    "mocked_http_tests": true,
+    "default_cli_network_calls": 0,
+    "remote_mode_rejected_before_loading_credentials": true
+  },
+  "completion": {
+    "preparation_complete": true,
+    "CE100_closed": false,
+    "CE103_status": "in_progress",
+    "G1_accepted": false,
+    "writes_authorized": false
+  },
+  "sources": [
+    "https://supabase.com/docs/guides/database/postgres/timeouts",
+    "https://docs.postgrest.org/en/stable/references/transactions.html",
+    "https://supabase.com/docs/guides/monitoring-and-debugging/metrics/vendor-agnostic"
+  ]
+}

@@ -1,0 +1,1061 @@
+{
+  "query": "BEGIN READ ONLY; SET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms'; SELECT jsonb_build_object('captured_at',clock_timestamp(),'columns',(SELECT jsonb_agg(jsonb_build_object('table',c.relname,'column',a.attname,'type',format_type(a.atttypid,a.atttypmod)) ORDER BY c.relname,a.attnum) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace JOIN pg_attribute a ON a.attrelid=c.oid WHERE n.nspname='public' AND c.relname IN ('mercadona_products','carrefour_products','consum_products','plusfresc_products','catalog_location_prices','catalog_sync_state','catalog_embedding_store_state') AND a.attnum>0 AND NOT a.attisdropped),'indexes',(SELECT jsonb_agg(jsonb_build_object('table',tablename,'definition',indexdef)) FROM pg_indexes WHERE schemaname='public' AND tablename IN ('mercadona_products','carrefour_products','consum_products','plusfresc_products','catalog_location_prices'))) AS evidence; COMMIT;",
+  "evidence": {
+    "columns": [
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "id"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "retailer_product_id"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "display_name"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "thumbnail"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "ean"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "category_id"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "category_name"
+      },
+      {
+        "type": "text[]",
+        "table": "carrefour_products",
+        "column": "category_ids"
+      },
+      {
+        "type": "numeric",
+        "table": "carrefour_products",
+        "column": "unit_price"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "price_format"
+      },
+      {
+        "type": "boolean",
+        "table": "carrefour_products",
+        "column": "available"
+      },
+      {
+        "type": "boolean",
+        "table": "carrefour_products",
+        "column": "published"
+      },
+      {
+        "type": "jsonb",
+        "table": "carrefour_products",
+        "column": "raw"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "carrefour_products",
+        "column": "synced_at"
+      },
+      {
+        "type": "numeric",
+        "table": "carrefour_products",
+        "column": "price_per_unit"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "price_per_unit_unit"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "display_name_norm"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "ingredients"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "allergens"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "nutrition"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "conservation"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "preparation"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "denomination"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "origin"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "operator"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "carrefour_products",
+        "column": "detail_synced_at"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "carrefour_products",
+        "column": "first_seen_at"
+      },
+      {
+        "type": "numeric",
+        "table": "carrefour_products",
+        "column": "prev_unit_price"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "carrefour_products",
+        "column": "price_changed_at"
+      },
+      {
+        "type": "numeric",
+        "table": "carrefour_products",
+        "column": "price_delta_pct"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "promo_name"
+      },
+      {
+        "type": "text",
+        "table": "carrefour_products",
+        "column": "promo_text"
+      },
+      {
+        "type": "date",
+        "table": "carrefour_products",
+        "column": "promo_start"
+      },
+      {
+        "type": "date",
+        "table": "carrefour_products",
+        "column": "promo_end"
+      },
+      {
+        "type": "numeric",
+        "table": "carrefour_products",
+        "column": "strikethrough_price"
+      },
+      {
+        "type": "text[]",
+        "table": "carrefour_products",
+        "column": "regions"
+      },
+      {
+        "type": "jsonb",
+        "table": "carrefour_products",
+        "column": "regional_prices"
+      },
+      {
+        "type": "text",
+        "table": "catalog_location_prices",
+        "column": "id"
+      },
+      {
+        "type": "text",
+        "table": "catalog_location_prices",
+        "column": "store"
+      },
+      {
+        "type": "text",
+        "table": "catalog_location_prices",
+        "column": "product_id"
+      },
+      {
+        "type": "text",
+        "table": "catalog_location_prices",
+        "column": "location_id"
+      },
+      {
+        "type": "numeric",
+        "table": "catalog_location_prices",
+        "column": "unit_price"
+      },
+      {
+        "type": "numeric",
+        "table": "catalog_location_prices",
+        "column": "price_per_unit"
+      },
+      {
+        "type": "text",
+        "table": "catalog_location_prices",
+        "column": "price_per_unit_unit"
+      },
+      {
+        "type": "boolean",
+        "table": "catalog_location_prices",
+        "column": "available"
+      },
+      {
+        "type": "boolean",
+        "table": "catalog_location_prices",
+        "column": "published"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "catalog_location_prices",
+        "column": "synced_at"
+      },
+      {
+        "type": "numeric",
+        "table": "catalog_location_prices",
+        "column": "base_unit_price"
+      },
+      {
+        "type": "text",
+        "table": "catalog_location_prices",
+        "column": "price_format"
+      },
+      {
+        "type": "text",
+        "table": "catalog_location_prices",
+        "column": "promo_type"
+      },
+      {
+        "type": "text",
+        "table": "catalog_location_prices",
+        "column": "promo_name"
+      },
+      {
+        "type": "text",
+        "table": "catalog_location_prices",
+        "column": "promo_text"
+      },
+      {
+        "type": "numeric",
+        "table": "catalog_location_prices",
+        "column": "promo_price"
+      },
+      {
+        "type": "numeric",
+        "table": "catalog_location_prices",
+        "column": "promo_base_price"
+      },
+      {
+        "type": "date",
+        "table": "catalog_location_prices",
+        "column": "promo_start"
+      },
+      {
+        "type": "date",
+        "table": "catalog_location_prices",
+        "column": "promo_end"
+      },
+      {
+        "type": "text",
+        "table": "catalog_location_prices",
+        "column": "offer_id"
+      },
+      {
+        "type": "text",
+        "table": "catalog_location_prices",
+        "column": "promotion_id"
+      },
+      {
+        "type": "numeric",
+        "table": "catalog_location_prices",
+        "column": "promo_discount"
+      },
+      {
+        "type": "boolean",
+        "table": "catalog_location_prices",
+        "column": "is_new"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "catalog_location_prices",
+        "column": "first_seen_at"
+      },
+      {
+        "type": "jsonb",
+        "table": "catalog_location_prices",
+        "column": "raw"
+      },
+      {
+        "type": "text",
+        "table": "consum_products",
+        "column": "id"
+      },
+      {
+        "type": "text",
+        "table": "consum_products",
+        "column": "retailer_product_id"
+      },
+      {
+        "type": "text",
+        "table": "consum_products",
+        "column": "display_name"
+      },
+      {
+        "type": "text",
+        "table": "consum_products",
+        "column": "brand"
+      },
+      {
+        "type": "text",
+        "table": "consum_products",
+        "column": "packaging"
+      },
+      {
+        "type": "text",
+        "table": "consum_products",
+        "column": "thumbnail"
+      },
+      {
+        "type": "text",
+        "table": "consum_products",
+        "column": "ean"
+      },
+      {
+        "type": "text",
+        "table": "consum_products",
+        "column": "category_id"
+      },
+      {
+        "type": "text",
+        "table": "consum_products",
+        "column": "category_name"
+      },
+      {
+        "type": "text[]",
+        "table": "consum_products",
+        "column": "category_ids"
+      },
+      {
+        "type": "numeric",
+        "table": "consum_products",
+        "column": "unit_price"
+      },
+      {
+        "type": "text",
+        "table": "consum_products",
+        "column": "price_format"
+      },
+      {
+        "type": "numeric",
+        "table": "consum_products",
+        "column": "price_per_unit"
+      },
+      {
+        "type": "text",
+        "table": "consum_products",
+        "column": "price_per_unit_unit"
+      },
+      {
+        "type": "boolean",
+        "table": "consum_products",
+        "column": "available"
+      },
+      {
+        "type": "boolean",
+        "table": "consum_products",
+        "column": "published"
+      },
+      {
+        "type": "jsonb",
+        "table": "consum_products",
+        "column": "raw"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "consum_products",
+        "column": "synced_at"
+      },
+      {
+        "type": "text",
+        "table": "consum_products",
+        "column": "display_name_norm"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "consum_products",
+        "column": "first_seen_at"
+      },
+      {
+        "type": "numeric",
+        "table": "consum_products",
+        "column": "prev_unit_price"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "consum_products",
+        "column": "price_changed_at"
+      },
+      {
+        "type": "numeric",
+        "table": "consum_products",
+        "column": "price_delta_pct"
+      },
+      {
+        "type": "text[]",
+        "table": "consum_products",
+        "column": "regions"
+      },
+      {
+        "type": "jsonb",
+        "table": "consum_products",
+        "column": "regional_prices"
+      },
+      {
+        "type": "numeric",
+        "table": "consum_products",
+        "column": "promo_base_price"
+      },
+      {
+        "type": "text[]",
+        "table": "consum_products",
+        "column": "offer_zones"
+      },
+      {
+        "type": "text",
+        "table": "mercadona_products",
+        "column": "id"
+      },
+      {
+        "type": "text",
+        "table": "mercadona_products",
+        "column": "display_name"
+      },
+      {
+        "type": "text",
+        "table": "mercadona_products",
+        "column": "slug"
+      },
+      {
+        "type": "text",
+        "table": "mercadona_products",
+        "column": "packaging"
+      },
+      {
+        "type": "text",
+        "table": "mercadona_products",
+        "column": "thumbnail"
+      },
+      {
+        "type": "bigint",
+        "table": "mercadona_products",
+        "column": "category_id"
+      },
+      {
+        "type": "text",
+        "table": "mercadona_products",
+        "column": "category_name"
+      },
+      {
+        "type": "numeric",
+        "table": "mercadona_products",
+        "column": "unit_price"
+      },
+      {
+        "type": "boolean",
+        "table": "mercadona_products",
+        "column": "is_new"
+      },
+      {
+        "type": "boolean",
+        "table": "mercadona_products",
+        "column": "price_decreased"
+      },
+      {
+        "type": "boolean",
+        "table": "mercadona_products",
+        "column": "published"
+      },
+      {
+        "type": "jsonb",
+        "table": "mercadona_products",
+        "column": "raw"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "mercadona_products",
+        "column": "synced_at"
+      },
+      {
+        "type": "numeric",
+        "table": "mercadona_products",
+        "column": "price_per_unit"
+      },
+      {
+        "type": "text",
+        "table": "mercadona_products",
+        "column": "price_per_unit_unit"
+      },
+      {
+        "type": "text",
+        "table": "mercadona_products",
+        "column": "ean"
+      },
+      {
+        "type": "text",
+        "table": "mercadona_products",
+        "column": "ingredients"
+      },
+      {
+        "type": "jsonb",
+        "table": "mercadona_products",
+        "column": "nutrition"
+      },
+      {
+        "type": "integer",
+        "table": "mercadona_products",
+        "column": "health_score"
+      },
+      {
+        "type": "text",
+        "table": "mercadona_products",
+        "column": "health_grade"
+      },
+      {
+        "type": "jsonb",
+        "table": "mercadona_products",
+        "column": "health"
+      },
+      {
+        "type": "text",
+        "table": "mercadona_products",
+        "column": "nutrition_image_id"
+      },
+      {
+        "type": "text",
+        "table": "mercadona_products",
+        "column": "nutrition_status"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "mercadona_products",
+        "column": "nutrition_synced_at"
+      },
+      {
+        "type": "text",
+        "table": "mercadona_products",
+        "column": "display_name_norm"
+      },
+      {
+        "type": "text",
+        "table": "mercadona_products",
+        "column": "display_name_ca"
+      },
+      {
+        "type": "text",
+        "table": "mercadona_products",
+        "column": "display_name_ca_norm"
+      },
+      {
+        "type": "text",
+        "table": "mercadona_products",
+        "column": "source_wh"
+      },
+      {
+        "type": "text[]",
+        "table": "mercadona_products",
+        "column": "regions"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "mercadona_products",
+        "column": "first_seen_at"
+      },
+      {
+        "type": "numeric",
+        "table": "mercadona_products",
+        "column": "prev_unit_price"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "mercadona_products",
+        "column": "price_changed_at"
+      },
+      {
+        "type": "numeric",
+        "table": "mercadona_products",
+        "column": "price_delta_pct"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "id"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "display_name"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "display_name_ca"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "brand"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "thumbnail"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "category_id"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "category_name"
+      },
+      {
+        "type": "text[]",
+        "table": "plusfresc_products",
+        "column": "category_ids"
+      },
+      {
+        "type": "numeric",
+        "table": "plusfresc_products",
+        "column": "unit_price"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "price_format"
+      },
+      {
+        "type": "numeric",
+        "table": "plusfresc_products",
+        "column": "price_per_unit"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "price_per_unit_unit"
+      },
+      {
+        "type": "boolean",
+        "table": "plusfresc_products",
+        "column": "available"
+      },
+      {
+        "type": "boolean",
+        "table": "plusfresc_products",
+        "column": "published"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "description"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "ingredients"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "allergens"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "nutrition"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "conservation"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "description_ca"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "ingredients_ca"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "allergens_ca"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "nutrition_ca"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "conservation_ca"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "plusfresc_products",
+        "column": "detail_synced_at"
+      },
+      {
+        "type": "jsonb",
+        "table": "plusfresc_products",
+        "column": "raw"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "plusfresc_products",
+        "column": "synced_at"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "plusfresc_products",
+        "column": "first_seen_at"
+      },
+      {
+        "type": "numeric",
+        "table": "plusfresc_products",
+        "column": "prev_unit_price"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "plusfresc_products",
+        "column": "price_changed_at"
+      },
+      {
+        "type": "numeric",
+        "table": "plusfresc_products",
+        "column": "price_delta_pct"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "display_name_norm"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "display_name_ca_norm"
+      },
+      {
+        "type": "text[]",
+        "table": "plusfresc_products",
+        "column": "centers"
+      },
+      {
+        "type": "jsonb",
+        "table": "plusfresc_products",
+        "column": "center_prices"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "promo_name"
+      },
+      {
+        "type": "text",
+        "table": "plusfresc_products",
+        "column": "promo_name_ca"
+      },
+      {
+        "type": "numeric",
+        "table": "plusfresc_products",
+        "column": "promo_offer_price"
+      },
+      {
+        "type": "numeric",
+        "table": "plusfresc_products",
+        "column": "promo_base_price"
+      },
+      {
+        "type": "date",
+        "table": "plusfresc_products",
+        "column": "promo_end"
+      },
+      {
+        "type": "text[]",
+        "table": "plusfresc_products",
+        "column": "offer_centers"
+      }
+    ],
+    "indexes": [
+      {
+        "table": "carrefour_products",
+        "definition": "CREATE INDEX carrefour_products_norm_trgm_idx ON public.carrefour_products USING gin (display_name_norm gin_trgm_ops)"
+      },
+      {
+        "table": "carrefour_products",
+        "definition": "CREATE UNIQUE INDEX carrefour_products_pkey ON public.carrefour_products USING btree (id)"
+      },
+      {
+        "table": "carrefour_products",
+        "definition": "CREATE INDEX carrefour_products_category_idx ON public.carrefour_products USING btree (category_id)"
+      },
+      {
+        "table": "carrefour_products",
+        "definition": "CREATE INDEX carrefour_products_category_ids_idx ON public.carrefour_products USING gin (category_ids)"
+      },
+      {
+        "table": "carrefour_products",
+        "definition": "CREATE INDEX carrefour_products_name_trgm_idx ON public.carrefour_products USING gin (display_name gin_trgm_ops)"
+      },
+      {
+        "table": "carrefour_products",
+        "definition": "CREATE INDEX carrefour_products_detail_synced_idx ON public.carrefour_products USING btree (detail_synced_at NULLS FIRST)"
+      },
+      {
+        "table": "carrefour_products",
+        "definition": "CREATE INDEX carrefour_products_first_seen_idx ON public.carrefour_products USING btree (first_seen_at DESC)"
+      },
+      {
+        "table": "carrefour_products",
+        "definition": "CREATE INDEX carrefour_products_price_changed_idx ON public.carrefour_products USING btree (price_changed_at DESC) WHERE (price_changed_at IS NOT NULL)"
+      },
+      {
+        "table": "carrefour_products",
+        "definition": "CREATE INDEX carrefour_products_offer_idx ON public.carrefour_products USING btree (display_name_norm, id) WHERE ((promo_name IS NOT NULL) OR (strikethrough_price IS NOT NULL))"
+      },
+      {
+        "table": "carrefour_products",
+        "definition": "CREATE INDEX carrefour_products_display_name_norm_browse_idx ON public.carrefour_products USING btree (display_name_norm, id) WHERE (published = true)"
+      },
+      {
+        "table": "carrefour_products",
+        "definition": "CREATE INDEX carrefour_products_price_browse_idx ON public.carrefour_products USING btree (unit_price, id) WHERE ((published = true) AND (unit_price IS NOT NULL))"
+      },
+      {
+        "table": "carrefour_products",
+        "definition": "CREATE INDEX carrefour_products_search_fts_idx ON public.carrefour_products USING gin (to_tsvector('simple'::regconfig, display_name_norm)) WHERE published"
+      },
+      {
+        "table": "catalog_location_prices",
+        "definition": "CREATE UNIQUE INDEX catalog_location_prices_pkey ON public.catalog_location_prices USING btree (id)"
+      },
+      {
+        "table": "catalog_location_prices",
+        "definition": "CREATE UNIQUE INDEX catalog_location_prices_store_product_id_location_id_key ON public.catalog_location_prices USING btree (store, product_id, location_id)"
+      },
+      {
+        "table": "catalog_location_prices",
+        "definition": "CREATE INDEX catalog_location_prices_lookup_idx ON public.catalog_location_prices USING btree (store, location_id, product_id) WHERE published"
+      },
+      {
+        "table": "catalog_location_prices",
+        "definition": "CREATE INDEX catalog_location_prices_new_feed_idx ON public.catalog_location_prices USING btree (store, location_id, first_seen_at DESC, product_id) WHERE (published AND available)"
+      },
+      {
+        "table": "catalog_location_prices",
+        "definition": "CREATE INDEX catalog_location_prices_offer_feed_idx ON public.catalog_location_prices USING btree (store, location_id, promo_end, product_id) WHERE (published AND available AND (promo_type IS NOT NULL))"
+      },
+      {
+        "table": "consum_products",
+        "definition": "CREATE UNIQUE INDEX consum_products_pkey ON public.consum_products USING btree (id)"
+      },
+      {
+        "table": "consum_products",
+        "definition": "CREATE INDEX consum_products_category_idx ON public.consum_products USING btree (category_id)"
+      },
+      {
+        "table": "consum_products",
+        "definition": "CREATE INDEX consum_products_category_ids_idx ON public.consum_products USING gin (category_ids)"
+      },
+      {
+        "table": "consum_products",
+        "definition": "CREATE INDEX consum_products_name_trgm_idx ON public.consum_products USING gin (display_name gin_trgm_ops)"
+      },
+      {
+        "table": "consum_products",
+        "definition": "CREATE INDEX consum_products_norm_trgm_idx ON public.consum_products USING gin (display_name_norm gin_trgm_ops)"
+      },
+      {
+        "table": "consum_products",
+        "definition": "CREATE INDEX consum_products_first_seen_idx ON public.consum_products USING btree (first_seen_at DESC)"
+      },
+      {
+        "table": "consum_products",
+        "definition": "CREATE INDEX consum_products_price_changed_idx ON public.consum_products USING btree (price_changed_at DESC) WHERE (price_changed_at IS NOT NULL)"
+      },
+      {
+        "table": "consum_products",
+        "definition": "CREATE INDEX consum_products_offer_zones_idx ON public.consum_products USING gin (offer_zones)"
+      },
+      {
+        "table": "consum_products",
+        "definition": "CREATE INDEX consum_products_display_name_norm_browse_idx ON public.consum_products USING btree (display_name_norm, id) WHERE (published = true)"
+      },
+      {
+        "table": "consum_products",
+        "definition": "CREATE INDEX consum_products_price_browse_idx ON public.consum_products USING btree (unit_price, id) WHERE ((published = true) AND (unit_price IS NOT NULL))"
+      },
+      {
+        "table": "consum_products",
+        "definition": "CREATE INDEX consum_products_search_fts_idx ON public.consum_products USING gin (to_tsvector('simple'::regconfig, display_name_norm)) WHERE published"
+      },
+      {
+        "table": "mercadona_products",
+        "definition": "CREATE UNIQUE INDEX mercadona_products_pkey ON public.mercadona_products USING btree (id)"
+      },
+      {
+        "table": "mercadona_products",
+        "definition": "CREATE INDEX mercadona_products_is_new_idx ON public.mercadona_products USING btree (is_new) WHERE is_new"
+      },
+      {
+        "table": "mercadona_products",
+        "definition": "CREATE INDEX mercadona_products_price_decreased_idx ON public.mercadona_products USING btree (price_decreased) WHERE price_decreased"
+      },
+      {
+        "table": "mercadona_products",
+        "definition": "CREATE INDEX mercadona_products_category_idx ON public.mercadona_products USING btree (category_id)"
+      },
+      {
+        "table": "mercadona_products",
+        "definition": "CREATE INDEX mercadona_products_name_trgm_idx ON public.mercadona_products USING gin (display_name gin_trgm_ops)"
+      },
+      {
+        "table": "mercadona_products",
+        "definition": "CREATE INDEX mercadona_health_score_idx ON public.mercadona_products USING btree (health_score) WHERE (health_score IS NOT NULL)"
+      },
+      {
+        "table": "mercadona_products",
+        "definition": "CREATE INDEX mercadona_products_norm_trgm_idx ON public.mercadona_products USING gin (display_name_norm gin_trgm_ops)"
+      },
+      {
+        "table": "mercadona_products",
+        "definition": "CREATE INDEX mercadona_products_ca_norm_trgm_idx ON public.mercadona_products USING gin (display_name_ca_norm gin_trgm_ops)"
+      },
+      {
+        "table": "mercadona_products",
+        "definition": "CREATE INDEX mercadona_products_first_seen_idx ON public.mercadona_products USING btree (first_seen_at DESC)"
+      },
+      {
+        "table": "mercadona_products",
+        "definition": "CREATE INDEX mercadona_products_price_changed_idx ON public.mercadona_products USING btree (price_changed_at DESC) WHERE (price_changed_at IS NOT NULL)"
+      },
+      {
+        "table": "mercadona_products",
+        "definition": "CREATE INDEX mercadona_products_display_name_norm_browse_idx ON public.mercadona_products USING btree (display_name_norm, id) WHERE (published = true)"
+      },
+      {
+        "table": "mercadona_products",
+        "definition": "CREATE INDEX mercadona_products_display_name_ca_norm_browse_idx ON public.mercadona_products USING btree (display_name_ca_norm, id) WHERE (published = true)"
+      },
+      {
+        "table": "mercadona_products",
+        "definition": "CREATE INDEX mercadona_products_price_browse_idx ON public.mercadona_products USING btree (unit_price, id) WHERE ((published = true) AND (unit_price IS NOT NULL))"
+      },
+      {
+        "table": "mercadona_products",
+        "definition": "CREATE INDEX mercadona_products_search_fts_idx ON public.mercadona_products USING gin (to_tsvector('simple'::regconfig, display_name_norm)) WHERE published"
+      },
+      {
+        "table": "mercadona_products",
+        "definition": "CREATE INDEX mercadona_products_search_ca_fts_idx ON public.mercadona_products USING gin (to_tsvector('simple'::regconfig, display_name_ca_norm)) WHERE published"
+      },
+      {
+        "table": "plusfresc_products",
+        "definition": "CREATE UNIQUE INDEX plusfresc_products_pkey ON public.plusfresc_products USING btree (id)"
+      },
+      {
+        "table": "plusfresc_products",
+        "definition": "CREATE INDEX plusfresc_products_category_idx ON public.plusfresc_products USING btree (category_id)"
+      },
+      {
+        "table": "plusfresc_products",
+        "definition": "CREATE INDEX plusfresc_products_category_ids_idx ON public.plusfresc_products USING gin (category_ids)"
+      },
+      {
+        "table": "plusfresc_products",
+        "definition": "CREATE INDEX plusfresc_products_name_trgm_idx ON public.plusfresc_products USING gin (display_name gin_trgm_ops)"
+      },
+      {
+        "table": "plusfresc_products",
+        "definition": "CREATE INDEX plusfresc_products_norm_trgm_idx ON public.plusfresc_products USING gin (display_name_norm gin_trgm_ops)"
+      },
+      {
+        "table": "plusfresc_products",
+        "definition": "CREATE INDEX plusfresc_products_ca_norm_trgm_idx ON public.plusfresc_products USING gin (display_name_ca_norm gin_trgm_ops)"
+      },
+      {
+        "table": "plusfresc_products",
+        "definition": "CREATE INDEX plusfresc_products_first_seen_idx ON public.plusfresc_products USING btree (first_seen_at DESC)"
+      },
+      {
+        "table": "plusfresc_products",
+        "definition": "CREATE INDEX plusfresc_products_price_changed_idx ON public.plusfresc_products USING btree (price_changed_at DESC) WHERE (price_changed_at IS NOT NULL)"
+      },
+      {
+        "table": "plusfresc_products",
+        "definition": "CREATE INDEX plusfresc_products_centers_idx ON public.plusfresc_products USING gin (centers)"
+      },
+      {
+        "table": "plusfresc_products",
+        "definition": "CREATE INDEX plusfresc_products_offer_centers_idx ON public.plusfresc_products USING gin (offer_centers)"
+      },
+      {
+        "table": "plusfresc_products",
+        "definition": "CREATE INDEX plusfresc_products_promo_end_idx ON public.plusfresc_products USING btree (promo_end) WHERE (promo_offer_price IS NOT NULL)"
+      },
+      {
+        "table": "plusfresc_products",
+        "definition": "CREATE INDEX plusfresc_products_display_name_norm_browse_idx ON public.plusfresc_products USING btree (display_name_norm, id) WHERE (published = true)"
+      },
+      {
+        "table": "plusfresc_products",
+        "definition": "CREATE INDEX plusfresc_products_display_name_ca_norm_browse_idx ON public.plusfresc_products USING btree (display_name_ca_norm, id) WHERE (published = true)"
+      },
+      {
+        "table": "plusfresc_products",
+        "definition": "CREATE INDEX plusfresc_products_price_browse_idx ON public.plusfresc_products USING btree (unit_price, id) WHERE ((published = true) AND (unit_price IS NOT NULL))"
+      },
+      {
+        "table": "plusfresc_products",
+        "definition": "CREATE INDEX plusfresc_products_search_fts_idx ON public.plusfresc_products USING gin (to_tsvector('simple'::regconfig, display_name_norm)) WHERE published"
+      },
+      {
+        "table": "plusfresc_products",
+        "definition": "CREATE INDEX plusfresc_products_search_ca_fts_idx ON public.plusfresc_products USING gin (to_tsvector('simple'::regconfig, display_name_ca_norm)) WHERE published"
+      }
+    ],
+    "captured_at": "2026-09-03T10:04:33.945299+00:00"
+  }
+}

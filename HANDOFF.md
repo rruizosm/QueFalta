@@ -1,5 +1,410 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Compilación Xcode: caché de React y sesión PIF (local, 2026-09-03)
+
+- Identificados los fallos `Framework 'React' not found` y sesión PIF ocupada.
+  El framework de DerivedData carecía del binario; el Pod original sí lo tenía.
+- Apartada solo la copia incompleta y reiniciado el `SWBBuildService` del editor.
+  CocoaPods ya ha restaurado el framework; SHA-256 idéntico al original.
+- TypeScript y Debug con XcodeBuildMCP correctos. Verificación final con el
+  DerivedData habitual de Xcode: `BUILD SUCCEEDED`, cero errores, simulador
+  iPhone 17 Pro/iOS 26.5 arm64. Persisten avisos de dependencias; no se arrancó
+  la app. Ver CONTEXTO.md para el diagnóstico.
+- Sin cambios funcionales, migraciones, reinstalación de Pods ni actualización
+  de versiones. El workspace correcto sigue siendo `ios/QuFalta.xcworkspace`.
+
+## CE-1: plan v1.1, Supabase directo autorizado (2026-09-02)
+
+- ÚLTIMO AVANCE CE-203 (2026-09-04): [selección y formulario](docs/comparator-strict/CE-203-progress.md).
+  Paquete `ce203-owner-independent-review-v1`: 1.200/6.000 aleatorias (20 %)
+  por familia × confirmatoria/reto y 175 disputas obligatorias; solape 39,
+  total **1.336**, 54 lotes. Semilla derivada de entradas congeladas, no elegida
+  por resultados. Libro `outputs/ce203-owner-review-v1/CE-203-revision-ciega.xlsx`
+  con evidencia original y formulario de ocho dimensiones; omite etiquetas
+  previas, predicciones, cohorte, disputa y selección. Propietario: `owner-01`;
+  0/1.336 respuestas, 0 arbitrajes, 0 gold. CE-203/G2 abiertas; no seguir a
+  CE-204/205 hasta revisión y confrontación. Sin red, Supabase, retailers,
+  app/SQL/cron/syncs/embeddings, integración, despliegue, commit o push.
+  Verificación integral: TypeScript, ESLint y **592/592 pruebas PASS**.
+
+- ÚLTIMO AVANCE CE-201/202 (2026-09-03): [cierre y reanudación](docs/comparator-strict/CE-201-202-water-closure.md).
+  CE-201 y CE-202 completadas como primera anotación: lote agua con 771 fuentes,
+  2.485 composiciones y 2.483 parejas nuevas; unión **6.000/6.000**, cero
+  pendientes. 410 rechazos, 595 exclusiones y 1.480 abstenciones en agua.
+  Ocho fichas en disputa/68 parejas. Positivo íntegro: Aquarel botella 1,5 L
+  Consum `2569879` ↔ Mercadona `27232`, mismo GTIN global `3700123300014`,
+  conteo/volumen total/envase exactos y sin oposición. Sigue `abstain` comercial:
+  precio, CP, stock y revisiones bilaterales no acreditados; cero ahorros/gold.
+  CE-203 es lo siguiente: propietario revisa 20 % aleatorio + todas las disputas,
+  en capa separada y ciega a propuestas. CE-204–208/G2 pendientes. CLI
+  `prepare-comparator-strict-water-review.mjs`; salida completa fijada por hash,
+  informe/manifiesto compactos. Sin Supabase/retailers, app, SQL, cron, syncs,
+  embeddings, integraciones, despliegue, commit o push. No repetir CE-200–202.
+
+- AVANCE ANTERIOR CE-201/202 (2026-09-03): [Carrefour y reanudación](docs/comparator-strict/CE-201-202-yogurt-carrefour-progress.md).
+  Capa `label-yogurt-carrefour-v1`: 545 fichas nuevas (445 atributos/formato,
+  100 por alcance); 431 previas byte-idénticas. Registradas las 976 observaciones
+  del bloque yogur. 2.011 composiciones, **2.007 parejas nuevas**, cuatro
+  solapes E05/E06/E07/E17. Unión **3.517/6.000**, pendientes **2.483 de agua**.
+  1.001 rechazos, 169 exclusiones y 841 abstenciones propuestas en este lote;
+  no revisión humana individual ni evaluación del motor. 281 fichas nuevas sin
+  denominación/ingredientes; sell_pack_unit no demuestra conteo de envases.
+  Ocho fichas nuevas en disputa; E07 fresa/macedonia cambia de rechazo propuesto
+  a abstención y queda para arbitraje, ambas versiones intactas. Política local
+  conservadora cacao/chocolate/stracciatella: relación desconocida, no positiva.
+  108 formatos compatibles, cero positivos íntegros/gold/ahorros. CE-201/202
+  abiertas; CE-203 del propietario 20% + disputas aún sin sortear ni realizar.
+  35 tests nuevos, TypeScript/lint y **567/567 PASS**. CLI
+  `prepare-comparator-strict-yogurt-carrefour.mjs`; anotaciones completas por
+  stdout con hash, fichas/índice/dossier materializados. Capas anteriores intactas.
+  Seguir con fuentes/parejas de agua en nueva capa, después positivos completos
+  y revisión independiente. No repetir lectura de yogur salvo disputa concreta,
+  ni CE-200/canarios; no saltar a producción del motor. Sin consultas al
+  proyecto/retailers, cambios app/SQL/cron/syncs/embeddings ni integraciones.
+
+- AVANCE ANTERIOR CE-201/202 (2026-09-03): [Plusfresc y reanudación](docs/comparator-strict/CE-201-202-yogurt-plusfresc-progress.md).
+  Lote `label-yogurt-plusfresc-v1`: 219 fichas nuevas (207 atributos/formato,
+  12 por alcance), reutilizando 212 anteriores sin cambios. 449 parejas
+  compuestas: 271 rechazos, 23 exclusiones, 155 abstenciones propuestas.
+  No revisión humana individual ni resultado del motor. Unión **1.510/6.000**;
+  pendientes **4.490** (2.007 yogur / 2.483 agua). 25 formatos compatibles
+  nuevos, cero equivalencias completas/ahorros/gold. CE-201/202 abiertas;
+  CE-203 del propietario, 20 % + disputas, sin sortear ni realizar.
+  Cuatro nuevas fichas en disputa; no elegir ganador entre 6/8 unidades,
+  arándanos/frambuesa o azucarado/sin añadido. Cantidades sin papel, masa/volumen,
+  sufijos logísticos y surtidos incompletos conservan incertidumbre.
+  CLI `prepare-comparator-strict-yogurt-plusfresc.mjs`, capa editorial nueva
+  con contrato de datos v1 reutilizado. 35 tests nuevos; `npm run quality`:
+  TypeScript/lint y **532/532 PASS**. Fuentes/artefactos anteriores intactos.
+  Seguir con 545 observaciones Carrefour sin ficha del bloque yogur; crear
+  otra capa, no alterar anteriores. No repetir Mercadona/Consum/Plusfresc
+  salvo disputa, ni CE-200/canarios. Sin consultas al proyecto/retailers,
+  escrituras app/SQL/cron/syncs/embeddings, contrataciones o integraciones.
+
+- AVANCE ANTERIOR CE-201/202 (2026-09-03): [punto de reanudación de yogur](docs/comparator-strict/CE-201-202-yogurt-progress.md).
+  Nuevo lote `label-yogurt-v1`: 212 fichas registradas (72 Mercadona, 118 Consum,
+  22 Carrefour), 133 parejas nuevas; 92 rechazos, 2 exclusiones y 39 abstenciones
+  propuestas. Composición desde hechos revisados, no revisión humana individual.
+  Acumulado **1.061/6.000**, pendientes **4.939**: 2.456 yogur y 2.483 agua.
+  Cero positivos íntegros/gold/ahorros; 20 formatos compatibles no bastan.
+  Azúcar añadido/total/edulcorantes independientes; cuatro fichas en disputa,
+  títulos 0% ambiguos sin completar, soja no implica vegetal, surtido no es mezcla.
+  CE-201/202 EN CURSO; segunda revisión CE-203 del propietario no realizada.
+  35 pruebas nuevas, `npm run quality`: TypeScript/lint y **497/497 PASS**.
+  No consultas al proyecto ni cambios en producción; artefactos anteriores
+  verificados byte a byte. Contadores históricos; el lote Plusfresc y el
+  pendiente actual figuran arriba. No reescribir v1 ni repetir CE-200.
+  Lectura preliminar sin hechos registrados no cuenta como anotación.
+
+- AVANCE ANTERIOR CE-201/202 (2026-09-03): [patatas](docs/comparator-strict/CE-201-202-potatoes-progress.md).
+  Nuevo lote `label-potatoes-v1`: 146 fuentes revisadas, 922 primeras anotaciones
+  compuestas por reutilización de esos hechos exactos. No revisión humana
+  individual; 93 confusores revisados por alcance y 53 congelados por atributos/formato.
+  319 rechazos propuestos / 104 exclusiones / 499 abstenciones. E09 se solapa
+  y mantiene estados: unión acumulada 928 parejas, pendientes 5.072 (yogur 2.589,
+  agua 2.483). CE-201/202 EN CURSO, cero positivos íntegros/gold/CE-203/G2.
+  Revisar después yogures y aguas; segunda revisión 20 % + disputas del propietario
+  todavía pendiente. No promover propuestas por pasar tests ni fabricar positivos.
+  CLI offline `scripts/prepare-comparator-strict-potato-review.mjs`; especificaciones
+  editoriales, citas originales y hashes congelados. 28 pruebas nuevas;
+  `npm run quality`: TypeScript/lint y **462/462 PASS**. No tocar artefactos v1: sus hashes
+  siguen comprobándose, incluidos sus informes históricos de 5.993 pendientes.
+  Diferenciar rebozado explícito/ausente/desconocido, corte/forma/grosor, puré
+  moldeado, patatas Bravas refrigeradas/congeladas y papel unidad/total. No
+  normalizar automáticamente «gueso», rústico o grandes a corte grueso.
+  Sin app, SQL, cron, syncs, integraciones, nuevas contrataciones o consultas al
+  proyecto. No repetir extracción/canarios ni usar esta anotación como motor F3.
+
+- ACTUALIZACIÓN VIGENTE 2026-09-03, plan v1.2: **CE-200 completada**.
+  [Acta y siguientes tareas](docs/comparator-strict/CE-200-closure.md);
+  corpus-v1: 4.176 productos, 5.189 observaciones de ubicación, 6.000 parejas
+  únicas y 1.200 Q de 600 orígenes. Descarga y segunda lectura de huellas coinciden.
+  Muestreo/alias/exposición/pesos/hashes congelados. No hay gold, particiones ni
+  holdout; seguir CE-201/202 con este corpus y luego CE-203–208, sin saltar G2.
+  CE-BU-002 revoca el límite acumulado SQL y autoriza 128 MiB / 50.000 filas
+  para este corpus. Migración privada **20260903101356** aplicada; counters
+  conservados, 119 jobs correctos/1 reconciliado, 0 pendientes/controles/principals.
+  Reserva final: 1.518.920 ms, 108.246.478 bytes, 34.177 lecturas, 399 escrituras
+  técnicas; transporte extraído 16,59 MiB. No nuevas contrataciones ni cambios
+  de app/legacy/cron/catálogo/compute. No volver a adquirir ni repetir canarios.
+  Dos incidencias resueltas: censo agregado cancelado y microsegundo de diferencia
+  entre relojes de lease; protocolo v3 correcto. Archivo de guarda F1 original
+  conservado por su SHA-256; sucesor sin techo acumulado probado por separado.
+  TypeScript/lint y **404/404 tests PASS**, más 14 comprobaciones PGlite del lector.
+  No baseline de rendimiento completo. Las notas inferiores «no más carga hoy»,
+  CE-200 abierta/sin consultas y límite 300.000 ms describen el estado anterior.
+
+- NUEVA AUTORIDAD 2026-09-03, CE-SEQ-003: «Cierra CE-100 y continua con el resto
+  de tareas». [Cierre administrativo](docs/comparator-strict/CE-100-owner-closure.md)
+  con limitaciones aceptadas, sin PASS ficticio. Continuar CE-103–106, no saltar
+  permisos, presupuesto, reversión o validación real. G1 verificado en el acta
+  siguiente; sin contratación/ampliación de recursos. CE-100 abierta en notas
+  inferiores es histórico.
+
+- ESTADO ACTUAL 2026-09-03: CE-100 cerrada por el propietario;
+  **CE-103–106 completadas; F1/G1 PASS acotado al canario privado**.
+  [Acta y siguiente paso](docs/comparator-strict/CE-105-106-closure.md).
+  Base privada `20260903080621` + recibos duraderos `20260903084621` aplicados.
+  Ejecutor atómico probado: reserva persistida, control y reversión confirmados
+  mediante transacciones completas por llamada, sin asumir sesión MCP estable.
+  Cero controles/identidades/trabajos pendientes; cuatro trabajos de auditoría
+  y una reserva diaria. No borrar pruebas ni repetir planes históricos.
+  16 grupos PG17.6 nativo PASS (concurrencia, cancelación, SIGKILL local);
+  `npm run quality`: TypeScript/lint y 353/353 tests PASS.
+  servidor temporal detenido. CI manual configurada/no ejecutada en GitHub.
+  El TTY truncaba JSON: corregido con entrada raw. Intento caducado reconciliado,
+  sin payload ni devolución de su reserva de 6 s; nuevos jobs limitados por
+  PostgreSQL a 2 s/transacción y 4 s reservados por trabajo.
+  Reserva diaria: 22.623.694/23.068.672 bytes y 299.920/300.000 ms; 4.128
+  lecturas, 35 escrituras técnicas. No nueva carga remota CE-1 hoy.
+  CE-200/F2 iniciado localmente según la nota siguiente; CE-100 sigue sin baseline de rendimiento
+  completo. Ningún cambio de app/legacy, grants globales, cron ni activación.
+  Las notas inferiores «G1 pendiente/sin escrituras» son históricas. No aplicar
+  migraciones locales por arrastre ni reutilizar autorizaciones caducadas.
+
+- CE-200 EN CURSO (2026-09-03): [punto exacto de reanudación](docs/comparator-strict/CE-200-dataset.md).
+  Solo preparación local: diseño de muestreo, CLI offline, semilla y hashes.
+  72 referencias CE-104 → 648 parejas sin dirección duplicada, 144 Q/432 R;
+  sin etiquetas, evidencia confirmatoria o holdout. Los 400 casos legacy están
+  duplicados byte a byte en dos CSV; no sumarlos como 800 ni heredar etiquetas.
+  Índice de 683 referencias previamente expuestas; 335 son de tiendas del
+  piloto, no necesariamente sus tres familias. Corpus completo aún pendiente.
+  14 nuevos tests; `npm run quality` 367/367, TypeScript y lint PASS.
+  No más consultas a Supabase por el presupuesto documentado de 299.920 ms.
+  Siguiente: operación nueva de lectura/censo paginado, con ref/salud/permisos y
+  presupuesto revalidados; congelar diseño antes de nuevas etiquetas. No usar
+  las excepciones F1 para importar corpus, ejecutar scripts legacy o llamar a
+  retailers/OFF. Estado CE-201/202 actualizado en la nota siguiente; G2 no
+  aceptado, nada programado.
+
+- CE-201/202 EN CURSO (2026-09-03), petición «continua con las tareas»:
+  [reanudación exacta](docs/comparator-strict/CE-201-202-progress.md) y
+  [guía ce202-v1](docs/comparator-strict/CE-202-labeling-guide.md).
+  CLI `scripts/prepare-comparator-strict-labels.mjs`, ocho dimensiones con
+  citas ligadas a observación/hash, 22 propuestas reales (9 fuera de piloto,
+  8 incompatibilidades, 5 abstenciones), ninguna gold ni revisada por propietario.
+  56 sintéticos: 32 F1 reutilizados sin reescribirlos + 24 ampliaciones.
+  Aclarados natural/azúcar y GTIN/formato contradictorio; no heredar predicciones.
+  Semilla CE-200 intacta; anotaciones en `dataset/label-pilot-v1/` separadas.
+  Cero nuevas consultas remotas, cambios de app/BD/cron/cuotas o dependencias.
+  No cerrar CE-201/202: falta corpus completo y etiquetado respaldado; no marcar
+  CE-203 hecha por haber generado un lote. CE-204–208 pendientes; el validador
+  no es un matcher ni un harness de métricas. Siguiente avance local posible:
+  CE-206/207; adquisición CE-200 requiere presupuesto/ref/salud/permisos revisados.
+  Validación: 22/22 tests nuevos, `npm run quality` 389/389 PASS con TypeScript/lint.
+
+- Punto de reanudación: [PROYECTO-COMPARADOR-ESTRICTO.md](PROYECTO-COMPARADOR-ESTRICTO.md).
+  Evidencia y ejemplos: [COMPARADOR-ESTRICTO.md](COMPARADOR-ESTRICTO.md).
+- El usuario ha autorizado trabajar en el Supabase actual, incluida producción:
+  decisión CE-ENV-001 del plan. Se retira el backend separado obligatorio y la
+  espera hasta F8 para aplicar cambios de BD; se mantienen fases y controles.
+- CE-000 completada tras actualizar la política: ver
+  [docs/comparator-strict/F0-baseline.md](docs/comparator-strict/F0-baseline.md).
+  HEAD `03b8ba273e17709fd8fc69c20dddb68c147a7e2a`, rama
+  `codex/phase5-observation`; cambios previos preservados. Estado actual:
+  F0 ACEPTADA / G0 PASS; F1 COMPLETADA / G1 PASS acotado, CE-100 cerrada
+  por el propietario con limitaciones.
+  CE-001 completada en solo lectura: ver
+  [docs/comparator-strict/CE-001-supabase-inventory.md](docs/comparator-strict/CE-001-supabase-inventory.md)
+  y su JSON de evidencia. CE-002 completada: ver
+  [docs/comparator-strict/CE-002-independent-review.md](docs/comparator-strict/CE-002-independent-review.md).
+  CE-003 completada: [decisions.md](docs/comparator-strict/decisions.md)
+  consolida D01–D14, piloto, cuarentenas, estados y cuota. El usuario revoca la
+  propuesta anterior de CU-01: debe haber al menos un equivalente válido.
+  En la lista principal de CE-1 esto exige una alternativa válida más económica
+  incluida en la respuesta final correcta, no un candidato evaluado internamente.
+  Sin ahorro válido ofrecido, cero usos. Tres usos por cuenta y Plus se conservan.
+  CE-004 completada: [budget.md](docs/comparator-strict/budget.md),
+  [source-zone-matrix.md](docs/comparator-strict/source-zone-matrix.md) y
+  [CE-004-evidence.json](docs/comparator-strict/CE-004-evidence.json).
+  RV-01 confirmada: el usuario se encargará de la segunda revisión (20 % aleatorio
+  y todos los casos discutidos); preparar lotes con evidencia en F2, sin dar la
+  revisión por realizada ni fijar horas. SC-01/BU-01 confirmadas con «si exacto,
+  eso es» ante la pregunta expresa sobre alcance y límites. CE-005 COMPLETADA:
+  [vigencia](docs/comparator-strict/freshness-policy.md) y
+  [aceptación](docs/comparator-strict/acceptance.md) ratificadas. FR-01 descartada,
+  FR-02 confirmada (catálogo activo, sin TTL de 24 h); QA-01 y G0 aceptados con
+  «cierra CE-005 y empieza CE-100». No pedir de nuevo estas aprobaciones ni
+  dar por alcanzadas las métricas del motor todavía no implementado.
+- Resultado CE-002: no adoptar los parches tal cual en CE-1. El guard propuesto
+  sigue pasando diferencias de pack, cantidad y endulzado en sondas aisladas;
+  no son resultados finales del comparador. Separar HNSW del 0,59 y del UPDATE
+  de todas las generaciones; seguimiento CE-602/606/608/609.
+- Modal: conservar error/reintento; resolver la ficha anterior que reaparece al
+  reabrir mientras carga y la pérdida de procedencia del fallback global.
+  Hay una segunda petición global incluso tras cerrar si el fetch local da null.
+  Sonda lógica con hooks/red simulados, no dispositivo. Seguimiento CE-703/706.
+  `npm run quality`: 213/213; los cinco tests focalizados solo inspeccionan texto.
+- Destino confirmado: `auth.quefalta.es` → `gkffvigcnsesbaihycay`; sin ramas
+  remotas. v7 es la RPC del cliente y reclama cuota antes de devolver resultados;
+  no invocarla como simple comprobación de lectura.
+- El timeout `20260901203103` ya está aplicado; la función tiene 60 s.
+  HNSW `20260902122234` sigue pendiente. Ledger remoto: 80 entradas; locales:
+  163 SQL. Hay 51 correspondencias de nombre con versión distinta/legacy y dos
+  entradas remotas sin archivo homónimo. Reconciliar contenido en CE-103, sin
+  `db push` por arrastre ni reparación automática de historial.
+- Captura 2026-09-02 19:18 UTC: pipeline pausado, cron 17 inactivo y 20 mensajes
+  visibles (19 Gadis + 1 Ahorramás). Índice sano y dead tuples estimadas 4,222 %.
+  No se procesaron colas ni se corrigieron runs antiguos; seguimiento operativo
+  independiente. Revalidar estado mutable antes de una escritura posterior.
+- Syncs mayoritariamente semanales/manuales: 15/20 estados globales tienen más
+  de 24 h, sin afirmar vigencia por producto. FR-02 no excluye por esa edad; el scheduler
+  Windows de Carrefour solo consta documentado, no verificado en esa máquina.
+  GitHub main tiene timeout DIA de 45 min y el checkout 60 min; no se publicó.
+- Igualdad nominal exacta (sin tolerancia genérica del 0,5 %), estructura de
+  pack y variantes verificadas. «Natural» no prueba ausencia de azúcar;
+  «yogur griego»/«griego yogur» pueden ser equivalentes si lo demás coincide.
+- OFF nutricional ya existe y su `off_code` puede ser de una unidad, no del
+  pack vendido. No convertirlo en identidad comercial sin evidencia.
+- Hasta CE-101 solo documentación; CE-102/103 añaden herramientas Node locales
+  y tests, sin modificar la app. CE-103 ya aplica una base privada inactiva;
+  sin nuevas extensiones, ramas remotas ni syncs. Mantener separados el HNSW pendiente,
+  la resiliencia del modal y las fases operativas del pipeline existentes.
+- CE-003 no hace consultas remotas ni cambia contadores. Define cuota cero por
+  error, pending, falta de alternativas válidas más económicas o reintento de
+  la misma petición. Exige formato/variante y precio/zona/fecha válidos antes
+  de contar resultados finales. Una respuesta de red perdida se recupera
+  por idempotencia, sin asumir que el servidor revirtió su transacción.
+- CE-004 fija Mercadona/Carrefour/Consum/Plusfresc, CP de referencia 08006 y
+  25001, sin nuevas contrataciones/ampliaciones y con trabajo remoto secuencial.
+  Son candidatas a evaluar, no cuatro fuentes habilitadas: Consum devuelve zona
+  desconocida para 25001, Carrefour muestrea 08001 para Catalunya y Mercadona
+  prioriza mad1 en el espejo. No heredar esos precios como locales sin prueba.
+  Plusfresc mapea 08006→3 y 25001→12 en el código; revalidar antes de activar.
+  Tres muestras locales de 200 filas tienen ~31 h; no son equivalentes ni una
+  estimación de calidad. FR-02 no las excluye por edad ni rejuvenece sus fechas.
+- Lecturas CE-004: proyecto/plan Pro, metadatos e índices, 25 conexiones y cero
+  activas/locks/idle-in-transaction en dos instantes. No prueba capacidad libre
+  ni compute efectivo; no se han verificado factura, margen ni CPU/I/O.
+  Cinco intentos SQL READ ONLY (uno con error sintáctico corregido), sin writes,
+  consultas de usuarios, llamadas a retailers, cambios de cron o embeddings.
+  CE-004 cerrada documentalmente; después CE-005 y G0 quedan aceptados.
+- CE-005 / FR-02 confirmada: catálogo activo tras sync, sin TTL comercial de
+  24 h ni otro plazo fijo sustituto. Se descarta FR-01 por petición del usuario.
+  Cambios semánticos reconcilian perfil/vector; precio/stock recalculan ahorro
+  sin generar un vector idéntico. Invalidar también vacíos ante altas/bajadas,
+  cambios de origen/destino y bajas antes de que termine el worker. Respetar
+  promociones vencidas y detectar versiones mezcladas/fallos de sync; no
+  declarar tiempo real ni completar un sync por el mero final de la descarga.
+  35/35 tests existentes de identidad/reconciliación pasan; no prueban recálculo
+  comercial CE-1. [CE-005-evidence.json](docs/comparator-strict/CE-005-evidence.json)
+  conserva cálculos y 16 escenarios del TTL anterior como historial descartado.
+  CU-01 y presupuesto intactos; sin cambios de código, Supabase o integraciones.
+  QA-01 (precisión ≥99,5 %, utilidad, latencia) y G0 aceptados por el propietario
+  al ordenar cerrar CE-005. Se aprueba el contrato, no resultados medidos.
+- CE-100 iniciada, todavía EN CURSO: [informe](docs/comparator-strict/CE-100-readiness.md)
+  y [JSON](docs/comparator-strict/CE-100-evidence.json). Reconfirmado proyecto
+  `gkffvigcnsesbaihycay`, Pro, eu-west-1, PostgreSQL 17.6. Cuatro lecturas SQL
+  con READ ONLY, timeout 5 s y lock_timeout 500 ms; cero errores SQL,
+  escrituras, RPC comerciales, nuevas instalaciones o cambios de cron.
+  Muestras de actividad sin locks/idle-in-transaction; no baseline de 15 min.
+  `postgres` tiene BYPASSRLS; grants/políticas no sustituyen pruebas de cliente.
+  Pipeline pausado y cron 17 inactivo en captura de 21:27 UTC. No contar como
+  relectura de los 20 mensajes históricos: la cola no se ha consultado aquí.
+  Acceso al panel resuelto: diez copias PHYSICAL, última 2026-09-02 08:00:12 UTC;
+  PITR no activado. Ninguna restauración ensayada. Compute MICRO/t4g.micro,
+  1 GB, no Medium; la UI de consumo registra 309 h Micro y 2 h Medium sin
+  explicar el cambio. No se modificó tamaño. Cuotas Pro no superadas, spend
+  cap habilitado. Ventana de métricas de 30 min incompleta: fallan siete
+  gráficos de I/O/red/disco/conexiones tras un reintento; alternativa de
+  conexiones pide preview que no se activó. Completar baseline de al menos
+  15 min antes de cerrar CE-100/permitir carga. Actualización CE-SEQ-001:
+  el usuario autoriza expresamente empezar CE-101 dejando CE-100 pendiente.
+- Revisión CE-100 del 2026-09-03: [nueva evidencia](docs/comparator-strict/CE-100-capacity-recheck.md).
+  Se recupera la lectura de CPU/memoria/I/O/conexiones por Metrics API, usando
+  la credencial local existente sin exponerla ni crear otra. Observador puntual,
+  analizador y 7 tests locales; quality 308/308. Sin servicios nuevos ni cambios
+  de app/BD. Sigue pendiente una ventana comparable de p95/errores/locks del
+  catálogo: medias y logs incompletos no permiten cerrar CE-100 ni escribir.
+- CE-100, prueba ejecutada el 2026-09-03: [resultados y continuación](docs/comparator-strict/CE-100-catalog-probe-results.md).
+  61/61 lecturas válidas más una previa, p95 3,49 s; 18/14/18 muestras por
+  tramo de 5 min (<20). La coordinación serializada del conector no mantuvo
+  densidad: no cerrar CE-100 ni cambiar umbrales para aprobarla. Corregir
+  instrumentación local y desglosar latencia antes de otra ventana.
+  Cuota incluida 3,901/250 GB verificada; permiso condicionado a no añadir
+  coste, excepción a 22 MiB solo hoy y lock HTTP existente sin ALTER ROLE.
+  Contabilidad 20,94/22 MiB; quedan 1.108.530 bytes, insuficientes para repetir.
+  Todos los procesos terminaron; manifiesto deshabilitado, ninguna búsqueda
+  comercial ni escritura. CE-100 abierta, CE-103 en curso, G1 no aceptado.
+- CE-101 COMPLETADA: [inventario](docs/comparator-strict/CE-101-services-inventory.md)
+  y [JSON](docs/comparator-strict/CE-101-evidence.json), documentados 2026-09-03.
+  Tres SQL READ ONLY, cero errores; HEAD local y GET Auth/settings 200 con ref
+  correcta. Siete Edge ACTIVE, dos buckets públicos, Data API public/graphql_public
+  y autoexposición de tablas ON. Cron 18 de alertas activo cada 15 min; cron 17 y
+  embeddings siguen pausados. No sembrar fixtures en catálogos reales. Auth sin
+  Hooks; Site URL localhost y comodines Expo existentes, sin cambiar configuración.
+  Cuenta habitual elegida `@rruizosma`, una coincidencia de perfil; no se leyó UID
+  ni se verificó token. [Manifiesto](docs/comparator-strict/CE-101-test-access.json)
+  documental `enabled=false`, sin runtime ni concesión de permisos. CE-VAL-001:
+  el propietario confirma catálogo en su móvil, producción 1.3. Se corrige la
+  exigencia prematura de build de desarrollo; no es prueba de código no publicado.
+  No invocar comparador comercial como smoke. Sin cambios
+  de servicios globales, cuentas, cuota, notificaciones o activación del motor.
+  La excepción de secuencia no cierra CE-100/G1 ni autoriza CE-102 por arrastre.
+- CE-SEQ-002 (2026-09-03) añade autorización expresa condicionada: al terminar
+  CE-101 empezar CE-102; si sus guardas y tests son correctos, empezar CE-103.
+  Secuencia cumplida tras CE-VAL-001. No se ha arrancado/instalado ninguna app.
+  Los scripts legacy de importación/materialización escriben salvo DRY_RUN:
+  no ejecutarlos como smoke ni suponer que las guardas nuevas ya los protegen.
+- CE-102 COMPLETADA como componente local: [informe](docs/comparator-strict/CE-102-execution-guards.md).
+  Guardas ejecutables de ref/origen, apply explícito, hash, objetos/filas,
+  recursos, capacidad, COMMIT/rollback y resultado incierto; preflight offline.
+  Sin transporte/coordinador remoto, ejecución rechazada. Los tests con dobles
+  pasan; falta integración transaccional y presupuesto duradero real en
+  CE-103/105/106. No confundir con RLS o protección de todas las vías administrativas.
+- CE-103 EN CURSO: [informe](docs/comparator-strict/CE-103-migration-readiness.md),
+  [evidencia](docs/comparator-strict/CE-103-evidence.json) y reconciliador reproducible.
+  Tres SQL READ ONLY, cero errores/escrituras: 80 remotas/163 locales; 50 huellas
+  textuales correlacionadas, 28 diferencias no resueltas, 2 remotas sin candidato.
+  85 locales sin asociación no autorizan db push. Esquema comparator_strict
+  ausente; propuesta de base/coordinador, sin SQL nuevo de despliegue. Finalizadora
+  sigue a 60 s; HNSW pendiente; pipeline paused/cron 17 off/18 on. Mantener CE-100
+  abierta: baseline antes de escrituras. Próximo: continuar reconciliación CE-103
+  y diseño local del bootstrap/adaptadores; no iniciar CE-104 por arrastre.
+- F1 prepara operación segura en la BD compartida: project ref, alcance,
+  permisos, límites, canario y reversión. La autorización incluye cambios
+  ordinarios de CE-1; no se vuelve a pedir por el mero destino productivo.
+- F8 exige aprobación de activación para usuarios, no de acceso a Supabase.
+  Costes nuevos no acordados y operaciones destructivas/masivas siguen separados.
+  La retirada segura apaga CE-1 y detiene sus jobs, sin sustituirlos por
+  resultados legacy presentados como estrictos.
+
+## Radar sin resultados de Bonpreu/bonÀrea (local; despliegue pendiente, 2026-09-02)
+
+- Reproducción productiva: Mercadona `31504` («Huevos grandes L») dejó estado
+  de caché para Bonpreu y bonÀrea pero 0 matches; Carrefour devolvió 2. Los
+  espejos no tienen huecos: Bonpreu 21.079/21.079 y bonÀrea 3.145/3.145
+  productos publicados con embedding vigente, y casi todos tienen precio.
+- El HNSW de ~201k filas se detenía antes de superar el filtro por tienda. La
+  prueba de sesión con `hnsw.iterative_scan = relaxed_order` recuperó 20
+  candidatos por destino y encontró «Huevos L rubio estuchado» en bonÀrea.
+  Bonpreu tenía un segundo fallo: el prefijo `BONPREU` impedía reconocer la
+  familia anclada `eggs`, y el match L/XL quedaba 0,5936, justo bajo 0,60.
+- Preparada
+  `20260902122234_fix_comparator_filtered_hnsw_recall.sql`: ajuste HNSW solo en
+  la función, familia de identidad con marca propia normalizada, separación de
+  codorniz/cocido, margen 0,59 condicionado a familia+identidad e invalidación
+  perezosa de generaciones. Añadidos test estático y smoke SQL con `ROLLBACK`.
+- Validación local: test focalizado 3/3, `npx tsc --noEmit` y `git diff --check`
+  correctos. **No desplegada; CE-002 no aprueba el paquete para CE-1.** El UPDATE
+  afecta a todas las generaciones existentes, no tiene un límite de 18 tiendas.
+  CE-ENV-001 autoriza el destino productivo, pero no sustituye separación de
+  cambios, pruebas y reversión. No ejecutar este smoke por arrastre en F0:
+  escribe caché dentro de una transacción, aunque termine en ROLLBACK.
+
+## Fichas del Radar de ahorro estables (local, 2026-09-02)
+
+- `SimilarProductsSection` activa un fallback global controlado al abrir un
+  resultado. Soluciona las filas de Carrefour, Consum, Dia o Plusfresc que el
+  RPC devuelve desde el catálogo global pero cuyo detalle se filtraba después
+  por la región/centro del perfil y respondía `null`.
+- `StoreProductModal` ya no ejecuta `onClose()` ante `null` o error. Mantiene la
+  hoja con un estado de error y botón «Reintentar»; las respuestas asíncronas se
+  asocian a una clave de producto+ubicación+idioma+intento para no reutilizar un
+  detalle anterior. El resto de aperturas continúa respetando la ubicación.
+- Regresión en `scripts/tests/store-product-modal-resilience.test.mjs`.
+  `npm run quality`: TypeScript, ESLint y 210/210 pruebas correctos.
+
 ## Fase 5A desplegada; observación de dos ciclos pendiente (2026-09-01)
 
 - Producción tiene
@@ -23,9 +428,29 @@
   a `relaxed_order`. pgvector 0.8.0 acepta la opción, pero sigue desactivada. No
   hacer `REINDEX` salvo bloat/degradación demostrados, con dispatcher pausado y
   ventana de mantenimiento.
-- Cola visible actual 2.946, cero en vuelo: HiperDino 2.901, Gadis 38 y un run
-  nuevo de Ahorramás con 7 dependencias. Este último terminó de materializar
-  antes del despliegue y no se solapó con la migración.
+  Nota posterior CE-100 (2026-09-02): compute Micro verificado en panel; no se
+  modificó. «Mantener Medium» describe el plan histórico, no el tamaño actual
+  ni una autorización para restaurarlo. Revalidar la capacidad del experimento.
+- Tras el canario 2716, la cadena secuencial 2718–2746 drenó los 2.846 trabajos
+  restantes en 29 ejecuciones (28×100 + 46): HTTP 200, 2.846/2.846 `completed`
+  y 0 failed/stale/deferred. Cola vacía y cero en vuelo. HiperDino, Gadis y
+  Ahorramás quedaron `settled`, con un solo bump por tienda y generaciones
+  6.907, 37.485 y 18.079. Pipeline `paused`, cron 17 inactivo. HNSW sano y
+  estable; tuplas muertas 4.154 (2,020 %), 2.946 cambios desde analyze, sin
+  vacuum, bloqueos ni fallos. Este drenaje no cuenta como ciclo completo de
+  sync para la observación 0/2.
+- Después de los syncs posteriores se drenaron otros 2.131 trabajos. La primera
+  petición (2778) se detuvo sin escrituras: el primer sublote de 20 agotó el
+  `statement_timeout` de 8 s heredado por PostgREST y dejó los 100 mensajes
+  diferidos hasta vencer su visibility timeout. Se desplegó
+  `20260901203103_extend_embedding_finalize_statement_timeout.sql`, que fija
+  60 s únicamente para `catalog_finalize_embedding_batch(jsonb)`.
+- Reanudación 2780–2801: 22 ejecuciones (21×100 + 31), 2.131/2.131
+  `completed`, 0 failed/stale/deferred y cero HTTP no-200. Once runs actuales
+  quedaron `settled`, cada uno con un único bump de generación. Postflight:
+  cola y vuelo 0, pipeline `paused`, cron 17 inactivo, HNSW sano/estable,
+  8.901 tuplas muertas (4,202 %), autoanalyze completado, y cero vacuum,
+  mantenimiento de índice, locks o fallos abiertos.
 
 ## Fase 4 desplegada; backlog legacy adoptado (2026-09-01)
 
@@ -55,18 +480,16 @@
   pendientes; el fallback `coalesce(embedding_input_hash, content_hash)` cubre
   sus filas legacy. La verificación posterior dio 0 diferencias cola↔manifiesto,
   3.201 enlaces `pending/queued` y generación HiperDino todavía en 6.906.
-- Drenajes canarios 2709, 2710 y 2712: tres peticiones FIFO, IDs HiperDino
-  240403–240702, todas HTTP 200 con 300/300 `completed` y 0
-  failed/stale/deferred/dispatched. Los 300 productos tienen vector, modelo y
-  `embedded_content_hash` vigentes; no quedan residuos de esos rangos en cola,
-  archivo ni fallos. La cola total bajó 3.239→2.939. HiperDino queda
-  `draining` con 300 completados/2.901 pendientes y generación 6.906, sin
-  settlement ni bump; Gadis sigue intacto con 38 pendientes y generación
-  37.484.
+- Drenajes canarios 2709, 2710, 2712 y 2716: cuatro peticiones FIFO con 400/400
+  `completed`. A continuación, la cadena 2718–2746 procesó la cola restante:
+  29 ejecuciones, 2.846/2.846 `completed` y 0 failed/stale/deferred. Los runs
+  durables de HiperDino (3.201), Gadis (38) y Ahorramás (7) quedaron `settled`
+  con todas sus dependencias completadas y un único bump al cierre.
 - Estado operativo: pipeline `paused`, cron 17 inactivo, 0 trabajos en vuelo,
-  fallos, bloqueos o vacuum; HNSW válido/listo y 0,600 % de tuplas muertas. No
-  pasar directamente a `active`: continuar con drenajes controlados. Después
-  queda implementar stale-while-revalidate en segundo plano.
+  fallos, bloqueos o vacuum; cola vacía, HNSW válido/listo y 2,020 % de tuplas
+  muertas. Mantener la observación de dos ciclos completos de sync antes de
+  decidir si se activa el dispatcher automático. Después queda implementar
+  stale-while-revalidate en segundo plano.
 
 ## Fase 3 HNSW desplegada y canario sano (2026-09-01)
 

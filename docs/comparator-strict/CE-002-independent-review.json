@@ -1,0 +1,468 @@
+{
+  "schema_version": 1,
+  "task": "CE-1/F0/CE-002",
+  "date": "2026-09-02",
+  "outcome": "Revisión completada; parches NO aprobados como paquete de incorporación a CE-1. Sin despliegue ni cambios de aplicación.",
+  "plan_version": "1.1",
+  "authority": "CE-ENV-001; continuidad de CE-002, lectura y diagnóstico",
+  "git": {
+    "head": "03b8ba273e17709fd8fc69c20dddb68c147a7e2a",
+    "branch": "codex/phase5-observation"
+  },
+  "target": {
+    "project_ref": "gkffvigcnsesbaihycay",
+    "source": "Identidad verificada en CE-001"
+  },
+  "protected_files": [
+    {
+      "path": "src/components/SimilarProductsSection.tsx",
+      "sha256": "d2e594cfd4ba184e839e13c0fd5e049917a16900dfea4fa2f884992234a1127e"
+    },
+    {
+      "path": "src/components/StoreProductModal.tsx",
+      "sha256": "f467d6a7604f797e7b944a543310f1c30bfe3bafc40e3f8fa5cf7d4e696a45c4"
+    },
+    {
+      "path": "supabase/ops/README-comparator-embedding-pipeline.md",
+      "sha256": "424a293c99b0b843a9c7032da5b813b889da324a05ffddcf3349970e53379f40"
+    },
+    {
+      "path": "scripts/tests/comparator-filtered-hnsw-recall.test.mjs",
+      "sha256": "77f062b789bff88cf0b3384794fec58a00c5752944a978dc6aa5f7016386eec4"
+    },
+    {
+      "path": "scripts/tests/store-product-modal-resilience.test.mjs",
+      "sha256": "5aecf3e3f1cc8150a2f0f870e58efbd6121b07c84670fe68c6840eda5ab4022d"
+    },
+    {
+      "path": "supabase/migrations/20260901203103_extend_embedding_finalize_statement_timeout.sql",
+      "sha256": "9a32b3054833c30d0ae23873211799fdf7341e9098ed16a9ed9ec2274b844c9f"
+    },
+    {
+      "path": "supabase/migrations/20260902122234_fix_comparator_filtered_hnsw_recall.sql",
+      "sha256": "ac9fa3360afa4be72a7ae0d1e1336282a5ec1c5991d78e6e249381ffbb97646d"
+    },
+    {
+      "path": "supabase/ops/verify-comparator-filtered-hnsw-recall.sql",
+      "sha256": "3e14c005dff3673b847e3a9ed816ea9bbeaecb98485acc5e9a1978d723e3aab4"
+    }
+  ],
+  "remote_inventory": {
+    "query": "begin read only; set local statement_timeout='5s'; set local lock_timeout='1s';\nselect now() as observed_at, n.nspname as schema, p.proname as name, pg_get_function_identity_arguments(p.oid) as arguments, p.proconfig as config, p.prosecdef as security_definer, md5(pg_get_functiondef(p.oid)) as definition_md5, has_function_privilege('anon',p.oid,'EXECUTE') as anon_execute, has_function_privilege('authenticated',p.oid,'EXECUTE') as authenticated_execute, has_function_privilege('service_role',p.oid,'EXECUTE') as service_execute, pg_get_functiondef(p.oid) as definition\nfrom pg_proc p join pg_namespace n on n.oid=p.pronamespace\nwhere (n.nspname='public' and p.proname in ('catalog_embedding_candidates_v3','catalog_product_family_v1','catalog_product_variants_v1','catalog_product_identity_compatible_v1','catalog_product_identity_family_v1')) or (n.nspname='comparator_internal' and p.proname='refresh_catalog_match_cache_pair_v3') order by n.nspname,p.proname limit 10;\nrollback;",
+    "rows": [
+      {
+        "observed_at": "2026-09-02 19:40:49.120276+00",
+        "schema": "comparator_internal",
+        "name": "refresh_catalog_match_cache_pair_v3",
+        "arguments": "p_source_store text, p_source_product_id text, p_target_store text",
+        "config": [
+          "search_path=\"\""
+        ],
+        "security_definer": true,
+        "definition_md5": "5813d06c6905d1b120785f1952a0a5e2",
+        "anon_execute": false,
+        "authenticated_execute": false,
+        "service_execute": true,
+        "definition": "CREATE OR REPLACE FUNCTION comparator_internal.refresh_catalog_match_cache_pair_v3(p_source_store text, p_source_product_id text, p_target_store text)\n RETURNS integer\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare\n  v_match_version constant text := 'embedding_hybrid_v3_0_60';\n  v_source record;\n  v_target_generation bigint;\n  v_refresh_token text;\n  v_inserted integer := 0;\nbegin\n  if p_source_store = p_target_store then\n    return 0;\n  end if;\n\n  select\n    source.content_hash,\n    source.embedded_at,\n    source.display_name,\n    source.global_gtin\n  into v_source\n  from public.catalog_product_embeddings as source\n  where source.store = p_source_store\n    and source.product_id = p_source_product_id\n    and source.published\n    and source.embedding is not null\n    and source.embedded_at is not null\n    and coalesce(\n      source.embedded_content_hash,\n      source.embedding_input_hash,\n      source.content_hash\n    ) = coalesce(source.embedding_input_hash, source.content_hash);\n\n  if not found then\n    delete from public.catalog_product_matches as match\n    where match.source_store = p_source_store\n      and match.source_product_id = p_source_product_id\n      and match.target_store = p_target_store\n      and match.match_version = v_match_version;\n    delete from public.catalog_product_match_cache_status as status\n    where status.source_store = p_source_store\n      and status.source_product_id = p_source_product_id\n      and status.target_store = p_target_store\n      and status.match_version = v_match_version;\n    return 0;\n  end if;\n\n  select version.generation\n  into v_target_generation\n  from comparator_internal.catalog_match_store_versions as version\n  where version.store = p_target_store;\n\n  if v_target_generation is null then\n    insert into comparator_internal.catalog_match_store_versions (store, generation, updated_at)\n    values (p_target_store, 1, now())\n    on conflict (store) do update set updated_at = excluded.updated_at\n    returning generation into v_target_generation;\n  end if;\n\n  v_refresh_token := pg_catalog.txid_current()::text || ':' || pg_catalog.clock_timestamp()::text;\n\n  with candidates as (\n    select\n      candidate.target_store,\n      candidate.target_product_id,\n      candidate.target_name,\n      candidate.vector_score,\n      candidate.quantity_ratio,\n      target.global_gtin as target_gtin,\n      target.content_hash as target_content_hash,\n      public.catalog_validated_lexical_score_v1(v_source.display_name, candidate.target_name) as lexical_score\n    from public.catalog_embedding_candidates_v3(\n      p_source_store,\n      p_source_product_id,\n      array[p_target_store],\n      20,\n      -1\n    ) as candidate\n    join public.catalog_product_embeddings as target\n      on target.store = candidate.target_store\n     and target.product_id = candidate.target_product_id\n     and target.published\n     and target.embedding is not null\n     and coalesce(\n       target.embedded_content_hash,\n       target.embedding_input_hash,\n       target.content_hash\n     ) = coalesce(target.embedding_input_hash, target.content_hash)\n  ),\n  scored as (\n    select\n      candidates.*,\n      v_source.global_gtin is not null and v_source.global_gtin = candidates.target_gtin as exact_gtin,\n      (0.5 * candidates.vector_score + 0.5 * candidates.lexical_score)::real as hybrid_score\n    from candidates\n  ),\n  accepted as (\n    select scored.*\n    from scored\n    where scored.exact_gtin\n       or (\n         public.catalog_has_preparation_marker_v1(v_source.display_name)\n           = public.catalog_has_preparation_marker_v1(scored.target_name)\n         and scored.hybrid_score >= 0.60\n       )\n  ),\n  upserted as (\n    insert into public.catalog_product_matches as match (\n      source_store,\n      source_product_id,\n      target_store,\n      target_product_id,\n      relation,\n      confidence,\n      vector_score,\n      lexical_score,\n      match_version,\n      evidence,\n      created_at,\n      updated_at\n    )\n    select\n      p_source_store,\n      p_source_product_id,\n      accepted.target_store,\n      accepted.target_product_id,\n      case when accepted.exact_gtin then 'identico' else 'comparable' end,\n      case when accepted.exact_gtin then 1::real else accepted.hybrid_score end,\n      accepted.vector_score,\n      accepted.lexical_score,\n      v_match_version,\n      pg_catalog.jsonb_build_object(\n        'quantity_ratio', accepted.quantity_ratio,\n        'source_content_hash', v_source.content_hash,\n        'target_content_hash', accepted.target_content_hash,\n        'target_generation', v_target_generation,\n        'cache_refresh_token', v_refresh_token\n      ),\n      now(),\n      now()\n    from accepted\n    on conflict (source_store, source_product_id, target_store, target_product_id, match_version)\n    do update set\n      relation = excluded.relation,\n      confidence = excluded.confidence,\n      vector_score = excluded.vector_score,\n      lexical_score = excluded.lexical_score,\n      evidence = excluded.evidence,\n      updated_at = excluded.updated_at\n    returning 1\n  )\n  select count(*)::integer into v_inserted from upserted;\n\n  delete from public.catalog_product_matches as match\n  where match.source_store = p_source_store\n    and match.source_product_id = p_source_product_id\n    and match.target_store = p_target_store\n    and match.match_version = v_match_version\n    and match.evidence ->> 'cache_refresh_token' is distinct from v_refresh_token;\n\n  insert into public.catalog_product_match_cache_status as status (\n    source_store,\n    source_product_id,\n    target_store,\n    match_version,\n    source_content_hash,\n    source_embedded_at,\n    target_generation,\n    built_at,\n    updated_at\n  ) values (\n    p_source_store,\n    p_source_product_id,\n    p_target_store,\n    v_match_version,\n    v_source.content_hash,\n    v_source.embedded_at,\n    v_target_generation,\n    now(),\n    now()\n  )\n  on conflict (source_store, source_product_id, target_store, match_version)\n  do update set\n    source_content_hash = excluded.source_content_hash,\n    source_embedded_at = excluded.source_embedded_at,\n    target_generation = excluded.target_generation,\n    built_at = excluded.built_at,\n    updated_at = excluded.updated_at;\n\n  return v_inserted;\nend;\n$function$\n"
+      },
+      {
+        "observed_at": "2026-09-02 19:40:49.120276+00",
+        "schema": "public",
+        "name": "catalog_embedding_candidates_v3",
+        "arguments": "p_source_store text, p_source_product_id text, p_target_stores text[], p_match_count integer, p_min_vector_score real",
+        "config": [
+          "search_path=\"\""
+        ],
+        "security_definer": false,
+        "definition_md5": "03f6138975dc32a1ef86e2e1f0b1cefb",
+        "anon_execute": false,
+        "authenticated_execute": false,
+        "service_execute": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.catalog_embedding_candidates_v3(p_source_store text, p_source_product_id text, p_target_stores text[] DEFAULT NULL::text[], p_match_count integer DEFAULT 20, p_min_vector_score real DEFAULT 0.45)\n RETURNS TABLE(target_store text, target_product_id text, target_name text, vector_score real, trigram_score real, quantity_ratio numeric)\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n  with source as (\n    select e.*\n    from public.catalog_product_embeddings as e\n    where e.store = p_source_store\n      and e.product_id = p_source_product_id\n      and e.published\n      and e.embedding is not null\n      and coalesce(e.embedded_content_hash, e.embedding_input_hash, e.content_hash)\n        = coalesce(e.embedding_input_hash, e.content_hash)\n  ),\n  exact_candidates as (\n    select\n      target.store,\n      target.product_id,\n      target.display_name,\n      (1 - (target.embedding operator(extensions.<=>) source.embedding))::real as vector_score,\n      public.similarity(source.display_name, target.display_name)::real as trigram_score,\n      case\n        when source.quantity_base is not null and target.quantity_base is not null\n          then target.quantity_base / source.quantity_base\n        else null\n      end as quantity_ratio,\n      true as exact_gtin,\n      null::bigint as vector_rank,\n      null::bigint as lexical_rank\n    from source\n    join public.catalog_product_embeddings as target\n      on source.global_gtin is not null\n     and target.global_gtin = source.global_gtin\n    where target.published\n      and target.embedding is not null\n      and coalesce(\n        target.embedded_content_hash,\n        target.embedding_input_hash,\n        target.content_hash\n      ) = coalesce(target.embedding_input_hash, target.content_hash)\n      and target.store <> source.store\n      and (p_target_stores is null or target.store = any (p_target_stores))\n  ),\n  vector_candidates as (\n    select\n      candidate.store,\n      candidate.product_id,\n      candidate.display_name,\n      candidate.vector_score,\n      candidate.trigram_score,\n      candidate.quantity_ratio,\n      false as exact_gtin,\n      row_number() over (order by candidate.vector_distance) as vector_rank,\n      null::bigint as lexical_rank\n    from source\n    cross join lateral (\n      select\n        target.store,\n        target.product_id,\n        target.display_name,\n        target.embedding operator(extensions.<=>) source.embedding as vector_distance,\n        (1 - (target.embedding operator(extensions.<=>) source.embedding))::real as vector_score,\n        public.similarity(source.display_name, target.display_name)::real as trigram_score,\n        case\n          when source.quantity_base is not null and target.quantity_base is not null\n            then target.quantity_base / source.quantity_base\n          else null\n        end as quantity_ratio\n      from public.catalog_product_embeddings as target\n      where target.published\n        and target.embedding is not null\n      and coalesce(\n        target.embedded_content_hash,\n        target.embedding_input_hash,\n        target.content_hash\n      ) = coalesce(target.embedding_input_hash, target.content_hash)\n        and target.store <> source.store\n        and (p_target_stores is null or target.store = any (p_target_stores))\n        and target.model = source.model\n        and target.content_version = source.content_version\n        and source.canonical_unit is not null\n        and target.canonical_unit = source.canonical_unit\n        and public.catalog_attributes_compatible(source.attributes, target.attributes)\n        and (\n          source.quantity_base is null\n          or target.quantity_base is null\n          or target.quantity_base / source.quantity_base between (1.0 / 12.0) and 12.0\n        )\n        and 1 - (target.embedding operator(extensions.<=>) source.embedding) >= p_min_vector_score\n      order by target.embedding operator(extensions.<=>) source.embedding\n      limit least(greatest(p_match_count, 1), 100)\n    ) as candidate\n  ),\n  lexical_candidates as (\n    select\n      candidate.store,\n      candidate.product_id,\n      candidate.display_name,\n      candidate.vector_score,\n      candidate.trigram_score,\n      candidate.quantity_ratio,\n      false as exact_gtin,\n      null::bigint as vector_rank,\n      row_number() over (\n        order by candidate.lexical_retrieval_score desc, candidate.vector_score desc\n      ) as lexical_rank\n    from source\n    cross join lateral (\n      select\n        target.store,\n        target.product_id,\n        target.display_name,\n        (1 - (target.embedding operator(extensions.<=>) source.embedding))::real as vector_score,\n        public.similarity(source.display_name, target.display_name)::real as trigram_score,\n        greatest(\n          public.similarity(source.display_name, target.display_name),\n          public.word_similarity(source.display_name, target.display_name),\n          public.word_similarity(target.display_name, source.display_name)\n        )::real as lexical_retrieval_score,\n        case\n          when source.quantity_base is not null and target.quantity_base is not null\n            then target.quantity_base / source.quantity_base\n          else null\n        end as quantity_ratio\n      from public.catalog_product_embeddings as target\n      where target.published\n        and target.embedding is not null\n      and coalesce(\n        target.embedded_content_hash,\n        target.embedding_input_hash,\n        target.content_hash\n      ) = coalesce(target.embedding_input_hash, target.content_hash)\n        and target.store <> source.store\n        and (p_target_stores is null or target.store = any (p_target_stores))\n        and target.model = source.model\n        and target.content_version = source.content_version\n        and source.canonical_unit is not null\n        and target.canonical_unit = source.canonical_unit\n        and public.catalog_attributes_compatible(source.attributes, target.attributes)\n        and (\n          source.quantity_base is null\n          or target.quantity_base is null\n          or target.quantity_base / source.quantity_base between (1.0 / 12.0) and 12.0\n        )\n        and (\n          target.display_name operator(public.%) source.display_name\n          or target.display_name operator(public.%>) source.display_name\n        )\n      order by greatest(\n                 public.similarity(source.display_name, target.display_name),\n                 public.word_similarity(source.display_name, target.display_name),\n                 public.word_similarity(target.display_name, source.display_name)\n               ) desc,\n               target.embedding operator(extensions.<=>) source.embedding\n      limit least(greatest(p_match_count, 1), 100)\n    ) as candidate\n  ),\n  combined as (\n    select * from exact_candidates\n    union all\n    select * from vector_candidates\n    union all\n    select * from lexical_candidates\n  ),\n  deduplicated as (\n    select\n      store,\n      product_id,\n      max(display_name) as display_name,\n      max(vector_score) as vector_score,\n      max(trigram_score) as trigram_score,\n      max(quantity_ratio) as quantity_ratio,\n      bool_or(exact_gtin) as exact_gtin,\n      min(vector_rank) as vector_rank,\n      min(lexical_rank) as lexical_rank\n    from combined\n    group by store, product_id\n  )\n  select\n    candidate.store,\n    candidate.product_id,\n    candidate.display_name,\n    candidate.vector_score,\n    candidate.trigram_score,\n    candidate.quantity_ratio\n  from deduplicated as candidate\n  order by\n    candidate.exact_gtin desc,\n    (\n      coalesce(1.0 / (60.0 + candidate.vector_rank), 0)\n      + coalesce(1.0 / (60.0 + candidate.lexical_rank), 0)\n    ) desc,\n    candidate.vector_score desc,\n    candidate.trigram_score desc;\n$function$\n"
+      },
+      {
+        "observed_at": "2026-09-02 19:40:49.120276+00",
+        "schema": "public",
+        "name": "catalog_product_family_v1",
+        "arguments": "p_name text, p_category text",
+        "config": [
+          "search_path=\"\""
+        ],
+        "security_definer": false,
+        "definition_md5": "3d0e13abacac8bbb2ae29791a5699fde",
+        "anon_execute": false,
+        "authenticated_execute": false,
+        "service_execute": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.catalog_product_family_v1(p_name text, p_category text DEFAULT NULL::text)\n RETURNS text\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\ndeclare\n  v_name text := lower(public.f_unaccent(coalesce(p_name, '')));\nbegin\n  -- Se clasifica por el nombre, no por el árbol de categorías: las categorías\n  -- no están homologadas entre cadenas y algunas contienen ramas paraguas o\n  -- asignaciones erróneas. Las marcas incluidas aquí son inequívocas dentro de\n  -- su familia y cubren títulos que omiten el sustantivo.\n  return case\n    when v_name ~ '\\m(pizza)\\M' then 'pizza'\n    when v_name ~ '\\m(helado|sorbete)\\M' then 'ice_cream'\n    when v_name ~ '\\m(chorizo|mortadela|salchichon|fuet)\\M' then 'charcuterie'\n    when v_name ~ '\\m(chipiron|calamar|pulpo)\\M' then 'cephalopod'\n    when v_name ~ '\\m(hojaldre)\\M' then 'pastry'\n    when v_name ~ '\\m(yogur|yogurt|skyr|kefir|activia)\\M' then 'yogurt'\n    when v_name ~ '\\m(queso|formatge|provolone|mozzarella|emmental|gouda|cheddar|brie|camembert|philadelphia)\\M' then 'cheese'\n    when v_name ~ '\\m(mantequilla|mantega)\\M' then 'butter'\n    when v_name ~ '\\m(kombucha)\\M' then 'kombucha'\n    when v_name ~ '\\m(te|tea|te[[:space:]-]*frio|ice[[:space:]-]*tea|nestea|fuze[[:space:]-]*tea|lipton)\\M' then 'tea'\n    when v_name ~ '\\m(cafe|coffee|espresso|cappuccino|capuchino)\\M' then 'coffee'\n    when v_name ~ '\\m(chocolate[[:space:]]+(a[[:space:]]+la[[:space:]]+taza|bebida)|cacao[[:space:]]+(soluble|instantaneo)|batido[[:space:]]+de[[:space:]]+chocolate)\\M' then 'cocoa_drink'\n    when v_name ~ '\\m(bebida[[:space:]]+(vegetal|de[[:space:]]+(avena|soja|almendra|arroz|coco))|leche[[:space:]]+de[[:space:]]+(avena|soja|almendra|arroz|coco)|begetal)\\M' then 'plant_drink'\n    when v_name ~ '\\m(leche)\\M' then 'milk'\n    when v_name ~ '\\m(horchata)\\M' then 'horchata'\n    when v_name ~ '\\m(agua)\\M' and v_name !~ '\\magua[[:space:]]+de[[:space:]]+colonia\\M' then 'water'\n    when v_name ~ '\\m(zumo|jugo|nectar|smoothie|bifrutas)\\M' then 'juice'\n    when v_name ~ '\\m(isotonico|isotonica|aquarius|powerade)\\M' then 'isotonic_drink'\n    when v_name ~ '\\m(energetic[oa]|energy[[:space:]]+drink|red[[:space:]]+bull|monster)\\M' then 'energy_drink'\n    when v_name ~ '\\m(tonica|tonic[[:space:]]+water)\\M' then 'tonic'\n    when v_name ~ '\\m(cerveza|beer)\\M' then 'beer'\n    when v_name ~ '\\m(sidra|cider)\\M' then 'cider'\n    when v_name ~ '\\m(cava|champan|champagne|espumoso)\\M' then 'sparkling_wine'\n    when v_name ~ '\\m(vino|vermut|vermouth|sangria)\\M' then 'wine'\n    when v_name ~ '\\m(ginebra|gin|ron|whisky|whiskey|vodka|tequila|licor)\\M' then 'spirit'\n    when v_name ~ '\\m(refresco|gaseosa|soda|cola|coca[[:space:]-]*cola|pepsi|fanta|sprite|seven[[:space:]-]*up|7up)\\M' then 'soft_drink'\n\n    when v_name ~ '\\m(nata|crema[[:space:]]+de[[:space:]]+leche)\\M' then 'cream'\n    when v_name ~ '^[^a-z0-9]*(huevo|huevos|ous)\\M' then 'eggs'\n\n    when v_name ~ '\\m(mayonesa|maionesa)\\M' then 'mayonnaise'\n    when v_name ~ '\\m(ketchup|catsup)\\M' then 'ketchup'\n    when v_name ~ '\\m(mostaza)\\M' then 'mustard'\n    when v_name ~ '\\m(pesto)\\M' then 'pesto'\n    when v_name ~ '\\m(salsa[[:space:]]+de[[:space:]]+soja)\\M' then 'soy_sauce'\n    when v_name ~ '\\m(tomate[[:space:]]+(frito|triturado)|salsa[[:space:]]+de[[:space:]]+tomate)\\M' then 'tomato_sauce'\n    when v_name ~ '\\m(aceite)\\M' then 'oil'\n    when v_name ~ '\\m(vinagre)\\M' then 'vinegar'\n\n    when v_name ~ '\\m(pasta|espagueti|spaghetti|macarron|tallarin|fideo|ravioli|tortellini)\\M' then 'pasta'\n    when v_name ~ '\\m(arroz)\\M' then 'rice'\n    when v_name ~ '\\m(pan|baguette|chapata|molde)\\M' then 'bread'\n    when v_name ~ '\\m(harina)\\M' then 'flour'\n    when v_name ~ '\\m(cereal|muesli|granola)\\M' then 'breakfast_cereal'\n    when v_name ~ '\\m(galleta|cookie)\\M' then 'biscuits'\n\n    when v_name ~ '\\m(pollo)\\M' then 'chicken'\n    when v_name ~ '\\m(pavo)\\M' then 'turkey'\n    when v_name ~ '\\m(ternera|vacuno|buey)\\M' then 'beef'\n    when v_name ~ '\\m(cerdo|porcino)\\M' then 'pork'\n    when v_name ~ '\\m(cordero)\\M' then 'lamb'\n    when v_name ~ '\\m(conejo)\\M' then 'rabbit'\n    when v_name ~ '\\m(salmon)\\M' then 'salmon'\n    when v_name ~ '\\m(atun|bonito)\\M' then 'tuna'\n    when v_name ~ '\\m(merluza)\\M' then 'hake'\n    when v_name ~ '\\m(bacalao)\\M' then 'cod'\n    when v_name ~ '\\m(sardina)\\M' then 'sardine'\n    when v_name ~ '\\m(gamba|langostino|camaron)\\M' then 'prawn'\n\n    when v_name ~ '\\m(detergente[[:space:]]+(ropa|lavadora)|capsulas[[:space:]]+lavadora)\\M' then 'laundry_detergent'\n    when v_name ~ '\\m(lavavajillas|rentavaixelles)\\M' then 'dishwasher'\n    when v_name ~ '\\m(suavizante)\\M' then 'fabric_softener'\n    when v_name ~ '\\m(champu|shampoo)\\M' then 'shampoo'\n    when v_name ~ '\\m(gel[[:space:]]+(de[[:space:]]+ducha|bano)|gel[[:space:]]+corporal)\\M' then 'shower_gel'\n    when v_name ~ '\\m(pasta[[:space:]]+de[[:space:]]+dientes|dentifrico)\\M' then 'toothpaste'\n    when v_name ~ '\\m(desodorante)\\M' then 'deodorant'\n    when v_name ~ '\\m(panal|panales)\\M' then 'nappies'\n\n    else null\n  end;\nend;\n$function$\n"
+      },
+      {
+        "observed_at": "2026-09-02 19:40:49.120276+00",
+        "schema": "public",
+        "name": "catalog_product_identity_compatible_v1",
+        "arguments": "p_left_name text, p_left_category text, p_right_name text, p_right_category text",
+        "config": [
+          "search_path=\"\""
+        ],
+        "security_definer": false,
+        "definition_md5": "4deb9905635b6b8718b5eb3ca5f1b1a6",
+        "anon_execute": false,
+        "authenticated_execute": false,
+        "service_execute": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.catalog_product_identity_compatible_v1(p_left_name text, p_left_category text, p_right_name text, p_right_category text)\n RETURNS boolean\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n  with signals as (\n    select\n      public.catalog_product_family_v1(p_left_name, p_left_category) as left_family,\n      public.catalog_product_family_v1(p_right_name, p_right_category) as right_family,\n      public.catalog_product_variants_v1(p_left_name) as left_variants,\n      public.catalog_product_variants_v1(p_right_name) as right_variants\n  ), normalized as (\n    select\n      left_family,\n      right_family,\n      case when left_family = 'coffee'\n        then array_remove(left_variants, 'coffee')\n        when left_family = 'cocoa_drink'\n        then array_remove(left_variants, 'chocolate')\n        when left_family = any (array['beer', 'wine', 'sparkling_wine', 'spirit'])\n        then array_remove(left_variants, 'sugar_free')\n        else left_variants\n      end as left_variants,\n      case when right_family = 'coffee'\n        then array_remove(right_variants, 'coffee')\n        when right_family = 'cocoa_drink'\n        then array_remove(right_variants, 'chocolate')\n        when right_family = any (array['beer', 'wine', 'sparkling_wine', 'spirit'])\n        then array_remove(right_variants, 'sugar_free')\n        else right_variants\n      end as right_variants\n    from signals\n  )\n  select\n    -- Si una sola parte tiene familia reconocible, el par es ambiguo y se\n    -- descarta. En comparación de precios se prioriza precisión sobre cobertura.\n    left_family is not distinct from right_family\n    and left_variants = right_variants\n  from normalized;\n$function$\n"
+      },
+      {
+        "observed_at": "2026-09-02 19:40:49.120276+00",
+        "schema": "public",
+        "name": "catalog_product_variants_v1",
+        "arguments": "p_name text",
+        "config": [
+          "search_path=\"\""
+        ],
+        "security_definer": false,
+        "definition_md5": "5165bfd8a66f91808edd0b5310842aa6",
+        "anon_execute": false,
+        "authenticated_execute": false,
+        "service_execute": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.catalog_product_variants_v1(p_name text)\n RETURNS text[]\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n  with normalized as (\n    select lower(public.f_unaccent(coalesce(p_name, ''))) as value\n  ),\n  rules(marker, pattern) as (\n    values\n      ('lemon', '\\mlimon\\M'),\n      ('lime', '\\mlima\\M'),\n      ('orange', '\\mnaranja\\M'),\n      ('peach', '\\m(melocoton|durazno)\\M'),\n      ('apple', '\\mmanzana\\M'),\n      ('pear', '\\mpera\\M'),\n      ('strawberry', '\\mfresa\\M'),\n      ('raspberry', '\\mframbuesa\\M'),\n      ('blueberry', '\\marandano\\M'),\n      ('berries', '\\mfrutos[[:space:]]+rojos\\M'),\n      ('mango', '\\mmango\\M'),\n      ('pineapple', '\\mpina\\M'),\n      ('passion_fruit', '\\m(maracuya|fruta[[:space:]]+de[[:space:]]+la[[:space:]]+pasion)\\M'),\n      ('banana', '\\m(platano|banana)\\M'),\n      ('coconut', '\\mcoco\\M'),\n      ('vanilla', '\\mvainilla\\M'),\n      ('chocolate', '\\m(chocolates?|choco|cacao)\\M'),\n      ('coffee', '\\m(cafe|coffee|espresso)\\M'),\n      ('mint', '\\m(menta|hierbabuena)\\M'),\n      ('ginger', '\\mjengibre\\M'),\n      ('olive', '\\moliva\\M'),\n      ('sunflower', '\\mgirasol\\M'),\n      ('basmati', '\\mbasmati\\M'),\n      ('jasmine', '\\mjazmin\\M'),\n      ('wholegrain', '\\m(integral|wholegrain)\\M'),\n      ('decaf', '\\m(descafeinado|decaf)\\M'),\n      ('sugar_free', '\\m(sin[[:space:]]+azucar(es)?|0[[:space:]]*%[[:space:]]*azucar(es)?|zero|cero)\\M'),\n      ('alcohol_free', '\\m(sin[[:space:]]+alcohol|0[.,]0)\\M'),\n      ('low_salt', '\\m(sin[[:space:]]+sal|baj[oa][[:space:]]+en[[:space:]]+sal)\\M'),\n      ('still', '\\msin[[:space:]]+gas\\M'),\n      ('sparkling', '\\mcon[[:space:]]+gas\\M'),\n      ('spicy', '\\m(picante|spicy|chili|guindilla)\\M'),\n      ('smoked', '\\m(ahumado|fumado)\\M')\n  )\n  select coalesce(array_agg(rules.marker order by rules.marker), array[]::text[])\n  from normalized\n  join rules on normalized.value ~ rules.pattern;\n$function$\n"
+      }
+    ]
+  },
+  "guard_probe": {
+    "query": "begin read only; set local statement_timeout='5s'; set local lock_timeout='1s';\nwith fixtures(case_id,p_left_name,p_right_name,p_left_category,p_right_category) as (values ('word_order','Yogur griego natural 6x125 g','Griego yogur natural 6x125 g',null::text,null::text),\n('sweetening','Yogur griego natural 6x125 g','Yogur griego azucarado 6x125 g',null::text,null::text),\n('pack_structure','Yogur griego natural 6x125 g','Yogur griego natural 3x250 g',null::text,null::text),\n('water_volume','Agua mineral sin gas 1 L','Agua mineral sin gas 1,5 L',null::text,null::text),\n('frozen_weight','Patatas congeladas 2 kg','Patatas congeladas 0,5 kg',null::text,null::text),\n('egg_grade_pack','Huevos grandes L 6 unidades','BONPREU Huevos frescos clase L/XL 12 unidades',null::text,null::text),\n('quail','Huevos grandes L','Huevos de codorniz',null::text,null::text),\n('cooked','Huevos grandes L','Huevos cocidos de gallina',null::text,null::text),\n('accented_brand','Huevos grandes L','bonÀrea Huevos grandes L',null::text,null::text),\n('chicken_species','Huevos de gallina','Huevos de pato',null::text,null::text))\nselect now() as observed_at,case_id,p_left_name,p_right_name,public.catalog_product_identity_compatible_v1(p_left_name,p_left_category,p_right_name,p_right_category) as deployed_guard,patched.* from fixtures cross join lateral (with signals as (\n    select\n      public.catalog_product_family_v1(\n    regexp_replace(\n      coalesce(p_left_name, ''),\n      '^[[:space:]]*(hacendado|bonpreu|bonarea|carrefour|consum|dia|deliplus|aliada|eroski|caprabo|sorli|ametller|alcampo|auchan|plusfresc|gadis|froiz|ahorramas|hiperdino)[[:space:]]+',\n      '',\n      'i'\n    ),\n    p_left_category\n  ) as left_family,\n      public.catalog_product_family_v1(\n    regexp_replace(\n      coalesce(p_right_name, ''),\n      '^[[:space:]]*(hacendado|bonpreu|bonarea|carrefour|consum|dia|deliplus|aliada|eroski|caprabo|sorli|ametller|alcampo|auchan|plusfresc|gadis|froiz|ahorramas|hiperdino)[[:space:]]+',\n      '',\n      'i'\n    ),\n    p_right_category\n  ) as right_family,\n      public.catalog_product_variants_v1(p_left_name) as left_variants,\n      public.catalog_product_variants_v1(p_right_name) as right_variants,\n      lower(public.f_unaccent(coalesce(p_left_name, ''))) as left_name,\n      lower(public.f_unaccent(coalesce(p_right_name, ''))) as right_name\n  ), normalized as (\n    select\n      left_family,\n      right_family,\n      left_name,\n      right_name,\n      case when left_family = 'coffee'\n        then array_remove(left_variants, 'coffee')\n        when left_family = 'cocoa_drink'\n        then array_remove(left_variants, 'chocolate')\n        when left_family = any (array['beer', 'wine', 'sparkling_wine', 'spirit'])\n        then array_remove(left_variants, 'sugar_free')\n        else left_variants\n      end as left_variants,\n      case when right_family = 'coffee'\n        then array_remove(right_variants, 'coffee')\n        when right_family = 'cocoa_drink'\n        then array_remove(right_variants, 'chocolate')\n        when right_family = any (array['beer', 'wine', 'sparkling_wine', 'spirit'])\n        then array_remove(right_variants, 'sugar_free')\n        else right_variants\n      end as right_variants\n    from signals\n  )\n  select\n    left_family is not distinct from right_family\n    and left_variants = right_variants\n    and (\n      left_family is distinct from 'eggs'\n      or (\n        (left_name ~ '\\m(codorniz|guatlla)\\M')\n          = (right_name ~ '\\m(codorniz|guatlla)\\M')\n        and (left_name ~ '\\m(cocido|cocida|cocidos|cocidas|duro|dura|duros|duras|dur|durs|dures)\\M')\n          = (right_name ~ '\\m(cocido|cocida|cocidos|cocidas|duro|dura|duros|duras|dur|durs|dures)\\M')\n      )\n    )\n  from normalized) as patched(patched_guard);\nrollback;",
+    "cases": [
+      [
+        "word_order",
+        "Yogur griego natural 6x125 g",
+        "Griego yogur natural 6x125 g"
+      ],
+      [
+        "sweetening",
+        "Yogur griego natural 6x125 g",
+        "Yogur griego azucarado 6x125 g"
+      ],
+      [
+        "pack_structure",
+        "Yogur griego natural 6x125 g",
+        "Yogur griego natural 3x250 g"
+      ],
+      [
+        "water_volume",
+        "Agua mineral sin gas 1 L",
+        "Agua mineral sin gas 1,5 L"
+      ],
+      [
+        "frozen_weight",
+        "Patatas congeladas 2 kg",
+        "Patatas congeladas 0,5 kg"
+      ],
+      [
+        "egg_grade_pack",
+        "Huevos grandes L 6 unidades",
+        "BONPREU Huevos frescos clase L/XL 12 unidades"
+      ],
+      [
+        "quail",
+        "Huevos grandes L",
+        "Huevos de codorniz"
+      ],
+      [
+        "cooked",
+        "Huevos grandes L",
+        "Huevos cocidos de gallina"
+      ],
+      [
+        "accented_brand",
+        "Huevos grandes L",
+        "bonÀrea Huevos grandes L"
+      ],
+      [
+        "chicken_species",
+        "Huevos de gallina",
+        "Huevos de pato"
+      ]
+    ],
+    "method": "Cuerpo literal del guard local con su nuevo helper SQL expandido; SELECT sobre fixtures, sin instalar funciones ni ejecutar búsquedas.",
+    "results": [
+      {
+        "observed_at": "2026-09-02 19:42:11.143756+00",
+        "case_id": "word_order",
+        "p_left_name": "Yogur griego natural 6x125 g",
+        "p_right_name": "Griego yogur natural 6x125 g",
+        "deployed_guard": true,
+        "patched_guard": true
+      },
+      {
+        "observed_at": "2026-09-02 19:42:11.143756+00",
+        "case_id": "sweetening",
+        "p_left_name": "Yogur griego natural 6x125 g",
+        "p_right_name": "Yogur griego azucarado 6x125 g",
+        "deployed_guard": true,
+        "patched_guard": true
+      },
+      {
+        "observed_at": "2026-09-02 19:42:11.143756+00",
+        "case_id": "pack_structure",
+        "p_left_name": "Yogur griego natural 6x125 g",
+        "p_right_name": "Yogur griego natural 3x250 g",
+        "deployed_guard": true,
+        "patched_guard": true
+      },
+      {
+        "observed_at": "2026-09-02 19:42:11.143756+00",
+        "case_id": "water_volume",
+        "p_left_name": "Agua mineral sin gas 1 L",
+        "p_right_name": "Agua mineral sin gas 1,5 L",
+        "deployed_guard": true,
+        "patched_guard": true
+      },
+      {
+        "observed_at": "2026-09-02 19:42:11.143756+00",
+        "case_id": "frozen_weight",
+        "p_left_name": "Patatas congeladas 2 kg",
+        "p_right_name": "Patatas congeladas 0,5 kg",
+        "deployed_guard": true,
+        "patched_guard": true
+      },
+      {
+        "observed_at": "2026-09-02 19:42:11.143756+00",
+        "case_id": "egg_grade_pack",
+        "p_left_name": "Huevos grandes L 6 unidades",
+        "p_right_name": "BONPREU Huevos frescos clase L/XL 12 unidades",
+        "deployed_guard": false,
+        "patched_guard": true
+      },
+      {
+        "observed_at": "2026-09-02 19:42:11.143756+00",
+        "case_id": "quail",
+        "p_left_name": "Huevos grandes L",
+        "p_right_name": "Huevos de codorniz",
+        "deployed_guard": true,
+        "patched_guard": false
+      },
+      {
+        "observed_at": "2026-09-02 19:42:11.143756+00",
+        "case_id": "cooked",
+        "p_left_name": "Huevos grandes L",
+        "p_right_name": "Huevos cocidos de gallina",
+        "deployed_guard": true,
+        "patched_guard": false
+      },
+      {
+        "observed_at": "2026-09-02 19:42:11.143756+00",
+        "case_id": "accented_brand",
+        "p_left_name": "Huevos grandes L",
+        "p_right_name": "bonÀrea Huevos grandes L",
+        "deployed_guard": false,
+        "patched_guard": false
+      },
+      {
+        "observed_at": "2026-09-02 19:42:11.143756+00",
+        "case_id": "chicken_species",
+        "p_left_name": "Huevos de gallina",
+        "p_right_name": "Huevos de pato",
+        "deployed_guard": true,
+        "patched_guard": true
+      }
+    ],
+    "caveats": [
+      "Fixtures textuales sintéticos, no productos insertados",
+      "Se expandió el helper nuevo en el cuerpo SQL del guard local para ejecutarlo como SELECT",
+      "No se instaló la función propuesta ni se modificó el guard desplegado",
+      "No es la aceptación final de un match ni una medida de precisión del comparador",
+      "Los helpers ya desplegados se inspeccionaron antes de usarlos"
+    ]
+  },
+  "modal_probe": {
+    "method": "TSX real transpilado, hooks/effects y fetches simulados sin red; no renderer React Native ni prueba de dispositivo.",
+    "current": {
+      "loadingCloseButtons": 0,
+      "reopenWhileRefetchPendingShowsOldProduct": true,
+      "reopenRequestCount": 2,
+      "requestsAfterClosedLocalNull": [
+        {
+          "name": "fetchCarrefourProduct",
+          "args": [
+            "fixture-A",
+            "madrid"
+          ]
+        },
+        {
+          "name": "fetchCarrefourProduct",
+          "args": [
+            "fixture-A",
+            null
+          ]
+        }
+      ],
+      "lateADoesNotReplaceB": true,
+      "nullDetailAutoCloseCalls": 0,
+      "nullDetailShowsError": true,
+      "retryStartsNewRequest": true,
+      "policyToggleWhileRefetchPendingShowsOldProduct": true
+    },
+    "head": {
+      "loadingCloseButtons": 0,
+      "reopenWhileRefetchPendingShowsOldProduct": false,
+      "reopenRequestCount": 2,
+      "requestsAfterClosedLocalNull": [
+        {
+          "name": "fetchCarrefourProduct",
+          "args": [
+            "fixture-A",
+            "madrid"
+          ]
+        }
+      ],
+      "lateADoesNotReplaceB": true,
+      "nullDetailAutoCloseCalls": 1,
+      "nullDetailShowsError": false,
+      "retryStartsNewRequest": false,
+      "policyToggleWhileRefetchPendingShowsOldProduct": true
+    },
+    "source": "// CE-002: diagnóstico aislado del código TSX real; no renderer nativo ni red.\nconst fs = require('node:fs');\nconst vm = require('node:vm');\nconst cp = require('node:child_process');\nconst { createRequire } = require('node:module');\nconst localRequire = createRequire(process.cwd() + '/package.json');\nconst ts = localRequire('typescript');\n\nfunction harness(source) {\n  const slots = [], requests = [], effects = [];\n  let cursor = 0, dirty = false, props, tree, closeCalls = 0;\n  const context = { profile: { region: 'madrid', postalCode: '28001' }, lang: 'es' };\n  const state = (initial) => {\n    const i = cursor++;\n    if (!(i in slots)) slots[i] = typeof initial === 'function' ? initial() : initial;\n    return [slots[i], (value) => {\n      const next = typeof value === 'function' ? value(slots[i]) : value;\n      if (!Object.is(next, slots[i])) { slots[i] = next; dirty = true; }\n    }];\n  };\n  const effect = (fn, deps) => {\n    const i = cursor++, old = slots[i];\n    if (!old || deps.some((v,j) => !Object.is(v,old.deps[j]))) {\n      slots[i] = { deps, cleanup: null };\n      effects.push(() => { old?.cleanup?.(); slots[i].cleanup = fn(); });\n    }\n  };\n  const ref = initial => { const i=cursor++; return slots[i] ??= { current: initial }; };\n  const element = (type, props) => ({ type, props });\n  const catalog = new Proxy({}, { get: (_, name) => (...args) => new Promise((resolve,reject) => requests.push({ name, args, resolve, reject })) });\n  const mockRequire = name => {\n    if (name === 'react') return { useState: state, useEffect: effect, useRef: ref };\n    if (name === 'react/jsx-runtime') return { jsx: element, jsxs: element };\n    if (name === 'react-native') return { Modal:'Modal',View:'View',Text:'Text',TouchableOpacity:'TouchableOpacity',ActivityIndicator:'ActivityIndicator',StyleSheet:{create:x=>x} };\n    if (name === '../api/catalog') return catalog;\n    if (name.endsWith('/colors')) return { colors:{} };\n    if (name.endsWith('/typography')) return { fonts:{} };\n    if (name.endsWith('/ThemeContext')) return { useThemedStyles:fn=>fn() };\n    if (name.endsWith('/LanguageContext')) return { useTranslation:()=>({t:key=>key,lang:context.lang}) };\n    if (name.endsWith('/ProfileContext')) return { useProfile:()=>({profile:context.profile}) };\n    if (name.endsWith('/ToastContext')) return { useToast:()=>({show:()=>{}}) };\n    if (name.endsWith('/useHeaderTopPadding')) return { useHeaderTopPadding:()=>56 };\n    if (name.endsWith('/useReducedMotion')) return { useReducedMotion:()=>true };\n    return { default:name, __esModule:true };\n  };\n  const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;\n  const exports={};\n  vm.runInNewContext(js,{exports,require:mockRequire,console});\n  function pump() {\n    for(let i=0;i<12;i++){\n      dirty=false; cursor=0; tree=exports.default(props);\n      while(effects.length)effects.shift()();\n      if(!dirty)return;\n    }\n    throw new Error('Unexpected render loop');\n  }\n  return {\n    requests,context,\n    render(p){props={onClose:()=>closeCalls++, ...p};pump();},\n    async settle(){await new Promise(resolve=>setImmediate(resolve));pump();},\n    get tree(){return tree;},get closeCalls(){return closeCalls;},\n  };\n}\nfunction allNodes(node,result=[]){\n  if(!node||typeof node!=='object')return result;\n  if(Array.isArray(node)){for(const x of node)allNodes(x,result);return result;}\n  result.push(node);allNodes(node.props?.children,result);return result;\n}\nconst productOf=h=>allNodes(h.tree).find(n=>n.props?.product)?.props.product ?? null;\nconst hasText=(h,t)=>allNodes(h.tree).some(n=>n.props?.children===t);\nconst A={store:'carrefour',id:'fixture-A'}, B={store:'carrefour',id:'fixture-B'};\n\nasync function run(source){\n  const result={};\n  let h=harness(source);\n  h.render({target:A});\n  result.loadingCloseButtons=allNodes(h.tree).filter(n=>n.type==='TouchableOpacity').length;\n  h.requests[0].resolve({id:A.id,unitPrice:1});await h.settle();\n  h.render({target:null});h.render({target:A});\n  result.reopenWhileRefetchPendingShowsOldProduct=productOf(h)?.unitPrice===1;\n  result.reopenRequestCount=h.requests.length;\n\n  h=harness(source);h.render({target:A,fallbackToGlobalCatalog:true});\n  h.render({target:null});h.requests[0].resolve(null);await h.settle();\n  result.requestsAfterClosedLocalNull=h.requests.map(r=>({name:r.name,args:r.args}));\n\n  h=harness(source);h.render({target:A});h.render({target:B});\n  h.requests[1].resolve({id:B.id,unitPrice:2});await h.settle();\n  h.requests[0].resolve({id:A.id,unitPrice:1});await h.settle();\n  result.lateADoesNotReplaceB=productOf(h)?.id===B.id;\n\n  h=harness(source);h.render({target:A});h.requests[0].resolve(null);await h.settle();\n  result.nullDetailAutoCloseCalls=h.closeCalls;\n  result.nullDetailShowsError=hasText(h,'product.detailLoadError');\n  const retry=allNodes(h.tree).find(n=>n.type==='TouchableOpacity'&&allNodes(n).some(x=>x.props?.children==='common.retry'));\n  retry?.props.onPress();await h.settle();\n  result.retryStartsNewRequest=h.requests.length===2;\n\n  h=harness(source);h.render({target:A,fallbackToGlobalCatalog:true});\n  h.requests[0].resolve({id:A.id,unitPrice:1});await h.settle();\n  h.render({target:A,fallbackToGlobalCatalog:false});\n  result.policyToggleWhileRefetchPendingShowsOldProduct=productOf(h)?.unitPrice===1;\n  return result;\n}\n(async()=>{\n  const current=fs.readFileSync('src/components/StoreProductModal.tsx','utf8');\n  const base=cp.execFileSync('git',['show','HEAD:src/components/StoreProductModal.tsx'],{encoding:'utf8'});\n  console.log(JSON.stringify({method:'TSX real transpilado, hooks/effects y fetches simulados sin red; no renderer React Native ni prueba de dispositivo.',current:await run(current),head:await run(base)},null,2));\n})().catch(error=>{console.error(error);process.exitCode=1;});\n",
+    "command": "node <ruta-del-script-de-sonda> (desde la raíz del checkout indicado)",
+    "caveats": [
+      "Hooks/effects simulados, no renderer React/React Native",
+      "No prueba gestos, frames, accesibilidad ni ejecución en iOS/Android",
+      "Red y componentes hijos sustituidos por dobles; no escribe en Supabase",
+      "HEAD compara el mismo escenario sin el parche local"
+    ]
+  },
+  "checks": [
+    {
+      "command": "node --test scripts/tests/comparator-filtered-hnsw-recall.test.mjs scripts/tests/store-product-modal-resilience.test.mjs",
+      "exit_code": 0,
+      "passed": 5,
+      "failed": 0,
+      "type": "Aserciones estáticas sobre fuente"
+    },
+    {
+      "command": "npm run quality",
+      "exit_code": 0,
+      "passed": 213,
+      "failed": 0,
+      "includes": [
+        "tsc --noEmit",
+        "expo lint --max-warnings 0",
+        "node --test"
+      ]
+    },
+    {
+      "check": "SHA-256 de archivos protegidos frente a CE-000",
+      "matched": 8,
+      "total": 8
+    }
+  ],
+  "remote_operations": {
+    "sql_calls": 2,
+    "read_only": true,
+    "statement_timeout": "5s",
+    "lock_timeout": "1s",
+    "ended_with": "ROLLBACK",
+    "search_rpc_calls": 0,
+    "cache_refresh_calls": 0,
+    "migrations": 0,
+    "queue_processing": 0,
+    "provider_calls": 0
+  },
+  "findings": [
+    {
+      "id": "CE002-H01",
+      "severity": "Alta para CE-1",
+      "finding": "Guard propuesto no verifica formato/endulzado y amplía aceptación 0.59 para todas las familias reconocidas",
+      "follow_up": [
+        "CE-300–CE-308 (F3)",
+        "CE-602",
+        "CE-608"
+      ]
+    },
+    {
+      "id": "CE002-H02",
+      "severity": "Alta operativa",
+      "finding": "Cambio compartido e invalidación de todas las generaciones sin versión nueva; rollback no se limita a desactivar GUC",
+      "follow_up": [
+        "CE-103",
+        "CE-606",
+        "CE-608"
+      ]
+    },
+    {
+      "id": "CE002-H03",
+      "severity": "Media",
+      "finding": "Smokes estáticos/fixtures reales no demuestran recall relevante, precisión o coste; ROLLBACK no vuelve la prueba read-only",
+      "follow_up": [
+        "CE-105",
+        "CE-608",
+        "CE-609"
+      ]
+    },
+    {
+      "id": "CE002-H04",
+      "severity": "Media",
+      "finding": "Normalización de marca no cubre bonÀrea; orden/empates/coste de relaxed_order requieren medición",
+      "follow_up": [
+        "F3",
+        "CE-608",
+        "CE-609"
+      ]
+    },
+    {
+      "id": "CE002-M01",
+      "severity": "Alta para CE-1",
+      "finding": "Fallback global pierde procedencia y puede mostrar/añadir precio base no validado para la zona",
+      "follow_up": [
+        "CE-603",
+        "CE-703"
+      ]
+    },
+    {
+      "id": "CE002-M02",
+      "severity": "Media; regresión local",
+      "finding": "Ficha anterior reaparece al reabrir mismo destino mientras se carga",
+      "follow_up": [
+        "CE-703",
+        "CE-706"
+      ]
+    },
+    {
+      "id": "CE002-M03",
+      "severity": "Media; deuda heredada y ampliada",
+      "finding": "Sin cierre visible en loader; fallback puede lanzarse después de cerrar; no aborta request",
+      "follow_up": [
+        "CE-703",
+        "CE-706"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "part": "Recorrido iterativo HNSW",
+      "decision": "Candidato a evaluación aislada en CE-608, sin umbral más permisivo ni cambio global por arrastre"
+    },
+    {
+      "part": "Excepción 0.59, guard y generaciones del parche",
+      "decision": "No trasladar tal cual a CE-1"
+    },
+    {
+      "part": "Error persistente/reintento del modal",
+      "decision": "Conservar intención y comportamiento útil; corregir/validar regresión antes de aprobar release"
+    },
+    {
+      "part": "Fallback global",
+      "decision": "Solo informativo y con procedencia/estado local explícitos; no certificar ahorro o disponibilidad"
+    },
+    {
+      "part": "Integraciones",
+      "decision": "Ninguna instalación necesaria en CE-002; pgTAP de F1 sigue siendo útil para cobertura SQL"
+    }
+  ],
+  "references": [
+    "https://github.com/pgvector/pgvector/blob/v0.8.0/README.md#iterative-index-scans",
+    "https://supabase.com/docs/guides/ai/vector-indexes/hnsw-indexes",
+    "https://www.postgresql.org/docs/17/sql-createfunction.html",
+    "https://www.postgresql.org/docs/17/app-psql.html",
+    "https://supabase.com/changelog"
+  ],
+  "next_task": "CE-003",
+  "phase_state": "F0 EN CURSO; G0 no aceptado"
+}

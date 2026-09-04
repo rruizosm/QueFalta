@@ -1,0 +1,2031 @@
+[
+  {
+    "case_id": "S01",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T07"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Una botella de 1 L y una de 1000 ml, conteo y resto de atributos explícitamente iguales.",
+    "source": "Agua mineral natural 1 L",
+    "candidate": "Agua mineral natural 1000 ml",
+    "historical_fixture": {
+      "id": "water-unit-normalization",
+      "family": "water",
+      "source": "Agua mineral natural 1 L",
+      "candidate": "Agua mineral natural 1000 ml",
+      "expected": {
+        "equivalence": "equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Normalize units exactly, same variants evidenced"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "water-unit-normalization"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "eligible_saving",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S02",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T08"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "1 L y 1,5 L no son la misma cantidad.",
+    "source": "Agua mineral natural 1 L",
+    "candidate": "Agua mineral natural 1,5 L",
+    "historical_fixture": {
+      "id": "water-size-mismatch",
+      "family": "water",
+      "source": "Agua mineral natural 1 L",
+      "candidate": "Agua mineral natural 1,5 L",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "different_nominal_quantity"
+      },
+      "reason": "No size tolerance"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "water-size-mismatch"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "incompatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S03",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T11"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Sin gas y con gas son distintos.",
+    "source": "Agua mineral natural sin gas 1 L",
+    "candidate": "Agua mineral natural con gas 1 L",
+    "historical_fixture": {
+      "id": "water-gas-mismatch",
+      "family": "water",
+      "source": "Agua mineral natural sin gas 1 L",
+      "candidate": "Agua mineral natural con gas 1 L",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Carbonation is a critical variant"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "water-gas-mismatch"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "incompatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S04",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T11"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Origen sin sabor añadido expresamente verificado; candidato sabor limón.",
+    "source": "Agua mineral natural 1 L",
+    "candidate": "Agua sabor limón 1 L",
+    "historical_fixture": {
+      "id": "water-flavour-mismatch",
+      "family": "water",
+      "source": "Agua mineral natural 1 L",
+      "candidate": "Agua sabor limón 1 L",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Flavour changes identity"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "water-flavour-mismatch"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "incompatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S05",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T20"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Colonia fuera del piloto; no se transforma en agua de bebida.",
+    "source": "Agua mineral natural 1 L",
+    "candidate": "Agua de colonia 1 L",
+    "historical_fixture": {
+      "id": "water-cologne-hard-negative",
+      "family": "water",
+      "source": "Agua mineral natural 1 L",
+      "candidate": "Agua de colonia 1 L",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Different product family despite shared word"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "water-cologne-hard-negative"
+    },
+    "states": {
+      "scope": "incompatible",
+      "identity": "incompatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "excluded_scope",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S06",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T01"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Tipo, sabor, grasa, base, especie, azúcar añadido, edulcorantes, declaraciones y pack expresamente iguales; solo cambia el orden.",
+    "source": "Yogur griego natural 6x125 g",
+    "candidate": "Griego yogur natural 6 x 125 g",
+    "historical_fixture": {
+      "id": "yogurt-word-order",
+      "family": "yogurt",
+      "source": "Yogur griego natural 6x125 g",
+      "candidate": "Griego yogur natural 6 x 125 g",
+      "expected": {
+        "equivalence": "equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Word order alone is not identity; critical facts match"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "yogurt-word-order"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "eligible_saving",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S07",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T03"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Aclaración necesaria al fixture F1: se estipula evidencia independiente de SIN azúcar añadido en origen y CON azúcar añadido en destino. Natural solo NO probaría este negativo: ver S34.",
+    "source": "Yogur griego natural 6x125 g",
+    "candidate": "Yogur griego azucarado 6x125 g",
+    "historical_fixture": {
+      "id": "yogurt-natural-sweetened",
+      "family": "yogurt",
+      "source": "Yogur griego natural 6x125 g",
+      "candidate": "Yogur griego azucarado 6x125 g",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Do not merge natural and sweetened variants"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "yogurt-natural-sweetened"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "incompatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S08",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T14"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "6 y 4 envases no son el mismo pack.",
+    "source": "Yogur griego natural 6x125 g",
+    "candidate": "Yogur griego natural 4x125 g",
+    "historical_fixture": {
+      "id": "yogurt-pack-count",
+      "family": "yogurt",
+      "source": "Yogur griego natural 6x125 g",
+      "candidate": "Yogur griego natural 4x125 g",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "different_pack_count"
+      },
+      "reason": "Require same pack count"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "yogurt-pack-count"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "incompatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S09",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T13"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "6×125 y 3×250 no equivalen aunque sumen 750 g.",
+    "source": "Yogur griego natural 6x125 g",
+    "candidate": "Yogur griego natural 3x250 g",
+    "historical_fixture": {
+      "id": "yogurt-equal-total-different-pack",
+      "family": "yogurt",
+      "source": "Yogur griego natural 6x125 g",
+      "candidate": "Yogur griego natural 3x250 g",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "different_pack_composition"
+      },
+      "reason": "Same total 750 g is insufficient"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "yogurt-equal-total-different-pack"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "incompatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S10",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T13"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "6×125 y una tarrina de 750 no equivalen.",
+    "source": "Yogur griego natural 6x125 g",
+    "candidate": "Yogur griego natural 750 g",
+    "historical_fixture": {
+      "id": "yogurt-pack-versus-single",
+      "family": "yogurt",
+      "source": "Yogur griego natural 6x125 g",
+      "candidate": "Yogur griego natural 750 g",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "different_pack_composition"
+      },
+      "reason": "Six pots are not one 750 g pot"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "yogurt-pack-versus-single"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "incompatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S11",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T22"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "No inventar composición desde total de 750 g.",
+    "source": "Yogur griego natural 6x125 g",
+    "candidate": "Yogur griego natural pack 750 g",
+    "historical_fixture": {
+      "id": "yogurt-missing-pack-details",
+      "family": "yogurt",
+      "source": "Yogur griego natural 6x125 g",
+      "candidate": "Yogur griego natural pack 750 g",
+      "expected": {
+        "equivalence": "unknown",
+        "format_relation": "unknown_pack_composition"
+      },
+      "reason": "Total alone does not prove count and portion size"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "yogurt-missing-pack-details"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "unknown",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "abstain",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S12",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T04",
+      "T05"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Natural sin evidencia de azúcar añadido: desconocido.",
+    "source": "Yogur griego natural 6x125 g",
+    "candidate": "Yogur griego natural sin azúcares añadidos 6x125 g",
+    "historical_fixture": {
+      "id": "yogurt-natural-not-no-added-sugar",
+      "family": "yogurt",
+      "source": "Yogur griego natural 6x125 g",
+      "candidate": "Yogur griego natural sin azúcares añadidos 6x125 g",
+      "expected": {
+        "equivalence": "unknown",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Natural alone does not establish the source added-sugar dimension"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "yogurt-natural-not-no-added-sugar"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "unknown",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "abstain",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S13",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T03"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Con y sin azúcar añadido, afirmaciones explícitas contrarias.",
+    "source": "Yogur griego con azúcar añadido 6x125 g",
+    "candidate": "Yogur griego sin azúcar añadido 6x125 g",
+    "historical_fixture": {
+      "id": "yogurt-negation",
+      "family": "yogurt",
+      "source": "Yogur griego con azúcar añadido 6x125 g",
+      "candidate": "Yogur griego sin azúcar añadido 6x125 g",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Preserve negations"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "yogurt-negation"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "incompatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S14",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T06"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Azúcar y edulcorantes se etiquetan por separado.",
+    "source": "Yogur griego natural sin edulcorantes 6x125 g",
+    "candidate": "Yogur griego natural con edulcorantes 6x125 g",
+    "historical_fixture": {
+      "id": "yogurt-sweetener",
+      "family": "yogurt",
+      "source": "Yogur griego natural sin edulcorantes 6x125 g",
+      "candidate": "Yogur griego natural con edulcorantes 6x125 g",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Sweetener is separate from sugar and flavour"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "yogurt-sweetener"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "incompatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S15",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T03"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Perfil de sabor natural y fresa expresamente diferentes; no inferir endulzado.",
+    "source": "Yogur griego natural 6x125 g",
+    "candidate": "Yogur griego fresa 6x125 g",
+    "historical_fixture": {
+      "id": "yogurt-flavour",
+      "family": "yogurt",
+      "source": "Yogur griego natural 6x125 g",
+      "candidate": "Yogur griego fresa 6x125 g",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Critical flavour mismatch"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "yogurt-flavour"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "incompatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S16",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T16"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Una bolsa de 2 kg y una de 2000 g; preparación/corte/piel/condimentación explícitamente iguales.",
+    "source": "Patatas congeladas para freír 2 kg",
+    "candidate": "Patatas congeladas para freír 2000 g",
+    "historical_fixture": {
+      "id": "potatoes-unit-normalization",
+      "family": "frozen_potatoes",
+      "source": "Patatas congeladas para freír 2 kg",
+      "candidate": "Patatas congeladas para freír 2000 g",
+      "expected": {
+        "equivalence": "equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Same preparation and nominal quantity"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "potatoes-unit-normalization"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "eligible_saving",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S17",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T16"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "2 kg y 1 kg: no comparar compras de cantidades diferentes.",
+    "source": "Patatas congeladas para freír 2 kg",
+    "candidate": "Patatas congeladas para freír 1 kg",
+    "historical_fixture": {
+      "id": "potatoes-1kg-mismatch",
+      "family": "frozen_potatoes",
+      "source": "Patatas congeladas para freír 2 kg",
+      "candidate": "Patatas congeladas para freír 1 kg",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "different_nominal_quantity"
+      },
+      "reason": "No arithmetic substitute purchase"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "potatoes-1kg-mismatch"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "incompatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S18",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T16"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "2 kg y 0,5 kg: no ahorro del mismo formato.",
+    "source": "Patatas congeladas para freír 2 kg",
+    "candidate": "Patatas congeladas para freír 0,5 kg",
+    "historical_fixture": {
+      "id": "potatoes-halfkg-mismatch",
+      "family": "frozen_potatoes",
+      "source": "Patatas congeladas para freír 2 kg",
+      "candidate": "Patatas congeladas para freír 0,5 kg",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "different_nominal_quantity"
+      },
+      "reason": "Lower bag price is not equivalent saving"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "potatoes-halfkg-mismatch"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "incompatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S19",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T18"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Patata fresca fuera del piloto congelado; rechazo sin badge.",
+    "source": "Patatas congeladas 2 kg",
+    "candidate": "Patatas frescas 2 kg",
+    "historical_fixture": {
+      "id": "potatoes-fresh-mismatch",
+      "family": "frozen_potatoes",
+      "source": "Patatas congeladas 2 kg",
+      "candidate": "Patatas frescas 2 kg",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Preservation state differs"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "potatoes-fresh-mismatch"
+    },
+    "states": {
+      "scope": "incompatible",
+      "identity": "incompatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "excluded_scope",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S20",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T20"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Utensilio fuera del piloto, no rellenar formato alimentario.",
+    "source": "Patatas congeladas 2 kg",
+    "candidate": "Pelador de patatas",
+    "historical_fixture": {
+      "id": "potatoes-peeler-hard-negative",
+      "family": "frozen_potatoes",
+      "source": "Patatas congeladas 2 kg",
+      "candidate": "Pelador de patatas",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "not_applicable"
+      },
+      "reason": "Utensil is not food"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "potatoes-peeler-hard-negative"
+    },
+    "states": {
+      "scope": "incompatible",
+      "identity": "incompatible",
+      "variants": "compatible",
+      "format": "unknown",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "excluded_scope",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S21",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T18",
+      "T19"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Aperitivo listo para comer no es patata congelada equivalente.",
+    "source": "Patatas congeladas 2 kg",
+    "candidate": "Patatas fritas aperitivo 2 kg",
+    "historical_fixture": {
+      "id": "potatoes-crisps-mismatch",
+      "family": "frozen_potatoes",
+      "source": "Patatas congeladas 2 kg",
+      "candidate": "Patatas fritas aperitivo 2 kg",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Preparation/use differ"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "potatoes-crisps-mismatch"
+    },
+    "states": {
+      "scope": "incompatible",
+      "identity": "incompatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "excluded_scope",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S22",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T21"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Carne y peso variable fuera del piloto, sin excepción por €/kg.",
+    "source": "Pollo bandeja peso aproximado 1 kg",
+    "candidate": "Pollo bandeja peso aproximado 0,9 kg",
+    "historical_fixture": {
+      "id": "variable-meat-quarantine",
+      "family": "quarantine",
+      "source": "Pollo bandeja peso aproximado 1 kg",
+      "candidate": "Pollo bandeja peso aproximado 0,9 kg",
+      "expected": {
+        "equivalence": "quarantined",
+        "format_relation": "variable_weight"
+      },
+      "reason": "Meat and variable weight outside pilot"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "variable-meat-quarantine"
+    },
+    "states": {
+      "scope": "incompatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "incompatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "excluded_scope",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S23",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T21"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Embutido al corte en cuarentena.",
+    "source": "Jamón al corte 200 g aproximadamente",
+    "candidate": "Jamón al corte 220 g aproximadamente",
+    "historical_fixture": {
+      "id": "sausage-quarantine",
+      "family": "quarantine",
+      "source": "Jamón al corte 200 g aproximadamente",
+      "candidate": "Jamón al corte 220 g aproximadamente",
+      "expected": {
+        "equivalence": "quarantined",
+        "format_relation": "variable_weight"
+      },
+      "reason": "Charcuterie outside pilot"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "sausage-quarantine"
+    },
+    "states": {
+      "scope": "incompatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "incompatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "excluded_scope",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S24",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T23"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Precisar F1: not_equivalent impedía mostrarlo, pero CE-202 debe registrar conflicto y abstenerse, no un negativo inequívoco de identidad.",
+    "source": "Agua 1 L, EAN fixture-code",
+    "candidate": "Agua 1,5 L, EAN fixture-code",
+    "historical_fixture": {
+      "id": "same-ean-conflicting-format",
+      "family": "water",
+      "source": "Agua 1 L, EAN fixture-code",
+      "candidate": "Agua 1,5 L, EAN fixture-code",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "different_nominal_quantity"
+      },
+      "reason": "Same claimed identifier does not override format conflict"
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "same-ean-conflicting-format"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "conflicting",
+      "variants": "compatible",
+      "format": "incompatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "abstain",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S25",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T30"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Precios iguales, sin ahorro ni uso consumible; este fixture NO ejecuta contadores.",
+    "source": null,
+    "candidate": null,
+    "historical_fixture": {
+      "id": "same-price-no-use",
+      "equivalence": "equivalent",
+      "source_price": "2.00",
+      "candidate_price": "2.00",
+      "published": true,
+      "expected": {
+        "show_saving": false,
+        "consume_use": false
+      }
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "same-price-no-use"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "equal_or_higher",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "equivalent_no_saving",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S26",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T30"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Elegibilidad de pareja; consumo requiere además respuesta final correcta CU-01, no lo implementa esta prueba.",
+    "source": null,
+    "candidate": null,
+    "historical_fixture": {
+      "id": "valid-cheaper-use",
+      "equivalence": "equivalent",
+      "source_price": "2.00",
+      "candidate_price": "1.50",
+      "published": true,
+      "expected": {
+        "show_saving": true,
+        "consume_use": true
+      }
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "valid-cheaper-use"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "eligible_saving",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S27",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T28"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Baja conocida aunque el vector anterior siga disponible.",
+    "source": null,
+    "candidate": null,
+    "historical_fixture": {
+      "id": "inactive-product-no-use",
+      "equivalence": "equivalent",
+      "source_price": "2.00",
+      "candidate_price": "1.50",
+      "published": false,
+      "expected": {
+        "show_saving": false,
+        "consume_use": false
+      }
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "inactive-product-no-use"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "incompatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S28",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T25",
+      "T26"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Precio total cero en este corpus, fuera del distintivo.",
+    "source": null,
+    "candidate": null,
+    "historical_fixture": {
+      "id": "zero-price-no-use",
+      "equivalence": "equivalent",
+      "source_price": "2.00",
+      "candidate_price": "0.00",
+      "published": true,
+      "expected": {
+        "show_saving": false,
+        "consume_use": false
+      }
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "zero-price-no-use"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "invalid",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S29",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T25",
+      "T26"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Precio negativo inválido.",
+    "source": null,
+    "candidate": null,
+    "historical_fixture": {
+      "id": "negative-price-no-use",
+      "equivalence": "equivalent",
+      "source_price": "2.00",
+      "candidate_price": "-1.00",
+      "published": true,
+      "expected": {
+        "show_saving": false,
+        "consume_use": false
+      }
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "negative-price-no-use"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "invalid",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S30",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T30"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Barato pero no equivalente; cero elegibilidad, sin ejecutar cuota.",
+    "source": null,
+    "candidate": null,
+    "historical_fixture": {
+      "id": "invalid-equivalent-no-use",
+      "equivalence": "not_equivalent",
+      "source_price": "2.00",
+      "candidate_price": "1.00",
+      "published": true,
+      "expected": {
+        "show_saving": false,
+        "consume_use": false
+      }
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "invalid-equivalent-no-use"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "incompatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S31",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T28"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Catálogo vigente con evidencia completa y sin promoción vencida, no excluir por superar 24 h.",
+    "source": null,
+    "candidate": null,
+    "historical_fixture": {
+      "id": "active-older-than-24h",
+      "equivalence": "equivalent",
+      "source_price": "2.00",
+      "candidate_price": "1.50",
+      "published": true,
+      "synced_at": "2026-09-01T00:00:00Z",
+      "evaluated_at": "2026-09-03T08:00:00Z",
+      "catalog_version_current": true,
+      "expected": {
+        "show_saving": true,
+        "consume_use": true
+      }
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "active-older-than-24h"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "eligible_saving",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S32",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T31"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Precio actualizado 2,50 frente a 2,00; no requiere cambiar vector. No prueba todavía invalidación de caché.",
+    "source": null,
+    "candidate": null,
+    "historical_fixture": {
+      "id": "price-only-revision",
+      "equivalence": "equivalent",
+      "source_price": "2.00",
+      "candidate_price": "2.50",
+      "published": true,
+      "prior_candidate_price": "1.50",
+      "catalog_version_current": true,
+      "semantic_version_changed": false,
+      "price_version_changed": true,
+      "expected": {
+        "show_saving": false,
+        "consume_use": false,
+        "rebuild_embedding": false,
+        "invalidate_savings": true
+      }
+    },
+    "historical_provenance": {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+      "case_id": "price-only-revision"
+    },
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "equal_or_higher",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "equivalent_no_saving",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S33",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T02"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Subtipo explícitamente distinto.",
+    "source": "Yogur griego natural 6×125 g",
+    "candidate": "Yogur estándar natural 6×125 g",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "incompatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S34",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T04"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "No convertir natural en sin azúcar añadido; anula la premisa de variantes conocidas.",
+    "source": "Yogur griego natural 6×125 g, endulzado no documentado",
+    "candidate": "Yogur griego azucarado 6×125 g",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "unknown",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "abstain",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S35",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T05"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Declaraciones diferentes; falta evidencia sobre resto de endulzado. No interpretar regulación nutricional desde el título.",
+    "source": "Yogur sin azúcares añadidos 6×125 g",
+    "candidate": "Yogur sin azúcar 6×125 g",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "unknown",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "abstain",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S36",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T09"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Número de envases diferente.",
+    "source": "Una botella de agua de 1 L",
+    "candidate": "Pack de 6 botellas de 1 L",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "incompatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S37",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T10"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Conteo, contenido unitario y total exactamente iguales, demás premisas verificadas.",
+    "source": "6 botellas de 50 cl",
+    "candidate": "6 botellas de 500 ml",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "eligible_saving",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S38",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T12"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Conversión exacta de unidades; no tolerancia.",
+    "source": "Yogur 6×125 g",
+    "candidate": "Yogur 6×0,125 kg",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "eligible_saving",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S39",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T14"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Pack de ocho no equivale al de seis.",
+    "source": "Yogur 6×125 g",
+    "candidate": "Yogur 8×125 g",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "incompatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S40",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T15"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Sin tolerancia nominal.",
+    "source": "Yogur 6×125 g",
+    "candidate": "Yogur 6×120 g",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "incompatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S41",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T15"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Ni siquiera 1 g de diferencia por envase se acepta.",
+    "source": "Yogur 6×125 g",
+    "candidate": "Yogur 6×124 g",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "incompatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S42",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T17"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Mismo total, estructura de pack distinta.",
+    "source": "Una bolsa de patatas congeladas de 2 kg",
+    "candidate": "Dos bolsas de patatas congeladas de 1 kg",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "incompatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S43",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T19"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Corte y condimentación explícitamente diferentes.",
+    "source": "Patatas congeladas corte fino sin especias",
+    "candidate": "Patatas congeladas gajo especiado",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "incompatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S44",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T20"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Uso alimentario distinto, no mera similitud de ingrediente.",
+    "source": "Alimento humano del piloto",
+    "candidate": "Alimento para gatos",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "incompatible",
+      "identity": "incompatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "excluded_scope",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S45",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T22"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Dos desconocidos no forman una igualdad.",
+    "source": "Producto sin familia ni cantidad verificadas",
+    "candidate": "Otro producto sin familia ni cantidad verificadas",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "unknown",
+      "identity": "unknown",
+      "variants": "unknown",
+      "format": "unknown",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "abstain",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S46",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T24"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "El vínculo nutricional de unidad no demuestra identidad comercial del pack.",
+    "source": "Pack de yogur 6×125 g",
+    "candidate": "Pack sin conteo, vinculado a off_code de un vasito",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "unknown",
+      "variants": "compatible",
+      "format": "unknown",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "abstain",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S47",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T25"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Una revisión humana no salta controles económicos; no representa una revisión realmente realizada.",
+    "source": "Equivalencia aprobada por una persona (supuesto)",
+    "candidate": "Mismo formato con precio corrupto",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "invalid",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S48",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T26"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Peso confundido con precio: cuarentena, no badge.",
+    "source": "Envase de 225 g",
+    "candidate": "Dato 0,225 cargado erróneamente como €/kg",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "invalid",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S49",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T27"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "No heredar precio global a una ubicación.",
+    "source": "Precio local verificado",
+    "candidate": "Solo detalle global, sin precio para CP",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "unknown",
+      "location": "unknown",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "abstain",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S50",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T28"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Agotado explícito bloquea ahorro.",
+    "source": "Origen disponible",
+    "candidate": "Candidato agotado",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "incompatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S51",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T28"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Publicado no equivale a disponible.",
+    "source": "Origen disponible",
+    "candidate": "Candidato publicado pero stock desconocido",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "unknown",
+      "catalog": "compatible"
+    },
+    "expected_decision": "abstain",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S52",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T28"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "La fecha explícita de promoción sí se respeta. No inventar precio alternativo.",
+    "source": "Precio normal válido",
+    "candidate": "Único precio es promoción vencida al reloj del caso",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "invalid",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "rejected",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S53",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T28"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Versiones contradictorias, no rejuvenecer el snapshot.",
+    "source": "Revisión vigente",
+    "candidate": "Formato de revisión A con precio y catálogo incompatible B",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "conflicting"
+    },
+    "expected_decision": "abstain",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S54",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T29"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Condición no demostrada, no aplicar el descuento.",
+    "source": "Precio incondicional",
+    "candidate": "Oferta con tarjeta no verificada",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "unknown",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "abstain",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S55",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T28"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "Se estipula ausencia de baja, conflicto o promoción vencida. La edad sola no invalida FR-02; aún no es replay de eventos CE-208.",
+    "source": "Catálogo activo válido incorporado hace 7 días",
+    "candidate": "Equivalente completo de la misma revisión comercial vigente",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "compatible",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "eligible_saving",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  },
+  {
+    "case_id": "S56",
+    "synthetic": true,
+    "cohort": "synthetic_contract_not_ce200",
+    "gold_eligible": false,
+    "regressions": [
+      "T22"
+    ],
+    "premises": "EJEMPLOS HIPOTÉTICOS, NO DATOS DE CATÁLOGO. Salvo anulación expresa: ambos productos pertenecen al piloto; todos los atributos obligatorios de identidad/variante y la firma nominal (incluido conteo explícito) están verificados e iguales; ambos activos/disponibles en el mismo CP/canal, con revisiones compatibles; precio total incondicional EUR 2,00 frente a 1,50. No se deducen esas premisas del título. No se presume una revisión humana realizada.",
+    "clarification": "No convertir masa en volumen sin evidencia específica.",
+    "source": "Cantidad nominal 1 kg",
+    "candidate": "Cantidad nominal 1 L, densidad no documentada",
+    "historical_fixture": null,
+    "historical_provenance": null,
+    "states": {
+      "scope": "compatible",
+      "identity": "compatible",
+      "variants": "compatible",
+      "format": "unknown",
+      "price": "cheaper",
+      "location": "compatible",
+      "availability": "compatible",
+      "catalog": "compatible"
+    },
+    "expected_decision": "abstain",
+    "engine_output": null,
+    "review_status": "editorial_contract_not_independent_review"
+  }
+]

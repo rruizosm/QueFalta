@@ -1,0 +1,1021 @@
+{
+  "schema_version": 1,
+  "task": "CE-104",
+  "project_ref": "gkffvigcnsesbaihycay",
+  "products": [
+    {
+      "hint": "potato_candidate",
+      "store": "carrefour",
+      "product": {
+        "id": "2047790350",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "unit_price": 2.99,
+        "display_name": "Pelador Patatas FACKELMANN Cooking 11,5cm - Inox",
+        "price_per_unit": "2.99"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "carrefour",
+      "product": {
+        "id": "521003658",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "unit_price": 0.8,
+        "display_name": "Patatas fritas gourmet Lay's sin gluten 45 g.",
+        "price_per_unit": "17.78"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "carrefour",
+      "product": {
+        "id": "521003682",
+        "ean": "8431876082739",
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "unit_price": 1.24,
+        "display_name": "Patatas fritas onduladas Sensation Carrefour 170 g.",
+        "price_per_unit": "7.29"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "carrefour",
+      "product": {
+        "id": "521003684",
+        "ean": "8431876082722",
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "unit_price": 0.84,
+        "display_name": "Patatas fritas lisas Classic Carrefour 170 g.",
+        "price_per_unit": "4.94"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "carrefour",
+      "product": {
+        "id": "521003690",
+        "ean": "8410199281876",
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "unit_price": 3.25,
+        "display_name": "Patatas fritas churrería Santa Ana sin gluten pack de 2 bolsas de 135 g.",
+        "price_per_unit": "12.04"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "carrefour",
+      "product": {
+        "id": "521003713",
+        "ean": "8431876098082",
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "unit_price": 1.72,
+        "display_name": "Patatas fritas en aceite de oliva bajo contenido de sal Extra Carrefour 150 g.",
+        "price_per_unit": "11.47"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "carrefour",
+      "product": {
+        "id": "2002870135",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "unit_price": 9.29,
+        "display_name": "Agua de colonia Gotas Frescas Baby Instituto Español 750 ml",
+        "price_per_unit": "12.4"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "carrefour",
+      "product": {
+        "id": "2002870179",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "unit_price": 5.49,
+        "display_name": "Agua de colonia Gotas Frescas Baby Instituto Español 250 ml",
+        "price_per_unit": "22"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "carrefour",
+      "product": {
+        "id": "2020197538",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "unit_price": 13.99,
+        "display_name": "Set 3 Filtros de Agua BRITA MicroDisc",
+        "price_per_unit": "4.66"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "carrefour",
+      "product": {
+        "id": "2047290071",
+        "ean": "8436538551097",
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "unit_price": 11.85,
+        "display_name": "Agua de mar higiene nasal en spray Senti2 pack de 2 unidades de 100 ml.",
+        "price_per_unit": "59.2"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "carrefour",
+      "product": {
+        "id": "520661019",
+        "ean": "8411547000156",
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "unit_price": 0.72,
+        "display_name": "Agua mineral Solan de Cabras 33 cl.",
+        "price_per_unit": "2.18"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "carrefour",
+      "product": {
+        "id": "520661023",
+        "ean": "8410055033014",
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "unit_price": 0.5,
+        "display_name": "Agua mineral Font Vella tapón deportivo 33 cl.",
+        "price_per_unit": "1.52"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "carrefour",
+      "product": {
+        "id": "2002870194",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "unit_price": 1.07,
+        "display_name": "Bolsita de yogur con fruta y cookies Hero Solo sin azúcar añadido 100 g.",
+        "price_per_unit": "10.7"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "carrefour",
+      "product": {
+        "id": "2003043837",
+        "ean": "8410175057402",
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "unit_price": 3.15,
+        "display_name": "Yogur infantil petit queso fresco y frutas variadas desde 6 meses Hero Baby sin gluten pack de 2 unidades de 80 g.",
+        "price_per_unit": "19.69"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "carrefour",
+      "product": {
+        "id": "2003044015",
+        "ean": "8410175044860",
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "unit_price": 1.05,
+        "display_name": "Bolsita con yogur, plátano y fresa Hero Solo sin gluten y sin azúcar añadido 100 g.",
+        "price_per_unit": "10.5"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "carrefour",
+      "product": {
+        "id": "2003044016",
+        "ean": "8410175044877",
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "unit_price": 1.05,
+        "display_name": "Bolsita de yogur, manzana y fresa desde 6 meses Hero Solo sin gluten y sin azúcar añadido 100 g.",
+        "price_per_unit": "10.5"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "carrefour",
+      "product": {
+        "id": "521004510",
+        "ean": "8424259802031",
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "unit_price": 2.99,
+        "display_name": "Galletas con chocolate, leche y yogur Gerblé sin aceite de palma 230 g.",
+        "price_per_unit": "13"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "carrefour",
+      "product": {
+        "id": "521014020",
+        "ean": "8423207000093",
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "unit_price": 2.99,
+        "display_name": "Tortitas de arroz integrales sabor yogur Bicentury 130 g.",
+        "price_per_unit": "23"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "consum",
+      "product": {
+        "id": "303677",
+        "ean": "8414513896746",
+        "packaging": "3 Kg",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 4.3,
+        "display_name": "Patata Nueva España Aptas Todo Uso Culinario",
+        "price_per_unit": "1.43"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "consum",
+      "product": {
+        "id": "56911",
+        "ean": "8420814032769",
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 0.59,
+        "display_name": "Patata  Selección Nueva de España",
+        "price_per_unit": "1.9"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "consum",
+      "product": {
+        "id": "57018",
+        "ean": "8420814301049",
+        "packaging": "1 Kg",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 2.55,
+        "display_name": "Patata Guarnición",
+        "price_per_unit": "2.55"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "consum",
+      "product": {
+        "id": "7000052",
+        "ean": "8410071100585",
+        "packaging": "250 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 2.39,
+        "display_name": "Patatas Fritas Lisas Caseras Bolsa Papel",
+        "price_per_unit": "9.56"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "consum",
+      "product": {
+        "id": "7020659",
+        "ean": "8410199281876",
+        "packaging": "2 x 135 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 2.99,
+        "display_name": "Patatas Fritas Lisas Artesanas Bolsa Papel",
+        "price_per_unit": "11.07"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "consum",
+      "product": {
+        "id": "7028475",
+        "ean": "8414807100184",
+        "packaging": "1 Kg",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 1.85,
+        "display_name": "Patatas Prefritas Corte Grueso",
+        "price_per_unit": "1.85"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "consum",
+      "product": {
+        "id": "1191998",
+        "ean": "8410055050011",
+        "packaging": "0,5 L",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 0.72,
+        "display_name": "Agua Mineral Natural Tapón Rosca",
+        "price_per_unit": "1.44"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "consum",
+      "product": {
+        "id": "1192004",
+        "ean": "8410055033014",
+        "packaging": "0,33 L",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 0.5,
+        "display_name": "Agua Mineral Natural",
+        "price_per_unit": "1.52"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "consum",
+      "product": {
+        "id": "138297",
+        "ean": "8410749001114",
+        "packaging": "6 x 0,3 L",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 6.49,
+        "display_name": "Agua Mineral con Gas Pack de 6 Vidrio",
+        "price_per_unit": "3.61"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "consum",
+      "product": {
+        "id": "1535434",
+        "ean": "8411002101602",
+        "packaging": "0,5 L",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 0.63,
+        "display_name": "Agua Mineral Natural Tapón Sport",
+        "price_per_unit": "1.26"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "consum",
+      "product": {
+        "id": "1592575",
+        "ean": "8413384222005",
+        "packaging": "1,5 L",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 0.79,
+        "display_name": "Agua Mineral Natural Botella",
+        "price_per_unit": "0.53"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "consum",
+      "product": {
+        "id": "162925",
+        "ean": "8410728180120",
+        "packaging": "1,5 L",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 0.65,
+        "display_name": "Agua Mineral Natural. Botella",
+        "price_per_unit": "0.43"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "consum",
+      "product": {
+        "id": "204230",
+        "ean": "8410500006112",
+        "packaging": "4 x 120 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 1,
+        "display_name": "Yogur Sabor Limón Pack de 4 Unidades",
+        "price_per_unit": "2.08"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "consum",
+      "product": {
+        "id": "204420",
+        "ean": "8410500006105",
+        "packaging": "4 x 120 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 1,
+        "display_name": "Yogur Sabor Fresa Pack de 4 Unidades",
+        "price_per_unit": "2.08"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "consum",
+      "product": {
+        "id": "227645",
+        "ean": "8410500006150",
+        "packaging": "4 x 120 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 1,
+        "display_name": "Yogur Sabor Coco Pack de 4 Unidades",
+        "price_per_unit": "2.08"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "consum",
+      "product": {
+        "id": "227652",
+        "ean": "8410500001360",
+        "packaging": "8 x 120 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 1.99,
+        "display_name": "Yogur Natural Pack de 8 Unidades",
+        "price_per_unit": "2.07"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "consum",
+      "product": {
+        "id": "230920",
+        "ean": "8410500001377",
+        "packaging": "8 x 120 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 1.99,
+        "display_name": "Yogur Natural Azucarado Pack de 8 Unidades",
+        "price_per_unit": "2.07"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "consum",
+      "product": {
+        "id": "236141",
+        "ean": "8410500001575",
+        "packaging": "4 x 120 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 2.99,
+        "display_name": "Activia Frutas Bosque Yogur Bífidus P-4 ud.",
+        "price_per_unit": "6.23"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "mercadona",
+      "product": {
+        "id": "11669",
+        "ean": "8402001028809",
+        "packaging": "Bandeja",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:33.803+00:00",
+        "unit_price": 2.6,
+        "display_name": "Patatas bravas con mayonesa y salsa picante Hacendado",
+        "price_per_unit": "5.532"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "mercadona",
+      "product": {
+        "id": "11670",
+        "ean": "8402001028793",
+        "packaging": "Bandeja",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:33.803+00:00",
+        "unit_price": 2.6,
+        "display_name": "Patatas bravas con allioli y salsa picante Hacendado",
+        "price_per_unit": "5.532"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "mercadona",
+      "product": {
+        "id": "13069",
+        "ean": "8402001034114",
+        "packaging": "Paquete",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:33.803+00:00",
+        "unit_price": 1.2,
+        "display_name": "Patatas fritas onduladas sabor queso de cabra y cebolla caramelizada Hacendado",
+        "price_per_unit": "8"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "mercadona",
+      "product": {
+        "id": "14960",
+        "ean": "8402001040993",
+        "packaging": "Bandeja",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:33.803+00:00",
+        "unit_price": 2.5,
+        "display_name": "Pasta fresca girasoles rellena de carrillera y puré de patata Hacendado",
+        "price_per_unit": "10"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "mercadona",
+      "product": {
+        "id": "15286",
+        "ean": "8711571099844",
+        "packaging": "Paquete",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:33.803+00:00",
+        "unit_price": 2.1,
+        "display_name": "Patatas prefritas Waffle con piel Hacendado ultracongeladas",
+        "price_per_unit": "3.5"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "mercadona",
+      "product": {
+        "id": "15534",
+        "ean": "8402001014253",
+        "packaging": "Tarro",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:33.803+00:00",
+        "unit_price": 1.9,
+        "display_name": "Patatas cocidas Hacendado",
+        "price_per_unit": "4.75"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "mercadona",
+      "product": {
+        "id": "12768",
+        "ean": "8411395273139",
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T13:10:33.803+00:00",
+        "unit_price": 5.04,
+        "display_name": "Agua mineral con extra gas grande Firgas",
+        "price_per_unit": "0.56"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "mercadona",
+      "product": {
+        "id": "12769",
+        "ean": "8411395373334",
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T13:10:33.803+00:00",
+        "unit_price": 6.72,
+        "display_name": "Agua mineral con extra gas pequeña Firgas",
+        "price_per_unit": "1.12"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "mercadona",
+      "product": {
+        "id": "12779",
+        "ean": "8402001030147",
+        "packaging": "Caja",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:33.803+00:00",
+        "unit_price": 1.3,
+        "display_name": "Tiras adhesivas protectoras de poliuretano Aqua Deliplus surtidas resistentes al agua",
+        "price_per_unit": "0.109"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "mercadona",
+      "product": {
+        "id": "12975",
+        "ean": "8402001033155",
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T13:10:33.803+00:00",
+        "unit_price": 2.4,
+        "display_name": "Agua mineral pequeña Fontébil tapón infantil",
+        "price_per_unit": "1.213"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "mercadona",
+      "product": {
+        "id": "12976",
+        "ean": "8402001033148",
+        "packaging": "Botella",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:33.803+00:00",
+        "unit_price": 0.4,
+        "display_name": "Agua mineral pequeña Fontébil tapón infantil",
+        "price_per_unit": "1.213"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "mercadona",
+      "product": {
+        "id": "12977",
+        "ean": "8402001033131",
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T13:10:33.803+00:00",
+        "unit_price": 1.74,
+        "display_name": "Agua mineral pequeña Fontébil",
+        "price_per_unit": "0.58"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "mercadona",
+      "product": {
+        "id": "13951",
+        "ean": "8402001036606",
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T13:10:33.803+00:00",
+        "unit_price": 1.6,
+        "display_name": "Yogur sabores Hacendado 0% MG 0% azúcares añadidos",
+        "price_per_unit": "1.6"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "mercadona",
+      "product": {
+        "id": "14141",
+        "ean": "8480000141415",
+        "packaging": "Paquete",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:33.803+00:00",
+        "unit_price": 1.9,
+        "display_name": "Tortitas de arroz con chocolate blanco sabor yogur Hacendado",
+        "price_per_unit": "15.834"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "mercadona",
+      "product": {
+        "id": "15660",
+        "ean": "8480000156600",
+        "packaging": "Botella",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:33.803+00:00",
+        "unit_price": 1.3,
+        "display_name": "Yogur líquido piña y coco Hacendado 0% MG 0% azúcares añadidos",
+        "price_per_unit": "1.3"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "mercadona",
+      "product": {
+        "id": "15661",
+        "ean": "8480000156617",
+        "packaging": "Botella",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:33.803+00:00",
+        "unit_price": 1.3,
+        "display_name": "Yogur líquido frutos silvestres Hacendado 0% MG 0% azúcares añadidos",
+        "price_per_unit": "1.3"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "mercadona",
+      "product": {
+        "id": "17327",
+        "ean": "8480000173270",
+        "packaging": "Bote",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:33.803+00:00",
+        "unit_price": 1.2,
+        "display_name": "Salsa Yogur Hacendado",
+        "price_per_unit": "3.871"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "mercadona",
+      "product": {
+        "id": "20001",
+        "ean": "8402001007897",
+        "packaging": "Pack-16",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:33.803+00:00",
+        "unit_price": 2.4,
+        "display_name": "Yogur sabores Hacendado",
+        "price_per_unit": "1.2"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "plusfresc",
+      "product": {
+        "id": "001218",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "unit_price": 1.89,
+        "display_name": "Patatas fritas con sal RUFFLES Onduladas, 150 g",
+        "price_per_unit": "12.6"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "plusfresc",
+      "product": {
+        "id": "001242",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "unit_price": 2.05,
+        "display_name": "Patatas fritas jamón RUFFLES, 150 g",
+        "price_per_unit": "13.66"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "plusfresc",
+      "product": {
+        "id": "001410",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "unit_price": 1.39,
+        "display_name": "Puré de patatas con leche MOUSLINE, 115 g",
+        "price_per_unit": "12.08"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "plusfresc",
+      "product": {
+        "id": "001411",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "unit_price": 2.29,
+        "display_name": "Puré de patatas doble MOUSLINE, 230 g",
+        "price_per_unit": "9.95"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "plusfresc",
+      "product": {
+        "id": "005425",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "unit_price": 1.17,
+        "display_name": "Patatas fritas onduladas ALTEZA, 160 g",
+        "price_per_unit": "7.31"
+      }
+    },
+    {
+      "hint": "potato_candidate",
+      "store": "plusfresc",
+      "product": {
+        "id": "005496",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "unit_price": 1.89,
+        "display_name": "Patatas fritas LAY'S Al punto de sal, 150 g",
+        "price_per_unit": "12.6"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "plusfresc",
+      "product": {
+        "id": "000599",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "unit_price": 2.85,
+        "display_name": "Agua mineral SOLAN DE CABRAS, 5 l",
+        "price_per_unit": "0.57"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "plusfresc",
+      "product": {
+        "id": "003281",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "unit_price": 0.72,
+        "display_name": "Agua FONT VELLA, 50 cl",
+        "price_per_unit": "1.44"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "plusfresc",
+      "product": {
+        "id": "003588",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "unit_price": 0.52,
+        "display_name": "Agua mineral AQUAREL, 33 cl",
+        "price_per_unit": "1.57"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "plusfresc",
+      "product": {
+        "id": "003683",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "unit_price": 1.14,
+        "display_name": "Agua mineral con gas FONTER, 1 l",
+        "price_per_unit": "1.14"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "plusfresc",
+      "product": {
+        "id": "005162",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "unit_price": 0.59,
+        "display_name": "Agua mineral FONT VELLA Junior, 33 cl",
+        "price_per_unit": "1.78"
+      }
+    },
+    {
+      "hint": "water_candidate",
+      "store": "plusfresc",
+      "product": {
+        "id": "005585",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "unit_price": 0.69,
+        "display_name": "Agua mineral VILADRAU, 1.5 l",
+        "price_per_unit": "0.46"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "plusfresc",
+      "product": {
+        "id": "002684",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "unit_price": 2.99,
+        "display_name": "Yogur desnatado con piña ACTIVIA DANONE,  pack 4 uds 480 grs",
+        "price_per_unit": "4.66"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "plusfresc",
+      "product": {
+        "id": "002694",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "unit_price": 2.99,
+        "display_name": "Yogur desnatado con ciruelas ACTIVIA DANONE, pack 4 unidades",
+        "price_per_unit": "4.66"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "plusfresc",
+      "product": {
+        "id": "002919",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "unit_price": 3.99,
+        "display_name": "Yogur líquido desnatado 0% ACTIMEL DANONE, pack 6 unidades",
+        "price_per_unit": "6.65"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "plusfresc",
+      "product": {
+        "id": "004100",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "unit_price": 2.99,
+        "display_name": "Yogur con cereales DANONE ACTIVIA 4 unidades, 460 gramos",
+        "price_per_unit": "6.5"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "plusfresc",
+      "product": {
+        "id": "004447",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "unit_price": 1,
+        "display_name": "Yogur natural DANONE, 4 unidades 480 gramos",
+        "price_per_unit": "2.08"
+      }
+    },
+    {
+      "hint": "yogurt_candidate",
+      "store": "plusfresc",
+      "product": {
+        "id": "004448",
+        "ean": null,
+        "packaging": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "unit_price": 1,
+        "display_name": "Yogur natural azucarado DANONE, pack 4 unidades 480 gramos",
+        "price_per_unit": "2.08"
+      }
+    }
+  ],
+  "selection": "first six active rows by id per store/lexical hint; not random, not validated families",
+  "captured_at": "2026-09-03T08:08:57.223041+00:00",
+  "label_status": "unreviewed candidates; not a holdout or equivalence labels",
+  "location_validation": "not evaluated; published does not prove stock/service at 08006 or 25001",
+  "projection_limitations": "only the listed source columns; null packaging can mean absent column; this is not a complete product extraction",
+  "synthetic": false
+}

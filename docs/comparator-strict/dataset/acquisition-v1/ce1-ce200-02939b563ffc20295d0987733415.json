@@ -1,0 +1,2030 @@
+{
+  "plan": {
+    "version": "ce200-read-v3",
+    "kind": "location-fingerprints",
+    "store": "consum",
+    "cursor": "consum:254:7391050",
+    "limit": 500,
+    "round": "verify",
+    "select": "SELECT l.id,md5(to_jsonb(l)::text) AS source_row_md5 FROM public.catalog_location_prices l\n      WHERE l.store='consum' AND l.product_id IN (SELECT id FROM public.consum_products WHERE published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)|b[ií]fidus'))\n      AND l.id COLLATE \"C\" > 'consum:254:7391050' COLLATE \"C\" ORDER BY l.id COLLATE \"C\" LIMIT 500",
+    "job": "ce1-ce200-02939b563ffc20295d0987733415",
+    "operationHash": "02939b563ffc20295d09877334150cb997a45b514154ae2e6152061a661887cf",
+    "maxRows": 500,
+    "maxBytes": 131072,
+    "sql": "-- ce1-ce200-02939b563ffc20295d0987733415: location-fingerprints; CE-BU-002; no app writes.\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $reserve$\nDECLARE job_started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE status IN ('planned','running','halted','unknown'))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-02939b563ffc20295d0987733415') THEN RAISE EXCEPTION 'ce200_exclusive_or_replay'; END IF;\n  IF EXISTS(SELECT 1 FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid))>0\n    OR (pid<>pg_backend_pid() AND state='active' AND query_start<clock_timestamp()-interval '30 seconds')) THEN RAISE EXCEPTION 'ce200_health_stop'; END IF;\n  UPDATE comparator_strict.execution_budget SET\n    sql_ms_reserved=sql_ms_reserved+10000,read_rows_reserved=read_rows_reserved+500,\n    bytes_reserved=bytes_reserved+131072,write_rows_reserved=write_rows_reserved+3,updated_at=clock_timestamp()\n    WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03'\n      AND approval_reference='CE-200-corpus-v1' AND bytes_limit=134217728 AND read_rows_limit=50000\n      AND bytes_reserved+131072<=bytes_limit AND read_rows_reserved+500<=read_rows_limit AND write_rows_reserved+3<=2000;\n  IF NOT FOUND THEN RAISE EXCEPTION 'ce200_budget'; END IF;\n  INSERT INTO comparator_strict.execution_jobs(id,project_ref,operation_key,sql_sha256,status,started_at,deadline_at,job_key,operation_hash,budget_date,reservation)\n    VALUES(gen_random_uuid(),'gkffvigcnsesbaihycay','ce200-location-fingerprints','419533b84f46c8b42034b743eeca8aa804b053fd6afcb5d2cb768e1d5917e916','running',job_started,job_started+interval '20 minutes','ce1-ce200-02939b563ffc20295d0987733415','02939b563ffc20295d09877334150cb997a45b514154ae2e6152061a661887cf',DATE '2026-09-03','{\"sqlMs\":10000,\"readRows\":500,\"writeRows\":3,\"responseBytes\":131072}'::jsonb);\nEND $reserve$;\nCOMMIT;\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $payload$\nDECLARE payload jsonb; data jsonb; started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR NOT EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-02939b563ffc20295d0987733415' AND status='running' AND operation_hash='02939b563ffc20295d09877334150cb997a45b514154ae2e6152061a661887cf' AND deadline_at>clock_timestamp()) THEN RAISE EXCEPTION 'ce200_lease'; END IF;\n  SELECT coalesce(jsonb_agg(to_jsonb(q)),'[]'::jsonb) INTO data FROM (SELECT l.id,md5(to_jsonb(l)::text) AS source_row_md5 FROM public.catalog_location_prices l\n      WHERE l.store='consum' AND l.product_id IN (SELECT id FROM public.consum_products WHERE published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)|b[ií]fidus'))\n      AND l.id COLLATE \"C\" > 'consum:254:7391050' COLLATE \"C\" ORDER BY l.id COLLATE \"C\" LIMIT 500) q;\n  payload:=jsonb_build_object('job_key','ce1-ce200-02939b563ffc20295d0987733415','operation_hash','02939b563ffc20295d09877334150cb997a45b514154ae2e6152061a661887cf',\n    'project_ref','gkffvigcnsesbaihycay','captured_at',started,'kind','location-fingerprints','store','consum',\n    'cursor','consum:254:7391050','rows',data,'row_count',jsonb_array_length(data),'elapsed_ms',extract(epoch FROM clock_timestamp()-started)*1000);\n  IF jsonb_array_length(data)>500 OR octet_length(payload::text)>122880 THEN RAISE EXCEPTION 'ce200_result_limit'; END IF;\n  UPDATE comparator_strict.execution_jobs SET status='succeeded',finished_at=clock_timestamp(),\n    receipt=jsonb_build_object('payload_sha256',encode(sha256(convert_to(payload::text,'UTF8')),'hex'),'row_count',jsonb_array_length(data),'payload_bytes',octet_length(payload::text),'elapsed_ms',payload->'elapsed_ms') WHERE job_key='ce1-ce200-02939b563ffc20295d0987733415';\n  PERFORM set_config('comparator_strict.ce200_response',payload::text,true);\nEND $payload$;\nSELECT current_setting('comparator_strict.ce200_response')::jsonb AS evidence;\nCOMMIT;"
+  },
+  "payload": {
+    "kind": "location-fingerprints",
+    "rows": [
+      {
+        "id": "consum:254:7391055",
+        "source_row_md5": "0706d977f5a2b54b9ba268149973f277"
+      },
+      {
+        "id": "consum:254:7391063",
+        "source_row_md5": "18dbf0e5717d65e5c8e539e53f60e5a4"
+      },
+      {
+        "id": "consum:254:7391803",
+        "source_row_md5": "9629aaed35281a3f3af7447c570c60f3"
+      },
+      {
+        "id": "consum:254:7393130",
+        "source_row_md5": "d810f2d0525edd83974020f2f1cd0ea6"
+      },
+      {
+        "id": "consum:254:7393366",
+        "source_row_md5": "2d50e8d3136516c68141c645ad1d9e12"
+      },
+      {
+        "id": "consum:254:7394260",
+        "source_row_md5": "1badfa15e927a21d44041ce73cc3edb5"
+      },
+      {
+        "id": "consum:254:7394328",
+        "source_row_md5": "3c2cdda6a9ec19ab4c6d425d69195fbf"
+      },
+      {
+        "id": "consum:254:7394729",
+        "source_row_md5": "657c409b382745a868ca483720b19506"
+      },
+      {
+        "id": "consum:254:7394732",
+        "source_row_md5": "9a8b8f41e02f1327873df174834718a6"
+      },
+      {
+        "id": "consum:254:7394851",
+        "source_row_md5": "c51a272bc89a839bdc4b83d21a0c2a6b"
+      },
+      {
+        "id": "consum:254:7394872",
+        "source_row_md5": "97274939cb225a127c2c7ee62d0affa5"
+      },
+      {
+        "id": "consum:254:7394950",
+        "source_row_md5": "e44c96586230a6522182f3b045db4f4d"
+      },
+      {
+        "id": "consum:254:7394963",
+        "source_row_md5": "bfad99e5b2e489c1e38e4fefad5d09ee"
+      },
+      {
+        "id": "consum:254:7396765",
+        "source_row_md5": "4961c0b4a2aefeb5d9b58535a4672098"
+      },
+      {
+        "id": "consum:254:7397094",
+        "source_row_md5": "c9282183cc534e5cb97a1a52840cef33"
+      },
+      {
+        "id": "consum:254:7397529",
+        "source_row_md5": "d2563273315b05c32e235761025f1506"
+      },
+      {
+        "id": "consum:254:7397669",
+        "source_row_md5": "42ce90e01086dd01128f36c10221c7e3"
+      },
+      {
+        "id": "consum:254:7398584",
+        "source_row_md5": "4151593e60e72406edd923c0e3b4ff4c"
+      },
+      {
+        "id": "consum:254:7398589",
+        "source_row_md5": "e108b06233f9f1b052b453099ec4a55c"
+      },
+      {
+        "id": "consum:254:7398931",
+        "source_row_md5": "a0fd93a68c27e8e9bff608df56df8e03"
+      },
+      {
+        "id": "consum:254:7400021",
+        "source_row_md5": "f2ce0f4f7294ff359935010e0e32ab94"
+      },
+      {
+        "id": "consum:254:7401768",
+        "source_row_md5": "88afe5a35180d993c6350421f4e6e4f0"
+      },
+      {
+        "id": "consum:254:7403090",
+        "source_row_md5": "94e43a5b1eca8fc0ce2dcc30a6422a86"
+      },
+      {
+        "id": "consum:254:7404887",
+        "source_row_md5": "ab9763f51cff1fba0a7fafabf7da72b6"
+      },
+      {
+        "id": "consum:254:7405863",
+        "source_row_md5": "7fba603a3d7087c4eb410f437eb618fa"
+      },
+      {
+        "id": "consum:254:7406437",
+        "source_row_md5": "665de6e39ec0f0b9e260c014edee8558"
+      },
+      {
+        "id": "consum:254:7406440",
+        "source_row_md5": "2ff54103944a05f6d80e895301941784"
+      },
+      {
+        "id": "consum:254:7410728",
+        "source_row_md5": "b6d658b6fb28158a514351065b5174aa"
+      },
+      {
+        "id": "consum:254:7411270",
+        "source_row_md5": "48ad890450f82b5f70530ac97f33fe75"
+      },
+      {
+        "id": "consum:254:7411858",
+        "source_row_md5": "e45ccb9312d24e80f4f8914fc991135e"
+      },
+      {
+        "id": "consum:254:7411866",
+        "source_row_md5": "d7b1b37e04dad8e2242acbd09f792c41"
+      },
+      {
+        "id": "consum:254:7412955",
+        "source_row_md5": "4fa54ed12802dcc86035136c7dc1640e"
+      },
+      {
+        "id": "consum:254:7412968",
+        "source_row_md5": "f0769431ec6756b2dd25d4eed6859297"
+      },
+      {
+        "id": "consum:254:7414167",
+        "source_row_md5": "6dc4e281f64cf4abfa8b63cf21732ae2"
+      },
+      {
+        "id": "consum:254:7414936",
+        "source_row_md5": "54264323e350cccc705f48d43c48dbe3"
+      },
+      {
+        "id": "consum:254:7415313",
+        "source_row_md5": "f73f9d75c6fbd3fd3995119c3e632782"
+      },
+      {
+        "id": "consum:254:7415461",
+        "source_row_md5": "d85ad4b95fb347bd0bc6499ebb9cdb96"
+      },
+      {
+        "id": "consum:254:7416394",
+        "source_row_md5": "0f2fb3c4648b08df5e3ab4ff2754bbbd"
+      },
+      {
+        "id": "consum:254:7416449",
+        "source_row_md5": "634ca631f3f4b3146249e242e40f8876"
+      },
+      {
+        "id": "consum:254:7417413",
+        "source_row_md5": "efa8792c02e54970bc7b64ffcb658d4a"
+      },
+      {
+        "id": "consum:254:7417988",
+        "source_row_md5": "34ed5197428e1bcfbd4777884631aae2"
+      },
+      {
+        "id": "consum:254:7418296",
+        "source_row_md5": "c2988c06bbe5d3fd5cd42d104a1157b8"
+      },
+      {
+        "id": "consum:254:7418341",
+        "source_row_md5": "a147a433b4ca2ddbcd5dc49d7806746f"
+      },
+      {
+        "id": "consum:254:7419182",
+        "source_row_md5": "4a747acfef678c0ba5971fbb477313fa"
+      },
+      {
+        "id": "consum:254:7420144",
+        "source_row_md5": "d4a1fb58538b55c49ccb9b54ad6ef1d3"
+      },
+      {
+        "id": "consum:254:7420156",
+        "source_row_md5": "3062da21ce3c89945d90e951ec3a8d76"
+      },
+      {
+        "id": "consum:254:7420404",
+        "source_row_md5": "8e5ae13fa992266db10660c046f5ce66"
+      },
+      {
+        "id": "consum:254:7421139",
+        "source_row_md5": "6082a8520abeb706caa5d7ff3e62d08d"
+      },
+      {
+        "id": "consum:254:7421154",
+        "source_row_md5": "4650feefd041c79d20028d1c3e682059"
+      },
+      {
+        "id": "consum:254:7421642",
+        "source_row_md5": "5c6dd45b032a210713b40a12311816e7"
+      },
+      {
+        "id": "consum:254:7422496",
+        "source_row_md5": "4f81f6ed5547e4881fa6beb55fc2cfc6"
+      },
+      {
+        "id": "consum:254:7423544",
+        "source_row_md5": "0a03fee7154e77e75b6114e268009be3"
+      },
+      {
+        "id": "consum:254:7424997",
+        "source_row_md5": "307198979a1c58597bf8b26312907f87"
+      },
+      {
+        "id": "consum:254:7425002",
+        "source_row_md5": "5943fbf54f2bd38f6dd1827b68449b6b"
+      },
+      {
+        "id": "consum:254:7425007",
+        "source_row_md5": "6cb15fc8e5fa10b0f4b1830ace6462fa"
+      },
+      {
+        "id": "consum:254:7425606",
+        "source_row_md5": "4df81da19e6538758e3528a4d265d124"
+      },
+      {
+        "id": "consum:254:7427243",
+        "source_row_md5": "77064e2116e20c45d54b22eca4a6da90"
+      },
+      {
+        "id": "consum:254:7429983",
+        "source_row_md5": "597d0c2bf218138e62bb0f5528a255b9"
+      },
+      {
+        "id": "consum:254:7430031",
+        "source_row_md5": "31167f5037a8d456643cd0ed75f77201"
+      },
+      {
+        "id": "consum:254:7430312",
+        "source_row_md5": "a65c13b3fab04ef2955cd3561d0c6d7b"
+      },
+      {
+        "id": "consum:254:7430986",
+        "source_row_md5": "917d4e9b14e7ed7eeefa7d51c45ab6e8"
+      },
+      {
+        "id": "consum:254:7431237",
+        "source_row_md5": "a17f35d4e9609ef1f89cd3df04acc9dc"
+      },
+      {
+        "id": "consum:254:7431385",
+        "source_row_md5": "0947d7f6cec7224506cc2992feed81e2"
+      },
+      {
+        "id": "consum:254:7431422",
+        "source_row_md5": "b4ac1630ba3a700419659e9d274578cf"
+      },
+      {
+        "id": "consum:254:7431914",
+        "source_row_md5": "9259c48c28bd299d6c426e33327aa470"
+      },
+      {
+        "id": "consum:254:7432037",
+        "source_row_md5": "a897c431fed5efe3f3be8c26a5314e91"
+      },
+      {
+        "id": "consum:254:7432040",
+        "source_row_md5": "8c830770c436c4129df068ecc93cada6"
+      },
+      {
+        "id": "consum:254:7432045",
+        "source_row_md5": "33d3ec8a29e2c69798b59b42bdd4ddd9"
+      },
+      {
+        "id": "consum:254:7432073",
+        "source_row_md5": "a2c74c64e99db0fa66dbde72cde06b41"
+      },
+      {
+        "id": "consum:254:7432391",
+        "source_row_md5": "d2ac546ecc8818aeea9718931bc97f56"
+      },
+      {
+        "id": "consum:254:7432735",
+        "source_row_md5": "ff91fadaedbfa85661eb2dcb100decd9"
+      },
+      {
+        "id": "consum:254:7432768",
+        "source_row_md5": "49014c48ecd94caca55e82a5ae1a7256"
+      },
+      {
+        "id": "consum:254:7432938",
+        "source_row_md5": "3955299149462882c263dca960b8b2a4"
+      },
+      {
+        "id": "consum:254:7433055",
+        "source_row_md5": "55c4e0f7916b8244996dd0b6e7b00c2f"
+      },
+      {
+        "id": "consum:254:7433571",
+        "source_row_md5": "c879b0708309fcf2ebafd6cabdb4689a"
+      },
+      {
+        "id": "consum:254:7433662",
+        "source_row_md5": "7f6c32baff162dd475571e95cd0ff31b"
+      },
+      {
+        "id": "consum:254:7434061",
+        "source_row_md5": "732ad4361a766b8cf7356b93b2534ec3"
+      },
+      {
+        "id": "consum:254:7434434",
+        "source_row_md5": "c0dbb0d9c43ec913fba7fbab67a40171"
+      },
+      {
+        "id": "consum:254:7436947",
+        "source_row_md5": "5f79de26d4b956126118a1d65915cc8a"
+      },
+      {
+        "id": "consum:254:7437283",
+        "source_row_md5": "c8739c0635e35b4f28cf3768f999eed7"
+      },
+      {
+        "id": "consum:254:7440498",
+        "source_row_md5": "bb2aa6defd3ed26a88cd4292519de7e9"
+      },
+      {
+        "id": "consum:254:7440659",
+        "source_row_md5": "1ae3dca0d6aa056fed0f779a20c4f1e0"
+      },
+      {
+        "id": "consum:254:7441806",
+        "source_row_md5": "2fdf60fbf71c158cd898859d3dd57aa0"
+      },
+      {
+        "id": "consum:254:7442536",
+        "source_row_md5": "5ab33fb957ec502d985f3d2b873d7822"
+      },
+      {
+        "id": "consum:254:7442549",
+        "source_row_md5": "3abcae02b9448d0e8d8fcf1cbbcad6a2"
+      },
+      {
+        "id": "consum:254:7442556",
+        "source_row_md5": "4dd09b815690d285f0377e5ac1cefbed"
+      },
+      {
+        "id": "consum:254:7443047",
+        "source_row_md5": "1dbdd69698500f93621cc464eaf94802"
+      },
+      {
+        "id": "consum:254:7443054",
+        "source_row_md5": "2488539f791e29f6d08cfa3cdf23eb2f"
+      },
+      {
+        "id": "consum:254:7443963",
+        "source_row_md5": "d71110e2c3059018c0e2ea1fdfe715bc"
+      },
+      {
+        "id": "consum:254:7443968",
+        "source_row_md5": "3113cfd0069729babae33600322281f3"
+      },
+      {
+        "id": "consum:254:7443971",
+        "source_row_md5": "45d7ddd13ea82bc8407d186f1ac9dbb3"
+      },
+      {
+        "id": "consum:254:7444292",
+        "source_row_md5": "6e974d1cdece499b66ab68e6dfbf9862"
+      },
+      {
+        "id": "consum:254:7445315",
+        "source_row_md5": "2e54abb4278b86883363cf47af31806a"
+      },
+      {
+        "id": "consum:254:7445500",
+        "source_row_md5": "cec3f07c26b3e1b0919a37c86c3c51c9"
+      },
+      {
+        "id": "consum:254:7445518",
+        "source_row_md5": "edea19c7706ef55e54883ce0660177fe"
+      },
+      {
+        "id": "consum:254:7448640",
+        "source_row_md5": "f98d5c905994906d363e8c1b67e0cebf"
+      },
+      {
+        "id": "consum:254:7449890",
+        "source_row_md5": "0a57046580df8530789641eaca65a1e6"
+      },
+      {
+        "id": "consum:254:7450013",
+        "source_row_md5": "2b1794f21e36400979b3430c6ae89b37"
+      },
+      {
+        "id": "consum:254:7451784",
+        "source_row_md5": "1807dd854ba0006fcc5cdb9a618224b8"
+      },
+      {
+        "id": "consum:254:7452514",
+        "source_row_md5": "dd0ac66e6b5500f32fadd868baba210a"
+      },
+      {
+        "id": "consum:254:7452600",
+        "source_row_md5": "7002f4b142b99173b424fa715f24b4d5"
+      },
+      {
+        "id": "consum:254:7452910",
+        "source_row_md5": "4fd8ff461ee18e09425e27441fa5789d"
+      },
+      {
+        "id": "consum:254:7453046",
+        "source_row_md5": "caf0cc2d12b09cbefb9db98f73434964"
+      },
+      {
+        "id": "consum:254:7453053",
+        "source_row_md5": "ac6710da7ad3139813d809d9a12bcad9"
+      },
+      {
+        "id": "consum:254:7453061",
+        "source_row_md5": "4759d8e7578663eabef1615ecb746bcd"
+      },
+      {
+        "id": "consum:254:7453066",
+        "source_row_md5": "ff9413618095430edc5e754a4c36e373"
+      },
+      {
+        "id": "consum:254:7453590",
+        "source_row_md5": "56c4e31f1276c9b8e017088176de4192"
+      },
+      {
+        "id": "consum:254:7454374",
+        "source_row_md5": "f2b9183ee9ebebe9d9dc6297b139443c"
+      },
+      {
+        "id": "consum:254:7454940",
+        "source_row_md5": "57099d46c56c9bdf7694e9518f0b9e35"
+      },
+      {
+        "id": "consum:254:7455012",
+        "source_row_md5": "46b92e24b13bd5087d899e52ec2e3ee0"
+      },
+      {
+        "id": "consum:254:7455017",
+        "source_row_md5": "bca1e4adbde5a86fa536f65fe8c32299"
+      },
+      {
+        "id": "consum:254:7455322",
+        "source_row_md5": "aad700597dcc139c15b44ff4eec2f75c"
+      },
+      {
+        "id": "consum:254:7455335",
+        "source_row_md5": "01b6dee9c8e5bdeb6d52ea46e1cc8b27"
+      },
+      {
+        "id": "consum:254:7456283",
+        "source_row_md5": "7612839173c73eee33cd9fe336a1163d"
+      },
+      {
+        "id": "consum:254:7458172",
+        "source_row_md5": "5d82012e4bf1e845dce85b0fcce27de1"
+      },
+      {
+        "id": "consum:254:7458235",
+        "source_row_md5": "164600e262363a2190c062418871f342"
+      },
+      {
+        "id": "consum:254:7458243",
+        "source_row_md5": "0f22b4dfaea112629714772a8635b621"
+      },
+      {
+        "id": "consum:254:7459725",
+        "source_row_md5": "d04bdc1c9dbb1a25bc67a433f1792d67"
+      },
+      {
+        "id": "consum:254:7459845",
+        "source_row_md5": "e673d28fc407d6e47001c3c0c893ba25"
+      },
+      {
+        "id": "consum:254:7460140",
+        "source_row_md5": "bbd4940cfa3ace973c18bb2edd110890"
+      },
+      {
+        "id": "consum:254:7460152",
+        "source_row_md5": "2a8fb6f09e859cae7ed843b1c22374c0"
+      },
+      {
+        "id": "consum:254:7460330",
+        "source_row_md5": "cc97e8d94b569f9cbcf8425c231e8b64"
+      },
+      {
+        "id": "consum:254:7460343",
+        "source_row_md5": "7655efd455cb1c12e79548b07d2195eb"
+      },
+      {
+        "id": "consum:254:7460355",
+        "source_row_md5": "53c6ff13ba0d3ee830a82494a385b0de"
+      },
+      {
+        "id": "consum:254:7460566",
+        "source_row_md5": "d623d0fcec2b0ea2a4ebdddcaf263d97"
+      },
+      {
+        "id": "consum:254:7460723",
+        "source_row_md5": "9b2809905e0c64ea9ab85284e7c37b20"
+      },
+      {
+        "id": "consum:254:7460751",
+        "source_row_md5": "7358a02d7395db18141fb3a1605f8334"
+      },
+      {
+        "id": "consum:254:7461762",
+        "source_row_md5": "7b5218785054de7d3a45f37d042c35e2"
+      },
+      {
+        "id": "consum:254:7461770",
+        "source_row_md5": "e9189925fdc1989b6bf4c0ac5f25be24"
+      },
+      {
+        "id": "consum:254:7462687",
+        "source_row_md5": "dc3a797ec8295862999dd5352120c71a"
+      },
+      {
+        "id": "consum:254:7462740",
+        "source_row_md5": "3cabdcbb442bb5714dd28915e2e4a3ec"
+      },
+      {
+        "id": "consum:254:7462885",
+        "source_row_md5": "5816bd881a8607c7047bdfbfccdc45b5"
+      },
+      {
+        "id": "consum:254:7463169",
+        "source_row_md5": "236625cab93d54e42e055c1516c79448"
+      },
+      {
+        "id": "consum:254:7463904",
+        "source_row_md5": "79f3208c0983ca91c1efe72e13603106"
+      },
+      {
+        "id": "consum:254:7465938",
+        "source_row_md5": "35a9b4d06056def5974f464f09291e69"
+      },
+      {
+        "id": "consum:254:7465941",
+        "source_row_md5": "f4a2861737acf2f6fe32ab5e558f7455"
+      },
+      {
+        "id": "consum:254:7468338",
+        "source_row_md5": "ea76d5567a75f9ad277431398da4b368"
+      },
+      {
+        "id": "consum:254:7468528",
+        "source_row_md5": "004507154afca7b46216b1b5f74e6cc8"
+      },
+      {
+        "id": "consum:254:7471444",
+        "source_row_md5": "e4e80e0f6981655919340c6d2a6f0f5b"
+      },
+      {
+        "id": "consum:254:7472074",
+        "source_row_md5": "a0784d7d679dd7afd115aec631193fa1"
+      },
+      {
+        "id": "consum:254:7473127",
+        "source_row_md5": "e5506b76ef8bf44be32824c0ec8b961f"
+      },
+      {
+        "id": "consum:254:7473494",
+        "source_row_md5": "71e4790ae38b1ccef03a74c736e454ef"
+      },
+      {
+        "id": "consum:254:7473684",
+        "source_row_md5": "3383bdd97f728a36a19ca026fca23a50"
+      },
+      {
+        "id": "consum:254:7473689",
+        "source_row_md5": "c1cf383e2ae383c4c90ab914a458e476"
+      },
+      {
+        "id": "consum:254:7473692",
+        "source_row_md5": "b26a7cd64fb1e9fc0f01d51a0dc010d3"
+      },
+      {
+        "id": "consum:254:7473697",
+        "source_row_md5": "e666de4427897afd2095a42df7e09c27"
+      },
+      {
+        "id": "consum:254:7473754",
+        "source_row_md5": "fec23909eaf7a8bb47469e11e11f1aac"
+      },
+      {
+        "id": "consum:254:7474901",
+        "source_row_md5": "d519b302dc727d4329b1ce0b19bdc06c"
+      },
+      {
+        "id": "consum:254:7475577",
+        "source_row_md5": "92ef15aecc13a1bcd75b2703b0703c44"
+      },
+      {
+        "id": "consum:254:7476349",
+        "source_row_md5": "558bd2074dc5e783880a329f2c74e0bc"
+      },
+      {
+        "id": "consum:254:7476364",
+        "source_row_md5": "341ec8b66d47602d410894853feca5f4"
+      },
+      {
+        "id": "consum:254:7476427",
+        "source_row_md5": "ecf3124257814a7c3f3bce2b98325fbf"
+      },
+      {
+        "id": "consum:254:7476695",
+        "source_row_md5": "f4d152f977c0a4d6ab8d6acad6fbb04e"
+      },
+      {
+        "id": "consum:254:7476716",
+        "source_row_md5": "8c715b5f09425648c0fb876e939c3bb2"
+      },
+      {
+        "id": "consum:254:7476992",
+        "source_row_md5": "cfa118569b8ffe06e8cd952940ba112f"
+      },
+      {
+        "id": "consum:254:7477003",
+        "source_row_md5": "c521c86f7c5ea97658337393464a93dd"
+      },
+      {
+        "id": "consum:254:7477008",
+        "source_row_md5": "5947b4d606c8d56a8a5e50ff03573346"
+      },
+      {
+        "id": "consum:254:7477248",
+        "source_row_md5": "75ea454959d4105bc80955e9a7217a79"
+      },
+      {
+        "id": "consum:254:7477276",
+        "source_row_md5": "bdd79fa8113ae29da4eb18d89a7c3594"
+      },
+      {
+        "id": "consum:254:7477466",
+        "source_row_md5": "af855a80360c79595210463eaa957f46"
+      },
+      {
+        "id": "consum:254:7478431",
+        "source_row_md5": "3be4b3fc152c754561e047a4384e01f2"
+      },
+      {
+        "id": "consum:254:7478451",
+        "source_row_md5": "abf92954f91e3228ff5f057e0617942f"
+      },
+      {
+        "id": "consum:254:7478894",
+        "source_row_md5": "8df6cb52d8b1831da50d951d883c8259"
+      },
+      {
+        "id": "consum:254:7478907",
+        "source_row_md5": "ddb5ad43b47a72c951378a661e8e91f7"
+      },
+      {
+        "id": "consum:254:7478910",
+        "source_row_md5": "961585f22eb23f65d54608ce986ff253"
+      },
+      {
+        "id": "consum:254:7479389",
+        "source_row_md5": "3a0d417aa4bc5fd7d231bed6e1a72fdf"
+      },
+      {
+        "id": "consum:254:7479418",
+        "source_row_md5": "11e55c35ec2f023d5d548fc6e6ef5f64"
+      },
+      {
+        "id": "consum:254:7479541",
+        "source_row_md5": "e1ab2e20e86b5f31a2206b3daaf60bd0"
+      },
+      {
+        "id": "consum:254:7480317",
+        "source_row_md5": "65b7cf8960ac277a1c109dda116fc228"
+      },
+      {
+        "id": "consum:254:7480726",
+        "source_row_md5": "47fb46e604a91a7faf15b5cf4d08912b"
+      },
+      {
+        "id": "consum:254:7481240",
+        "source_row_md5": "b08555cb40f5cc20cd50d65585ff5212"
+      },
+      {
+        "id": "consum:254:7481542",
+        "source_row_md5": "3eb3131bfc47cbc44566cbd27dc4a56e"
+      },
+      {
+        "id": "consum:254:7481559",
+        "source_row_md5": "46211f6af96a91afd65874193108ba6a"
+      },
+      {
+        "id": "consum:254:7481633",
+        "source_row_md5": "2541c1db788a256770dcefaff97192e5"
+      },
+      {
+        "id": "consum:254:7481948",
+        "source_row_md5": "07f2816d7448131ddee4568599294338"
+      },
+      {
+        "id": "consum:254:7482334",
+        "source_row_md5": "7b6934aa9e44ca0ff52d5bd5629d224c"
+      },
+      {
+        "id": "consum:254:7482557",
+        "source_row_md5": "309c7a4a6b9d9c7a70d11ee6b98a0fe4"
+      },
+      {
+        "id": "consum:254:7482698",
+        "source_row_md5": "82a0c4be60aed5903f10ec4302ffb782"
+      },
+      {
+        "id": "consum:254:7484306",
+        "source_row_md5": "16fe27d7ca6a757b2a8a25526b44bbf6"
+      },
+      {
+        "id": "consum:254:7484889",
+        "source_row_md5": "45bcb44e7254fd9227975a6c03ba2d78"
+      },
+      {
+        "id": "consum:254:844837",
+        "source_row_md5": "c5b3835f499d9cdc3c84af2fe262ef16"
+      },
+      {
+        "id": "consum:254:937151",
+        "source_row_md5": "01c4ebf708c0e5fe5d91ed408b4fb642"
+      },
+      {
+        "id": "consum:495:1191998",
+        "source_row_md5": "cec01f8bdafeb4f5921f286ef90e2e62"
+      },
+      {
+        "id": "consum:495:1192004",
+        "source_row_md5": "664624aad6467ab687b3fdeac97d5b06"
+      },
+      {
+        "id": "consum:495:138297",
+        "source_row_md5": "6df256d3d26cb1c512570669b2e10161"
+      },
+      {
+        "id": "consum:495:162925",
+        "source_row_md5": "e051acec605d7a8a332d5e4a3a2a235b"
+      },
+      {
+        "id": "consum:495:1772516",
+        "source_row_md5": "66e45bc950bf473e9123cbae45785c2f"
+      },
+      {
+        "id": "consum:495:200642",
+        "source_row_md5": "46c210ad8be86465f9f0dd5168c1d1fa"
+      },
+      {
+        "id": "consum:495:204230",
+        "source_row_md5": "bc295fbcf4588d9b0daf25bb2d3ea666"
+      },
+      {
+        "id": "consum:495:204420",
+        "source_row_md5": "085abcebd491232abe01c863ded29d91"
+      },
+      {
+        "id": "consum:495:2154441",
+        "source_row_md5": "f698e2b488d5866ca3740d1f8c51d357"
+      },
+      {
+        "id": "consum:495:227645",
+        "source_row_md5": "0061cdab5cdb6c6713d12f7f62a6c11c"
+      },
+      {
+        "id": "consum:495:227652",
+        "source_row_md5": "701863ea030db48fd75c9089dbf96be8"
+      },
+      {
+        "id": "consum:495:227793",
+        "source_row_md5": "60266181286fef9e6a91e4035cc03a41"
+      },
+      {
+        "id": "consum:495:230920",
+        "source_row_md5": "0024f08b7d7cc4402c5e12a718034b79"
+      },
+      {
+        "id": "consum:495:236141",
+        "source_row_md5": "5d8b81aa0b2398785e3e07cf33cca6e9"
+      },
+      {
+        "id": "consum:495:2569838",
+        "source_row_md5": "b33b087e9d8e8f9297d6bb408501c5aa"
+      },
+      {
+        "id": "consum:495:2569861",
+        "source_row_md5": "e4554658f3445d76f175df43f4ebebe2"
+      },
+      {
+        "id": "consum:495:2569879",
+        "source_row_md5": "c206b34f216fd7a2229e3bcdc3539d24"
+      },
+      {
+        "id": "consum:495:2808418",
+        "source_row_md5": "94a782ba6df35009af6b329593964c46"
+      },
+      {
+        "id": "consum:495:294439",
+        "source_row_md5": "df0ecf40d808cacf7ed3c7b6e69b96d4"
+      },
+      {
+        "id": "consum:495:303677",
+        "source_row_md5": "f4adc18bd10ebeecd2fde930125fbf30"
+      },
+      {
+        "id": "consum:495:311530",
+        "source_row_md5": "836363b56f14c040384c85cd0dbbb170"
+      },
+      {
+        "id": "consum:495:366807",
+        "source_row_md5": "e1a006ad92ee123ef4f23c7ebf6c3c80"
+      },
+      {
+        "id": "consum:495:4507455",
+        "source_row_md5": "15ecc97453fadbadf785b21fd0ffcade"
+      },
+      {
+        "id": "consum:495:4507471",
+        "source_row_md5": "9089483101930a61c71872c41f40186e"
+      },
+      {
+        "id": "consum:495:53017",
+        "source_row_md5": "c4246433bfff8ba889f5d98f6c22d397"
+      },
+      {
+        "id": "consum:495:56911",
+        "source_row_md5": "63774d529609a1dbf09d1b17bd847d9c"
+      },
+      {
+        "id": "consum:495:57018",
+        "source_row_md5": "3458b7c73f15c63d0bcc5bccbc82bf0e"
+      },
+      {
+        "id": "consum:495:7000052",
+        "source_row_md5": "5ea2d19bf119652f9eb2e54183e15903"
+      },
+      {
+        "id": "consum:495:7020659",
+        "source_row_md5": "0627ce908486265f553f9571052828fd"
+      },
+      {
+        "id": "consum:495:7027063",
+        "source_row_md5": "2f8c6ec4860b7da1585e503401e6a387"
+      },
+      {
+        "id": "consum:495:7028475",
+        "source_row_md5": "67a24ec5f6e8c6f4bc0b228d23e40edf"
+      },
+      {
+        "id": "consum:495:7031974",
+        "source_row_md5": "606149d10f44af36eb9e35fe79f7dce2"
+      },
+      {
+        "id": "consum:495:7044092",
+        "source_row_md5": "53858b5e851efcce660806bd3e249eac"
+      },
+      {
+        "id": "consum:495:7044642",
+        "source_row_md5": "922e24bf795e928e9ac21cc012249b52"
+      },
+      {
+        "id": "consum:495:7046514",
+        "source_row_md5": "b3e60a2c3b22450a734d5027e8308457"
+      },
+      {
+        "id": "consum:495:7056398",
+        "source_row_md5": "af6e9110d1e591f7fb740fe3304a4df8"
+      },
+      {
+        "id": "consum:495:7056406",
+        "source_row_md5": "508967ca45feab3a8c5b02c0d2e163fb"
+      },
+      {
+        "id": "consum:495:7056554",
+        "source_row_md5": "cc76b4400187d16e5e0ba724759b2adb"
+      },
+      {
+        "id": "consum:495:7057706",
+        "source_row_md5": "486918ff91cf9f06f43076062ad09a82"
+      },
+      {
+        "id": "consum:495:7068588",
+        "source_row_md5": "8191d3e3364afff9fb25afd5ba5a4a40"
+      },
+      {
+        "id": "consum:495:7068674",
+        "source_row_md5": "2959a1331e04fe73aef0af7d6428dee8"
+      },
+      {
+        "id": "consum:495:7068906",
+        "source_row_md5": "5a5020804f9cf7fdc32edfbc1910909b"
+      },
+      {
+        "id": "consum:495:7076271",
+        "source_row_md5": "4864694128386e82652f29dbf95fca34"
+      },
+      {
+        "id": "consum:495:7080518",
+        "source_row_md5": "1923a0cf3db7e92907d7e9cf78ec44b4"
+      },
+      {
+        "id": "consum:495:7088599",
+        "source_row_md5": "3c5f4ea9ba8bba599c66b7aa3c586938"
+      },
+      {
+        "id": "consum:495:7090814",
+        "source_row_md5": "8a18f78c0f15e9060009e013e308a4a2"
+      },
+      {
+        "id": "consum:495:7091536",
+        "source_row_md5": "b08539ff1c573f29760db40faf4b540b"
+      },
+      {
+        "id": "consum:495:7103740",
+        "source_row_md5": "ddf1e687324b6ff1e0794391c164da9f"
+      },
+      {
+        "id": "consum:495:7105232",
+        "source_row_md5": "3df47d5b1d3277eb596d494ca449cd04"
+      },
+      {
+        "id": "consum:495:7105237",
+        "source_row_md5": "f0d536718e030f262f854bcbb0fe04c8"
+      },
+      {
+        "id": "consum:495:7109064",
+        "source_row_md5": "7ef1e8679aecd164035bece8b656afc2"
+      },
+      {
+        "id": "consum:495:7119709",
+        "source_row_md5": "0c4fd5af84a94e0743b2377e43c368f7"
+      },
+      {
+        "id": "consum:495:7141542",
+        "source_row_md5": "ba37e06425c41d987cd97393bfa3e7e5"
+      },
+      {
+        "id": "consum:495:7141799",
+        "source_row_md5": "df2ef9c196e5bb105acc245d64a58c33"
+      },
+      {
+        "id": "consum:495:7147895",
+        "source_row_md5": "6be31ddaa465f3c49a6fa38256e804b9"
+      },
+      {
+        "id": "consum:495:7148203",
+        "source_row_md5": "7f3893b09e63a718158334a1e5e87796"
+      },
+      {
+        "id": "consum:495:7153369",
+        "source_row_md5": "3e9e98ed1d1c62646fec0bb2b530e29e"
+      },
+      {
+        "id": "consum:495:7153799",
+        "source_row_md5": "c5d02b4e48f196b66f8d3bccb5ed1eb1"
+      },
+      {
+        "id": "consum:495:7157654",
+        "source_row_md5": "83e4f62797b730b2afbaf1384995e3d2"
+      },
+      {
+        "id": "consum:495:7159705",
+        "source_row_md5": "d205ef4b7cb36d869cc0c224442edbf5"
+      },
+      {
+        "id": "consum:495:7168649",
+        "source_row_md5": "39ea8c7f4d60061b515760c62b5fdcfd"
+      },
+      {
+        "id": "consum:495:7168651",
+        "source_row_md5": "5bc31fd17811f32b2a59ef7c2b86033c"
+      },
+      {
+        "id": "consum:495:7169626",
+        "source_row_md5": "51e95acd87b7264670cb4fe1abe2241f"
+      },
+      {
+        "id": "consum:495:7169993",
+        "source_row_md5": "2ffdc64b601883189faf89615705440d"
+      },
+      {
+        "id": "consum:495:7169998",
+        "source_row_md5": "38468c73ab33e7d51f75d39405878480"
+      },
+      {
+        "id": "consum:495:7170020",
+        "source_row_md5": "c87e0ef425c5cfc7d5dfd54d2ac46f54"
+      },
+      {
+        "id": "consum:495:7171622",
+        "source_row_md5": "216573ed2d5e153f8cd04869907bee6c"
+      },
+      {
+        "id": "consum:495:7172344",
+        "source_row_md5": "d68e67c27d585fac62185c81e3ed89ab"
+      },
+      {
+        "id": "consum:495:7172364",
+        "source_row_md5": "fae08e8b60f686fa80d269fb2a483c43"
+      },
+      {
+        "id": "consum:495:7173227",
+        "source_row_md5": "0fb85f483a6ed69e3c4d55a28f653b7d"
+      },
+      {
+        "id": "consum:495:7173433",
+        "source_row_md5": "ca4f4ea5230b2133c24c4c63c7bfc991"
+      },
+      {
+        "id": "consum:495:7177264",
+        "source_row_md5": "4453cb176cee4b9e4425cbec4ee15761"
+      },
+      {
+        "id": "consum:495:7179083",
+        "source_row_md5": "39256e092a9e78c4979b49faf3690903"
+      },
+      {
+        "id": "consum:495:7185952",
+        "source_row_md5": "6bad149e789c865e048b85c3f325206e"
+      },
+      {
+        "id": "consum:495:7188139",
+        "source_row_md5": "098b85ef8c48e553515d2659563efd9b"
+      },
+      {
+        "id": "consum:495:7188241",
+        "source_row_md5": "954d27fb85819bb6e625ebcd281982ea"
+      },
+      {
+        "id": "consum:495:7188725",
+        "source_row_md5": "ab7f8dd4079cb6e7848db489b89c2161"
+      },
+      {
+        "id": "consum:495:7190499",
+        "source_row_md5": "da329200cf550495e2b2ac0c8e33194c"
+      },
+      {
+        "id": "consum:495:7191591",
+        "source_row_md5": "31248dd561db918067535535f91e4205"
+      },
+      {
+        "id": "consum:495:7194165",
+        "source_row_md5": "63c9aead329458982a9d545132505c2d"
+      },
+      {
+        "id": "consum:495:7194285",
+        "source_row_md5": "aefd378c175516e3a4dee047dfc50d9f"
+      },
+      {
+        "id": "consum:495:7195832",
+        "source_row_md5": "92188970989ac1e963da800274244bd6"
+      },
+      {
+        "id": "consum:495:7198328",
+        "source_row_md5": "f8843b1d96f84d2b89584f3b07f3764a"
+      },
+      {
+        "id": "consum:495:7199623",
+        "source_row_md5": "e900d2ccf4f765c6387d01ff74a8ec29"
+      },
+      {
+        "id": "consum:495:7199636",
+        "source_row_md5": "9aef6d3e97eb04204e21ad36d422dbe7"
+      },
+      {
+        "id": "consum:495:7199771",
+        "source_row_md5": "8f194ef0a070524a390e93b793fdf9e1"
+      },
+      {
+        "id": "consum:495:7199776",
+        "source_row_md5": "6d805dcb98ad79bcf3e3a3ae798c8ce5"
+      },
+      {
+        "id": "consum:495:7213721",
+        "source_row_md5": "1db0452dd1d0d1ed363e0a100be2c1a1"
+      },
+      {
+        "id": "consum:495:7213742",
+        "source_row_md5": "2a1079891fe6233ca6249195b9ebd037"
+      },
+      {
+        "id": "consum:495:7215143",
+        "source_row_md5": "7440968b4272f73b7a589514229ab4a8"
+      },
+      {
+        "id": "consum:495:7221583",
+        "source_row_md5": "1c91e0094562bdc55a9599737eac5050"
+      },
+      {
+        "id": "consum:495:7225709",
+        "source_row_md5": "ad55fef1b0843c8bf3dd5a751c7f097f"
+      },
+      {
+        "id": "consum:495:7226843",
+        "source_row_md5": "d90535f7db15101f47e8a1be0b0c0c91"
+      },
+      {
+        "id": "consum:495:7227676",
+        "source_row_md5": "fdfb43bdbe7f0a8ab5267639976b3c4e"
+      },
+      {
+        "id": "consum:495:7228849",
+        "source_row_md5": "5f7b32ced72975dd128215c9a7d9513d"
+      },
+      {
+        "id": "consum:495:7234057",
+        "source_row_md5": "a6c3b4e0c3c8f3f3f512f873cb5ea37b"
+      },
+      {
+        "id": "consum:495:7246320",
+        "source_row_md5": "71dac43c3948d7691b368968f888dc24"
+      },
+      {
+        "id": "consum:495:7246791",
+        "source_row_md5": "4474beff1f0a03c6fa5760c0328b6208"
+      },
+      {
+        "id": "consum:495:7247674",
+        "source_row_md5": "f2f52c03f1a63697f9591a000beabba8"
+      },
+      {
+        "id": "consum:495:7249923",
+        "source_row_md5": "3d4b5b767c2a6ebce253336e110ad5c4"
+      },
+      {
+        "id": "consum:495:7254592",
+        "source_row_md5": "0933a5fa3ec6863cde256983cfe733cc"
+      },
+      {
+        "id": "consum:495:7254600",
+        "source_row_md5": "6810c886d8a29c3cf6a7c776ad88ab0c"
+      },
+      {
+        "id": "consum:495:7255425",
+        "source_row_md5": "082b34708e399ac21e17bb5b3e8e15bb"
+      },
+      {
+        "id": "consum:495:7260834",
+        "source_row_md5": "948b4918091e91148f65d0f43caab3e8"
+      },
+      {
+        "id": "consum:495:7263353",
+        "source_row_md5": "fc4d6f6424a8232f4a782b4da4e49fc1"
+      },
+      {
+        "id": "consum:495:7265767",
+        "source_row_md5": "2d76dc7919c77fd08c54b5a56527a50f"
+      },
+      {
+        "id": "consum:495:7267750",
+        "source_row_md5": "fe9d47c67b0b488c92604294c30ddc6a"
+      },
+      {
+        "id": "consum:495:7270879",
+        "source_row_md5": "d1dd54b2a40d3a15adb26997cc6dfdd7"
+      },
+      {
+        "id": "consum:495:7273266",
+        "source_row_md5": "a4ea8814dffd51015e2e49e21a223d20"
+      },
+      {
+        "id": "consum:495:7273910",
+        "source_row_md5": "2a809ab9a27447f2885cacbc494b2466"
+      },
+      {
+        "id": "consum:495:7275753",
+        "source_row_md5": "9fbf6e069fb0b2e0a7fd092ccea90de2"
+      },
+      {
+        "id": "consum:495:7277259",
+        "source_row_md5": "ea254bd0f9dfb8d118aebd2f09f00a6c"
+      },
+      {
+        "id": "consum:495:7279912",
+        "source_row_md5": "11e3dec7586e555d5191d6d1c9701a28"
+      },
+      {
+        "id": "consum:495:7280196",
+        "source_row_md5": "1438e7b0678738e17f2923541f11c3a3"
+      },
+      {
+        "id": "consum:495:7280308",
+        "source_row_md5": "0af8b1a0a1c234821001f16fef578b1a"
+      },
+      {
+        "id": "consum:495:7282150",
+        "source_row_md5": "61ba95a9f0218e757a0fe06ffe68fa25"
+      },
+      {
+        "id": "consum:495:7282155",
+        "source_row_md5": "5170c1af3a2235f5317ec1631deb8bec"
+      },
+      {
+        "id": "consum:495:7284842",
+        "source_row_md5": "cf91cf741c9866544b29a6bf011dc041"
+      },
+      {
+        "id": "consum:495:7284847",
+        "source_row_md5": "de2ec751e3192e15b9eae09989677ff1"
+      },
+      {
+        "id": "consum:495:7287837",
+        "source_row_md5": "431cc3462dce903e39ec637d2b709350"
+      },
+      {
+        "id": "consum:495:7288272",
+        "source_row_md5": "e01e6fc9a43bf0f7eb7150a262ad62a7"
+      },
+      {
+        "id": "consum:495:7288280",
+        "source_row_md5": "e1a5209de39c35d541cbeee071826a0b"
+      },
+      {
+        "id": "consum:495:7290513",
+        "source_row_md5": "2c5a32322a8a14889884c9356c28f40a"
+      },
+      {
+        "id": "consum:495:7290526",
+        "source_row_md5": "a10e31b0767ed91159a4c2a4cf4d039a"
+      },
+      {
+        "id": "consum:495:7291370",
+        "source_row_md5": "03580ed175eb7d2888801f6ce841e28c"
+      },
+      {
+        "id": "consum:495:7293983",
+        "source_row_md5": "106aaf65f694c4c20d542d72b424156e"
+      },
+      {
+        "id": "consum:495:7294366",
+        "source_row_md5": "da009ba9b1987fccf07d3d123faa8580"
+      },
+      {
+        "id": "consum:495:7294382",
+        "source_row_md5": "ab2a6677dd941382ed432bdac9b2bc1d"
+      },
+      {
+        "id": "consum:495:7294387",
+        "source_row_md5": "b317243f7a384147e596cad3abcf4453"
+      },
+      {
+        "id": "consum:495:7294627",
+        "source_row_md5": "57f01eb7c8a55d12361b9bf021c7401a"
+      },
+      {
+        "id": "consum:495:7294692",
+        "source_row_md5": "7f59f29fb1e25c4484771481b7081998"
+      },
+      {
+        "id": "consum:495:7294705",
+        "source_row_md5": "46eef6a855c731f33416570861922cc8"
+      },
+      {
+        "id": "consum:495:7294713",
+        "source_row_md5": "cc71ca0ce7314a8f971b3d8683cdb014"
+      },
+      {
+        "id": "consum:495:7294721",
+        "source_row_md5": "4b79dec32a99a23158b00773e05a9911"
+      },
+      {
+        "id": "consum:495:7295553",
+        "source_row_md5": "4a22b7656e3efe86339b3d628d3a3510"
+      },
+      {
+        "id": "consum:495:7296622",
+        "source_row_md5": "dbab7fcb8c2592aa5e1b46d827ebc933"
+      },
+      {
+        "id": "consum:495:7302867",
+        "source_row_md5": "9183f6bad4f6a2509ed1d3b5de71045b"
+      },
+      {
+        "id": "consum:495:7302875",
+        "source_row_md5": "bbf366c243d4f983c3b8401aa8af4eb5"
+      },
+      {
+        "id": "consum:495:7303522",
+        "source_row_md5": "9bed6a7e7f9a5030ab82dae454f350c9"
+      },
+      {
+        "id": "consum:495:7303527",
+        "source_row_md5": "46085d1cba8d680698906f99e9e78e58"
+      },
+      {
+        "id": "consum:495:7303712",
+        "source_row_md5": "9a6e0bc4622241524571b1ab8b4d4063"
+      },
+      {
+        "id": "consum:495:7308542",
+        "source_row_md5": "adef607fc06b983e5a7ab95a0ce8f9a0"
+      },
+      {
+        "id": "consum:495:7308554",
+        "source_row_md5": "3ec2f412f166277c019bbc3dd1b89269"
+      },
+      {
+        "id": "consum:495:7308583",
+        "source_row_md5": "458c4b4c7204fc37ef59357ffdeb66e0"
+      },
+      {
+        "id": "consum:495:7308591",
+        "source_row_md5": "c73ad466ab500a5573c3eceb5c182bb1"
+      },
+      {
+        "id": "consum:495:7309412",
+        "source_row_md5": "d12f280579222cf6abbc8cb451a5f322"
+      },
+      {
+        "id": "consum:495:7310159",
+        "source_row_md5": "a770dfdbb12a907fc41d679d9ad705e7"
+      },
+      {
+        "id": "consum:495:7310290",
+        "source_row_md5": "84dcc81c8bd4d2a41eac41e0e0d3662c"
+      },
+      {
+        "id": "consum:495:7310563",
+        "source_row_md5": "f6af310887f4eed4f2cce710b5bb789e"
+      },
+      {
+        "id": "consum:495:7312015",
+        "source_row_md5": "0f94a90752936e492f08d5c8d1e2d304"
+      },
+      {
+        "id": "consum:495:7312648",
+        "source_row_md5": "23c73212638bab5f6cea27f553a7d29b"
+      },
+      {
+        "id": "consum:495:7314193",
+        "source_row_md5": "1e6cbfb7c2ed25a812e0ef63a2b73b61"
+      },
+      {
+        "id": "consum:495:7315257",
+        "source_row_md5": "7315d78c454ba839bc1298d7aacbbfc4"
+      },
+      {
+        "id": "consum:495:7326825",
+        "source_row_md5": "f145489cfa1d7e35ea0005fdf45e0801"
+      },
+      {
+        "id": "consum:495:7327146",
+        "source_row_md5": "8e4ffc4decaade0dcf0c9e275e1f292a"
+      },
+      {
+        "id": "consum:495:7329121",
+        "source_row_md5": "60f2b7d4825ba6f1f662a9556cb4f21d"
+      },
+      {
+        "id": "consum:495:7330913",
+        "source_row_md5": "86c3f5ea75d7105bc52f4187160f1f51"
+      },
+      {
+        "id": "consum:495:7331465",
+        "source_row_md5": "19ad3a95b434dbcdaf986c392050b2fd"
+      },
+      {
+        "id": "consum:495:7331536",
+        "source_row_md5": "bcb0a37eed85a4a105400c343df3ed6a"
+      },
+      {
+        "id": "consum:495:7331544",
+        "source_row_md5": "f5594562dafec6d04d45f0a18c67793f"
+      },
+      {
+        "id": "consum:495:7332224",
+        "source_row_md5": "a6ada2c121b74fab6558f64212dbd062"
+      },
+      {
+        "id": "consum:495:7332588",
+        "source_row_md5": "90dfc1af1601647198a954ca66659619"
+      },
+      {
+        "id": "consum:495:7333227",
+        "source_row_md5": "1da213bc7e9d6c801d4f0ca82ff593b4"
+      },
+      {
+        "id": "consum:495:7333623",
+        "source_row_md5": "deadc53255ea5431181f4949b9eeca32"
+      },
+      {
+        "id": "consum:495:7334394",
+        "source_row_md5": "2ebfce7a005a7ec50e19157dec6ed002"
+      },
+      {
+        "id": "consum:495:7337876",
+        "source_row_md5": "7692895ea77ef19b52165d3034cfb686"
+      },
+      {
+        "id": "consum:495:7338940",
+        "source_row_md5": "36d0a28eb45c053901152eff7fa6c796"
+      },
+      {
+        "id": "consum:495:7339752",
+        "source_row_md5": "649e4403738f13031d6a7fa02813083c"
+      },
+      {
+        "id": "consum:495:7340776",
+        "source_row_md5": "68c9454f14159df33c4f10be32a9750b"
+      },
+      {
+        "id": "consum:495:7340784",
+        "source_row_md5": "680ad679fc231509059ad5681643e4b1"
+      },
+      {
+        "id": "consum:495:7340789",
+        "source_row_md5": "c0b6358bf0002742163c6ec53db602e7"
+      },
+      {
+        "id": "consum:495:7340792",
+        "source_row_md5": "500ecce30c6c838edc7aed76c9ae360d"
+      },
+      {
+        "id": "consum:495:7340867",
+        "source_row_md5": "9922d1af24bd32dc31e3ad187c3f4a0f"
+      },
+      {
+        "id": "consum:495:7340870",
+        "source_row_md5": "575cc1b8c151e1dc756ab19d288843a2"
+      },
+      {
+        "id": "consum:495:7340875",
+        "source_row_md5": "3f047c80cffc008c5e5438b26178fab1"
+      },
+      {
+        "id": "consum:495:7340883",
+        "source_row_md5": "1a451ec60f9d59a9622c34335089f7f4"
+      },
+      {
+        "id": "consum:495:7340888",
+        "source_row_md5": "33d6176e82a9d87a41f4d47a8e6ad527"
+      },
+      {
+        "id": "consum:495:7340896",
+        "source_row_md5": "06775fca43adfcd1f46d833547f0a6d3"
+      },
+      {
+        "id": "consum:495:7340904",
+        "source_row_md5": "20a48dcc688e381a615891d260e57145"
+      },
+      {
+        "id": "consum:495:7340909",
+        "source_row_md5": "6474279962d09f052122a7e0d4b65392"
+      },
+      {
+        "id": "consum:495:7340912",
+        "source_row_md5": "9f65fd31a09ce14c73f68f9e11abfc2a"
+      },
+      {
+        "id": "consum:495:7340953",
+        "source_row_md5": "a91994310331b55160d48da56383bf02"
+      },
+      {
+        "id": "consum:495:7342574",
+        "source_row_md5": "4ebaed9e6fc7f9936e810d386fd286fe"
+      },
+      {
+        "id": "consum:495:7343283",
+        "source_row_md5": "5285fdd882724273118cccef8d234d92"
+      },
+      {
+        "id": "consum:495:7346109",
+        "source_row_md5": "0d4b66a412626c913564960ed3397689"
+      },
+      {
+        "id": "consum:495:7347842",
+        "source_row_md5": "08a240f048aaf5e73494973498b28dda"
+      },
+      {
+        "id": "consum:495:7354876",
+        "source_row_md5": "f7178943f6308c1be3266884e785f638"
+      },
+      {
+        "id": "consum:495:7357460",
+        "source_row_md5": "1f5aab66a1aee05c043f454c2fd76bef"
+      },
+      {
+        "id": "consum:495:7357721",
+        "source_row_md5": "5500f729114bd4c250375413278e9800"
+      },
+      {
+        "id": "consum:495:7358646",
+        "source_row_md5": "58165a7e1e600428dc681abcddc2491b"
+      },
+      {
+        "id": "consum:495:7359412",
+        "source_row_md5": "3cf9f78343997b3eb98251b4e736f1a7"
+      },
+      {
+        "id": "consum:495:7359425",
+        "source_row_md5": "4c3ff73850d88d89757c781e00217cc4"
+      },
+      {
+        "id": "consum:495:7360761",
+        "source_row_md5": "31f7194125d0fc67b6a72ff6bf6ee70c"
+      },
+      {
+        "id": "consum:495:7361426",
+        "source_row_md5": "db11ed371f9cd3c7aaf7a2b1f236cbfa"
+      },
+      {
+        "id": "consum:495:7362973",
+        "source_row_md5": "8a04d6a786661eab2c78989f0d74588f"
+      },
+      {
+        "id": "consum:495:7364581",
+        "source_row_md5": "f933d8951a06f4f0e21c9034b549819b"
+      },
+      {
+        "id": "consum:495:7364607",
+        "source_row_md5": "71e1d4831e1677b79425d88199605c9c"
+      },
+      {
+        "id": "consum:495:7369093",
+        "source_row_md5": "a46b224d29e7620c53b4f79a7dc46d54"
+      },
+      {
+        "id": "consum:495:7369176",
+        "source_row_md5": "813a4bd7ae7775f3c601584c5283148f"
+      },
+      {
+        "id": "consum:495:7369460",
+        "source_row_md5": "77acd8c0baf0c1d7bde0ddbd5dd5509f"
+      },
+      {
+        "id": "consum:495:7370500",
+        "source_row_md5": "851166ee334111804051f4c660056949"
+      },
+      {
+        "id": "consum:495:7370984",
+        "source_row_md5": "94e37527d1401cc3aaae0f5b6754f59f"
+      },
+      {
+        "id": "consum:495:7371029",
+        "source_row_md5": "6504d34f2ca6234a0be6f3e92aca4407"
+      },
+      {
+        "id": "consum:495:7371032",
+        "source_row_md5": "0d12715b8412575471f4e79d3b531b7e"
+      },
+      {
+        "id": "consum:495:7371037",
+        "source_row_md5": "c8d08e84d51144ba1fa2300f1229cbef"
+      },
+      {
+        "id": "consum:495:7371040",
+        "source_row_md5": "f38821c186d32b06ac41630a2129fd62"
+      },
+      {
+        "id": "consum:495:7373764",
+        "source_row_md5": "210e35c9f2b08762c2dec8242fa80ab7"
+      },
+      {
+        "id": "consum:495:7375004",
+        "source_row_md5": "1255a9dfd0ba17e37630d865cd8e5cf6"
+      },
+      {
+        "id": "consum:495:7375009",
+        "source_row_md5": "23b99cc6ce2fb915b777ae56cbc84742"
+      },
+      {
+        "id": "consum:495:7375715",
+        "source_row_md5": "fae6450651abd48737cd0dbe152abcbd"
+      },
+      {
+        "id": "consum:495:7376978",
+        "source_row_md5": "8127774ffdcabb8eb30962b4eef240b1"
+      },
+      {
+        "id": "consum:495:7380074",
+        "source_row_md5": "0d96da726e7d5f87afbc051b94db5757"
+      },
+      {
+        "id": "consum:495:7380079",
+        "source_row_md5": "938407d6f33ed8fed296d0f170c2bd9f"
+      },
+      {
+        "id": "consum:495:7380223",
+        "source_row_md5": "8f4132e1c8767c94dbf0380344da6c40"
+      },
+      {
+        "id": "consum:495:7391030",
+        "source_row_md5": "851cbaf8ce41c04030f1f47768226a0a"
+      },
+      {
+        "id": "consum:495:7391043",
+        "source_row_md5": "4938b047aa3818c2afece49415aadea7"
+      },
+      {
+        "id": "consum:495:7391048",
+        "source_row_md5": "753275a02d85c02f3b4dfadf6b04d883"
+      },
+      {
+        "id": "consum:495:7391050",
+        "source_row_md5": "40c9c9b58811d644c8e41c24ca7754aa"
+      },
+      {
+        "id": "consum:495:7391055",
+        "source_row_md5": "c327c3d2212685071acdeb60eb99fcb2"
+      },
+      {
+        "id": "consum:495:7391063",
+        "source_row_md5": "e8b719a7b7f94a442d12be7c20588317"
+      },
+      {
+        "id": "consum:495:7391803",
+        "source_row_md5": "a0a37b37b2ccab6313fb30ce57fd2e70"
+      },
+      {
+        "id": "consum:495:7393130",
+        "source_row_md5": "58cce038b51fdb5c8421866cb50fee36"
+      },
+      {
+        "id": "consum:495:7393366",
+        "source_row_md5": "8eae9fdab02ae31120f6f4f87b4103fe"
+      },
+      {
+        "id": "consum:495:7394260",
+        "source_row_md5": "d56e99848209423d48d10d5074c3b52f"
+      },
+      {
+        "id": "consum:495:7394328",
+        "source_row_md5": "012a3bdfbc6e1e30e864e2473bc6d62d"
+      },
+      {
+        "id": "consum:495:7394729",
+        "source_row_md5": "eb1476d580e5c8a8a0cbf5a0c86571ff"
+      },
+      {
+        "id": "consum:495:7394732",
+        "source_row_md5": "62a9f0abda82ce650155f8eebfd605b5"
+      },
+      {
+        "id": "consum:495:7394851",
+        "source_row_md5": "ea24e71c8bab164850b6110c5065f107"
+      },
+      {
+        "id": "consum:495:7394872",
+        "source_row_md5": "24f22678b10b6266d1e3fdb2f1790555"
+      },
+      {
+        "id": "consum:495:7394950",
+        "source_row_md5": "90f7f752d6de82e055d26989d03110bf"
+      },
+      {
+        "id": "consum:495:7394963",
+        "source_row_md5": "88088477006ca0bde472557109eed9e3"
+      },
+      {
+        "id": "consum:495:7396765",
+        "source_row_md5": "f698c1547428cadc45b0846be4ebea21"
+      },
+      {
+        "id": "consum:495:7397094",
+        "source_row_md5": "11c65d9c31daa3903f9c4bec4ee825ce"
+      },
+      {
+        "id": "consum:495:7397529",
+        "source_row_md5": "b770fefba9c48e3451c6c43201557327"
+      },
+      {
+        "id": "consum:495:7397669",
+        "source_row_md5": "116a19ee3cea21fdbce00056e9b518bb"
+      },
+      {
+        "id": "consum:495:7398584",
+        "source_row_md5": "69eb4246fe584ca9933be51e02ae7832"
+      },
+      {
+        "id": "consum:495:7398589",
+        "source_row_md5": "6a9852279b8b3a880dbd84448ec54416"
+      },
+      {
+        "id": "consum:495:7398931",
+        "source_row_md5": "6119910c9277a2d76381f882b8d1bd32"
+      },
+      {
+        "id": "consum:495:7400021",
+        "source_row_md5": "052e0e18e41f9cd39c926b62859b50fd"
+      },
+      {
+        "id": "consum:495:7401768",
+        "source_row_md5": "1f28a4e671e412c09eb19141e0bcc9da"
+      },
+      {
+        "id": "consum:495:7403090",
+        "source_row_md5": "b2274b1d08cf1b7847cf7cdd75ac72a5"
+      },
+      {
+        "id": "consum:495:7404887",
+        "source_row_md5": "2740f7a6c55d8009ba4e2b6108128aa3"
+      },
+      {
+        "id": "consum:495:7405863",
+        "source_row_md5": "095b9e04080322c773977c8317b3e928"
+      },
+      {
+        "id": "consum:495:7406437",
+        "source_row_md5": "1b5b97511de97a345dfbed4fecc4fd86"
+      },
+      {
+        "id": "consum:495:7406440",
+        "source_row_md5": "e46b48845edae8d979e3bbdc3b6a4551"
+      },
+      {
+        "id": "consum:495:7410728",
+        "source_row_md5": "120ca8c6b2e2ca683e46dda2b7fcff22"
+      },
+      {
+        "id": "consum:495:7411270",
+        "source_row_md5": "5e811bc1d0cb928e4aa28efeb44f20fe"
+      },
+      {
+        "id": "consum:495:7411858",
+        "source_row_md5": "52c9ebb61d19b090d9c2e711a9845bbd"
+      },
+      {
+        "id": "consum:495:7411866",
+        "source_row_md5": "05f598ebb7af55e568b509d654fbe339"
+      },
+      {
+        "id": "consum:495:7412955",
+        "source_row_md5": "e04bef7c188ea2daf82b37ecf8b27309"
+      },
+      {
+        "id": "consum:495:7412968",
+        "source_row_md5": "6be962e39aa1db1c9e533009d786aad5"
+      },
+      {
+        "id": "consum:495:7414167",
+        "source_row_md5": "135e5eb1276edce8c6b44c4af8f5bf2f"
+      },
+      {
+        "id": "consum:495:7414936",
+        "source_row_md5": "f1d1dab8100b71d4362e9993af6285fd"
+      },
+      {
+        "id": "consum:495:7415313",
+        "source_row_md5": "bc06ec2188f43665fabe6f84b10bfeff"
+      },
+      {
+        "id": "consum:495:7415461",
+        "source_row_md5": "077008fd2a46e90b8b044f388adfa908"
+      },
+      {
+        "id": "consum:495:7416394",
+        "source_row_md5": "cca02339e8678d3f18974db6c6f06333"
+      },
+      {
+        "id": "consum:495:7416449",
+        "source_row_md5": "9ff0df417cc13d2d2518efb2b636966a"
+      },
+      {
+        "id": "consum:495:7417413",
+        "source_row_md5": "ee98db87989b93c6a033e41bc5e4c084"
+      },
+      {
+        "id": "consum:495:7417988",
+        "source_row_md5": "a5e5dee5253a47d29fef2d1e9469ee63"
+      },
+      {
+        "id": "consum:495:7418296",
+        "source_row_md5": "4965ac9b33fac43bf5be18f5c6357aaa"
+      },
+      {
+        "id": "consum:495:7418341",
+        "source_row_md5": "78bfde4d3179cd8d838a937a765782cc"
+      },
+      {
+        "id": "consum:495:7419182",
+        "source_row_md5": "eb46b963d9a0584fb20e5d03e0ca5cb2"
+      },
+      {
+        "id": "consum:495:7420144",
+        "source_row_md5": "646f461e1b3567d44320fb46736b582b"
+      },
+      {
+        "id": "consum:495:7420156",
+        "source_row_md5": "2e5c95cf47d454b3077c5415e6a5391d"
+      },
+      {
+        "id": "consum:495:7421139",
+        "source_row_md5": "7493998ff9cc90281366f412f329f865"
+      },
+      {
+        "id": "consum:495:7421154",
+        "source_row_md5": "c8f4f8c339288b3cb627b20f7f7a4abf"
+      },
+      {
+        "id": "consum:495:7421642",
+        "source_row_md5": "a7a5feae820d607a50694cca7cc25e26"
+      },
+      {
+        "id": "consum:495:7422496",
+        "source_row_md5": "274d27f6b8b5e92a4a8b35805a8b61d6"
+      },
+      {
+        "id": "consum:495:7423544",
+        "source_row_md5": "160baa3ea12ab22c9e18486cffd8c981"
+      },
+      {
+        "id": "consum:495:7424997",
+        "source_row_md5": "a184f5f94250bfb5e25b788cb596df55"
+      },
+      {
+        "id": "consum:495:7425002",
+        "source_row_md5": "a81b4097ea9cee480697e07749721b64"
+      },
+      {
+        "id": "consum:495:7425007",
+        "source_row_md5": "a9e9a6fbbf63991e2b851f4732c0b6e8"
+      },
+      {
+        "id": "consum:495:7425606",
+        "source_row_md5": "1351063a0b8e214ecd35a7012c16c9c1"
+      },
+      {
+        "id": "consum:495:7427243",
+        "source_row_md5": "b9f480d64c3060d5aac049dd2a8fb85b"
+      },
+      {
+        "id": "consum:495:7429983",
+        "source_row_md5": "c1941d94f68d8644f978a794537c6eec"
+      },
+      {
+        "id": "consum:495:7430031",
+        "source_row_md5": "7f96e5b42afd3432b1a89557b0f9739e"
+      },
+      {
+        "id": "consum:495:7430312",
+        "source_row_md5": "a01068e38837b3d682326b06f598982f"
+      },
+      {
+        "id": "consum:495:7430986",
+        "source_row_md5": "0f5cf79b871252e39711771906cdee8b"
+      },
+      {
+        "id": "consum:495:7431237",
+        "source_row_md5": "6ca7be7a7beedd7dd073094d09c4e18c"
+      },
+      {
+        "id": "consum:495:7431385",
+        "source_row_md5": "df7197a9a64b7dd75e3bf2f391c245de"
+      },
+      {
+        "id": "consum:495:7431422",
+        "source_row_md5": "db2f2069ef5566162f6a6f91ded0ead9"
+      },
+      {
+        "id": "consum:495:7431914",
+        "source_row_md5": "fbdf701b4bfaa6e1adc0342cee24f4e4"
+      },
+      {
+        "id": "consum:495:7432037",
+        "source_row_md5": "2ac643301496c32a93daeb9349f93de7"
+      },
+      {
+        "id": "consum:495:7432040",
+        "source_row_md5": "36df346aacf62e5565398538c5fd4944"
+      },
+      {
+        "id": "consum:495:7432045",
+        "source_row_md5": "e5999735f4f7b336e73d002c9af4cef1"
+      },
+      {
+        "id": "consum:495:7432073",
+        "source_row_md5": "c14f66cdfd587c5b6dd2a4370e00e371"
+      },
+      {
+        "id": "consum:495:7432391",
+        "source_row_md5": "4c8e0be2044d46c121c0ed0a72dd12c3"
+      },
+      {
+        "id": "consum:495:7432735",
+        "source_row_md5": "fae5bdca4d485cbfb7639548a07335b2"
+      },
+      {
+        "id": "consum:495:7432768",
+        "source_row_md5": "094fd4ec6f0e774867772bbb8b5916c3"
+      },
+      {
+        "id": "consum:495:7432938",
+        "source_row_md5": "a670d41181260bbbebcfdae0cc2d104c"
+      },
+      {
+        "id": "consum:495:7433055",
+        "source_row_md5": "b2f4277ee71f1451df8ee96da0316829"
+      },
+      {
+        "id": "consum:495:7433662",
+        "source_row_md5": "75f7288deccb9c7f4511d2d761145582"
+      },
+      {
+        "id": "consum:495:7434061",
+        "source_row_md5": "7e3d5f8667f233855a71707e505f55ff"
+      },
+      {
+        "id": "consum:495:7434434",
+        "source_row_md5": "06dc93bf8c0b681abb1d22d43a5cc8bb"
+      },
+      {
+        "id": "consum:495:7436947",
+        "source_row_md5": "be7a437eeff929d7c57cb6ac8f821114"
+      },
+      {
+        "id": "consum:495:7437283",
+        "source_row_md5": "916fa950e5f03f213a8e25161201d500"
+      },
+      {
+        "id": "consum:495:7439805",
+        "source_row_md5": "7966adcaaeda44e3101db928c6f5a143"
+      },
+      {
+        "id": "consum:495:7440498",
+        "source_row_md5": "37221212487d138db90c67a93fd71507"
+      },
+      {
+        "id": "consum:495:7440659",
+        "source_row_md5": "ad2a6b5c0cf100d597cc3cc764834e01"
+      },
+      {
+        "id": "consum:495:7441806",
+        "source_row_md5": "24138a7d147b22059d85425241fbd979"
+      },
+      {
+        "id": "consum:495:7442536",
+        "source_row_md5": "d1d3974cee95810df6aff0dc95a9dca3"
+      },
+      {
+        "id": "consum:495:7442549",
+        "source_row_md5": "c68bab792eb53c6816a6d8e9c907265e"
+      },
+      {
+        "id": "consum:495:7442556",
+        "source_row_md5": "a33789865cba1d85580e8cc3ac104686"
+      },
+      {
+        "id": "consum:495:7443047",
+        "source_row_md5": "f4bac62bbf13e3957ae2454a1dd7a705"
+      },
+      {
+        "id": "consum:495:7443054",
+        "source_row_md5": "f45213aed95bb9c230004c311809eb5b"
+      },
+      {
+        "id": "consum:495:7443963",
+        "source_row_md5": "70b2a3f9e9127ad3be09b2c221244fdb"
+      },
+      {
+        "id": "consum:495:7443968",
+        "source_row_md5": "1bde22d03e9b201754933002a64fa446"
+      },
+      {
+        "id": "consum:495:7443971",
+        "source_row_md5": "8dfad0b4bd87647185f44fb08fa839ff"
+      },
+      {
+        "id": "consum:495:7444292",
+        "source_row_md5": "c2a01a17e2c018ac15b9692d888bcc7b"
+      },
+      {
+        "id": "consum:495:7444987",
+        "source_row_md5": "3d1223cd402812cb96f940d859d6d8cb"
+      },
+      {
+        "id": "consum:495:7445315",
+        "source_row_md5": "4db5ccbcfd8cdbf40e2f5de38c368c9f"
+      },
+      {
+        "id": "consum:495:7445500",
+        "source_row_md5": "321a03aa5722ddb795fe0dd5eaffcd83"
+      },
+      {
+        "id": "consum:495:7445518",
+        "source_row_md5": "0d955806c735ef3a2e3cc9576c132f60"
+      },
+      {
+        "id": "consum:495:7448640",
+        "source_row_md5": "b6c743bbe883f727b849214651332711"
+      },
+      {
+        "id": "consum:495:7449890",
+        "source_row_md5": "be96ff445c7472471b0bbbde23dc57e0"
+      },
+      {
+        "id": "consum:495:7450013",
+        "source_row_md5": "87bd21861926a31750cc5d888a05335b"
+      },
+      {
+        "id": "consum:495:7451784",
+        "source_row_md5": "e78ab81a8c60100f2d099674c03184c8"
+      },
+      {
+        "id": "consum:495:7452514",
+        "source_row_md5": "edd1d96a2130e1c417451faf0a6d1d54"
+      }
+    ],
+    "store": "consum",
+    "cursor": "consum:254:7391050",
+    "job_key": "ce1-ce200-02939b563ffc20295d0987733415",
+    "row_count": 500,
+    "elapsed_ms": 85.003,
+    "captured_at": "2026-09-03T10:38:20.827038+00:00",
+    "project_ref": "gkffvigcnsesbaihycay",
+    "operation_hash": "02939b563ffc20295d09877334150cb997a45b514154ae2e6152061a661887cf"
+  },
+  "transport_bytes": 53029
+}

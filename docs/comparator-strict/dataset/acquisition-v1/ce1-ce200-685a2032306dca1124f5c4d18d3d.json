@@ -1,0 +1,29 @@
+{
+  "plan": {
+    "version": "ce200-read-v3",
+    "kind": "location-fingerprints",
+    "store": "mercadona",
+    "cursor": "",
+    "limit": 500,
+    "round": "verify",
+    "select": "SELECT l.id,md5(to_jsonb(l)::text) AS source_row_md5 FROM public.catalog_location_prices l\n      WHERE l.store='mercadona' AND l.product_id IN (SELECT id FROM public.mercadona_products WHERE published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)|b[ií]fidus'))\n      AND l.id COLLATE \"C\" > '' COLLATE \"C\" ORDER BY l.id COLLATE \"C\" LIMIT 500",
+    "job": "ce1-ce200-685a2032306dca1124f5c4d18d3d",
+    "operationHash": "685a2032306dca1124f5c4d18d3da18f73874229263116fba0c13da0f85e3d7e",
+    "maxRows": 500,
+    "maxBytes": 131072,
+    "sql": "-- ce1-ce200-685a2032306dca1124f5c4d18d3d: location-fingerprints; CE-BU-002; no app writes.\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $reserve$\nDECLARE job_started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE status IN ('planned','running','halted','unknown'))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-685a2032306dca1124f5c4d18d3d') THEN RAISE EXCEPTION 'ce200_exclusive_or_replay'; END IF;\n  IF EXISTS(SELECT 1 FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid))>0\n    OR (pid<>pg_backend_pid() AND state='active' AND query_start<clock_timestamp()-interval '30 seconds')) THEN RAISE EXCEPTION 'ce200_health_stop'; END IF;\n  UPDATE comparator_strict.execution_budget SET\n    sql_ms_reserved=sql_ms_reserved+10000,read_rows_reserved=read_rows_reserved+500,\n    bytes_reserved=bytes_reserved+131072,write_rows_reserved=write_rows_reserved+3,updated_at=clock_timestamp()\n    WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03'\n      AND approval_reference='CE-200-corpus-v1' AND bytes_limit=134217728 AND read_rows_limit=50000\n      AND bytes_reserved+131072<=bytes_limit AND read_rows_reserved+500<=read_rows_limit AND write_rows_reserved+3<=2000;\n  IF NOT FOUND THEN RAISE EXCEPTION 'ce200_budget'; END IF;\n  INSERT INTO comparator_strict.execution_jobs(id,project_ref,operation_key,sql_sha256,status,started_at,deadline_at,job_key,operation_hash,budget_date,reservation)\n    VALUES(gen_random_uuid(),'gkffvigcnsesbaihycay','ce200-location-fingerprints','0204a8fa0634afdb97655d4838670985031fdd20954d72a3737686156101529a','running',job_started,job_started+interval '20 minutes','ce1-ce200-685a2032306dca1124f5c4d18d3d','685a2032306dca1124f5c4d18d3da18f73874229263116fba0c13da0f85e3d7e',DATE '2026-09-03','{\"sqlMs\":10000,\"readRows\":500,\"writeRows\":3,\"responseBytes\":131072}'::jsonb);\nEND $reserve$;\nCOMMIT;\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $payload$\nDECLARE payload jsonb; data jsonb; started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR NOT EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-685a2032306dca1124f5c4d18d3d' AND status='running' AND operation_hash='685a2032306dca1124f5c4d18d3da18f73874229263116fba0c13da0f85e3d7e' AND deadline_at>clock_timestamp()) THEN RAISE EXCEPTION 'ce200_lease'; END IF;\n  SELECT coalesce(jsonb_agg(to_jsonb(q)),'[]'::jsonb) INTO data FROM (SELECT l.id,md5(to_jsonb(l)::text) AS source_row_md5 FROM public.catalog_location_prices l\n      WHERE l.store='mercadona' AND l.product_id IN (SELECT id FROM public.mercadona_products WHERE published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)|b[ií]fidus'))\n      AND l.id COLLATE \"C\" > '' COLLATE \"C\" ORDER BY l.id COLLATE \"C\" LIMIT 500) q;\n  payload:=jsonb_build_object('job_key','ce1-ce200-685a2032306dca1124f5c4d18d3d','operation_hash','685a2032306dca1124f5c4d18d3da18f73874229263116fba0c13da0f85e3d7e',\n    'project_ref','gkffvigcnsesbaihycay','captured_at',started,'kind','location-fingerprints','store','mercadona',\n    'cursor','','rows',data,'row_count',jsonb_array_length(data),'elapsed_ms',extract(epoch FROM clock_timestamp()-started)*1000);\n  IF jsonb_array_length(data)>500 OR octet_length(payload::text)>122880 THEN RAISE EXCEPTION 'ce200_result_limit'; END IF;\n  UPDATE comparator_strict.execution_jobs SET status='succeeded',finished_at=clock_timestamp(),\n    receipt=jsonb_build_object('payload_sha256',encode(sha256(convert_to(payload::text,'UTF8')),'hex'),'row_count',jsonb_array_length(data),'payload_bytes',octet_length(payload::text),'elapsed_ms',payload->'elapsed_ms') WHERE job_key='ce1-ce200-685a2032306dca1124f5c4d18d3d';\n  PERFORM set_config('comparator_strict.ce200_response',payload::text,true);\nEND $payload$;\nSELECT current_setting('comparator_strict.ce200_response')::jsonb AS evidence;\nCOMMIT;"
+  },
+  "payload": {
+    "kind": "location-fingerprints",
+    "rows": [],
+    "store": "mercadona",
+    "cursor": "",
+    "job_key": "ce1-ce200-685a2032306dca1124f5c4d18d3d",
+    "row_count": 0,
+    "elapsed_ms": 6.717,
+    "captured_at": "2026-09-03T10:38:31.307773+00:00",
+    "project_ref": "gkffvigcnsesbaihycay",
+    "operation_hash": "685a2032306dca1124f5c4d18d3da18f73874229263116fba0c13da0f85e3d7e"
+  },
+  "transport_bytes": 1034
+}

@@ -1,0 +1,168 @@
+{
+  "products": 4176,
+  "locations": 5189,
+  "unique_pairs": 6000,
+  "confirmatory_pairs": 4000,
+  "challenge_pairs": 2000,
+  "queries": 1200,
+  "destination_cases": 3600,
+  "confirmatory_eligible_products": 1439,
+  "source_supported_products": 1508,
+  "potential_alias_groups": 33,
+  "supported_family_exposed": 50,
+  "coverage": [
+    {
+      "family": "drinking_water",
+      "store": "carrefour",
+      "source_supported": 295,
+      "new_confirmatory_eligible": 278,
+      "query_origins": 116
+    },
+    {
+      "family": "drinking_water",
+      "store": "consum",
+      "source_supported": 76,
+      "new_confirmatory_eligible": 63,
+      "query_origins": 27
+    },
+    {
+      "family": "drinking_water",
+      "store": "mercadona",
+      "source_supported": 188,
+      "new_confirmatory_eligible": 182,
+      "query_origins": 76
+    },
+    {
+      "family": "drinking_water",
+      "store": "plusfresc",
+      "source_supported": 57,
+      "new_confirmatory_eligible": 51,
+      "query_origins": 22
+    },
+    {
+      "family": "yogurt",
+      "store": "carrefour",
+      "source_supported": 439,
+      "new_confirmatory_eligible": 435,
+      "query_origins": 182
+    },
+    {
+      "family": "yogurt",
+      "store": "consum",
+      "source_supported": 113,
+      "new_confirmatory_eligible": 105,
+      "query_origins": 43
+    },
+    {
+      "family": "yogurt",
+      "store": "mercadona",
+      "source_supported": 66,
+      "new_confirmatory_eligible": 61,
+      "query_origins": 25
+    },
+    {
+      "family": "yogurt",
+      "store": "plusfresc",
+      "source_supported": 219,
+      "new_confirmatory_eligible": 211,
+      "query_origins": 88
+    },
+    {
+      "family": "frozen_potatoes",
+      "store": "carrefour",
+      "source_supported": 32,
+      "new_confirmatory_eligible": 32,
+      "query_origins": 13
+    },
+    {
+      "family": "frozen_potatoes",
+      "store": "consum",
+      "source_supported": 8,
+      "new_confirmatory_eligible": 7,
+      "query_origins": 3
+    },
+    {
+      "family": "frozen_potatoes",
+      "store": "mercadona",
+      "source_supported": 7,
+      "new_confirmatory_eligible": 6,
+      "query_origins": 2
+    },
+    {
+      "family": "frozen_potatoes",
+      "store": "plusfresc",
+      "source_supported": 8,
+      "new_confirmatory_eligible": 8,
+      "query_origins": 3
+    }
+  ],
+  "gold_labels": 0,
+  "holdout_assigned": false,
+  "G2_pass": false,
+  "missing_location_tables_for_pilot": [
+    "carrefour",
+    "mercadona"
+  ],
+  "corpus_ready_for_CE201_CE202": true,
+  "stability": [
+    {
+      "store": "carrefour",
+      "kind": "fingerprints",
+      "rows": 2745,
+      "status": "all_content_fingerprints_match",
+      "atomic_snapshot": false
+    },
+    {
+      "store": "carrefour",
+      "kind": "location-fingerprints",
+      "rows": 0,
+      "status": "all_content_fingerprints_match",
+      "atomic_snapshot": false
+    },
+    {
+      "store": "consum",
+      "kind": "fingerprints",
+      "rows": 488,
+      "status": "all_content_fingerprints_match",
+      "atomic_snapshot": false
+    },
+    {
+      "store": "consum",
+      "kind": "location-fingerprints",
+      "rows": 1988,
+      "status": "all_content_fingerprints_match",
+      "atomic_snapshot": false
+    },
+    {
+      "store": "mercadona",
+      "kind": "fingerprints",
+      "rows": 490,
+      "status": "all_content_fingerprints_match",
+      "atomic_snapshot": false
+    },
+    {
+      "store": "mercadona",
+      "kind": "location-fingerprints",
+      "rows": 0,
+      "status": "all_content_fingerprints_match",
+      "atomic_snapshot": false
+    },
+    {
+      "store": "plusfresc",
+      "kind": "fingerprints",
+      "rows": 453,
+      "status": "all_content_fingerprints_match",
+      "atomic_snapshot": false
+    },
+    {
+      "store": "plusfresc",
+      "kind": "location-fingerprints",
+      "rows": 3201,
+      "status": "all_content_fingerprints_match",
+      "atomic_snapshot": false
+    }
+  ],
+  "source_pages": 118,
+  "quantities_are_sampling_evidence_not_normalized_truth": true,
+  "location_observations_for_target_mapping": 1211
+}

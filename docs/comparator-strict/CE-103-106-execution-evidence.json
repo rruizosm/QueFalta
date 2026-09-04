@@ -1,0 +1,2234 @@
+{
+  "version": 1,
+  "project_ref": "gkffvigcnsesbaihycay",
+  "authority": "CE-SEQ-003",
+  "migration": {
+    "name": "comparator_strict_private_foundation",
+    "remote_version": "20260903080621",
+    "sha256": "11ff64042b6b372699a80c005d2ff23c217531a41f4bf76b7fb8e3740170df86",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"success\":true}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  "records": [
+    {
+      "key": "ce103_current_preflight",
+      "sql": "BEGIN READ ONLY;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nSELECT jsonb_build_object(\n 'captured_at',clock_timestamp(),\n 'strict_schema_exists',to_regnamespace('comparator_strict') IS NOT NULL,\n 'client_connections',(SELECT count(*) FROM pg_stat_activity WHERE backend_type='client backend' AND pid<>pg_backend_pid()),\n 'blocked',(SELECT count(*) FROM pg_stat_activity WHERE pid<>pg_backend_pid() AND cardinality(pg_blocking_pids(pid))>0),\n 'active_older_30s',(SELECT count(*) FROM pg_stat_activity WHERE state='active' AND query_start<now()-interval '30 seconds' AND pid<>pg_backend_pid()),\n 'legacy_functions',(SELECT jsonb_agg(jsonb_build_object('schema',n.nspname,'name',p.proname,'args',pg_get_function_identity_arguments(p.oid),'hash',md5(pg_get_functiondef(p.oid)))) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname IN ('public','private','comparator_internal') AND p.proname IN ('catalog_cheaper_products_v7','catalog_finalize_embedding_batch','catalog_dispatch_embedding_jobs','claim_free_comparator_use')),\n 'unmapped_migrations',(SELECT jsonb_agg(jsonb_build_object('version',version,'name',name,'statement_count',cardinality(statements),'bytes',octet_length(array_to_string(statements,E'\\n')),'hash',md5(array_to_string(statements,E'\\n')))) FROM supabase_migrations.schema_migrations WHERE version IN ('20260823194414','20260824172919')),\n 'extensions',(SELECT jsonb_agg(jsonb_build_object('name',name,'installed',installed_version,'available',default_version)) FROM pg_available_extensions WHERE name IN ('pgtap','pg_jsonschema')),\n 'default_privileges',(SELECT jsonb_agg(jsonb_build_object('owner',pg_get_userbyid(defaclrole),'schema',n.nspname,'type',defaclobjtype,'acl',defaclacl::text)) FROM pg_default_acl a LEFT JOIN pg_namespace n ON n.oid=a.defaclnamespace WHERE defaclrole=(SELECT oid FROM pg_roles WHERE rolname=current_user))\n) AS evidence;\nROLLBACK;",
+      "rows": [
+        {
+          "evidence": {
+            "blocked": 0,
+            "extensions": [
+              {
+                "name": "pgtap",
+                "available": "1.3.3",
+                "installed": null
+              },
+              {
+                "name": "pg_jsonschema",
+                "available": "0.3.3",
+                "installed": null
+              }
+            ],
+            "captured_at": "2026-09-03T07:52:22.109309+00:00",
+            "active_older_30s": 0,
+            "legacy_functions": [
+              {
+                "args": "p_source_store text, p_source_product_id text, p_stores text[], p_language text",
+                "hash": "86c703ed6f6fe9888a4a8f70ca2df086",
+                "name": "catalog_cheaper_products_v7",
+                "schema": "public"
+              },
+              {
+                "args": "p_max_requests integer",
+                "hash": "b9c019255990e1f0c2bb69125f8cce75",
+                "name": "catalog_dispatch_embedding_jobs",
+                "schema": "public"
+              },
+              {
+                "args": "p_batch jsonb",
+                "hash": "c07dddcf7361441f22a6fd3ee2698a74",
+                "name": "catalog_finalize_embedding_batch",
+                "schema": "public"
+              },
+              {
+                "args": "",
+                "hash": "eb0178e6a3f89a7bb4ecc477cb0ea1bd",
+                "name": "claim_free_comparator_use",
+                "schema": "private"
+              }
+            ],
+            "client_connections": 15,
+            "default_privileges": [
+              {
+                "acl": "{postgres=rwU/postgres,anon=rwU/postgres,authenticated=rwU/postgres,service_role=rwU/postgres}",
+                "type": "S",
+                "owner": "postgres",
+                "schema": "public"
+              },
+              {
+                "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+                "type": "f",
+                "owner": "postgres",
+                "schema": "public"
+              },
+              {
+                "acl": "{postgres=arwdDxtm/postgres,anon=arwdDxtm/postgres,authenticated=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+                "type": "r",
+                "owner": "postgres",
+                "schema": "public"
+              },
+              {
+                "acl": "{postgres=rwU/postgres,anon=rwU/postgres,authenticated=rwU/postgres,service_role=rwU/postgres}",
+                "type": "S",
+                "owner": "postgres",
+                "schema": "storage"
+              },
+              {
+                "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+                "type": "f",
+                "owner": "postgres",
+                "schema": "storage"
+              },
+              {
+                "acl": "{postgres=arwdDxtm/postgres,anon=arwdDxtm/postgres,authenticated=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+                "type": "r",
+                "owner": "postgres",
+                "schema": "storage"
+              },
+              {
+                "acl": "{pg_monitor=r/postgres}",
+                "type": "S",
+                "owner": "postgres",
+                "schema": "pgmq"
+              },
+              {
+                "acl": "{pg_monitor=r/postgres}",
+                "type": "r",
+                "owner": "postgres",
+                "schema": "pgmq"
+              }
+            ],
+            "unmapped_migrations": [
+              {
+                "hash": "cc607775fe0f8df97fe6f6d860070560",
+                "name": "fix_targeted_price_alert_processor_alias",
+                "bytes": 5009,
+                "version": "20260823194414",
+                "statement_count": 1
+              },
+              {
+                "hash": "abb4f42f82240fdae6863d0da43d80ed",
+                "name": "dashboard_metrics_and_match_review",
+                "bytes": 1109,
+                "version": "20260824172919",
+                "statement_count": 1
+              }
+            ],
+            "strict_schema_exists": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "ce103_mapping",
+      "sql": "BEGIN READ ONLY; SET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nSELECT version,name,(SELECT jsonb_agg(m[1]) FROM regexp_matches(array_to_string(statements,E'\\n'),'(?i)create\\s+(?:or\\s+replace\\s+)?(?:function|view|table)\\s+([a-z_][a-z_0-9]*(?:\\.[a-z_][a-z_0-9]*)?)','g') m) AS declared_objects FROM supabase_migrations.schema_migrations WHERE version IN ('20260823194414','20260824172919');\nROLLBACK;",
+      "rows": [
+        {
+          "version": "20260823194414",
+          "name": "fix_targeted_price_alert_processor_alias",
+          "declared_objects": [
+            "public.claim_price_alert_deliveries_for_user"
+          ]
+        },
+        {
+          "version": "20260824172919",
+          "name": "dashboard_metrics_and_match_review",
+          "declared_objects": [
+            "public.dashboard_app_active_user_metrics"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ce103_preapply",
+      "sql": "BEGIN READ ONLY;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nSELECT jsonb_build_object(\n'captured_at',now(),\n'strict_schema_absent',to_regnamespace('comparator_strict') IS NULL,\n'client_connections',(SELECT count(*) FROM pg_stat_activity WHERE backend_type='client backend' AND pid<>pg_backend_pid()),\n'blocked',(SELECT count(*) FROM pg_stat_activity WHERE wait_event_type='Lock' AND pid<>pg_backend_pid()),\n'active_older_30s',(SELECT count(*) FROM pg_stat_activity WHERE state='active' AND query_start<now()-interval '30 seconds' AND pid<>pg_backend_pid()),\n'event_triggers',(SELECT jsonb_agg(jsonb_build_object('name',e.evtname,'event',e.evtevent,'enabled',e.evtenabled,'function',e.evtfoid::regproc::text,'tags',e.evttags)) FROM pg_event_trigger e WHERE e.evtenabled<>'D'),\n'api_schemas',(SELECT jsonb_agg(setting) FROM pg_db_role_setting CROSS JOIN LATERAL unnest(setconfig) setting WHERE setting LIKE 'pgrst.db_schemas=%'),\n'legacy',(SELECT jsonb_agg(jsonb_build_object('schema',n.nspname,'name',p.proname,'hash',md5(pg_get_functiondef(p.oid))) ORDER BY n.nspname,p.proname) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE (n.nspname='public' AND p.proname IN ('catalog_cheaper_products_v7','catalog_dispatch_embedding_jobs','catalog_finalize_embedding_batch')) OR (n.nspname='private' AND p.proname='claim_free_comparator_use')),\n'catalog_columns',(SELECT jsonb_agg(jsonb_build_object('table',table_name,'column',column_name)) FROM information_schema.columns WHERE table_schema='public' AND table_name IN ('mercadona_products','carrefour_products','consum_products','plusfresc_products') AND column_name IN ('id','display_name','published','packaging','unit_price','unit_size','brand','updated_at','synced_at','gtin','ean','weight','price_per_unit','bulk_price','size'))\n) evidence; ROLLBACK;",
+      "rows": [
+        {
+          "evidence": {
+            "legacy": [
+              {
+                "hash": "eb0178e6a3f89a7bb4ecc477cb0ea1bd",
+                "name": "claim_free_comparator_use",
+                "schema": "private"
+              },
+              {
+                "hash": "86c703ed6f6fe9888a4a8f70ca2df086",
+                "name": "catalog_cheaper_products_v7",
+                "schema": "public"
+              },
+              {
+                "hash": "b9c019255990e1f0c2bb69125f8cce75",
+                "name": "catalog_dispatch_embedding_jobs",
+                "schema": "public"
+              },
+              {
+                "hash": "c07dddcf7361441f22a6fd3ee2698a74",
+                "name": "catalog_finalize_embedding_batch",
+                "schema": "public"
+              }
+            ],
+            "blocked": 0,
+            "api_schemas": null,
+            "captured_at": "2026-09-03T08:04:20.862249+00:00",
+            "event_triggers": [
+              {
+                "name": "issue_graphql_placeholder",
+                "tags": [
+                  "DROP EXTENSION"
+                ],
+                "event": "sql_drop",
+                "enabled": "O",
+                "function": "set_graphql_placeholder"
+              },
+              {
+                "name": "pgrst_ddl_watch",
+                "tags": null,
+                "event": "ddl_command_end",
+                "enabled": "O",
+                "function": "pgrst_ddl_watch"
+              },
+              {
+                "name": "pgrst_drop_watch",
+                "tags": null,
+                "event": "sql_drop",
+                "enabled": "O",
+                "function": "pgrst_drop_watch"
+              },
+              {
+                "name": "issue_pg_cron_access",
+                "tags": [
+                  "CREATE EXTENSION"
+                ],
+                "event": "ddl_command_end",
+                "enabled": "O",
+                "function": "grant_pg_cron_access"
+              },
+              {
+                "name": "issue_pg_net_access",
+                "tags": [
+                  "CREATE EXTENSION"
+                ],
+                "event": "ddl_command_end",
+                "enabled": "O",
+                "function": "grant_pg_net_access"
+              },
+              {
+                "name": "issue_pg_graphql_access",
+                "tags": [
+                  "CREATE EXTENSION"
+                ],
+                "event": "ddl_command_end",
+                "enabled": "O",
+                "function": "grant_pg_graphql_access"
+              }
+            ],
+            "catalog_columns": [
+              {
+                "table": "carrefour_products",
+                "column": "id"
+              },
+              {
+                "table": "carrefour_products",
+                "column": "display_name"
+              },
+              {
+                "table": "carrefour_products",
+                "column": "ean"
+              },
+              {
+                "table": "carrefour_products",
+                "column": "unit_price"
+              },
+              {
+                "table": "carrefour_products",
+                "column": "published"
+              },
+              {
+                "table": "carrefour_products",
+                "column": "synced_at"
+              },
+              {
+                "table": "carrefour_products",
+                "column": "price_per_unit"
+              },
+              {
+                "table": "consum_products",
+                "column": "id"
+              },
+              {
+                "table": "consum_products",
+                "column": "display_name"
+              },
+              {
+                "table": "consum_products",
+                "column": "brand"
+              },
+              {
+                "table": "consum_products",
+                "column": "packaging"
+              },
+              {
+                "table": "consum_products",
+                "column": "ean"
+              },
+              {
+                "table": "consum_products",
+                "column": "unit_price"
+              },
+              {
+                "table": "consum_products",
+                "column": "price_per_unit"
+              },
+              {
+                "table": "consum_products",
+                "column": "published"
+              },
+              {
+                "table": "consum_products",
+                "column": "synced_at"
+              },
+              {
+                "table": "mercadona_products",
+                "column": "id"
+              },
+              {
+                "table": "mercadona_products",
+                "column": "display_name"
+              },
+              {
+                "table": "mercadona_products",
+                "column": "packaging"
+              },
+              {
+                "table": "mercadona_products",
+                "column": "unit_price"
+              },
+              {
+                "table": "mercadona_products",
+                "column": "published"
+              },
+              {
+                "table": "mercadona_products",
+                "column": "synced_at"
+              },
+              {
+                "table": "mercadona_products",
+                "column": "price_per_unit"
+              },
+              {
+                "table": "mercadona_products",
+                "column": "ean"
+              },
+              {
+                "table": "plusfresc_products",
+                "column": "id"
+              },
+              {
+                "table": "plusfresc_products",
+                "column": "display_name"
+              },
+              {
+                "table": "plusfresc_products",
+                "column": "brand"
+              },
+              {
+                "table": "plusfresc_products",
+                "column": "unit_price"
+              },
+              {
+                "table": "plusfresc_products",
+                "column": "price_per_unit"
+              },
+              {
+                "table": "plusfresc_products",
+                "column": "published"
+              },
+              {
+                "table": "plusfresc_products",
+                "column": "synced_at"
+              }
+            ],
+            "active_older_30s": 0,
+            "client_connections": 17,
+            "strict_schema_absent": true
+          }
+        }
+      ]
+    },
+    {
+      "key": "ce103_postapply",
+      "sql": "BEGIN READ ONLY;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nSELECT jsonb_build_object('captured_at',now(),\n'tables',(SELECT jsonb_agg(jsonb_build_object('name',c.relname,'rls',c.relrowsecurity,'owner',pg_get_userbyid(c.relowner),'acl',c.relacl::text)) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='comparator_strict' AND c.relkind='r'),\n'roles',(SELECT jsonb_agg(jsonb_build_object('role',r.role,'schema_usage',has_schema_privilege(r.role,'comparator_strict','USAGE'),'schema_create',has_schema_privilege(r.role,'comparator_strict','CREATE'),'table',t.name,'any_table_grant',has_table_privilege(r.role,'comparator_strict.'||t.name,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER'))) FROM (VALUES ('anon'),('authenticated'),('service_role')) r(role) CROSS JOIN (VALUES ('execution_control'),('execution_jobs'),('execution_budget'),('test_principals')) t(name)),\n'rows',jsonb_build_object('control',(SELECT count(*) FROM comparator_strict.execution_control),'jobs',(SELECT count(*) FROM comparator_strict.execution_jobs),'budget',(SELECT count(*) FROM comparator_strict.execution_budget),'principals',(SELECT count(*) FROM comparator_strict.test_principals)),\n'policies',(SELECT count(*) FROM pg_policies WHERE schemaname='comparator_strict'),\n'migration',(SELECT jsonb_agg(jsonb_build_object('version',version,'name',name,'statement_count',cardinality(statements))) FROM supabase_migrations.schema_migrations WHERE name='comparator_strict_private_foundation'),\n'legacy',(SELECT jsonb_agg(jsonb_build_object('schema',n.nspname,'name',p.proname,'hash',md5(pg_get_functiondef(p.oid))) ORDER BY n.nspname,p.proname) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE (n.nspname='public' AND p.proname IN ('catalog_cheaper_products_v7','catalog_dispatch_embedding_jobs','catalog_finalize_embedding_batch')) OR (n.nspname='private' AND p.proname='claim_free_comparator_use')),\n'health',jsonb_build_object('connections',(SELECT count(*) FROM pg_stat_activity WHERE backend_type='client backend' AND pid<>pg_backend_pid()),'blocked',(SELECT count(*) FROM pg_stat_activity WHERE wait_event_type='Lock' AND pid<>pg_backend_pid()),'active_older_30s',(SELECT count(*) FROM pg_stat_activity WHERE state='active' AND query_start<now()-interval '30 seconds' AND pid<>pg_backend_pid()))\n) evidence; ROLLBACK;",
+      "rows": [
+        {
+          "evidence": {
+            "rows": {
+              "jobs": 0,
+              "budget": 0,
+              "control": 0,
+              "principals": 0
+            },
+            "roles": [
+              {
+                "role": "anon",
+                "table": "execution_control",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "authenticated",
+                "table": "execution_control",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "service_role",
+                "table": "execution_control",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "anon",
+                "table": "execution_jobs",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "authenticated",
+                "table": "execution_jobs",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "service_role",
+                "table": "execution_jobs",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "anon",
+                "table": "execution_budget",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "authenticated",
+                "table": "execution_budget",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "service_role",
+                "table": "execution_budget",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "anon",
+                "table": "test_principals",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "authenticated",
+                "table": "test_principals",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "service_role",
+                "table": "test_principals",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              }
+            ],
+            "health": {
+              "blocked": 0,
+              "connections": 6,
+              "active_older_30s": 0
+            },
+            "legacy": [
+              {
+                "hash": "eb0178e6a3f89a7bb4ecc477cb0ea1bd",
+                "name": "claim_free_comparator_use",
+                "schema": "private"
+              },
+              {
+                "hash": "86c703ed6f6fe9888a4a8f70ca2df086",
+                "name": "catalog_cheaper_products_v7",
+                "schema": "public"
+              },
+              {
+                "hash": "b9c019255990e1f0c2bb69125f8cce75",
+                "name": "catalog_dispatch_embedding_jobs",
+                "schema": "public"
+              },
+              {
+                "hash": "c07dddcf7361441f22a6fd3ee2698a74",
+                "name": "catalog_finalize_embedding_batch",
+                "schema": "public"
+              }
+            ],
+            "tables": [
+              {
+                "acl": "{postgres=arwdDxtm/postgres}",
+                "rls": true,
+                "name": "execution_jobs",
+                "owner": "postgres"
+              },
+              {
+                "acl": "{postgres=arwdDxtm/postgres}",
+                "rls": true,
+                "name": "execution_control",
+                "owner": "postgres"
+              },
+              {
+                "acl": "{postgres=arwdDxtm/postgres}",
+                "rls": true,
+                "name": "execution_budget",
+                "owner": "postgres"
+              },
+              {
+                "acl": "{postgres=arwdDxtm/postgres}",
+                "rls": true,
+                "name": "test_principals",
+                "owner": "postgres"
+              }
+            ],
+            "policies": 0,
+            "migration": [
+              {
+                "name": "comparator_strict_private_foundation",
+                "version": "20260903080621",
+                "statement_count": 1
+              }
+            ],
+            "captured_at": "2026-09-03T08:07:06.044576+00:00"
+          }
+        }
+      ]
+    },
+    {
+      "key": "ce104_sample",
+      "sql": "BEGIN READ ONLY; SET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nWITH hints(hint,pattern) AS (VALUES ('water_candidate','%agua%'),('yogurt_candidate','%yogur%'),('potato_candidate','%patata%')),\nsamples AS (SELECT 'mercadona'::text AS store,h.hint,to_jsonb(p) AS product FROM hints h CROSS JOIN LATERAL (SELECT id::text,display_name,packaging::text,unit_price,price_per_unit::text,ean::text,published,synced_at FROM public.mercadona_products WHERE published AND display_name ILIKE h.pattern ORDER BY id LIMIT 6) p\nUNION ALL\nSELECT 'carrefour'::text AS store,h.hint,to_jsonb(p) AS product FROM hints h CROSS JOIN LATERAL (SELECT id::text,display_name,NULL::text AS packaging,unit_price,price_per_unit::text,ean::text,published,synced_at FROM public.carrefour_products WHERE published AND display_name ILIKE h.pattern ORDER BY id LIMIT 6) p\nUNION ALL\nSELECT 'consum'::text AS store,h.hint,to_jsonb(p) AS product FROM hints h CROSS JOIN LATERAL (SELECT id::text,display_name,packaging::text,unit_price,price_per_unit::text,ean::text,published,synced_at FROM public.consum_products WHERE published AND display_name ILIKE h.pattern ORDER BY id LIMIT 6) p\nUNION ALL\nSELECT 'plusfresc'::text AS store,h.hint,to_jsonb(p) AS product FROM hints h CROSS JOIN LATERAL (SELECT id::text,display_name,NULL::text AS packaging,unit_price,price_per_unit::text,NULL::text AS ean,published,synced_at FROM public.plusfresc_products WHERE published AND display_name ILIKE h.pattern ORDER BY id LIMIT 6) p)\nSELECT jsonb_build_object('captured_at',now(),'selection','first six active rows by id per store/lexical hint; not random, not validated families','products',(SELECT jsonb_agg(to_jsonb(s) ORDER BY store,hint,product->>'id') FROM samples s)) evidence;\nROLLBACK;",
+      "rows": [
+        {
+          "evidence": {
+            "products": [
+              {
+                "hint": "potato_candidate",
+                "store": "carrefour",
+                "product": {
+                  "id": "2047790350",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-08-31T06:29:04.947+00:00",
+                  "unit_price": 2.99,
+                  "display_name": "Pelador Patatas FACKELMANN Cooking 11,5cm - Inox",
+                  "price_per_unit": "2.99"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "carrefour",
+                "product": {
+                  "id": "521003658",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-08-31T06:29:04.947+00:00",
+                  "unit_price": 0.8,
+                  "display_name": "Patatas fritas gourmet Lay's sin gluten 45 g.",
+                  "price_per_unit": "17.78"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "carrefour",
+                "product": {
+                  "id": "521003682",
+                  "ean": "8431876082739",
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-08-31T06:29:04.947+00:00",
+                  "unit_price": 1.24,
+                  "display_name": "Patatas fritas onduladas Sensation Carrefour 170 g.",
+                  "price_per_unit": "7.29"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "carrefour",
+                "product": {
+                  "id": "521003684",
+                  "ean": "8431876082722",
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-08-31T06:29:04.947+00:00",
+                  "unit_price": 0.84,
+                  "display_name": "Patatas fritas lisas Classic Carrefour 170 g.",
+                  "price_per_unit": "4.94"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "carrefour",
+                "product": {
+                  "id": "521003690",
+                  "ean": "8410199281876",
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-08-31T06:29:04.947+00:00",
+                  "unit_price": 3.25,
+                  "display_name": "Patatas fritas churrería Santa Ana sin gluten pack de 2 bolsas de 135 g.",
+                  "price_per_unit": "12.04"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "carrefour",
+                "product": {
+                  "id": "521003713",
+                  "ean": "8431876098082",
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-08-31T06:29:04.947+00:00",
+                  "unit_price": 1.72,
+                  "display_name": "Patatas fritas en aceite de oliva bajo contenido de sal Extra Carrefour 150 g.",
+                  "price_per_unit": "11.47"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "carrefour",
+                "product": {
+                  "id": "2002870135",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-08-31T06:29:04.947+00:00",
+                  "unit_price": 9.29,
+                  "display_name": "Agua de colonia Gotas Frescas Baby Instituto Español 750 ml",
+                  "price_per_unit": "12.4"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "carrefour",
+                "product": {
+                  "id": "2002870179",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-08-31T06:29:04.947+00:00",
+                  "unit_price": 5.49,
+                  "display_name": "Agua de colonia Gotas Frescas Baby Instituto Español 250 ml",
+                  "price_per_unit": "22"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "carrefour",
+                "product": {
+                  "id": "2020197538",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-08-31T06:29:04.947+00:00",
+                  "unit_price": 13.99,
+                  "display_name": "Set 3 Filtros de Agua BRITA MicroDisc",
+                  "price_per_unit": "4.66"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "carrefour",
+                "product": {
+                  "id": "2047290071",
+                  "ean": "8436538551097",
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-08-31T06:29:04.947+00:00",
+                  "unit_price": 11.85,
+                  "display_name": "Agua de mar higiene nasal en spray Senti2 pack de 2 unidades de 100 ml.",
+                  "price_per_unit": "59.2"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "carrefour",
+                "product": {
+                  "id": "520661019",
+                  "ean": "8411547000156",
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-08-31T06:29:04.947+00:00",
+                  "unit_price": 0.72,
+                  "display_name": "Agua mineral Solan de Cabras 33 cl.",
+                  "price_per_unit": "2.18"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "carrefour",
+                "product": {
+                  "id": "520661023",
+                  "ean": "8410055033014",
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-08-31T06:29:04.947+00:00",
+                  "unit_price": 0.5,
+                  "display_name": "Agua mineral Font Vella tapón deportivo 33 cl.",
+                  "price_per_unit": "1.52"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "carrefour",
+                "product": {
+                  "id": "2002870194",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-08-31T06:29:04.947+00:00",
+                  "unit_price": 1.07,
+                  "display_name": "Bolsita de yogur con fruta y cookies Hero Solo sin azúcar añadido 100 g.",
+                  "price_per_unit": "10.7"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "carrefour",
+                "product": {
+                  "id": "2003043837",
+                  "ean": "8410175057402",
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-08-31T06:29:04.947+00:00",
+                  "unit_price": 3.15,
+                  "display_name": "Yogur infantil petit queso fresco y frutas variadas desde 6 meses Hero Baby sin gluten pack de 2 unidades de 80 g.",
+                  "price_per_unit": "19.69"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "carrefour",
+                "product": {
+                  "id": "2003044015",
+                  "ean": "8410175044860",
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-08-31T06:29:04.947+00:00",
+                  "unit_price": 1.05,
+                  "display_name": "Bolsita con yogur, plátano y fresa Hero Solo sin gluten y sin azúcar añadido 100 g.",
+                  "price_per_unit": "10.5"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "carrefour",
+                "product": {
+                  "id": "2003044016",
+                  "ean": "8410175044877",
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-08-31T06:29:04.947+00:00",
+                  "unit_price": 1.05,
+                  "display_name": "Bolsita de yogur, manzana y fresa desde 6 meses Hero Solo sin gluten y sin azúcar añadido 100 g.",
+                  "price_per_unit": "10.5"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "carrefour",
+                "product": {
+                  "id": "521004510",
+                  "ean": "8424259802031",
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-08-31T06:29:04.947+00:00",
+                  "unit_price": 2.99,
+                  "display_name": "Galletas con chocolate, leche y yogur Gerblé sin aceite de palma 230 g.",
+                  "price_per_unit": "13"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "carrefour",
+                "product": {
+                  "id": "521014020",
+                  "ean": "8423207000093",
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-08-31T06:29:04.947+00:00",
+                  "unit_price": 2.99,
+                  "display_name": "Tortitas de arroz integrales sabor yogur Bicentury 130 g.",
+                  "price_per_unit": "23"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "consum",
+                "product": {
+                  "id": "303677",
+                  "ean": "8414513896746",
+                  "packaging": "3 Kg",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:38.117+00:00",
+                  "unit_price": 4.3,
+                  "display_name": "Patata Nueva España Aptas Todo Uso Culinario",
+                  "price_per_unit": "1.43"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "consum",
+                "product": {
+                  "id": "56911",
+                  "ean": "8420814032769",
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:38.117+00:00",
+                  "unit_price": 0.59,
+                  "display_name": "Patata  Selección Nueva de España",
+                  "price_per_unit": "1.9"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "consum",
+                "product": {
+                  "id": "57018",
+                  "ean": "8420814301049",
+                  "packaging": "1 Kg",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:38.117+00:00",
+                  "unit_price": 2.55,
+                  "display_name": "Patata Guarnición",
+                  "price_per_unit": "2.55"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "consum",
+                "product": {
+                  "id": "7000052",
+                  "ean": "8410071100585",
+                  "packaging": "250 Gr",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:38.117+00:00",
+                  "unit_price": 2.39,
+                  "display_name": "Patatas Fritas Lisas Caseras Bolsa Papel",
+                  "price_per_unit": "9.56"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "consum",
+                "product": {
+                  "id": "7020659",
+                  "ean": "8410199281876",
+                  "packaging": "2 x 135 Gr",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:38.117+00:00",
+                  "unit_price": 2.99,
+                  "display_name": "Patatas Fritas Lisas Artesanas Bolsa Papel",
+                  "price_per_unit": "11.07"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "consum",
+                "product": {
+                  "id": "7028475",
+                  "ean": "8414807100184",
+                  "packaging": "1 Kg",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:38.117+00:00",
+                  "unit_price": 1.85,
+                  "display_name": "Patatas Prefritas Corte Grueso",
+                  "price_per_unit": "1.85"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "consum",
+                "product": {
+                  "id": "1191998",
+                  "ean": "8410055050011",
+                  "packaging": "0,5 L",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:38.117+00:00",
+                  "unit_price": 0.72,
+                  "display_name": "Agua Mineral Natural Tapón Rosca",
+                  "price_per_unit": "1.44"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "consum",
+                "product": {
+                  "id": "1192004",
+                  "ean": "8410055033014",
+                  "packaging": "0,33 L",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:38.117+00:00",
+                  "unit_price": 0.5,
+                  "display_name": "Agua Mineral Natural",
+                  "price_per_unit": "1.52"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "consum",
+                "product": {
+                  "id": "138297",
+                  "ean": "8410749001114",
+                  "packaging": "6 x 0,3 L",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:38.117+00:00",
+                  "unit_price": 6.49,
+                  "display_name": "Agua Mineral con Gas Pack de 6 Vidrio",
+                  "price_per_unit": "3.61"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "consum",
+                "product": {
+                  "id": "1535434",
+                  "ean": "8411002101602",
+                  "packaging": "0,5 L",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:38.117+00:00",
+                  "unit_price": 0.63,
+                  "display_name": "Agua Mineral Natural Tapón Sport",
+                  "price_per_unit": "1.26"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "consum",
+                "product": {
+                  "id": "1592575",
+                  "ean": "8413384222005",
+                  "packaging": "1,5 L",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:38.117+00:00",
+                  "unit_price": 0.79,
+                  "display_name": "Agua Mineral Natural Botella",
+                  "price_per_unit": "0.53"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "consum",
+                "product": {
+                  "id": "162925",
+                  "ean": "8410728180120",
+                  "packaging": "1,5 L",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:38.117+00:00",
+                  "unit_price": 0.65,
+                  "display_name": "Agua Mineral Natural. Botella",
+                  "price_per_unit": "0.43"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "consum",
+                "product": {
+                  "id": "204230",
+                  "ean": "8410500006112",
+                  "packaging": "4 x 120 Gr",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:38.117+00:00",
+                  "unit_price": 1,
+                  "display_name": "Yogur Sabor Limón Pack de 4 Unidades",
+                  "price_per_unit": "2.08"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "consum",
+                "product": {
+                  "id": "204420",
+                  "ean": "8410500006105",
+                  "packaging": "4 x 120 Gr",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:38.117+00:00",
+                  "unit_price": 1,
+                  "display_name": "Yogur Sabor Fresa Pack de 4 Unidades",
+                  "price_per_unit": "2.08"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "consum",
+                "product": {
+                  "id": "227645",
+                  "ean": "8410500006150",
+                  "packaging": "4 x 120 Gr",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:38.117+00:00",
+                  "unit_price": 1,
+                  "display_name": "Yogur Sabor Coco Pack de 4 Unidades",
+                  "price_per_unit": "2.08"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "consum",
+                "product": {
+                  "id": "227652",
+                  "ean": "8410500001360",
+                  "packaging": "8 x 120 Gr",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:38.117+00:00",
+                  "unit_price": 1.99,
+                  "display_name": "Yogur Natural Pack de 8 Unidades",
+                  "price_per_unit": "2.07"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "consum",
+                "product": {
+                  "id": "230920",
+                  "ean": "8410500001377",
+                  "packaging": "8 x 120 Gr",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:38.117+00:00",
+                  "unit_price": 1.99,
+                  "display_name": "Yogur Natural Azucarado Pack de 8 Unidades",
+                  "price_per_unit": "2.07"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "consum",
+                "product": {
+                  "id": "236141",
+                  "ean": "8410500001575",
+                  "packaging": "4 x 120 Gr",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:38.117+00:00",
+                  "unit_price": 2.99,
+                  "display_name": "Activia Frutas Bosque Yogur Bífidus P-4 ud.",
+                  "price_per_unit": "6.23"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "mercadona",
+                "product": {
+                  "id": "11669",
+                  "ean": "8402001028809",
+                  "packaging": "Bandeja",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:33.803+00:00",
+                  "unit_price": 2.6,
+                  "display_name": "Patatas bravas con mayonesa y salsa picante Hacendado",
+                  "price_per_unit": "5.532"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "mercadona",
+                "product": {
+                  "id": "11670",
+                  "ean": "8402001028793",
+                  "packaging": "Bandeja",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:33.803+00:00",
+                  "unit_price": 2.6,
+                  "display_name": "Patatas bravas con allioli y salsa picante Hacendado",
+                  "price_per_unit": "5.532"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "mercadona",
+                "product": {
+                  "id": "13069",
+                  "ean": "8402001034114",
+                  "packaging": "Paquete",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:33.803+00:00",
+                  "unit_price": 1.2,
+                  "display_name": "Patatas fritas onduladas sabor queso de cabra y cebolla caramelizada Hacendado",
+                  "price_per_unit": "8"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "mercadona",
+                "product": {
+                  "id": "14960",
+                  "ean": "8402001040993",
+                  "packaging": "Bandeja",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:33.803+00:00",
+                  "unit_price": 2.5,
+                  "display_name": "Pasta fresca girasoles rellena de carrillera y puré de patata Hacendado",
+                  "price_per_unit": "10"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "mercadona",
+                "product": {
+                  "id": "15286",
+                  "ean": "8711571099844",
+                  "packaging": "Paquete",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:33.803+00:00",
+                  "unit_price": 2.1,
+                  "display_name": "Patatas prefritas Waffle con piel Hacendado ultracongeladas",
+                  "price_per_unit": "3.5"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "mercadona",
+                "product": {
+                  "id": "15534",
+                  "ean": "8402001014253",
+                  "packaging": "Tarro",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:33.803+00:00",
+                  "unit_price": 1.9,
+                  "display_name": "Patatas cocidas Hacendado",
+                  "price_per_unit": "4.75"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "mercadona",
+                "product": {
+                  "id": "12768",
+                  "ean": "8411395273139",
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:33.803+00:00",
+                  "unit_price": 5.04,
+                  "display_name": "Agua mineral con extra gas grande Firgas",
+                  "price_per_unit": "0.56"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "mercadona",
+                "product": {
+                  "id": "12769",
+                  "ean": "8411395373334",
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:33.803+00:00",
+                  "unit_price": 6.72,
+                  "display_name": "Agua mineral con extra gas pequeña Firgas",
+                  "price_per_unit": "1.12"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "mercadona",
+                "product": {
+                  "id": "12779",
+                  "ean": "8402001030147",
+                  "packaging": "Caja",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:33.803+00:00",
+                  "unit_price": 1.3,
+                  "display_name": "Tiras adhesivas protectoras de poliuretano Aqua Deliplus surtidas resistentes al agua",
+                  "price_per_unit": "0.109"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "mercadona",
+                "product": {
+                  "id": "12975",
+                  "ean": "8402001033155",
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:33.803+00:00",
+                  "unit_price": 2.4,
+                  "display_name": "Agua mineral pequeña Fontébil tapón infantil",
+                  "price_per_unit": "1.213"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "mercadona",
+                "product": {
+                  "id": "12976",
+                  "ean": "8402001033148",
+                  "packaging": "Botella",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:33.803+00:00",
+                  "unit_price": 0.4,
+                  "display_name": "Agua mineral pequeña Fontébil tapón infantil",
+                  "price_per_unit": "1.213"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "mercadona",
+                "product": {
+                  "id": "12977",
+                  "ean": "8402001033131",
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:33.803+00:00",
+                  "unit_price": 1.74,
+                  "display_name": "Agua mineral pequeña Fontébil",
+                  "price_per_unit": "0.58"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "mercadona",
+                "product": {
+                  "id": "13951",
+                  "ean": "8402001036606",
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:33.803+00:00",
+                  "unit_price": 1.6,
+                  "display_name": "Yogur sabores Hacendado 0% MG 0% azúcares añadidos",
+                  "price_per_unit": "1.6"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "mercadona",
+                "product": {
+                  "id": "14141",
+                  "ean": "8480000141415",
+                  "packaging": "Paquete",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:33.803+00:00",
+                  "unit_price": 1.9,
+                  "display_name": "Tortitas de arroz con chocolate blanco sabor yogur Hacendado",
+                  "price_per_unit": "15.834"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "mercadona",
+                "product": {
+                  "id": "15660",
+                  "ean": "8480000156600",
+                  "packaging": "Botella",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:33.803+00:00",
+                  "unit_price": 1.3,
+                  "display_name": "Yogur líquido piña y coco Hacendado 0% MG 0% azúcares añadidos",
+                  "price_per_unit": "1.3"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "mercadona",
+                "product": {
+                  "id": "15661",
+                  "ean": "8480000156617",
+                  "packaging": "Botella",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:33.803+00:00",
+                  "unit_price": 1.3,
+                  "display_name": "Yogur líquido frutos silvestres Hacendado 0% MG 0% azúcares añadidos",
+                  "price_per_unit": "1.3"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "mercadona",
+                "product": {
+                  "id": "17327",
+                  "ean": "8480000173270",
+                  "packaging": "Bote",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:33.803+00:00",
+                  "unit_price": 1.2,
+                  "display_name": "Salsa Yogur Hacendado",
+                  "price_per_unit": "3.871"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "mercadona",
+                "product": {
+                  "id": "20001",
+                  "ean": "8402001007897",
+                  "packaging": "Pack-16",
+                  "published": true,
+                  "synced_at": "2026-09-01T13:10:33.803+00:00",
+                  "unit_price": 2.4,
+                  "display_name": "Yogur sabores Hacendado",
+                  "price_per_unit": "1.2"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "plusfresc",
+                "product": {
+                  "id": "001218",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T12:49:13.414+00:00",
+                  "unit_price": 1.89,
+                  "display_name": "Patatas fritas con sal RUFFLES Onduladas, 150 g",
+                  "price_per_unit": "12.6"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "plusfresc",
+                "product": {
+                  "id": "001242",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T12:49:13.414+00:00",
+                  "unit_price": 2.05,
+                  "display_name": "Patatas fritas jamón RUFFLES, 150 g",
+                  "price_per_unit": "13.66"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "plusfresc",
+                "product": {
+                  "id": "001410",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T12:49:13.414+00:00",
+                  "unit_price": 1.39,
+                  "display_name": "Puré de patatas con leche MOUSLINE, 115 g",
+                  "price_per_unit": "12.08"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "plusfresc",
+                "product": {
+                  "id": "001411",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T12:49:13.414+00:00",
+                  "unit_price": 2.29,
+                  "display_name": "Puré de patatas doble MOUSLINE, 230 g",
+                  "price_per_unit": "9.95"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "plusfresc",
+                "product": {
+                  "id": "005425",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T12:49:13.414+00:00",
+                  "unit_price": 1.17,
+                  "display_name": "Patatas fritas onduladas ALTEZA, 160 g",
+                  "price_per_unit": "7.31"
+                }
+              },
+              {
+                "hint": "potato_candidate",
+                "store": "plusfresc",
+                "product": {
+                  "id": "005496",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T12:49:13.414+00:00",
+                  "unit_price": 1.89,
+                  "display_name": "Patatas fritas LAY'S Al punto de sal, 150 g",
+                  "price_per_unit": "12.6"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "plusfresc",
+                "product": {
+                  "id": "000599",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T12:49:13.414+00:00",
+                  "unit_price": 2.85,
+                  "display_name": "Agua mineral SOLAN DE CABRAS, 5 l",
+                  "price_per_unit": "0.57"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "plusfresc",
+                "product": {
+                  "id": "003281",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T12:49:13.414+00:00",
+                  "unit_price": 0.72,
+                  "display_name": "Agua FONT VELLA, 50 cl",
+                  "price_per_unit": "1.44"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "plusfresc",
+                "product": {
+                  "id": "003588",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T12:49:13.414+00:00",
+                  "unit_price": 0.52,
+                  "display_name": "Agua mineral AQUAREL, 33 cl",
+                  "price_per_unit": "1.57"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "plusfresc",
+                "product": {
+                  "id": "003683",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T12:49:13.414+00:00",
+                  "unit_price": 1.14,
+                  "display_name": "Agua mineral con gas FONTER, 1 l",
+                  "price_per_unit": "1.14"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "plusfresc",
+                "product": {
+                  "id": "005162",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T12:49:13.414+00:00",
+                  "unit_price": 0.59,
+                  "display_name": "Agua mineral FONT VELLA Junior, 33 cl",
+                  "price_per_unit": "1.78"
+                }
+              },
+              {
+                "hint": "water_candidate",
+                "store": "plusfresc",
+                "product": {
+                  "id": "005585",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T12:49:13.414+00:00",
+                  "unit_price": 0.69,
+                  "display_name": "Agua mineral VILADRAU, 1.5 l",
+                  "price_per_unit": "0.46"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "plusfresc",
+                "product": {
+                  "id": "002684",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T12:49:13.414+00:00",
+                  "unit_price": 2.99,
+                  "display_name": "Yogur desnatado con piña ACTIVIA DANONE,  pack 4 uds 480 grs",
+                  "price_per_unit": "4.66"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "plusfresc",
+                "product": {
+                  "id": "002694",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T12:49:13.414+00:00",
+                  "unit_price": 2.99,
+                  "display_name": "Yogur desnatado con ciruelas ACTIVIA DANONE, pack 4 unidades",
+                  "price_per_unit": "4.66"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "plusfresc",
+                "product": {
+                  "id": "002919",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T12:49:13.414+00:00",
+                  "unit_price": 3.99,
+                  "display_name": "Yogur líquido desnatado 0% ACTIMEL DANONE, pack 6 unidades",
+                  "price_per_unit": "6.65"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "plusfresc",
+                "product": {
+                  "id": "004100",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T12:49:13.414+00:00",
+                  "unit_price": 2.99,
+                  "display_name": "Yogur con cereales DANONE ACTIVIA 4 unidades, 460 gramos",
+                  "price_per_unit": "6.5"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "plusfresc",
+                "product": {
+                  "id": "004447",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T12:49:13.414+00:00",
+                  "unit_price": 1,
+                  "display_name": "Yogur natural DANONE, 4 unidades 480 gramos",
+                  "price_per_unit": "2.08"
+                }
+              },
+              {
+                "hint": "yogurt_candidate",
+                "store": "plusfresc",
+                "product": {
+                  "id": "004448",
+                  "ean": null,
+                  "packaging": null,
+                  "published": true,
+                  "synced_at": "2026-09-01T12:49:13.414+00:00",
+                  "unit_price": 1,
+                  "display_name": "Yogur natural azucarado DANONE, pack 4 unidades 480 gramos",
+                  "price_per_unit": "2.08"
+                }
+              }
+            ],
+            "selection": "first six active rows by id per store/lexical hint; not random, not validated families",
+            "captured_at": "2026-09-03T08:08:57.223041+00:00"
+          }
+        }
+      ]
+    },
+    {
+      "key": "ce106_precanary",
+      "sql": "BEGIN READ ONLY; SET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $test$\nDECLARE client_role text; object_name text; denied boolean;\nBEGIN\nFOREACH client_role IN ARRAY ARRAY['anon','authenticated','service_role'] LOOP\n FOREACH object_name IN ARRAY ARRAY['execution_control','execution_jobs','execution_budget','test_principals'] LOOP\n  EXECUTE format('SET LOCAL ROLE %I',client_role); denied:=false;\n  BEGIN EXECUTE format('SELECT 1 FROM comparator_strict.%I LIMIT 1',object_name);\n  EXCEPTION WHEN insufficient_privilege THEN denied:=true; END;\n  RESET ROLE;\n  IF NOT denied THEN RAISE EXCEPTION 'Unexpected accessible table % for %',object_name,client_role; END IF;\n END LOOP;\nEND LOOP;\nEND $test$;\nSELECT jsonb_build_object('captured_at',now(),'role_denials_passed',12,'health',jsonb_build_object(\n'connections',(SELECT count(*) FROM pg_stat_activity WHERE backend_type='client backend' AND pid<>pg_backend_pid()),\n'blocked',(SELECT count(*) FROM pg_stat_activity WHERE wait_event_type='Lock' AND pid<>pg_backend_pid()),\n'active_older_30s',(SELECT count(*) FROM pg_stat_activity WHERE state='active' AND query_start<now()-interval '30 seconds' AND pid<>pg_backend_pid()))) evidence;\nROLLBACK;",
+      "rows": [
+        {
+          "evidence": {
+            "health": {
+              "blocked": 0,
+              "connections": 4,
+              "active_older_30s": 0
+            },
+            "captured_at": "2026-09-03T08:10:38.257033+00:00",
+            "role_denials_passed": 12
+          }
+        }
+      ]
+    },
+    {
+      "key": "ce106_committed",
+      "sql": "BEGIN READ ONLY; SET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nSELECT jsonb_build_object('captured_at',now(),\n'control',(SELECT to_jsonb(c) FROM comparator_strict.execution_control c WHERE project_ref='gkffvigcnsesbaihycay'),\n'job',(SELECT to_jsonb(j) FROM comparator_strict.execution_jobs j WHERE project_ref='gkffvigcnsesbaihycay' AND operation_key='CE-106-foundation-canary-2026-09-03'),\n'budget',(SELECT to_jsonb(b) FROM comparator_strict.execution_budget b WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date='2026-09-03'),\n'principals',(SELECT count(*) FROM comparator_strict.test_principals),\n'blocked',(SELECT count(*) FROM pg_stat_activity WHERE wait_event_type='Lock' AND pid<>pg_backend_pid())) evidence;\nROLLBACK;",
+      "rows": [
+        {
+          "evidence": {
+            "job": {
+              "id": "129f8406-5ced-4789-b1aa-aab0259df7a4",
+              "status": "running",
+              "sql_sha256": "341e120e91bd94a8de966ca20ae901d67f06308494c7cabb34a4568f9ca34c4b",
+              "started_at": "2026-09-03T08:11:34.023112+00:00",
+              "deadline_at": "2026-09-03T08:31:34.023112+00:00",
+              "finished_at": null,
+              "project_ref": "gkffvigcnsesbaihycay",
+              "stop_reason": null,
+              "operation_key": "CE-106-foundation-canary-2026-09-03"
+            },
+            "budget": {
+              "updated_at": "2026-09-03T08:11:34.023112+00:00",
+              "budget_date": "2026-09-03",
+              "bytes_limit": 23068672,
+              "project_ref": "gkffvigcnsesbaihycay",
+              "bytes_reserved": 22484430,
+              "sql_ms_reserved": 280520,
+              "approval_reference": "CE-100-22MiB-2026-09-03",
+              "read_rows_reserved": 3900,
+              "write_rows_reserved": 20
+            },
+            "blocked": 0,
+            "control": {
+              "halted": true,
+              "enabled": false,
+              "updated_at": "2026-09-03T08:11:34.023112+00:00",
+              "project_ref": "gkffvigcnsesbaihycay",
+              "active_job_id": "129f8406-5ced-4789-b1aa-aab0259df7a4"
+            },
+            "principals": 0,
+            "captured_at": "2026-09-03T08:11:51.556138+00:00"
+          }
+        }
+      ]
+    },
+    {
+      "key": "ce106_final",
+      "sql": "BEGIN READ ONLY;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nSELECT jsonb_build_object('captured_at',now(),\n'tables',(SELECT jsonb_agg(jsonb_build_object('name',c.relname,'rls',c.relrowsecurity,'owner',pg_get_userbyid(c.relowner),'acl',c.relacl::text)) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='comparator_strict' AND c.relkind='r'),\n'roles',(SELECT jsonb_agg(jsonb_build_object('role',r.role,'schema_usage',has_schema_privilege(r.role,'comparator_strict','USAGE'),'schema_create',has_schema_privilege(r.role,'comparator_strict','CREATE'),'table',t.name,'any_table_grant',has_table_privilege(r.role,'comparator_strict.'||t.name,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER'))) FROM (VALUES ('anon'),('authenticated'),('service_role')) r(role) CROSS JOIN (VALUES ('execution_control'),('execution_jobs'),('execution_budget'),('test_principals')) t(name)),\n'rows',jsonb_build_object('control',(SELECT count(*) FROM comparator_strict.execution_control),'jobs',(SELECT count(*) FROM comparator_strict.execution_jobs),'budget',(SELECT count(*) FROM comparator_strict.execution_budget),'principals',(SELECT count(*) FROM comparator_strict.test_principals)),\n'canary_job',(SELECT to_jsonb(j) FROM comparator_strict.execution_jobs j WHERE operation_key='CE-106-foundation-canary-2026-09-03'),\n'budget',(SELECT to_jsonb(b) FROM comparator_strict.execution_budget b WHERE budget_date='2026-09-03'),\n'policies',(SELECT count(*) FROM pg_policies WHERE schemaname='comparator_strict'),\n'migration',(SELECT jsonb_agg(jsonb_build_object('version',version,'name',name,'statement_count',cardinality(statements))) FROM supabase_migrations.schema_migrations WHERE name='comparator_strict_private_foundation'),\n'legacy',(SELECT jsonb_agg(jsonb_build_object('schema',n.nspname,'name',p.proname,'hash',md5(pg_get_functiondef(p.oid))) ORDER BY n.nspname,p.proname) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE (n.nspname='public' AND p.proname IN ('catalog_cheaper_products_v7','catalog_dispatch_embedding_jobs','catalog_finalize_embedding_batch')) OR (n.nspname='private' AND p.proname='claim_free_comparator_use')),\n'health',jsonb_build_object('connections',(SELECT count(*) FROM pg_stat_activity WHERE backend_type='client backend' AND pid<>pg_backend_pid()),'blocked',(SELECT count(*) FROM pg_stat_activity WHERE wait_event_type='Lock' AND pid<>pg_backend_pid()),'active_older_30s',(SELECT count(*) FROM pg_stat_activity WHERE state='active' AND query_start<now()-interval '30 seconds' AND pid<>pg_backend_pid()))\n) evidence; ROLLBACK;",
+      "rows": [
+        {
+          "evidence": {
+            "rows": {
+              "jobs": 1,
+              "budget": 1,
+              "control": 0,
+              "principals": 0
+            },
+            "roles": [
+              {
+                "role": "anon",
+                "table": "execution_control",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "authenticated",
+                "table": "execution_control",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "service_role",
+                "table": "execution_control",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "anon",
+                "table": "execution_jobs",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "authenticated",
+                "table": "execution_jobs",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "service_role",
+                "table": "execution_jobs",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "anon",
+                "table": "execution_budget",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "authenticated",
+                "table": "execution_budget",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "service_role",
+                "table": "execution_budget",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "anon",
+                "table": "test_principals",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "authenticated",
+                "table": "test_principals",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              },
+              {
+                "role": "service_role",
+                "table": "test_principals",
+                "schema_usage": false,
+                "schema_create": false,
+                "any_table_grant": false
+              }
+            ],
+            "budget": {
+              "updated_at": "2026-09-03T08:11:34.023112+00:00",
+              "budget_date": "2026-09-03",
+              "bytes_limit": 23068672,
+              "project_ref": "gkffvigcnsesbaihycay",
+              "bytes_reserved": 22484430,
+              "sql_ms_reserved": 280520,
+              "approval_reference": "CE-100-22MiB-2026-09-03",
+              "read_rows_reserved": 3900,
+              "write_rows_reserved": 20
+            },
+            "health": {
+              "blocked": 0,
+              "connections": 8,
+              "active_older_30s": 0
+            },
+            "legacy": [
+              {
+                "hash": "eb0178e6a3f89a7bb4ecc477cb0ea1bd",
+                "name": "claim_free_comparator_use",
+                "schema": "private"
+              },
+              {
+                "hash": "86c703ed6f6fe9888a4a8f70ca2df086",
+                "name": "catalog_cheaper_products_v7",
+                "schema": "public"
+              },
+              {
+                "hash": "b9c019255990e1f0c2bb69125f8cce75",
+                "name": "catalog_dispatch_embedding_jobs",
+                "schema": "public"
+              },
+              {
+                "hash": "c07dddcf7361441f22a6fd3ee2698a74",
+                "name": "catalog_finalize_embedding_batch",
+                "schema": "public"
+              }
+            ],
+            "tables": [
+              {
+                "acl": "{postgres=arwdDxtm/postgres}",
+                "rls": true,
+                "name": "execution_jobs",
+                "owner": "postgres"
+              },
+              {
+                "acl": "{postgres=arwdDxtm/postgres}",
+                "rls": true,
+                "name": "execution_control",
+                "owner": "postgres"
+              },
+              {
+                "acl": "{postgres=arwdDxtm/postgres}",
+                "rls": true,
+                "name": "execution_budget",
+                "owner": "postgres"
+              },
+              {
+                "acl": "{postgres=arwdDxtm/postgres}",
+                "rls": true,
+                "name": "test_principals",
+                "owner": "postgres"
+              }
+            ],
+            "policies": 0,
+            "migration": [
+              {
+                "name": "comparator_strict_private_foundation",
+                "version": "20260903080621",
+                "statement_count": 1
+              }
+            ],
+            "canary_job": {
+              "id": "129f8406-5ced-4789-b1aa-aab0259df7a4",
+              "status": "rolled_back",
+              "sql_sha256": "341e120e91bd94a8de966ca20ae901d67f06308494c7cabb34a4568f9ca34c4b",
+              "started_at": "2026-09-03T08:11:34.023112+00:00",
+              "deadline_at": "2026-09-03T08:31:34.023112+00:00",
+              "finished_at": "2026-09-03T08:12:07.389807+00:00",
+              "project_ref": "gkffvigcnsesbaihycay",
+              "stop_reason": "CE-106 committed inactive control row removed; budget reservation retained",
+              "operation_key": "CE-106-foundation-canary-2026-09-03"
+            },
+            "captured_at": "2026-09-03T08:12:41.897936+00:00"
+          }
+        }
+      ]
+    },
+    {
+      "key": "ce106_canary",
+      "sql": "-- CE-106 ONE-TIME canary. Do not rerun, generalize or reset today's budget.\n-- Only three own rows; no app flag, account, product or commercial function.\nBEGIN;\nSET LOCAL statement_timeout='5s';\nSET LOCAL lock_timeout='500ms';\nDO $canary$\nDECLARE\n  job_id uuid := gen_random_uuid();\n  canary_sql constant text := 'INSERT INTO comparator_strict.execution_control(project_ref,enabled,halted,active_job_id) VALUES (''gkffvigcnsesbaihycay'',false,true,$1)';\nBEGIN\n  IF (now() AT TIME ZONE 'UTC')::date <> DATE '2026-09-03' THEN\n    RAISE EXCEPTION 'One-time budget authority expired';\n  END IF;\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:foundation-canary',0)) THEN\n    RAISE EXCEPTION 'Another foundation operation is running';\n  END IF;\n  IF EXISTS (SELECT 1 FROM comparator_strict.execution_control)\n     OR EXISTS (SELECT 1 FROM comparator_strict.execution_jobs)\n     OR EXISTS (SELECT 1 FROM comparator_strict.execution_budget)\n     OR EXISTS (SELECT 1 FROM comparator_strict.test_principals) THEN\n    RAISE EXCEPTION 'Canary requires verified empty foundation; never retry blindly';\n  END IF;\n  -- Includes earlier read-only work + the reserved continuation and reversal.\n  INSERT INTO comparator_strict.execution_budget(project_ref,budget_date,bytes_limit,approval_reference,\n    bytes_reserved,sql_ms_reserved,read_rows_reserved,write_rows_reserved)\n  VALUES ('gkffvigcnsesbaihycay','2026-09-03',23068672,'CE-100-22MiB-2026-09-03',\n    22484430,280520,3900,20);\n  INSERT INTO comparator_strict.execution_jobs(id,project_ref,operation_key,sql_sha256,status,started_at,deadline_at)\n  VALUES (job_id,'gkffvigcnsesbaihycay','CE-106-foundation-canary-2026-09-03',\n    encode(sha256(convert_to(canary_sql,'UTF8')),'hex'),'running',now(),now()+interval '20 minutes');\n  EXECUTE canary_sql USING job_id;\n  IF NOT EXISTS (SELECT 1 FROM comparator_strict.execution_control WHERE project_ref='gkffvigcnsesbaihycay'\n    AND active_job_id=job_id AND NOT enabled AND halted) THEN\n    RAISE EXCEPTION 'Canary validation failed before COMMIT';\n  END IF;\nEND\n$canary$;\nCOMMIT;\n",
+      "rows": []
+    },
+    {
+      "key": "ce106_reversal",
+      "sql": "-- CE-106 compensating transaction. Preserve budget and job audit evidence.\n-- Exact operation key + verified stopped control row; never broad cleanup.\nBEGIN;\nSET LOCAL statement_timeout='5s';\nSET LOCAL lock_timeout='500ms';\nDO $revert$\nDECLARE\n  job_id uuid;\n  affected integer;\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:foundation-canary',0)) THEN\n    RAISE EXCEPTION 'Another foundation operation is running';\n  END IF;\n  SELECT id INTO STRICT job_id FROM comparator_strict.execution_jobs\n    WHERE project_ref='gkffvigcnsesbaihycay' AND operation_key='CE-106-foundation-canary-2026-09-03'\n      AND status='running' FOR UPDATE;\n  DELETE FROM comparator_strict.execution_control\n    WHERE project_ref='gkffvigcnsesbaihycay' AND active_job_id=job_id AND NOT enabled AND halted;\n  GET DIAGNOSTICS affected=ROW_COUNT;\n  IF affected<>1 THEN RAISE EXCEPTION 'Control changed; stop and inspect without deleting anything'; END IF;\n  UPDATE comparator_strict.execution_jobs SET status='rolled_back',finished_at=now(),\n    stop_reason='CE-106 committed inactive control row removed; budget reservation retained'\n    WHERE id=job_id;\n  IF EXISTS (SELECT 1 FROM comparator_strict.execution_control WHERE active_job_id=job_id) THEN\n    RAISE EXCEPTION 'Reversal validation failed before COMMIT';\n  END IF;\nEND\n$revert$;\nCOMMIT;\n",
+      "rows": []
+    }
+  ],
+  "api_before": [
+    {
+      "check": "strict_schema_not_exposed",
+      "status": 406,
+      "code": "PGRST106",
+      "rows": null,
+      "elapsed_ms": 307.610416,
+      "bytes": 152,
+      "captured_at": "2026-09-03T08:11:14.712Z"
+    },
+    {
+      "check": "public_catalog_single_row",
+      "status": 200,
+      "code": null,
+      "rows": 1,
+      "elapsed_ms": 91.28854199999995,
+      "bytes": 16,
+      "captured_at": "2026-09-03T08:11:14.804Z"
+    }
+  ],
+  "api_after": [
+    {
+      "check": "strict_schema_not_exposed",
+      "status": 406,
+      "code": "PGRST106",
+      "rows": null,
+      "elapsed_ms": 173.067125,
+      "bytes": 152,
+      "captured_at": "2026-09-03T08:12:47.814Z"
+    },
+    {
+      "check": "public_catalog_single_row",
+      "status": 200,
+      "code": null,
+      "rows": 1,
+      "elapsed_ms": 89.92179200000001,
+      "bytes": 16,
+      "captured_at": "2026-09-03T08:12:47.905Z"
+    }
+  ],
+  "local_sql": {
+    "status": "PASS",
+    "version": "PostgreSQL 18.3 (PGlite 0.5.8) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.74 (1092ec30a3fb1d46b1782ff1b4db5094d3d06ae5), 32-bit",
+    "module": "/private/tmp/quefalta-ce1-tools.Mh399b/node_modules/@electric-sql/pglite/dist/index.js",
+    "sqlAssertions": "28 negative cases + structure, defaults, budget and RLS",
+    "rollback": "empty foundation removed/recreated; nonempty rollback refused without loss",
+    "canary": "PASS: committed local inactive canary, refused replay, compensating reversal, retained accounting, refused second reversal",
+    "limitations": "Embedded single-process PostgreSQL; not a production concurrency, cancellation or crash-recovery test"
+  },
+  "advisors": [
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "catalog_embedding_job_identities",
+        "type": "table",
+        "schema": "comparator_internal"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "catalog_embedding_pipeline_control",
+        "type": "table",
+        "schema": "comparator_internal"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "catalog_embedding_run_jobs",
+        "type": "table",
+        "schema": "comparator_internal"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "catalog_embedding_runs",
+        "type": "table",
+        "schema": "comparator_internal"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "catalog_match_store_versions",
+        "type": "table",
+        "schema": "comparator_internal"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "execution_budget",
+        "type": "table",
+        "schema": "comparator_strict"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "execution_control",
+        "type": "table",
+        "schema": "comparator_strict"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "execution_jobs",
+        "type": "table",
+        "schema": "comparator_strict"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "test_principals",
+        "type": "table",
+        "schema": "comparator_strict"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "catalog_match_reports",
+        "type": "table",
+        "schema": "private"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "apple_credentials",
+        "type": "table",
+        "schema": "public"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "bonpreu_sync_categories",
+        "type": "table",
+        "schema": "public"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "bonpreu_sync_cycles",
+        "type": "table",
+        "schema": "public"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "bonpreu_sync_memberships",
+        "type": "table",
+        "schema": "public"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "bonpreu_sync_products",
+        "type": "table",
+        "schema": "public"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "catalog_embedding_failures",
+        "type": "table",
+        "schema": "public"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "catalog_product_embeddings",
+        "type": "table",
+        "schema": "public"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "catalog_product_match_cache_status",
+        "type": "table",
+        "schema": "public"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "catalog_product_matches",
+        "type": "table",
+        "schema": "public"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "push_throttle",
+        "type": "table",
+        "schema": "public"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "function_search_path_mutable",
+      "level": "WARN",
+      "metadata": {
+        "name": "catalog_track_price_change",
+        "type": "function",
+        "schema": "public"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable"
+    },
+    {
+      "name": "function_search_path_mutable",
+      "level": "WARN",
+      "metadata": {
+        "name": "f_unaccent",
+        "type": "function",
+        "schema": "public"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable"
+    },
+    {
+      "name": "extension_in_public",
+      "level": "WARN",
+      "metadata": {
+        "name": "pg_trgm",
+        "type": "extension",
+        "schema": "public"
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0014_extension_in_public"
+    },
+    {
+      "name": "authenticated_security_definer_function_executable",
+      "level": "WARN",
+      "metadata": {
+        "name": "get_price_alert_notification_products",
+        "schema": "public",
+        "language": "plpgsql",
+        "arguments": "p_notification_id uuid",
+        "security_definer": true
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    },
+    {
+      "name": "authenticated_security_definer_function_executable",
+      "level": "WARN",
+      "metadata": {
+        "name": "has_friendship",
+        "schema": "public",
+        "language": "sql",
+        "arguments": "other uuid",
+        "security_definer": true
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    },
+    {
+      "name": "authenticated_security_definer_function_executable",
+      "level": "WARN",
+      "metadata": {
+        "name": "is_discoverable",
+        "schema": "public",
+        "language": "sql",
+        "arguments": "uid uuid",
+        "security_definer": true
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    },
+    {
+      "name": "authenticated_security_definer_function_executable",
+      "level": "WARN",
+      "metadata": {
+        "name": "is_group_admin",
+        "schema": "public",
+        "language": "sql",
+        "arguments": "gid uuid",
+        "security_definer": true
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    },
+    {
+      "name": "authenticated_security_definer_function_executable",
+      "level": "WARN",
+      "metadata": {
+        "name": "is_group_member",
+        "schema": "public",
+        "language": "sql",
+        "arguments": "gid uuid",
+        "security_definer": true
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    },
+    {
+      "name": "authenticated_security_definer_function_executable",
+      "level": "WARN",
+      "metadata": {
+        "name": "is_premium",
+        "schema": "public",
+        "language": "sql",
+        "arguments": "uid uuid",
+        "security_definer": true
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    },
+    {
+      "name": "authenticated_security_definer_function_executable",
+      "level": "WARN",
+      "metadata": {
+        "name": "preview_price_alert",
+        "schema": "public",
+        "language": "plpgsql",
+        "arguments": "p_kind text, p_query text, p_stores text[], p_exact_store text, p_exact_product_id text, p_region text, p_location_ids jsonb, p_limit integer",
+        "security_definer": true
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    },
+    {
+      "name": "authenticated_security_definer_function_executable",
+      "level": "WARN",
+      "metadata": {
+        "name": "shares_group_with",
+        "schema": "public",
+        "language": "sql",
+        "arguments": "other uuid",
+        "security_definer": true
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    },
+    {
+      "name": "authenticated_security_definer_function_executable",
+      "level": "WARN",
+      "metadata": {
+        "name": "username_available",
+        "schema": "public",
+        "language": "sql",
+        "arguments": "uname text",
+        "security_definer": true
+      },
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    },
+    {
+      "name": "auth_leaked_password_protection",
+      "level": "WARN",
+      "metadata": {
+        "type": "auth",
+        "entity": "Auth"
+      },
+      "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection"
+    }
+  ],
+  "accounting": {
+    "captured_tool_response_bytes_plus_HTTP_bodies": 78999,
+    "other_transport_headers_requests_project_metadata_and_advisor_SQL_cost": "covered conservatively by 0.5 MiB / 100000 ms reservation, not exact billed bytes",
+    "direct_sql_calls": 10,
+    "direct_DDL_calls": 1,
+    "direct_SQL_body_timeout_budget_ms": 60000,
+    "SQL_budget_scope": "11 calls, 12 substantive SQL bodies at 5 seconds each; role-denial call has DO plus SELECT; transaction setup and advisor overhead are in the larger 100000 ms reservation",
+    "continuation_reserved_bytes": 524288,
+    "continuation_reserved_sql_ms": 100000,
+    "day_reserved_bytes": 22484430,
+    "day_reserved_sql_ms": 280520
+  },
+  "limitations": [
+    "No generic remote coordinator/transport test",
+    "No concurrency or crash-recovery test",
+    "No full performance baseline",
+    "No real product equivalences labeled or engine measured",
+    "No GitHub workflow dispatched"
+  ]
+}

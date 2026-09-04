@@ -1,0 +1,56 @@
+{
+  "tasks": [
+    "CE-201",
+    "CE-202"
+  ],
+  "status": "in_progress_exploratory_proposals_only",
+  "proposals": 22,
+  "unique_pairs": 22,
+  "decisions": {
+    "eligible_saving": 0,
+    "equivalent_no_saving": 0,
+    "rejected": 8,
+    "abstain": 5,
+    "excluded_scope": 9
+  },
+  "reviewed_gold_pairs": 0,
+  "confirmatory_pairs": 0,
+  "CE203_completed": false,
+  "G2_pass": false,
+  "data_sha256": "d6087c90ec010ae180804c06c8e6076733321fd8bf49d1b213f128152434e67c",
+  "engine_evaluated": false,
+  "synthetic_contract_cases": 56,
+  "historical_contract_cases_reused": 32,
+  "additional_synthetic_cases": 24,
+  "contracts_sha256": "33db651cf1d47b1fd43c52cc4b4c99afdb86fa52270cefe537d01dd0e8bfeb89",
+  "synthetic_is_not_real_coverage": true,
+  "partial_T30_T31_are_not_CE207_tests": true,
+  "source_files": [
+    {
+      "path": "docs/comparator-strict/fixtures/catalog-sample-2026-09-03.json",
+      "sha256": "13383c912e054f26bc0cd29c40d6e5f9e0bde1f8fda7944b032fce552d429311"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/seed-v1/products.json",
+      "sha256": "9ef6b65f68a46b284ac2f8cbdd64adab500c3ebc375ac522b71a763568c06e3a"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/seed-v1/pairs.json",
+      "sha256": "1ca9ab5c15e4c191bd74af60ee054b9e126b651a5a99c64409aae49099190a7c"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-pilot-v1/real-case-specs.json",
+      "sha256": "bf14b13c0854ffe46f05aad847cade780a8dbe70fe5a0ea9fb895b9c9cfbbd61"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-pilot-v1/contract-case-specs.json",
+      "sha256": "9baff853e22966259278a3dba96e545a383fc3c2f5a07af4213766ce7be5ccda"
+    },
+    {
+      "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+      "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267"
+    }
+  ],
+  "remote_project_calls": 0,
+  "dependencies_added": 0
+}

@@ -1,0 +1,2703 @@
+{
+  "plan": {
+    "version": "ce200-read-v3",
+    "kind": "supplement",
+    "store": "plusfresc",
+    "cursor": "",
+    "limit": 100,
+    "round": "initial",
+    "select": "SELECT id,display_name,display_name_ca,brand,category_id,category_name,category_ids,unit_price,price_format,price_per_unit,price_per_unit_unit,available,published,description,ingredients,allergens,nutrition,conservation,description_ca,ingredients_ca,allergens_ca,nutrition_ca,detail_synced_at,synced_at,centers,center_prices,promo_name,promo_name_ca,promo_offer_price,promo_base_price,promo_end,offer_centers,raw,md5(to_jsonb(p)::text) AS source_row_md5 FROM public.plusfresc_products p WHERE (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)|b[ií]fidus' OR category_id IN ('020101','020102') OR category_id LIKE '0404%'))\n      AND NOT (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)'))\n      AND id COLLATE \"C\" > '' COLLATE \"C\" ORDER BY id COLLATE \"C\" LIMIT 100",
+    "job": "ce1-ce200-5ba9870b1a17b56d5ed9529cf1e7",
+    "operationHash": "5ba9870b1a17b56d5ed9529cf1e761673d88a662b413e6a364f82b570a389a0c",
+    "maxRows": 100,
+    "maxBytes": 1048576,
+    "sql": "-- ce1-ce200-5ba9870b1a17b56d5ed9529cf1e7: supplement; CE-BU-002; no app writes.\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $reserve$\nDECLARE job_started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE status IN ('planned','running','halted','unknown'))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-5ba9870b1a17b56d5ed9529cf1e7') THEN RAISE EXCEPTION 'ce200_exclusive_or_replay'; END IF;\n  IF EXISTS(SELECT 1 FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid))>0\n    OR (pid<>pg_backend_pid() AND state='active' AND query_start<clock_timestamp()-interval '30 seconds')) THEN RAISE EXCEPTION 'ce200_health_stop'; END IF;\n  UPDATE comparator_strict.execution_budget SET\n    sql_ms_reserved=sql_ms_reserved+10000,read_rows_reserved=read_rows_reserved+100,\n    bytes_reserved=bytes_reserved+1048576,write_rows_reserved=write_rows_reserved+3,updated_at=clock_timestamp()\n    WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03'\n      AND approval_reference='CE-200-corpus-v1' AND bytes_limit=134217728 AND read_rows_limit=50000\n      AND bytes_reserved+1048576<=bytes_limit AND read_rows_reserved+100<=read_rows_limit AND write_rows_reserved+3<=2000;\n  IF NOT FOUND THEN RAISE EXCEPTION 'ce200_budget'; END IF;\n  INSERT INTO comparator_strict.execution_jobs(id,project_ref,operation_key,sql_sha256,status,started_at,deadline_at,job_key,operation_hash,budget_date,reservation)\n    VALUES(gen_random_uuid(),'gkffvigcnsesbaihycay','ce200-supplement','abd51c9243e3772aa53bff175336b3d23e8af179cc68e82857dd5bc6faff468f','running',job_started,job_started+interval '20 minutes','ce1-ce200-5ba9870b1a17b56d5ed9529cf1e7','5ba9870b1a17b56d5ed9529cf1e761673d88a662b413e6a364f82b570a389a0c',DATE '2026-09-03','{\"sqlMs\":10000,\"readRows\":100,\"writeRows\":3,\"responseBytes\":1048576}'::jsonb);\nEND $reserve$;\nCOMMIT;\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $payload$\nDECLARE payload jsonb; data jsonb; started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR NOT EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-5ba9870b1a17b56d5ed9529cf1e7' AND status='running' AND operation_hash='5ba9870b1a17b56d5ed9529cf1e761673d88a662b413e6a364f82b570a389a0c' AND deadline_at>clock_timestamp()) THEN RAISE EXCEPTION 'ce200_lease'; END IF;\n  SELECT coalesce(jsonb_agg(to_jsonb(q)),'[]'::jsonb) INTO data FROM (SELECT id,display_name,display_name_ca,brand,category_id,category_name,category_ids,unit_price,price_format,price_per_unit,price_per_unit_unit,available,published,description,ingredients,allergens,nutrition,conservation,description_ca,ingredients_ca,allergens_ca,nutrition_ca,detail_synced_at,synced_at,centers,center_prices,promo_name,promo_name_ca,promo_offer_price,promo_base_price,promo_end,offer_centers,raw,md5(to_jsonb(p)::text) AS source_row_md5 FROM public.plusfresc_products p WHERE (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)|b[ií]fidus' OR category_id IN ('020101','020102') OR category_id LIKE '0404%'))\n      AND NOT (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)'))\n      AND id COLLATE \"C\" > '' COLLATE \"C\" ORDER BY id COLLATE \"C\" LIMIT 100) q;\n  payload:=jsonb_build_object('job_key','ce1-ce200-5ba9870b1a17b56d5ed9529cf1e7','operation_hash','5ba9870b1a17b56d5ed9529cf1e761673d88a662b413e6a364f82b570a389a0c',\n    'project_ref','gkffvigcnsesbaihycay','captured_at',started,'kind','supplement','store','plusfresc',\n    'cursor','','rows',data,'row_count',jsonb_array_length(data),'elapsed_ms',extract(epoch FROM clock_timestamp()-started)*1000);\n  IF jsonb_array_length(data)>100 OR octet_length(payload::text)>1040384 THEN RAISE EXCEPTION 'ce200_result_limit'; END IF;\n  UPDATE comparator_strict.execution_jobs SET status='succeeded',finished_at=clock_timestamp(),\n    receipt=jsonb_build_object('payload_sha256',encode(sha256(convert_to(payload::text,'UTF8')),'hex'),'row_count',jsonb_array_length(data),'payload_bytes',octet_length(payload::text),'elapsed_ms',payload->'elapsed_ms') WHERE job_key='ce1-ce200-5ba9870b1a17b56d5ed9529cf1e7';\n  PERFORM set_config('comparator_strict.ce200_response',payload::text,true);\nEND $payload$;\nSELECT current_setting('comparator_strict.ce200_response')::jsonb AS evidence;\nCOMMIT;"
+  },
+  "payload": {
+    "kind": "supplement",
+    "rows": [
+      {
+        "id": "019612",
+        "raw": {
+          "id": "040413019612",
+          "icon": "019612_Petit_Suisse_DANONINO_Street_paquet_4_unitats_280_grams.jpg",
+          "order": 2031,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Petit Suisse DANONINO Street, paquet 4 unitats 280 grams",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Petit Suisse DANONINO Street, paquete 4 unidades 280 gramos",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "019612",
+          "available": true,
+          "filter_id": "040413",
+          "image_url": "019612_Petit_Suisse_DANONINO_Street_paquet_4_unitats_280_grams_gran.jpg",
+          "brand_name": "DANONINO",
+          "has_format": false,
+          "category_id": "040413",
+          "value_cents": 269,
+          "unit_measure": "Kg",
+          "value_x_unit": 960,
+          "characteristics": [
+            {
+              "id": "SGL_SI",
+              "row": 0,
+              "icon": null,
+              "level": 0,
+              "order": 0,
+              "texts": [
+                {
+                  "lang": "ca",
+                  "text": "SENSE GLUTEN",
+                  "type": 5,
+                  "order": 1
+                },
+                {
+                  "lang": "es",
+                  "text": "SIN GLUTEN",
+                  "type": 5,
+                  "order": 1
+                }
+              ],
+              "childs": [],
+              "visible": false,
+              "banner_id": null,
+              "leaf_count": 785,
+              "embedded_icon_url": "SGL_SI"
+            }
+          ]
+        },
+        "brand": "DANONINO",
+        "centers": [
+          "3",
+          "17",
+          "33",
+          "36",
+          "58",
+          "61",
+          "110"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 2.69,
+        "category_id": "040413",
+        "description": null,
+        "ingredients": null,
+        "allergens_ca": null,
+        "category_ids": [
+          "04",
+          "0404",
+          "040413"
+        ],
+        "conservation": null,
+        "display_name": "Petit Suisse DANONINO Street, paquete 4 unidades 280 gramos",
+        "nutrition_ca": null,
+        "price_format": "2,69 €",
+        "category_name": "Bebibles",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 9.6,
+        "source_row_md5": "b14b9963e2fcda58a84f4055065fa7af",
+        "display_name_ca": "Petit Suisse DANONINO Street, paquet 4 unitats 280 grams",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "022186",
+        "raw": {
+          "id": "04040802022186",
+          "icon": "022186_Mousse_de_xarrup_natural_ensucrat_DANONE_pack_4_unitats.jpg",
+          "order": 1951,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Mousse de xarrup natural ensucrat DANONE, pack 4 unitats",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Mousse de sorbete natural azucarado DANONE, pack 4 unidades",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "022186",
+          "available": true,
+          "filter_id": "04040802",
+          "image_url": "022186_Mousse_de_xarrup_natural_ensucrat_DANONE_pack_4_unitats_gran.jpg",
+          "brand_name": "DANONE",
+          "has_format": false,
+          "category_id": "040408",
+          "value_cents": 299,
+          "unit_measure": "Kg",
+          "value_x_unit": 1150,
+          "characteristics": []
+        },
+        "brand": "DANONE",
+        "centers": [
+          "3",
+          "12",
+          "33",
+          "36",
+          "61",
+          "110"
+        ],
+        "allergens": "Contiene: Llet\nPuede contener: Fruits Secs, Cereals que contenen gluten",
+        "available": true,
+        "nutrition": "Valor energético: 172 kcal\nValor energético: 720 kJ\nGrasa: 9.5 g\nGrasas Saturadas: 6.1 g\nCarbohidratos: 16.3 g\nAzúcares: 16.3 g\nProteína: 4.6 g\nSal equivalente: 0.1 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 2.99,
+        "category_id": "04040802",
+        "description": "Mousse Danone Natural Azucarada 4x65 g",
+        "ingredients": "Leche pasteurizada, nata pasteurizada, azúcar (10,2%), leche en polvo, gelatina, emulgente (E 472b) y fermentos lácticos. Puede contener trazas de cereales con gluten (menos de 3ppm) y frutos de cáscara.",
+        "allergens_ca": "Conté: Llet\nPot contenir: Fruits Secs, Cereals que contenen gluten",
+        "category_ids": [
+          "04",
+          "0404",
+          "040408",
+          "04040802"
+        ],
+        "conservation": "Consérvese en frío entre 2°C y 6°C",
+        "display_name": "Mousse de sorbete natural azucarado DANONE, pack 4 unidades",
+        "nutrition_ca": "Valor energètic: 172 kcal\nValor energètic: 720 kJ\nGreix: 9.5 g\nGreixos Saturats: 6.1 g\nCarbohidrats: 16.3 g\nSucres: 16.3 g\nProteïna: 4.6 g\nSal equivalent: 0.1 g",
+        "price_format": "2,99 €",
+        "category_name": "Mousse",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 11.5,
+        "source_row_md5": "51d70f817d8f6cbabfce9de12f106b76",
+        "display_name_ca": "Mousse de xarrup natural ensucrat DANONE, pack 4 unitats",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "022386",
+        "raw": {
+          "id": "040411022386",
+          "icon": "022386_Llet_fermentada_quefir_de_vaca_EL_PASTORET_terrina_500_g.jpg",
+          "order": 2042,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Llet fermentada quefir de vaca EL PASTORET, terrina 500 g",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Leche fermentada kéfir de vaca EL PASTORET, tarrina 500 grs",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "022386",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "022386_Llet_fermentada_quefir_de_vaca_EL_PASTORET_terrina_500_g_gran.jpg",
+          "brand_name": "EL PASTORET",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 235,
+          "unit_measure": "Kg",
+          "value_x_unit": 470,
+          "characteristics": [
+            {
+              "id": "SGL_SI",
+              "row": 0,
+              "icon": null,
+              "level": 0,
+              "order": 0,
+              "texts": [
+                {
+                  "lang": "ca",
+                  "text": "SENSE GLUTEN",
+                  "type": 5,
+                  "order": 1
+                },
+                {
+                  "lang": "es",
+                  "text": "SIN GLUTEN",
+                  "type": 5,
+                  "order": 1
+                }
+              ],
+              "childs": [],
+              "visible": false,
+              "banner_id": null,
+              "leaf_count": 785,
+              "embedded_icon_url": "SGL_SI"
+            },
+            {
+              "id": "LOL_SI",
+              "row": 0,
+              "icon": null,
+              "level": 0,
+              "order": 0,
+              "texts": [
+                {
+                  "lang": "ca",
+                  "text": "PRODUCTE LOCAL",
+                  "type": 5,
+                  "order": 1
+                },
+                {
+                  "lang": "es",
+                  "text": "PRODUCTO LOCAL",
+                  "type": 5,
+                  "order": 1
+                }
+              ],
+              "childs": [],
+              "visible": false,
+              "banner_id": null,
+              "leaf_count": 593,
+              "embedded_icon_url": "LOL_SI"
+            }
+          ]
+        },
+        "brand": "EL PASTORET",
+        "centers": null,
+        "allergens": "Contiene: Llet",
+        "available": true,
+        "nutrition": "Valor energético: 65 kcal\nValor energético: 273 kJ\nGrasa: 3.8 g\nGrasas Saturadas: 2.7 g\nCarbohidratos: 3.8 g\nAzúcares: 3.8 g\nProteína: 3.4 g\nSal equivalente: 0.1 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 2.35,
+        "category_id": "040411",
+        "description": "Kéfir",
+        "ingredients": "Leche pasteurizada de vaca y fermentos lácticos. Origen de la leche: España.",
+        "allergens_ca": "Conté: Llet",
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": "Conservar entre 2° y 6° C.",
+        "display_name": "Leche fermentada kéfir de vaca EL PASTORET, tarrina 500 grs",
+        "nutrition_ca": "Valor energètic: 65 kcal\nValor energètic: 273 kJ\nGreix: 3.8 g\nGreixos Saturats: 2.7 g\nCarbohidrats: 3.8 g\nSucres: 3.8 g\nProteïna: 3.4 g\nSal equivalent: 0.1 g",
+        "price_format": "2,35 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 4.7,
+        "source_row_md5": "6fcf9f5f41b7416147b1c2a4ebee4e3a",
+        "display_name_ca": "Llet fermentada quefir de vaca EL PASTORET, terrina 500 g",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "026369",
+        "raw": {
+          "id": "040411026369",
+          "icon": "026369_Quefir_de_vaca_per_beure_NESTLE_ampolla_500_grams.jpg",
+          "order": 2053,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir de vaca per beure NESTLE, ampolla 500 grams",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir de vaca para beber NESTLE, botella 500 gramos",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "026369",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "026369_Quefir_de_vaca_per_beure_NESTLE_ampolla_500_grams_gran.jpg",
+          "brand_name": "NESTLE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 199,
+          "unit_measure": "Kg",
+          "value_x_unit": 398,
+          "characteristics": []
+        },
+        "brand": "NESTLE",
+        "centers": null,
+        "allergens": "Contiene: Llet\nPuede contener: Cereals que contenen gluten, Blat",
+        "available": true,
+        "nutrition": "Valor energético: 44 kcal\nValor energético: 186 kJ\nGrasa: 1.5 g\nGrasas Saturadas: 0.9 g\nCarbohidratos: 3.9 g\nAzúcares: 3.9 g\nProteína: 3.4 g\nSal equivalente: 0.4 g\nFibra: 0 g\nCalcio: 480\nVitamina D: 3",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 1.99,
+        "category_id": "040411",
+        "description": "Nestlé Kéfir natural con fermentos lácteos y levaduras de kéfir 500g",
+        "ingredients": "LECHE  pasteurizada semidesnatada. gránulos de kéfir. levaduras. vitamina D. Puede contener GLUTEN.",
+        "allergens_ca": "Conté: Llet\nPot contenir: Cereals que contenen gluten, Blat",
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": "Conservar en frío (de 1 a 8°C). Una vez abierto, consumir en 2-3 días.",
+        "display_name": "Kéfir de vaca para beber NESTLE, botella 500 gramos",
+        "nutrition_ca": "Valor energètic: 44 kcal\nValor energètic: 186 kJ\nGreix: 1.5 g\nGreixos Saturats: 0.9 g\nCarbohidrats: 3.9 g\nSucres: 3.9 g\nProteïna: 3.4 g\nSal equivalent: 0.4 g\nFibra: 0 g\nCalci: 480\nVitamina D: 3",
+        "price_format": "1,99 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 3.98,
+        "source_row_md5": "fc6750f7adeafee50f115d0a0fef5af7",
+        "display_name_ca": "Quefir de vaca per beure NESTLE, ampolla 500 grams",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "027355",
+        "raw": {
+          "id": "040411027355",
+          "icon": "027355_Quefir_natural_bio_LA_TORRE_2_unitats_250_g.jpg",
+          "order": 2152,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir natural bio LA TORRE, 2 unitats 250 g",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir natural bio LA TORRE, 2 unidades 250 g",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "027355",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "027355_Quefir_natural_bio_LA_TORRE_2_unitats_250_g_gran.jpg",
+          "brand_name": "LA TORRE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 139,
+          "unit_measure": "Kg",
+          "value_x_unit": 556,
+          "characteristics": [
+            {
+              "id": "ECO_SI",
+              "row": 0,
+              "icon": null,
+              "level": 0,
+              "order": 0,
+              "texts": [
+                {
+                  "lang": "ca",
+                  "text": "ECOLÒGIC",
+                  "type": 5,
+                  "order": 1
+                },
+                {
+                  "lang": "es",
+                  "text": "ECOLÓGICO",
+                  "type": 5,
+                  "order": 1
+                }
+              ],
+              "childs": [],
+              "visible": false,
+              "banner_id": null,
+              "leaf_count": 272,
+              "embedded_icon_url": "ECO_SI"
+            },
+            {
+              "id": "CAT_si",
+              "row": 0,
+              "icon": null,
+              "level": 0,
+              "order": 0,
+              "texts": [
+                {
+                  "lang": "ca",
+                  "text": "PRODUCTE CATALÀ",
+                  "type": 5,
+                  "order": 1
+                },
+                {
+                  "lang": "es",
+                  "text": "PRODUCTO CATALÁN",
+                  "type": 5,
+                  "order": 1
+                }
+              ],
+              "childs": [],
+              "visible": false,
+              "banner_id": null,
+              "leaf_count": 5,
+              "embedded_icon_url": "CAT"
+            }
+          ]
+        },
+        "brand": "LA TORRE",
+        "centers": [
+          "3",
+          "110"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 1.39,
+        "category_id": "040411",
+        "description": null,
+        "ingredients": null,
+        "allergens_ca": null,
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": null,
+        "display_name": "Kéfir natural bio LA TORRE, 2 unidades 250 g",
+        "nutrition_ca": null,
+        "price_format": "1,39 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 5.56,
+        "source_row_md5": "3349052a9c8c7b238ac519572f1b166a",
+        "display_name_ca": "Quefir natural bio LA TORRE, 2 unitats 250 g",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "027356",
+        "raw": {
+          "id": "040411027356",
+          "icon": "027356_Quefir_natural_desnatat_bio_LA_TORRE_2_unitats_250_g.jpg",
+          "order": 2154,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir natural desnatat bio LA TORRE, 2 unitats 250 g",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir natural desnatado bio LA TORRE, 2 unidades 250 g",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "027356",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "027356_Quefir_natural_desnatat_bio_LA_TORRE_2_unitats_250_g_gran.jpg",
+          "brand_name": "LA TORRE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 139,
+          "unit_measure": "Kg",
+          "value_x_unit": 556,
+          "characteristics": [
+            {
+              "id": "ECO_SI",
+              "row": 0,
+              "icon": null,
+              "level": 0,
+              "order": 0,
+              "texts": [
+                {
+                  "lang": "ca",
+                  "text": "ECOLÒGIC",
+                  "type": 5,
+                  "order": 1
+                },
+                {
+                  "lang": "es",
+                  "text": "ECOLÓGICO",
+                  "type": 5,
+                  "order": 1
+                }
+              ],
+              "childs": [],
+              "visible": false,
+              "banner_id": null,
+              "leaf_count": 272,
+              "embedded_icon_url": "ECO_SI"
+            },
+            {
+              "id": "CAT_SI",
+              "row": 0,
+              "icon": null,
+              "level": 0,
+              "order": 0,
+              "texts": [
+                {
+                  "lang": "ca",
+                  "text": "PRODUCTE CATALÀ",
+                  "type": 5,
+                  "order": 1
+                },
+                {
+                  "lang": "es",
+                  "text": "PRODUCTO CATALÁN",
+                  "type": 5,
+                  "order": 1
+                }
+              ],
+              "childs": [],
+              "visible": false,
+              "banner_id": null,
+              "leaf_count": 1128,
+              "embedded_icon_url": "CAT"
+            }
+          ]
+        },
+        "brand": "LA TORRE",
+        "centers": [
+          "3",
+          "110"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 1.39,
+        "category_id": "040411",
+        "description": null,
+        "ingredients": null,
+        "allergens_ca": null,
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": null,
+        "display_name": "Kéfir natural desnatado bio LA TORRE, 2 unidades 250 g",
+        "nutrition_ca": null,
+        "price_format": "1,39 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 5.56,
+        "source_row_md5": "d18f67009d0f96223b32a027da9acddb",
+        "display_name_ca": "Quefir natural desnatat bio LA TORRE, 2 unitats 250 g",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "027706",
+        "raw": {
+          "id": "040413027706",
+          "icon": "027706_Batut_de_maduixa_i_platan_ALTEZA_1_litre.jpg",
+          "order": 1952,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Batut de maduixa i plàtan ALTEZA, 1 litre",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Batido de fresa y plátano ALTEZA, 1 litro",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "027706",
+          "available": true,
+          "filter_id": "040413",
+          "image_url": "027706_Batut_de_maduixa_i_platan_ALTEZA_1_litre_gran.jpg",
+          "brand_name": "ALTEZA",
+          "has_format": false,
+          "category_id": "040413",
+          "value_cents": 150,
+          "unit_measure": "L",
+          "value_x_unit": 150,
+          "characteristics": []
+        },
+        "brand": "ALTEZA",
+        "centers": null,
+        "allergens": "Libre de: Crustacis i els seus derivats, Ous, Peix, Fruits Secs, Cacauet, Llavors de sèsam, Diòxid de sofre i sulfits, Cereals que contenen gluten, Soja, Api i els seus derivats, Mostassa, Lupino, Mol·luscs\nContiene: Llet",
+        "available": true,
+        "nutrition": "Valor energético: 72 kcal\nValor energético: 306 kJ\nGrasa: 1.1 g\nGrasas Saturadas: 0.7 g\nCarbohidratos: 12 g\nAzúcares: 12 g\nProteína: 2.8 g\nSal equivalente: 0.1 g\nFibra: 0 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 1.5,
+        "category_id": "040413",
+        "description": "Yogur liquido con fresa y plátano",
+        "ingredients": "LECHE PARCIALMENTE DESNATADA (1,2% DE MATERIA GRASA), AZÚCAR, FRESA (1%), PLÁTANO (1%), LECHE DESNATADA EN POLVO,  ALMIDÓN MODIFICADO, ZUMO CONCENTRADO DE ZANAHORIA Y ZANAHORIA NEGRA, CORRECTORES DE ACIDEZ: E331, E330, AROMA, FERMENTOS LÁCTICOS. PAÍS DE ORDEÑO: UE. PAÍS DE TRANSFORMACIÓN: ESPAÑA.",
+        "allergens_ca": "Lliure de: Crustacis i els seus derivats, Ous, Peix, Fruits Secs, Cacauet, Llavors de sèsam, Diòxid de sofre i sulfits, Cereals que contenen gluten, Soja, Api i els seus derivats, Mostassa, Lupino, Mol·luscs\nConté: Llet",
+        "category_ids": [
+          "04",
+          "0404",
+          "040413"
+        ],
+        "conservation": "Conservar en frio (entre 1ºC y 8ºC). Conservar em frio (entre 0ºC e +6ºC) Una vez abierto, consumir en un plazo de 3 días.",
+        "display_name": "Batido de fresa y plátano ALTEZA, 1 litro",
+        "nutrition_ca": "Valor energètic: 72 kcal\nValor energètic: 306 kJ\nGreix: 1.1 g\nGreixos Saturats: 0.7 g\nCarbohidrats: 12 g\nSucres: 12 g\nProteïna: 2.8 g\nSal equivalent: 0.1 g\nFibra: 0 g",
+        "price_format": "1,50 €",
+        "category_name": "Bebibles",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 1.5,
+        "source_row_md5": "ac85ebd02f75be5057442eda7bc7a95f",
+        "display_name_ca": "Batut de maduixa i plàtan ALTEZA, 1 litre",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "l"
+      },
+      {
+        "id": "027744",
+        "raw": {
+          "id": "040411027744",
+          "icon": "027744_Quefir_ecologic_de_cabra_BEEE__CAL_VALLS_420_grams.jpg",
+          "order": 2054,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir ecològic de cabra BEEE / CAL VALLS, 420 grams",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir ecológico de cabra BEEE / CAL VALLS, 420 gramos",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "027744",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "027744_Quefir_ecologic_de_cabra_BEEE__CAL_VALLS_420_grams_gran.jpg",
+          "brand_name": "BEEE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 365,
+          "unit_measure": "Kg",
+          "value_x_unit": 869,
+          "characteristics": [
+            {
+              "id": "ECO_SI",
+              "row": 0,
+              "icon": null,
+              "level": 0,
+              "order": 0,
+              "texts": [
+                {
+                  "lang": "ca",
+                  "text": "ECOLÒGIC",
+                  "type": 5,
+                  "order": 1
+                },
+                {
+                  "lang": "es",
+                  "text": "ECOLÓGICO",
+                  "type": 5,
+                  "order": 1
+                }
+              ],
+              "childs": [],
+              "visible": false,
+              "banner_id": null,
+              "leaf_count": 272,
+              "embedded_icon_url": "ECO_SI"
+            }
+          ]
+        },
+        "brand": "BEEE",
+        "centers": null,
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 3.65,
+        "category_id": "040411",
+        "description": "Kéfir ecológico de cabra BEEE / CAL VALLS, 420 gramos",
+        "ingredients": null,
+        "allergens_ca": null,
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": null,
+        "display_name": "Kéfir ecológico de cabra BEEE / CAL VALLS, 420 gramos",
+        "nutrition_ca": null,
+        "price_format": "3,65 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": "Quefir ecològic de cabra BEEE / CAL VALLS, 420 grams",
+        "ingredients_ca": null,
+        "price_per_unit": 8.69,
+        "source_row_md5": "db329f3003e331a81f2f5c08cd744030",
+        "display_name_ca": "Quefir ecològic de cabra BEEE / CAL VALLS, 420 grams",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "028511",
+        "raw": {
+          "id": "040411028511",
+          "icon": "028511_Quefir_natural_LA_TORRE_1_l.jpg",
+          "order": 2155,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir natural LA TORRE, 1 l",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir natural LA TORRE, 1 l",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "028511",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "028511_Quefir_natural_LA_TORRE_1_l_gran.jpg",
+          "brand_name": "LA TORRE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 339,
+          "unit_measure": "L",
+          "value_x_unit": 339,
+          "characteristics": []
+        },
+        "brand": "LA TORRE",
+        "centers": [
+          "3",
+          "110"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 3.39,
+        "category_id": "040411",
+        "description": null,
+        "ingredients": null,
+        "allergens_ca": null,
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": null,
+        "display_name": "Kéfir natural LA TORRE, 1 l",
+        "nutrition_ca": null,
+        "price_format": "3,39 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 3.39,
+        "source_row_md5": "083b93ebc091b975e1300dcce1e549c0",
+        "display_name_ca": "Quefir natural LA TORRE, 1 l",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "l"
+      },
+      {
+        "id": "028512",
+        "raw": {
+          "id": "040411028512",
+          "icon": "028512_Quefir_amb_maduixa_LA_TORRE_1_l.jpg",
+          "order": 2139,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir amb maduixa LA TORRE, 1 l",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir con fresa LA TORRE, 1 l",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "028512",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "028512_Quefir_amb_maduixa_LA_TORRE_1_l_gran.jpg",
+          "brand_name": "LA TORRE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 359,
+          "unit_measure": "L",
+          "value_x_unit": 359,
+          "characteristics": []
+        },
+        "brand": "LA TORRE",
+        "centers": [
+          "3",
+          "110"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 3.59,
+        "category_id": "040411",
+        "description": null,
+        "ingredients": null,
+        "allergens_ca": null,
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": null,
+        "display_name": "Kéfir con fresa LA TORRE, 1 l",
+        "nutrition_ca": null,
+        "price_format": "3,59 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 3.59,
+        "source_row_md5": "44e600affebfeaa016cdff7ed7515e15",
+        "display_name_ca": "Quefir amb maduixa LA TORRE, 1 l",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "l"
+      },
+      {
+        "id": "028946",
+        "raw": {
+          "id": "040411028946",
+          "icon": "028946_Quefir_0_desnatat_EL_PASTORET_500_grams.jpg",
+          "order": 2043,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir  0% desnatat EL PASTORET, 500 grams",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kefir 0% desnatado EL PASTORET, 500 gramos",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "028946",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "028946_Quefir_0_desnatat_EL_PASTORET_500_grams_gran.jpg",
+          "brand_name": "EL PASTORET",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 235,
+          "unit_measure": "Kg",
+          "value_x_unit": 470,
+          "characteristics": [
+            {
+              "id": "LOL_SI",
+              "row": 0,
+              "icon": null,
+              "level": 0,
+              "order": 0,
+              "texts": [
+                {
+                  "lang": "ca",
+                  "text": "PRODUCTE LOCAL",
+                  "type": 5,
+                  "order": 1
+                },
+                {
+                  "lang": "es",
+                  "text": "PRODUCTO LOCAL",
+                  "type": 5,
+                  "order": 1
+                }
+              ],
+              "childs": [],
+              "visible": false,
+              "banner_id": null,
+              "leaf_count": 593,
+              "embedded_icon_url": "LOL_SI"
+            }
+          ]
+        },
+        "brand": "EL PASTORET",
+        "centers": null,
+        "allergens": "Contiene: Llet",
+        "available": true,
+        "nutrition": "Valor energético: 31 kcal\nValor energético: 130 kJ\nGrasa: 0.1 g\nGrasas Saturadas: 0.1 g\nCarbohidratos: 3.6 g\nAzúcares: 3.6 g\nProteína: 3.4 g\nSal equivalente: 0.1 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 2.35,
+        "category_id": "040411",
+        "description": "Kéfir 0% Pastoret",
+        "ingredients": "Leche desnatada pasteurizada de vaca, proteínas de la leche y fermentos lácticos. *Origen de la leche: España.",
+        "allergens_ca": "Conté: Llet",
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": "Conservar entre 2° y 6° C.",
+        "display_name": "Kefir 0% desnatado EL PASTORET, 500 gramos",
+        "nutrition_ca": "Valor energètic: 31 kcal\nValor energètic: 130 kJ\nGreix: 0.1 g\nGreixos Saturats: 0.1 g\nCarbohidrats: 3.6 g\nSucres: 3.6 g\nProteïna: 3.4 g\nSal equivalent: 0.1 g",
+        "price_format": "2,35 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 4.7,
+        "source_row_md5": "b5f9b516e20a0cbf8eab3b40aa7b6bae",
+        "display_name_ca": "Quefir  0% desnatat EL PASTORET, 500 grams",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "034085",
+        "raw": {
+          "id": "040411034085",
+          "icon": "034085_Quefir_DANONE_ACTIVIA_345_grams.jpg",
+          "order": 2049,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir DANONE ACTIVIA, 345 grams",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir DANONE ACTIVIA, 345 gramos",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "034085",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "034085_Quefir_DANONE_ACTIVIA_345_grams_gran.jpg",
+          "brand_name": "DANONE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 199,
+          "unit_measure": "Kg",
+          "value_x_unit": 442,
+          "characteristics": []
+        },
+        "brand": "DANONE",
+        "centers": null,
+        "allergens": "Contiene: Llet",
+        "available": true,
+        "nutrition": "Valor energético: 67 kcal\nValor energético: 279 kJ\nGrasa: 3.5 g\nGrasas Saturadas: 2.3 g\nCarbohidratos: 4.8 g\nAzúcares: 4.8 g\nProteína: 4 g\nSal equivalente: 0.1 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 1.99,
+        "category_id": "040411",
+        "description": "Kéfir natural Danone Activia 345G",
+        "ingredients": "Leche desnatada pasteurizada, nata pasteurizada, leche desnatada en polvo, bifidobacterias y otros fermentos lácticos y bacterias y levaduras propias del kéfir.",
+        "allergens_ca": "Conté: Llet",
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": "Consérvese en frío entre 2ºC y 6ºC, y consumir fresco, o de lo contrario el envase podría hincharse.",
+        "display_name": "Kéfir DANONE ACTIVIA, 345 gramos",
+        "nutrition_ca": "Valor energètic: 67 kcal\nValor energètic: 279 kJ\nGreix: 3.5 g\nGreixos Saturats: 2.3 g\nCarbohidrats: 4.8 g\nSucres: 4.8 g\nProteïna: 4 g\nSal equivalent: 0.1 g",
+        "price_format": "1,99 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 4.42,
+        "source_row_md5": "28c9f5119d4a3f48d43885ae9082eeb2",
+        "display_name_ca": "Quefir DANONE ACTIVIA, 345 grams",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "034267",
+        "raw": {
+          "id": "040411034267",
+          "icon": "034267_Quefir_amb_platan_LA_TORRE_1_l.jpg",
+          "order": 2140,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir amb plàtan LA TORRE, 1 l",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir con platano LA TORRE, 1 l",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "034267",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "034267_Quefir_amb_platan_LA_TORRE_1_l_gran.jpg",
+          "brand_name": "LA TORRE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 359,
+          "unit_measure": "L",
+          "value_x_unit": 359,
+          "characteristics": [
+            {
+              "id": "CAT_SI",
+              "row": 0,
+              "icon": null,
+              "level": 0,
+              "order": 0,
+              "texts": [
+                {
+                  "lang": "ca",
+                  "text": "PRODUCTE CATALÀ",
+                  "type": 5,
+                  "order": 1
+                },
+                {
+                  "lang": "es",
+                  "text": "PRODUCTO CATALÁN",
+                  "type": 5,
+                  "order": 1
+                }
+              ],
+              "childs": [],
+              "visible": false,
+              "banner_id": null,
+              "leaf_count": 1128,
+              "embedded_icon_url": "CAT"
+            }
+          ]
+        },
+        "brand": "LA TORRE",
+        "centers": [
+          "3",
+          "110"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 3.59,
+        "category_id": "040411",
+        "description": null,
+        "ingredients": null,
+        "allergens_ca": null,
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": null,
+        "display_name": "Kéfir con platano LA TORRE, 1 l",
+        "nutrition_ca": null,
+        "price_format": "3,59 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 3.59,
+        "source_row_md5": "98a0ab42ef7d87aeab264ecc950ab4a0",
+        "display_name_ca": "Quefir amb plàtan LA TORRE, 1 l",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "l"
+      },
+      {
+        "id": "034395",
+        "raw": {
+          "id": "040411034395",
+          "icon": "034395_Quefir_ovella_LA_TORRE_2_unitats_250_g.jpg",
+          "order": 2159,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir ovella LA TORRE, 2 unitats 250 g",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir ovella LA TORRE, 2 unidades 250 g",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "034395",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "034395_Quefir_ovella_LA_TORRE_2_unitats_250_g_gran.jpg",
+          "brand_name": "LA TORRE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 229,
+          "unit_measure": "Kg",
+          "value_x_unit": 916,
+          "characteristics": []
+        },
+        "brand": "LA TORRE",
+        "centers": [
+          "3",
+          "110"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 2.29,
+        "category_id": "040411",
+        "description": null,
+        "ingredients": null,
+        "allergens_ca": null,
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": null,
+        "display_name": "Kéfir ovella LA TORRE, 2 unidades 250 g",
+        "nutrition_ca": null,
+        "price_format": "2,29 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 9.16,
+        "source_row_md5": "08035d75916954cc50df7ea49c323657",
+        "display_name_ca": "Quefir ovella LA TORRE, 2 unitats 250 g",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "034559",
+        "raw": {
+          "id": "040411034559",
+          "icon": "034559_Quefir_maduixa_gerds_DANONE_ACTIVIA_380_g.jpg",
+          "order": 2057,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir maduixa-gerds DANONE ACTIVIA, 380 g",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir fresa-frambuesa DANONE ACTIVIA, 380 g",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "034559",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "034559_Quefir_maduixa_gerds_DANONE_ACTIVIA_380_g_gran.jpg",
+          "brand_name": "DANONE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 239,
+          "unit_measure": "Kg",
+          "value_x_unit": 628,
+          "characteristics": []
+        },
+        "brand": "DANONE",
+        "centers": null,
+        "allergens": "Contiene: Llet",
+        "available": true,
+        "nutrition": "Valor energético: 80 kcal\nValor energético: 334 kJ\nGrasa: 3.1 g\nGrasas Saturadas: 2 g\nCarbohidratos: 9.4 g\nAzúcares: 8.9 g\nProteína: 3.6 g\nSal equivalente: 0.1 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 2.39,
+        "category_id": "040411",
+        "description": "Kéfir sabor fresa-frambuesa Danone Activia 380G",
+        "ingredients": "Leche desnatada pasteurizada, nata pasteurizada, azúcar, fresa (4,4%), leche desnatada en polvo, puré de frambuesa (0,6%), almidón de maíz, aromas naturales, concentrado de zanahoria y arándano, zumo concentrado de limón, sólidos lácteos, bifidobacterias y otros fermentos lácticos y bacterias y levaduras propias del kéfir.",
+        "allergens_ca": "Conté: Llet",
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": "Consérvese en frío entre 2ºC y 6ºC, y consumir fresco, o de lo contrario el envase podría hincharse.",
+        "display_name": "Kéfir fresa-frambuesa DANONE ACTIVIA, 380 g",
+        "nutrition_ca": "Valor energètic: 80 kcal\nValor energètic: 334 kJ\nGreix: 3.1 g\nGreixos Saturats: 2 g\nCarbohidrats: 9.4 g\nSucres: 8.9 g\nProteïna: 3.6 g\nSal equivalent: 0.1 g",
+        "price_format": "2,39 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 6.28,
+        "source_row_md5": "10db235b4a60a2cc514df6ec88405df0",
+        "display_name_ca": "Quefir maduixa-gerds DANONE ACTIVIA, 380 g",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "035381",
+        "raw": {
+          "id": "040411035381",
+          "icon": "035381_Quefir_natural_s_lactosa_KAIKU_500_g.jpg",
+          "order": 2059,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir natural s/lactosa KAIKU, 500 g",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir natural s/lactosa KAIKU, 500 g",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "035381",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "035381_Quefir_natural_s_lactosa_KAIKU_500_g_gran.jpg",
+          "brand_name": "KAIKU",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 199,
+          "unit_measure": "Kg",
+          "value_x_unit": 398,
+          "characteristics": []
+        },
+        "brand": "KAIKU",
+        "centers": null,
+        "allergens": "Contiene: Llet\nPuede contener: Fruits Secs, Soja",
+        "available": true,
+        "nutrition": "Valor energético: 46 kcal\nValor energético: 190 kJ\nGrasa: 2 g\nGrasas Saturadas: 1.3 g\nCarbohidratos: 4.7 g\nAzúcares: 4.6 g\nProteína: 5 g\nSal equivalente: 0.1 g\nCalcio: 120",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 1.99,
+        "category_id": "040411",
+        "description": "Leche fermentada con fermentos de kéfir, sin lactosa",
+        "ingredients": "Leche parcialmente desnatada, leche desnatada em polvo, proteínas de la leche, enzima lactasa y fermentos del kéfir. Puede contener trazas de frutos de cáscara y soja. País de ordeño: UE. País de transformación: España.",
+        "allergens_ca": "Conté: Llet\nPot contenir: Fruits Secs, Soja",
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": "Conservar en frío entre 1ºC y 8ºC.",
+        "display_name": "Kéfir natural s/lactosa KAIKU, 500 g",
+        "nutrition_ca": "Valor energètic: 46 kcal\nValor energètic: 190 kJ\nGreix: 2 g\nGreixos Saturats: 1.3 g\nCarbohidrats: 4.7 g\nSucres: 4.6 g\nProteïna: 5 g\nSal equivalent: 0.1 g\nCalci: 120",
+        "price_format": "1,99 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 3.98,
+        "source_row_md5": "63cea1f651001e3359582c6a885ba5c4",
+        "display_name_ca": "Quefir natural s/lactosa KAIKU, 500 g",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "035525",
+        "raw": {
+          "id": "040411035525",
+          "icon": "035525_Quefir_natural_suau_ALTEZA_500_g.jpg",
+          "order": 2060,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir natural suau ALTEZA, 500 g",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir natural suave ALTEZA, 500 g",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "035525",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "035525_Quefir_natural_suau_ALTEZA_500_g_gran.jpg",
+          "brand_name": "ALTEZA",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 120,
+          "unit_measure": "Kg",
+          "value_x_unit": 240,
+          "characteristics": []
+        },
+        "brand": "ALTEZA",
+        "centers": null,
+        "allergens": "Libre de: Crustacis i els seus derivats, Ous, Peix, Fruits Secs, Cacauet, Llavors de sèsam, Diòxid de sofre i sulfits, Cereals que contenen gluten, Soja, Api i els seus derivats, Mostassa, Lupino, Mol·luscs\nContiene: Llet",
+        "available": true,
+        "nutrition": "Valor energético: 66 kcal\nValor energético: 274 kJ\nGrasa: 3.6 g\nGrasas Saturadas: 2.3 g\nCarbohidratos: 3.9 g\nAzúcares: 3.9 g\nProteína: 4.4 g\nSal equivalente: 0.1 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 1.2,
+        "category_id": "040411",
+        "description": "Kéfir natural sabor suave",
+        "ingredients": "LECHE ENTERA PASTEURIZADA (97,7%), PROTEÍNAS DE LA LECHE Y FERMENTOS LÁCTICOS DE KÉFIR (STREPTOCOCCUS THERMOPHILUS, LACTOBACILLUS BULGARICUS, LACTOCOCCUS LACTIS SUBSP. LACTIS, LACTACOCCUS LACTIS SUBS. CREMORIS).",
+        "allergens_ca": "Lliure de: Crustacis i els seus derivats, Ous, Peix, Fruits Secs, Cacauet, Llavors de sèsam, Diòxid de sofre i sulfits, Cereals que contenen gluten, Soja, Api i els seus derivats, Mostassa, Lupino, Mol·luscs\nConté: Llet",
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": "Conservas refrigerado entre 1ºC y 8ºC Una vez abierto, consumir en 4 días.",
+        "display_name": "Kéfir natural suave ALTEZA, 500 g",
+        "nutrition_ca": "Valor energètic: 66 kcal\nValor energètic: 274 kJ\nGreix: 3.6 g\nGreixos Saturats: 2.3 g\nCarbohidrats: 3.9 g\nSucres: 3.9 g\nProteïna: 4.4 g\nSal equivalent: 0.1 g",
+        "price_format": "1,20 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 2.4,
+        "source_row_md5": "e4d005063883dc0a4f7925665b646a42",
+        "display_name_ca": "Quefir natural suau ALTEZA, 500 g",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "035596",
+        "raw": {
+          "id": "020101035596",
+          "icon": "035596_Refresc_de_te_sabor_llimona_FONT_VELLA_115_l.jpg",
+          "order": 3694,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Refresc de té sabor llimona FONT VELLA, 1.15 l",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Refresco de té sabor limón FONT VELLA, 1.15 l",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "035596",
+          "available": true,
+          "filter_id": "020101",
+          "image_url": "035596_Refresc_de_te_sabor_llimona_FONT_VELLA_115_l_gran.jpg",
+          "brand_name": "FONT VELLA",
+          "has_format": false,
+          "category_id": "020101",
+          "value_cents": 179,
+          "unit_measure": "L",
+          "value_x_unit": 155,
+          "characteristics": []
+        },
+        "brand": "FONT VELLA",
+        "centers": null,
+        "allergens": null,
+        "available": true,
+        "nutrition": "Valor energético: 16 kcal\nValor energético: 68 kJ\nGrasa: 0 g\nGrasas Saturadas: 0 g\nCarbohidratos: 3.9 g\nAzúcares: 3.9 g\nProteína: 0 g\nSal equivalente: 0 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 1.79,
+        "category_id": "020101",
+        "description": "FONT VELLA con té limón 1,15L",
+        "ingredients": "Agua mineral natural, azúcar, acidulante (ácido cítrico), extracto de té negro (0,02%) y aromas naturales.",
+        "allergens_ca": null,
+        "category_ids": [
+          "02",
+          "0201",
+          "020101"
+        ],
+        "conservation": "Conservar en lugar limpio, fresco, seco. Proteger de la luz solar y de olores agresivos.",
+        "display_name": "Refresco de té sabor limón FONT VELLA, 1.15 l",
+        "nutrition_ca": "Valor energètic: 16 kcal\nValor energètic: 68 kJ\nGreix: 0 g\nGreixos Saturats: 0 g\nCarbohidrats: 3.9 g\nSucres: 3.9 g\nProteïna: 0 g\nSal equivalent: 0 g",
+        "price_format": "1,79 €",
+        "category_name": "Sin gas",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 1.55,
+        "source_row_md5": "051141f1b6d359135bb69315b0f0bdd4",
+        "display_name_ca": "Refresc de té sabor llimona FONT VELLA, 1.15 l",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "l"
+      },
+      {
+        "id": "035645",
+        "raw": {
+          "id": "040411035645",
+          "icon": "035645_Quefir_amb_llimona_LA_TORRE_1_l.jpg",
+          "order": 2138,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir amb llimona LA TORRE, 1 l",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir de limón LA TORRE, 1 l",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "035645",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "035645_Quefir_amb_llimona_LA_TORRE_1_l_gran.jpg",
+          "brand_name": "LA TORRE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 359,
+          "unit_measure": "L",
+          "value_x_unit": 359,
+          "characteristics": []
+        },
+        "brand": "LA TORRE",
+        "centers": [
+          "3",
+          "110"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 3.59,
+        "category_id": "040411",
+        "description": null,
+        "ingredients": null,
+        "allergens_ca": null,
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": null,
+        "display_name": "Kéfir de limón LA TORRE, 1 l",
+        "nutrition_ca": null,
+        "price_format": "3,59 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 3.59,
+        "source_row_md5": "b7b1aaa8ae784e10f1f8d12889d14b15",
+        "display_name_ca": "Quefir amb llimona LA TORRE, 1 l",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "l"
+      },
+      {
+        "id": "035945",
+        "raw": {
+          "id": "040411035945",
+          "icon": "035945_Quefir_mango_DANONE_ACTIVIA_280_ml.jpg",
+          "order": 2040,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir mango DANONE ACTIVIA, 280 ml",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir mango DANONE ACTIVIA, 280 ml",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "035945",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "035945_Quefir_mango_DANONE_ACTIVIA_280_ml_gran.jpg",
+          "brand_name": "DANONE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 179,
+          "unit_measure": "L",
+          "value_x_unit": 471,
+          "characteristics": []
+        },
+        "brand": "DANONE",
+        "centers": null,
+        "allergens": "Contiene: Llet, Cereals que contenen gluten, Civada",
+        "available": true,
+        "nutrition": "Valor energético: 73 kcal\nValor energético: 306 kJ\nGrasa: 3.1 g\nGrasas Saturadas: 2 g\nCarbohidratos: 8.1 g\nAzúcares: 8 g\nProteína: 3.1 g\nSal equivalente: 0.1 g\nCloruro: 92",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 1.79,
+        "category_id": "040411",
+        "description": "ACTIVIA KEFIR DRINK MANGO 280g",
+        "ingredients": "Leche desnatada pasteurizada, nata pasteurizada, azúcar, puré de mango (1%), leche desnatada en polvo, concentrado de zanahoria, zumo de limón concentrado, aromas naturales, bifidobacterias y otros fermentos lácticos y bacterias y levaduras propias del kéfir. Puede contener trazas de cereales con gluten (trigo, avena, cebada y centeno).",
+        "allergens_ca": "Conté: Llet, Cereals que contenen gluten, Civada",
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": "Consérvese en frío entre 2ºC y 6ºC y consumir fresco, o de lo contrario el envase podría hincharse.",
+        "display_name": "Kéfir mango DANONE ACTIVIA, 280 ml",
+        "nutrition_ca": "Valor energètic: 73 kcal\nValor energètic: 306 kJ\nGreix: 3.1 g\nGreixos Saturats: 2 g\nCarbohidrats: 8.1 g\nSucres: 8 g\nProteïna: 3.1 g\nSal equivalent: 0.1 g\nClorur: 92",
+        "price_format": "1,79 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 4.71,
+        "source_row_md5": "95361d13b036905a1b8ebb89717617b6",
+        "display_name_ca": "Quefir mango DANONE ACTIVIA, 280 ml",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "l"
+      },
+      {
+        "id": "035946",
+        "raw": {
+          "id": "040411035946",
+          "icon": "035946_Quefir_arandanos_DANONE_ACTIVIA_280_ml.jpg",
+          "order": 2048,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir arándanos DANONE ACTIVIA, 280 ml",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir nabius DANONE ACTIVIA, 280 ml",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "035946",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "035946_Quefir_arandanos_DANONE_ACTIVIA_280_ml_gran.jpg",
+          "brand_name": "DANONE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 179,
+          "unit_measure": "L",
+          "value_x_unit": 639,
+          "characteristics": []
+        },
+        "brand": "DANONE",
+        "centers": null,
+        "allergens": "Contiene: Llet, Cereals que contenen gluten, Civada",
+        "available": true,
+        "nutrition": "Valor energético: 72 kcal\nValor energético: 303 kJ\nGrasa: 3.1 g\nGrasas Saturadas: 2 g\nCarbohidratos: 8 g\nAzúcares: 7.7 g\nProteína: 3.1 g\nSal equivalente: 0.1 g\nCloruro: 90",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 1.79,
+        "category_id": "040411",
+        "description": "ACTIVIA KEFIR DRINK ARANDANOS 280g",
+        "ingredients": "Leche desnatada pasteurizada, nata pasteurizada, azúcar, arándano (1%), leche desnatada en polvo, zumo de limón concentrado, concentrado de zanahoria, aronia y uva, aromas naturales, bifidobacterias y otros fermentos lácticos y bacterias y levaduras propias del kéfir. Puede contener trazas de cereales con gluten (trigo, avena, cebada y centeno).",
+        "allergens_ca": "Conté: Llet, Cereals que contenen gluten, Civada",
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": "Consérvese en frío entre 2ºC y 6ºC y consumir fresco, o de lo contrario el envase podría hincharse.",
+        "display_name": "Kéfir nabius DANONE ACTIVIA, 280 ml",
+        "nutrition_ca": "Valor energètic: 72 kcal\nValor energètic: 303 kJ\nGreix: 3.1 g\nGreixos Saturats: 2 g\nCarbohidrats: 8 g\nSucres: 7.7 g\nProteïna: 3.1 g\nSal equivalent: 0.1 g\nClorur: 90",
+        "price_format": "1,79 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 6.39,
+        "source_row_md5": "c1c705116f0200e29e392a0ce4369b75",
+        "display_name_ca": "Quefir arándanos DANONE ACTIVIA, 280 ml",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "l"
+      },
+      {
+        "id": "035947",
+        "raw": {
+          "id": "040411035947",
+          "icon": "035947_Quefir_maduixa_DANONE_ACTIVIA_280_ml.jpg",
+          "order": 2056,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir maduixa DANONE ACTIVIA, 280 ml",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir fresa DANONE ACTIVIA, 280 ml",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "035947",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "035947_Quefir_maduixa_DANONE_ACTIVIA_280_ml_gran.jpg",
+          "brand_name": "DANONE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 179,
+          "unit_measure": "L",
+          "value_x_unit": 639,
+          "characteristics": []
+        },
+        "brand": "DANONE",
+        "centers": null,
+        "allergens": "Contiene: Llet, Cereals que contenen gluten, Civada",
+        "available": true,
+        "nutrition": "Valor energético: 72 kcal\nValor energético: 302 kJ\nGrasa: 3.1 g\nGrasas Saturadas: 2 g\nCarbohidratos: 7.9 g\nAzúcares: 7.8 g\nProteína: 3.1 g\nSal equivalente: 0.1 g\nCloruro: 90",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 1.79,
+        "category_id": "040411",
+        "description": "ACTIVIA KEFIR DRINK FRESA 280g",
+        "ingredients": "Leche desnatada pasteurizada, nata pasteurizada, azúcar, puré de fresa (1%), leche desnatada en polvo, concentrado de zanahoria y de zanahoria negra, zumo de limón concentrado, aromas naturales, bifidobacterias y otros fermentos lácticos y bacterias y levaduras propias del kéfir. Puede contener trazas de cereales con gluten (trigo, avena, cebada y centeno)",
+        "allergens_ca": "Conté: Llet, Cereals que contenen gluten, Civada",
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": "Consérvese en frío entre 2ºC y 6ºC y consumir fresco, o de lo contrario el envase podría hincharse.",
+        "display_name": "Kéfir fresa DANONE ACTIVIA, 280 ml",
+        "nutrition_ca": "Valor energètic: 72 kcal\nValor energètic: 302 kJ\nGreix: 3.1 g\nGreixos Saturats: 2 g\nCarbohidrats: 7.9 g\nSucres: 7.8 g\nProteïna: 3.1 g\nSal equivalent: 0.1 g\nClorur: 90",
+        "price_format": "1,79 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 6.39,
+        "source_row_md5": "2ce9fca3ef8f2b158e9b00186c08866c",
+        "display_name_ca": "Quefir maduixa DANONE ACTIVIA, 280 ml",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "l"
+      },
+      {
+        "id": "035948",
+        "raw": {
+          "id": "040411035948",
+          "icon": "035948_Quefir_natural_DANONE_ACTIVIA_280_ml.jpg",
+          "order": 2058,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir natural DANONE ACTIVIA, 280 ml",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir natural DANONE ACTIVIA, 280 ml",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "035948",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "035948_Quefir_natural_DANONE_ACTIVIA_280_ml_gran.jpg",
+          "brand_name": "DANONE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 179,
+          "unit_measure": "L",
+          "value_x_unit": 639,
+          "characteristics": []
+        },
+        "brand": "DANONE",
+        "centers": null,
+        "allergens": "Contiene: Llet, Cereals que contenen gluten, Civada",
+        "available": true,
+        "nutrition": "Valor energético: 59 kcal\nValor energético: 248 kJ\nGrasa: 3.3 g\nGrasas Saturadas: 2.1 g\nCarbohidratos: 4.1 g\nAzúcares: 4.1 g\nProteína: 3.3 g\nSal equivalente: 0.1 g\nCloruro: 100",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 1.79,
+        "category_id": "040411",
+        "description": "ACTIVIA KEFIR DRINK NATURAL 280g",
+        "ingredients": "Leche desnatada pasteurizada, nata pasteurizada, leche desnatada en polvo, bifidobacterias y otros fermentos lácticos y bacterias y levaduras propias del kéfir. Puede contener trazas de cereales con gluten (trigo, avena, cebada y centeno)",
+        "allergens_ca": "Conté: Llet, Cereals que contenen gluten, Civada",
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": "Consérvese en frío entre 2ºC y 6ºC y consumir fresco, o de lo contrario el envase podría hincharse.",
+        "display_name": "Kéfir natural DANONE ACTIVIA, 280 ml",
+        "nutrition_ca": "Valor energètic: 59 kcal\nValor energètic: 248 kJ\nGreix: 3.3 g\nGreixos Saturats: 2.1 g\nCarbohidrats: 4.1 g\nSucres: 4.1 g\nProteïna: 3.3 g\nSal equivalent: 0.1 g\nClorur: 100",
+        "price_format": "1,79 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 6.39,
+        "source_row_md5": "f3dcb5c6e00533cbe7e3bb4007916639",
+        "display_name_ca": "Quefir natural DANONE ACTIVIA, 280 ml",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "l"
+      },
+      {
+        "id": "036132",
+        "raw": {
+          "id": "040411036132",
+          "icon": "036132_Quefir_estil_grec_EL_PASTORET_500_g.jpg",
+          "order": 2055,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quéfir estil grec EL PASTORET, 500 g",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir estilo griego EL PASTORET, 500 g",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "036132",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "036132_Quefir_estil_grec_EL_PASTORET_500_g_gran.jpg",
+          "brand_name": "EL PASTORET",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 280,
+          "unit_measure": "Kg",
+          "value_x_unit": 560,
+          "characteristics": [
+            {
+              "id": "LOL_SI",
+              "row": 0,
+              "icon": null,
+              "level": 0,
+              "order": 0,
+              "texts": [
+                {
+                  "lang": "ca",
+                  "text": "PRODUCTE LOCAL",
+                  "type": 5,
+                  "order": 1
+                },
+                {
+                  "lang": "es",
+                  "text": "PRODUCTO LOCAL",
+                  "type": 5,
+                  "order": 1
+                }
+              ],
+              "childs": [],
+              "visible": false,
+              "banner_id": null,
+              "leaf_count": 593,
+              "embedded_icon_url": "LOL_SI"
+            }
+          ]
+        },
+        "brand": "EL PASTORET",
+        "centers": [
+          "3",
+          "12",
+          "17",
+          "33",
+          "58",
+          "61",
+          "110"
+        ],
+        "allergens": "Contiene: Llet",
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 2.8,
+        "category_id": "040411",
+        "description": "Kéfir al Estilo Griego",
+        "ingredients": "Leche* pasteurizada de vaca, nata* pasteurizada de vaca, proteínas de la leche, leche desnatada en   polvo y fermentos lácticos de Kéfir.*Origen de la leche: España.",
+        "allergens_ca": "Conté: Llet",
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": "Conservar entre 2° y 6° C.",
+        "display_name": "Kéfir estilo griego EL PASTORET, 500 g",
+        "nutrition_ca": null,
+        "price_format": "2,80 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 5.6,
+        "source_row_md5": "afd7aa47ae6864e4270fad7e87735aba",
+        "display_name_ca": "Quéfir estil grec EL PASTORET, 500 g",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "036225",
+        "raw": {
+          "id": "040411036225",
+          "icon": "036225_Quefir_amb_jalea_real_i_mel_KAIKU_4_unitats_125_g.jpg",
+          "order": 2046,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir amb jalea real i mel KAIKU, 4 unitats 125 g",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir con jalea real y miel KAIKU, 4 unidades 125 g",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "036225",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "036225_Quefir_amb_jalea_real_i_mel_KAIKU_4_unitats_125_g_gran.jpg",
+          "brand_name": "KAIKU",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 199,
+          "unit_measure": "Kg",
+          "value_x_unit": 1592,
+          "characteristics": []
+        },
+        "brand": "KAIKU",
+        "centers": null,
+        "allergens": "Contiene: Llet\nPuede contener: Fruits Secs, Soja",
+        "available": true,
+        "nutrition": "Valor energético: 64 kcal\nValor energético: 268 kJ\nGrasa: 3.2 g\nGrasas Saturadas: 2.2 g\nCarbohidratos: 3.9 g\nAzúcares: 3.5 g\nProteína: 4.1 g\nSal equivalente: 0.1 g\nVitamina B12: 0.4\nVitamina B6: 0.2\nCalcio: 120",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 1.99,
+        "category_id": "040411",
+        "description": "Kaiku Kéfir jalea real-miel 4x125g",
+        "ingredients": "Leche, fibra allmentarla (fructooligosacáridos), proteínas de la leche, jalea real (0,1%), almidón de maíz, corrector de acidez (ácido ascórbico), espesante (pectina), aroma natural, edulcorante (sucralosa), vitamina B6, vitamina B12 y fermentos de kéfir. Puede contener trazas de soja y frutos de cáscara. Origen de la leche: España.",
+        "allergens_ca": "Conté: Llet\nPot contenir: Fruits Secs, Soja",
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": "Conservar en frío entre 1°C y 8°C.",
+        "display_name": "Kéfir con jalea real y miel KAIKU, 4 unidades 125 g",
+        "nutrition_ca": "Valor energètic: 64 kcal\nValor energètic: 268 kJ\nGreix: 3.2 g\nGreixos Saturats: 2.2 g\nCarbohidrats: 3.9 g\nSucres: 3.5 g\nProteïna: 4.1 g\nSal equivalent: 0.1 g\nVitamina B12: 0.4\nVitamina B6: 0.2\nCalci: 120",
+        "price_format": "1,99 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 15.92,
+        "source_row_md5": "1de5e3f28e0bbc392338b6f46adccb6a",
+        "display_name_ca": "Quefir amb jalea real i mel KAIKU, 4 unitats 125 g",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "036365",
+        "raw": {
+          "id": "040411036365",
+          "icon": "036365_Quefir_activia_natural_DANONE_4u_500_g.jpg",
+          "order": 2045,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir activia natural DANONE, 4u 500 g",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kefir activia natural DANONE, 4u 500 g",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "036365",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "036365_Quefir_activia_natural_DANONE_4u_500_g_gran.jpg",
+          "brand_name": "DANONE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 299,
+          "unit_measure": "Kg",
+          "value_x_unit": 598,
+          "characteristics": []
+        },
+        "brand": "DANONE",
+        "centers": null,
+        "allergens": "Contiene: Llet",
+        "available": true,
+        "nutrition": "Valor energético: 67 kcal\nValor energético: 279 kJ\nGrasa: 3.5 g\nGrasas Saturadas: 2.3 g\nCarbohidratos: 4.8 g\nAzúcares: 4.8 g\nProteína: 4 g\nSal equivalente: 0.1 g\nCalcio: 96",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 2.99,
+        "category_id": "040411",
+        "description": "Activia Kéfir natural 4x125g",
+        "ingredients": "Leche desnatada pasteurizada, nata pasteurizada, leche desnatada en polvo, bifidobacterias y otros fermentos lácticos y fermentos y levaduras propios del kéfir. Sin gluten.",
+        "allergens_ca": "Conté: Llet",
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": "Consérvese en frío entre 2°C y 6°C.",
+        "display_name": "Kefir activia natural DANONE, 4u 500 g",
+        "nutrition_ca": "Valor energètic: 67 kcal\nValor energètic: 279 kJ\nGreix: 3.5 g\nGreixos Saturats: 2.3 g\nCarbohidrats: 4.8 g\nSucres: 4.8 g\nProteïna: 4 g\nSal equivalent: 0.1 g\nCalci: 96",
+        "price_format": "2,99 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 5.98,
+        "source_row_md5": "b2e36e90b2c392f8d3c55bcb5465cadb",
+        "display_name_ca": "Quefir activia natural DANONE, 4u 500 g",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "036366",
+        "raw": {
+          "id": "040411036366",
+          "icon": "036366_Quefir_activia_gerds_DANONE_4u_500_g.jpg",
+          "order": 2044,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir activia gerds DANONE, 4u 500 g",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kefir activia frambuesa DANONE, 4u 500 g",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "036366",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "036366_Quefir_activia_gerds_DANONE_4u_500_g_gran.jpg",
+          "brand_name": "DANONE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 299,
+          "unit_measure": "Kg",
+          "value_x_unit": 598,
+          "characteristics": []
+        },
+        "brand": "DANONE",
+        "centers": null,
+        "allergens": "Contiene: Llet",
+        "available": true,
+        "nutrition": "Valor energético: 80 kcal\nValor energético: 331 kJ\nGrasa: 3.1 g\nGrasas Saturadas: 2 g\nCarbohidratos: 9.4 g\nAzúcares: 8.9 g\nProteína: 3.6 g\nSal equivalente: 0.1 g\nCalcio: 96",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 2.99,
+        "category_id": "040411",
+        "description": "Activia Kéfir fresa/frambuesa 4x125g",
+        "ingredients": "Leche desnatada pasteurizada, nata pasteurizada, azúcar, fresa (4,4%), leche desnatada en polvo, puré de frambuesa (0,6%), almidón de maíz, aromas naturales, concentrado de zanahoria y arándano, zumo concentrado de limón, sólidos lácteos, bifidobacterias y otros fermentos lácticos y fermentos y levaduras propios del kéfir. Sin gluten.",
+        "allergens_ca": "Conté: Llet",
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": "Consérvese en frío entre 2°C y 6°C.",
+        "display_name": "Kefir activia frambuesa DANONE, 4u 500 g",
+        "nutrition_ca": "Valor energètic: 80 kcal\nValor energètic: 331 kJ\nGreix: 3.1 g\nGreixos Saturats: 2 g\nCarbohidrats: 9.4 g\nSucres: 8.9 g\nProteïna: 3.6 g\nSal equivalent: 0.1 g\nCalci: 96",
+        "price_format": "2,99 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 5.98,
+        "source_row_md5": "b9ce8a21731ab44f2b485c682bedfb06",
+        "display_name_ca": "Quefir activia gerds DANONE, 4u 500 g",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "036729",
+        "raw": {
+          "id": "040411036729",
+          "icon": "036729_Quefir_amb_pressec_i_maracuja_DANONE_ACTIVIA_380_g.jpg",
+          "order": 2047,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir amb préssec i maracujà DANONE ACTIVIA, 380 g",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kefir con melocotón y maracuyá DANONE ACTIVIA, 380 g",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "036729",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "036729_Quefir_amb_pressec_i_maracuja_DANONE_ACTIVIA_380_g_gran.jpg",
+          "brand_name": "DANONE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 239,
+          "unit_measure": "Kg",
+          "value_x_unit": 628,
+          "characteristics": []
+        },
+        "brand": "DANONE",
+        "centers": null,
+        "allergens": "Contiene: Llet",
+        "available": true,
+        "nutrition": "Valor energético: 80 kcal\nValor energético: 333 kJ\nGrasa: 3.1 g\nGrasas Saturadas: 2 g\nCarbohidratos: 9.3 g\nAzúcares: 8.9 g\nProteína: 3.6 g\nSal equivalente: 0.1 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 2.39,
+        "category_id": "040411",
+        "description": "Kéfir sabor melocotón-maracuyá Danone Activia 380G",
+        "ingredients": "Leche desnatada pasteurizada, nata pasteurizada, melocotón (4,6%), azúcar, leche desnatada en polvo, zumo concentrado de maracuyá (0,5%), almidón de maíz, concentrado de calabaza y manzana, zumo concentrado de limón, aromas naturales, sólidos lácteos, bifidobacterias y otros fermentos lácticos y bacterias y levaduras propias del kéfir.",
+        "allergens_ca": "Conté: Llet",
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": "Consérvese en frío entre 2ºC y 6ºC, y consumir fresco, o de lo contrario el envase podría hincharse.",
+        "display_name": "Kefir con melocotón y maracuyá DANONE ACTIVIA, 380 g",
+        "nutrition_ca": "Valor energètic: 80 kcal\nValor energètic: 333 kJ\nGreix: 3.1 g\nGreixos Saturats: 2 g\nCarbohidrats: 9.3 g\nSucres: 8.9 g\nProteïna: 3.6 g\nSal equivalent: 0.1 g",
+        "price_format": "2,39 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 6.28,
+        "source_row_md5": "661258c5b67aa0b84498c3f8eaa87c56",
+        "display_name_ca": "Quefir amb préssec i maracujà DANONE ACTIVIA, 380 g",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "036730",
+        "raw": {
+          "id": "040411036730",
+          "icon": "036730_Quefir_de_pressec_maracuja_DANONE_ACTIVIA_4_unitats_500_g.jpg",
+          "order": 2052,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir de préssec-maracuja DANONE ACTIVIA, 4 unitats 500 g",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kefir de melocotón-maracuyá DANONE ACTIVIA, 4 unidades 500 g",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "036730",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "036730_Quefir_de_pressec_maracuja_DANONE_ACTIVIA_4_unitats_500_g_gran.jpg",
+          "brand_name": "DANONE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 299,
+          "unit_measure": "Kg",
+          "value_x_unit": 598,
+          "characteristics": []
+        },
+        "brand": "DANONE",
+        "centers": null,
+        "allergens": "Contiene: Llet",
+        "available": true,
+        "nutrition": "Valor energético: 80 kcal\nValor energético: 333 kJ\nGrasa: 3.1 g\nGrasas Saturadas: 2 g\nCarbohidratos: 9.3 g\nAzúcares: 8.9 g\nProteína: 3.6 g\nSal equivalente: 0.1 g\nCalcio: 96",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 2.99,
+        "category_id": "040411",
+        "description": "Activia Kéfir Melocotón/Maracuyá 4x125g",
+        "ingredients": "Leche desnatada pasteurizada, nata pasteurizada, melocotón (4,6%), azúcar, leche desnatada en polvo, zumo concentrado de maracuyá (0,5%), almidón de maíz, concentrado de calabaza y manzana, zumo concentrado de limón, aromas naturales, sólidos lácteos, bifidobacterias y otros fermentos lácticos y bacterias y levaduras propias del kéfir. Sin gluten.",
+        "allergens_ca": "Conté: Llet",
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": "Consérvese en frío entre 2ºC y 6ºC, y consumir fresco, o de lo contrario el envase podría hincharse.",
+        "display_name": "Kefir de melocotón-maracuyá DANONE ACTIVIA, 4 unidades 500 g",
+        "nutrition_ca": "Valor energètic: 80 kcal\nValor energètic: 333 kJ\nGreix: 3.1 g\nGreixos Saturats: 2 g\nCarbohidrats: 9.3 g\nSucres: 8.9 g\nProteïna: 3.6 g\nSal equivalent: 0.1 g\nCalci: 96",
+        "price_format": "2,99 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 5.98,
+        "source_row_md5": "eb52e0cc738a5c34b77e1d360654e727",
+        "display_name_ca": "Quefir de préssec-maracuja DANONE ACTIVIA, 4 unitats 500 g",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "036742",
+        "raw": {
+          "id": "020102036742",
+          "icon": "036742_Refresc_amb_gas_aromatitzat_llima_llimo_ALTEZA_2_l.jpg",
+          "order": 3712,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Refresc amb gas aromatitzat llima-llimó ALTEZA, 2 l",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Refresco con gas aromatizado lima-limón ALTEZA, 2 l",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "036742",
+          "available": true,
+          "filter_id": "020102",
+          "image_url": "036742_Refresc_amb_gas_aromatitzat_llima_llimo_ALTEZA_2_l_gran.jpg",
+          "brand_name": "ALTEZA",
+          "has_format": false,
+          "category_id": "020102",
+          "value_cents": 95,
+          "unit_measure": "L",
+          "value_x_unit": 47,
+          "characteristics": []
+        },
+        "brand": "ALTEZA",
+        "centers": null,
+        "allergens": "Libre de: Crustacis i els seus derivats, Ous, Peix, Llet, Fruits Secs, Cacauet, Llavors de sèsam, Diòxid de sofre i sulfits, Cereals que contenen gluten, Soja, Api i els seus derivats, Mostassa, Lupino, Mol·luscs",
+        "available": true,
+        "nutrition": "Valor energético: 10 kcal\nValor energético: 41 kJ\nGrasa: 0 g\nGrasas Saturadas: 0 g\nCarbohidratos: 2.1 g\nAzúcares: 2.1 g\nProteína: 0 g\nSal equivalente: 0 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 0.95,
+        "category_id": "020102",
+        "description": "Refresco lima limón. Menos azúcar. Mismo sabor.",
+        "ingredients": "AGUA CARBONATADA, AZÚCAR, ACIDULANTE: ÁCIDO CITRICO; AROMAS, CORRECTOR DE ACIDEZ: CITRATOS DE SODIO; EDULCORANTES: ACESULFAMO K,  SUCRALOSA; CONSERVADOR: SORBATO POTÁSICO.",
+        "allergens_ca": "Lliure de: Crustacis i els seus derivats, Ous, Peix, Llet, Fruits Secs, Cacauet, Llavors de sèsam, Diòxid de sofre i sulfits, Cereals que contenen gluten, Soja, Api i els seus derivats, Mostassa, Lupino, Mol·luscs",
+        "category_ids": [
+          "02",
+          "0201",
+          "020102"
+        ],
+        "conservation": "Conservar en un lugar fresco, sin olores agresivos y fuera del alcance de la luz solar.",
+        "display_name": "Refresco con gas aromatizado lima-limón ALTEZA, 2 l",
+        "nutrition_ca": "Valor energètic: 10 kcal\nValor energètic: 41 kJ\nGreix: 0 g\nGreixos Saturats: 0 g\nCarbohidrats: 2.1 g\nSucres: 2.1 g\nProteïna: 0 g\nSal equivalent: 0 g",
+        "price_format": "0,95 €",
+        "category_name": "Con gas",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 0.47,
+        "source_row_md5": "976444a498cbcd1820f7a753c68ab0d3",
+        "display_name_ca": "Refresc amb gas aromatitzat llima-llimó ALTEZA, 2 l",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "l"
+      },
+      {
+        "id": "036764",
+        "raw": {
+          "id": "040411036764",
+          "icon": "036764_Quefir_natural_sense_sucre_LA_TORRE_1_l.jpg",
+          "order": 2157,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir natural sense sucre LA TORRE, 1 l",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kefir natural sin azúcar LA TORRE, 1 l",
+              "type": 4,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "036764",
+          "available": true,
+          "filter_id": "040411",
+          "image_url": "036764_Quefir_natural_sense_sucre_LA_TORRE_1_l_gran.jpg",
+          "brand_name": "LA TORRE",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 335,
+          "unit_measure": "L",
+          "value_x_unit": 335,
+          "characteristics": [
+            {
+              "id": "CAT_SI",
+              "row": 0,
+              "icon": null,
+              "level": 0,
+              "order": 0,
+              "texts": [
+                {
+                  "lang": "ca",
+                  "text": "PRODUCTE CATALÀ",
+                  "type": 5,
+                  "order": 1
+                },
+                {
+                  "lang": "es",
+                  "text": "PRODUCTO CATALÁN",
+                  "type": 5,
+                  "order": 1
+                }
+              ],
+              "childs": [],
+              "visible": false,
+              "banner_id": null,
+              "leaf_count": 1128,
+              "embedded_icon_url": "CAT"
+            }
+          ]
+        },
+        "brand": "LA TORRE",
+        "centers": [
+          "3",
+          "58",
+          "110"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": null,
+        "unit_price": 3.35,
+        "category_id": "040411",
+        "description": null,
+        "ingredients": null,
+        "allergens_ca": null,
+        "category_ids": [
+          "04",
+          "0404",
+          "040411"
+        ],
+        "conservation": null,
+        "display_name": "Kefir natural sin azúcar LA TORRE, 1 l",
+        "nutrition_ca": null,
+        "price_format": "3,35 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": null,
+        "promo_name_ca": null,
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 3.35,
+        "source_row_md5": "21dff286708459936c73acbca619113c",
+        "display_name_ca": "Quefir natural sense sucre LA TORRE, 1 l",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": null,
+        "promo_offer_price": null,
+        "price_per_unit_unit": "l"
+      },
+      {
+        "id": "036886",
+        "raw": {
+          "id": "040411036886",
+          "icon": "036886_Quefir_de_cabra_eco_CANTERO_DE_LETUR_420_g.jpg",
+          "order": 2050,
+          "texts": [
+            {
+              "lang": "ca",
+              "text": "Quefir de cabra eco CANTERO DE LETUR, 420 g",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "ca",
+              "text": "Segona al 50 %",
+              "type": 6,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Kéfir de cabra eco CANTERO DE LETUR, 420 g",
+              "type": 4,
+              "order": 1
+            },
+            {
+              "lang": "es",
+              "text": "Segunda al 50%",
+              "type": 6,
+              "order": 1
+            }
+          ],
+          "formats": [],
+          "item_id": "036886",
+          "band_uri": "OfferType_5637146356.png",
+          "end_date": "14/09/2026",
+          "promo_id": "CategoMxN_34150",
+          "available": false,
+          "filter_id": "040411",
+          "image_url": "036886_Quefir_de_cabra_eco_CANTERO_DE_LETUR_420_g_gran.jpg",
+          "brand_name": "CANTERO DE LETUR",
+          "chip_color": "250;193;21;255",
+          "has_format": false,
+          "category_id": "040411",
+          "value_cents": 375,
+          "qty_required": 2,
+          "unit_measure": "Kg",
+          "value_x_unit": 669,
+          "characteristics": [
+            {
+              "id": "ECO_SI",
+              "row": 0,
+              "icon": null,
+              "level": 0,
+              "order": 0,
+              "texts": [
+                {
+                  "lang": "ca",
+                  "text": "ECOLÒGIC",
+                  "type": 5,
+                  "order": 1
+                },
+                {
+                  "lang": "es",
+                  "text": "ECOLÓGICO",
+                  "type": 5,
+                  "order": 1
+                }
+              ],
+              "childs": [],
+              "visible": false,
+              "banner_id": null,
+              "leaf_count": 272,
+              "embedded_icon_url": "ECO_SI"
+            }
+          ],
+          "new_value_cents": 281
+        },
+        "brand": "CANTERO DE LETUR",
+        "centers": [
+          "3",
+          "12",
+          "17",
+          "33",
+          "58",
+          "61",
+          "110"
+        ],
+        "allergens": "Contiene: Llet",
+        "available": false,
+        "nutrition": "Valor energético: 72 kcal\nValor energético: 302 kJ\nGrasa: 4.4 g\nGrasas Saturadas: 2.6 g\nCarbohidratos: 4.3 g\nAzúcares: 2.9 g\nProteína: 3.9 g\nSal equivalente: 0.1 g\nCalcio: 151",
+        "promo_end": "2026-09-14",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00",
+        "promo_name": "Segunda al 50%",
+        "unit_price": 3.75,
+        "category_id": "040411",
+        "description": "Kéfir ecológico de cabra Cantero de Letur 420 g",
+        "ingredients": "Leche entera de cabra pasteurizada y fermentos lácticos de Kéfir. (*) ecológico. Origen de la leche: España.",
+        "allergens_ca": "Conté: Llet",
+        "category_ids": [
+          "04",
+          "0404",
+          "040411",
+          "40",
+          "4001"
+        ],
+        "conservation": "Conservar entre 1° y 8° C",
+        "display_name": "Kéfir de cabra eco CANTERO DE LETUR, 420 g",
+        "nutrition_ca": "Valor energètic: 72 kcal\nValor energètic: 302 kJ\nGreix: 4.4 g\nGreixos Saturats: 2.6 g\nCarbohidrats: 4.3 g\nSucres: 2.9 g\nProteïna: 3.9 g\nSal equivalent: 0.1 g\nCalci: 151",
+        "price_format": "3,75 €",
+        "category_name": "Kéfir",
+        "center_prices": null,
+        "offer_centers": [
+          "3",
+          "12",
+          "17",
+          "33",
+          "58",
+          "61",
+          "110"
+        ],
+        "promo_name_ca": "Segona al 50 %",
+        "description_ca": null,
+        "ingredients_ca": null,
+        "price_per_unit": 6.69,
+        "source_row_md5": "1c92cccc995630c500ed90a138337779",
+        "display_name_ca": "Quefir de cabra eco CANTERO DE LETUR, 420 g",
+        "detail_synced_at": "2026-08-18T08:27:13.948+00:00",
+        "promo_base_price": 3.75,
+        "promo_offer_price": 2.81,
+        "price_per_unit_unit": "kg"
+      }
+    ],
+    "store": "plusfresc",
+    "cursor": "",
+    "job_key": "ce1-ce200-5ba9870b1a17b56d5ed9529cf1e7",
+    "row_count": 32,
+    "elapsed_ms": 77.685,
+    "captured_at": "2026-09-03T10:31:40.692788+00:00",
+    "project_ref": "gkffvigcnsesbaihycay",
+    "operation_hash": "5ba9870b1a17b56d5ed9529cf1e761673d88a662b413e6a364f82b570a389a0c"
+  },
+  "transport_bytes": 88515
+}

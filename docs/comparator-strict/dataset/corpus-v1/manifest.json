@@ -1,0 +1,1265 @@
+{
+  "schema_version": 1,
+  "task": "CE-200",
+  "corpus_version": "corpus-v1",
+  "status": "acquired_and_sampled_unlabelled",
+  "source_files": [
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-02939b563ffc20295d0987733415.json",
+      "sha256": "3578c17d554c95a1229152b51e1ff1da17e04dcd4c88177f7695f34407f59dde",
+      "kind": "location-fingerprints",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:38:20.827038+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-02939b563ffc20295d0987733415"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-088765ee80fee7794b74e34ba0ef.json",
+      "sha256": "774da0acff0919295a068beddd9d16bfc9279b357ea93b4d9fcf05f92a864c3b",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:26:37.20037+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-088765ee80fee7794b74e34ba0ef"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-09f1681cef48f99d5f77be182f0f.json",
+      "sha256": "fdad0fa04d779e54e2afbe1e5193cbbb32a9b88775e4ccad1484a760bb7cfd5c",
+      "kind": "census",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:19:15.194724+00:00",
+      "row_count": 86,
+      "job": "ce1-ce200-09f1681cef48f99d5f77be182f0f"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-0d2c7854f8ed532ab0057d149400.json",
+      "sha256": "1776404dce9d2a619de7a7c50fd068dec2669c5000437a8eeb4de1b57e296e92",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:26:42.199196+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-0d2c7854f8ed532ab0057d149400"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-0ef3f508de41d3d34caf51778350.json",
+      "sha256": "b4eaff4acb49e359bce0ab0d213eea7a6c755a8fffff951c70a08781d18b3930",
+      "kind": "locations",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:34:18.458682+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-0ef3f508de41d3d34caf51778350"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-0fc5de5e3ae29260820cdc418e35.json",
+      "sha256": "9e99678e541cb775c3e4b16fcb2df5120ee928aff9570d4189e374ba0f7aa515",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:23:38.799838+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-0fc5de5e3ae29260820cdc418e35"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-13bb4b5717bf01e6022e24a3db73.json",
+      "sha256": "7384f833d0d5f75503bd3d6a4344a9076d016cc5459fa8fbfb76aac600bc65b8",
+      "kind": "locations",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:34:55.436144+00:00",
+      "row_count": 188,
+      "job": "ce1-ce200-13bb4b5717bf01e6022e24a3db73"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-14215848f0a953073cbb20770ef1.json",
+      "sha256": "6e0c22bbb2118caaf9a97ef7b60f57f9d9492357da06c93fc8f18c9252590d7f",
+      "kind": "census",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:19:21.394886+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-14215848f0a953073cbb20770ef1"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-1905cc2e630c542154eea9776551.json",
+      "sha256": "5509274ca251c0d3a19e64d463b699b2c417b66540a6d3ee076d91cc6f57f4e9",
+      "kind": "locations",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:35:08.249381+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-1905cc2e630c542154eea9776551"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-1f7953da2b70c01325a3544ddd5f.json",
+      "sha256": "5f5d9a892e8fbd29c48b013780f2acf7eaca43bdc476f0a2156c898a2a202f9f",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:25:31.207647+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-1f7953da2b70c01325a3544ddd5f"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-22f1bf6b71d3a263c07ed9f82342.json",
+      "sha256": "17451bdb945b69cf4c3e27e114a6b022de3b8a0c0b26c24989bbf00cb6d39dc7",
+      "kind": "taxonomy",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:40:51.710595+00:00",
+      "row_count": 311,
+      "job": "ce1-ce200-22f1bf6b71d3a263c07ed9f82342"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-23f4865075aa8518c6c54b3b2343.json",
+      "sha256": "ab5d5cae83f08076d2a3430ec4f55b2516a57515bb6fdf6544c46ea23a9478a8",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:26:48.167896+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-23f4865075aa8518c6c54b3b2343"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-273fc58031cdddf9009e89e1d9d5.json",
+      "sha256": "c436f9f31c8cd98fe8140563b32e6e192f23a83168c60102d2915ef65d2ec16f",
+      "kind": "taxonomy",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:40:39.169485+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-273fc58031cdddf9009e89e1d9d5"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-286ab167dd405086dfe8d91c594c.json",
+      "sha256": "785fae62ad26bd606e8cc5e894678b58764b2ed592d8fc205e326edd3f075068",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:27:42.0776+00:00",
+      "row_count": 45,
+      "job": "ce1-ce200-286ab167dd405086dfe8d91c594c"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-286d41da12afc2b81fea596c9ad9.json",
+      "sha256": "25ef6e68e17495f743f628e4741df746af500275e3cd32fc84973b5e8e4244d5",
+      "kind": "locations",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:36:29.096133+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-286d41da12afc2b81fea596c9ad9"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-292f2e5b07846cb5d11f275d1ce9.json",
+      "sha256": "03fb2e7a6a966548842c9bd4b10363522c57ec96da59483562e0dfeb5f901888",
+      "kind": "location-fingerprints",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:38:25.584684+00:00",
+      "row_count": 488,
+      "job": "ce1-ce200-292f2e5b07846cb5d11f275d1ce9"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-29fcc264a245d0ed520583e49cb3.json",
+      "sha256": "62a5ffe5281109c624a6a9affa6fc085e23fb378f55d902760e5bd4cef36c014",
+      "kind": "location-fingerprints",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:38:42.763573+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-29fcc264a245d0ed520583e49cb3"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-2ac7484a83d479dd2017616bed81.json",
+      "sha256": "a9e12cd38b84babc915be348544017fda6f783aaf67e405a60700b50a96558cc",
+      "kind": "locations",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:36:01.981813+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-2ac7484a83d479dd2017616bed81"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-2eaf7e3af11850f979635687b73a.json",
+      "sha256": "cbed13ec0df00b072bf46501ccf29295f9d21d1c75778cca7a7de7d257a73013",
+      "kind": "profile",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:20:12.433316+00:00",
+      "row_count": 3,
+      "job": "ce1-ce200-2eaf7e3af11850f979635687b73a"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-32c5660170505dc5ac521f6b4ae3.json",
+      "sha256": "d2c9f3f041629de230dd45b80433dac00a54f793b59d6c57237c8d4a0027ccf7",
+      "kind": "fingerprints",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:32:33.535771+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-32c5660170505dc5ac521f6b4ae3"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-33d9e5178bb476d4ffefb65eb039.json",
+      "sha256": "08d3067c5bd172fc52903d92349530beca65c1ac0dfb0f7b5fa9c8f7840ea271",
+      "kind": "fingerprints",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:33:18.325042+00:00",
+      "row_count": 453,
+      "job": "ce1-ce200-33d9e5178bb476d4ffefb65eb039"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-355f21acbfa5098a909c2b6ff025.json",
+      "sha256": "668a442f0cd0cd6fe22e8bb71c1d3dda5ea60587936b30a45fc4d43f33f0ef73",
+      "kind": "location-fingerprints",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:38:48.054596+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-355f21acbfa5098a909c2b6ff025"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-3564e584228c74eb7d10b0161442.json",
+      "sha256": "e492b01aed941cef279d7ef3c5a2a35a05b4c8ea2c14d0772de99d04fc84921b",
+      "kind": "products",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:27:58.789003+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-3564e584228c74eb7d10b0161442"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-360507ec1db1fe38afcedc42acaf.json",
+      "sha256": "214a87faf186a02ecdf0b06b38a4c164a445daebcf627c2845089a9bf2c5de73",
+      "kind": "location-fingerprints",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:39:04.233941+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-360507ec1db1fe38afcedc42acaf"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-39b9f346c80bc80e1b43162fd5c0.json",
+      "sha256": "85028a9de246b1e400e97905aee7dbdf505c5459de5372c462642a4a2b605595",
+      "kind": "products",
+      "store": "mercadona",
+      "captured_at": "2026-09-03T10:28:28.701929+00:00",
+      "row_count": 62,
+      "job": "ce1-ce200-39b9f346c80bc80e1b43162fd5c0"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-3b19d9bac2698f2cce73e30b0b32.json",
+      "sha256": "ad80925cf8a195c54e6912e2ef6b06d365fa1be05c9bfe75b2ba89d982a24b66",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:23:43.633105+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-3b19d9bac2698f2cce73e30b0b32"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-406f9e3b9b12089065d5922adbae.json",
+      "sha256": "d11c85c01e4a5b0fb1a60c86b177052822bb7a3df4800d7dee768e8bf030122c",
+      "kind": "locations",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:35:23.926786+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-406f9e3b9b12089065d5922adbae"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-4127c37335c49be03eac1f45c04d.json",
+      "sha256": "52f20789f034ca77c1c59d98262e0696f89f5f42bba913ab9e7905894f7219fe",
+      "kind": "profile",
+      "store": "mercadona",
+      "captured_at": "2026-09-03T10:20:23.234009+00:00",
+      "row_count": 3,
+      "job": "ce1-ce200-4127c37335c49be03eac1f45c04d"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-4ecabddaef70b6974b47a7615d7c.json",
+      "sha256": "c4aa464915b450331e75a573fe035c53d8f17ea0231b5f50eaed5cb79844ba11",
+      "kind": "locations",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:34:33.681644+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-4ecabddaef70b6974b47a7615d7c"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-4fbe760ba90ce7ac93068aa8eadb.json",
+      "sha256": "9f366bd63ecfd9e12bfff6d07625e930ce18998f5ef1e61ba25c5a69622fb986",
+      "kind": "products",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:28:43.76053+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-4fbe760ba90ce7ac93068aa8eadb"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-517ce1407c23ec86f4d6be2dc3a7.json",
+      "sha256": "af12da283a11c768a879870daaa91b035ae14b7f0d99a3c21d18e072cda1ec49",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:26:54.369696+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-517ce1407c23ec86f4d6be2dc3a7"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-53fde264b0807d786420a35bbaf9.json",
+      "sha256": "767f835c719426b9b445385ef4ffeafe08ba5fd1d8de9a3480a22b39cbae2826",
+      "kind": "census",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:19:31.868826+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-53fde264b0807d786420a35bbaf9"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-5a3acac3cc886eadc59ae3aa7365.json",
+      "sha256": "3f0d6045ad7d830d393dac1c8db920a06fafc1326d9cd502b34a6b471b493410",
+      "kind": "fingerprints",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:32:27.911985+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-5a3acac3cc886eadc59ae3aa7365"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-5abac7655f41598021641faf87e2.json",
+      "sha256": "7776627129060f3dad94fd600f65c2edde7a7ddcf71144f4efe735809147bb21",
+      "kind": "location-fingerprints",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:38:58.086171+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-5abac7655f41598021641faf87e2"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-5ba9870b1a17b56d5ed9529cf1e7.json",
+      "sha256": "4d8b5e5b6063cf4e103dab32de533a739fd95e37aa154ba783f5c55e41eccf12",
+      "kind": "supplement",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:31:40.692788+00:00",
+      "row_count": 32,
+      "job": "ce1-ce200-5ba9870b1a17b56d5ed9529cf1e7"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-6359d5cd7e018110c10a106604e3.json",
+      "sha256": "72043b02cb285a72630900776280e9d7b0754cee8d2a9de26896685e8fdc2715",
+      "kind": "location-fingerprints",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:38:06.050792+00:00",
+      "row_count": 0,
+      "job": "ce1-ce200-6359d5cd7e018110c10a106604e3"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-63c87276f4d78ba8e780052e303c.json",
+      "sha256": "e27c1db6c93038ab40f21b11285d45e6bdc5d999b4cde5fed2643f033784eed3",
+      "kind": "location-fingerprints",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:38:10.755713+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-63c87276f4d78ba8e780052e303c"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-65b30eb03c38584868d08bdc27cc.json",
+      "sha256": "67d3a81216b8d5e6c8a34f9daa99238461eea59b721202b2bee6c5f69b9afc65",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:27:36.240945+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-65b30eb03c38584868d08bdc27cc"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-66b21a599d9093679cc109687387.json",
+      "sha256": "412519546b12f045f2c297f71e34b64f87febde301992051c4821a50e5338931",
+      "kind": "locations",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:36:18.629464+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-66b21a599d9093679cc109687387"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-66dcd22cebc75d76f1383de33bcb.json",
+      "sha256": "b3d40150eb8f65a30fc549d773944f7e7bc080d664c504f1fefbd582c22e9155",
+      "kind": "census",
+      "store": "mercadona",
+      "captured_at": "2026-09-03T10:19:26.617646+00:00",
+      "row_count": 151,
+      "job": "ce1-ce200-66dcd22cebc75d76f1383de33bcb"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-6732ff5576d723bb7f8746cb88d1.json",
+      "sha256": "99c3d939ae4df3bb512675d7a5e06e69661286bf92051470846631fb6b8cdcbc",
+      "kind": "locations",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:34:44.146746+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-6732ff5576d723bb7f8746cb88d1"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-679d1e961d6b9241787e6af5be6e.json",
+      "sha256": "a89356a4e921c57b54ed72353875d249f740ec2bb15ffe7a41226ab6c6acbf12",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:26:01.751768+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-679d1e961d6b9241787e6af5be6e"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-67e4aac89f20e2d75b7363508d48.json",
+      "sha256": "7465448bd35085939363fe4fe6ba23a1bc2e495ef2aa9339bb0ef5e3fff1bb8b",
+      "kind": "locations",
+      "store": "mercadona",
+      "captured_at": "2026-09-03T10:35:01.59341+00:00",
+      "row_count": 0,
+      "job": "ce1-ce200-67e4aac89f20e2d75b7363508d48"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-685a2032306dca1124f5c4d18d3d.json",
+      "sha256": "703f8ec84d0c077b0de238f346e610d70558d6875c49ac66fb2cb4aa9b6c797e",
+      "kind": "location-fingerprints",
+      "store": "mercadona",
+      "captured_at": "2026-09-03T10:38:31.307773+00:00",
+      "row_count": 0,
+      "job": "ce1-ce200-685a2032306dca1124f5c4d18d3d"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-6cf8d820bd73d855f79ebccbea8b.json",
+      "sha256": "35b4679ffd254a657e0067f32c3b42dd4f2c5907e517c6ce25a9eb3409f06381",
+      "kind": "locations",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:36:14.05958+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-6cf8d820bd73d855f79ebccbea8b"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-6dc0c3ddc2f847047dc0ab7ea442.json",
+      "sha256": "bb367768fc83ae3c9176f9c32981a5b0c708f47149b97e831c1a3ce633cfd460",
+      "kind": "locations",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:34:02.605442+00:00",
+      "row_count": 0,
+      "job": "ce1-ce200-6dc0c3ddc2f847047dc0ab7ea442"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-6eda81290870d903b71cf8ac22b3.json",
+      "sha256": "86cdd10afe0e3690e3f7cb4d831bac06b87e38a108590c0b6b5a87247e2c5051",
+      "kind": "locations",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:36:54.497033+00:00",
+      "row_count": 1,
+      "job": "ce1-ce200-6eda81290870d903b71cf8ac22b3"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-6f51f954c4d57567a1d27ca5b314.json",
+      "sha256": "7c6527a8af3becde2d79663b37a51429a84d1dbe834e598a071039a92a2b1b59",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:27:30.186454+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-6f51f954c4d57567a1d27ca5b314"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-799bf976b6b5950b1cdaa334fb46.json",
+      "sha256": "80102f91b0d72ec3de67600d02eea3214613196d596274a1b50ac60f4c83dcc7",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:25:26.510987+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-799bf976b6b5950b1cdaa334fb46"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-7b430853e29979ff2f2951df1ec0.json",
+      "sha256": "c2c603505fd077b6e2de6b110171864bc63d15caf1c46008690261ef2ecffdf7",
+      "kind": "locations",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:35:35.647213+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-7b430853e29979ff2f2951df1ec0"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-7d6dd62106c3afd6ab92109c6fd7.json",
+      "sha256": "ee8366d2bfcb1d9ef5fae019ae233fc0c4a2a7cd2178f422f8891bed97db7bce",
+      "kind": "products",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:22:31.206462+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-7d6dd62106c3afd6ab92109c6fd7"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-7d901ea4d42ffb4758aad98c0a79.json",
+      "sha256": "6efc3c3896c9f2a964feb88de4f1384659c775a281344df70569d74dc25ba528",
+      "kind": "products",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:27:52.984734+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-7d901ea4d42ffb4758aad98c0a79"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-7ed84f058fe0abab4d90eb69b7e2.json",
+      "sha256": "6153f2e496aaf25856d3862334443da8e9402d29ead656416a9b15c099873329",
+      "kind": "fingerprints",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:32:40.320954+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-7ed84f058fe0abab4d90eb69b7e2"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-8018f0877af834350d8dd866141d.json",
+      "sha256": "500d04b098cd15f0608dac41f5167a4b4c3e6ee6421e508eeaefba99495e47d7",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:27:10.630569+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-8018f0877af834350d8dd866141d"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-80c9bb924d74db32b81875672103.json",
+      "sha256": "a03bde31116978dea81c3ce54649664ca9f6aa39db52544ca26dd9d08efbb5bc",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:25:19.739502+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-80c9bb924d74db32b81875672103"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-812d025338f3249f360c1c707b3f.json",
+      "sha256": "9b18245711271f10b883cc577364bea9940cd97317712182a1d758327bb185a2",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:26:59.705564+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-812d025338f3249f360c1c707b3f"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-866111424cfcc0f055868030520b.json",
+      "sha256": "eca1f2ad62f7dcaef97f3f90eb987dedf2b4a0667fa74aff2f81707975fb9c23",
+      "kind": "fingerprints",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:32:59.204629+00:00",
+      "row_count": 245,
+      "job": "ce1-ce200-866111424cfcc0f055868030520b"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-868edaf845332c8df0e9c3721ba5.json",
+      "sha256": "290c366bff7904f9a04781f75ff400ae76004d26bfc11f4dd5d27d7bf5a288e6",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:23:49.81688+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-868edaf845332c8df0e9c3721ba5"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-8696d2cfa71e3ad2b504a39ca66d.json",
+      "sha256": "ca0755fba02ac6f053fa5dc9919d12ee54279c40b375929c068eeca0d75bc7cd",
+      "kind": "locations",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:34:39.166043+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-8696d2cfa71e3ad2b504a39ca66d"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-886e2438c530cfcb0c1cd03a0e3e.json",
+      "sha256": "b1e5ed5b9b065efa7ba98df873ae5e64e2d52912eb1f9b72704c63aada2149a5",
+      "kind": "taxonomy",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:40:57.898016+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-886e2438c530cfcb0c1cd03a0e3e"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-88d49f9d9578c44bc08ee4b09a6f.json",
+      "sha256": "c7ed18a69bd1ba716555b1b839e270dbc9a414cbc20c6e8d9f48d85ef48e6b37",
+      "kind": "census",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:21:52.187044+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-88d49f9d9578c44bc08ee4b09a6f"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-8a8c236b99d0f51a84c7d8d30344.json",
+      "sha256": "b4d4ef261c4c81c1e68e51e8fd4ed8b9a8e2e37486e00b73f4929f262d660a28",
+      "kind": "locations",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:34:28.869515+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-8a8c236b99d0f51a84c7d8d30344"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-8b88f73cf66fc9c9d1b41d8eb792.json",
+      "sha256": "65425a84288658fb4be631f281f3b2930624a2eb60c9bb3a10d78e3d3d172a6e",
+      "kind": "products",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:27:47.712198+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-8b88f73cf66fc9c9d1b41d8eb792"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-8d8e3e17615b7776b25918743bec.json",
+      "sha256": "ce245cc2adfc4d3c24091fcf37cd79ad6f1d0f24974545605b9ea28228469aea",
+      "kind": "census",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:21:36.597573+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-8d8e3e17615b7776b25918743bec"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-90cc7a96fec493ea084e045e50e9.json",
+      "sha256": "18ecbd4389dabda8c8ce36412c7bdc1ea6a5d84ee80377cac4221b21449b8f61",
+      "kind": "locations",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:35:18.807316+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-90cc7a96fec493ea084e045e50e9"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-93fdd1d8349caadb42ca0d3ebaba.json",
+      "sha256": "8ab006730f65a8293ee6f5f4abfedb6cb6385185fa2760708164c919c89a8cf2",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:23:33.831401+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-93fdd1d8349caadb42ca0d3ebaba"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-9690f856f12a77fc63d094783a4c.json",
+      "sha256": "327ccf48a9a19d14d95ad1ef11b73a41c4ba96ba10b2d457c005d079f7108470",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:27:04.901296+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-9690f856f12a77fc63d094783a4c"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-99a6f088e22833d53073126fd8d9.json",
+      "sha256": "f3d933312c55cbc98f4dba4d09d636a3f8e012a839e47347d8da53b4a366e27c",
+      "kind": "location-fingerprints",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:39:09.702564+00:00",
+      "row_count": 201,
+      "job": "ce1-ce200-99a6f088e22833d53073126fd8d9"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-9bce5573287f370b1d06e995018c.json",
+      "sha256": "4b943a065681aa48f85502686456cefa04e7fc6dc375ff7372f40da859c7fd5e",
+      "kind": "locations",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:36:23.400571+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-9bce5573287f370b1d06e995018c"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-a20ba272dec72236dc0cf4a2ef8f.json",
+      "sha256": "08455b923d33f258d260c6f88156c5b769f4c01323fc601b51c866d693912821",
+      "kind": "taxonomy",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:41:03.598981+00:00",
+      "row_count": 290,
+      "job": "ce1-ce200-a20ba272dec72236dc0cf4a2ef8f"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-a42ee008701934aee0fbc9f49dea.json",
+      "sha256": "2939e217a1daa3d1f8e29d0039e8bc5823d19bbe215e9e6dc708029b5280d12d",
+      "kind": "fingerprints",
+      "store": "mercadona",
+      "captured_at": "2026-09-03T10:33:10.950752+00:00",
+      "row_count": 490,
+      "job": "ce1-ce200-a42ee008701934aee0fbc9f49dea"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-a48fbbc3d3a529338159e787cc71.json",
+      "sha256": "d8e9ab23ada19fb349163bce91021d139354162ce85ce548c2276be2c63e2e7f",
+      "kind": "fingerprints",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:33:05.591999+00:00",
+      "row_count": 488,
+      "job": "ce1-ce200-a48fbbc3d3a529338159e787cc71"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-a8c5d2378a950004803df06cd043.json",
+      "sha256": "103122048fba6de1c9e2c930a12d811da2de17e251cd569a942ff82f5c8de15d",
+      "kind": "locations",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:34:50.439959+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-a8c5d2378a950004803df06cd043"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-aeb340c51470e06fba6581d18414.json",
+      "sha256": "20632b6d60283d8aeb95f034ab7084315accab52084172f6a8e1c2183c009268",
+      "kind": "supplement",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:31:24.507818+00:00",
+      "row_count": 0,
+      "job": "ce1-ce200-aeb340c51470e06fba6581d18414"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b19e73e7c1defec20b0765b5c3e2.json",
+      "sha256": "c102eda71a375369c151ba709854587ada18a83733ece3cf618f9ed9ec1ac219",
+      "kind": "census",
+      "store": "mercadona",
+      "captured_at": "2026-09-03T10:21:47.432947+00:00",
+      "row_count": 151,
+      "job": "ce1-ce200-b19e73e7c1defec20b0765b5c3e2"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b1cf39dfc08f233dbf20689280e5.json",
+      "sha256": "67c34ebaf8f3df0a6c02d599487a4e0a4cb2544462fe87a2a3240e40b0214bad",
+      "kind": "products",
+      "store": "mercadona",
+      "captured_at": "2026-09-03T10:28:10.9374+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-b1cf39dfc08f233dbf20689280e5"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b2ee98bacce539c23da687150b24.json",
+      "sha256": "304a33bb3cecdc8c435ad22bb192144fbd67cf039641654221c17ff271d80f21",
+      "kind": "products",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:28:37.171628+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-b2ee98bacce539c23da687150b24"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b789e6ba08a374c64c616fed6e71.json",
+      "sha256": "c57a923a28e4193a20fd96a82b23890805c733030ef8c07a3c053c507506c44e",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:23:28.176026+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-b789e6ba08a374c64c616fed6e71"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b8e1638016d22c3a49ae447d65c4.json",
+      "sha256": "2018b65234068b0e1d4bb9ec577e0d1877929d58f41d0bdb2b613d144331f960",
+      "kind": "products",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:28:49.213699+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-b8e1638016d22c3a49ae447d65c4"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b9055c9b43a8bbb8ef9243908394.json",
+      "sha256": "b06479fb75c64a22d720150c6feb6fb5cb0e7e728c92c4230e4d86073ff74427",
+      "kind": "location-fingerprints",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:38:52.977124+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-b9055c9b43a8bbb8ef9243908394"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b99fa174f5260c336c619d5dca24.json",
+      "sha256": "92596c74fdb0925bc42ca43a58ea60cb899de5f03f7ca456a2c5fcc028bb9fbf",
+      "kind": "location-fingerprints",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:38:38.06194+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-b99fa174f5260c336c619d5dca24"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-bef62f39a9bc96ddfd5e1f95dae6.json",
+      "sha256": "41f74bc5d134d3e9d0f885bea6db851c0d75ad4a3956fe416a9235a642b70605",
+      "kind": "products",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:28:04.726938+00:00",
+      "row_count": 73,
+      "job": "ce1-ce200-bef62f39a9bc96ddfd5e1f95dae6"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-bf926df59e41bc3017bfaa919800.json",
+      "sha256": "5d6a82958e3ae101678b5560cd8b1eabf6c048fa23a34f28c366bf83cbe8e25f",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:27:22.377322+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-bf926df59e41bc3017bfaa919800"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-bfa1c72ef658fdd6afd6c0bb9663.json",
+      "sha256": "952bc5aa36322e00b82a68cda13f335820ecbe7fc73a7dbaa50edadf552cfc08",
+      "kind": "fingerprints",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:32:45.807896+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-bfa1c72ef658fdd6afd6c0bb9663"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-c77dee8dfcaf4129f6fcdf96f44c.json",
+      "sha256": "2f4695b4f02d2ab87ce352879cfe14c7472dd6580cccb3c340ae42859474116a",
+      "kind": "locations",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:34:23.66738+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-c77dee8dfcaf4129f6fcdf96f44c"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-c94320eb666813c55b0abbb7850e.json",
+      "sha256": "e403ddc80af6456e7bbb5354834623f5d1f87b708fce47770007fa74319b3d97",
+      "kind": "products",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:22:41.20641+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-c94320eb666813c55b0abbb7850e"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-ca4dae79993eb719e09e8f18de04.json",
+      "sha256": "a696e0b2f7a28344f455bfd2de0c55d4ac8850e70422b5827660a2d007e8942f",
+      "kind": "health",
+      "store": null,
+      "captured_at": "2026-09-03T10:17:22.995626+00:00",
+      "row_count": 1,
+      "job": "ce1-ce200-ca4dae79993eb719e09e8f18de04"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-cbf2789fdca8f21e2f987873009c.json",
+      "sha256": "84e4b46060f83b289e2587bdc86352d7c2f2c539966cdbe64eda1a19c68730d7",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:23:17.470524+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-cbf2789fdca8f21e2f987873009c"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-cbfc1170e20d0225d5a33e256707.json",
+      "sha256": "c62e9b66890e81a8c06b0f7ae530377b1a961165f97e0f86363ebf33f61d09ee",
+      "kind": "census",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:21:08.876154+00:00",
+      "row_count": 86,
+      "job": "ce1-ce200-cbfc1170e20d0225d5a33e256707"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-d525351bb3028e37fecac682d400.json",
+      "sha256": "46e9c3650efd8b72fab6a0a5e0d1a2cfade3c4f68a89d6308f3ad83c43687f87",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:25:41.742186+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-d525351bb3028e37fecac682d400"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-d6f326332fdefaed81ec2f309a14.json",
+      "sha256": "4ce288cfa008a935f8cecadf1cf9a403443f5932b6b18734f2ecb64a3f2f2132",
+      "kind": "locations",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:34:07.186383+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-d6f326332fdefaed81ec2f309a14"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-d9a6ae5c4267e5b61fedacb44b97.json",
+      "sha256": "3199b6106c349623023d9ae4a90a7a6ac2f2a5d4102e89e1ecbea587bd3536e7",
+      "kind": "supplement",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:31:30.14029+00:00",
+      "row_count": 15,
+      "job": "ce1-ce200-d9a6ae5c4267e5b61fedacb44b97"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-dc0f5c7a2a238abcec91540ef810.json",
+      "sha256": "249a52e45adad7d6caf4dde99a71a51ff31c28e463c6becd57f303a89e7aff28",
+      "kind": "locations",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:36:08.654312+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-dc0f5c7a2a238abcec91540ef810"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-dcba3f92c20520e4aa636f21fab8.json",
+      "sha256": "8e22d549bd83909ec0de776400cfea31fb2e4fa72051297383aa69af0a75b90b",
+      "kind": "products",
+      "store": "mercadona",
+      "captured_at": "2026-09-03T10:22:36.203235+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-dcba3f92c20520e4aa636f21fab8"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-def72502d790bb5ac9b5626582dd.json",
+      "sha256": "b283ba90a9753e27a0876f3d4e6caa48faddcb9dd05b1c8d1dc539e768a76f89",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:27:16.29095+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-def72502d790bb5ac9b5626582dd"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-e00d78459eeb09311bc9fb230ae9.json",
+      "sha256": "d5af0c5f548e55a5825548922d5f12a2f6cfb3d6518abb46143b6cb6cd10d5f4",
+      "kind": "locations",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:34:12.749237+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-e00d78459eeb09311bc9fb230ae9"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-e4fe81ae8ed7439cd374215dd658.json",
+      "sha256": "7add0ff1daa26d56804076a4731bec5a014380adfb34553072095d693f2c9a3b",
+      "kind": "supplement",
+      "store": "mercadona",
+      "captured_at": "2026-09-03T10:31:34.930722+00:00",
+      "row_count": 28,
+      "job": "ce1-ce200-e4fe81ae8ed7439cd374215dd658"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-e9b52d1e0a5d9f5394bceb486cda.json",
+      "sha256": "26266ea93aad8d750b47cdaa0fc520cd90ea97b88f86e20b02fad06642a2fdc0",
+      "kind": "products",
+      "store": "mercadona",
+      "captured_at": "2026-09-03T10:28:21.716082+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-e9b52d1e0a5d9f5394bceb486cda"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-eaf263834a0d88b2f86b7b6970d2.json",
+      "sha256": "118efb6735706e7f50c7172c7bdd2c6849eee112979b5402bc58de18690a5f2f",
+      "kind": "locations",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:36:44.90862+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-eaf263834a0d88b2f86b7b6970d2"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-eb4a74c1953f11a410c04232426c.json",
+      "sha256": "0046f37d8cc920ab7a2ae900d771329a6786cf64e89d8e104df9c5e43d94b9a1",
+      "kind": "locations",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:36:39.315227+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-eb4a74c1953f11a410c04232426c"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-ec600ee2eb29160d48ddcfb9d9d8.json",
+      "sha256": "a6406964bc3ca99a0eef09e47c927f736f47609e20ccd84f29a30201d8697ffa",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:22:26.238909+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-ec600ee2eb29160d48ddcfb9d9d8"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-ed0960d01e2aea94cf3e178a8400.json",
+      "sha256": "07804358d7c542e5fbd2c8c754a67c506d71aae7ba21e7672847dc941c1337f7",
+      "kind": "profile",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:20:29.891879+00:00",
+      "row_count": 3,
+      "job": "ce1-ce200-ed0960d01e2aea94cf3e178a8400"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-ede6a6038df436d725e989883100.json",
+      "sha256": "e171a97fbdecdc3689c31c007b807c0fce2309e2d13b1e8e531b4336c07eacc6",
+      "kind": "profile",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:20:17.261207+00:00",
+      "row_count": 3,
+      "job": "ce1-ce200-ede6a6038df436d725e989883100"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-eefaaba945159fd0d7eb44df9963.json",
+      "sha256": "f94ec853f07b64e51af0fe311efc15d5fd3b788af616ac6788d0f17cc82e3375",
+      "kind": "location-fingerprints",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:38:16.119338+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-eefaaba945159fd0d7eb44df9963"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-ef555d29ebfbfd1cc2e042080058.json",
+      "sha256": "a3d4fa7a5171c2e43fd67e2d32ef26d721857a0887e61447aec541a3a6e303ef",
+      "kind": "taxonomy",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:40:45.987651+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-ef555d29ebfbfd1cc2e042080058"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-ef8cc8fb58412b85bb0ce0ecd273.json",
+      "sha256": "a5d64f812223afbc425cf345315c16c56f4acc1e2990044e86709786bddf284e",
+      "kind": "locations",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:35:13.545119+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-ef8cc8fb58412b85bb0ce0ecd273"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-f13692d45200fef830282bf5eaa0.json",
+      "sha256": "7fb067c91d6b2b681d61a6318fd047f0ddceffd6ce11f7d02780059865ec24a6",
+      "kind": "products",
+      "store": "mercadona",
+      "captured_at": "2026-09-03T10:28:16.516651+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-f13692d45200fef830282bf5eaa0"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-f19e7158fc83ee62ac9f06d399c6.json",
+      "sha256": "a54bb62405f06bc83f31b55478ae6560d8a72c0a76858cf34822c19d94f0eec4",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:25:55.747938+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-f19e7158fc83ee62ac9f06d399c6"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-f2915a39da443b4dd7c6f0cf0a92.json",
+      "sha256": "989014116f74f249ae7b536077634d527c6f94a2e013469a51cdb6beac9a39f5",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:25:36.438616+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-f2915a39da443b4dd7c6f0cf0a92"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-f52466470ff89064caf7d9cc97c2.json",
+      "sha256": "8a350dd4e3fb1db86dce10df2c56a15139b441a5a0a1f537f4f07df80b4fd37f",
+      "kind": "products",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:29:23.489671+00:00",
+      "row_count": 21,
+      "job": "ce1-ce200-f52466470ff89064caf7d9cc97c2"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-f5cea62aa13d0c95aaf131a396df.json",
+      "sha256": "6c2a796a7f8d4fe2b1a586cebf6e70ccee75cc32ec38aea4d31f7beb8185249e",
+      "kind": "locations",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:36:49.787121+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-f5cea62aa13d0c95aaf131a396df"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-f72b3d9052656b982cb06cfbd2cf.json",
+      "sha256": "86279e4b18ab26bf8e5472df137fb90460ffd70db1bdec19d81d8cc7f91fc19b",
+      "kind": "locations",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:36:34.041213+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-f72b3d9052656b982cb06cfbd2cf"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-f7646f5558181bf56fec4c8346a4.json",
+      "sha256": "c0c7e621ee47289d7355bb920115a3bf62d70ebad613ea91b30ba658a99d2044",
+      "kind": "fingerprints",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:32:52.658667+00:00",
+      "row_count": 500,
+      "job": "ce1-ce200-f7646f5558181bf56fec4c8346a4"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-fa81d329ed4c50f2b0d5ffea0884.json",
+      "sha256": "4ee2c46f275a42afc783d9646369d5e84cf4853ee9c407091925cfb71561c8ce",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:23:23.270577+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-fa81d329ed4c50f2b0d5ffea0884"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-fb9c8f2b352ff266d6cc934f07f4.json",
+      "sha256": "4910d79b736b019c0fda2fa4ad0c128e6ee5fee24422680def6d7d5a0e0223c2",
+      "kind": "census",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:21:56.727239+00:00",
+      "row_count": 79,
+      "job": "ce1-ce200-fb9c8f2b352ff266d6cc934f07f4"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-fbfdd9330b07568b945ccfcb12d4.json",
+      "sha256": "80a890792315eca24d1eea3f1ba43c717d4ee859b1513dedbd7812420ed38950",
+      "kind": "locations",
+      "store": "plusfresc",
+      "captured_at": "2026-09-03T10:35:29.404315+00:00",
+      "row_count": 200,
+      "job": "ce1-ce200-fbfdd9330b07568b945ccfcb12d4"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-fe9c5c5e5659a7236abdcf097687.json",
+      "sha256": "808dc2513491c222455d7949155bd224e1e2283ae07c5217b0e7723cefd5f296",
+      "kind": "products",
+      "store": "carrefour",
+      "captured_at": "2026-09-03T10:25:47.936355+00:00",
+      "row_count": 100,
+      "job": "ce1-ce200-fe9c5c5e5659a7236abdcf097687"
+    },
+    {
+      "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-fee50ab65f0cb9a84f8c71e3a7dc.json",
+      "sha256": "977e249ab73e18e5d0e17c57a7baa04716ff9d9908f778036460b6faf12c80c2",
+      "kind": "census",
+      "store": "consum",
+      "captured_at": "2026-09-03T10:21:42.408039+00:00",
+      "row_count": 136,
+      "job": "ce1-ce200-fee50ab65f0cb9a84f8c71e3a7dc"
+    }
+  ],
+  "source_frame_sha256": "0137500d1a4ecd55e17edfb83b8270adac2c82bdf9a3a85edec1a72c6bc7916a",
+  "products": 4176,
+  "locations": 5189,
+  "hashes": {
+    "pairs": "b9b0ae479a5756911fce0b523dba11973864fc04b5871f3ef3f701939bcb5cb0",
+    "queries": "702a7972ef19461e800618f0ba88827f20a0d847f523cdeafb336bfdaa50cc1c",
+    "pools": "6bbbad74c857413f34e896ef1e6d878fe14d45aa7bcb889e065a427cd0139595",
+    "selection": "8c2aa77cd019f28dd20ccc2567f5d37d472072dd08bc7584c413e8357783154d"
+  },
+  "generator_files": [
+    {
+      "file": "scripts/lib/comparator-strict-corpus.mjs",
+      "sha256": "69dca18c12f1c161d0d726c0d191b92728d4225c16a8b2f1fb17b60a3e5af232"
+    },
+    {
+      "file": "scripts/prepare-comparator-strict-corpus.mjs",
+      "sha256": "3de2573837978e7f7ff3b71853887e49675cafc2461545c539cca0b93470ac67"
+    },
+    {
+      "file": "scripts/lib/comparator-strict-dataset.mjs",
+      "sha256": "e83982cc2cbd0cabc972e2fd1fa09ad9186a0580cda31e836fe0538776ad8eae"
+    }
+  ],
+  "annotation_status": "unreviewed; annotation records in CE202 are separate; no implicit negatives",
+  "G2_pass": false,
+  "external_calls": 0,
+  "commercial_ttl_hours": null,
+  "report": {
+    "products": 4176,
+    "locations": 5189,
+    "unique_pairs": 6000,
+    "confirmatory_pairs": 4000,
+    "challenge_pairs": 2000,
+    "queries": 1200,
+    "destination_cases": 3600,
+    "confirmatory_eligible_products": 1439,
+    "source_supported_products": 1508,
+    "potential_alias_groups": 33,
+    "supported_family_exposed": 50,
+    "coverage": [
+      {
+        "family": "drinking_water",
+        "store": "carrefour",
+        "source_supported": 295,
+        "new_confirmatory_eligible": 278,
+        "query_origins": 116
+      },
+      {
+        "family": "drinking_water",
+        "store": "consum",
+        "source_supported": 76,
+        "new_confirmatory_eligible": 63,
+        "query_origins": 27
+      },
+      {
+        "family": "drinking_water",
+        "store": "mercadona",
+        "source_supported": 188,
+        "new_confirmatory_eligible": 182,
+        "query_origins": 76
+      },
+      {
+        "family": "drinking_water",
+        "store": "plusfresc",
+        "source_supported": 57,
+        "new_confirmatory_eligible": 51,
+        "query_origins": 22
+      },
+      {
+        "family": "yogurt",
+        "store": "carrefour",
+        "source_supported": 439,
+        "new_confirmatory_eligible": 435,
+        "query_origins": 182
+      },
+      {
+        "family": "yogurt",
+        "store": "consum",
+        "source_supported": 113,
+        "new_confirmatory_eligible": 105,
+        "query_origins": 43
+      },
+      {
+        "family": "yogurt",
+        "store": "mercadona",
+        "source_supported": 66,
+        "new_confirmatory_eligible": 61,
+        "query_origins": 25
+      },
+      {
+        "family": "yogurt",
+        "store": "plusfresc",
+        "source_supported": 219,
+        "new_confirmatory_eligible": 211,
+        "query_origins": 88
+      },
+      {
+        "family": "frozen_potatoes",
+        "store": "carrefour",
+        "source_supported": 32,
+        "new_confirmatory_eligible": 32,
+        "query_origins": 13
+      },
+      {
+        "family": "frozen_potatoes",
+        "store": "consum",
+        "source_supported": 8,
+        "new_confirmatory_eligible": 7,
+        "query_origins": 3
+      },
+      {
+        "family": "frozen_potatoes",
+        "store": "mercadona",
+        "source_supported": 7,
+        "new_confirmatory_eligible": 6,
+        "query_origins": 2
+      },
+      {
+        "family": "frozen_potatoes",
+        "store": "plusfresc",
+        "source_supported": 8,
+        "new_confirmatory_eligible": 8,
+        "query_origins": 3
+      }
+    ],
+    "gold_labels": 0,
+    "holdout_assigned": false,
+    "G2_pass": false,
+    "missing_location_tables_for_pilot": [
+      "carrefour",
+      "mercadona"
+    ],
+    "corpus_ready_for_CE201_CE202": true,
+    "stability": [
+      {
+        "store": "carrefour",
+        "kind": "fingerprints",
+        "rows": 2745,
+        "status": "all_content_fingerprints_match",
+        "atomic_snapshot": false
+      },
+      {
+        "store": "carrefour",
+        "kind": "location-fingerprints",
+        "rows": 0,
+        "status": "all_content_fingerprints_match",
+        "atomic_snapshot": false
+      },
+      {
+        "store": "consum",
+        "kind": "fingerprints",
+        "rows": 488,
+        "status": "all_content_fingerprints_match",
+        "atomic_snapshot": false
+      },
+      {
+        "store": "consum",
+        "kind": "location-fingerprints",
+        "rows": 1988,
+        "status": "all_content_fingerprints_match",
+        "atomic_snapshot": false
+      },
+      {
+        "store": "mercadona",
+        "kind": "fingerprints",
+        "rows": 490,
+        "status": "all_content_fingerprints_match",
+        "atomic_snapshot": false
+      },
+      {
+        "store": "mercadona",
+        "kind": "location-fingerprints",
+        "rows": 0,
+        "status": "all_content_fingerprints_match",
+        "atomic_snapshot": false
+      },
+      {
+        "store": "plusfresc",
+        "kind": "fingerprints",
+        "rows": 453,
+        "status": "all_content_fingerprints_match",
+        "atomic_snapshot": false
+      },
+      {
+        "store": "plusfresc",
+        "kind": "location-fingerprints",
+        "rows": 3201,
+        "status": "all_content_fingerprints_match",
+        "atomic_snapshot": false
+      }
+    ],
+    "source_pages": 118,
+    "quantities_are_sampling_evidence_not_normalized_truth": true,
+    "location_observations_for_target_mapping": 1211
+  }
+}

@@ -1,0 +1,2060 @@
+{
+  "plan": {
+    "version": "ce200-read-v3",
+    "kind": "taxonomy",
+    "store": "plusfresc",
+    "cursor": "0804",
+    "limit": 500,
+    "round": "initial",
+    "select": "SELECT id,name,parent_id,published,synced_at FROM public.plusfresc_categories\n      WHERE id COLLATE \"C\" > '0804' COLLATE \"C\" ORDER BY id COLLATE \"C\" LIMIT 500",
+    "job": "ce1-ce200-a20ba272dec72236dc0cf4a2ef8f",
+    "operationHash": "a20ba272dec72236dc0cf4a2ef8ff85d519920dae6d8d50daf1aee2f006e09f1",
+    "maxRows": 500,
+    "maxBytes": 131072,
+    "sql": "-- ce1-ce200-a20ba272dec72236dc0cf4a2ef8f: taxonomy; CE-BU-002; no app writes.\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $reserve$\nDECLARE job_started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE status IN ('planned','running','halted','unknown'))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-a20ba272dec72236dc0cf4a2ef8f') THEN RAISE EXCEPTION 'ce200_exclusive_or_replay'; END IF;\n  IF EXISTS(SELECT 1 FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid))>0\n    OR (pid<>pg_backend_pid() AND state='active' AND query_start<clock_timestamp()-interval '30 seconds')) THEN RAISE EXCEPTION 'ce200_health_stop'; END IF;\n  UPDATE comparator_strict.execution_budget SET\n    sql_ms_reserved=sql_ms_reserved+10000,read_rows_reserved=read_rows_reserved+500,\n    bytes_reserved=bytes_reserved+131072,write_rows_reserved=write_rows_reserved+3,updated_at=clock_timestamp()\n    WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03'\n      AND approval_reference='CE-200-corpus-v1' AND bytes_limit=134217728 AND read_rows_limit=50000\n      AND bytes_reserved+131072<=bytes_limit AND read_rows_reserved+500<=read_rows_limit AND write_rows_reserved+3<=2000;\n  IF NOT FOUND THEN RAISE EXCEPTION 'ce200_budget'; END IF;\n  INSERT INTO comparator_strict.execution_jobs(id,project_ref,operation_key,sql_sha256,status,started_at,deadline_at,job_key,operation_hash,budget_date,reservation)\n    VALUES(gen_random_uuid(),'gkffvigcnsesbaihycay','ce200-taxonomy','9facda8304d666373a89cd98ac7302306ea7aae1363a6403016d9bcbe1f307b6','running',job_started,job_started+interval '20 minutes','ce1-ce200-a20ba272dec72236dc0cf4a2ef8f','a20ba272dec72236dc0cf4a2ef8ff85d519920dae6d8d50daf1aee2f006e09f1',DATE '2026-09-03','{\"sqlMs\":10000,\"readRows\":500,\"writeRows\":3,\"responseBytes\":131072}'::jsonb);\nEND $reserve$;\nCOMMIT;\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $payload$\nDECLARE payload jsonb; data jsonb; started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR NOT EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-a20ba272dec72236dc0cf4a2ef8f' AND status='running' AND operation_hash='a20ba272dec72236dc0cf4a2ef8ff85d519920dae6d8d50daf1aee2f006e09f1' AND deadline_at>clock_timestamp()) THEN RAISE EXCEPTION 'ce200_lease'; END IF;\n  SELECT coalesce(jsonb_agg(to_jsonb(q)),'[]'::jsonb) INTO data FROM (SELECT id,name,parent_id,published,synced_at FROM public.plusfresc_categories\n      WHERE id COLLATE \"C\" > '0804' COLLATE \"C\" ORDER BY id COLLATE \"C\" LIMIT 500) q;\n  payload:=jsonb_build_object('job_key','ce1-ce200-a20ba272dec72236dc0cf4a2ef8f','operation_hash','a20ba272dec72236dc0cf4a2ef8ff85d519920dae6d8d50daf1aee2f006e09f1',\n    'project_ref','gkffvigcnsesbaihycay','captured_at',started,'kind','taxonomy','store','plusfresc',\n    'cursor','0804','rows',data,'row_count',jsonb_array_length(data),'elapsed_ms',extract(epoch FROM clock_timestamp()-started)*1000);\n  IF jsonb_array_length(data)>500 OR octet_length(payload::text)>122880 THEN RAISE EXCEPTION 'ce200_result_limit'; END IF;\n  UPDATE comparator_strict.execution_jobs SET status='succeeded',finished_at=clock_timestamp(),\n    receipt=jsonb_build_object('payload_sha256',encode(sha256(convert_to(payload::text,'UTF8')),'hex'),'row_count',jsonb_array_length(data),'payload_bytes',octet_length(payload::text),'elapsed_ms',payload->'elapsed_ms') WHERE job_key='ce1-ce200-a20ba272dec72236dc0cf4a2ef8f';\n  PERFORM set_config('comparator_strict.ce200_response',payload::text,true);\nEND $payload$;\nSELECT current_setting('comparator_strict.ce200_response')::jsonb AS evidence;\nCOMMIT;"
+  },
+  "payload": {
+    "kind": "taxonomy",
+    "rows": [
+      {
+        "id": "080401",
+        "name": "Insecticidas",
+        "parent_id": "0804",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "080402",
+        "name": "Champús",
+        "parent_id": "0804",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "080403",
+        "name": "Bolsas Excrementos",
+        "parent_id": "0804",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "080404",
+        "name": "Complementos",
+        "parent_id": "0804",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09",
+        "name": "Frescos",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "0901",
+        "name": "Fruta y Verdura",
+        "parent_id": "09",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090101",
+        "name": "Fruta",
+        "parent_id": "0901",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010101",
+        "name": "Manzanas",
+        "parent_id": "090101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010102",
+        "name": "Pera",
+        "parent_id": "090101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010103",
+        "name": "Melocotón, nectarina y paraguayo",
+        "parent_id": "090101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010104",
+        "name": "Cereza",
+        "parent_id": "090101",
+        "published": false,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010105",
+        "name": "Ciruela y Albaricoque",
+        "parent_id": "090101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010106",
+        "name": "Fresa y Berries",
+        "parent_id": "090101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010107",
+        "name": "Melón",
+        "parent_id": "090101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010108",
+        "name": "Sandía",
+        "parent_id": "090101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010109",
+        "name": "Naranjas",
+        "parent_id": "090101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010110",
+        "name": "Mandarinas",
+        "parent_id": "090101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010111",
+        "name": "Limón",
+        "parent_id": "090101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010112",
+        "name": "Uva",
+        "parent_id": "090101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010113",
+        "name": "Plátanos",
+        "parent_id": "090101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010114",
+        "name": "Piña",
+        "parent_id": "090101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010115",
+        "name": "Kiwi",
+        "parent_id": "090101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010116",
+        "name": "Tropicales",
+        "parent_id": "090101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010117",
+        "name": "Exóticos",
+        "parent_id": "090101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010118",
+        "name": "Otras Frutas",
+        "parent_id": "090101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010121",
+        "name": "Pomelo",
+        "parent_id": "090101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090102",
+        "name": "Verdura",
+        "parent_id": "0901",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010201",
+        "name": "Patata y Moniato",
+        "parent_id": "090102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010202",
+        "name": "Cebolla",
+        "parent_id": "090102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010204",
+        "name": "Ajo",
+        "parent_id": "090102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010205",
+        "name": "Puerro",
+        "parent_id": "090102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010206",
+        "name": "Zanahoria y Remolacha",
+        "parent_id": "090102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010207",
+        "name": "Ensaladas",
+        "parent_id": "090102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010208",
+        "name": "Tomates",
+        "parent_id": "090102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010209",
+        "name": "Pimiento",
+        "parent_id": "090102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010210",
+        "name": "Berenjena y Calabacín",
+        "parent_id": "090102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010211",
+        "name": "Pepino",
+        "parent_id": "090102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010213",
+        "name": "Col y Coliflor",
+        "parent_id": "090102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010214",
+        "name": "Judía",
+        "parent_id": "090102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010215",
+        "name": "Acelga y Espinacas",
+        "parent_id": "090102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010216",
+        "name": "Apio",
+        "parent_id": "090102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010217",
+        "name": "Espárrago",
+        "parent_id": "090102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010218",
+        "name": "Caldo",
+        "parent_id": "090102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010219",
+        "name": "Otras Verduras",
+        "parent_id": "090102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090103",
+        "name": "Ensaladas y Verduras Limpias",
+        "parent_id": "0901",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010301",
+        "name": "Ensalada",
+        "parent_id": "090103",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010302",
+        "name": "Verdura",
+        "parent_id": "090103",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010303",
+        "name": "Fruta",
+        "parent_id": "090103",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010304",
+        "name": "Sopas y Cremas",
+        "parent_id": "090103",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010305",
+        "name": "Salsas y Especias",
+        "parent_id": "090103",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090104",
+        "name": "Setas",
+        "parent_id": "0901",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010401",
+        "name": "Setas",
+        "parent_id": "090104",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090105",
+        "name": "Hierbas Aromáticas",
+        "parent_id": "0901",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010501",
+        "name": "Hierbas Aromáticas",
+        "parent_id": "090105",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010502",
+        "name": "Especias",
+        "parent_id": "090105",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090106",
+        "name": "Encurtidos",
+        "parent_id": "0901",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010601",
+        "name": "Olivas y Encurtidos",
+        "parent_id": "090106",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090109",
+        "name": "Caracoles",
+        "parent_id": "0901",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09010901",
+        "name": "Caracoles",
+        "parent_id": "090109",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090110",
+        "name": "Zumos",
+        "parent_id": "0901",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09011001",
+        "name": "Zumos",
+        "parent_id": "090110",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090111",
+        "name": "Frutos secos",
+        "parent_id": "0901",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09011101",
+        "name": "Frutos secos",
+        "parent_id": "090111",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090120",
+        "name": "Es de Temporada!",
+        "parent_id": "0901",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09012001",
+        "name": "Es de Temporada!",
+        "parent_id": "090120",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "0902",
+        "name": "Peix",
+        "parent_id": "09",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090201",
+        "name": "Pescado Blanco",
+        "parent_id": "0902",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020101",
+        "name": "Merluza Mostrador",
+        "parent_id": "090201",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020102",
+        "name": "Rape Mostrador",
+        "parent_id": "090201",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020103",
+        "name": "Lenguado Mostrador",
+        "parent_id": "090201",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020104",
+        "name": "Dorada Mostrador",
+        "parent_id": "090201",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020105",
+        "name": "Lubina Mostrador",
+        "parent_id": "090201",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020106",
+        "name": "Rodaballo Mostrador",
+        "parent_id": "090201",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020107",
+        "name": "Trucha Mostardor",
+        "parent_id": "090201",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020108",
+        "name": "Bacalao Mostrador",
+        "parent_id": "090201",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020109",
+        "name": "Varios Pescado Blanco Mostrador",
+        "parent_id": "090201",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090202",
+        "name": "Pescado Azul",
+        "parent_id": "0902",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020201",
+        "name": "Sardina Mostrador",
+        "parent_id": "090202",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020202",
+        "name": "Salmón Mostrador",
+        "parent_id": "090202",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020203",
+        "name": "Atún Mostrador",
+        "parent_id": "090202",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020204",
+        "name": "Varios Pescado Azul Mostrador",
+        "parent_id": "090202",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020206",
+        "name": "Boquerón Mostrador",
+        "parent_id": "090202",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090203",
+        "name": "Pulpo, Calamar y Sepia",
+        "parent_id": "0902",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020301",
+        "name": "Sepia Mostrador",
+        "parent_id": "090203",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020302",
+        "name": "Calamar Mostrador",
+        "parent_id": "090203",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020303",
+        "name": "Pulpo Mostrador",
+        "parent_id": "090203",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020305",
+        "name": "Bandejas Cefalópodos",
+        "parent_id": "090203",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090204",
+        "name": "Moluscos",
+        "parent_id": "0902",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020401",
+        "name": "Mejillón Mostrador",
+        "parent_id": "090204",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020402",
+        "name": "Almeja Mostrador",
+        "parent_id": "090204",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020403",
+        "name": "Berberecho Mostrador",
+        "parent_id": "090204",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020404",
+        "name": "Navaja Mostrador",
+        "parent_id": "090204",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020405",
+        "name": "Ostra Mostrador",
+        "parent_id": "090204",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020406",
+        "name": "Varios Moluscos Mostrador",
+        "parent_id": "090204",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090205",
+        "name": "Crustáceos",
+        "parent_id": "0902",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020501",
+        "name": "Gamba Mostrador",
+        "parent_id": "090205",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020502",
+        "name": "Langostino Mostrador",
+        "parent_id": "090205",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020503",
+        "name": "Cigala Mostrador",
+        "parent_id": "090205",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020504",
+        "name": "Bogavante Mostrador",
+        "parent_id": "090205",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020505",
+        "name": "Varios Crustáceos Mostrador",
+        "parent_id": "090205",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090207",
+        "name": "Elaborados",
+        "parent_id": "0902",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020701",
+        "name": "Elaborados Pescado Mostrador",
+        "parent_id": "090207",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020702",
+        "name": "Cocidos Pescado Mostrador",
+        "parent_id": "090207",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020703",
+        "name": "Elaborados Pescado Bandeja",
+        "parent_id": "090207",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09020704",
+        "name": "Cocidos Pescado Bandeja",
+        "parent_id": "090207",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "0903",
+        "name": "Panadería",
+        "parent_id": "09",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090301",
+        "name": "Pan",
+        "parent_id": "0903",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09030101",
+        "name": "Pan Redondo",
+        "parent_id": "090301",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09030102",
+        "name": "Pan Barra",
+        "parent_id": "090301",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09030103",
+        "name": "Integrales",
+        "parent_id": "090301",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090302",
+        "name": "Panecillo",
+        "parent_id": "0903",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09030201",
+        "name": "Pan Blanco",
+        "parent_id": "090302",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09030203",
+        "name": "Especiales",
+        "parent_id": "090302",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090303",
+        "name": "Coca y Panadón",
+        "parent_id": "0903",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09030301",
+        "name": "Coca Dulce",
+        "parent_id": "090303",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09030302",
+        "name": "Coca Salada",
+        "parent_id": "090303",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09030303",
+        "name": "Panadones",
+        "parent_id": "090303",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090304",
+        "name": "Magdalena",
+        "parent_id": "0903",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09030401",
+        "name": "Madalena",
+        "parent_id": "090304",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090305",
+        "name": "Bollería",
+        "parent_id": "0903",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09030501",
+        "name": "Croissant",
+        "parent_id": "090305",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09030502",
+        "name": "Hojaldre",
+        "parent_id": "090305",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09030503",
+        "name": "Bollería",
+        "parent_id": "090305",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "0904",
+        "name": "Carne",
+        "parent_id": "09",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090401",
+        "name": "Ternera",
+        "parent_id": "0904",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040101",
+        "name": "Ternera Hembra al Corte",
+        "parent_id": "090401",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040104",
+        "name": "Añojo al Corte",
+        "parent_id": "090401",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040105",
+        "name": "Ternera Hembra Bandeja",
+        "parent_id": "090401",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040106",
+        "name": "Ternera Bandeja y G.P. Ternera de los Pirineos",
+        "parent_id": "090401",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040107",
+        "name": "Añojo Bandeja",
+        "parent_id": "090401",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040108",
+        "name": "Carpaccio",
+        "parent_id": "090401",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090402",
+        "name": "Cerdo",
+        "parent_id": "0904",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040201",
+        "name": "Cerdo al Corte",
+        "parent_id": "090402",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040202",
+        "name": "Cerdo Bandeja",
+        "parent_id": "090402",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090403",
+        "name": "Aves",
+        "parent_id": "0904",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040301",
+        "name": "Pollo al Corte",
+        "parent_id": "090403",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040302",
+        "name": "Pavo al Corte",
+        "parent_id": "090403",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040303",
+        "name": "Guallas y Picantón Mostrador",
+        "parent_id": "090403",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040305",
+        "name": "Pollo Bandeja",
+        "parent_id": "090403",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040306",
+        "name": "Pavo Bandeja",
+        "parent_id": "090403",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040307",
+        "name": "Guallas y Picantón Bandeja",
+        "parent_id": "090403",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090404",
+        "name": "Cordero",
+        "parent_id": "0904",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040401",
+        "name": "Cordero al Corte",
+        "parent_id": "090404",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040403",
+        "name": "Cordero Bandeja",
+        "parent_id": "090404",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090405",
+        "name": "Conejo",
+        "parent_id": "0904",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040501",
+        "name": "Conejo al Corte",
+        "parent_id": "090405",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040502",
+        "name": "Conejo Bandeja",
+        "parent_id": "090405",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090406",
+        "name": "Lote Parrillada",
+        "parent_id": "0904",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040603",
+        "name": "Lotes Parrillada",
+        "parent_id": "090406",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090407",
+        "name": "Hamburguesa",
+        "parent_id": "0904",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040701",
+        "name": "Hamburguesa Mostrador",
+        "parent_id": "090407",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040702",
+        "name": "Hamburguesa Bandeja",
+        "parent_id": "090407",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090408",
+        "name": "Longaniza y Salchicha",
+        "parent_id": "0904",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040801",
+        "name": "Longaniza Mostrador",
+        "parent_id": "090408",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040802",
+        "name": "Salchicha Mostrador",
+        "parent_id": "090408",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040803",
+        "name": "Chorizo Mostrador",
+        "parent_id": "090408",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040804",
+        "name": "Longaniza Bandeja",
+        "parent_id": "090408",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040805",
+        "name": "Salchicha Bandeja",
+        "parent_id": "090408",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040806",
+        "name": "Chorizo Bandeja",
+        "parent_id": "090408",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090409",
+        "name": "Empanados, Adobados y Elaborados",
+        "parent_id": "0904",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040903",
+        "name": "Adobados Mostrador",
+        "parent_id": "090409",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040905",
+        "name": "Empanados Mostrador",
+        "parent_id": "090409",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040909",
+        "name": "Adobados Bandeja",
+        "parent_id": "090409",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09040912",
+        "name": "Otros Elaborados Bandeja",
+        "parent_id": "090409",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090410",
+        "name": "Picada y Albondigas",
+        "parent_id": "0904",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09041001",
+        "name": "Albondigas",
+        "parent_id": "090410",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09041003",
+        "name": "Picada Bandeja",
+        "parent_id": "090410",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "0905",
+        "name": "Quesos",
+        "parent_id": "09",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090501",
+        "name": "Al corte",
+        "parent_id": "0905",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050101",
+        "name": "Queso Manchego",
+        "parent_id": "090501",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050102",
+        "name": "Especialidades Locales",
+        "parent_id": "090501",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050103",
+        "name": "Especialidades Nacionales",
+        "parent_id": "090501",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050104",
+        "name": "Queso Importación",
+        "parent_id": "090501",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050105",
+        "name": "Queso Pasta veteada",
+        "parent_id": "090501",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050106",
+        "name": "Queso Pasta Blanda",
+        "parent_id": "090501",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050107",
+        "name": "Queso Fresco",
+        "parent_id": "090501",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050108",
+        "name": "Queso Fresco Salud",
+        "parent_id": "090501",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050110",
+        "name": "Quesos varios",
+        "parent_id": "090501",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090502",
+        "name": "Envasados",
+        "parent_id": "0905",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050201",
+        "name": "Queso tipo manchego",
+        "parent_id": "090502",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050202",
+        "name": "Queso Bola",
+        "parent_id": "090502",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050203",
+        "name": "Queso Fundido",
+        "parent_id": "090502",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050204",
+        "name": "Queso Blanco Pasteurizado",
+        "parent_id": "090502",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050205",
+        "name": "Queso Azul",
+        "parent_id": "090502",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050206",
+        "name": "Queso Cremoso de Corteza Blanca",
+        "parent_id": "090502",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050207",
+        "name": "Queso Fresco",
+        "parent_id": "090502",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050208",
+        "name": "Requesón",
+        "parent_id": "090502",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050209",
+        "name": "Queso Rallado",
+        "parent_id": "090502",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09050210",
+        "name": "Resto Queso Natural",
+        "parent_id": "090502",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "0906",
+        "name": "Embutidos",
+        "parent_id": "09",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090601",
+        "name": "Jamón Curado",
+        "parent_id": "0906",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060101",
+        "name": "Jamones y Paleta Serrana al Corte",
+        "parent_id": "090601",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060102",
+        "name": "Jamones y Paleta Serrana Envasada",
+        "parent_id": "090601",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060103",
+        "name": "Jamones y Paleta Serrana entera",
+        "parent_id": "090601",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060104",
+        "name": "Jamones y Paleta Ibérica al Corte",
+        "parent_id": "090601",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060105",
+        "name": "Jamones y Paleta Ibérica envasada",
+        "parent_id": "090601",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060106",
+        "name": "Jamones y Paleta Ibérica entera",
+        "parent_id": "090601",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060107",
+        "name": "Huesos Jamón",
+        "parent_id": "090601",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060108",
+        "name": "Jamón y Paletilla cortado a máquina",
+        "parent_id": "090601",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090602",
+        "name": "Jamón Cocido (Dulce)",
+        "parent_id": "0906",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060201",
+        "name": "Jamón Cocido al Corte",
+        "parent_id": "090602",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060202",
+        "name": "Jamón Cocido Envasado",
+        "parent_id": "090602",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060204",
+        "name": "Paleta Cocida Envasada",
+        "parent_id": "090602",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090603",
+        "name": "Chorizo",
+        "parent_id": "0906",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060301",
+        "name": "Chorizo al corte",
+        "parent_id": "090603",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060302",
+        "name": "Chorizo envasado",
+        "parent_id": "090603",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060303",
+        "name": "Chistorra",
+        "parent_id": "090603",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090604",
+        "name": "Salchichón y Salami",
+        "parent_id": "0906",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060401",
+        "name": "Salchichón al corte",
+        "parent_id": "090604",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060402",
+        "name": "Salchichón envasado",
+        "parent_id": "090604",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090605",
+        "name": "Fuet y Longaniza Curada",
+        "parent_id": "0906",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060501",
+        "name": "Fuet y Longaniza Curada al Corte",
+        "parent_id": "090605",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060502",
+        "name": "Fuet y Longaniza Curada Envasada",
+        "parent_id": "090605",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090606",
+        "name": "Lomo curado",
+        "parent_id": "0906",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060601",
+        "name": "Lomo Embutido al Corte",
+        "parent_id": "090606",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060602",
+        "name": "Lomo Embutido envasado",
+        "parent_id": "090606",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090607",
+        "name": "Bacon y Panceta",
+        "parent_id": "0906",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060701",
+        "name": "Bacon y Panceta al Corte",
+        "parent_id": "090607",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060702",
+        "name": "Bacon y Panceta envasada",
+        "parent_id": "090607",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090608",
+        "name": "Pavo",
+        "parent_id": "0906",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060801",
+        "name": "Pavo al corte",
+        "parent_id": "090608",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060802",
+        "name": "Pavo envasado",
+        "parent_id": "090608",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090609",
+        "name": "Butifarra",
+        "parent_id": "0906",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060901",
+        "name": "Butifarra al Corte",
+        "parent_id": "090609",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09060902",
+        "name": "Butifarra envasada",
+        "parent_id": "090609",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090610",
+        "name": "Resto Embutidos",
+        "parent_id": "0906",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09061001",
+        "name": "Salami al corte",
+        "parent_id": "090610",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09061002",
+        "name": "Salami envasado",
+        "parent_id": "090610",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09061003",
+        "name": "Sobrasada al corte",
+        "parent_id": "090610",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09061004",
+        "name": "Sobrasada envasada",
+        "parent_id": "090610",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09061005",
+        "name": "Surtido Embutidos",
+        "parent_id": "090610",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09061006",
+        "name": "Otros Embutidos al Corte",
+        "parent_id": "090610",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09061007",
+        "name": "Otros Embutidos envasados",
+        "parent_id": "090610",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09061008",
+        "name": "Pechuga de pollo cocida al corte",
+        "parent_id": "090610",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "090611",
+        "name": "Varios Charcutería",
+        "parent_id": "0906",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "09061101",
+        "name": "Varios Charcutería",
+        "parent_id": "090611",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "0907",
+        "name": "Pesca Salada a Granel",
+        "parent_id": "09",
+        "published": false,
+        "synced_at": "2026-07-26T21:16:00.122+00:00"
+      },
+      {
+        "id": "090702",
+        "name": "Bonito",
+        "parent_id": "0907",
+        "published": false,
+        "synced_at": "2026-07-26T21:16:00.122+00:00"
+      },
+      {
+        "id": "09070201",
+        "name": "Bonito",
+        "parent_id": "090702",
+        "published": false,
+        "synced_at": "2026-07-26T21:16:00.122+00:00"
+      },
+      {
+        "id": "100901",
+        "name": "Para el hogar",
+        "parent_id": "29",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "11",
+        "name": "Celler Plusfresc",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "1101",
+        "name": "Bodega",
+        "parent_id": "11",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "110101",
+        "name": "Vino de Bodega",
+        "parent_id": "1101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "11010101",
+        "name": "Vino Bodega Negro",
+        "parent_id": "110101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "11010102",
+        "name": "Vino Bodega Rosado",
+        "parent_id": "110101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "11010103",
+        "name": "Vino Bodega Blanco",
+        "parent_id": "110101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "110102",
+        "name": "Vino de Importación",
+        "parent_id": "1101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "11010201",
+        "name": "Vino Importación: Negro",
+        "parent_id": "110102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "11010202",
+        "name": "Vino Importación: Rosado",
+        "parent_id": "110102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "11010203",
+        "name": "Vino Importacióno: Blanco",
+        "parent_id": "110102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "110103",
+        "name": "Vino de Mesa",
+        "parent_id": "1101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "11010301",
+        "name": "Vino de Mesa: Botella",
+        "parent_id": "110103",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "11010302",
+        "name": "Vino de Mesa: Brick",
+        "parent_id": "110103",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "11010303",
+        "name": "Vino de Mesa: Garrafa",
+        "parent_id": "110103",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "110104",
+        "name": "Finos y Dulces",
+        "parent_id": "1101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "110105",
+        "name": "Sangría",
+        "parent_id": "1101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "110106",
+        "name": "Vermut",
+        "parent_id": "1101",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "1102",
+        "name": "Cavas",
+        "parent_id": "11",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "110201",
+        "name": "Cava",
+        "parent_id": "1102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "11020101",
+        "name": "Cava: Brut",
+        "parent_id": "110201",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "11020102",
+        "name": "Cava: Semi",
+        "parent_id": "110201",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "11020104",
+        "name": "Cava: Infantil",
+        "parent_id": "110201",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "110202",
+        "name": "Champagne",
+        "parent_id": "1102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "110203",
+        "name": "Sidra",
+        "parent_id": "1102",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "1103",
+        "name": "Licores",
+        "parent_id": "11",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "110301",
+        "name": "Whisky",
+        "parent_id": "1103",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "110302",
+        "name": "Brandy",
+        "parent_id": "1103",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "110303",
+        "name": "Ginebra",
+        "parent_id": "1103",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "110304",
+        "name": "Anís",
+        "parent_id": "1103",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "110305",
+        "name": "Ron",
+        "parent_id": "1103",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "110306",
+        "name": "Vodka",
+        "parent_id": "1103",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "110307",
+        "name": "Resto Licores",
+        "parent_id": "1103",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "29",
+        "name": "Para el hogar",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "33",
+        "name": "Jamones enteros",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "3301",
+        "name": "Jamones enteros",
+        "parent_id": "33",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "34",
+        "name": "Gourmet",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "3401",
+        "name": "Gourmet",
+        "parent_id": "34",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "35",
+        "name": "Sushi",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "3501",
+        "name": "Sushi",
+        "parent_id": "35",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "36",
+        "name": "Vino del mes",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "3601",
+        "name": "Vino del Mes",
+        "parent_id": "36",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "37",
+        "name": "Especial Burger",
+        "parent_id": null,
+        "published": false,
+        "synced_at": "2026-07-20T12:36:50.243+00:00"
+      },
+      {
+        "id": "3701",
+        "name": "Hamburguesa Carne Mostrador",
+        "parent_id": "37",
+        "published": false,
+        "synced_at": "2026-07-20T12:36:50.243+00:00"
+      },
+      {
+        "id": "3702",
+        "name": "Hamburguesa Pescado Mostrador",
+        "parent_id": "37",
+        "published": false,
+        "synced_at": "2026-07-20T12:36:50.243+00:00"
+      },
+      {
+        "id": "3703",
+        "name": "Hamburguesa Carne Bandeja",
+        "parent_id": "37",
+        "published": false,
+        "synced_at": "2026-07-20T12:36:50.243+00:00"
+      },
+      {
+        "id": "3704",
+        "name": "Hamburguesa Pescado Bandeja",
+        "parent_id": "37",
+        "published": false,
+        "synced_at": "2026-07-20T12:36:50.243+00:00"
+      },
+      {
+        "id": "3705",
+        "name": "Salsas Hamburguesa",
+        "parent_id": "37",
+        "published": false,
+        "synced_at": "2026-07-20T12:36:50.243+00:00"
+      },
+      {
+        "id": "3706",
+        "name": "Pan Hamburguesa",
+        "parent_id": "37",
+        "published": false,
+        "synced_at": "2026-07-20T12:36:50.243+00:00"
+      },
+      {
+        "id": "40",
+        "name": "Novedades",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      },
+      {
+        "id": "4001",
+        "name": "Novedades",
+        "parent_id": "40",
+        "published": true,
+        "synced_at": "2026-09-01T12:49:13.414+00:00"
+      }
+    ],
+    "store": "plusfresc",
+    "cursor": "0804",
+    "job_key": "ce1-ce200-a20ba272dec72236dc0cf4a2ef8f",
+    "row_count": 290,
+    "elapsed_ms": 3.286,
+    "captured_at": "2026-09-03T10:41:03.598981+00:00",
+    "project_ref": "gkffvigcnsesbaihycay",
+    "operation_hash": "a20ba272dec72236dc0cf4a2ef8ff85d519920dae6d8d50daf1aee2f006e09f1"
+  },
+  "transport_bytes": 52325
+}

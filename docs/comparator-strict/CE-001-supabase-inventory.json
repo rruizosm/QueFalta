@@ -1,0 +1,2120 @@
+{
+  "schema_version": 1,
+  "task": "CE-1/F0/CE-001",
+  "recorded_date": "2026-09-02",
+  "scope": "Inventario remoto de solo lectura; no evaluación de precisión, despliegue ni cierre de F0.",
+  "snapshot_notice": "Capturas sucesivas, no transacción única. Fechas UTC; estadísticas estimadas identificadas como tales.",
+  "target": {
+    "project_ref": "gkffvigcnsesbaihycay",
+    "name": "QueFalta",
+    "region": "eu-west-1",
+    "management_status": "ACTIVE_HEALTHY",
+    "postgres_managed_version": "17.6.1.127",
+    "api_url": "https://gkffvigcnsesbaihycay.supabase.co",
+    "app_url": "https://auth.quefalta.es",
+    "custom_domain_evidence": {
+      "method": "HEAD sin credenciales a /auth/v1/health",
+      "http_status": 401,
+      "sb_project_ref": "gkffvigcnsesbaihycay"
+    },
+    "remote_branches": [],
+    "local_cli_project_ref_file_present": false
+  },
+  "local": {
+    "branch": "codex/phase5-observation",
+    "head": "03b8ba273e17709fd8fc69c20dddb68c147a7e2a",
+    "staged_changes": false,
+    "baseline": "F0-baseline.md"
+  },
+  "method": {
+    "sql_calls": 5,
+    "read_only": true,
+    "statement_timeout": "5s",
+    "lock_timeout": "1s",
+    "transaction_end": "ROLLBACK",
+    "remote_mutations": false,
+    "product_search_rpc_invocations": 0,
+    "inspected_function_bodies": [
+      "comparator_internal.catalog_cheaper_products_v5",
+      "public.catalog_cheaper_products_v7",
+      "public.catalog_embedding_maintenance_status",
+      "public.catalog_embedding_pipeline_status"
+    ],
+    "invoked_read_only_status_function": "public.catalog_embedding_maintenance_status()",
+    "excluded": [
+      "Perfiles/listas de usuarios",
+      "Credenciales y valores de secrets",
+      "Cuerpos de comandos cron",
+      "Pruebas de carga",
+      "Aplicar/reparar migraciones",
+      "Drenar/reactivar colas"
+    ]
+  },
+  "migrations": {
+    "localCount": 163,
+    "remoteCount": 80,
+    "localTimestamped": 89,
+    "localLegacyNamed": 74,
+    "exactCount": 27,
+    "renamedVersion": [
+      {
+        "local": "20260727090948_catalog_price_browse_indexes.sql",
+        "remoteVersion": "20260727091048",
+        "name": "catalog_price_browse_indexes"
+      },
+      {
+        "local": "20260728182501_bonpreu_sync_staging.sql",
+        "remoteVersion": "20260728183128",
+        "name": "bonpreu_sync_staging"
+      },
+      {
+        "local": "20260729184317_bonpreu_resumable_publication.sql",
+        "remoteVersion": "20260804185744",
+        "name": "bonpreu_resumable_publication"
+      },
+      {
+        "local": "20260809120628_comparator_embeddings_layer.sql",
+        "remoteVersion": "20260809125237",
+        "name": "comparator_embeddings_layer"
+      },
+      {
+        "local": "20260809123232_comparator_embedding_pipeline.sql",
+        "remoteVersion": "20260809125302",
+        "name": "comparator_embedding_pipeline"
+      },
+      {
+        "local": "20260809125941_comparator_embedding_failure_fk_index.sql",
+        "remoteVersion": "20260809130000",
+        "name": "comparator_embedding_failure_fk_index"
+      },
+      {
+        "local": "20260809130221_comparator_embedding_queue_service_role_grants.sql",
+        "remoteVersion": "20260809130241",
+        "name": "comparator_embedding_queue_service_role_grants"
+      },
+      {
+        "local": "20260809130333_comparator_embedding_queue_service_role_select.sql",
+        "remoteVersion": "20260809130351",
+        "name": "comparator_embedding_queue_service_role_select"
+      },
+      {
+        "local": "20260809132534_comparator_embedding_candidates_v2.sql",
+        "remoteVersion": "20260809132746",
+        "name": "comparator_embedding_candidates_v2"
+      },
+      {
+        "local": "20260809143000_comparator_embedding_enqueue_after_upsert.sql",
+        "remoteVersion": "20260809133731",
+        "name": "comparator_embedding_enqueue_after_upsert"
+      },
+      {
+        "local": "20260810140003_comparator_match_cache_metadata_invalidation.sql",
+        "remoteVersion": "20260810140243",
+        "name": "comparator_match_cache_metadata_invalidation"
+      },
+      {
+        "local": "20260810140503_comparator_match_cache_trigger_when_changed.sql",
+        "remoteVersion": "20260810140659",
+        "name": "comparator_match_cache_trigger_when_changed"
+      },
+      {
+        "local": "20260811110855_comparator_total_price_for_unpriced_stores.sql",
+        "remoteVersion": "20260811111147",
+        "name": "comparator_total_price_for_unpriced_stores"
+      },
+      {
+        "local": "20260811112144_comparator_cheaper_highlight.sql",
+        "remoteVersion": "20260811112317",
+        "name": "comparator_cheaper_highlight"
+      },
+      {
+        "local": "20260818112705_froiz_explicit_new_arrivals.sql",
+        "remoteVersion": "20260818092848",
+        "name": "froiz_explicit_new_arrivals"
+      },
+      {
+        "local": "20260821175658_list_item_notes.sql",
+        "remoteVersion": "20260821180449",
+        "name": "list_item_notes"
+      },
+      {
+        "local": "20260821175745_allow_unlimited_group_creation.sql",
+        "remoteVersion": "20260821175935",
+        "name": "allow_unlimited_group_creation"
+      },
+      {
+        "local": "20260821181503_list_item_note_product.sql",
+        "remoteVersion": "20260821182635",
+        "name": "list_item_note_product"
+      },
+      {
+        "local": "20260821210209_price_alert_notification_products.sql",
+        "remoteVersion": "20260823193941",
+        "name": "price_alert_notification_products"
+      },
+      {
+        "local": "20260822071818_add_group_icon.sql",
+        "remoteVersion": "20260822073002",
+        "name": "add_group_icon"
+      },
+      {
+        "local": "20260822165410_general_statistics.sql",
+        "remoteVersion": "20260822171009",
+        "name": "general_statistics"
+      },
+      {
+        "local": "20260822171122_general_statistics_private_boundary.sql",
+        "remoteVersion": "20260822171221",
+        "name": "general_statistics_private_boundary"
+      },
+      {
+        "local": "20260823063529_free_tier_alert_and_comparator_allowances.sql",
+        "remoteVersion": "20260823064939",
+        "name": "free_tier_alert_and_comparator_allowances"
+      },
+      {
+        "local": "20260823065123_restrict_free_tier_usage_direct_access.sql",
+        "remoteVersion": "20260823065153",
+        "name": "restrict_free_tier_usage_direct_access"
+      },
+      {
+        "local": "20260823065448_enforce_free_allowances_before_paywall_launch.sql",
+        "remoteVersion": "20260823065550",
+        "name": "enforce_free_allowances_before_paywall_launch"
+      },
+      {
+        "local": "20260823101900_catalog_search_engine_v1.sql",
+        "remoteVersion": "20260823103505",
+        "name": "catalog_search_engine_v1"
+      },
+      {
+        "local": "20260823103646_catalog_search_language_index_planner.sql",
+        "remoteVersion": "20260823103803",
+        "name": "catalog_search_language_index_planner"
+      },
+      {
+        "local": "20260823104120_catalog_search_server_sort_orders.sql",
+        "remoteVersion": "20260823104828",
+        "name": "catalog_search_server_sort_orders"
+      },
+      {
+        "local": "20260823110039_catalog_feed_search_engine.sql",
+        "remoteVersion": "20260823110849",
+        "name": "catalog_feed_search_engine"
+      },
+      {
+        "local": "20260823214058_targeted_price_alert_processor.sql",
+        "remoteVersion": "20260823194159",
+        "name": "targeted_price_alert_processor"
+      },
+      {
+        "local": "20260824131021_extend_comparator_statement_timeout.sql",
+        "remoteVersion": "20260824131133",
+        "name": "extend_comparator_statement_timeout"
+      },
+      {
+        "local": "20260824140037_catalog_match_reports.sql",
+        "remoteVersion": "20260824140510",
+        "name": "catalog_match_reports"
+      },
+      {
+        "local": "20260824140442_extend_comparator_to_gadis_froiz_ahorramas.sql",
+        "remoteVersion": "20260824140836",
+        "name": "extend_comparator_to_gadis_froiz_ahorramas"
+      },
+      {
+        "local": "20260824141713_normalize_comparator_reference_units.sql",
+        "remoteVersion": "20260824141904",
+        "name": "normalize_comparator_reference_units"
+      },
+      {
+        "local": "20260824143104_normalize_gadis_reference_units.sql",
+        "remoteVersion": "20260824143221",
+        "name": "normalize_gadis_reference_units"
+      },
+      {
+        "local": "20260824150548_extend_comparator_cache_status_stores.sql",
+        "remoteVersion": "20260824150622",
+        "name": "extend_comparator_cache_status_stores"
+      },
+      {
+        "local": "20260824165601_high_priority_cart_integrity.sql",
+        "remoteVersion": "20260824170527",
+        "name": "high_priority_cart_integrity"
+      },
+      {
+        "local": "20260824170826_app_active_user_metrics.sql",
+        "remoteVersion": "20260824171037",
+        "name": "app_active_user_metrics"
+      },
+      {
+        "local": "20260824171201_app_active_user_metrics_hardening.sql",
+        "remoteVersion": "20260824171226",
+        "name": "app_active_user_metrics_hardening"
+      },
+      {
+        "local": "20260824174500_grant_legacy_all_stores_to_pre_1_3_accounts.sql",
+        "remoteVersion": "20260824174522",
+        "name": "grant_legacy_all_stores_to_pre_1_3_accounts"
+      },
+      {
+        "local": "20260824194005_fix_price_alert_service_role_claim.sql",
+        "remoteVersion": "20260824194109",
+        "name": "fix_price_alert_service_role_claim"
+      },
+      {
+        "local": "20260824213612_localize_comparator_results.sql",
+        "remoteVersion": "20260824213809",
+        "name": "localize_comparator_results"
+      },
+      {
+        "local": "20260825174505_event_driven_catalog_embedding_dispatch.sql",
+        "remoteVersion": "20260825175141",
+        "name": "event_driven_catalog_embedding_dispatch"
+      },
+      {
+        "local": "20260830171924_bm_multizone_catalog.sql",
+        "remoteVersion": "20260830181142",
+        "name": "bm_multizone_catalog"
+      },
+      {
+        "local": "20260830181342_bm_multizone_fk_indexes.sql",
+        "remoteVersion": "20260830181414",
+        "name": "bm_multizone_fk_indexes"
+      },
+      {
+        "local": "20260831203004_embedding_pipeline_phase_zero_control.sql",
+        "remoteVersion": "20260831204235",
+        "name": "embedding_pipeline_phase_zero_control"
+      },
+      {
+        "local": "20260831204445_fix_embedding_phase_zero_special_expressions.sql",
+        "remoteVersion": "20260831205119",
+        "name": "fix_embedding_phase_zero_special_expressions"
+      },
+      {
+        "local": "20260831205518_enforce_single_canary_dispatch_budget.sql",
+        "remoteVersion": "20260831205917",
+        "name": "enforce_single_canary_dispatch_budget"
+      },
+      {
+        "local": "20260831214031_embedding_materializer_phase_one_idempotency.sql",
+        "remoteVersion": "20260901061238",
+        "name": "embedding_materializer_phase_one_idempotency"
+      },
+      {
+        "local": "bonpreu_product_details.sql",
+        "remoteVersion": "20260720182304",
+        "name": "bonpreu_product_details"
+      },
+      {
+        "local": "sorli_nutri_score.sql",
+        "remoteVersion": "20260720173704",
+        "name": "sorli_nutri_score"
+      }
+    ],
+    "unmatchedRelevant": [
+      {
+        "file": "20260809102018_comparator_source_unit_v2.sql",
+        "version": "20260809102018",
+        "name": "comparator_source_unit_v2"
+      },
+      {
+        "file": "20260817124758_comparator_semantic_identity_guard.sql",
+        "version": "20260817124758",
+        "name": "comparator_semantic_identity_guard"
+      },
+      {
+        "file": "20260902122234_fix_comparator_filtered_hnsw_recall.sql",
+        "version": "20260902122234",
+        "name": "fix_comparator_filtered_hnsw_recall"
+      },
+      {
+        "file": "similar_products.sql",
+        "version": null,
+        "name": "similar_products"
+      }
+    ],
+    "remoteUnmatched": [
+      {
+        "version": "20260823194414",
+        "name": "fix_targeted_price_alert_processor_alias"
+      },
+      {
+        "version": "20260824172919",
+        "name": "dashboard_metrics_and_match_review"
+      }
+    ],
+    "sameVersionDifferentName": [],
+    "remote_ledger": [
+      {
+        "version": "20260720173704",
+        "name": "sorli_nutri_score"
+      },
+      {
+        "version": "20260720182304",
+        "name": "bonpreu_product_details"
+      },
+      {
+        "version": "20260723204711",
+        "name": "dia_offers"
+      },
+      {
+        "version": "20260723212240",
+        "name": "sorli_offers"
+      },
+      {
+        "version": "20260726200544",
+        "name": "retailer_offers_condis_ametller_alcampo_eroski_caprabo"
+      },
+      {
+        "version": "20260727091048",
+        "name": "catalog_price_browse_indexes"
+      },
+      {
+        "version": "20260728183128",
+        "name": "bonpreu_sync_staging"
+      },
+      {
+        "version": "20260804185744",
+        "name": "bonpreu_resumable_publication"
+      },
+      {
+        "version": "20260809125237",
+        "name": "comparator_embeddings_layer"
+      },
+      {
+        "version": "20260809125302",
+        "name": "comparator_embedding_pipeline"
+      },
+      {
+        "version": "20260809130000",
+        "name": "comparator_embedding_failure_fk_index"
+      },
+      {
+        "version": "20260809130241",
+        "name": "comparator_embedding_queue_service_role_grants"
+      },
+      {
+        "version": "20260809130351",
+        "name": "comparator_embedding_queue_service_role_select"
+      },
+      {
+        "version": "20260809132746",
+        "name": "comparator_embedding_candidates_v2"
+      },
+      {
+        "version": "20260809133731",
+        "name": "comparator_embedding_enqueue_after_upsert"
+      },
+      {
+        "version": "20260809162706",
+        "name": "comparator_embedding_candidates_v3"
+      },
+      {
+        "version": "20260809164345",
+        "name": "comparator_cheaper_products_v3"
+      },
+      {
+        "version": "20260810105331",
+        "name": "comparator_match_cache_v3"
+      },
+      {
+        "version": "20260810105703",
+        "name": "comparator_match_cache_security_boundary"
+      },
+      {
+        "version": "20260810140243",
+        "name": "comparator_match_cache_metadata_invalidation"
+      },
+      {
+        "version": "20260810140659",
+        "name": "comparator_match_cache_trigger_when_changed"
+      },
+      {
+        "version": "20260811111147",
+        "name": "comparator_total_price_for_unpriced_stores"
+      },
+      {
+        "version": "20260811112317",
+        "name": "comparator_cheaper_highlight"
+      },
+      {
+        "version": "20260811203243",
+        "name": "purchase_statistics"
+      },
+      {
+        "version": "20260811210204",
+        "name": "normalize_purchase_statistic_categories"
+      },
+      {
+        "version": "20260812090753",
+        "name": "statistics_visuals"
+      },
+      {
+        "version": "20260814141719",
+        "name": "phase_3_security_performance_hardening"
+      },
+      {
+        "version": "20260818092848",
+        "name": "froiz_explicit_new_arrivals"
+      },
+      {
+        "version": "20260820162731",
+        "name": "personalized_price_alerts"
+      },
+      {
+        "version": "20260820163441",
+        "name": "sync_plus_verified_badge"
+      },
+      {
+        "version": "20260820163535",
+        "name": "fix_personalized_price_alert_claim_ambiguity"
+      },
+      {
+        "version": "20260820163711",
+        "name": "fix_personalized_price_alert_fk_indexes"
+      },
+      {
+        "version": "20260820165618",
+        "name": "price_alert_rule_emoji"
+      },
+      {
+        "version": "20260820170935",
+        "name": "personalized_alert_new_arrivals"
+      },
+      {
+        "version": "20260821130300",
+        "name": "onboarding_integrity"
+      },
+      {
+        "version": "20260821175935",
+        "name": "allow_unlimited_group_creation"
+      },
+      {
+        "version": "20260821180449",
+        "name": "list_item_notes"
+      },
+      {
+        "version": "20260821182635",
+        "name": "list_item_note_product"
+      },
+      {
+        "version": "20260822073002",
+        "name": "add_group_icon"
+      },
+      {
+        "version": "20260822171009",
+        "name": "general_statistics"
+      },
+      {
+        "version": "20260822171221",
+        "name": "general_statistics_private_boundary"
+      },
+      {
+        "version": "20260823064939",
+        "name": "free_tier_alert_and_comparator_allowances"
+      },
+      {
+        "version": "20260823065153",
+        "name": "restrict_free_tier_usage_direct_access"
+      },
+      {
+        "version": "20260823065550",
+        "name": "enforce_free_allowances_before_paywall_launch"
+      },
+      {
+        "version": "20260823103505",
+        "name": "catalog_search_engine_v1"
+      },
+      {
+        "version": "20260823103803",
+        "name": "catalog_search_language_index_planner"
+      },
+      {
+        "version": "20260823104828",
+        "name": "catalog_search_server_sort_orders"
+      },
+      {
+        "version": "20260823110849",
+        "name": "catalog_feed_search_engine"
+      },
+      {
+        "version": "20260823193941",
+        "name": "price_alert_notification_products"
+      },
+      {
+        "version": "20260823194159",
+        "name": "targeted_price_alert_processor"
+      },
+      {
+        "version": "20260823194414",
+        "name": "fix_targeted_price_alert_processor_alias"
+      },
+      {
+        "version": "20260824131133",
+        "name": "extend_comparator_statement_timeout"
+      },
+      {
+        "version": "20260824140510",
+        "name": "catalog_match_reports"
+      },
+      {
+        "version": "20260824140836",
+        "name": "extend_comparator_to_gadis_froiz_ahorramas"
+      },
+      {
+        "version": "20260824141904",
+        "name": "normalize_comparator_reference_units"
+      },
+      {
+        "version": "20260824143221",
+        "name": "normalize_gadis_reference_units"
+      },
+      {
+        "version": "20260824150622",
+        "name": "extend_comparator_cache_status_stores"
+      },
+      {
+        "version": "20260824170527",
+        "name": "high_priority_cart_integrity"
+      },
+      {
+        "version": "20260824171037",
+        "name": "app_active_user_metrics"
+      },
+      {
+        "version": "20260824171226",
+        "name": "app_active_user_metrics_hardening"
+      },
+      {
+        "version": "20260824172919",
+        "name": "dashboard_metrics_and_match_review"
+      },
+      {
+        "version": "20260824174522",
+        "name": "grant_legacy_all_stores_to_pre_1_3_accounts"
+      },
+      {
+        "version": "20260824194109",
+        "name": "fix_price_alert_service_role_claim"
+      },
+      {
+        "version": "20260824213809",
+        "name": "localize_comparator_results"
+      },
+      {
+        "version": "20260825175141",
+        "name": "event_driven_catalog_embedding_dispatch"
+      },
+      {
+        "version": "20260829124046",
+        "name": "grant_all_registered_users_all_stores_access"
+      },
+      {
+        "version": "20260830181142",
+        "name": "bm_multizone_catalog"
+      },
+      {
+        "version": "20260830181414",
+        "name": "bm_multizone_fk_indexes"
+      },
+      {
+        "version": "20260831124403",
+        "name": "community_recipes"
+      },
+      {
+        "version": "20260831204235",
+        "name": "embedding_pipeline_phase_zero_control"
+      },
+      {
+        "version": "20260831205119",
+        "name": "fix_embedding_phase_zero_special_expressions"
+      },
+      {
+        "version": "20260831205917",
+        "name": "enforce_single_canary_dispatch_budget"
+      },
+      {
+        "version": "20260901061238",
+        "name": "embedding_materializer_phase_one_idempotency"
+      },
+      {
+        "version": "20260901072452",
+        "name": "embedding_worker_phase_three_batch_writes"
+      },
+      {
+        "version": "20260901094105",
+        "name": "phase_three_single_hnsw_mutation"
+      },
+      {
+        "version": "20260901103216",
+        "name": "embedding_runs_durable_settlement_and_set_based_invalidation"
+      },
+      {
+        "version": "20260901104518",
+        "name": "phase4_legacy_materializer_compatibility"
+      },
+      {
+        "version": "20260901104730",
+        "name": "phase4_manifest_revalidate_on_close"
+      },
+      {
+        "version": "20260901115631",
+        "name": "catalog_embedding_postgres_maintenance_baseline"
+      },
+      {
+        "version": "20260901203103",
+        "name": "extend_embedding_finalize_statement_timeout"
+      }
+    ],
+    "matching_caveat": "Coincidencia por nombre/versión no demuestra igualdad de SQL ni autoriza db push.",
+    "verified_timeout_migration": {
+      "version": "20260901203103",
+      "name": "extend_embedding_finalize_statement_timeout",
+      "ledger_present": true,
+      "effective_statement_timeout": "60s"
+    },
+    "pending_hnsw_patch": {
+      "version": "20260902122234",
+      "name": "fix_comparator_filtered_hnsw_recall",
+      "ledger_present": false,
+      "candidates_body_sets_iterative_scan": false
+    },
+    "absent_legacy_rpc": "public.similar_products_v2"
+  },
+  "database_inventory": {
+    "database": "postgres",
+    "functions": [
+      {
+        "name": "catalog_cheaper_products_v3",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "comparator_internal",
+        "arguments": "p_source_store text, p_source_product_id text, p_stores text[]",
+        "volatility": "v",
+        "anon_execute": false,
+        "definition_md5": "c246d317dbf288dd0f958b6b609f5529",
+        "service_execute": true,
+        "security_definer": true,
+        "authenticated_execute": true
+      },
+      {
+        "name": "catalog_cheaper_products_v4",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "comparator_internal",
+        "arguments": "p_source_store text, p_source_product_id text, p_stores text[]",
+        "volatility": "v",
+        "anon_execute": false,
+        "definition_md5": "6c2063ebb4f0b90730c341995113f416",
+        "service_execute": true,
+        "security_definer": true,
+        "authenticated_execute": true
+      },
+      {
+        "name": "catalog_cheaper_products_v5",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "comparator_internal",
+        "arguments": "p_source_store text, p_source_product_id text, p_stores text[]",
+        "volatility": "v",
+        "anon_execute": false,
+        "definition_md5": "fe66f77c014fd88b1477b1ba07288ccf",
+        "service_execute": true,
+        "security_definer": true,
+        "authenticated_execute": true
+      },
+      {
+        "name": "catalog_cheaper_products_v3",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "public",
+        "arguments": "p_source_store text, p_source_product_id text, p_stores text[]",
+        "volatility": "v",
+        "anon_execute": false,
+        "definition_md5": "51abfbd86143c20f996af138b9732817",
+        "service_execute": true,
+        "security_definer": false,
+        "authenticated_execute": true
+      },
+      {
+        "name": "catalog_cheaper_products_v4",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "public",
+        "arguments": "p_source_store text, p_source_product_id text, p_stores text[]",
+        "volatility": "v",
+        "anon_execute": false,
+        "definition_md5": "14e211a8b4544095f23ea52352e958e5",
+        "service_execute": true,
+        "security_definer": false,
+        "authenticated_execute": true
+      },
+      {
+        "name": "catalog_cheaper_products_v5",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "public",
+        "arguments": "p_source_store text, p_source_product_id text, p_stores text[]",
+        "volatility": "v",
+        "anon_execute": false,
+        "definition_md5": "eefba89923ba0798728d05e94709932f",
+        "service_execute": true,
+        "security_definer": false,
+        "authenticated_execute": true
+      },
+      {
+        "name": "catalog_cheaper_products_v6",
+        "config": [
+          "search_path=\"\"",
+          "statement_timeout=60s"
+        ],
+        "schema": "public",
+        "arguments": "p_source_store text, p_source_product_id text, p_stores text[]",
+        "volatility": "v",
+        "anon_execute": false,
+        "definition_md5": "ecfed403611019adbf5a8343978b6516",
+        "service_execute": true,
+        "security_definer": false,
+        "authenticated_execute": true
+      },
+      {
+        "name": "catalog_cheaper_products_v7",
+        "config": [
+          "search_path=\"\"",
+          "statement_timeout=60s"
+        ],
+        "schema": "public",
+        "arguments": "p_source_store text, p_source_product_id text, p_stores text[], p_language text",
+        "volatility": "v",
+        "anon_execute": false,
+        "definition_md5": "86c703ed6f6fe9888a4a8f70ca2df086",
+        "service_execute": true,
+        "security_definer": false,
+        "authenticated_execute": true
+      },
+      {
+        "name": "catalog_embedding_candidates",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "public",
+        "arguments": "p_source_store text, p_source_product_id text, p_target_stores text[], p_match_count integer, p_min_vector_score real",
+        "volatility": "s",
+        "anon_execute": false,
+        "definition_md5": "4e23c7b59f4bb0eb6410663699f403b8",
+        "service_execute": true,
+        "security_definer": false,
+        "authenticated_execute": false
+      },
+      {
+        "name": "catalog_embedding_candidates_v2",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "public",
+        "arguments": "p_source_store text, p_source_product_id text, p_target_stores text[], p_match_count integer, p_min_vector_score real",
+        "volatility": "s",
+        "anon_execute": false,
+        "definition_md5": "3bff871a0b4e49b927be94a48e5ab4a6",
+        "service_execute": true,
+        "security_definer": false,
+        "authenticated_execute": false
+      },
+      {
+        "name": "catalog_embedding_candidates_v3",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "public",
+        "arguments": "p_source_store text, p_source_product_id text, p_target_stores text[], p_match_count integer, p_min_vector_score real",
+        "volatility": "s",
+        "anon_execute": false,
+        "definition_md5": "03f6138975dc32a1ef86e2e1f0b1cefb",
+        "service_execute": true,
+        "security_definer": false,
+        "authenticated_execute": false
+      },
+      {
+        "name": "catalog_embedding_maintenance_status",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "public",
+        "arguments": "",
+        "volatility": "s",
+        "anon_execute": false,
+        "definition_md5": "1f535aab67d9cb02c5b48e02e03df20f",
+        "service_execute": true,
+        "security_definer": false,
+        "authenticated_execute": false
+      },
+      {
+        "name": "catalog_embedding_pipeline_status",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "public",
+        "arguments": "",
+        "volatility": "s",
+        "anon_execute": false,
+        "definition_md5": "6e7d1eec23568911e7b16b51d220df46",
+        "service_execute": true,
+        "security_definer": false,
+        "authenticated_execute": false
+      },
+      {
+        "name": "catalog_finalize_embedding_batch",
+        "config": [
+          "search_path=\"\"",
+          "statement_timeout=60s"
+        ],
+        "schema": "public",
+        "arguments": "p_batch jsonb",
+        "volatility": "v",
+        "anon_execute": false,
+        "definition_md5": "c07dddcf7361441f22a6fd3ee2698a74",
+        "service_execute": true,
+        "security_definer": false,
+        "authenticated_execute": false
+      },
+      {
+        "name": "catalog_product_family_v1",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "public",
+        "arguments": "p_name text, p_category text",
+        "volatility": "i",
+        "anon_execute": false,
+        "definition_md5": "3d0e13abacac8bbb2ae29791a5699fde",
+        "service_execute": true,
+        "security_definer": false,
+        "authenticated_execute": false
+      },
+      {
+        "name": "catalog_product_identity_compatible_v1",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "public",
+        "arguments": "p_left_name text, p_left_category text, p_right_name text, p_right_category text",
+        "volatility": "i",
+        "anon_execute": false,
+        "definition_md5": "4deb9905635b6b8718b5eb3ca5f1b1a6",
+        "service_execute": true,
+        "security_definer": false,
+        "authenticated_execute": false
+      }
+    ],
+    "read_only": "on",
+    "relations": [
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "catalog_embedding_job_identities",
+        "schema": "comparator_internal",
+        "options": null,
+        "estimated_rows": 5222
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "catalog_embedding_pipeline_control",
+        "schema": "comparator_internal",
+        "options": null,
+        "estimated_rows": 1
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "catalog_embedding_run_jobs",
+        "schema": "comparator_internal",
+        "options": null,
+        "estimated_rows": 5477
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "catalog_embedding_runs",
+        "schema": "comparator_internal",
+        "options": null,
+        "estimated_rows": 19
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "catalog_match_store_versions",
+        "schema": "comparator_internal",
+        "options": null,
+        "estimated_rows": 18
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "job",
+        "schema": "cron",
+        "options": null,
+        "estimated_rows": -1
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "job_run_details",
+        "schema": "cron",
+        "options": null,
+        "estimated_rows": 11012
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "a_catalog_embedding_jobs",
+        "schema": "pgmq",
+        "options": null,
+        "estimated_rows": -1
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "q_catalog_embedding_jobs",
+        "schema": "pgmq",
+        "options": null,
+        "estimated_rows": 0
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "catalog_embedding_failures",
+        "schema": "public",
+        "options": null,
+        "estimated_rows": 0
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "catalog_product_embeddings",
+        "schema": "public",
+        "options": [
+          "autovacuum_vacuum_scale_factor=0.05",
+          "autovacuum_analyze_scale_factor=0.02"
+        ],
+        "estimated_rows": 202933
+      }
+    ],
+    "snapshot_at": "2026-09-02T19:16:10.263021+00:00",
+    "server_version": "17.6"
+  },
+  "schemas": [
+    {
+      "nspname": "public",
+      "anon_usage": true,
+      "authenticated_usage": true
+    },
+    {
+      "nspname": "pgmq",
+      "anon_usage": false,
+      "authenticated_usage": false
+    },
+    {
+      "nspname": "comparator_internal",
+      "anon_usage": false,
+      "authenticated_usage": true
+    }
+  ],
+  "supporting_functions": [
+    {
+      "name": "catalog_embedding_candidates_v3",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "arguments": "p_source_store text, p_source_product_id text, p_target_stores text[], p_match_count integer, p_min_vector_score real",
+      "definition_md5": "03f6138975dc32a1ef86e2e1f0b1cefb",
+      "body_sets_iterative_scan": false,
+      "body_mentions_relaxed_order": false
+    },
+    {
+      "name": "catalog_embedding_semantic_name_v1",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "arguments": "p_name text",
+      "definition_md5": "2a19c8f3dc5273440e2220adf135ad2c",
+      "body_sets_iterative_scan": false,
+      "body_mentions_relaxed_order": false
+    },
+    {
+      "name": "catalog_product_variants_v1",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "arguments": "p_name text",
+      "definition_md5": "5165bfd8a66f91808edd0b5310842aa6",
+      "body_sets_iterative_scan": false,
+      "body_mentions_relaxed_order": false
+    },
+    {
+      "name": "similar_products",
+      "config": [
+        "search_path=pg_catalog, public, extensions"
+      ],
+      "schema": "public",
+      "arguments": "p_name text, p_stores text[]",
+      "definition_md5": "75f83462dfae80e4568aafa9d17101ff",
+      "body_sets_iterative_scan": false,
+      "body_mentions_relaxed_order": false
+    }
+  ],
+  "cache_relations": [
+    {
+      "schema": "public",
+      "name": "catalog_product_match_cache_status",
+      "rls": true,
+      "estimated_rows": 3745,
+      "anon_select": false,
+      "authenticated_select": false,
+      "service_select": true
+    },
+    {
+      "schema": "public",
+      "name": "catalog_product_matches",
+      "rls": true,
+      "estimated_rows": 15446,
+      "anon_select": false,
+      "authenticated_select": false,
+      "service_select": true
+    }
+  ],
+  "observed_call_chain": {
+    "client_file": "src/api/catalog.ts",
+    "client_rpc": "public.catalog_cheaper_products_v7",
+    "v7_first_call": "private.claim_free_comparator_use()",
+    "v7_results_from": "comparator_internal.catalog_cheaper_products_v5",
+    "v7_localization": "comparator_internal.catalog_localized_product_name_v1",
+    "v5_first_dependency": "comparator_internal.catalog_cheaper_products_v3",
+    "v5_match_version": "embedding_hybrid_v3_0_60",
+    "v5_requires_current_source_and_target_embeddings": true,
+    "v5_identity_guard_bypass": [
+      "relation=identico",
+      "review_decision=aprobado"
+    ],
+    "v5_max_results_per_store": 2,
+    "v5_total_price_exceptions": [
+      "caprabo",
+      "eroski",
+      "hiperdino"
+    ],
+    "v5_supported_stores": [
+      "mercadona",
+      "esclat",
+      "carrefour",
+      "bonarea",
+      "consum",
+      "dia",
+      "sorli",
+      "eroski",
+      "caprabo",
+      "condis",
+      "ametller",
+      "aldi",
+      "hiperdino",
+      "alcampo",
+      "plusfresc",
+      "gadis",
+      "froiz",
+      "ahorramas"
+    ],
+    "catalog_sync_stores_not_in_v5_destinations": [
+      "bm",
+      "hipercor"
+    ],
+    "behavioral_test_performed": false
+  },
+  "extensions": {
+    "installed": [
+      {
+        "name": "pgcrypto",
+        "schema": "extensions",
+        "installed_version": "1.3"
+      },
+      {
+        "name": "supabase_vault",
+        "schema": "vault",
+        "installed_version": "0.3.1"
+      },
+      {
+        "name": "pg_stat_statements",
+        "schema": "extensions",
+        "installed_version": "1.11"
+      },
+      {
+        "name": "uuid-ossp",
+        "schema": "extensions",
+        "installed_version": "1.1"
+      },
+      {
+        "name": "pg_trgm",
+        "schema": "public",
+        "installed_version": "1.6"
+      },
+      {
+        "name": "pg_cron",
+        "schema": "pg_catalog",
+        "installed_version": "1.6.4"
+      },
+      {
+        "name": "unaccent",
+        "schema": "extensions",
+        "installed_version": "1.1"
+      },
+      {
+        "name": "pg_net",
+        "schema": "extensions",
+        "installed_version": "0.20.3"
+      },
+      {
+        "name": "pgmq",
+        "schema": "pgmq",
+        "installed_version": "1.5.1"
+      },
+      {
+        "name": "vector",
+        "schema": "extensions",
+        "installed_version": "0.8.0"
+      },
+      {
+        "name": "plpgsql",
+        "schema": "pg_catalog",
+        "installed_version": "1.0"
+      }
+    ],
+    "candidates_not_installed": [
+      {
+        "name": "pgroonga",
+        "installed_version": null,
+        "available_default_version": "3.2.5"
+      },
+      {
+        "name": "hypopg",
+        "installed_version": null,
+        "available_default_version": "1.4.1"
+      },
+      {
+        "name": "pgtap",
+        "installed_version": null,
+        "available_default_version": "1.3.3"
+      },
+      {
+        "name": "isn",
+        "installed_version": null,
+        "available_default_version": "1.2"
+      },
+      {
+        "name": "fuzzystrmatch",
+        "installed_version": null,
+        "available_default_version": "1.2"
+      },
+      {
+        "name": "index_advisor",
+        "installed_version": null,
+        "available_default_version": "0.2.0"
+      },
+      {
+        "name": "pg_jsonschema",
+        "installed_version": null,
+        "available_default_version": "0.3.3"
+      }
+    ]
+  },
+  "edge_functions": [
+    {
+      "slug": "delete-account",
+      "version": 10,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": "2026-06-22T18:50:50.415Z"
+    },
+    {
+      "slug": "apple-link",
+      "version": 8,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": "2026-06-22T18:50:40.381Z"
+    },
+    {
+      "slug": "send-push",
+      "version": 13,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": "2026-08-20T07:54:25.337Z"
+    },
+    {
+      "slug": "catalog-embed",
+      "version": 13,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "updated_at": "2026-09-01T09:44:05.170Z"
+    },
+    {
+      "slug": "revenuecat-webhook",
+      "version": 6,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "updated_at": "2026-08-22T08:47:27.159Z"
+    },
+    {
+      "slug": "process-price-alerts",
+      "version": 6,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "updated_at": "2026-08-28T16:46:06.303Z"
+    },
+    {
+      "slug": "sync-plus-subscription",
+      "version": 2,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": "2026-08-24T18:16:25.153Z"
+    }
+  ],
+  "operational_snapshot": {
+    "cron": [
+      {
+        "jobid": 17,
+        "active": false,
+        "jobname": "catalog-embedding-dispatch",
+        "schedule": "*/15 * * * *",
+        "command_md5": "43ec45ebeea9cc76560426656cd93693",
+        "edge_handler": null
+      },
+      {
+        "jobid": 18,
+        "active": true,
+        "jobname": "process-price-alerts-every-15-minutes",
+        "schedule": "*/15 * * * *",
+        "command_md5": "855e52bb6c5d9570f91e1bf12913909a",
+        "edge_handler": "process-price-alerts"
+      }
+    ],
+    "queue": {
+      "has_invisible": false,
+      "count_up_to_5001": 20
+    },
+    "syncs": [
+      {
+        "store": "ahorramas",
+        "synced_at": "2026-09-02T11:20:40.91+00:00",
+        "updated_at": "2026-09-02T11:20:40.996686+00:00"
+      },
+      {
+        "store": "alcampo",
+        "synced_at": "2026-08-21T09:05:06.908+00:00",
+        "updated_at": "2026-08-29T17:09:47.501845+00:00"
+      },
+      {
+        "store": "aldi",
+        "synced_at": "2026-09-01T12:50:13.318+00:00",
+        "updated_at": "2026-09-01T12:50:13.388888+00:00"
+      },
+      {
+        "store": "ametller",
+        "synced_at": "2026-09-01T13:10:59.898+00:00",
+        "updated_at": "2026-09-01T13:10:59.983079+00:00"
+      },
+      {
+        "store": "bm",
+        "synced_at": "2026-08-30T18:20:35.264+00:00",
+        "updated_at": "2026-08-30T18:20:35.331272+00:00"
+      },
+      {
+        "store": "bonarea",
+        "synced_at": "2026-09-01T13:18:03.372+00:00",
+        "updated_at": "2026-09-01T13:18:03.4716+00:00"
+      },
+      {
+        "store": "caprabo",
+        "synced_at": "2026-08-31T09:24:40.16+00:00",
+        "updated_at": "2026-08-31T09:24:44.473772+00:00"
+      },
+      {
+        "store": "carrefour",
+        "synced_at": "2026-08-31T09:22:40.575+00:00",
+        "updated_at": "2026-08-31T09:22:44.884022+00:00"
+      },
+      {
+        "store": "condis",
+        "synced_at": "2026-09-01T13:12:15.848+00:00",
+        "updated_at": "2026-09-01T13:12:16.146251+00:00"
+      },
+      {
+        "store": "consum",
+        "synced_at": "2026-09-01T13:12:26.198+00:00",
+        "updated_at": "2026-09-01T13:12:26.273934+00:00"
+      },
+      {
+        "store": "dia",
+        "synced_at": "2026-09-01T20:20:14.989+00:00",
+        "updated_at": "2026-09-01T20:20:15.053161+00:00"
+      },
+      {
+        "store": "eroski",
+        "synced_at": "2026-08-31T08:12:35.588+00:00",
+        "updated_at": "2026-08-31T08:12:39.873278+00:00"
+      },
+      {
+        "store": "esclat",
+        "synced_at": "2026-09-01T19:30:59.264+00:00",
+        "updated_at": "2026-09-01T19:30:59.410486+00:00"
+      },
+      {
+        "store": "froiz",
+        "synced_at": "2026-08-29T11:30:34.814+00:00",
+        "updated_at": "2026-08-29T11:30:36.584357+00:00"
+      },
+      {
+        "store": "gadis",
+        "synced_at": "2026-09-02T09:58:52.861+00:00",
+        "updated_at": "2026-09-02T09:58:53.116855+00:00"
+      },
+      {
+        "store": "hipercor",
+        "synced_at": "2026-09-02T09:23:05.729+00:00",
+        "updated_at": "2026-09-02T09:23:05.836374+00:00"
+      },
+      {
+        "store": "hiperdino",
+        "synced_at": "2026-09-01T12:50:47.703+00:00",
+        "updated_at": "2026-09-01T12:50:47.772723+00:00"
+      },
+      {
+        "store": "mercadona",
+        "synced_at": "2026-09-01T13:49:13.971+00:00",
+        "updated_at": "2026-09-01T13:49:14.43461+00:00"
+      },
+      {
+        "store": "plusfresc",
+        "synced_at": "2026-09-01T12:51:13.364+00:00",
+        "updated_at": "2026-09-01T12:51:13.423166+00:00"
+      },
+      {
+        "store": "sorli",
+        "synced_at": "2026-09-01T13:13:15.666+00:00",
+        "updated_at": "2026-09-01T13:13:15.756147+00:00"
+      }
+    ],
+    "control": {
+      "mode": "paused",
+      "updated_at": "2026-09-01T20:37:38.565012+00:00",
+      "max_auto_jobs": 1000,
+      "max_auto_ratio": 0.1,
+      "canary_max_requests": 1,
+      "canary_remaining_requests": 0
+    },
+    "activity": {
+      "lock_waiters": 0,
+      "active_sessions": 0,
+      "idle_in_transaction": 0
+    },
+    "run_states": [
+      {
+        "count": 2,
+        "status": "draining"
+      },
+      {
+        "count": 3,
+        "status": "materialized"
+      },
+      {
+        "count": 1,
+        "status": "running"
+      },
+      {
+        "count": 15,
+        "status": "settled"
+      }
+    ],
+    "maintenance": {
+      "hnsw": {
+        "live": true,
+        "ready": true,
+        "valid": true,
+        "indexBytes": 597745664,
+        "indexScans": 3768,
+        "lastIndexScan": "2026-09-02T18:21:55.598846+00:00"
+      },
+      "table": {
+        "deadTuples": 8946,
+        "liveTuples": 202953,
+        "tableBytes": 169394176,
+        "totalBytes": 1487691776,
+        "deadTupleAlert": false,
+        "deadTupleRatio": 0.042218,
+        "lastAutovacuum": "2026-09-01T13:09:59.266613+00:00",
+        "autovacuumCount": 7,
+        "lastAutoanalyze": "2026-09-01T20:35:57.35214+00:00",
+        "autoanalyzeCount": 13,
+        "deadTuplePercent": 4.222,
+        "modifiedSinceAnalyze": 706,
+        "deadTupleAlertThreshold": 0.05
+      },
+      "autovacuum": {
+        "vacuumThreshold": 50,
+        "analyzeThreshold": 50,
+        "vacuumScaleFactor": 0.05,
+        "analyzeScaleFactor": 0.02,
+        "estimatedVacuumTriggerTuples": 10198,
+        "estimatedAnalyzeTriggerChanges": 4110
+      },
+      "observedAt": "2026-09-02T19:18:48.6077+00:00",
+      "maintenance": {
+        "vacuumInProgress": 0,
+        "indexMaintenanceInProgress": 0
+      },
+      "pgvectorVersion": "0.8.0",
+      "requiresAttention": false
+    },
+    "observed_at": "2026-09-02T19:18:48.6077+00:00",
+    "recent_runs": [
+      {
+        "store": "ahorramas",
+        "status": "draining",
+        "settled_at": null,
+        "started_at": "2026-09-02T11:20:53.2771+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": 1,
+        "completed_dependency_count": 0,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "gadis",
+        "status": "draining",
+        "settled_at": null,
+        "started_at": "2026-09-02T09:59:07.617045+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": 19,
+        "completed_dependency_count": 0,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "dia",
+        "status": "settled",
+        "settled_at": "2026-09-01T20:37:08.02802+00:00",
+        "started_at": "2026-09-01T20:20:23.437784+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": 255,
+        "completed_dependency_count": 255,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "esclat",
+        "status": "settled",
+        "settled_at": "2026-09-01T20:36:54.926403+00:00",
+        "started_at": "2026-09-01T19:31:25.619146+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": 476,
+        "completed_dependency_count": 476,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "dia",
+        "status": "running",
+        "settled_at": null,
+        "started_at": "2026-09-01T13:55:09.347508+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": null,
+        "completed_dependency_count": 0,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "mercadona",
+        "status": "settled",
+        "settled_at": "2026-09-01T20:35:43.750022+00:00",
+        "started_at": "2026-09-01T13:49:25.121084+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": 25,
+        "completed_dependency_count": 25,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "bonarea",
+        "status": "settled",
+        "settled_at": "2026-09-01T20:35:40.639334+00:00",
+        "started_at": "2026-09-01T13:18:08.422504+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": 60,
+        "completed_dependency_count": 60,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "sorli",
+        "status": "settled",
+        "settled_at": "2026-09-01T20:35:32.084582+00:00",
+        "started_at": "2026-09-01T13:13:25.55133+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": 132,
+        "completed_dependency_count": 132,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "consum",
+        "status": "settled",
+        "settled_at": "2026-09-01T20:35:02.181858+00:00",
+        "started_at": "2026-09-01T13:12:42.802277+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": 216,
+        "completed_dependency_count": 216,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "condis",
+        "status": "settled",
+        "settled_at": "2026-09-01T20:35:28.677334+00:00",
+        "started_at": "2026-09-01T13:12:21.140402+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": 93,
+        "completed_dependency_count": 93,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "ametller",
+        "status": "settled",
+        "settled_at": "2026-09-01T20:34:16.050328+00:00",
+        "started_at": "2026-09-01T13:11:05.407287+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": 174,
+        "completed_dependency_count": 174,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "plusfresc",
+        "status": "settled",
+        "settled_at": "2026-09-01T20:33:32.360173+00:00",
+        "started_at": "2026-09-01T12:51:22.013785+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": 356,
+        "completed_dependency_count": 356,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "hiperdino",
+        "status": "settled",
+        "settled_at": "2026-09-01T20:33:54.139088+00:00",
+        "started_at": "2026-09-01T12:51:03.753664+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": 161,
+        "completed_dependency_count": 161,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "aldi",
+        "status": "settled",
+        "settled_at": "2026-09-01T20:32:51.728724+00:00",
+        "started_at": "2026-09-01T12:50:16.554626+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": 183,
+        "completed_dependency_count": 183,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "ahorramas",
+        "status": "settled",
+        "settled_at": "2026-09-01T12:41:17.935829+00:00",
+        "started_at": "2026-09-01T11:55:55.250814+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": 7,
+        "completed_dependency_count": 7,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "hiperdino",
+        "status": "settled",
+        "settled_at": "2026-09-01T12:41:11.328065+00:00",
+        "started_at": "2026-09-01T10:58:35.016962+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": 3201,
+        "completed_dependency_count": 3201,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "gadis",
+        "status": "settled",
+        "settled_at": "2026-09-01T12:41:14.902268+00:00",
+        "started_at": "2026-09-01T10:48:49.579666+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": 38,
+        "completed_dependency_count": 38,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "hiperdino",
+        "status": "settled",
+        "settled_at": "2026-09-01T10:36:57.953671+00:00",
+        "started_at": "2026-09-01T10:35:16.655839+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": 100,
+        "completed_dependency_count": 100,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "gadis",
+        "status": "materialized",
+        "settled_at": null,
+        "started_at": "2026-09-01T10:28:49.081035+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": null,
+        "completed_dependency_count": 0,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "gadis",
+        "status": "materialized",
+        "settled_at": null,
+        "started_at": "2026-09-01T06:16:55.825291+00:00",
+        "dispatch_request_count": 0,
+        "expected_dependency_count": null,
+        "completed_dependency_count": 0,
+        "terminal_failed_dependency_count": 0
+      }
+    ],
+    "cron_timezone": "GMT",
+    "cron_17_recent": [
+      {
+        "jobid": 17,
+        "status": "succeeded",
+        "end_time": "2026-08-31T14:30:08.139346+00:00",
+        "start_time": "2026-08-31T14:30:07.261336+00:00"
+      },
+      {
+        "jobid": 17,
+        "status": "failed",
+        "end_time": "2026-08-31T14:15:10.620273+00:00",
+        "start_time": "2026-08-31T14:15:00.005208+00:00"
+      },
+      {
+        "jobid": 17,
+        "status": "succeeded",
+        "end_time": "2026-08-31T14:00:05.298767+00:00",
+        "start_time": "2026-08-31T14:00:04.160059+00:00"
+      },
+      {
+        "jobid": 17,
+        "status": "failed",
+        "end_time": "2026-08-31T13:45:10.342412+00:00",
+        "start_time": "2026-08-31T13:45:00.000912+00:00"
+      },
+      {
+        "jobid": 17,
+        "status": "succeeded",
+        "end_time": "2026-08-31T13:30:08.595235+00:00",
+        "start_time": "2026-08-31T13:30:07.333092+00:00"
+      }
+    ],
+    "hnsw_overrides": null
+  },
+  "operational_detail": {
+    "queue_by_store": [
+      {
+        "count": 1,
+        "store": "ahorramas"
+      },
+      {
+        "count": 19,
+        "store": "gadis"
+      }
+    ],
+    "unsettled_runs": [
+      {
+        "store": "gadis",
+        "status": "materialized",
+        "started_at": "2026-09-01T06:16:43.248665+00:00",
+        "materialized_at": "2026-09-01T06:16:43.345628+00:00",
+        "dependency_count": 0,
+        "expected_dependency_count": null,
+        "completed_dependency_count": 0,
+        "superseded_dependency_count": 0,
+        "already_ready_dependency_count": 0,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "gadis",
+        "status": "materialized",
+        "started_at": "2026-09-01T06:16:55.825291+00:00",
+        "materialized_at": "2026-09-01T06:16:55.902396+00:00",
+        "dependency_count": 0,
+        "expected_dependency_count": null,
+        "completed_dependency_count": 0,
+        "superseded_dependency_count": 0,
+        "already_ready_dependency_count": 0,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "gadis",
+        "status": "materialized",
+        "started_at": "2026-09-01T10:28:49.081035+00:00",
+        "materialized_at": "2026-09-01T10:28:52.303201+00:00",
+        "dependency_count": 0,
+        "expected_dependency_count": null,
+        "completed_dependency_count": 0,
+        "superseded_dependency_count": 0,
+        "already_ready_dependency_count": 0,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "dia",
+        "status": "running",
+        "started_at": "2026-09-01T13:55:09.347508+00:00",
+        "materialized_at": null,
+        "dependency_count": 0,
+        "expected_dependency_count": null,
+        "completed_dependency_count": 0,
+        "superseded_dependency_count": 0,
+        "already_ready_dependency_count": 0,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "gadis",
+        "status": "draining",
+        "started_at": "2026-09-02T09:59:07.617045+00:00",
+        "materialized_at": "2026-09-02T09:59:08.318567+00:00",
+        "dependency_count": 19,
+        "expected_dependency_count": 19,
+        "completed_dependency_count": 0,
+        "superseded_dependency_count": 0,
+        "already_ready_dependency_count": 0,
+        "terminal_failed_dependency_count": 0
+      },
+      {
+        "store": "ahorramas",
+        "status": "draining",
+        "started_at": "2026-09-02T11:20:53.2771+00:00",
+        "materialized_at": "2026-09-02T11:20:54.080465+00:00",
+        "dependency_count": 1,
+        "expected_dependency_count": 1,
+        "completed_dependency_count": 0,
+        "superseded_dependency_count": 0,
+        "already_ready_dependency_count": 0,
+        "terminal_failed_dependency_count": 0
+      }
+    ]
+  },
+  "freshness_summary": {
+    "source": "public.catalog_sync_status.synced_at; estado global, no observación por producto",
+    "observed_at": "2026-09-02T19:18:48.6077+00:00",
+    "stores": 20,
+    "within_24h": 5,
+    "older_than_24h": 15
+  },
+  "github": {
+    "observedAt": "2026-09-02T19:20:44.840Z",
+    "defaultBranch": "main",
+    "commit": "78542449361897f614fffa29b0f49ae15fbd9383",
+    "totalWorkflows": 23,
+    "workflows": [
+      {
+        "id": 347475108,
+        "name": "Catalog embedding maintenance",
+        "path": ".github/workflows/catalog-embedding-maintenance.yml",
+        "state": "active",
+        "crons": [
+          "20 5 * * *"
+        ],
+        "manual": true,
+        "gitBlobSha": "aba1033abad1938c0d9ea3c8b9716b9780b190ca",
+        "sha256": "a0bfc6553a71187988f4c974af97dd026b9953c1624462e130c012b8a3092268",
+        "sameAsLocal": true
+      },
+      {
+        "id": 334691916,
+        "name": "Sync Ahorramás catalog",
+        "path": ".github/workflows/sync-ahorramas.yml",
+        "state": "active",
+        "crons": [
+          "0 6 * * *"
+        ],
+        "manual": true,
+        "gitBlobSha": "a6fdef15d0f827ae5281faed8599da140e318763",
+        "sha256": "ffe79077ae7c2781fa2b6fc9b944ba79be05c220bcb45f65e8f4d06ddb195e94",
+        "sameAsLocal": true
+      },
+      {
+        "id": 312260795,
+        "name": "Sync Alcampo catalog",
+        "path": ".github/workflows/sync-alcampo.yml",
+        "state": "active",
+        "crons": [],
+        "manual": true,
+        "gitBlobSha": "c89c27d53172275919795ee97e5964b810937746",
+        "sha256": "d744c5166b508c6e09e97486eef218f31429d686724b634a8067bf2bacb1c198",
+        "sameAsLocal": true
+      },
+      {
+        "id": 311579538,
+        "name": "Sync Aldi catalog",
+        "path": ".github/workflows/sync-aldi.yml",
+        "state": "active",
+        "crons": [
+          "40 10 * * 1"
+        ],
+        "manual": true,
+        "gitBlobSha": "074e2c2ca4384ad53445cf1d7e5c736e4e87d937",
+        "sha256": "d4b2001c3303be636f9a37d342e79743f1b449531bad92d9916388d475752962",
+        "sameAsLocal": true
+      },
+      {
+        "id": 311579539,
+        "name": "Sync Ametller catalog",
+        "path": ".github/workflows/sync-ametller.yml",
+        "state": "active",
+        "crons": [
+          "20 10 * * 1"
+        ],
+        "manual": true,
+        "gitBlobSha": "3d7a3be6a23831b46888b16bd56b845c3c3b23f3",
+        "sha256": "933a1175531900bdc1577c0de0c5d76437889d3e23b24a422414c8ef5a3cf54b",
+        "sameAsLocal": true
+      },
+      {
+        "id": 346048367,
+        "name": "Sync BM catalog",
+        "path": ".github/workflows/sync-bm.yml",
+        "state": "active",
+        "crons": [],
+        "manual": true,
+        "gitBlobSha": "1f0f1363e2765616607f761d944980be0b038aa3",
+        "sha256": "134a937903a33ec7fb42e32e0afdd44e9624c9ac830dd41a0b3e15d6457c8ff7",
+        "sameAsLocal": true
+      },
+      {
+        "id": 291893443,
+        "name": "Sync bonArea catalog",
+        "path": ".github/workflows/sync-bonarea.yml",
+        "state": "active",
+        "crons": [
+          "10 7 * * 1"
+        ],
+        "manual": true,
+        "gitBlobSha": "9b9f4776ed5601d9c6061dfd6294ee761aae26ef",
+        "sha256": "5ae011031136535a1aeef0eeb7696c09a5118346ba1b4e55c0a45ce8bde69a84",
+        "sameAsLocal": true
+      },
+      {
+        "id": 290911400,
+        "name": "Sync BonpreuEsclat catalog",
+        "path": ".github/workflows/sync-bonpreu.yml",
+        "state": "active",
+        "crons": [
+          "0 7 * * 2"
+        ],
+        "manual": true,
+        "gitBlobSha": "93f3a50884444bfce31239611d839850b6cd1f37",
+        "sha256": "6ce454eb35356b28c2701ae85cb471bb7ce98f0ef026a915e397bb5782e3c878",
+        "sameAsLocal": true
+      },
+      {
+        "id": 311204763,
+        "name": "Sync Caprabo catalog",
+        "path": ".github/workflows/sync-caprabo.yml",
+        "state": "active",
+        "crons": [],
+        "manual": true,
+        "gitBlobSha": "5b3ef6a9c8f4e51e971e56d2389a0b499ec82089",
+        "sha256": "755c8c3ecaae91cc10f1754d73bf4c13830e7801e756dbb11c16db0838006cd2",
+        "sameAsLocal": true
+      },
+      {
+        "id": 290872330,
+        "name": "Sync Mercadona catalog",
+        "path": ".github/workflows/sync-catalog.yml",
+        "state": "active",
+        "crons": [
+          "0 6 * * 1"
+        ],
+        "manual": true,
+        "gitBlobSha": "860fc4aa052654129f3732c8734d8cdb87e88c92",
+        "sha256": "d2ec6e17f33f1dd461c41a41747616494e04320b09f5e5701b9529b6c2a1f055",
+        "sameAsLocal": true
+      },
+      {
+        "id": 311579540,
+        "name": "Sync Condis catalog",
+        "path": ".github/workflows/sync-condis.yml",
+        "state": "active",
+        "crons": [
+          "0 10 * * 1"
+        ],
+        "manual": true,
+        "gitBlobSha": "c55dffa5c9e251e4890fbb3b132fa763e4399cc4",
+        "sha256": "c34c38bfde1cf695d12fd4e91fdaadfa6f4a0930bca2c63c923d4ae6ee749900",
+        "sameAsLocal": true
+      },
+      {
+        "id": 294638764,
+        "name": "Sync Consum catalog",
+        "path": ".github/workflows/sync-consum.yml",
+        "state": "active",
+        "crons": [
+          "30 7 * * 1"
+        ],
+        "manual": true,
+        "gitBlobSha": "ef4f63988be89cec65432d684b39da711dc79c18",
+        "sha256": "6a5a353fc271be6eec74ffa433affb4746c3dfd32ad31e17c709098b2d2b4db4",
+        "sameAsLocal": true
+      },
+      {
+        "id": 294638765,
+        "name": "Sync Dia catalog",
+        "path": ".github/workflows/sync-dia.yml",
+        "state": "active",
+        "crons": [
+          "50 7 * * 1"
+        ],
+        "manual": true,
+        "gitBlobSha": "5ce4545293f1b2a7cabbe11ef7a4d6ccd8ca007d",
+        "sha256": "62386cf8a73ec88db4fc88cc31f3c382d854158d4b5529feb6d20b96fa38d37d",
+        "sameAsLocal": false
+      },
+      {
+        "id": 311204765,
+        "name": "Sync Eroski catalog",
+        "path": ".github/workflows/sync-eroski.yml",
+        "state": "active",
+        "crons": [],
+        "manual": true,
+        "gitBlobSha": "ac42994366e46244aea2bb7d40dc8ac2a3222526",
+        "sha256": "cc7972efa006df08b5fc7be3210fea0977f6a3d86356bfbb90966ddde1313404",
+        "sameAsLocal": true
+      },
+      {
+        "id": 334395381,
+        "name": "Sync Froiz catalog",
+        "path": ".github/workflows/sync-froiz.yml",
+        "state": "active",
+        "crons": [],
+        "manual": true,
+        "gitBlobSha": "04d14ad7741ffdf1d4f9d1168504a091966eadec",
+        "sha256": "42080bef7b53e37100083fd3f8a814b8b36cedc64a9249c98f7b0f6799c1690e",
+        "sameAsLocal": true
+      },
+      {
+        "id": 334391436,
+        "name": "Sync Gadis catalog",
+        "path": ".github/workflows/sync-gadis.yml",
+        "state": "active",
+        "crons": [
+          "20 5 * * *"
+        ],
+        "manual": true,
+        "gitBlobSha": "c44dc8dfdf36fa9d365a1e12e81f8ea7ed4b049d",
+        "sha256": "9a883da799137615c60c8026759c3242e80d50ab89badb3b8e20388317785d3f",
+        "sameAsLocal": true
+      },
+      {
+        "id": 334959407,
+        "name": "Sync Hipercor catalog",
+        "path": ".github/workflows/sync-hipercor.yml",
+        "state": "active",
+        "crons": [
+          "40 4 * * *"
+        ],
+        "manual": true,
+        "gitBlobSha": "fc40dcbee3fda57db98c5b2118693f24a609debd",
+        "sha256": "e648c0301d32011d9d08005ad4f71c9534e9a341b59bfd1ab4b2aad73e5f994e",
+        "sameAsLocal": true
+      },
+      {
+        "id": 312260798,
+        "name": "Sync HiperDino catalog",
+        "path": ".github/workflows/sync-hiperdino.yml",
+        "state": "active",
+        "crons": [
+          "40 11 * * 1"
+        ],
+        "manual": true,
+        "gitBlobSha": "7cf97977a42627802567f29c664d07677f81c235",
+        "sha256": "e8a2d06e7940a516b2871d5a2c220feeab1c462ac587d2ee6427abb5dbe472d2",
+        "sameAsLocal": true
+      },
+      {
+        "id": 314334013,
+        "name": "Sync Plusfresc catalog",
+        "path": ".github/workflows/sync-plusfresc.yml",
+        "state": "active",
+        "crons": [
+          "40 10 * * 1"
+        ],
+        "manual": true,
+        "gitBlobSha": "249598ac7ebbb5a24792dc7e1a34d49c7489fd50",
+        "sha256": "1bc0d272fc8fe35c4e4f98a2006ea1a6dbafd759b2c78682ff715d32c9145b4b",
+        "sameAsLocal": true
+      },
+      {
+        "id": 310836142,
+        "name": "Sync Sorli catalog",
+        "path": ".github/workflows/sync-sorli.yml",
+        "state": "active",
+        "crons": [
+          "20 8 * * 1"
+        ],
+        "manual": true,
+        "gitBlobSha": "9be298c8d0ec0f815531c038f8e64aa7f575b015",
+        "sha256": "049e799ced922b9d6125b10810f23520adbdbd62e6cc470e3d7b4ea4b2b9ea76",
+        "sameAsLocal": true
+      }
+    ],
+    "differing_workflow": {
+      "path": ".github/workflows/sync-dia.yml",
+      "remote_timeout_minutes": 45,
+      "local_timeout_minutes": 60,
+      "changed_line": 15
+    },
+    "windows_scheduler": {
+      "store": "carrefour",
+      "documented": "Lunes 08:00 hora local de Windows",
+      "source": "scripts/README-carrefour-sync.md",
+      "installation_verified": false
+    },
+    "limitations": [
+      "Configuración de workflows, no historial completo de ejecución",
+      "Valores de secrets no inspeccionados",
+      "Scheduler externo de Windows no inspeccionado"
+    ]
+  },
+  "read_only_queries": [
+    {
+      "sequence": 1,
+      "sql": "begin read only;\nset local statement_timeout = '5s';\nset local lock_timeout = '1s';\nselect jsonb_build_object(\n  'snapshot_at', now(),\n  'database', current_database(),\n  'server_version', current_setting('server_version'),\n  'read_only', current_setting('transaction_read_only'),\n  'functions', (select jsonb_agg(to_jsonb(f)) from (\n    select n.nspname as schema, p.proname as name,\n      pg_get_function_identity_arguments(p.oid) as arguments,\n      p.prosecdef as security_definer, p.provolatile as volatility,\n      p.proconfig as config,\n      md5(pg_get_functiondef(p.oid)) as definition_md5,\n      has_function_privilege('anon',p.oid,'EXECUTE') as anon_execute,\n      has_function_privilege('authenticated',p.oid,'EXECUTE') as authenticated_execute,\n      has_function_privilege('service_role',p.oid,'EXECUTE') as service_execute\n    from pg_proc p join pg_namespace n on n.oid=p.pronamespace\n    where n.nspname in ('public','comparator_internal')\n      and (p.proname like 'catalog_cheaper_products%' or p.proname like 'catalog_embedding_candidates%'\n        or p.proname in ('catalog_finalize_embedding_batch','catalog_product_identity_compatible_v1','catalog_product_family_v1','catalog_embedding_maintenance_status','catalog_embedding_pipeline_status'))\n    order by n.nspname,p.proname limit 50\n  ) f),\n  'relations', (select jsonb_agg(to_jsonb(r)) from (\n    select n.nspname as schema,c.relname as name,c.relkind as kind,\n      c.reltuples::bigint as estimated_rows,c.relrowsecurity as rls,c.reloptions as options\n    from pg_class c join pg_namespace n on n.oid=c.relnamespace\n    where n.nspname in ('public','comparator_internal','pgmq','cron')\n      and c.relkind in ('r','p','v')\n      and (c.relname like 'catalog_embedding%' or c.relname like '%catalog_match%'\n        or c.relname like '%catalog_embedding_jobs' or c.relname in ('catalog_product_embeddings','catalog_sync_runs','catalog_store_sync_status','job','job_run_details'))\n    order by n.nspname,c.relname limit 60\n  ) r)\n) as inventory;\nrollback;"
+    },
+    {
+      "sequence": 2,
+      "sql": "begin read only; set local statement_timeout='5s'; set local lock_timeout='1s';\nselect jsonb_build_object(\n 'columns',(select jsonb_agg(to_jsonb(x)) from (\n  select table_schema,table_name,column_name,data_type\n  from information_schema.columns\n  where (table_schema='comparator_internal' and table_name in ('catalog_embedding_pipeline_control','catalog_embedding_runs','catalog_embedding_run_jobs'))\n    or (table_schema='public' and table_name like 'catalog_sync%')\n  order by table_schema,table_name,ordinal_position limit 150) x),\n 'source',(select jsonb_agg(to_jsonb(x)) from (\n  select n.nspname as schema,p.proname as name,p.prosrc as body\n  from pg_proc p join pg_namespace n on n.oid=p.pronamespace\n  where (n.nspname='public' and p.proname in ('catalog_cheaper_products_v7','catalog_embedding_pipeline_status','catalog_embedding_maintenance_status'))\n    or (n.nspname='comparator_internal' and p.proname='catalog_cheaper_products_v5')\n  order by n.nspname,p.proname limit 4) x),\n 'schemas',(select jsonb_agg(to_jsonb(x)) from (\n  select nspname,has_schema_privilege('anon',oid,'USAGE') as anon_usage,\n  has_schema_privilege('authenticated',oid,'USAGE') as authenticated_usage\n  from pg_namespace where nspname in ('public','comparator_internal','pgmq')) x)\n) as details; rollback;"
+    },
+    {
+      "sequence": 3,
+      "sql": "begin read only; set local statement_timeout='5s'; set local lock_timeout='1s';\nselect jsonb_build_object(\n 'observed_at',now(),\n 'control',(select to_jsonb(c) from (select mode,max_auto_jobs,max_auto_ratio,canary_max_requests,canary_remaining_requests,updated_at from comparator_internal.catalog_embedding_pipeline_control where singleton) c),\n 'queue',(select jsonb_build_object('count_up_to_5001',count(*),'has_invisible',coalesce(bool_or(vt>now()),false)) from (select vt from pgmq.q_catalog_embedding_jobs limit 5001) q),\n 'run_states',(select jsonb_agg(to_jsonb(r)) from (select status,count(*) as count from comparator_internal.catalog_embedding_runs group by status order by status) r),\n 'recent_runs',(select jsonb_agg(to_jsonb(r)) from (select store,status,started_at,settled_at,expected_dependency_count,completed_dependency_count,terminal_failed_dependency_count,dispatch_request_count from comparator_internal.catalog_embedding_runs order by started_at desc limit 20) r),\n 'maintenance',public.catalog_embedding_maintenance_status(),\n 'cron_timezone',current_setting('cron.timezone',true),\n 'cron',(select jsonb_agg(to_jsonb(j)) from (select jobid,jobname,schedule,active,md5(command) as command_md5,substring(command from '/functions/v1/([a-zA-Z0-9_-]+)') as edge_handler from cron.job order by jobid limit 100) j),\n 'cron_17_recent',(select jsonb_agg(to_jsonb(j)) from (select jobid,status,start_time,end_time from cron.job_run_details where jobid=17 order by start_time desc limit 5) j),\n 'syncs',(select jsonb_agg(to_jsonb(s)) from (select store,synced_at,updated_at from public.catalog_sync_status order by store limit 50) s),\n 'activity',(select jsonb_build_object('active_sessions',count(*) filter(where state='active'),'lock_waiters',count(*) filter(where wait_event_type='Lock'),'idle_in_transaction',count(*) filter(where state='idle in transaction')) from pg_stat_activity where datname=current_database() and pid<>pg_backend_pid()),\n 'hnsw_overrides',(select jsonb_agg(to_jsonb(s)) from (select setdatabase,setrole,v as setting from pg_db_role_setting cross join lateral unnest(setconfig) v where v like 'hnsw.%' limit 20) s)\n) as state; rollback;"
+    },
+    {
+      "sequence": 4,
+      "sql": "begin read only; set local statement_timeout='5s'; set local lock_timeout='1s';\nselect jsonb_build_object(\n 'functions',(select jsonb_agg(to_jsonb(f)) from (\n  select n.nspname as schema,p.proname as name,pg_get_function_identity_arguments(p.oid) as arguments,\n    p.proconfig as config,md5(pg_get_functiondef(p.oid)) as definition_md5,\n    position('hnsw.iterative_scan' in p.prosrc)>0 as body_sets_iterative_scan,\n    position('relaxed_order' in p.prosrc)>0 as body_mentions_relaxed_order\n  from pg_proc p join pg_namespace n on n.oid=p.pronamespace\n  where n.nspname in ('public','comparator_internal') and p.proname in ('similar_products','similar_products_v2','catalog_product_variants_v1','catalog_embedding_semantic_name_v1','catalog_embedding_candidates_v3')\n  order by n.nspname,p.proname limit 10) f),\n 'queue_by_store',(select jsonb_agg(to_jsonb(q)) from (\n  select message->>'store' as store,count(*) as count\n  from (select message from pgmq.q_catalog_embedding_jobs limit 5001) q group by message->>'store' order by store) q),\n 'unsettled_runs',(select jsonb_agg(to_jsonb(r)) from (\n  select store,status,started_at,materialized_at,expected_dependency_count,dependency_count,completed_dependency_count,already_ready_dependency_count,superseded_dependency_count,terminal_failed_dependency_count\n  from comparator_internal.catalog_embedding_runs where status<>'settled' order by started_at limit 30) r)\n) as reconciliation; rollback;"
+    },
+    {
+      "sequence": 5,
+      "sql": "begin read only; set local statement_timeout='5s'; set local lock_timeout='1s';\nselect n.nspname as schema,c.relname as name,c.relrowsecurity as rls,\n c.reltuples::bigint as estimated_rows,\n has_table_privilege('anon',c.oid,'SELECT') as anon_select,\n has_table_privilege('authenticated',c.oid,'SELECT') as authenticated_select,\n has_table_privilege('service_role',c.oid,'SELECT') as service_select\nfrom pg_class c join pg_namespace n on n.oid=c.relnamespace\nwhere n.nspname='public' and c.relname in ('catalog_product_matches','catalog_product_match_cache_status')\norder by c.relname; rollback;"
+    }
+  ],
+  "limits": [
+    "No se declara precisión/cobertura nuevas",
+    "No constituye auditoría completa RLS/Auth/Edge",
+    "No demuestra ausencia de impacto de lectura en CPU/I/O",
+    "No verifica backups/PITR ni presupuesto de F1",
+    "Revalidar estado mutable antes de escribir"
+  ]
+}

@@ -1,0 +1,504 @@
+{
+  "plan": {
+    "version": "ce200-read-v1",
+    "kind": "census",
+    "store": "plusfresc",
+    "cursor": "09050103:Especialidades Nacionales",
+    "limit": 100,
+    "round": "frame",
+    "select": "SELECT category_id,category_name,count(*)::int AS n,\n      count(*) FILTER (WHERE (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)')))::int AS frame_n\n      FROM public.plusfresc_products p WHERE published IS TRUE\n      AND (category_id::text||':'||coalesce(category_name,'')) COLLATE \"C\" > '09050103:Especialidades Nacionales' COLLATE \"C\"\n      GROUP BY category_id,category_name ORDER BY (category_id::text||':'||coalesce(category_name,'')) COLLATE \"C\" LIMIT 500",
+    "job": "ce1-ce200-fb9c8f2b352ff266d6cc934f07f4",
+    "operationHash": "fb9c8f2b352ff266d6cc934f07f44a0ad766a386a158154154f60ea4e77441a4",
+    "maxRows": 500,
+    "maxBytes": 131072,
+    "sql": "-- ce1-ce200-fb9c8f2b352ff266d6cc934f07f4: census; CE-BU-002; no app writes.\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $reserve$\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE status IN ('planned','running','halted','unknown'))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-fb9c8f2b352ff266d6cc934f07f4') THEN RAISE EXCEPTION 'ce200_exclusive_or_replay'; END IF;\n  IF EXISTS(SELECT 1 FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid))>0\n    OR (pid<>pg_backend_pid() AND state='active' AND query_start<clock_timestamp()-interval '30 seconds')) THEN RAISE EXCEPTION 'ce200_health_stop'; END IF;\n  UPDATE comparator_strict.execution_budget SET\n    sql_ms_reserved=sql_ms_reserved+10000,read_rows_reserved=read_rows_reserved+500,\n    bytes_reserved=bytes_reserved+131072,write_rows_reserved=write_rows_reserved+3,updated_at=clock_timestamp()\n    WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03'\n      AND approval_reference='CE-200-corpus-v1' AND bytes_limit=134217728 AND read_rows_limit=50000\n      AND bytes_reserved+131072<=bytes_limit AND read_rows_reserved+500<=read_rows_limit AND write_rows_reserved+3<=2000;\n  IF NOT FOUND THEN RAISE EXCEPTION 'ce200_budget'; END IF;\n  INSERT INTO comparator_strict.execution_jobs(id,project_ref,operation_key,sql_sha256,status,started_at,deadline_at,job_key,operation_hash,budget_date,reservation)\n    VALUES(gen_random_uuid(),'gkffvigcnsesbaihycay','ce200-census','5577e854b5b75c7700d39b1226d8c33252b1a259387caceb07d52c2b48969d61','running',clock_timestamp(),clock_timestamp()+interval '20 minutes','ce1-ce200-fb9c8f2b352ff266d6cc934f07f4','fb9c8f2b352ff266d6cc934f07f44a0ad766a386a158154154f60ea4e77441a4',DATE '2026-09-03','{\"sqlMs\":10000,\"readRows\":500,\"writeRows\":3,\"responseBytes\":131072}'::jsonb);\nEND $reserve$;\nCOMMIT;\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $payload$\nDECLARE payload jsonb; data jsonb; started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR NOT EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-fb9c8f2b352ff266d6cc934f07f4' AND status='running' AND operation_hash='fb9c8f2b352ff266d6cc934f07f44a0ad766a386a158154154f60ea4e77441a4' AND deadline_at>clock_timestamp()) THEN RAISE EXCEPTION 'ce200_lease'; END IF;\n  SELECT coalesce(jsonb_agg(to_jsonb(q)),'[]'::jsonb) INTO data FROM (SELECT category_id,category_name,count(*)::int AS n,\n      count(*) FILTER (WHERE (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)')))::int AS frame_n\n      FROM public.plusfresc_products p WHERE published IS TRUE\n      AND (category_id::text||':'||coalesce(category_name,'')) COLLATE \"C\" > '09050103:Especialidades Nacionales' COLLATE \"C\"\n      GROUP BY category_id,category_name ORDER BY (category_id::text||':'||coalesce(category_name,'')) COLLATE \"C\" LIMIT 500) q;\n  payload:=jsonb_build_object('job_key','ce1-ce200-fb9c8f2b352ff266d6cc934f07f4','operation_hash','fb9c8f2b352ff266d6cc934f07f44a0ad766a386a158154154f60ea4e77441a4',\n    'project_ref','gkffvigcnsesbaihycay','captured_at',started,'kind','census','store','plusfresc',\n    'cursor','09050103:Especialidades Nacionales','rows',data,'row_count',jsonb_array_length(data),'elapsed_ms',extract(epoch FROM clock_timestamp()-started)*1000);\n  IF jsonb_array_length(data)>500 OR octet_length(payload::text)>122880 THEN RAISE EXCEPTION 'ce200_result_limit'; END IF;\n  UPDATE comparator_strict.execution_jobs SET status='succeeded',finished_at=clock_timestamp(),\n    receipt=jsonb_build_object('payload_sha256',encode(sha256(convert_to(payload::text,'UTF8')),'hex'),'row_count',jsonb_array_length(data),'payload_bytes',octet_length(payload::text),'elapsed_ms',payload->'elapsed_ms') WHERE job_key='ce1-ce200-fb9c8f2b352ff266d6cc934f07f4';\n  PERFORM set_config('comparator_strict.ce200_response',payload::text,true);\nEND $payload$;\nSELECT current_setting('comparator_strict.ce200_response')::jsonb AS evidence;\nCOMMIT;"
+  },
+  "payload": {
+    "kind": "census",
+    "rows": [
+      {
+        "n": 47,
+        "frame_n": 0,
+        "category_id": "09050104",
+        "category_name": "Queso Importación"
+      },
+      {
+        "n": 14,
+        "frame_n": 0,
+        "category_id": "09050105",
+        "category_name": "Queso Pasta veteada"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "09050106",
+        "category_name": "Queso Pasta Blanda"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "09050107",
+        "category_name": "Queso Fresco"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "09050108",
+        "category_name": "Queso Fresco Salud"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09050110",
+        "category_name": "Quesos varios"
+      },
+      {
+        "n": 43,
+        "frame_n": 0,
+        "category_id": "09050201",
+        "category_name": "Queso tipo manchego"
+      },
+      {
+        "n": 26,
+        "frame_n": 0,
+        "category_id": "09050202",
+        "category_name": "Queso Bola"
+      },
+      {
+        "n": 22,
+        "frame_n": 0,
+        "category_id": "09050203",
+        "category_name": "Queso Fundido"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "09050204",
+        "category_name": "Queso Blanco Pasteurizado"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "09050205",
+        "category_name": "Queso Azul"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "09050206",
+        "category_name": "Queso Cremoso de Corteza Blanca"
+      },
+      {
+        "n": 32,
+        "frame_n": 0,
+        "category_id": "09050207",
+        "category_name": "Queso Fresco"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "09050208",
+        "category_name": "Requesón"
+      },
+      {
+        "n": 24,
+        "frame_n": 0,
+        "category_id": "09050209",
+        "category_name": "Queso Rallado"
+      },
+      {
+        "n": 35,
+        "frame_n": 0,
+        "category_id": "09050210",
+        "category_name": "Resto Queso Natural"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "09060101",
+        "category_name": "Jamones y Paleta Serrana al Corte"
+      },
+      {
+        "n": 16,
+        "frame_n": 0,
+        "category_id": "09060102",
+        "category_name": "Jamones y Paleta Serrana Envasada"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "09060103",
+        "category_name": "Jamones y Paleta Serrana entera"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09060104",
+        "category_name": "Jamones y Paleta Ibérica al Corte"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "09060105",
+        "category_name": "Jamones y Paleta Ibérica envasada"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "09060106",
+        "category_name": "Jamones y Paleta Ibérica entera"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09060107",
+        "category_name": "Huesos Jamón"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "09060108",
+        "category_name": "Jamón y Paletilla cortado a máquina"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "09060201",
+        "category_name": "Jamón Cocido al Corte"
+      },
+      {
+        "n": 20,
+        "frame_n": 0,
+        "category_id": "09060202",
+        "category_name": "Jamón Cocido Envasado"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "09060204",
+        "category_name": "Paleta Cocida Envasada"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "09060301",
+        "category_name": "Chorizo al corte"
+      },
+      {
+        "n": 16,
+        "frame_n": 0,
+        "category_id": "09060302",
+        "category_name": "Chorizo envasado"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09060303",
+        "category_name": "Chistorra"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "09060401",
+        "category_name": "Salchichón al corte"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "09060402",
+        "category_name": "Salchichón envasado"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "09060501",
+        "category_name": "Fuet y Longaniza Curada al Corte"
+      },
+      {
+        "n": 25,
+        "frame_n": 0,
+        "category_id": "09060502",
+        "category_name": "Fuet y Longaniza Curada Envasada"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "09060601",
+        "category_name": "Lomo Embutido al Corte"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "09060602",
+        "category_name": "Lomo Embutido envasado"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "09060701",
+        "category_name": "Bacon y Panceta al Corte"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "09060702",
+        "category_name": "Bacon y Panceta envasada"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "09060801",
+        "category_name": "Pavo al corte"
+      },
+      {
+        "n": 19,
+        "frame_n": 0,
+        "category_id": "09060802",
+        "category_name": "Pavo envasado"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "09060901",
+        "category_name": "Butifarra al Corte"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "09060902",
+        "category_name": "Butifarra envasada"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09061001",
+        "category_name": "Salami al corte"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09061002",
+        "category_name": "Salami envasado"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09061003",
+        "category_name": "Sobrasada al corte"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "09061004",
+        "category_name": "Sobrasada envasada"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09061005",
+        "category_name": "Surtido Embutidos"
+      },
+      {
+        "n": 20,
+        "frame_n": 0,
+        "category_id": "09061006",
+        "category_name": "Otros Embutidos al Corte"
+      },
+      {
+        "n": 19,
+        "frame_n": 0,
+        "category_id": "09061007",
+        "category_name": "Otros Embutidos envasados"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09061008",
+        "category_name": "Pechuga de pollo cocida al corte"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09061101",
+        "category_name": "Varios Charcutería"
+      },
+      {
+        "n": 28,
+        "frame_n": 1,
+        "category_id": "100901",
+        "category_name": "Para el hogar"
+      },
+      {
+        "n": 178,
+        "frame_n": 0,
+        "category_id": "11010101",
+        "category_name": "Vino Bodega Negro"
+      },
+      {
+        "n": 20,
+        "frame_n": 0,
+        "category_id": "11010102",
+        "category_name": "Vino Bodega Rosado"
+      },
+      {
+        "n": 112,
+        "frame_n": 0,
+        "category_id": "11010103",
+        "category_name": "Vino Bodega Blanco"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "11010201",
+        "category_name": "Vino Importación: Negro"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "11010202",
+        "category_name": "Vino Importación: Rosado"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "11010203",
+        "category_name": "Vino Importacióno: Blanco"
+      },
+      {
+        "n": 21,
+        "frame_n": 0,
+        "category_id": "11010301",
+        "category_name": "Vino de Mesa: Botella"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "11010302",
+        "category_name": "Vino de Mesa: Brick"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "11010303",
+        "category_name": "Vino de Mesa: Garrafa"
+      },
+      {
+        "n": 23,
+        "frame_n": 0,
+        "category_id": "110104",
+        "category_name": "Finos y Dulces"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "110105",
+        "category_name": "Sangría"
+      },
+      {
+        "n": 25,
+        "frame_n": 0,
+        "category_id": "110106",
+        "category_name": "Vermut"
+      },
+      {
+        "n": 69,
+        "frame_n": 0,
+        "category_id": "11020101",
+        "category_name": "Cava: Brut"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "11020102",
+        "category_name": "Cava: Semi"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "11020104",
+        "category_name": "Cava: Infantil"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "110202",
+        "category_name": "Champagne"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "110203",
+        "category_name": "Sidra"
+      },
+      {
+        "n": 28,
+        "frame_n": 0,
+        "category_id": "110301",
+        "category_name": "Whisky"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "110302",
+        "category_name": "Brandy"
+      },
+      {
+        "n": 28,
+        "frame_n": 0,
+        "category_id": "110303",
+        "category_name": "Ginebra"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "110304",
+        "category_name": "Anís"
+      },
+      {
+        "n": 14,
+        "frame_n": 3,
+        "category_id": "110305",
+        "category_name": "Ron"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "110306",
+        "category_name": "Vodka"
+      },
+      {
+        "n": 44,
+        "frame_n": 0,
+        "category_id": "110307",
+        "category_name": "Resto Licores"
+      },
+      {
+        "n": 71,
+        "frame_n": 2,
+        "category_id": "3401",
+        "category_name": "Gourmet"
+      },
+      {
+        "n": 21,
+        "frame_n": 0,
+        "category_id": "3501",
+        "category_name": "Sushi"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "4001",
+        "category_name": "Novedades"
+      }
+    ],
+    "store": "plusfresc",
+    "cursor": "09050103:Especialidades Nacionales",
+    "job_key": "ce1-ce200-fb9c8f2b352ff266d6cc934f07f4",
+    "row_count": 79,
+    "elapsed_ms": 19.275,
+    "captured_at": "2026-09-03T10:21:56.727239+00:00",
+    "project_ref": "gkffvigcnsesbaihycay",
+    "operation_hash": "fb9c8f2b352ff266d6cc934f07f44a0ad766a386a158154154f60ea4e77441a4"
+  },
+  "transport_bytes": 10352
+}

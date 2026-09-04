@@ -11,6 +11,8 @@
 //      MIN_MATCHED_OFFERS=1
 //      MIN_COVERAGE_RATIO=0.85 (respecto al catálogo publicado anterior)
 //      DRY_RUN=1, MAX_LEAVES=N (solo permitido con DRY_RUN)
+import { lidlMinimumProducts } from './lib/lidl-store-coverage.mjs';
+import { lidlRequest, sortedLidlRows } from './lib/lidl-http.mjs';
 import { markStale } from './lib/stale.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
 import {
@@ -33,7 +35,7 @@ const STORE_ID = String(process.env.LIDL_STORE_ID || 'ES3572').toUpperCase();
 const LANGUAGE = String(process.env.LIDL_LANGUAGE || 'es').toLowerCase();
 const CONCURRENCY = Math.min(8, Math.max(1, Number(process.env.CONCURRENCY || 4)));
 const PAGE_SIZE = Math.min(500, Math.max(20, Number(process.env.PAGE_SIZE || 100)));
-const MIN_PRODUCTS = Math.max(1, Number(process.env.MIN_PRODUCTS || 2200));
+const MIN_PRODUCTS = lidlMinimumProducts(STORE_ID, Math.max(1, Number(process.env.MIN_PRODUCTS || 2200)));
 const MIN_LEAVES = Math.max(1, Number(process.env.MIN_LEAVES || 35));
 const MIN_NONEMPTY_LEAVES = Math.max(1, Number(process.env.MIN_NONEMPTY_LEAVES || 40));
 const MIN_MATCHED_OFFERS = Math.max(0, Number(process.env.MIN_MATCHED_OFFERS || 1));
@@ -59,41 +61,11 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const chunks = (rows, size) => Array.from({ length: Math.ceil(rows.length / size) }, (_, index) => rows.slice(index * size, index * size + size));
 
 async function getJson(path, tries = 5) {
-  let lastError;
-  for (let attempt = 0; attempt < tries; attempt++) {
-    if (attempt) await sleep(750 * 2 ** (attempt - 1));
-    try {
-      const response = await fetch(`${BASE}${path}`, {
-        headers,
-        signal: AbortSignal.timeout(30000),
-      });
-      if (response.ok) return await response.json();
-      lastError = new Error(`${path}: HTTP ${response.status} ${await response.text()}`);
-      if (response.status !== 429 && response.status < 500) break;
-    } catch (error) {
-      lastError = error;
-    }
-  }
-  throw lastError ?? new Error(`${path}: respuesta vacía`);
+  return lidlRequest(`${BASE}${path}`, { headers }, { label: path, attempts: tries });
 }
 
 async function getOffersJson(tries = 5) {
-  let lastError;
-  for (let attempt = 0; attempt < tries; attempt++) {
-    if (attempt) await sleep(750 * 2 ** (attempt - 1));
-    try {
-      const response = await fetch(OFFERS_URL, {
-        headers,
-        signal: AbortSignal.timeout(30000),
-      });
-      if (response.ok) return await response.json();
-      lastError = new Error(`ofertas: HTTP ${response.status} ${await response.text()}`);
-      if (response.status !== 429 && response.status < 500) break;
-    } catch (error) {
-      lastError = error;
-    }
-  }
-  throw lastError ?? new Error('ofertas: respuesta vacía');
+  return lidlRequest(OFFERS_URL, { headers }, { label: 'ofertas', attempts: tries });
 }
 
 async function discoverCategories() {
@@ -242,8 +214,8 @@ async function mergeCurrentOffers(rows) {
 }
 
 async function upsert(table, rows) {
-  for (const batch of chunks(rows, 250)) {
-    const response = await fetch(`${URL}/rest/v1/${table}`, {
+  for (const batch of chunks(sortedLidlRows(rows), 250)) {
+    await lidlRequest(`${URL}/rest/v1/${table}`, {
       method: 'POST',
       headers: {
         apikey: KEY,
@@ -252,8 +224,7 @@ async function upsert(table, rows) {
         Prefer: 'resolution=merge-duplicates,return=minimal',
       },
       body: JSON.stringify(batch),
-    });
-    if (!response.ok) throw new Error(`upsert ${table}: HTTP ${response.status} ${await response.text()}`);
+    }, { label: `upsert ${table}`, json: false });
   }
 }
 
@@ -306,6 +277,15 @@ async function main() {
   const leaves = allLeaves.slice(0, MAX_LEAVES);
   console.log(`[lidl] ${roots.length} raíces · ${allLeaves.length} hojas${leaves.length !== allLeaves.length ? ` · prueba limitada a ${leaves.length}` : ''}`);
 
+  // A store may have a category tree while its entire product feed is empty.
+  // Check three independent food branches before downloading/retrying 40 leaves.
+  const probeLeaves = leaves.filter((leaf) => ['90', '10', '30'].includes(leaf.id));
+  const probeResults = new Map();
+  for (const leaf of probeLeaves) probeResults.set(leaf.id, await fetchLeaf(leaf));
+  if (probeLeaves.length === 3 && [...probeResults.values()].every((rows) => rows.length === 0)) {
+    throw new Error(`LIDL_CATALOG_EMPTY ${STORE_ID}: pan, fruta y carne vacíos tras reintentos; no se publica`);
+  }
+
   const products = new Map();
   const leafCounts = new Map();
   const queue = [...leaves];
@@ -314,7 +294,7 @@ async function main() {
     for (;;) {
       const leaf = queue.shift();
       if (!leaf) break;
-      const pageProducts = await fetchLeaf(leaf);
+      const pageProducts = probeResults.get(leaf.id) ?? await fetchLeaf(leaf);
       leafCounts.set(leaf.id, pageProducts.length);
       for (const product of pageProducts) {
         const row = normalizeLidlProduct(product, leaf);
@@ -395,5 +375,7 @@ async function main() {
 
 main().catch((error) => {
   console.error('[lidl] ERROR', error);
-  process.exit(1);
+  if (process.send) {
+    process.send({ type: 'lidl-error', message: String(error.message).slice(0, 1800) }, () => process.exit(1));
+  } else process.exit(1);
 });

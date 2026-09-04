@@ -152,9 +152,76 @@ test('el orquestador arranca y programa el barrido con la RPC esperada', async (
 
 test('el único workflow ejecuta capacidad para todo el censo cada lunes', () => {
   assert.match(fleetWorkflow, /cron: '20 11 \* \* 1'/);
-  assert.match(fleetWorkflow, /worker: \[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24\]/);
-  assert.match(fleetWorkflow, /LIDL_FLEET_JOB_LIMIT: '32'/);
+  assert.match(fleetWorkflow, /workers=\[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24\]/);
+  assert.match(fleetWorkflow, /LIDL_FLEET_JOB_LIMIT:.*'100'/);
+  assert.match(fleetWorkflow, /--report-only/);
+  assert.match(fleetWorkflow, /default: recover/);
   assert.match(fleetWorkflow, /schedule_all_lidl_catalog_sync_jobs|--schedule-only/);
   assert.match(fleetWorkflow, /vars\.LIDL_SYNC_ENABLED == 'true'/);
   assert.doesNotMatch(fleetWorkflow, /MIN_PRIORITY|SCHEDULE_LIMIT|MAX_AGE_DAYS/);
+});
+
+async function runFleetScenario(mode, setup, extraEnv = {}) {
+  return execFileAsync(process.execPath, ['--input-type=module', '--eval', `
+    ${setup}
+    process.argv = [process.execPath, ${JSON.stringify(orchestratorPath)}, ${JSON.stringify(mode)}];
+    await import(${JSON.stringify(orchestratorModule)});
+  `], {
+    env: { ...process.env, SUPABASE_URL: 'https://supabase.invalid', SUPABASE_SERVICE_ROLE: 'test',
+      LIDL_FLEET_IDLE_MINUTES: '0', ...extraEnv }, timeout: 5000,
+  });
+}
+
+test('recovery forwards the filter, never schedules and preserves successful jobs', async () => {
+  const { stdout } = await runFleetScenario('--recover-only', `
+    globalThis.fetch = async (url, init) => {
+      const body = JSON.parse(init.body);
+      if (JSON.stringify(body.p_store_ids) !== '["ES0367"]') throw new Error('missing filter');
+      if (url.endsWith('claim_lidl_catalog_sync_jobs_filtered')) return Response.json([]);
+      if (url.endsWith('lidl_catalog_sync_report')) return Response.json([{ store_id:'ES0367',status:'succeeded' }]);
+      throw new Error('unexpected mutation ' + url);
+    };
+  `, { LIDL_FLEET_STORE_IDS: 'ES0367' });
+  assert.match(stdout, /completadas=0 fallidas=0/);
+});
+
+test('final report fails for unfinished or missing stores and passes only complete scopes', async () => {
+  for (const rows of [[], [{store_id:'ES0367',status:'retry'}], [{store_id:'ES0367',status:'dead'}]]) {
+    await assert.rejects(runFleetScenario('--report-only',
+      `globalThis.fetch = async () => Response.json(${JSON.stringify(rows)});`, { LIDL_FLEET_STORE_IDS:'ES0367' }),
+    (error) => error.code === 1 && error.stdout.includes('estado final'));
+  }
+  await runFleetScenario('--report-only', `globalThis.fetch = async () => Response.json([{store_id:'ES0367',status:'succeeded'}]);`,
+    { LIDL_FLEET_STORE_IDS:'ES0367' });
+});
+
+test('child error is persisted and repeated 403 stops claims after two stores', async () => {
+  await assert.rejects(runFleetScenario('--recover-only', `
+    import childProcess from 'node:child_process';
+    import { EventEmitter } from 'node:events';
+    import { syncBuiltinESMExports } from 'node:module';
+    childProcess.spawn = () => {
+      const child = new EventEmitter();
+      queueMicrotask(() => {
+        child.emit('message', { type:'lidl-error', message:'/categories: HTTP 403 denied' });
+        child.emit('close', 1, null);
+      });
+      return child;
+    };
+    syncBuiltinESMExports();
+    let claimed = 0, failed = 0;
+    globalThis.fetch = async (url, init) => {
+      if (url.endsWith('claim_lidl_catalog_sync_jobs_filtered')) {
+        if (++claimed > 2) throw new Error('circuit did not stop');
+        return Response.json([{job_store_id:'ES0'+claimed,job_attempts:1}]);
+      }
+      if (url.endsWith('fail_lidl_catalog_sync_job')) {
+        if (JSON.parse(init.body).p_error !== '/categories: HTTP 403 denied') throw new Error('lost error detail');
+        failed++;
+        return Response.json('retry');
+      }
+      throw new Error('unexpected RPC ' + url);
+    };
+    process.on('exit', () => { if (claimed !== 2 || failed !== 2) process.exitCode = 99; });
+  `), (error) => error.code === 1 && error.stderr.includes('pausa: rechazos HTTP repetidos'));
 });

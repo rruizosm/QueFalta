@@ -105,3 +105,69 @@ $env:DRY_RUN='1'
 node scripts/sync-lidl.mjs
 Remove-Item Env:DRY_RUN
 ```
+
+## Recuperación y resistencia del barrido (2026-09-04)
+
+El run `33909268291` terminó con 643 tiendas completadas y 78 en `retry`.
+Las 39 tiendas que devolvieron cero productos pertenecen a Canarias. Una
+comprobación posterior de fruta y carne en ES0951, ES0953 y ES9100 volvió a
+obtener HTTP 200 y `totalProducts=0`; ES2106, que había dado 403, volvió a
+responder con 144 y 111 productos en esas ramas. No se usan precios peninsulares
+como sustituto y no se rebajan los controles de las tiendas vacías.
+
+Las cinco tiendas pequeñas repitieron exactamente sus recuentos en los dos
+intentos del run y un DRY_RUN secuencial posterior (concurrencia 1, pausa 250 ms):
+
+| Tienda | Productos | Mínimo específico (98 %) |
+|---|---:|---:|
+| ES0367 | 2145 | 2102 |
+| ES0431 | 2151 | 2107 |
+| ES0529 | 2195 | 2151 |
+| ES0530 | 2166 | 2122 |
+| ES0848 | 2146 | 2103 |
+
+Todas completaron las 40 hojas, con 100 % de precio e imagen y ofertas
+verificadas. `lib/lidl-store-coverage.mjs` limita las excepciones a estos IDs;
+se mantiene además la cobertura del 85 % frente al catálogo previo. El resto
+conserva el mínimo de 2.200. Las tiendas totalmente vacías se detectan con tres
+ramas alimentarias antes de barrer las restantes; no se publica nada.
+
+- Las escrituras ordenan las claves antes de dividir en lotes de 250 y
+  reintentan deadlocks/errores transitorios con espera exponencial y jitter.
+- Los JSON incompletos se reintentan con el endpoint y tamaño en el error.
+  Los 403 no se reintentan inmediatamente; tras dos tiendas seguidas con
+  403/429 el worker se detiene conservando la cola para una ejecución posterior.
+- El hijo comunica su error real al orquestador por IPC; se guarda en `last_error`.
+- La migración `20260904210752_lidl_fleet_recovery.sql` está aplicada. Añade claim
+  filtrado, informe y recuperación explícita de `dead`, con `SECURITY INVOKER`
+  y `EXECUTE` exclusivo de `service_role`. No reinicializa trabajos al desplegar.
+- El workflow manual tiene modo `recover` por defecto (dos workers), `canary`
+  (un worker, máximo cinco intentos, IDs obligatorios) y `weekly` (censo completo).
+  El cron sigue siendo semanal. Cada worker admite hasta 100 intentos y espera
+  hasta 35 minutos a reintentos diferidos, con un tope total de 300 minutos.
+  Se reduce la concurrencia a tres workers semanales, dos peticiones por tienda
+  y 250 ms entre descargas. Un informe final se ejecuta incluso si falla un worker
+  y deja el run fallido si quedan pendientes, running, retry, dead o IDs ausentes.
+
+Operación (credenciales en el entorno, nunca en argumentos):
+
+```sh
+# Recuperar solo los trabajos todavía procesables, sin reprogramar éxitos:
+node scripts/sync-lidl-fleet.mjs --recover-only
+# Prueba acotada:
+LIDL_FLEET_STORE_IDS=ES0367,ES2106 LIDL_FLEET_JOB_LIMIT=2 LIDL_FLEET_IDLE_MINUTES=0 node scripts/sync-lidl-fleet.mjs --recover-only
+# Informe autoritativo, exit 1 si falta completar alguna tienda:
+node scripts/sync-lidl-fleet.mjs --report-only
+# Tras resolver la causa de un dead, reabrir exclusivamente IDs explícitos:
+LIDL_FLEET_STORE_IDS=ES0367 node scripts/sync-lidl-fleet.mjs --retry-dead-only
+```
+
+`recover` no reinicia automáticamente `dead`. No usar `weekly` para recuperar
+un barrido parcial: volvería a programar también los catálogos ya completados.
+
+La prueba productiva posterior recuperó ES0367, ES2106 y ES4003. ES5016,
+ES5026 y ES5093 responden 204 sin contenido en `/categories` y cero productos
+al consultar fruta directamente. El sync distingue explícitamente ese estado
+como catálogo no disponible, sin intentar parsearlo ni publicarlo. Los errores
+200 con JSON truncado sí conservan reintentos. Estas tres tiendas y las 39
+canarias quedan pendientes de datos en la fuente, sin sustituciones.

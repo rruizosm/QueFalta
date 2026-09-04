@@ -3,56 +3,91 @@ name: Sync Lidl catalog fleet
 on:
   schedule:
     - cron: '20 11 * * 1' # lunes 11:20 UTC
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'recover conserva las tiendas completadas; weekly vuelve a programar el censo'
+        type: choice
+        options: [recover, canary, weekly]
+        default: recover
+      store_ids:
+        description: 'IDs separados por comas (obligatorios en canary)'
+        type: string
+        default: ''
 
 concurrency:
   group: sync-lidl-weekly-fleet
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   schedule:
-    # Cada lunes se vuelve a programar el censo abierto completo. Los runs de
-    # cron se omiten hasta definir LIDL_SYNC_ENABLED=true en el repositorio.
     if: github.event_name == 'workflow_dispatch' || vars.LIDL_SYNC_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    outputs:
+      workers: ${{ steps.mode.outputs.workers }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - id: mode
+        name: Validar el alcance
+        env:
+          MODE: ${{ github.event_name == 'schedule' && 'weekly' || inputs.mode }}
+          STORE_IDS: ${{ inputs.store_ids }}
+        run: |
+          case "$MODE" in
+            weekly)
+              test -z "$STORE_IDS" || { echo 'weekly no admite filtros'; exit 1; }
+              echo 'workers=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]' >> "$GITHUB_OUTPUT"
+              ;;
+            recover) echo 'workers=[1,2]' >> "$GITHUB_OUTPUT" ;;
+            canary)
+              test -n "$STORE_IDS" || { echo 'canary requiere store_ids'; exit 1; }
+              echo 'workers=[1]' >> "$GITHUB_OUTPUT"
+              ;;
+            *) exit 1 ;;
+          esac
       - name: Programar todas las tiendas abiertas
+        if: github.event_name == 'schedule' || inputs.mode == 'weekly'
         run: node scripts/sync-lidl-fleet.mjs --schedule-only
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
 
   sync:
-    if: github.event_name == 'workflow_dispatch' || vars.LIDL_SYNC_ENABLED == 'true'
     needs: schedule
     runs-on: ubuntu-latest
     timeout-minutes: 360
     strategy:
       fail-fast: false
-      max-parallel: 6
+      max-parallel: 3
       matrix:
-        worker: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+        worker: ${{ fromJSON(needs.schedule.outputs.workers) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Procesar hasta 32 tiendas de la cola semanal
-        run: node scripts/sync-lidl-fleet.mjs --work-only
+      - name: Procesar únicamente trabajos pendientes
+        run: node scripts/sync-lidl-fleet.mjs --recover-only
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          LIDL_FLEET_STORE_IDS: ${{ inputs.store_ids }}
           LIDL_FLEET_WORKER_INDEX: ${{ matrix.worker }}
-          LIDL_FLEET_JOB_LIMIT: '32'
+          LIDL_FLEET_JOB_LIMIT: ${{ inputs.mode == 'canary' && '5' || '100' }}
+          LIDL_FLEET_IDLE_MINUTES: ${{ inputs.mode == 'canary' && '0' || '35' }}
+          LIDL_FLEET_WORK_MINUTES: '300'
           LIDL_FLEET_LEASE_MINUTES: '45'
           LIDL_FLEET_STORE_TIMEOUT_MINUTES: '35'
           LIDL_FLEET_MAX_ATTEMPTS: '3'
-          CONCURRENCY: '4'
+          CONCURRENCY: '2'
+          REQUEST_DELAY_MS: '250'
           PAGE_SIZE: '100'
           MIN_LEAVES: '35'
           MIN_NONEMPTY_LEAVES: '40'
@@ -60,3 +95,20 @@ jobs:
           MIN_PRODUCTS: '2200'
           MIN_MATCHED_OFFERS: '1'
           MIN_COVERAGE_RATIO: '0.85'
+
+  report:
+    if: always() && needs.schedule.result == 'success'
+    needs: [schedule, sync]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verificar el estado final de la cola
+        run: node scripts/sync-lidl-fleet.mjs --report-only
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          LIDL_FLEET_STORE_IDS: ${{ inputs.store_ids }}

@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task": "CE-200",
+  "cohort": "exploratory_exposed",
+  "NOT_A_HOLDOUT": true,
+  "labels": "none; raw hints and legacy annotations are not truth",
+  "pair_identity": "unordered commercial IDs; reciprocal direction/CP do not add identity evidence",
+  "query_identity": "origin observation + full other-store set + postcode + channel + fixed replay clock",
+  "price_and_location": "unknown until evidence and review; published is not stock",
+  "observation_age_policy": "historical replay has no age TTL; not evidence of live commerce",
+  "source_files": [
+    {
+      "path": "docs/comparator-strict/fixtures/catalog-sample-2026-09-03.json",
+      "sha256": "13383c912e054f26bc0cd29c40d6e5f9e0bde1f8fda7944b032fce552d429311"
+    },
+    {
+      "path": "supabase/experiments/comparator-embedding-pilot.jsonl",
+      "sha256": "f97224763569d0fb67c5b24fe0dea71df186d51ea8a42866abc84ee03b9c8530"
+    }
+  ],
+  "row_counts": {
+    "products": 72,
+    "pairs": 648,
+    "queries": 144,
+    "exposure": 683
+  },
+  "content_hashes": {
+    "products": "e98397a3a4c925bd8dae714d0b9807051624f6ce0da1a7d8cc9b4706b971230e",
+    "pairs": "b8667d268e3e3dcf0e4a75fbebf58f4ae633f54504868bdfda94b140f5111ee4",
+    "queries": "1b4fb3bfec289941874d5b655af6ac1520af83e7165ddee8a121f57f5a77845d",
+    "exposure": "cf3fcf6f9337b9f680e28a750d107762544238863f2879065b2a20bbdf150ce6"
+  }
+}

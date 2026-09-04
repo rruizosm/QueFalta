@@ -1,0 +1,88 @@
+{
+  "version": "ce202-potato-source-review-v1",
+  "date": "2026-09-03",
+  "status": "potato_family_first_annotation_complete_via_source_review_reuse_not_independent_review",
+  "source_reviewed_products": 146,
+  "frozen_potato_products": 53,
+  "scope_exclusion_products": 93,
+  "first_annotations_this_batch": 922,
+  "independent_pair_by_pair_reviews_this_batch": 0,
+  "decision_counts": {
+    "abstain": 499,
+    "excluded_scope": 104,
+    "rejected": 319
+  },
+  "dimension_counts": {
+    "scope": {
+      "compatible": 12,
+      "incompatible": 104,
+      "unknown": 806
+    },
+    "identity": {
+      "compatible": 188,
+      "incompatible": 131,
+      "unknown": 603
+    },
+    "variants": {
+      "incompatible": 30,
+      "unknown": 892
+    },
+    "format": {
+      "compatible": 2,
+      "incompatible": 293,
+      "unknown": 627
+    }
+  },
+  "attribute_negative_pair_counts": {
+    "frozen_storage": 0,
+    "preparation": 0,
+    "cut_shape": 12,
+    "cut_thickness": 8,
+    "skin": 0,
+    "coating": 10,
+    "seasoning": 0,
+    "organic_claim": 0,
+    "microwave_use": 0,
+    "declarations": 0
+  },
+  "known_single_package_products": 8,
+  "corpus_pairs_unchanged": 6000,
+  "corpus_queries_unchanged": 1200,
+  "original_origin_count_unchanged": 600,
+  "cp_assessments_this_batch_correlated_not_new_queries": 1844,
+  "previous_first_annotations_within_corpus": 7,
+  "overlapping_previous_annotations": [
+    {
+      "previous_id": "E09",
+      "pair_id": "56be5bf96fceff214d546a052e2eb1a61e21674d9b26860c66113a01c238eebf",
+      "previous_annotation_id": "67e51bcd1677988d18314e6cf405d5fc8185bf080c26127097885727f67966d2",
+      "annotation_id": "870370dcd5f4963e963f42a98415d8a557ec033e4789017f166c4973a8d9579f",
+      "changed_product_dimensions": [],
+      "decision_changed": false
+    }
+  ],
+  "union_first_annotated_corpus_pairs": 928,
+  "corpus_pairs_pending_first_annotation": 5072,
+  "previous_supplemental_editorial_annotations_not_added_to_corpus": 13,
+  "independent_reviews": 0,
+  "gold_pairs": 0,
+  "supported_full_positive_equivalences": 0,
+  "eligible_savings": 0,
+  "CE201_complete": false,
+  "CE202_complete": false,
+  "CE203_complete": false,
+  "G2_pass": false,
+  "remote_project_calls": 0,
+  "retailer_calls": 0,
+  "new_integrations": 0,
+  "commercial_ttl_hours": null,
+  "source_manifest_sha256": "15da91ad7ae616199da7a50b53dba2abca4e3c43c1420a4a413b23ad02b9abd7",
+  "specs_sha256": "9c5c94d7a59f46730a911e5000e212c05ad472062372d7ef90da9c8b67bd1f0e",
+  "hashes": {
+    "products": "a4ade71563317ecc7115935cfcf4504f35f43f5aa58c394308453844564fdc04",
+    "annotations": "99e6777ca8e404dbc4c30b9aebfbb39a9ac2522d6ec24460399f0f4f8f867d90",
+    "index": "2fccdcec02e3c80f7070582d5c790cdd7589b8c1e76d69e5c24e1a3112b60332"
+  },
+  "limitation": "Semantic facts were authored after source inspection. Pair composition is deterministic and not individual human review; proof of interpretation requires CE-203. Unknowns refer only to the acquired projection; no catalogue-wide absence or market optimum claimed."
+}
+

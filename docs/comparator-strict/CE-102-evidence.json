@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "task": "CE-102",
+  "date": "2026-09-03",
+  "status": "completed_local_guard_component",
+  "authority": {
+    "sequence": "CE-SEQ-002",
+    "CE_101_closed_by": "CE-VAL-001",
+    "owner_catalog_confirmation": "pues si, se abre el catalogo correctamente confirmado",
+    "runtime": "owner physical mobile, production 1.3; no new development build tested"
+  },
+  "implementation": {
+    "files": [
+      "scripts/lib/comparator-strict-guard.mjs",
+      "scripts/lib/comparator-strict-guard.test.mjs",
+      "scripts/comparator-strict-preflight.mjs"
+    ],
+    "application_code_changed": false,
+    "legacy_scripts_changed": false,
+    "sql_deployment_files_changed": false,
+    "remote_mutations": 0,
+    "remote_adapters_configured": false,
+    "credentials_loaded_by_preflight": false,
+    "default_mode": "plan",
+    "production_ref": "gkffvigcnsesbaihycay",
+    "allowed_origins": ["https://auth.quefalta.es", "https://gkffvigcnsesbaihycay.supabase.co"],
+    "guards": [
+      "Exact ref and endpoint, no credentials/path/query/fragment/other port",
+      "Registered immutable operation and SHA-256 of SQL/scope/budgets",
+      "Explicit apply confirmation, no implicit writes in read or plan",
+      "Exact new CE-1 object allowlist, explicit row keys and induced-row bound",
+      "Zero external calls, queues, commercial quota or global changes",
+      "CE-100 complete healthy baseline and rollback/scope review before writes",
+      "Exclusive project coordinator required, no memory-only fallback",
+      "Daily UTC/work budgets reserved before transaction, retained on failure",
+      "Validate actual objects, keys, rows, bytes and SQL time before COMMIT",
+      "READ ONLY rollback, invalid result rollback, two consecutive SQL cancellations stop",
+      "Commit-unknown halts, no automatic retries or quota refunds",
+      "Immutable snapshots, expired job/target and clock/day-change rejection"
+    ]
+  },
+  "verification": {
+    "guard_tests": {"command": "node --test scripts/lib/comparator-strict-guard.test.mjs", "passed": 78, "total": 78, "remote_database_used": false},
+    "cli_positive": {"command": "node scripts/comparator-strict-preflight.mjs", "result": "planned", "network_calls": 0},
+    "cli_negative_wrong_project": {"result": "ce1_wrong_project", "expected_exit_code": 1},
+    "cli_negative_missing_adapter": {"result": "ce1_adapter_required", "expected_exit_code": 1},
+    "local_validation": {
+      "status": "PASS",
+      "command": "npm run quality",
+      "typecheck": "PASS",
+      "lint": "PASS",
+      "tests_passed": 301,
+      "tests_total": 301,
+      "json_documents_validated": 10,
+      "markdown_documents_link_and_fence_checked": 18,
+      "unique_project_tasks": 67,
+      "completed_project_tasks": 8,
+      "regression_cases": 35,
+      "project_decisions": 14,
+      "protected_prior_files_hash_unchanged": 8,
+      "diff_check": "PASS",
+      "production_comparator_tested": false,
+      "real_remote_adapter_tested": false
+    }
+  },
+  "limitations": [
+    "Positive apply and rollback are adapter-double tests, not production transactions",
+    "Project-wide durable coordinator, real cancellation, transport binding and budget accounting require CE-103/105/106 integration",
+    "No active protection of legacy scripts, direct administrative SQL or all service-role callers",
+    "No RLS security certification, comparator quality measurement or G1 acceptance",
+    "Five-minute operational evidence freshness is not a commercial product/price TTL"
+  ],
+  "completion": {"CE_101": "completed", "CE_102": "completed_local_component", "CE_103": "in_progress_read_only_reconciliation", "CE_100": "open", "G1": "not_accepted"},
+  "sources": [
+    "https://supabase.com/changelog",
+    "https://supabase.com/docs/guides/deployment/database-migrations",
+    "https://www.postgresql.org/docs/current/tutorial-transactions.html"
+  ]
+}

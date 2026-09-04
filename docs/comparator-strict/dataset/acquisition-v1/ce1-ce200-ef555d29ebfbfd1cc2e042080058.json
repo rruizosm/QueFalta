@@ -1,0 +1,3530 @@
+{
+  "plan": {
+    "version": "ce200-read-v3",
+    "kind": "taxonomy",
+    "store": "consum",
+    "cursor": "",
+    "limit": 500,
+    "round": "initial",
+    "select": "SELECT id,name,parent_id,published,synced_at FROM public.consum_categories\n      WHERE id COLLATE \"C\" > '' COLLATE \"C\" ORDER BY id COLLATE \"C\" LIMIT 500",
+    "job": "ce1-ce200-ef555d29ebfbfd1cc2e042080058",
+    "operationHash": "ef555d29ebfbfd1cc2e04208005864299450f29493c2638046a42faae3260663",
+    "maxRows": 500,
+    "maxBytes": 131072,
+    "sql": "-- ce1-ce200-ef555d29ebfbfd1cc2e042080058: taxonomy; CE-BU-002; no app writes.\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $reserve$\nDECLARE job_started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE status IN ('planned','running','halted','unknown'))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-ef555d29ebfbfd1cc2e042080058') THEN RAISE EXCEPTION 'ce200_exclusive_or_replay'; END IF;\n  IF EXISTS(SELECT 1 FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid))>0\n    OR (pid<>pg_backend_pid() AND state='active' AND query_start<clock_timestamp()-interval '30 seconds')) THEN RAISE EXCEPTION 'ce200_health_stop'; END IF;\n  UPDATE comparator_strict.execution_budget SET\n    sql_ms_reserved=sql_ms_reserved+10000,read_rows_reserved=read_rows_reserved+500,\n    bytes_reserved=bytes_reserved+131072,write_rows_reserved=write_rows_reserved+3,updated_at=clock_timestamp()\n    WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03'\n      AND approval_reference='CE-200-corpus-v1' AND bytes_limit=134217728 AND read_rows_limit=50000\n      AND bytes_reserved+131072<=bytes_limit AND read_rows_reserved+500<=read_rows_limit AND write_rows_reserved+3<=2000;\n  IF NOT FOUND THEN RAISE EXCEPTION 'ce200_budget'; END IF;\n  INSERT INTO comparator_strict.execution_jobs(id,project_ref,operation_key,sql_sha256,status,started_at,deadline_at,job_key,operation_hash,budget_date,reservation)\n    VALUES(gen_random_uuid(),'gkffvigcnsesbaihycay','ce200-taxonomy','1a1f84a9506d798cbcc5ad1a08af8ee275a2a122059b24753bfe264ada98771a','running',job_started,job_started+interval '20 minutes','ce1-ce200-ef555d29ebfbfd1cc2e042080058','ef555d29ebfbfd1cc2e04208005864299450f29493c2638046a42faae3260663',DATE '2026-09-03','{\"sqlMs\":10000,\"readRows\":500,\"writeRows\":3,\"responseBytes\":131072}'::jsonb);\nEND $reserve$;\nCOMMIT;\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $payload$\nDECLARE payload jsonb; data jsonb; started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR NOT EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-ef555d29ebfbfd1cc2e042080058' AND status='running' AND operation_hash='ef555d29ebfbfd1cc2e04208005864299450f29493c2638046a42faae3260663' AND deadline_at>clock_timestamp()) THEN RAISE EXCEPTION 'ce200_lease'; END IF;\n  SELECT coalesce(jsonb_agg(to_jsonb(q)),'[]'::jsonb) INTO data FROM (SELECT id,name,parent_id,published,synced_at FROM public.consum_categories\n      WHERE id COLLATE \"C\" > '' COLLATE \"C\" ORDER BY id COLLATE \"C\" LIMIT 500) q;\n  payload:=jsonb_build_object('job_key','ce1-ce200-ef555d29ebfbfd1cc2e042080058','operation_hash','ef555d29ebfbfd1cc2e04208005864299450f29493c2638046a42faae3260663',\n    'project_ref','gkffvigcnsesbaihycay','captured_at',started,'kind','taxonomy','store','consum',\n    'cursor','','rows',data,'row_count',jsonb_array_length(data),'elapsed_ms',extract(epoch FROM clock_timestamp()-started)*1000);\n  IF jsonb_array_length(data)>500 OR octet_length(payload::text)>122880 THEN RAISE EXCEPTION 'ce200_result_limit'; END IF;\n  UPDATE comparator_strict.execution_jobs SET status='succeeded',finished_at=clock_timestamp(),\n    receipt=jsonb_build_object('payload_sha256',encode(sha256(convert_to(payload::text,'UTF8')),'hex'),'row_count',jsonb_array_length(data),'payload_bytes',octet_length(payload::text),'elapsed_ms',payload->'elapsed_ms') WHERE job_key='ce1-ce200-ef555d29ebfbfd1cc2e042080058';\n  PERFORM set_config('comparator_strict.ce200_response',payload::text,true);\nEND $payload$;\nSELECT current_setting('comparator_strict.ce200_response')::jsonb AS evidence;\nCOMMIT;"
+  },
+  "payload": {
+    "kind": "taxonomy",
+    "rows": [
+      {
+        "id": "1239",
+        "name": "Droguería y limpieza",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1240",
+        "name": "Accesorios y utensilios limpieza",
+        "parent_id": "1239",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1245",
+        "name": "Estropajos",
+        "parent_id": "1240",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1253",
+        "name": "Cubos y barreños",
+        "parent_id": "1240",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1259",
+        "name": "Ambientadores",
+        "parent_id": "1239",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1260",
+        "name": "Absorbe olores y antihumedad",
+        "parent_id": "1259",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1261",
+        "name": "Aerosol spray o pistola",
+        "parent_id": "1259",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1263",
+        "name": "Eléctricos y automáticos",
+        "parent_id": "1259",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1264",
+        "name": "Continuos y decorativos",
+        "parent_id": "1259",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1277",
+        "name": "Celulosa",
+        "parent_id": "1239",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1278",
+        "name": "Pañuelos y tissues",
+        "parent_id": "1277",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1279",
+        "name": "Papel higiénico",
+        "parent_id": "1277",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1280",
+        "name": "Papel de cocina",
+        "parent_id": "1277",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1281",
+        "name": "Servilletas de papel",
+        "parent_id": "1277",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1282",
+        "name": "Toallitas húmedas",
+        "parent_id": "1277",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1284",
+        "name": "Aditivos para el lavado",
+        "parent_id": "5052",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1285",
+        "name": "Descalcificadores lavadora",
+        "parent_id": "5052",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1287",
+        "name": "Prelavado y blanqueador",
+        "parent_id": "5052",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1288",
+        "name": "Productos planchado",
+        "parent_id": "5052",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1290",
+        "name": "Quitamanchas",
+        "parent_id": "5052",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1292",
+        "name": "Detergente",
+        "parent_id": "5051",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1293",
+        "name": "A mano y jabón común",
+        "parent_id": "1292",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1294",
+        "name": "A máquina líquido",
+        "parent_id": "1292",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1295",
+        "name": "Máquina pastilla",
+        "parent_id": "1292",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1296",
+        "name": "Máquina polvo",
+        "parent_id": "1292",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1298",
+        "name": "Prendas delicadas",
+        "parent_id": "1292",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1299",
+        "name": "Desechables",
+        "parent_id": "1486",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1300",
+        "name": "Bolsas y sacos de basura",
+        "parent_id": "1240",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1301",
+        "name": "Herméticos",
+        "parent_id": "4542",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1302",
+        "name": "Vasos y copas",
+        "parent_id": "1299",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1303",
+        "name": "Decoración y fiestas",
+        "parent_id": "1299",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1306",
+        "name": "Moldes y recipientes",
+        "parent_id": "4542",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1312",
+        "name": "Film transparente",
+        "parent_id": "4542",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1313",
+        "name": "Papel aluminio",
+        "parent_id": "4542",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1314",
+        "name": "Insecticidas",
+        "parent_id": "1239",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1319",
+        "name": "Eléctricos",
+        "parent_id": "1314",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1321",
+        "name": "Otros insecticidas",
+        "parent_id": "1314",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1336",
+        "name": "Lejía con detergente",
+        "parent_id": "5075",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1337",
+        "name": "Lejía normal y multiusos",
+        "parent_id": "5075",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1341",
+        "name": "Abrillantador suelos",
+        "parent_id": "5078",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1343",
+        "name": "Antical",
+        "parent_id": "5074",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1344",
+        "name": "Desatascador limpia tuberías",
+        "parent_id": "5074",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1346",
+        "name": "Fregasuelos",
+        "parent_id": "5078",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1350",
+        "name": "Otros limpiadores específicos",
+        "parent_id": "5074",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1354",
+        "name": "Limpiador suelo madera",
+        "parent_id": "5078",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1361",
+        "name": "Limpia vitrocerámica",
+        "parent_id": "5053",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1362",
+        "name": "Quitagrasas",
+        "parent_id": "5053",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1368",
+        "name": "Suavizante",
+        "parent_id": "5051",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1373",
+        "name": "Gel de baño",
+        "parent_id": "5129",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1377",
+        "name": "Jabón en pastillas",
+        "parent_id": "5129",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1385",
+        "name": "Después afeitado",
+        "parent_id": "5132",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1386",
+        "name": "Maquinillas de afeitar",
+        "parent_id": "5132",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1387",
+        "name": "Recambios hojas afeitar",
+        "parent_id": "5132",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1389",
+        "name": "Gel y jabón de afeitado",
+        "parent_id": "5132",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1390",
+        "name": "Espuma de afeitar",
+        "parent_id": "5132",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1391",
+        "name": "Crema de afeitado",
+        "parent_id": "5132",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1392",
+        "name": "Brochas",
+        "parent_id": "5132",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1393",
+        "name": "Colonias y perfumes",
+        "parent_id": "2814",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1394",
+        "name": "Estuches",
+        "parent_id": "1393",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1395",
+        "name": "Familiar",
+        "parent_id": "1393",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1396",
+        "name": "Femeninas",
+        "parent_id": "1393",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1397",
+        "name": "Masculinas",
+        "parent_id": "1393",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1398",
+        "name": "Infantiles",
+        "parent_id": "1393",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1399",
+        "name": "Accesorios y complementos",
+        "parent_id": "2814",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1403",
+        "name": "Cuidado corporal",
+        "parent_id": "2814",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1407",
+        "name": "Body-lociones",
+        "parent_id": "1403",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1412",
+        "name": "Solares",
+        "parent_id": "2814",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1413",
+        "name": "Cuidado facial",
+        "parent_id": "2814",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1427",
+        "name": "Maquillaje",
+        "parent_id": "2814",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1440",
+        "name": "Cremas de manos",
+        "parent_id": "5131",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1442",
+        "name": "Depilación",
+        "parent_id": "2814",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1446",
+        "name": "Cera",
+        "parent_id": "1442",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1447",
+        "name": "Maquinillas y recambios",
+        "parent_id": "1442",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1449",
+        "name": "Depilación hombre",
+        "parent_id": "1442",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1450",
+        "name": "Crema, gel y spray",
+        "parent_id": "1442",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1452",
+        "name": "Desodorante",
+        "parent_id": "2814",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1453",
+        "name": "Crema y barra",
+        "parent_id": "1452",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1454",
+        "name": "Roll on",
+        "parent_id": "1452",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1455",
+        "name": "Spray",
+        "parent_id": "1452",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1456",
+        "name": "Higiene bucal",
+        "parent_id": "2814",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1457",
+        "name": "Antisépticos y enjuagues",
+        "parent_id": "1456",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1458",
+        "name": "Cepillos de dientes",
+        "parent_id": "1456",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1459",
+        "name": "Cepillos eléctricos y a pilas",
+        "parent_id": "1456",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1460",
+        "name": "Dentífricos",
+        "parent_id": "1456",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1461",
+        "name": "Productos protésicos",
+        "parent_id": "1456",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1462",
+        "name": "Seda dental",
+        "parent_id": "1456",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1463",
+        "name": "Higiene íntima",
+        "parent_id": "2814",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1464",
+        "name": "Aseo íntimo",
+        "parent_id": "1463",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1465",
+        "name": "Tampones",
+        "parent_id": "1463",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1467",
+        "name": "Compresas y protegeslips",
+        "parent_id": "1463",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1475",
+        "name": "Cuidado del cabello",
+        "parent_id": "2814",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1476",
+        "name": "Coloración",
+        "parent_id": "1475",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1477",
+        "name": "Champú",
+        "parent_id": "1475",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1482",
+        "name": "Gel y cera",
+        "parent_id": "5047",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1483",
+        "name": "Mascarillas cabello",
+        "parent_id": "1475",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1486",
+        "name": "Bazar",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1487",
+        "name": "Promocionales",
+        "parent_id": "1486",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1489",
+        "name": "Accesorios",
+        "parent_id": "2469",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1490",
+        "name": "Antiparásitos e higiene",
+        "parent_id": "1491",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1491",
+        "name": "Perros",
+        "parent_id": "2469",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1492",
+        "name": "Comida Húmeda",
+        "parent_id": "1491",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1494",
+        "name": "Pienso",
+        "parent_id": "4055",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1495",
+        "name": "Comida Húmeda",
+        "parent_id": "4055",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1496",
+        "name": "Hogar",
+        "parent_id": "1487",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1497",
+        "name": "Pequeño electrodoméstico",
+        "parent_id": "1487",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1509",
+        "name": "Velas",
+        "parent_id": "1486",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1525",
+        "name": "Conservas, aceites y condimentos",
+        "parent_id": "2811",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1526",
+        "name": "Aceite y vinagre",
+        "parent_id": "1525",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1527",
+        "name": "Aceite de girasol",
+        "parent_id": "1526",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1533",
+        "name": "Aceite de oliva virgen y virgen extra",
+        "parent_id": "1526",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1538",
+        "name": "Otros aceites",
+        "parent_id": "1526",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1539",
+        "name": "Azúcar",
+        "parent_id": "4051",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1542",
+        "name": "Conservas pescado",
+        "parent_id": "1525",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1543",
+        "name": "Almejas, berberechos y navajas",
+        "parent_id": "1542",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1546",
+        "name": "Atún y bonito",
+        "parent_id": "1542",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1549",
+        "name": "Caballa y melva",
+        "parent_id": "1542",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1554",
+        "name": "Mejillones",
+        "parent_id": "1542",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1557",
+        "name": "Otras conservas pescado",
+        "parent_id": "1542",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1560",
+        "name": "Sardinas",
+        "parent_id": "1542",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1564",
+        "name": "Conservas dulces",
+        "parent_id": "1525",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1567",
+        "name": "Membrillos y compotas",
+        "parent_id": "3999",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1568",
+        "name": "Mermeladas y confituras",
+        "parent_id": "3999",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1569",
+        "name": "Miel",
+        "parent_id": "3999",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1570",
+        "name": "Aceitunas y encurtidos",
+        "parent_id": "1970",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1577",
+        "name": "Conservas vegetales",
+        "parent_id": "1525",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1579",
+        "name": "Alcachofa",
+        "parent_id": "1577",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1581",
+        "name": "Espárragos y palmitos",
+        "parent_id": "1577",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1584",
+        "name": "Guisantes",
+        "parent_id": "1577",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1585",
+        "name": "Judía verde",
+        "parent_id": "1577",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1586",
+        "name": "Maíz",
+        "parent_id": "1577",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1587",
+        "name": "Otros vegetales",
+        "parent_id": "1577",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1589",
+        "name": "Pimiento",
+        "parent_id": "1577",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1590",
+        "name": "Setas y champiñones",
+        "parent_id": "1577",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1591",
+        "name": "Tomate",
+        "parent_id": "1525",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1601",
+        "name": "Sal, bicarbonato y especias",
+        "parent_id": "1525",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1608",
+        "name": "Sazonadores",
+        "parent_id": "1601",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1614",
+        "name": "Sal",
+        "parent_id": "1601",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1615",
+        "name": "Especias",
+        "parent_id": "1601",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1616",
+        "name": "Salsas",
+        "parent_id": "1525",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1619",
+        "name": "Bechamel",
+        "parent_id": "1616",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1623",
+        "name": "Ketchup",
+        "parent_id": "1616",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1624",
+        "name": "Mayonesa",
+        "parent_id": "1616",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1628",
+        "name": "Tomate frito",
+        "parent_id": "1616",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1629",
+        "name": "Salsas calientes",
+        "parent_id": "1616",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1631",
+        "name": "Salsas frías",
+        "parent_id": "1616",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1632",
+        "name": "Vinagre y aliños",
+        "parent_id": "1526",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1639",
+        "name": "Arroz, pastas, legumbres",
+        "parent_id": "2811",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1640",
+        "name": "Arroz",
+        "parent_id": "1639",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1642",
+        "name": "Arroz integral",
+        "parent_id": "1640",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1643",
+        "name": "Arroz largo y vaporizado",
+        "parent_id": "1640",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1644",
+        "name": "Arroz Redondo",
+        "parent_id": "1640",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1646",
+        "name": "Harina, levadura y pan rallado",
+        "parent_id": "2811",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1654",
+        "name": "Legumbres",
+        "parent_id": "1639",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1655",
+        "name": "Alubias secas",
+        "parent_id": "1654",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1656",
+        "name": "Garbanzos secos",
+        "parent_id": "1654",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1658",
+        "name": "Lentejas secas",
+        "parent_id": "1654",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1659",
+        "name": "Pastas",
+        "parent_id": "1639",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1660",
+        "name": "Canelones y lasagnas",
+        "parent_id": "1659",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1666",
+        "name": "Pasta fresca",
+        "parent_id": "1659",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1669",
+        "name": "Pizza",
+        "parent_id": "1639",
+        "published": false,
+        "synced_at": "2026-08-17T08:04:55.41+00:00"
+      },
+      {
+        "id": "1671",
+        "name": "Pizza congelada",
+        "parent_id": "1669",
+        "published": false,
+        "synced_at": "2026-08-17T08:04:55.41+00:00"
+      },
+      {
+        "id": "1690",
+        "name": "Bebidas",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1691",
+        "name": "Agua con gas",
+        "parent_id": "2482",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1701",
+        "name": "Cavas y sidras",
+        "parent_id": "1690",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1707",
+        "name": "Cervezas",
+        "parent_id": "1690",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1708",
+        "name": "Especial",
+        "parent_id": "2820",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1710",
+        "name": "0,0",
+        "parent_id": "2818",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1720",
+        "name": "Isotónicas y energéticas",
+        "parent_id": "1690",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1721",
+        "name": "Licores",
+        "parent_id": "1690",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1728",
+        "name": "Refrescos",
+        "parent_id": "1690",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1731",
+        "name": "Cola",
+        "parent_id": "1728",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1734",
+        "name": "Limón y lima-limón",
+        "parent_id": "1728",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1735",
+        "name": "Naranja",
+        "parent_id": "1728",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1737",
+        "name": "Té",
+        "parent_id": "1728",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1739",
+        "name": "Sangrías y combinados base vino",
+        "parent_id": "1690",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1744",
+        "name": "Vinos",
+        "parent_id": "1690",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1754",
+        "name": "Fino, dulce y de licor",
+        "parent_id": "1744",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1755",
+        "name": "Blanco mesa",
+        "parent_id": "1744",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1764",
+        "name": "Tinto otras DO",
+        "parent_id": "1744",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1765",
+        "name": "Rosado mesa",
+        "parent_id": "1744",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1768",
+        "name": "Tinto DO Rioja",
+        "parent_id": "1744",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1776",
+        "name": "Tinto mesa",
+        "parent_id": "1744",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1779",
+        "name": "Zumos y néctares",
+        "parent_id": "1690",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1782",
+        "name": "Zumos refrigerados",
+        "parent_id": "1779",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1783",
+        "name": "Congelados y helados",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1784",
+        "name": "Helados",
+        "parent_id": "1783",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1786",
+        "name": "Bloques, tartas y Nata",
+        "parent_id": "1784",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1787",
+        "name": "Bombones",
+        "parent_id": "1784",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1788",
+        "name": "Conos",
+        "parent_id": "1784",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1789",
+        "name": "Sándwich",
+        "parent_id": "1784",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1790",
+        "name": "Tarrinas",
+        "parent_id": "1784",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1792",
+        "name": "Platos preparados",
+        "parent_id": "1783",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1793",
+        "name": "Bases y masas",
+        "parent_id": "1639",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1794",
+        "name": "Croquetas y empanadillas",
+        "parent_id": "5211",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1813",
+        "name": "Pescado y marisco",
+        "parent_id": "5211",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1831",
+        "name": "Salteados y revueltos",
+        "parent_id": "1792",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1833",
+        "name": "Platos preparados",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1834",
+        "name": "Bocadillos y sándwiches",
+        "parent_id": "4111",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1843",
+        "name": "Preparados en sobre",
+        "parent_id": "4112",
+        "published": false,
+        "synced_at": "2026-08-17T08:04:55.41+00:00"
+      },
+      {
+        "id": "1846",
+        "name": "Ensaladas y humus",
+        "parent_id": "4111",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1852",
+        "name": "Desayuno, dulces y café",
+        "parent_id": "2811",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1856",
+        "name": "Croissants y ensaimadas",
+        "parent_id": "5021",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1859",
+        "name": "Bollería industrial y pastelitos",
+        "parent_id": "1852",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1868",
+        "name": "Chocolates y bombones",
+        "parent_id": "1852",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1870",
+        "name": "Chocolatinas",
+        "parent_id": "1868",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1871",
+        "name": "Tabletas",
+        "parent_id": "1868",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1873",
+        "name": "Cremas de desayuno",
+        "parent_id": "5036",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1877",
+        "name": "Cacao soluble",
+        "parent_id": "5036",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1878",
+        "name": "Café y cápsulas",
+        "parent_id": "1852",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1883",
+        "name": "Café Grano",
+        "parent_id": "1878",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1884",
+        "name": "Café Molido descafeinado",
+        "parent_id": "1878",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1885",
+        "name": "Café Molido mezcla",
+        "parent_id": "1878",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1886",
+        "name": "Café Molido natural",
+        "parent_id": "1878",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1889",
+        "name": "Café Soluble",
+        "parent_id": "1878",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1892",
+        "name": "Cereales solubles",
+        "parent_id": "5036",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1894",
+        "name": "Cereales y barritas",
+        "parent_id": "1852",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1912",
+        "name": "Galletas",
+        "parent_id": "1852",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1915",
+        "name": "Galletas de chocolate",
+        "parent_id": "1912",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1917",
+        "name": "Desayuno y maría",
+        "parent_id": "1912",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1924",
+        "name": "Wafer y barquillos",
+        "parent_id": "1912",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1925",
+        "name": "Galletas saludables",
+        "parent_id": "1912",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1928",
+        "name": "Infusiones",
+        "parent_id": "1852",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1931",
+        "name": "Otras infusiones",
+        "parent_id": "1928",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1933",
+        "name": "Té",
+        "parent_id": "1928",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1959",
+        "name": "Pan de horno",
+        "parent_id": "4108",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1970",
+        "name": "Aperitivos y frutos secos",
+        "parent_id": "2811",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1973",
+        "name": "Alcaparras",
+        "parent_id": "1570",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1974",
+        "name": "Banderillas y cocktails",
+        "parent_id": "1570",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1975",
+        "name": "Cebollitas",
+        "parent_id": "1570",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1976",
+        "name": "Guindillas",
+        "parent_id": "1570",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1977",
+        "name": "Pepinillos",
+        "parent_id": "1570",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1978",
+        "name": "Resto de encurtidos",
+        "parent_id": "1570",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1980",
+        "name": "Fruta desecada",
+        "parent_id": "1970",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1985",
+        "name": "Frutos secos",
+        "parent_id": "1970",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1986",
+        "name": "Almendras",
+        "parent_id": "1985",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1988",
+        "name": "Cacahuetes",
+        "parent_id": "1985",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1991",
+        "name": "Nueces",
+        "parent_id": "1985",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1992",
+        "name": "Otros frutos secos",
+        "parent_id": "1985",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1994",
+        "name": "Pipas",
+        "parent_id": "1985",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1996",
+        "name": "Maíz tostado y cocktail",
+        "parent_id": "1985",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1997",
+        "name": "Galletas saladas",
+        "parent_id": "1970",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "1998",
+        "name": "Snacks y otros aperitivos",
+        "parent_id": "1970",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2005",
+        "name": "Charcutería",
+        "parent_id": "2812",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2006",
+        "name": "Ahumados",
+        "parent_id": "2171",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2007",
+        "name": "Cocido",
+        "parent_id": "2005",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2008",
+        "name": "Bacon y panceta",
+        "parent_id": "2007",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2010",
+        "name": "Jamón cocido - york",
+        "parent_id": "2007",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2011",
+        "name": "Mortadela y chopped",
+        "parent_id": "2007",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2012",
+        "name": "Curado",
+        "parent_id": "2005",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2013",
+        "name": "Chorizo",
+        "parent_id": "5176",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2016",
+        "name": "Jamón",
+        "parent_id": "2012",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2018",
+        "name": "Salchichón y salami",
+        "parent_id": "5176",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2019",
+        "name": "Quesos",
+        "parent_id": "2812",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2021",
+        "name": "Bola, edam, gouda, maasdam",
+        "parent_id": "2031",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2023",
+        "name": "Emmental y gruyere",
+        "parent_id": "2031",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2030",
+        "name": "Quesos de Oveja",
+        "parent_id": "2019",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2031",
+        "name": "Quesos de importación",
+        "parent_id": "2019",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2033",
+        "name": "Frescos y para ensaladas",
+        "parent_id": "2019",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2036",
+        "name": "Brie, camembert y cremosos",
+        "parent_id": "2031",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2038",
+        "name": "Quesos Para untar",
+        "parent_id": "2019",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2040",
+        "name": "Quesos Rallados",
+        "parent_id": "2019",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2042",
+        "name": "Tablas",
+        "parent_id": "2019",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2044",
+        "name": "Surimis y salazones",
+        "parent_id": "2171",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2050",
+        "name": "Salchichas",
+        "parent_id": "2005",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2054",
+        "name": "Sobrasada",
+        "parent_id": "5182",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2055",
+        "name": "Lácteos y huevos",
+        "parent_id": "2811",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2056",
+        "name": "Batidos",
+        "parent_id": "2055",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2064",
+        "name": "Horchatas",
+        "parent_id": "2055",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2065",
+        "name": "Huevos",
+        "parent_id": "2055",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2071",
+        "name": "Leche",
+        "parent_id": "2055",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2073",
+        "name": "Condensada",
+        "parent_id": "2071",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2074",
+        "name": "Desnatada",
+        "parent_id": "2071",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2075",
+        "name": "Semidesnatada",
+        "parent_id": "2071",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2076",
+        "name": "Entera",
+        "parent_id": "2071",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2077",
+        "name": "Evaporada",
+        "parent_id": "2071",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2078",
+        "name": "Leche en polvo y deshidratada",
+        "parent_id": "2071",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2080",
+        "name": "Leche fresca",
+        "parent_id": "2071",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2082",
+        "name": "Leche con calcio",
+        "parent_id": "2071",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2088",
+        "name": "Zumos con leche",
+        "parent_id": "1779",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2090",
+        "name": "Leches especiales",
+        "parent_id": "2071",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2091",
+        "name": "Bebidas vegetales",
+        "parent_id": "2055",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2093",
+        "name": "Preparados lácteos",
+        "parent_id": "2071",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2094",
+        "name": "Mantequilla y margarina",
+        "parent_id": "2055",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2096",
+        "name": "Mantequilla",
+        "parent_id": "2094",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2099",
+        "name": "Margarina",
+        "parent_id": "2094",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2100",
+        "name": "Nata",
+        "parent_id": "2055",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2101",
+        "name": "Nata para cocinar",
+        "parent_id": "2100",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2102",
+        "name": "Nata para montar",
+        "parent_id": "2100",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2103",
+        "name": "Postres",
+        "parent_id": "2055",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2106",
+        "name": "Flanes",
+        "parent_id": "2103",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2107",
+        "name": "Natillas",
+        "parent_id": "2103",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2109",
+        "name": "Arroz con leche",
+        "parent_id": "2103",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2110",
+        "name": "Cuajada",
+        "parent_id": "2103",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2113",
+        "name": "Gelatina",
+        "parent_id": "2103",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2114",
+        "name": "Mousse",
+        "parent_id": "2103",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2116",
+        "name": "Copa",
+        "parent_id": "2103",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2119",
+        "name": "Otros postres",
+        "parent_id": "2103",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2123",
+        "name": "Yogures",
+        "parent_id": "2055",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2126",
+        "name": "Petit e infantiles",
+        "parent_id": "2123",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2129",
+        "name": "Yogur líquido",
+        "parent_id": "2123",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2132",
+        "name": "Yogur natural y azucarado",
+        "parent_id": "2123",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2134",
+        "name": "Yogur sabores",
+        "parent_id": "2123",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2136",
+        "name": "Bífidus",
+        "parent_id": "2123",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2137",
+        "name": "L-casei",
+        "parent_id": "2123",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2148",
+        "name": "Carnicería",
+        "parent_id": "2812",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2156",
+        "name": "Aves",
+        "parent_id": "2148",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2159",
+        "name": "Cerdo",
+        "parent_id": "2148",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2162",
+        "name": "Cordero",
+        "parent_id": "2148",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2163",
+        "name": "Otros elaborados",
+        "parent_id": "2148",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2165",
+        "name": "Picadas y hamburguesas",
+        "parent_id": "2148",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2166",
+        "name": "Embutido",
+        "parent_id": "2148",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2170",
+        "name": "Conejo",
+        "parent_id": "2148",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2171",
+        "name": "Pescadería",
+        "parent_id": "2812",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2179",
+        "name": "Frutas",
+        "parent_id": "2812",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2180",
+        "name": "Cítricos",
+        "parent_id": "2179",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2182",
+        "name": "Manzana, pera y uva",
+        "parent_id": "2179",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2183",
+        "name": "Fruta de temporada",
+        "parent_id": "2179",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2184",
+        "name": "Fruta tropical",
+        "parent_id": "2179",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2185",
+        "name": "Otras frutas",
+        "parent_id": "2179",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2187",
+        "name": "Verduras",
+        "parent_id": "2812",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2189",
+        "name": "Cebollas, ajos y puerros",
+        "parent_id": "2187",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2193",
+        "name": "Brócoli, col y coliflor",
+        "parent_id": "2187",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2194",
+        "name": "Calabaza, calabacín y berenjena",
+        "parent_id": "2187",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2196",
+        "name": "Champiñones y setas",
+        "parent_id": "2187",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2200",
+        "name": "Espárragos",
+        "parent_id": "2187",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2203",
+        "name": "Otras verduras",
+        "parent_id": "2187",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2211",
+        "name": "Pepino y pimiento",
+        "parent_id": "2187",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2214",
+        "name": "Zanahorias y otras raíces",
+        "parent_id": "2187",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2218",
+        "name": "Nutrición y dietética",
+        "parent_id": "2811",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2223",
+        "name": "Edulcorantes",
+        "parent_id": "4051",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2243",
+        "name": "Complementos nutricionales",
+        "parent_id": "2218",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2290",
+        "name": "Nutrición deportiva",
+        "parent_id": "2218",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2297",
+        "name": "Infantil",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2298",
+        "name": "Alimentación infantil",
+        "parent_id": "2297",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2312",
+        "name": "Higiene",
+        "parent_id": "2297",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2313",
+        "name": "Gel y champú",
+        "parent_id": "2312",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2314",
+        "name": "Leches infantiles",
+        "parent_id": "2297",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2318",
+        "name": "Complementos higiene",
+        "parent_id": "2312",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2319",
+        "name": "Toallitas",
+        "parent_id": "2312",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2320",
+        "name": "Pañales",
+        "parent_id": "2297",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2325",
+        "name": "Puericultura",
+        "parent_id": "2297",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2333",
+        "name": "Bicarbonato",
+        "parent_id": "1601",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2334",
+        "name": "Botiquín",
+        "parent_id": "5050",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2337",
+        "name": "Bandas protectoras adhesivas",
+        "parent_id": "2334",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2338",
+        "name": "Esparadrapo",
+        "parent_id": "2334",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2339",
+        "name": "Pomadas y polvos de talco",
+        "parent_id": "2334",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2342",
+        "name": "Vendas gasas esterilizadas",
+        "parent_id": "2334",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2350",
+        "name": "Fitoterapia",
+        "parent_id": "5050",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2351",
+        "name": "Preservativos",
+        "parent_id": "5050",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2366",
+        "name": "Cocina internacional",
+        "parent_id": "2811",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2462",
+        "name": "Pilas",
+        "parent_id": "1486",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2464",
+        "name": "Papel horno",
+        "parent_id": "4542",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2465",
+        "name": "Gel de manos",
+        "parent_id": "5129",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2468",
+        "name": "Pienso",
+        "parent_id": "1491",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2469",
+        "name": "Mascotas",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2478",
+        "name": "Refrigeradas",
+        "parent_id": "1793",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2482",
+        "name": "Aguas",
+        "parent_id": "1690",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2483",
+        "name": "Agua con sabores",
+        "parent_id": "2482",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2484",
+        "name": "Gaseosas y sodas",
+        "parent_id": "1690",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2485",
+        "name": "Mostaza",
+        "parent_id": "1616",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2487",
+        "name": "Hielo",
+        "parent_id": "1783",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2488",
+        "name": "Polos de hielo",
+        "parent_id": "1784",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2489",
+        "name": "Horchatas y granizados",
+        "parent_id": "1784",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2490",
+        "name": "Caldos, sopas y purés",
+        "parent_id": "2811",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2491",
+        "name": "Caldo liquido",
+        "parent_id": "2490",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2492",
+        "name": "Sopas en sobre",
+        "parent_id": "2490",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2493",
+        "name": "Caldo en pastillas",
+        "parent_id": "2490",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2494",
+        "name": "Purés",
+        "parent_id": "2490",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2495",
+        "name": "Gazpacho",
+        "parent_id": "2490",
+        "published": false,
+        "synced_at": "2026-08-17T08:04:55.41+00:00"
+      },
+      {
+        "id": "2496",
+        "name": "Noodles",
+        "parent_id": "2490",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2497",
+        "name": "Cremas",
+        "parent_id": "2490",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2502",
+        "name": "Aceitunas con hueso",
+        "parent_id": "1570",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2505",
+        "name": "Carnes",
+        "parent_id": "1783",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2514",
+        "name": "Frutas y Verduras",
+        "parent_id": "1783",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2517",
+        "name": "Patatas",
+        "parent_id": "2514",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2519",
+        "name": "Guisantes, judías y habas",
+        "parent_id": "2514",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2520",
+        "name": "Menestras y ensaladillas",
+        "parent_id": "2514",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2521",
+        "name": "Pescados y mariscos",
+        "parent_id": "1783",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2530",
+        "name": "Patatas fritas",
+        "parent_id": "1970",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2548",
+        "name": "Otros cocidos",
+        "parent_id": "2007",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2549",
+        "name": "Lechuga y endibias",
+        "parent_id": "2187",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2557",
+        "name": "Yogur especial salud",
+        "parent_id": "2123",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2558",
+        "name": "Algodón",
+        "parent_id": "2334",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2559",
+        "name": "Tortitas",
+        "parent_id": "2218",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2562",
+        "name": "Bañadores",
+        "parent_id": "2320",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2568",
+        "name": "Protector labial",
+        "parent_id": "1413",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2570",
+        "name": "Cremas, lociones y colonia",
+        "parent_id": "2312",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2586",
+        "name": "Judías, habas y otras legumbres",
+        "parent_id": "2187",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2612",
+        "name": "Lociones",
+        "parent_id": "1475",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2616",
+        "name": "Mosto",
+        "parent_id": "1779",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2624",
+        "name": "Exfoliantes",
+        "parent_id": "1403",
+        "published": false,
+        "synced_at": "2026-06-13T09:41:38.197+00:00"
+      },
+      {
+        "id": "2628",
+        "name": "Cápsulas sistema Nespresso",
+        "parent_id": "1878",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2644",
+        "name": "Congeladas",
+        "parent_id": "1793",
+        "published": false,
+        "synced_at": "2026-08-17T08:04:55.41+00:00"
+      },
+      {
+        "id": "2714",
+        "name": "Macarrones, espaguetis y tallarines",
+        "parent_id": "1659",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2716",
+        "name": "Fideos y sopas",
+        "parent_id": "1659",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2717",
+        "name": "Pasta sin gluten",
+        "parent_id": "1659",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2718",
+        "name": "Pasta integral",
+        "parent_id": "1659",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2719",
+        "name": "Pasta italiana",
+        "parent_id": "1659",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2720",
+        "name": "Pasta al huevo",
+        "parent_id": "1659",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2722",
+        "name": "Otras pastas secas",
+        "parent_id": "1659",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2734",
+        "name": "Rubia lata",
+        "parent_id": "2820",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2736",
+        "name": "Rubia botella",
+        "parent_id": "2820",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2750",
+        "name": "Agua sin gas : garrafa",
+        "parent_id": "2482",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2752",
+        "name": "Agua sin gas : botella",
+        "parent_id": "2482",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2754",
+        "name": "Negra",
+        "parent_id": "2820",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2758",
+        "name": "Importación",
+        "parent_id": "2820",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2760",
+        "name": "Aromatizada",
+        "parent_id": "2820",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2762",
+        "name": "Sabor limón",
+        "parent_id": "2818",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2774",
+        "name": "Desayuno y merienda infantil",
+        "parent_id": "1912",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2811",
+        "name": "Despensa",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2812",
+        "name": "Frescos",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2814",
+        "name": "Cuidado personal",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2818",
+        "name": "Cervezas sin alcohol",
+        "parent_id": "1707",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2820",
+        "name": "Cervezas con alcohol",
+        "parent_id": "1707",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "2822",
+        "name": "Sabor limón",
+        "parent_id": "2820",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "3999",
+        "name": "Mermeladas, confituras y miel",
+        "parent_id": "1852",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4000",
+        "name": "Aceite de oliva intenso y suave",
+        "parent_id": "1526",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4001",
+        "name": "Frutas en almíbar y en su jugo",
+        "parent_id": "1564",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4003",
+        "name": "Chicles, caramelos y gominolas",
+        "parent_id": "1852",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4004",
+        "name": "Repostería para preparar",
+        "parent_id": "1852",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4005",
+        "name": "Energéticas",
+        "parent_id": "1720",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4006",
+        "name": "Otras mascotas",
+        "parent_id": "2469",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4010",
+        "name": "Bitter y ginger ale",
+        "parent_id": "1728",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4011",
+        "name": "Tónica",
+        "parent_id": "1728",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4012",
+        "name": "Refrescos sin gas",
+        "parent_id": "1728",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4013",
+        "name": "Espumoso",
+        "parent_id": "1744",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4014",
+        "name": "Blanco DO",
+        "parent_id": "1744",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4016",
+        "name": "Rosado DO",
+        "parent_id": "1744",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4017",
+        "name": "Tinto DO Ribera del Duero",
+        "parent_id": "1744",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4018",
+        "name": "Zumos y néctares no refrigerados",
+        "parent_id": "1779",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4019",
+        "name": "Sin azúcar, veganos y saludables",
+        "parent_id": "1784",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4021",
+        "name": "Barbacoa, carbón y encendido",
+        "parent_id": "4543",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4022",
+        "name": "Jardinería y plantas",
+        "parent_id": "4543",
+        "published": false,
+        "synced_at": "2026-08-17T08:04:55.41+00:00"
+      },
+      {
+        "id": "4027",
+        "name": "Anti hormigas y cucarachicidas",
+        "parent_id": "1314",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4030",
+        "name": "Cera suelos",
+        "parent_id": "5078",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4032",
+        "name": "Alcohol, agua oxigenada y otros",
+        "parent_id": "2334",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4033",
+        "name": "Otros",
+        "parent_id": "2334",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4034",
+        "name": "Labiales",
+        "parent_id": "1427",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4035",
+        "name": "Ojos",
+        "parent_id": "1427",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4036",
+        "name": "Rostro",
+        "parent_id": "1427",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4037",
+        "name": "Uñas",
+        "parent_id": "1427",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4039",
+        "name": "Limpieza y desmaquilladores",
+        "parent_id": "1413",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4040",
+        "name": "Pañal adulto y protectores",
+        "parent_id": "1463",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4050",
+        "name": "Aceitunas sin hueso",
+        "parent_id": "1570",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4051",
+        "name": "Azúcar y edulcorantes",
+        "parent_id": "1852",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4052",
+        "name": "Cereales",
+        "parent_id": "1894",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4055",
+        "name": "Gatos",
+        "parent_id": "2469",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4057",
+        "name": "Isotónicas",
+        "parent_id": "1720",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4058",
+        "name": "Carnicería corte",
+        "parent_id": "2812",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4060",
+        "name": "Aves",
+        "parent_id": "4058",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4062",
+        "name": "Cerdo",
+        "parent_id": "4058",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4064",
+        "name": "Cordero",
+        "parent_id": "4058",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4065",
+        "name": "Picadas y hamburguesas",
+        "parent_id": "4058",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4066",
+        "name": "Embutido",
+        "parent_id": "4058",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4068",
+        "name": "Conejo",
+        "parent_id": "4058",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4069",
+        "name": "Otros elaborados",
+        "parent_id": "4058",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4070",
+        "name": "Charcutería corte",
+        "parent_id": "2812",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4072",
+        "name": "Cocido",
+        "parent_id": "4070",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4073",
+        "name": "Bacon y panceta",
+        "parent_id": "4072",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4075",
+        "name": "Jamón cocido - york",
+        "parent_id": "4072",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4076",
+        "name": "Mortadela y chopped",
+        "parent_id": "4072",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4077",
+        "name": "Otros cocidos",
+        "parent_id": "4072",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4078",
+        "name": "Curado",
+        "parent_id": "4070",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4079",
+        "name": "Chorizo",
+        "parent_id": "5190",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4081",
+        "name": "Jamón",
+        "parent_id": "4078",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4082",
+        "name": "Salchichón y salami",
+        "parent_id": "5190",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4086",
+        "name": "Sobrasada",
+        "parent_id": "5194",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4087",
+        "name": "Salazones y marinados",
+        "parent_id": "4070",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4089",
+        "name": "Pescado azul",
+        "parent_id": "2171",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4090",
+        "name": "Pescado blanco",
+        "parent_id": "2171",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4091",
+        "name": "Calamar y sepia",
+        "parent_id": "2171",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4092",
+        "name": "Marisco",
+        "parent_id": "2171",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4093",
+        "name": "Quesos corte",
+        "parent_id": "2812",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4094",
+        "name": "Quesos Nacionales",
+        "parent_id": "4093",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4097",
+        "name": "Quesos de Cabra",
+        "parent_id": "4093",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4100",
+        "name": "Frescos y para ensaladas",
+        "parent_id": "4093",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4101",
+        "name": "Quesos de Oveja",
+        "parent_id": "4093",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4102",
+        "name": "Quesos Para untar",
+        "parent_id": "4093",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4103",
+        "name": "Roquefort y azules",
+        "parent_id": "4093",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4106",
+        "name": "Otros quesos importación",
+        "parent_id": "4093",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4108",
+        "name": "Horno",
+        "parent_id": null,
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4109",
+        "name": "Verduras de temporada",
+        "parent_id": "2187",
+        "published": false,
+        "synced_at": "2026-08-17T08:04:55.41+00:00"
+      },
+      {
+        "id": "4111",
+        "name": "Preparados refrigerados",
+        "parent_id": "1833",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4112",
+        "name": "Preparados en conserva",
+        "parent_id": "1833",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4508",
+        "name": "Mexicano",
+        "parent_id": "2366",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4509",
+        "name": "Asiático",
+        "parent_id": "2366",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4510",
+        "name": "Hindú",
+        "parent_id": "2366",
+        "published": false,
+        "synced_at": "2026-08-17T08:04:55.41+00:00"
+      },
+      {
+        "id": "4511",
+        "name": "Charcutería origen vegetal",
+        "parent_id": "2007",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4514",
+        "name": "Ensaladas y brotes",
+        "parent_id": "2187",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4515",
+        "name": "Aromáticos",
+        "parent_id": "2187",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4517",
+        "name": "Fruta preparada",
+        "parent_id": "2179",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4522",
+        "name": "Fruta helada",
+        "parent_id": "1784",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4523",
+        "name": "Papillas",
+        "parent_id": "2298",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4524",
+        "name": "Potitos y platos preparados",
+        "parent_id": "2298",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4525",
+        "name": "Yogures",
+        "parent_id": "2298",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4526",
+        "name": "Galletas y Snacks",
+        "parent_id": "2298",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4527",
+        "name": "Braguita noche",
+        "parent_id": "2320",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4528",
+        "name": "Bebé: Talla de 0 a 3",
+        "parent_id": "2320",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4529",
+        "name": "Junior: Talla de 4 a 6",
+        "parent_id": "2320",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      },
+      {
+        "id": "4530",
+        "name": "Textil",
+        "parent_id": "1487",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00"
+      }
+    ],
+    "store": "consum",
+    "cursor": "",
+    "job_key": "ce1-ce200-ef555d29ebfbfd1cc2e042080058",
+    "row_count": 500,
+    "elapsed_ms": 10.126,
+    "captured_at": "2026-09-03T10:40:45.987651+00:00",
+    "project_ref": "gkffvigcnsesbaihycay",
+    "operation_hash": "ef555d29ebfbfd1cc2e04208005864299450f29493c2638046a42faae3260663"
+  },
+  "transport_bytes": 87362
+}

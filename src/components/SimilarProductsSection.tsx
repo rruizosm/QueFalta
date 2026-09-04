@@ -373,7 +373,11 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
         </View>
       ) : null}
 
-      <StoreProductModal target={target} onClose={() => setTarget(null)} />
+      <StoreProductModal
+        target={target}
+        onClose={() => setTarget(null)}
+        fallbackToGlobalCatalog
+      />
       <PaywallModal
         visible={paywallVisible}
         onClose={() => setPaywallVisible(false)}

@@ -223,17 +223,28 @@ durante los sublotes y terminó en 6.906 al asentarse el run: un solo bump para
 adoptaron en siete bloques (6×500 + 201) en el run
 `fae4f61b-4187-4488-9d8b-4deb55fdd058`; el cierre verificó 3.201 enlaces
 `pending/queued`, cero diferencias cola↔manifiesto y ningún bump prematuro.
-Los drenajes canarios 2709, 2710 y 2712 procesaron después tres peticiones FIFO
-con los IDs HiperDino 240403–240702: las tres terminaron HTTP 200, con 300/300
-`completed` y 0 failed, stale, deferred o dispatched. Los 300 enlaces quedaron
-`completed`, los vectores y hashes son vigentes y no quedan residuos de esos
-rangos en cola, archivo ni fallos. La cola total bajó 3.239→2.939. HiperDino
-continúa `draining` con 2.901 dependencias pendientes y generación 6.906;
-Gadis conserva intactas sus 38 pendientes y la generación 37.484. No hubo
-settlement ni bump. El HNSW permanece válido/listo, con 0,600 % de tuplas
-muertas y sin locks ni vacuum activo. Mantener el pipeline `paused` y el cron
-17 inactivo; continuar solo con drenajes controlados antes de considerar
-`active`.
+Los drenajes canarios 2709, 2710, 2712 y 2716 procesaron primero 400
+dependencias HiperDino. La cadena secuencial 2718–2746 drenó después los 2.846
+trabajos restantes en 29 ejecuciones (28×100 + 46): todas HTTP 200, con
+2.846/2.846 `completed` y 0 failed, stale o deferred. La cola quedó vacía y los
+runs durables de HiperDino (3.201 dependencias), Gadis (38) y Ahorramás (7) se
+asentaron con todas sus dependencias completadas. Cada tienda hizo un solo bump
+al cierre: generaciones 6.907, 37.485 y 18.079. El postflight dejó el HNSW
+válido/listo y estable en 597.745.664 bytes, 4.154 tuplas muertas (2,020 %),
+2.946 cambios desde analyze y cero locks, vacuum, mantenimiento de índice o
+fallos abiertos. Mantener el pipeline `paused` y el cron 17 inactivo durante la
+observación de dos ciclos completos de sync antes de decidir si se activa el
+dispatcher automático.
+
+Un segundo drenaje, después de once syncs, encontró el límite corto heredado
+por la finalizadora: la petición 2778 agotó 8 s antes de confirmar su primer
+sublote y dejó los 100 mensajes diferidos, sin escrituras parciales. La
+migración `20260901203103_extend_embedding_finalize_statement_timeout.sql`
+asigna 60 s solo a `catalog_finalize_embedding_batch(jsonb)`. Tras recuperar
+visibilidad, la cadena 2780–2801 completó 2.131/2.131 trabajos en 22 ejecuciones
+(21×100 + 31), sin failed/stale/deferred. Los once runs quedaron `settled` con
+un solo bump por tienda; el postflight dejó cola vacía, pipeline `paused`, cron
+17 inactivo, HNSW sano, 4,202 % de tuplas muertas y cero vacuum, locks o fallos.
 
 El PR #49 publicó el materializador nuevo en `main` (`b8cf096`). La migración de
 compatibilidad sigue adoptando automáticamente solo jobs legacy de la misma

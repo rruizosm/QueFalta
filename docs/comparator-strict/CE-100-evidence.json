@@ -1,0 +1,923 @@
+{
+  "schema_version": 1,
+  "task": "CE-100",
+  "date": "2026-09-02",
+  "status": "in_progress_capacity_baseline_incomplete",
+  "authority": {
+    "user_request": "cierra CE-005 y empieza CE-100",
+    "G0": "accepted",
+    "scope": "Read-only readiness diagnosis; no implementation, production writes, restores or activation."
+  },
+  "project": {
+    "id": "gkffvigcnsesbaihycay",
+    "ref": "gkffvigcnsesbaihycay",
+    "organization_id": "trnqzlirexddfnowcifm",
+    "organization_slug": "trnqzlirexddfnowcifm",
+    "name": "QueFalta",
+    "region": "eu-west-1",
+    "status": "ACTIVE_HEALTHY",
+    "database": {
+      "host": "db.gkffvigcnsesbaihycay.supabase.co",
+      "version": "17.6.1.127",
+      "postgres_engine": "17",
+      "release_channel": "ga"
+    },
+    "created_at": "2026-05-31T16:58:55.059749Z"
+  },
+  "organization": {
+    "id": "trnqzlirexddfnowcifm",
+    "name": "rruizosm",
+    "plan": "pro",
+    "opt_in_tags": [],
+    "allowed_release_channels": [
+      "ga",
+      "preview"
+    ]
+  },
+  "public_endpoint": "https://gkffvigcnsesbaihycay.supabase.co",
+  "local_target": {
+    "env_file_present": true,
+    "public_supabase_url": "https://auth.quefalta.es",
+    "cli_temp_project_ref_present": false,
+    "project_domain_mapping": "Verified in CE-001; this task reconfirmed project metadata and local URL. Independent CNAME recheck was inconclusive, not evidence of a wrong target.",
+    "dns_attempts": [
+      {
+        "scope": "sandbox public DNS",
+        "result": "ECONNREFUSED"
+      },
+      {
+        "scope": "approved external public DNS; no credentials",
+        "result": "ENODATA for CNAME"
+      }
+    ]
+  },
+  "execution": {
+    "read_only_sql_calls": 4,
+    "sql_errors": 0,
+    "statement_timeout": "5s",
+    "lock_timeout": "500ms",
+    "concurrency": 1,
+    "transaction_end": "ROLLBACK",
+    "comparison_rpc_calls": 0,
+    "retailer_calls": 0,
+    "explicit_data_or_schema_writes": 0,
+    "global_configuration_changes": 0,
+    "role_or_grant_changes": 0,
+    "restores": 0,
+    "queue_or_worker_executions": 0,
+    "installations": 0,
+    "new_paid_services": 0,
+    "observed_read_query_scope": "System metadata, aggregated statistics, singleton pipeline mode and one cron record; no catalog exports, vector scans, customer rows or SQL query texts.",
+    "bounded_workload": "Four diagnostic SELECT statements, each bounded at 5s; actual total SQL execution time was not separately measured. Platform tooling latency is not SQL duration."
+  },
+  "captures": [
+    {
+      "id": "ce100_q1",
+      "query": "BEGIN TRANSACTION READ ONLY;\nSET LOCAL statement_timeout = '5s';\nSET LOCAL lock_timeout = '500ms';\nSET LOCAL application_name = 'ce1_ce100_readonly';\nWITH session_role AS (\n SELECT rolname, rolsuper, rolcreaterole, rolcreatedb, rolcanlogin, rolbypassrls\n FROM pg_roles WHERE rolname = current_user\n), activity AS (\n SELECT count(*) AS connections,\n count(*) FILTER (WHERE backend_type='client backend') AS client_connections,\n count(*) FILTER (WHERE state='active') AS active,\n count(*) FILTER (WHERE wait_event_type='Lock') AS waiting_lock,\n count(*) FILTER (WHERE state='idle in transaction') AS idle_in_transaction,\n count(*) FILTER (WHERE state='active' AND query_start<now()-interval '30 seconds') AS active_older_30s\n FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid()\n), stats AS (\n SELECT numbackends,xact_commit,xact_rollback,blks_read,blks_hit,temp_files,temp_bytes,deadlocks,\n conflicts,blk_read_time,blk_write_time,stats_reset\n FROM pg_stat_database WHERE datname=current_database()\n), extensions AS (\n SELECT extname,extversion FROM pg_extension\n WHERE extname IN ('pg_stat_statements','pg_cron','pgmq','vector','pgstattuple')\n), schemas AS (\n SELECT nspname,has_schema_privilege(current_user,oid,'USAGE') AS session_usage,\n has_schema_privilege(current_user,oid,'CREATE') AS session_create\n FROM pg_namespace WHERE nspname IN ('public','comparator_internal','auth','storage')\n)\nSELECT jsonb_build_object(\n 'captured_at',clock_timestamp(),\n 'current_database',current_database(),\n 'current_user',current_user,\n 'session_user',session_user,\n 'server_version',current_setting('server_version'),\n 'read_only',current_setting('transaction_read_only'),\n 'statement_timeout',current_setting('statement_timeout'),\n 'lock_timeout',current_setting('lock_timeout'),\n 'max_connections',current_setting('max_connections'),\n 'track_io_timing',current_setting('track_io_timing'),\n 'pg_in_recovery',pg_is_in_recovery(),\n 'wal_level',current_setting('wal_level'),\n 'archive_mode',current_setting('archive_mode'),\n 'database_size_bytes',pg_database_size(current_database()),\n 'session_role',(SELECT to_jsonb(r) FROM session_role r),\n 'activity',(SELECT to_jsonb(a) FROM activity a),\n 'database_stats',(SELECT to_jsonb(s) FROM stats s),\n 'extensions',(SELECT jsonb_agg(to_jsonb(e) ORDER BY e.extname) FROM extensions e),\n 'schema_privileges',(SELECT jsonb_agg(to_jsonb(s) ORDER BY s.nspname) FROM schemas s)\n) AS evidence;\nROLLBACK;",
+      "result": {
+        "activity": {
+          "active": 0,
+          "connections": 28,
+          "waiting_lock": 0,
+          "active_older_30s": 0,
+          "client_connections": 26,
+          "idle_in_transaction": 0
+        },
+        "read_only": "on",
+        "wal_level": "logical",
+        "extensions": [
+          {
+            "extname": "pg_cron",
+            "extversion": "1.6.4"
+          },
+          {
+            "extname": "pg_stat_statements",
+            "extversion": "1.11"
+          },
+          {
+            "extname": "pgmq",
+            "extversion": "1.5.1"
+          },
+          {
+            "extname": "vector",
+            "extversion": "0.8.0"
+          }
+        ],
+        "captured_at": "2026-09-02T21:24:25.945477+00:00",
+        "archive_mode": "on",
+        "current_user": "postgres",
+        "lock_timeout": "500ms",
+        "session_role": {
+          "rolname": "postgres",
+          "rolsuper": false,
+          "rolcanlogin": true,
+          "rolcreatedb": true,
+          "rolbypassrls": true,
+          "rolcreaterole": true
+        },
+        "session_user": "postgres",
+        "database_stats": {
+          "blks_hit": 1368789912,
+          "blks_read": 97844935,
+          "conflicts": 0,
+          "deadlocks": 0,
+          "temp_bytes": 29013563283,
+          "temp_files": 8696,
+          "numbackends": 29,
+          "stats_reset": null,
+          "xact_commit": 1858096,
+          "blk_read_time": 0,
+          "xact_rollback": 2414,
+          "blk_write_time": 0
+        },
+        "pg_in_recovery": false,
+        "server_version": "17.6",
+        "max_connections": "60",
+        "track_io_timing": "off",
+        "current_database": "postgres",
+        "schema_privileges": [
+          {
+            "nspname": "auth",
+            "session_usage": true,
+            "session_create": false
+          },
+          {
+            "nspname": "comparator_internal",
+            "session_usage": true,
+            "session_create": true
+          },
+          {
+            "nspname": "public",
+            "session_usage": true,
+            "session_create": true
+          },
+          {
+            "nspname": "storage",
+            "session_usage": true,
+            "session_create": false
+          }
+        ],
+        "statement_timeout": "5s",
+        "database_size_bytes": 3355348115
+      }
+    },
+    {
+      "id": "ce100_q2",
+      "query": "BEGIN TRANSACTION READ ONLY;\nSET LOCAL statement_timeout='5s';\nSET LOCAL lock_timeout='500ms';\nSET LOCAL application_name='ce1_ce100_readonly';\nWITH relations AS (\n SELECT n.nspname AS schema,c.relname AS name,c.relkind AS kind,c.relrowsecurity AS rls,\n c.relforcerowsecurity AS force_rls,pg_get_userbyid(c.relowner) AS owner,\n has_table_privilege(current_user,c.oid,'SELECT') AS session_select,\n has_table_privilege(current_user,c.oid,'UPDATE') AS session_update,\n has_table_privilege('anon',c.oid,'SELECT') AS anon_select,\n has_table_privilege('anon',c.oid,'INSERT,UPDATE,DELETE') AS anon_any_write,\n has_table_privilege('authenticated',c.oid,'SELECT') AS authenticated_select,\n has_table_privilege('authenticated',c.oid,'INSERT,UPDATE,DELETE') AS authenticated_any_write,\n has_table_privilege('service_role',c.oid,'SELECT') AS service_select,\n (SELECT count(*) FROM pg_policy p WHERE p.polrelid=c.oid) AS policy_count\n FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace\n WHERE c.relkind IN ('r','p','v') AND\n ((n.nspname='public' AND c.relname IN\n ('catalog_product_embeddings','catalog_product_match_cache','catalog_product_match_cache_status',\n 'catalog_location_prices','mercadona_products','carrefour_products','consum_products','plusfresc_products'))\n OR(n.nspname='comparator_internal' AND c.relname IN\n ('catalog_embedding_pipeline_control','catalog_embedding_runs','catalog_embedding_run_jobs','catalog_match_store_versions')))\n), functions AS (\n SELECT n.nspname AS schema,p.proname AS name,pg_get_function_identity_arguments(p.oid) AS arguments,\n p.prosecdef AS security_definer,pg_get_userbyid(p.proowner) AS owner,p.proconfig AS settings,\n has_function_privilege('anon',p.oid,'EXECUTE') AS anon_execute,\n has_function_privilege('authenticated',p.oid,'EXECUTE') AS authenticated_execute,\n has_function_privilege('service_role',p.oid,'EXECUTE') AS service_execute,\n md5(pg_get_functiondef(p.oid)) AS definition_md5\n FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace\n WHERE (n.nspname='public' AND p.proname IN\n ('catalog_cheaper_products_v7','catalog_cheaper_products_v6','catalog_finalize_embedding_batch','catalog_embedding_pipeline_status'))\n OR (n.nspname='comparator_internal' AND p.proname='catalog_cheaper_products_v5')\n OR (n.nspname='private' AND p.proname='claim_free_comparator_use')\n), schema_roles AS (\n SELECT n.nspname AS schema,r.role,\n has_schema_privilege(r.role,n.oid,'USAGE') AS usage,\n has_schema_privilege(r.role,n.oid,'CREATE') AS create\n FROM pg_namespace n CROSS JOIN (VALUES ('anon'),('authenticated'),('service_role'))r(role)\n WHERE n.nspname IN ('public','comparator_internal','private')\n), stats_extensions AS (\n SELECT e.extname,n.nspname AS schema FROM pg_extension e JOIN pg_namespace n ON n.oid=e.extnamespace\n WHERE e.extname='pg_stat_statements'\n)\nSELECT jsonb_build_object('captured_at',clock_timestamp(),\n 'relations',(SELECT jsonb_agg(to_jsonb(r) ORDER BY r.schema,r.name) FROM relations r),\n 'functions',(SELECT jsonb_agg(to_jsonb(f) ORDER BY f.schema,f.name) FROM functions f),\n 'schema_roles',(SELECT jsonb_agg(to_jsonb(s) ORDER BY s.schema,s.role) FROM schema_roles s),\n 'stats_extension',(SELECT jsonb_agg(to_jsonb(s)) FROM stats_extensions s)\n) AS evidence;\nROLLBACK;",
+      "result": {
+        "functions": [
+          {
+            "name": "catalog_cheaper_products_v5",
+            "owner": "postgres",
+            "schema": "comparator_internal",
+            "settings": [
+              "search_path=\"\""
+            ],
+            "arguments": "p_source_store text, p_source_product_id text, p_stores text[]",
+            "anon_execute": false,
+            "definition_md5": "fe66f77c014fd88b1477b1ba07288ccf",
+            "service_execute": true,
+            "security_definer": true,
+            "authenticated_execute": true
+          },
+          {
+            "name": "claim_free_comparator_use",
+            "owner": "postgres",
+            "schema": "private",
+            "settings": [
+              "search_path=\"\""
+            ],
+            "arguments": "",
+            "anon_execute": false,
+            "definition_md5": "eb0178e6a3f89a7bb4ecc477cb0ea1bd",
+            "service_execute": true,
+            "security_definer": true,
+            "authenticated_execute": true
+          },
+          {
+            "name": "catalog_cheaper_products_v6",
+            "owner": "postgres",
+            "schema": "public",
+            "settings": [
+              "search_path=\"\"",
+              "statement_timeout=60s"
+            ],
+            "arguments": "p_source_store text, p_source_product_id text, p_stores text[]",
+            "anon_execute": false,
+            "definition_md5": "ecfed403611019adbf5a8343978b6516",
+            "service_execute": true,
+            "security_definer": false,
+            "authenticated_execute": true
+          },
+          {
+            "name": "catalog_cheaper_products_v7",
+            "owner": "postgres",
+            "schema": "public",
+            "settings": [
+              "search_path=\"\"",
+              "statement_timeout=60s"
+            ],
+            "arguments": "p_source_store text, p_source_product_id text, p_stores text[], p_language text",
+            "anon_execute": false,
+            "definition_md5": "86c703ed6f6fe9888a4a8f70ca2df086",
+            "service_execute": true,
+            "security_definer": false,
+            "authenticated_execute": true
+          },
+          {
+            "name": "catalog_embedding_pipeline_status",
+            "owner": "postgres",
+            "schema": "public",
+            "settings": [
+              "search_path=\"\""
+            ],
+            "arguments": "",
+            "anon_execute": false,
+            "definition_md5": "6e7d1eec23568911e7b16b51d220df46",
+            "service_execute": true,
+            "security_definer": false,
+            "authenticated_execute": false
+          },
+          {
+            "name": "catalog_finalize_embedding_batch",
+            "owner": "postgres",
+            "schema": "public",
+            "settings": [
+              "search_path=\"\"",
+              "statement_timeout=60s"
+            ],
+            "arguments": "p_batch jsonb",
+            "anon_execute": false,
+            "definition_md5": "c07dddcf7361441f22a6fd3ee2698a74",
+            "service_execute": true,
+            "security_definer": false,
+            "authenticated_execute": false
+          }
+        ],
+        "relations": [
+          {
+            "rls": true,
+            "kind": "r",
+            "name": "catalog_embedding_pipeline_control",
+            "owner": "postgres",
+            "schema": "comparator_internal",
+            "force_rls": false,
+            "anon_select": false,
+            "policy_count": 0,
+            "anon_any_write": false,
+            "service_select": true,
+            "session_select": true,
+            "session_update": true,
+            "authenticated_select": false,
+            "authenticated_any_write": false
+          },
+          {
+            "rls": true,
+            "kind": "r",
+            "name": "catalog_embedding_run_jobs",
+            "owner": "postgres",
+            "schema": "comparator_internal",
+            "force_rls": false,
+            "anon_select": false,
+            "policy_count": 0,
+            "anon_any_write": false,
+            "service_select": true,
+            "session_select": true,
+            "session_update": true,
+            "authenticated_select": false,
+            "authenticated_any_write": false
+          },
+          {
+            "rls": true,
+            "kind": "r",
+            "name": "catalog_embedding_runs",
+            "owner": "postgres",
+            "schema": "comparator_internal",
+            "force_rls": false,
+            "anon_select": false,
+            "policy_count": 0,
+            "anon_any_write": false,
+            "service_select": true,
+            "session_select": true,
+            "session_update": true,
+            "authenticated_select": false,
+            "authenticated_any_write": false
+          },
+          {
+            "rls": true,
+            "kind": "r",
+            "name": "catalog_match_store_versions",
+            "owner": "postgres",
+            "schema": "comparator_internal",
+            "force_rls": false,
+            "anon_select": false,
+            "policy_count": 0,
+            "anon_any_write": false,
+            "service_select": true,
+            "session_select": true,
+            "session_update": true,
+            "authenticated_select": false,
+            "authenticated_any_write": false
+          },
+          {
+            "rls": true,
+            "kind": "r",
+            "name": "carrefour_products",
+            "owner": "postgres",
+            "schema": "public",
+            "force_rls": false,
+            "anon_select": true,
+            "policy_count": 1,
+            "anon_any_write": true,
+            "service_select": true,
+            "session_select": true,
+            "session_update": true,
+            "authenticated_select": true,
+            "authenticated_any_write": true
+          },
+          {
+            "rls": true,
+            "kind": "r",
+            "name": "catalog_location_prices",
+            "owner": "postgres",
+            "schema": "public",
+            "force_rls": false,
+            "anon_select": true,
+            "policy_count": 1,
+            "anon_any_write": false,
+            "service_select": true,
+            "session_select": true,
+            "session_update": true,
+            "authenticated_select": true,
+            "authenticated_any_write": false
+          },
+          {
+            "rls": true,
+            "kind": "r",
+            "name": "catalog_product_embeddings",
+            "owner": "postgres",
+            "schema": "public",
+            "force_rls": false,
+            "anon_select": false,
+            "policy_count": 0,
+            "anon_any_write": false,
+            "service_select": true,
+            "session_select": true,
+            "session_update": true,
+            "authenticated_select": false,
+            "authenticated_any_write": false
+          },
+          {
+            "rls": true,
+            "kind": "r",
+            "name": "catalog_product_match_cache_status",
+            "owner": "postgres",
+            "schema": "public",
+            "force_rls": false,
+            "anon_select": false,
+            "policy_count": 0,
+            "anon_any_write": false,
+            "service_select": true,
+            "session_select": true,
+            "session_update": true,
+            "authenticated_select": false,
+            "authenticated_any_write": false
+          },
+          {
+            "rls": true,
+            "kind": "r",
+            "name": "consum_products",
+            "owner": "postgres",
+            "schema": "public",
+            "force_rls": false,
+            "anon_select": true,
+            "policy_count": 1,
+            "anon_any_write": true,
+            "service_select": true,
+            "session_select": true,
+            "session_update": true,
+            "authenticated_select": true,
+            "authenticated_any_write": true
+          },
+          {
+            "rls": true,
+            "kind": "r",
+            "name": "mercadona_products",
+            "owner": "postgres",
+            "schema": "public",
+            "force_rls": false,
+            "anon_select": true,
+            "policy_count": 1,
+            "anon_any_write": true,
+            "service_select": true,
+            "session_select": true,
+            "session_update": true,
+            "authenticated_select": true,
+            "authenticated_any_write": true
+          },
+          {
+            "rls": true,
+            "kind": "r",
+            "name": "plusfresc_products",
+            "owner": "postgres",
+            "schema": "public",
+            "force_rls": false,
+            "anon_select": true,
+            "policy_count": 1,
+            "anon_any_write": true,
+            "service_select": true,
+            "session_select": true,
+            "session_update": true,
+            "authenticated_select": true,
+            "authenticated_any_write": true
+          }
+        ],
+        "captured_at": "2026-09-02T21:26:25.929963+00:00",
+        "schema_roles": [
+          {
+            "role": "anon",
+            "usage": false,
+            "create": false,
+            "schema": "comparator_internal"
+          },
+          {
+            "role": "authenticated",
+            "usage": true,
+            "create": false,
+            "schema": "comparator_internal"
+          },
+          {
+            "role": "service_role",
+            "usage": true,
+            "create": false,
+            "schema": "comparator_internal"
+          },
+          {
+            "role": "anon",
+            "usage": false,
+            "create": false,
+            "schema": "private"
+          },
+          {
+            "role": "authenticated",
+            "usage": true,
+            "create": false,
+            "schema": "private"
+          },
+          {
+            "role": "service_role",
+            "usage": true,
+            "create": false,
+            "schema": "private"
+          },
+          {
+            "role": "anon",
+            "usage": true,
+            "create": false,
+            "schema": "public"
+          },
+          {
+            "role": "authenticated",
+            "usage": true,
+            "create": false,
+            "schema": "public"
+          },
+          {
+            "role": "service_role",
+            "usage": true,
+            "create": false,
+            "schema": "public"
+          }
+        ],
+        "stats_extension": [
+          {
+            "schema": "extensions",
+            "extname": "pg_stat_statements"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ce100_q3",
+      "query": "BEGIN TRANSACTION READ ONLY;\nSET LOCAL statement_timeout='5s';\nSET LOCAL lock_timeout='500ms';\nSET LOCAL application_name='ce1_ce100_readonly';\nWITH policies AS (\n SELECT n.nspname AS schema,c.relname AS relation,p.polname AS policy,p.polcmd AS command,\n p.polpermissive AS permissive,\n ARRAY(SELECT CASE WHEN roleid=0 THEN 'public' ELSE pg_get_userbyid(roleid) END FROM unnest(p.polroles) roleid) AS roles,\n pg_get_expr(p.polqual,p.polrelid) AS using_expression,\n pg_get_expr(p.polwithcheck,p.polrelid) AS check_expression\n FROM pg_policy p JOIN pg_class c ON c.oid=p.polrelid JOIN pg_namespace n ON n.oid=c.relnamespace\n WHERE n.nspname='public' AND c.relname IN\n ('catalog_location_prices','mercadona_products','carrefour_products','consum_products','plusfresc_products')\n), table_stats AS (\n SELECT schemaname,relname,n_live_tup,n_dead_tup,last_autovacuum,last_autoanalyze,\n last_vacuum,last_analyze\n FROM pg_stat_user_tables WHERE (schemaname='public' AND relname IN\n ('catalog_product_embeddings','catalog_location_prices','mercadona_products','carrefour_products','consum_products','plusfresc_products'))\n OR (schemaname='comparator_internal' AND relname IN ('catalog_embedding_runs','catalog_embedding_run_jobs'))\n), statement_stats AS (\n SELECT count(*) AS tracked_entries,sum(calls) AS calls,sum(total_exec_time) AS total_exec_time_ms,\n max(max_exec_time) AS maximum_recorded_exec_time_ms\n FROM extensions.pg_stat_statements WHERE dbid=(SELECT oid FROM pg_database WHERE datname=current_database())\n), archiver AS (\n SELECT archived_count,last_archived_time,failed_count,last_failed_time,stats_reset FROM pg_stat_archiver\n), pipeline AS (\n SELECT mode FROM comparator_internal.catalog_embedding_pipeline_control LIMIT 1\n), cron_config AS (\n SELECT jobid,jobname,active,schedule FROM cron.job WHERE jobid=17\n)\nSELECT jsonb_build_object('captured_at',clock_timestamp(),\n 'catalog_policies',(SELECT jsonb_agg(to_jsonb(p) ORDER BY p.relation,p.policy) FROM policies p),\n 'table_stats',(SELECT jsonb_agg(to_jsonb(s) ORDER BY s.schemaname,s.relname) FROM table_stats s),\n 'statement_stats_cumulative',(SELECT to_jsonb(s) FROM statement_stats s),\n 'archiver_cumulative',(SELECT to_jsonb(a) FROM archiver a),\n 'pipeline',(SELECT to_jsonb(p) FROM pipeline p),\n 'cron_17',(SELECT jsonb_agg(to_jsonb(c)) FROM cron_config c)\n) AS evidence;\nROLLBACK;",
+      "result": {
+        "cron_17": [
+          {
+            "jobid": 17,
+            "active": false,
+            "jobname": "catalog-embedding-dispatch",
+            "schedule": "*/15 * * * *"
+          }
+        ],
+        "pipeline": {
+          "mode": "paused"
+        },
+        "captured_at": "2026-09-02T21:27:36.484831+00:00",
+        "table_stats": [
+          {
+            "relname": "catalog_embedding_run_jobs",
+            "n_dead_tup": 740,
+            "n_live_tup": 5497,
+            "schemaname": "comparator_internal",
+            "last_vacuum": null,
+            "last_analyze": null,
+            "last_autovacuum": "2026-09-01T20:35:54.275822+00:00",
+            "last_autoanalyze": "2026-09-01T20:36:54.257748+00:00"
+          },
+          {
+            "relname": "catalog_embedding_runs",
+            "n_dead_tup": 34,
+            "n_live_tup": 21,
+            "schemaname": "comparator_internal",
+            "last_vacuum": null,
+            "last_analyze": null,
+            "last_autovacuum": "2026-09-01T10:47:26.192069+00:00",
+            "last_autoanalyze": "2026-09-01T20:36:54.279265+00:00"
+          },
+          {
+            "relname": "carrefour_products",
+            "n_dead_tup": 0,
+            "n_live_tup": 35755,
+            "schemaname": "public",
+            "last_vacuum": null,
+            "last_analyze": null,
+            "last_autovacuum": "2026-08-31T09:22:57.141624+00:00",
+            "last_autoanalyze": "2026-08-31T09:23:00.328045+00:00"
+          },
+          {
+            "relname": "catalog_location_prices",
+            "n_dead_tup": 0,
+            "n_live_tup": 163838,
+            "schemaname": "public",
+            "last_vacuum": null,
+            "last_analyze": null,
+            "last_autovacuum": "2026-09-01T13:12:46.961981+00:00",
+            "last_autoanalyze": "2026-09-01T13:12:47.74288+00:00"
+          },
+          {
+            "relname": "catalog_product_embeddings",
+            "n_dead_tup": 8946,
+            "n_live_tup": 202953,
+            "schemaname": "public",
+            "last_vacuum": null,
+            "last_analyze": null,
+            "last_autovacuum": "2026-09-01T13:09:59.266613+00:00",
+            "last_autoanalyze": "2026-09-01T20:35:57.35214+00:00"
+          },
+          {
+            "relname": "consum_products",
+            "n_dead_tup": 0,
+            "n_live_tup": 11660,
+            "schemaname": "public",
+            "last_vacuum": null,
+            "last_analyze": null,
+            "last_autovacuum": "2026-09-01T13:12:34.729722+00:00",
+            "last_autoanalyze": "2026-09-01T13:12:35.505867+00:00"
+          },
+          {
+            "relname": "mercadona_products",
+            "n_dead_tup": 0,
+            "n_live_tup": 6530,
+            "schemaname": "public",
+            "last_vacuum": null,
+            "last_analyze": null,
+            "last_autovacuum": "2026-09-01T13:49:36.149802+00:00",
+            "last_autoanalyze": "2026-09-01T13:49:36.469826+00:00"
+          },
+          {
+            "relname": "plusfresc_products",
+            "n_dead_tup": 1611,
+            "n_live_tup": 8116,
+            "schemaname": "public",
+            "last_vacuum": null,
+            "last_analyze": null,
+            "last_autovacuum": "2026-09-01T12:50:34.29288+00:00",
+            "last_autoanalyze": "2026-09-01T12:51:33.180467+00:00"
+          }
+        ],
+        "catalog_policies": [
+          {
+            "roles": [
+              "anon",
+              "authenticated"
+            ],
+            "policy": "carrefour catalog read",
+            "schema": "public",
+            "command": "r",
+            "relation": "carrefour_products",
+            "permissive": true,
+            "check_expression": null,
+            "using_expression": "true"
+          },
+          {
+            "roles": [
+              "anon",
+              "authenticated"
+            ],
+            "policy": "location prices read",
+            "schema": "public",
+            "command": "r",
+            "relation": "catalog_location_prices",
+            "permissive": true,
+            "check_expression": null,
+            "using_expression": "true"
+          },
+          {
+            "roles": [
+              "anon",
+              "authenticated"
+            ],
+            "policy": "consum catalog read",
+            "schema": "public",
+            "command": "r",
+            "relation": "consum_products",
+            "permissive": true,
+            "check_expression": null,
+            "using_expression": "true"
+          },
+          {
+            "roles": [
+              "anon",
+              "authenticated"
+            ],
+            "policy": "catalog read",
+            "schema": "public",
+            "command": "r",
+            "relation": "mercadona_products",
+            "permissive": true,
+            "check_expression": null,
+            "using_expression": "true"
+          },
+          {
+            "roles": [
+              "anon",
+              "authenticated"
+            ],
+            "policy": "plusfresc catalog read",
+            "schema": "public",
+            "command": "r",
+            "relation": "plusfresc_products",
+            "permissive": true,
+            "check_expression": null,
+            "using_expression": "true"
+          }
+        ],
+        "archiver_cumulative": {
+          "stats_reset": "2026-08-20T16:25:07.249648+00:00",
+          "failed_count": 1,
+          "archived_count": 7830,
+          "last_failed_time": "2026-08-31T12:01:01.159817+00:00",
+          "last_archived_time": "2026-09-02T21:26:15.539665+00:00"
+        },
+        "statement_stats_cumulative": {
+          "calls": 2365099,
+          "tracked_entries": 3209,
+          "total_exec_time_ms": 109793442.943385,
+          "maximum_recorded_exec_time_ms": 66786.917481
+        }
+      }
+    },
+    {
+      "id": "ce100_q4",
+      "query": "BEGIN TRANSACTION READ ONLY;\nSET LOCAL statement_timeout = '5s';\nSET LOCAL lock_timeout = '500ms';\nSET LOCAL application_name = 'ce1_ce100_readonly';\nSELECT jsonb_build_object(\n 'captured_at', clock_timestamp(),\n 'transaction_read_only', current_setting('transaction_read_only'),\n 'statement_timeout', current_setting('statement_timeout'),\n 'lock_timeout', current_setting('lock_timeout'),\n 'activity_excluding_self', (\n  SELECT jsonb_build_object(\n   'connections', count(*),\n   'client_connections', count(*) FILTER (WHERE backend_type = 'client backend'),\n   'active', count(*) FILTER (WHERE state = 'active'),\n   'waiting_lock', count(*) FILTER (WHERE wait_event_type = 'Lock'),\n   'idle_in_transaction', count(*) FILTER (WHERE state LIKE 'idle in transaction%'),\n   'active_older_than_30s', count(*) FILTER (WHERE state = 'active' AND query_start < now() - interval '30 seconds')\n  ) FROM pg_stat_activity WHERE pid <> pg_backend_pid()\n ),\n 'database_stats', (\n  SELECT jsonb_build_object('numbackends',numbackends,'deadlocks',deadlocks,'conflicts',conflicts,\n   'xact_commit',xact_commit,'xact_rollback',xact_rollback,'temp_files',temp_files,'temp_bytes',temp_bytes,\n   'stats_reset',stats_reset)\n  FROM pg_stat_database WHERE datname=current_database()\n )\n) AS evidence;\nROLLBACK;",
+      "result": {
+        "captured_at": "2026-09-02T21:32:27.74466+00:00",
+        "lock_timeout": "500ms",
+        "database_stats": {
+          "conflicts": 0,
+          "deadlocks": 0,
+          "temp_bytes": 29071948216,
+          "temp_files": 8712,
+          "numbackends": 28,
+          "stats_reset": null,
+          "xact_commit": 1859445,
+          "xact_rollback": 2417
+        },
+        "statement_timeout": "5s",
+        "transaction_read_only": "on",
+        "activity_excluding_self": {
+          "active": 0,
+          "connections": 33,
+          "waiting_lock": 0,
+          "client_connections": 25,
+          "idle_in_transaction": 0,
+          "active_older_than_30s": 0
+        }
+      }
+    }
+  ],
+  "interpretation_limits": [
+    "Captures are separate snapshots, not one atomic read or a 15-minute sustained baseline.",
+    "q1 activity is limited to current database excluding own PID; q4 activity covers all databases excluding own PID. Connection totals are not directly comparable.",
+    "Administrative postgres has BYPASSRLS. Metadata inspection is not an end-user RLS/HTTP authorization test.",
+    "any_write is OR across INSERT,UPDATE,DELETE privileges, not proof of all three or permission to write through RLS.",
+    "Five inspected catalog tables have SELECT-only policies; broad legacy grants remain a least-privilege review item, not a demonstrated write exploit.",
+    "Schema USAGE and function EXECUTE do not by themselves establish API-exposed schemas or complete call-chain safety.",
+    "pg_stat_user_tables counts are estimates; dead tuple ratios are not measured physical bloat.",
+    "Database and statement counters are cumulative; stats_reset may be null. Rollbacks include deliberate diagnostic ROLLBACKs and are not an app error rate.",
+    "track_io_timing=off: zero recorded read/write time is not zero I/O or measured I/O latency.",
+    "archive_mode=on and archived WAL activity do not establish PITR activation, a verified backup inventory or a tested restore.",
+    "Daily Pro backup entitlement is not evidence of actual successful backups for this project.",
+    "Existing queue length was not reread. Pipeline paused and cron disabled were observed; no active synchronization or worker correctness guarantee.",
+    "Targeted relation/function lists are not a full catalog or migration audit.",
+    "Dashboard summary percentages with different windows/sources are not comparable measurements or maximum/p95 values unless documented.",
+    "Backup timestamps listed in the dashboard establish available listed restore points, not verified backup contents or a measured recovery time.",
+    "No longer blocked on dashboard authentication; actual remaining obstacle is incomplete performance evidence."
+  ],
+  "pending": {
+    "dashboard_authentication": {
+      "status": "resolved",
+      "credentials_requested": false
+    },
+    "backup_inventory": {
+      "status": "verified_dashboard_list",
+      "required": "Recheck most recent point before a later mutation; no restoration test was executed."
+    },
+    "pitr": {
+      "status": "verified_not_enabled",
+      "required": "No purchase required merely to start read-only F1; any future add-on needs separate cost approval."
+    },
+    "recovery_procedure": {
+      "status": "documented_not_exercised",
+      "required": "Scoped reversal of CE-1 objects in CE-106; whole-project restore causes downtime and risks all changes after the selected point. RTO unmeasured; no production restore test."
+    },
+    "compute_and_metrics": {
+      "status": "infrastructure_metrics_access_resolved_application_baseline_missing",
+      "required": "Micro reconfirmed on 2026-09-03. Metrics API now provides selected infrastructure series. Obtain a comparable >=15-minute application latency/error baseline and adequate lock coverage before closing CE-100 or permitting new load/mutations. See CE-100-capacity-recheck.md; missing p95/errors are not zero.",
+      "recheck_report": "CE-100-capacity-recheck.md",
+      "recheck_evidence": "CE-100-capacity-recheck.json"
+    },
+    "consumption_margin": {
+      "status": "included_usage_margin_observed",
+      "required": "No quota exceeded in current cycle; final invoice not checked, future cost not guaranteed, BU-01 remains unchanged."
+    },
+    "client_security": {
+      "status": "metadata_only",
+      "follow_up": "CE-101/103/105/106 for exposure inventory and scoped negative role tests; do not consume quota as a smoke test."
+    }
+  },
+  "completion": {
+    "CE_005": "completed_definition_only",
+    "F0": "accepted",
+    "G0": "PASS",
+    "CE_100": "in_progress",
+    "CE_101": "completed_under_CE_VAL_001",
+    "G1": "not_accepted",
+    "sequence_exception": {
+      "id": "CE-SEQ-001",
+      "user_request": "Empieza con CE-101 y dejamos pendiente cerrar CE-100",
+      "scope": "CE-101 read-only inventory, local connection and test-access preparation may proceed; CE-100 remains open, no G1 acceptance or CE-102 activation.",
+      "evidence": "CE-101-evidence.json"
+    },
+    "next": "CE-101 completed with owner-reported production 1.3 catalog smoke; CE-102 local guards completed and CE-103 reconciliation started under CE-SEQ-002. Independently complete the missing capacity baseline before closing CE-100 or authorizing writes/increased load; no job activation or compute changes."
+  },
+  "local_validation": {
+    "status": "PASS",
+    "typecheck": "npx tsc --noEmit: PASS",
+    "existing_helper_tests": {"passed": 35, "total": 35, "production_comparator_tested": false},
+    "diff_check": "git diff --check: PASS",
+    "markdown_documents_with_valid_links_and_fences": 14,
+    "unique_project_tasks": 67,
+    "closed_tasks": ["CE-000", "CE-001", "CE-002", "CE-003", "CE-004", "CE-005"],
+    "regression_cases_preserved": 35,
+    "product_decisions_preserved": 14,
+    "preexisting_source_and_sql_hashes_unchanged": 8,
+    "CE_100_closed": false
+  },
+  "sources": [
+    {
+      "url": "https://supabase.com/docs/guides/platform/backups",
+      "purpose": "Backup retention entitlement, PITR optionality, storage-file exclusion and restore downtime."
+    },
+    {
+      "url": "https://supabase.com/docs/guides/monitoring-and-debugging/metrics",
+      "purpose": "Infrastructure metrics availability; not actual project measurements."
+    },
+    {
+      "url": "https://supabase.com/changelog/bulk-prepare-retry-on-transient-failure",
+      "purpose": "Recent backup-scheduler fix; does not prove this project was affected."
+    },
+    {
+      "url": "https://supabase.com/changelog/48235-migration-of-supabase-management-api-logs-all-analytics-endpoint-to-logs-endpoint",
+      "purpose": "Upcoming logs API change relevant to future observability integration."
+    },
+    {
+      "url": "https://supabase.com/changelog/45329-breaking-change-tables-not-exposed-to-data-and-graphql-api-automatically",
+      "purpose": "Exposure behavior changes; check actual configuration in CE-101/103."
+    }
+  ],
+  "dashboard": {
+    "observed_date": "2026-09-02",
+    "method": "Authenticated visible Supabase dashboard via accessibility UI; no hidden state, API fetch, save/apply, restore or subscription changes.",
+    "authentication": "Available after initial sign-in handoff; no longer blocked on login.",
+    "scheduled_backups": {
+      "url": "https://supabase.com/dashboard/project/gkffvigcnsesbaihycay/database/backups/scheduled",
+      "type": "PHYSICAL",
+      "listed_points_utc": [
+        "2026-09-02T08:00:12Z",
+        "2026-09-01T07:59:00Z",
+        "2026-08-31T20:05:04Z",
+        "2026-08-31T19:19:23Z",
+        "2026-08-31T07:58:11Z",
+        "2026-08-30T08:00:37Z",
+        "2026-08-29T08:00:34Z",
+        "2026-08-28T07:56:53Z",
+        "2026-08-27T07:57:45Z",
+        "2026-08-26T07:56:38Z"
+      ],
+      "restore_buttons_visible": true,
+      "restore_executed": false,
+      "content_or_restorability_tested": false,
+      "storage_objects_excluded": true
+    },
+    "pitr": {
+      "url": "https://supabase.com/dashboard/project/gkffvigcnsesbaihycay/database/backups/pitr",
+      "enabled": false,
+      "evidence": "Dashboard offers PITR as an add-on to enable; no recoverable PITR interval is displayed.",
+      "addon_enabled_or_purchased": false
+    },
+    "infrastructure": {
+      "url": "https://supabase.com/dashboard/project/gkffvigcnsesbaihycay/settings/infrastructure",
+      "compute": "MICRO",
+      "instance": "t4g.micro",
+      "selected_compute_memory_gb": 1,
+      "selected_compute_cpu_cores": 2,
+      "medium_selected": false,
+      "replicas": 0,
+      "display_snapshot": {
+        "cpu_percent": 4,
+        "disk_percent": 52,
+        "ram_percent": 68,
+        "connections": 27,
+        "max_connections": 60
+      },
+      "disk": {
+        "provisioned_gb": 8,
+        "used_display_gb": 4.07,
+        "storage_type": "GP3",
+        "iops_display": 3000,
+        "throughput_display_mb_s": 125
+      },
+      "historical_summary": {
+        "displayed_range": "Aug 26–Sep 2",
+        "compute_percent": 91,
+        "cpu_percent": 91,
+        "memory_percent": 78,
+        "disk_io_percent": 1,
+        "aggregation_not_established": true
+      },
+      "spend_cap_enabled_notice": true,
+      "conflicting_disk_notices": "UI shows spend cap restricting disk to 8GB and a generic autoscale-to-12GB at 90% notice; actual future autoscale/billing behavior was not exercised or inferred.",
+      "configuration_changed": false,
+      "medium_history_discrepancy": "Prior local handoff described Medium observation. Current actual UI shows Micro; organization usage lists 2 Medium compute hours. Actor/time/reason for the transition are not established by this task."
+    },
+    "metrics": {
+      "url": "https://supabase.com/dashboard/project/gkffvigcnsesbaihycay/observability/database?its=2026-09-02T21:07:33.926Z&ite=2026-09-02T21:37:33.926Z&isHelper=true&helperText=Last+30+minutes",
+      "selected_window_minutes": 30,
+      "start_utc": "2026-09-02T21:07:33.926Z",
+      "end_utc": "2026-09-02T21:37:33.926Z",
+      "displayed_summary": {
+        "cpu_percent": 2.61,
+        "memory_usage_mb": 904.27,
+        "memory_commitment_gb": 2.16,
+        "database_size_gb": 3.14,
+        "provisioned_disk_gb": 8
+      },
+      "summary_aggregation_not_established": true,
+      "errors_persist_after_one_refresh": [
+        "Network throughput",
+        "Disk Input/Output operations per second (IOPS)",
+        "Disk throughput",
+        "Database Connections",
+        "Dedicated Pooler Client Connections",
+        "Shared Pooler (Supavisor) client connections",
+        "Disk Usage"
+      ],
+      "complete_baseline": false,
+      "separate_connections_report": "Feature preview not enabled; not activated during this read-only task."
+    },
+    "usage": {
+      "url": "https://supabase.com/dashboard/org/trnqzlirexddfnowcifm/usage",
+      "organization_projects_display": 1,
+      "cycle_start": "2026-08-21",
+      "cycle_end": "2026-09-21",
+      "plan": "Pro",
+      "quota_exceeded_display": false,
+      "egress_gb": 3.881,
+      "egress_included_gb": 250,
+      "cached_egress_gb": 0.052,
+      "cached_egress_included_gb": 250,
+      "edge_invocations": 10799,
+      "edge_invocations_included": 2000000,
+      "storage_gb": 0.029,
+      "storage_included_gb": 100,
+      "micro_compute_hours": 309,
+      "micro_compute_cost_display_usd": 4.15,
+      "medium_compute_hours": 2,
+      "medium_compute_cost_display_usd": 0.16,
+      "compute_credit_description_usd": 10,
+      "final_invoice_verified": false,
+      "limitation": "Billing-cycle aggregate with refresh delays; not actual marginal cost of CE-1, a final invoice, or permission for new spending."
+    }
+  }
+}

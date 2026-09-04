@@ -1,0 +1,105 @@
+{
+  "plan": {
+    "version": "ce200-read-v1",
+    "kind": "profile",
+    "store": "carrefour",
+    "cursor": "",
+    "limit": 3,
+    "round": "initial",
+    "select": "SELECT id,display_name,category_id,category_name,pg_column_size(raw) AS raw_bytes,\n      (SELECT jsonb_agg(k) FROM jsonb_object_keys(raw) k) AS raw_keys\n      FROM public.carrefour_products WHERE (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)')) ORDER BY id COLLATE \"C\" LIMIT 3",
+    "job": "ce1-ce200-2eaf7e3af11850f979635687b73a",
+    "operationHash": "2eaf7e3af11850f979635687b73a7d68d8d0a142bb4363b77a0e1e8dccb9d0e1",
+    "maxRows": 3,
+    "maxBytes": 131072,
+    "sql": "-- ce1-ce200-2eaf7e3af11850f979635687b73a: profile; CE-BU-002; no app writes.\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $reserve$\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE status IN ('planned','running','halted','unknown'))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-2eaf7e3af11850f979635687b73a') THEN RAISE EXCEPTION 'ce200_exclusive_or_replay'; END IF;\n  IF EXISTS(SELECT 1 FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid))>0\n    OR (pid<>pg_backend_pid() AND state='active' AND query_start<clock_timestamp()-interval '30 seconds')) THEN RAISE EXCEPTION 'ce200_health_stop'; END IF;\n  UPDATE comparator_strict.execution_budget SET\n    sql_ms_reserved=sql_ms_reserved+10000,read_rows_reserved=read_rows_reserved+3,\n    bytes_reserved=bytes_reserved+131072,write_rows_reserved=write_rows_reserved+3,updated_at=clock_timestamp()\n    WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03'\n      AND approval_reference='CE-200-corpus-v1' AND bytes_limit=134217728 AND read_rows_limit=50000\n      AND bytes_reserved+131072<=bytes_limit AND read_rows_reserved+3<=read_rows_limit AND write_rows_reserved+3<=2000;\n  IF NOT FOUND THEN RAISE EXCEPTION 'ce200_budget'; END IF;\n  INSERT INTO comparator_strict.execution_jobs(id,project_ref,operation_key,sql_sha256,status,started_at,deadline_at,job_key,operation_hash,budget_date,reservation)\n    VALUES(gen_random_uuid(),'gkffvigcnsesbaihycay','ce200-profile','956778bf19cdf149200307b0ca7c271f93f2539c3cfbcf16dd1e9dcae0b947d7','running',clock_timestamp(),clock_timestamp()+interval '20 minutes','ce1-ce200-2eaf7e3af11850f979635687b73a','2eaf7e3af11850f979635687b73a7d68d8d0a142bb4363b77a0e1e8dccb9d0e1',DATE '2026-09-03','{\"sqlMs\":10000,\"readRows\":3,\"writeRows\":3,\"responseBytes\":131072}'::jsonb);\nEND $reserve$;\nCOMMIT;\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $payload$\nDECLARE payload jsonb; data jsonb; started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR NOT EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-2eaf7e3af11850f979635687b73a' AND status='running' AND operation_hash='2eaf7e3af11850f979635687b73a7d68d8d0a142bb4363b77a0e1e8dccb9d0e1' AND deadline_at>clock_timestamp()) THEN RAISE EXCEPTION 'ce200_lease'; END IF;\n  SELECT coalesce(jsonb_agg(to_jsonb(q)),'[]'::jsonb) INTO data FROM (SELECT id,display_name,category_id,category_name,pg_column_size(raw) AS raw_bytes,\n      (SELECT jsonb_agg(k) FROM jsonb_object_keys(raw) k) AS raw_keys\n      FROM public.carrefour_products WHERE (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)')) ORDER BY id COLLATE \"C\" LIMIT 3) q;\n  payload:=jsonb_build_object('job_key','ce1-ce200-2eaf7e3af11850f979635687b73a','operation_hash','2eaf7e3af11850f979635687b73a7d68d8d0a142bb4363b77a0e1e8dccb9d0e1',\n    'project_ref','gkffvigcnsesbaihycay','captured_at',started,'kind','profile','store','carrefour',\n    'cursor','','rows',data,'row_count',jsonb_array_length(data),'elapsed_ms',extract(epoch FROM clock_timestamp()-started)*1000);\n  IF jsonb_array_length(data)>3 OR octet_length(payload::text)>122880 THEN RAISE EXCEPTION 'ce200_result_limit'; END IF;\n  UPDATE comparator_strict.execution_jobs SET status='succeeded',finished_at=clock_timestamp(),\n    receipt=jsonb_build_object('payload_sha256',encode(sha256(convert_to(payload::text,'UTF8')),'hex'),'row_count',jsonb_array_length(data),'payload_bytes',octet_length(payload::text),'elapsed_ms',payload->'elapsed_ms') WHERE job_key='ce1-ce200-2eaf7e3af11850f979635687b73a';\n  PERFORM set_config('comparator_strict.ce200_response',payload::text,true);\nEND $payload$;\nSELECT current_setting('comparator_strict.ce200_response')::jsonb AS evidence;\nCOMMIT;"
+  },
+  "payload": {
+    "kind": "profile",
+    "rows": [
+      {
+        "id": "2002870135",
+        "raw_keys": [
+          "url",
+          "name",
+          "brand",
+          "price",
+          "images",
+          "sku_id",
+          "catalog",
+          "app_price",
+          "product_id",
+          "measure_unit",
+          "document_type",
+          "price_per_unit",
+          "sell_pack_unit",
+          "units_in_stock",
+          "parent_category",
+          "app_price_per_unit"
+        ],
+        "raw_bytes": 741,
+        "category_id": "cat20049",
+        "display_name": "Agua de colonia Gotas Frescas Baby Instituto Español 750 ml",
+        "category_name": "Cuidado e Higiene Infantil"
+      },
+      {
+        "id": "2002870179",
+        "raw_keys": [
+          "url",
+          "name",
+          "brand",
+          "price",
+          "images",
+          "sku_id",
+          "catalog",
+          "app_price",
+          "product_id",
+          "measure_unit",
+          "document_type",
+          "price_per_unit",
+          "sell_pack_unit",
+          "units_in_stock",
+          "parent_category",
+          "app_price_per_unit"
+        ],
+        "raw_bytes": 741,
+        "category_id": "cat20049",
+        "display_name": "Agua de colonia Gotas Frescas Baby Instituto Español 250 ml",
+        "category_name": "Cuidado e Higiene Infantil"
+      },
+      {
+        "id": "2002870194",
+        "raw_keys": [
+          "url",
+          "name",
+          "brand",
+          "price",
+          "images",
+          "sku_id",
+          "catalog",
+          "app_price",
+          "product_id",
+          "measure_unit",
+          "document_type",
+          "price_per_unit",
+          "sell_pack_unit",
+          "units_in_stock",
+          "parent_category",
+          "app_price_per_unit"
+        ],
+        "raw_bytes": 772,
+        "category_id": "cat20048",
+        "display_name": "Bolsita de yogur con fruta y cookies Hero Solo sin azúcar añadido 100 g.",
+        "category_name": "Alimentación infantil"
+      }
+    ],
+    "store": "carrefour",
+    "cursor": "",
+    "job_key": "ce1-ce200-2eaf7e3af11850f979635687b73a",
+    "row_count": 3,
+    "elapsed_ms": 314.586,
+    "captured_at": "2026-09-03T10:20:12.433316+00:00",
+    "project_ref": "gkffvigcnsesbaihycay",
+    "operation_hash": "2eaf7e3af11850f979635687b73a7d68d8d0a142bb4363b77a0e1e8dccb9d0e1"
+  },
+  "transport_bytes": 2699
+}

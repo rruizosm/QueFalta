@@ -1,0 +1,3030 @@
+{
+  "plan": {
+    "version": "ce200-read-v1",
+    "kind": "census",
+    "store": "plusfresc",
+    "cursor": "",
+    "limit": 100,
+    "round": "light",
+    "select": "SELECT category_id,category_name,count(*)::int AS n,\n      count(*) FILTER (WHERE (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)')))::int AS frame_n\n      FROM public.plusfresc_products p WHERE published IS TRUE\n      GROUP BY category_id,category_name ORDER BY category_id::text,category_name LIMIT 500",
+    "job": "ce1-ce200-53fde264b0807d786420a35bbaf9",
+    "operationHash": "53fde264b0807d786420a35bbaf916426ae9241edab437e926e90191bc92b206",
+    "maxRows": 500,
+    "maxBytes": 131072,
+    "sql": "-- ce1-ce200-53fde264b0807d786420a35bbaf9: census; CE-BU-002; no app writes.\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $reserve$\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE status IN ('planned','running','halted','unknown'))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-53fde264b0807d786420a35bbaf9') THEN RAISE EXCEPTION 'ce200_exclusive_or_replay'; END IF;\n  IF EXISTS(SELECT 1 FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid))>0\n    OR (pid<>pg_backend_pid() AND state='active' AND query_start<clock_timestamp()-interval '30 seconds')) THEN RAISE EXCEPTION 'ce200_health_stop'; END IF;\n  UPDATE comparator_strict.execution_budget SET\n    sql_ms_reserved=sql_ms_reserved+10000,read_rows_reserved=read_rows_reserved+500,\n    bytes_reserved=bytes_reserved+131072,write_rows_reserved=write_rows_reserved+3,updated_at=clock_timestamp()\n    WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03'\n      AND approval_reference='CE-200-corpus-v1' AND bytes_limit=134217728 AND read_rows_limit=50000\n      AND bytes_reserved+131072<=bytes_limit AND read_rows_reserved+500<=read_rows_limit AND write_rows_reserved+3<=2000;\n  IF NOT FOUND THEN RAISE EXCEPTION 'ce200_budget'; END IF;\n  INSERT INTO comparator_strict.execution_jobs(id,project_ref,operation_key,sql_sha256,status,started_at,deadline_at,job_key,operation_hash,budget_date,reservation)\n    VALUES(gen_random_uuid(),'gkffvigcnsesbaihycay','ce200-census','7cd6d96248447d1d77fcef121fd9824634bbf445429f651521e7802df5f9989d','running',clock_timestamp(),clock_timestamp()+interval '20 minutes','ce1-ce200-53fde264b0807d786420a35bbaf9','53fde264b0807d786420a35bbaf916426ae9241edab437e926e90191bc92b206',DATE '2026-09-03','{\"sqlMs\":10000,\"readRows\":500,\"writeRows\":3,\"responseBytes\":131072}'::jsonb);\nEND $reserve$;\nCOMMIT;\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $payload$\nDECLARE payload jsonb; data jsonb; started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR NOT EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-53fde264b0807d786420a35bbaf9' AND status='running' AND operation_hash='53fde264b0807d786420a35bbaf916426ae9241edab437e926e90191bc92b206' AND deadline_at>clock_timestamp()) THEN RAISE EXCEPTION 'ce200_lease'; END IF;\n  SELECT coalesce(jsonb_agg(to_jsonb(q)),'[]'::jsonb) INTO data FROM (SELECT category_id,category_name,count(*)::int AS n,\n      count(*) FILTER (WHERE (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)')))::int AS frame_n\n      FROM public.plusfresc_products p WHERE published IS TRUE\n      GROUP BY category_id,category_name ORDER BY category_id::text,category_name LIMIT 500) q;\n  payload:=jsonb_build_object('job_key','ce1-ce200-53fde264b0807d786420a35bbaf9','operation_hash','53fde264b0807d786420a35bbaf916426ae9241edab437e926e90191bc92b206',\n    'project_ref','gkffvigcnsesbaihycay','captured_at',started,'kind','census','store','plusfresc',\n    'cursor','','rows',data,'row_count',jsonb_array_length(data),'elapsed_ms',extract(epoch FROM clock_timestamp()-started)*1000);\n  IF jsonb_array_length(data)>500 OR octet_length(payload::text)>122880 THEN RAISE EXCEPTION 'ce200_result_limit'; END IF;\n  UPDATE comparator_strict.execution_jobs SET status='succeeded',finished_at=clock_timestamp(),\n    receipt=jsonb_build_object('payload_sha256',encode(sha256(convert_to(payload::text,'UTF8')),'hex'),'row_count',jsonb_array_length(data),'payload_bytes',octet_length(payload::text),'elapsed_ms',payload->'elapsed_ms') WHERE job_key='ce1-ce200-53fde264b0807d786420a35bbaf9';\n  PERFORM set_config('comparator_strict.ce200_response',payload::text,true);\nEND $payload$;\nSELECT current_setting('comparator_strict.ce200_response')::jsonb AS evidence;\nCOMMIT;"
+  },
+  "payload": {
+    "kind": "census",
+    "rows": [
+      {
+        "n": 43,
+        "frame_n": 0,
+        "category_id": "01010101",
+        "category_name": "Aceite de Oliva"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "01010102",
+        "category_name": "Aceite Vegetal"
+      },
+      {
+        "n": 43,
+        "frame_n": 0,
+        "category_id": "010102",
+        "category_name": "Vinagres"
+      },
+      {
+        "n": 76,
+        "frame_n": 2,
+        "category_id": "010103",
+        "category_name": "Especias"
+      },
+      {
+        "n": 19,
+        "frame_n": 0,
+        "category_id": "01010401",
+        "category_name": "Mayonesa"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "01010402",
+        "category_name": "Mostaza"
+      },
+      {
+        "n": 47,
+        "frame_n": 1,
+        "category_id": "01010501",
+        "category_name": "Salsas Secas"
+      },
+      {
+        "n": 15,
+        "frame_n": 0,
+        "category_id": "01010502",
+        "category_name": "Salsas Frescas"
+      },
+      {
+        "n": 33,
+        "frame_n": 0,
+        "category_id": "01010601",
+        "category_name": "Tomate Frito"
+      },
+      {
+        "n": 11,
+        "frame_n": 0,
+        "category_id": "01010602",
+        "category_name": "Ketchup"
+      },
+      {
+        "n": 20,
+        "frame_n": 1,
+        "category_id": "010107",
+        "category_name": "Sal"
+      },
+      {
+        "n": 15,
+        "frame_n": 0,
+        "category_id": "01010801",
+        "category_name": "Azúcar"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "01010802",
+        "category_name": "Endulzantes"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "01020101",
+        "category_name": "Redondo"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "01020102",
+        "category_name": "Largo"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "01020103",
+        "category_name": "Especialidades"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "01020104",
+        "category_name": "Vaporizado"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "01020105",
+        "category_name": "Integral"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "01020106",
+        "category_name": "Trigo blando"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "01020107",
+        "category_name": "Preparado"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "01020108",
+        "category_name": "Quinoa"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "01020201",
+        "category_name": "Secas"
+      },
+      {
+        "n": 48,
+        "frame_n": 0,
+        "category_id": "01020202",
+        "category_name": "Cocidas"
+      },
+      {
+        "n": 19,
+        "frame_n": 0,
+        "category_id": "01020301",
+        "category_name": "Sopas y Cremas Deshidratadas"
+      },
+      {
+        "n": 17,
+        "frame_n": 0,
+        "category_id": "01020302",
+        "category_name": "Caldo en polvo"
+      },
+      {
+        "n": 63,
+        "frame_n": 0,
+        "category_id": "01020303",
+        "category_name": "Caldos y Cremas líquidas"
+      },
+      {
+        "n": 28,
+        "frame_n": 0,
+        "category_id": "01020304",
+        "category_name": "Harinas, Rebozados y Pan Rallado"
+      },
+      {
+        "n": 6,
+        "frame_n": 3,
+        "category_id": "01020305",
+        "category_name": "Purés, Sémolas y Tapiocas"
+      },
+      {
+        "n": 80,
+        "frame_n": 0,
+        "category_id": "01020401",
+        "category_name": "Pasta Normal"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "01020402",
+        "category_name": "Pasta Laminada"
+      },
+      {
+        "n": 16,
+        "frame_n": 0,
+        "category_id": "01020403",
+        "category_name": "Pasta Integral/Sin Gluten"
+      },
+      {
+        "n": 32,
+        "frame_n": 2,
+        "category_id": "01020404",
+        "category_name": "Pasta Fresca"
+      },
+      {
+        "n": 32,
+        "frame_n": 0,
+        "category_id": "01020501",
+        "category_name": "Platos Preparados Deshidratados"
+      },
+      {
+        "n": 25,
+        "frame_n": 0,
+        "category_id": "01020502",
+        "category_name": "Platos Preparados Conserva"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "01020601",
+        "category_name": "Gazpachos y Cremas"
+      },
+      {
+        "n": 8,
+        "frame_n": 5,
+        "category_id": "01020602",
+        "category_name": "Tortillas"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "01020604",
+        "category_name": "Exótico"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "01020605",
+        "category_name": "Sándwiches"
+      },
+      {
+        "n": 25,
+        "frame_n": 6,
+        "category_id": "01020606",
+        "category_name": "Resto Refrigerados"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "01020701",
+        "category_name": "Canelones"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "01020702",
+        "category_name": "Pasta"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "01020703",
+        "category_name": "Croquetas"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "01020704",
+        "category_name": "Ensaladas"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "01020705",
+        "category_name": "Carnes"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "01020706",
+        "category_name": "Pescado"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "01020707",
+        "category_name": "Arroces"
+      },
+      {
+        "n": 15,
+        "frame_n": 0,
+        "category_id": "01020709",
+        "category_name": "Veganos"
+      },
+      {
+        "n": 14,
+        "frame_n": 0,
+        "category_id": "01020710",
+        "category_name": "Resto"
+      },
+      {
+        "n": 26,
+        "frame_n": 0,
+        "category_id": "01020801",
+        "category_name": "Platos Exóticos"
+      },
+      {
+        "n": 18,
+        "frame_n": 0,
+        "category_id": "01020802",
+        "category_name": "Salsas Exóticas"
+      },
+      {
+        "n": 18,
+        "frame_n": 0,
+        "category_id": "010209",
+        "category_name": "Pizzas Refrigeradas"
+      },
+      {
+        "n": 25,
+        "frame_n": 0,
+        "category_id": "010210",
+        "category_name": "Masas refrigeradas"
+      },
+      {
+        "n": 50,
+        "frame_n": 0,
+        "category_id": "01030101",
+        "category_name": "Atún"
+      },
+      {
+        "n": 16,
+        "frame_n": 0,
+        "category_id": "01030102",
+        "category_name": "Sardinas"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "01030103",
+        "category_name": "Mejillones"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "01030104",
+        "category_name": "Calamares"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "01030105",
+        "category_name": "Pulpo"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "01030106",
+        "category_name": "Berberechos"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "01030107",
+        "category_name": "Almejas, Navajas i Aperitivos"
+      },
+      {
+        "n": 18,
+        "frame_n": 0,
+        "category_id": "01030108",
+        "category_name": "Anchoas"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "01030109",
+        "category_name": "Resto"
+      },
+      {
+        "n": 16,
+        "frame_n": 0,
+        "category_id": "01030201",
+        "category_name": "Espárragos"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "01030202",
+        "category_name": "Pimiento"
+      },
+      {
+        "n": 25,
+        "frame_n": 0,
+        "category_id": "01030203",
+        "category_name": "Verdura"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "01030204",
+        "category_name": "Ensalada"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "01030205",
+        "category_name": "Alcachofas"
+      },
+      {
+        "n": 26,
+        "frame_n": 0,
+        "category_id": "01030206",
+        "category_name": "Setas"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "01030207",
+        "category_name": "Maiz"
+      },
+      {
+        "n": 22,
+        "frame_n": 0,
+        "category_id": "01030208",
+        "category_name": "Tomate para freir"
+      },
+      {
+        "n": 31,
+        "frame_n": 0,
+        "category_id": "01030301",
+        "category_name": "Paté Seco"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "01030302",
+        "category_name": "Paté Fresco"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "010304",
+        "category_name": "Precocinados Cárnicos"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "01030501",
+        "category_name": "Frankfurt"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "01030502",
+        "category_name": "Viena"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "01030503",
+        "category_name": "Bratwurst"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "01030506",
+        "category_name": "Queso"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "01030508",
+        "category_name": "Otros sabores"
+      },
+      {
+        "n": 22,
+        "frame_n": 1,
+        "category_id": "010306",
+        "category_name": "Fruta en almíbar"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "01030701",
+        "category_name": "Bacalao"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "01030702",
+        "category_name": "Arenques"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "01030703",
+        "category_name": "Boquerones"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "01030704",
+        "category_name": "Resto Salazones"
+      },
+      {
+        "n": 22,
+        "frame_n": 1,
+        "category_id": "01030705",
+        "category_name": "Resto Pesca Salada"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "01030801",
+        "category_name": "Salmó"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "01030803",
+        "category_name": "Resto Ahumados"
+      },
+      {
+        "n": 66,
+        "frame_n": 0,
+        "category_id": "01040101",
+        "category_name": "Chocolate tableta"
+      },
+      {
+        "n": 18,
+        "frame_n": 0,
+        "category_id": "01040102",
+        "category_name": "Chocolate a la taza"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "01040103",
+        "category_name": "Bombones"
+      },
+      {
+        "n": 46,
+        "frame_n": 0,
+        "category_id": "01040104",
+        "category_name": "Snacks chocolate"
+      },
+      {
+        "n": 24,
+        "frame_n": 0,
+        "category_id": "01040201",
+        "category_name": "Café Molido"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "01040202",
+        "category_name": "Café en Grano"
+      },
+      {
+        "n": 21,
+        "frame_n": 0,
+        "category_id": "01040203",
+        "category_name": "Café Soluble"
+      },
+      {
+        "n": 73,
+        "frame_n": 0,
+        "category_id": "01040204",
+        "category_name": "Café en Cápsulas"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "01040205",
+        "category_name": "Café Preparado"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "01040206",
+        "category_name": "Sucedáneos"
+      },
+      {
+        "n": 53,
+        "frame_n": 0,
+        "category_id": "01040301",
+        "category_name": "Cereales Desayuno"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "01040302",
+        "category_name": "Barritas"
+      },
+      {
+        "n": 57,
+        "frame_n": 0,
+        "category_id": "01040401",
+        "category_name": "Mermelada"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "01040402",
+        "category_name": "Confitura"
+      },
+      {
+        "n": 15,
+        "frame_n": 0,
+        "category_id": "01040403",
+        "category_name": "Miel"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "01040404",
+        "category_name": "Membrillo y Jalea"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "01040405",
+        "category_name": "Compotas"
+      },
+      {
+        "n": 17,
+        "frame_n": 2,
+        "category_id": "01040501",
+        "category_name": "Te"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "01040502",
+        "category_name": "Manzanilla"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "01040503",
+        "category_name": "Tila"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "01040504",
+        "category_name": "Poleo Menta"
+      },
+      {
+        "n": 16,
+        "frame_n": 0,
+        "category_id": "01040505",
+        "category_name": "Infusiones Terapéuticas"
+      },
+      {
+        "n": 11,
+        "frame_n": 0,
+        "category_id": "01040506",
+        "category_name": "Resto Infusiones"
+      },
+      {
+        "n": 16,
+        "frame_n": 0,
+        "category_id": "01040601",
+        "category_name": "Soluble"
+      },
+      {
+        "n": 19,
+        "frame_n": 0,
+        "category_id": "01040602",
+        "category_name": "Crema Cacao para untar"
+      },
+      {
+        "n": 46,
+        "frame_n": 0,
+        "category_id": "01040701",
+        "category_name": "Caramelos"
+      },
+      {
+        "n": 37,
+        "frame_n": 0,
+        "category_id": "01040702",
+        "category_name": "Chicles"
+      },
+      {
+        "n": 35,
+        "frame_n": 0,
+        "category_id": "01040703",
+        "category_name": "Golosinas"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "01040801",
+        "category_name": "Levadura"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "01040802",
+        "category_name": "Caramelo Líquido"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "01040803",
+        "category_name": "Coco Rallado"
+      },
+      {
+        "n": 44,
+        "frame_n": 1,
+        "category_id": "01040804",
+        "category_name": "Resto Ingredientes"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "01040901",
+        "category_name": "Postres en polvo"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "01040902",
+        "category_name": "Gelatinas"
+      },
+      {
+        "n": 54,
+        "frame_n": 0,
+        "category_id": "01050101",
+        "category_name": "Bollería Industrial"
+      },
+      {
+        "n": 14,
+        "frame_n": 0,
+        "category_id": "01050102",
+        "category_name": "Hojaldre"
+      },
+      {
+        "n": 18,
+        "frame_n": 0,
+        "category_id": "01050103",
+        "category_name": "Magdalenas"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "01050104",
+        "category_name": "Bollería Frita"
+      },
+      {
+        "n": 46,
+        "frame_n": 1,
+        "category_id": "01050105",
+        "category_name": "Pastelitos Industriales"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "01050106",
+        "category_name": "Tartas y Bizcocho"
+      },
+      {
+        "n": 12,
+        "frame_n": 3,
+        "category_id": "01050107",
+        "category_name": "Especialidades Bollería"
+      },
+      {
+        "n": 47,
+        "frame_n": 0,
+        "category_id": "01050201",
+        "category_name": "Galletas Desayuno"
+      },
+      {
+        "n": 59,
+        "frame_n": 0,
+        "category_id": "01050202",
+        "category_name": "Galleta Merienda"
+      },
+      {
+        "n": 87,
+        "frame_n": 0,
+        "category_id": "01050203",
+        "category_name": "Galleta Especialidad"
+      },
+      {
+        "n": 27,
+        "frame_n": 0,
+        "category_id": "01050301",
+        "category_name": "Pan Tostado"
+      },
+      {
+        "n": 33,
+        "frame_n": 0,
+        "category_id": "01050302",
+        "category_name": "Pan de Molde"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "01050303",
+        "category_name": "Biscotes"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "01050304",
+        "category_name": "Panecillo Tostado"
+      },
+      {
+        "n": 15,
+        "frame_n": 0,
+        "category_id": "01050305",
+        "category_name": "Panecillo Bollería"
+      },
+      {
+        "n": 29,
+        "frame_n": 0,
+        "category_id": "01050306",
+        "category_name": "Panecillo Tostado"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "01050308",
+        "category_name": "Especialidades Panadería Industrial"
+      },
+      {
+        "n": 68,
+        "frame_n": 1,
+        "category_id": "01050401",
+        "category_name": "Desayunos y Meriendas"
+      },
+      {
+        "n": 29,
+        "frame_n": 0,
+        "category_id": "01050406",
+        "category_name": "Otros Dietética"
+      },
+      {
+        "n": 40,
+        "frame_n": 1,
+        "category_id": "01050407",
+        "category_name": "Complementos Deportes"
+      },
+      {
+        "n": 31,
+        "frame_n": 0,
+        "category_id": "010505",
+        "category_name": "Bollería ecológica"
+      },
+      {
+        "n": 88,
+        "frame_n": 3,
+        "category_id": "01060101",
+        "category_name": "Frutos Secos"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "01060102",
+        "category_name": "Fruita Seca"
+      },
+      {
+        "n": 45,
+        "frame_n": 45,
+        "category_id": "01060201",
+        "category_name": "Patatas Fritas"
+      },
+      {
+        "n": 44,
+        "frame_n": 2,
+        "category_id": "01060202",
+        "category_name": "Snacks"
+      },
+      {
+        "n": 50,
+        "frame_n": 0,
+        "category_id": "01060301",
+        "category_name": "Olivas"
+      },
+      {
+        "n": 23,
+        "frame_n": 0,
+        "category_id": "01060302",
+        "category_name": "Aperitivos Conserva"
+      },
+      {
+        "n": 42,
+        "frame_n": 41,
+        "category_id": "020101",
+        "category_name": "Sin gas"
+      },
+      {
+        "n": 18,
+        "frame_n": 17,
+        "category_id": "020102",
+        "category_name": "Con gas"
+      },
+      {
+        "n": 38,
+        "frame_n": 0,
+        "category_id": "020201",
+        "category_name": "Colas"
+      },
+      {
+        "n": 15,
+        "frame_n": 0,
+        "category_id": "020202",
+        "category_name": "Naranjada"
+      },
+      {
+        "n": 20,
+        "frame_n": 0,
+        "category_id": "020203",
+        "category_name": "Limonada"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "020204",
+        "category_name": "Gasosas"
+      },
+      {
+        "n": 41,
+        "frame_n": 1,
+        "category_id": "020205",
+        "category_name": "Isotónicas/Energéticas"
+      },
+      {
+        "n": 16,
+        "frame_n": 0,
+        "category_id": "020207",
+        "category_name": "Tónicas"
+      },
+      {
+        "n": 14,
+        "frame_n": 0,
+        "category_id": "020208",
+        "category_name": "Bebidas de Té"
+      },
+      {
+        "n": 30,
+        "frame_n": 0,
+        "category_id": "020209",
+        "category_name": "Resto Bebidas"
+      },
+      {
+        "n": 36,
+        "frame_n": 2,
+        "category_id": "020301",
+        "category_name": "Zumos 100%"
+      },
+      {
+        "n": 41,
+        "frame_n": 0,
+        "category_id": "020302",
+        "category_name": "Néctares"
+      },
+      {
+        "n": 13,
+        "frame_n": 1,
+        "category_id": "020303",
+        "category_name": "Zumos Frescos"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "020304",
+        "category_name": "Mosto/Zumo de Uvas"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "020305",
+        "category_name": "Bifrutas"
+      },
+      {
+        "n": 38,
+        "frame_n": 0,
+        "category_id": "02040101",
+        "category_name": "Normal"
+      },
+      {
+        "n": 26,
+        "frame_n": 0,
+        "category_id": "02040102",
+        "category_name": "Especialidades"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "02040103",
+        "category_name": "Extra"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "02040104",
+        "category_name": "Negra"
+      },
+      {
+        "n": 20,
+        "frame_n": 0,
+        "category_id": "020402",
+        "category_name": "Sin alcohol"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "020403",
+        "category_name": "Con limón"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "03010101",
+        "category_name": "Cefalópodos Paquetería"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "03010102",
+        "category_name": "Merluza Paquetería"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "03010103",
+        "category_name": "Bacalao Paquetería"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "03010105",
+        "category_name": "Marisco Paquetería"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "03010106",
+        "category_name": "Cáscara Paquetería"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "03010107",
+        "category_name": "Gambas Paquetería"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "03010108",
+        "category_name": "Rape Paquetería"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "03010109",
+        "category_name": "Resto Peescado Paquetería"
+      },
+      {
+        "n": 20,
+        "frame_n": 0,
+        "category_id": "03010110",
+        "category_name": "Preparados Pescado Paquetería"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "03010201",
+        "category_name": "Cefalópodos Granel"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "03010202",
+        "category_name": "Merluza Granel"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "03010203",
+        "category_name": "Bacalao Granel"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "03010205",
+        "category_name": "Marisco Granel"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "03010206",
+        "category_name": "Cáscara Granel"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "03010207",
+        "category_name": "Gambas Granel"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "03010208",
+        "category_name": "Rape Granel"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "03010210",
+        "category_name": "Preparados Pescado Granel"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "03010301",
+        "category_name": "Congelado Plusfresc"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "03020101",
+        "category_name": "Espinacas Paquetería"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "03020102",
+        "category_name": "Guisantes Paquetería"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "03020103",
+        "category_name": "Judías Paquetería"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "03020104",
+        "category_name": "Menestras Paquetería"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "03020105",
+        "category_name": "Ensaladas Paquetería"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "03020106",
+        "category_name": "Habas Paquetería"
+      },
+      {
+        "n": 23,
+        "frame_n": 0,
+        "category_id": "03020107",
+        "category_name": "Resto Verduras Paquetería"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "03030101",
+        "category_name": "Croquetas Paquetería"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "03030102",
+        "category_name": "Empanadillas Paquetería"
+      },
+      {
+        "n": 21,
+        "frame_n": 0,
+        "category_id": "03030103",
+        "category_name": "Resto Precocinado Paquetería"
+      },
+      {
+        "n": 8,
+        "frame_n": 8,
+        "category_id": "03030104",
+        "category_name": "Patatas Fritas Paquetería"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "03030203",
+        "category_name": "Resto Precocinado Granel"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "03040101",
+        "category_name": "Base Arroz"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "03040102",
+        "category_name": "Base Pasta"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "03040103",
+        "category_name": "Base Carne"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "03040105",
+        "category_name": "Base Verdura"
+      },
+      {
+        "n": 1,
+        "frame_n": 1,
+        "category_id": "03040107",
+        "category_name": "Tortillas"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "03040109",
+        "category_name": "Exóticos"
+      },
+      {
+        "n": 49,
+        "frame_n": 0,
+        "category_id": "03040201",
+        "category_name": "Pizzas"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "030501",
+        "category_name": "Pastelería y otros"
+      },
+      {
+        "n": 17,
+        "frame_n": 0,
+        "category_id": "030601",
+        "category_name": "Sin glúten"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "030602",
+        "category_name": "Hielo y granizados"
+      },
+      {
+        "n": 11,
+        "frame_n": 0,
+        "category_id": "04010201",
+        "category_name": "Leche Condensada"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "04010202",
+        "category_name": "Leche en Polvo"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "04010203",
+        "category_name": "Leche Evaporada"
+      },
+      {
+        "n": 11,
+        "frame_n": 0,
+        "category_id": "04010401",
+        "category_name": "Leche entera"
+      },
+      {
+        "n": 11,
+        "frame_n": 0,
+        "category_id": "04010501",
+        "category_name": "Leche semidesnatada"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "04010601",
+        "category_name": "Leche desnatada"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "04010701",
+        "category_name": "Leche sin lactosa entera"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "04010702",
+        "category_name": "Leche sin lactosa semidesnatada"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "04010703",
+        "category_name": "Leche sin lactosa desnatada"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "04010801",
+        "category_name": "Leche enriquecida"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "04010901",
+        "category_name": "Preparados lácteos"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "04011001",
+        "category_name": "Leche fresca"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "04020101",
+        "category_name": "Mantequilla con sal"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "04020102",
+        "category_name": "Mantequilla sin sal"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "04020103",
+        "category_name": "Resto de Mantequilla"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "04020201",
+        "category_name": "Margarina Vegetal"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "04020301",
+        "category_name": "Nata Montada"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "04020302",
+        "category_name": "Nata para Montar"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "04020303",
+        "category_name": "Nata para Cocinar"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "04030101",
+        "category_name": "Batidos Cacao"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "04030201",
+        "category_name": "Horchata Larga Durada"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "04030202",
+        "category_name": "Horchata Fresca"
+      },
+      {
+        "n": 14,
+        "frame_n": 14,
+        "category_id": "040405",
+        "category_name": "Naturales"
+      },
+      {
+        "n": 38,
+        "frame_n": 38,
+        "category_id": "040406",
+        "category_name": "Sabores y Frutas"
+      },
+      {
+        "n": 19,
+        "frame_n": 19,
+        "category_id": "040407",
+        "category_name": "Desnatados y 0%"
+      },
+      {
+        "n": 28,
+        "frame_n": 28,
+        "category_id": "04040801",
+        "category_name": "Griegos"
+      },
+      {
+        "n": 5,
+        "frame_n": 4,
+        "category_id": "04040802",
+        "category_name": "Mousse"
+      },
+      {
+        "n": 2,
+        "frame_n": 2,
+        "category_id": "04040803",
+        "category_name": "Cristal"
+      },
+      {
+        "n": 12,
+        "frame_n": 12,
+        "category_id": "04040804",
+        "category_name": "Especiales"
+      },
+      {
+        "n": 14,
+        "frame_n": 14,
+        "category_id": "04040901",
+        "category_name": "Colesterol"
+      },
+      {
+        "n": 7,
+        "frame_n": 7,
+        "category_id": "04040902",
+        "category_name": "Colesterol"
+      },
+      {
+        "n": 39,
+        "frame_n": 39,
+        "category_id": "040410",
+        "category_name": "Bífidus"
+      },
+      {
+        "n": 29,
+        "frame_n": 2,
+        "category_id": "040411",
+        "category_name": "Kéfir"
+      },
+      {
+        "n": 30,
+        "frame_n": 30,
+        "category_id": "040412",
+        "category_name": "Sin Lactosa y Vegetales"
+      },
+      {
+        "n": 13,
+        "frame_n": 11,
+        "category_id": "040413",
+        "category_name": "Bebibles"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "040503",
+        "category_name": "Pastel de Queso"
+      },
+      {
+        "n": 21,
+        "frame_n": 0,
+        "category_id": "040504",
+        "category_name": "Flanes"
+      },
+      {
+        "n": 16,
+        "frame_n": 0,
+        "category_id": "040505",
+        "category_name": "Natillas"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "040506",
+        "category_name": "Arroz con leche"
+      },
+      {
+        "n": 7,
+        "frame_n": 3,
+        "category_id": "040507",
+        "category_name": "Infantiles"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "040508",
+        "category_name": "Cuajada"
+      },
+      {
+        "n": 13,
+        "frame_n": 1,
+        "category_id": "040509",
+        "category_name": "Tiramisú, Mousse, Copa y Otros"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "040510",
+        "category_name": "Gelatinas"
+      },
+      {
+        "n": 18,
+        "frame_n": 0,
+        "category_id": "040601",
+        "category_name": "Rubios"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "040602",
+        "category_name": "De Codorniz"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "040604",
+        "category_name": "Clara de Huevo"
+      },
+      {
+        "n": 14,
+        "frame_n": 0,
+        "category_id": "04070101",
+        "category_name": "Bebidas de avena"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "04070201",
+        "category_name": "Bebidas de arroz"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "04070301",
+        "category_name": "Bebidas de almendra"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "04070401",
+        "category_name": "Bebidas de soja"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "04070501",
+        "category_name": "Otras bebidas vegetales"
+      },
+      {
+        "n": 54,
+        "frame_n": 0,
+        "category_id": "050101",
+        "category_name": "Champú"
+      },
+      {
+        "n": 36,
+        "frame_n": 0,
+        "category_id": "050102",
+        "category_name": "Acondicionador"
+      },
+      {
+        "n": 23,
+        "frame_n": 0,
+        "category_id": "050103",
+        "category_name": "Fijación Capilar"
+      },
+      {
+        "n": 23,
+        "frame_n": 0,
+        "category_id": "050104",
+        "category_name": "Colorante"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "050105",
+        "category_name": "Lociones capilares"
+      },
+      {
+        "n": 38,
+        "frame_n": 0,
+        "category_id": "050201",
+        "category_name": "Compresas"
+      },
+      {
+        "n": 15,
+        "frame_n": 0,
+        "category_id": "050202",
+        "category_name": "Tampones"
+      },
+      {
+        "n": 14,
+        "frame_n": 0,
+        "category_id": "050203",
+        "category_name": "Protectores Íntimos"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "050204",
+        "category_name": "Higiene Íntima"
+      },
+      {
+        "n": 41,
+        "frame_n": 1,
+        "category_id": "05030101",
+        "category_name": "Parafarmacia"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "05030201",
+        "category_name": "Medias"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "05030202",
+        "category_name": "Calcetines"
+      },
+      {
+        "n": 33,
+        "frame_n": 0,
+        "category_id": "050401",
+        "category_name": "Dentífricos"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "050402",
+        "category_name": "Elixires"
+      },
+      {
+        "n": 15,
+        "frame_n": 0,
+        "category_id": "050403",
+        "category_name": "Cepillos Dentales"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "050404",
+        "category_name": "Varios Dentales"
+      },
+      {
+        "n": 15,
+        "frame_n": 0,
+        "category_id": "050501",
+        "category_name": "Maquinillas y Hojas"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "050502",
+        "category_name": "Jabón de Afeitar"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "050503",
+        "category_name": "Lociones"
+      },
+      {
+        "n": 17,
+        "frame_n": 0,
+        "category_id": "05060101",
+        "category_name": "Lociones y Leches Corporales"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "05060102",
+        "category_name": "Cremas Manos"
+      },
+      {
+        "n": 52,
+        "frame_n": 0,
+        "category_id": "05060201",
+        "category_name": "Gel Baño"
+      },
+      {
+        "n": 15,
+        "frame_n": 0,
+        "category_id": "05060202",
+        "category_name": "Jabón Tocador"
+      },
+      {
+        "n": 56,
+        "frame_n": 0,
+        "category_id": "050603",
+        "category_name": "Desodorantes"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "050605",
+        "category_name": "Tratamiento de Pies"
+      },
+      {
+        "n": 20,
+        "frame_n": 0,
+        "category_id": "050606",
+        "category_name": "Depilatorios"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "05060701",
+        "category_name": "Utensilios Perfumería y Belleza"
+      },
+      {
+        "n": 16,
+        "frame_n": 0,
+        "category_id": "05060702",
+        "category_name": "Utensilios de Higiene"
+      },
+      {
+        "n": 20,
+        "frame_n": 0,
+        "category_id": "05060901",
+        "category_name": "Cremas y Geles de Belleza"
+      },
+      {
+        "n": 16,
+        "frame_n": 4,
+        "category_id": "05060902",
+        "category_name": "Limpieza Facial"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "05061001",
+        "category_name": "Colonia Femenina"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "05061004",
+        "category_name": "Colonia Familiar"
+      },
+      {
+        "n": 26,
+        "frame_n": 0,
+        "category_id": "05061101",
+        "category_name": "Bronzeadores"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "05061103",
+        "category_name": "Productos Post-Solares"
+      },
+      {
+        "n": 20,
+        "frame_n": 0,
+        "category_id": "060101",
+        "category_name": "Papel Higiénico"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "060102",
+        "category_name": "Papel Cocina"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "060103",
+        "category_name": "Servilletas"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "060104",
+        "category_name": "Pañuelos"
+      },
+      {
+        "n": 17,
+        "frame_n": 0,
+        "category_id": "06020101",
+        "category_name": "Ambientadores Eléctricos"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "06020102",
+        "category_name": "Ambientadores Automáticos"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "06020103",
+        "category_name": "Ambientadores Aerosoles"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "06020104",
+        "category_name": "Ambientadores Mini spray"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "06020105",
+        "category_name": "Ambientadores Geles"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "06020106",
+        "category_name": "Ambientadores Coches"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "06020107",
+        "category_name": "Ambientadores Velas"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "06020108",
+        "category_name": "Ambientadores Varillas"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "06020201",
+        "category_name": "Insecticidas Insectos Voladores"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "06020202",
+        "category_name": "Insecticidas Hogar y Plantas"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "06020203",
+        "category_name": "Insecticidas Escarabajos"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "06020204",
+        "category_name": "Antipolilla"
+      },
+      {
+        "n": 67,
+        "frame_n": 0,
+        "category_id": "06030101",
+        "category_name": "Detergente Máquina"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "06030102",
+        "category_name": "Detergente a Mano"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "06030103",
+        "category_name": "Detergente Ropa Delicada"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "06030201",
+        "category_name": "Suavizantes Tradicionales"
+      },
+      {
+        "n": 21,
+        "frame_n": 0,
+        "category_id": "06030202",
+        "category_name": "Suavizantes Concentrados"
+      },
+      {
+        "n": 15,
+        "frame_n": 0,
+        "category_id": "06030203",
+        "category_name": "Suavizantes Complementos"
+      },
+      {
+        "n": 4,
+        "frame_n": 2,
+        "category_id": "06030301",
+        "category_name": "Para Planchar"
+      },
+      {
+        "n": 15,
+        "frame_n": 0,
+        "category_id": "06030302",
+        "category_name": "Quitamanchas"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "06030303",
+        "category_name": "Descalcificador"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "06030304",
+        "category_name": "Blanquedores"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "06030306",
+        "category_name": "Aditivos Lavado"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "06030309",
+        "category_name": "Limpiadores Lavadora"
+      },
+      {
+        "n": 17,
+        "frame_n": 0,
+        "category_id": "06030401",
+        "category_name": "Vajilla Mano"
+      },
+      {
+        "n": 19,
+        "frame_n": 0,
+        "category_id": "06030402",
+        "category_name": "Vajilla Máquina"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "06030403",
+        "category_name": "Complemento Lavavajilla"
+      },
+      {
+        "n": 21,
+        "frame_n": 0,
+        "category_id": "06030501",
+        "category_name": "Lejías"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "06030502",
+        "category_name": "Desinfectantes y Líquidos fuertes"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "06030503",
+        "category_name": "Desinfectante de Uso Alimentario"
+      },
+      {
+        "n": 16,
+        "frame_n": 0,
+        "category_id": "06030601",
+        "category_name": "Limpieza Zapatos"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "06030602",
+        "category_name": "Plantillas de Pies"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "06030603",
+        "category_name": "Desodorantes Zapatos"
+      },
+      {
+        "n": 18,
+        "frame_n": 0,
+        "category_id": "060401",
+        "category_name": "Bolsas Basuras"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "060402",
+        "category_name": "Papel de Aluminio"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "060403",
+        "category_name": "Film Transparente"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "060404",
+        "category_name": "Bolsas Otros Usos"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "060501",
+        "category_name": "Bombillas"
+      },
+      {
+        "n": 49,
+        "frame_n": 0,
+        "category_id": "060502",
+        "category_name": "Utensilios Hogar"
+      },
+      {
+        "n": 20,
+        "frame_n": 0,
+        "category_id": "060503",
+        "category_name": "Pilas"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "060506",
+        "category_name": "Papelería"
+      },
+      {
+        "n": 25,
+        "frame_n": 0,
+        "category_id": "060601",
+        "category_name": "Uso General"
+      },
+      {
+        "n": 33,
+        "frame_n": 1,
+        "category_id": "060602",
+        "category_name": "Baño"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "060603",
+        "category_name": "Limpiacristales"
+      },
+      {
+        "n": 19,
+        "frame_n": 0,
+        "category_id": "060604",
+        "category_name": "Suelo"
+      },
+      {
+        "n": 29,
+        "frame_n": 0,
+        "category_id": "060605",
+        "category_name": "Específicos"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "060606",
+        "category_name": "Cocina"
+      },
+      {
+        "n": 22,
+        "frame_n": 0,
+        "category_id": "060701",
+        "category_name": "Estropajos"
+      },
+      {
+        "n": 14,
+        "frame_n": 0,
+        "category_id": "060702",
+        "category_name": "Bayetas y Gamuza"
+      },
+      {
+        "n": 11,
+        "frame_n": 0,
+        "category_id": "060703",
+        "category_name": "Guantes"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "060704",
+        "category_name": "Fregonas"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "060705",
+        "category_name": "Cepillos"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "060706",
+        "category_name": "Palos y Recogedores"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "060707",
+        "category_name": "Mopas"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "060708",
+        "category_name": "Cubos y Escobillas"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "060710",
+        "category_name": "Utensilios de Ropa"
+      },
+      {
+        "n": 43,
+        "frame_n": 3,
+        "category_id": "070101",
+        "category_name": "Potitos Infantiles"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "070102",
+        "category_name": "Papillas Infantiles"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "070103",
+        "category_name": "Leches Infantiles"
+      },
+      {
+        "n": 1,
+        "frame_n": 1,
+        "category_id": "070106",
+        "category_name": "Yogures"
+      },
+      {
+        "n": 16,
+        "frame_n": 0,
+        "category_id": "07020101",
+        "category_name": "Pañales Tradicional"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "07020102",
+        "category_name": "Resto Pañales"
+      },
+      {
+        "n": 12,
+        "frame_n": 1,
+        "category_id": "070202",
+        "category_name": "Toallitas"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "070203",
+        "category_name": "Perfumería Infantil"
+      },
+      {
+        "n": 22,
+        "frame_n": 0,
+        "category_id": "080101",
+        "category_name": "Comida Seca"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "080102",
+        "category_name": "Comida Húmeda"
+      },
+      {
+        "n": 14,
+        "frame_n": 0,
+        "category_id": "080103",
+        "category_name": "Snacks"
+      },
+      {
+        "n": 23,
+        "frame_n": 0,
+        "category_id": "080201",
+        "category_name": "Comida Seca"
+      },
+      {
+        "n": 31,
+        "frame_n": 0,
+        "category_id": "080202",
+        "category_name": "Comida Húmeda"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "080203",
+        "category_name": "Snacks"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "080301",
+        "category_name": "Comida Pájaros"
+      },
+      {
+        "n": 3,
+        "frame_n": 1,
+        "category_id": "080302",
+        "category_name": "Comida Pájaros Pequeños"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "080401",
+        "category_name": "Insecticidas"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "080402",
+        "category_name": "Champús"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "080403",
+        "category_name": "Bolsas Excrementos"
+      },
+      {
+        "n": 24,
+        "frame_n": 1,
+        "category_id": "080404",
+        "category_name": "Complementos"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "09010101",
+        "category_name": "Manzanas"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09010102",
+        "category_name": "Pera"
+      },
+      {
+        "n": 4,
+        "frame_n": 4,
+        "category_id": "09010103",
+        "category_name": "Melocotón, nectarina y paraguayo"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09010105",
+        "category_name": "Ciruela y Albaricoque"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "09010106",
+        "category_name": "Fresa y Berries"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09010107",
+        "category_name": "Melón"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09010109",
+        "category_name": "Naranjas"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09010110",
+        "category_name": "Mandarinas"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09010111",
+        "category_name": "Limón"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "09010112",
+        "category_name": "Uva"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "09010113",
+        "category_name": "Plátanos"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09010114",
+        "category_name": "Piña"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "09010115",
+        "category_name": "Kiwi"
+      },
+      {
+        "n": 7,
+        "frame_n": 2,
+        "category_id": "09010116",
+        "category_name": "Tropicales"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "09010117",
+        "category_name": "Exóticos"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09010118",
+        "category_name": "Otras Frutas"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09010121",
+        "category_name": "Pomelo"
+      },
+      {
+        "n": 13,
+        "frame_n": 13,
+        "category_id": "09010201",
+        "category_name": "Patata y Moniato"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "09010202",
+        "category_name": "Cebolla"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "09010204",
+        "category_name": "Ajo"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09010205",
+        "category_name": "Puerro"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "09010206",
+        "category_name": "Zanahoria y Remolacha"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "09010207",
+        "category_name": "Ensaladas"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "09010208",
+        "category_name": "Tomates"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "09010209",
+        "category_name": "Pimiento"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "09010210",
+        "category_name": "Berenjena y Calabacín"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09010211",
+        "category_name": "Pepino"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "09010213",
+        "category_name": "Col y Coliflor"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09010214",
+        "category_name": "Judía"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09010215",
+        "category_name": "Acelga y Espinacas"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09010216",
+        "category_name": "Apio"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09010217",
+        "category_name": "Espárrago"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "09010218",
+        "category_name": "Caldo"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09010219",
+        "category_name": "Otras Verduras"
+      },
+      {
+        "n": 42,
+        "frame_n": 0,
+        "category_id": "09010301",
+        "category_name": "Ensalada"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "09010302",
+        "category_name": "Verdura"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "09010303",
+        "category_name": "Fruta"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09010304",
+        "category_name": "Sopas y Cremas"
+      },
+      {
+        "n": 9,
+        "frame_n": 1,
+        "category_id": "09010305",
+        "category_name": "Salsas y Especias"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "09010401",
+        "category_name": "Setas"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "09010501",
+        "category_name": "Hierbas Aromáticas"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09010502",
+        "category_name": "Especias"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "09010601",
+        "category_name": "Olivas y Encurtidos"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09010901",
+        "category_name": "Caracoles"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "09011001",
+        "category_name": "Zumos"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "09011101",
+        "category_name": "Frutos secos"
+      },
+      {
+        "n": 18,
+        "frame_n": 1,
+        "category_id": "09012001",
+        "category_name": "Es de Temporada!"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "09020101",
+        "category_name": "Merluza Mostrador"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "09020102",
+        "category_name": "Rape Mostrador"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "09020103",
+        "category_name": "Lenguado Mostrador"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09020104",
+        "category_name": "Dorada Mostrador"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09020105",
+        "category_name": "Lubina Mostrador"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09020106",
+        "category_name": "Rodaballo Mostrador"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09020107",
+        "category_name": "Trucha Mostardor"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09020108",
+        "category_name": "Bacalao Mostrador"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09020109",
+        "category_name": "Varios Pescado Blanco Mostrador"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09020201",
+        "category_name": "Sardina Mostrador"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "09020202",
+        "category_name": "Salmón Mostrador"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "09020203",
+        "category_name": "Atún Mostrador"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09020204",
+        "category_name": "Varios Pescado Azul Mostrador"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09020206",
+        "category_name": "Boquerón Mostrador"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "09020301",
+        "category_name": "Sepia Mostrador"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "09020302",
+        "category_name": "Calamar Mostrador"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09020303",
+        "category_name": "Pulpo Mostrador"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09020305",
+        "category_name": "Bandejas Cefalópodos"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09020401",
+        "category_name": "Mejillón Mostrador"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09020402",
+        "category_name": "Almeja Mostrador"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09020403",
+        "category_name": "Berberecho Mostrador"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "09020404",
+        "category_name": "Navaja Mostrador"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09020405",
+        "category_name": "Ostra Mostrador"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "09020406",
+        "category_name": "Varios Moluscos Mostrador"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "09020501",
+        "category_name": "Gamba Mostrador"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09020502",
+        "category_name": "Langostino Mostrador"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "09020503",
+        "category_name": "Cigala Mostrador"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09020504",
+        "category_name": "Bogavante Mostrador"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "09020505",
+        "category_name": "Varios Crustáceos Mostrador"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "09020701",
+        "category_name": "Elaborados Pescado Mostrador"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09020702",
+        "category_name": "Cocidos Pescado Mostrador"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "09020703",
+        "category_name": "Elaborados Pescado Bandeja"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "09020704",
+        "category_name": "Cocidos Pescado Bandeja"
+      },
+      {
+        "n": 26,
+        "frame_n": 0,
+        "category_id": "09030101",
+        "category_name": "Pan Redondo"
+      },
+      {
+        "n": 21,
+        "frame_n": 1,
+        "category_id": "09030102",
+        "category_name": "Pan Barra"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "09030103",
+        "category_name": "Integrales"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "09030201",
+        "category_name": "Pan Blanco"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "09030203",
+        "category_name": "Especiales"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "09030301",
+        "category_name": "Coca Dulce"
+      },
+      {
+        "n": 15,
+        "frame_n": 0,
+        "category_id": "09030302",
+        "category_name": "Coca Salada"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09030303",
+        "category_name": "Panadones"
+      },
+      {
+        "n": 8,
+        "frame_n": 1,
+        "category_id": "09030401",
+        "category_name": "Madalena"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "09030501",
+        "category_name": "Croissant"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "09030502",
+        "category_name": "Hojaldre"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "09030503",
+        "category_name": "Bollería"
+      },
+      {
+        "n": 19,
+        "frame_n": 0,
+        "category_id": "09040101",
+        "category_name": "Ternera Hembra al Corte"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09040104",
+        "category_name": "Añojo al Corte"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "09040105",
+        "category_name": "Ternera Hembra Bandeja"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "09040106",
+        "category_name": "Ternera Bandeja y G.P. Ternera de los Pirineos"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09040107",
+        "category_name": "Añojo Bandeja"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09040108",
+        "category_name": "Carpaccio"
+      },
+      {
+        "n": 14,
+        "frame_n": 0,
+        "category_id": "09040201",
+        "category_name": "Cerdo al Corte"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "09040202",
+        "category_name": "Cerdo Bandeja"
+      },
+      {
+        "n": 22,
+        "frame_n": 0,
+        "category_id": "09040301",
+        "category_name": "Pollo al Corte"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09040302",
+        "category_name": "Pavo al Corte"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09040303",
+        "category_name": "Guallas y Picantón Mostrador"
+      },
+      {
+        "n": 23,
+        "frame_n": 0,
+        "category_id": "09040305",
+        "category_name": "Pollo Bandeja"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "09040306",
+        "category_name": "Pavo Bandeja"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "09040307",
+        "category_name": "Guallas y Picantón Bandeja"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "09040401",
+        "category_name": "Cordero al Corte"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "09040403",
+        "category_name": "Cordero Bandeja"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09040501",
+        "category_name": "Conejo al Corte"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "09040502",
+        "category_name": "Conejo Bandeja"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09040603",
+        "category_name": "Lotes Parrillada"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "09040701",
+        "category_name": "Hamburguesa Mostrador"
+      },
+      {
+        "n": 22,
+        "frame_n": 0,
+        "category_id": "09040702",
+        "category_name": "Hamburguesa Bandeja"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "09040801",
+        "category_name": "Longaniza Mostrador"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "09040802",
+        "category_name": "Salchicha Mostrador"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09040803",
+        "category_name": "Chorizo Mostrador"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "09040804",
+        "category_name": "Longaniza Bandeja"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "09040805",
+        "category_name": "Salchicha Bandeja"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "09040806",
+        "category_name": "Chorizo Bandeja"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "09040903",
+        "category_name": "Adobados Mostrador"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "09040905",
+        "category_name": "Empanados Mostrador"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "09040909",
+        "category_name": "Adobados Bandeja"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "09040912",
+        "category_name": "Otros Elaborados Bandeja"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "09041001",
+        "category_name": "Albondigas"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "09041003",
+        "category_name": "Picada Bandeja"
+      },
+      {
+        "n": 17,
+        "frame_n": 0,
+        "category_id": "09050101",
+        "category_name": "Queso Manchego"
+      },
+      {
+        "n": 16,
+        "frame_n": 0,
+        "category_id": "09050102",
+        "category_name": "Especialidades Locales"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "09050103",
+        "category_name": "Especialidades Nacionales"
+      }
+    ],
+    "store": "plusfresc",
+    "cursor": "",
+    "job_key": "ce1-ce200-53fde264b0807d786420a35bbaf9",
+    "row_count": 500,
+    "elapsed_ms": 908.01,
+    "captured_at": "2026-09-03T10:19:31.868826+00:00",
+    "project_ref": "gkffvigcnsesbaihycay",
+    "operation_hash": "53fde264b0807d786420a35bbaf916426ae9241edab437e926e90191bc92b206"
+  },
+  "transport_bytes": 58211
+}

@@ -1,0 +1,16 @@
+{
+  "job": "ce1-ce200-fd75f0c20c329d37a6b9ae75be09",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"error\":{\"name\":\"HttpException\",\"message\":\"Failed to run sql query: ERROR:  23514: new row for relation \\\"execution_jobs\\\" violates check constraint \\\"execution_jobs_check1\\\"\\nDETAIL:  Failing row contains (1ed79edc-214a-4e0c-b74c-eedb26ff9377, gkffvigcnsesbaihycay, ce200-products, 55a135e91a3beb7998f4d290c9ef20e8c6b913e880133bc2809db754e2d93dfc, running, 2026-09-03 10:23:56.131961+00, 2026-09-03 10:43:56.131962+00, null, null, ce1-ce200-fd75f0c20c329d37a6b9ae75be09, fd75f0c20c329d37a6b9ae75be095a24ebf12f9e28d271da1030c22c4630d52b, 2026-09-03, {\\\"sqlMs\\\": 10000, \\\"readRows\\\": 100, \\\"writeRows\\\": 3, \\\"responseBytes..., null).\\nCONTEXT:  SQL statement \\\"INSERT INTO comparator_strict.execution_jobs(id,project_ref,operation_key,sql_sha256,status,started_at,deadline_at,job_key,operation_hash,budget_date,reservation)\\n    VALUES(gen_random_uuid(),'gkffvigcnsesbaihycay','ce200-products','55a135e91a3beb7998f4d290c9ef20e8c6b913e880133bc2809db754e2d93dfc','running',clock_timestamp(),clock_timestamp()+interval '20 minutes','ce1-ce200-fd75f0c20c329d37a6b9ae75be09','fd75f0c20c329d37a6b9ae75be095a24ebf12f9e28d271da1030c22c4630d52b',DATE '2026-09-03','{\\\"sqlMs\\\":10000,\\\"readRows\\\":100,\\\"writeRows\\\":3,\\\"responseBytes\\\":1048576}'::jsonb)\\\"\\nPL/pgSQL function inline_code_block line 15 at SQL statement\\n\"}}"
+      }
+    ],
+    "structuredContent": {
+      "error_code": "INVALID_ARGUMENT"
+    },
+    "isError": true
+  },
+  "interpretation": "Reservation transaction rejected before catalogue SELECT: two clock_timestamp calls differed by 1 microsecond and breached lease maximum. Entire reservation rolled back. v2 captures one clock for both dates; source cursor unchanged. No automatic retry."
+}

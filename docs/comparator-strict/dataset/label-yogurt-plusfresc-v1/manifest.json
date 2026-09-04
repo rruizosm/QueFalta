@@ -1,0 +1,73 @@
+{
+  "version": "ce202-yogurt-plusfresc-v1",
+  "corpus_manifest_sha256": "15da91ad7ae616199da7a50b53dba2abca4e3c43c1420a4a413b23ad02b9abd7",
+  "code_and_preexisting_evidence": [
+    {
+      "path": "scripts/lib/comparator-strict-yogurt-plusfresc-specs.mjs",
+      "sha256": "64aa7a106c7b700317c6bf5b4ab4d59eef104bc235fdca2039d435ca757111e0"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-yogurt-plusfresc.mjs",
+      "sha256": "e8ab064cf0e53581bb055f03d2cab36b4095b7cfaef69f507acdb2e96252bf4c"
+    },
+    {
+      "path": "scripts/prepare-comparator-strict-yogurt-plusfresc.mjs",
+      "sha256": "b43e39b2eab46fb2f703250ed743b0cded1c6853f4d1f73df8aaa15f88870df9"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-yogurt-review.mjs",
+      "sha256": "c1dbe8ecf2c959da0ec0fa207af81a635d7cf6709a51e04a65c5dc414c0b1f46"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-corpus-labels.mjs",
+      "sha256": "dac2bb3d1c072418be97a3e40e47c1ee9ee2e9b46269d3df1005c1686ad56431"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-corpus.mjs",
+      "sha256": "69dca18c12f1c161d0d726c0d191b92728d4225c16a8b2f1fb17b60a3e5af232"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-dataset.mjs",
+      "sha256": "e83982cc2cbd0cabc972e2fd1fa09ad9186a0580cda31e836fe0538776ad8eae"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-labels.mjs",
+      "sha256": "6ec33dd1564f4f35e33dadc4154b0dee85a7c1283be6cec5d9b253cbdb2182cd"
+    },
+    {
+      "path": "docs/comparator-strict/CE-201-202-yogurt-evidence.json",
+      "sha256": "938a38a6d379bb5618403e6519bf631df7e5d02de2e0308c9e9271c32025e0ab"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-yogurt-v1/products.json",
+      "sha256": "02598c45404fac165bd4cda8dabaa20cca7a68a728192ee3471ab37d15770110"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-yogurt-v1/index.json",
+      "sha256": "eb3960e18f69f0cfc6af60079f8fbcd602925eede1fd4eb6ebc0e6f0bd601479"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-potatoes-v1/index.json",
+      "sha256": "a5f0f6ba465824800aa5828059033ab39f73e96a9cccd1a4a0a20d6526752f27"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/editorial.json",
+      "sha256": "7c4a65fceae6c1282e388b3033745f4492a87aeff724f41cd724a18bd94cfaad"
+    },
+    {
+      "path": "docs/comparator-strict/CE-202-yogurt-plusfresc-guide.md",
+      "sha256": "8c4baf72d0f4dbefb549c6aefca01522014a85c560573046a45d5df09cd06ac9"
+    }
+  ],
+  "hashes": {
+    "products": "2847088b36528ca5c2e04a8067d5d49ece8c884354967dd9681cfaf014957c13",
+    "annotations": "728b4bb31aef289b29d888b065ddbbe8b4e99a6fde700f6a769a763dcd55aab3",
+    "index": "46b2683986c89e059bfb1ccb86e134b70385991a87f3996bc9be38e9bba5b97c"
+  },
+  "report_sha256": "7e83a48ce48ee1f3e41ba6bce55a58751553831c55d349e8a47b9bf769751b35",
+  "materialization": "219 new source reviews and compact pair index stored. 212 prior source reviews reused byte-identically. Full annotations stdout-reproducible and pinned by hash. Spanish source review, not complete yogurt family or gold.",
+  "CE201_complete": false,
+  "CE202_complete": false,
+  "CE203_complete": false,
+  "G2_pass": false
+}

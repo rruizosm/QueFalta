@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "document_only": true,
+  "consumed_by_runtime": false,
+  "task": "CE-101",
+  "project_ref": "gkffvigcnsesbaihycay",
+  "local_app_url": "https://auth.quefalta.es",
+  "feature": "CE-1 strict comparator",
+  "enabled": false,
+  "access_enforcement_implemented": false,
+  "nominated_test_account": {
+    "handle": "rruizosma",
+    "selected_by": "owner in this conversation",
+    "exact_profile_matches_observed": 1,
+    "authenticated_uid": null,
+    "session_ownership_verified": false
+  },
+  "future_access_contract": {
+    "default": "deny",
+    "authorization_anchor": "verified immutable auth.uid and server-owned allowlist",
+    "client_dev_flag_is_authorization": false,
+    "user_editable_metadata_is_authorization": false,
+    "affects_legacy_comparator": false,
+    "grants_plus": false,
+    "changes_subscription": false,
+    "resets_free_uses": false,
+    "changes_existing_user_permissions": false,
+    "CU_01": "unchanged; no quota bypass, reset or refunds; test calls here must not invoke the commercial RPC"
+  },
+  "prohibited_now": [
+    "feature activation",
+    "login/token refresh by the agent",
+    "service-role key in app",
+    "new accounts",
+    "shared catalog fixtures",
+    "push/email tests",
+    "purchases",
+    "remote migrations",
+    "cron/queue changes"
+  ],
+  "pending": [
+    "Validate a development runtime when unpublished app code needs testing; production 1.3 catalog load confirmed by owner under CE-VAL-001",
+    "Resolve nominated account to verified UID only when implementing server access controls; keep UUID out of public docs",
+    "Test denied anonymous/nonallowlisted callers before pilot",
+    "Complete CE-100 capacity baseline and remaining G1 controls"
+  ],
+  "owner_catalog_validation": {
+    "decision": "CE-VAL-001",
+    "device": "physical mobile",
+    "version": "production 1.3",
+    "catalog_load_confirmed": true,
+    "token_or_uid_verified": false,
+    "feature_access_enabled": false
+  }
+}

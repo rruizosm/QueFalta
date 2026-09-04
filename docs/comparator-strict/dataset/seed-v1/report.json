@@ -1,0 +1,47 @@
+{
+  "task": "CE-200",
+  "status": "in_progress_local_seed_only",
+  "scope": "historical exploratory; NOT representative or labelled",
+  "products": 72,
+  "unique_commercial_pairs": 648,
+  "logical_query_drafts": 144,
+  "origin_products": 72,
+  "destination_cases": 432,
+  "by_store": {
+    "carrefour": 18,
+    "consum": 18,
+    "mercadona": 18,
+    "plusfresc": 18
+  },
+  "by_lexical_cohort": {
+    "potato_candidate": 24,
+    "water_candidate": 24,
+    "yogurt_candidate": 24
+  },
+  "legacy_exposed_products": 683,
+  "legacy_pilot_store_products": 335,
+  "seed_overlaps_legacy": [
+    "carrefour:520661019"
+  ],
+  "CE200_confirmatory_pairs": 0,
+  "CE200_confirmatory_queries": 0,
+  "strict_equivalence_labels": 0,
+  "holdout_assigned": false,
+  "G2_pass": false,
+  "remote_calls": 0,
+  "app_changes": false,
+  "blockers": [
+    "documented sampling frame and representative acquisition not available",
+    "historical lexical hints are not verified pilot families",
+    "full source projection and product/location revision evidence incomplete",
+    "required 5000-10000 pairs and at least 1000 queries not established"
+  ],
+  "source_selection": "first six active rows by id per store/lexical hint; not random, not validated families",
+  "source_projection_limitations": "only the listed source columns; null packaging can mean absent column; this is not a complete product extraction",
+  "hashes": {
+    "products": "e98397a3a4c925bd8dae714d0b9807051624f6ce0da1a7d8cc9b4706b971230e",
+    "pairs": "b8667d268e3e3dcf0e4a75fbebf58f4ae633f54504868bdfda94b140f5111ee4",
+    "queries": "1b4fb3bfec289941874d5b655af6ac1520af83e7165ddee8a121f57f5a77845d",
+    "exposure": "cf3fcf6f9337b9f680e28a750d107762544238863f2879065b2a20bbdf150ce6"
+  }
+}

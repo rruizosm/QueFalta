@@ -1,0 +1,936 @@
+[
+  {
+    "id": "E01",
+    "products": [
+      "carrefour:VC4AECOMM-621804",
+      "mercadona:20559"
+    ],
+    "tags": [
+      "positive_format",
+      "greek_natural",
+      "6x125"
+    ],
+    "assertions": {
+      "scope": {
+        "state": "compatible",
+        "reason": "Ambos son yogures en pack nominal fijo documentado, dentro del piloto.",
+        "refs": [
+          [
+            "carrefour:VC4AECOMM-621804",
+            "/display_name"
+          ],
+          [
+            "mercadona:20559",
+            "/display_name"
+          ],
+          [
+            "mercadona:20559",
+            "/raw/price_instructions"
+          ]
+        ]
+      },
+      "identity": {
+        "state": "compatible",
+        "reason": "Denominaciones comerciales de yogur griego para el mismo uso; base, sabor y endulzado se revisan por separado.",
+        "refs": [
+          [
+            "carrefour:VC4AECOMM-621804",
+            "/display_name"
+          ],
+          [
+            "mercadona:20559",
+            "/display_name"
+          ]
+        ]
+      },
+      "format": {
+        "state": "compatible",
+        "reason": "Ambos declaran seis envases de 125 g, total 750 g. Coincidencia nominal, no equivalencia completa.",
+        "refs": [
+          [
+            "carrefour:VC4AECOMM-621804",
+            "/display_name"
+          ],
+          [
+            "mercadona:20559",
+            "/raw/price_instructions"
+          ]
+        ]
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "El origen tiene ingredientes declarados; Mercadona no los aporta. Natural no demuestra endulzado ni todos los atributos obligatorios.",
+        "refs": [
+          [
+            "carrefour:VC4AECOMM-621804",
+            "/ingredients"
+          ],
+          [
+            "mercadona:20559",
+            "/ingredients"
+          ],
+          [
+            "mercadona:20559",
+            "/display_name"
+          ]
+        ]
+      }
+    },
+    "expected": "abstain",
+    "reason": "Positivo real de identidad/tipo y formato 6×125 g; no aprobar equivalencia ni ahorro por las lagunas de variante y ámbito."
+  },
+  {
+    "id": "E02",
+    "products": [
+      "carrefour:VC4AECOMM-652994",
+      "mercadona:52441"
+    ],
+    "tags": [
+      "positive_format",
+      "cane_sugar",
+      "6x125"
+    ],
+    "assertions": {
+      "scope": {
+        "state": "compatible",
+        "reason": "Ambos son yogures en pack nominal fijo documentado, dentro del piloto.",
+        "refs": [
+          [
+            "carrefour:VC4AECOMM-652994",
+            "/display_name"
+          ],
+          [
+            "mercadona:52441",
+            "/display_name"
+          ],
+          [
+            "mercadona:52441",
+            "/raw/price_instructions"
+          ]
+        ]
+      },
+      "identity": {
+        "state": "compatible",
+        "reason": "Denominaciones comerciales de yogur griego para el mismo uso; base, sabor y endulzado se revisan por separado.",
+        "refs": [
+          [
+            "carrefour:VC4AECOMM-652994",
+            "/display_name"
+          ],
+          [
+            "mercadona:52441",
+            "/display_name"
+          ]
+        ]
+      },
+      "format": {
+        "state": "compatible",
+        "reason": "Ambos declaran seis envases de 125 g, total 750 g. Coincidencia nominal, no equivalencia completa.",
+        "refs": [
+          [
+            "carrefour:VC4AECOMM-652994",
+            "/display_name"
+          ],
+          [
+            "mercadona:52441",
+            "/raw/price_instructions"
+          ]
+        ]
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Ambos declaran azúcar de caña, pero eso no completa grasa, especie, edulcorantes y todas las declaraciones.",
+        "refs": [
+          [
+            "carrefour:VC4AECOMM-652994",
+            "/display_name"
+          ],
+          [
+            "mercadona:52441",
+            "/display_name"
+          ],
+          [
+            "carrefour:VC4AECOMM-652994",
+            "/ingredients"
+          ],
+          [
+            "mercadona:52441",
+            "/ingredients"
+          ]
+        ]
+      }
+    },
+    "expected": "abstain",
+    "reason": "Pack y declaración de azúcar de caña coincidentes no suplen atributos ausentes ni evidencia de precio local."
+  },
+  {
+    "id": "E03",
+    "products": [
+      "carrefour:VC4AECOMM-621804",
+      "mercadona:52441"
+    ],
+    "tags": [
+      "natural_not_no_added_sugar",
+      "6x125"
+    ],
+    "assertions": {
+      "scope": {
+        "state": "compatible",
+        "reason": "Ambos son yogures en pack nominal fijo documentado, dentro del piloto.",
+        "refs": [
+          [
+            "carrefour:VC4AECOMM-621804",
+            "/display_name"
+          ],
+          [
+            "mercadona:52441",
+            "/display_name"
+          ],
+          [
+            "mercadona:52441",
+            "/raw/price_instructions"
+          ]
+        ]
+      },
+      "identity": {
+        "state": "compatible",
+        "reason": "Denominaciones comerciales de yogur griego para el mismo uso; base, sabor y endulzado se revisan por separado.",
+        "refs": [
+          [
+            "carrefour:VC4AECOMM-621804",
+            "/display_name"
+          ],
+          [
+            "mercadona:52441",
+            "/display_name"
+          ]
+        ]
+      },
+      "format": {
+        "state": "compatible",
+        "reason": "Ambos declaran seis envases de 125 g, total 750 g. Coincidencia nominal, no equivalencia completa.",
+        "refs": [
+          [
+            "carrefour:VC4AECOMM-621804",
+            "/display_name"
+          ],
+          [
+            "mercadona:52441",
+            "/raw/price_instructions"
+          ]
+        ]
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Uno declara azúcar añadido y el otro se denomina natural. La lista disponible debe validarse como declaración completa antes de afirmar ausencia; no aprobar por el nombre.",
+        "refs": [
+          [
+            "carrefour:VC4AECOMM-621804",
+            "/display_name"
+          ],
+          [
+            "carrefour:VC4AECOMM-621804",
+            "/ingredients"
+          ],
+          [
+            "mercadona:52441",
+            "/display_name"
+          ]
+        ]
+      }
+    },
+    "expected": "abstain",
+    "reason": "Contraste natural/azúcar: no son intercambiables por defecto; tampoco se inventa una ausencia de azúcar añadido."
+  },
+  {
+    "id": "E04",
+    "products": [
+      "carrefour:VC4AECOMM-652994",
+      "mercadona:20559"
+    ],
+    "tags": [
+      "natural_not_no_added_sugar",
+      "6x125"
+    ],
+    "assertions": {
+      "scope": {
+        "state": "compatible",
+        "reason": "Ambos son yogures en pack nominal fijo documentado, dentro del piloto.",
+        "refs": [
+          [
+            "carrefour:VC4AECOMM-652994",
+            "/display_name"
+          ],
+          [
+            "mercadona:20559",
+            "/display_name"
+          ],
+          [
+            "mercadona:20559",
+            "/raw/price_instructions"
+          ]
+        ]
+      },
+      "identity": {
+        "state": "compatible",
+        "reason": "Denominaciones comerciales de yogur griego para el mismo uso; base, sabor y endulzado se revisan por separado.",
+        "refs": [
+          [
+            "carrefour:VC4AECOMM-652994",
+            "/display_name"
+          ],
+          [
+            "mercadona:20559",
+            "/display_name"
+          ]
+        ]
+      },
+      "format": {
+        "state": "compatible",
+        "reason": "Ambos declaran seis envases de 125 g, total 750 g. Coincidencia nominal, no equivalencia completa.",
+        "refs": [
+          [
+            "carrefour:VC4AECOMM-652994",
+            "/display_name"
+          ],
+          [
+            "mercadona:20559",
+            "/raw/price_instructions"
+          ]
+        ]
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Carrefour declara azúcar de caña; el yogur natural de Mercadona no tiene ingredientes en el snapshot. No completar el dato ausente.",
+        "refs": [
+          [
+            "carrefour:VC4AECOMM-652994",
+            "/display_name"
+          ],
+          [
+            "mercadona:20559",
+            "/display_name"
+          ],
+          [
+            "mercadona:20559",
+            "/ingredients"
+          ]
+        ]
+      }
+    },
+    "expected": "abstain",
+    "reason": "No ofrecer como equivalente el natural frente al azucarado sin verificar el endulzado del primero."
+  },
+  {
+    "id": "E05",
+    "products": [
+      "carrefour:521029389",
+      "mercadona:20559"
+    ],
+    "tags": [
+      "negative_format",
+      "count",
+      "per_unit"
+    ],
+    "assertions": {
+      "format": {
+        "state": "incompatible",
+        "reason": "Carrefour declara 8×120 g y Mercadona 6×125 g: difieren conteo y contenido por envase.",
+        "refs": [
+          [
+            "carrefour:521029389",
+            "/display_name"
+          ],
+          [
+            "mercadona:20559",
+            "/raw/price_instructions"
+          ]
+        ]
+      }
+    },
+    "expected": "rejected",
+    "reason": "Rechazo respaldado por 8×120 frente a 6×125; no usar el total ni la palabra natural para igualarlos."
+  },
+  {
+    "id": "E06",
+    "products": [
+      "carrefour:521029389",
+      "consum:7340867"
+    ],
+    "tags": [
+      "negative_format",
+      "sweeteners"
+    ],
+    "assertions": {
+      "format": {
+        "state": "incompatible",
+        "reason": "El pack de ocho unidades de 120 g no coincide con cuatro de 125 g.",
+        "refs": [
+          [
+            "carrefour:521029389",
+            "/display_name"
+          ],
+          [
+            "consum:7340867",
+            "/packaging"
+          ]
+        ]
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Edulcorado es una declaración del candidato, no una prueba de ausencia de edulcorantes en el origen; no completar grasa ni sabor.",
+        "refs": [
+          [
+            "carrefour:521029389",
+            "/display_name"
+          ],
+          [
+            "consum:7340867",
+            "/display_name"
+          ],
+          [
+            "carrefour:521029389",
+            "/ingredients"
+          ]
+        ]
+      }
+    },
+    "expected": "rejected",
+    "reason": "Pack inequívocamente distinto; las otras dimensiones conservan lo que todavía no está probado."
+  },
+  {
+    "id": "E07",
+    "products": [
+      "carrefour:521029420",
+      "mercadona:20037"
+    ],
+    "tags": [
+      "positive_format",
+      "negative_flavour"
+    ],
+    "assertions": {
+      "format": {
+        "state": "compatible",
+        "reason": "Las fuentes declaran 4×120 g en los dos productos, sin cambiar el contenido nominal.",
+        "refs": [
+          [
+            "carrefour:521029420",
+            "/display_name"
+          ],
+          [
+            "mercadona:20037",
+            "/raw/price_instructions"
+          ]
+        ]
+      },
+      "variants": {
+        "state": "incompatible",
+        "reason": "Los sabores declarados son fresa y macedonia, respectivamente. Esta incompatibilidad no depende del azúcar.",
+        "refs": [
+          [
+            "carrefour:521029420",
+            "/display_name"
+          ],
+          [
+            "carrefour:521029420",
+            "/denomination"
+          ],
+          [
+            "mercadona:20037",
+            "/display_name"
+          ]
+        ]
+      }
+    },
+    "expected": "rejected",
+    "reason": "Mismo fabricante y pack 4×120 g, pero sabores diferentes: la coincidencia de formato no autoriza equivalencia."
+  },
+  {
+    "id": "E08",
+    "products": [
+      "consum:7028475",
+      "mercadona:61405"
+    ],
+    "tags": [
+      "frozen_potatoes",
+      "2kg_vs_1kg"
+    ],
+    "assertions": {
+      "format": {
+        "state": "incompatible",
+        "reason": "Mercadona fija una bolsa de 2 kg. Consum declara formato nominal 1 kg: no es una bolsa nominal de 2 kg; no se infiere su número de envases.",
+        "refs": [
+          [
+            "consum:7028475",
+            "/packaging"
+          ],
+          [
+            "consum:7028475",
+            "/raw/productData/description"
+          ],
+          [
+            "mercadona:61405",
+            "/raw/price_instructions"
+          ]
+        ]
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "Ambos mencionan prefritas y corte grueso, pero hay que revisar conservación, piel, rebozado y condimentación; no aprobar por el título.",
+        "refs": [
+          [
+            "consum:7028475",
+            "/display_name"
+          ],
+          [
+            "mercadona:61405",
+            "/display_name"
+          ]
+        ]
+      }
+    },
+    "expected": "rejected",
+    "reason": "Las patatas de 1 kg no representan ahorro equivalente respecto a la bolsa de 2 kg."
+  },
+  {
+    "id": "E09",
+    "products": [
+      "mercadona:61405",
+      "plusfresc:032789"
+    ],
+    "tags": [
+      "frozen_potatoes",
+      "2kg_vs_500g"
+    ],
+    "assertions": {
+      "format": {
+        "state": "incompatible",
+        "reason": "Una bolsa nominal de 2 kg frente al producto declarado de 500 g. No multiplicar la compra ni inventar un pack para igualar cantidades.",
+        "refs": [
+          [
+            "mercadona:61405",
+            "/raw/price_instructions"
+          ],
+          [
+            "plusfresc:032789",
+            "/display_name"
+          ],
+          [
+            "plusfresc:032789",
+            "/description"
+          ]
+        ]
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "McCain declara rebozado y sal; la ausencia de ingredientes de Mercadona no acredita que su producto tenga o no esos componentes.",
+        "refs": [
+          [
+            "plusfresc:032789",
+            "/ingredients"
+          ],
+          [
+            "plusfresc:032789",
+            "/conservation"
+          ],
+          [
+            "mercadona:61405",
+            "/ingredients"
+          ]
+        ]
+      }
+    },
+    "expected": "rejected",
+    "reason": "Congelados con cantidades 2 kg y 500 g no se igualan por €/kg ni por precio menor del envase."
+  },
+  {
+    "id": "E10",
+    "products": [
+      "mercadona:12980",
+      "plusfresc:025303"
+    ],
+    "tags": [
+      "water_1L",
+      "sale_option_unknown"
+    ],
+    "assertions": {
+      "format": {
+        "state": "unknown",
+        "reason": "Mercadona ofrece una unidad de 1 L. Plusfresc permite unidad o pack de seis botellas de 1 L, sin selección comercial acreditada.",
+        "refs": [
+          [
+            "mercadona:12980",
+            "/raw/price_instructions"
+          ],
+          [
+            "plusfresc:025303",
+            "/display_name"
+          ],
+          [
+            "plusfresc:025303",
+            "/raw/formats"
+          ]
+        ]
+      }
+    },
+    "expected": "abstain",
+    "reason": "El texto 1 L no basta cuando la referencia tiene varias opciones de venta; no decidir el conteo por defecto."
+  },
+  {
+    "id": "E11",
+    "products": [
+      "consum:7227676",
+      "plusfresc:014543"
+    ],
+    "tags": [
+      "negative_gas",
+      "unit_pack_scope"
+    ],
+    "assertions": {
+      "variants": {
+        "state": "incompatible",
+        "reason": "Consum declara con gas; la descripción de Viladrau declara sin gas. No se deriva el dato de su marca.",
+        "refs": [
+          [
+            "consum:7227676",
+            "/display_name"
+          ],
+          [
+            "plusfresc:014543",
+            "/description"
+          ]
+        ]
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "El título de Viladrau muestra 5 L y la descripción habla de pack de dos garrafas de 5 L; falta vincular ambos al precio mostrado.",
+        "refs": [
+          [
+            "plusfresc:014543",
+            "/display_name"
+          ],
+          [
+            "plusfresc:014543",
+            "/description"
+          ]
+        ]
+      }
+    },
+    "expected": "rejected",
+    "reason": "Con gas y sin gas son incompatibles aunque otras dimensiones de la pareja sigan sin resolver."
+  },
+  {
+    "id": "E12",
+    "products": [
+      "carrefour:VC4AECOMM-621804",
+      "plusfresc:027336"
+    ],
+    "tags": [
+      "conflicting_sugar",
+      "sweeteners"
+    ],
+    "assertions": {
+      "variants": {
+        "state": "conflicting",
+        "reason": "Plusfresc titula azucarado, pero la descripción dice sin azúcares añadidos y los ingredientes enumeran edulcorantes. Registrar la discordancia, no elegir el campo más favorable.",
+        "refs": [
+          [
+            "plusfresc:027336",
+            "/display_name"
+          ],
+          [
+            "plusfresc:027336",
+            "/description"
+          ],
+          [
+            "plusfresc:027336",
+            "/ingredients"
+          ]
+        ]
+      }
+    },
+    "expected": "abstain",
+    "reason": "La contradicción de endulzado exige arbitraje y corrección de procedencia; un embedding no puede resolverla."
+  },
+  {
+    "id": "E13",
+    "products": [
+      "carrefour:VC4AECOMM-621804",
+      "plusfresc:036733"
+    ],
+    "tags": [
+      "conflicting_pack",
+      "mass_volume"
+    ],
+    "assertions": {
+      "format": {
+        "state": "conflicting",
+        "reason": "La misma referencia Plusfresc declara seis unidades en el título y ocho en la descripción. La discordancia de conteo es independiente de la conversión g/ml.",
+        "refs": [
+          [
+            "plusfresc:036733",
+            "/display_name"
+          ],
+          [
+            "plusfresc:036733",
+            "/description"
+          ]
+        ]
+      }
+    },
+    "expected": "abstain",
+    "reason": "No tratar la referencia con conteo seis/ocho como si tuviera un formato verificado."
+  },
+  {
+    "id": "E14",
+    "products": [
+      "carrefour:VC4AECOMM-621804",
+      "plusfresc:024581"
+    ],
+    "tags": [
+      "ambiguous_quantity",
+      "550_vs_4x125"
+    ],
+    "assertions": {
+      "format": {
+        "state": "unknown",
+        "reason": "El título Plusfresc dice 4 uds. 550 g y la descripción 4×125 g. No asignar silenciosamente a 550 g el papel de total ni corregirlo a 500 g.",
+        "refs": [
+          [
+            "plusfresc:024581",
+            "/display_name"
+          ],
+          [
+            "plusfresc:024581",
+            "/description"
+          ],
+          [
+            "carrefour:VC4AECOMM-621804",
+            "/display_name"
+          ]
+        ]
+      }
+    },
+    "expected": "abstain",
+    "reason": "Cantidad ambigua en una observación posiblemente mezclada; se conserva para revisión en lugar de normalizar a voluntad."
+  },
+  {
+    "id": "E15",
+    "products": [
+      "mercadona:16348",
+      "plusfresc:007307"
+    ],
+    "tags": [
+      "unit_vs_commercial_pack",
+      "conflicting_source_scope"
+    ],
+    "assertions": {
+      "format": {
+        "state": "conflicting",
+        "reason": "Plusfresc describe un pack de seis en el título y una botella de 300 ml en la descripción. Puede mezclar ficha de unidad y pack; el ámbito comercial no se puede resolver aquí.",
+        "refs": [
+          [
+            "plusfresc:007307",
+            "/display_name"
+          ],
+          [
+            "plusfresc:007307",
+            "/description"
+          ]
+        ]
+      }
+    },
+    "expected": "abstain",
+    "reason": "Discordancia de ámbito unidad/pack: registrar las dos fuentes sin usar descripción nutricional como identidad comercial."
+  },
+  {
+    "id": "E16",
+    "products": [
+      "carrefour:2002870135",
+      "mercadona:12981"
+    ],
+    "tags": [
+      "hard_negative",
+      "cologne"
+    ],
+    "assertions": {
+      "scope": {
+        "state": "incompatible",
+        "reason": "El origen se denomina agua de colonia infantil: uso ajeno a las tres familias del piloto.",
+        "refs": [
+          [
+            "carrefour:2002870135",
+            "/display_name"
+          ]
+        ]
+      },
+      "identity": {
+        "state": "incompatible",
+        "reason": "Agua de colonia y agua mineral de bebida tienen usos distintos aunque compartan agua.",
+        "refs": [
+          [
+            "carrefour:2002870135",
+            "/display_name"
+          ],
+          [
+            "mercadona:12981",
+            "/display_name"
+          ]
+        ]
+      }
+    },
+    "expected": "excluded_scope",
+    "reason": "Negativo difícil lexical: no confundir colonia con agua para beber."
+  },
+  {
+    "id": "E17",
+    "products": [
+      "carrefour:546306276",
+      "consum:937151"
+    ],
+    "tags": [
+      "hard_negative",
+      "sauce"
+    ],
+    "assertions": {
+      "scope": {
+        "state": "incompatible",
+        "reason": "La salsa para ensalada sabor yogur no es un yogur del piloto.",
+        "refs": [
+          [
+            "carrefour:546306276",
+            "/display_name"
+          ]
+        ]
+      },
+      "identity": {
+        "state": "incompatible",
+        "reason": "Salsa para ensalada y yogur son tipos/uso diferentes; yogur como sabor no demuestra identidad.",
+        "refs": [
+          [
+            "carrefour:546306276",
+            "/display_name"
+          ],
+          [
+            "consum:937151",
+            "/display_name"
+          ]
+        ]
+      }
+    },
+    "expected": "excluded_scope",
+    "reason": "Negativo por tipo/uso, no por falta de precio ni por ausencia de un embedding."
+  },
+  {
+    "id": "E18",
+    "products": [
+      "carrefour:521029389",
+      "plusfresc:036361"
+    ],
+    "tags": [
+      "negative_base",
+      "dairy_vs_soy"
+    ],
+    "assertions": {
+      "variants": {
+        "state": "incompatible",
+        "reason": "El origen declara leche pasteurizada; el candidato declara habas de soja y sin lácteos. Bases alimentarias distintas, no igualar yogur como palabra.",
+        "refs": [
+          [
+            "carrefour:521029389",
+            "/ingredients"
+          ],
+          [
+            "plusfresc:036361",
+            "/ingredients"
+          ]
+        ]
+      }
+    },
+    "expected": "rejected",
+    "reason": "Base láctea frente a soja sin lácteos: diferencia explícita incluso antes de completar precio o formato."
+  },
+  {
+    "id": "E19",
+    "products": [
+      "carrefour:VC4AECOMM-621804",
+      "plusfresc:019933"
+    ],
+    "tags": [
+      "mass_volume_unknown",
+      "not_conflict_by_density"
+    ],
+    "assertions": {
+      "format": {
+        "state": "unknown",
+        "reason": "Plusfresc declara envase de 940 ml y botella de 750 g. Sin densidad ni ámbito no son unidades convertibles; tampoco se demuestra contradicción física solo por kg/L.",
+        "refs": [
+          [
+            "plusfresc:019933",
+            "/display_name"
+          ],
+          [
+            "plusfresc:019933",
+            "/description"
+          ]
+        ]
+      }
+    },
+    "expected": "abstain",
+    "reason": "Conservar masa/volumen como evidencia no resuelta; no inventar densidad ni equivalencia."
+  },
+  {
+    "id": "E20",
+    "products": [
+      "carrefour:VC4AECOMM-621804",
+      "plusfresc:036225"
+    ],
+    "tags": [
+      "hard_negative",
+      "kefir",
+      "quantity_role"
+    ],
+    "assertions": {
+      "scope": {
+        "state": "incompatible",
+        "reason": "El candidato se denomina kéfir: fuera del piloto de yogur definido, aunque la categoría reúna fermentados.",
+        "refs": [
+          [
+            "plusfresc:036225",
+            "/display_name"
+          ]
+        ]
+      },
+      "identity": {
+        "state": "incompatible",
+        "reason": "Las denominaciones son yogur griego y kéfir, que no se equiparan por compartir zona del catálogo.",
+        "refs": [
+          [
+            "carrefour:VC4AECOMM-621804",
+            "/display_name"
+          ],
+          [
+            "plusfresc:036225",
+            "/display_name"
+          ]
+        ]
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Cuatro unidades 125 g no demuestra total de 125 g. La descripción 4×125 g aclara su propio pack, no equivale al pack del origen.",
+        "refs": [
+          [
+            "plusfresc:036225",
+            "/display_name"
+          ],
+          [
+            "plusfresc:036225",
+            "/description"
+          ]
+        ]
+      }
+    },
+    "expected": "excluded_scope",
+    "reason": "La categoría compartida no convierte kéfir en yogur; el caso además prueba que no hay que fabricar conflictos de total."
+  }
+]

@@ -1,0 +1,1813 @@
+{
+  "plan": {
+    "version": "ce200-read-v3",
+    "kind": "supplement",
+    "store": "consum",
+    "cursor": "",
+    "limit": 100,
+    "round": "initial",
+    "select": "SELECT id,display_name,brand,packaging,ean,category_id,category_name,category_ids,unit_price,price_format,price_per_unit,price_per_unit_unit,available,published,synced_at,regions,regional_prices,promo_base_price,offer_zones,raw,md5(to_jsonb(p)::text) AS source_row_md5 FROM public.consum_products p WHERE (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)|b[ií]fidus'))\n      AND NOT (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)'))\n      AND id COLLATE \"C\" > '' COLLATE \"C\" ORDER BY id COLLATE \"C\" LIMIT 100",
+    "job": "ce1-ce200-d9a6ae5c4267e5b61fedacb44b97",
+    "operationHash": "d9a6ae5c4267e5b61fedacb44b973c64bdd808af24ad354b9179bd55e8269533",
+    "maxRows": 100,
+    "maxBytes": 1048576,
+    "sql": "-- ce1-ce200-d9a6ae5c4267e5b61fedacb44b97: supplement; CE-BU-002; no app writes.\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $reserve$\nDECLARE job_started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE status IN ('planned','running','halted','unknown'))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-d9a6ae5c4267e5b61fedacb44b97') THEN RAISE EXCEPTION 'ce200_exclusive_or_replay'; END IF;\n  IF EXISTS(SELECT 1 FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid))>0\n    OR (pid<>pg_backend_pid() AND state='active' AND query_start<clock_timestamp()-interval '30 seconds')) THEN RAISE EXCEPTION 'ce200_health_stop'; END IF;\n  UPDATE comparator_strict.execution_budget SET\n    sql_ms_reserved=sql_ms_reserved+10000,read_rows_reserved=read_rows_reserved+100,\n    bytes_reserved=bytes_reserved+1048576,write_rows_reserved=write_rows_reserved+3,updated_at=clock_timestamp()\n    WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03'\n      AND approval_reference='CE-200-corpus-v1' AND bytes_limit=134217728 AND read_rows_limit=50000\n      AND bytes_reserved+1048576<=bytes_limit AND read_rows_reserved+100<=read_rows_limit AND write_rows_reserved+3<=2000;\n  IF NOT FOUND THEN RAISE EXCEPTION 'ce200_budget'; END IF;\n  INSERT INTO comparator_strict.execution_jobs(id,project_ref,operation_key,sql_sha256,status,started_at,deadline_at,job_key,operation_hash,budget_date,reservation)\n    VALUES(gen_random_uuid(),'gkffvigcnsesbaihycay','ce200-supplement','e6c42623ba02f860fe56d6f07e07b6db15194e3984a5b15896c19c367d0329a2','running',job_started,job_started+interval '20 minutes','ce1-ce200-d9a6ae5c4267e5b61fedacb44b97','d9a6ae5c4267e5b61fedacb44b973c64bdd808af24ad354b9179bd55e8269533',DATE '2026-09-03','{\"sqlMs\":10000,\"readRows\":100,\"writeRows\":3,\"responseBytes\":1048576}'::jsonb);\nEND $reserve$;\nCOMMIT;\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $payload$\nDECLARE payload jsonb; data jsonb; started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR NOT EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-d9a6ae5c4267e5b61fedacb44b97' AND status='running' AND operation_hash='d9a6ae5c4267e5b61fedacb44b973c64bdd808af24ad354b9179bd55e8269533' AND deadline_at>clock_timestamp()) THEN RAISE EXCEPTION 'ce200_lease'; END IF;\n  SELECT coalesce(jsonb_agg(to_jsonb(q)),'[]'::jsonb) INTO data FROM (SELECT id,display_name,brand,packaging,ean,category_id,category_name,category_ids,unit_price,price_format,price_per_unit,price_per_unit_unit,available,published,synced_at,regions,regional_prices,promo_base_price,offer_zones,raw,md5(to_jsonb(p)::text) AS source_row_md5 FROM public.consum_products p WHERE (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)|b[ií]fidus'))\n      AND NOT (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)'))\n      AND id COLLATE \"C\" > '' COLLATE \"C\" ORDER BY id COLLATE \"C\" LIMIT 100) q;\n  payload:=jsonb_build_object('job_key','ce1-ce200-d9a6ae5c4267e5b61fedacb44b97','operation_hash','d9a6ae5c4267e5b61fedacb44b973c64bdd808af24ad354b9179bd55e8269533',\n    'project_ref','gkffvigcnsesbaihycay','captured_at',started,'kind','supplement','store','consum',\n    'cursor','','rows',data,'row_count',jsonb_array_length(data),'elapsed_ms',extract(epoch FROM clock_timestamp()-started)*1000);\n  IF jsonb_array_length(data)>100 OR octet_length(payload::text)>1040384 THEN RAISE EXCEPTION 'ce200_result_limit'; END IF;\n  UPDATE comparator_strict.execution_jobs SET status='succeeded',finished_at=clock_timestamp(),\n    receipt=jsonb_build_object('payload_sha256',encode(sha256(convert_to(payload::text,'UTF8')),'hex'),'row_count',jsonb_array_length(data),'payload_bytes',octet_length(payload::text),'elapsed_ms',payload->'elapsed_ms') WHERE job_key='ce1-ce200-d9a6ae5c4267e5b61fedacb44b97';\n  PERFORM set_config('comparator_strict.ce200_response',payload::text,true);\nEND $payload$;\nSELECT current_setting('comparator_strict.ce200_response')::jsonb AS evidence;\nCOMMIT;"
+  },
+  "payload": {
+    "kind": "supplement",
+    "rows": [
+      {
+        "id": "2154441",
+        "ean": "8410500003654",
+        "raw": {
+          "id": 5235,
+          "ean": "8410500003654",
+          "code": "2154441",
+          "type": "product",
+          "media": [
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/2154441_001.jpg?t=20251113091501",
+              "type": "P",
+              "order": 1
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/2154441_002.jpg?t=20231025040003",
+              "type": "P",
+              "order": 2
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/2154441_003.jpg?t=20230718040002",
+              "type": "P",
+              "order": 3
+            }
+          ],
+          "offers": [],
+          "coupons": [],
+          "priceData": {
+            "prices": [
+              {
+                "id": "PRICE",
+                "value": {
+                  "centAmount": 2.99,
+                  "centUnitAmount": 6.23
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              }
+            ],
+            "maximumUnit": 20,
+            "minimumUnit": 1,
+            "intervalUnit": 1,
+            "priceUnitType": "",
+            "taxPercentage": 4,
+            "unitPriceUnitType": "1 Kg"
+          },
+          "categories": [
+            {
+              "id": 2136,
+              "name": "Bífidus",
+              "type": 0
+            }
+          ],
+          "productData": {
+            "seo": "activia-00-con-pina-bifidus-desnatado-p-4ud",
+            "url": "https://tienda.consum.es/es/p/activia-00-con-pina-bifidus-desnatado-p-4ud/2154441",
+            "name": "Activia 00% con Piña Bífidus Desnatado P-4ud",
+            "brand": {
+              "id": "DANONE",
+              "url": "danone",
+              "name": "DANONE",
+              "landing": false
+            },
+            "format": "",
+            "actions": [],
+            "novelty": false,
+            "featured": false,
+            "imageURL": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/2154441.jpg?t=20260827095707",
+            "seoTitle": "",
+            "sponsored": false,
+            "description": "Activia 00% con Piña Bífidus Desnatado P-4ud 4 x 120 Gr",
+            "availability": "1",
+            "seoDescription": "activia-00-con-pina-bifidus-desnatado-p-4ud",
+            "temporaryOutOfStock": false,
+            "containAllergensIntolernacies": false
+          },
+          "productType": 1,
+          "purchaseData": {
+            "allowComments": false
+          }
+        },
+        "brand": "DANONE",
+        "regions": null,
+        "available": true,
+        "packaging": "4 x 120 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 2.99,
+        "category_id": "2136",
+        "offer_zones": null,
+        "category_ids": [
+          "2136",
+          "2123",
+          "2055",
+          "2811"
+        ],
+        "display_name": "Activia 00% con Piña Bífidus Desnatado P-4ud",
+        "price_format": "2,99 €",
+        "category_name": "Bífidus",
+        "price_per_unit": 6.23,
+        "source_row_md5": "fe62884acf149d44c0abbb719cc05365",
+        "regional_prices": null,
+        "promo_base_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "7031974",
+        "ean": "8410500008970",
+        "raw": {
+          "id": 5509,
+          "ean": "8410500008970",
+          "code": "7031974",
+          "type": "product",
+          "media": [
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7031974_001.jpg?t=20250305091501",
+              "type": "P",
+              "order": 1
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7031974_002.jpg?t=20250305091501",
+              "type": "P",
+              "order": 2
+            }
+          ],
+          "offers": [],
+          "coupons": [],
+          "priceData": {
+            "prices": [
+              {
+                "id": "PRICE",
+                "value": {
+                  "centAmount": 2.99,
+                  "centUnitAmount": 6.23
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              }
+            ],
+            "maximumUnit": 20,
+            "minimumUnit": 1,
+            "intervalUnit": 1,
+            "priceUnitType": "",
+            "taxPercentage": 4,
+            "unitPriceUnitType": "1 Kg"
+          },
+          "categories": [
+            {
+              "id": 2136,
+              "name": "Bífidus",
+              "type": 0
+            }
+          ],
+          "productData": {
+            "seo": "activia-soja-mango-y-papaya-p-4-ud",
+            "url": "https://tienda.consum.es/es/p/activia-soja-mango-y-papaya-p-4-ud/7031974",
+            "name": "Activia Soja Mango y Papaya P-4 ud.",
+            "brand": {
+              "id": "DANONE",
+              "url": "danone",
+              "name": "DANONE",
+              "landing": false
+            },
+            "format": "",
+            "actions": [],
+            "novelty": false,
+            "featured": false,
+            "imageURL": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7031974.jpg?t=20260827095859",
+            "seoTitle": "",
+            "sponsored": false,
+            "description": "Activia Soja Mango y Papaya P-4 ud. 4 x 120 Gr",
+            "availability": "1",
+            "seoDescription": "activia-soja-mango-y-papaya-p-4-ud",
+            "temporaryOutOfStock": false,
+            "containAllergensIntolernacies": false
+          },
+          "productType": 1,
+          "purchaseData": {
+            "allowComments": false
+          }
+        },
+        "brand": "DANONE",
+        "regions": null,
+        "available": true,
+        "packaging": "4 x 120 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 2.99,
+        "category_id": "2136",
+        "offer_zones": null,
+        "category_ids": [
+          "2136",
+          "2123",
+          "2055",
+          "2811"
+        ],
+        "display_name": "Activia Soja Mango y Papaya P-4 ud.",
+        "price_format": "2,99 €",
+        "category_name": "Bífidus",
+        "price_per_unit": 6.23,
+        "source_row_md5": "8079a74cc914b8a1d9188d1ef3b847f8",
+        "regional_prices": null,
+        "promo_base_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "7067788",
+        "ean": "8424395999275",
+        "raw": {
+          "id": 16635,
+          "ean": "8424395999275",
+          "code": "7067788",
+          "type": "product",
+          "media": [
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7067788_001.jpg?t=20240426040001",
+              "type": "P",
+              "order": 1
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7067788_002.jpg?t=20240426040001",
+              "type": "P",
+              "order": 2
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7067788_003.jpg?t=20240426040001",
+              "type": "P",
+              "order": 3
+            }
+          ],
+          "offers": [],
+          "coupons": [],
+          "priceData": {
+            "prices": [
+              {
+                "id": "PRICE",
+                "value": {
+                  "centAmount": 2.49,
+                  "centUnitAmount": 4.98
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              }
+            ],
+            "maximumUnit": 20,
+            "minimumUnit": 1,
+            "intervalUnit": 1,
+            "priceUnitType": "",
+            "taxPercentage": 4,
+            "unitPriceUnitType": "1 Kg"
+          },
+          "categories": [
+            {
+              "id": 2136,
+              "name": "Bífidus",
+              "type": 0
+            }
+          ],
+          "productData": {
+            "seo": "bifidus-desnatado-natural-pack-de-4-und",
+            "url": "https://tienda.consum.es/es/p/bifidus-desnatado-natural-pack-de-4-und/7067788",
+            "name": "Bífidus Desnatado Natural Pack de 4 Und.",
+            "brand": {
+              "id": "LA FAGEDA",
+              "url": "la-fageda",
+              "name": "LA FAGEDA",
+              "landing": false
+            },
+            "format": "",
+            "actions": [],
+            "novelty": false,
+            "featured": false,
+            "imageURL": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7067788.jpg?t=20260805080142",
+            "seoTitle": "",
+            "sponsored": false,
+            "description": "Bífidus Desnatado Natural Pack de 4 Und. 4 x 125 Gr",
+            "availability": "1",
+            "seoDescription": "bifidus-desnatado-natural-pack-de-4-und",
+            "temporaryOutOfStock": false,
+            "containAllergensIntolernacies": false
+          },
+          "productType": 1,
+          "purchaseData": {
+            "allowComments": false
+          }
+        },
+        "brand": "LA FAGEDA",
+        "regions": [
+          "Catalunya"
+        ],
+        "available": true,
+        "packaging": "4 x 125 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 2.49,
+        "category_id": "2136",
+        "offer_zones": null,
+        "category_ids": [
+          "2136",
+          "2123",
+          "2055",
+          "2811"
+        ],
+        "display_name": "Bífidus Desnatado Natural Pack de 4 Und.",
+        "price_format": "2,49 €",
+        "category_name": "Bífidus",
+        "price_per_unit": 4.98,
+        "source_row_md5": "4b6faacd3a06b8d0bb94b245bc3b950c",
+        "regional_prices": null,
+        "promo_base_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "7076271",
+        "ean": "8410500010546",
+        "raw": {
+          "id": 5902,
+          "ean": "8410500010546",
+          "code": "7076271",
+          "type": "product",
+          "media": [
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7076271_001.jpg?t=20251113091501",
+              "type": "P",
+              "order": 1
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7076271_002.jpg?t=20231025040008",
+              "type": "P",
+              "order": 2
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7076271_003.jpg?t=20220908040001",
+              "type": "P",
+              "order": 3
+            }
+          ],
+          "offers": [],
+          "coupons": [],
+          "priceData": {
+            "prices": [
+              {
+                "id": "PRICE",
+                "value": {
+                  "centAmount": 2.99,
+                  "centUnitAmount": 6.23
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              }
+            ],
+            "maximumUnit": 20,
+            "minimumUnit": 1,
+            "intervalUnit": 1,
+            "priceUnitType": "",
+            "taxPercentage": 4,
+            "unitPriceUnitType": "1 Kg"
+          },
+          "categories": [
+            {
+              "id": 2136,
+              "name": "Bífidus",
+              "type": 0
+            }
+          ],
+          "productData": {
+            "seo": "activia-00-melocoton-bifidus-desnatado-p-4",
+            "url": "https://tienda.consum.es/es/p/activia-00-melocoton-bifidus-desnatado-p-4/7076271",
+            "name": "Activia 00% Melocotón Bífidus Desnatado P-4",
+            "brand": {
+              "id": "DANONE",
+              "url": "danone",
+              "name": "DANONE",
+              "landing": false
+            },
+            "format": "",
+            "actions": [],
+            "novelty": false,
+            "featured": false,
+            "imageURL": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7076271.jpg?t=20260827100051",
+            "seoTitle": "",
+            "sponsored": false,
+            "description": "Activia 00% Melocotón Bífidus Desnatado P-4 4 x 120 Gr",
+            "availability": "1",
+            "seoDescription": "activia-00-melocoton-bifidus-desnatado-p-4",
+            "temporaryOutOfStock": false,
+            "containAllergensIntolernacies": false
+          },
+          "productType": 1,
+          "purchaseData": {
+            "allowComments": false
+          }
+        },
+        "brand": "DANONE",
+        "regions": null,
+        "available": true,
+        "packaging": "4 x 120 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 2.99,
+        "category_id": "2136",
+        "offer_zones": null,
+        "category_ids": [
+          "2136",
+          "2123",
+          "2055",
+          "2811"
+        ],
+        "display_name": "Activia 00% Melocotón Bífidus Desnatado P-4",
+        "price_format": "2,99 €",
+        "category_name": "Bífidus",
+        "price_per_unit": 6.23,
+        "source_row_md5": "8c1c0746c1e9b1b59f16f285734e5d7a",
+        "regional_prices": null,
+        "promo_base_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "7213721",
+        "ean": "8410500017699",
+        "raw": {
+          "id": 7398,
+          "ean": "8410500017699",
+          "code": "7213721",
+          "type": "product",
+          "media": [
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7213721_001.jpg?t=20251113091501",
+              "type": "P",
+              "order": 1
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7213721_002.jpg?t=20250719091518",
+              "type": "P",
+              "order": 2
+            }
+          ],
+          "offers": [],
+          "coupons": [],
+          "priceData": {
+            "prices": [
+              {
+                "id": "PRICE",
+                "value": {
+                  "centAmount": 2.89,
+                  "centUnitAmount": 6.28
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              }
+            ],
+            "maximumUnit": 20,
+            "minimumUnit": 1,
+            "intervalUnit": 1,
+            "priceUnitType": "",
+            "taxPercentage": 4,
+            "unitPriceUnitType": "1 Kg"
+          },
+          "categories": [
+            {
+              "id": 2136,
+              "name": "Bífidus",
+              "type": 0
+            }
+          ],
+          "productData": {
+            "seo": "activia-0-cremoso-frutas-silvestres-pack-4",
+            "url": "https://tienda.consum.es/es/p/activia-0-cremoso-frutas-silvestres-pack-4/7213721",
+            "name": "Activia 0% Cremoso Frutas Silvestres Pack 4",
+            "brand": {
+              "id": "DANONE",
+              "url": "danone",
+              "name": "DANONE",
+              "landing": false
+            },
+            "format": "",
+            "actions": [],
+            "novelty": false,
+            "featured": false,
+            "imageURL": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7213721.jpg?t=20260812080232",
+            "seoTitle": "",
+            "sponsored": false,
+            "description": "Activia 0% Cremoso Frutas Silvestres Pack 4 4 x 115 Gr",
+            "availability": "1",
+            "seoDescription": "activia-0-cremoso-frutas-silvestres-pack-4",
+            "temporaryOutOfStock": false,
+            "containAllergensIntolernacies": false
+          },
+          "productType": 1,
+          "purchaseData": {
+            "allowComments": false
+          }
+        },
+        "brand": "DANONE",
+        "regions": null,
+        "available": true,
+        "packaging": "4 x 115 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 2.89,
+        "category_id": "2136",
+        "offer_zones": null,
+        "category_ids": [
+          "2136",
+          "2123",
+          "2055",
+          "2811"
+        ],
+        "display_name": "Activia 0% Cremoso Frutas Silvestres Pack 4",
+        "price_format": "2,89 €",
+        "category_name": "Bífidus",
+        "price_per_unit": 6.28,
+        "source_row_md5": "c34467c30d451bd2ddbb5b09f1f8fae7",
+        "regional_prices": null,
+        "promo_base_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "7213742",
+        "ean": "8410500017712",
+        "raw": {
+          "id": 7401,
+          "ean": "8410500017712",
+          "code": "7213742",
+          "type": "product",
+          "media": [
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7213742_001.jpg?t=20260717130004",
+              "type": "P",
+              "order": 1
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7213742_002.jpg?t=20260717130004",
+              "type": "P",
+              "order": 2
+            }
+          ],
+          "offers": [],
+          "coupons": [],
+          "priceData": {
+            "prices": [
+              {
+                "id": "PRICE",
+                "value": {
+                  "centAmount": 2.89,
+                  "centUnitAmount": 6.28
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              }
+            ],
+            "maximumUnit": 20,
+            "minimumUnit": 1,
+            "intervalUnit": 1,
+            "priceUnitType": "",
+            "taxPercentage": 4,
+            "unitPriceUnitType": "1 Kg"
+          },
+          "categories": [
+            {
+              "id": 2136,
+              "name": "Bífidus",
+              "type": 0
+            }
+          ],
+          "productData": {
+            "seo": "activia-cremoso-sabor-lima-limon",
+            "url": "https://tienda.consum.es/es/p/activia-cremoso-sabor-lima-limon/7213742",
+            "name": "Activia Cremoso Sabor Lima Limón",
+            "brand": {
+              "id": "DANONE",
+              "url": "danone",
+              "name": "DANONE",
+              "landing": false
+            },
+            "format": "",
+            "actions": [],
+            "novelty": false,
+            "featured": false,
+            "imageURL": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7213742.jpg?t=20260812080232",
+            "seoTitle": "",
+            "sponsored": false,
+            "description": "Activia Cremoso Sabor Lima Limón 4 x 115 Gr",
+            "availability": "1",
+            "seoDescription": "activia-cremoso-sabor-lima-limon",
+            "temporaryOutOfStock": false,
+            "containAllergensIntolernacies": false
+          },
+          "productType": 1,
+          "purchaseData": {
+            "allowComments": false
+          }
+        },
+        "brand": "DANONE",
+        "regions": null,
+        "available": true,
+        "packaging": "4 x 115 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 2.89,
+        "category_id": "2136",
+        "offer_zones": null,
+        "category_ids": [
+          "2136",
+          "2123",
+          "2055",
+          "2811"
+        ],
+        "display_name": "Activia Cremoso Sabor Lima Limón",
+        "price_format": "2,89 €",
+        "category_name": "Bífidus",
+        "price_per_unit": 6.28,
+        "source_row_md5": "f444e241a6e58cc0063a6fb3e4e30d54",
+        "regional_prices": null,
+        "promo_base_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "7263353",
+        "ean": "8410500020071",
+        "raw": {
+          "id": 9442,
+          "ean": "8410500020071",
+          "code": "7263353",
+          "type": "product",
+          "media": [
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7263353_001.jpg?t=20241206091502",
+              "type": "P",
+              "order": 1
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7263353_002.jpg?t=20241206091502",
+              "type": "P",
+              "order": 2
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7263353_003.jpg?t=20241206091502",
+              "type": "P",
+              "order": 3
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7263353_004.jpg?t=20241206091502",
+              "type": "P",
+              "order": 4
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7263353_005.jpg?t=20241206091502",
+              "type": "P",
+              "order": 5
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7263353_006.jpg?t=20241206091502",
+              "type": "P",
+              "order": 6
+            }
+          ],
+          "offers": [
+            {
+              "id": 12756581,
+              "to": "2026-09-23T21:59:00.000Z",
+              "from": "2026-08-26T22:00:00.000Z",
+              "image": "https://cdn-consum.aktiosdigitalservices.com/assets/promotion/es/oferta-inmediato.png",
+              "amount": 2,
+              "inmediate": true,
+              "pictoType": "default",
+              "promotionId": 424205924,
+              "promotionType": 1,
+              "minDescription": "Ahora ",
+              "longDescription": "Ahora más barato",
+              "visibleValidate": false,
+              "shortDescription": "Ahora más barato",
+              "visibleProductWidget": true,
+              "applicationActionType": 2,
+              "applicationTargetType": 1,
+              "visiblePromotionWidget": false
+            }
+          ],
+          "coupons": [],
+          "priceData": {
+            "prices": [
+              {
+                "id": "PRICE",
+                "value": {
+                  "centAmount": 2.99,
+                  "centUnitAmount": 6.5
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              },
+              {
+                "id": "OFFER_PRICE",
+                "value": {
+                  "centAmount": 2,
+                  "centUnitAmount": 4.35
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              }
+            ],
+            "maximumUnit": 20,
+            "minimumUnit": 1,
+            "intervalUnit": 1,
+            "priceUnitType": "",
+            "taxPercentage": 4,
+            "unitPriceUnitType": "1 Kg"
+          },
+          "categories": [
+            {
+              "id": 2136,
+              "name": "Bífidus",
+              "type": 0
+            },
+            {
+              "id": 999992811,
+              "name": "Ofertas en despensa",
+              "type": 1
+            }
+          ],
+          "productData": {
+            "seo": "activia-avena-nueces-bifidus-p4",
+            "url": "https://tienda.consum.es/es/p/activia-avena-nueces-bifidus-p4/7263353",
+            "name": "Activia Avena Nueces Bifidus P4",
+            "brand": {
+              "id": "DANONE",
+              "url": "danone",
+              "name": "DANONE",
+              "landing": false
+            },
+            "format": "",
+            "actions": [],
+            "novelty": false,
+            "featured": false,
+            "imageURL": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7263353.jpg?t=20260827101318",
+            "seoTitle": "",
+            "sponsored": false,
+            "description": "Activia Avena Nueces Bifidus P4 4 x 115 Gr",
+            "availability": "1",
+            "seoDescription": "activia-avena-nueces-bifidus-p4",
+            "temporaryOutOfStock": false,
+            "containAllergensIntolernacies": false
+          },
+          "productType": 1,
+          "purchaseData": {
+            "allowComments": false
+          }
+        },
+        "brand": "DANONE",
+        "regions": null,
+        "available": true,
+        "packaging": "4 x 115 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 2,
+        "category_id": "2136",
+        "offer_zones": [
+          "147",
+          "575",
+          "495",
+          "1105",
+          "254"
+        ],
+        "category_ids": [
+          "2136",
+          "2123",
+          "2055",
+          "2811"
+        ],
+        "display_name": "Activia Avena Nueces Bifidus P4",
+        "price_format": "2,00 €",
+        "category_name": "Bífidus",
+        "price_per_unit": 4.35,
+        "source_row_md5": "dfbd045a7a68bef0fe730ff6e84c0b8e",
+        "regional_prices": null,
+        "promo_base_price": 2.99,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "7340953",
+        "ean": "8410500024574",
+        "raw": {
+          "id": 22606,
+          "ean": "8410500024574",
+          "code": "7340953",
+          "type": "product",
+          "media": [
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7340953_001.jpg?t=20251113091501",
+              "type": "P",
+              "order": 1
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7340953_002.jpg?t=20220512040005",
+              "type": "P",
+              "order": 2
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7340953_003.jpg?t=20220512040005",
+              "type": "P",
+              "order": 3
+            }
+          ],
+          "offers": [
+            {
+              "id": 12772506,
+              "to": "2026-09-23T21:59:00.000Z",
+              "from": "2026-08-26T22:00:00.000Z",
+              "image": "https://cdn-consum.aktiosdigitalservices.com/assets/promotion/es/oferta-inmediato.png",
+              "amount": 2,
+              "inmediate": true,
+              "pictoType": "default",
+              "promotionId": 424225486,
+              "promotionType": 1,
+              "minDescription": "Ahora ",
+              "longDescription": "Ahora más barato",
+              "visibleValidate": false,
+              "shortDescription": "Ahora más barato",
+              "visibleProductWidget": true,
+              "applicationActionType": 2,
+              "applicationTargetType": 1,
+              "visiblePromotionWidget": false
+            }
+          ],
+          "coupons": [],
+          "priceData": {
+            "prices": [
+              {
+                "id": "PRICE",
+                "value": {
+                  "centAmount": 2.99,
+                  "centUnitAmount": 6.5
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              },
+              {
+                "id": "OFFER_PRICE",
+                "value": {
+                  "centAmount": 2,
+                  "centUnitAmount": 4.35
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              }
+            ],
+            "maximumUnit": 20,
+            "minimumUnit": 1,
+            "intervalUnit": 1,
+            "priceUnitType": "",
+            "taxPercentage": 4,
+            "unitPriceUnitType": "1 Kg"
+          },
+          "categories": [
+            {
+              "id": 2136,
+              "name": "Bífidus",
+              "type": 0
+            },
+            {
+              "id": 999992811,
+              "name": "Ofertas en despensa",
+              "type": 1
+            }
+          ],
+          "productData": {
+            "seo": "activia-00-semillas-chia-y-almendra",
+            "url": "https://tienda.consum.es/es/p/activia-00-semillas-chia-y-almendra/7340953",
+            "name": "Activia 00% Semillas Chía y Almendra",
+            "brand": {
+              "id": "DANONE",
+              "url": "danone",
+              "name": "DANONE",
+              "landing": false
+            },
+            "format": "",
+            "actions": [],
+            "novelty": false,
+            "featured": false,
+            "imageURL": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7340953.jpg?t=20260827102231",
+            "seoTitle": "",
+            "sponsored": false,
+            "description": "Activia 00% Semillas Chía y Almendra 4 x 115 Gr",
+            "availability": "1",
+            "seoDescription": "activia-00-semillas-chia-y-almendra",
+            "temporaryOutOfStock": false,
+            "containAllergensIntolernacies": false
+          },
+          "productType": 1,
+          "purchaseData": {
+            "allowComments": false
+          }
+        },
+        "brand": "DANONE",
+        "regions": null,
+        "available": true,
+        "packaging": "4 x 115 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 2,
+        "category_id": "2136",
+        "offer_zones": [
+          "147",
+          "575",
+          "495",
+          "1105",
+          "254"
+        ],
+        "category_ids": [
+          "2136",
+          "2123",
+          "2055",
+          "2811"
+        ],
+        "display_name": "Activia 00% Semillas Chía y Almendra",
+        "price_format": "2,00 €",
+        "category_name": "Bífidus",
+        "price_per_unit": 4.35,
+        "source_row_md5": "7cf77455f3b8bbebd0399e6cc901da65",
+        "regional_prices": null,
+        "promo_base_price": 2.99,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "7375004",
+        "ean": "8410500001001",
+        "raw": {
+          "id": 26748,
+          "ean": "8410500001001",
+          "code": "7375004",
+          "type": "product",
+          "media": [
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7375004_001.jpg?t=20260418041502",
+              "type": "P",
+              "order": 1
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7375004_002.jpg?t=20260418041502",
+              "type": "P",
+              "order": 2
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7375004_003.jpg?t=20230718040003",
+              "type": "P",
+              "order": 3
+            }
+          ],
+          "offers": [],
+          "coupons": [],
+          "priceData": {
+            "prices": [
+              {
+                "id": "PRICE",
+                "value": {
+                  "centAmount": 2.99,
+                  "centUnitAmount": 6.23
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              }
+            ],
+            "maximumUnit": 20,
+            "minimumUnit": 1,
+            "intervalUnit": 1,
+            "priceUnitType": "",
+            "taxPercentage": 4,
+            "unitPriceUnitType": "1 Kg"
+          },
+          "categories": [
+            {
+              "id": 2136,
+              "name": "Bífidus",
+              "type": 0
+            }
+          ],
+          "productData": {
+            "seo": "activia-con-fresas-pack-de-4-unidades",
+            "url": "https://tienda.consum.es/es/p/activia-con-fresas-pack-de-4-unidades/7375004",
+            "name": "Activia con Fresas Pack de 4 Unidades",
+            "brand": {
+              "id": "DANONE",
+              "url": "danone",
+              "name": "DANONE",
+              "landing": false
+            },
+            "format": "",
+            "actions": [],
+            "novelty": false,
+            "featured": false,
+            "imageURL": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7375004.jpg?t=20260827102635",
+            "seoTitle": "",
+            "sponsored": false,
+            "description": "Activia con Fresas Pack de 4 Unidades 4 x 120 Gr",
+            "availability": "1",
+            "seoDescription": "activia-con-fresas-pack-de-4-unidades",
+            "temporaryOutOfStock": false,
+            "containAllergensIntolernacies": false
+          },
+          "productType": 1,
+          "purchaseData": {
+            "allowComments": false
+          }
+        },
+        "brand": "DANONE",
+        "regions": null,
+        "available": true,
+        "packaging": "4 x 120 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 2.99,
+        "category_id": "2136",
+        "offer_zones": null,
+        "category_ids": [
+          "2136",
+          "2123",
+          "2055",
+          "2811"
+        ],
+        "display_name": "Activia con Fresas Pack de 4 Unidades",
+        "price_format": "2,99 €",
+        "category_name": "Bífidus",
+        "price_per_unit": 6.23,
+        "source_row_md5": "5e76b255c2fad77e8808fc65ce463574",
+        "regional_prices": null,
+        "promo_base_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "7375009",
+        "ean": "8410500011147",
+        "raw": {
+          "id": 26749,
+          "ean": "8410500011147",
+          "code": "7375009",
+          "type": "product",
+          "media": [
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7375009_001.jpg?t=20260418041502",
+              "type": "P",
+              "order": 1
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7375009_002.jpg?t=20260418041502",
+              "type": "P",
+              "order": 2
+            }
+          ],
+          "offers": [],
+          "coupons": [],
+          "priceData": {
+            "prices": [
+              {
+                "id": "PRICE",
+                "value": {
+                  "centAmount": 2.99,
+                  "centUnitAmount": 6.23
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              }
+            ],
+            "maximumUnit": 20,
+            "minimumUnit": 1,
+            "intervalUnit": 1,
+            "priceUnitType": "",
+            "taxPercentage": 4,
+            "unitPriceUnitType": "1 Kg"
+          },
+          "categories": [
+            {
+              "id": 2136,
+              "name": "Bífidus",
+              "type": 0
+            }
+          ],
+          "productData": {
+            "seo": "activia-con-mango-pack-de-4-unidades",
+            "url": "https://tienda.consum.es/es/p/activia-con-mango-pack-de-4-unidades/7375009",
+            "name": "Activia con Mango Pack de 4 Unidades",
+            "brand": {
+              "id": "DANONE",
+              "url": "danone",
+              "name": "DANONE",
+              "landing": false
+            },
+            "format": "",
+            "actions": [],
+            "novelty": false,
+            "featured": false,
+            "imageURL": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7375009.jpg?t=20260827102637",
+            "seoTitle": "",
+            "sponsored": false,
+            "description": "Activia con Mango Pack de 4 Unidades 4 x 120 Gr",
+            "availability": "1",
+            "seoDescription": "activia-con-mango-pack-de-4-unidades",
+            "temporaryOutOfStock": false,
+            "containAllergensIntolernacies": false
+          },
+          "productType": 1,
+          "purchaseData": {
+            "allowComments": false
+          }
+        },
+        "brand": "DANONE",
+        "regions": null,
+        "available": true,
+        "packaging": "4 x 120 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 2.99,
+        "category_id": "2136",
+        "offer_zones": null,
+        "category_ids": [
+          "2136",
+          "2123",
+          "2055",
+          "2811"
+        ],
+        "display_name": "Activia con Mango Pack de 4 Unidades",
+        "price_format": "2,99 €",
+        "category_name": "Bífidus",
+        "price_per_unit": 6.23,
+        "source_row_md5": "2c9991517e0df0e25d5d0ba714450c90",
+        "regional_prices": null,
+        "promo_base_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "7476992",
+        "ean": "8410500007287",
+        "raw": {
+          "id": 45848,
+          "ean": "8410500007287",
+          "code": "7476992",
+          "type": "product",
+          "media": [
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7476992_001.jpg?t=20260428091502",
+              "type": "P",
+              "order": 1
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7476992_002.jpg?t=20260428091502",
+              "type": "P",
+              "order": 2
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7476992_003.jpg?t=20260428091502",
+              "type": "P",
+              "order": 3
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7476992_004.jpg?t=20260428091502",
+              "type": "P",
+              "order": 4
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7476992_005.jpg?t=20260428091502",
+              "type": "P",
+              "order": 5
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7476992_006.jpg?t=20260428091502",
+              "type": "P",
+              "order": 6
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7476992_007.jpg?t=20260428091502",
+              "type": "P",
+              "order": 7
+            }
+          ],
+          "offers": [],
+          "coupons": [],
+          "priceData": {
+            "prices": [
+              {
+                "id": "PRICE",
+                "value": {
+                  "centAmount": 3.99,
+                  "centUnitAmount": 4.16
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              }
+            ],
+            "maximumUnit": 49,
+            "minimumUnit": 1,
+            "intervalUnit": 1,
+            "priceUnitType": "",
+            "taxPercentage": 4,
+            "unitPriceUnitType": "1 Kg"
+          },
+          "categories": [
+            {
+              "id": 2136,
+              "name": "Bífidus",
+              "type": 0
+            }
+          ],
+          "productData": {
+            "seo": "activia-natural-pack-de-8",
+            "url": "https://tienda.consum.es/es/p/activia-natural-pack-de-8/7476992",
+            "name": "Activia Natural Pack de 8",
+            "brand": {
+              "id": "DANONE",
+              "url": "danone",
+              "name": "DANONE",
+              "landing": false
+            },
+            "format": "",
+            "actions": [],
+            "novelty": false,
+            "featured": false,
+            "imageURL": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7476992.jpg?t=20260827105601",
+            "seoTitle": "",
+            "sponsored": false,
+            "description": "Activia Natural Pack de 8 8 x 120 Gr",
+            "availability": "1",
+            "seoDescription": "activia-natural-pack-de-8",
+            "temporaryOutOfStock": false,
+            "containAllergensIntolernacies": false
+          },
+          "productType": 1,
+          "purchaseData": {
+            "allowComments": false
+          }
+        },
+        "brand": "DANONE",
+        "regions": null,
+        "available": true,
+        "packaging": "8 x 120 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 3.99,
+        "category_id": "2136",
+        "offer_zones": null,
+        "category_ids": [
+          "2136",
+          "2123",
+          "2055",
+          "2811"
+        ],
+        "display_name": "Activia Natural Pack de 8",
+        "price_format": "3,99 €",
+        "category_name": "Bífidus",
+        "price_per_unit": 4.16,
+        "source_row_md5": "2b78caa16f0e95f6f11af74cfd76038b",
+        "regional_prices": null,
+        "promo_base_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "7477003",
+        "ean": "8410500008871",
+        "raw": {
+          "id": 45849,
+          "ean": "8410500008871",
+          "code": "7477003",
+          "type": "product",
+          "media": [
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7477003_001.jpg?t=20260428091502",
+              "type": "P",
+              "order": 1
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7477003_002.jpg?t=20260428091502",
+              "type": "P",
+              "order": 2
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7477003_003.jpg?t=20260428091502",
+              "type": "P",
+              "order": 3
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7477003_004.jpg?t=20260428091502",
+              "type": "P",
+              "order": 4
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7477003_005.jpg?t=20260428091502",
+              "type": "P",
+              "order": 5
+            }
+          ],
+          "offers": [],
+          "coupons": [],
+          "priceData": {
+            "prices": [
+              {
+                "id": "PRICE",
+                "value": {
+                  "centAmount": 3.99,
+                  "centUnitAmount": 4.16
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              }
+            ],
+            "maximumUnit": 49,
+            "minimumUnit": 1,
+            "intervalUnit": 1,
+            "priceUnitType": "",
+            "taxPercentage": 4,
+            "unitPriceUnitType": "1 Kg"
+          },
+          "categories": [
+            {
+              "id": 2136,
+              "name": "Bífidus",
+              "type": 0
+            }
+          ],
+          "productData": {
+            "seo": "activia-0-natural-pack-de-8",
+            "url": "https://tienda.consum.es/es/p/activia-0-natural-pack-de-8/7477003",
+            "name": "Activia 0% Natural Pack de 8",
+            "brand": {
+              "id": "DANONE",
+              "url": "danone",
+              "name": "DANONE",
+              "landing": false
+            },
+            "format": "",
+            "actions": [],
+            "novelty": false,
+            "featured": false,
+            "imageURL": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7477003.jpg?t=20260827105602",
+            "seoTitle": "",
+            "sponsored": false,
+            "description": "Activia 0% Natural Pack de 8 8 x 120 Gr",
+            "availability": "1",
+            "seoDescription": "activia-0-natural-pack-de-8",
+            "temporaryOutOfStock": false,
+            "containAllergensIntolernacies": false
+          },
+          "productType": 1,
+          "purchaseData": {
+            "allowComments": false
+          }
+        },
+        "brand": "DANONE",
+        "regions": null,
+        "available": true,
+        "packaging": "8 x 120 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 3.99,
+        "category_id": "2136",
+        "offer_zones": null,
+        "category_ids": [
+          "2136",
+          "2123",
+          "2055",
+          "2811"
+        ],
+        "display_name": "Activia 0% Natural Pack de 8",
+        "price_format": "3,99 €",
+        "category_name": "Bífidus",
+        "price_per_unit": 4.16,
+        "source_row_md5": "6795b9741a1dfb8026d8c9c6c220730a",
+        "regional_prices": null,
+        "promo_base_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "7477008",
+        "ean": "8410500014421",
+        "raw": {
+          "id": 45850,
+          "ean": "8410500014421",
+          "code": "7477008",
+          "type": "product",
+          "media": [
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7477008_001.jpg?t=20260428091502",
+              "type": "P",
+              "order": 1
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7477008_002.jpg?t=20260428091502",
+              "type": "P",
+              "order": 2
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7477008_003.jpg?t=20260428091502",
+              "type": "P",
+              "order": 3
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7477008_004.jpg?t=20260428091502",
+              "type": "P",
+              "order": 4
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7477008_005.jpg?t=20260428091502",
+              "type": "P",
+              "order": 5
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7477008_006.jpg?t=20260428091502",
+              "type": "P",
+              "order": 6
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7477008_007.jpg?t=20260428091502",
+              "type": "P",
+              "order": 7
+            }
+          ],
+          "offers": [],
+          "coupons": [],
+          "priceData": {
+            "prices": [
+              {
+                "id": "PRICE",
+                "value": {
+                  "centAmount": 3.99,
+                  "centUnitAmount": 4.16
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              }
+            ],
+            "maximumUnit": 49,
+            "minimumUnit": 1,
+            "intervalUnit": 1,
+            "priceUnitType": "",
+            "taxPercentage": 4,
+            "unitPriceUnitType": "1 Kg"
+          },
+          "categories": [
+            {
+              "id": 2136,
+              "name": "Bífidus",
+              "type": 0
+            }
+          ],
+          "productData": {
+            "seo": "activia-0-natural-edulcorado",
+            "url": "https://tienda.consum.es/es/p/activia-0-natural-edulcorado/7477008",
+            "name": "Activia 0% Natural Edulcorado",
+            "brand": {
+              "id": "DANONE",
+              "url": "danone",
+              "name": "DANONE",
+              "landing": false
+            },
+            "format": "",
+            "actions": [],
+            "novelty": false,
+            "featured": false,
+            "imageURL": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7477008.jpg?t=20260827105604",
+            "seoTitle": "",
+            "sponsored": false,
+            "description": "Activia 0% Natural Edulcorado 8 x 120 Gr",
+            "availability": "1",
+            "seoDescription": "activia-0-natural-edulcorado",
+            "temporaryOutOfStock": false,
+            "containAllergensIntolernacies": false
+          },
+          "productType": 1,
+          "purchaseData": {
+            "allowComments": false
+          }
+        },
+        "brand": "DANONE",
+        "regions": null,
+        "available": true,
+        "packaging": "8 x 120 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 3.99,
+        "category_id": "2136",
+        "offer_zones": null,
+        "category_ids": [
+          "2136",
+          "2123",
+          "2055",
+          "2811"
+        ],
+        "display_name": "Activia 0% Natural Edulcorado",
+        "price_format": "3,99 €",
+        "category_name": "Bífidus",
+        "price_per_unit": 4.16,
+        "source_row_md5": "eeda08e26ef78e1d4ba7e3bcb9bb12e7",
+        "regional_prices": null,
+        "promo_base_price": null,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "7478431",
+        "ean": "8410500031695",
+        "raw": {
+          "id": 45957,
+          "ean": "8410500031695",
+          "code": "7478431",
+          "type": "product",
+          "media": [
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7478431_001.jpg?t=20260512091503",
+              "type": "P",
+              "order": 1
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7478431_002.jpg?t=20260512091503",
+              "type": "P",
+              "order": 2
+            }
+          ],
+          "offers": [
+            {
+              "id": 12837101,
+              "to": "2026-09-23T21:59:00.000Z",
+              "from": "2026-08-26T22:00:00.000Z",
+              "image": "https://cdn-consum.aktiosdigitalservices.com/assets/promotion/es/oferta-inmediato.png",
+              "amount": 2,
+              "inmediate": true,
+              "pictoType": "default",
+              "promotionId": 424305317,
+              "promotionType": 1,
+              "minDescription": "Ahora ",
+              "longDescription": "Ahora más barato",
+              "visibleValidate": false,
+              "shortDescription": "Ahora más barato",
+              "visibleProductWidget": true,
+              "applicationActionType": 2,
+              "applicationTargetType": 1,
+              "visiblePromotionWidget": false
+            }
+          ],
+          "coupons": [],
+          "priceData": {
+            "prices": [
+              {
+                "id": "PRICE",
+                "value": {
+                  "centAmount": 2.99,
+                  "centUnitAmount": 6.5
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              },
+              {
+                "id": "OFFER_PRICE",
+                "value": {
+                  "centAmount": 2,
+                  "centUnitAmount": 4.35
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              }
+            ],
+            "maximumUnit": 49,
+            "minimumUnit": 1,
+            "intervalUnit": 1,
+            "priceUnitType": "",
+            "taxPercentage": 4,
+            "unitPriceUnitType": "1 Kg"
+          },
+          "categories": [
+            {
+              "id": 2136,
+              "name": "Bífidus",
+              "type": 0
+            },
+            {
+              "id": 999992811,
+              "name": "Ofertas en despensa",
+              "type": 1
+            }
+          ],
+          "productData": {
+            "seo": "activia-frutos-rojos-y-cereales",
+            "url": "https://tienda.consum.es/es/p/activia-frutos-rojos-y-cereales/7478431",
+            "name": "Activia Frutos Rojos y Cereales",
+            "brand": {
+              "id": "DANONE",
+              "url": "danone",
+              "name": "DANONE",
+              "landing": false
+            },
+            "format": "",
+            "actions": [],
+            "novelty": false,
+            "featured": false,
+            "imageURL": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7478431.jpg?t=20260827105638",
+            "seoTitle": "",
+            "sponsored": false,
+            "description": "Activia Frutos Rojos y Cereales 4 x 115 Gr",
+            "availability": "1",
+            "seoDescription": "activia-frutos-rojos-y-cereales",
+            "temporaryOutOfStock": false,
+            "containAllergensIntolernacies": false
+          },
+          "productType": 1,
+          "purchaseData": {
+            "allowComments": false
+          }
+        },
+        "brand": "DANONE",
+        "regions": null,
+        "available": true,
+        "packaging": "4 x 115 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 2,
+        "category_id": "2136",
+        "offer_zones": [
+          "147",
+          "575",
+          "495",
+          "1105",
+          "254"
+        ],
+        "category_ids": [
+          "2136",
+          "2123",
+          "2055",
+          "2811"
+        ],
+        "display_name": "Activia Frutos Rojos y Cereales",
+        "price_format": "2,00 €",
+        "category_name": "Bífidus",
+        "price_per_unit": 4.35,
+        "source_row_md5": "2874c6d079ae324eb56edd2c064b0e76",
+        "regional_prices": null,
+        "promo_base_price": 2.99,
+        "price_per_unit_unit": "kg"
+      },
+      {
+        "id": "7478451",
+        "ean": "8410500020040",
+        "raw": {
+          "id": 45958,
+          "ean": "8410500020040",
+          "code": "7478451",
+          "type": "product",
+          "media": [
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7478451_001.jpg?t=20260512091503",
+              "type": "P",
+              "order": 1
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7478451_002.jpg?t=20260512091503",
+              "type": "P",
+              "order": 2
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7478451_003.jpg?t=20260512091503",
+              "type": "P",
+              "order": 3
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7478451_004.jpg?t=20260512091503",
+              "type": "P",
+              "order": 4
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7478451_005.jpg?t=20260512091503",
+              "type": "P",
+              "order": 5
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7478451_006.jpg?t=20260512091503",
+              "type": "P",
+              "order": 6
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7478451_007.jpg?t=20260512091503",
+              "type": "P",
+              "order": 7
+            },
+            {
+              "url": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7478451_008.jpg?t=20260512091503",
+              "type": "P",
+              "order": 8
+            }
+          ],
+          "offers": [
+            {
+              "id": 12837186,
+              "to": "2026-09-23T21:59:00.000Z",
+              "from": "2026-08-26T22:00:00.000Z",
+              "image": "https://cdn-consum.aktiosdigitalservices.com/assets/promotion/es/oferta-inmediato.png",
+              "amount": 2,
+              "inmediate": true,
+              "pictoType": "default",
+              "promotionId": 424305411,
+              "promotionType": 1,
+              "minDescription": "Ahora ",
+              "longDescription": "Ahora más barato",
+              "visibleValidate": false,
+              "shortDescription": "Ahora más barato",
+              "visibleProductWidget": true,
+              "applicationActionType": 2,
+              "applicationTargetType": 1,
+              "visiblePromotionWidget": false
+            }
+          ],
+          "coupons": [],
+          "priceData": {
+            "prices": [
+              {
+                "id": "PRICE",
+                "value": {
+                  "centAmount": 2.99,
+                  "centUnitAmount": 6.5
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              },
+              {
+                "id": "OFFER_PRICE",
+                "value": {
+                  "centAmount": 2,
+                  "centUnitAmount": 4.35
+                },
+                "toDate": "2099-12-31T22:59:59Z"
+              }
+            ],
+            "maximumUnit": 49,
+            "minimumUnit": 1,
+            "intervalUnit": 1,
+            "priceUnitType": "",
+            "taxPercentage": 4,
+            "unitPriceUnitType": "1 Kg"
+          },
+          "categories": [
+            {
+              "id": 2136,
+              "name": "Bífidus",
+              "type": 0
+            },
+            {
+              "id": 999992811,
+              "name": "Ofertas en despensa",
+              "type": 1
+            }
+          ],
+          "productData": {
+            "seo": "activia-0-muesli",
+            "url": "https://tienda.consum.es/es/p/activia-0-muesli/7478451",
+            "name": "Activia 0% Muesli",
+            "brand": {
+              "id": "DANONE",
+              "url": "danone",
+              "name": "DANONE",
+              "landing": false
+            },
+            "format": "",
+            "actions": [],
+            "novelty": false,
+            "featured": false,
+            "imageURL": "https://cdn-consum.aktiosdigitalservices.com/tol/consum/media/product/img/300x300/7478451.jpg?t=20260827105639",
+            "seoTitle": "",
+            "sponsored": false,
+            "description": "Activia 0% Muesli 4 x 115 Gr",
+            "availability": "1",
+            "seoDescription": "activia-0-muesli",
+            "temporaryOutOfStock": false,
+            "containAllergensIntolernacies": false
+          },
+          "productType": 1,
+          "purchaseData": {
+            "allowComments": false
+          }
+        },
+        "brand": "DANONE",
+        "regions": null,
+        "available": true,
+        "packaging": "4 x 115 Gr",
+        "published": true,
+        "synced_at": "2026-09-01T13:10:38.117+00:00",
+        "unit_price": 2,
+        "category_id": "2136",
+        "offer_zones": [
+          "147",
+          "575",
+          "495",
+          "1105",
+          "254"
+        ],
+        "category_ids": [
+          "2136",
+          "2123",
+          "2055",
+          "2811"
+        ],
+        "display_name": "Activia 0% Muesli",
+        "price_format": "2,00 €",
+        "category_name": "Bífidus",
+        "price_per_unit": 4.35,
+        "source_row_md5": "e14e8879eff9ebbd856fff18289be69a",
+        "regional_prices": null,
+        "promo_base_price": 2.99,
+        "price_per_unit_unit": "kg"
+      }
+    ],
+    "store": "consum",
+    "cursor": "",
+    "job_key": "ce1-ce200-d9a6ae5c4267e5b61fedacb44b97",
+    "row_count": 15,
+    "elapsed_ms": 66.667,
+    "captured_at": "2026-09-03T10:31:30.14029+00:00",
+    "project_ref": "gkffvigcnsesbaihycay",
+    "operation_hash": "d9a6ae5c4267e5b61fedacb44b973c64bdd808af24ad354b9179bd55e8269533"
+  },
+  "transport_bytes": 49114
+}

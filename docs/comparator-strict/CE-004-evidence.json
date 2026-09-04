@@ -1,0 +1,493 @@
+{
+  "schema_version": 1,
+  "task": "CE-004",
+  "captured_date": "2026-09-02",
+  "status": "completed_definition_only",
+  "decision_updates": [
+    {
+      "decision_id": "RV-01",
+      "date": "2026-09-02",
+      "status": "confirmed",
+      "reviewer": "project_owner",
+      "user_statement": "si yo me encargaré de revisarlo",
+      "scope": "Second review of the random 20 percent sample and all disputed cases under CE-203; cases have not yet been reviewed.",
+      "does_not_approve": ["SC-01", "BU-01"],
+      "schedule": "To be agreed when preparing review batches in F2; no fixed hours committed."
+    },
+    {
+      "decision_id": "SC-01",
+      "date": "2026-09-02",
+      "status": "confirmed",
+      "user_statement": "si exacto, eso es",
+      "scope": "Evaluation pilot with Mercadona, Carrefour, Consum and Plusfresc at reference postal codes 08006 and 25001, following the explicit confirmation question. Coverage is not certified and no public activation is approved."
+    },
+    {
+      "decision_id": "BU-01",
+      "date": "2026-09-02",
+      "status": "confirmed",
+      "user_statement": "si exacto, eso es",
+      "scope": "No new contracts or infrastructure expansion; accept the documented operational limits. Apply only after G0 within the planned phases; no new paid services, configuration change or public activation is approved by this record."
+    }
+  ],
+  "repository": {
+    "head": "03b8ba273e17709fd8fc69c20dddb68c147a7e2a",
+    "branch": "codex/phase5-observation"
+  },
+  "project": {
+    "id": "gkffvigcnsesbaihycay",
+    "name": "QueFalta",
+    "region": "eu-west-1",
+    "status": "ACTIVE_HEALTHY",
+    "postgres_release": "17.6.1.127",
+    "organization_plan": "pro"
+  },
+  "limits_of_evidence": [
+    "Organization plan verified; compute size, usage allowances remaining, spend-cap state, actual invoice, CPU/I/O time series and live postal service mappings not verified.",
+    "600 published location-price rows sampled by product_id, not random or family-stratified; no equivalence or production capacity certification.",
+    "No retailer calls, comparator RPC calls, writes, syncs, infrastructure changes, installations or deployments."
+  ],
+  "sql_attempts": {
+    "total": 5,
+    "succeeded": 4,
+    "syntax_error": 1,
+    "notes": "Initial schema inspection succeeded; only the last SELECT result was exposed. A combined metadata query then failed with SQLSTATE 42601; corrected once using CTEs. No retry with relaxed timeouts. The three retained successful evidence queries follow."
+  },
+  "captures": [
+    {
+      "id": "ce004_q3",
+      "sql": "BEGIN TRANSACTION READ ONLY;\nSET LOCAL statement_timeout='5s';\nSET LOCAL lock_timeout='1s';\nWITH activity AS (\n SELECT count(*) AS connections,\n count(*) FILTER(WHERE state='active') AS active,\n count(*) FILTER(WHERE wait_event_type='Lock') AS waiting_lock,\n count(*) FILTER(WHERE state='idle in transaction') AS idle_in_transaction,\n current_setting('max_connections') AS max_connections\n FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid()\n), relations AS (\n SELECT c.relname AS name,c.reltuples AS estimated_rows\n FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace\n WHERE n.nspname='public' AND c.relkind='r'\n AND (c.relname IN ('mercadona_products','carrefour_products','consum_products','plusfresc_products')\n OR c.relname LIKE 'catalog%location%' OR c.relname LIKE 'catalog%sync%')\n), columns AS (\n SELECT table_name,column_name,data_type\n FROM information_schema.columns\n WHERE table_schema='public'\n AND (table_name LIKE 'catalog%location%' OR table_name LIKE 'catalog%sync%')\n)\nSELECT jsonb_build_object('captured_at',now(),'activity',(SELECT to_jsonb(a) FROM activity a),\n 'relations',(SELECT jsonb_agg(to_jsonb(r) ORDER BY r.name) FROM relations r),\n 'columns',(SELECT jsonb_agg(to_jsonb(c) ORDER BY c.table_name,c.column_name) FROM columns c)) AS evidence;\nROLLBACK;",
+      "result": {
+        "columns": [
+          {
+            "data_type": "timestamp with time zone",
+            "table_name": "catalog_location_price_changes",
+            "column_name": "changed_at"
+          },
+          {
+            "data_type": "bigint",
+            "table_name": "catalog_location_price_changes",
+            "column_name": "id"
+          },
+          {
+            "data_type": "text",
+            "table_name": "catalog_location_price_changes",
+            "column_name": "location_id"
+          },
+          {
+            "data_type": "numeric",
+            "table_name": "catalog_location_price_changes",
+            "column_name": "new_unit_price"
+          },
+          {
+            "data_type": "numeric",
+            "table_name": "catalog_location_price_changes",
+            "column_name": "prev_unit_price"
+          },
+          {
+            "data_type": "numeric",
+            "table_name": "catalog_location_price_changes",
+            "column_name": "price_delta_pct"
+          },
+          {
+            "data_type": "text",
+            "table_name": "catalog_location_price_changes",
+            "column_name": "product_id"
+          },
+          {
+            "data_type": "text",
+            "table_name": "catalog_location_price_changes",
+            "column_name": "store"
+          },
+          {
+            "data_type": "boolean",
+            "table_name": "catalog_location_prices",
+            "column_name": "available"
+          },
+          {
+            "data_type": "numeric",
+            "table_name": "catalog_location_prices",
+            "column_name": "base_unit_price"
+          },
+          {
+            "data_type": "timestamp with time zone",
+            "table_name": "catalog_location_prices",
+            "column_name": "first_seen_at"
+          },
+          {
+            "data_type": "text",
+            "table_name": "catalog_location_prices",
+            "column_name": "id"
+          },
+          {
+            "data_type": "boolean",
+            "table_name": "catalog_location_prices",
+            "column_name": "is_new"
+          },
+          {
+            "data_type": "text",
+            "table_name": "catalog_location_prices",
+            "column_name": "location_id"
+          },
+          {
+            "data_type": "text",
+            "table_name": "catalog_location_prices",
+            "column_name": "offer_id"
+          },
+          {
+            "data_type": "text",
+            "table_name": "catalog_location_prices",
+            "column_name": "price_format"
+          },
+          {
+            "data_type": "numeric",
+            "table_name": "catalog_location_prices",
+            "column_name": "price_per_unit"
+          },
+          {
+            "data_type": "text",
+            "table_name": "catalog_location_prices",
+            "column_name": "price_per_unit_unit"
+          },
+          {
+            "data_type": "text",
+            "table_name": "catalog_location_prices",
+            "column_name": "product_id"
+          },
+          {
+            "data_type": "numeric",
+            "table_name": "catalog_location_prices",
+            "column_name": "promo_base_price"
+          },
+          {
+            "data_type": "numeric",
+            "table_name": "catalog_location_prices",
+            "column_name": "promo_discount"
+          },
+          {
+            "data_type": "date",
+            "table_name": "catalog_location_prices",
+            "column_name": "promo_end"
+          },
+          {
+            "data_type": "text",
+            "table_name": "catalog_location_prices",
+            "column_name": "promo_name"
+          },
+          {
+            "data_type": "numeric",
+            "table_name": "catalog_location_prices",
+            "column_name": "promo_price"
+          },
+          {
+            "data_type": "date",
+            "table_name": "catalog_location_prices",
+            "column_name": "promo_start"
+          },
+          {
+            "data_type": "text",
+            "table_name": "catalog_location_prices",
+            "column_name": "promo_text"
+          },
+          {
+            "data_type": "text",
+            "table_name": "catalog_location_prices",
+            "column_name": "promo_type"
+          },
+          {
+            "data_type": "text",
+            "table_name": "catalog_location_prices",
+            "column_name": "promotion_id"
+          },
+          {
+            "data_type": "boolean",
+            "table_name": "catalog_location_prices",
+            "column_name": "published"
+          },
+          {
+            "data_type": "jsonb",
+            "table_name": "catalog_location_prices",
+            "column_name": "raw"
+          },
+          {
+            "data_type": "text",
+            "table_name": "catalog_location_prices",
+            "column_name": "store"
+          },
+          {
+            "data_type": "timestamp with time zone",
+            "table_name": "catalog_location_prices",
+            "column_name": "synced_at"
+          },
+          {
+            "data_type": "numeric",
+            "table_name": "catalog_location_prices",
+            "column_name": "unit_price"
+          },
+          {
+            "data_type": "text",
+            "table_name": "catalog_sync_status",
+            "column_name": "store"
+          },
+          {
+            "data_type": "timestamp with time zone",
+            "table_name": "catalog_sync_status",
+            "column_name": "synced_at"
+          },
+          {
+            "data_type": "timestamp with time zone",
+            "table_name": "catalog_sync_status",
+            "column_name": "updated_at"
+          }
+        ],
+        "activity": {
+          "active": 0,
+          "connections": 25,
+          "waiting_lock": 0,
+          "max_connections": "60",
+          "idle_in_transaction": 0
+        },
+        "relations": [
+          {
+            "name": "carrefour_products",
+            "estimated_rows": 35755
+          },
+          {
+            "name": "catalog_location_price_changes",
+            "estimated_rows": 27826
+          },
+          {
+            "name": "catalog_location_prices",
+            "estimated_rows": 163838
+          },
+          {
+            "name": "catalog_sync_status",
+            "estimated_rows": 18
+          },
+          {
+            "name": "consum_products",
+            "estimated_rows": 11660
+          },
+          {
+            "name": "mercadona_products",
+            "estimated_rows": 6530
+          },
+          {
+            "name": "plusfresc_products",
+            "estimated_rows": 8116
+          }
+        ],
+        "captured_at": "2026-09-02T20:22:50.029927+00:00"
+      }
+    },
+    {
+      "id": "ce004_q4",
+      "sql": "BEGIN TRANSACTION READ ONLY;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='1s';\nSELECT jsonb_build_object(\n 'captured_at',now(),\n 'indexes',(SELECT jsonb_agg(jsonb_build_object('name',indexname,'definition',indexdef) ORDER BY indexname) FROM pg_indexes WHERE schemaname='public' AND tablename='catalog_location_prices'),\n 'syncs',(SELECT jsonb_agg(to_jsonb(s) ORDER BY s.store) FROM public.catalog_sync_status s WHERE store IN ('mercadona','carrefour','consum','plusfresc')),\n 'locations',(SELECT jsonb_agg(to_jsonb(t) ORDER BY t.store,t.location_id) FROM (SELECT store,location_id FROM public.catalog_location_prices GROUP BY store,location_id ORDER BY store,location_id LIMIT 41) t)\n) AS evidence;\nROLLBACK;",
+      "result": {
+        "syncs": [
+          {
+            "store": "carrefour",
+            "synced_at": "2026-08-31T09:22:40.575+00:00",
+            "updated_at": "2026-08-31T09:22:44.884022+00:00"
+          },
+          {
+            "store": "consum",
+            "synced_at": "2026-09-01T13:12:26.198+00:00",
+            "updated_at": "2026-09-01T13:12:26.273934+00:00"
+          },
+          {
+            "store": "mercadona",
+            "synced_at": "2026-09-01T13:49:13.971+00:00",
+            "updated_at": "2026-09-01T13:49:14.43461+00:00"
+          },
+          {
+            "store": "plusfresc",
+            "synced_at": "2026-09-01T12:51:13.364+00:00",
+            "updated_at": "2026-09-01T12:51:13.423166+00:00"
+          }
+        ],
+        "indexes": [
+          {
+            "name": "catalog_location_prices_lookup_idx",
+            "definition": "CREATE INDEX catalog_location_prices_lookup_idx ON public.catalog_location_prices USING btree (store, location_id, product_id) WHERE published"
+          },
+          {
+            "name": "catalog_location_prices_new_feed_idx",
+            "definition": "CREATE INDEX catalog_location_prices_new_feed_idx ON public.catalog_location_prices USING btree (store, location_id, first_seen_at DESC, product_id) WHERE (published AND available)"
+          },
+          {
+            "name": "catalog_location_prices_offer_feed_idx",
+            "definition": "CREATE INDEX catalog_location_prices_offer_feed_idx ON public.catalog_location_prices USING btree (store, location_id, promo_end, product_id) WHERE (published AND available AND (promo_type IS NOT NULL))"
+          },
+          {
+            "name": "catalog_location_prices_pkey",
+            "definition": "CREATE UNIQUE INDEX catalog_location_prices_pkey ON public.catalog_location_prices USING btree (id)"
+          },
+          {
+            "name": "catalog_location_prices_store_product_id_location_id_key",
+            "definition": "CREATE UNIQUE INDEX catalog_location_prices_store_product_id_location_id_key ON public.catalog_location_prices USING btree (store, product_id, location_id)"
+          }
+        ],
+        "locations": [
+          {
+            "store": "bm",
+            "location_id": "14942D"
+          },
+          {
+            "store": "bm",
+            "location_id": "14946"
+          },
+          {
+            "store": "bm",
+            "location_id": "14955D"
+          },
+          {
+            "store": "bm",
+            "location_id": "14971D"
+          },
+          {
+            "store": "bm",
+            "location_id": "14982D"
+          },
+          {
+            "store": "bm",
+            "location_id": "14984D"
+          },
+          {
+            "store": "bm",
+            "location_id": "14985D2"
+          },
+          {
+            "store": "consum",
+            "location_id": "1105"
+          },
+          {
+            "store": "consum",
+            "location_id": "147"
+          },
+          {
+            "store": "consum",
+            "location_id": "254"
+          },
+          {
+            "store": "consum",
+            "location_id": "495"
+          },
+          {
+            "store": "consum",
+            "location_id": "575"
+          },
+          {
+            "store": "plusfresc",
+            "location_id": "110"
+          },
+          {
+            "store": "plusfresc",
+            "location_id": "12"
+          },
+          {
+            "store": "plusfresc",
+            "location_id": "17"
+          },
+          {
+            "store": "plusfresc",
+            "location_id": "3"
+          },
+          {
+            "store": "plusfresc",
+            "location_id": "33"
+          },
+          {
+            "store": "plusfresc",
+            "location_id": "36"
+          },
+          {
+            "store": "plusfresc",
+            "location_id": "58"
+          },
+          {
+            "store": "plusfresc",
+            "location_id": "61"
+          }
+        ],
+        "captured_at": "2026-09-02T20:23:11.160157+00:00"
+      }
+    },
+    {
+      "id": "ce004_q5",
+      "sql": "BEGIN TRANSACTION READ ONLY;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='1s';\nWITH targets(store,location_id) AS (\n VALUES ('consum'::text,'575'::text),('plusfresc','3'),('plusfresc','12')\n), samples AS (\n SELECT t.store,t.location_id,p.product_id,p.unit_price,p.available,p.synced_at\n FROM targets t CROSS JOIN LATERAL (\n  SELECT product_id,unit_price,available,synced_at\n  FROM public.catalog_location_prices p\n  WHERE p.store=t.store AND p.location_id=t.location_id AND p.published\n  ORDER BY product_id LIMIT 200\n ) p\n), measures AS (\n SELECT store,location_id,count(*) AS sample_size,\n count(*) FILTER (WHERE unit_price>0) AS positive_price,\n count(*) FILTER (WHERE available) AS available_flag,\n min(synced_at) AS min_synced_at,max(synced_at) AS max_synced_at\n FROM samples GROUP BY store,location_id\n)\nSELECT jsonb_build_object('captured_at',now(),\n 'sample_method','First 200 published rows by product_id per selected store/location, not random or family-stratified',\n 'samples',(SELECT jsonb_agg(to_jsonb(m) ORDER BY m.store,m.location_id) FROM measures m),\n 'activity',(SELECT jsonb_build_object('connections',count(*),'active',count(*) FILTER(WHERE state='active'),'waiting_lock',count(*) FILTER(WHERE wait_event_type='Lock'),'idle_in_transaction',count(*) FILTER(WHERE state='idle in transaction')) FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid())\n) AS evidence; ROLLBACK;",
+      "result": {
+        "samples": [
+          {
+            "store": "consum",
+            "location_id": "575",
+            "sample_size": 200,
+            "max_synced_at": "2026-09-01T13:10:38.117+00:00",
+            "min_synced_at": "2026-09-01T13:10:38.117+00:00",
+            "available_flag": 200,
+            "positive_price": 200
+          },
+          {
+            "store": "plusfresc",
+            "location_id": "12",
+            "sample_size": 200,
+            "max_synced_at": "2026-09-01T12:49:13.414+00:00",
+            "min_synced_at": "2026-09-01T12:49:13.414+00:00",
+            "available_flag": 196,
+            "positive_price": 200
+          },
+          {
+            "store": "plusfresc",
+            "location_id": "3",
+            "sample_size": 200,
+            "max_synced_at": "2026-09-01T12:49:13.414+00:00",
+            "min_synced_at": "2026-09-01T12:49:13.414+00:00",
+            "available_flag": 195,
+            "positive_price": 200
+          }
+        ],
+        "activity": {
+          "active": 0,
+          "connections": 25,
+          "waiting_lock": 0,
+          "idle_in_transaction": 0
+        },
+        "captured_at": "2026-09-02T20:23:52.469841+00:00",
+        "sample_method": "First 200 published rows by product_id per selected store/location, not random or family-stratified"
+      }
+    }
+  ],
+  "proposed_pilot": {
+    "stores": [
+      "mercadona",
+      "carrefour",
+      "consum",
+      "plusfresc"
+    ],
+    "reference_postal_codes": [
+      "08006",
+      "25001"
+    ],
+    "families": [
+      "water",
+      "yogurt",
+      "frozen_potatoes"
+    ],
+    "coverage_not_guaranteed": true,
+    "approved": true
+  },
+  "source_files": [
+    "scripts/sync-catalog.mjs",
+    "scripts/sync-carrefour.mjs",
+    "scripts/sync-consum.mjs",
+    "scripts/sync-plusfresc.mjs",
+    "src/constants/retailerZones.ts",
+    "supabase/migrations/catalog_location_price_history.sql"
+  ],
+  "official_sources": [
+    "https://supabase.com/docs/guides/platform/cost-control",
+    "https://supabase.com/docs/guides/platform/manage-your-usage/compute",
+    "https://supabase.com/docs/guides/platform/compute-and-disk",
+    "https://supabase.com/changelog/48235-migration-of-supabase-management-api-logs-all-analytics-endpoint-to-logs-endpoint",
+    "https://supabase.com/changelog/extension-version-pinning-ignored"
+  ]
+}

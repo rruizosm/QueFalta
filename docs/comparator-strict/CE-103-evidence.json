@@ -1,0 +1,833 @@
+{
+  "schema_version": 1,
+  "task": "CE-103",
+  "date": "2026-09-03",
+  "status": "in_progress_read_only_reconciliation",
+  "authority": {
+    "sequence": "CE-SEQ-002",
+    "CE101": "completed_owner_report_production_1_3",
+    "CE102": "local_guard_tests_pass",
+    "CE100": "open_capacity_baseline_missing"
+  },
+  "project": {
+    "id": "gkffvigcnsesbaihycay",
+    "ref": "gkffvigcnsesbaihycay",
+    "organization_id": "trnqzlirexddfnowcifm",
+    "organization_slug": "trnqzlirexddfnowcifm",
+    "name": "QueFalta",
+    "region": "eu-west-1",
+    "status": "ACTIVE_HEALTHY",
+    "database": {
+      "host": "db.gkffvigcnsesbaihycay.supabase.co",
+      "version": "17.6.1.127",
+      "postgres_engine": "17",
+      "release_channel": "ga"
+    },
+    "created_at": "2026-05-31T16:58:55.059749Z"
+  },
+  "execution": {
+    "sql_calls": 3,
+    "sql_errors": 0,
+    "read_only": true,
+    "statement_timeout": "5s",
+    "lock_timeout": "500ms",
+    "concurrency": 1,
+    "sql_reserved_upper_bound_ms": 15000,
+    "sql_duration_separately_measured": false,
+    "comparison_rpc_calls": 0,
+    "customer_rows_read": 0,
+    "secret_values_read": 0,
+    "remote_writes": 0,
+    "migrations_applied": 0,
+    "ledger_repairs": 0,
+    "queue_or_cron_changes": 0,
+    "remote_adapter_deployed": false,
+    "guard_note": "Bounded administrative diagnostic via MCP; not a deployed transaction/coordinator adapter or a production execution test of the new runner."
+  },
+  "captures": [
+    {
+      "id": "ce103q1",
+      "query": "BEGIN TRANSACTION READ ONLY;\nSET LOCAL statement_timeout='5s';\nSET LOCAL lock_timeout='500ms';\nSET LOCAL application_name='ce1_ce103_reconcile';\nSELECT jsonb_build_object(\n 'captured_at',clock_timestamp(),\n 'read_only',current_setting('transaction_read_only'),\n 'columns',(SELECT jsonb_agg(jsonb_build_object('column',column_name,'type',data_type) ORDER BY ordinal_position) FROM information_schema.columns WHERE table_schema='supabase_migrations' AND table_name='schema_migrations'),\n 'strict_schema_exists',EXISTS(SELECT 1 FROM pg_namespace WHERE nspname='comparator_strict'),\n 'activity',(SELECT jsonb_build_object('client_connections',count(*) FILTER(WHERE backend_type='client backend'),'active',count(*) FILTER(WHERE state='active'),'waiting_lock',count(*) FILTER(WHERE wait_event_type='Lock'),'idle_in_transaction',count(*) FILTER(WHERE state='idle in transaction')) FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid())\n) AS evidence;\nROLLBACK;",
+      "result": {
+        "columns": [
+          {
+            "type": "text",
+            "column": "version"
+          },
+          {
+            "type": "ARRAY",
+            "column": "statements"
+          },
+          {
+            "type": "text",
+            "column": "name"
+          },
+          {
+            "type": "text",
+            "column": "created_by"
+          },
+          {
+            "type": "text",
+            "column": "idempotency_key"
+          },
+          {
+            "type": "ARRAY",
+            "column": "rollback"
+          }
+        ],
+        "activity": {
+          "active": 0,
+          "waiting_lock": 0,
+          "client_connections": 10,
+          "idle_in_transaction": 0
+        },
+        "read_only": "on",
+        "captured_at": "2026-09-03T05:39:29.229479+00:00",
+        "strict_schema_exists": false
+      }
+    },
+    {
+      "id": "ce103q2",
+      "query": "BEGIN TRANSACTION READ ONLY;\nSET LOCAL statement_timeout='5s';\nSET LOCAL lock_timeout='500ms';\nSET LOCAL application_name='ce1_ce103_reconcile';\nWITH rows AS (\n SELECT version,name,coalesce(cardinality(statements),0) AS statement_count,\n  coalesce((SELECT sum(octet_length(s)) FROM unnest(statements) s),0) AS statement_bytes,\n  CASE WHEN cardinality(statements)>0 THEN md5(btrim(replace(array_to_string(statements,E'\\n'),E'\\r\\n',E'\\n'),E' \\t\\r\\n;')) END AS joined_lf_md5,\n  CASE WHEN cardinality(statements)>0 THEN md5(btrim(replace(array_to_string(statements,E';\\n'),E'\\r\\n',E'\\n'),E' \\t\\r\\n;')) END AS joined_semicolon_lf_md5\n FROM supabase_migrations.schema_migrations ORDER BY version LIMIT 500\n)\nSELECT jsonb_build_object('captured_at',clock_timestamp(),\n 'total_rows',(SELECT count(*) FROM supabase_migrations.schema_migrations),\n 'rows',(SELECT jsonb_agg(to_jsonb(r) ORDER BY r.version) FROM rows r)\n) AS evidence;\nROLLBACK;",
+      "result": {
+        "rows": [
+          {
+            "name": "sorli_nutri_score",
+            "version": "20260720173704",
+            "joined_lf_md5": "20606eb2e55de95086ce389808f57c83",
+            "statement_bytes": 732,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "20606eb2e55de95086ce389808f57c83"
+          },
+          {
+            "name": "bonpreu_product_details",
+            "version": "20260720182304",
+            "joined_lf_md5": "0c37d71feb949ac0d7c0a4b5942f05c0",
+            "statement_bytes": 516,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "0c37d71feb949ac0d7c0a4b5942f05c0"
+          },
+          {
+            "name": "dia_offers",
+            "version": "20260723204711",
+            "joined_lf_md5": "fd0172d5ad3c2bc0ba7f2779a626662f",
+            "statement_bytes": 4983,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "fd0172d5ad3c2bc0ba7f2779a626662f"
+          },
+          {
+            "name": "sorli_offers",
+            "version": "20260723212240",
+            "joined_lf_md5": "d078dc8f3b78b4d6051c380adcc772b9",
+            "statement_bytes": 6858,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "d078dc8f3b78b4d6051c380adcc772b9"
+          },
+          {
+            "name": "retailer_offers_condis_ametller_alcampo_eroski_caprabo",
+            "version": "20260726200544",
+            "joined_lf_md5": "d4c2a1b220040830f5032d41eb8cec30",
+            "statement_bytes": 9447,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "d4c2a1b220040830f5032d41eb8cec30"
+          },
+          {
+            "name": "catalog_price_browse_indexes",
+            "version": "20260727091048",
+            "joined_lf_md5": "582b5ecaf658cfa1dac8ea96cbfc7411",
+            "statement_bytes": 1567,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "582b5ecaf658cfa1dac8ea96cbfc7411"
+          },
+          {
+            "name": "bonpreu_sync_staging",
+            "version": "20260728183128",
+            "joined_lf_md5": "20258764d38ba3bb6aa0e53ce80688cf",
+            "statement_bytes": 2999,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "20258764d38ba3bb6aa0e53ce80688cf"
+          },
+          {
+            "name": "bonpreu_resumable_publication",
+            "version": "20260804185744",
+            "joined_lf_md5": "dcbb3333642c35208ad60e0622b4c968",
+            "statement_bytes": 4466,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "dcbb3333642c35208ad60e0622b4c968"
+          },
+          {
+            "name": "comparator_embeddings_layer",
+            "version": "20260809125237",
+            "joined_lf_md5": "b5d53547c31d1379f23dd1f4efe6893d",
+            "statement_bytes": 9464,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "b5d53547c31d1379f23dd1f4efe6893d"
+          },
+          {
+            "name": "comparator_embedding_pipeline",
+            "version": "20260809125302",
+            "joined_lf_md5": "26d61aedd034c2c6189e7217e18d7193",
+            "statement_bytes": 9107,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "26d61aedd034c2c6189e7217e18d7193"
+          },
+          {
+            "name": "comparator_embedding_failure_fk_index",
+            "version": "20260809130000",
+            "joined_lf_md5": "d4ad103d83986cc5f875b4f1bad900ba",
+            "statement_bytes": 112,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "d4ad103d83986cc5f875b4f1bad900ba"
+          },
+          {
+            "name": "comparator_embedding_queue_service_role_grants",
+            "version": "20260809130241",
+            "joined_lf_md5": "98151e7699488df6ce53059602880721",
+            "statement_bytes": 138,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "98151e7699488df6ce53059602880721"
+          },
+          {
+            "name": "comparator_embedding_queue_service_role_select",
+            "version": "20260809130351",
+            "joined_lf_md5": "50275ced42b33e3fac0c5374d8638512",
+            "statement_bytes": 69,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "50275ced42b33e3fac0c5374d8638512"
+          },
+          {
+            "name": "comparator_embedding_candidates_v2",
+            "version": "20260809132746",
+            "joined_lf_md5": "9e1bfd5ad89b29be681151168f474ed1",
+            "statement_bytes": 2851,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "9e1bfd5ad89b29be681151168f474ed1"
+          },
+          {
+            "name": "comparator_embedding_enqueue_after_upsert",
+            "version": "20260809133731",
+            "joined_lf_md5": "abc318d13a28d86274ba284c3aa5261e",
+            "statement_bytes": 3056,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "abc318d13a28d86274ba284c3aa5261e"
+          },
+          {
+            "name": "comparator_embedding_candidates_v3",
+            "version": "20260809162706",
+            "joined_lf_md5": "7c5e6c6906128128313760587ac89b01",
+            "statement_bytes": 7638,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "7c5e6c6906128128313760587ac89b01"
+          },
+          {
+            "name": "comparator_cheaper_products_v3",
+            "version": "20260809164345",
+            "joined_lf_md5": "cf26a20eea7349ad7cccce8e1e583dd8",
+            "statement_bytes": 12642,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "cf26a20eea7349ad7cccce8e1e583dd8"
+          },
+          {
+            "name": "comparator_match_cache_v3",
+            "version": "20260810105331",
+            "joined_lf_md5": "e3c74cf19ad509e3ac80e4454e1758b2",
+            "statement_bytes": 16713,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "e3c74cf19ad509e3ac80e4454e1758b2"
+          },
+          {
+            "name": "comparator_match_cache_security_boundary",
+            "version": "20260810105703",
+            "joined_lf_md5": "e7edb93be1d10612f30ae51314ebcdd8",
+            "statement_bytes": 1390,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "e7edb93be1d10612f30ae51314ebcdd8"
+          },
+          {
+            "name": "comparator_match_cache_metadata_invalidation",
+            "version": "20260810140243",
+            "joined_lf_md5": "7141d3ca3a6e0e5d574bb53b62c54fca",
+            "statement_bytes": 2373,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "7141d3ca3a6e0e5d574bb53b62c54fca"
+          },
+          {
+            "name": "comparator_match_cache_trigger_when_changed",
+            "version": "20260810140659",
+            "joined_lf_md5": "9fe09fedfaacdad2f6af8a0a4595fd9c",
+            "statement_bytes": 1132,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "9fe09fedfaacdad2f6af8a0a4595fd9c"
+          },
+          {
+            "name": "comparator_total_price_for_unpriced_stores",
+            "version": "20260811111147",
+            "joined_lf_md5": "a554a2e9b5fe69722972d0509ceeb03a",
+            "statement_bytes": 6654,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "a554a2e9b5fe69722972d0509ceeb03a"
+          },
+          {
+            "name": "comparator_cheaper_highlight",
+            "version": "20260811112317",
+            "joined_lf_md5": "aa43110b2ca8bd2e4eba91d38cb12c35",
+            "statement_bytes": 3010,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "aa43110b2ca8bd2e4eba91d38cb12c35"
+          },
+          {
+            "name": "purchase_statistics",
+            "version": "20260811203243",
+            "joined_lf_md5": "6ff5ddeb733aae6c7ddea3160ced0a3f",
+            "statement_bytes": 4207,
+            "statement_count": 7,
+            "joined_semicolon_lf_md5": "c0f73eeb262d3eaa9ef8fdf91af76de3"
+          },
+          {
+            "name": "normalize_purchase_statistic_categories",
+            "version": "20260811210204",
+            "joined_lf_md5": "0890be9f20ad42610a33e26a09e22d08",
+            "statement_bytes": 6199,
+            "statement_count": 3,
+            "joined_semicolon_lf_md5": "d12fc83faf0078ecc34e869f225ddb64"
+          },
+          {
+            "name": "statistics_visuals",
+            "version": "20260812090753",
+            "joined_lf_md5": "db20022d280cb2ddf5deaad86d377184",
+            "statement_bytes": 1308,
+            "statement_count": 3,
+            "joined_semicolon_lf_md5": "7f71bea1f501d37ed1fa34b3a226552f"
+          },
+          {
+            "name": "phase_3_security_performance_hardening",
+            "version": "20260814141719",
+            "joined_lf_md5": "872a079fb8828a22ea0ddb7cfece09b8",
+            "statement_bytes": 17449,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "872a079fb8828a22ea0ddb7cfece09b8"
+          },
+          {
+            "name": "froiz_explicit_new_arrivals",
+            "version": "20260818092848",
+            "joined_lf_md5": "42625b1efb2ab9afc86a29ba79e8c56a",
+            "statement_bytes": 519,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "42625b1efb2ab9afc86a29ba79e8c56a"
+          },
+          {
+            "name": "personalized_price_alerts",
+            "version": "20260820162731",
+            "joined_lf_md5": "f096f4a077a9df0bbe86009d8cfea1b1",
+            "statement_bytes": 34907,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "f096f4a077a9df0bbe86009d8cfea1b1"
+          },
+          {
+            "name": "sync_plus_verified_badge",
+            "version": "20260820163441",
+            "joined_lf_md5": "d87b98ddc11d9a622a8f1657c6c11d7b",
+            "statement_bytes": 1202,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "d87b98ddc11d9a622a8f1657c6c11d7b"
+          },
+          {
+            "name": "fix_personalized_price_alert_claim_ambiguity",
+            "version": "20260820163535",
+            "joined_lf_md5": "b951871213ba6ce6af684c7f84941354",
+            "statement_bytes": 3988,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "b951871213ba6ce6af684c7f84941354"
+          },
+          {
+            "name": "fix_personalized_price_alert_fk_indexes",
+            "version": "20260820163711",
+            "joined_lf_md5": "8aec804c6767846e5301fbddf53555ce",
+            "statement_bytes": 466,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "8aec804c6767846e5301fbddf53555ce"
+          },
+          {
+            "name": "price_alert_rule_emoji",
+            "version": "20260820165618",
+            "joined_lf_md5": "5122ea82566159177473f11e2629aa26",
+            "statement_bytes": 548,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "5122ea82566159177473f11e2629aa26"
+          },
+          {
+            "name": "personalized_alert_new_arrivals",
+            "version": "20260820170935",
+            "joined_lf_md5": "5e721eacc1609dbd6e34f5bc68904366",
+            "statement_bytes": 14019,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "5e721eacc1609dbd6e34f5bc68904366"
+          },
+          {
+            "name": "onboarding_integrity",
+            "version": "20260821130300",
+            "joined_lf_md5": "9673d9ea41dd7d2d6fc56795017328d0",
+            "statement_bytes": 3488,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "9673d9ea41dd7d2d6fc56795017328d0"
+          },
+          {
+            "name": "allow_unlimited_group_creation",
+            "version": "20260821175935",
+            "joined_lf_md5": "ad4093893a40cda2ee23716123a05b39",
+            "statement_bytes": 312,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "ad4093893a40cda2ee23716123a05b39"
+          },
+          {
+            "name": "list_item_notes",
+            "version": "20260821180449",
+            "joined_lf_md5": "ae257ffe0d0972f9d2ce9603a273cd5d",
+            "statement_bytes": 1165,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "ae257ffe0d0972f9d2ce9603a273cd5d"
+          },
+          {
+            "name": "list_item_note_product",
+            "version": "20260821182635",
+            "joined_lf_md5": "83cde898ad5efcc7e14ce3555509a149",
+            "statement_bytes": 4437,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "83cde898ad5efcc7e14ce3555509a149"
+          },
+          {
+            "name": "add_group_icon",
+            "version": "20260822073002",
+            "joined_lf_md5": "2b412dd39b0b0fd4e83bf8f5675852db",
+            "statement_bytes": 566,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "2b412dd39b0b0fd4e83bf8f5675852db"
+          },
+          {
+            "name": "general_statistics",
+            "version": "20260822171009",
+            "joined_lf_md5": "25a87277f233fce7abe75b4ba9ba5c41",
+            "statement_bytes": 6040,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "25a87277f233fce7abe75b4ba9ba5c41"
+          },
+          {
+            "name": "general_statistics_private_boundary",
+            "version": "20260822171221",
+            "joined_lf_md5": "531c7eb7dbb81a17ddb75d0902adc947",
+            "statement_bytes": 1455,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "531c7eb7dbb81a17ddb75d0902adc947"
+          },
+          {
+            "name": "free_tier_alert_and_comparator_allowances",
+            "version": "20260823064939",
+            "joined_lf_md5": "4d7d10a6e5f868cd4b9e027a1eb4f542",
+            "statement_bytes": 15285,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "4d7d10a6e5f868cd4b9e027a1eb4f542"
+          },
+          {
+            "name": "restrict_free_tier_usage_direct_access",
+            "version": "20260823065153",
+            "joined_lf_md5": "f16b5bcbe999b89c226e8bb180b78009",
+            "statement_bytes": 629,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "f16b5bcbe999b89c226e8bb180b78009"
+          },
+          {
+            "name": "enforce_free_allowances_before_paywall_launch",
+            "version": "20260823065550",
+            "joined_lf_md5": "2f42f573b3272b022b91244129709107",
+            "statement_bytes": 3568,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "2f42f573b3272b022b91244129709107"
+          },
+          {
+            "name": "catalog_search_engine_v1",
+            "version": "20260823103505",
+            "joined_lf_md5": "da87d7c1bc06c8a84e1ebd8ce8a29094",
+            "statement_bytes": 13023,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "da87d7c1bc06c8a84e1ebd8ce8a29094"
+          },
+          {
+            "name": "catalog_search_language_index_planner",
+            "version": "20260823103803",
+            "joined_lf_md5": "e8ad998215812b463f3ac999b9610d9f",
+            "statement_bytes": 6613,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "e8ad998215812b463f3ac999b9610d9f"
+          },
+          {
+            "name": "catalog_search_server_sort_orders",
+            "version": "20260823104828",
+            "joined_lf_md5": "3959ef9751ba2439843c365fe6770636",
+            "statement_bytes": 7257,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "3959ef9751ba2439843c365fe6770636"
+          },
+          {
+            "name": "catalog_feed_search_engine",
+            "version": "20260823110849",
+            "joined_lf_md5": "76c90378844adba0b6f7440bed5f6be6",
+            "statement_bytes": 13975,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "76c90378844adba0b6f7440bed5f6be6"
+          },
+          {
+            "name": "price_alert_notification_products",
+            "version": "20260823193941",
+            "joined_lf_md5": "cec708dc0533f7e535aabd2c26d65ee9",
+            "statement_bytes": 5328,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "cec708dc0533f7e535aabd2c26d65ee9"
+          },
+          {
+            "name": "targeted_price_alert_processor",
+            "version": "20260823194159",
+            "joined_lf_md5": "2d9bbfa72ed2dff5a1db5249dadece3c",
+            "statement_bytes": 5001,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "2d9bbfa72ed2dff5a1db5249dadece3c"
+          },
+          {
+            "name": "fix_targeted_price_alert_processor_alias",
+            "version": "20260823194414",
+            "joined_lf_md5": "327cd5f79c69d3d10998a07b7a484baa",
+            "statement_bytes": 5009,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "327cd5f79c69d3d10998a07b7a484baa"
+          },
+          {
+            "name": "extend_comparator_statement_timeout",
+            "version": "20260824131133",
+            "joined_lf_md5": "530df7ad36ace9dd3e4f8dbf535ec7ca",
+            "statement_bytes": 410,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "530df7ad36ace9dd3e4f8dbf535ec7ca"
+          },
+          {
+            "name": "catalog_match_reports",
+            "version": "20260824140510",
+            "joined_lf_md5": "1705f513b19b5ca9c0d3d89bc9fe8f3e",
+            "statement_bytes": 7926,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "1705f513b19b5ca9c0d3d89bc9fe8f3e"
+          },
+          {
+            "name": "extend_comparator_to_gadis_froiz_ahorramas",
+            "version": "20260824140836",
+            "joined_lf_md5": "aef541629cb661543f481c9d5886185b",
+            "statement_bytes": 18304,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "aef541629cb661543f481c9d5886185b"
+          },
+          {
+            "name": "normalize_comparator_reference_units",
+            "version": "20260824141904",
+            "joined_lf_md5": "af8029059a8686a8e9049f49f47934ef",
+            "statement_bytes": 7502,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "af8029059a8686a8e9049f49f47934ef"
+          },
+          {
+            "name": "normalize_gadis_reference_units",
+            "version": "20260824143221",
+            "joined_lf_md5": "0dac77615af28b557c3c26fb2a9883a5",
+            "statement_bytes": 1776,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "0dac77615af28b557c3c26fb2a9883a5"
+          },
+          {
+            "name": "extend_comparator_cache_status_stores",
+            "version": "20260824150622",
+            "joined_lf_md5": "ea17298dd4aa76929604fed2ebef8f99",
+            "statement_bytes": 719,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "ea17298dd4aa76929604fed2ebef8f99"
+          },
+          {
+            "name": "high_priority_cart_integrity",
+            "version": "20260824170527",
+            "joined_lf_md5": "3b18fe7855ec0aa11edb4ac47c8be895",
+            "statement_bytes": 11138,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "3b18fe7855ec0aa11edb4ac47c8be895"
+          },
+          {
+            "name": "app_active_user_metrics",
+            "version": "20260824171037",
+            "joined_lf_md5": "285c20cb992472dea9fbdcb2f069042e",
+            "statement_bytes": 5699,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "285c20cb992472dea9fbdcb2f069042e"
+          },
+          {
+            "name": "app_active_user_metrics_hardening",
+            "version": "20260824171226",
+            "joined_lf_md5": "b6c3599116dba31c196cf732e1ef8d70",
+            "statement_bytes": 402,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "b6c3599116dba31c196cf732e1ef8d70"
+          },
+          {
+            "name": "dashboard_metrics_and_match_review",
+            "version": "20260824172919",
+            "joined_lf_md5": "337c4d95c0852aedadf1d996ca6a0b94",
+            "statement_bytes": 1109,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "337c4d95c0852aedadf1d996ca6a0b94"
+          },
+          {
+            "name": "grant_legacy_all_stores_to_pre_1_3_accounts",
+            "version": "20260824174522",
+            "joined_lf_md5": "6ffaedbf7ab994d0dc91ced366e7e9d1",
+            "statement_bytes": 419,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "6ffaedbf7ab994d0dc91ced366e7e9d1"
+          },
+          {
+            "name": "fix_price_alert_service_role_claim",
+            "version": "20260824194109",
+            "joined_lf_md5": "89abfe4cb8800789bccf7468f9a9743c",
+            "statement_bytes": 2652,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "89abfe4cb8800789bccf7468f9a9743c"
+          },
+          {
+            "name": "localize_comparator_results",
+            "version": "20260824213809",
+            "joined_lf_md5": "44b836b54e16d7ff18efd5810bb4a274",
+            "statement_bytes": 4294,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "44b836b54e16d7ff18efd5810bb4a274"
+          },
+          {
+            "name": "event_driven_catalog_embedding_dispatch",
+            "version": "20260825175141",
+            "joined_lf_md5": "0a57f81ae6c1bdbae0ca4ab107b53373",
+            "statement_bytes": 2026,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "0a57f81ae6c1bdbae0ca4ab107b53373"
+          },
+          {
+            "name": "grant_all_registered_users_all_stores_access",
+            "version": "20260829124046",
+            "joined_lf_md5": "f76b2886b7c7997f3d3b334602e1022f",
+            "statement_bytes": 389,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "f76b2886b7c7997f3d3b334602e1022f"
+          },
+          {
+            "name": "bm_multizone_catalog",
+            "version": "20260830181142",
+            "joined_lf_md5": "3ed8f89ee362c1d32f47f1706194cc4c",
+            "statement_bytes": 22017,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "3ed8f89ee362c1d32f47f1706194cc4c"
+          },
+          {
+            "name": "bm_multizone_fk_indexes",
+            "version": "20260830181414",
+            "joined_lf_md5": "588abdb9745723049a12b01b57826b16",
+            "statement_bytes": 457,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "588abdb9745723049a12b01b57826b16"
+          },
+          {
+            "name": "community_recipes",
+            "version": "20260831124403",
+            "joined_lf_md5": "3c33f5cb1730c16606bcc25f922ca9c4",
+            "statement_bytes": 3524,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "3c33f5cb1730c16606bcc25f922ca9c4"
+          },
+          {
+            "name": "embedding_pipeline_phase_zero_control",
+            "version": "20260831204235",
+            "joined_lf_md5": "2a57ec1800a11d6ffb3939f469af8bf0",
+            "statement_bytes": 15842,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "2a57ec1800a11d6ffb3939f469af8bf0"
+          },
+          {
+            "name": "fix_embedding_phase_zero_special_expressions",
+            "version": "20260831205119",
+            "joined_lf_md5": "76b6a1a0b4b71382a05267d67e2ec40c",
+            "statement_bytes": 10239,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "76b6a1a0b4b71382a05267d67e2ec40c"
+          },
+          {
+            "name": "enforce_single_canary_dispatch_budget",
+            "version": "20260831205917",
+            "joined_lf_md5": "5c103ec4ec0513b433fadfbe0f0f59f4",
+            "statement_bytes": 5868,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "5c103ec4ec0513b433fadfbe0f0f59f4"
+          },
+          {
+            "name": "embedding_materializer_phase_one_idempotency",
+            "version": "20260901061238",
+            "joined_lf_md5": "2011fa63bb5318ccd39736fa7ba947f9",
+            "statement_bytes": 27519,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "2011fa63bb5318ccd39736fa7ba947f9"
+          },
+          {
+            "name": "embedding_worker_phase_three_batch_writes",
+            "version": "20260901072452",
+            "joined_lf_md5": "825927f940ba3e7105e1978c56d17bea",
+            "statement_bytes": 23337,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "825927f940ba3e7105e1978c56d17bea"
+          },
+          {
+            "name": "phase_three_single_hnsw_mutation",
+            "version": "20260901094105",
+            "joined_lf_md5": "f131c0047a26b81ea0ddf5970f3ac9a8",
+            "statement_bytes": 62873,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "f131c0047a26b81ea0ddf5970f3ac9a8"
+          },
+          {
+            "name": "embedding_runs_durable_settlement_and_set_based_invalidation",
+            "version": "20260901103216",
+            "joined_lf_md5": "10d3fd020dca46d884279d022091e947",
+            "statement_bytes": 49898,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "10d3fd020dca46d884279d022091e947"
+          },
+          {
+            "name": "phase4_legacy_materializer_compatibility",
+            "version": "20260901104518",
+            "joined_lf_md5": "64c7d68ce69396da77f295fc0a47723e",
+            "statement_bytes": 6778,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "64c7d68ce69396da77f295fc0a47723e"
+          },
+          {
+            "name": "phase4_manifest_revalidate_on_close",
+            "version": "20260901104730",
+            "joined_lf_md5": "b983671dc27aa831d9867873ab5ff316",
+            "statement_bytes": 9270,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "b983671dc27aa831d9867873ab5ff316"
+          },
+          {
+            "name": "catalog_embedding_postgres_maintenance_baseline",
+            "version": "20260901115631",
+            "joined_lf_md5": "2581600f73f7a869bb850ea6cba88c24",
+            "statement_bytes": 9094,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "2581600f73f7a869bb850ea6cba88c24"
+          },
+          {
+            "name": "extend_embedding_finalize_statement_timeout",
+            "version": "20260901203103",
+            "joined_lf_md5": "737ea28ffb44d94bd6376a63f817540d",
+            "statement_bytes": 96,
+            "statement_count": 1,
+            "joined_semicolon_lf_md5": "737ea28ffb44d94bd6376a63f817540d"
+          }
+        ],
+        "total_rows": 80,
+        "captured_at": "2026-09-03T05:40:08.214465+00:00"
+      }
+    },
+    {
+      "id": "ce103q3",
+      "query": "BEGIN TRANSACTION READ ONLY;\nSET LOCAL statement_timeout='5s';\nSET LOCAL lock_timeout='500ms';\nSET LOCAL application_name='ce1_ce103_reconcile';\nSELECT jsonb_build_object('captured_at',clock_timestamp(),\n 'functions',(SELECT jsonb_agg(jsonb_build_object('schema',n.nspname,'name',p.proname,\n  'arguments',pg_get_function_identity_arguments(p.oid),'settings',p.proconfig,\n  'definition_md5',md5(pg_get_functiondef(p.oid)),\n  'mentions_iterative_scan',position('hnsw.iterative_scan' in pg_get_functiondef(p.oid))>0)\n  ORDER BY n.nspname,p.proname) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace\n  WHERE n.nspname IN ('public','comparator_internal') AND p.proname IN\n   ('catalog_cheaper_products_v7','catalog_cheaper_products_v5','catalog_embedding_candidates_v3','catalog_finalize_embedding_batch')),\n 'cron',(SELECT jsonb_agg(jsonb_build_object('id',jobid,'name',jobname,'active',active) ORDER BY jobid) FROM cron.job WHERE jobid IN (17,18)),\n 'pipeline_mode',(SELECT mode FROM comparator_internal.catalog_embedding_pipeline_control LIMIT 1)\n) AS evidence;\nROLLBACK;",
+      "result": {
+        "cron": [
+          {
+            "id": 17,
+            "name": "catalog-embedding-dispatch",
+            "active": false
+          },
+          {
+            "id": 18,
+            "name": "process-price-alerts-every-15-minutes",
+            "active": true
+          }
+        ],
+        "functions": [
+          {
+            "name": "catalog_cheaper_products_v5",
+            "schema": "comparator_internal",
+            "settings": [
+              "search_path=\"\""
+            ],
+            "arguments": "p_source_store text, p_source_product_id text, p_stores text[]",
+            "definition_md5": "fe66f77c014fd88b1477b1ba07288ccf",
+            "mentions_iterative_scan": false
+          },
+          {
+            "name": "catalog_cheaper_products_v5",
+            "schema": "public",
+            "settings": [
+              "search_path=\"\""
+            ],
+            "arguments": "p_source_store text, p_source_product_id text, p_stores text[]",
+            "definition_md5": "eefba89923ba0798728d05e94709932f",
+            "mentions_iterative_scan": false
+          },
+          {
+            "name": "catalog_cheaper_products_v7",
+            "schema": "public",
+            "settings": [
+              "search_path=\"\"",
+              "statement_timeout=60s"
+            ],
+            "arguments": "p_source_store text, p_source_product_id text, p_stores text[], p_language text",
+            "definition_md5": "86c703ed6f6fe9888a4a8f70ca2df086",
+            "mentions_iterative_scan": false
+          },
+          {
+            "name": "catalog_embedding_candidates_v3",
+            "schema": "public",
+            "settings": [
+              "search_path=\"\""
+            ],
+            "arguments": "p_source_store text, p_source_product_id text, p_target_stores text[], p_match_count integer, p_min_vector_score real",
+            "definition_md5": "03f6138975dc32a1ef86e2e1f0b1cefb",
+            "mentions_iterative_scan": false
+          },
+          {
+            "name": "catalog_finalize_embedding_batch",
+            "schema": "public",
+            "settings": [
+              "search_path=\"\"",
+              "statement_timeout=60s"
+            ],
+            "arguments": "p_batch jsonb",
+            "definition_md5": "c07dddcf7361441f22a6fd3ee2698a74",
+            "mentions_iterative_scan": false
+          }
+        ],
+        "captured_at": "2026-09-03T05:40:36.1178+00:00",
+        "pipeline_mode": "paused"
+      }
+    }
+  ],
+  "reconciliation_file": "CE-103-migration-reconciliation.json",
+  "local_validation": {
+    "status": "PASS",
+    "command": "npm run quality",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "tests_passed": 301,
+    "tests_total": 301,
+    "reconciler_tests_passed": 10,
+    "offline_reconciliation_reproduced": true,
+    "json_documents_validated": 10,
+    "markdown_documents_link_and_fence_checked": 18,
+    "unique_project_tasks": 67,
+    "completed_project_tasks": 8,
+    "protected_prior_files_hash_unchanged": 8,
+    "diff_check": "PASS",
+    "migration_applied": false,
+    "G1_accepted": false
+  }
+}

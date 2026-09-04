@@ -1,0 +1,4525 @@
+{
+  "plan": {
+    "version": "ce200-read-v2",
+    "kind": "products",
+    "store": "carrefour",
+    "cursor": "prod840786",
+    "limit": 100,
+    "round": "initial",
+    "select": "SELECT id,display_name,ean,category_id,category_name,category_ids,unit_price,price_format,available,published,synced_at,price_per_unit,price_per_unit_unit,ingredients,allergens,nutrition,conservation,preparation,denomination,origin,detail_synced_at,promo_name,promo_text,promo_start,promo_end,strikethrough_price,regions,regional_prices,raw,md5(to_jsonb(p)::text) AS source_row_md5 FROM public.carrefour_products p WHERE (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)'))\n      AND id COLLATE \"C\" > 'prod840786' COLLATE \"C\" ORDER BY id COLLATE \"C\" LIMIT 100",
+    "job": "ce1-ce200-286ab167dd405086dfe8d91c594c",
+    "operationHash": "286ab167dd405086dfe8d91c594cda1cf7e4a4813c9e3dfac53c0ba0f95a2e58",
+    "maxRows": 100,
+    "maxBytes": 1048576,
+    "sql": "-- ce1-ce200-286ab167dd405086dfe8d91c594c: products; CE-BU-002; no app writes.\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $reserve$\nDECLARE job_started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE status IN ('planned','running','halted','unknown'))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-286ab167dd405086dfe8d91c594c') THEN RAISE EXCEPTION 'ce200_exclusive_or_replay'; END IF;\n  IF EXISTS(SELECT 1 FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid))>0\n    OR (pid<>pg_backend_pid() AND state='active' AND query_start<clock_timestamp()-interval '30 seconds')) THEN RAISE EXCEPTION 'ce200_health_stop'; END IF;\n  UPDATE comparator_strict.execution_budget SET\n    sql_ms_reserved=sql_ms_reserved+10000,read_rows_reserved=read_rows_reserved+100,\n    bytes_reserved=bytes_reserved+1048576,write_rows_reserved=write_rows_reserved+3,updated_at=clock_timestamp()\n    WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03'\n      AND approval_reference='CE-200-corpus-v1' AND bytes_limit=134217728 AND read_rows_limit=50000\n      AND bytes_reserved+1048576<=bytes_limit AND read_rows_reserved+100<=read_rows_limit AND write_rows_reserved+3<=2000;\n  IF NOT FOUND THEN RAISE EXCEPTION 'ce200_budget'; END IF;\n  INSERT INTO comparator_strict.execution_jobs(id,project_ref,operation_key,sql_sha256,status,started_at,deadline_at,job_key,operation_hash,budget_date,reservation)\n    VALUES(gen_random_uuid(),'gkffvigcnsesbaihycay','ce200-products','f266a6c01c8d53557566c17a52ff81769256b5cc90ff8d901d164a74c2146ff4','running',job_started,job_started+interval '20 minutes','ce1-ce200-286ab167dd405086dfe8d91c594c','286ab167dd405086dfe8d91c594cda1cf7e4a4813c9e3dfac53c0ba0f95a2e58',DATE '2026-09-03','{\"sqlMs\":10000,\"readRows\":100,\"writeRows\":3,\"responseBytes\":1048576}'::jsonb);\nEND $reserve$;\nCOMMIT;\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $payload$\nDECLARE payload jsonb; data jsonb; started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR NOT EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-286ab167dd405086dfe8d91c594c' AND status='running' AND operation_hash='286ab167dd405086dfe8d91c594cda1cf7e4a4813c9e3dfac53c0ba0f95a2e58' AND deadline_at>clock_timestamp()) THEN RAISE EXCEPTION 'ce200_lease'; END IF;\n  SELECT coalesce(jsonb_agg(to_jsonb(q)),'[]'::jsonb) INTO data FROM (SELECT id,display_name,ean,category_id,category_name,category_ids,unit_price,price_format,available,published,synced_at,price_per_unit,price_per_unit_unit,ingredients,allergens,nutrition,conservation,preparation,denomination,origin,detail_synced_at,promo_name,promo_text,promo_start,promo_end,strikethrough_price,regions,regional_prices,raw,md5(to_jsonb(p)::text) AS source_row_md5 FROM public.carrefour_products p WHERE (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)'))\n      AND id COLLATE \"C\" > 'prod840786' COLLATE \"C\" ORDER BY id COLLATE \"C\" LIMIT 100) q;\n  payload:=jsonb_build_object('job_key','ce1-ce200-286ab167dd405086dfe8d91c594c','operation_hash','286ab167dd405086dfe8d91c594cda1cf7e4a4813c9e3dfac53c0ba0f95a2e58',\n    'project_ref','gkffvigcnsesbaihycay','captured_at',started,'kind','products','store','carrefour',\n    'cursor','prod840786','rows',data,'row_count',jsonb_array_length(data),'elapsed_ms',extract(epoch FROM clock_timestamp()-started)*1000);\n  IF jsonb_array_length(data)>100 OR octet_length(payload::text)>1040384 THEN RAISE EXCEPTION 'ce200_result_limit'; END IF;\n  UPDATE comparator_strict.execution_jobs SET status='succeeded',finished_at=clock_timestamp(),\n    receipt=jsonb_build_object('payload_sha256',encode(sha256(convert_to(payload::text,'UTF8')),'hex'),'row_count',jsonb_array_length(data),'payload_bytes',octet_length(payload::text),'elapsed_ms',payload->'elapsed_ms') WHERE job_key='ce1-ce200-286ab167dd405086dfe8d91c594c';\n  PERFORM set_config('comparator_strict.ce200_response',payload::text,true);\nEND $payload$;\nSELECT current_setting('comparator_strict.ce200_response')::jsonb AS evidence;\nCOMMIT;"
+  },
+  "payload": {
+    "kind": "products",
+    "rows": [
+      {
+        "id": "prod840787",
+        "ean": "8414135018595",
+        "raw": {
+          "url": "/supermercado/agua-de-colonia-brummel-500-ml/R-prod840787/p",
+          "name": "Agua de colonia Brummel 500 ml.",
+          "brand": "BRUMMEL",
+          "price": "12,05 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/355969_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/355969_00_1.jpg"
+          },
+          "sku_id": "3559690000",
+          "catalog": "food",
+          "app_price": "12,05 €",
+          "product_id": "prod840787",
+          "measure_unit": "100ml",
+          "document_type": "food",
+          "price_per_unit": "2,41 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 9,
+          "app_price_per_unit": "2,41 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "Catalunya",
+          "Ceuta",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Galicia",
+          "Illes Balears",
+          "La Rioja",
+          "Melilla",
+          "Navarra",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 12.05,
+        "category_id": "cat20028",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat20028"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua de colonia Brummel 500 ml.",
+        "price_format": "12,05 €",
+        "category_name": "Baño e Higiene Corporal",
+        "price_per_unit": 24.1,
+        "source_row_md5": "665aeab2bea5465f034438a9d3560781",
+        "regional_prices": {
+          "Ceuta": {
+            "p": 12.35,
+            "av": true,
+            "pf": "12,35 €",
+            "ppu": 24.7,
+            "ppuu": "l"
+          },
+          "Euskadi": {
+            "p": 12.35,
+            "av": true,
+            "pf": "12,35 €",
+            "ppu": 24.7,
+            "ppuu": "l"
+          },
+          "Galicia": {
+            "p": 12.35,
+            "av": true,
+            "pf": "12,35 €",
+            "ppu": 24.7,
+            "ppuu": "l"
+          },
+          "Navarra": {
+            "p": 12.35,
+            "av": true,
+            "pf": "12,35 €",
+            "ppu": 24.7,
+            "ppuu": "l"
+          },
+          "Asturias": {
+            "p": 12.35,
+            "av": true,
+            "pf": "12,35 €",
+            "ppu": 24.7,
+            "ppuu": "l"
+          },
+          "Canarias": {
+            "p": 15.59,
+            "av": true,
+            "pf": "15,59 €",
+            "ppu": 31.2,
+            "ppuu": "l"
+          },
+          "La Rioja": {
+            "p": 12.35,
+            "av": true,
+            "pf": "12,35 €",
+            "ppu": 24.7,
+            "ppuu": "l"
+          },
+          "Cantabria": {
+            "p": 12.35,
+            "av": true,
+            "pf": "12,35 €",
+            "ppu": 24.7,
+            "ppuu": "l"
+          },
+          "Catalunya": {
+            "p": 12.35,
+            "av": true,
+            "pf": "12,35 €",
+            "ppu": 24.7,
+            "ppuu": "l"
+          },
+          "Andalucía": {
+            "p": 12.35,
+            "av": true,
+            "pf": "12,35 €",
+            "ppu": 24.7,
+            "ppuu": "l"
+          },
+          "Extremadura": {
+            "p": 12.35,
+            "av": true,
+            "pf": "12,35 €",
+            "ppu": 24.7,
+            "ppuu": "l"
+          },
+          "Illes Balears": {
+            "p": 12.35,
+            "av": true,
+            "pf": "12,35 €",
+            "ppu": 24.7,
+            "ppuu": "l"
+          },
+          "Castilla y León": {
+            "p": 12.35,
+            "av": true,
+            "pf": "12,35 €",
+            "ppu": 24.7,
+            "ppuu": "l"
+          },
+          "Región de Murcia": {
+            "p": 12.35,
+            "av": true,
+            "pf": "12,35 €",
+            "ppu": 24.7,
+            "ppuu": "l"
+          },
+          "Comunitat Valenciana": {
+            "p": 12.35,
+            "av": true,
+            "pf": "12,35 €",
+            "ppu": 24.7,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": "2026-08-29T11:38:07.703+00:00",
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod840799",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-de-colonia-original-anouk-200-ml/R-prod840799/p",
+          "name": "Agua de colonia Original Anouk 200 ml.",
+          "brand": "ANOUK",
+          "price": "9,85 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/356047_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/356047_00_1.jpg"
+          },
+          "sku_id": "3560470000",
+          "catalog": "food",
+          "app_price": "9,85 €",
+          "product_id": "prod840799",
+          "measure_unit": "100ml",
+          "document_type": "food",
+          "price_per_unit": "4,92 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 4,
+          "app_price_per_unit": "4,92 €"
+        },
+        "origin": null,
+        "regions": [
+          "Asturias",
+          "Canarias",
+          "Extremadura",
+          "Galicia",
+          "Navarra"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 9.85,
+        "category_id": "cat20028",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat20028"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua de colonia Original Anouk 200 ml.",
+        "price_format": "9,85 €",
+        "category_name": "Baño e Higiene Corporal",
+        "price_per_unit": 49.2,
+        "source_row_md5": "ed4ef3472631a9c7cf7aaaa8cb7d6759",
+        "regional_prices": {
+          "Canarias": {
+            "p": 14.55,
+            "av": true,
+            "pf": "14,55 €",
+            "ppu": 72.7,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": null,
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod840802",
+        "ean": "8436559718974",
+        "raw": {
+          "url": "/supermercado/agua-de-colonia-don-algodon-200-ml/R-prod840802/p",
+          "name": "Agua de colonia Don Algodón 200 ml.",
+          "brand": "DON ALGODON",
+          "price": "15,55 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/355835_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/355835_00_1.jpg"
+          },
+          "sku_id": "3558350000",
+          "catalog": "food",
+          "app_price": "15,55 €",
+          "product_id": "prod840802",
+          "measure_unit": "100ml",
+          "document_type": "food",
+          "price_per_unit": "7,77 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 4,
+          "app_price_per_unit": "7,77 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "Catalunya",
+          "Ceuta",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Galicia",
+          "Illes Balears",
+          "La Rioja",
+          "Melilla",
+          "Navarra",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 15.55,
+        "category_id": "cat20028",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat20028"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua de colonia Don Algodón 200 ml.",
+        "price_format": "15,55 €",
+        "category_name": "Baño e Higiene Corporal",
+        "price_per_unit": 77.7,
+        "source_row_md5": "7ddc601115e45898dab3c70d5d078fbb",
+        "regional_prices": {
+          "Ceuta": {
+            "p": 15.99,
+            "av": true,
+            "pf": "15,99 €",
+            "ppu": 79.9,
+            "ppuu": "l"
+          },
+          "Euskadi": {
+            "p": 15.99,
+            "av": true,
+            "pf": "15,99 €",
+            "ppu": 79.9,
+            "ppuu": "l"
+          },
+          "Galicia": {
+            "p": 15.99,
+            "av": true,
+            "pf": "15,99 €",
+            "ppu": 79.9,
+            "ppuu": "l"
+          },
+          "Navarra": {
+            "p": 15.99,
+            "av": true,
+            "pf": "15,99 €",
+            "ppu": 79.9,
+            "ppuu": "l"
+          },
+          "Asturias": {
+            "p": 15.99,
+            "av": true,
+            "pf": "15,99 €",
+            "ppu": 79.9,
+            "ppuu": "l"
+          },
+          "Canarias": {
+            "p": 15.79,
+            "av": true,
+            "pf": "15,79 €",
+            "ppu": 78.9,
+            "ppuu": "l"
+          },
+          "La Rioja": {
+            "p": 15.99,
+            "av": true,
+            "pf": "15,99 €",
+            "ppu": 79.9,
+            "ppuu": "l"
+          },
+          "Cantabria": {
+            "p": 15.99,
+            "av": true,
+            "pf": "15,99 €",
+            "ppu": 79.9,
+            "ppuu": "l"
+          },
+          "Catalunya": {
+            "p": 15.99,
+            "av": true,
+            "pf": "15,99 €",
+            "ppu": 79.9,
+            "ppuu": "l"
+          },
+          "Andalucía": {
+            "p": 15.99,
+            "av": true,
+            "pf": "15,99 €",
+            "ppu": 79.9,
+            "ppuu": "l"
+          },
+          "Extremadura": {
+            "p": 15.99,
+            "av": true,
+            "pf": "15,99 €",
+            "ppu": 79.9,
+            "ppuu": "l"
+          },
+          "Illes Balears": {
+            "p": 15.99,
+            "av": true,
+            "pf": "15,99 €",
+            "ppu": 79.9,
+            "ppuu": "l"
+          },
+          "Castilla y León": {
+            "p": 15.99,
+            "av": true,
+            "pf": "15,99 €",
+            "ppu": 79.9,
+            "ppuu": "l"
+          },
+          "Región de Murcia": {
+            "p": 15.99,
+            "av": true,
+            "pf": "15,99 €",
+            "ppu": 79.9,
+            "ppuu": "l"
+          },
+          "Comunitat Valenciana": {
+            "p": 15.99,
+            "av": true,
+            "pf": "15,99 €",
+            "ppu": 79.9,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": "2026-08-31T06:29:04.947+00:00",
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod840811",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-de-colonia-flor-agatha-ruiz-de-la-prada-100-ml/R-prod840811/p",
+          "name": "Agua de colonia Flor Agatha Ruiz de la Prada 100 ml.",
+          "brand": "AGATHA RUIZ DE LA PRADA",
+          "price": "16,45 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/356017_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/356017_00_1.jpg"
+          },
+          "sku_id": "3560170000",
+          "catalog": "food",
+          "app_price": "16,45 €",
+          "product_id": "prod840811",
+          "measure_unit": "100ml",
+          "document_type": "food",
+          "price_per_unit": "16,45 €",
+          "sell_pack_unit": 1,
+          "app_price_per_unit": "16,45 €"
+        },
+        "origin": null,
+        "regions": [
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Castilla y León",
+          "Ceuta",
+          "Extremadura",
+          "Galicia",
+          "La Rioja",
+          "Navarra",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 16.45,
+        "category_id": "cat20028",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat20028"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua de colonia Flor Agatha Ruiz de la Prada 100 ml.",
+        "price_format": "16,45 €",
+        "category_name": "Baño e Higiene Corporal",
+        "price_per_unit": 164.5,
+        "source_row_md5": "e129778c93acd868092383710b6d831f",
+        "regional_prices": {
+          "Canarias": {
+            "p": 14.65,
+            "av": true,
+            "pf": "14,65 €",
+            "ppu": 146.5,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": null,
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod840915",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-de-colonia-24-7-her-pacha-ibiza-80-ml/R-prod840915/p",
+          "name": "Agua de colonia 24/7 Her Pacha Ibiza 80 ml.",
+          "brand": "PACHA",
+          "price": "12,29 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/365725_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/365725_00_1.jpg"
+          },
+          "sku_id": "3657250000",
+          "catalog": "food",
+          "app_price": "12,29 €",
+          "product_id": "prod840915",
+          "measure_unit": "100ml",
+          "document_type": "food",
+          "price_per_unit": "15,36 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 5,
+          "app_price_per_unit": "15,36 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "Ceuta",
+          "Extremadura",
+          "Galicia",
+          "La Rioja",
+          "Navarra",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 12.29,
+        "category_id": "cat20028",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat20028"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua de colonia 24/7 Her Pacha Ibiza 80 ml.",
+        "price_format": "12,29 €",
+        "category_name": "Baño e Higiene Corporal",
+        "price_per_unit": 153.6,
+        "source_row_md5": "e8a6d2e75b29249416bd1487b802ef1f",
+        "regional_prices": {
+          "Castilla-La Mancha": {
+            "p": 11.99,
+            "av": true,
+            "pf": "11,99 €",
+            "ppu": 149.9,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": null,
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod842073",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-de-colonia-fresca-de-flores-azahar-alvarez-gomez-150-ml/R-prod842073/p",
+          "name": "Agua de colonia fresca de flores azahar Álvarez Gómez 150 ml.",
+          "brand": "ALVAREZ GOMEZ",
+          "price": "12,65 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/815782_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/815782_00_1.jpg"
+          },
+          "sku_id": "8157820000",
+          "catalog": "food",
+          "app_price": "12,65 €",
+          "product_id": "prod842073",
+          "measure_unit": "100ml",
+          "document_type": "food",
+          "price_per_unit": "8,43 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 1,
+          "app_price_per_unit": "8,43 €"
+        },
+        "origin": null,
+        "regions": [
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Extremadura",
+          "Galicia",
+          "Navarra"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 12.65,
+        "category_id": "cat20028",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat20028"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua de colonia fresca de flores azahar Álvarez Gómez 150 ml.",
+        "price_format": "12,65 €",
+        "category_name": "Baño e Higiene Corporal",
+        "price_per_unit": 84.3,
+        "source_row_md5": "7a66755da18c97f79dae23387572ad9a",
+        "regional_prices": {
+          "Canarias": {
+            "p": 12.35,
+            "av": true,
+            "pf": "12,35 €",
+            "ppu": 82.3,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": null,
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod850177",
+        "ean": "8710438097344",
+        "raw": {
+          "url": "/supermercado/patatas-original-steakhouse-mccain-1-kg/R-prod850177/p",
+          "name": "Patatas Original Steakhouse McCain 1 kg.",
+          "brand": "MCCAIN",
+          "price": "4,15 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/376275_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/376275_00_1.jpg"
+          },
+          "sku_id": "3762750000",
+          "catalog": "food",
+          "app_price": "4,15 €",
+          "info_tags": [
+            {
+              "icon": "https://static.carrefour.es/crs/cdn_static/CatNavImages/Icons/congelados.png",
+              "message": "Congelado",
+              "color_code": "#50A7FD"
+            }
+          ],
+          "product_id": "prod850177",
+          "measure_unit": "kg",
+          "document_type": "food",
+          "price_per_unit": "4,15 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 5,
+          "app_price_per_unit": "4,15 €"
+        },
+        "origin": null,
+        "regions": [
+          "Asturias",
+          "Canarias",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "Catalunya",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Illes Balears",
+          "Melilla"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": "Valores medios por 100 g:\nValor energético 538 KJ / 128 Kcal\nGrasas 2.9 g (Saturadas 0.3 g)\nHidratos de carbono 22 g (Azúcares 0.5 g)\nFibra alimentaria 2 g\nProteínas 2.4 g\nSal 0.1 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 4.15,
+        "category_id": "cat32544703",
+        "ingredients": "Patatas (97%), aceite de girasol (3%). No está elaborado con aceite de cacahuate.",
+        "preparation": "Freidora: con el aceite a 175°C, freir el producto congelado durante 7-8 minutos.\nSartén: freír el producto congelado en aceite muy caliente durante 7-8 minutos.\nPara optimizar la calidad, recomendamos seguir la forma de preparación indicada y utilizar el producto sin descongelar. Seleccione un aceite de calidad que resista una temperatura de 175°C. Utilice 2-3 litros de aceite para preparar 400g-500g de patatas fritas. Filtre el aceite con regularidad (después de dos frituras) y cámbielo después de 10-12 frituras. Para cantidades pequeñans reducir el tiempo de cocinado. Cocinar hasta obtener un aspecto dorado y crujiente. No cocinar demasiado.\n*Tiempo de cocinado recomendado: varíelo según el equipo utilizado.",
+        "promo_start": null,
+        "category_ids": [
+          "cat32544703"
+        ],
+        "conservation": null,
+        "denomination": "Patatas de corte rústico, prefritas y ultracongeladas.",
+        "display_name": "Patatas Original Steakhouse McCain 1 kg.",
+        "price_format": "4,15 €",
+        "category_name": "Patatas",
+        "price_per_unit": 4.15,
+        "source_row_md5": "bc68f7a98a75c130f6d9b4e85c266b65",
+        "regional_prices": {
+          "Euskadi": {
+            "p": 4.25,
+            "av": true,
+            "pf": "4,25 €",
+            "ppu": 4.25,
+            "ppuu": "kg"
+          },
+          "Asturias": {
+            "p": 4.25,
+            "av": true,
+            "pf": "4,25 €",
+            "ppu": 4.25,
+            "ppuu": "kg"
+          },
+          "Canarias": {
+            "p": 4.35,
+            "av": true,
+            "pf": "4,35 €",
+            "ppu": 4.35,
+            "ppuu": "kg"
+          },
+          "Catalunya": {
+            "p": 4.25,
+            "av": true,
+            "pf": "4,25 €",
+            "ppu": 4.25,
+            "ppuu": "kg"
+          },
+          "Extremadura": {
+            "p": 4.25,
+            "av": true,
+            "pf": "4,25 €",
+            "ppu": 4.25,
+            "ppuu": "kg"
+          },
+          "Illes Balears": {
+            "p": 4.25,
+            "av": true,
+            "pf": "4,25 €",
+            "ppu": 4.25,
+            "ppuu": "kg"
+          },
+          "Castilla y León": {
+            "p": 4.25,
+            "av": true,
+            "pf": "4,25 €",
+            "ppu": 4.25,
+            "ppuu": "kg"
+          },
+          "Comunitat Valenciana": {
+            "p": 4.25,
+            "av": true,
+            "pf": "4,25 €",
+            "ppu": 4.25,
+            "ppuu": "kg"
+          }
+        },
+        "detail_synced_at": "2026-08-29T11:38:07.703+00:00",
+        "price_per_unit_unit": "kg",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod850197",
+        "ean": "8710438111699",
+        "raw": {
+          "url": "/supermercado/patatas-barbacoa-mccain-750-g/R-prod850197/p",
+          "name": "Patatas barbacoa McCain 750 g.",
+          "brand": "MCCAIN",
+          "price": "3,99 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/377341_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/377341_00_1.jpg"
+          },
+          "sku_id": "3773410000",
+          "catalog": "food",
+          "app_price": "3,99 €",
+          "info_tags": [
+            {
+              "icon": "https://static.carrefour.es/crs/cdn_static/CatNavImages/Icons/congelados.png",
+              "message": "Congelado",
+              "color_code": "#50A7FD"
+            }
+          ],
+          "product_id": "prod850197",
+          "measure_unit": "kg",
+          "document_type": "food",
+          "price_per_unit": "5,32 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 31,
+          "app_price_per_unit": "5,32 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Aragón",
+          "Asturias",
+          "Cantabria",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "Catalunya",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Illes Balears",
+          "Melilla",
+          "Navarra",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": "Valores medios por 100 g:\nValor energético 568 KJ / 135 Kcal\nGrasas 4 g (Saturadas 0.4 g)\nHidratos de carbono 21 g (Azúcares 0.5 g)\nFibra alimentaria 2.5 g\nProteínas 2.5 g\nSal 0.6 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 3.99,
+        "category_id": "cat32544703",
+        "ingredients": "Patatas (90,5%), rebozado (5,5%: harina de maíz, harina de arroz, almidón de maíz, sal, ajo en polvo, cebolla en polvo, especias (pimienta negra, extracto de pimiento), extracto de levadura, aceite de pimentón, espesante (goma xantana)), aceite de girasol (4%). No está elaborado con aceite de cacahuete.",
+        "preparation": "Horno: Hornear a 220°C durante 17 minutos.\nFreidora: Precalentar el aceite a 175°C, freir el producto durante 5-6 minutos.\nSartén: freír el producto en aceite muy caliente durante 10 min.\nAir fryer: Cocinar 300g de producto a 200°C durante 9-11 minutos. Agitar el producto a mitad de la cocción.\nPara optimizar la calidad, recomendamos utilizar el producto aún congelado siguiendo los métodos de preparación indicados. Cocinar hasta obtener un aspecto dorado y crujiente. No cocinar demasiado. Adaptar el tiempo de cocción según la cantidad de producto y el equipo utilizado.",
+        "promo_start": null,
+        "category_ids": [
+          "cat32544703"
+        ],
+        "conservation": null,
+        "denomination": "Gajos de patata con piel y un crujiente rebozado con especias, prefritos y ultracongelados.",
+        "display_name": "Patatas barbacoa McCain 750 g.",
+        "price_format": "3,99 €",
+        "category_name": "Patatas",
+        "price_per_unit": 5.32,
+        "source_row_md5": "c0240a327946c77ed2f550e5785ae73c",
+        "regional_prices": {
+          "Catalunya": {
+            "p": 3.85,
+            "av": true,
+            "pf": "3,85 €",
+            "ppu": 5.13,
+            "ppuu": "kg"
+          }
+        },
+        "detail_synced_at": "2026-08-29T11:38:07.703+00:00",
+        "price_per_unit_unit": "kg",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod860513",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/eye-liner-de-ojos-negro-waterproof-exaggerate-rimmel-1-ud/R-prod860513/p",
+          "name": "Eye liner de ojos negro waterproof Exaggerate Rimmel 1 ud.",
+          "badge": {
+            "url": "/supermercado/3x2/7961357815/s",
+            "name": "3x2",
+            "priority": 1,
+            "description": "Compra 3 unidades de este producto y paga sólo 2. Descuento aplicable sobre el de menor precio. Válido del 26/08/2026 al 09/09/2026."
+          },
+          "brand": "RIMMEL",
+          "price": "12,79 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/390514_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/390514_00_1.jpg"
+          },
+          "sku_id": "3905140000",
+          "catalog": "food",
+          "app_price": "12,79 €",
+          "badge_map": {
+            "promotions": [
+              {
+                "icon": "https://static.carrefour.es/crs/cdn-static/promo-content/Carrefour/contenidos/web-icon/promo-blanco.svg",
+                "link": "/supermercado/3x2/7961357815/s",
+                "name": "3x2",
+                "color": "#D30D1F",
+                "end_date": "09/09/2026",
+                "pdp_text": "Compra 3 unidades de este producto y paga sólo 2. Descuento aplicable sobre el de menor precio. Válido del 26/08/2026 al 09/09/2026.",
+                "priority": 1,
+                "badge_type": "promotions",
+                "start_date": "26/08/2026",
+                "text_color": "#FFFFFF"
+              }
+            ]
+          },
+          "product_id": "prod860513",
+          "measure_unit": "ud",
+          "document_type": "food",
+          "price_per_unit": "12,79 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 5,
+          "app_price_per_unit": "12,79 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Aragón",
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "Galicia",
+          "Navarra",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": "2026-09-09",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": "3x2",
+        "promo_text": "Compra 3 unidades de este producto y paga sólo 2. Descuento aplicable sobre el de menor precio. Válido del 26/08/2026 al 09/09/2026.",
+        "unit_price": 12.79,
+        "category_id": "cat20032",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": "2026-08-26",
+        "category_ids": [
+          "cat20032"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Eye liner de ojos negro waterproof Exaggerate Rimmel 1 ud.",
+        "price_format": "12,79 €",
+        "category_name": "Cosmética",
+        "price_per_unit": 12.79,
+        "source_row_md5": "1f04519a75de8252e3a3e0358f552b58",
+        "regional_prices": {
+          "Canarias": {
+            "p": 13.29,
+            "av": true,
+            "pf": "13,29 €",
+            "ppu": 13.29,
+            "ppuu": "ud"
+          }
+        },
+        "detail_synced_at": null,
+        "price_per_unit_unit": "ud",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod860560",
+        "ean": "3560071203245",
+        "raw": {
+          "url": "/supermercado/salsa-para-patatas-fritas-sensation-carrefour-envase-355-g/R-prod860560/p",
+          "name": "Salsa para patatas fritas Sensation Carrefour envase 355 g.",
+          "brand": "CARREFOUR",
+          "price": "1,99 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/389984_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/389984_00_1.jpg"
+          },
+          "sku_id": "3899840000",
+          "catalog": "food",
+          "app_price": "1,99 €",
+          "product_id": "prod860560",
+          "measure_unit": "kg",
+          "document_type": "food",
+          "price_per_unit": "5,61 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 16,
+          "app_price_per_unit": "5,61 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Aragón",
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "Catalunya",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Galicia",
+          "Illes Balears",
+          "La Rioja",
+          "Melilla",
+          "Navarra",
+          "Región de Murcia"
+        ],
+        "allergens": "Contiene: Mostaza, Huevo",
+        "available": true,
+        "nutrition": "Valores medios por 100 g:\nValor energético 1151 KJ / 278 Kcal\nGrasas 25 g (Saturadas 2.1 g)\nHidratos de carbono 13 g (Azúcares 8.2 g)\nFibra alimentaria 0.5 g\nProteínas 0.5 g\nSal 1.5 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 1.99,
+        "category_id": "cat20009",
+        "ingredients": "Agua, aceite de colza, azucar, almidón modificado de maiz, vinagre de alcohol, yema de huevos de gallinas camperas sal, mostaza (agua vinagre de alcohol, granos de mostaza, acidulante: ácido cítrico, curcuma) cebolla, almidon de tapioca, acidulante: acido citrico, espesante: goma xantana, perejill, aroma natural de romero, aroma natural de ajo, aroma natural, aroma.",
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat20009"
+        ],
+        "conservation": "Una vez abierto, conservar un mes en el frigorifico.",
+        "denomination": "Salsa para condimentar.",
+        "display_name": "Salsa para patatas fritas Sensation Carrefour envase 355 g.",
+        "price_format": "1,99 €",
+        "category_name": "Alimentación",
+        "price_per_unit": 5.61,
+        "source_row_md5": "994613c7049bc7ee38a593ee6187e446",
+        "regional_prices": null,
+        "detail_synced_at": "2026-08-29T11:38:07.703+00:00",
+        "price_per_unit_unit": "kg",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod860726",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-de-colonia-flor-de-naranjo-alvarez-gomez-750-ml/R-prod860726/p",
+          "name": "Agua de colonia flor de naranjo Álvarez Gómez 750 ml.",
+          "brand": "ALVAREZ GOMEZ",
+          "price": "6,39 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/395450_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/395450_00_1.jpg"
+          },
+          "sku_id": "3954500000",
+          "catalog": "food",
+          "app_price": "6,39 €",
+          "product_id": "prod860726",
+          "measure_unit": "100ml",
+          "document_type": "food",
+          "price_per_unit": "0,85 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 6,
+          "app_price_per_unit": "0,85 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "La Rioja",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 6.39,
+        "category_id": "cat20028",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat20028"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua de colonia flor de naranjo Álvarez Gómez 750 ml.",
+        "price_format": "6,39 €",
+        "category_name": "Baño e Higiene Corporal",
+        "price_per_unit": 8.5,
+        "source_row_md5": "9cd519b767a2159ee17ca71fd54612f2",
+        "regional_prices": {
+          "Canarias": {
+            "p": 7.59,
+            "av": true,
+            "pf": "7,59 €",
+            "ppu": 10.1,
+            "ppuu": "l"
+          },
+          "Castilla-La Mancha": {
+            "p": 6.25,
+            "av": true,
+            "pf": "6,25 €",
+            "ppu": 8.3,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": null,
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod870060",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-de-colonia-fresca-de-bano-alvarez-gomez-750-ml/R-prod870060/p",
+          "name": "Agua de colonia fresca de baño Álvarez Gomez 750 ml.",
+          "brand": "ALVAREZ GOMEZ",
+          "price": "6,39 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/003994_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/003994_00_1.jpg"
+          },
+          "sku_id": "0039940000",
+          "catalog": "food",
+          "app_price": "6,39 €",
+          "product_id": "prod870060",
+          "measure_unit": "100ml",
+          "document_type": "food",
+          "price_per_unit": "0,85 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 12,
+          "app_price_per_unit": "0,85 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Aragón",
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "Ceuta",
+          "Extremadura",
+          "Galicia",
+          "La Rioja",
+          "Navarra",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 6.39,
+        "category_id": "cat20028",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat20028"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua de colonia fresca de baño Álvarez Gomez 750 ml.",
+        "price_format": "6,39 €",
+        "category_name": "Baño e Higiene Corporal",
+        "price_per_unit": 8.5,
+        "source_row_md5": "3e48a526b7630e2e8098ca338a6517c1",
+        "regional_prices": {
+          "Canarias": {
+            "p": 7.59,
+            "av": true,
+            "pf": "7,59 €",
+            "ppu": 10.1,
+            "ppuu": "l"
+          },
+          "Castilla-La Mancha": {
+            "p": 6.25,
+            "av": true,
+            "pf": "6,25 €",
+            "ppu": 8.3,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": null,
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod870622",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/crema-de-patatera-iberica-con-miel-iberitos-250-g/R-prod870622/p",
+          "name": "Crema de patatera ibérica con miel Iberitos 250 g.",
+          "brand": "IBERITOS",
+          "price": "3,15 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/010448_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/010448_00_1.jpg"
+          },
+          "sku_id": "0104480000",
+          "catalog": "food",
+          "app_price": "3,15 €",
+          "product_id": "prod870622",
+          "measure_unit": "kg",
+          "document_type": "food",
+          "price_per_unit": "12,60 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 59,
+          "app_price_per_unit": "12,60 €"
+        },
+        "origin": null,
+        "regions": [
+          "Extremadura"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 3.15,
+        "category_id": "cat20017",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat20017"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Crema de patatera ibérica con miel Iberitos 250 g.",
+        "price_format": "3,15 €",
+        "category_name": "Charcutería",
+        "price_per_unit": 12.6,
+        "source_row_md5": "646cd627c7f65c7160042cc4a194f1ed",
+        "regional_prices": null,
+        "detail_synced_at": null,
+        "price_per_unit_unit": "kg",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod870789",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-de-colonia-pink-nike-30-ml/R-prod870789/p",
+          "name": "Agua de colonia Pink Nike 30 ml.",
+          "brand": "NIKE",
+          "price": "3,15 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/014092_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/014092_00_1.jpg"
+          },
+          "sku_id": "0140920000",
+          "catalog": "food",
+          "app_price": "3,15 €",
+          "product_id": "prod870789",
+          "measure_unit": "100ml",
+          "document_type": "food",
+          "price_per_unit": "10,50 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 8,
+          "app_price_per_unit": "10,50 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "Ceuta",
+          "Extremadura",
+          "Galicia",
+          "La Rioja",
+          "Navarra",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 3.15,
+        "category_id": "cat20028",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat20028"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua de colonia Pink Nike 30 ml.",
+        "price_format": "3,15 €",
+        "category_name": "Baño e Higiene Corporal",
+        "price_per_unit": 105,
+        "source_row_md5": "3cb4c0f5c7f5bf268f5b19f3881c413b",
+        "regional_prices": {
+          "Canarias": {
+            "p": 3.59,
+            "av": true,
+            "pf": "3,59 €",
+            "ppu": 119.7,
+            "ppuu": "l"
+          },
+          "Castilla-La Mancha": {
+            "p": 3.09,
+            "av": true,
+            "pf": "3,09 €",
+            "ppu": 103,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": null,
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod880427",
+        "ean": "3560071182472",
+        "raw": {
+          "url": "/supermercado/zumo-de-melocoton-y-uva-ecologico-carrefour-bio-exprimido-pack-de-3-briks-de-20-cl/R-prod880427/p",
+          "name": "Zumo de melocotón y uva ecológico Carrefour Bio exprimido pack de 3 briks de 20 cl.",
+          "brand": "CARREFOUR BIO",
+          "price": "2,29 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/025668_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/025668_00_1.jpg"
+          },
+          "sku_id": "0256680000",
+          "catalog": "food",
+          "app_price": "2,29 €",
+          "info_tags": [
+            {
+              "icon": "https://static.carrefour.es/crs/cdn_static/CatNavImages/Icons/organic.png",
+              "message": "Bio",
+              "color_code": "#4BD074"
+            }
+          ],
+          "product_id": "prod880427",
+          "measure_unit": "l",
+          "document_type": "food",
+          "price_per_unit": "3,82 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 3,
+          "app_price_per_unit": "3,82 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Aragón",
+          "Canarias",
+          "Cantabria",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "Catalunya",
+          "Ceuta",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Galicia",
+          "Illes Balears",
+          "La Rioja",
+          "Melilla",
+          "Navarra",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 2.29,
+        "category_id": "cat650002",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat650002"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Zumo de melocotón y uva ecológico Carrefour Bio exprimido pack de 3 briks de 20 cl.",
+        "price_format": "2,29 €",
+        "category_name": "Aguas y Zumos",
+        "price_per_unit": 3.82,
+        "source_row_md5": "f87950dea821e4e0b8ebe147d6b94aa0",
+        "regional_prices": {
+          "Ceuta": {
+            "p": 2.35,
+            "av": true,
+            "pf": "2,35 €",
+            "ppu": 3.92,
+            "ppuu": "l"
+          },
+          "Aragón": {
+            "p": 2.35,
+            "av": true,
+            "pf": "2,35 €",
+            "ppu": 3.92,
+            "ppuu": "l"
+          },
+          "Euskadi": {
+            "p": 2.35,
+            "av": true,
+            "pf": "2,35 €",
+            "ppu": 3.92,
+            "ppuu": "l"
+          },
+          "Galicia": {
+            "p": 2.35,
+            "av": true,
+            "pf": "2,35 €",
+            "ppu": 3.92,
+            "ppuu": "l"
+          },
+          "Navarra": {
+            "p": 2.35,
+            "av": true,
+            "pf": "2,35 €",
+            "ppu": 3.92,
+            "ppuu": "l"
+          },
+          "Canarias": {
+            "p": 1.75,
+            "av": true,
+            "pf": "1,75 €",
+            "ppu": 2.92,
+            "ppuu": "l"
+          },
+          "La Rioja": {
+            "p": 2.35,
+            "av": true,
+            "pf": "2,35 €",
+            "ppu": 3.92,
+            "ppuu": "l"
+          },
+          "Cantabria": {
+            "p": 2.35,
+            "av": true,
+            "pf": "2,35 €",
+            "ppu": 3.92,
+            "ppuu": "l"
+          },
+          "Catalunya": {
+            "p": 2.35,
+            "av": true,
+            "pf": "2,35 €",
+            "ppu": 3.92,
+            "ppuu": "l"
+          },
+          "Andalucía": {
+            "p": 2.35,
+            "av": true,
+            "pf": "2,35 €",
+            "ppu": 3.92,
+            "ppuu": "l"
+          },
+          "Extremadura": {
+            "p": 2.35,
+            "av": true,
+            "pf": "2,35 €",
+            "ppu": 3.92,
+            "ppuu": "l"
+          },
+          "Illes Balears": {
+            "p": 2.35,
+            "av": true,
+            "pf": "2,35 €",
+            "ppu": 3.92,
+            "ppuu": "l"
+          },
+          "Castilla y León": {
+            "p": 2.35,
+            "av": true,
+            "pf": "2,35 €",
+            "ppu": 3.92,
+            "ppuu": "l"
+          },
+          "Región de Murcia": {
+            "p": 2.35,
+            "av": true,
+            "pf": "2,35 €",
+            "ppu": 3.92,
+            "ppuu": "l"
+          },
+          "Comunitat Valenciana": {
+            "p": 2.35,
+            "av": true,
+            "pf": "2,35 €",
+            "ppu": 3.92,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": "2026-08-31T06:29:04.947+00:00",
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod880430",
+        "ean": "3560071182489",
+        "raw": {
+          "url": "/supermercado/zumo-de-uva-roja-ecologico-carrefour-bio-brik-1-l/R-prod880430/p",
+          "name": "Zumo de uva roja ecológico Carrefour Bio brik 1 l.",
+          "brand": "CARREFOUR BIO",
+          "price": "2,35 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/025660_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/025660_00_1.jpg"
+          },
+          "sku_id": "0256600000",
+          "catalog": "food",
+          "app_price": "2,35 €",
+          "info_tags": [
+            {
+              "icon": "https://static.carrefour.es/crs/cdn_static/CatNavImages/Icons/organic.png",
+              "message": "Bio",
+              "color_code": "#4BD074"
+            }
+          ],
+          "product_id": "prod880430",
+          "measure_unit": "l",
+          "document_type": "food",
+          "price_per_unit": "2,35 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 18,
+          "app_price_per_unit": "2,35 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Aragón",
+          "Canarias",
+          "Cantabria",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "Catalunya",
+          "Ceuta",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Galicia",
+          "Illes Balears",
+          "La Rioja",
+          "Melilla",
+          "Navarra",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": "Valores medios por 100 ml:\nValor energético 298 KJ / 70 Kcal\nHidratos de carbono 17.0 g (Azúcares 17.0 g)\nProteínas 1.0 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 2.35,
+        "category_id": "cat650002",
+        "ingredients": "Zumo de uva roja procedente de la agricultura ecológica.",
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat650002"
+        ],
+        "conservation": "Antes de abrir, conservar en lugar limpio, fresco y seco, resguardado de la luz. Una vez aierto, conservar en el frigorífico y consumir en 4 días.",
+        "denomination": "Zumo de uva roja procedente de la agricultura ecológica",
+        "display_name": "Zumo de uva roja ecológico Carrefour Bio brik 1 l.",
+        "price_format": "2,35 €",
+        "category_name": "Aguas y Zumos",
+        "price_per_unit": 2.35,
+        "source_row_md5": "17aacda1226323b78a38026377ea6546",
+        "regional_prices": {
+          "Ceuta": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 2.39,
+            "ppuu": "l"
+          },
+          "Aragón": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 2.39,
+            "ppuu": "l"
+          },
+          "Euskadi": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 2.39,
+            "ppuu": "l"
+          },
+          "Galicia": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 2.39,
+            "ppuu": "l"
+          },
+          "Navarra": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 2.39,
+            "ppuu": "l"
+          },
+          "Canarias": {
+            "p": 1.59,
+            "av": true,
+            "pf": "1,59 €",
+            "ppu": 1.59,
+            "ppuu": "l"
+          },
+          "La Rioja": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 2.39,
+            "ppuu": "l"
+          },
+          "Cantabria": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 2.39,
+            "ppuu": "l"
+          },
+          "Catalunya": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 2.39,
+            "ppuu": "l"
+          },
+          "Andalucía": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 2.39,
+            "ppuu": "l"
+          },
+          "Extremadura": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 2.39,
+            "ppuu": "l"
+          },
+          "Illes Balears": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 2.39,
+            "ppuu": "l"
+          },
+          "Castilla y León": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 2.39,
+            "ppuu": "l"
+          },
+          "Región de Murcia": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 2.39,
+            "ppuu": "l"
+          },
+          "Comunitat Valenciana": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 2.39,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": "2026-08-24T06:16:09.743+00:00",
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod880769",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-micelar-bifasica-micellair-waterproof-professional-nivea-400-ml/R-prod880769/p",
+          "name": "Agua micelar bifásica MicellAIR Waterproof Professional Nivea 400 ml.",
+          "badge": {
+            "url": "/supermercado/3x2/7961357813/s",
+            "name": "3x2",
+            "priority": 1,
+            "description": "Compra 3 unidades de este producto y paga sólo 2. Descuento aplicable sobre el de menor precio. Válido del 26/08/2026 al 09/09/2026."
+          },
+          "brand": "NIVEA",
+          "price": "5,75 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/028859_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/028859_00_1.jpg"
+          },
+          "sku_id": "0288590000",
+          "catalog": "food",
+          "app_price": "5,75 €",
+          "badge_map": {
+            "promotions": [
+              {
+                "icon": "https://static.carrefour.es/crs/cdn-static/promo-content/Carrefour/contenidos/web-icon/promo-blanco.svg",
+                "link": "/supermercado/3x2/7961357813/s",
+                "name": "3x2",
+                "color": "#D30D1F",
+                "end_date": "09/09/2026",
+                "pdp_text": "Compra 3 unidades de este producto y paga sólo 2. Descuento aplicable sobre el de menor precio. Válido del 26/08/2026 al 09/09/2026.",
+                "priority": 1,
+                "badge_type": "promotions",
+                "start_date": "26/08/2026",
+                "text_color": "#FFFFFF"
+              }
+            ]
+          },
+          "product_id": "prod880769",
+          "measure_unit": "100ml",
+          "document_type": "food",
+          "price_per_unit": "1,44 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 11,
+          "app_price_per_unit": "1,44 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Aragón",
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Castilla y León",
+          "Ceuta",
+          "Extremadura",
+          "Galicia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": "2026-09-09",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": "3x2",
+        "promo_text": "Compra 3 unidades de este producto y paga sólo 2. Descuento aplicable sobre el de menor precio. Válido del 26/08/2026 al 09/09/2026.",
+        "unit_price": 5.75,
+        "category_id": "cat20033",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": "2026-08-26",
+        "category_ids": [
+          "cat20033"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua micelar bifásica MicellAIR Waterproof Professional Nivea 400 ml.",
+        "price_format": "5,75 €",
+        "category_name": "Cuidado y Protección Corporal",
+        "price_per_unit": 14.4,
+        "source_row_md5": "3ae045b3d1f3f9776c5638481c6c78cb",
+        "regional_prices": {
+          "Canarias": {
+            "p": 5.89,
+            "av": true,
+            "pf": "5,89 €",
+            "ppu": 14.7,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": null,
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod880797",
+        "ean": "8410500022730",
+        "raw": {
+          "url": "/supermercado/leche-fermentada-liquida-con-avena-danone-danacol-sin-azucar-anadido-pack-de-6-unidades-de-100-g/R-prod880797/p",
+          "name": "Leche fermentada líquida con avena Danone Danacol sin azúcar añadido pack de 6 unidades de 100 g.",
+          "badge": {
+            "url": "/supermercado/3x2/7961358770/s",
+            "name": "3x2",
+            "priority": 1,
+            "description": "Compra 3 unidades de este producto y paga sólo 2. Descuento aplicable sobre el de menor precio. Válido del 26/08/2026 al 09/09/2026."
+          },
+          "brand": "DANACOL",
+          "price": "4,39 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/029440_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/029440_00_1.jpg"
+          },
+          "sku_id": "0294400000",
+          "catalog": "food",
+          "app_price": "4,39 €",
+          "badge_map": {
+            "promotions": [
+              {
+                "icon": "https://static.carrefour.es/crs/cdn-static/promo-content/Carrefour/contenidos/web-icon/promo-blanco.svg",
+                "link": "/supermercado/3x2/7961358770/s",
+                "name": "3x2",
+                "color": "#D30D1F",
+                "end_date": "09/09/2026",
+                "pdp_text": "Compra 3 unidades de este producto y paga sólo 2. Descuento aplicable sobre el de menor precio. Válido del 26/08/2026 al 09/09/2026.",
+                "priority": 1,
+                "badge_type": "promotions",
+                "start_date": "26/08/2026",
+                "text_color": "#FFFFFF"
+              }
+            ]
+          },
+          "product_id": "prod880797",
+          "measure_unit": "kg",
+          "document_type": "food",
+          "price_per_unit": "7,32 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 99,
+          "app_price_per_unit": "7,32 €"
+        },
+        "origin": null,
+        "regions": [
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Castilla-La Mancha",
+          "Ceuta",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Galicia",
+          "Illes Balears",
+          "La Rioja",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": "Valores medios por 100 ml:\nValor energético 160 KJ / 38 Kcal\nGrasas 1.1 g (Saturadas 0.1 g)\nHidratos de carbono 4.2 g (Azúcares 4 g)\nProteínas 2.7 g\nSal 0.1 g",
+        "promo_end": "2026-09-09",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": "3x2",
+        "promo_text": "Compra 3 unidades de este producto y paga sólo 2. Descuento aplicable sobre el de menor precio. Válido del 26/08/2026 al 09/09/2026.",
+        "unit_price": 4.39,
+        "category_id": "cat390008",
+        "ingredients": "Leche pasteurizada desnatada, concentrado de sólidos lácteos rehidratado, éster de esterol vegetal (2,6 %, del cual 1,6% esterol vegetal libre), aromas, harina de avena (0,15%), leche en polvo desnatada, fermentos lácticos y edulcorantes (acesulfamo K y sucralosa). Origen de la leche: España.",
+        "preparation": null,
+        "promo_start": "2026-08-26",
+        "category_ids": [
+          "cat390008"
+        ],
+        "conservation": "Consérvese en frío entre 2ºC y 6ºC",
+        "denomination": "Leche fermentada desnatada con avena y esteroles vegetales añadidos. Con edulcorantes.",
+        "display_name": "Leche fermentada líquida con avena Danone Danacol sin azúcar añadido pack de 6 unidades de 100 g.",
+        "price_format": "4,39 €",
+        "category_name": "Yogures y Postres",
+        "price_per_unit": 7.32,
+        "source_row_md5": "ed5c5e322a6b3d5a175a3b2c5d64ba26",
+        "regional_prices": null,
+        "detail_synced_at": "2026-08-24T06:16:09.743+00:00",
+        "price_per_unit_unit": "kg",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod880807",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-mineral-con-gas-krystal-natural-15-l/R-prod880807/p",
+          "name": "Agua mineral con gas Krystal natural 1,5 l",
+          "badge": {
+            "url": "/supermercado/envio-gratis/8021359410/s",
+            "name": "Envío Gratis",
+            "priority": 1,
+            "description": "Gastos de envío gratis por la compra mínima de 20€ en estos productos. Exclusivo online. Válido del 26/08/2026 al 09/09/2026 en pedidos superiores a 50€ en carrefour.es/supermercado."
+          },
+          "brand": "KRYSTAL",
+          "price": "0,93 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/168089_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/168089_00_1.jpg"
+          },
+          "sku_id": "1680890000",
+          "catalog": "food",
+          "app_price": "0,93 €",
+          "badge_map": {
+            "promotions": [
+              {
+                "icon": "https://static.carrefour.es/crs/cdn-static/promo-content/Carrefour/contenidos/web-icon/promo-blanco.svg",
+                "link": "/supermercado/envio-gratis/8021359410/s",
+                "name": "Envío Gratis",
+                "color": "#D30D1F",
+                "end_date": "09/09/2026",
+                "pdp_text": "Gastos de envío gratis por la compra mínima de 20€ en estos productos. Exclusivo online. Válido del 26/08/2026 al 09/09/2026 en pedidos superiores a 50€ en carrefour.es/supermercado.",
+                "priority": 1,
+                "badge_type": "promotions",
+                "start_date": "26/08/2026",
+                "text_color": "#FFFFFF"
+              }
+            ]
+          },
+          "product_id": "prod880807",
+          "measure_unit": "l",
+          "restrictions": [
+            {
+              "id": "58",
+              "quantity": 45000,
+              "display_name": "MAXIMO EN AGUAS 1,5 L.-ESPECIAL",
+              "restriction_type": "product-quantity"
+            }
+          ],
+          "document_type": "food",
+          "price_per_unit": "0,62 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 21,
+          "app_price_per_unit": "0,62 €"
+        },
+        "origin": null,
+        "regions": [
+          "Canarias"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": "2026-09-09",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": "Envío Gratis",
+        "promo_text": "Gastos de envío gratis por la compra mínima de 20€ en estos productos. Exclusivo online. Válido del 26/08/2026 al 09/09/2026 en pedidos superiores a 50€ en carrefour.es/supermercado.",
+        "unit_price": 0.93,
+        "category_id": "cat650002",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": "2026-08-26",
+        "category_ids": [
+          "cat650002"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua mineral con gas Krystal natural 1,5 l",
+        "price_format": "0,93 €",
+        "category_name": "Aguas y Zumos",
+        "price_per_unit": 0.62,
+        "source_row_md5": "445b5b58341df5ff9e36d46e0d2c1326",
+        "regional_prices": null,
+        "detail_synced_at": null,
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod880856",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/bifidus-cereales-chia-y-frambuesas-danone-activia-mixgo-170-g/R-prod880856/p",
+          "name": "Bífidus cereales, chía y frambuesas Danone Activia Mix&go 170 g.",
+          "badge": {
+            "url": "/supermercado/5-dto/7405340415/s",
+            "name": "5€ dto.",
+            "priority": 1,
+            "description": "Te descontamos 5€ por la compra de 20€ en estos productos. Exclusivo online. Válido del 26/08/2026 al 09/09/2026."
+          },
+          "brand": "ACTIVIA",
+          "price": "2,15 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/029355_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/029355_00_1.jpg"
+          },
+          "sku_id": "0293550000",
+          "catalog": "food",
+          "app_price": "2,15 €",
+          "badge_map": {
+            "promotions": [
+              {
+                "icon": "https://static.carrefour.es/crs/cdn-static/promo-content/Carrefour/contenidos/web-icon/promo-blanco.svg",
+                "link": "/supermercado/5-dto/7405340415/s",
+                "name": "5€ dto.",
+                "color": "#D30D1F",
+                "end_date": "09/09/2026",
+                "pdp_text": "Te descontamos 5€ por la compra de 20€ en estos productos. Exclusivo online. Válido del 26/08/2026 al 09/09/2026.",
+                "priority": 1,
+                "badge_type": "promotions",
+                "start_date": "26/08/2026",
+                "text_color": "#FFFFFF"
+              }
+            ]
+          },
+          "product_id": "prod880856",
+          "measure_unit": "kg",
+          "document_type": "food",
+          "price_per_unit": "12,65 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 4,
+          "app_price_per_unit": "12,65 €"
+        },
+        "origin": null,
+        "regions": [
+          "Aragón",
+          "Asturias",
+          "Cantabria",
+          "Castilla y León",
+          "Ceuta",
+          "Extremadura",
+          "Galicia",
+          "La Rioja"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": "2026-09-09",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": "5€ dto.",
+        "promo_text": "Te descontamos 5€ por la compra de 20€ en estos productos. Exclusivo online. Válido del 26/08/2026 al 09/09/2026.",
+        "unit_price": 2.15,
+        "category_id": "cat390008",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": "2026-08-26",
+        "category_ids": [
+          "cat390008"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Bífidus cereales, chía y frambuesas Danone Activia Mix&go 170 g.",
+        "price_format": "2,15 €",
+        "category_name": "Yogures y Postres",
+        "price_per_unit": 12.65,
+        "source_row_md5": "9416d5e8d32f7494465af250bc52ebc2",
+        "regional_prices": {
+          "Ceuta": {
+            "p": 2.09,
+            "av": true,
+            "pf": "2,09 €",
+            "ppu": 12.29,
+            "ppuu": "kg"
+          }
+        },
+        "detail_synced_at": null,
+        "price_per_unit_unit": "kg",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod910003",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-de-colonia-oh-my-god-aire-de-sevilla-150-ml/R-prod910003/p",
+          "name": "Agua de colonia Oh my God!! Aire de Sevilla 150 ml.",
+          "brand": "AIRE DE SEVILLA",
+          "price": "14,39 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/036928_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/036928_00_1.jpg"
+          },
+          "sku_id": "0369280000",
+          "catalog": "food",
+          "app_price": "14,39 €",
+          "product_id": "prod910003",
+          "measure_unit": "100ml",
+          "document_type": "food",
+          "price_per_unit": "9,59 €",
+          "sell_pack_unit": 1,
+          "app_price_per_unit": "9,59 €"
+        },
+        "origin": null,
+        "regions": [
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Catalunya",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Galicia",
+          "Illes Balears",
+          "Melilla",
+          "Navarra"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 14.39,
+        "category_id": "cat20028",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat20028"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua de colonia Oh my God!! Aire de Sevilla 150 ml.",
+        "price_format": "14,39 €",
+        "category_name": "Baño e Higiene Corporal",
+        "price_per_unit": 95.9,
+        "source_row_md5": "100c4a6c8b191a3dd72ffe8f3087bf94",
+        "regional_prices": {
+          "Euskadi": {
+            "p": 14.79,
+            "av": true,
+            "pf": "14,79 €",
+            "ppu": 98.6,
+            "ppuu": "l"
+          },
+          "Galicia": {
+            "p": 14.79,
+            "av": true,
+            "pf": "14,79 €",
+            "ppu": 98.6,
+            "ppuu": "l"
+          },
+          "Navarra": {
+            "p": 14.79,
+            "av": true,
+            "pf": "14,79 €",
+            "ppu": 98.6,
+            "ppuu": "l"
+          },
+          "Asturias": {
+            "p": 14.79,
+            "av": true,
+            "pf": "14,79 €",
+            "ppu": 98.6,
+            "ppuu": "l"
+          },
+          "Canarias": {
+            "p": 14.79,
+            "av": true,
+            "pf": "14,79 €",
+            "ppu": 98.6,
+            "ppuu": "l"
+          },
+          "Cantabria": {
+            "p": 14.79,
+            "av": true,
+            "pf": "14,79 €",
+            "ppu": 98.6,
+            "ppuu": "l"
+          },
+          "Catalunya": {
+            "p": 14.79,
+            "av": true,
+            "pf": "14,79 €",
+            "ppu": 98.6,
+            "ppuu": "l"
+          },
+          "Extremadura": {
+            "p": 14.79,
+            "av": true,
+            "pf": "14,79 €",
+            "ppu": 98.6,
+            "ppuu": "l"
+          },
+          "Illes Balears": {
+            "p": 14.79,
+            "av": true,
+            "pf": "14,79 €",
+            "ppu": 98.6,
+            "ppuu": "l"
+          },
+          "Comunitat Valenciana": {
+            "p": 14.79,
+            "av": true,
+            "pf": "14,79 €",
+            "ppu": 98.6,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": "2026-08-29T11:38:07.703+00:00",
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod910004",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-de-colonia-deep-poseidon-150-ml/R-prod910004/p",
+          "name": "Agua de colonia Deep Poseidon 150 ml.",
+          "brand": "POSEIDON",
+          "price": "16,89 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/036927_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/036927_00_1.jpg"
+          },
+          "sku_id": "0369270000",
+          "catalog": "food",
+          "app_price": "16,89 €",
+          "product_id": "prod910004",
+          "measure_unit": "100ml",
+          "document_type": "food",
+          "price_per_unit": "11,26 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 5,
+          "app_price_per_unit": "11,26 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "Ceuta",
+          "Extremadura",
+          "Galicia",
+          "Navarra",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 16.89,
+        "category_id": "cat20028",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat20028"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua de colonia Deep Poseidon 150 ml.",
+        "price_format": "16,89 €",
+        "category_name": "Baño e Higiene Corporal",
+        "price_per_unit": 112.6,
+        "source_row_md5": "b7f041cc2402518a46085d30f70a38ee",
+        "regional_prices": {
+          "Castilla-La Mancha": {
+            "p": 16.45,
+            "av": true,
+            "pf": "16,45 €",
+            "ppu": 109.7,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": null,
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod920382",
+        "ean": "8431876267792",
+        "raw": {
+          "url": "/supermercado/patatas-fritas-en-aceite-de-oliva-ecologicas-carrefour-bio-100-g/R-prod920382/p",
+          "name": "Patatas fritas en aceite de oliva ecológicas Carrefour Bio 100 g.",
+          "brand": "CARREFOUR BIO",
+          "price": "2,29 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/042931_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/042931_00_1.jpg"
+          },
+          "sku_id": "0429310000",
+          "catalog": "food",
+          "app_price": "2,29 €",
+          "info_tags": [
+            {
+              "icon": "https://static.carrefour.es/crs/cdn_static/CatNavImages/Icons/organic.png",
+              "message": "Bio",
+              "color_code": "#4BD074"
+            }
+          ],
+          "product_id": "prod920382",
+          "measure_unit": "kg",
+          "document_type": "food",
+          "price_per_unit": "22,90 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 19,
+          "app_price_per_unit": "22,90 €"
+        },
+        "origin": null,
+        "regions": null,
+        "allergens": null,
+        "available": true,
+        "nutrition": "Valores medios por 100 g:\nValor energético 2370 KJ / 569 Kcal\nGrasas 39 g (Saturadas 6 g)\nHidratos de carbono 47 g\nProteínas 7 g\nSal 0 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 2.29,
+        "category_id": "cat390001",
+        "ingredients": "Patata, aceite de oliva virgen extra (39%), sal.",
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat390001"
+        ],
+        "conservation": "Conservar en lugar fresco y seco.",
+        "denomination": "Patatas fritas en aceite de oliva virgen extra.",
+        "display_name": "Patatas fritas en aceite de oliva ecológicas Carrefour Bio 100 g.",
+        "price_format": "2,29 €",
+        "category_name": "Aperitivos",
+        "price_per_unit": 22.9,
+        "source_row_md5": "01aaaa52b7aefefcf3224c226df5ce36",
+        "regional_prices": {
+          "Ceuta": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 23.9,
+            "ppuu": "kg"
+          },
+          "Aragón": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 23.9,
+            "ppuu": "kg"
+          },
+          "Euskadi": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 23.9,
+            "ppuu": "kg"
+          },
+          "Galicia": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 23.9,
+            "ppuu": "kg"
+          },
+          "Navarra": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 23.9,
+            "ppuu": "kg"
+          },
+          "Asturias": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 23.9,
+            "ppuu": "kg"
+          },
+          "Canarias": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 23.9,
+            "ppuu": "kg"
+          },
+          "La Rioja": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 23.9,
+            "ppuu": "kg"
+          },
+          "Cantabria": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 23.9,
+            "ppuu": "kg"
+          },
+          "Catalunya": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 23.9,
+            "ppuu": "kg"
+          },
+          "Andalucía": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 23.9,
+            "ppuu": "kg"
+          },
+          "Extremadura": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 23.9,
+            "ppuu": "kg"
+          },
+          "Illes Balears": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 23.9,
+            "ppuu": "kg"
+          },
+          "Castilla y León": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 23.9,
+            "ppuu": "kg"
+          },
+          "Región de Murcia": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 23.9,
+            "ppuu": "kg"
+          },
+          "Comunitat Valenciana": {
+            "p": 2.39,
+            "av": true,
+            "pf": "2,39 €",
+            "ppu": 23.9,
+            "ppuu": "kg"
+          }
+        },
+        "detail_synced_at": "2026-08-31T06:29:04.947+00:00",
+        "price_per_unit_unit": "kg",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod920406",
+        "ean": "8431876267808",
+        "raw": {
+          "url": "/supermercado/patatas-fritas-ecologicas-carrefour-bio-sin-sal-anadida-100-g/R-prod920406/p",
+          "name": "Patatas fritas ecológicas Carrefour Bio sin sal añadida 100 g.",
+          "brand": "CARREFOUR BIO",
+          "price": "2,05 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/042954_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/042954_00_1.jpg"
+          },
+          "sku_id": "0429540000",
+          "catalog": "food",
+          "app_price": "2,05 €",
+          "info_tags": [
+            {
+              "icon": "https://static.carrefour.es/crs/cdn_static/CatNavImages/Icons/organic.png",
+              "message": "Bio",
+              "color_code": "#4BD074"
+            }
+          ],
+          "product_id": "prod920406",
+          "measure_unit": "kg",
+          "document_type": "food",
+          "price_per_unit": "20,50 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 26,
+          "app_price_per_unit": "20,50 €"
+        },
+        "origin": null,
+        "regions": [
+          "Aragón",
+          "Canarias",
+          "Cantabria",
+          "Catalunya",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Illes Balears",
+          "Melilla",
+          "Navarra"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": "Valores medios por 100 g:\nValor energético 2297 KJ / 551 Kcal\nGrasas 33 g (Saturadas 9 g)\nHidratos de carbono 55 g\nFibra alimentaria 3.4 g\nProteínas 7 g\nSal 0 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 2.05,
+        "category_id": "cat390001",
+        "ingredients": "Patata, aceite de girasol (33%).",
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat390001"
+        ],
+        "conservation": "Conservar en lugar fresco y seco.",
+        "denomination": "Patatas fritas en aceite de girasol (33%) sin sal añadida ecológicas.",
+        "display_name": "Patatas fritas ecológicas Carrefour Bio sin sal añadida 100 g.",
+        "price_format": "2,05 €",
+        "category_name": "Aperitivos",
+        "price_per_unit": 20.5,
+        "source_row_md5": "43c5ce6f85fa510293373afbbf507071",
+        "regional_prices": {
+          "Canarias": {
+            "p": 2.35,
+            "av": true,
+            "pf": "2,35 €",
+            "ppu": 23.5,
+            "ppuu": "kg"
+          }
+        },
+        "detail_synced_at": "2026-08-31T06:29:04.947+00:00",
+        "price_per_unit_unit": "kg",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod930141",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/yogur-de-sabores-central-lechera-asturiana-pack-de-8-unidades-de125-g/R-prod930141/p",
+          "name": "Yogur de sabores Central Lechera Asturiana pack de 8 unidades de125 g.",
+          "brand": "CENTRAL LECHERA ASTURIANA",
+          "price": "2,19 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/282103_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/282103_00_1.jpg"
+          },
+          "sku_id": "2821030000",
+          "catalog": "food",
+          "app_price": "2,19 €",
+          "product_id": "prod930141",
+          "measure_unit": "kg",
+          "document_type": "food",
+          "price_per_unit": "2,19 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 8,
+          "app_price_per_unit": "2,19 €"
+        },
+        "origin": null,
+        "regions": [
+          "Asturias",
+          "Cantabria",
+          "La Rioja"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 2.19,
+        "category_id": "cat390008",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat390008"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Yogur de sabores Central Lechera Asturiana pack de 8 unidades de125 g.",
+        "price_format": "2,19 €",
+        "category_name": "Yogures y Postres",
+        "price_per_unit": 2.19,
+        "source_row_md5": "f315836737e208efd4ab68eff85fc241",
+        "regional_prices": null,
+        "detail_synced_at": null,
+        "price_per_unit_unit": "kg",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod950028",
+        "ean": "5449000229168",
+        "raw": {
+          "url": "/supermercado/appletiser-100-zumo-de-manzana-con-burbujas-finas-lata-25-cl/R-prod950028/p",
+          "name": "Appletiser 100% zumo de manzana con burbujas finas lata 25 cl.",
+          "badge": {
+            "url": "/supermercado/envio-gratis/8021359410/s",
+            "name": "Envío Gratis",
+            "priority": 1,
+            "description": "Gastos de envío gratis por la compra mínima de 20€ en estos productos. Exclusivo online. Válido del 26/08/2026 al 09/09/2026 en pedidos superiores a 50€ en carrefour.es/supermercado."
+          },
+          "brand": "APPLETISER",
+          "price": "0,92 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/048422_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/048422_00_1.jpg"
+          },
+          "sku_id": "0484220000",
+          "catalog": "food",
+          "app_price": "0,92 €",
+          "badge_map": {
+            "promotions": [
+              {
+                "icon": "https://static.carrefour.es/crs/cdn-static/promo-content/Carrefour/contenidos/web-icon/promo-blanco.svg",
+                "link": "/supermercado/envio-gratis/8021359410/s",
+                "name": "Envío Gratis",
+                "color": "#D30D1F",
+                "end_date": "09/09/2026",
+                "pdp_text": "Gastos de envío gratis por la compra mínima de 20€ en estos productos. Exclusivo online. Válido del 26/08/2026 al 09/09/2026 en pedidos superiores a 50€ en carrefour.es/supermercado.",
+                "priority": 1,
+                "badge_type": "promotions",
+                "start_date": "26/08/2026",
+                "text_color": "#FFFFFF"
+              }
+            ]
+          },
+          "product_id": "prod950028",
+          "measure_unit": "l",
+          "document_type": "food",
+          "price_per_unit": "3,68 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 87,
+          "app_price_per_unit": "3,68 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Aragón",
+          "Asturias",
+          "Cantabria",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "Catalunya",
+          "Ceuta",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Galicia",
+          "Illes Balears",
+          "La Rioja",
+          "Melilla",
+          "Navarra",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": "Valores medios por 100 ml:\nValor energético 195 KJ / 46 Kcal\nGrasas 0 g (Saturadas 0 g)\nHidratos de carbono 10.8 g (Azúcares 10.2 g)\nProteínas 0 g\nSal 0 g",
+        "promo_end": "2026-09-09",
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": "Envío Gratis",
+        "promo_text": "Gastos de envío gratis por la compra mínima de 20€ en estos productos. Exclusivo online. Válido del 26/08/2026 al 09/09/2026 en pedidos superiores a 50€ en carrefour.es/supermercado.",
+        "unit_price": 0.92,
+        "category_id": "cat650002",
+        "ingredients": "Ingredientes: *zumo de manzana a partir de concentrado (100%) y gasificante dióxido de carbono.",
+        "preparation": null,
+        "promo_start": "2026-08-26",
+        "category_ids": [
+          "cat650002"
+        ],
+        "conservation": "Proteger de la luz solar. Preservar de olores agresivos. Conservar en lugar limpio, fresco y seco. Servir frío",
+        "denomination": "Zumo de manzana a partir de concentrado ligeramente gasificado",
+        "display_name": "Appletiser 100% zumo de manzana con burbujas finas lata 25 cl.",
+        "price_format": "0,92 €",
+        "category_name": "Aguas y Zumos",
+        "price_per_unit": 3.68,
+        "source_row_md5": "67f65a4efde1f8fb94a2c752cef1a03a",
+        "regional_prices": {
+          "Ceuta": {
+            "p": 0.86,
+            "av": true,
+            "pf": "0,86 €",
+            "ppu": 3.44,
+            "ppuu": "l"
+          },
+          "Aragón": {
+            "p": 0.93,
+            "av": true,
+            "pf": "0,93 €",
+            "ppu": 3.72,
+            "ppuu": "l"
+          },
+          "Euskadi": {
+            "p": 0.93,
+            "av": true,
+            "pf": "0,93 €",
+            "ppu": 3.72,
+            "ppuu": "l"
+          },
+          "Galicia": {
+            "p": 0.93,
+            "av": true,
+            "pf": "0,93 €",
+            "ppu": 3.72,
+            "ppuu": "l"
+          },
+          "Navarra": {
+            "p": 0.93,
+            "av": true,
+            "pf": "0,93 €",
+            "ppu": 3.72,
+            "ppuu": "l"
+          },
+          "Asturias": {
+            "p": 0.93,
+            "av": true,
+            "pf": "0,93 €",
+            "ppu": 3.72,
+            "ppuu": "l"
+          },
+          "La Rioja": {
+            "p": 0.93,
+            "av": true,
+            "pf": "0,93 €",
+            "ppu": 3.72,
+            "ppuu": "l"
+          },
+          "Cantabria": {
+            "p": 0.93,
+            "av": true,
+            "pf": "0,93 €",
+            "ppu": 3.72,
+            "ppuu": "l"
+          },
+          "Catalunya": {
+            "p": 0.93,
+            "av": true,
+            "pf": "0,93 €",
+            "ppu": 3.72,
+            "ppuu": "l"
+          },
+          "Andalucía": {
+            "p": 0.93,
+            "av": true,
+            "pf": "0,93 €",
+            "ppu": 3.72,
+            "ppuu": "l"
+          },
+          "Extremadura": {
+            "p": 0.93,
+            "av": true,
+            "pf": "0,93 €",
+            "ppu": 3.72,
+            "ppuu": "l"
+          },
+          "Illes Balears": {
+            "p": 0.93,
+            "av": true,
+            "pf": "0,93 €",
+            "ppu": 3.72,
+            "ppuu": "l"
+          },
+          "Castilla y León": {
+            "p": 0.93,
+            "av": true,
+            "pf": "0,93 €",
+            "ppu": 3.72,
+            "ppuu": "l"
+          },
+          "Región de Murcia": {
+            "p": 0.93,
+            "av": true,
+            "pf": "0,93 €",
+            "ppu": 3.72,
+            "ppuu": "l"
+          },
+          "Comunitat Valenciana": {
+            "p": 0.93,
+            "av": true,
+            "pf": "0,93 €",
+            "ppu": 3.72,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": "2026-08-24T06:16:09.743+00:00",
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod970202",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/caprichos-de-yogur-con-manzana-al-horno-pastoret-sin-gluten-150-g/R-prod970202/p",
+          "name": "Caprichos de yogur con manzana al horno Pastoret sin gluten 150 g.",
+          "brand": "PASTORET",
+          "price": "3,09 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/052622_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/052622_00_1.jpg"
+          },
+          "sku_id": "0526220000",
+          "catalog": "food",
+          "app_price": "3,09 €",
+          "info_tags": [
+            {
+              "icon": "https://static.carrefour.es/crs/cdn_static/CatNavImages/Icons/no-gluten.png",
+              "message": "Sin gluten",
+              "color_code": "#f9e9de"
+            }
+          ],
+          "product_id": "prod970202",
+          "measure_unit": "kg",
+          "document_type": "food",
+          "price_per_unit": "20,60 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 11,
+          "app_price_per_unit": "20,60 €"
+        },
+        "origin": null,
+        "regions": [
+          "Aragón",
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Catalunya",
+          "Ceuta",
+          "Extremadura",
+          "La Rioja"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 3.09,
+        "category_id": "cat390008",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat390008"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Caprichos de yogur con manzana al horno Pastoret sin gluten 150 g.",
+        "price_format": "3,09 €",
+        "category_name": "Yogures y Postres",
+        "price_per_unit": 20.6,
+        "source_row_md5": "2a57eb5114ff75e49a11b6cdd4822f09",
+        "regional_prices": {
+          "Canarias": {
+            "p": 3.55,
+            "av": true,
+            "pf": "3,55 €",
+            "ppu": 23.67,
+            "ppuu": "kg"
+          }
+        },
+        "detail_synced_at": null,
+        "price_per_unit_unit": "kg",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod970232",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/caprichos-de-yogur-con-mango-y-frutas-del-bosque-pastoret-150-g/R-prod970232/p",
+          "name": "Caprichos de yogur con mango y frutas del bosque Pastoret 150 g.",
+          "brand": "PASTORET",
+          "price": "3,09 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/052619_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/052619_00_1.jpg"
+          },
+          "sku_id": "0526190000",
+          "catalog": "food",
+          "app_price": "3,09 €",
+          "product_id": "prod970232",
+          "measure_unit": "kg",
+          "document_type": "food",
+          "price_per_unit": "20,60 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 7,
+          "app_price_per_unit": "20,60 €"
+        },
+        "origin": null,
+        "regions": [
+          "Aragón",
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Catalunya",
+          "Ceuta",
+          "Extremadura",
+          "La Rioja"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 3.09,
+        "category_id": "cat390008",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat390008"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Caprichos de yogur con mango y frutas del bosque Pastoret 150 g.",
+        "price_format": "3,09 €",
+        "category_name": "Yogures y Postres",
+        "price_per_unit": 20.6,
+        "source_row_md5": "1328a761af2138425b4bce3dc25fb8b3",
+        "regional_prices": {
+          "Canarias": {
+            "p": 3.55,
+            "av": true,
+            "pf": "3,55 €",
+            "ppu": 23.67,
+            "ppuu": "kg"
+          }
+        },
+        "detail_synced_at": null,
+        "price_per_unit_unit": "kg",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod970653",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-mineral-con-gas-carrefour-classic-15-l/R-prod970653/p",
+          "name": "Agua mineral con gas Carrefour Classic 1,5 l.",
+          "brand": "CARREFOUR",
+          "price": "0,42 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/059581_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/059581_00_1.jpg"
+          },
+          "sku_id": "0595810000",
+          "catalog": "food",
+          "app_price": "0,42 €",
+          "product_id": "prod970653",
+          "measure_unit": "l",
+          "restrictions": [
+            {
+              "id": "58",
+              "quantity": 45000,
+              "display_name": "MAXIMO EN AGUAS 1,5 L.-ESPECIAL",
+              "restriction_type": "product-quantity"
+            }
+          ],
+          "document_type": "food",
+          "price_per_unit": "0,28 €",
+          "sell_pack_unit": 6,
+          "app_price_per_unit": "0,28 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Catalunya",
+          "Ceuta",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Illes Balears",
+          "Melilla",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 0.42,
+        "category_id": "cat650002",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat650002"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua mineral con gas Carrefour Classic 1,5 l.",
+        "price_format": "0,42 €",
+        "category_name": "Aguas y Zumos",
+        "price_per_unit": 0.28,
+        "source_row_md5": "0cb70cb28086e4793a2a9a7faed740be",
+        "regional_prices": {
+          "Ceuta": {
+            "p": 0.46,
+            "av": true,
+            "pf": "0,46 €",
+            "ppu": 0.31,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": "2026-08-17T07:22:24.838+00:00",
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod970656",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-mineral-carrefour-classic-8-l/R-prod970656/p",
+          "name": "Agua mineral Carrefour Classic 8 l.",
+          "brand": "CARREFOUR",
+          "price": "1,85 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/059587_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/059587_00_1.jpg"
+          },
+          "sku_id": "0595870000",
+          "catalog": "food",
+          "app_price": "1,85 €",
+          "product_id": "prod970656",
+          "measure_unit": "l",
+          "restrictions": [
+            {
+              "id": "65",
+              "quantity": 80000,
+              "display_name": "MAXIMO EN AGUAS 8 L.-ESPECIAL",
+              "restriction_type": "product-quantity"
+            }
+          ],
+          "document_type": "food",
+          "price_per_unit": "0,23 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 186,
+          "app_price_per_unit": "0,23 €"
+        },
+        "origin": null,
+        "regions": [
+          "Comunitat Valenciana",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 1.85,
+        "category_id": "cat650002",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat650002"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua mineral Carrefour Classic 8 l.",
+        "price_format": "1,85 €",
+        "category_name": "Aguas y Zumos",
+        "price_per_unit": 0.23,
+        "source_row_md5": "858e787133389ae3f4fd496b753834cf",
+        "regional_prices": null,
+        "detail_synced_at": null,
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod970658",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-mineral-carrefour-classic-5-l/R-prod970658/p",
+          "name": "Agua mineral Carrefour Classic 5 l.",
+          "brand": "CARREFOUR",
+          "price": "1,08 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/059594_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/059594_00_1.jpg"
+          },
+          "sku_id": "0595940000",
+          "catalog": "food",
+          "app_price": "1,08 €",
+          "product_id": "prod970658",
+          "measure_unit": "l",
+          "restrictions": [
+            {
+              "id": "62",
+              "quantity": 50000,
+              "display_name": "MAXIMO EN AGUAS 5 L.-ESPECIAL",
+              "restriction_type": "product-quantity"
+            }
+          ],
+          "document_type": "food",
+          "price_per_unit": "0,22 €",
+          "sell_pack_unit": 1,
+          "app_price_per_unit": "0,22 €"
+        },
+        "origin": null,
+        "regions": [
+          "Catalunya",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Illes Balears",
+          "Melilla",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 1.08,
+        "category_id": "cat650002",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat650002"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua mineral Carrefour Classic 5 l.",
+        "price_format": "1,08 €",
+        "category_name": "Aguas y Zumos",
+        "price_per_unit": 0.22,
+        "source_row_md5": "5943fe25fbe275c1cc37c40353285641",
+        "regional_prices": null,
+        "detail_synced_at": "2026-08-31T06:29:04.947+00:00",
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod970659",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-mineral-carrefour-classic-5-l/R-prod970659/p",
+          "name": "Agua mineral Carrefour Classic 5 l.",
+          "brand": "CARREFOUR",
+          "price": "1,08 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/059590_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/059590_00_1.jpg"
+          },
+          "sku_id": "0595900000",
+          "catalog": "food",
+          "app_price": "1,08 €",
+          "product_id": "prod970659",
+          "measure_unit": "l",
+          "restrictions": [
+            {
+              "id": "62",
+              "quantity": 50000,
+              "display_name": "MAXIMO EN AGUAS 5 L.-ESPECIAL",
+              "restriction_type": "product-quantity"
+            }
+          ],
+          "document_type": "food",
+          "price_per_unit": "0,22 €",
+          "sell_pack_unit": 1,
+          "app_price_per_unit": "0,22 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Catalunya",
+          "Ceuta",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Illes Balears",
+          "Melilla"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 1.08,
+        "category_id": "cat650002",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat650002"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua mineral Carrefour Classic 5 l.",
+        "price_format": "1,08 €",
+        "category_name": "Aguas y Zumos",
+        "price_per_unit": 0.22,
+        "source_row_md5": "24d1aec39de6938195c15266811928a1",
+        "regional_prices": {
+          "Ceuta": {
+            "p": 1.22,
+            "av": true,
+            "pf": "1,22 €",
+            "ppu": 0.24,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": "2026-08-17T07:22:24.838+00:00",
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod970661",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-mineral-con-gas-carrefour-classic-50-cl/R-prod970661/p",
+          "name": "Agua mineral con gas Carrefour Classic 50 cl.",
+          "brand": "CARREFOUR",
+          "price": "0,26 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/059569_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/059569_00_1.jpg"
+          },
+          "sku_id": "0595690000",
+          "catalog": "food",
+          "app_price": "0,26 €",
+          "product_id": "prod970661",
+          "measure_unit": "l",
+          "restrictions": [
+            {
+              "id": "52",
+              "quantity": 25000,
+              "display_name": "MAXIMO EN AGUAS 500ML.-ESPECIAL",
+              "restriction_type": "product-quantity"
+            }
+          ],
+          "document_type": "food",
+          "price_per_unit": "0,52 €",
+          "sell_pack_unit": 6,
+          "app_price_per_unit": "0,52 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Catalunya",
+          "Ceuta",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Illes Balears",
+          "Melilla",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 0.26,
+        "category_id": "cat650002",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat650002"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua mineral con gas Carrefour Classic 50 cl.",
+        "price_format": "0,26 €",
+        "category_name": "Aguas y Zumos",
+        "price_per_unit": 0.52,
+        "source_row_md5": "70b503e124ee16fd0917608931407d55",
+        "regional_prices": {
+          "Ceuta": {
+            "p": 0.29,
+            "av": true,
+            "pf": "0,29 €",
+            "ppu": 0.58,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": "2026-08-24T06:16:09.743+00:00",
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod970711",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-mineral-carrefour-classic-15-l/R-prod970711/p",
+          "name": "Agua mineral Carrefour Classic 1,5 l.",
+          "brand": "CARREFOUR",
+          "price": "0,39 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/059622_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/059622_00_1.jpg"
+          },
+          "sku_id": "0596220000",
+          "catalog": "food",
+          "app_price": "0,39 €",
+          "product_id": "prod970711",
+          "measure_unit": "l",
+          "restrictions": [
+            {
+              "id": "58",
+              "quantity": 45000,
+              "display_name": "MAXIMO EN AGUAS 1,5 L.-ESPECIAL",
+              "restriction_type": "product-quantity"
+            }
+          ],
+          "document_type": "food",
+          "price_per_unit": "0,26 €",
+          "sell_pack_unit": 6,
+          "app_price_per_unit": "0,26 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Catalunya",
+          "Ceuta",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Illes Balears",
+          "Melilla"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 0.39,
+        "category_id": "cat650002",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat650002"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua mineral Carrefour Classic 1,5 l.",
+        "price_format": "0,39 €",
+        "category_name": "Aguas y Zumos",
+        "price_per_unit": 0.26,
+        "source_row_md5": "7de8b75888990a5f0259124c2c314f25",
+        "regional_prices": {
+          "Ceuta": {
+            "p": 0.44,
+            "av": true,
+            "pf": "0,44 €",
+            "ppu": 0.29,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": "2026-08-31T06:29:04.947+00:00",
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod970712",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-mineral-carrefour-classic-50-cl/R-prod970712/p",
+          "name": "Agua mineral Carrefour Classic 50 cl.",
+          "brand": "CARREFOUR",
+          "price": "0,29 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/059624_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/059624_00_1.jpg"
+          },
+          "sku_id": "0596240000",
+          "catalog": "food",
+          "app_price": "0,29 €",
+          "product_id": "prod970712",
+          "measure_unit": "l",
+          "restrictions": [
+            {
+              "id": "52",
+              "quantity": 25000,
+              "display_name": "MAXIMO EN AGUAS 500ML.-ESPECIAL",
+              "restriction_type": "product-quantity"
+            }
+          ],
+          "document_type": "food",
+          "price_per_unit": "0,58 €",
+          "sell_pack_unit": 6,
+          "app_price_per_unit": "0,58 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Catalunya",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Illes Balears",
+          "Melilla"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 0.29,
+        "category_id": "cat650002",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat650002"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua mineral Carrefour Classic 50 cl.",
+        "price_format": "0,29 €",
+        "category_name": "Aguas y Zumos",
+        "price_per_unit": 0.58,
+        "source_row_md5": "599ef42a5290a54a88f814238b7acab4",
+        "regional_prices": null,
+        "detail_synced_at": "2026-08-24T06:16:09.743+00:00",
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod970718",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-mineral-carrefour-natural-50-cl/R-prod970718/p",
+          "name": "Agua mineral Carrefour natural 50 cl.",
+          "brand": "CARREFOUR",
+          "price": "0,29 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/059637_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/059637_00_1.jpg"
+          },
+          "sku_id": "0596370000",
+          "catalog": "food",
+          "app_price": "0,29 €",
+          "product_id": "prod970718",
+          "measure_unit": "l",
+          "restrictions": [
+            {
+              "id": "52",
+              "quantity": 25000,
+              "display_name": "MAXIMO EN AGUAS 500ML.-ESPECIAL",
+              "restriction_type": "product-quantity"
+            }
+          ],
+          "document_type": "food",
+          "price_per_unit": "0,58 €",
+          "sell_pack_unit": 6,
+          "app_price_per_unit": "0,58 €"
+        },
+        "origin": null,
+        "regions": [
+          "Catalunya",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Illes Balears",
+          "Melilla"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 0.29,
+        "category_id": "cat650002",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat650002"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua mineral Carrefour natural 50 cl.",
+        "price_format": "0,29 €",
+        "category_name": "Aguas y Zumos",
+        "price_per_unit": 0.58,
+        "source_row_md5": "16aa382c9b75c65c6c514ab78ac1e3d6",
+        "regional_prices": null,
+        "detail_synced_at": "2026-08-24T06:16:09.743+00:00",
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod970720",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-mineral-carrefour-kids-tapon-deportivo-33-cl/R-prod970720/p",
+          "name": "Agua mineral Carrefour Kids tapón deportivo 33 cl.",
+          "brand": "CARREFOUR",
+          "price": "0,28 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/059635_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/059635_00_1.jpg"
+          },
+          "sku_id": "0596350000",
+          "catalog": "food",
+          "app_price": "0,28 €",
+          "product_id": "prod970720",
+          "measure_unit": "l",
+          "restrictions": [
+            {
+              "id": "49",
+              "quantity": 16500,
+              "display_name": "MAXIMO EN AGUAS 330ML.-ESPECIAL",
+              "restriction_type": "product-quantity"
+            }
+          ],
+          "document_type": "food",
+          "price_per_unit": "0,85 €",
+          "sell_pack_unit": 6,
+          "app_price_per_unit": "0,85 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Catalunya",
+          "Ceuta",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Illes Balears",
+          "Melilla",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 0.28,
+        "category_id": "cat650002",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat650002"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua mineral Carrefour Kids tapón deportivo 33 cl.",
+        "price_format": "0,28 €",
+        "category_name": "Aguas y Zumos",
+        "price_per_unit": 0.85,
+        "source_row_md5": "09ae943c6dbe10ab8361d019ec395f55",
+        "regional_prices": {
+          "Ceuta": {
+            "p": 0.32,
+            "av": true,
+            "pf": "0,32 €",
+            "ppu": 0.97,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": "2026-08-31T06:29:04.947+00:00",
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod970724",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-mineral-carrefour-classic-8-l/R-prod970724/p",
+          "name": "Agua mineral Carrefour Classic 8 l.",
+          "brand": "CARREFOUR",
+          "price": "1,85 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/059606_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/059606_00_1.jpg"
+          },
+          "sku_id": "0596060000",
+          "catalog": "food",
+          "app_price": "1,85 €",
+          "product_id": "prod970724",
+          "measure_unit": "l",
+          "restrictions": [
+            {
+              "id": "65",
+              "quantity": 80000,
+              "display_name": "MAXIMO EN AGUAS 8 L.-ESPECIAL",
+              "restriction_type": "product-quantity"
+            }
+          ],
+          "document_type": "food",
+          "price_per_unit": "0,23 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 84,
+          "app_price_per_unit": "0,23 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Ceuta",
+          "Comunitat Valenciana",
+          "Extremadura"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 1.85,
+        "category_id": "cat650002",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat650002"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua mineral Carrefour Classic 8 l.",
+        "price_format": "1,85 €",
+        "category_name": "Aguas y Zumos",
+        "price_per_unit": 0.23,
+        "source_row_md5": "eb49eb81eabb7a78cd1b1bfc53015fdf",
+        "regional_prices": null,
+        "detail_synced_at": null,
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod970725",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-mineral-carrefour-classic-15-l/R-prod970725/p",
+          "name": "Agua mineral Carrefour Classic 1,5 l.",
+          "brand": "CARREFOUR",
+          "price": "0,39 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/059607_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/059607_00_1.jpg"
+          },
+          "sku_id": "0596070000",
+          "catalog": "food",
+          "app_price": "0,39 €",
+          "product_id": "prod970725",
+          "measure_unit": "l",
+          "restrictions": [
+            {
+              "id": "58",
+              "quantity": 45000,
+              "display_name": "MAXIMO EN AGUAS 1,5 L.-ESPECIAL",
+              "restriction_type": "product-quantity"
+            }
+          ],
+          "document_type": "food",
+          "price_per_unit": "0,26 €",
+          "sell_pack_unit": 6,
+          "app_price_per_unit": "0,26 €"
+        },
+        "origin": null,
+        "regions": [
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Illes Balears",
+          "Melilla",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 0.39,
+        "category_id": "cat650002",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat650002"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua mineral Carrefour Classic 1,5 l.",
+        "price_format": "0,39 €",
+        "category_name": "Aguas y Zumos",
+        "price_per_unit": 0.26,
+        "source_row_md5": "37321f5f58f2caa1f253cdb30891a8e4",
+        "regional_prices": null,
+        "detail_synced_at": "2026-08-17T07:22:24.838+00:00",
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod970726",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/agua-mineral-carrefour-natural-2-l/R-prod970726/p",
+          "name": "Agua mineral Carrefour natural 2 l.",
+          "brand": "CARREFOUR",
+          "price": "0,51 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/059600_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/059600_00_1.jpg"
+          },
+          "sku_id": "0596000000",
+          "catalog": "food",
+          "app_price": "0,51 €",
+          "product_id": "prod970726",
+          "measure_unit": "l",
+          "restrictions": [
+            {
+              "id": "59",
+              "quantity": 60000,
+              "display_name": "MAXIMO EN AGUAS 2 L.-ESPECIAL",
+              "restriction_type": "product-quantity"
+            }
+          ],
+          "document_type": "food",
+          "price_per_unit": "0,25 €",
+          "sell_pack_unit": 6,
+          "app_price_per_unit": "0,25 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Catalunya",
+          "Ceuta",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Illes Balears",
+          "Melilla",
+          "Región de Murcia"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 0.51,
+        "category_id": "cat650002",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat650002"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Agua mineral Carrefour natural 2 l.",
+        "price_format": "0,51 €",
+        "category_name": "Aguas y Zumos",
+        "price_per_unit": 0.25,
+        "source_row_md5": "a91fe7c898080b295cdf1d624d20f5ee",
+        "regional_prices": {
+          "Ceuta": {
+            "p": 0.57,
+            "av": true,
+            "pf": "0,57 €",
+            "ppu": 0.28,
+            "ppuu": "l"
+          }
+        },
+        "detail_synced_at": "2026-08-31T06:29:04.947+00:00",
+        "price_per_unit_unit": "l",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod970930",
+        "ean": "3023290114360",
+        "raw": {
+          "url": "/supermercado/mousse-de-chocolate-blanco-nestle-milkybar-pack-de-4-unidades-de-55-g/R-prod970930/p",
+          "name": "Mousse de chocolate blanco Nestlé Milkybar pack de 4 unidades de 55 g.",
+          "brand": "MILKYBAR",
+          "price": "2,69 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/061933_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/061933_00_1.jpg"
+          },
+          "sku_id": "0619330000",
+          "catalog": "food",
+          "app_price": "2,69 €",
+          "product_id": "prod970930",
+          "measure_unit": "kg",
+          "document_type": "food",
+          "price_per_unit": "12,23 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 5,
+          "app_price_per_unit": "12,23 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Aragón",
+          "Canarias",
+          "Cantabria",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "Catalunya",
+          "Ceuta",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Illes Balears",
+          "La Rioja",
+          "Melilla"
+        ],
+        "allergens": "Contiene: Leche",
+        "available": true,
+        "nutrition": "Valores medios por 100 g:\nValor energético 647 KJ / 154 Kcal\nGrasas 3.5 g (Saturadas 4.1 g)\nHidratos de carbono 19.6 g (Azúcares 18.3 g)\nProteínas 4.7 g\nSal 0.2 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 2.69,
+        "category_id": "cat390008",
+        "ingredients": "Leche desnatada, chocolate blanco 10% [azúcar, leche en polvo, manteca de cacao, aroma natural, emulgente (lecitina de girasol)], nata, azúcar, leche desnatada en polvo, almidón, gelatina, emulgente (ésteres lácticos de monoglicéridos y diglicéridos de ácidos grasos), espesante (alginato sódico), aromas, corrector de acidez (hidróxido potásico).",
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat390008"
+        ],
+        "conservation": "Conservar en frio de 1-8°C",
+        "denomination": "Mousse de chocolate blanco",
+        "display_name": "Mousse de chocolate blanco Nestlé Milkybar pack de 4 unidades de 55 g.",
+        "price_format": "2,69 €",
+        "category_name": "Yogures y Postres",
+        "price_per_unit": 12.23,
+        "source_row_md5": "5f9b1fa098a4d799938892e572e8ccd4",
+        "regional_prices": {
+          "Ceuta": {
+            "p": 2.75,
+            "av": true,
+            "pf": "2,75 €",
+            "ppu": 12.5,
+            "ppuu": "kg"
+          },
+          "Aragón": {
+            "p": 2.75,
+            "av": true,
+            "pf": "2,75 €",
+            "ppu": 12.5,
+            "ppuu": "kg"
+          },
+          "Euskadi": {
+            "p": 2.75,
+            "av": true,
+            "pf": "2,75 €",
+            "ppu": 12.5,
+            "ppuu": "kg"
+          },
+          "Canarias": {
+            "p": 2.79,
+            "av": true,
+            "pf": "2,79 €",
+            "ppu": 12.68,
+            "ppuu": "kg"
+          },
+          "La Rioja": {
+            "p": 2.75,
+            "av": true,
+            "pf": "2,75 €",
+            "ppu": 12.5,
+            "ppuu": "kg"
+          },
+          "Cantabria": {
+            "p": 2.75,
+            "av": true,
+            "pf": "2,75 €",
+            "ppu": 12.5,
+            "ppuu": "kg"
+          },
+          "Catalunya": {
+            "p": 2.65,
+            "av": true,
+            "pf": "2,65 €",
+            "ppu": 12.05,
+            "ppuu": "kg"
+          },
+          "Andalucía": {
+            "p": 2.75,
+            "av": true,
+            "pf": "2,75 €",
+            "ppu": 12.5,
+            "ppuu": "kg"
+          },
+          "Extremadura": {
+            "p": 2.75,
+            "av": true,
+            "pf": "2,75 €",
+            "ppu": 12.5,
+            "ppuu": "kg"
+          },
+          "Illes Balears": {
+            "p": 2.75,
+            "av": true,
+            "pf": "2,75 €",
+            "ppu": 12.5,
+            "ppuu": "kg"
+          },
+          "Castilla y León": {
+            "p": 2.75,
+            "av": true,
+            "pf": "2,75 €",
+            "ppu": 12.5,
+            "ppuu": "kg"
+          },
+          "Comunitat Valenciana": {
+            "p": 2.75,
+            "av": true,
+            "pf": "2,75 €",
+            "ppu": 12.5,
+            "ppuu": "kg"
+          }
+        },
+        "detail_synced_at": "2026-08-10T10:46:58.189+00:00",
+        "price_per_unit_unit": "kg",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod970931",
+        "ean": "8435257051635",
+        "raw": {
+          "url": "/supermercado/crema-de-chocolate-blanco-nestle-milkybar-sin-gluten-pack-de-2-unidades-de-70-g/R-prod970931/p",
+          "name": "Crema de chocolate blanco Nestlé Milkybar sin gluten pack de 2 unidades de 70 g.",
+          "brand": "MILKYBAR",
+          "price": "1,80 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/061920_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/061920_00_1.jpg"
+          },
+          "sku_id": "0619200000",
+          "catalog": "food",
+          "app_price": "1,80 €",
+          "info_tags": [
+            {
+              "icon": "https://static.carrefour.es/crs/cdn_static/CatNavImages/Icons/no-gluten.png",
+              "message": "Sin gluten",
+              "color_code": "#f9e9de"
+            }
+          ],
+          "product_id": "prod970931",
+          "measure_unit": "kg",
+          "document_type": "food",
+          "price_per_unit": "12,86 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 9,
+          "app_price_per_unit": "12,86 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Aragón",
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "Catalunya",
+          "Ceuta",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Galicia",
+          "Illes Balears",
+          "La Rioja",
+          "Melilla",
+          "Región de Murcia"
+        ],
+        "allergens": "Contiene: Leche",
+        "available": true,
+        "nutrition": "Valores medios por 100 g:\nValor energético 630 KJ / 150 Kcal\nGrasas 7.9 g (Saturadas 5.1 g)\nHidratos de carbono 18.4 g (Azúcares 16.5 g)\nProteínas 4.4 g\nSal 0.12 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 1.8,
+        "category_id": "cat390008",
+        "ingredients": "LECHE desnatada (65%), chocolate blanco (15,8%) [azúcar, LECHE en polvo, manteca de cacao, aroma natural, emulgente (lecitinas)], NATA, LECHE desnatada en polvo, azúcar, almidón modificado, gelatina, estabilizantes (celulosa, carragenanos), aromas, emulgente (mono y diglicéridos de ácidos grasos). Sin gluten.",
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat390008"
+        ],
+        "conservation": "Conservar en frío (de 1 a 8°C). Una vez abierto, consumir en 3 días.",
+        "denomination": "Postre lácteo con chocolate blanco",
+        "display_name": "Crema de chocolate blanco Nestlé Milkybar sin gluten pack de 2 unidades de 70 g.",
+        "price_format": "1,80 €",
+        "category_name": "Yogures y Postres",
+        "price_per_unit": 12.86,
+        "source_row_md5": "98d49221fd83b5d59951f16f736c01c1",
+        "regional_prices": {
+          "Ceuta": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Aragón": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Euskadi": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Galicia": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Asturias": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Canarias": {
+            "p": 1.93,
+            "av": true,
+            "pf": "1,93 €",
+            "ppu": 13.79,
+            "ppuu": "kg"
+          },
+          "La Rioja": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Cantabria": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Catalunya": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Andalucía": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Extremadura": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Illes Balears": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Castilla y León": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Región de Murcia": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Comunitat Valenciana": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          }
+        },
+        "detail_synced_at": "2026-08-31T06:29:04.947+00:00",
+        "price_per_unit_unit": "kg",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod970932",
+        "ean": "8435257051666",
+        "raw": {
+          "url": "/supermercado/crema-de-chocolate-y-caramelo-extrafino-nestle-pack-de-2-unidades-de-70-g/R-prod970932/p",
+          "name": "Crema de chocolate y caramelo Extrafino Nestlé pack de 2 unidades de 70 g.",
+          "brand": "NESTLE",
+          "price": "1,80 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/061923_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/061923_00_1.jpg"
+          },
+          "sku_id": "0619230000",
+          "catalog": "food",
+          "app_price": "1,80 €",
+          "product_id": "prod970932",
+          "measure_unit": "kg",
+          "document_type": "food",
+          "price_per_unit": "12,86 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 20,
+          "app_price_per_unit": "12,86 €"
+        },
+        "origin": null,
+        "regions": [
+          "Andalucía",
+          "Aragón",
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "Catalunya",
+          "Ceuta",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Galicia",
+          "Illes Balears",
+          "La Rioja",
+          "Melilla",
+          "Región de Murcia"
+        ],
+        "allergens": "Contiene: Leche\nPuede contener: Soja",
+        "available": true,
+        "nutrition": "Valores medios por 100 g:\nValor energético 875 KJ / 209 Kcal\nGrasas 9.7 g (Saturadas 6.3 g)\nHidratos de carbono 26.8 g (Azúcares 23.2 g)\nProteínas 3.4 g\nSal 0.34 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 1.8,
+        "category_id": "cat390008",
+        "ingredients": "Leche desnatada (46%), nata, azúcar, chocolate con leche (12%) [azúcar, leche en polvo, manteca de cacao, cacao, suero lácteo en polvo, emulgente (lecitina de girasol), aroma], caramelo líquido (7,9%) [jarabe de glucosa, leche condensada (leche, azúcar), grasa de coco, emulgente (lecitina de girasol), aroma, sal], almidón modificado de maíz, leche desnatada en polvo, gelatina bovina, cacao en polvo, caramelo (jarabe de glucosa, agua, azúcar), cacao desgrasado en polvo, sal, estabilizantes (carragenanos, goma xantana), emulgente (monoglicéridos y diglicéridos de ácidos grasos), dextrosa. Puede contener soja.",
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat390008"
+        ],
+        "conservation": "Conservar en frio de 1-8°C",
+        "denomination": "Postre lácteo de chocolate con leche y caramelo",
+        "display_name": "Crema de chocolate y caramelo Extrafino Nestlé pack de 2 unidades de 70 g.",
+        "price_format": "1,80 €",
+        "category_name": "Yogures y Postres",
+        "price_per_unit": 12.86,
+        "source_row_md5": "7db6497e28db604eb248df41f7594218",
+        "regional_prices": {
+          "Ceuta": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Aragón": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Euskadi": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Galicia": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Asturias": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Canarias": {
+            "p": 1.93,
+            "av": true,
+            "pf": "1,93 €",
+            "ppu": 13.79,
+            "ppuu": "kg"
+          },
+          "La Rioja": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Cantabria": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Catalunya": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Andalucía": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Extremadura": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Illes Balears": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Castilla y León": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Región de Murcia": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          },
+          "Comunitat Valenciana": {
+            "p": 1.84,
+            "av": true,
+            "pf": "1,84 €",
+            "ppu": 13.14,
+            "ppuu": "kg"
+          }
+        },
+        "detail_synced_at": "2026-08-24T06:16:09.743+00:00",
+        "price_per_unit_unit": "kg",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod970970",
+        "ean": null,
+        "raw": {
+          "url": "/supermercado/yogur-desnatado-natural-central-lechera-astriana-pack-de-4-unidades-de-125-g/R-prod970970/p",
+          "name": "Yogur desnatado natural Central Lechera Astriana pack de 4 unidades de 125 g.",
+          "brand": "CENTRAL LECHERA ASTURIANA",
+          "price": "1,09 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/061834_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/061834_00_1.jpg"
+          },
+          "sku_id": "0618340000",
+          "catalog": "food",
+          "app_price": "1,09 €",
+          "product_id": "prod970970",
+          "measure_unit": "kg",
+          "document_type": "food",
+          "price_per_unit": "2,18 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 1,
+          "app_price_per_unit": "2,18 €"
+        },
+        "origin": null,
+        "regions": [
+          "Asturias",
+          "Cantabria",
+          "La Rioja"
+        ],
+        "allergens": null,
+        "available": true,
+        "nutrition": null,
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 1.09,
+        "category_id": "cat390008",
+        "ingredients": null,
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat390008"
+        ],
+        "conservation": null,
+        "denomination": null,
+        "display_name": "Yogur desnatado natural Central Lechera Astriana pack de 4 unidades de 125 g.",
+        "price_format": "1,09 €",
+        "category_name": "Yogures y Postres",
+        "price_per_unit": 2.18,
+        "source_row_md5": "200fc16d769ddbf16701a546e38e1df6",
+        "regional_prices": null,
+        "detail_synced_at": null,
+        "price_per_unit_unit": "kg",
+        "strikethrough_price": null
+      },
+      {
+        "id": "prod971291",
+        "ean": "8432425049777",
+        "raw": {
+          "url": "/supermercado/leche-fermentada-natural-kaiku-sin-lactosa-pack-de-4-unidades-de-125-g/R-prod971291/p",
+          "name": "Leche fermentada natural Kaiku sin lactosa pack de 4 unidades de 125 g.",
+          "brand": "KAIKU",
+          "price": "2,26 €",
+          "images": {
+            "mobile": "https://static.carrefour.es/hd_350x_/img_pim_food/063178_00_1.jpg",
+            "desktop": "https://static.carrefour.es/hd_350x_/img_pim_food/063178_00_1.jpg"
+          },
+          "sku_id": "0631780000",
+          "catalog": "food",
+          "app_price": "2,26 €",
+          "info_tags": [
+            {
+              "icon": "https://static.carrefour.es/crs/cdn_static/CatNavImages/Icons/no-lactose.png",
+              "message": "Sin lactosa",
+              "color_code": "#efdef9"
+            }
+          ],
+          "product_id": "prod971291",
+          "measure_unit": "kg",
+          "document_type": "food",
+          "price_per_unit": "4,52 €",
+          "sell_pack_unit": 1,
+          "units_in_stock": 27,
+          "app_price_per_unit": "4,52 €"
+        },
+        "origin": null,
+        "regions": [
+          "Aragón",
+          "Asturias",
+          "Canarias",
+          "Cantabria",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "Catalunya",
+          "Comunidad de Madrid",
+          "Comunitat Valenciana",
+          "Euskadi",
+          "Extremadura",
+          "Illes Balears",
+          "La Rioja",
+          "Melilla"
+        ],
+        "allergens": "Contiene: Leche",
+        "available": true,
+        "nutrition": "Valores medios por 100 g:\nValor energético 254 KJ / 61 Kcal\nGrasas 3.5 g (Saturadas 2.3 g)\nHidratos de carbono 4.0 g (Azúcares 4.0 g)\nProteínas 3.3 g\nSal 0.11 g",
+        "promo_end": null,
+        "published": true,
+        "synced_at": "2026-08-31T06:29:04.947+00:00",
+        "promo_name": null,
+        "promo_text": null,
+        "unit_price": 2.26,
+        "category_id": "cat390008",
+        "ingredients": "Leche desnatada, nata, leche desnatada en polvo, minerales de la leche, enzima lactasa y fermentos lácticos. Sin lactosa. Origen de la leche: España",
+        "preparation": null,
+        "promo_start": null,
+        "category_ids": [
+          "cat390008"
+        ],
+        "conservation": "Consérvese en frío (entre 1°C y 8°C)",
+        "denomination": "Leche fermentada sin lactosa",
+        "display_name": "Leche fermentada natural Kaiku sin lactosa pack de 4 unidades de 125 g.",
+        "price_format": "2,26 €",
+        "category_name": "Yogures y Postres",
+        "price_per_unit": 4.52,
+        "source_row_md5": "1feee97b030368a8c491a5704e33b2a3",
+        "regional_prices": {
+          "Aragón": {
+            "p": 2.32,
+            "av": true,
+            "pf": "2,32 €",
+            "ppu": 4.64,
+            "ppuu": "kg"
+          },
+          "Euskadi": {
+            "p": 2.32,
+            "av": true,
+            "pf": "2,32 €",
+            "ppu": 4.64,
+            "ppuu": "kg"
+          },
+          "Asturias": {
+            "p": 2.32,
+            "av": true,
+            "pf": "2,32 €",
+            "ppu": 4.64,
+            "ppuu": "kg"
+          },
+          "Canarias": {
+            "p": 2.59,
+            "av": true,
+            "pf": "2,59 €",
+            "ppu": 5.18,
+            "ppuu": "kg"
+          },
+          "La Rioja": {
+            "p": 2.32,
+            "av": true,
+            "pf": "2,32 €",
+            "ppu": 4.64,
+            "ppuu": "kg"
+          },
+          "Cantabria": {
+            "p": 2.32,
+            "av": true,
+            "pf": "2,32 €",
+            "ppu": 4.64,
+            "ppuu": "kg"
+          },
+          "Catalunya": {
+            "p": 2.32,
+            "av": true,
+            "pf": "2,32 €",
+            "ppu": 4.64,
+            "ppuu": "kg"
+          },
+          "Extremadura": {
+            "p": 2.32,
+            "av": true,
+            "pf": "2,32 €",
+            "ppu": 4.64,
+            "ppuu": "kg"
+          },
+          "Illes Balears": {
+            "p": 2.32,
+            "av": true,
+            "pf": "2,32 €",
+            "ppu": 4.64,
+            "ppuu": "kg"
+          },
+          "Castilla y León": {
+            "p": 2.32,
+            "av": true,
+            "pf": "2,32 €",
+            "ppu": 4.64,
+            "ppuu": "kg"
+          }
+        },
+        "detail_synced_at": "2026-08-24T06:16:09.743+00:00",
+        "price_per_unit_unit": "kg",
+        "strikethrough_price": null
+      }
+    ],
+    "store": "carrefour",
+    "cursor": "prod840786",
+    "job_key": "ce1-ce200-286ab167dd405086dfe8d91c594c",
+    "row_count": 45,
+    "elapsed_ms": 55.806,
+    "captured_at": "2026-09-03T10:27:42.0776+00:00",
+    "project_ref": "gkffvigcnsesbaihycay",
+    "operation_hash": "286ab167dd405086dfe8d91c594cda1cf7e4a4813c9e3dfac53c0ba0f95a2e58"
+  },
+  "transport_bytes": 128856
+}

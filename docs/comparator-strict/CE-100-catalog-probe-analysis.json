@@ -1,0 +1,533 @@
+{
+  "date": "2026-09-03",
+  "status": "diagnostic_complete_baseline_incomplete",
+  "catalog": {
+    "attempted": 61,
+    "successful": 61,
+    "failed": 0,
+    "observed_error_rate": 0,
+    "error_rate_wilson_upper_95": 0.05924591620194442,
+    "p95_success_ms": 3490.192667,
+    "acquisition_span_ms": 1052085,
+    "windows": [
+      {
+        "index": 0,
+        "attempted": 18,
+        "successful": 18,
+        "failures": 0,
+        "p95_success_ms": 2769.190583,
+        "adequate_success_sample": false
+      },
+      {
+        "index": 1,
+        "attempted": 14,
+        "successful": 14,
+        "failures": 0,
+        "p95_success_ms": 4327.493708,
+        "adequate_success_sample": false
+      },
+      {
+        "index": 2,
+        "attempted": 18,
+        "successful": 18,
+        "failures": 0,
+        "p95_success_ms": 4483.912209,
+        "adequate_success_sample": false
+      }
+    ],
+    "read_window_complete": false,
+    "synthetic_only": true,
+    "mobile_rendering_measured": false,
+    "real_user_error_rate_measured": false,
+    "infrastructure_and_lock_correlation_required": true,
+    "CE100_closed": false,
+    "writes_authorized": false
+  },
+  "capacity": {
+    "sample_count": 17,
+    "from": "2026-09-03T07:19:56.467Z",
+    "to": "2026-09-03T07:37:43.725Z",
+    "acquisition_duration_seconds": 1067.258,
+    "observation_window_at_least_15_minutes": true,
+    "unchanged_cpu_counter_samples": 5,
+    "acquisition_time_is_not_exporter_generation_time": true,
+    "cpu_busy_weighted_percent": 4.103179880689441,
+    "max_cpu_interval_percent": 9.13754773982236,
+    "min_available_memory_percent": 27.60700153785012,
+    "max_connections": 16,
+    "max_connection_percent": 26.666666666666668,
+    "swap_in_pages_delta": 24033,
+    "swap_out_pages_delta": 25526,
+    "postgres_all_samples_up": true,
+    "deadlocks_delta": 0,
+    "gauges": [
+      {
+        "observed_at": "2026-09-03T07:19:56.467Z",
+        "available_memory_percent": 41.236414217337966,
+        "swap_used_bytes": 509702144,
+        "connection_count": 14,
+        "connection_limit": 60,
+        "connection_percent": 23.333333333333332,
+        "pg_up": 1,
+        "scrape_error": 0,
+        "deadlocks": 0
+      },
+      {
+        "observed_at": "2026-09-03T07:20:52.489Z",
+        "available_memory_percent": 41.236414217337966,
+        "swap_used_bytes": 509702144,
+        "connection_count": 14,
+        "connection_limit": 60,
+        "connection_percent": 23.333333333333332,
+        "pg_up": 1,
+        "scrape_error": 0,
+        "deadlocks": 0
+      },
+      {
+        "observed_at": "2026-09-03T07:21:53.379Z",
+        "available_memory_percent": 29.584175695056416,
+        "swap_used_bytes": 454963200,
+        "connection_count": 16,
+        "connection_limit": 60,
+        "connection_percent": 26.666666666666668,
+        "pg_up": 1,
+        "scrape_error": 0,
+        "deadlocks": 0
+      },
+      {
+        "observed_at": "2026-09-03T07:22:53.668Z",
+        "available_memory_percent": 27.60700153785012,
+        "swap_used_bytes": 482803712,
+        "connection_count": 16,
+        "connection_limit": 60,
+        "connection_percent": 26.666666666666668,
+        "pg_up": 1,
+        "scrape_error": 0,
+        "deadlocks": 0
+      },
+      {
+        "observed_at": "2026-09-03T07:24:20.874Z",
+        "available_memory_percent": 43.879270125965476,
+        "swap_used_bytes": 532193280,
+        "connection_count": 15,
+        "connection_limit": 60,
+        "connection_percent": 25,
+        "pg_up": 1,
+        "scrape_error": 0,
+        "deadlocks": 0
+      },
+      {
+        "observed_at": "2026-09-03T07:25:38.221Z",
+        "available_memory_percent": 40.43768251170667,
+        "swap_used_bytes": 517361664,
+        "connection_count": 15,
+        "connection_limit": 60,
+        "connection_percent": 25,
+        "pg_up": 1,
+        "scrape_error": 0,
+        "deadlocks": 0
+      },
+      {
+        "observed_at": "2026-09-03T07:26:50.770Z",
+        "available_memory_percent": 34.04221312183574,
+        "swap_used_bytes": 484655104,
+        "connection_count": 15,
+        "connection_limit": 60,
+        "connection_percent": 25,
+        "pg_up": 1,
+        "scrape_error": 0,
+        "deadlocks": 0
+      },
+      {
+        "observed_at": "2026-09-03T07:28:07.759Z",
+        "available_memory_percent": 36.81077531836954,
+        "swap_used_bytes": 484155392,
+        "connection_count": 15,
+        "connection_limit": 60,
+        "connection_percent": 25,
+        "pg_up": 1,
+        "scrape_error": 0,
+        "deadlocks": 0
+      },
+      {
+        "observed_at": "2026-09-03T07:29:33.255Z",
+        "available_memory_percent": 33.63183176956439,
+        "swap_used_bytes": 479416320,
+        "connection_count": 16,
+        "connection_limit": 60,
+        "connection_percent": 26.666666666666668,
+        "pg_up": 1,
+        "scrape_error": 0,
+        "deadlocks": 0
+      },
+      {
+        "observed_at": "2026-09-03T07:31:07.619Z",
+        "available_memory_percent": 34.275050541703386,
+        "swap_used_bytes": 476000256,
+        "connection_count": 15,
+        "connection_limit": 60,
+        "connection_percent": 25,
+        "pg_up": 1,
+        "scrape_error": 0,
+        "deadlocks": 0
+      },
+      {
+        "observed_at": "2026-09-03T07:32:03.983Z",
+        "available_memory_percent": 34.275050541703386,
+        "swap_used_bytes": 476000256,
+        "connection_count": 15,
+        "connection_limit": 60,
+        "connection_percent": 25,
+        "pg_up": 1,
+        "scrape_error": 0,
+        "deadlocks": 0
+      },
+      {
+        "observed_at": "2026-09-03T07:33:29.337Z",
+        "available_memory_percent": 32.32120332452094,
+        "swap_used_bytes": 469327872,
+        "connection_count": 13,
+        "connection_limit": 60,
+        "connection_percent": 21.666666666666668,
+        "pg_up": 1,
+        "scrape_error": 0,
+        "deadlocks": 0
+      },
+      {
+        "observed_at": "2026-09-03T07:34:24.917Z",
+        "available_memory_percent": 32.32120332452094,
+        "swap_used_bytes": 469327872,
+        "connection_count": 13,
+        "connection_limit": 60,
+        "connection_percent": 21.666666666666668,
+        "pg_up": 1,
+        "scrape_error": 0,
+        "deadlocks": 0
+      },
+      {
+        "observed_at": "2026-09-03T07:35:23.678Z",
+        "available_memory_percent": 44.441708568762635,
+        "swap_used_bytes": 533573632,
+        "connection_count": 13,
+        "connection_limit": 60,
+        "connection_percent": 21.666666666666668,
+        "pg_up": 1,
+        "scrape_error": 0,
+        "deadlocks": 0
+      },
+      {
+        "observed_at": "2026-09-03T07:36:23.276Z",
+        "available_memory_percent": 44.441708568762635,
+        "swap_used_bytes": 533573632,
+        "connection_count": 13,
+        "connection_limit": 60,
+        "connection_percent": 21.666666666666668,
+        "pg_up": 1,
+        "scrape_error": 0,
+        "deadlocks": 0
+      },
+      {
+        "observed_at": "2026-09-03T07:37:25.848Z",
+        "available_memory_percent": 41.972508769201525,
+        "swap_used_bytes": 525381632,
+        "connection_count": 16,
+        "connection_limit": 60,
+        "connection_percent": 26.666666666666668,
+        "pg_up": 1,
+        "scrape_error": 0,
+        "deadlocks": 0
+      },
+      {
+        "observed_at": "2026-09-03T07:37:43.725Z",
+        "available_memory_percent": 41.972508769201525,
+        "swap_used_bytes": 525381632,
+        "connection_count": 16,
+        "connection_limit": 60,
+        "connection_percent": 26.666666666666668,
+        "pg_up": 1,
+        "scrape_error": 0,
+        "deadlocks": 0
+      }
+    ],
+    "intervals": [
+      {
+        "from": "2026-09-03T07:19:56.467Z",
+        "to": "2026-09-03T07:21:53.379Z",
+        "seconds": 116.912,
+        "cpu_counter_seconds": 232.76999999996042,
+        "cpu_busy_percent": 4.609700562755082,
+        "cpu_iowait_percent": 2.1566353052374834,
+        "swap_in_pages": 10014,
+        "swap_out_pages": 900,
+        "disks": {
+          "nvme0n1": {
+            "iops": 79.29040645955932,
+            "bytes_per_second": 499142.19241822907,
+            "busy_percent": 2.5634665389355225
+          },
+          "nvme1n1": {
+            "iops": 36.01854386205009,
+            "bytes_per_second": 452580.8129191186,
+            "busy_percent": 1.3257834952786556
+          }
+        }
+      },
+      {
+        "from": "2026-09-03T07:21:53.379Z",
+        "to": "2026-09-03T07:22:53.668Z",
+        "seconds": 60.289,
+        "cpu_counter_seconds": 120.1500000001397,
+        "cpu_busy_percent": 5.043695380911572,
+        "cpu_iowait_percent": 1.4981273408223796,
+        "swap_in_pages": 331,
+        "swap_out_pages": 1057,
+        "disks": {
+          "nvme0n1": {
+            "iops": 58.219575710328584,
+            "bytes_per_second": 1390991.7895470152,
+            "busy_percent": 2.5029441523329536
+          },
+          "nvme1n1": {
+            "iops": 7.414287846870905,
+            "bytes_per_second": 537876.4285358855,
+            "busy_percent": 0.5573155965429604
+          }
+        }
+      },
+      {
+        "from": "2026-09-03T07:22:53.668Z",
+        "to": "2026-09-03T07:24:20.874Z",
+        "seconds": 87.206,
+        "cpu_counter_seconds": 175.42999999999302,
+        "cpu_busy_percent": 9.13754773982236,
+        "cpu_iowait_percent": 2.2630108875337243,
+        "swap_in_pages": 688,
+        "swap_out_pages": 10265,
+        "disks": {
+          "nvme0n1": {
+            "iops": 139.6348875077403,
+            "bytes_per_second": 4384438.134990712,
+            "busy_percent": 4.644175859458898
+          },
+          "nvme1n1": {
+            "iops": 3.692406485792262,
+            "bytes_per_second": 65522.09710341031,
+            "busy_percent": 0.0779762860356065
+          }
+        }
+      },
+      {
+        "from": "2026-09-03T07:24:20.874Z",
+        "to": "2026-09-03T07:25:38.221Z",
+        "seconds": 77.347,
+        "cpu_counter_seconds": 152.9299999998766,
+        "cpu_busy_percent": 2.190544693561114,
+        "cpu_iowait_percent": 0.7323612110120935,
+        "swap_in_pages": 1280,
+        "swap_out_pages": 18,
+        "disks": {
+          "nvme0n1": {
+            "iops": 25.301563085833973,
+            "bytes_per_second": 627636.3918445448,
+            "busy_percent": 1.371740338992009
+          },
+          "nvme1n1": {
+            "iops": 5.727436099654803,
+            "bytes_per_second": 259802.91414017353,
+            "busy_percent": 0.11894449687783396
+          }
+        }
+      },
+      {
+        "from": "2026-09-03T07:25:38.221Z",
+        "to": "2026-09-03T07:26:50.770Z",
+        "seconds": 72.549,
+        "cpu_counter_seconds": 146.96999999997206,
+        "cpu_busy_percent": 6.069265836555349,
+        "cpu_iowait_percent": 2.4903041437031708,
+        "swap_in_pages": 6499,
+        "swap_out_pages": 371,
+        "disks": {
+          "nvme0n1": {
+            "iops": 79.36704847758067,
+            "bytes_per_second": 528111.814084274,
+            "busy_percent": 4.04692001268129
+          },
+          "nvme1n1": {
+            "iops": 59.73893506457704,
+            "bytes_per_second": 731870.1567216639,
+            "busy_percent": 2.398379026588625
+          }
+        }
+      },
+      {
+        "from": "2026-09-03T07:26:50.770Z",
+        "to": "2026-09-03T07:28:07.759Z",
+        "seconds": 76.989,
+        "cpu_counter_seconds": 151.63000000006286,
+        "cpu_busy_percent": 1.4245202136989432,
+        "cpu_iowait_percent": 0.08573501286028837,
+        "swap_in_pages": 109,
+        "swap_out_pages": 0,
+        "disks": {
+          "nvme0n1": {
+            "iops": 3.7927496135811607,
+            "bytes_per_second": 49212.225123069526,
+            "busy_percent": 0.12988868539649695
+          },
+          "nvme1n1": {
+            "iops": 3.18227279221707,
+            "bytes_per_second": 30963.80002337996,
+            "busy_percent": 0.04805881359649714
+          }
+        }
+      },
+      {
+        "from": "2026-09-03T07:28:07.759Z",
+        "to": "2026-09-03T07:29:33.255Z",
+        "seconds": 85.496,
+        "cpu_counter_seconds": 175.42999999999302,
+        "cpu_busy_percent": 2.5993273670729455,
+        "cpu_iowait_percent": 0.27361340705670784,
+        "swap_in_pages": 910,
+        "swap_out_pages": 117,
+        "disks": {
+          "nvme0n1": {
+            "iops": 11.240291943482736,
+            "bytes_per_second": 112729.11013380744,
+            "busy_percent": 0.5251707682231557
+          },
+          "nvme1n1": {
+            "iops": 6.316084963039207,
+            "bytes_per_second": 241699.26078413025,
+            "busy_percent": 0.153223542622243
+          }
+        }
+      },
+      {
+        "from": "2026-09-03T07:29:33.255Z",
+        "to": "2026-09-03T07:31:07.619Z",
+        "seconds": 94.364,
+        "cpu_counter_seconds": 182.46999999997206,
+        "cpu_busy_percent": 2.323669644288451,
+        "cpu_iowait_percent": 0.36718364662693886,
+        "swap_in_pages": 627,
+        "swap_out_pages": 215,
+        "disks": {
+          "nvme0n1": {
+            "iops": 9.738883472510702,
+            "bytes_per_second": 108863.21054639481,
+            "busy_percent": 0.44720444237211804
+          },
+          "nvme1n1": {
+            "iops": 6.73985842058412,
+            "bytes_per_second": 265386.63049468014,
+            "busy_percent": 0.34759018269676417
+          }
+        }
+      },
+      {
+        "from": "2026-09-03T07:31:07.619Z",
+        "to": "2026-09-03T07:33:29.337Z",
+        "seconds": 141.718,
+        "cpu_counter_seconds": 281.6800000000512,
+        "cpu_busy_percent": 1.849616586224867,
+        "cpu_iowait_percent": 0.1562056234025949,
+        "swap_in_pages": 1304,
+        "swap_out_pages": 115,
+        "disks": {
+          "nvme0n1": {
+            "iops": 10.203361605441794,
+            "bytes_per_second": 89019.60230881046,
+            "busy_percent": 0.28083941348289104
+          },
+          "nvme1n1": {
+            "iops": 2.928350668228454,
+            "bytes_per_second": 142344.6562892505,
+            "busy_percent": 0.10513837338932756
+          }
+        }
+      },
+      {
+        "from": "2026-09-03T07:33:29.337Z",
+        "to": "2026-09-03T07:35:23.678Z",
+        "seconds": 114.341,
+        "cpu_counter_seconds": 227.62999999994645,
+        "cpu_busy_percent": 8.469885340208261,
+        "cpu_iowait_percent": 2.222905592409033,
+        "swap_in_pages": 536,
+        "swap_out_pages": 12468,
+        "disks": {
+          "nvme0n1": {
+            "iops": 119.70334350757821,
+            "bytes_per_second": 3723480.0465274923,
+            "busy_percent": 4.31953542473855
+          },
+          "nvme1n1": {
+            "iops": 3.096002308883078,
+            "bytes_per_second": 174635.52006716753,
+            "busy_percent": 0.10932211542666236
+          }
+        }
+      },
+      {
+        "from": "2026-09-03T07:35:23.678Z",
+        "to": "2026-09-03T07:37:25.848Z",
+        "seconds": 122.17,
+        "cpu_counter_seconds": 243.2400000001071,
+        "cpu_busy_percent": 2.1501397796807598,
+        "cpu_iowait_percent": 0.4810064134186637,
+        "swap_in_pages": 1735,
+        "swap_out_pages": 0,
+        "disks": {
+          "nvme0n1": {
+            "iops": 13.644921011705001,
+            "bytes_per_second": 107085.4055823852,
+            "busy_percent": 0.663010559057007
+          },
+          "nvme1n1": {
+            "iops": 9.478595399852663,
+            "bytes_per_second": 214539.608741917,
+            "busy_percent": 0.3593353523777121
+          }
+        }
+      }
+    ],
+    "commercial_latency_measured": false,
+    "commercial_error_rate_measured": false,
+    "complete_BU01_baseline": false,
+    "CE100_closed": false,
+    "writes_authorized": false
+  },
+  "additional": {
+    "median_ms": 368.16550000000007,
+    "maximum_ms": 4483.912209,
+    "minimum_ms": 164.46391700000004,
+    "above_1000_ms": 9,
+    "above_3000_ms": 4,
+    "response_hashes": [
+      "1692fbe08b069f672edd4ee888708be6419c5ff51ae01cfe36d9c529d1e15d4c"
+    ],
+    "min_start_gap_ms": 15002,
+    "max_start_gap_ms": 51955,
+    "gaps_above_16000_ms": 12,
+    "sql_roundtrip_max_ms": 31749,
+    "sql_roundtrip_min_ms": 3602,
+    "sql_captures": 18,
+    "sql_max_connections": 16,
+    "sql_blocked_max": 0,
+    "metrics_body_bytes": 9863967,
+    "catalog_body_bytes": 1474608,
+    "charged_sql_body_upper_bytes": 263814,
+    "accounted_total_bytes": 21960142,
+    "budget_bytes": 23068672,
+    "remaining_bytes": 1108530,
+    "used_rows": 3100,
+    "sql_budget_upper_ms": 180520,
+    "commercial_uses": 0,
+    "remote_mutations": 0,
+    "first_at": "2026-09-03T07:20:02.615Z",
+    "last_at": "2026-09-03T07:37:34.700Z",
+    "finished_at": "2026-09-03T07:37:43.969Z"
+  }
+}

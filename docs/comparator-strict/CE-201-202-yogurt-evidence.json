@@ -1,0 +1,257 @@
+{
+  "schema_version": 1,
+  "tasks": [
+    "CE-201",
+    "CE-202"
+  ],
+  "status": "in_progress_incremental_yogurt_first_annotation",
+  "authority": "adelante, continua",
+  "captured_at": "2026-09-03T13:11:18Z",
+  "annotation_date": "2026-09-03",
+  "authorship": "assistant_source_review_with_deterministic_pair_composition",
+  "not_claimed": [
+    "complete yogurt family",
+    "individual human pair-by-pair review",
+    "owner independent review",
+    "gold",
+    "full equivalence",
+    "production matcher quality"
+  ],
+  "git": {
+    "branch": "codex/phase5-observation",
+    "head": "03b8ba273e17709fd8fc69c20dddb68c147a7e2a",
+    "changes": "local uncommitted, no push; unrelated work preserved"
+  },
+  "report": {
+    "version": "ce202-yogurt-source-review-v1",
+    "date": "2026-09-03",
+    "status": "incremental_yogurt_first_annotation_not_family_complete",
+    "source_reviewed_products": 212,
+    "reviewed_by_store": {
+      "carrefour": 22,
+      "consum": 118,
+      "mercadona": 72
+    },
+    "source_review_depth": {
+      "family_attributes_and_format": 198,
+      "scope_gate_only": 14
+    },
+    "first_annotations_this_batch": 133,
+    "newly_first_annotated_corpus_pairs": 133,
+    "previous_first_annotated_corpus_pairs": 928,
+    "overlapping_previous_annotations": [],
+    "union_first_annotated_corpus_pairs": 1061,
+    "corpus_pairs_pending_first_annotation": 4939,
+    "pending_by_family": {
+      "drinking_water": 2483,
+      "yogurt": 2456
+    },
+    "yogurt_products_remaining_without_source_review": 764,
+    "decision_counts": {
+      "abstain": 39,
+      "excluded_scope": 2,
+      "rejected": 92
+    },
+    "dimension_counts": {
+      "scope": {
+        "compatible": 35,
+        "incompatible": 2,
+        "unknown": 96
+      },
+      "identity": {
+        "compatible": 60,
+        "unknown": 73
+      },
+      "variants": {
+        "conflicting": 4,
+        "incompatible": 43,
+        "unknown": 86
+      },
+      "format": {
+        "compatible": 20,
+        "incompatible": 77,
+        "unknown": 36
+      }
+    },
+    "source_dispute_products": [
+      "carrefour:522715570",
+      "carrefour:647801823",
+      "carrefour:819115325",
+      "carrefour:852100300"
+    ],
+    "source_dispute_pairs": 15,
+    "known_format_products": 164,
+    "corpus_pairs_unchanged": 6000,
+    "corpus_queries_unchanged": 1200,
+    "original_origin_count_unchanged": 600,
+    "independent_pair_by_pair_reviews_this_batch": 0,
+    "independent_reviews": 0,
+    "gold_pairs": 0,
+    "supported_full_positive_equivalences": 0,
+    "eligible_savings": 0,
+    "CE201_complete": false,
+    "CE202_complete": false,
+    "CE203_complete": false,
+    "G2_pass": false,
+    "remote_project_calls": 0,
+    "retailer_calls": 0,
+    "new_integrations": 0,
+    "commercial_ttl_hours": null,
+    "source_manifest_sha256": "15da91ad7ae616199da7a50b53dba2abca4e3c43c1420a4a413b23ad02b9abd7",
+    "specs_sha256": "2edf741a2ccd01207b37e5246bc7018a28e4caf7b35e9cf4fa7a9ad871d3a28c",
+    "hashes": {
+      "products": "7ba7e536fcf2ff274785072d444d184bdeb0fab33ed979e6f4202dc72c340a45",
+      "annotations": "cd12fdbf62a90474709c508fd78ce6f088dfa2da763ccf04aa40caa7783463a5",
+      "index": "337c783863223dab49116bfd244ecd205ba716de883c078ab17ff877918a0894"
+    },
+    "limitation": "Editorial source review and deterministic pair composition; not individual human review, gold, matcher evaluation or general-purpose extractor. Unknowns concern this projection. Only pairs with both reviewed observations are counted."
+  },
+  "validation": {
+    "command": "npm run quality",
+    "exit_code": 0,
+    "typescript": "PASS",
+    "eslint": "PASS",
+    "tests": 497,
+    "passed": 497,
+    "failed": 0,
+    "skipped": 0,
+    "new_tests": 35,
+    "focused_source_review_tests": 30,
+    "focused_evidence_tests": 5,
+    "git_diff_check": "PASS",
+    "full_stdout_saved": false,
+    "summary": "Successful runner exit and final TAP summary observed. Materialized product reviews, index, report, dossier and full annotation hashes exactly regenerate."
+  },
+  "comparison_against_frozen_drafts": {
+    "changed_decisions": 30,
+    "transitions": {
+      "abstain -> rejected": 28,
+      "abstain -> abstain": 38,
+      "rejected -> rejected": 64,
+      "rejected -> abstain": 1,
+      "abstain -> excluded_scope": 1,
+      "excluded_scope -> excluded_scope": 1
+    },
+    "not_engine_accuracy": true
+  },
+  "remote_actions": {
+    "project_queries": 0,
+    "sql_reads": 0,
+    "sql_writes": 0,
+    "retailer_queries": 0,
+    "model_api_calls": 0,
+    "new_integrations": 0,
+    "new_paid_resources": 0,
+    "deployed": false,
+    "production_health_rechecked": false
+  },
+  "previous_evidence_preserved": [
+    {
+      "path": "docs/comparator-strict/CE-201-202-corpus-evidence.json",
+      "sha256": "8827df528b9071e75aff0b295e0480e2d76bf0aa0c77f3a6b709ca366531ab76"
+    },
+    {
+      "path": "docs/comparator-strict/CE-201-202-potatoes-evidence.json",
+      "sha256": "75c8a111eb5e97d3388d8be7d1933df8f8028c95befede8947cec576c719d11b"
+    }
+  ],
+  "files": [
+    {
+      "path": "scripts/lib/comparator-strict-yogurt-review-specs.mjs",
+      "sha256": "eb9be0bfdac537e02c295f5a0f9d7ec1264773eead1bd079248604ce81e10cc9",
+      "bytes": 14033
+    },
+    {
+      "path": "scripts/lib/comparator-strict-yogurt-review.mjs",
+      "sha256": "c1dbe8ecf2c959da0ec0fa207af81a635d7cf6709a51e04a65c5dc414c0b1f46",
+      "bytes": 25233
+    },
+    {
+      "path": "scripts/lib/comparator-strict-yogurt-review.test.mjs",
+      "sha256": "dca48f285cc81ad33a0e572ea155740fd8553d2d5aa8524890cfc83616dfb058",
+      "bytes": 13756
+    },
+    {
+      "path": "scripts/prepare-comparator-strict-yogurt-review.mjs",
+      "sha256": "ae506b26f76e42c5620e6874c71765191a0d1d20ba29b363ad7ff4c2f2f1dee9",
+      "bytes": 4464
+    },
+    {
+      "path": "scripts/tests/comparator-strict-yogurt-review-evidence.test.mjs",
+      "sha256": "e481aed258cbae71ef94faea8a0117c1148594d58169dc472f0176f4b0e0371f",
+      "bytes": 2950
+    },
+    {
+      "path": "docs/comparator-strict/CE-201-202-yogurt-progress.md",
+      "sha256": "2452fe467e5fe102cfd016da8a087bda872aacdbe14f86b7dbba734fecb6b058",
+      "bytes": 9565
+    },
+    {
+      "path": "docs/comparator-strict/CE-202-yogurt-source-review-guide.md",
+      "sha256": "708c58ea181e13518e4d737ea08e33a94584985557fc255019eb118d82e84ddc",
+      "bytes": 6365
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-yogurt-v1/products.json",
+      "sha256": "02598c45404fac165bd4cda8dabaa20cca7a68a728192ee3471ab37d15770110",
+      "bytes": 3420692
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-yogurt-v1/index.json",
+      "sha256": "eb3960e18f69f0cfc6af60079f8fbcd602925eede1fd4eb6ebc0e6f0bd601479",
+      "bytes": 73991
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-yogurt-v1/report.json",
+      "sha256": "f6fe89bf91e943b4bb227d1f193de2ee8f5d50979143785cc27b5824f37574f5",
+      "bytes": 2640
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-yogurt-v1/manifest.json",
+      "sha256": "5e1690b9b7c6e238b6a4650794676bff25fa37b5fd7186c2ed3a50a4345010ae",
+      "bytes": 2477
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-yogurt-v1/review.md",
+      "sha256": "cf5870ac4525a9110b7bb660e9aa933ad9e31388991134d16fbd172b4d564527",
+      "bytes": 47644
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-yogurt-v1/README.md",
+      "sha256": "08f3ec929e2083ccc30688c56d32689366764871922b37885b76cb8d01db7261",
+      "bytes": 1320
+    }
+  ],
+  "protected_files": [
+    {
+      "path": "src/components/SimilarProductsSection.tsx",
+      "sha256": "d2e594cfd4ba184e839e13c0fd5e049917a16900dfea4fa2f884992234a1127e",
+      "unchanged": true
+    },
+    {
+      "path": "src/components/StoreProductModal.tsx",
+      "sha256": "f467d6a7604f797e7b944a543310f1c30bfe3bafc40e3f8fa5cf7d4e696a45c4",
+      "unchanged": true
+    },
+    {
+      "path": "src/api/catalog.ts",
+      "sha256": "bd35cdc8820661b52993a652ebc3a06b41963981df11183a9ba0880a4058bb05",
+      "unchanged": true
+    },
+    {
+      "path": "supabase/ops/README-comparator-embedding-pipeline.md",
+      "sha256": "424a293c99b0b843a9c7032da5b813b889da324a05ffddcf3349970e53379f40",
+      "unchanged": true
+    }
+  ],
+  "next": [
+    "Register remaining 545 Carrefour and 219 Plusfresc yogurt-source reviews in a new versioned layer; do not overwrite this layer.",
+    "First-annotate remaining 2456 yogurt pairs with both endpoints reviewed, then 2483 water pairs.",
+    "Supported full positives required before CE-201 closure; unknowns cannot be invented.",
+    "Owner CE-203 random 20% plus disputes remains pending and unsampled."
+  ],
+  "CE201_complete": false,
+  "CE202_complete": false,
+  "CE203_complete": false,
+  "G2_pass": false
+}

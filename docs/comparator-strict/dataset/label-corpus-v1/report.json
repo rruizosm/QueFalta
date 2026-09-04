@@ -1,0 +1,75 @@
+{
+  "version": "ce202-corpus-v1",
+  "status": "drafts_complete_semantic_annotation_in_progress",
+  "unique_pairs": 6000,
+  "products": 1893,
+  "postcode_assessments": 12000,
+  "unique_CE200_queries_unchanged": 1200,
+  "underlying_origins_unchanged": 600,
+  "product_dimensions": {
+    "scope": {
+      "incompatible": 81,
+      "unknown": 5919
+    },
+    "identity": {
+      "unknown": 6000
+    },
+    "variants": {
+      "conflicting": 12,
+      "incompatible": 13,
+      "unknown": 5975
+    },
+    "format": {
+      "compatible": 160,
+      "conflicting": 24,
+      "incompatible": 822,
+      "unknown": 4994
+    }
+  },
+  "decisions_per_unique_pair": {
+    "abstain": 5085,
+    "excluded_scope": 81,
+    "rejected": 834
+  },
+  "product_format_states": {
+    "conflicting": 2,
+    "known": 818,
+    "unknown": 1073
+  },
+  "products_with_unselected_formats": 18,
+  "positive_format_pairs_not_equivalents": 160,
+  "eligible_savings": 0,
+  "reviewed_gold_pairs": 0,
+  "independent_reviews": 0,
+  "first_semantic_reviews": 7,
+  "CE201_complete": false,
+  "CE202_complete": false,
+  "CE203_complete": false,
+  "G2_pass": false,
+  "unknown_is_not_negative": true,
+  "remote_project_calls": 0,
+  "commercial_ttl_hours": null,
+  "hashes": {
+    "products": "beb8e6d3e412d4d77072d84a7fdd3209dba17827cecd06fcd15ef1b0b96e9fe4",
+    "locations": "153e3a2122d56b82975d00ae0b705655671fc4f850862291a88d8262fa126ece",
+    "annotations": "73604d0489bcbd8b2501c9b09fef3b6d324f81d1b7a5b999dae005913fd4ae3a"
+  },
+  "source_manifest_sha256": "15da91ad7ae616199da7a50b53dba2abca4e3c43c1420a4a413b23ad02b9abd7",
+  "remaining": [
+    "First semantic annotation beyond finite literal drafting rules.",
+    "Real fully supported positive equivalence/commerce cases; format compatibility alone is not a positive.",
+    "CE203 owner review and disputes; partition/holdout and evaluation remain separate."
+  ],
+  "editorial_first_annotations": 20,
+  "drafts_pending_first_semantic_review": 5993,
+  "editorial_within_frozen_corpus": 7,
+  "editorial_supplemental_challenges": 13,
+  "editorial_decisions": {
+    "abstain": 10,
+    "rejected": 7,
+    "excluded_scope": 3
+  },
+  "editorial_supplements_do_not_inflate_CE200": true,
+  "editorial_sha256": "db3d4940e3343edeff115e3aa4f667717adf93ae0288a2265d3d6c563bfb9ae0",
+  "index_sha256": "7ab813b026a80080468fb5db840d02c90909d9b301cd829d369745df5e652c93"
+}

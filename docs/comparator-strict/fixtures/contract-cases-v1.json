@@ -1,0 +1,373 @@
+{
+  "schema_version": 1,
+  "synthetic": true,
+  "authority": "Accepted CE-003/005 contract and user examples; editorial fixtures, no engine predictions",
+  "not_a_holdout": true,
+  "review_status": "contract illustrations; owner review still required for real labeled dataset",
+  "preconditions": "Except stated conflict/unknown, other critical identity, location, availability, unconditional EUR price and valid final response dimensions are assumed independently verified. Titles alone do not establish them.",
+  "cases": [
+    {
+      "id": "water-unit-normalization",
+      "family": "water",
+      "source": "Agua mineral natural 1 L",
+      "candidate": "Agua mineral natural 1000 ml",
+      "expected": {
+        "equivalence": "equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Normalize units exactly, same variants evidenced"
+    },
+    {
+      "id": "water-size-mismatch",
+      "family": "water",
+      "source": "Agua mineral natural 1 L",
+      "candidate": "Agua mineral natural 1,5 L",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "different_nominal_quantity"
+      },
+      "reason": "No size tolerance"
+    },
+    {
+      "id": "water-gas-mismatch",
+      "family": "water",
+      "source": "Agua mineral natural sin gas 1 L",
+      "candidate": "Agua mineral natural con gas 1 L",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Carbonation is a critical variant"
+    },
+    {
+      "id": "water-flavour-mismatch",
+      "family": "water",
+      "source": "Agua mineral natural 1 L",
+      "candidate": "Agua sabor limón 1 L",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Flavour changes identity"
+    },
+    {
+      "id": "water-cologne-hard-negative",
+      "family": "water",
+      "source": "Agua mineral natural 1 L",
+      "candidate": "Agua de colonia 1 L",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Different product family despite shared word"
+    },
+    {
+      "id": "yogurt-word-order",
+      "family": "yogurt",
+      "source": "Yogur griego natural 6x125 g",
+      "candidate": "Griego yogur natural 6 x 125 g",
+      "expected": {
+        "equivalence": "equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Word order alone is not identity; critical facts match"
+    },
+    {
+      "id": "yogurt-natural-sweetened",
+      "family": "yogurt",
+      "source": "Yogur griego natural 6x125 g",
+      "candidate": "Yogur griego azucarado 6x125 g",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Do not merge natural and sweetened variants"
+    },
+    {
+      "id": "yogurt-pack-count",
+      "family": "yogurt",
+      "source": "Yogur griego natural 6x125 g",
+      "candidate": "Yogur griego natural 4x125 g",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "different_pack_count"
+      },
+      "reason": "Require same pack count"
+    },
+    {
+      "id": "yogurt-equal-total-different-pack",
+      "family": "yogurt",
+      "source": "Yogur griego natural 6x125 g",
+      "candidate": "Yogur griego natural 3x250 g",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "different_pack_composition"
+      },
+      "reason": "Same total 750 g is insufficient"
+    },
+    {
+      "id": "yogurt-pack-versus-single",
+      "family": "yogurt",
+      "source": "Yogur griego natural 6x125 g",
+      "candidate": "Yogur griego natural 750 g",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "different_pack_composition"
+      },
+      "reason": "Six pots are not one 750 g pot"
+    },
+    {
+      "id": "yogurt-missing-pack-details",
+      "family": "yogurt",
+      "source": "Yogur griego natural 6x125 g",
+      "candidate": "Yogur griego natural pack 750 g",
+      "expected": {
+        "equivalence": "unknown",
+        "format_relation": "unknown_pack_composition"
+      },
+      "reason": "Total alone does not prove count and portion size"
+    },
+    {
+      "id": "yogurt-natural-not-no-added-sugar",
+      "family": "yogurt",
+      "source": "Yogur griego natural 6x125 g",
+      "candidate": "Yogur griego natural sin azúcares añadidos 6x125 g",
+      "expected": {
+        "equivalence": "unknown",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Natural alone does not establish the source added-sugar dimension"
+    },
+    {
+      "id": "yogurt-negation",
+      "family": "yogurt",
+      "source": "Yogur griego con azúcar añadido 6x125 g",
+      "candidate": "Yogur griego sin azúcar añadido 6x125 g",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Preserve negations"
+    },
+    {
+      "id": "yogurt-sweetener",
+      "family": "yogurt",
+      "source": "Yogur griego natural sin edulcorantes 6x125 g",
+      "candidate": "Yogur griego natural con edulcorantes 6x125 g",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Sweetener is separate from sugar and flavour"
+    },
+    {
+      "id": "yogurt-flavour",
+      "family": "yogurt",
+      "source": "Yogur griego natural 6x125 g",
+      "candidate": "Yogur griego fresa 6x125 g",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Critical flavour mismatch"
+    },
+    {
+      "id": "potatoes-unit-normalization",
+      "family": "frozen_potatoes",
+      "source": "Patatas congeladas para freír 2 kg",
+      "candidate": "Patatas congeladas para freír 2000 g",
+      "expected": {
+        "equivalence": "equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Same preparation and nominal quantity"
+    },
+    {
+      "id": "potatoes-1kg-mismatch",
+      "family": "frozen_potatoes",
+      "source": "Patatas congeladas para freír 2 kg",
+      "candidate": "Patatas congeladas para freír 1 kg",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "different_nominal_quantity"
+      },
+      "reason": "No arithmetic substitute purchase"
+    },
+    {
+      "id": "potatoes-halfkg-mismatch",
+      "family": "frozen_potatoes",
+      "source": "Patatas congeladas para freír 2 kg",
+      "candidate": "Patatas congeladas para freír 0,5 kg",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "different_nominal_quantity"
+      },
+      "reason": "Lower bag price is not equivalent saving"
+    },
+    {
+      "id": "potatoes-fresh-mismatch",
+      "family": "frozen_potatoes",
+      "source": "Patatas congeladas 2 kg",
+      "candidate": "Patatas frescas 2 kg",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Preservation state differs"
+    },
+    {
+      "id": "potatoes-peeler-hard-negative",
+      "family": "frozen_potatoes",
+      "source": "Patatas congeladas 2 kg",
+      "candidate": "Pelador de patatas",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "not_applicable"
+      },
+      "reason": "Utensil is not food"
+    },
+    {
+      "id": "potatoes-crisps-mismatch",
+      "family": "frozen_potatoes",
+      "source": "Patatas congeladas 2 kg",
+      "candidate": "Patatas fritas aperitivo 2 kg",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "same_nominal_format"
+      },
+      "reason": "Preparation/use differ"
+    },
+    {
+      "id": "variable-meat-quarantine",
+      "family": "quarantine",
+      "source": "Pollo bandeja peso aproximado 1 kg",
+      "candidate": "Pollo bandeja peso aproximado 0,9 kg",
+      "expected": {
+        "equivalence": "quarantined",
+        "format_relation": "variable_weight"
+      },
+      "reason": "Meat and variable weight outside pilot"
+    },
+    {
+      "id": "sausage-quarantine",
+      "family": "quarantine",
+      "source": "Jamón al corte 200 g aproximadamente",
+      "candidate": "Jamón al corte 220 g aproximadamente",
+      "expected": {
+        "equivalence": "quarantined",
+        "format_relation": "variable_weight"
+      },
+      "reason": "Charcuterie outside pilot"
+    },
+    {
+      "id": "same-ean-conflicting-format",
+      "family": "water",
+      "source": "Agua 1 L, EAN fixture-code",
+      "candidate": "Agua 1,5 L, EAN fixture-code",
+      "expected": {
+        "equivalence": "not_equivalent",
+        "format_relation": "different_nominal_quantity"
+      },
+      "reason": "Same claimed identifier does not override format conflict"
+    }
+  ],
+  "price_and_freshness_scenarios": [
+    {
+      "id": "same-price-no-use",
+      "equivalence": "equivalent",
+      "source_price": "2.00",
+      "candidate_price": "2.00",
+      "published": true,
+      "expected": {
+        "show_saving": false,
+        "consume_use": false
+      }
+    },
+    {
+      "id": "valid-cheaper-use",
+      "equivalence": "equivalent",
+      "source_price": "2.00",
+      "candidate_price": "1.50",
+      "published": true,
+      "expected": {
+        "show_saving": true,
+        "consume_use": true
+      }
+    },
+    {
+      "id": "inactive-product-no-use",
+      "equivalence": "equivalent",
+      "source_price": "2.00",
+      "candidate_price": "1.50",
+      "published": false,
+      "expected": {
+        "show_saving": false,
+        "consume_use": false
+      }
+    },
+    {
+      "id": "zero-price-no-use",
+      "equivalence": "equivalent",
+      "source_price": "2.00",
+      "candidate_price": "0.00",
+      "published": true,
+      "expected": {
+        "show_saving": false,
+        "consume_use": false
+      }
+    },
+    {
+      "id": "negative-price-no-use",
+      "equivalence": "equivalent",
+      "source_price": "2.00",
+      "candidate_price": "-1.00",
+      "published": true,
+      "expected": {
+        "show_saving": false,
+        "consume_use": false
+      }
+    },
+    {
+      "id": "invalid-equivalent-no-use",
+      "equivalence": "not_equivalent",
+      "source_price": "2.00",
+      "candidate_price": "1.00",
+      "published": true,
+      "expected": {
+        "show_saving": false,
+        "consume_use": false
+      }
+    },
+    {
+      "id": "active-older-than-24h",
+      "equivalence": "equivalent",
+      "source_price": "2.00",
+      "candidate_price": "1.50",
+      "published": true,
+      "synced_at": "2026-09-01T00:00:00Z",
+      "evaluated_at": "2026-09-03T08:00:00Z",
+      "catalog_version_current": true,
+      "expected": {
+        "show_saving": true,
+        "consume_use": true
+      }
+    },
+    {
+      "id": "price-only-revision",
+      "equivalence": "equivalent",
+      "source_price": "2.00",
+      "candidate_price": "2.50",
+      "published": true,
+      "prior_candidate_price": "1.50",
+      "catalog_version_current": true,
+      "semantic_version_changed": false,
+      "price_version_changed": true,
+      "expected": {
+        "show_saving": false,
+        "consume_use": false,
+        "rebuild_embedding": false,
+        "invalidate_savings": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "request": {
+    "operation": "f1_stopped_control",
+    "jobId": "ce1-ce106-final-control-20260903",
+    "projectRef": "gkffvigcnsesbaihycay",
+    "supabaseUrl": "https://auth.quefalta.es",
+    "mode": "apply",
+    "confirmProduction": "gkffvigcnsesbaihycay",
+    "operationHash": "62e617ba14f18d66a8dc0a18d5b0201d0a64625903926472d7850db832027220"
+  },
+  "prepared": {
+    "mode": "apply",
+    "projectRef": "gkffvigcnsesbaihycay",
+    "origin": "https://auth.quefalta.es",
+    "operationId": "f1_stopped_control",
+    "operationHash": "62e617ba14f18d66a8dc0a18d5b0201d0a64625903926472d7850db832027220",
+    "jobId": "ce1-ce106-final-control-20260903",
+    "operation": {
+      "kind": "write",
+      "sql": "INSERT INTO comparator_strict.execution_control(project_ref,enabled,halted,active_job_id)\nVALUES ('gkffvigcnsesbaihycay',false,true,$1) RETURNING project_ref,enabled,halted,active_job_id",
+      "objects": [
+        "comparator_strict.execution_control",
+        "comparator_strict.execution_jobs"
+      ],
+      "rowKeys": [
+        "gkffvigcnsesbaihycay"
+      ],
+      "maxReadRows": 1,
+      "maxWriteRows": 1,
+      "maxInducedRows": 1,
+      "maxResponseBytes": 4096,
+      "maxSqlMs": 1000,
+      "externalCalls": 0,
+      "queueJobs": 0,
+      "commercialQuotaUses": 0,
+      "globalChanges": false,
+      "reviewed": true
+    },
+    "reservation": {
+      "sqlMs": 1000,
+      "readRows": 1,
+      "writeRows": 2,
+      "responseBytes": 4096
+    },
+    "transaction": {
+      "readOnly": false,
+      "statementTimeoutMs": 1000,
+      "lockTimeoutMs": 500
+    }
+  },
+  "parentJobKey": null,
+  "reservation": {
+    "sqlMs": 6000,
+    "responseBytes": 32768,
+    "readRows": 32,
+    "writeRows": 4
+  },
+  "approvedAt": "2026-09-03T08:48:07.264Z",
+  "expiresAt": "2026-09-03T08:53:07.264Z",
+  "utcDay": "2026-09-03",
+  "protocolHash": "a90e2829e9ad1960e6a3813f0a32bda7fa0d89708b4cbb0fa9aced71ba040281"
+}

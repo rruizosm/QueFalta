@@ -1,0 +1,21 @@
+{
+  "project_ref": "gkffvigcnsesbaihycay",
+  "authority": "CE-SEQ-003; one-time stopped control row, no comparator activation",
+  "operation_key": "CE-106-foundation-canary-2026-09-03",
+  "sql_file": "supabase/ops/canary-comparator-strict-foundation.sql",
+  "sql_sha256": "76742a81e4a655165ca7395cf7ccc1fc0b5221b3181f694139fa168870130fb8",
+  "reversal_file": "supabase/ops/revert-comparator-strict-canary.sql",
+  "reversal_sha256": "7571e68b446fd510d0602e0003123d65ebe6969118262ab4317f7330f03e2e93",
+  "insert_rows": 3,
+  "reversal_rows": 2,
+  "retained_evidence_rows": 2,
+  "public_or_catalog_rows_changed": 0,
+  "budget_manifest": "CE-103-bootstrap-manifest.json",
+  "reservation_reset_on_reversal": false,
+  "schema_rollback_after_canary": "refused while audit rows exist, preserve them",
+  "execution_mode": "single bounded SQL transaction per operation via Management API, validation inside transaction",
+  "generic_CE102_remote_adapter_tested": false,
+  "local_canary_and_refused_replay_and_reversal": "PASS PostgreSQL 18.3 WASM",
+  "requires_before_execution": ["current health without client locks", "12 remote role denials passed", "private schema not in Data API", "public catalog single-row GET succeeds", "exact SQL hash"],
+  "on_uncertain_commit": "stop; read exact operation and control state, never blindly retry or clear audit"
+}

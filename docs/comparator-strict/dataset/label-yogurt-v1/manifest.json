@@ -1,0 +1,57 @@
+{
+  "version": "ce202-yogurt-source-review-v1",
+  "corpus_manifest_sha256": "15da91ad7ae616199da7a50b53dba2abca4e3c43c1420a4a413b23ad02b9abd7",
+  "code_and_preexisting_evidence": [
+    {
+      "path": "scripts/lib/comparator-strict-yogurt-review-specs.mjs",
+      "sha256": "eb9be0bfdac537e02c295f5a0f9d7ec1264773eead1bd079248604ce81e10cc9"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-yogurt-review.mjs",
+      "sha256": "c1dbe8ecf2c959da0ec0fa207af81a635d7cf6709a51e04a65c5dc414c0b1f46"
+    },
+    {
+      "path": "scripts/prepare-comparator-strict-yogurt-review.mjs",
+      "sha256": "ae506b26f76e42c5620e6874c71765191a0d1d20ba29b363ad7ff4c2f2f1dee9"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-corpus-labels.mjs",
+      "sha256": "dac2bb3d1c072418be97a3e40e47c1ee9ee2e9b46269d3df1005c1686ad56431"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-corpus.mjs",
+      "sha256": "69dca18c12f1c161d0d726c0d191b92728d4225c16a8b2f1fb17b60a3e5af232"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-labels.mjs",
+      "sha256": "6ec33dd1564f4f35e33dadc4154b0dee85a7c1283be6cec5d9b253cbdb2182cd"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-dataset.mjs",
+      "sha256": "e83982cc2cbd0cabc972e2fd1fa09ad9186a0580cda31e836fe0538776ad8eae"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/editorial.json",
+      "sha256": "7c4a65fceae6c1282e388b3033745f4492a87aeff724f41cd724a18bd94cfaad"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-potatoes-v1/index.json",
+      "sha256": "a5f0f6ba465824800aa5828059033ab39f73e96a9cccd1a4a0a20d6526752f27"
+    },
+    {
+      "path": "docs/comparator-strict/CE-202-yogurt-source-review-guide.md",
+      "sha256": "708c58ea181e13518e4d737ea08e33a94584985557fc255019eb118d82e84ddc"
+    }
+  ],
+  "hashes": {
+    "products": "7ba7e536fcf2ff274785072d444d184bdeb0fab33ed979e6f4202dc72c340a45",
+    "annotations": "cd12fdbf62a90474709c508fd78ce6f088dfa2da763ccf04aa40caa7783463a5",
+    "index": "337c783863223dab49116bfd244ecd205ba716de883c078ab17ff877918a0894"
+  },
+  "report_sha256": "3d1a72a7874f7516604948de92cbc86b4246555fe4b5d486a39593a10de30d21",
+  "materialization": "Reviewed products and compact pair index stored. Full annotations are stdout-reproducible and pinned by hash. This is an incremental batch, not the complete yogurt block.",
+  "CE201_complete": false,
+  "CE202_complete": false,
+  "CE203_complete": false,
+  "G2_pass": false
+}

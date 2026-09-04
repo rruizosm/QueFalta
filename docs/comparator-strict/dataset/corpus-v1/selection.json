@@ -1,0 +1,1580 @@
+{
+  "algorithm": "ce200-stratified-v1",
+  "seed": "ce1-ce200-v1-2026-09-03",
+  "frame": "source-supported family, active catalogue; conservative alias representatives; prior-exposed groups excluded",
+  "frame_is_not": "all application traffic, all possible unclassified products, a gold set, or a holdout",
+  "pair_population": 312493,
+  "family_allocations": {
+    "drinking_water": 1682,
+    "yogurt": 1500,
+    "frozen_potatoes": 818
+  },
+  "pair_strata": [
+    {
+      "stratum": "drinking_water|carrefour|consum|named_brand|named_brand|multipack_evidence|unresolved_structure",
+      "population": 104,
+      "selected": 1,
+      "inclusion_probability": 0.009615384615384616,
+      "inverse_probability_weight": 104
+    },
+    {
+      "stratum": "drinking_water|carrefour|consum|named_brand|named_brand|unresolved_structure|unresolved_structure",
+      "population": 12428,
+      "selected": 197,
+      "inclusion_probability": 0.015851303508207275,
+      "inverse_probability_weight": 63.086294416243646
+    },
+    {
+      "stratum": "drinking_water|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 22,
+      "selected": 1,
+      "inclusion_probability": 0.045454545454545456,
+      "inverse_probability_weight": 22
+    },
+    {
+      "stratum": "drinking_water|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+      "population": 3877,
+      "selected": 61,
+      "inclusion_probability": 0.0157338148052618,
+      "inverse_probability_weight": 63.557377049180324
+    },
+    {
+      "stratum": "drinking_water|carrefour|consum|named_brand|unresolved_brand|unresolved_structure|unresolved_structure",
+      "population": 676,
+      "selected": 10,
+      "inclusion_probability": 0.014792899408284023,
+      "inverse_probability_weight": 67.60000000000001
+    },
+    {
+      "stratum": "drinking_water|carrefour|consum|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+      "population": 264,
+      "selected": 4,
+      "inclusion_probability": 0.015151515151515152,
+      "inverse_probability_weight": 66
+    },
+    {
+      "stratum": "drinking_water|carrefour|consum|retailer_label_literal|unresolved_brand|unresolved_structure|unresolved_structure",
+      "population": 143,
+      "selected": 2,
+      "inclusion_probability": 0.013986013986013986,
+      "inverse_probability_weight": 71.5
+    },
+    {
+      "stratum": "drinking_water|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+      "population": 4,
+      "selected": 1,
+      "inclusion_probability": 0.25,
+      "inverse_probability_weight": 4
+    },
+    {
+      "stratum": "drinking_water|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|single_explicit",
+      "population": 4,
+      "selected": 1,
+      "inclusion_probability": 0.25,
+      "inverse_probability_weight": 4
+    },
+    {
+      "stratum": "drinking_water|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 478,
+      "selected": 7,
+      "inclusion_probability": 0.014644351464435146,
+      "inverse_probability_weight": 68.28571428571429
+    },
+    {
+      "stratum": "drinking_water|carrefour|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+      "population": 478,
+      "selected": 7,
+      "inclusion_probability": 0.014644351464435146,
+      "inverse_probability_weight": 68.28571428571429
+    },
+    {
+      "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+      "population": 152,
+      "selected": 2,
+      "inclusion_probability": 0.013157894736842105,
+      "inverse_probability_weight": 76
+    },
+    {
+      "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|single_explicit",
+      "population": 204,
+      "selected": 3,
+      "inclusion_probability": 0.014705882352941176,
+      "inverse_probability_weight": 68
+    },
+    {
+      "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+      "population": 18164,
+      "selected": 287,
+      "inclusion_probability": 0.01580048447478529,
+      "inverse_probability_weight": 63.289198606271775
+    },
+    {
+      "stratum": "drinking_water|carrefour|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+      "population": 24378,
+      "selected": 386,
+      "inclusion_probability": 0.015833948642218394,
+      "inverse_probability_weight": 63.15544041450777
+    },
+    {
+      "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 48,
+      "selected": 1,
+      "inclusion_probability": 0.020833333333333332,
+      "inverse_probability_weight": 48
+    },
+    {
+      "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+      "population": 48,
+      "selected": 1,
+      "inclusion_probability": 0.020833333333333332,
+      "inverse_probability_weight": 48
+    },
+    {
+      "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|unresolved_brand|multipack_evidence|unresolved_structure",
+      "population": 1850,
+      "selected": 29,
+      "inclusion_probability": 0.015675675675675675,
+      "inverse_probability_weight": 63.793103448275865
+    },
+    {
+      "stratum": "drinking_water|carrefour|mercadona|retailer_label_literal|unresolved_brand|single_explicit|unresolved_structure",
+      "population": 2474,
+      "selected": 39,
+      "inclusion_probability": 0.01576394502829426,
+      "inverse_probability_weight": 63.43589743589743
+    },
+    {
+      "stratum": "drinking_water|carrefour|mercadona|unresolved_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+      "population": 988,
+      "selected": 15,
+      "inclusion_probability": 0.015182186234817813,
+      "inverse_probability_weight": 65.86666666666667
+    },
+    {
+      "stratum": "drinking_water|carrefour|mercadona|unresolved_brand|unresolved_brand|single_explicit|unresolved_structure",
+      "population": 1326,
+      "selected": 21,
+      "inclusion_probability": 0.01583710407239819,
+      "inverse_probability_weight": 63.142857142857146
+    },
+    {
+      "stratum": "drinking_water|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+      "population": 2,
+      "selected": 1,
+      "inclusion_probability": 0.5,
+      "inverse_probability_weight": 2
+    },
+    {
+      "stratum": "drinking_water|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+      "population": 339,
+      "selected": 5,
+      "inclusion_probability": 0.014749262536873156,
+      "inverse_probability_weight": 67.8
+    },
+    {
+      "stratum": "drinking_water|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+      "population": 11950,
+      "selected": 189,
+      "inclusion_probability": 0.015815899581589958,
+      "inverse_probability_weight": 63.22751322751323
+    },
+    {
+      "stratum": "drinking_water|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 24,
+      "selected": 1,
+      "inclusion_probability": 0.041666666666666664,
+      "inverse_probability_weight": 24
+    },
+    {
+      "stratum": "drinking_water|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+      "population": 1200,
+      "selected": 19,
+      "inclusion_probability": 0.015833333333333335,
+      "inverse_probability_weight": 63.1578947368421
+    },
+    {
+      "stratum": "drinking_water|carrefour|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+      "population": 13,
+      "selected": 1,
+      "inclusion_probability": 0.07692307692307693,
+      "inverse_probability_weight": 13
+    },
+    {
+      "stratum": "drinking_water|carrefour|plusfresc|named_brand|unresolved_brand|unresolved_structure|unresolved_structure",
+      "population": 650,
+      "selected": 10,
+      "inclusion_probability": 0.015384615384615385,
+      "inverse_probability_weight": 65
+    },
+    {
+      "stratum": "drinking_water|consum|mercadona|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 104,
+      "selected": 1,
+      "inclusion_probability": 0.009615384615384616,
+      "inverse_probability_weight": 104
+    },
+    {
+      "stratum": "drinking_water|consum|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+      "population": 104,
+      "selected": 1,
+      "inclusion_probability": 0.009615384615384616,
+      "inverse_probability_weight": 104
+    },
+    {
+      "stratum": "drinking_water|consum|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+      "population": 3952,
+      "selected": 62,
+      "inclusion_probability": 0.01568825910931174,
+      "inverse_probability_weight": 63.741935483870975
+    },
+    {
+      "stratum": "drinking_water|consum|mercadona|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+      "population": 5304,
+      "selected": 84,
+      "inclusion_probability": 0.01583710407239819,
+      "inverse_probability_weight": 63.142857142857146
+    },
+    {
+      "stratum": "drinking_water|consum|mercadona|retailer_label_literal|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 22,
+      "selected": 1,
+      "inclusion_probability": 0.045454545454545456,
+      "inverse_probability_weight": 22
+    },
+    {
+      "stratum": "drinking_water|consum|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+      "population": 22,
+      "selected": 1,
+      "inclusion_probability": 0.045454545454545456,
+      "inverse_probability_weight": 22
+    },
+    {
+      "stratum": "drinking_water|consum|mercadona|retailer_label_literal|unresolved_brand|multipack_evidence|unresolved_structure",
+      "population": 836,
+      "selected": 13,
+      "inclusion_probability": 0.01555023923444976,
+      "inverse_probability_weight": 64.3076923076923
+    },
+    {
+      "stratum": "drinking_water|consum|mercadona|retailer_label_literal|unresolved_brand|single_explicit|unresolved_structure",
+      "population": 1122,
+      "selected": 18,
+      "inclusion_probability": 0.016042780748663103,
+      "inverse_probability_weight": 62.33333333333333
+    },
+    {
+      "stratum": "drinking_water|consum|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+      "population": 52,
+      "selected": 1,
+      "inclusion_probability": 0.019230769230769232,
+      "inverse_probability_weight": 52
+    },
+    {
+      "stratum": "drinking_water|consum|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+      "population": 2600,
+      "selected": 41,
+      "inclusion_probability": 0.015769230769230768,
+      "inverse_probability_weight": 63.41463414634147
+    },
+    {
+      "stratum": "drinking_water|consum|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 11,
+      "selected": 1,
+      "inclusion_probability": 0.09090909090909091,
+      "inverse_probability_weight": 11
+    },
+    {
+      "stratum": "drinking_water|consum|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+      "population": 550,
+      "selected": 9,
+      "inclusion_probability": 0.016363636363636365,
+      "inverse_probability_weight": 61.11111111111111
+    },
+    {
+      "stratum": "drinking_water|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+      "population": 2,
+      "selected": 1,
+      "inclusion_probability": 0.5,
+      "inverse_probability_weight": 2
+    },
+    {
+      "stratum": "drinking_water|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|single_explicit",
+      "population": 2,
+      "selected": 1,
+      "inclusion_probability": 0.5,
+      "inverse_probability_weight": 2
+    },
+    {
+      "stratum": "drinking_water|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 100,
+      "selected": 1,
+      "inclusion_probability": 0.01,
+      "inverse_probability_weight": 100
+    },
+    {
+      "stratum": "drinking_water|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+      "population": 100,
+      "selected": 1,
+      "inclusion_probability": 0.01,
+      "inverse_probability_weight": 100
+    },
+    {
+      "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+      "population": 76,
+      "selected": 1,
+      "inclusion_probability": 0.013157894736842105,
+      "inverse_probability_weight": 76
+    },
+    {
+      "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|single_explicit",
+      "population": 102,
+      "selected": 1,
+      "inclusion_probability": 0.00980392156862745,
+      "inverse_probability_weight": 102
+    },
+    {
+      "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+      "population": 3800,
+      "selected": 60,
+      "inclusion_probability": 0.015789473684210527,
+      "inverse_probability_weight": 63.33333333333333
+    },
+    {
+      "stratum": "drinking_water|mercadona|plusfresc|named_brand|unresolved_brand|single_explicit|unresolved_structure",
+      "population": 5100,
+      "selected": 81,
+      "inclusion_probability": 0.01588235294117647,
+      "inverse_probability_weight": 62.96296296296297
+    },
+    {
+      "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|multipack_evidence",
+      "population": 10710,
+      "selected": 78,
+      "inclusion_probability": 0.007282913165266107,
+      "inverse_probability_weight": 137.3076923076923
+    },
+    {
+      "stratum": "yogurt|carrefour|consum|named_brand|named_brand|multipack_evidence|unresolved_structure",
+      "population": 8253,
+      "selected": 60,
+      "inclusion_probability": 0.007270083605961469,
+      "inverse_probability_weight": 137.55
+    },
+    {
+      "stratum": "yogurt|carrefour|consum|named_brand|named_brand|unresolved_structure|unresolved_structure",
+      "population": 931,
+      "selected": 7,
+      "inclusion_probability": 0.007518796992481203,
+      "inverse_probability_weight": 133
+    },
+    {
+      "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+      "population": 10830,
+      "selected": 79,
+      "inclusion_probability": 0.0072945521698984305,
+      "inverse_probability_weight": 137.0886075949367
+    },
+    {
+      "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 9022,
+      "selected": 66,
+      "inclusion_probability": 0.0073154511194857014,
+      "inverse_probability_weight": 136.6969696969697
+    },
+    {
+      "stratum": "yogurt|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+      "population": 1547,
+      "selected": 11,
+      "inclusion_probability": 0.007110536522301228,
+      "inverse_probability_weight": 140.63636363636363
+    },
+    {
+      "stratum": "yogurt|carrefour|consum|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+      "population": 51,
+      "selected": 1,
+      "inclusion_probability": 0.0196078431372549,
+      "inverse_probability_weight": 51
+    },
+    {
+      "stratum": "yogurt|carrefour|consum|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+      "population": 7,
+      "selected": 1,
+      "inclusion_probability": 0.14285714285714285,
+      "inverse_probability_weight": 7
+    },
+    {
+      "stratum": "yogurt|carrefour|consum|retailer_label_literal|retailer_label_literal|multipack_evidence|multipack_evidence",
+      "population": 2220,
+      "selected": 16,
+      "inclusion_probability": 0.007207207207207207,
+      "inverse_probability_weight": 138.75
+    },
+    {
+      "stratum": "yogurt|carrefour|consum|retailer_label_literal|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 1747,
+      "selected": 13,
+      "inclusion_probability": 0.007441327990841442,
+      "inverse_probability_weight": 134.3846153846154
+    },
+    {
+      "stratum": "yogurt|carrefour|consum|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+      "population": 310,
+      "selected": 2,
+      "inclusion_probability": 0.0064516129032258064,
+      "inverse_probability_weight": 155
+    },
+    {
+      "stratum": "yogurt|carrefour|consum|retailer_label_literal|unresolved_brand|multipack_evidence|multipack_evidence",
+      "population": 37,
+      "selected": 1,
+      "inclusion_probability": 0.02702702702702703,
+      "inverse_probability_weight": 37
+    },
+    {
+      "stratum": "yogurt|carrefour|consum|retailer_label_literal|unresolved_brand|multipack_evidence|unresolved_structure",
+      "population": 10,
+      "selected": 1,
+      "inclusion_probability": 0.1,
+      "inverse_probability_weight": 10
+    },
+    {
+      "stratum": "yogurt|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+      "population": 9450,
+      "selected": 69,
+      "inclusion_probability": 0.007301587301587302,
+      "inverse_probability_weight": 136.95652173913044
+    },
+    {
+      "stratum": "yogurt|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|single_explicit",
+      "population": 1260,
+      "selected": 9,
+      "inclusion_probability": 0.007142857142857143,
+      "inverse_probability_weight": 140
+    },
+    {
+      "stratum": "yogurt|carrefour|mercadona|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 5985,
+      "selected": 43,
+      "inclusion_probability": 0.007184628237259816,
+      "inverse_probability_weight": 139.18604651162792
+    },
+    {
+      "stratum": "yogurt|carrefour|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+      "population": 798,
+      "selected": 6,
+      "inclusion_probability": 0.007518796992481203,
+      "inverse_probability_weight": 133
+    },
+    {
+      "stratum": "yogurt|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+      "population": 2100,
+      "selected": 15,
+      "inclusion_probability": 0.007142857142857143,
+      "inverse_probability_weight": 140
+    },
+    {
+      "stratum": "yogurt|carrefour|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+      "population": 1330,
+      "selected": 9,
+      "inclusion_probability": 0.006766917293233083,
+      "inverse_probability_weight": 147.77777777777777
+    },
+    {
+      "stratum": "yogurt|carrefour|mercadona|retailer_label_literal|retailer_label_literal|multipack_evidence|multipack_evidence",
+      "population": 2700,
+      "selected": 20,
+      "inclusion_probability": 0.007407407407407408,
+      "inverse_probability_weight": 135
+    },
+    {
+      "stratum": "yogurt|carrefour|mercadona|retailer_label_literal|retailer_label_literal|multipack_evidence|single_explicit",
+      "population": 360,
+      "selected": 2,
+      "inclusion_probability": 0.005555555555555556,
+      "inverse_probability_weight": 180
+    },
+    {
+      "stratum": "yogurt|carrefour|mercadona|retailer_label_literal|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 1395,
+      "selected": 10,
+      "inclusion_probability": 0.007168458781362007,
+      "inverse_probability_weight": 139.5
+    },
+    {
+      "stratum": "yogurt|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+      "population": 186,
+      "selected": 1,
+      "inclusion_probability": 0.005376344086021506,
+      "inverse_probability_weight": 185.99999999999997
+    },
+    {
+      "stratum": "yogurt|carrefour|mercadona|retailer_label_literal|unresolved_brand|multipack_evidence|multipack_evidence",
+      "population": 645,
+      "selected": 4,
+      "inclusion_probability": 0.006201550387596899,
+      "inverse_probability_weight": 161.25
+    },
+    {
+      "stratum": "yogurt|carrefour|mercadona|retailer_label_literal|unresolved_brand|multipack_evidence|single_explicit",
+      "population": 6,
+      "selected": 1,
+      "inclusion_probability": 0.16666666666666666,
+      "inverse_probability_weight": 6
+    },
+    {
+      "stratum": "yogurt|carrefour|mercadona|retailer_label_literal|unresolved_brand|multipack_evidence|unresolved_structure",
+      "population": 310,
+      "selected": 2,
+      "inclusion_probability": 0.0064516129032258064,
+      "inverse_probability_weight": 155
+    },
+    {
+      "stratum": "yogurt|carrefour|mercadona|unresolved_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+      "population": 10,
+      "selected": 1,
+      "inclusion_probability": 0.1,
+      "inverse_probability_weight": 10
+    },
+    {
+      "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+      "population": 22890,
+      "selected": 167,
+      "inclusion_probability": 0.007295762341633902,
+      "inverse_probability_weight": 137.06586826347305
+    },
+    {
+      "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+      "population": 31507,
+      "selected": 230,
+      "inclusion_probability": 0.007299965087123496,
+      "inverse_probability_weight": 136.98695652173913
+    },
+    {
+      "stratum": "yogurt|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+      "population": 10773,
+      "selected": 78,
+      "inclusion_probability": 0.007240323029796714,
+      "inverse_probability_weight": 138.1153846153846
+    },
+    {
+      "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+      "population": 9900,
+      "selected": 72,
+      "inclusion_probability": 0.007272727272727273,
+      "inverse_probability_weight": 137.5
+    },
+    {
+      "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 11417,
+      "selected": 83,
+      "inclusion_probability": 0.007269860733993168,
+      "inverse_probability_weight": 137.55421686746988
+    },
+    {
+      "stratum": "yogurt|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+      "population": 3176,
+      "selected": 23,
+      "inclusion_probability": 0.007241813602015114,
+      "inverse_probability_weight": 138.08695652173913
+    },
+    {
+      "stratum": "yogurt|carrefour|plusfresc|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+      "population": 109,
+      "selected": 1,
+      "inclusion_probability": 0.009174311926605505,
+      "inverse_probability_weight": 109
+    },
+    {
+      "stratum": "yogurt|carrefour|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+      "population": 81,
+      "selected": 1,
+      "inclusion_probability": 0.012345679012345678,
+      "inverse_probability_weight": 81
+    },
+    {
+      "stratum": "yogurt|carrefour|plusfresc|retailer_label_literal|retailer_label_literal|multipack_evidence|multipack_evidence",
+      "population": 960,
+      "selected": 7,
+      "inclusion_probability": 0.007291666666666667,
+      "inverse_probability_weight": 137.14285714285714
+    },
+    {
+      "stratum": "yogurt|carrefour|plusfresc|retailer_label_literal|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 796,
+      "selected": 6,
+      "inclusion_probability": 0.007537688442211055,
+      "inverse_probability_weight": 132.66666666666669
+    },
+    {
+      "stratum": "yogurt|carrefour|plusfresc|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+      "population": 155,
+      "selected": 1,
+      "inclusion_probability": 0.0064516129032258064,
+      "inverse_probability_weight": 155
+    },
+    {
+      "stratum": "yogurt|carrefour|plusfresc|retailer_label_literal|unresolved_brand|multipack_evidence|multipack_evidence",
+      "population": 16,
+      "selected": 1,
+      "inclusion_probability": 0.0625,
+      "inverse_probability_weight": 16
+    },
+    {
+      "stratum": "yogurt|carrefour|plusfresc|retailer_label_literal|unresolved_brand|multipack_evidence|unresolved_structure",
+      "population": 5,
+      "selected": 1,
+      "inclusion_probability": 0.2,
+      "inverse_probability_weight": 5
+    },
+    {
+      "stratum": "yogurt|consum|mercadona|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+      "population": 2295,
+      "selected": 17,
+      "inclusion_probability": 0.007407407407407408,
+      "inverse_probability_weight": 135
+    },
+    {
+      "stratum": "yogurt|consum|mercadona|named_brand|retailer_label_literal|multipack_evidence|single_explicit",
+      "population": 306,
+      "selected": 2,
+      "inclusion_probability": 0.006535947712418301,
+      "inverse_probability_weight": 153
+    },
+    {
+      "stratum": "yogurt|consum|mercadona|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 315,
+      "selected": 2,
+      "inclusion_probability": 0.006349206349206349,
+      "inverse_probability_weight": 157.5
+    },
+    {
+      "stratum": "yogurt|consum|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+      "population": 42,
+      "selected": 1,
+      "inclusion_probability": 0.023809523809523808,
+      "inverse_probability_weight": 42
+    },
+    {
+      "stratum": "yogurt|consum|mercadona|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+      "population": 510,
+      "selected": 4,
+      "inclusion_probability": 0.00784313725490196,
+      "inverse_probability_weight": 127.5
+    },
+    {
+      "stratum": "yogurt|consum|mercadona|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+      "population": 70,
+      "selected": 1,
+      "inclusion_probability": 0.014285714285714285,
+      "inverse_probability_weight": 70
+    },
+    {
+      "stratum": "yogurt|consum|mercadona|retailer_label_literal|retailer_label_literal|multipack_evidence|multipack_evidence",
+      "population": 1665,
+      "selected": 12,
+      "inclusion_probability": 0.007207207207207207,
+      "inverse_probability_weight": 138.75
+    },
+    {
+      "stratum": "yogurt|consum|mercadona|retailer_label_literal|retailer_label_literal|multipack_evidence|single_explicit",
+      "population": 222,
+      "selected": 1,
+      "inclusion_probability": 0.0045045045045045045,
+      "inverse_probability_weight": 222
+    },
+    {
+      "stratum": "yogurt|consum|mercadona|retailer_label_literal|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 450,
+      "selected": 3,
+      "inclusion_probability": 0.006666666666666667,
+      "inverse_probability_weight": 150
+    },
+    {
+      "stratum": "yogurt|consum|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+      "population": 60,
+      "selected": 1,
+      "inclusion_probability": 0.016666666666666666,
+      "inverse_probability_weight": 60
+    },
+    {
+      "stratum": "yogurt|consum|mercadona|retailer_label_literal|unresolved_brand|multipack_evidence|multipack_evidence",
+      "population": 370,
+      "selected": 2,
+      "inclusion_probability": 0.005405405405405406,
+      "inverse_probability_weight": 185
+    },
+    {
+      "stratum": "yogurt|consum|mercadona|retailer_label_literal|unresolved_brand|multipack_evidence|unresolved_structure",
+      "population": 100,
+      "selected": 1,
+      "inclusion_probability": 0.01,
+      "inverse_probability_weight": 100
+    },
+    {
+      "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|multipack_evidence",
+      "population": 5559,
+      "selected": 40,
+      "inclusion_probability": 0.007195538765965102,
+      "inverse_probability_weight": 138.975
+    },
+    {
+      "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|multipack_evidence|unresolved_structure",
+      "population": 4894,
+      "selected": 36,
+      "inclusion_probability": 0.0073559460563955865,
+      "inverse_probability_weight": 135.94444444444446
+    },
+    {
+      "stratum": "yogurt|consum|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+      "population": 567,
+      "selected": 4,
+      "inclusion_probability": 0.007054673721340388,
+      "inverse_probability_weight": 141.75
+    },
+    {
+      "stratum": "yogurt|consum|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+      "population": 4849,
+      "selected": 35,
+      "inclusion_probability": 0.0072179830892967626,
+      "inverse_probability_weight": 138.54285714285714
+    },
+    {
+      "stratum": "yogurt|consum|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 4454,
+      "selected": 32,
+      "inclusion_probability": 0.007184553210597216,
+      "inverse_probability_weight": 139.1875
+    },
+    {
+      "stratum": "yogurt|consum|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+      "population": 845,
+      "selected": 6,
+      "inclusion_probability": 0.007100591715976331,
+      "inverse_probability_weight": 140.83333333333334
+    },
+    {
+      "stratum": "yogurt|consum|plusfresc|retailer_label_literal|retailer_label_literal|multipack_evidence|multipack_evidence",
+      "population": 592,
+      "selected": 4,
+      "inclusion_probability": 0.006756756756756757,
+      "inverse_probability_weight": 148
+    },
+    {
+      "stratum": "yogurt|consum|plusfresc|retailer_label_literal|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 345,
+      "selected": 2,
+      "inclusion_probability": 0.005797101449275362,
+      "inverse_probability_weight": 172.5
+    },
+    {
+      "stratum": "yogurt|consum|plusfresc|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+      "population": 50,
+      "selected": 1,
+      "inclusion_probability": 0.02,
+      "inverse_probability_weight": 50
+    },
+    {
+      "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|multipack_evidence",
+      "population": 4905,
+      "selected": 36,
+      "inclusion_probability": 0.007339449541284404,
+      "inverse_probability_weight": 136.25
+    },
+    {
+      "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|single_explicit",
+      "population": 654,
+      "selected": 5,
+      "inclusion_probability": 0.00764525993883792,
+      "inverse_probability_weight": 130.8
+    },
+    {
+      "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 3645,
+      "selected": 26,
+      "inclusion_probability": 0.007133058984910837,
+      "inverse_probability_weight": 140.19230769230768
+    },
+    {
+      "stratum": "yogurt|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+      "population": 486,
+      "selected": 3,
+      "inclusion_probability": 0.006172839506172839,
+      "inverse_probability_weight": 162
+    },
+    {
+      "stratum": "yogurt|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|multipack_evidence",
+      "population": 1090,
+      "selected": 8,
+      "inclusion_probability": 0.007339449541284404,
+      "inverse_probability_weight": 136.25
+    },
+    {
+      "stratum": "yogurt|mercadona|plusfresc|named_brand|unresolved_brand|multipack_evidence|unresolved_structure",
+      "population": 810,
+      "selected": 6,
+      "inclusion_probability": 0.007407407407407408,
+      "inverse_probability_weight": 135
+    },
+    {
+      "stratum": "yogurt|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|multipack_evidence|multipack_evidence",
+      "population": 720,
+      "selected": 5,
+      "inclusion_probability": 0.006944444444444444,
+      "inverse_probability_weight": 144
+    },
+    {
+      "stratum": "yogurt|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|multipack_evidence|single_explicit",
+      "population": 96,
+      "selected": 1,
+      "inclusion_probability": 0.010416666666666666,
+      "inverse_probability_weight": 96
+    },
+    {
+      "stratum": "yogurt|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|multipack_evidence|unresolved_structure",
+      "population": 225,
+      "selected": 1,
+      "inclusion_probability": 0.0044444444444444444,
+      "inverse_probability_weight": 225
+    },
+    {
+      "stratum": "yogurt|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+      "population": 30,
+      "selected": 1,
+      "inclusion_probability": 0.03333333333333333,
+      "inverse_probability_weight": 30
+    },
+    {
+      "stratum": "yogurt|mercadona|plusfresc|retailer_label_literal|unresolved_brand|multipack_evidence|multipack_evidence",
+      "population": 160,
+      "selected": 1,
+      "inclusion_probability": 0.00625,
+      "inverse_probability_weight": 160
+    },
+    {
+      "stratum": "yogurt|mercadona|plusfresc|retailer_label_literal|unresolved_brand|multipack_evidence|unresolved_structure",
+      "population": 50,
+      "selected": 1,
+      "inclusion_probability": 0.02,
+      "inverse_probability_weight": 50
+    },
+    {
+      "stratum": "frozen_potatoes|carrefour|consum|named_brand|named_brand|unresolved_structure|unresolved_structure",
+      "population": 57,
+      "selected": 57,
+      "inclusion_probability": 1,
+      "inverse_probability_weight": 1
+    },
+    {
+      "stratum": "frozen_potatoes|carrefour|consum|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+      "population": 115,
+      "selected": 115,
+      "inclusion_probability": 1,
+      "inverse_probability_weight": 1
+    },
+    {
+      "stratum": "frozen_potatoes|carrefour|consum|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+      "population": 52,
+      "selected": 52,
+      "inclusion_probability": 1,
+      "inverse_probability_weight": 1
+    },
+    {
+      "stratum": "frozen_potatoes|carrefour|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+      "population": 114,
+      "selected": 114,
+      "inclusion_probability": 1,
+      "inverse_probability_weight": 1
+    },
+    {
+      "stratum": "frozen_potatoes|carrefour|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+      "population": 78,
+      "selected": 78,
+      "inclusion_probability": 1,
+      "inverse_probability_weight": 1
+    },
+    {
+      "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+      "population": 114,
+      "selected": 114,
+      "inclusion_probability": 1,
+      "inverse_probability_weight": 1
+    },
+    {
+      "stratum": "frozen_potatoes|carrefour|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+      "population": 116,
+      "selected": 116,
+      "inclusion_probability": 1,
+      "inverse_probability_weight": 1
+    },
+    {
+      "stratum": "frozen_potatoes|carrefour|plusfresc|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+      "population": 26,
+      "selected": 26,
+      "inclusion_probability": 1,
+      "inverse_probability_weight": 1
+    },
+    {
+      "stratum": "frozen_potatoes|consum|mercadona|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+      "population": 18,
+      "selected": 18,
+      "inclusion_probability": 1,
+      "inverse_probability_weight": 1
+    },
+    {
+      "stratum": "frozen_potatoes|consum|mercadona|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+      "population": 24,
+      "selected": 24,
+      "inclusion_probability": 1,
+      "inverse_probability_weight": 1
+    },
+    {
+      "stratum": "frozen_potatoes|consum|plusfresc|named_brand|named_brand|unresolved_structure|unresolved_structure",
+      "population": 18,
+      "selected": 18,
+      "inclusion_probability": 1,
+      "inverse_probability_weight": 1
+    },
+    {
+      "stratum": "frozen_potatoes|consum|plusfresc|named_brand|retailer_label_literal|unresolved_structure|unresolved_structure",
+      "population": 30,
+      "selected": 30,
+      "inclusion_probability": 1,
+      "inverse_probability_weight": 1
+    },
+    {
+      "stratum": "frozen_potatoes|consum|plusfresc|retailer_label_literal|retailer_label_literal|unresolved_structure|unresolved_structure",
+      "population": 8,
+      "selected": 8,
+      "inclusion_probability": 1,
+      "inverse_probability_weight": 1
+    },
+    {
+      "stratum": "frozen_potatoes|mercadona|plusfresc|named_brand|retailer_label_literal|single_explicit|unresolved_structure",
+      "population": 36,
+      "selected": 36,
+      "inclusion_probability": 1,
+      "inverse_probability_weight": 1
+    },
+    {
+      "stratum": "frozen_potatoes|mercadona|plusfresc|retailer_label_literal|retailer_label_literal|single_explicit|unresolved_structure",
+      "population": 12,
+      "selected": 12,
+      "inclusion_probability": 1,
+      "inverse_probability_weight": 1
+    }
+  ],
+  "origin_strata": [
+    {
+      "stratum": "drinking_water|carrefour|named_brand|multipack_evidence",
+      "population": 2,
+      "selected": 1,
+      "inclusion_probability": 0.5,
+      "inverse_probability_weight": 2
+    },
+    {
+      "stratum": "drinking_water|carrefour|named_brand|unresolved_structure",
+      "population": 239,
+      "selected": 100,
+      "inclusion_probability": 0.41841004184100417,
+      "inverse_probability_weight": 2.39
+    },
+    {
+      "stratum": "drinking_water|carrefour|retailer_label_literal|unresolved_structure",
+      "population": 24,
+      "selected": 10,
+      "inclusion_probability": 0.4166666666666667,
+      "inverse_probability_weight": 2.4
+    },
+    {
+      "stratum": "drinking_water|carrefour|unresolved_brand|unresolved_structure",
+      "population": 13,
+      "selected": 5,
+      "inclusion_probability": 0.38461538461538464,
+      "inverse_probability_weight": 2.5999999999999996
+    },
+    {
+      "stratum": "drinking_water|consum|named_brand|unresolved_structure",
+      "population": 52,
+      "selected": 22,
+      "inclusion_probability": 0.4230769230769231,
+      "inverse_probability_weight": 2.3636363636363638
+    },
+    {
+      "stratum": "drinking_water|consum|retailer_label_literal|unresolved_structure",
+      "population": 11,
+      "selected": 5,
+      "inclusion_probability": 0.45454545454545453,
+      "inverse_probability_weight": 2.2
+    },
+    {
+      "stratum": "drinking_water|mercadona|retailer_label_literal|multipack_evidence",
+      "population": 2,
+      "selected": 1,
+      "inclusion_probability": 0.5,
+      "inverse_probability_weight": 2
+    },
+    {
+      "stratum": "drinking_water|mercadona|retailer_label_literal|single_explicit",
+      "population": 2,
+      "selected": 1,
+      "inclusion_probability": 0.5,
+      "inverse_probability_weight": 2
+    },
+    {
+      "stratum": "drinking_water|mercadona|unresolved_brand|multipack_evidence",
+      "population": 76,
+      "selected": 32,
+      "inclusion_probability": 0.42105263157894735,
+      "inverse_probability_weight": 2.375
+    },
+    {
+      "stratum": "drinking_water|mercadona|unresolved_brand|single_explicit",
+      "population": 102,
+      "selected": 42,
+      "inclusion_probability": 0.4117647058823529,
+      "inverse_probability_weight": 2.428571428571429
+    },
+    {
+      "stratum": "drinking_water|plusfresc|named_brand|multipack_evidence",
+      "population": 1,
+      "selected": 1,
+      "inclusion_probability": 1,
+      "inverse_probability_weight": 1
+    },
+    {
+      "stratum": "drinking_water|plusfresc|named_brand|unresolved_structure",
+      "population": 50,
+      "selected": 21,
+      "inclusion_probability": 0.42,
+      "inverse_probability_weight": 2.380952380952381
+    },
+    {
+      "stratum": "frozen_potatoes|carrefour|named_brand|unresolved_structure",
+      "population": 19,
+      "selected": 8,
+      "inclusion_probability": 0.42105263157894735,
+      "inverse_probability_weight": 2.375
+    },
+    {
+      "stratum": "frozen_potatoes|carrefour|retailer_label_literal|unresolved_structure",
+      "population": 13,
+      "selected": 5,
+      "inclusion_probability": 0.38461538461538464,
+      "inverse_probability_weight": 2.5999999999999996
+    },
+    {
+      "stratum": "frozen_potatoes|consum|named_brand|unresolved_structure",
+      "population": 3,
+      "selected": 1,
+      "inclusion_probability": 0.3333333333333333,
+      "inverse_probability_weight": 3
+    },
+    {
+      "stratum": "frozen_potatoes|consum|retailer_label_literal|unresolved_structure",
+      "population": 4,
+      "selected": 2,
+      "inclusion_probability": 0.5,
+      "inverse_probability_weight": 2
+    },
+    {
+      "stratum": "frozen_potatoes|mercadona|retailer_label_literal|single_explicit",
+      "population": 6,
+      "selected": 2,
+      "inclusion_probability": 0.3333333333333333,
+      "inverse_probability_weight": 3
+    },
+    {
+      "stratum": "frozen_potatoes|plusfresc|named_brand|unresolved_structure",
+      "population": 6,
+      "selected": 2,
+      "inclusion_probability": 0.3333333333333333,
+      "inverse_probability_weight": 3
+    },
+    {
+      "stratum": "frozen_potatoes|plusfresc|retailer_label_literal|unresolved_structure",
+      "population": 2,
+      "selected": 1,
+      "inclusion_probability": 0.5,
+      "inverse_probability_weight": 2
+    },
+    {
+      "stratum": "yogurt|carrefour|named_brand|multipack_evidence",
+      "population": 210,
+      "selected": 88,
+      "inclusion_probability": 0.41904761904761906,
+      "inverse_probability_weight": 2.3863636363636362
+    },
+    {
+      "stratum": "yogurt|carrefour|named_brand|unresolved_structure",
+      "population": 133,
+      "selected": 55,
+      "inclusion_probability": 0.41353383458646614,
+      "inverse_probability_weight": 2.4181818181818184
+    },
+    {
+      "stratum": "yogurt|carrefour|retailer_label_literal|multipack_evidence",
+      "population": 60,
+      "selected": 25,
+      "inclusion_probability": 0.4166666666666667,
+      "inverse_probability_weight": 2.4
+    },
+    {
+      "stratum": "yogurt|carrefour|retailer_label_literal|unresolved_structure",
+      "population": 31,
+      "selected": 13,
+      "inclusion_probability": 0.41935483870967744,
+      "inverse_probability_weight": 2.3846153846153846
+    },
+    {
+      "stratum": "yogurt|carrefour|unresolved_brand|multipack_evidence",
+      "population": 1,
+      "selected": 1,
+      "inclusion_probability": 1,
+      "inverse_probability_weight": 1
+    },
+    {
+      "stratum": "yogurt|consum|named_brand|multipack_evidence",
+      "population": 51,
+      "selected": 21,
+      "inclusion_probability": 0.4117647058823529,
+      "inverse_probability_weight": 2.428571428571429
+    },
+    {
+      "stratum": "yogurt|consum|named_brand|unresolved_structure",
+      "population": 7,
+      "selected": 3,
+      "inclusion_probability": 0.42857142857142855,
+      "inverse_probability_weight": 2.3333333333333335
+    },
+    {
+      "stratum": "yogurt|consum|retailer_label_literal|multipack_evidence",
+      "population": 37,
+      "selected": 15,
+      "inclusion_probability": 0.40540540540540543,
+      "inverse_probability_weight": 2.4666666666666663
+    },
+    {
+      "stratum": "yogurt|consum|retailer_label_literal|unresolved_structure",
+      "population": 10,
+      "selected": 4,
+      "inclusion_probability": 0.4,
+      "inverse_probability_weight": 2.5
+    },
+    {
+      "stratum": "yogurt|mercadona|retailer_label_literal|multipack_evidence",
+      "population": 45,
+      "selected": 19,
+      "inclusion_probability": 0.4222222222222222,
+      "inverse_probability_weight": 2.3684210526315788
+    },
+    {
+      "stratum": "yogurt|mercadona|retailer_label_literal|single_explicit",
+      "population": 6,
+      "selected": 2,
+      "inclusion_probability": 0.3333333333333333,
+      "inverse_probability_weight": 3
+    },
+    {
+      "stratum": "yogurt|mercadona|unresolved_brand|multipack_evidence",
+      "population": 10,
+      "selected": 4,
+      "inclusion_probability": 0.4,
+      "inverse_probability_weight": 2.5
+    },
+    {
+      "stratum": "yogurt|plusfresc|named_brand|multipack_evidence",
+      "population": 109,
+      "selected": 45,
+      "inclusion_probability": 0.41284403669724773,
+      "inverse_probability_weight": 2.422222222222222
+    },
+    {
+      "stratum": "yogurt|plusfresc|named_brand|unresolved_structure",
+      "population": 81,
+      "selected": 34,
+      "inclusion_probability": 0.41975308641975306,
+      "inverse_probability_weight": 2.3823529411764706
+    },
+    {
+      "stratum": "yogurt|plusfresc|retailer_label_literal|multipack_evidence",
+      "population": 16,
+      "selected": 7,
+      "inclusion_probability": 0.4375,
+      "inverse_probability_weight": 2.2857142857142856
+    },
+    {
+      "stratum": "yogurt|plusfresc|retailer_label_literal|unresolved_structure",
+      "population": 5,
+      "selected": 2,
+      "inclusion_probability": 0.4,
+      "inverse_probability_weight": 2.5
+    }
+  ],
+  "challenge_quotas": {
+    "different_format_evidence": 500,
+    "variant_word_contrast": 500,
+    "missing_structured_evidence": 500,
+    "lexical_confuser_outside_supported_family": 500
+  },
+  "prior_exposure_policy": "CE104 and legacy excluded by product/possible-alias group; CE204 must additionally group verified GTIN/entities before partitioning",
+  "origin_count": 600,
+  "distinct_queries": 1200,
+  "counts_do_not_establish_independence": true,
+  "alias_groups": [
+    {
+      "signature": "234c1d3500310cf69dedd1fb701a45b5761d5b595d12bf3c138f1661c26ef833",
+      "keys": [
+        "carrefour:VC4AECOMM-582612",
+        "carrefour:VC4AECOMM-685769",
+        "carrefour:prod1040115"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "ee82c3db6aea408199535b7f0b0755997a19c3ba5cfd41d21fc633f06db6603b",
+      "keys": [
+        "carrefour:VC4AECOMM-582622",
+        "carrefour:VC4AECOMM-582628"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "bb5bd37c687807e24a9ff59eea508296731dcaf4e69b3a9e22ef995cc8032fad",
+      "keys": [
+        "carrefour:640001889",
+        "carrefour:VC4AECOMM-335692"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "7faa60dc275ef9e2d258927d4c98de84f456ca936d8b951e565b30bcca78eb32",
+      "keys": [
+        "carrefour:589802746",
+        "carrefour:VC4AECOMM-156001"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "742ac96ba2bdc26ba3eb4018652e7831b4eb3541812ce7eb528762d1b0f92167",
+      "keys": [
+        "carrefour:VC4AECOMM-475662",
+        "carrefour:VC4AECOMM-621804"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "54fdfa522643594a402193263fb7c3fdaae1332016065ddaea222362fdccb1ee",
+      "keys": [
+        "carrefour:prod840786",
+        "carrefour:prod840802"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "17eecf5d62f34a69d8da0996de127289839cbe3b4ad0e1ca176e2dc1f31a6f58",
+      "keys": [
+        "carrefour:521009490",
+        "carrefour:prod970656",
+        "carrefour:prod970724"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "eb210431959302211ba0c83d83ad26012ef190afd8a484865e8f1c4caca2fecf",
+      "keys": [
+        "carrefour:521028194",
+        "carrefour:prod970658",
+        "carrefour:prod970659"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "bf740ffdaee870c15277d23d1c83c03bdc69448fa40b9ba14ff3bc7fadd70653",
+      "keys": [
+        "carrefour:530014491",
+        "carrefour:prod970661"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "786dd2a69ae7a0941557325f3a4aec9463ca11ed2a71442e0b4a6983c032a465",
+      "keys": [
+        "carrefour:520661062",
+        "carrefour:prod970711",
+        "carrefour:prod970725"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "a288125a9017ae11a2f57dba45f120f9b7f1790b59b02ecdc5834819e95e712d",
+      "keys": [
+        "carrefour:520661025",
+        "carrefour:prod970712"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "c8e562d218176003110bc6ddf86f2bbbc16b40bd0f3672d3573f24f3153acc51",
+      "keys": [
+        "consum:7099682",
+        "consum:7455418"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "777eaedbcc9f6ca351611b5cedae1158d6d3183ec841acbe7cfa18527954e135",
+      "keys": [
+        "mercadona:69065",
+        "mercadona:69099"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "9195255a8d40b5e48c8837360326da852ce4c0ed2eb89646e09a41553556986a",
+      "keys": [
+        "carrefour:521030036",
+        "carrefour:745415924"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "4aca7a44af0697ff0883a341f7c640e6f9ac8bd9201fae386041a9a9273a494e",
+      "keys": [
+        "carrefour:768101347",
+        "carrefour:768101455"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "22a0923e0b14a76001604e2a3cdb2d3d23353511458923e67cd51033fae62a8c",
+      "keys": [
+        "carrefour:521030032",
+        "carrefour:prod810661"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "0f76923b044e32b9f4570e605708ee6ec7c97300f1010da45d2a2964930f09dc",
+      "keys": [
+        "carrefour:521029568",
+        "carrefour:prod490197"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "e3246a2845cbad5fad11c41bab4eed8c236019ab015966133b53d3ddb33780bf",
+      "keys": [
+        "carrefour:589802824",
+        "carrefour:VC4AECOMM-013793"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "6680b234b4f37d04c431b722166e92e3643e92d247a75dd7e2211bb32642470c",
+      "keys": [
+        "consum:7061869",
+        "consum:7308542"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "83c0253594f913d0df6ba017bc3c61664a71c75cc0ae4fb6a1a03774dd661139",
+      "keys": [
+        "consum:7099646",
+        "consum:7308591",
+        "consum:7332005"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "dfada435ceb60ca68f9713aee8ded8b60a782d461fae223d6a26c6c0bbfc6dba",
+      "keys": [
+        "carrefour:VC4AECOMM-690155",
+        "carrefour:VC4AECOMM-690181"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "1bd57a5340427da1de371533c7b8cba8b969e993fe9bcd0b72f4dc23e286652f",
+      "keys": [
+        "consum:7308554",
+        "consum:7331986"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "b1fd2266df234800282347ab9f07974aba68f564df0b01a61cb9aa4ff5abfba7",
+      "keys": [
+        "consum:7308583",
+        "consum:7331999"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "60dc17b1b2945cc3e2c0f3242cc5399174fb8fa1febf1a16d0877d0e3b254624",
+      "keys": [
+        "mercadona:21733",
+        "mercadona:27973"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "70dbf4da87df3ba6543a993035c255f7fd2bfc2861f6f0d5c88264f49ad90bd4",
+      "keys": [
+        "mercadona:21969",
+        "mercadona:46949"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "41ecae1f3eee3cc9ca5663171f005c7ab7f20733fbbdc86dfa82e705c308f811",
+      "keys": [
+        "carrefour:543602464",
+        "carrefour:543602468"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "3db9538a8dcfe1dfd1b2a1142246c0d720e82c9fd15a90c223b7908ac73c1e40",
+      "keys": [
+        "carrefour:520661023",
+        "carrefour:prod130196"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "64c2b9f336d27bb36308dcf0a0a7e5f5709618cb1dffb72a4802b85c6307c2f4",
+      "keys": [
+        "carrefour:520661019",
+        "carrefour:VC4AECOMM-335634"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "03def3e78ec82cac48b590cd9636386363f9d1fb4b4204dfa2165c9b49308391",
+      "keys": [
+        "carrefour:VC4AECOMM-347619",
+        "carrefour:VC4AECOMM-440130"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "6edce619d1bcccf9456109b3685dea1640a496201d093f6e510dafefbb8e023e",
+      "keys": [
+        "mercadona:16388",
+        "mercadona:17617"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "958a8fe7d140a44d2b405f97da6c9fd4a67f36fbc69da4c2459fb351548a7a6e",
+      "keys": [
+        "mercadona:67977",
+        "mercadona:86839"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "f88fa312657733e389b52061b03ae9971a652caa2fcedf6abde9a9d2a5569fce",
+      "keys": [
+        "carrefour:521009163",
+        "carrefour:VC4AECOMM-454263"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    },
+    {
+      "signature": "ebf69510086ba56046cd603e96463e8bbc0cf936c426363a029de6195553a6d4",
+      "keys": [
+        "carrefour:VC4AECOMM-485688",
+        "carrefour:VC4AECOMM-486724"
+      ],
+      "status": "potential_alias_not_verified_identity"
+    }
+  ],
+  "coverage": [
+    {
+      "family": "drinking_water",
+      "store": "carrefour",
+      "source_supported": 295,
+      "new_confirmatory_eligible": 278,
+      "query_origins": 116
+    },
+    {
+      "family": "drinking_water",
+      "store": "consum",
+      "source_supported": 76,
+      "new_confirmatory_eligible": 63,
+      "query_origins": 27
+    },
+    {
+      "family": "drinking_water",
+      "store": "mercadona",
+      "source_supported": 188,
+      "new_confirmatory_eligible": 182,
+      "query_origins": 76
+    },
+    {
+      "family": "drinking_water",
+      "store": "plusfresc",
+      "source_supported": 57,
+      "new_confirmatory_eligible": 51,
+      "query_origins": 22
+    },
+    {
+      "family": "yogurt",
+      "store": "carrefour",
+      "source_supported": 439,
+      "new_confirmatory_eligible": 435,
+      "query_origins": 182
+    },
+    {
+      "family": "yogurt",
+      "store": "consum",
+      "source_supported": 113,
+      "new_confirmatory_eligible": 105,
+      "query_origins": 43
+    },
+    {
+      "family": "yogurt",
+      "store": "mercadona",
+      "source_supported": 66,
+      "new_confirmatory_eligible": 61,
+      "query_origins": 25
+    },
+    {
+      "family": "yogurt",
+      "store": "plusfresc",
+      "source_supported": 219,
+      "new_confirmatory_eligible": 211,
+      "query_origins": 88
+    },
+    {
+      "family": "frozen_potatoes",
+      "store": "carrefour",
+      "source_supported": 32,
+      "new_confirmatory_eligible": 32,
+      "query_origins": 13
+    },
+    {
+      "family": "frozen_potatoes",
+      "store": "consum",
+      "source_supported": 8,
+      "new_confirmatory_eligible": 7,
+      "query_origins": 3
+    },
+    {
+      "family": "frozen_potatoes",
+      "store": "mercadona",
+      "source_supported": 7,
+      "new_confirmatory_eligible": 6,
+      "query_origins": 2
+    },
+    {
+      "family": "frozen_potatoes",
+      "store": "plusfresc",
+      "source_supported": 8,
+      "new_confirmatory_eligible": 8,
+      "query_origins": 3
+    }
+  ]
+}

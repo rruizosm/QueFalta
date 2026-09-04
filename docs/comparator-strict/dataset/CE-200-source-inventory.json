@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "task": "CE-200",
+  "date": "2026-09-03",
+  "source_files": [
+    {
+      "path": "docs/comparator-strict/fixtures/catalog-sample-2026-09-03.json",
+      "sha256": "13383c912e054f26bc0cd29c40d6e5f9e0bde1f8fda7944b032fce552d429311",
+      "bytes": 29441
+    },
+    {
+      "path": "supabase/experiments/comparator-evaluation-pairs.csv",
+      "sha256": "5d977fb58216decfd27d99c0521ca0c97286cc5de70ee827a76ece2141f5a701",
+      "bytes": 147067
+    },
+    {
+      "path": "supabase/experiments/comparator-evaluation-candidates.csv",
+      "sha256": "5d977fb58216decfd27d99c0521ca0c97286cc5de70ee827a76ece2141f5a701",
+      "bytes": 147067
+    },
+    {
+      "path": "supabase/experiments/comparator-embedding-pilot.jsonl",
+      "sha256": "f97224763569d0fb67c5b24fe0dea71df186d51ea8a42866abc84ee03b9c8530",
+      "bytes": 497638
+    },
+    {
+      "path": "scripts/build-comparator-embedding-pilot.mjs",
+      "sha256": "dd554335f7714b45edc824f008ba20a5a13f62c124ec4432a6445587eae56c44",
+      "bytes": 5664
+    }
+  ],
+  "legacy_csv_audit": {
+    "rows": 400,
+    "columns": 30,
+    "labels": {
+      "identico": 122,
+      "no_relacionado": 100,
+      "comparable": 178
+    },
+    "within_pilot_stores": 66,
+    "identifiers_not_imported_from_workbook": true,
+    "source_modified": false,
+    "tool": "Read-only @oai/artifact-tool Workbook.fromCSV in bundled workspace runtime",
+    "duplicate_files_identical_sha256": true,
+    "source_summary_human_labels_stale": true,
+    "strict_labels_imported": 0,
+    "source_user_names_not_copied": true
+  },
+  "legacy_jsonl_audit": {
+    "products": 683,
+    "pilot_store_products": 335,
+    "published_field_present": 0,
+    "observation_timestamp_field_present": 0,
+    "imported_fields": [
+      "store/product_id as exposure identity",
+      "global_gtin as unverified raw exposure link"
+    ],
+    "derived_attributes_and_quantities_imported": false
+  },
+  "source_scope": "Named experiment and CE-104 files inside this repository; no scan of profiles, device storage or external accounts",
+  "missing": "No full raw product/location snapshot found in the scoped local corpus files; current product/location revisions and representative sampling frame unavailable",
+  "policy": {
+    "legacy_labels_are_not_strict_truth": true,
+    "age_TTL_applied": false,
+    "private_data_exported": false,
+    "remote_project_calls": 0,
+    "source_files_modified": false
+  }
+}

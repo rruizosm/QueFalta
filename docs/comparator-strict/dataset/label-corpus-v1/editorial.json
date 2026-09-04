@@ -1,0 +1,2923 @@
+[
+  {
+    "schema_version": 1,
+    "id": "E01",
+    "annotation_id": "f6af52ecbbd94c2573c4d268ea4fea44e75aca3b8c3b21c9af6b0d9778dbb4c4",
+    "pair_id": "072686bc4a697bf8de61d8702a06848c0df5f20595bfb0bb89a78712176ba7b6",
+    "products": [
+      "carrefour:VC4AECOMM-621804",
+      "mercadona:20559"
+    ],
+    "observations": [
+      "9f91bdbeadace843e8e45034b099bff2175f56fe3dffeff90cfcb6f6f2fa34aa",
+      "061c6dbce16d1a3c67aa53e73f2c64e3c27a994d6f656012b41f3aba2d41af4b"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "supplemental_editorial_challenge_not_CE200_sample",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "compatible",
+        "reason": "Ambos son yogures en pack nominal fijo documentado, dentro del piloto.",
+        "evidence": [
+          "9329352615d93cefd2635b7fd5b74f262a164fcdf872723b75e356e4d95b91c9",
+          "f83b765235306be6922aae9ef57363c434c3da1a372d86372d96412b3699740c",
+          "9541b718c0a87948d6856bcb548194cc0f12687935422d5bacd4949bce39815d"
+        ]
+      },
+      "identity": {
+        "state": "compatible",
+        "reason": "Denominaciones comerciales de yogur griego para el mismo uso; base, sabor y endulzado se revisan por separado.",
+        "evidence": [
+          "9329352615d93cefd2635b7fd5b74f262a164fcdf872723b75e356e4d95b91c9",
+          "f83b765235306be6922aae9ef57363c434c3da1a372d86372d96412b3699740c"
+        ]
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "El origen tiene ingredientes declarados; Mercadona no los aporta. Natural no demuestra endulzado ni todos los atributos obligatorios.",
+        "evidence": [
+          "cf6f492b18066169342d71fea592aaf242a8caaddcc4c06aa713d03b04149475",
+          "367f2999ee22edaf344f686dcf271a1c575cef2247f4a107407782d1d68ccb0c",
+          "f83b765235306be6922aae9ef57363c434c3da1a372d86372d96412b3699740c"
+        ]
+      },
+      "format": {
+        "state": "compatible",
+        "reason": "Ambos declaran seis envases de 125 g, total 750 g. Coincidencia nominal, no equivalencia completa.",
+        "evidence": [
+          "9329352615d93cefd2635b7fd5b74f262a164fcdf872723b75e356e4d95b91c9",
+          "9541b718c0a87948d6856bcb548194cc0f12687935422d5bacd4949bce39815d"
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "abstain",
+    "reason": "Positivo real de identidad/tipo y formato 6×125 g; no aprobar equivalencia ni ahorro por las lagunas de variante y ámbito.",
+    "tags": [
+      "positive_format",
+      "greek_natural",
+      "6x125"
+    ],
+    "citations": [
+      {
+        "id": "9329352615d93cefd2635b7fd5b74f262a164fcdf872723b75e356e4d95b91c9",
+        "product_key": "carrefour:VC4AECOMM-621804",
+        "observation_id": "9f91bdbeadace843e8e45034b099bff2175f56fe3dffeff90cfcb6f6f2fa34aa",
+        "captured_at": "2026-09-03T10:26:48.167896+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-23f4865075aa8518c6c54b3b2343.json",
+          "sha256": "ab5d5cae83f08076d2a3430ec4f55b2516a57515bb6fdf6544c46ea23a9478a8",
+          "pointer": "/payload/rows/12",
+          "raw_sha256": "cadc19e1c05ba643128eeceece44db4f954f0088fff7f5ec7d5467b10a0414bb",
+          "source_row_md5": "43e3bf21bbb897ff7cf8cdfb610ac887"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur griego natural Carrefour Extra pack de 6 unidades de 125 g."
+      },
+      {
+        "id": "f83b765235306be6922aae9ef57363c434c3da1a372d86372d96412b3699740c",
+        "product_key": "mercadona:20559",
+        "observation_id": "061c6dbce16d1a3c67aa53e73f2c64e3c27a994d6f656012b41f3aba2d41af4b",
+        "captured_at": "2026-09-03T10:28:10.9374+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b1cf39dfc08f233dbf20689280e5.json",
+          "sha256": "67c34ebaf8f3df0a6c02d599487a4e0a4cb2544462fe87a2a3240e40b0214bad",
+          "pointer": "/payload/rows/18",
+          "raw_sha256": "d15b55b10ea12deace69e032c36bfcfa03f803c2a0ffbbadf20c35a64e05dca6",
+          "source_row_md5": "bf8174c07c34c94cce289adeedffdb1a"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur griego natural Hacendado"
+      },
+      {
+        "id": "9541b718c0a87948d6856bcb548194cc0f12687935422d5bacd4949bce39815d",
+        "product_key": "mercadona:20559",
+        "observation_id": "061c6dbce16d1a3c67aa53e73f2c64e3c27a994d6f656012b41f3aba2d41af4b",
+        "captured_at": "2026-09-03T10:28:10.9374+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b1cf39dfc08f233dbf20689280e5.json",
+          "sha256": "67c34ebaf8f3df0a6c02d599487a4e0a4cb2544462fe87a2a3240e40b0214bad",
+          "pointer": "/payload/rows/18",
+          "raw_sha256": "d15b55b10ea12deace69e032c36bfcfa03f803c2a0ffbbadf20c35a64e05dca6",
+          "source_row_md5": "bf8174c07c34c94cce289adeedffdb1a"
+        },
+        "pointer": "/raw/price_instructions",
+        "value": {
+          "iva": null,
+          "is_new": false,
+          "is_pack": true,
+          "pack_size": 0.125,
+          "unit_name": "ud.",
+          "unit_size": 0.75,
+          "bulk_price": "1.93",
+          "unit_price": "1.45",
+          "approx_size": false,
+          "size_format": "kg",
+          "total_units": 6,
+          "unit_selector": true,
+          "bunch_selector": false,
+          "drained_weight": null,
+          "selling_method": 0,
+          "tax_percentage": "4.000",
+          "price_decreased": false,
+          "reference_price": "1.934",
+          "min_bunch_amount": 1,
+          "reference_format": "kg",
+          "previous_unit_price": null,
+          "increment_bunch_amount": 1
+        }
+      },
+      {
+        "id": "cf6f492b18066169342d71fea592aaf242a8caaddcc4c06aa713d03b04149475",
+        "product_key": "carrefour:VC4AECOMM-621804",
+        "observation_id": "9f91bdbeadace843e8e45034b099bff2175f56fe3dffeff90cfcb6f6f2fa34aa",
+        "captured_at": "2026-09-03T10:26:48.167896+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-23f4865075aa8518c6c54b3b2343.json",
+          "sha256": "ab5d5cae83f08076d2a3430ec4f55b2516a57515bb6fdf6544c46ea23a9478a8",
+          "pointer": "/payload/rows/12",
+          "raw_sha256": "cadc19e1c05ba643128eeceece44db4f954f0088fff7f5ec7d5467b10a0414bb",
+          "source_row_md5": "43e3bf21bbb897ff7cf8cdfb610ac887"
+        },
+        "pointer": "/ingredients",
+        "value": "Leche entera pasteurizada 79,5%, nata pasteurizada, leche desnatada en polvo y fermentos lácticos."
+      },
+      {
+        "id": "367f2999ee22edaf344f686dcf271a1c575cef2247f4a107407782d1d68ccb0c",
+        "product_key": "mercadona:20559",
+        "observation_id": "061c6dbce16d1a3c67aa53e73f2c64e3c27a994d6f656012b41f3aba2d41af4b",
+        "captured_at": "2026-09-03T10:28:10.9374+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b1cf39dfc08f233dbf20689280e5.json",
+          "sha256": "67c34ebaf8f3df0a6c02d599487a4e0a4cb2544462fe87a2a3240e40b0214bad",
+          "pointer": "/payload/rows/18",
+          "raw_sha256": "d15b55b10ea12deace69e032c36bfcfa03f803c2a0ffbbadf20c35a64e05dca6",
+          "source_row_md5": "bf8174c07c34c94cce289adeedffdb1a"
+        },
+        "pointer": "/ingredients",
+        "value": null
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E02",
+    "annotation_id": "cb0c9c25cadba714900c14c074dada9629862bfbe511cb6914ed97dce58f1033",
+    "pair_id": "37f83bee58e12105c72e162139051324ebb4e39213d73d09177bdcdac4944922",
+    "products": [
+      "carrefour:VC4AECOMM-652994",
+      "mercadona:52441"
+    ],
+    "observations": [
+      "5f786c592049f2d389872f075e40fc6d587a236bebf4c8b3de247fb51eb5d6f2",
+      "7e3b9e4797b8348edef9960c5336f8f297494784ad582bf162e0a097d63f84f9"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "supplemental_editorial_challenge_not_CE200_sample",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "compatible",
+        "reason": "Ambos son yogures en pack nominal fijo documentado, dentro del piloto.",
+        "evidence": [
+          "369457b681be1d0b88ba008ed3a6415a2e8233331761691b7e077c22783a2863",
+          "dd980429deef51c5d69af2517262ded2ab1a00a697c9e39b918d6ce610ce1a75",
+          "421edba4f91b00ef8aef5408c2d682d95f01994962b9335c6ec01a1b6de3251b"
+        ]
+      },
+      "identity": {
+        "state": "compatible",
+        "reason": "Denominaciones comerciales de yogur griego para el mismo uso; base, sabor y endulzado se revisan por separado.",
+        "evidence": [
+          "369457b681be1d0b88ba008ed3a6415a2e8233331761691b7e077c22783a2863",
+          "dd980429deef51c5d69af2517262ded2ab1a00a697c9e39b918d6ce610ce1a75"
+        ]
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Ambos declaran azúcar de caña, pero eso no completa grasa, especie, edulcorantes y todas las declaraciones.",
+        "evidence": [
+          "369457b681be1d0b88ba008ed3a6415a2e8233331761691b7e077c22783a2863",
+          "dd980429deef51c5d69af2517262ded2ab1a00a697c9e39b918d6ce610ce1a75",
+          "70729e9c8af632e99ddcf0f103f97abe9e44505f84ed44a172537194b4b26389",
+          "cd68065adec4f5ec177f862f60d01f79d302191d05488c4c6151db4bae6931c3"
+        ]
+      },
+      "format": {
+        "state": "compatible",
+        "reason": "Ambos declaran seis envases de 125 g, total 750 g. Coincidencia nominal, no equivalencia completa.",
+        "evidence": [
+          "369457b681be1d0b88ba008ed3a6415a2e8233331761691b7e077c22783a2863",
+          "421edba4f91b00ef8aef5408c2d682d95f01994962b9335c6ec01a1b6de3251b"
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "abstain",
+    "reason": "Pack y declaración de azúcar de caña coincidentes no suplen atributos ausentes ni evidencia de precio local.",
+    "tags": [
+      "positive_format",
+      "cane_sugar",
+      "6x125"
+    ],
+    "citations": [
+      {
+        "id": "369457b681be1d0b88ba008ed3a6415a2e8233331761691b7e077c22783a2863",
+        "product_key": "carrefour:VC4AECOMM-652994",
+        "observation_id": "5f786c592049f2d389872f075e40fc6d587a236bebf4c8b3de247fb51eb5d6f2",
+        "captured_at": "2026-09-03T10:26:48.167896+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-23f4865075aa8518c6c54b3b2343.json",
+          "sha256": "ab5d5cae83f08076d2a3430ec4f55b2516a57515bb6fdf6544c46ea23a9478a8",
+          "pointer": "/payload/rows/80",
+          "raw_sha256": "486eaaea41733031e26cc4df2166674dc8033a1b1f117fa0ec652e6da99712a7",
+          "source_row_md5": "d571a27dbb32f76f3e41fd9388ce908c"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur griego natural con azúcar de caña Carrefour Extra pack de 6 unidades de 125 g."
+      },
+      {
+        "id": "dd980429deef51c5d69af2517262ded2ab1a00a697c9e39b918d6ce610ce1a75",
+        "product_key": "mercadona:52441",
+        "observation_id": "7e3b9e4797b8348edef9960c5336f8f297494784ad582bf162e0a097d63f84f9",
+        "captured_at": "2026-09-03T10:28:21.716082+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-e9b52d1e0a5d9f5394bceb486cda.json",
+          "sha256": "26266ea93aad8d750b47cdaa0fc520cd90ea97b88f86e20b02fad06642a2fdc0",
+          "pointer": "/payload/rows/71",
+          "raw_sha256": "ac7f83b1f43a73d3e58980139e636bf22a625c1eba2c4db12b8012487bd1c3ed",
+          "source_row_md5": "381ed02988f2b68957b64b5ccc67067a"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur griego natural Hacendado con azúcar de caña"
+      },
+      {
+        "id": "421edba4f91b00ef8aef5408c2d682d95f01994962b9335c6ec01a1b6de3251b",
+        "product_key": "mercadona:52441",
+        "observation_id": "7e3b9e4797b8348edef9960c5336f8f297494784ad582bf162e0a097d63f84f9",
+        "captured_at": "2026-09-03T10:28:21.716082+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-e9b52d1e0a5d9f5394bceb486cda.json",
+          "sha256": "26266ea93aad8d750b47cdaa0fc520cd90ea97b88f86e20b02fad06642a2fdc0",
+          "pointer": "/payload/rows/71",
+          "raw_sha256": "ac7f83b1f43a73d3e58980139e636bf22a625c1eba2c4db12b8012487bd1c3ed",
+          "source_row_md5": "381ed02988f2b68957b64b5ccc67067a"
+        },
+        "pointer": "/raw/price_instructions",
+        "value": {
+          "iva": null,
+          "is_new": false,
+          "is_pack": true,
+          "pack_size": 0.125,
+          "unit_name": "ud.",
+          "unit_size": 0.75,
+          "bulk_price": "2.00",
+          "unit_price": "1.50",
+          "approx_size": false,
+          "size_format": "kg",
+          "total_units": 6,
+          "unit_selector": true,
+          "bunch_selector": false,
+          "drained_weight": null,
+          "selling_method": 0,
+          "tax_percentage": "4.000",
+          "price_decreased": false,
+          "reference_price": "2.000",
+          "min_bunch_amount": 1,
+          "reference_format": "kg",
+          "previous_unit_price": null,
+          "increment_bunch_amount": 1
+        }
+      },
+      {
+        "id": "70729e9c8af632e99ddcf0f103f97abe9e44505f84ed44a172537194b4b26389",
+        "product_key": "carrefour:VC4AECOMM-652994",
+        "observation_id": "5f786c592049f2d389872f075e40fc6d587a236bebf4c8b3de247fb51eb5d6f2",
+        "captured_at": "2026-09-03T10:26:48.167896+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-23f4865075aa8518c6c54b3b2343.json",
+          "sha256": "ab5d5cae83f08076d2a3430ec4f55b2516a57515bb6fdf6544c46ea23a9478a8",
+          "pointer": "/payload/rows/80",
+          "raw_sha256": "486eaaea41733031e26cc4df2166674dc8033a1b1f117fa0ec652e6da99712a7",
+          "source_row_md5": "d571a27dbb32f76f3e41fd9388ce908c"
+        },
+        "pointer": "/ingredients",
+        "value": "Leche entera pasteurizada, nata pasteurizada (contiene leche), azúcar moreno de caña (7,6%), leche desnatada en polvo y fermentos lácticos."
+      },
+      {
+        "id": "cd68065adec4f5ec177f862f60d01f79d302191d05488c4c6151db4bae6931c3",
+        "product_key": "mercadona:52441",
+        "observation_id": "7e3b9e4797b8348edef9960c5336f8f297494784ad582bf162e0a097d63f84f9",
+        "captured_at": "2026-09-03T10:28:21.716082+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-e9b52d1e0a5d9f5394bceb486cda.json",
+          "sha256": "26266ea93aad8d750b47cdaa0fc520cd90ea97b88f86e20b02fad06642a2fdc0",
+          "pointer": "/payload/rows/71",
+          "raw_sha256": "ac7f83b1f43a73d3e58980139e636bf22a625c1eba2c4db12b8012487bd1c3ed",
+          "source_row_md5": "381ed02988f2b68957b64b5ccc67067a"
+        },
+        "pointer": "/ingredients",
+        "value": null
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E03",
+    "annotation_id": "f47aa5c4542c6ebbdcec17941853fa57b328cd0e7fce213efadfd95eb54282bd",
+    "pair_id": "495bfcf0dbfe559764f0918c12dc92543e7e825f15d8bf62a765e7b9c661d3ca",
+    "products": [
+      "carrefour:VC4AECOMM-621804",
+      "mercadona:52441"
+    ],
+    "observations": [
+      "9f91bdbeadace843e8e45034b099bff2175f56fe3dffeff90cfcb6f6f2fa34aa",
+      "7e3b9e4797b8348edef9960c5336f8f297494784ad582bf162e0a097d63f84f9"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "supplemental_editorial_challenge_not_CE200_sample",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "compatible",
+        "reason": "Ambos son yogures en pack nominal fijo documentado, dentro del piloto.",
+        "evidence": [
+          "9329352615d93cefd2635b7fd5b74f262a164fcdf872723b75e356e4d95b91c9",
+          "dd980429deef51c5d69af2517262ded2ab1a00a697c9e39b918d6ce610ce1a75",
+          "421edba4f91b00ef8aef5408c2d682d95f01994962b9335c6ec01a1b6de3251b"
+        ]
+      },
+      "identity": {
+        "state": "compatible",
+        "reason": "Denominaciones comerciales de yogur griego para el mismo uso; base, sabor y endulzado se revisan por separado.",
+        "evidence": [
+          "9329352615d93cefd2635b7fd5b74f262a164fcdf872723b75e356e4d95b91c9",
+          "dd980429deef51c5d69af2517262ded2ab1a00a697c9e39b918d6ce610ce1a75"
+        ]
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Uno declara azúcar añadido y el otro se denomina natural. La lista disponible debe validarse como declaración completa antes de afirmar ausencia; no aprobar por el nombre.",
+        "evidence": [
+          "9329352615d93cefd2635b7fd5b74f262a164fcdf872723b75e356e4d95b91c9",
+          "cf6f492b18066169342d71fea592aaf242a8caaddcc4c06aa713d03b04149475",
+          "dd980429deef51c5d69af2517262ded2ab1a00a697c9e39b918d6ce610ce1a75"
+        ]
+      },
+      "format": {
+        "state": "compatible",
+        "reason": "Ambos declaran seis envases de 125 g, total 750 g. Coincidencia nominal, no equivalencia completa.",
+        "evidence": [
+          "9329352615d93cefd2635b7fd5b74f262a164fcdf872723b75e356e4d95b91c9",
+          "421edba4f91b00ef8aef5408c2d682d95f01994962b9335c6ec01a1b6de3251b"
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "abstain",
+    "reason": "Contraste natural/azúcar: no son intercambiables por defecto; tampoco se inventa una ausencia de azúcar añadido.",
+    "tags": [
+      "natural_not_no_added_sugar",
+      "6x125"
+    ],
+    "citations": [
+      {
+        "id": "9329352615d93cefd2635b7fd5b74f262a164fcdf872723b75e356e4d95b91c9",
+        "product_key": "carrefour:VC4AECOMM-621804",
+        "observation_id": "9f91bdbeadace843e8e45034b099bff2175f56fe3dffeff90cfcb6f6f2fa34aa",
+        "captured_at": "2026-09-03T10:26:48.167896+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-23f4865075aa8518c6c54b3b2343.json",
+          "sha256": "ab5d5cae83f08076d2a3430ec4f55b2516a57515bb6fdf6544c46ea23a9478a8",
+          "pointer": "/payload/rows/12",
+          "raw_sha256": "cadc19e1c05ba643128eeceece44db4f954f0088fff7f5ec7d5467b10a0414bb",
+          "source_row_md5": "43e3bf21bbb897ff7cf8cdfb610ac887"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur griego natural Carrefour Extra pack de 6 unidades de 125 g."
+      },
+      {
+        "id": "dd980429deef51c5d69af2517262ded2ab1a00a697c9e39b918d6ce610ce1a75",
+        "product_key": "mercadona:52441",
+        "observation_id": "7e3b9e4797b8348edef9960c5336f8f297494784ad582bf162e0a097d63f84f9",
+        "captured_at": "2026-09-03T10:28:21.716082+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-e9b52d1e0a5d9f5394bceb486cda.json",
+          "sha256": "26266ea93aad8d750b47cdaa0fc520cd90ea97b88f86e20b02fad06642a2fdc0",
+          "pointer": "/payload/rows/71",
+          "raw_sha256": "ac7f83b1f43a73d3e58980139e636bf22a625c1eba2c4db12b8012487bd1c3ed",
+          "source_row_md5": "381ed02988f2b68957b64b5ccc67067a"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur griego natural Hacendado con azúcar de caña"
+      },
+      {
+        "id": "421edba4f91b00ef8aef5408c2d682d95f01994962b9335c6ec01a1b6de3251b",
+        "product_key": "mercadona:52441",
+        "observation_id": "7e3b9e4797b8348edef9960c5336f8f297494784ad582bf162e0a097d63f84f9",
+        "captured_at": "2026-09-03T10:28:21.716082+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-e9b52d1e0a5d9f5394bceb486cda.json",
+          "sha256": "26266ea93aad8d750b47cdaa0fc520cd90ea97b88f86e20b02fad06642a2fdc0",
+          "pointer": "/payload/rows/71",
+          "raw_sha256": "ac7f83b1f43a73d3e58980139e636bf22a625c1eba2c4db12b8012487bd1c3ed",
+          "source_row_md5": "381ed02988f2b68957b64b5ccc67067a"
+        },
+        "pointer": "/raw/price_instructions",
+        "value": {
+          "iva": null,
+          "is_new": false,
+          "is_pack": true,
+          "pack_size": 0.125,
+          "unit_name": "ud.",
+          "unit_size": 0.75,
+          "bulk_price": "2.00",
+          "unit_price": "1.50",
+          "approx_size": false,
+          "size_format": "kg",
+          "total_units": 6,
+          "unit_selector": true,
+          "bunch_selector": false,
+          "drained_weight": null,
+          "selling_method": 0,
+          "tax_percentage": "4.000",
+          "price_decreased": false,
+          "reference_price": "2.000",
+          "min_bunch_amount": 1,
+          "reference_format": "kg",
+          "previous_unit_price": null,
+          "increment_bunch_amount": 1
+        }
+      },
+      {
+        "id": "cf6f492b18066169342d71fea592aaf242a8caaddcc4c06aa713d03b04149475",
+        "product_key": "carrefour:VC4AECOMM-621804",
+        "observation_id": "9f91bdbeadace843e8e45034b099bff2175f56fe3dffeff90cfcb6f6f2fa34aa",
+        "captured_at": "2026-09-03T10:26:48.167896+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-23f4865075aa8518c6c54b3b2343.json",
+          "sha256": "ab5d5cae83f08076d2a3430ec4f55b2516a57515bb6fdf6544c46ea23a9478a8",
+          "pointer": "/payload/rows/12",
+          "raw_sha256": "cadc19e1c05ba643128eeceece44db4f954f0088fff7f5ec7d5467b10a0414bb",
+          "source_row_md5": "43e3bf21bbb897ff7cf8cdfb610ac887"
+        },
+        "pointer": "/ingredients",
+        "value": "Leche entera pasteurizada 79,5%, nata pasteurizada, leche desnatada en polvo y fermentos lácticos."
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E04",
+    "annotation_id": "23ac0bbec3fa9741543232d84b31b67b3d677878b54b6c2068b008142ea920c7",
+    "pair_id": "1147f61d8557e593bcbb5cfb416e559d2e8ccc430439fe9cb7a66d6addb59468",
+    "products": [
+      "carrefour:VC4AECOMM-652994",
+      "mercadona:20559"
+    ],
+    "observations": [
+      "5f786c592049f2d389872f075e40fc6d587a236bebf4c8b3de247fb51eb5d6f2",
+      "061c6dbce16d1a3c67aa53e73f2c64e3c27a994d6f656012b41f3aba2d41af4b"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "supplemental_editorial_challenge_not_CE200_sample",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "compatible",
+        "reason": "Ambos son yogures en pack nominal fijo documentado, dentro del piloto.",
+        "evidence": [
+          "369457b681be1d0b88ba008ed3a6415a2e8233331761691b7e077c22783a2863",
+          "f83b765235306be6922aae9ef57363c434c3da1a372d86372d96412b3699740c",
+          "9541b718c0a87948d6856bcb548194cc0f12687935422d5bacd4949bce39815d"
+        ]
+      },
+      "identity": {
+        "state": "compatible",
+        "reason": "Denominaciones comerciales de yogur griego para el mismo uso; base, sabor y endulzado se revisan por separado.",
+        "evidence": [
+          "369457b681be1d0b88ba008ed3a6415a2e8233331761691b7e077c22783a2863",
+          "f83b765235306be6922aae9ef57363c434c3da1a372d86372d96412b3699740c"
+        ]
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Carrefour declara azúcar de caña; el yogur natural de Mercadona no tiene ingredientes en el snapshot. No completar el dato ausente.",
+        "evidence": [
+          "369457b681be1d0b88ba008ed3a6415a2e8233331761691b7e077c22783a2863",
+          "f83b765235306be6922aae9ef57363c434c3da1a372d86372d96412b3699740c",
+          "367f2999ee22edaf344f686dcf271a1c575cef2247f4a107407782d1d68ccb0c"
+        ]
+      },
+      "format": {
+        "state": "compatible",
+        "reason": "Ambos declaran seis envases de 125 g, total 750 g. Coincidencia nominal, no equivalencia completa.",
+        "evidence": [
+          "369457b681be1d0b88ba008ed3a6415a2e8233331761691b7e077c22783a2863",
+          "9541b718c0a87948d6856bcb548194cc0f12687935422d5bacd4949bce39815d"
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "abstain",
+    "reason": "No ofrecer como equivalente el natural frente al azucarado sin verificar el endulzado del primero.",
+    "tags": [
+      "natural_not_no_added_sugar",
+      "6x125"
+    ],
+    "citations": [
+      {
+        "id": "369457b681be1d0b88ba008ed3a6415a2e8233331761691b7e077c22783a2863",
+        "product_key": "carrefour:VC4AECOMM-652994",
+        "observation_id": "5f786c592049f2d389872f075e40fc6d587a236bebf4c8b3de247fb51eb5d6f2",
+        "captured_at": "2026-09-03T10:26:48.167896+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-23f4865075aa8518c6c54b3b2343.json",
+          "sha256": "ab5d5cae83f08076d2a3430ec4f55b2516a57515bb6fdf6544c46ea23a9478a8",
+          "pointer": "/payload/rows/80",
+          "raw_sha256": "486eaaea41733031e26cc4df2166674dc8033a1b1f117fa0ec652e6da99712a7",
+          "source_row_md5": "d571a27dbb32f76f3e41fd9388ce908c"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur griego natural con azúcar de caña Carrefour Extra pack de 6 unidades de 125 g."
+      },
+      {
+        "id": "f83b765235306be6922aae9ef57363c434c3da1a372d86372d96412b3699740c",
+        "product_key": "mercadona:20559",
+        "observation_id": "061c6dbce16d1a3c67aa53e73f2c64e3c27a994d6f656012b41f3aba2d41af4b",
+        "captured_at": "2026-09-03T10:28:10.9374+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b1cf39dfc08f233dbf20689280e5.json",
+          "sha256": "67c34ebaf8f3df0a6c02d599487a4e0a4cb2544462fe87a2a3240e40b0214bad",
+          "pointer": "/payload/rows/18",
+          "raw_sha256": "d15b55b10ea12deace69e032c36bfcfa03f803c2a0ffbbadf20c35a64e05dca6",
+          "source_row_md5": "bf8174c07c34c94cce289adeedffdb1a"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur griego natural Hacendado"
+      },
+      {
+        "id": "9541b718c0a87948d6856bcb548194cc0f12687935422d5bacd4949bce39815d",
+        "product_key": "mercadona:20559",
+        "observation_id": "061c6dbce16d1a3c67aa53e73f2c64e3c27a994d6f656012b41f3aba2d41af4b",
+        "captured_at": "2026-09-03T10:28:10.9374+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b1cf39dfc08f233dbf20689280e5.json",
+          "sha256": "67c34ebaf8f3df0a6c02d599487a4e0a4cb2544462fe87a2a3240e40b0214bad",
+          "pointer": "/payload/rows/18",
+          "raw_sha256": "d15b55b10ea12deace69e032c36bfcfa03f803c2a0ffbbadf20c35a64e05dca6",
+          "source_row_md5": "bf8174c07c34c94cce289adeedffdb1a"
+        },
+        "pointer": "/raw/price_instructions",
+        "value": {
+          "iva": null,
+          "is_new": false,
+          "is_pack": true,
+          "pack_size": 0.125,
+          "unit_name": "ud.",
+          "unit_size": 0.75,
+          "bulk_price": "1.93",
+          "unit_price": "1.45",
+          "approx_size": false,
+          "size_format": "kg",
+          "total_units": 6,
+          "unit_selector": true,
+          "bunch_selector": false,
+          "drained_weight": null,
+          "selling_method": 0,
+          "tax_percentage": "4.000",
+          "price_decreased": false,
+          "reference_price": "1.934",
+          "min_bunch_amount": 1,
+          "reference_format": "kg",
+          "previous_unit_price": null,
+          "increment_bunch_amount": 1
+        }
+      },
+      {
+        "id": "367f2999ee22edaf344f686dcf271a1c575cef2247f4a107407782d1d68ccb0c",
+        "product_key": "mercadona:20559",
+        "observation_id": "061c6dbce16d1a3c67aa53e73f2c64e3c27a994d6f656012b41f3aba2d41af4b",
+        "captured_at": "2026-09-03T10:28:10.9374+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b1cf39dfc08f233dbf20689280e5.json",
+          "sha256": "67c34ebaf8f3df0a6c02d599487a4e0a4cb2544462fe87a2a3240e40b0214bad",
+          "pointer": "/payload/rows/18",
+          "raw_sha256": "d15b55b10ea12deace69e032c36bfcfa03f803c2a0ffbbadf20c35a64e05dca6",
+          "source_row_md5": "bf8174c07c34c94cce289adeedffdb1a"
+        },
+        "pointer": "/ingredients",
+        "value": null
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E05",
+    "annotation_id": "43572b56a987a0055e668606bc132bd3c481b673a8aba322422752b1903637ce",
+    "pair_id": "99c8fbb90434f0b39d6ef1aba7fcbd38a795296aeb2ea3ae39b6384b2d6edbad",
+    "products": [
+      "carrefour:521029389",
+      "mercadona:20559"
+    ],
+    "observations": [
+      "e0e4286cb76cc1cdc23c0f5ec3c6c74faa548018f63308bad86c4e8240a937f4",
+      "061c6dbce16d1a3c67aa53e73f2c64e3c27a994d6f656012b41f3aba2d41af4b"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "editorial_subset_of_frozen_corpus",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "format": {
+        "state": "incompatible",
+        "reason": "Carrefour declara 8×120 g y Mercadona 6×125 g: difieren conteo y contenido por envase.",
+        "evidence": [
+          "cb7575e38eaf57b066a327161f306498973af5584191cecd5ca64c8ceff1741a",
+          "9541b718c0a87948d6856bcb548194cc0f12687935422d5bacd4949bce39815d"
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "rejected",
+    "reason": "Rechazo respaldado por 8×120 frente a 6×125; no usar el total ni la palabra natural para igualarlos.",
+    "tags": [
+      "negative_format",
+      "count",
+      "per_unit"
+    ],
+    "citations": [
+      {
+        "id": "cb7575e38eaf57b066a327161f306498973af5584191cecd5ca64c8ceff1741a",
+        "product_key": "carrefour:521029389",
+        "observation_id": "e0e4286cb76cc1cdc23c0f5ec3c6c74faa548018f63308bad86c4e8240a937f4",
+        "captured_at": "2026-09-03T10:23:17.470524+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-cbf2789fdca8f21e2f987873009c.json",
+          "sha256": "84e4b46060f83b289e2587bdc86352d7c2f2c539966cdbe64eda1a19c68730d7",
+          "pointer": "/payload/rows/14",
+          "raw_sha256": "93ceed5c009896807038b9c9fd346e8449089c61c74ab62c1d0e50d9a2a9118d",
+          "source_row_md5": "3332e2a16371ae50168da99ba0a4181d"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur natural Danone pack de 8 unidades de 120 g."
+      },
+      {
+        "id": "9541b718c0a87948d6856bcb548194cc0f12687935422d5bacd4949bce39815d",
+        "product_key": "mercadona:20559",
+        "observation_id": "061c6dbce16d1a3c67aa53e73f2c64e3c27a994d6f656012b41f3aba2d41af4b",
+        "captured_at": "2026-09-03T10:28:10.9374+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b1cf39dfc08f233dbf20689280e5.json",
+          "sha256": "67c34ebaf8f3df0a6c02d599487a4e0a4cb2544462fe87a2a3240e40b0214bad",
+          "pointer": "/payload/rows/18",
+          "raw_sha256": "d15b55b10ea12deace69e032c36bfcfa03f803c2a0ffbbadf20c35a64e05dca6",
+          "source_row_md5": "bf8174c07c34c94cce289adeedffdb1a"
+        },
+        "pointer": "/raw/price_instructions",
+        "value": {
+          "iva": null,
+          "is_new": false,
+          "is_pack": true,
+          "pack_size": 0.125,
+          "unit_name": "ud.",
+          "unit_size": 0.75,
+          "bulk_price": "1.93",
+          "unit_price": "1.45",
+          "approx_size": false,
+          "size_format": "kg",
+          "total_units": 6,
+          "unit_selector": true,
+          "bunch_selector": false,
+          "drained_weight": null,
+          "selling_method": 0,
+          "tax_percentage": "4.000",
+          "price_decreased": false,
+          "reference_price": "1.934",
+          "min_bunch_amount": 1,
+          "reference_format": "kg",
+          "previous_unit_price": null,
+          "increment_bunch_amount": 1
+        }
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E06",
+    "annotation_id": "668abd4e621801111374ab065f729eb64716575b04817a82d42364349b578004",
+    "pair_id": "54b8ac7cd9991c2d7652af8a17e3b755e27c9ecd3df49d0aa6f0c7cca1f55377",
+    "products": [
+      "carrefour:521029389",
+      "consum:7340867"
+    ],
+    "observations": [
+      "e0e4286cb76cc1cdc23c0f5ec3c6c74faa548018f63308bad86c4e8240a937f4",
+      "b1e328948d58ead71fe1fbc3b4d14837856109d87e28c7167f5266fbc268af0f"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "editorial_subset_of_frozen_corpus",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Edulcorado es una declaración del candidato, no una prueba de ausencia de edulcorantes en el origen; no completar grasa ni sabor.",
+        "evidence": [
+          "cb7575e38eaf57b066a327161f306498973af5584191cecd5ca64c8ceff1741a",
+          "89b1cfbfc725b1977e16fc21aa00f3fc5729cd540fa8236c0e0fc8c5c9796ee5",
+          "00b90ad38766a37e62c0e23991ee0911f93a57a96642d2953a41e00364d728e7"
+        ]
+      },
+      "format": {
+        "state": "incompatible",
+        "reason": "El pack de ocho unidades de 120 g no coincide con cuatro de 125 g.",
+        "evidence": [
+          "cb7575e38eaf57b066a327161f306498973af5584191cecd5ca64c8ceff1741a",
+          "6f2c1b07b1f19650df088ef66a32c69c844038472b9c9332d48ddda5d77515f7"
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "rejected",
+    "reason": "Pack inequívocamente distinto; las otras dimensiones conservan lo que todavía no está probado.",
+    "tags": [
+      "negative_format",
+      "sweeteners"
+    ],
+    "citations": [
+      {
+        "id": "cb7575e38eaf57b066a327161f306498973af5584191cecd5ca64c8ceff1741a",
+        "product_key": "carrefour:521029389",
+        "observation_id": "e0e4286cb76cc1cdc23c0f5ec3c6c74faa548018f63308bad86c4e8240a937f4",
+        "captured_at": "2026-09-03T10:23:17.470524+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-cbf2789fdca8f21e2f987873009c.json",
+          "sha256": "84e4b46060f83b289e2587bdc86352d7c2f2c539966cdbe64eda1a19c68730d7",
+          "pointer": "/payload/rows/14",
+          "raw_sha256": "93ceed5c009896807038b9c9fd346e8449089c61c74ab62c1d0e50d9a2a9118d",
+          "source_row_md5": "3332e2a16371ae50168da99ba0a4181d"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur natural Danone pack de 8 unidades de 120 g."
+      },
+      {
+        "id": "6f2c1b07b1f19650df088ef66a32c69c844038472b9c9332d48ddda5d77515f7",
+        "product_key": "consum:7340867",
+        "observation_id": "b1e328948d58ead71fe1fbc3b4d14837856109d87e28c7167f5266fbc268af0f",
+        "captured_at": "2026-09-03T10:27:52.984734+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-7d901ea4d42ffb4758aad98c0a79.json",
+          "sha256": "6efc3c3896c9f2a964feb88de4f1384659c775a281344df70569d74dc25ba528",
+          "pointer": "/payload/rows/3",
+          "raw_sha256": "2435004e5a0e4e6ed751865f09ce7cd921194cbb2a1d53054f98087b756d66d3",
+          "source_row_md5": "87128b8cb58c54201f1ca82d03587642"
+        },
+        "pointer": "/packaging",
+        "value": "4 x 125 Gr"
+      },
+      {
+        "id": "89b1cfbfc725b1977e16fc21aa00f3fc5729cd540fa8236c0e0fc8c5c9796ee5",
+        "product_key": "consum:7340867",
+        "observation_id": "b1e328948d58ead71fe1fbc3b4d14837856109d87e28c7167f5266fbc268af0f",
+        "captured_at": "2026-09-03T10:27:52.984734+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-7d901ea4d42ffb4758aad98c0a79.json",
+          "sha256": "6efc3c3896c9f2a964feb88de4f1384659c775a281344df70569d74dc25ba528",
+          "pointer": "/payload/rows/3",
+          "raw_sha256": "2435004e5a0e4e6ed751865f09ce7cd921194cbb2a1d53054f98087b756d66d3",
+          "source_row_md5": "87128b8cb58c54201f1ca82d03587642"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur 00% Natural Edulcorado 4 Unidades"
+      },
+      {
+        "id": "00b90ad38766a37e62c0e23991ee0911f93a57a96642d2953a41e00364d728e7",
+        "product_key": "carrefour:521029389",
+        "observation_id": "e0e4286cb76cc1cdc23c0f5ec3c6c74faa548018f63308bad86c4e8240a937f4",
+        "captured_at": "2026-09-03T10:23:17.470524+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-cbf2789fdca8f21e2f987873009c.json",
+          "sha256": "84e4b46060f83b289e2587bdc86352d7c2f2c539966cdbe64eda1a19c68730d7",
+          "pointer": "/payload/rows/14",
+          "raw_sha256": "93ceed5c009896807038b9c9fd346e8449089c61c74ab62c1d0e50d9a2a9118d",
+          "source_row_md5": "3332e2a16371ae50168da99ba0a4181d"
+        },
+        "pointer": "/ingredients",
+        "value": "Leche fresca pasteurizada (99,1%), leche en polvo desnatada y fermentos lácticos. Origen de la leche: España."
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E07",
+    "annotation_id": "b2c52df0f2870790421fe66584dd29baccccfc3916a7197e49f58aafd47fe072",
+    "pair_id": "e60d6e824558f31b1733c7b0fbecc34919f0ecf68726e3f19bf17b4a5f31fb09",
+    "products": [
+      "carrefour:521029420",
+      "mercadona:20037"
+    ],
+    "observations": [
+      "18affca2e2db639dfd5118758718965108db56523a9743040e58ceac964b5af2",
+      "8d782c17190063ed50e6cb1d7a983c8565b04bf52f1d799cb82788a2bbae7a54"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "editorial_subset_of_frozen_corpus",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "incompatible",
+        "reason": "Los sabores declarados son fresa y macedonia, respectivamente. Esta incompatibilidad no depende del azúcar.",
+        "evidence": [
+          "1e0304f1310bdb4145376b17cbc69ebdafe5074f68c94f44e1b0082d13f688ba",
+          "bdef8f372360656797a8061e1e86583ea13ebcfc2b9712081a77b95d32140c9c",
+          "ec795c72ee45403edd1d0ee43a152f56910c3a42e54f015f1c657a90687e39c0"
+        ]
+      },
+      "format": {
+        "state": "compatible",
+        "reason": "Las fuentes declaran 4×120 g en los dos productos, sin cambiar el contenido nominal.",
+        "evidence": [
+          "1e0304f1310bdb4145376b17cbc69ebdafe5074f68c94f44e1b0082d13f688ba",
+          "446ad63962eb4463712c361da98e8000817049950e3ba0586c2577b1ecd536cb"
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "rejected",
+    "reason": "Mismo fabricante y pack 4×120 g, pero sabores diferentes: la coincidencia de formato no autoriza equivalencia.",
+    "tags": [
+      "positive_format",
+      "negative_flavour"
+    ],
+    "citations": [
+      {
+        "id": "1e0304f1310bdb4145376b17cbc69ebdafe5074f68c94f44e1b0082d13f688ba",
+        "product_key": "carrefour:521029420",
+        "observation_id": "18affca2e2db639dfd5118758718965108db56523a9743040e58ceac964b5af2",
+        "captured_at": "2026-09-03T10:23:17.470524+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-cbf2789fdca8f21e2f987873009c.json",
+          "sha256": "84e4b46060f83b289e2587bdc86352d7c2f2c539966cdbe64eda1a19c68730d7",
+          "pointer": "/payload/rows/19",
+          "raw_sha256": "ab7eb757a519d76f9e45dc823b1a2181a6d890f8d3af164d35855611fd1ca7c7",
+          "source_row_md5": "80e7a55accf95f9a56fc02244c0cb1f5"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur sabor fresa Danone sin gluten pack de 4 unidades de 120 g."
+      },
+      {
+        "id": "446ad63962eb4463712c361da98e8000817049950e3ba0586c2577b1ecd536cb",
+        "product_key": "mercadona:20037",
+        "observation_id": "8d782c17190063ed50e6cb1d7a983c8565b04bf52f1d799cb82788a2bbae7a54",
+        "captured_at": "2026-09-03T10:22:36.203235+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-dcba3f92c20520e4aa636f21fab8.json",
+          "sha256": "8e22d549bd83909ec0de776400cfea31fb2e4fa72051297383aa69af0a75b90b",
+          "pointer": "/payload/rows/87",
+          "raw_sha256": "2fd71fd0abe231a3db410961021bca583dc6fc99d43773cf3841d02af9962459",
+          "source_row_md5": "72ee0ee54ba541a1c80e19e22b89fcad"
+        },
+        "pointer": "/raw/price_instructions",
+        "value": {
+          "iva": 4,
+          "is_new": false,
+          "is_pack": true,
+          "pack_size": 0.12,
+          "unit_name": "ud.",
+          "unit_size": 0.48,
+          "bulk_price": "2.08",
+          "unit_price": "1.00",
+          "approx_size": false,
+          "size_format": "kg",
+          "total_units": 4,
+          "unit_selector": true,
+          "bunch_selector": false,
+          "drained_weight": null,
+          "selling_method": 0,
+          "tax_percentage": "4.000",
+          "price_decreased": false,
+          "reference_price": "2.084",
+          "min_bunch_amount": 1,
+          "reference_format": "kg",
+          "previous_unit_price": null,
+          "increment_bunch_amount": 1
+        }
+      },
+      {
+        "id": "bdef8f372360656797a8061e1e86583ea13ebcfc2b9712081a77b95d32140c9c",
+        "product_key": "carrefour:521029420",
+        "observation_id": "18affca2e2db639dfd5118758718965108db56523a9743040e58ceac964b5af2",
+        "captured_at": "2026-09-03T10:23:17.470524+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-cbf2789fdca8f21e2f987873009c.json",
+          "sha256": "84e4b46060f83b289e2587bdc86352d7c2f2c539966cdbe64eda1a19c68730d7",
+          "pointer": "/payload/rows/19",
+          "raw_sha256": "ab7eb757a519d76f9e45dc823b1a2181a6d890f8d3af164d35855611fd1ca7c7",
+          "source_row_md5": "80e7a55accf95f9a56fc02244c0cb1f5"
+        },
+        "pointer": "/denomination",
+        "value": "Yogur aromatizado con sabor a fresa"
+      },
+      {
+        "id": "ec795c72ee45403edd1d0ee43a152f56910c3a42e54f015f1c657a90687e39c0",
+        "product_key": "mercadona:20037",
+        "observation_id": "8d782c17190063ed50e6cb1d7a983c8565b04bf52f1d799cb82788a2bbae7a54",
+        "captured_at": "2026-09-03T10:22:36.203235+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-dcba3f92c20520e4aa636f21fab8.json",
+          "sha256": "8e22d549bd83909ec0de776400cfea31fb2e4fa72051297383aa69af0a75b90b",
+          "pointer": "/payload/rows/87",
+          "raw_sha256": "2fd71fd0abe231a3db410961021bca583dc6fc99d43773cf3841d02af9962459",
+          "source_row_md5": "72ee0ee54ba541a1c80e19e22b89fcad"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur sabor macedonia Danone"
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E08",
+    "annotation_id": "2af9b07e573f2eadbf7dc4e58e30c9fe9416da0233a35ce9c389e6a035120964",
+    "pair_id": "15ba68e7c3dbb9453947e1e1e03f6d9765e3883f819c3a8be2366d6e899b60ad",
+    "products": [
+      "consum:7028475",
+      "mercadona:61405"
+    ],
+    "observations": [
+      "2b580248e599a06a55311aa73913475c3730a2ca696f3a7ca8f82e9410a9b9f1",
+      "5f7380af391ad23e06e9ac7c08d6e89da0599053f3f9dfb8280347b54e4731ad"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "supplemental_editorial_challenge_not_CE200_sample",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "Ambos mencionan prefritas y corte grueso, pero hay que revisar conservación, piel, rebozado y condimentación; no aprobar por el título.",
+        "evidence": [
+          "e1b1154a5a9277108b1616c3a6e2e00a488a6b9d1c15db6151fc00fcb7e5350d",
+          "6f7bf170ad135ae294c10097545084f1d52f0414d52f0a7323ea91523e15faa6"
+        ]
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "format": {
+        "state": "incompatible",
+        "reason": "Mercadona fija una bolsa de 2 kg. Consum declara formato nominal 1 kg: no es una bolsa nominal de 2 kg; no se infiere su número de envases.",
+        "evidence": [
+          "b3482956abb33cc2c301d5b722c07b5357eb21e58798d7b79ef793e04297cffe",
+          "aa327ee062d1a5f9aad3a90085f11ce3e01661da838f023ec3ba3c35f924601d",
+          "ccfab4973fe894bf8564fc73f6c2d7a75e60ac3c8d573e0140bd64425cb0b09c"
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "rejected",
+    "reason": "Las patatas de 1 kg no representan ahorro equivalente respecto a la bolsa de 2 kg.",
+    "tags": [
+      "frozen_potatoes",
+      "2kg_vs_1kg"
+    ],
+    "citations": [
+      {
+        "id": "b3482956abb33cc2c301d5b722c07b5357eb21e58798d7b79ef793e04297cffe",
+        "product_key": "consum:7028475",
+        "observation_id": "2b580248e599a06a55311aa73913475c3730a2ca696f3a7ca8f82e9410a9b9f1",
+        "captured_at": "2026-09-03T10:22:31.206462+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-7d6dd62106c3afd6ab92109c6fd7.json",
+          "sha256": "ee8366d2bfcb1d9ef5fae019ae233fc0c4a2a7cd2178f422f8891bed97db7bce",
+          "pointer": "/payload/rows/32",
+          "raw_sha256": "efe29773c848732b5da4e510839dbe8dd15e2329af1c23b2e9467e769f8f961f",
+          "source_row_md5": "3aa6a5e2e44218baafbaf9c27baa35f8"
+        },
+        "pointer": "/packaging",
+        "value": "1 Kg"
+      },
+      {
+        "id": "aa327ee062d1a5f9aad3a90085f11ce3e01661da838f023ec3ba3c35f924601d",
+        "product_key": "consum:7028475",
+        "observation_id": "2b580248e599a06a55311aa73913475c3730a2ca696f3a7ca8f82e9410a9b9f1",
+        "captured_at": "2026-09-03T10:22:31.206462+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-7d6dd62106c3afd6ab92109c6fd7.json",
+          "sha256": "ee8366d2bfcb1d9ef5fae019ae233fc0c4a2a7cd2178f422f8891bed97db7bce",
+          "pointer": "/payload/rows/32",
+          "raw_sha256": "efe29773c848732b5da4e510839dbe8dd15e2329af1c23b2e9467e769f8f961f",
+          "source_row_md5": "3aa6a5e2e44218baafbaf9c27baa35f8"
+        },
+        "pointer": "/raw/productData/description",
+        "value": "Patatas Prefritas Corte Grueso 1 Kg"
+      },
+      {
+        "id": "ccfab4973fe894bf8564fc73f6c2d7a75e60ac3c8d573e0140bd64425cb0b09c",
+        "product_key": "mercadona:61405",
+        "observation_id": "5f7380af391ad23e06e9ac7c08d6e89da0599053f3f9dfb8280347b54e4731ad",
+        "captured_at": "2026-09-03T10:28:28.701929+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-39b9f346c80bc80e1b43162fd5c0.json",
+          "sha256": "85028a9de246b1e400e97905aee7dbdf505c5459de5372c462642a4a2b605595",
+          "pointer": "/payload/rows/0",
+          "raw_sha256": "ca3570aa536363bee96c8d942d34f417180021ca6dc0dd864f9cbd31310300b4",
+          "source_row_md5": "cb9e965c773309f28132a9163eefe324"
+        },
+        "pointer": "/raw/price_instructions",
+        "value": {
+          "iva": null,
+          "is_new": false,
+          "is_pack": false,
+          "pack_size": null,
+          "unit_name": null,
+          "unit_size": 2,
+          "bulk_price": "1.50",
+          "unit_price": "3.00",
+          "approx_size": false,
+          "size_format": "kg",
+          "total_units": null,
+          "unit_selector": true,
+          "bunch_selector": false,
+          "drained_weight": null,
+          "selling_method": 0,
+          "tax_percentage": "4.000",
+          "price_decreased": false,
+          "reference_price": "1.500",
+          "min_bunch_amount": 1,
+          "reference_format": "kg",
+          "previous_unit_price": null,
+          "increment_bunch_amount": 1
+        }
+      },
+      {
+        "id": "e1b1154a5a9277108b1616c3a6e2e00a488a6b9d1c15db6151fc00fcb7e5350d",
+        "product_key": "consum:7028475",
+        "observation_id": "2b580248e599a06a55311aa73913475c3730a2ca696f3a7ca8f82e9410a9b9f1",
+        "captured_at": "2026-09-03T10:22:31.206462+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-7d6dd62106c3afd6ab92109c6fd7.json",
+          "sha256": "ee8366d2bfcb1d9ef5fae019ae233fc0c4a2a7cd2178f422f8891bed97db7bce",
+          "pointer": "/payload/rows/32",
+          "raw_sha256": "efe29773c848732b5da4e510839dbe8dd15e2329af1c23b2e9467e769f8f961f",
+          "source_row_md5": "3aa6a5e2e44218baafbaf9c27baa35f8"
+        },
+        "pointer": "/display_name",
+        "value": "Patatas Prefritas Corte Grueso"
+      },
+      {
+        "id": "6f7bf170ad135ae294c10097545084f1d52f0414d52f0a7323ea91523e15faa6",
+        "product_key": "mercadona:61405",
+        "observation_id": "5f7380af391ad23e06e9ac7c08d6e89da0599053f3f9dfb8280347b54e4731ad",
+        "captured_at": "2026-09-03T10:28:28.701929+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-39b9f346c80bc80e1b43162fd5c0.json",
+          "sha256": "85028a9de246b1e400e97905aee7dbdf505c5459de5372c462642a4a2b605595",
+          "pointer": "/payload/rows/0",
+          "raw_sha256": "ca3570aa536363bee96c8d942d34f417180021ca6dc0dd864f9cbd31310300b4",
+          "source_row_md5": "cb9e965c773309f28132a9163eefe324"
+        },
+        "pointer": "/display_name",
+        "value": "Patatas prefritas corte grueso Hacendado ultracongeladas"
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E09",
+    "annotation_id": "67e51bcd1677988d18314e6cf405d5fc8185bf080c26127097885727f67966d2",
+    "pair_id": "56be5bf96fceff214d546a052e2eb1a61e21674d9b26860c66113a01c238eebf",
+    "products": [
+      "mercadona:61405",
+      "plusfresc:032789"
+    ],
+    "observations": [
+      "5f7380af391ad23e06e9ac7c08d6e89da0599053f3f9dfb8280347b54e4731ad",
+      "bc6652468859e0b4314d5f271fd2c546f8d25c67a5716a483f2e5f4f21f1c501"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "editorial_subset_of_frozen_corpus",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "McCain declara rebozado y sal; la ausencia de ingredientes de Mercadona no acredita que su producto tenga o no esos componentes.",
+        "evidence": [
+          "46f95ee1f9f24cfa9a4cfaf8f39cfe54f9589d2417f58d3a8f85bdd1a75d34ee",
+          "6fb51340d15f1d755f7ee6934b4c2f101d7c277191b80c38d4c51a26f3b13643",
+          "46d72be4981d2891b027baff4c5e7bffe8f97a51d41a9bfe72eaab47a6c72ea5"
+        ]
+      },
+      "format": {
+        "state": "incompatible",
+        "reason": "Una bolsa nominal de 2 kg frente al producto declarado de 500 g. No multiplicar la compra ni inventar un pack para igualar cantidades.",
+        "evidence": [
+          "ccfab4973fe894bf8564fc73f6c2d7a75e60ac3c8d573e0140bd64425cb0b09c",
+          "89d42e7ed9ef36bdf44f8b31545b4995915e3568eb696f0452604eae0f2e3d95",
+          "14ebb7de23d3ea7361a50c1095f8f87083ca0c73441fe487f5d57f26b8df6e5f"
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "rejected",
+    "reason": "Congelados con cantidades 2 kg y 500 g no se igualan por €/kg ni por precio menor del envase.",
+    "tags": [
+      "frozen_potatoes",
+      "2kg_vs_500g"
+    ],
+    "citations": [
+      {
+        "id": "ccfab4973fe894bf8564fc73f6c2d7a75e60ac3c8d573e0140bd64425cb0b09c",
+        "product_key": "mercadona:61405",
+        "observation_id": "5f7380af391ad23e06e9ac7c08d6e89da0599053f3f9dfb8280347b54e4731ad",
+        "captured_at": "2026-09-03T10:28:28.701929+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-39b9f346c80bc80e1b43162fd5c0.json",
+          "sha256": "85028a9de246b1e400e97905aee7dbdf505c5459de5372c462642a4a2b605595",
+          "pointer": "/payload/rows/0",
+          "raw_sha256": "ca3570aa536363bee96c8d942d34f417180021ca6dc0dd864f9cbd31310300b4",
+          "source_row_md5": "cb9e965c773309f28132a9163eefe324"
+        },
+        "pointer": "/raw/price_instructions",
+        "value": {
+          "iva": null,
+          "is_new": false,
+          "is_pack": false,
+          "pack_size": null,
+          "unit_name": null,
+          "unit_size": 2,
+          "bulk_price": "1.50",
+          "unit_price": "3.00",
+          "approx_size": false,
+          "size_format": "kg",
+          "total_units": null,
+          "unit_selector": true,
+          "bunch_selector": false,
+          "drained_weight": null,
+          "selling_method": 0,
+          "tax_percentage": "4.000",
+          "price_decreased": false,
+          "reference_price": "1.500",
+          "min_bunch_amount": 1,
+          "reference_format": "kg",
+          "previous_unit_price": null,
+          "increment_bunch_amount": 1
+        }
+      },
+      {
+        "id": "89d42e7ed9ef36bdf44f8b31545b4995915e3568eb696f0452604eae0f2e3d95",
+        "product_key": "plusfresc:032789",
+        "observation_id": "bc6652468859e0b4314d5f271fd2c546f8d25c67a5716a483f2e5f4f21f1c501",
+        "captured_at": "2026-09-03T10:28:49.213699+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b8e1638016d22c3a49ae447d65c4.json",
+          "sha256": "2018b65234068b0e1d4bb9ec577e0d1877929d58f41d0bdb2b613d144331f960",
+          "pointer": "/payload/rows/12",
+          "raw_sha256": "7737655f9f21cee357bf69bf541982a2657312c3e9075050f89f9a16f3b02729",
+          "source_row_md5": "1e84a57744f077d095a924d84b4aa42f"
+        },
+        "pointer": "/display_name",
+        "value": "Patatas fritas \"chef gourmet\" MCCAIN, 500 g"
+      },
+      {
+        "id": "14ebb7de23d3ea7361a50c1095f8f87083ca0c73441fe487f5d57f26b8df6e5f",
+        "product_key": "plusfresc:032789",
+        "observation_id": "bc6652468859e0b4314d5f271fd2c546f8d25c67a5716a483f2e5f4f21f1c501",
+        "captured_at": "2026-09-03T10:28:49.213699+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b8e1638016d22c3a49ae447d65c4.json",
+          "sha256": "2018b65234068b0e1d4bb9ec577e0d1877929d58f41d0bdb2b613d144331f960",
+          "pointer": "/payload/rows/12",
+          "raw_sha256": "7737655f9f21cee357bf69bf541982a2657312c3e9075050f89f9a16f3b02729",
+          "source_row_md5": "1e84a57744f077d095a924d84b4aa42f"
+        },
+        "pointer": "/description",
+        "value": "Chef Gourmet McCain 500g"
+      },
+      {
+        "id": "46f95ee1f9f24cfa9a4cfaf8f39cfe54f9589d2417f58d3a8f85bdd1a75d34ee",
+        "product_key": "plusfresc:032789",
+        "observation_id": "bc6652468859e0b4314d5f271fd2c546f8d25c67a5716a483f2e5f4f21f1c501",
+        "captured_at": "2026-09-03T10:28:49.213699+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b8e1638016d22c3a49ae447d65c4.json",
+          "sha256": "2018b65234068b0e1d4bb9ec577e0d1877929d58f41d0bdb2b613d144331f960",
+          "pointer": "/payload/rows/12",
+          "raw_sha256": "7737655f9f21cee357bf69bf541982a2657312c3e9075050f89f9a16f3b02729",
+          "source_row_md5": "1e84a57744f077d095a924d84b4aa42f"
+        },
+        "pointer": "/ingredients",
+        "value": "Patatas (89%), rebozado (5,5%: almidón modificado de patata, harina de arroz, dextrina, fibra de guisante, espesante (goma xantana), proteína de guisante, colorantes (curcumina, extracto de pimentón)), aceite de girasol, sal. No está elaborado con aceite de cacahuete."
+      },
+      {
+        "id": "6fb51340d15f1d755f7ee6934b4c2f101d7c277191b80c38d4c51a26f3b13643",
+        "product_key": "plusfresc:032789",
+        "observation_id": "bc6652468859e0b4314d5f271fd2c546f8d25c67a5716a483f2e5f4f21f1c501",
+        "captured_at": "2026-09-03T10:28:49.213699+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b8e1638016d22c3a49ae447d65c4.json",
+          "sha256": "2018b65234068b0e1d4bb9ec577e0d1877929d58f41d0bdb2b613d144331f960",
+          "pointer": "/payload/rows/12",
+          "raw_sha256": "7737655f9f21cee357bf69bf541982a2657312c3e9075050f89f9a16f3b02729",
+          "source_row_md5": "1e84a57744f077d095a924d84b4aa42f"
+        },
+        "pointer": "/conservation",
+        "value": "En el congelador según los símbolos: \n-6°C * 1 Semana\n-12°C ** 1 Mes\n-18°C *** Ver fecha al dorso. \nNo volver a congelar el producto después de haber sido descongelado."
+      },
+      {
+        "id": "46d72be4981d2891b027baff4c5e7bffe8f97a51d41a9bfe72eaab47a6c72ea5",
+        "product_key": "mercadona:61405",
+        "observation_id": "5f7380af391ad23e06e9ac7c08d6e89da0599053f3f9dfb8280347b54e4731ad",
+        "captured_at": "2026-09-03T10:28:28.701929+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-39b9f346c80bc80e1b43162fd5c0.json",
+          "sha256": "85028a9de246b1e400e97905aee7dbdf505c5459de5372c462642a4a2b605595",
+          "pointer": "/payload/rows/0",
+          "raw_sha256": "ca3570aa536363bee96c8d942d34f417180021ca6dc0dd864f9cbd31310300b4",
+          "source_row_md5": "cb9e965c773309f28132a9163eefe324"
+        },
+        "pointer": "/ingredients",
+        "value": null
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E10",
+    "annotation_id": "a0302a7b5f63fb50336d30f6f13678f215d5b24c13ff62a61f24d031c882b661",
+    "pair_id": "6dac068a3bed1b67ec39dc81f48f2a705f9ba43e5e74e4f343982b88674829de",
+    "products": [
+      "mercadona:12980",
+      "plusfresc:025303"
+    ],
+    "observations": [
+      "d661333cb804210d64278d2199ed2a6482733abc46f4af7477152cb2db9d96e1",
+      "e343b5f51e1cb7d1d1c990613ae2cde3eb0fe2634997ea9377e7aa35d66de877"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "supplemental_editorial_challenge_not_CE200_sample",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Mercadona ofrece una unidad de 1 L. Plusfresc permite unidad o pack de seis botellas de 1 L, sin selección comercial acreditada.",
+        "evidence": [
+          "45903d419a72a938abd4f56ad62eea66da989f2993ce8535689346d211a4b110",
+          "c1801c3b009a4610473c7fcfd30261b06abc29af28209218ef1d1399a1af89fc",
+          "9257bbef73e50f365ca59f8b7daf3743cf254ca5c8efccd57740ce6abbd0b3bd"
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "abstain",
+    "reason": "El texto 1 L no basta cuando la referencia tiene varias opciones de venta; no decidir el conteo por defecto.",
+    "tags": [
+      "water_1L",
+      "sale_option_unknown"
+    ],
+    "citations": [
+      {
+        "id": "45903d419a72a938abd4f56ad62eea66da989f2993ce8535689346d211a4b110",
+        "product_key": "mercadona:12980",
+        "observation_id": "d661333cb804210d64278d2199ed2a6482733abc46f4af7477152cb2db9d96e1",
+        "captured_at": "2026-09-03T10:22:36.203235+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-dcba3f92c20520e4aa636f21fab8.json",
+          "sha256": "8e22d549bd83909ec0de776400cfea31fb2e4fa72051297383aa69af0a75b90b",
+          "pointer": "/payload/rows/14",
+          "raw_sha256": "d5f55717a4bc82087e1a38b6584c455b8ceb8f7889bfdd2885e16c31fc24b4a3",
+          "source_row_md5": "3008b9f3a7d08f8767567c4e2b2b86fa"
+        },
+        "pointer": "/raw/price_instructions",
+        "value": {
+          "iva": null,
+          "is_new": false,
+          "is_pack": false,
+          "pack_size": null,
+          "unit_name": null,
+          "unit_size": 1,
+          "bulk_price": "0.50",
+          "unit_price": "0.50",
+          "approx_size": false,
+          "size_format": "l",
+          "total_units": null,
+          "unit_selector": true,
+          "bunch_selector": false,
+          "drained_weight": null,
+          "selling_method": 0,
+          "tax_percentage": "10.000",
+          "price_decreased": false,
+          "reference_price": "0.500",
+          "min_bunch_amount": 1,
+          "reference_format": "L",
+          "previous_unit_price": null,
+          "increment_bunch_amount": 1
+        }
+      },
+      {
+        "id": "c1801c3b009a4610473c7fcfd30261b06abc29af28209218ef1d1399a1af89fc",
+        "product_key": "plusfresc:025303",
+        "observation_id": "e343b5f51e1cb7d1d1c990613ae2cde3eb0fe2634997ea9377e7aa35d66de877",
+        "captured_at": "2026-09-03T10:28:43.76053+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-4fbe760ba90ce7ac93068aa8eadb.json",
+          "sha256": "9f366bd63ecfd9e12bfff6d07625e930ce18998f5ef1e61ba25c5a69622fb986",
+          "pointer": "/payload/rows/1",
+          "raw_sha256": "45c36df0988c0186a89622b6bad6568c71065b795c52abb0d89d2be468acaca9",
+          "source_row_md5": "54db244f5430348505632f2e94eb4b21"
+        },
+        "pointer": "/display_name",
+        "value": "Agua mineral VILAS DEL TURBÓN, 1 l"
+      },
+      {
+        "id": "9257bbef73e50f365ca59f8b7daf3743cf254ca5c8efccd57740ce6abbd0b3bd",
+        "product_key": "plusfresc:025303",
+        "observation_id": "e343b5f51e1cb7d1d1c990613ae2cde3eb0fe2634997ea9377e7aa35d66de877",
+        "captured_at": "2026-09-03T10:28:43.76053+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-4fbe760ba90ce7ac93068aa8eadb.json",
+          "sha256": "9f366bd63ecfd9e12bfff6d07625e930ce18998f5ef1e61ba25c5a69622fb986",
+          "pointer": "/payload/rows/1",
+          "raw_sha256": "45c36df0988c0186a89622b6bad6568c71065b795c52abb0d89d2be468acaca9",
+          "source_row_md5": "54db244f5430348505632f2e94eb4b21"
+        },
+        "pointer": "/raw/formats",
+        "value": [
+          {
+            "order": 1,
+            "title": [
+              {
+                "lang": "ca",
+                "text": "Format de Servei",
+                "type": 2,
+                "order": 1
+              },
+              {
+                "lang": "es",
+                "text": "Formato de Servicio",
+                "type": 2,
+                "order": 1
+              }
+            ],
+            "options": [
+              {
+                "option_id": "Unitat",
+                "description": [
+                  {
+                    "lang": "ca",
+                    "text": "Unitats",
+                    "type": 3,
+                    "order": 1
+                  },
+                  {
+                    "lang": "es",
+                    "text": "Unidades",
+                    "type": 3,
+                    "order": 1
+                  }
+                ],
+                "interval_mili": 0,
+                "max_value_mili": 0,
+                "min_value_mili": 0,
+                "percentage_mili": 1000
+              },
+              {
+                "option_id": "Zpack",
+                "description": [
+                  {
+                    "lang": "ca",
+                    "text": "Pack (6 unitats x 1l.)",
+                    "type": 3,
+                    "order": 1
+                  },
+                  {
+                    "lang": "es",
+                    "text": "Pack (6 unidades x 1l.)",
+                    "type": 3,
+                    "order": 1
+                  }
+                ],
+                "interval_mili": 0,
+                "max_value_mili": 0,
+                "min_value_mili": 1000,
+                "percentage_mili": 6000
+              }
+            ],
+            "format_id": "Pa6-1L"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E11",
+    "annotation_id": "cfe12646072fa07f66c46427b691ccab476e931e7c19c53903cf66f5e0d3a4fd",
+    "pair_id": "ad4087509032e6ad1eb8b3237c99d272fe30f46bef8d71c2a6bad67db9098dde",
+    "products": [
+      "consum:7227676",
+      "plusfresc:014543"
+    ],
+    "observations": [
+      "fb12fd62fa40be241a84ee81f30d114ff0afebecb1c8da8de7db45cc674f2158",
+      "33e18f42750f17162ab1769bb23cd8c3fcc30957326deaad6b9b424b2f7cf10e"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "editorial_subset_of_frozen_corpus",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "incompatible",
+        "reason": "Consum declara con gas; la descripción de Viladrau declara sin gas. No se deriva el dato de su marca.",
+        "evidence": [
+          "7c1465c8823acd4398f6e4fd09aaf2b286cac74a9fec6491b5076462f4667e31",
+          "33a6a03fa3b6147b715c20bfad5c4f81d164614a0a78f2f7b01de2a4c17d1e4f"
+        ]
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "El título de Viladrau muestra 5 L y la descripción habla de pack de dos garrafas de 5 L; falta vincular ambos al precio mostrado.",
+        "evidence": [
+          "0c035910606235078dde122f35c277c6dad82b194a60857d7bb013035d4ba90a",
+          "33a6a03fa3b6147b715c20bfad5c4f81d164614a0a78f2f7b01de2a4c17d1e4f"
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "rejected",
+    "reason": "Con gas y sin gas son incompatibles aunque otras dimensiones de la pareja sigan sin resolver.",
+    "tags": [
+      "negative_gas",
+      "unit_pack_scope"
+    ],
+    "citations": [
+      {
+        "id": "7c1465c8823acd4398f6e4fd09aaf2b286cac74a9fec6491b5076462f4667e31",
+        "product_key": "consum:7227676",
+        "observation_id": "fb12fd62fa40be241a84ee81f30d114ff0afebecb1c8da8de7db45cc674f2158",
+        "captured_at": "2026-09-03T10:27:47.712198+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-8b88f73cf66fc9c9d1b41d8eb792.json",
+          "sha256": "65425a84288658fb4be631f281f3b2930624a2eb60c9bb3a10d78e3d3d172a6e",
+          "pointer": "/payload/rows/9",
+          "raw_sha256": "b16e4e33c57d98e99e1de5721a91f8864862d8d9342c6837b2941f6fec6d81c2",
+          "source_row_md5": "3a17c75ae83737f58ddb1073bda7acca"
+        },
+        "pointer": "/display_name",
+        "value": "Agua Mineral con Gas Botella Pet"
+      },
+      {
+        "id": "33a6a03fa3b6147b715c20bfad5c4f81d164614a0a78f2f7b01de2a4c17d1e4f",
+        "product_key": "plusfresc:014543",
+        "observation_id": "33e18f42750f17162ab1769bb23cd8c3fcc30957326deaad6b9b424b2f7cf10e",
+        "captured_at": "2026-09-03T10:28:37.171628+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b2ee98bacce539c23da687150b24.json",
+          "sha256": "304a33bb3cecdc8c435ad22bb192144fbd67cf039641654221c17ff271d80f21",
+          "pointer": "/payload/rows/0",
+          "raw_sha256": "4558c25da1a3c988c7ded44c65a44eb1957c11c06a1e598d01bca02df4f7bc73",
+          "source_row_md5": "c385674773231bb600db220233013b67"
+        },
+        "pointer": "/description",
+        "value": "VILADRAU agua mineral natural sin gas - Viladrau pack de 2 garrafas de 5L"
+      },
+      {
+        "id": "0c035910606235078dde122f35c277c6dad82b194a60857d7bb013035d4ba90a",
+        "product_key": "plusfresc:014543",
+        "observation_id": "33e18f42750f17162ab1769bb23cd8c3fcc30957326deaad6b9b424b2f7cf10e",
+        "captured_at": "2026-09-03T10:28:37.171628+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b2ee98bacce539c23da687150b24.json",
+          "sha256": "304a33bb3cecdc8c435ad22bb192144fbd67cf039641654221c17ff271d80f21",
+          "pointer": "/payload/rows/0",
+          "raw_sha256": "4558c25da1a3c988c7ded44c65a44eb1957c11c06a1e598d01bca02df4f7bc73",
+          "source_row_md5": "c385674773231bb600db220233013b67"
+        },
+        "pointer": "/display_name",
+        "value": "Agua VILADRAU, 5 l"
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E12",
+    "annotation_id": "abe5b9d2bace33b24dd9cf7a491399074400efbb65110e1d0bf65791f5ac5e30",
+    "pair_id": "6a6168a49b5f647b24defa6d896c2a5697de77971d32094d650465457ca5d3f1",
+    "products": [
+      "carrefour:VC4AECOMM-621804",
+      "plusfresc:027336"
+    ],
+    "observations": [
+      "9f91bdbeadace843e8e45034b099bff2175f56fe3dffeff90cfcb6f6f2fa34aa",
+      "62349433aa86db7f13436e48ddafec65fd5da76ecb3f84c78b906593a7d7c8a2"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "supplemental_editorial_challenge_not_CE200_sample",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "conflicting",
+        "reason": "Plusfresc titula azucarado, pero la descripción dice sin azúcares añadidos y los ingredientes enumeran edulcorantes. Registrar la discordancia, no elegir el campo más favorable.",
+        "evidence": [
+          "17b92b8a0060d59f88671c17e8d6d7ed189289070b44ec405488d1f49b079689",
+          "f016c80634792a9a10dc3b53b7f3ee131de2f8053a4214fb00fc806fe56db18d",
+          "5a3ea92c2cbf27b52be273f193cf10fbc32f725f3a0b49712ad694a0ba41dc20"
+        ]
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "abstain",
+    "reason": "La contradicción de endulzado exige arbitraje y corrección de procedencia; un embedding no puede resolverla.",
+    "tags": [
+      "conflicting_sugar",
+      "sweeteners"
+    ],
+    "citations": [
+      {
+        "id": "17b92b8a0060d59f88671c17e8d6d7ed189289070b44ec405488d1f49b079689",
+        "product_key": "plusfresc:027336",
+        "observation_id": "62349433aa86db7f13436e48ddafec65fd5da76ecb3f84c78b906593a7d7c8a2",
+        "captured_at": "2026-09-03T10:28:43.76053+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-4fbe760ba90ce7ac93068aa8eadb.json",
+          "sha256": "9f366bd63ecfd9e12bfff6d07625e930ce18998f5ef1e61ba25c5a69622fb986",
+          "pointer": "/payload/rows/36",
+          "raw_sha256": "d04b20232cbd34529cda9e88849223ca12d43250aa154577724dced181f9615e",
+          "source_row_md5": "8ea0e41fa6e1d406a9e91a3a52374bcb"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur desnatado cremoso natural azucarado ALTEZA, 4uds 500gr"
+      },
+      {
+        "id": "f016c80634792a9a10dc3b53b7f3ee131de2f8053a4214fb00fc806fe56db18d",
+        "product_key": "plusfresc:027336",
+        "observation_id": "62349433aa86db7f13436e48ddafec65fd5da76ecb3f84c78b906593a7d7c8a2",
+        "captured_at": "2026-09-03T10:28:43.76053+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-4fbe760ba90ce7ac93068aa8eadb.json",
+          "sha256": "9f366bd63ecfd9e12bfff6d07625e930ce18998f5ef1e61ba25c5a69622fb986",
+          "pointer": "/payload/rows/36",
+          "raw_sha256": "d04b20232cbd34529cda9e88849223ca12d43250aa154577724dced181f9615e",
+          "source_row_md5": "8ea0e41fa6e1d406a9e91a3a52374bcb"
+        },
+        "pointer": "/description",
+        "value": "Yogur cremoso edulcorado  0% materia grasa, sin azúcares añadidos. contiene azúc"
+      },
+      {
+        "id": "5a3ea92c2cbf27b52be273f193cf10fbc32f725f3a0b49712ad694a0ba41dc20",
+        "product_key": "plusfresc:027336",
+        "observation_id": "62349433aa86db7f13436e48ddafec65fd5da76ecb3f84c78b906593a7d7c8a2",
+        "captured_at": "2026-09-03T10:28:43.76053+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-4fbe760ba90ce7ac93068aa8eadb.json",
+          "sha256": "9f366bd63ecfd9e12bfff6d07625e930ce18998f5ef1e61ba25c5a69622fb986",
+          "pointer": "/payload/rows/36",
+          "raw_sha256": "d04b20232cbd34529cda9e88849223ca12d43250aa154577724dced181f9615e",
+          "source_row_md5": "8ea0e41fa6e1d406a9e91a3a52374bcb"
+        },
+        "pointer": "/ingredients",
+        "value": "LECHE DESNATADA, PROTEÍNAS DE LA LECHE, EDULCORANTES: E950, E955; FERMENTOS LÁCTICOS.  ORIGEN DE LA LECHE: ESPAÑA."
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E13",
+    "annotation_id": "73b4ffbe5161c952305827c0df5a216f308738c3477ed6805f88e0b170a5cb94",
+    "pair_id": "49748f346bad0a44d2f837a71b0592b27a6d5098a819db06fac8e0ab6d6cb330",
+    "products": [
+      "carrefour:VC4AECOMM-621804",
+      "plusfresc:036733"
+    ],
+    "observations": [
+      "9f91bdbeadace843e8e45034b099bff2175f56fe3dffeff90cfcb6f6f2fa34aa",
+      "c59de3fa62bf2d6eec9b3955d6ae73d75647c3e42174a1726b68d05c3bb24336"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "supplemental_editorial_challenge_not_CE200_sample",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "format": {
+        "state": "conflicting",
+        "reason": "La misma referencia Plusfresc declara seis unidades en el título y ocho en la descripción. La discordancia de conteo es independiente de la conversión g/ml.",
+        "evidence": [
+          "8ca62e54246fe53c3180770b03c4dfab2c4d739391b6f278fe3982ec6feb5d15",
+          "32a3a61ab2b5d9e09255015b8826d16148dab57c030e45acb7d23f42606ef0da"
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "abstain",
+    "reason": "No tratar la referencia con conteo seis/ocho como si tuviera un formato verificado.",
+    "tags": [
+      "conflicting_pack",
+      "mass_volume"
+    ],
+    "citations": [
+      {
+        "id": "8ca62e54246fe53c3180770b03c4dfab2c4d739391b6f278fe3982ec6feb5d15",
+        "product_key": "plusfresc:036733",
+        "observation_id": "c59de3fa62bf2d6eec9b3955d6ae73d75647c3e42174a1726b68d05c3bb24336",
+        "captured_at": "2026-09-03T10:29:23.489671+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-f52466470ff89064caf7d9cc97c2.json",
+          "sha256": "8a350dd4e3fb1db86dce10df2c56a15139b441a5a0a1f537f4f07df80b4fd37f",
+          "pointer": "/payload/rows/5",
+          "raw_sha256": "bcb60e9e63103d652fdca79dde12e12e382257eb3bc1df1a46c5d37070e43fd3",
+          "source_row_md5": "d20dd65b7f426094e38197b5baf960c7"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur melocotón-albaricoque DANONE DANACOL, 6 unidades 600 g"
+      },
+      {
+        "id": "32a3a61ab2b5d9e09255015b8826d16148dab57c030e45acb7d23f42606ef0da",
+        "product_key": "plusfresc:036733",
+        "observation_id": "c59de3fa62bf2d6eec9b3955d6ae73d75647c3e42174a1726b68d05c3bb24336",
+        "captured_at": "2026-09-03T10:29:23.489671+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-f52466470ff89064caf7d9cc97c2.json",
+          "sha256": "8a350dd4e3fb1db86dce10df2c56a15139b441a5a0a1f537f4f07df80b4fd37f",
+          "pointer": "/payload/rows/5",
+          "raw_sha256": "bcb60e9e63103d652fdca79dde12e12e382257eb3bc1df1a46c5d37070e43fd3",
+          "source_row_md5": "d20dd65b7f426094e38197b5baf960c7"
+        },
+        "pointer": "/description",
+        "value": "Danacol Melocotón y Albaricoque 8x96ml"
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E14",
+    "annotation_id": "0f848cf512c9b7a63184a4973925a24470d1037b728ca43b1b487c6eb74aafc8",
+    "pair_id": "00b6e26047f56667a7129658ab7e7c1e1f2c9ae229e3531502237b8a861db772",
+    "products": [
+      "carrefour:VC4AECOMM-621804",
+      "plusfresc:024581"
+    ],
+    "observations": [
+      "9f91bdbeadace843e8e45034b099bff2175f56fe3dffeff90cfcb6f6f2fa34aa",
+      "6380b082fb248c3578dcca561305a5e7f057f615362f5a155e22d2e8e8d71ae0"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "supplemental_editorial_challenge_not_CE200_sample",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "El título Plusfresc dice 4 uds. 550 g y la descripción 4×125 g. No asignar silenciosamente a 550 g el papel de total ni corregirlo a 500 g.",
+        "evidence": [
+          "163c5bb1ba6d19247ec5dece8dca1f78cc6dd0d660aeac475d98526a12a1624c",
+          "f4c52cfec3db24c4f7c70a74e292a5d7b5243c9eedd824f2c5b4908a54d02ee6",
+          "9329352615d93cefd2635b7fd5b74f262a164fcdf872723b75e356e4d95b91c9"
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "abstain",
+    "reason": "Cantidad ambigua en una observación posiblemente mezclada; se conserva para revisión en lugar de normalizar a voluntad.",
+    "tags": [
+      "ambiguous_quantity",
+      "550_vs_4x125"
+    ],
+    "citations": [
+      {
+        "id": "163c5bb1ba6d19247ec5dece8dca1f78cc6dd0d660aeac475d98526a12a1624c",
+        "product_key": "plusfresc:024581",
+        "observation_id": "6380b082fb248c3578dcca561305a5e7f057f615362f5a155e22d2e8e8d71ae0",
+        "captured_at": "2026-09-03T10:28:37.171628+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b2ee98bacce539c23da687150b24.json",
+          "sha256": "304a33bb3cecdc8c435ad22bb192144fbd67cf039641654221c17ff271d80f21",
+          "pointer": "/payload/rows/91",
+          "raw_sha256": "439bd507742199ec916bfc201dc548d6f6d6dfb1779c92a080a8e0f0b8ff4e37",
+          "source_row_md5": "e970f2451836a73bea9fb76b939bd64d"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur natural azucarado sin lactosa ALTEZA, 4 uds. 550 grs."
+      },
+      {
+        "id": "f4c52cfec3db24c4f7c70a74e292a5d7b5243c9eedd824f2c5b4908a54d02ee6",
+        "product_key": "plusfresc:024581",
+        "observation_id": "6380b082fb248c3578dcca561305a5e7f057f615362f5a155e22d2e8e8d71ae0",
+        "captured_at": "2026-09-03T10:28:37.171628+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b2ee98bacce539c23da687150b24.json",
+          "sha256": "304a33bb3cecdc8c435ad22bb192144fbd67cf039641654221c17ff271d80f21",
+          "pointer": "/payload/rows/91",
+          "raw_sha256": "439bd507742199ec916bfc201dc548d6f6d6dfb1779c92a080a8e0f0b8ff4e37",
+          "source_row_md5": "e970f2451836a73bea9fb76b939bd64d"
+        },
+        "pointer": "/description",
+        "value": "Yogur natural azucarado sin lactosa,pack 4 x 125 g"
+      },
+      {
+        "id": "9329352615d93cefd2635b7fd5b74f262a164fcdf872723b75e356e4d95b91c9",
+        "product_key": "carrefour:VC4AECOMM-621804",
+        "observation_id": "9f91bdbeadace843e8e45034b099bff2175f56fe3dffeff90cfcb6f6f2fa34aa",
+        "captured_at": "2026-09-03T10:26:48.167896+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-23f4865075aa8518c6c54b3b2343.json",
+          "sha256": "ab5d5cae83f08076d2a3430ec4f55b2516a57515bb6fdf6544c46ea23a9478a8",
+          "pointer": "/payload/rows/12",
+          "raw_sha256": "cadc19e1c05ba643128eeceece44db4f954f0088fff7f5ec7d5467b10a0414bb",
+          "source_row_md5": "43e3bf21bbb897ff7cf8cdfb610ac887"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur griego natural Carrefour Extra pack de 6 unidades de 125 g."
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E15",
+    "annotation_id": "1944442e5c2b3183c14e9d5c9968395ded365abf3ed4fbd0ffbce646e3e99a36",
+    "pair_id": "aee97d82754aef8cdb8331d06c4045856a984d4858973a5c8ea3a77398e7aa25",
+    "products": [
+      "mercadona:16348",
+      "plusfresc:007307"
+    ],
+    "observations": [
+      "2849b52fd3178088de2ed15d1e9abd6d6876e9ad3063fc2ec4c952a4d5e2980e",
+      "3b15ad5f3f8aa097233dd4777cf695e1a3ceab1325a149741ef2df3dffe2589c"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "supplemental_editorial_challenge_not_CE200_sample",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "format": {
+        "state": "conflicting",
+        "reason": "Plusfresc describe un pack de seis en el título y una botella de 300 ml en la descripción. Puede mezclar ficha de unidad y pack; el ámbito comercial no se puede resolver aquí.",
+        "evidence": [
+          "b129cd8f40debfe73b8db01b661b35394e3611d396b057dd804fef31b649aa33",
+          "9dee889bec4c67d925feab2119aef645a7bc7f48324e507a53d9889cef06864f"
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "abstain",
+    "reason": "Discordancia de ámbito unidad/pack: registrar las dos fuentes sin usar descripción nutricional como identidad comercial.",
+    "tags": [
+      "unit_vs_commercial_pack",
+      "conflicting_source_scope"
+    ],
+    "citations": [
+      {
+        "id": "b129cd8f40debfe73b8db01b661b35394e3611d396b057dd804fef31b649aa33",
+        "product_key": "plusfresc:007307",
+        "observation_id": "3b15ad5f3f8aa097233dd4777cf695e1a3ceab1325a149741ef2df3dffe2589c",
+        "captured_at": "2026-09-03T10:22:41.20641+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-c94320eb666813c55b0abbb7850e.json",
+          "sha256": "e403ddc80af6456e7bbb5354834623f5d1f87b708fce47770007fa74319b3d97",
+          "pointer": "/payload/rows/37",
+          "raw_sha256": "a6d0e0f7570b69fb4f6c1efac57b2cac9a01345f3d9c8fe52f2b75b84c239f2c",
+          "source_row_md5": "043e8b29185fc4d15e975df64acf1ee8"
+        },
+        "pointer": "/display_name",
+        "value": "Agua mineral con gas VICHY CATALÁN, pack 6 unidades 150 cl"
+      },
+      {
+        "id": "9dee889bec4c67d925feab2119aef645a7bc7f48324e507a53d9889cef06864f",
+        "product_key": "plusfresc:007307",
+        "observation_id": "3b15ad5f3f8aa097233dd4777cf695e1a3ceab1325a149741ef2df3dffe2589c",
+        "captured_at": "2026-09-03T10:22:41.20641+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-c94320eb666813c55b0abbb7850e.json",
+          "sha256": "e403ddc80af6456e7bbb5354834623f5d1f87b708fce47770007fa74319b3d97",
+          "pointer": "/payload/rows/37",
+          "raw_sha256": "a6d0e0f7570b69fb4f6c1efac57b2cac9a01345f3d9c8fe52f2b75b84c239f2c",
+          "source_row_md5": "043e8b29185fc4d15e975df64acf1ee8"
+        },
+        "pointer": "/description",
+        "value": "Agua mineral natural BOTELLA 300ML RC VICHY CATALAN"
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E16",
+    "annotation_id": "23e9f5e87cbda51ddbf682faca0c0654ff1d9e9bada9cb8a6c64b76595c41736",
+    "pair_id": "69661deaa508448e461753c89e39b988c6ff427bba7cd545d9b794271beb01a5",
+    "products": [
+      "carrefour:2002870135",
+      "mercadona:12981"
+    ],
+    "observations": [
+      "67cc9ca0544c5eaa874f573758d1f966206e4f7de470013c6257fe36cc69f39b",
+      "945d15e64efe7cbe4eea0a7018e1d4f5fa67f3918ba35627357fd45e71f2e0b4"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "editorial_subset_of_frozen_corpus",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "incompatible",
+        "reason": "El origen se denomina agua de colonia infantil: uso ajeno a las tres familias del piloto.",
+        "evidence": [
+          "98b6f1751d6c41936ba648354698d3efc562e9b34bb4469c400a6dc479bea215"
+        ]
+      },
+      "identity": {
+        "state": "incompatible",
+        "reason": "Agua de colonia y agua mineral de bebida tienen usos distintos aunque compartan agua.",
+        "evidence": [
+          "98b6f1751d6c41936ba648354698d3efc562e9b34bb4469c400a6dc479bea215",
+          "7efc088a49d396e1e6d6237a74e82dd1ec0dbe76de46bed74878b1492cec4154"
+        ]
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "excluded_scope",
+    "reason": "Negativo difícil lexical: no confundir colonia con agua para beber.",
+    "tags": [
+      "hard_negative",
+      "cologne"
+    ],
+    "citations": [
+      {
+        "id": "98b6f1751d6c41936ba648354698d3efc562e9b34bb4469c400a6dc479bea215",
+        "product_key": "carrefour:2002870135",
+        "observation_id": "67cc9ca0544c5eaa874f573758d1f966206e4f7de470013c6257fe36cc69f39b",
+        "captured_at": "2026-09-03T10:22:26.238909+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-ec600ee2eb29160d48ddcfb9d9d8.json",
+          "sha256": "a6406964bc3ca99a0eef09e47c927f736f47609e20ccd84f29a30201d8697ffa",
+          "pointer": "/payload/rows/0",
+          "raw_sha256": "9c5ae0084957a2a156e5e4e146cb00a15bfb00923d7a3209c503206702f31bee",
+          "source_row_md5": "373194d3d8c8899afe2561cd94a96a76"
+        },
+        "pointer": "/display_name",
+        "value": "Agua de colonia Gotas Frescas Baby Instituto Español 750 ml"
+      },
+      {
+        "id": "7efc088a49d396e1e6d6237a74e82dd1ec0dbe76de46bed74878b1492cec4154",
+        "product_key": "mercadona:12981",
+        "observation_id": "945d15e64efe7cbe4eea0a7018e1d4f5fa67f3918ba35627357fd45e71f2e0b4",
+        "captured_at": "2026-09-03T10:22:36.203235+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-dcba3f92c20520e4aa636f21fab8.json",
+          "sha256": "8e22d549bd83909ec0de776400cfea31fb2e4fa72051297383aa69af0a75b90b",
+          "pointer": "/payload/rows/15",
+          "raw_sha256": "2e1dfaae9460a859a21234d49ea0c7e1760424f800556f52554404e7c5ecb243",
+          "source_row_md5": "27519b212be77d00424bf7d312b54cb6"
+        },
+        "pointer": "/display_name",
+        "value": "Agua mineral grande Fontébil"
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E17",
+    "annotation_id": "b5be096db068847318f07a68fcf11cdf2ed30ec43e233c28067128f67ad038fc",
+    "pair_id": "d9b403386e76f61a58a72081447ecec3458047cf5900d97fa293361e93a2332f",
+    "products": [
+      "carrefour:546306276",
+      "consum:937151"
+    ],
+    "observations": [
+      "20a76bda7ed0758b2a2d196fb7cc1c0a742a0c31f8cf03f79bbf4ca85e742499",
+      "b7e1343ee93c3ef5f6f8cfec74431e90596a2057a1d73b3c78259c44ebd33b26"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "editorial_subset_of_frozen_corpus",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "incompatible",
+        "reason": "La salsa para ensalada sabor yogur no es un yogur del piloto.",
+        "evidence": [
+          "a3bab24fc34ec7ffb67dbc21d793d9a3bee1afd68d1296e2190b6df4f89cc652"
+        ]
+      },
+      "identity": {
+        "state": "incompatible",
+        "reason": "Salsa para ensalada y yogur son tipos/uso diferentes; yogur como sabor no demuestra identidad.",
+        "evidence": [
+          "a3bab24fc34ec7ffb67dbc21d793d9a3bee1afd68d1296e2190b6df4f89cc652",
+          "9cce3ed307b88c34e3a008bde075707a8d516734ff181a8ffa5ee2dbdcf52b7b"
+        ]
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "excluded_scope",
+    "reason": "Negativo por tipo/uso, no por falta de precio ni por ausencia de un embedding.",
+    "tags": [
+      "hard_negative",
+      "sauce"
+    ],
+    "citations": [
+      {
+        "id": "a3bab24fc34ec7ffb67dbc21d793d9a3bee1afd68d1296e2190b6df4f89cc652",
+        "product_key": "carrefour:546306276",
+        "observation_id": "20a76bda7ed0758b2a2d196fb7cc1c0a742a0c31f8cf03f79bbf4ca85e742499",
+        "captured_at": "2026-09-03T10:23:28.176026+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b789e6ba08a374c64c616fed6e71.json",
+          "sha256": "c57a923a28e4193a20fd96a82b23890805c733030ef8c07a3c053c507506c44e",
+          "pointer": "/payload/rows/52",
+          "raw_sha256": "360cca0f2c4fb4c0a4135b794cd09ac754bf2e1e3a41edb300a3fca2e6579e2e",
+          "source_row_md5": "64755dfafee33783da7abd2513632115"
+        },
+        "pointer": "/display_name",
+        "value": "Salsa para ensalada sabor yogur Heinz envase 400 ml."
+      },
+      {
+        "id": "9cce3ed307b88c34e3a008bde075707a8d516734ff181a8ffa5ee2dbdcf52b7b",
+        "product_key": "consum:937151",
+        "observation_id": "b7e1343ee93c3ef5f6f8cfec74431e90596a2057a1d73b3c78259c44ebd33b26",
+        "captured_at": "2026-09-03T10:28:04.726938+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-bef62f39a9bc96ddfd5e1f95dae6.json",
+          "sha256": "41f74bc5d134d3e9d0f885bea6db851c0d75ad4a3956fe416a9235a642b70605",
+          "pointer": "/payload/rows/69",
+          "raw_sha256": "bb00945ea763c7f05ddeea86dfe73921e005b610cce78d947caf81cad20109de",
+          "source_row_md5": "f30fbc57a0149d19a38230bf77c17b28"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur Sabor Macedonia Pack de 4 Unidades"
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E18",
+    "annotation_id": "0091d706fb73291add906912739daa2aebd38e433196dbe3dffee42fbe7d4552",
+    "pair_id": "18710e397d4c971dc7adf86a638d47c1aaaa8098007143c170affa2e6c0763d6",
+    "products": [
+      "carrefour:521029389",
+      "plusfresc:036361"
+    ],
+    "observations": [
+      "e0e4286cb76cc1cdc23c0f5ec3c6c74faa548018f63308bad86c4e8240a937f4",
+      "fbc6b7417ab9f8699c2218f9dfe0046b9903b7c4fbc47c769375dd96f76e5d00"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "supplemental_editorial_challenge_not_CE200_sample",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "incompatible",
+        "reason": "El origen declara leche pasteurizada; el candidato declara habas de soja y sin lácteos. Bases alimentarias distintas, no igualar yogur como palabra.",
+        "evidence": [
+          "00b90ad38766a37e62c0e23991ee0911f93a57a96642d2953a41e00364d728e7",
+          "60c6a57b84a90ea3caeaa3974e31364c36e4aacf864eab4e5d04d392acf8c27a"
+        ]
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "rejected",
+    "reason": "Base láctea frente a soja sin lácteos: diferencia explícita incluso antes de completar precio o formato.",
+    "tags": [
+      "negative_base",
+      "dairy_vs_soy"
+    ],
+    "citations": [
+      {
+        "id": "00b90ad38766a37e62c0e23991ee0911f93a57a96642d2953a41e00364d728e7",
+        "product_key": "carrefour:521029389",
+        "observation_id": "e0e4286cb76cc1cdc23c0f5ec3c6c74faa548018f63308bad86c4e8240a937f4",
+        "captured_at": "2026-09-03T10:23:17.470524+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-cbf2789fdca8f21e2f987873009c.json",
+          "sha256": "84e4b46060f83b289e2587bdc86352d7c2f2c539966cdbe64eda1a19c68730d7",
+          "pointer": "/payload/rows/14",
+          "raw_sha256": "93ceed5c009896807038b9c9fd346e8449089c61c74ab62c1d0e50d9a2a9118d",
+          "source_row_md5": "3332e2a16371ae50168da99ba0a4181d"
+        },
+        "pointer": "/ingredients",
+        "value": "Leche fresca pasteurizada (99,1%), leche en polvo desnatada y fermentos lácticos. Origen de la leche: España."
+      },
+      {
+        "id": "60c6a57b84a90ea3caeaa3974e31364c36e4aacf864eab4e5d04d392acf8c27a",
+        "product_key": "plusfresc:036361",
+        "observation_id": "fbc6b7417ab9f8699c2218f9dfe0046b9903b7c4fbc47c769375dd96f76e5d00",
+        "captured_at": "2026-09-03T10:28:49.213699+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b8e1638016d22c3a49ae447d65c4.json",
+          "sha256": "2018b65234068b0e1d4bb9ec577e0d1877929d58f41d0bdb2b613d144331f960",
+          "pointer": "/payload/rows/96",
+          "raw_sha256": "a4a124928a69308fb611130627167c88dbebe8b7a6bfdbda03b1937ca5a3be01",
+          "source_row_md5": "50d35870b16637ca8c5c84189c2e05bf"
+        },
+        "pointer": "/ingredients",
+        "value": "Agua, habas de soja descascarilladas (9,5%), zumo de manzana concentrado (5,6%), frambuesa (5%), zumo de frambuesa a partir de concentrado (1,1%), calcio, estabilizante (pectinas), aroma natural, almidón de maíz, correctores de acidez (ácido cítrico, citratos de sodio), concentrado de zanahoria, sal marina, antioxidante (extracto rico en tocoferoles, ésteres de ácidos grasos del ácido ascórbico), vitaminas B2, B12, D2, fermentos (S. thermophilus, L. bulgaricus). Puede contener trazas de frutos de cáscara (no cacahuetes). Sin lácteos y sin gluten. Naturalmente sin lactosa."
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E19",
+    "annotation_id": "cefd2e7ec2139ba8671ff7a4a14ac19b187ecb9c14cf1716db7d06ebfbbf0a5a",
+    "pair_id": "0f8200259df0f98c1c9aa2ee93d38f74687651dc0046b744481ccfe6bd1e065b",
+    "products": [
+      "carrefour:VC4AECOMM-621804",
+      "plusfresc:019933"
+    ],
+    "observations": [
+      "9f91bdbeadace843e8e45034b099bff2175f56fe3dffeff90cfcb6f6f2fa34aa",
+      "e580c3b52606a70029d8bd254a81fb24befcd9b13cb8f0a5a2e1638cc7fc5393"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "supplemental_editorial_challenge_not_CE200_sample",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Plusfresc declara envase de 940 ml y botella de 750 g. Sin densidad ni ámbito no son unidades convertibles; tampoco se demuestra contradicción física solo por kg/L.",
+        "evidence": [
+          "6f39b7c78ede2c0c7af34e133ceccd1f335f5899f6678c3d95717127eba92048",
+          "7d2869495466787c736f8e47390293daf145b16d83b1a8b2a2d59cfbf4adca2f"
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "abstain",
+    "reason": "Conservar masa/volumen como evidencia no resuelta; no inventar densidad ni equivalencia.",
+    "tags": [
+      "mass_volume_unknown",
+      "not_conflict_by_density"
+    ],
+    "citations": [
+      {
+        "id": "6f39b7c78ede2c0c7af34e133ceccd1f335f5899f6678c3d95717127eba92048",
+        "product_key": "plusfresc:019933",
+        "observation_id": "e580c3b52606a70029d8bd254a81fb24befcd9b13cb8f0a5a2e1638cc7fc5393",
+        "captured_at": "2026-09-03T10:28:37.171628+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b2ee98bacce539c23da687150b24.json",
+          "sha256": "304a33bb3cecdc8c435ad22bb192144fbd67cf039641654221c17ff271d80f21",
+          "pointer": "/payload/rows/44",
+          "raw_sha256": "492a8ad7306ad9ed9017ca43872c21757b95bd61528381e4ebff4857d9d05e5a",
+          "source_row_md5": "43bc2230757bf73a265460f98a5f9be5"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur líquido de fresa ALTEZA, envase 940 ml"
+      },
+      {
+        "id": "7d2869495466787c736f8e47390293daf145b16d83b1a8b2a2d59cfbf4adca2f",
+        "product_key": "plusfresc:019933",
+        "observation_id": "e580c3b52606a70029d8bd254a81fb24befcd9b13cb8f0a5a2e1638cc7fc5393",
+        "captured_at": "2026-09-03T10:28:37.171628+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-b2ee98bacce539c23da687150b24.json",
+          "sha256": "304a33bb3cecdc8c435ad22bb192144fbd67cf039641654221c17ff271d80f21",
+          "pointer": "/payload/rows/44",
+          "raw_sha256": "492a8ad7306ad9ed9017ca43872c21757b95bd61528381e4ebff4857d9d05e5a",
+          "source_row_md5": "43bc2230757bf73a265460f98a5f9be5"
+        },
+        "pointer": "/description",
+        "value": "Yogur liquido fresa botella 750 g"
+      }
+    ]
+  },
+  {
+    "schema_version": 1,
+    "id": "E20",
+    "annotation_id": "ebac2b5acd4ba6f75ecbee12d629dd42c41a4e769840c56b8a750779f89ba0f9",
+    "pair_id": "04e164aaf06b02587bab09cd4e37b577ceb7d647cc3e424719757c1831e61b77",
+    "products": [
+      "carrefour:VC4AECOMM-621804",
+      "plusfresc:036225"
+    ],
+    "observations": [
+      "9f91bdbeadace843e8e45034b099bff2175f56fe3dffeff90cfcb6f6f2fa34aa",
+      "d8747d1abe564920b0e872a51c10588b67e22fbd98fb5197175df1e8bbff5946"
+    ],
+    "guide_version": "ce202-corpus-v1",
+    "authorship": "assistant_editorial_first_annotation",
+    "review_status": "awaiting_owner_independent_review",
+    "gold_eligible": false,
+    "cohort": "supplemental_editorial_challenge_not_CE200_sample",
+    "selection": "purposeful_exposed_not_representative_not_CE203_random20",
+    "reference_clock": "2026-09-03T10:41:03.598981+00:00",
+    "postcode_contexts": [
+      "08006",
+      "25001"
+    ],
+    "commercial_direction": "not_assessed_no_savings_claim",
+    "labels": {
+      "scope": {
+        "state": "incompatible",
+        "reason": "El candidato se denomina kéfir: fuera del piloto de yogur definido, aunque la categoría reúna fermentados.",
+        "evidence": [
+          "2b5d23f9d398347081ecfabdb92367e23b47c9b086c6f8b0a98c0cbe07ee96f8"
+        ]
+      },
+      "identity": {
+        "state": "incompatible",
+        "reason": "Las denominaciones son yogur griego y kéfir, que no se equiparan por compartir zona del catálogo.",
+        "evidence": [
+          "9329352615d93cefd2635b7fd5b74f262a164fcdf872723b75e356e4d95b91c9",
+          "2b5d23f9d398347081ecfabdb92367e23b47c9b086c6f8b0a98c0cbe07ee96f8"
+        ]
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Revisado como no resuelto en esta anotación; la evidencia disponible no verifica esta dimensión completa.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Cuatro unidades 125 g no demuestra total de 125 g. La descripción 4×125 g aclara su propio pack, no equivale al pack del origen.",
+        "evidence": [
+          "2b5d23f9d398347081ecfabdb92367e23b47c9b086c6f8b0a98c0cbe07ee96f8",
+          "d74810510c4469c32d204cd76ab7c06cc91b05adde6017b4f88e4220aacb8c5c"
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "Revisada la limitación del corpus: no hay evidencia bilateral de CP/precio/disponibilidad/revisiones. No inferirla de publicación ni de antigüedad.",
+        "evidence": []
+      }
+    },
+    "decision": "excluded_scope",
+    "reason": "La categoría compartida no convierte kéfir en yogur; el caso además prueba que no hay que fabricar conflictos de total.",
+    "tags": [
+      "hard_negative",
+      "kefir",
+      "quantity_role"
+    ],
+    "citations": [
+      {
+        "id": "2b5d23f9d398347081ecfabdb92367e23b47c9b086c6f8b0a98c0cbe07ee96f8",
+        "product_key": "plusfresc:036225",
+        "observation_id": "d8747d1abe564920b0e872a51c10588b67e22fbd98fb5197175df1e8bbff5946",
+        "captured_at": "2026-09-03T10:31:40.692788+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-5ba9870b1a17b56d5ed9529cf1e7.json",
+          "sha256": "4d8b5e5b6063cf4e103dab32de533a739fd95e37aa154ba783f5c55e41eccf12",
+          "pointer": "/payload/rows/24",
+          "raw_sha256": "99ab96189b8c6292cb039dd47d3c8c9df1392fe8fd360d04316c3b33b14d4b1d",
+          "source_row_md5": "1de5e3f28e0bbc392338b6f46adccb6a"
+        },
+        "pointer": "/display_name",
+        "value": "Kéfir con jalea real y miel KAIKU, 4 unidades 125 g"
+      },
+      {
+        "id": "9329352615d93cefd2635b7fd5b74f262a164fcdf872723b75e356e4d95b91c9",
+        "product_key": "carrefour:VC4AECOMM-621804",
+        "observation_id": "9f91bdbeadace843e8e45034b099bff2175f56fe3dffeff90cfcb6f6f2fa34aa",
+        "captured_at": "2026-09-03T10:26:48.167896+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-23f4865075aa8518c6c54b3b2343.json",
+          "sha256": "ab5d5cae83f08076d2a3430ec4f55b2516a57515bb6fdf6544c46ea23a9478a8",
+          "pointer": "/payload/rows/12",
+          "raw_sha256": "cadc19e1c05ba643128eeceece44db4f954f0088fff7f5ec7d5467b10a0414bb",
+          "source_row_md5": "43e3bf21bbb897ff7cf8cdfb610ac887"
+        },
+        "pointer": "/display_name",
+        "value": "Yogur griego natural Carrefour Extra pack de 6 unidades de 125 g."
+      },
+      {
+        "id": "d74810510c4469c32d204cd76ab7c06cc91b05adde6017b4f88e4220aacb8c5c",
+        "product_key": "plusfresc:036225",
+        "observation_id": "d8747d1abe564920b0e872a51c10588b67e22fbd98fb5197175df1e8bbff5946",
+        "captured_at": "2026-09-03T10:31:40.692788+00:00",
+        "source": {
+          "file": "docs/comparator-strict/dataset/acquisition-v1/ce1-ce200-5ba9870b1a17b56d5ed9529cf1e7.json",
+          "sha256": "4d8b5e5b6063cf4e103dab32de533a739fd95e37aa154ba783f5c55e41eccf12",
+          "pointer": "/payload/rows/24",
+          "raw_sha256": "99ab96189b8c6292cb039dd47d3c8c9df1392fe8fd360d04316c3b33b14d4b1d",
+          "source_row_md5": "1de5e3f28e0bbc392338b6f46adccb6a"
+        },
+        "pointer": "/description",
+        "value": "Kaiku Kéfir jalea real-miel 4x125g"
+      }
+    ]
+  }
+]

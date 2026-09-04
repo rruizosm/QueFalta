@@ -1,0 +1,1799 @@
+[
+  {
+    "schema_version": 1,
+    "annotation_id": "e2ebbb3ded4f314fad5fec426de16efcc294355630618e8b38f6cf5697399e7e",
+    "case_id": "R01",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "2616bfa6b51b6b1ed95879a4dc65061a4d18a35b27fdc354871310c3a9f16575",
+      "origin_key": "consum:1191998",
+      "candidate_key": "carrefour:2002870135",
+      "origin_observation": "8a92217fb3f53106834c5345d964de745f4b5b52cd06e1a601cc53467fe3b5e4",
+      "candidate_observation": "f26849ee88f69cdaa6ce150f3467d5e4987e138dc2cf7f1bbd4d47bd3187849d",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "incompatible",
+        "reason": "El nombre identifica explícitamente agua de colonia.",
+        "evidence": [
+          {
+            "product_key": "carrefour:2002870135",
+            "observation_id": "f26849ee88f69cdaa6ce150f3467d5e4987e138dc2cf7f1bbd4d47bd3187849d",
+            "raw_sha256": "eade635833d88cb8bdaa4a7fe7f0646f1ba331fafbabc8027c0020699c534475",
+            "field": "display_name",
+            "value": "Agua de colonia Gotas Frescas Baby Instituto Español 750 ml"
+          }
+        ]
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Faltan atributos obligatorios o evidencia negativa explícita; ausencia de palabras no implica false.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Falta una firma completa verificada: modo de venta, conteo, contenido unitario, total y composición.",
+        "evidence": []
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "excluded_scope",
+    "reason": "El candidato es colonia, no agua de bebida.",
+    "regressions": [
+      "T20"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "97d45245711ac914beb68e53b7fe146ac0ab26b1b3784580becd2410f745ad68",
+    "case_id": "R02",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "f52745e38053d4e5d58b8fb61082802c2cfca5d16ff6adb552c470bf2eb1b029",
+      "origin_key": "plusfresc:003281",
+      "candidate_key": "carrefour:2020197538",
+      "origin_observation": "42dae17e342d6fad125035215bb18e40794b663fc086e5673379aa416dbc9e9b",
+      "candidate_observation": "16a67ef53944d49e2bc865d2875554f201458b6f56854e5cd1ebb747d9e57159",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "incompatible",
+        "reason": "Se vende un set de filtros BRITA.",
+        "evidence": [
+          {
+            "product_key": "carrefour:2020197538",
+            "observation_id": "16a67ef53944d49e2bc865d2875554f201458b6f56854e5cd1ebb747d9e57159",
+            "raw_sha256": "580b0ed7f593b23d776e52c194bfabb488152736646c0906f13a42a0d494a768",
+            "field": "display_name",
+            "value": "Set 3 Filtros de Agua BRITA MicroDisc"
+          }
+        ]
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Faltan atributos obligatorios o evidencia negativa explícita; ausencia de palabras no implica false.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Falta una firma completa verificada: modo de venta, conteo, contenido unitario, total y composición.",
+        "evidence": []
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "excluded_scope",
+    "reason": "Un filtro de agua no es agua envasada.",
+    "regressions": [
+      "T20"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "9d699d2e84707d075281e6535d743322354d969fe746a0cb743a88f6701c446b",
+    "case_id": "R03",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "a687d12f12a094d23c61ffe678998f252fd41ec536e1e279fbded565f09c5923",
+      "origin_key": "consum:1192004",
+      "candidate_key": "carrefour:2047290071",
+      "origin_observation": "d90ee787e8d353c09f3a5c046179fbaedf256fbac21e5d43e9bf76711738081a",
+      "candidate_observation": "27857169c626c90613205e77ec9ebc44170865d1116e2dded20953b35f38428a",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "incompatible",
+        "reason": "El uso nasal consta en el título; el pack no lo convierte en agua comparable.",
+        "evidence": [
+          {
+            "product_key": "carrefour:2047290071",
+            "observation_id": "27857169c626c90613205e77ec9ebc44170865d1116e2dded20953b35f38428a",
+            "raw_sha256": "5bcfde9ee38413069751942b897e78a79552f6fdde8664909cedbec2ba907a28",
+            "field": "display_name",
+            "value": "Agua de mar higiene nasal en spray Senti2 pack de 2 unidades de 100 ml."
+          }
+        ]
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Faltan atributos obligatorios o evidencia negativa explícita; ausencia de palabras no implica false.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Falta una firma completa verificada: modo de venta, conteo, contenido unitario, total y composición.",
+        "evidence": []
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "excluded_scope",
+    "reason": "El spray de higiene nasal queda fuera de agua de bebida.",
+    "regressions": [
+      "T20"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "0c993278c891f636e3d347910847ff1aca102873275d74b759c6bf84a20dac68",
+    "case_id": "R04",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "22327e104b586d40b6061a36f9ed818795454429c87bf2e0367b307084e3495b",
+      "origin_key": "consum:1191998",
+      "candidate_key": "mercadona:12779",
+      "origin_observation": "8a92217fb3f53106834c5345d964de745f4b5b52cd06e1a601cc53467fe3b5e4",
+      "candidate_observation": "a7fa61226060bbb438c43ead3ecc5709512fc896e8f3062870a7435404a1ed5d",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "incompatible",
+        "reason": "Son tiras adhesivas de poliuretano, no una bebida.",
+        "evidence": [
+          {
+            "product_key": "mercadona:12779",
+            "observation_id": "a7fa61226060bbb438c43ead3ecc5709512fc896e8f3062870a7435404a1ed5d",
+            "raw_sha256": "15ecb7724d4cc8be6712522c7fb35bf47150ffda28c7613d62465266fe29a52f",
+            "field": "display_name",
+            "value": "Tiras adhesivas protectoras de poliuretano Aqua Deliplus surtidas resistentes al agua"
+          }
+        ]
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Faltan atributos obligatorios o evidencia negativa explícita; ausencia de palabras no implica false.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Falta una firma completa verificada: modo de venta, conteo, contenido unitario, total y composición.",
+        "evidence": []
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "excluded_scope",
+    "reason": "La resistencia al agua de unas tiras adhesivas es ruido léxico.",
+    "regressions": [
+      "T20"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "2995d98811ab0ba59ee9264c8dfc17ff8091de87dfc8d3bd4b483c80707c8e86",
+    "case_id": "R05",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "241767e84153d714de014a53776e9049e25df75b61a3f9e5342aa37e53185b27",
+      "origin_key": "consum:204230",
+      "candidate_key": "carrefour:521004510",
+      "origin_observation": "44f3f2ef4437f95f7846d182825750ebcca6e949a530746766e90bcfec120d50",
+      "candidate_observation": "cb6856abb98427700c3f3b7aabb4cdc2a2e7418a6574cf0b91b84abc68cb3915",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "incompatible",
+        "reason": "La familia explícita del candidato es galletas.",
+        "evidence": [
+          {
+            "product_key": "carrefour:521004510",
+            "observation_id": "cb6856abb98427700c3f3b7aabb4cdc2a2e7418a6574cf0b91b84abc68cb3915",
+            "raw_sha256": "aef9054864bbc3b459c0d788aefe873732a74307555e206690a382a6417e6a9c",
+            "field": "display_name",
+            "value": "Galletas con chocolate, leche y yogur Gerblé sin aceite de palma 230 g."
+          }
+        ]
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Faltan atributos obligatorios o evidencia negativa explícita; ausencia de palabras no implica false.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Falta una firma completa verificada: modo de venta, conteo, contenido unitario, total y composición.",
+        "evidence": []
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "excluded_scope",
+    "reason": "Galletas con yogur no son un yogur del piloto.",
+    "regressions": [
+      "T20"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "ccb2b08927ac0934f14f1bfb73e0d97c43448c6ed9e7855242da04de503ae885",
+    "case_id": "R06",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "9192193be1e379944584817d70b9fe26fab849322f442214ae6d478e4bd832a0",
+      "origin_key": "plusfresc:004447",
+      "candidate_key": "mercadona:17327",
+      "origin_observation": "9f734596d659d49879b01557220a857e9b2b2000403ad74a445dc9b29bb3d1f7",
+      "candidate_observation": "f1f34286543a5e3c98934719a93f4ec78eca6bf0372f9f0c8ef54e192988894a",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "incompatible",
+        "reason": "El título declara salsa y el envase Bote no cambia esa identidad.",
+        "evidence": [
+          {
+            "product_key": "mercadona:17327",
+            "observation_id": "f1f34286543a5e3c98934719a93f4ec78eca6bf0372f9f0c8ef54e192988894a",
+            "raw_sha256": "78e8de6ddfcc61c741f86f52bac6c8f2ab013c7f08fa0cc803e4aa6dc6159743",
+            "field": "display_name",
+            "value": "Salsa Yogur Hacendado"
+          }
+        ]
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Faltan atributos obligatorios o evidencia negativa explícita; ausencia de palabras no implica false.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Falta una firma completa verificada: modo de venta, conteo, contenido unitario, total y composición.",
+        "evidence": []
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "excluded_scope",
+    "reason": "Salsa de yogur no equivale a yogur.",
+    "regressions": [
+      "T20"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "3320a53e072b9635782c400d9829d05ca8d3122c9122c3f0fe8bd7bf1def362b",
+    "case_id": "R07",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "ee09f4313f657606e030e87ff5999bddc95620655a5c60e60cf59d3ae391e77c",
+      "origin_key": "consum:204420",
+      "candidate_key": "mercadona:14141",
+      "origin_observation": "24fa46787a533d73b9a45ec63f338ecb3d4e00ff81b127e7587da8e93f61a0d1",
+      "candidate_observation": "283be9599a8e2851cd340829776b491fe3baebbf801f81a3373d98b1c53f00be",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "incompatible",
+        "reason": "El candidato declara tortitas de arroz con chocolate.",
+        "evidence": [
+          {
+            "product_key": "mercadona:14141",
+            "observation_id": "283be9599a8e2851cd340829776b491fe3baebbf801f81a3373d98b1c53f00be",
+            "raw_sha256": "4118a53a9005cd5280bfadba8b29e07dcb289f0ade2a27cef429c706fc2723ff",
+            "field": "display_name",
+            "value": "Tortitas de arroz con chocolate blanco sabor yogur Hacendado"
+          }
+        ]
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Faltan atributos obligatorios o evidencia negativa explícita; ausencia de palabras no implica false.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Falta una firma completa verificada: modo de venta, conteo, contenido unitario, total y composición.",
+        "evidence": []
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "excluded_scope",
+    "reason": "Tortitas sabor yogur no son yogures.",
+    "regressions": [
+      "T20"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "b9919a9572ccff6e69d52c4c6dbf006ecd626a57253d7b9e93d7f3e5907247d5",
+    "case_id": "R08",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "26c3c84eeeff8b496c5d3dd7a4548e5e18ff40658f8b900f75232c97901a6c8f",
+      "origin_key": "mercadona:15286",
+      "candidate_key": "carrefour:2047790350",
+      "origin_observation": "79fa2d578730114c0e7ead56eb49d9ee581a9bea6f4048db50b119ef8c29404c",
+      "candidate_observation": "dab9e61653e9f9892ff6af6f6b3e4e8855e179cb2d4c52ec85e4efab5001c42f",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "incompatible",
+        "reason": "Pelador de acero inoxidable de 11,5 cm; centímetros no son cantidad alimentaria.",
+        "evidence": [
+          {
+            "product_key": "carrefour:2047790350",
+            "observation_id": "dab9e61653e9f9892ff6af6f6b3e4e8855e179cb2d4c52ec85e4efab5001c42f",
+            "raw_sha256": "7f72fb0e26ec76c3bd7eccf9c19cae21f38f5b7aff98dc800d77b11a64a93c60",
+            "field": "display_name",
+            "value": "Pelador Patatas FACKELMANN Cooking 11,5cm - Inox"
+          }
+        ]
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Faltan atributos obligatorios o evidencia negativa explícita; ausencia de palabras no implica false.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Falta una firma completa verificada: modo de venta, conteo, contenido unitario, total y composición.",
+        "evidence": []
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "excluded_scope",
+    "reason": "Un pelador no es un alimento, aunque contenga la palabra patatas.",
+    "regressions": [
+      "T20"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "fbf9ae551fd8d9acb65a26f76779883dd434ea62c0eb328138638781724385a1",
+    "case_id": "R09",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "93a0c47c0954c3596da21f9bb9edf08303827a801c2b6249070e9128335b3ce4",
+      "origin_key": "mercadona:15286",
+      "candidate_key": "plusfresc:001410",
+      "origin_observation": "79fa2d578730114c0e7ead56eb49d9ee581a9bea6f4048db50b119ef8c29404c",
+      "candidate_observation": "8bd5ff0df020eb22055cf537c19f9a09816d6327ec1f4a53b55e2ac2797f7134",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "incompatible",
+        "reason": "El candidato declara puré con leche; no se afirma su estado de conservación por ausencia de la palabra congelado.",
+        "evidence": [
+          {
+            "product_key": "plusfresc:001410",
+            "observation_id": "8bd5ff0df020eb22055cf537c19f9a09816d6327ec1f4a53b55e2ac2797f7134",
+            "raw_sha256": "026f5a67f9a366b686b397253d986b51457026cd248e47d3d9c3c1df58d8b1c0",
+            "field": "display_name",
+            "value": "Puré de patatas con leche MOUSLINE, 115 g"
+          }
+        ]
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Faltan atributos obligatorios o evidencia negativa explícita; ausencia de palabras no implica false.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Falta una firma completa verificada: modo de venta, conteo, contenido unitario, total y composición.",
+        "evidence": []
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "excluded_scope",
+    "reason": "Puré con leche no pertenece al piloto de patatas congeladas comparables.",
+    "regressions": [
+      "T18",
+      "T19"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "8223924e5fa3d13639ed6c3a9cb903a89345452d750c19438b13c6cec2ec8e6e",
+    "case_id": "R10",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "78b12315e75be26d900cb3367c84f0a37671e8c53ad2f067fad856872c40ceed",
+      "origin_key": "carrefour:520661019",
+      "candidate_key": "plusfresc:000599",
+      "origin_observation": "e18c4099a603d02b02a2afef14fdceee10deab264f146dc39f712416daea2cce",
+      "candidate_observation": "28c3a0ec0fc0fcbdfc027c585357a0de357295539e4be355719fbdb99d3520ae",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "No se ha verificado la pertenencia de ambos productos al piloto; una pista léxica no basta.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Faltan atributos obligatorios o evidencia negativa explícita; ausencia de palabras no implica false.",
+        "evidence": []
+      },
+      "format": {
+        "state": "incompatible",
+        "reason": "Cantidades nominales declaradas distintas: 33 cl y 5 l. No se ha aprobado el resto de la firma de pack.",
+        "evidence": [
+          {
+            "product_key": "carrefour:520661019",
+            "observation_id": "e18c4099a603d02b02a2afef14fdceee10deab264f146dc39f712416daea2cce",
+            "raw_sha256": "53458f792c56b22396e3ae9246b7eb11b4a69e40ad7a2027d181aeaef846abfb",
+            "field": "display_name",
+            "value": "Agua mineral Solan de Cabras 33 cl."
+          },
+          {
+            "product_key": "plusfresc:000599",
+            "observation_id": "28c3a0ec0fc0fcbdfc027c585357a0de357295539e4be355719fbdb99d3520ae",
+            "raw_sha256": "45a87c52d172f250d30fbe69e407030c41e64b94d9add75be3282985739b8356",
+            "field": "display_name",
+            "value": "Agua mineral SOLAN DE CABRAS, 5 l"
+          }
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "rejected",
+    "reason": "Misma marca SOLAN DE CABRAS no permite comparar 33 cl con 5 l.",
+    "regressions": [
+      "T08"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "cc63789c7d12427a90a15c7d05b718420fad18b42d37387c23afe3724312c684",
+    "case_id": "R11",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "81325f43c45ff6d4882b8fdf7908dcaec524405ee3003787e8c6f14a9c0abc41",
+      "origin_key": "consum:1191998",
+      "candidate_key": "plusfresc:003281",
+      "origin_observation": "8a92217fb3f53106834c5345d964de745f4b5b52cd06e1a601cc53467fe3b5e4",
+      "candidate_observation": "42dae17e342d6fad125035215bb18e40794b663fc086e5673379aa416dbc9e9b",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "No se ha verificado la pertenencia de ambos productos al piloto; una pista léxica no basta.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Faltan atributos obligatorios o evidencia negativa explícita; ausencia de palabras no implica false.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Coincide la cantidad mencionada; falta una firma completa y evidencia explícita del número de envases. No inferir uno por defecto.",
+        "evidence": [
+          {
+            "product_key": "consum:1191998",
+            "observation_id": "8a92217fb3f53106834c5345d964de745f4b5b52cd06e1a601cc53467fe3b5e4",
+            "raw_sha256": "ee308c864dbb13c30a8da37397c2de0946090cd1db5596b0d94a0a9626091416",
+            "field": "packaging",
+            "value": "0,5 L"
+          },
+          {
+            "product_key": "plusfresc:003281",
+            "observation_id": "42dae17e342d6fad125035215bb18e40794b663fc086e5673379aa416dbc9e9b",
+            "raw_sha256": "10dbdb3ef189d659027266adea5483fa1cf6b952c6719295937132bb9984d199",
+            "field": "display_name",
+            "value": "Agua FONT VELLA, 50 cl"
+          }
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "abstain",
+    "reason": "0,5 L y 50 cl son la misma cantidad declarada, pero eso no verifica conteo, variantes ni precio local.",
+    "regressions": [
+      "T07",
+      "T22",
+      "T27"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "2e14519c9b88eedf1a4bcfaa9d7e8126cdf23b4e5c60563a762b7d0fd507edac",
+    "case_id": "R12",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "4fccfbeba086478796989ba1b7e38ad8c4bed4724a47d4f1375c2b98bddc1d91",
+      "origin_key": "carrefour:520661019",
+      "candidate_key": "plusfresc:003588",
+      "origin_observation": "e18c4099a603d02b02a2afef14fdceee10deab264f146dc39f712416daea2cce",
+      "candidate_observation": "d3386645c9803abac2f76de93f0c0908d168a3713dc7d7d37c1a1a492a8e4f01",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "No se ha verificado la pertenencia de ambos productos al piloto; una pista léxica no basta.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Faltan atributos obligatorios o evidencia negativa explícita; ausencia de palabras no implica false.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Hay volumen en ambos títulos, pero no evidencia completa de pack; tampoco se conocen todos los atributos de agua.",
+        "evidence": [
+          {
+            "product_key": "carrefour:520661019",
+            "observation_id": "e18c4099a603d02b02a2afef14fdceee10deab264f146dc39f712416daea2cce",
+            "raw_sha256": "53458f792c56b22396e3ae9246b7eb11b4a69e40ad7a2027d181aeaef846abfb",
+            "field": "display_name",
+            "value": "Agua mineral Solan de Cabras 33 cl."
+          },
+          {
+            "product_key": "plusfresc:003588",
+            "observation_id": "d3386645c9803abac2f76de93f0c0908d168a3713dc7d7d37c1a1a492a8e4f01",
+            "raw_sha256": "1f84e9bf204624b5c03d9782ad99209ae387fd1843995aec8cfdd0931d3784f7",
+            "field": "display_name",
+            "value": "Agua mineral AQUAREL, 33 cl"
+          }
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "abstain",
+    "reason": "Dos títulos con 33 cl no bastan para aprobar equivalencia ni ahorro.",
+    "regressions": [
+      "T22",
+      "T27"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "e53cb555b53603eb0c12a1e959e770ea6a0a519622cf4ea6f43eb7c97c46bf4d",
+    "case_id": "R13",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "f4d856df99b4a8eadbf629130ab59fb4b3df2938803cf673d1ef0b6a5f4f1675",
+      "origin_key": "mercadona:15286",
+      "candidate_key": "consum:7028475",
+      "origin_observation": "79fa2d578730114c0e7ead56eb49d9ee581a9bea6f4048db50b119ef8c29404c",
+      "candidate_observation": "9ac32ddd888bcc91e6657b7000a6e6169917dfd516e3a7cbc19a8d1a95e00f7c",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "No se ha verificado la pertenencia de ambos productos al piloto; una pista léxica no basta.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se ha demostrado la conservación congelada del candidato. Tampoco se deduce el peso de Mercadona dividiendo precio por precio/kg.",
+        "evidence": [
+          {
+            "product_key": "mercadona:15286",
+            "observation_id": "79fa2d578730114c0e7ead56eb49d9ee581a9bea6f4048db50b119ef8c29404c",
+            "raw_sha256": "6461a59e699057f242e239d780d7344790bba2f6e91ad16f52ba13997145336e",
+            "field": "display_name",
+            "value": "Patatas prefritas Waffle con piel Hacendado ultracongeladas"
+          },
+          {
+            "product_key": "consum:7028475",
+            "observation_id": "9ac32ddd888bcc91e6657b7000a6e6169917dfd516e3a7cbc19a8d1a95e00f7c",
+            "raw_sha256": "8a41be5a58fa1b8bec65e3517c3086532e53f496afe88d865e20700c0caf52a2",
+            "field": "display_name",
+            "value": "Patatas Prefritas Corte Grueso"
+          }
+        ]
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Faltan atributos obligatorios o evidencia negativa explícita; ausencia de palabras no implica false.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Falta una firma completa verificada: modo de venta, conteo, contenido unitario, total y composición.",
+        "evidence": []
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "abstain",
+    "reason": "Ultracongeladas está explícito solo en Mercadona; prefritas no demuestra congelación por sí sola.",
+    "regressions": [
+      "T18",
+      "T22"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "7a177de56c377d72a3ae3bf54be74a45a21fa862a583e902311638668819a4e8",
+    "case_id": "R14",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "5b428be9b86a0e2dd45c828480c1f8db83fc6f39eb53c8e1489fd4bf022d756c",
+      "origin_key": "consum:227652",
+      "candidate_key": "plusfresc:004447",
+      "origin_observation": "d11713f57c413d5dc27d40a66e104b887d292a09b3a2eba357fdabdb4592fac4",
+      "candidate_observation": "9f734596d659d49879b01557220a857e9b2b2000403ad74a445dc9b29bb3d1f7",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "No se ha verificado la pertenencia de ambos productos al piloto; una pista léxica no basta.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Natural no demuestra ausencia de azúcar añadido ni edulcorantes en ninguno de los lados.",
+        "evidence": [
+          {
+            "product_key": "consum:227652",
+            "observation_id": "d11713f57c413d5dc27d40a66e104b887d292a09b3a2eba357fdabdb4592fac4",
+            "raw_sha256": "038adf09e71632ba357a730d718391b84a624fb799bd5b2992fdc9cebc884ec4",
+            "field": "display_name",
+            "value": "Yogur Natural Pack de 8 Unidades"
+          },
+          {
+            "product_key": "plusfresc:004447",
+            "observation_id": "9f734596d659d49879b01557220a857e9b2b2000403ad74a445dc9b29bb3d1f7",
+            "raw_sha256": "8bbd4c9577b18bf836be95bce426a79a32b397dd6352abf851266608459a12fd",
+            "field": "display_name",
+            "value": "Yogur natural DANONE, 4 unidades 480 gramos"
+          }
+        ]
+      },
+      "format": {
+        "state": "incompatible",
+        "reason": "Conteos explícitos 8 frente a 4. No se divide 480 g entre 4 para dar por probado todo el formato.",
+        "evidence": [
+          {
+            "product_key": "consum:227652",
+            "observation_id": "d11713f57c413d5dc27d40a66e104b887d292a09b3a2eba357fdabdb4592fac4",
+            "raw_sha256": "038adf09e71632ba357a730d718391b84a624fb799bd5b2992fdc9cebc884ec4",
+            "field": "display_name",
+            "value": "Yogur Natural Pack de 8 Unidades"
+          },
+          {
+            "product_key": "consum:227652",
+            "observation_id": "d11713f57c413d5dc27d40a66e104b887d292a09b3a2eba357fdabdb4592fac4",
+            "raw_sha256": "038adf09e71632ba357a730d718391b84a624fb799bd5b2992fdc9cebc884ec4",
+            "field": "packaging",
+            "value": "8 x 120 Gr"
+          },
+          {
+            "product_key": "plusfresc:004447",
+            "observation_id": "9f734596d659d49879b01557220a857e9b2b2000403ad74a445dc9b29bb3d1f7",
+            "raw_sha256": "8bbd4c9577b18bf836be95bce426a79a32b397dd6352abf851266608459a12fd",
+            "field": "display_name",
+            "value": "Yogur natural DANONE, 4 unidades 480 gramos"
+          }
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "rejected",
+    "reason": "Yogur natural de 8 unidades frente a 4: pack incompatible; natural no acredita endulzado.",
+    "regressions": [
+      "T14",
+      "T04"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "a92313e66ca003f370ee613bb9b9743a709ac12b4688c1e93e5f294a6754c882",
+    "case_id": "R15",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "0f4fb8d649a0b5bc2ef6be944f74b1b19468fc2df9763ebbc91b1630eec0549a",
+      "origin_key": "consum:230920",
+      "candidate_key": "plusfresc:004448",
+      "origin_observation": "29d163fa17969432441e5552a7a80a2bfa6366da15f630d9299bc6854bbeabd8",
+      "candidate_observation": "c79e954a4ec2eb102987735136813d86ffc3f92e7bc0ba911e1d7d2434b57b70",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "No se ha verificado la pertenencia de ambos productos al piloto; una pista léxica no basta.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Faltan atributos obligatorios o evidencia negativa explícita; ausencia de palabras no implica false.",
+        "evidence": []
+      },
+      "format": {
+        "state": "incompatible",
+        "reason": "Conteo explícito distinto: 8 frente a 4 unidades.",
+        "evidence": [
+          {
+            "product_key": "consum:230920",
+            "observation_id": "29d163fa17969432441e5552a7a80a2bfa6366da15f630d9299bc6854bbeabd8",
+            "raw_sha256": "46da2f5a5d21e2f1a04b07f1e1884fecdec456899ca7db5d8408ff53a08b5ca0",
+            "field": "display_name",
+            "value": "Yogur Natural Azucarado Pack de 8 Unidades"
+          },
+          {
+            "product_key": "plusfresc:004448",
+            "observation_id": "c79e954a4ec2eb102987735136813d86ffc3f92e7bc0ba911e1d7d2434b57b70",
+            "raw_sha256": "95c60558baa91b67b148c7f9af4712df1e5d38f8aee28156bbdceb648f5b4630",
+            "field": "display_name",
+            "value": "Yogur natural azucarado DANONE, pack 4 unidades 480 gramos"
+          }
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "rejected",
+    "reason": "Que ambos sean azucarados no permite aceptar 8 unidades frente a 4.",
+    "regressions": [
+      "T14"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "874175e7d166b03cf8990bbfc5677b7c173c74fe8a94b055a9d7269c952922e4",
+    "case_id": "R16",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "eb33f97444a5f36e13f0e0494f0e64906f40709c0bcadaaa91d7d066ed02e7f6",
+      "origin_key": "consum:204230",
+      "candidate_key": "plusfresc:002684",
+      "origin_observation": "44f3f2ef4437f95f7846d182825750ebcca6e949a530746766e90bcfec120d50",
+      "candidate_observation": "753f0d89830d55ec31ce0aa123af9cfede66c2151d523598334cc351d62b4292",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "No se ha verificado la pertenencia de ambos productos al piloto; una pista léxica no basta.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "incompatible",
+        "reason": "Sabor limón frente a yogur con piña. Es una propuesta de diferencia de variante, no una afirmación sobre ingredientes ausentes.",
+        "evidence": [
+          {
+            "product_key": "consum:204230",
+            "observation_id": "44f3f2ef4437f95f7846d182825750ebcca6e949a530746766e90bcfec120d50",
+            "raw_sha256": "ad786ae87adadd76e30a3a658b274303613c5b8a6b7a6a5e21fd065dccfd10f6",
+            "field": "display_name",
+            "value": "Yogur Sabor Limón Pack de 4 Unidades"
+          },
+          {
+            "product_key": "plusfresc:002684",
+            "observation_id": "753f0d89830d55ec31ce0aa123af9cfede66c2151d523598334cc351d62b4292",
+            "raw_sha256": "9117d6891e262b1ca0fbe12dd42c6f0e3d1871a1808f88e625833dabbaa0cc8a",
+            "field": "display_name",
+            "value": "Yogur desnatado con piña ACTIVIA DANONE,  pack 4 uds 480 grs"
+          }
+        ]
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Falta una firma completa verificada: modo de venta, conteo, contenido unitario, total y composición.",
+        "evidence": []
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "rejected",
+    "reason": "Los perfiles de sabor declarados son limón y piña; el total parecido no elimina la diferencia.",
+    "regressions": [
+      "T03",
+      "T19"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "9d22f12f73bcb8cc8d289a45f57d40c28411b6e39382616770455d7e4a91152c",
+    "case_id": "R17",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "b03d8b281e6f6c758f9ca8a9e27c7f1fe8ce03ce88ba9c8b8ff3b768ca19521f",
+      "origin_key": "consum:204420",
+      "candidate_key": "plusfresc:002694",
+      "origin_observation": "24fa46787a533d73b9a45ec63f338ecb3d4e00ff81b127e7587da8e93f61a0d1",
+      "candidate_observation": "c640ab2c4985c7bb67188d249e49f42bff8744d1f9e97129da6fd6abe8b62ae3",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "No se ha verificado la pertenencia de ambos productos al piloto; una pista léxica no basta.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "incompatible",
+        "reason": "Los sabores declarados no coinciden; no se aprueban identidad, grasa o endulzado por ello.",
+        "evidence": [
+          {
+            "product_key": "consum:204420",
+            "observation_id": "24fa46787a533d73b9a45ec63f338ecb3d4e00ff81b127e7587da8e93f61a0d1",
+            "raw_sha256": "0be8035fd423df54b08473c290a29fe570af88d744df13b7add6dca47bd09ae3",
+            "field": "display_name",
+            "value": "Yogur Sabor Fresa Pack de 4 Unidades"
+          },
+          {
+            "product_key": "plusfresc:002694",
+            "observation_id": "c640ab2c4985c7bb67188d249e49f42bff8744d1f9e97129da6fd6abe8b62ae3",
+            "raw_sha256": "cb359d95fd9d97f7b31f47ab8d9b58ebcadb9784fd477c030e43b038b995dfdb",
+            "field": "display_name",
+            "value": "Yogur desnatado con ciruelas ACTIVIA DANONE, pack 4 unidades"
+          }
+        ]
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Falta una firma completa verificada: modo de venta, conteo, contenido unitario, total y composición.",
+        "evidence": []
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "rejected",
+    "reason": "Sabor fresa frente a yogur con ciruelas: variante declarada distinta.",
+    "regressions": [
+      "T03",
+      "T19"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "d22f81ec14750b114fdb2052717497ecddf73de8ef5a7119b8ba31ba73183317",
+    "case_id": "R18",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "a0a6f974474dda4350a720acc354a138cc0e4bc4900c51329144e09344c9f83d",
+      "origin_key": "consum:236141",
+      "candidate_key": "mercadona:15661",
+      "origin_observation": "1d06cf0f4f809cfe3897e5da423430da56650d195c1c915d42c5ef6b0f9bceae",
+      "candidate_observation": "ec62044e6bcc790730320ac5ab6400cc632ecfa94e148b21cc72f74911e7789d",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "No se ha verificado la pertenencia de ambos productos al piloto; una pista léxica no basta.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "Mercadona declara yogur líquido; Consum no declara explícitamente consistencia ni composición suficiente. No inferir sólido por ausencia.",
+        "evidence": [
+          {
+            "product_key": "consum:236141",
+            "observation_id": "1d06cf0f4f809cfe3897e5da423430da56650d195c1c915d42c5ef6b0f9bceae",
+            "raw_sha256": "9af697f146e45c58aa66eec93348d47248f1937c961ec7aca3b0f872e5c15ba4",
+            "field": "display_name",
+            "value": "Activia Frutas Bosque Yogur Bífidus P-4 ud."
+          },
+          {
+            "product_key": "mercadona:15661",
+            "observation_id": "ec62044e6bcc790730320ac5ab6400cc632ecfa94e148b21cc72f74911e7789d",
+            "raw_sha256": "97976ebd841d93dbe3e556514b370121bb73d32f9a45766407aa787cd92d7dbe",
+            "field": "display_name",
+            "value": "Yogur líquido frutos silvestres Hacendado 0% MG 0% azúcares añadidos"
+          }
+        ]
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Faltan atributos obligatorios o evidencia negativa explícita; ausencia de palabras no implica false.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Falta una firma completa verificada: modo de venta, conteo, contenido unitario, total y composición.",
+        "evidence": []
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "abstain",
+    "reason": "Frutas del bosque y frutos silvestres no demuestran misma mezcla, base o subtipo.",
+    "regressions": [
+      "T02",
+      "T22"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "963dcc72fc431145ad9cf8b1a02590386acc6e5ee572161ab0e6746e20ded313",
+    "case_id": "R19",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "f8630130dabca282ac9078d93009220fdc2325a6078c5cb62450ea6a76b802d6",
+      "origin_key": "mercadona:13951",
+      "candidate_key": "plusfresc:004448",
+      "origin_observation": "001bec644c8858d098073494338d566115f1977917ced40fd525a0726c2c6970",
+      "candidate_observation": "c79e954a4ec2eb102987735136813d86ffc3f92e7bc0ba911e1d7d2434b57b70",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "No se ha verificado la pertenencia de ambos productos al piloto; una pista léxica no basta.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "incompatible",
+        "reason": "La declaración de ausencia de azúcares añadidos no es compatible con yogur declarado azucarado. No se infiere ausencia de azúcares totales ni de edulcorantes.",
+        "evidence": [
+          {
+            "product_key": "mercadona:13951",
+            "observation_id": "001bec644c8858d098073494338d566115f1977917ced40fd525a0726c2c6970",
+            "raw_sha256": "b1e2c28c518ffb90dc24ce5165d36bf453cdc0567e3fdedca5aaf11eba51fa23",
+            "field": "display_name",
+            "value": "Yogur sabores Hacendado 0% MG 0% azúcares añadidos"
+          },
+          {
+            "product_key": "plusfresc:004448",
+            "observation_id": "c79e954a4ec2eb102987735136813d86ffc3f92e7bc0ba911e1d7d2434b57b70",
+            "raw_sha256": "95c60558baa91b67b148c7f9af4712df1e5d38f8aee28156bbdceb648f5b4630",
+            "field": "display_name",
+            "value": "Yogur natural azucarado DANONE, pack 4 unidades 480 gramos"
+          }
+        ]
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Falta una firma completa verificada: modo de venta, conteo, contenido unitario, total y composición.",
+        "evidence": []
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "rejected",
+    "reason": "0% azúcares añadidos frente a azucarado: contradicción explícita de endulzado.",
+    "regressions": [
+      "T03",
+      "T05"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "e04542cdb00883cb611ba14be23d009a4ffea9a85b6dd08322ce6823982b6df7",
+    "case_id": "R20",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "ae3f852fb7032645f855c9a5a423b416e182434de2aee4dd07bc94909954ce31",
+      "origin_key": "consum:227652",
+      "candidate_key": "plusfresc:004448",
+      "origin_observation": "d11713f57c413d5dc27d40a66e104b887d292a09b3a2eba357fdabdb4592fac4",
+      "candidate_observation": "c79e954a4ec2eb102987735136813d86ffc3f92e7bc0ba911e1d7d2434b57b70",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "No se ha verificado la pertenencia de ambos productos al piloto; una pista léxica no basta.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Natural en origen no significa sin azúcar añadido. Azucarado solo consta en destino.",
+        "evidence": [
+          {
+            "product_key": "consum:227652",
+            "observation_id": "d11713f57c413d5dc27d40a66e104b887d292a09b3a2eba357fdabdb4592fac4",
+            "raw_sha256": "038adf09e71632ba357a730d718391b84a624fb799bd5b2992fdc9cebc884ec4",
+            "field": "display_name",
+            "value": "Yogur Natural Pack de 8 Unidades"
+          },
+          {
+            "product_key": "plusfresc:004448",
+            "observation_id": "c79e954a4ec2eb102987735136813d86ffc3f92e7bc0ba911e1d7d2434b57b70",
+            "raw_sha256": "95c60558baa91b67b148c7f9af4712df1e5d38f8aee28156bbdceb648f5b4630",
+            "field": "display_name",
+            "value": "Yogur natural azucarado DANONE, pack 4 unidades 480 gramos"
+          }
+        ]
+      },
+      "format": {
+        "state": "incompatible",
+        "reason": "Número de envases expresamente distinto.",
+        "evidence": [
+          {
+            "product_key": "consum:227652",
+            "observation_id": "d11713f57c413d5dc27d40a66e104b887d292a09b3a2eba357fdabdb4592fac4",
+            "raw_sha256": "038adf09e71632ba357a730d718391b84a624fb799bd5b2992fdc9cebc884ec4",
+            "field": "display_name",
+            "value": "Yogur Natural Pack de 8 Unidades"
+          },
+          {
+            "product_key": "plusfresc:004448",
+            "observation_id": "c79e954a4ec2eb102987735136813d86ffc3f92e7bc0ba911e1d7d2434b57b70",
+            "raw_sha256": "95c60558baa91b67b148c7f9af4712df1e5d38f8aee28156bbdceb648f5b4630",
+            "field": "display_name",
+            "value": "Yogur natural azucarado DANONE, pack 4 unidades 480 gramos"
+          }
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "rejected",
+    "reason": "El rechazo demostrado es por pack de 8 frente a 4; no se atribuye a azúcar que no está documentado en origen.",
+    "regressions": [
+      "T04",
+      "T14"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "8e3167785acb30ea2ac048df2345912e5b0f88691e6f1d4bba1cc7225b9ae283",
+    "case_id": "R21",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "19fbc9f9c1568e3ed1495d3437366cc3ba2e685caec0d2558e1b0affe6a86c40",
+      "origin_key": "mercadona:12975",
+      "candidate_key": "plusfresc:005162",
+      "origin_observation": "f90044d12c46227d6cad6e378c0c2d8b484c16eca4f262344e5bddc9008199b5",
+      "candidate_observation": "79e6cd13cf20b88ae97808c4d04efc26184b27045bd1f446fad099cfccf0ce74",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "No se ha verificado la pertenencia de ambos productos al piloto; una pista léxica no basta.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Faltan atributos obligatorios o evidencia negativa explícita; ausencia de palabras no implica false.",
+        "evidence": []
+      },
+      "format": {
+        "state": "unknown",
+        "reason": "Mercadona no declara cantidad nominal en los campos exportados. El nombre infantil no prueba igualdad de formato.",
+        "evidence": [
+          {
+            "product_key": "mercadona:12975",
+            "observation_id": "f90044d12c46227d6cad6e378c0c2d8b484c16eca4f262344e5bddc9008199b5",
+            "raw_sha256": "89b383ecadaed0c2c00a4167a838f2732b75b3d70d6141a8132b926170744019",
+            "field": "display_name",
+            "value": "Agua mineral pequeña Fontébil tapón infantil"
+          },
+          {
+            "product_key": "plusfresc:005162",
+            "observation_id": "79e6cd13cf20b88ae97808c4d04efc26184b27045bd1f446fad099cfccf0ce74",
+            "raw_sha256": "d4712cc909e7f0f78686d2b4680a005a589b5baa0822c5762dce3cd92db879a1",
+            "field": "display_name",
+            "value": "Agua mineral FONT VELLA Junior, 33 cl"
+          }
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "abstain",
+    "reason": "Pequeña/tapón infantil y Junior no verifican volumen ni pack; no calcularlos desde €/L.",
+    "regressions": [
+      "T22"
+    ]
+  },
+  {
+    "schema_version": 1,
+    "annotation_id": "b98127b8f7f6424a39b7f21aa421266ba15375689ef31119114c12522d2a76ab",
+    "case_id": "R22",
+    "guide_version": "ce202-v1",
+    "target": {
+      "pair_id": "661f08ad058c2d045b9d25ac9326bd21dfd00eb8ee1bfcad0d5ba7b4e5dd0519",
+      "origin_key": "plusfresc:003683",
+      "candidate_key": "consum:138297",
+      "origin_observation": "6fab62d4ba3554b2ffc59e960904603c8a463a317449d8052a95b4d0d932aa4f",
+      "candidate_observation": "3376370b7c8eca47770ec96e79422d209e9401db1e8abeace9ae1f093539d811",
+      "postcode": "08006",
+      "channel": "online",
+      "reference_clock": "2026-09-03T08:08:57.223041+00:00"
+    },
+    "cohort": "exploratory_exposed",
+    "authorship": "assistant_proposal",
+    "review_status": "awaiting_independent_review",
+    "gold_eligible": false,
+    "labels": {
+      "scope": {
+        "state": "unknown",
+        "reason": "No se ha verificado la pertenencia de ambos productos al piloto; una pista léxica no basta.",
+        "evidence": []
+      },
+      "identity": {
+        "state": "unknown",
+        "reason": "No se han comprobado todos los atributos de identidad/subtipo en ambos lados.",
+        "evidence": []
+      },
+      "variants": {
+        "state": "unknown",
+        "reason": "Faltan atributos obligatorios o evidencia negativa explícita; ausencia de palabras no implica false.",
+        "evidence": []
+      },
+      "format": {
+        "state": "incompatible",
+        "reason": "Cantidad declarada de 1 l frente a seis envases de 0,3 l; no son firmas nominales iguales.",
+        "evidence": [
+          {
+            "product_key": "plusfresc:003683",
+            "observation_id": "6fab62d4ba3554b2ffc59e960904603c8a463a317449d8052a95b4d0d932aa4f",
+            "raw_sha256": "81209f5f21911db2fc6de6050287ac9cf1f7f9eb72db045d71cb1875a9a4125b",
+            "field": "display_name",
+            "value": "Agua mineral con gas FONTER, 1 l"
+          },
+          {
+            "product_key": "consum:138297",
+            "observation_id": "3376370b7c8eca47770ec96e79422d209e9401db1e8abeace9ae1f093539d811",
+            "raw_sha256": "27abfdd06b26a919ea058614fb35a7144cfeeb58da9bfef4cb17e51ebb9f03c8",
+            "field": "display_name",
+            "value": "Agua Mineral con Gas Pack de 6 Vidrio"
+          },
+          {
+            "product_key": "consum:138297",
+            "observation_id": "3376370b7c8eca47770ec96e79422d209e9401db1e8abeace9ae1f093539d811",
+            "raw_sha256": "27abfdd06b26a919ea058614fb35a7144cfeeb58da9bfef4cb17e51ebb9f03c8",
+            "field": "packaging",
+            "value": "6 x 0,3 L"
+          }
+        ]
+      },
+      "price": {
+        "state": "unknown",
+        "reason": "Precios globales del snapshot sin ámbito comercial verificado; no acreditan ahorro local.",
+        "evidence": []
+      },
+      "location": {
+        "state": "unknown",
+        "reason": "La proyección no demuestra servicio/precio para este CP y canal en ambos lados.",
+        "evidence": []
+      },
+      "availability": {
+        "state": "unknown",
+        "reason": "published=true no acredita disponibilidad en la ubicación.",
+        "evidence": []
+      },
+      "catalog": {
+        "state": "unknown",
+        "reason": "No se exportaron revisiones completas compatibles de producto, precio y ámbito.",
+        "evidence": []
+      }
+    },
+    "decision": "rejected",
+    "reason": "Que ambas aguas tengan gas no compensa 1 l frente a 6 × 0,3 l.",
+    "regressions": [
+      "T09",
+      "T10"
+    ]
+  }
+]

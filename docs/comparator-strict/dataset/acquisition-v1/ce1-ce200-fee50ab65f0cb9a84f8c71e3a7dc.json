@@ -1,0 +1,846 @@
+{
+  "plan": {
+    "version": "ce200-read-v1",
+    "kind": "census",
+    "store": "consum",
+    "cursor": "5164:Cafés refrigerados",
+    "limit": 100,
+    "round": "frame",
+    "select": "SELECT category_id,category_name,count(*)::int AS n,\n      count(*) FILTER (WHERE (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)')))::int AS frame_n\n      FROM public.consum_products p WHERE published IS TRUE\n      AND (category_id::text||':'||coalesce(category_name,'')) COLLATE \"C\" > '5164:Cafés refrigerados' COLLATE \"C\"\n      GROUP BY category_id,category_name ORDER BY (category_id::text||':'||coalesce(category_name,'')) COLLATE \"C\" LIMIT 500",
+    "job": "ce1-ce200-fee50ab65f0cb9a84f8c71e3a7dc",
+    "operationHash": "fee50ab65f0cb9a84f8c71e3a7dc22428af19e334fd4e9421a471c8c6b0f2cb0",
+    "maxRows": 500,
+    "maxBytes": 131072,
+    "sql": "-- ce1-ce200-fee50ab65f0cb9a84f8c71e3a7dc: census; CE-BU-002; no app writes.\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $reserve$\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE status IN ('planned','running','halted','unknown'))\n    OR EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-fee50ab65f0cb9a84f8c71e3a7dc') THEN RAISE EXCEPTION 'ce200_exclusive_or_replay'; END IF;\n  IF EXISTS(SELECT 1 FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid))>0\n    OR (pid<>pg_backend_pid() AND state='active' AND query_start<clock_timestamp()-interval '30 seconds')) THEN RAISE EXCEPTION 'ce200_health_stop'; END IF;\n  UPDATE comparator_strict.execution_budget SET\n    sql_ms_reserved=sql_ms_reserved+10000,read_rows_reserved=read_rows_reserved+500,\n    bytes_reserved=bytes_reserved+131072,write_rows_reserved=write_rows_reserved+3,updated_at=clock_timestamp()\n    WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03'\n      AND approval_reference='CE-200-corpus-v1' AND bytes_limit=134217728 AND read_rows_limit=50000\n      AND bytes_reserved+131072<=bytes_limit AND read_rows_reserved+500<=read_rows_limit AND write_rows_reserved+3<=2000;\n  IF NOT FOUND THEN RAISE EXCEPTION 'ce200_budget'; END IF;\n  INSERT INTO comparator_strict.execution_jobs(id,project_ref,operation_key,sql_sha256,status,started_at,deadline_at,job_key,operation_hash,budget_date,reservation)\n    VALUES(gen_random_uuid(),'gkffvigcnsesbaihycay','ce200-census','28c6d256f23687b26274e7f8c704ae1ec4992f3512ac4bd5cdba1db6e888d410','running',clock_timestamp(),clock_timestamp()+interval '20 minutes','ce1-ce200-fee50ab65f0cb9a84f8c71e3a7dc','fee50ab65f0cb9a84f8c71e3a7dc22428af19e334fd4e9421a471c8c6b0f2cb0',DATE '2026-09-03','{\"sqlMs\":10000,\"readRows\":500,\"writeRows\":3,\"responseBytes\":131072}'::jsonb);\nEND $reserve$;\nCOMMIT;\nBEGIN;\nSET LOCAL statement_timeout='5s'; SET LOCAL lock_timeout='500ms';\nDO $payload$\nDECLARE payload jsonb; data jsonb; started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0))\n    OR NOT EXISTS(SELECT 1 FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce200-fee50ab65f0cb9a84f8c71e3a7dc' AND status='running' AND operation_hash='fee50ab65f0cb9a84f8c71e3a7dc22428af19e334fd4e9421a471c8c6b0f2cb0' AND deadline_at>clock_timestamp()) THEN RAISE EXCEPTION 'ce200_lease'; END IF;\n  SELECT coalesce(jsonb_agg(to_jsonb(q)),'[]'::jsonb) INTO data FROM (SELECT category_id,category_name,count(*)::int AS n,\n      count(*) FILTER (WHERE (published IS TRUE AND (display_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)' OR category_name ~* '(agua|aigua|water|yogu|yogh|iogur|patat|papat)')))::int AS frame_n\n      FROM public.consum_products p WHERE published IS TRUE\n      AND (category_id::text||':'||coalesce(category_name,'')) COLLATE \"C\" > '5164:Cafés refrigerados' COLLATE \"C\"\n      GROUP BY category_id,category_name ORDER BY (category_id::text||':'||coalesce(category_name,'')) COLLATE \"C\" LIMIT 500) q;\n  payload:=jsonb_build_object('job_key','ce1-ce200-fee50ab65f0cb9a84f8c71e3a7dc','operation_hash','fee50ab65f0cb9a84f8c71e3a7dc22428af19e334fd4e9421a471c8c6b0f2cb0',\n    'project_ref','gkffvigcnsesbaihycay','captured_at',started,'kind','census','store','consum',\n    'cursor','5164:Cafés refrigerados','rows',data,'row_count',jsonb_array_length(data),'elapsed_ms',extract(epoch FROM clock_timestamp()-started)*1000);\n  IF jsonb_array_length(data)>500 OR octet_length(payload::text)>122880 THEN RAISE EXCEPTION 'ce200_result_limit'; END IF;\n  UPDATE comparator_strict.execution_jobs SET status='succeeded',finished_at=clock_timestamp(),\n    receipt=jsonb_build_object('payload_sha256',encode(sha256(convert_to(payload::text,'UTF8')),'hex'),'row_count',jsonb_array_length(data),'payload_bytes',octet_length(payload::text),'elapsed_ms',payload->'elapsed_ms') WHERE job_key='ce1-ce200-fee50ab65f0cb9a84f8c71e3a7dc';\n  PERFORM set_config('comparator_strict.ce200_response',payload::text,true);\nEND $payload$;\nSELECT current_setting('comparator_strict.ce200_response')::jsonb AS evidence;\nCOMMIT;"
+  },
+  "payload": {
+    "kind": "census",
+    "rows": [
+      {
+        "n": 6,
+        "frame_n": 6,
+        "category_id": "5165",
+        "category_name": "Yogur enriquecido"
+      },
+      {
+        "n": 12,
+        "frame_n": 12,
+        "category_id": "5166",
+        "category_name": "Yogur proteinas"
+      },
+      {
+        "n": 12,
+        "frame_n": 12,
+        "category_id": "5167",
+        "category_name": "Yogur vegetal"
+      },
+      {
+        "n": 24,
+        "frame_n": 24,
+        "category_id": "5168",
+        "category_name": "Yogur griego"
+      },
+      {
+        "n": 10,
+        "frame_n": 10,
+        "category_id": "5169",
+        "category_name": "Yogur desnatado"
+      },
+      {
+        "n": 20,
+        "frame_n": 1,
+        "category_id": "5170",
+        "category_name": "Bebidas refrescantes"
+      },
+      {
+        "n": 21,
+        "frame_n": 0,
+        "category_id": "5171",
+        "category_name": "Zumos frescos"
+      },
+      {
+        "n": 24,
+        "frame_n": 0,
+        "category_id": "5172",
+        "category_name": "Cocidos de pavo"
+      },
+      {
+        "n": 11,
+        "frame_n": 0,
+        "category_id": "5173",
+        "category_name": "Cocidos de pollo"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "5174",
+        "category_name": "Paleta"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "5175",
+        "category_name": "Curados especialidades"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "5177",
+        "category_name": "Lomo"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "5178",
+        "category_name": "Longaniza"
+      },
+      {
+        "n": 11,
+        "frame_n": 0,
+        "category_id": "5179",
+        "category_name": "Fuet"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "5180",
+        "category_name": "Surtidos"
+      },
+      {
+        "n": 37,
+        "frame_n": 0,
+        "category_id": "5183",
+        "category_name": "Paté de carne"
+      },
+      {
+        "n": 18,
+        "frame_n": 0,
+        "category_id": "5184",
+        "category_name": "Foie y paté de ave"
+      },
+      {
+        "n": 10,
+        "frame_n": 0,
+        "category_id": "5186",
+        "category_name": "Cocidos de pavo"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "5187",
+        "category_name": "Cocidos de pollo"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "5189",
+        "category_name": "Curados especialidades"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "5191",
+        "category_name": "Lomo"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "5192",
+        "category_name": "Longaniza"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "5195",
+        "category_name": "Paté de cerdo"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "5196",
+        "category_name": "Paté de ave"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "5198",
+        "category_name": "Cuña tierno y saludable"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "5199",
+        "category_name": "Cuña semicurado"
+      },
+      {
+        "n": 16,
+        "frame_n": 0,
+        "category_id": "5200",
+        "category_name": "Cuña curado"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "5201",
+        "category_name": "Pasta blanda cabra"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "5202",
+        "category_name": "Pasta blanda vaca"
+      },
+      {
+        "n": 29,
+        "frame_n": 0,
+        "category_id": "5203",
+        "category_name": "En lonchas"
+      },
+      {
+        "n": 25,
+        "frame_n": 0,
+        "category_id": "5204",
+        "category_name": "Fundidos y porciones"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "5205",
+        "category_name": "Base arroz"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "5207",
+        "category_name": "Base pescado"
+      },
+      {
+        "n": 19,
+        "frame_n": 0,
+        "category_id": "5208",
+        "category_name": "Base pasta"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "5209",
+        "category_name": "Base verdura"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "5211",
+        "category_name": "Rebozados"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "5212",
+        "category_name": "Carne"
+      },
+      {
+        "n": 14,
+        "frame_n": 0,
+        "category_id": "5213",
+        "category_name": "Snacks"
+      },
+      {
+        "n": 36,
+        "frame_n": 0,
+        "category_id": "5216",
+        "category_name": "Pizza congelada"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "5217",
+        "category_name": "Bases congeladas"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "5219",
+        "category_name": "Pistachos"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "5220",
+        "category_name": "Avellanas y anacardos"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "5223",
+        "category_name": "Membrillo"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "5225",
+        "category_name": "Membrillo"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "5226",
+        "category_name": "Quesos de Barra"
+      },
+      {
+        "n": 10,
+        "frame_n": 10,
+        "category_id": "5227",
+        "category_name": "Patatas"
+      },
+      {
+        "n": 21,
+        "frame_n": 0,
+        "category_id": "5228",
+        "category_name": "Tomates"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "5229",
+        "category_name": "Plátano y banana"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "5231",
+        "category_name": "Frutos rojos"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "5232",
+        "category_name": "Oriental"
+      },
+      {
+        "n": 32,
+        "frame_n": 0,
+        "category_id": "5234",
+        "category_name": "Chocolate Negro"
+      },
+      {
+        "n": 44,
+        "frame_n": 0,
+        "category_id": "5235",
+        "category_name": "Chocolate con Leche"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "5236",
+        "category_name": "Chocolate blanco"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "5237",
+        "category_name": "Chocolate para postres"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "5238",
+        "category_name": "Chocolate a la taza"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "5239",
+        "category_name": "Bombones"
+      },
+      {
+        "n": 38,
+        "frame_n": 0,
+        "category_id": "5243",
+        "category_name": "Tomate frito"
+      },
+      {
+        "n": 21,
+        "frame_n": 0,
+        "category_id": "5244",
+        "category_name": "Tomate natural"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "5245",
+        "category_name": "Berlinas"
+      },
+      {
+        "n": 18,
+        "frame_n": 0,
+        "category_id": "5246",
+        "category_name": "Bollería"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "5247",
+        "category_name": "Croissants"
+      },
+      {
+        "n": 19,
+        "frame_n": 0,
+        "category_id": "5248",
+        "category_name": "Hojaldres"
+      },
+      {
+        "n": 23,
+        "frame_n": 0,
+        "category_id": "5249",
+        "category_name": "Magdalenas"
+      },
+      {
+        "n": 23,
+        "frame_n": 0,
+        "category_id": "5250",
+        "category_name": "Pastelitos"
+      },
+      {
+        "n": 32,
+        "frame_n": 0,
+        "category_id": "5251",
+        "category_name": "Tartas y bizcochos"
+      },
+      {
+        "n": 24,
+        "frame_n": 0,
+        "category_id": "5252",
+        "category_name": "Harina"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "5253",
+        "category_name": "Levadura"
+      },
+      {
+        "n": 31,
+        "frame_n": 0,
+        "category_id": "5254",
+        "category_name": "Decoración postres"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "5255",
+        "category_name": "Gelatinas"
+      },
+      {
+        "n": 19,
+        "frame_n": 0,
+        "category_id": "5256",
+        "category_name": "Postres en polvo"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "5257",
+        "category_name": "Salsas y siropes"
+      },
+      {
+        "n": 30,
+        "frame_n": 0,
+        "category_id": "5260",
+        "category_name": "Barritas y galletas"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "5261",
+        "category_name": "Batidos y cremas"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "5262",
+        "category_name": "Semillas"
+      },
+      {
+        "n": 32,
+        "frame_n": 0,
+        "category_id": "5263",
+        "category_name": "Pizzas"
+      },
+      {
+        "n": 20,
+        "frame_n": 0,
+        "category_id": "5264",
+        "category_name": "Gazpachos"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "5265",
+        "category_name": "Cremas y sopas"
+      },
+      {
+        "n": 15,
+        "frame_n": 15,
+        "category_id": "5266",
+        "category_name": "Tortillas, croquetas y patatas"
+      },
+      {
+        "n": 31,
+        "frame_n": 5,
+        "category_id": "5267",
+        "category_name": "Preparados de carne y pescado"
+      },
+      {
+        "n": 16,
+        "frame_n": 0,
+        "category_id": "5268",
+        "category_name": "Preparados de verdura"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "5269",
+        "category_name": "Preparados de arroz"
+      },
+      {
+        "n": 29,
+        "frame_n": 0,
+        "category_id": "5270",
+        "category_name": "Preparados de pasta"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "5271",
+        "category_name": "Comida étnica"
+      },
+      {
+        "n": 30,
+        "frame_n": 0,
+        "category_id": "5272",
+        "category_name": "Preparados de legumbres y hortalizas"
+      },
+      {
+        "n": 21,
+        "frame_n": 3,
+        "category_id": "5273",
+        "category_name": "Preparados de carne"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "5274",
+        "category_name": "Preparados de pasta y arroz"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "5276",
+        "category_name": "Levadura"
+      },
+      {
+        "n": 11,
+        "frame_n": 0,
+        "category_id": "5277",
+        "category_name": "Pan rallado"
+      },
+      {
+        "n": 25,
+        "frame_n": 0,
+        "category_id": "5279",
+        "category_name": "Vacuno"
+      },
+      {
+        "n": 31,
+        "frame_n": 0,
+        "category_id": "5280",
+        "category_name": "Vacuno"
+      },
+      {
+        "n": 22,
+        "frame_n": 0,
+        "category_id": "5282",
+        "category_name": "Despensa"
+      },
+      {
+        "n": 5,
+        "frame_n": 1,
+        "category_id": "5283",
+        "category_name": "Frescos y refrigerados"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "5284",
+        "category_name": "Droguería y limpieza"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "5287",
+        "category_name": "Menaje de mesa"
+      },
+      {
+        "n": 11,
+        "frame_n": 0,
+        "category_id": "5289",
+        "category_name": "Platos, bandejas y cuencos"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "5290",
+        "category_name": "Cubiertos"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "5291",
+        "category_name": "Palillos y pajitas"
+      },
+      {
+        "n": 2,
+        "frame_n": 0,
+        "category_id": "5292",
+        "category_name": "Manteles"
+      },
+      {
+        "n": 11,
+        "frame_n": 0,
+        "category_id": "5294",
+        "category_name": "Bolsas de conservación"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "5295",
+        "category_name": "Tender y planchar"
+      },
+      {
+        "n": 30,
+        "frame_n": 2,
+        "category_id": "5296",
+        "category_name": "Accesorios de baño"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "5297",
+        "category_name": "Pasta ensaladas"
+      },
+      {
+        "n": 20,
+        "frame_n": 0,
+        "category_id": "5309",
+        "category_name": "Cápsulas sistema Dolce Gusto"
+      },
+      {
+        "n": 7,
+        "frame_n": 0,
+        "category_id": "5312",
+        "category_name": "Cápsulas otros sistemas"
+      },
+      {
+        "n": 15,
+        "frame_n": 0,
+        "category_id": "5314",
+        "category_name": "Vermut y aperitivo"
+      },
+      {
+        "n": 9,
+        "frame_n": 0,
+        "category_id": "5315",
+        "category_name": "Anís"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "5316",
+        "category_name": "Brandy"
+      },
+      {
+        "n": 27,
+        "frame_n": 0,
+        "category_id": "5317",
+        "category_name": "Whisky"
+      },
+      {
+        "n": 25,
+        "frame_n": 0,
+        "category_id": "5318",
+        "category_name": "Ginebra"
+      },
+      {
+        "n": 16,
+        "frame_n": 0,
+        "category_id": "5319",
+        "category_name": "Ron"
+      },
+      {
+        "n": 8,
+        "frame_n": 0,
+        "category_id": "5320",
+        "category_name": "Vodka"
+      },
+      {
+        "n": 59,
+        "frame_n": 1,
+        "category_id": "5321",
+        "category_name": "Licores y cremas"
+      },
+      {
+        "n": 11,
+        "frame_n": 0,
+        "category_id": "5322",
+        "category_name": "Combinados"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "5323",
+        "category_name": "Otros licores"
+      },
+      {
+        "n": 13,
+        "frame_n": 0,
+        "category_id": "5326",
+        "category_name": "Arenas e higiene"
+      },
+      {
+        "n": 25,
+        "frame_n": 2,
+        "category_id": "5329",
+        "category_name": "Platos para llevar"
+      },
+      {
+        "n": 34,
+        "frame_n": 4,
+        "category_id": "5330",
+        "category_name": "Pouches"
+      },
+      {
+        "n": 15,
+        "frame_n": 0,
+        "category_id": "5331",
+        "category_name": "Potitos de Carne"
+      },
+      {
+        "n": 1,
+        "frame_n": 0,
+        "category_id": "5335",
+        "category_name": "Platos preparados"
+      },
+      {
+        "n": 16,
+        "frame_n": 0,
+        "category_id": "5336",
+        "category_name": "Ipa y artesana"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "5337",
+        "category_name": "Sin filtrar"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "5338",
+        "category_name": "Sin gluten"
+      },
+      {
+        "n": 15,
+        "frame_n": 0,
+        "category_id": "5339",
+        "category_name": "Tostada"
+      },
+      {
+        "n": 5,
+        "frame_n": 0,
+        "category_id": "5340",
+        "category_name": "Trigo"
+      },
+      {
+        "n": 14,
+        "frame_n": 0,
+        "category_id": "5341",
+        "category_name": "0,0 tostada"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "5342",
+        "category_name": "Baja graduación"
+      },
+      {
+        "n": 11,
+        "frame_n": 0,
+        "category_id": "5344",
+        "category_name": "Arroz cocido"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "5345",
+        "category_name": "Arroz basmati"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "5346",
+        "category_name": "Arroz bomba"
+      },
+      {
+        "n": 12,
+        "frame_n": 0,
+        "category_id": "5347",
+        "category_name": "Arroz especial"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "5348",
+        "category_name": "Paté pescado y marisco"
+      },
+      {
+        "n": 3,
+        "frame_n": 0,
+        "category_id": "5349",
+        "category_name": "Untables"
+      },
+      {
+        "n": 15,
+        "frame_n": 0,
+        "category_id": "5352",
+        "category_name": "Sepia, pulpo y calamares"
+      },
+      {
+        "n": 27,
+        "frame_n": 0,
+        "category_id": "5353",
+        "category_name": "Huevos frescos"
+      },
+      {
+        "n": 4,
+        "frame_n": 0,
+        "category_id": "5354",
+        "category_name": "Otros huevos y claras de huevo"
+      },
+      {
+        "n": 6,
+        "frame_n": 0,
+        "category_id": "5355",
+        "category_name": "Café con Leche"
+      }
+    ],
+    "store": "consum",
+    "cursor": "5164:Cafés refrigerados",
+    "job_key": "ce1-ce200-fee50ab65f0cb9a84f8c71e3a7dc",
+    "row_count": 136,
+    "elapsed_ms": 29.925,
+    "captured_at": "2026-09-03T10:21:42.408039+00:00",
+    "project_ref": "gkffvigcnsesbaihycay",
+    "operation_hash": "fee50ab65f0cb9a84f8c71e3a7dc22428af19e334fd4e9421a471c8c6b0f2cb0"
+  },
+  "transport_bytes": 16060
+}

@@ -1,0 +1,925 @@
+{
+  "schema_version": 1,
+  "authority": "Sigue avanzando con las tareas CE-105 y 106 hasta darlas por finalizadas; CE-SEQ-003",
+  "captured_at": "2026-09-03T09:00:31.08591+00:00",
+  "project_ref": "gkffvigcnsesbaihycay",
+  "git": {
+    "head": "03b8ba273e17709fd8fc69c20dddb68c147a7e2a",
+    "branch": "codex/phase5-observation",
+    "changes": "local uncommitted; pre-existing changes preserved"
+  },
+  "status": {
+    "CE105": "completed",
+    "CE106": "completed",
+    "G1": "PASS_bounded_F1_foundation",
+    "CE100": "owner_closed_with_limitations",
+    "baseline_complete": false,
+    "F2_started": false,
+    "public_comparator_activated": false
+  },
+  "migration": {
+    "file": "supabase/migrations/20260903084621_comparator_strict_atomic_receipts.sql",
+    "remote_version": "20260903084621",
+    "sha256": "62a805075786342cdf7208745ae91e4771706030840d33fe3fccb5a3ed79025c",
+    "sql": "-- CE-105: durable identity/reservation/receipt for the bounded atomic executor.\n-- Only own table, nullable for the already retained bootstrap audit record.\nBEGIN;\nSET LOCAL statement_timeout='1s';\nSET LOCAL lock_timeout='500ms';\nDO $upgrade$\nBEGIN\n-- Carry the prior accounting forward; reserve diagnostics + DDL bookkeeping.\n-- Headroom includes the two forthcoming 6000 ms / 32768-byte atomic jobs.\nIF (clock_timestamp() AT TIME ZONE 'UTC')::date<>DATE '2026-09-03' THEN\n  RAISE EXCEPTION 'ce1_upgrade_authority_expired';\nEND IF;\nUPDATE comparator_strict.execution_budget SET sql_ms_reserved=sql_ms_reserved+5000,\n  bytes_reserved=bytes_reserved+32768,read_rows_reserved=read_rows_reserved+100,\n  write_rows_reserved=write_rows_reserved+2,updated_at=clock_timestamp()\nWHERE project_ref='gkffvigcnsesbaihycay' AND budget_date='2026-09-03'\n  AND bytes_limit=23068672 AND approval_reference='CE-100-22MiB-2026-09-03'\n  AND sql_ms_reserved+17000<=300000 AND bytes_reserved+98304<=bytes_limit\n  AND read_rows_reserved+164<=5000 AND write_rows_reserved+10<=2000;\nIF NOT FOUND THEN RAISE EXCEPTION 'ce1_upgrade_budget_missing_or_insufficient'; END IF;\nALTER TABLE comparator_strict.execution_jobs\n  ADD COLUMN job_key text UNIQUE CHECK (job_key ~ '^ce1-[a-z0-9-]{1,72}$'),\n  ADD COLUMN operation_hash text CHECK (operation_hash ~ '^[0-9a-f]{64}$'),\n  ADD COLUMN budget_date date,\n  ADD COLUMN reservation jsonb CHECK (jsonb_typeof(reservation)='object'),\n  ADD COLUMN receipt jsonb CHECK (jsonb_typeof(receipt)='object'),\n  ADD CONSTRAINT execution_jobs_budget_fk FOREIGN KEY (project_ref,budget_date)\n    REFERENCES comparator_strict.execution_budget(project_ref,budget_date) ON DELETE RESTRICT,\n  ADD CONSTRAINT execution_jobs_atomic_identity CHECK (\n    (job_key IS NULL AND operation_hash IS NULL AND budget_date IS NULL AND reservation IS NULL AND receipt IS NULL)\n    OR (job_key IS NOT NULL AND operation_hash IS NOT NULL AND budget_date IS NOT NULL AND reservation IS NOT NULL)\n  );\nEND\n$upgrade$;\nCOMMIT;\n",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"success\":true}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  "runtime_hashes": {
+    "supabase/migrations/20260903084621_comparator_strict_atomic_receipts.sql": "62a805075786342cdf7208745ae91e4771706030840d33fe3fccb5a3ed79025c",
+    "scripts/lib/comparator-strict-atomic.mjs": "2920675d44c4225b77caf9c1200f295ac61279553c0be6e9095c2278b6314be2",
+    "scripts/lib/comparator-strict-guard.mjs": "5689b11495c22cad620e035fb31553b7983f40a1a15fc8fa685ecaa624016991",
+    "scripts/lib/comparator-strict-f1-contract.mjs": "0fd9c0c414fa31f6b74c057e337d8dc82a6ff08537d9359956b460ef74403593",
+    "scripts/run-comparator-strict-bridge.mjs": "e75e959af1d92681520f56eb02deac3ddc5ad8b17f86b9c7daf821a6189781f6",
+    "scripts/test-comparator-strict-postgres.mjs": "550d02edeecc6556613ca8977367b1d8cddc2e23f71ec64bd610a2260296e54c",
+    "scripts/comparator-strict-tools/package-lock.json": "3fe87cba52872075c802aaaf97762e2edbfd0d015ffa14010c194973161d7100"
+  },
+  "native_postgres": {
+    "status": "PASS",
+    "version": "PostgreSQL 17.6 on x86_64-apple-darwin23.6.0, compiled by Apple clang version 16.0.0 (clang-1600.0.26.6), 64-bit",
+    "isolatedDatabase": "ce1_test_262e5be08825",
+    "tests": [
+      {
+        "name": "foundation SQL assertions including 28 negative cases, real PG17 roles and RLS",
+        "status": "PASS"
+      },
+      {
+        "name": "committed canary + compensating operation + retained cumulative budget",
+        "status": "PASS",
+        "elapsed_ms": 40
+      },
+      {
+        "name": "two independent sessions cannot reserve two active jobs",
+        "status": "PASS",
+        "elapsed_ms": 25
+      },
+      {
+        "name": "concurrent replay executes the payload once and preserves original start",
+        "status": "PASS",
+        "elapsed_ms": 30
+      },
+      {
+        "name": "reservation response lost: no automatic payload; explicit reconciliation only",
+        "status": "PASS",
+        "elapsed_ms": 31
+      },
+      {
+        "name": "response lost after COMMIT: recover durable receipt, never duplicate effect",
+        "status": "PASS",
+        "elapsed_ms": 34
+      },
+      {
+        "name": "real PostgreSQL statement cancellation rolls back effects but keeps reservation",
+        "status": "PASS",
+        "elapsed_ms": 1036
+      },
+      {
+        "name": "whole transaction timeout bounds multiple individually valid statements",
+        "status": "PASS",
+        "elapsed_ms": 2009
+      },
+      {
+        "name": "pre-COMMIT validation rejects an unexpected row without committing it",
+        "status": "PASS",
+        "elapsed_ms": 36
+      },
+      {
+        "name": "unknown triggers are refused before payload and cannot introduce induced effects",
+        "status": "PASS",
+        "elapsed_ms": 33
+      },
+      {
+        "name": "database budget check survives stale client snapshot and does not create a job",
+        "status": "PASS",
+        "elapsed_ms": 24
+      },
+      {
+        "name": "different day cannot reuse reservation or clear unresolved job",
+        "status": "PASS",
+        "elapsed_ms": 36
+      },
+      {
+        "name": "expired original job cannot get a new 20-minute window",
+        "status": "PASS",
+        "elapsed_ms": 41
+      },
+      {
+        "name": "process killed during transaction: locks block competitors until real rollback",
+        "status": "PASS",
+        "elapsed_ms": 1119
+      },
+      {
+        "name": "native lock timeout ends a blocked write with no effect",
+        "status": "PASS",
+        "elapsed_ms": 282
+      },
+      {
+        "name": "real app roles still cannot access or execute the upgraded protocol",
+        "status": "PASS",
+        "elapsed_ms": 34
+      }
+    ],
+    "testDate": "2026-09-03T09:01:23.181Z",
+    "clockRebased": true,
+    "limitations": [
+      "Tests target only the two F1 registered operations",
+      "No public comparator activation or production load test",
+      "Day transition uses persisted fixtures, not wall-clock manipulation"
+    ],
+    "process_exit_code": 0,
+    "temporary_server_stopped": true,
+    "isolated_test_database_dropped": true
+  },
+  "local_quality": {
+    "command": "npm run quality",
+    "exit_code": 0,
+    "typescript": "PASS",
+    "eslint": "PASS",
+    "tests": 353,
+    "passed": 353,
+    "github_workflow_executed": false,
+    "tests_are_not_a_product_quality_metric": true
+  },
+  "before": {
+    "budget": {
+      "updated_at": "2026-09-03T08:11:34.023112+00:00",
+      "budget_date": "2026-09-03",
+      "bytes_limit": 23068672,
+      "project_ref": "gkffvigcnsesbaihycay",
+      "bytes_reserved": 22484430,
+      "sql_ms_reserved": 280520,
+      "approval_reference": "CE-100-22MiB-2026-09-03",
+      "read_rows_reserved": 3900,
+      "write_rows_reserved": 20
+    },
+    "legacy": [
+      {
+        "hash": "eb0178e6a3f89a7bb4ecc477cb0ea1bd",
+        "name": "claim_free_comparator_use",
+        "schema": "private"
+      },
+      {
+        "hash": "86c703ed6f6fe9888a4a8f70ca2df086",
+        "name": "catalog_cheaper_products_v7",
+        "schema": "public"
+      },
+      {
+        "hash": "b9c019255990e1f0c2bb69125f8cce75",
+        "name": "catalog_dispatch_embedding_jobs",
+        "schema": "public"
+      },
+      {
+        "hash": "c07dddcf7361441f22a6fd3ee2698a74",
+        "name": "catalog_finalize_embedding_batch",
+        "schema": "public"
+      }
+    ],
+    "blocked": 0,
+    "principals": 0,
+    "unresolved": 0,
+    "captured_at": "2026-09-03T08:45:30.604315+00:00",
+    "connections": 12,
+    "control_rows": 0,
+    "active_older_30s": 0,
+    "new_columns_absent": true
+  },
+  "post_migration": {
+    "rls": true,
+    "budget": {
+      "updated_at": "2026-09-03T08:46:21.625669+00:00",
+      "budget_date": "2026-09-03",
+      "bytes_limit": 23068672,
+      "project_ref": "gkffvigcnsesbaihycay",
+      "bytes_reserved": 22517198,
+      "sql_ms_reserved": 285520,
+      "approval_reference": "CE-100-22MiB-2026-09-03",
+      "read_rows_reserved": 4000,
+      "write_rows_reserved": 22
+    },
+    "blocked": 0,
+    "version": "17.6",
+    "unresolved": 0,
+    "captured_at": "2026-09-03T08:47:01.073736+00:00",
+    "connections": 9,
+    "active_older_30s": 0,
+    "migration_version": "20260903084621"
+  },
+  "aborted_attempt": {
+    "plan_file": "CE-106-final-control-plan.json",
+    "plan": {
+      "request": {
+        "operation": "f1_stopped_control",
+        "jobId": "ce1-ce106-final-control-20260903",
+        "projectRef": "gkffvigcnsesbaihycay",
+        "supabaseUrl": "https://auth.quefalta.es",
+        "mode": "apply",
+        "confirmProduction": "gkffvigcnsesbaihycay",
+        "operationHash": "62e617ba14f18d66a8dc0a18d5b0201d0a64625903926472d7850db832027220"
+      },
+      "prepared": {
+        "mode": "apply",
+        "projectRef": "gkffvigcnsesbaihycay",
+        "origin": "https://auth.quefalta.es",
+        "operationId": "f1_stopped_control",
+        "operationHash": "62e617ba14f18d66a8dc0a18d5b0201d0a64625903926472d7850db832027220",
+        "jobId": "ce1-ce106-final-control-20260903",
+        "operation": {
+          "kind": "write",
+          "sql": "INSERT INTO comparator_strict.execution_control(project_ref,enabled,halted,active_job_id)\nVALUES ('gkffvigcnsesbaihycay',false,true,$1) RETURNING project_ref,enabled,halted,active_job_id",
+          "objects": [
+            "comparator_strict.execution_control",
+            "comparator_strict.execution_jobs"
+          ],
+          "rowKeys": [
+            "gkffvigcnsesbaihycay"
+          ],
+          "maxReadRows": 1,
+          "maxWriteRows": 1,
+          "maxInducedRows": 1,
+          "maxResponseBytes": 4096,
+          "maxSqlMs": 1000,
+          "externalCalls": 0,
+          "queueJobs": 0,
+          "commercialQuotaUses": 0,
+          "globalChanges": false,
+          "reviewed": true
+        },
+        "reservation": {
+          "sqlMs": 1000,
+          "readRows": 1,
+          "writeRows": 2,
+          "responseBytes": 4096
+        },
+        "transaction": {
+          "readOnly": false,
+          "statementTimeoutMs": 1000,
+          "lockTimeoutMs": 500
+        }
+      },
+      "parentJobKey": null,
+      "reservation": {
+        "sqlMs": 6000,
+        "responseBytes": 32768,
+        "readRows": 32,
+        "writeRows": 4
+      },
+      "approvedAt": "2026-09-03T08:48:07.264Z",
+      "expiresAt": "2026-09-03T08:53:07.264Z",
+      "utcDay": "2026-09-03",
+      "protocolHash": "a90e2829e9ad1960e6a3813f0a32bda7fa0d89708b4cbb0fa9aced71ba040281"
+    },
+    "reservation": {
+      "job": {
+        "id": "65ac538c-7423-4e84-b37d-7ac8a9a51f5d",
+        "status": "planned",
+        "job_key": "ce1-ce106-final-control-20260903",
+        "receipt": null,
+        "sql_sha256": "3ef7045c5caa6a8d61ff1ea51616d4d64d4ab651aa7496ab6d9358a17fde5c88",
+        "started_at": "2026-09-03T08:48:54.152126+00:00",
+        "budget_date": "2026-09-03",
+        "deadline_at": "2026-09-03T09:08:54.152126+00:00",
+        "finished_at": null,
+        "project_ref": "gkffvigcnsesbaihycay",
+        "reservation": {
+          "sqlMs": 6000,
+          "readRows": 32,
+          "expiresAt": "2026-09-03T08:53:07.264Z",
+          "writeRows": 4,
+          "payloadHash": "3ef7045c5caa6a8d61ff1ea51616d4d64d4ab651aa7496ab6d9358a17fde5c88",
+          "parentJobKey": null,
+          "protocolHash": "a90e2829e9ad1960e6a3813f0a32bda7fa0d89708b4cbb0fa9aced71ba040281",
+          "responseBytes": 32768
+        },
+        "stop_reason": null,
+        "operation_key": "f1_stopped_control",
+        "operation_hash": "62e617ba14f18d66a8dc0a18d5b0201d0a64625903926472d7850db832027220"
+      },
+      "budget": {
+        "updated_at": "2026-09-03T08:48:54.151908+00:00",
+        "budget_date": "2026-09-03",
+        "bytes_limit": 23068672,
+        "project_ref": "gkffvigcnsesbaihycay",
+        "bytes_reserved": 22549966,
+        "sql_ms_reserved": 291520,
+        "approval_reference": "CE-100-22MiB-2026-09-03",
+        "read_rows_reserved": 4032,
+        "write_rows_reserved": 26
+      },
+      "captured_at": "2026-09-03T08:48:54.156029+00:00",
+      "freshReservation": true
+    },
+    "payload_dispatched": false,
+    "reason": "macOS canonical TTY truncated an input receipt; operation authority expired while local bridge was waiting. No payload was sent. Bridge stopped without automatic retry.",
+    "reconcile_sql": "BEGIN;\nSET LOCAL statement_timeout='1000ms'; SET LOCAL lock_timeout='250ms';\nSET LOCAL idle_in_transaction_session_timeout='2000ms'; SET LOCAL transaction_timeout='3000ms';\nDO $ce1$\nDECLARE j comparator_strict.execution_jobs;\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0)) THEN RAISE EXCEPTION 'ce1_project_busy'; END IF;\n  SELECT * INTO STRICT j FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce106-final-control-20260903' FOR UPDATE;\n  IF j.operation_hash<>'62e617ba14f18d66a8dc0a18d5b0201d0a64625903926472d7850db832027220' OR j.reservation->>'protocolHash' IS DISTINCT FROM 'a90e2829e9ad1960e6a3813f0a32bda7fa0d89708b4cbb0fa9aced71ba040281'\n    THEN RAISE EXCEPTION 'ce1_job_identity_conflict'; END IF;\n  IF j.status<>'planned' OR j.receipt IS NOT NULL THEN RAISE EXCEPTION 'ce1_reconciliation_requires_uncommitted_job'; END IF;\n  IF EXISTS (SELECT 1 FROM comparator_strict.execution_control WHERE active_job_id=j.id) THEN RAISE EXCEPTION 'ce1_unexpected_effect'; END IF;\n  UPDATE comparator_strict.execution_jobs SET status='rolled_back',finished_at=clock_timestamp(),stop_reason='Explicit reconciliation: no atomic effect committed; reservation retained' WHERE id=j.id;\nEND\n$ce1$;\nSELECT jsonb_build_object('captured_at',clock_timestamp(),'job',(SELECT to_jsonb(j) FROM comparator_strict.execution_jobs j WHERE job_key='ce1-ce106-final-control-20260903'),\n  \n  'budget',(SELECT to_jsonb(b) FROM comparator_strict.execution_budget b WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03')) AS evidence;\nCOMMIT;",
+    "reconciled": {
+      "job": {
+        "id": "65ac538c-7423-4e84-b37d-7ac8a9a51f5d",
+        "status": "rolled_back",
+        "job_key": "ce1-ce106-final-control-20260903",
+        "receipt": null,
+        "sql_sha256": "3ef7045c5caa6a8d61ff1ea51616d4d64d4ab651aa7496ab6d9358a17fde5c88",
+        "started_at": "2026-09-03T08:48:54.152126+00:00",
+        "budget_date": "2026-09-03",
+        "deadline_at": "2026-09-03T09:08:54.152126+00:00",
+        "finished_at": "2026-09-03T08:55:52.927425+00:00",
+        "project_ref": "gkffvigcnsesbaihycay",
+        "reservation": {
+          "sqlMs": 6000,
+          "readRows": 32,
+          "expiresAt": "2026-09-03T08:53:07.264Z",
+          "writeRows": 4,
+          "payloadHash": "3ef7045c5caa6a8d61ff1ea51616d4d64d4ab651aa7496ab6d9358a17fde5c88",
+          "parentJobKey": null,
+          "protocolHash": "a90e2829e9ad1960e6a3813f0a32bda7fa0d89708b4cbb0fa9aced71ba040281",
+          "responseBytes": 32768
+        },
+        "stop_reason": "Explicit reconciliation: no atomic effect committed; reservation retained",
+        "operation_key": "f1_stopped_control",
+        "operation_hash": "62e617ba14f18d66a8dc0a18d5b0201d0a64625903926472d7850db832027220"
+      },
+      "budget": {
+        "updated_at": "2026-09-03T08:48:54.151908+00:00",
+        "budget_date": "2026-09-03",
+        "bytes_limit": 23068672,
+        "project_ref": "gkffvigcnsesbaihycay",
+        "bytes_reserved": 22549966,
+        "sql_ms_reserved": 291520,
+        "approval_reference": "CE-100-22MiB-2026-09-03",
+        "read_rows_reserved": 4032,
+        "write_rows_reserved": 26
+      },
+      "captured_at": "2026-09-03T08:55:52.928983+00:00"
+    },
+    "initial_6000ms_reservation_retained": true
+  },
+  "bounded_refresh": {
+    "sql": "BEGIN;\nSET LOCAL statement_timeout='150ms'; SET LOCAL lock_timeout='50ms';\nSET LOCAL idle_in_transaction_session_timeout='1500ms'; SET LOCAL transaction_timeout='300ms';\n\nUPDATE comparator_strict.execution_budget SET sql_ms_reserved=sql_ms_reserved+400,bytes_reserved=bytes_reserved+8192,read_rows_reserved=read_rows_reserved+32,write_rows_reserved=write_rows_reserved+1,updated_at=clock_timestamp()\nWHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03'\nAND sql_ms_reserved=291520 AND bytes_reserved=22549966 AND sql_ms_reserved+8400<=300000;\nSELECT jsonb_build_object('captured_at',clock_timestamp(),\n  'version',current_setting('server_version'),\n  'budget',(SELECT to_jsonb(b) FROM comparator_strict.execution_budget b WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=(clock_timestamp() AT TIME ZONE 'UTC')::date),\n  'unresolved',(SELECT count(*) FROM comparator_strict.execution_jobs WHERE project_ref='gkffvigcnsesbaihycay' AND status IN ('planned','running','halted','unknown')),\n  'blocked',(SELECT count(*) FROM pg_stat_activity WHERE wait_event_type='Lock' AND pid<>pg_backend_pid()),\n  'active_older_30s',(SELECT count(*) FROM pg_stat_activity WHERE state='active' AND query_start<clock_timestamp()-interval '30 seconds' AND pid<>pg_backend_pid()),\n  'connections',(SELECT count(*) FROM pg_stat_activity WHERE backend_type='client backend' AND pid<>pg_backend_pid())) AS evidence;\nCOMMIT;",
+    "evidence": {
+      "budget": {
+        "updated_at": "2026-09-03T08:57:34.101491+00:00",
+        "budget_date": "2026-09-03",
+        "bytes_limit": 23068672,
+        "project_ref": "gkffvigcnsesbaihycay",
+        "bytes_reserved": 22558158,
+        "sql_ms_reserved": 291920,
+        "approval_reference": "CE-100-22MiB-2026-09-03",
+        "read_rows_reserved": 4064,
+        "write_rows_reserved": 27
+      },
+      "blocked": 0,
+      "version": "17.6",
+      "unresolved": 0,
+      "captured_at": "2026-09-03T08:57:34.106722+00:00",
+      "connections": 13,
+      "active_older_30s": 0
+    },
+    "reservation": {
+      "sql_ms": 400,
+      "bytes": 8192,
+      "reads": 32,
+      "writes": 1
+    },
+    "whole_transaction_timeout_ms": 300
+  },
+  "completed_control": {
+    "plan_file": "CE-106-verified-control-plan.json",
+    "plan": {
+      "request": {
+        "operation": "f1_stopped_control",
+        "jobId": "ce1-ce106-verified-control-20260903",
+        "projectRef": "gkffvigcnsesbaihycay",
+        "supabaseUrl": "https://auth.quefalta.es",
+        "mode": "apply",
+        "confirmProduction": "gkffvigcnsesbaihycay",
+        "operationHash": "62e617ba14f18d66a8dc0a18d5b0201d0a64625903926472d7850db832027220"
+      },
+      "prepared": {
+        "mode": "apply",
+        "projectRef": "gkffvigcnsesbaihycay",
+        "origin": "https://auth.quefalta.es",
+        "operationId": "f1_stopped_control",
+        "operationHash": "62e617ba14f18d66a8dc0a18d5b0201d0a64625903926472d7850db832027220",
+        "jobId": "ce1-ce106-verified-control-20260903",
+        "operation": {
+          "kind": "write",
+          "sql": "INSERT INTO comparator_strict.execution_control(project_ref,enabled,halted,active_job_id)\nVALUES ('gkffvigcnsesbaihycay',false,true,$1) RETURNING project_ref,enabled,halted,active_job_id",
+          "objects": [
+            "comparator_strict.execution_control",
+            "comparator_strict.execution_jobs"
+          ],
+          "rowKeys": [
+            "gkffvigcnsesbaihycay"
+          ],
+          "maxReadRows": 1,
+          "maxWriteRows": 1,
+          "maxInducedRows": 1,
+          "maxResponseBytes": 4096,
+          "maxSqlMs": 1000,
+          "externalCalls": 0,
+          "queueJobs": 0,
+          "commercialQuotaUses": 0,
+          "globalChanges": false,
+          "reviewed": true
+        },
+        "reservation": {
+          "sqlMs": 1000,
+          "readRows": 1,
+          "writeRows": 2,
+          "responseBytes": 4096
+        },
+        "transaction": {
+          "readOnly": false,
+          "statementTimeoutMs": 1000,
+          "lockTimeoutMs": 500
+        }
+      },
+      "parentJobKey": null,
+      "reservation": {
+        "sqlMs": 4000,
+        "responseBytes": 32768,
+        "readRows": 32,
+        "writeRows": 4
+      },
+      "approvedAt": "2026-09-03T08:57:51.765Z",
+      "expiresAt": "2026-09-03T09:02:51.765Z",
+      "utcDay": "2026-09-03",
+      "protocolHash": "728847320dada11edba02fb8a977d76c10e79c74d4c1c614e691467e74883322"
+    },
+    "reserve_message": {
+      "kind": "sql",
+      "sha256": "776a6b46089de0fa45e12199a03760c78fb39d1cce7ed1ed95d6cf12173ccd8b",
+      "sql": "BEGIN;\nSET LOCAL statement_timeout='1000ms'; SET LOCAL lock_timeout='250ms';\nSET LOCAL idle_in_transaction_session_timeout='1500ms'; SET LOCAL transaction_timeout='2000ms';\nDO $ce1$\nDECLARE existing comparator_strict.execution_jobs; b comparator_strict.execution_budget; job_started timestamptz;\nBEGIN\n  PERFORM set_config('ce1.fresh_reservation','false',true);\n  IF (clock_timestamp() AT TIME ZONE 'UTC')::date<>DATE '2026-09-03' OR clock_timestamp()>'2026-09-03T09:02:51.765Z'::timestamptz\n    OR clock_timestamp()<'2026-09-03T08:57:51.765Z'::timestamptz THEN RAISE EXCEPTION 'ce1_authority_expired'; END IF;\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0)) THEN RAISE EXCEPTION 'ce1_project_busy'; END IF;\n  SELECT * INTO existing FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce106-verified-control-20260903' FOR UPDATE;\n  IF FOUND THEN\n    IF existing.operation_hash<>'62e617ba14f18d66a8dc0a18d5b0201d0a64625903926472d7850db832027220' OR existing.reservation IS DISTINCT FROM '{\"sqlMs\":4000,\"responseBytes\":32768,\"readRows\":32,\"writeRows\":4,\"protocolHash\":\"728847320dada11edba02fb8a977d76c10e79c74d4c1c614e691467e74883322\",\"parentJobKey\":null,\"expiresAt\":\"2026-09-03T09:02:51.765Z\",\"payloadHash\":\"3ef7045c5caa6a8d61ff1ea51616d4d64d4ab651aa7496ab6d9358a17fde5c88\"}'::jsonb THEN\n      RAISE EXCEPTION 'ce1_job_identity_conflict'; END IF;\n    RETURN; -- Same identity: report durable state, never reset start or reserve twice.\n  END IF;\n  IF EXISTS (SELECT 1 FROM comparator_strict.execution_jobs WHERE project_ref='gkffvigcnsesbaihycay' AND status IN ('planned','running','halted','unknown'))\n    THEN RAISE EXCEPTION 'ce1_unresolved_work'; END IF;\n  IF EXISTS (SELECT 1 FROM pg_stat_activity WHERE pid<>pg_backend_pid() AND (wait_event_type='Lock'\n    OR (state='active' AND query_start<clock_timestamp()-interval '30 seconds'))) THEN RAISE EXCEPTION 'ce1_unhealthy_now'; END IF;\n  SELECT * INTO STRICT b FROM comparator_strict.execution_budget WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03' FOR UPDATE;\n  IF b.bytes_limit<>23068672 OR b.approval_reference IS DISTINCT FROM 'CE-100-22MiB-2026-09-03'\n    OR b.bytes_reserved+32768>b.bytes_limit OR b.sql_ms_reserved+4000>300000\n    OR b.read_rows_reserved+32>5000 OR b.write_rows_reserved+4>2000 THEN RAISE EXCEPTION 'ce1_budget_exceeded'; END IF;\n  UPDATE comparator_strict.execution_budget SET bytes_reserved=bytes_reserved+32768, sql_ms_reserved=sql_ms_reserved+4000,\n    read_rows_reserved=read_rows_reserved+32, write_rows_reserved=write_rows_reserved+4,updated_at=clock_timestamp()\n    WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03';\n  job_started:=clock_timestamp();\n  INSERT INTO comparator_strict.execution_jobs(id,project_ref,operation_key,sql_sha256,status,started_at,deadline_at,job_key,operation_hash,budget_date,reservation)\n  VALUES(gen_random_uuid(),'gkffvigcnsesbaihycay','f1_stopped_control','3ef7045c5caa6a8d61ff1ea51616d4d64d4ab651aa7496ab6d9358a17fde5c88','planned',job_started,job_started+interval '20 minutes',\n    'ce1-ce106-verified-control-20260903','62e617ba14f18d66a8dc0a18d5b0201d0a64625903926472d7850db832027220',DATE '2026-09-03','{\"sqlMs\":4000,\"responseBytes\":32768,\"readRows\":32,\"writeRows\":4,\"protocolHash\":\"728847320dada11edba02fb8a977d76c10e79c74d4c1c614e691467e74883322\",\"parentJobKey\":null,\"expiresAt\":\"2026-09-03T09:02:51.765Z\",\"payloadHash\":\"3ef7045c5caa6a8d61ff1ea51616d4d64d4ab651aa7496ab6d9358a17fde5c88\"}'::jsonb);\n  PERFORM set_config('ce1.fresh_reservation','true',true);\nEND\n$ce1$;\nSELECT jsonb_build_object('captured_at',clock_timestamp(),'job',(SELECT to_jsonb(j) FROM comparator_strict.execution_jobs j WHERE job_key='ce1-ce106-verified-control-20260903'),\n  'freshReservation',current_setting('ce1.fresh_reservation',true)::boolean,\n  'budget',(SELECT to_jsonb(b) FROM comparator_strict.execution_budget b WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03')) AS evidence;\nCOMMIT;",
+      "seq": 2,
+      "projectRef": "gkffvigcnsesbaihycay"
+    },
+    "reserved": {
+      "job": {
+        "id": "47279310-3f2b-47f5-a418-61d9f3a3f9a2",
+        "status": "planned",
+        "job_key": "ce1-ce106-verified-control-20260903",
+        "receipt": null,
+        "sql_sha256": "3ef7045c5caa6a8d61ff1ea51616d4d64d4ab651aa7496ab6d9358a17fde5c88",
+        "started_at": "2026-09-03T08:58:09.169197+00:00",
+        "budget_date": "2026-09-03",
+        "deadline_at": "2026-09-03T09:18:09.169197+00:00",
+        "finished_at": null,
+        "project_ref": "gkffvigcnsesbaihycay",
+        "reservation": {
+          "sqlMs": 4000,
+          "readRows": 32,
+          "expiresAt": "2026-09-03T09:02:51.765Z",
+          "writeRows": 4,
+          "payloadHash": "3ef7045c5caa6a8d61ff1ea51616d4d64d4ab651aa7496ab6d9358a17fde5c88",
+          "parentJobKey": null,
+          "protocolHash": "728847320dada11edba02fb8a977d76c10e79c74d4c1c614e691467e74883322",
+          "responseBytes": 32768
+        },
+        "stop_reason": null,
+        "operation_key": "f1_stopped_control",
+        "operation_hash": "62e617ba14f18d66a8dc0a18d5b0201d0a64625903926472d7850db832027220"
+      },
+      "budget": {
+        "updated_at": "2026-09-03T08:58:09.168978+00:00",
+        "budget_date": "2026-09-03",
+        "bytes_limit": 23068672,
+        "project_ref": "gkffvigcnsesbaihycay",
+        "bytes_reserved": 22590926,
+        "sql_ms_reserved": 295920,
+        "approval_reference": "CE-100-22MiB-2026-09-03",
+        "read_rows_reserved": 4096,
+        "write_rows_reserved": 31
+      },
+      "captured_at": "2026-09-03T08:58:09.170764+00:00",
+      "freshReservation": true
+    },
+    "execute_message": {
+      "kind": "sql",
+      "sha256": "11794ead2f922b3d505d3abbd14f88b9a5deead3ac02fb63541064f3f95529a8",
+      "sql": "BEGIN;\nSET LOCAL statement_timeout='1000ms'; SET LOCAL lock_timeout='250ms';\nSET LOCAL idle_in_transaction_session_timeout='1500ms'; SET LOCAL transaction_timeout='2000ms';\nDO $ce1$\nDECLARE j comparator_strict.execution_jobs; parent comparator_strict.execution_jobs;\n  affected integer; item record; argument uuid; outcome jsonb; started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0)) THEN RAISE EXCEPTION 'ce1_project_busy'; END IF;\n  LOCK TABLE comparator_strict.execution_control, comparator_strict.execution_jobs IN ROW EXCLUSIVE MODE;\n  SELECT * INTO STRICT j FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce106-verified-control-20260903' FOR UPDATE;\n  IF j.project_ref<>'gkffvigcnsesbaihycay' OR j.operation_key<>'f1_stopped_control' OR j.operation_hash<>'62e617ba14f18d66a8dc0a18d5b0201d0a64625903926472d7850db832027220'\n    OR j.sql_sha256<>'3ef7045c5caa6a8d61ff1ea51616d4d64d4ab651aa7496ab6d9358a17fde5c88' OR j.reservation->>'protocolHash' IS DISTINCT FROM '728847320dada11edba02fb8a977d76c10e79c74d4c1c614e691467e74883322'\n    THEN RAISE EXCEPTION 'ce1_job_identity_conflict'; END IF;\n  IF j.status='succeeded' THEN RETURN; END IF; -- Receipt, not another side effect.\n  IF j.status<>'planned' THEN RAISE EXCEPTION 'ce1_job_not_executable'; END IF;\n  IF j.budget_date<>(clock_timestamp() AT TIME ZONE 'UTC')::date OR clock_timestamp()>j.deadline_at\n    OR clock_timestamp()>'2026-09-03T09:02:51.765Z'::timestamptz THEN RAISE EXCEPTION 'ce1_job_expired'; END IF;\n  IF EXISTS(SELECT 1 FROM comparator_strict.test_principals) THEN RAISE EXCEPTION 'ce1_unexpected_principals'; END IF;\n  IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgrelid IN ('comparator_strict.execution_control'::regclass,'comparator_strict.execution_jobs'::regclass) AND NOT tgisinternal)\n    THEN RAISE EXCEPTION 'ce1_unreviewed_induced_effects'; END IF;\n  IF EXISTS (SELECT 1 FROM pg_rewrite WHERE ev_class IN ('comparator_strict.execution_control'::regclass,'comparator_strict.execution_jobs'::regclass))\n    THEN RAISE EXCEPTION 'ce1_unreviewed_rule'; END IF;\n  IF EXISTS (SELECT 1 FROM pg_constraint WHERE contype='f' AND confrelid IN\n    ('comparator_strict.execution_control'::regclass,'comparator_strict.execution_jobs'::regclass) AND (confdeltype<>'r' AND confdeltype<>'a' OR confupdtype<>'a'))\n    THEN RAISE EXCEPTION 'ce1_unreviewed_cascade'; END IF;\n  argument:=j.id;\n  \n  EXECUTE 'INSERT INTO comparator_strict.execution_control(project_ref,enabled,halted,active_job_id)\nVALUES (''gkffvigcnsesbaihycay'',false,true,$1) RETURNING project_ref,enabled,halted,active_job_id' INTO STRICT item USING argument;\n  GET DIAGNOSTICS affected=ROW_COUNT;\n  IF affected<>1 OR item.project_ref<>'gkffvigcnsesbaihycay' OR item.enabled OR NOT item.halted OR item.active_job_id<>argument\n    THEN RAISE EXCEPTION 'ce1_result_scope_violation'; END IF;\n  outcome:=jsonb_build_object('operationId','f1_stopped_control','operationHash','62e617ba14f18d66a8dc0a18d5b0201d0a64625903926472d7850db832027220','jobKey','ce1-ce106-verified-control-20260903',\n    'protocolHash','728847320dada11edba02fb8a977d76c10e79c74d4c1c614e691467e74883322','readRows',1,'writeRows',2,'inducedWriteRows',1,\n    'touchedObjects',jsonb_build_array('comparator_strict.execution_control','comparator_strict.execution_jobs'),\n    'directWriteRowKeys',jsonb_build_array(item.project_ref),'payload',to_jsonb(item),'sqlMs',extract(epoch FROM clock_timestamp()-started)*1000);\n  IF octet_length(outcome::text)>4096 OR (outcome->>'sqlMs')::numeric>1000\n    OR (clock_timestamp() AT TIME ZONE 'UTC')::date<>j.budget_date OR clock_timestamp()>j.deadline_at THEN RAISE EXCEPTION 'ce1_result_budget_exceeded'; END IF;\n  UPDATE comparator_strict.execution_jobs SET status='succeeded',finished_at=clock_timestamp(),receipt=outcome WHERE id=j.id;\n  -- Operation and durable receipt commit TOGETHER; failure rolls both back.\nEND\n$ce1$;\nSELECT jsonb_build_object('captured_at',clock_timestamp(),'job',(SELECT to_jsonb(j) FROM comparator_strict.execution_jobs j WHERE job_key='ce1-ce106-verified-control-20260903'),\n  \n  'budget',(SELECT to_jsonb(b) FROM comparator_strict.execution_budget b WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03')) AS evidence;\nCOMMIT;",
+      "seq": 3,
+      "projectRef": "gkffvigcnsesbaihycay"
+    },
+    "committed": {
+      "job": {
+        "id": "47279310-3f2b-47f5-a418-61d9f3a3f9a2",
+        "status": "succeeded",
+        "job_key": "ce1-ce106-verified-control-20260903",
+        "receipt": {
+          "sqlMs": 6.146,
+          "jobKey": "ce1-ce106-verified-control-20260903",
+          "payload": {
+            "halted": true,
+            "enabled": false,
+            "project_ref": "gkffvigcnsesbaihycay",
+            "active_job_id": "47279310-3f2b-47f5-a418-61d9f3a3f9a2"
+          },
+          "readRows": 1,
+          "writeRows": 2,
+          "operationId": "f1_stopped_control",
+          "protocolHash": "728847320dada11edba02fb8a977d76c10e79c74d4c1c614e691467e74883322",
+          "operationHash": "62e617ba14f18d66a8dc0a18d5b0201d0a64625903926472d7850db832027220",
+          "touchedObjects": [
+            "comparator_strict.execution_control",
+            "comparator_strict.execution_jobs"
+          ],
+          "inducedWriteRows": 1,
+          "directWriteRowKeys": [
+            "gkffvigcnsesbaihycay"
+          ]
+        },
+        "sql_sha256": "3ef7045c5caa6a8d61ff1ea51616d4d64d4ab651aa7496ab6d9358a17fde5c88",
+        "started_at": "2026-09-03T08:58:09.169197+00:00",
+        "budget_date": "2026-09-03",
+        "deadline_at": "2026-09-03T09:18:09.169197+00:00",
+        "finished_at": "2026-09-03T08:58:38.414908+00:00",
+        "project_ref": "gkffvigcnsesbaihycay",
+        "reservation": {
+          "sqlMs": 4000,
+          "readRows": 32,
+          "expiresAt": "2026-09-03T09:02:51.765Z",
+          "writeRows": 4,
+          "payloadHash": "3ef7045c5caa6a8d61ff1ea51616d4d64d4ab651aa7496ab6d9358a17fde5c88",
+          "parentJobKey": null,
+          "protocolHash": "728847320dada11edba02fb8a977d76c10e79c74d4c1c614e691467e74883322",
+          "responseBytes": 32768
+        },
+        "stop_reason": null,
+        "operation_key": "f1_stopped_control",
+        "operation_hash": "62e617ba14f18d66a8dc0a18d5b0201d0a64625903926472d7850db832027220"
+      },
+      "budget": {
+        "updated_at": "2026-09-03T08:58:09.168978+00:00",
+        "budget_date": "2026-09-03",
+        "bytes_limit": 23068672,
+        "project_ref": "gkffvigcnsesbaihycay",
+        "bytes_reserved": 22590926,
+        "sql_ms_reserved": 295920,
+        "approval_reference": "CE-100-22MiB-2026-09-03",
+        "read_rows_reserved": 4096,
+        "write_rows_reserved": 31
+      },
+      "captured_at": "2026-09-03T08:58:38.416106+00:00"
+    },
+    "bridge_exit_code": 0
+  },
+  "completed_reversal": {
+    "plan_file": "CE-106-verified-revert-plan.json",
+    "plan": {
+      "request": {
+        "operation": "f1_revert_control",
+        "jobId": "ce1-ce106-verified-revert-20260903",
+        "projectRef": "gkffvigcnsesbaihycay",
+        "supabaseUrl": "https://auth.quefalta.es",
+        "mode": "apply",
+        "confirmProduction": "gkffvigcnsesbaihycay",
+        "operationHash": "8a84e899525fe8410c73529cc80fb0dbc8c3ee6e5dc2a574cc9997f2d3e92a24"
+      },
+      "prepared": {
+        "mode": "apply",
+        "projectRef": "gkffvigcnsesbaihycay",
+        "origin": "https://auth.quefalta.es",
+        "operationId": "f1_revert_control",
+        "operationHash": "8a84e899525fe8410c73529cc80fb0dbc8c3ee6e5dc2a574cc9997f2d3e92a24",
+        "jobId": "ce1-ce106-verified-revert-20260903",
+        "operation": {
+          "kind": "write",
+          "sql": "DELETE FROM comparator_strict.execution_control\nWHERE project_ref='gkffvigcnsesbaihycay' AND active_job_id=$1 AND NOT enabled AND halted\nRETURNING project_ref,enabled,halted,active_job_id",
+          "objects": [
+            "comparator_strict.execution_control",
+            "comparator_strict.execution_jobs"
+          ],
+          "rowKeys": [
+            "gkffvigcnsesbaihycay"
+          ],
+          "maxReadRows": 1,
+          "maxWriteRows": 1,
+          "maxInducedRows": 1,
+          "maxResponseBytes": 4096,
+          "maxSqlMs": 1000,
+          "externalCalls": 0,
+          "queueJobs": 0,
+          "commercialQuotaUses": 0,
+          "globalChanges": false,
+          "reviewed": true
+        },
+        "reservation": {
+          "sqlMs": 1000,
+          "readRows": 1,
+          "writeRows": 2,
+          "responseBytes": 4096
+        },
+        "transaction": {
+          "readOnly": false,
+          "statementTimeoutMs": 1000,
+          "lockTimeoutMs": 500
+        }
+      },
+      "parentJobKey": "ce1-ce106-verified-control-20260903",
+      "reservation": {
+        "sqlMs": 4000,
+        "responseBytes": 32768,
+        "readRows": 32,
+        "writeRows": 4
+      },
+      "approvedAt": "2026-09-03T08:58:38.709Z",
+      "expiresAt": "2026-09-03T09:03:38.709Z",
+      "utcDay": "2026-09-03",
+      "protocolHash": "a75f7840da94b69f3fd7dca1c282e28de055c4a4fda67d72f781294e9f02b03d"
+    },
+    "reserve_message": {
+      "kind": "sql",
+      "sha256": "433c29de093d69fa759d4a6cda8dd19b8b6c5509a87ded505bbc70ca7da84476",
+      "sql": "BEGIN;\nSET LOCAL statement_timeout='1000ms'; SET LOCAL lock_timeout='250ms';\nSET LOCAL idle_in_transaction_session_timeout='1500ms'; SET LOCAL transaction_timeout='2000ms';\nDO $ce1$\nDECLARE existing comparator_strict.execution_jobs; b comparator_strict.execution_budget; job_started timestamptz;\nBEGIN\n  PERFORM set_config('ce1.fresh_reservation','false',true);\n  IF (clock_timestamp() AT TIME ZONE 'UTC')::date<>DATE '2026-09-03' OR clock_timestamp()>'2026-09-03T09:03:38.709Z'::timestamptz\n    OR clock_timestamp()<'2026-09-03T08:58:38.709Z'::timestamptz THEN RAISE EXCEPTION 'ce1_authority_expired'; END IF;\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0)) THEN RAISE EXCEPTION 'ce1_project_busy'; END IF;\n  SELECT * INTO existing FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce106-verified-revert-20260903' FOR UPDATE;\n  IF FOUND THEN\n    IF existing.operation_hash<>'8a84e899525fe8410c73529cc80fb0dbc8c3ee6e5dc2a574cc9997f2d3e92a24' OR existing.reservation IS DISTINCT FROM '{\"sqlMs\":4000,\"responseBytes\":32768,\"readRows\":32,\"writeRows\":4,\"protocolHash\":\"a75f7840da94b69f3fd7dca1c282e28de055c4a4fda67d72f781294e9f02b03d\",\"parentJobKey\":\"ce1-ce106-verified-control-20260903\",\"expiresAt\":\"2026-09-03T09:03:38.709Z\",\"payloadHash\":\"14eeebdacc4966a2fbc79f9d7be6ad0d9264ef8e02933c07d7801ff52b84d40b\"}'::jsonb THEN\n      RAISE EXCEPTION 'ce1_job_identity_conflict'; END IF;\n    RETURN; -- Same identity: report durable state, never reset start or reserve twice.\n  END IF;\n  IF EXISTS (SELECT 1 FROM comparator_strict.execution_jobs WHERE project_ref='gkffvigcnsesbaihycay' AND status IN ('planned','running','halted','unknown'))\n    THEN RAISE EXCEPTION 'ce1_unresolved_work'; END IF;\n  IF EXISTS (SELECT 1 FROM pg_stat_activity WHERE pid<>pg_backend_pid() AND (wait_event_type='Lock'\n    OR (state='active' AND query_start<clock_timestamp()-interval '30 seconds'))) THEN RAISE EXCEPTION 'ce1_unhealthy_now'; END IF;\n  SELECT * INTO STRICT b FROM comparator_strict.execution_budget WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03' FOR UPDATE;\n  IF b.bytes_limit<>23068672 OR b.approval_reference IS DISTINCT FROM 'CE-100-22MiB-2026-09-03'\n    OR b.bytes_reserved+32768>b.bytes_limit OR b.sql_ms_reserved+4000>300000\n    OR b.read_rows_reserved+32>5000 OR b.write_rows_reserved+4>2000 THEN RAISE EXCEPTION 'ce1_budget_exceeded'; END IF;\n  UPDATE comparator_strict.execution_budget SET bytes_reserved=bytes_reserved+32768, sql_ms_reserved=sql_ms_reserved+4000,\n    read_rows_reserved=read_rows_reserved+32, write_rows_reserved=write_rows_reserved+4,updated_at=clock_timestamp()\n    WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03';\n  job_started:=clock_timestamp();\n  INSERT INTO comparator_strict.execution_jobs(id,project_ref,operation_key,sql_sha256,status,started_at,deadline_at,job_key,operation_hash,budget_date,reservation)\n  VALUES(gen_random_uuid(),'gkffvigcnsesbaihycay','f1_revert_control','14eeebdacc4966a2fbc79f9d7be6ad0d9264ef8e02933c07d7801ff52b84d40b','planned',job_started,job_started+interval '20 minutes',\n    'ce1-ce106-verified-revert-20260903','8a84e899525fe8410c73529cc80fb0dbc8c3ee6e5dc2a574cc9997f2d3e92a24',DATE '2026-09-03','{\"sqlMs\":4000,\"responseBytes\":32768,\"readRows\":32,\"writeRows\":4,\"protocolHash\":\"a75f7840da94b69f3fd7dca1c282e28de055c4a4fda67d72f781294e9f02b03d\",\"parentJobKey\":\"ce1-ce106-verified-control-20260903\",\"expiresAt\":\"2026-09-03T09:03:38.709Z\",\"payloadHash\":\"14eeebdacc4966a2fbc79f9d7be6ad0d9264ef8e02933c07d7801ff52b84d40b\"}'::jsonb);\n  PERFORM set_config('ce1.fresh_reservation','true',true);\nEND\n$ce1$;\nSELECT jsonb_build_object('captured_at',clock_timestamp(),'job',(SELECT to_jsonb(j) FROM comparator_strict.execution_jobs j WHERE job_key='ce1-ce106-verified-revert-20260903'),\n  'freshReservation',current_setting('ce1.fresh_reservation',true)::boolean,\n  'budget',(SELECT to_jsonb(b) FROM comparator_strict.execution_budget b WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03')) AS evidence;\nCOMMIT;",
+      "seq": 2,
+      "projectRef": "gkffvigcnsesbaihycay"
+    },
+    "reserved": {
+      "job": {
+        "id": "6312cb40-4904-4dd0-96db-7eb28583d0df",
+        "status": "planned",
+        "job_key": "ce1-ce106-verified-revert-20260903",
+        "receipt": null,
+        "sql_sha256": "14eeebdacc4966a2fbc79f9d7be6ad0d9264ef8e02933c07d7801ff52b84d40b",
+        "started_at": "2026-09-03T08:58:57.661792+00:00",
+        "budget_date": "2026-09-03",
+        "deadline_at": "2026-09-03T09:18:57.661792+00:00",
+        "finished_at": null,
+        "project_ref": "gkffvigcnsesbaihycay",
+        "reservation": {
+          "sqlMs": 4000,
+          "readRows": 32,
+          "expiresAt": "2026-09-03T09:03:38.709Z",
+          "writeRows": 4,
+          "payloadHash": "14eeebdacc4966a2fbc79f9d7be6ad0d9264ef8e02933c07d7801ff52b84d40b",
+          "parentJobKey": "ce1-ce106-verified-control-20260903",
+          "protocolHash": "a75f7840da94b69f3fd7dca1c282e28de055c4a4fda67d72f781294e9f02b03d",
+          "responseBytes": 32768
+        },
+        "stop_reason": null,
+        "operation_key": "f1_revert_control",
+        "operation_hash": "8a84e899525fe8410c73529cc80fb0dbc8c3ee6e5dc2a574cc9997f2d3e92a24"
+      },
+      "budget": {
+        "updated_at": "2026-09-03T08:58:57.661589+00:00",
+        "budget_date": "2026-09-03",
+        "bytes_limit": 23068672,
+        "project_ref": "gkffvigcnsesbaihycay",
+        "bytes_reserved": 22623694,
+        "sql_ms_reserved": 299920,
+        "approval_reference": "CE-100-22MiB-2026-09-03",
+        "read_rows_reserved": 4128,
+        "write_rows_reserved": 35
+      },
+      "captured_at": "2026-09-03T08:58:57.663196+00:00",
+      "freshReservation": true
+    },
+    "execute_message": {
+      "kind": "sql",
+      "sha256": "6abbf6a81fd58852a7d3e61b46051f8ecbb8f565b753a50726f06cf40ec4b763",
+      "sql": "BEGIN;\nSET LOCAL statement_timeout='1000ms'; SET LOCAL lock_timeout='250ms';\nSET LOCAL idle_in_transaction_session_timeout='1500ms'; SET LOCAL transaction_timeout='2000ms';\nDO $ce1$\nDECLARE j comparator_strict.execution_jobs; parent comparator_strict.execution_jobs;\n  affected integer; item record; argument uuid; outcome jsonb; started timestamptz:=clock_timestamp();\nBEGIN\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('comparator_strict:atomic-v1',0)) THEN RAISE EXCEPTION 'ce1_project_busy'; END IF;\n  LOCK TABLE comparator_strict.execution_control, comparator_strict.execution_jobs IN ROW EXCLUSIVE MODE;\n  SELECT * INTO STRICT j FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce106-verified-revert-20260903' FOR UPDATE;\n  IF j.project_ref<>'gkffvigcnsesbaihycay' OR j.operation_key<>'f1_revert_control' OR j.operation_hash<>'8a84e899525fe8410c73529cc80fb0dbc8c3ee6e5dc2a574cc9997f2d3e92a24'\n    OR j.sql_sha256<>'14eeebdacc4966a2fbc79f9d7be6ad0d9264ef8e02933c07d7801ff52b84d40b' OR j.reservation->>'protocolHash' IS DISTINCT FROM 'a75f7840da94b69f3fd7dca1c282e28de055c4a4fda67d72f781294e9f02b03d'\n    THEN RAISE EXCEPTION 'ce1_job_identity_conflict'; END IF;\n  IF j.status='succeeded' THEN RETURN; END IF; -- Receipt, not another side effect.\n  IF j.status<>'planned' THEN RAISE EXCEPTION 'ce1_job_not_executable'; END IF;\n  IF j.budget_date<>(clock_timestamp() AT TIME ZONE 'UTC')::date OR clock_timestamp()>j.deadline_at\n    OR clock_timestamp()>'2026-09-03T09:03:38.709Z'::timestamptz THEN RAISE EXCEPTION 'ce1_job_expired'; END IF;\n  IF EXISTS(SELECT 1 FROM comparator_strict.test_principals) THEN RAISE EXCEPTION 'ce1_unexpected_principals'; END IF;\n  IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgrelid IN ('comparator_strict.execution_control'::regclass,'comparator_strict.execution_jobs'::regclass) AND NOT tgisinternal)\n    THEN RAISE EXCEPTION 'ce1_unreviewed_induced_effects'; END IF;\n  IF EXISTS (SELECT 1 FROM pg_rewrite WHERE ev_class IN ('comparator_strict.execution_control'::regclass,'comparator_strict.execution_jobs'::regclass))\n    THEN RAISE EXCEPTION 'ce1_unreviewed_rule'; END IF;\n  IF EXISTS (SELECT 1 FROM pg_constraint WHERE contype='f' AND confrelid IN\n    ('comparator_strict.execution_control'::regclass,'comparator_strict.execution_jobs'::regclass) AND (confdeltype<>'r' AND confdeltype<>'a' OR confupdtype<>'a'))\n    THEN RAISE EXCEPTION 'ce1_unreviewed_cascade'; END IF;\n  argument:=j.id;\n  SELECT * INTO STRICT parent FROM comparator_strict.execution_jobs WHERE job_key='ce1-ce106-verified-control-20260903' FOR SHARE;\n  IF parent.status<>'succeeded' OR parent.operation_hash<>'62e617ba14f18d66a8dc0a18d5b0201d0a64625903926472d7850db832027220'\n    OR parent.receipt->>'operationId'<>'f1_stopped_control' THEN RAISE EXCEPTION 'ce1_invalid_reversal_parent'; END IF;\n  argument:=parent.id;\n  EXECUTE 'DELETE FROM comparator_strict.execution_control\nWHERE project_ref=''gkffvigcnsesbaihycay'' AND active_job_id=$1 AND NOT enabled AND halted\nRETURNING project_ref,enabled,halted,active_job_id' INTO STRICT item USING argument;\n  GET DIAGNOSTICS affected=ROW_COUNT;\n  IF affected<>1 OR item.project_ref<>'gkffvigcnsesbaihycay' OR item.enabled OR NOT item.halted OR item.active_job_id<>argument\n    THEN RAISE EXCEPTION 'ce1_result_scope_violation'; END IF;\n  outcome:=jsonb_build_object('operationId','f1_revert_control','operationHash','8a84e899525fe8410c73529cc80fb0dbc8c3ee6e5dc2a574cc9997f2d3e92a24','jobKey','ce1-ce106-verified-revert-20260903',\n    'protocolHash','a75f7840da94b69f3fd7dca1c282e28de055c4a4fda67d72f781294e9f02b03d','readRows',1,'writeRows',2,'inducedWriteRows',1,\n    'touchedObjects',jsonb_build_array('comparator_strict.execution_control','comparator_strict.execution_jobs'),\n    'directWriteRowKeys',jsonb_build_array(item.project_ref),'payload',to_jsonb(item),'sqlMs',extract(epoch FROM clock_timestamp()-started)*1000);\n  IF octet_length(outcome::text)>4096 OR (outcome->>'sqlMs')::numeric>1000\n    OR (clock_timestamp() AT TIME ZONE 'UTC')::date<>j.budget_date OR clock_timestamp()>j.deadline_at THEN RAISE EXCEPTION 'ce1_result_budget_exceeded'; END IF;\n  UPDATE comparator_strict.execution_jobs SET status='succeeded',finished_at=clock_timestamp(),receipt=outcome WHERE id=j.id;\n  -- Operation and durable receipt commit TOGETHER; failure rolls both back.\nEND\n$ce1$;\nSELECT jsonb_build_object('captured_at',clock_timestamp(),'job',(SELECT to_jsonb(j) FROM comparator_strict.execution_jobs j WHERE job_key='ce1-ce106-verified-revert-20260903'),\n  \n  'budget',(SELECT to_jsonb(b) FROM comparator_strict.execution_budget b WHERE project_ref='gkffvigcnsesbaihycay' AND budget_date=DATE '2026-09-03')) AS evidence;\nCOMMIT;",
+      "seq": 3,
+      "projectRef": "gkffvigcnsesbaihycay"
+    },
+    "committed": {
+      "job": {
+        "id": "6312cb40-4904-4dd0-96db-7eb28583d0df",
+        "status": "succeeded",
+        "job_key": "ce1-ce106-verified-revert-20260903",
+        "receipt": {
+          "sqlMs": 4.973,
+          "jobKey": "ce1-ce106-verified-revert-20260903",
+          "payload": {
+            "halted": true,
+            "enabled": false,
+            "project_ref": "gkffvigcnsesbaihycay",
+            "active_job_id": "47279310-3f2b-47f5-a418-61d9f3a3f9a2"
+          },
+          "readRows": 1,
+          "writeRows": 2,
+          "operationId": "f1_revert_control",
+          "protocolHash": "a75f7840da94b69f3fd7dca1c282e28de055c4a4fda67d72f781294e9f02b03d",
+          "operationHash": "8a84e899525fe8410c73529cc80fb0dbc8c3ee6e5dc2a574cc9997f2d3e92a24",
+          "touchedObjects": [
+            "comparator_strict.execution_control",
+            "comparator_strict.execution_jobs"
+          ],
+          "inducedWriteRows": 1,
+          "directWriteRowKeys": [
+            "gkffvigcnsesbaihycay"
+          ]
+        },
+        "sql_sha256": "14eeebdacc4966a2fbc79f9d7be6ad0d9264ef8e02933c07d7801ff52b84d40b",
+        "started_at": "2026-09-03T08:58:57.661792+00:00",
+        "budget_date": "2026-09-03",
+        "deadline_at": "2026-09-03T09:18:57.661792+00:00",
+        "finished_at": "2026-09-03T08:59:16.516502+00:00",
+        "project_ref": "gkffvigcnsesbaihycay",
+        "reservation": {
+          "sqlMs": 4000,
+          "readRows": 32,
+          "expiresAt": "2026-09-03T09:03:38.709Z",
+          "writeRows": 4,
+          "payloadHash": "14eeebdacc4966a2fbc79f9d7be6ad0d9264ef8e02933c07d7801ff52b84d40b",
+          "parentJobKey": "ce1-ce106-verified-control-20260903",
+          "protocolHash": "a75f7840da94b69f3fd7dca1c282e28de055c4a4fda67d72f781294e9f02b03d",
+          "responseBytes": 32768
+        },
+        "stop_reason": null,
+        "operation_key": "f1_revert_control",
+        "operation_hash": "8a84e899525fe8410c73529cc80fb0dbc8c3ee6e5dc2a574cc9997f2d3e92a24"
+      },
+      "budget": {
+        "updated_at": "2026-09-03T08:58:57.661589+00:00",
+        "budget_date": "2026-09-03",
+        "bytes_limit": 23068672,
+        "project_ref": "gkffvigcnsesbaihycay",
+        "bytes_reserved": 22623694,
+        "sql_ms_reserved": 299920,
+        "approval_reference": "CE-100-22MiB-2026-09-03",
+        "read_rows_reserved": 4128,
+        "write_rows_reserved": 35
+      },
+      "captured_at": "2026-09-03T08:59:16.517821+00:00"
+    },
+    "bridge_exit_code": 0
+  },
+  "after": {
+    "sql_file": "supabase/ops/verify-comparator-strict-atomic.sql",
+    "evidence": {
+      "jobs": [
+        {
+          "id": "129f8406-5ced-4789-b1aa-aab0259df7a4",
+          "status": "rolled_back",
+          "job_key": null,
+          "started_at": "2026-09-03T08:11:34.023112+00:00",
+          "finished_at": "2026-09-03T08:12:07.389807+00:00",
+          "receipt_present": false
+        },
+        {
+          "id": "65ac538c-7423-4e84-b37d-7ac8a9a51f5d",
+          "status": "rolled_back",
+          "job_key": "ce1-ce106-final-control-20260903",
+          "started_at": "2026-09-03T08:48:54.152126+00:00",
+          "finished_at": "2026-09-03T08:55:52.927425+00:00",
+          "receipt_present": false
+        },
+        {
+          "id": "47279310-3f2b-47f5-a418-61d9f3a3f9a2",
+          "status": "succeeded",
+          "job_key": "ce1-ce106-verified-control-20260903",
+          "started_at": "2026-09-03T08:58:09.169197+00:00",
+          "finished_at": "2026-09-03T08:58:38.414908+00:00",
+          "receipt_present": true
+        },
+        {
+          "id": "6312cb40-4904-4dd0-96db-7eb28583d0df",
+          "status": "succeeded",
+          "job_key": "ce1-ce106-verified-revert-20260903",
+          "started_at": "2026-09-03T08:58:57.661792+00:00",
+          "finished_at": "2026-09-03T08:59:16.516502+00:00",
+          "receipt_present": true
+        }
+      ],
+      "budget": {
+        "updated_at": "2026-09-03T08:58:57.661589+00:00",
+        "budget_date": "2026-09-03",
+        "bytes_limit": 23068672,
+        "project_ref": "gkffvigcnsesbaihycay",
+        "bytes_reserved": 22623694,
+        "sql_ms_reserved": 299920,
+        "approval_reference": "CE-100-22MiB-2026-09-03",
+        "read_rows_reserved": 4128,
+        "write_rows_reserved": 35
+      },
+      "legacy": [
+        {
+          "hash": "eb0178e6a3f89a7bb4ecc477cb0ea1bd",
+          "name": "claim_free_comparator_use",
+          "schema": "private"
+        },
+        {
+          "hash": "86c703ed6f6fe9888a4a8f70ca2df086",
+          "name": "catalog_cheaper_products_v7",
+          "schema": "public"
+        },
+        {
+          "hash": "b9c019255990e1f0c2bb69125f8cce75",
+          "name": "catalog_dispatch_embedding_jobs",
+          "schema": "public"
+        },
+        {
+          "hash": "c07dddcf7361441f22a6fd3ee2698a74",
+          "name": "catalog_finalize_embedding_batch",
+          "schema": "public"
+        }
+      ],
+      "blocked": 0,
+      "migrations": [
+        {
+          "name": "comparator_strict_private_foundation",
+          "version": "20260903080621"
+        },
+        {
+          "name": "comparator_strict_atomic_receipts",
+          "version": "20260903084621"
+        }
+      ],
+      "principals": 0,
+      "rls_tables": [
+        {
+          "rls": true,
+          "name": "execution_budget"
+        },
+        {
+          "rls": true,
+          "name": "execution_control"
+        },
+        {
+          "rls": true,
+          "name": "execution_jobs"
+        },
+        {
+          "rls": true,
+          "name": "test_principals"
+        }
+      ],
+      "unresolved": 0,
+      "captured_at": "2026-09-03T09:00:31.08591+00:00",
+      "connections": 14,
+      "control_rows": 0,
+      "policy_count": 0,
+      "active_older_30s": 0,
+      "public_table_grants": 0,
+      "public_schema_grants": 0,
+      "verified_role_denials": 12
+    }
+  },
+  "public_api": {
+    "before": [
+      {
+        "check": "strict_schema_not_exposed",
+        "status": 406,
+        "code": "PGRST106",
+        "rows": null,
+        "elapsed_ms": 309.244667,
+        "bytes": 152,
+        "captured_at": "2026-09-03T08:46:27.196Z"
+      },
+      {
+        "check": "public_catalog_single_row",
+        "status": 200,
+        "code": null,
+        "rows": 1,
+        "elapsed_ms": 76.51024999999998,
+        "bytes": 16,
+        "captured_at": "2026-09-03T08:46:27.273Z"
+      }
+    ],
+    "after": [
+      {
+        "check": "strict_schema_not_exposed",
+        "status": 406,
+        "code": "PGRST106",
+        "rows": null,
+        "elapsed_ms": 313.704958,
+        "bytes": 152,
+        "captured_at": "2026-09-03T09:00:36.793Z"
+      },
+      {
+        "check": "public_catalog_single_row",
+        "status": 200,
+        "code": null,
+        "rows": 1,
+        "elapsed_ms": 77.39220800000004,
+        "bytes": 16,
+        "captured_at": "2026-09-03T09:00:36.872Z"
+      }
+    ],
+    "single_point_checks_not_p95": true
+  },
+  "limits": {
+    "day_sql_ms": 300000,
+    "day_bytes": 23068672,
+    "day_reads": 5000,
+    "day_writes": 2000,
+    "new_job_sql_ms": 4000,
+    "new_transaction_timeout_ms": 2000
+  },
+  "accounting_note": "All old reservations retained. Upgrade/diagnostic envelope +5000 ms, cancelled attempt +6000 ms, bounded refresh +400 ms, successful control+reversal +8000 ms. No counter reset/refund. Final verification uses its pre-reserved 2000 ms envelope, not new headroom. Timers bound SQL transactions, not network wall time. Receipt sqlMs measures the validated payload body before the receipt UPDATE, not the full transport.",
+  "limitations": [
+    "CE-100 baseline remains incomplete; not a production load/performance certification.",
+    "Native multi-session/crash faults were tested only in isolated PG17, never injected into Supabase.",
+    "Only the two exact F1 operations are registered; future business operations require separate contracts, reviewed SQL and budget.",
+    "CI configured for manual invocation only; no GitHub job run or production secrets.",
+    "No new Supabase extensions/integrations, paid resources, role grants or app changes.",
+    "No full second security-advisor scan after the additive receipt migration: bounded permissions/RLS/public API proof checked explicitly; previous broader findings remain separate.",
+    "No further remote CE-1 load today; remaining SQL headroom 80 ms is not an executable budget for a new job."
+  ]
+}

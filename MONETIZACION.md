@@ -3,6 +3,14 @@
 > Spec por fases del modelo freemium. Decisiones cerradas en junio 2026.
 > Estado premium en código desde Fase 1; paywall de cliente y gates del servidor activados para la revisión de la versión 1.3 el 2026-08-25.
 
+Nota CE-1 (2026-09-02): la política futura de cuándo descontar un uso del
+comparador se documenta en [decisions.md](docs/comparator-strict/decisions.md).
+CU-01 queda corregida: descontar solo si la respuesta final correcta incluye
+al menos un equivalente válido más económico; sin ahorro válido ofrecido, cero
+usos. No modifica el cupo actual de tres búsquedas por cuenta, Plus, contadores
+existentes ni precios de suscripción. Es el contrato futuro de CE-1, pendiente
+de implementación; no un comportamiento ya desplegado.
+
 ## Decisiones cerradas
 
 - **Plan:** suscripción "QuéFalta Plus" — **3,99 €/mes** y **19,99 €/año** (con prueba

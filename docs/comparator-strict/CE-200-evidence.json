@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "task": "CE-200",
+  "status": "in_progress_not_complete",
+  "captured_at": "2026-09-03 09:27:03 UTC",
+  "authority": "Continua con la tarea CE-200",
+  "git": {
+    "branch": "codex/phase5-observation",
+    "head": "03b8ba273e17709fd8fc69c20dddb68c147a7e2a",
+    "changes": "local uncommitted; unrelated work preserved"
+  },
+  "scope": "Offline preparation and source audit only. No full corpus acquisition, labels, benchmark or holdout assignment.",
+  "sourcesPreserved": true,
+  "files": [
+    {
+      "path": "scripts/lib/comparator-strict-dataset.mjs",
+      "sha256": "e83982cc2cbd0cabc972e2fd1fa09ad9186a0580cda31e836fe0538776ad8eae",
+      "bytes": 8226
+    },
+    {
+      "path": "scripts/lib/comparator-strict-dataset.test.mjs",
+      "sha256": "a48f8affe2a3f6dead3534df9bcd682f952172b4df8ecdb7013915fe1d032ccd",
+      "bytes": 8128
+    },
+    {
+      "path": "scripts/prepare-comparator-strict-dataset.mjs",
+      "sha256": "1a2e7b40de5cc85868806a33830bfd0e0e16d6f4c74c8d1baf01dd67a0d4643a",
+      "bytes": 2170
+    },
+    {
+      "path": "docs/comparator-strict/dataset/CE-200-source-inventory.json",
+      "sha256": "85de0fb5b96f511fa0cb2b60a839c8525ff1969eaa9d2c73a65cfd4636697b0f",
+      "bytes": 2440
+    },
+    {
+      "path": "docs/comparator-strict/dataset/CE-200-sampling-plan.json",
+      "sha256": "9ace99405830f11dd900031275e570f128c42304e0921201996fcfc3f03d3702",
+      "bytes": 5744
+    },
+    {
+      "path": "docs/comparator-strict/dataset/seed-v1/products.json",
+      "sha256": "9ef6b65f68a46b284ac2f8cbdd64adab500c3ebc375ac522b71a763568c06e3a",
+      "bytes": 69477
+    },
+    {
+      "path": "docs/comparator-strict/dataset/seed-v1/pairs.json",
+      "sha256": "1ca9ab5c15e4c191bd74af60ee054b9e126b651a5a99c64409aae49099190a7c",
+      "bytes": 117651
+    },
+    {
+      "path": "docs/comparator-strict/dataset/seed-v1/queries.json",
+      "sha256": "1d9ff09ebe6ddb781a169161f67b1004236cd8198a057c64af0a5229b029f1f1",
+      "bytes": 303187
+    },
+    {
+      "path": "docs/comparator-strict/dataset/seed-v1/exposure.json",
+      "sha256": "d948c3141e7dc62873375b8c2ba24b8784de675ec80259a69342aa84ce856993",
+      "bytes": 103666
+    },
+    {
+      "path": "docs/comparator-strict/dataset/seed-v1/manifest.json",
+      "sha256": "e41d897a798a4f9fa41a7a1cc1f9aa67b93f8aeef9ec22129324a43ebac36bc3",
+      "bytes": 1388
+    },
+    {
+      "path": "docs/comparator-strict/dataset/seed-v1/report.json",
+      "sha256": "44eee2355c613a570df58652bb9ec83d26004826d5c359eefa3ccc67ca85b2ff",
+      "bytes": 1741
+    }
+  ],
+  "seed_report": {
+    "task": "CE-200",
+    "status": "in_progress_local_seed_only",
+    "scope": "historical exploratory; NOT representative or labelled",
+    "products": 72,
+    "unique_commercial_pairs": 648,
+    "logical_query_drafts": 144,
+    "origin_products": 72,
+    "destination_cases": 432,
+    "by_store": {
+      "carrefour": 18,
+      "consum": 18,
+      "mercadona": 18,
+      "plusfresc": 18
+    },
+    "by_lexical_cohort": {
+      "potato_candidate": 24,
+      "water_candidate": 24,
+      "yogurt_candidate": 24
+    },
+    "legacy_exposed_products": 683,
+    "legacy_pilot_store_products": 335,
+    "seed_overlaps_legacy": [
+      "carrefour:520661019"
+    ],
+    "CE200_confirmatory_pairs": 0,
+    "CE200_confirmatory_queries": 0,
+    "strict_equivalence_labels": 0,
+    "holdout_assigned": false,
+    "G2_pass": false,
+    "remote_calls": 0,
+    "app_changes": false,
+    "blockers": [
+      "documented sampling frame and representative acquisition not available",
+      "historical lexical hints are not verified pilot families",
+      "full source projection and product/location revision evidence incomplete",
+      "required 5000-10000 pairs and at least 1000 queries not established"
+    ],
+    "source_selection": "first six active rows by id per store/lexical hint; not random, not validated families",
+    "source_projection_limitations": "only the listed source columns; null packaging can mean absent column; this is not a complete product extraction",
+    "hashes": {
+      "products": "e98397a3a4c925bd8dae714d0b9807051624f6ce0da1a7d8cc9b4706b971230e",
+      "pairs": "b8667d268e3e3dcf0e4a75fbebf58f4ae633f54504868bdfda94b140f5111ee4",
+      "queries": "1b4fb3bfec289941874d5b655af6ac1520af83e7165ddee8a121f57f5a77845d",
+      "exposure": "cf3fcf6f9337b9f680e28a750d107762544238863f2879065b2a20bbdf150ce6"
+    }
+  },
+  "verification": {
+    "command": "npm run quality",
+    "exit_code": 0,
+    "typescript": "PASS",
+    "eslint": "PASS",
+    "tests": 367,
+    "passed": 367,
+    "new_dataset_tests": 14,
+    "new_dataset_tests_passed": 14,
+    "git_diff_check": "PASS",
+    "data_hashes_regenerated": "PASS"
+  },
+  "source_audit": {
+    "rows": 400,
+    "columns": 30,
+    "labels": {
+      "identico": 122,
+      "no_relacionado": 100,
+      "comparable": 178
+    },
+    "within_pilot_stores": 66,
+    "identifiers_not_imported_from_workbook": true,
+    "source_modified": false
+  },
+  "counts_not_independent": {
+    "commercial_pairs": 648,
+    "query_drafts": 144,
+    "origin_references": 72,
+    "destination_cases": 432,
+    "CE200_countable_confirmatory_pairs": 0,
+    "CE200_countable_confirmatory_queries": 0,
+    "strict_labels": 0
+  },
+  "remote_actions": {
+    "supabase_project_calls": 0,
+    "SQL_queries": 0,
+    "DDL_or_DML": 0,
+    "retailer_or_OFF_calls": 0,
+    "model_calls": 0,
+    "public_storage_uploads": 0,
+    "account_changes": 0,
+    "scheduled_jobs": 0
+  },
+  "budget": {
+    "last_verified_file": "docs/comparator-strict/CE-105-106-closure-evidence.json",
+    "SQL_reserved_ms": 299920,
+    "SQL_day_limit_ms": 300000,
+    "remaining_ms": 80,
+    "UTC_day": "2026-09-03",
+    "counters_reset_or_extended": false,
+    "remotely_requeried_this_turn": false
+  },
+  "limitations": [
+    "Seed uses first IDs per lexical hint, not verified family or representative sampling.",
+    "Legacy CSVs are byte-identical; 400 old labelled pairs not 800 and not strict CE-1 truth.",
+    "Legacy index preserves exposure, not field truth; no eligibility from GTIN, publication or capture age alone.",
+    "No full raw product/location export found in scoped local files.",
+    "6000 pair / 1200 query targets and 4000/2000 cohort allocation are provisional until the sampling frame is frozen.",
+    "Acquisition read operation and final sampling implementation remain pending; two F1 exception payloads do not authorize corpus reads.",
+    "CE-201 to CE-208 not completed or invoked; no model quality metric or G2 PASS."
+  ],
+  "next": "Prepare/review a bounded read-only acquisition operation; revalidate daily budget, target, health and permissions before obtaining additional data. Freeze feasible sampling design before labelling. No automatic resumption scheduled."
+}

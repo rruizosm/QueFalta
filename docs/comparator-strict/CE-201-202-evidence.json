@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "tasks": [
+    "CE-201",
+    "CE-202"
+  ],
+  "status": "in_progress_not_complete",
+  "recorded_at": "2026-09-03T09:52:43Z",
+  "authority": "continua con las tareas",
+  "scope": "Offline exploratory case preparation and annotation proposals while CE-200 acquisition remains pending",
+  "git": {
+    "branch": "codex/phase5-observation",
+    "head": "03b8ba273e17709fd8fc69c20dddb68c147a7e2a",
+    "new_work_uncommitted": true,
+    "unrelated_work_preserved": true
+  },
+  "real_proposals": {
+    "pairs": 22,
+    "excluded_scope": 9,
+    "rejected": 8,
+    "abstain": 5,
+    "eligible_saving": 0,
+    "reviewed_gold": 0,
+    "authorship": "assistant_proposal",
+    "representative": false,
+    "source_clock": "2026-09-03T08:08:57.223041+00:00",
+    "postcode": "08006",
+    "commercial_dimensions_all_unknown": true,
+    "owner_review_performed": false
+  },
+  "synthetic": {
+    "cases": 56,
+    "reused_F1_cases": 32,
+    "additional": 24,
+    "independent_real_pairs_added": 0,
+    "engine_outputs": null,
+    "historical_ambiguities_clarified": [
+      "natural alone does not establish added sugar",
+      "same claimed GTIN plus contradictory format is conflict/abstention"
+    ],
+    "T01_T29_editorial_coverage": true,
+    "T30_T31_partial_illustrations_not_system_tests": true
+  },
+  "verification": {
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "quality_command": "npm run quality",
+    "quality_exit_code": 0,
+    "tests": 389,
+    "passed": 389,
+    "failed": 0,
+    "new_focused_tests": 22,
+    "new_focused_passed": 22,
+    "artifacts_regenerated": true,
+    "seed_checked_against_original": true,
+    "semantics": "Annotation structure/provenance/consistency checks; not parser/matcher or accuracy/latency evaluation",
+    "git_diff_check": "PASS",
+    "new_files_whitespace_json_check": "PASS"
+  },
+  "effects": {
+    "supabase_project_calls": 0,
+    "sql_queries": 0,
+    "DDL": 0,
+    "DML": 0,
+    "legacy_rpc_calls": 0,
+    "retailer_calls": 0,
+    "OFF_calls": 0,
+    "external_model_api_calls": 0,
+    "app_functional_changes": 0,
+    "services_installed": 0,
+    "dependencies_added": 0,
+    "schedulers_created": 0,
+    "commercial_uses": 0,
+    "remote_budget_edited": false,
+    "public_documentation_access": true
+  },
+  "budget": {
+    "last_verified_day": "2026-09-03",
+    "sql_reserved_ms": 299920,
+    "sql_daily_limit_ms": 300000,
+    "type": "Conservative prior reservations; not measured CPU usage",
+    "requeried": false
+  },
+  "remaining": {
+    "CE200": "Sampling frame and bounded acquisition; 5000–10000 pairs and at least 1000 logical Q not established",
+    "CE201": "Complete real positive/negative/unknown coverage after acquisition",
+    "CE202": "Full corpus dimensional annotation backed by source evidence",
+    "CE203": "Owner second review: random 20 percent plus disputes; not performed",
+    "CE204_CE205": "Entity partitions and holdout lock pending",
+    "CE206_CE207_CE208": "Evaluation harness, executable negative scenarios and revision replay pending",
+    "G2_pass": false,
+    "automatic_remote_resumption": false
+  },
+  "artifact_audit": {
+    "files": [
+      {
+        "path": "scripts/lib/comparator-strict-labels.mjs",
+        "sha256": "6ec33dd1564f4f35e33dadc4154b0dee85a7c1283be6cec5d9b253cbdb2182cd",
+        "bytes": 11728
+      },
+      {
+        "path": "scripts/lib/comparator-strict-labels.test.mjs",
+        "sha256": "ee551b4e43624b33b164a0a52909bb6db1dbae6694ecfeb9f14ec53a42f77c63",
+        "bytes": 13410
+      },
+      {
+        "path": "scripts/prepare-comparator-strict-labels.mjs",
+        "sha256": "3c930c2d3d1c2bee8554d30a467618517428aed6f1419627e11453ad95677a76",
+        "bytes": 4755
+      },
+      {
+        "path": "docs/comparator-strict/CE-202-labeling-guide.md",
+        "sha256": "e9f9197bed6f4c655678e47d428ce9e35aad203d947c8c69736891c8327393c2",
+        "bytes": 11597
+      },
+      {
+        "path": "docs/comparator-strict/CE-201-202-progress.md",
+        "sha256": "e3a557408447a012d65728558757c477ddb65ee28c1757661397d085171fe680",
+        "bytes": 5665
+      },
+      {
+        "path": "docs/comparator-strict/dataset/label-pilot-v1/real-case-specs.json",
+        "sha256": "bf14b13c0854ffe46f05aad847cade780a8dbe70fe5a0ea9fb895b9c9cfbbd61",
+        "bytes": 9426
+      },
+      {
+        "path": "docs/comparator-strict/dataset/label-pilot-v1/contract-case-specs.json",
+        "sha256": "9baff853e22966259278a3dba96e545a383fc3c2f5a07af4213766ce7be5ccda",
+        "bytes": 14034
+      },
+      {
+        "path": "docs/comparator-strict/dataset/label-pilot-v1/annotations.json",
+        "sha256": "a7f35990c5be60cab679ea54ff4d9fc639ca05c1283f797063a7007583c63484",
+        "bytes": 70444
+      },
+      {
+        "path": "docs/comparator-strict/dataset/label-pilot-v1/contracts.json",
+        "sha256": "5e15a0eb84e32b1ddf76566a53e73f3ab438929d753c976b973770a887098fe9",
+        "bytes": 89665
+      },
+      {
+        "path": "docs/comparator-strict/dataset/label-pilot-v1/report.json",
+        "sha256": "e8e2a68f6e54f09e3ce1128202c14fc56191c838895961a02ddb5fb97e88774a",
+        "bytes": 1908
+      },
+      {
+        "path": "docs/comparator-strict/dataset/label-pilot-v1/review.md",
+        "sha256": "cad2b7df7d3e6568f7c329ef37ffef5ef2f77539d69aa202faef3b85c06873b2",
+        "bytes": 6524
+      }
+    ],
+    "bytes": 239156,
+    "protected_files": [
+      {
+        "path": "src/components/SimilarProductsSection.tsx",
+        "sha256": "d2e594cfd4ba184e839e13c0fd5e049917a16900dfea4fa2f884992234a1127e",
+        "unchanged": true
+      },
+      {
+        "path": "src/components/StoreProductModal.tsx",
+        "sha256": "f467d6a7604f797e7b944a543310f1c30bfe3bafc40e3f8fa5cf7d4e696a45c4",
+        "unchanged": true
+      },
+      {
+        "path": "src/api/catalog.ts",
+        "sha256": "bd35cdc8820661b52993a652ebc3a06b41963981df11183a9ba0880a4058bb05",
+        "unchanged": true
+      },
+      {
+        "path": "supabase/ops/README-comparator-embedding-pipeline.md",
+        "sha256": "424a293c99b0b843a9c7032da5b813b889da324a05ffddcf3349970e53379f40",
+        "unchanged": true
+      }
+    ],
+    "sources": [
+      {
+        "path": "docs/comparator-strict/fixtures/catalog-sample-2026-09-03.json",
+        "sha256": "13383c912e054f26bc0cd29c40d6e5f9e0bde1f8fda7944b032fce552d429311",
+        "hash_matches": true
+      },
+      {
+        "path": "docs/comparator-strict/dataset/seed-v1/products.json",
+        "sha256": "9ef6b65f68a46b284ac2f8cbdd64adab500c3ebc375ac522b71a763568c06e3a",
+        "hash_matches": true
+      },
+      {
+        "path": "docs/comparator-strict/dataset/seed-v1/pairs.json",
+        "sha256": "1ca9ab5c15e4c191bd74af60ee054b9e126b651a5a99c64409aae49099190a7c",
+        "hash_matches": true
+      },
+      {
+        "path": "docs/comparator-strict/dataset/label-pilot-v1/real-case-specs.json",
+        "sha256": "bf14b13c0854ffe46f05aad847cade780a8dbe70fe5a0ea9fb895b9c9cfbbd61",
+        "hash_matches": true
+      },
+      {
+        "path": "docs/comparator-strict/dataset/label-pilot-v1/contract-case-specs.json",
+        "sha256": "9baff853e22966259278a3dba96e545a383fc3c2f5a07af4213766ce7be5ccda",
+        "hash_matches": true
+      },
+      {
+        "path": "docs/comparator-strict/fixtures/contract-cases-v1.json",
+        "sha256": "2e058e9cbadebbcc9c23162c17189e7a0a03f6f8470c8ea68b49e2a3ca16f267",
+        "hash_matches": true
+      }
+    ],
+    "CE200_original_sources_preserved": true
+  }
+}

@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
-import { Modal, View, ActivityIndicator, StyleSheet } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Modal, View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
+import { fonts } from '../constants/typography';
 import {
   fetchBonpreuProduct, fetchCarrefourProduct, fetchBonareaProduct, fetchConsumProduct, fetchDiaProduct, fetchSorliProduct,
   fetchEroskiProduct, fetchCapraboProduct, fetchCondisProduct, fetchAmetllerProduct, fetchAldiProduct, fetchGadisProduct, fetchFroizProduct, fetchAhorramasProduct, fetchHiperdinoProduct, fetchAlcampoProduct,
@@ -9,7 +11,7 @@ import {
   type CondisProduct, type AmetllerProduct, type AldiProduct, type GadisProduct, type FroizProduct, type AhorramasProduct, type HiperdinoProduct, type AlcampoProduct, type PlusfrescProduct, type TapestryProduct,
 } from '../api/catalog';
 import type { CatalogStore } from '../constants/stores';
-import { useToast } from '../context/ToastContext';
+import type { RegionValue } from '../constants/regions';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useProfile } from '../context/ProfileContext';
@@ -31,71 +33,98 @@ interface Props {
   fullScreen?: boolean;
   /** Etiqueta contextual superpuesta en la imagen principal (p. ej. Novedad). */
   badgeLabel?: string;
+  /** Si un resultado del comparador no existe en la zona activa, permite abrir
+   *  su ficha desde el catálogo global que originó esa misma comparación. */
+  fallbackToGlobalCatalog?: boolean;
+}
+
+type MirrorProduct = BonpreuProduct | CarrefourProduct | BonareaProduct | ConsumProduct
+  | DiaProduct | SorliProduct | CondisProduct | AmetllerProduct | AldiProduct
+  | GadisProduct | FroizProduct | AhorramasProduct | HiperdinoProduct
+  | AlcampoProduct | PlusfrescProduct | TapestryProduct;
+
+const LOCATION_FILTERED_STORES = new Set<CatalogStore>(['carrefour', 'consum', 'dia', 'plusfresc']);
+
+function fetchMirrorProduct(
+  store: Exclude<CatalogStore, 'mercadona'>,
+  id: string,
+  region: RegionValue | null,
+  postalCode: string | null,
+  ignoreLocation = false,
+): Promise<MirrorProduct | null> {
+  const activeRegion = ignoreLocation ? null : region;
+  const activePostalCode = ignoreLocation ? null : postalCode;
+  const fetcher =
+    store === 'esclat' ? fetchBonpreuProduct
+    : store === 'carrefour' ? (productId: string) => fetchCarrefourProduct(productId, activeRegion)
+    : store === 'consum' ? (productId: string) => fetchConsumProduct(productId, activeRegion, activePostalCode)
+    : store === 'dia' ? (productId: string) => fetchDiaProduct(productId, activeRegion)
+    : store === 'sorli' ? fetchSorliProduct
+    : store === 'eroski' ? fetchEroskiProduct
+    : store === 'caprabo' ? fetchCapraboProduct
+    : store === 'condis' ? fetchCondisProduct
+    : store === 'ametller' ? fetchAmetllerProduct
+    : store === 'aldi' ? fetchAldiProduct
+    : store === 'gadis' ? fetchGadisProduct
+    : store === 'froiz' ? fetchFroizProduct
+    : store === 'ahorramas' ? fetchAhorramasProduct
+    : store === 'hiperdino' ? fetchHiperdinoProduct
+    : store === 'alcampo' ? fetchAlcampoProduct
+    : store === 'plusfresc' ? (productId: string) => fetchPlusfrescProduct(productId, activePostalCode)
+    : fetchBonareaProduct;
+  return fetcher(id);
 }
 
 /** Abre el detalle de un producto de CUALQUIER súper encima del modal actual
  *  (RN Modal → se apila sobre el detalle abierto y al cerrarse se vuelve a él).
  *  Mercadona delega en ProductDetailModal (que ya hace su propio fetch); para los
  *  espejos se carga el producto por id y se pinta su modal correspondiente. */
-export default function StoreProductModal({ target, onClose, fullScreen = false, badgeLabel }: Props) {
+export default function StoreProductModal({
+  target,
+  onClose,
+  fullScreen = false,
+  badgeLabel,
+  fallbackToGlobalCatalog = false,
+}: Props) {
   const styles = useThemedStyles(themedStyles);
   const reducedMotion = useReducedMotion();
   const fullScreenTop = useHeaderTopPadding(56);
   const sheetTop = useHeaderTopPadding(56);
-  const toast = useToast();
   const { t, lang } = useTranslation();
   const { profile } = useProfile();
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
   const targetStore = target?.store;
   const targetId = target?.id;
-  // El cierre y el texto pueden cambiar de identidad al renderizar el padre.
-  // El fetch solo debe reiniciarse cuando cambia el producto o su contexto.
-  const feedbackRef = useRef({ onClose, showToast: toast.show, t });
-  feedbackRef.current = { onClose, showToast: toast.show, t };
-  const [mirror, setMirror] = useState<BonpreuProduct | CarrefourProduct | BonareaProduct | ConsumProduct | DiaProduct | SorliProduct | CondisProduct | AmetllerProduct | AldiProduct | GadisProduct | FroizProduct | AhorramasProduct | HiperdinoProduct | AlcampoProduct | PlusfrescProduct | TapestryProduct | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
+  const requestKey = targetStore && targetId
+    ? [targetStore, targetId, region ?? '', postalCode ?? '', lang, reloadToken].join('\u001f')
+    : null;
+  const [mirrorResult, setMirrorResult] = useState<{ key: string; product: MirrorProduct } | null>(null);
+  const [errorKey, setErrorKey] = useState<string | null>(null);
+  const mirror = requestKey && mirrorResult?.key === requestKey ? mirrorResult.product : null;
+  const loadError = requestKey != null && errorKey === requestKey;
 
   useEffect(() => {
-    setMirror(null);
-    if (!targetStore || !targetId || targetStore === 'mercadona') return;
+    setErrorKey(null);
+    if (!targetStore || !targetId || targetStore === 'mercadona' || !requestKey) return;
     let cancelled = false;
-    const fetcher =
-      targetStore === 'esclat' ? fetchBonpreuProduct
-      : targetStore === 'carrefour' ? (id: string) => fetchCarrefourProduct(id, region)
-       : targetStore === 'consum' ? (id: string) => fetchConsumProduct(id, region, postalCode)
-      : targetStore === 'dia' ? (id: string) => fetchDiaProduct(id, region)
-      : targetStore === 'sorli' ? fetchSorliProduct
-      : targetStore === 'eroski' ? fetchEroskiProduct
-      : targetStore === 'caprabo' ? fetchCapraboProduct
-      : targetStore === 'condis' ? fetchCondisProduct
-      : targetStore === 'ametller' ? fetchAmetllerProduct
-      : targetStore === 'aldi' ? fetchAldiProduct
-      : targetStore === 'gadis' ? fetchGadisProduct
-      : targetStore === 'froiz' ? fetchFroizProduct
-      : targetStore === 'ahorramas' ? fetchAhorramasProduct
-      : targetStore === 'hiperdino' ? fetchHiperdinoProduct
-      : targetStore === 'alcampo' ? fetchAlcampoProduct
-       : targetStore === 'plusfresc' ? (id: string) => fetchPlusfrescProduct(id, postalCode)
-      : fetchBonareaProduct;
-    fetcher(targetId)
-      .then((p) => {
+    (async () => {
+      try {
+        const store = targetStore as Exclude<CatalogStore, 'mercadona'>;
+        let product = await fetchMirrorProduct(store, targetId, region, postalCode);
+        if (!product && fallbackToGlobalCatalog && LOCATION_FILTERED_STORES.has(store)) {
+          product = await fetchMirrorProduct(store, targetId, region, postalCode, true);
+        }
         if (cancelled) return;
-        if (p) setMirror(p);
-        else {
-          const feedback = feedbackRef.current;
-          feedback.showToast(feedback.t('product.loadError'), 'error');
-          feedback.onClose();
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          const feedback = feedbackRef.current;
-          feedback.showToast(feedback.t('product.loadError'), 'error');
-          feedback.onClose();
-        }
-      });
+        if (product) setMirrorResult({ key: requestKey, product });
+        else setErrorKey(requestKey);
+      } catch {
+        if (!cancelled) setErrorKey(requestKey);
+      }
+    })();
     return () => { cancelled = true; };
-  }, [targetStore, targetId, region, postalCode, lang]);
+  }, [fallbackToGlobalCatalog, requestKey, targetStore, targetId, region, postalCode]);
 
   if (!target) return null;
 
@@ -110,6 +139,36 @@ export default function StoreProductModal({ target, onClose, fullScreen = false,
   if (target.store === 'mercadona') {
     const ProductDetailModal = require('./ProductDetailModal').default;
     content = <ProductDetailModal productId={target.id} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
+  } else if (loadError) {
+    content = (
+      <View style={styles.loadState}>
+        <View style={[styles.loadHeader, { paddingTop: topInset }]}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={t('common.close')}
+            onPress={onClose}
+            style={styles.closeButton}
+          >
+            <Ionicons name="close" size={24} color={colors.ink} />
+          </TouchableOpacity>
+          <Text style={styles.loadHeaderTitle}>{t('product.detailTitle')}</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+        <View style={styles.errorState}>
+          <Ionicons name="alert-circle-outline" size={44} color={colors.inkFaint} />
+          <Text style={styles.errorText}>{t('product.detailLoadError')}</Text>
+          <TouchableOpacity
+            accessibilityRole="button"
+            onPress={() => setReloadToken((current) => current + 1)}
+            activeOpacity={0.75}
+            style={styles.retryButton}
+          >
+            <Ionicons name="refresh" size={17} color={colors.white} />
+            <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
   } else if (!mirror) {
     content = (
       <View style={styles.loading}>
@@ -193,4 +252,29 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.paper,
   },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  loadState: { flex: 1, backgroundColor: colors.paper },
+  loadHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingBottom: 10,
+  },
+  closeButton: {
+    width: 38, height: 38, borderRadius: 19,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
+  },
+  loadHeaderTitle: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink },
+  headerSpacer: { width: 38, height: 38 },
+  errorState: {
+    flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12,
+    paddingHorizontal: 40, paddingBottom: 48,
+  },
+  errorText: {
+    fontSize: 14, lineHeight: 20, fontFamily: fonts.medium,
+    color: colors.inkSoft, textAlign: 'center',
+  },
+  retryButton: {
+    minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    marginTop: 4, paddingHorizontal: 18, borderRadius: 16, backgroundColor: colors.accent,
+  },
+  retryButtonText: { fontSize: 14, fontFamily: fonts.bold, color: colors.white },
 });

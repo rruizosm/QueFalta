@@ -1,0 +1,9 @@
+{
+  "name": "quefalta-ce1-sql-tests",
+  "private": true,
+  "type": "module",
+  "description": "Isolated test tooling; not an application dependency",
+  "dependencies": {
+    "pg": "8.16.3"
+  }
+}

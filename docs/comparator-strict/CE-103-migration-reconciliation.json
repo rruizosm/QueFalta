@@ -1,0 +1,2044 @@
+{
+  "directory": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/supabase/migrations/",
+  "method": "Exact version first, then exact name; MD5 used only for text correlation after CRLF/outer-delimiter normalization, not authorization or semantic equivalence.",
+  "remote_capture_at": "2026-09-03T05:40:08.214465+00:00",
+  "counts": {
+    "local": 163,
+    "local_timestamped": 89,
+    "remote": 80,
+    "associations": {
+      "name_only": 51,
+      "remote_only": 2,
+      "same_version": 27
+    },
+    "text_evidence": {
+      "boundary_text_match": 50,
+      "no_candidate": 2,
+      "text_equivalence_not_established": 28
+    }
+  },
+  "rows": [
+    {
+      "remote_version": "20260720173704",
+      "remote_name": "sorli_nutri_score",
+      "association": "name_only",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "sorli_nutri_score.sql",
+          "version": null,
+          "name": "sorli_nutri_score",
+          "sha256": "6f5828c5d1323977e656038ef396467f3f5863982c349c4e1f36a4112e51ec79",
+          "boundary_md5": "1ace74ca7eac93389cf8609dcaf7ee6d",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260720182304",
+      "remote_name": "bonpreu_product_details",
+      "association": "name_only",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "bonpreu_product_details.sql",
+          "version": null,
+          "name": "bonpreu_product_details",
+          "sha256": "df38bd42bc8f661537af99b72cb2858e8b5aa0a0ba13ca77ad99b01ed9d3184b",
+          "boundary_md5": "ca45b81711ad17f7145bdb7e6e8e1038",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260723204711",
+      "remote_name": "dia_offers",
+      "association": "same_version",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260723204711_dia_offers.sql",
+          "version": "20260723204711",
+          "name": "dia_offers",
+          "sha256": "f72d34a72918884286b101ab915e89e7f265c8e2b486c12b6711079a90177095",
+          "boundary_md5": "1f3a1ea4275b2577854d098d2c643585",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260723212240",
+      "remote_name": "sorli_offers",
+      "association": "same_version",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260723212240_sorli_offers.sql",
+          "version": "20260723212240",
+          "name": "sorli_offers",
+          "sha256": "aafe123d444b0b06f2cda4ec85870a1afedbbf23cf5039451a7378af6bcc1947",
+          "boundary_md5": "b957f605a410cbbcd8107e4a2691b5dc",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260726200544",
+      "remote_name": "retailer_offers_condis_ametller_alcampo_eroski_caprabo",
+      "association": "same_version",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260726200544_retailer_offers_condis_ametller_alcampo_eroski_caprabo.sql",
+          "version": "20260726200544",
+          "name": "retailer_offers_condis_ametller_alcampo_eroski_caprabo",
+          "sha256": "1e87ccdafb4f152b953a705498f352649c6bab15074f3239bab645c98b0c9dd6",
+          "boundary_md5": "d4c2a1b220040830f5032d41eb8cec30",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260727091048",
+      "remote_name": "catalog_price_browse_indexes",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260727090948_catalog_price_browse_indexes.sql",
+          "version": "20260727090948",
+          "name": "catalog_price_browse_indexes",
+          "sha256": "6d8747f2de47169c554847fde80bc57921f5434e0a3ed76a7d4dbc0d9c6766a8",
+          "boundary_md5": "582b5ecaf658cfa1dac8ea96cbfc7411",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260728183128",
+      "remote_name": "bonpreu_sync_staging",
+      "association": "name_only",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260728182501_bonpreu_sync_staging.sql",
+          "version": "20260728182501",
+          "name": "bonpreu_sync_staging",
+          "sha256": "dac1ce0943c181aa21b9bdfdc4714a227aa01961e4a0cdd23f920677a32c2e1a",
+          "boundary_md5": "cfeca6a25d47f4e6213b9a56ad29627d",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260804185744",
+      "remote_name": "bonpreu_resumable_publication",
+      "association": "name_only",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260729184317_bonpreu_resumable_publication.sql",
+          "version": "20260729184317",
+          "name": "bonpreu_resumable_publication",
+          "sha256": "0cc96482b463646cf4af2003586e67cb1dc55a957058d47089ae3e2aa214da0f",
+          "boundary_md5": "c5309aff61db3c39add59af7da730f99",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260809125237",
+      "remote_name": "comparator_embeddings_layer",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260809120628_comparator_embeddings_layer.sql",
+          "version": "20260809120628",
+          "name": "comparator_embeddings_layer",
+          "sha256": "babcb7fd7f6e4540b1648dd32fee3f9fe51f2bb66bc09b07f040dda7ba6d9680",
+          "boundary_md5": "b5d53547c31d1379f23dd1f4efe6893d",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260809125302",
+      "remote_name": "comparator_embedding_pipeline",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260809123232_comparator_embedding_pipeline.sql",
+          "version": "20260809123232",
+          "name": "comparator_embedding_pipeline",
+          "sha256": "92ef9c3b71d39008fcc02d0974d5da9c3d354d9422e9b7180dfc1fb7104f3ab4",
+          "boundary_md5": "26d61aedd034c2c6189e7217e18d7193",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260809130000",
+      "remote_name": "comparator_embedding_failure_fk_index",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260809125941_comparator_embedding_failure_fk_index.sql",
+          "version": "20260809125941",
+          "name": "comparator_embedding_failure_fk_index",
+          "sha256": "8634ce23279c575b52c179c041867123cd1698d05904ecd93baf1e45c586bfc3",
+          "boundary_md5": "d4ad103d83986cc5f875b4f1bad900ba",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260809130241",
+      "remote_name": "comparator_embedding_queue_service_role_grants",
+      "association": "name_only",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260809130221_comparator_embedding_queue_service_role_grants.sql",
+          "version": "20260809130221",
+          "name": "comparator_embedding_queue_service_role_grants",
+          "sha256": "f84d72522e3d02dd1e51d56a998fe707626127763ca042a8fe4e82b93df984d7",
+          "boundary_md5": "697578ff23d00afbbae3ee934a8d9ddc",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260809130351",
+      "remote_name": "comparator_embedding_queue_service_role_select",
+      "association": "name_only",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260809130333_comparator_embedding_queue_service_role_select.sql",
+          "version": "20260809130333",
+          "name": "comparator_embedding_queue_service_role_select",
+          "sha256": "9e8498b566856e9e218fb6aa5342ac0ec6a5010c6d3f7d5bbe773351669501f8",
+          "boundary_md5": "0ecb9c2294b32032040ed832476af9c4",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260809132746",
+      "remote_name": "comparator_embedding_candidates_v2",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260809132534_comparator_embedding_candidates_v2.sql",
+          "version": "20260809132534",
+          "name": "comparator_embedding_candidates_v2",
+          "sha256": "6ae3aff54f1eaea0c12fb01a06c6082ff8b7d4b903a18b3addf1e0e2ff1b37f4",
+          "boundary_md5": "9e1bfd5ad89b29be681151168f474ed1",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260809133731",
+      "remote_name": "comparator_embedding_enqueue_after_upsert",
+      "association": "name_only",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260809143000_comparator_embedding_enqueue_after_upsert.sql",
+          "version": "20260809143000",
+          "name": "comparator_embedding_enqueue_after_upsert",
+          "sha256": "a9ac6b385d5ac9aed429acd7e853d872e0def63c93b2f9dedcaf6f7e14c3b52c",
+          "boundary_md5": "c1b7057ec529f98184fa0ad9aee8b062",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260809162706",
+      "remote_name": "comparator_embedding_candidates_v3",
+      "association": "same_version",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260809162706_comparator_embedding_candidates_v3.sql",
+          "version": "20260809162706",
+          "name": "comparator_embedding_candidates_v3",
+          "sha256": "7f54a82e05d892e3d5bc34118352c12a07f275cb26d302524d548e91069675d4",
+          "boundary_md5": "9b501d51736e56befc942d77f067bae2",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260809164345",
+      "remote_name": "comparator_cheaper_products_v3",
+      "association": "same_version",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260809164345_comparator_cheaper_products_v3.sql",
+          "version": "20260809164345",
+          "name": "comparator_cheaper_products_v3",
+          "sha256": "8b5c09174bdeac7371a017c0744bc5eeae738a6cdca199babd156b90c6be9248",
+          "boundary_md5": "cf26a20eea7349ad7cccce8e1e583dd8",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260810105331",
+      "remote_name": "comparator_match_cache_v3",
+      "association": "same_version",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260810105331_comparator_match_cache_v3.sql",
+          "version": "20260810105331",
+          "name": "comparator_match_cache_v3",
+          "sha256": "65f797596c7bc81e6caad1a98d27b60ce79a7240e0f33caf22c3400a3c30e7b6",
+          "boundary_md5": "e3c74cf19ad509e3ac80e4454e1758b2",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260810105703",
+      "remote_name": "comparator_match_cache_security_boundary",
+      "association": "same_version",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260810105703_comparator_match_cache_security_boundary.sql",
+          "version": "20260810105703",
+          "name": "comparator_match_cache_security_boundary",
+          "sha256": "9f897995576d8d3b203c84c4020c0397752d6e6b795d39284f859a97e4f12fce",
+          "boundary_md5": "e7edb93be1d10612f30ae51314ebcdd8",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260810140243",
+      "remote_name": "comparator_match_cache_metadata_invalidation",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260810140003_comparator_match_cache_metadata_invalidation.sql",
+          "version": "20260810140003",
+          "name": "comparator_match_cache_metadata_invalidation",
+          "sha256": "3d87b6338526249618ef403ca32d347135cd5d790368575ff72d0eddee0885cf",
+          "boundary_md5": "7141d3ca3a6e0e5d574bb53b62c54fca",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260810140659",
+      "remote_name": "comparator_match_cache_trigger_when_changed",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260810140503_comparator_match_cache_trigger_when_changed.sql",
+          "version": "20260810140503",
+          "name": "comparator_match_cache_trigger_when_changed",
+          "sha256": "21ad34f26e9b8695d44847d69f425d15405dffd0ec24afd1d3d19e8729f872fb",
+          "boundary_md5": "9fe09fedfaacdad2f6af8a0a4595fd9c",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260811111147",
+      "remote_name": "comparator_total_price_for_unpriced_stores",
+      "association": "name_only",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260811110855_comparator_total_price_for_unpriced_stores.sql",
+          "version": "20260811110855",
+          "name": "comparator_total_price_for_unpriced_stores",
+          "sha256": "d72bde13d574d84ff8df1c3c50026c7dcceee3bfc73888951f0ecb2aff5669c2",
+          "boundary_md5": "26cf66013ec7d2b23031c02070b0b62f",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260811112317",
+      "remote_name": "comparator_cheaper_highlight",
+      "association": "name_only",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260811112144_comparator_cheaper_highlight.sql",
+          "version": "20260811112144",
+          "name": "comparator_cheaper_highlight",
+          "sha256": "34849e9e5a42acb457a73edfcd2a67ec578fc3deeda0841baa294dcec90be1d9",
+          "boundary_md5": "39d8b10c76d160d2c945a16abdf3fb51",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260811203243",
+      "remote_name": "purchase_statistics",
+      "association": "same_version",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260811203243_purchase_statistics.sql",
+          "version": "20260811203243",
+          "name": "purchase_statistics",
+          "sha256": "62a4aa8c1a50c695b1e492de2fa8025e6779723eecf466718d715c285f531eb3",
+          "boundary_md5": "7c23dcfc481f00ff91fbb4d9ee5a35b5",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 7,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260811210204",
+      "remote_name": "normalize_purchase_statistic_categories",
+      "association": "same_version",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260811210204_normalize_purchase_statistic_categories.sql",
+          "version": "20260811210204",
+          "name": "normalize_purchase_statistic_categories",
+          "sha256": "39026e36d715816449706678347251d462f57389e5c6206112b0d2253d3ec667",
+          "boundary_md5": "2cc3fea61794a78bc54c8c1d1aa66457",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 3,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260812090753",
+      "remote_name": "statistics_visuals",
+      "association": "same_version",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260812090753_statistics_visuals.sql",
+          "version": "20260812090753",
+          "name": "statistics_visuals",
+          "sha256": "b57a17d5c11da53a0733600637a63145bece71e015ad25825ed0a2bc0f3af8c3",
+          "boundary_md5": "0d9b9a7cb1b8ebc79fe7a8e8f5d60993",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 3,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260814141719",
+      "remote_name": "phase_3_security_performance_hardening",
+      "association": "same_version",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260814141719_phase_3_security_performance_hardening.sql",
+          "version": "20260814141719",
+          "name": "phase_3_security_performance_hardening",
+          "sha256": "628f25cd5184e7100dc6687634b18140bfcf01986b3f5c790074eef6b4deea3f",
+          "boundary_md5": "872a079fb8828a22ea0ddb7cfece09b8",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260818092848",
+      "remote_name": "froiz_explicit_new_arrivals",
+      "association": "name_only",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260818112705_froiz_explicit_new_arrivals.sql",
+          "version": "20260818112705",
+          "name": "froiz_explicit_new_arrivals",
+          "sha256": "533eae9e97df0b3844a9375566ea129dc027356106d39e61b02684bc266427db",
+          "boundary_md5": "f0d9f0c1a5e9b5da25ee8fad149cf0b7",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260820162731",
+      "remote_name": "personalized_price_alerts",
+      "association": "same_version",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260820162731_personalized_price_alerts.sql",
+          "version": "20260820162731",
+          "name": "personalized_price_alerts",
+          "sha256": "ecdff73b96208a9f405b6591d196d88b48e4f1f970196fd0f356d7b8b9bf719e",
+          "boundary_md5": "38d9d742b991cf5fe0646fbf812c1671",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260820163441",
+      "remote_name": "sync_plus_verified_badge",
+      "association": "same_version",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260820163441_sync_plus_verified_badge.sql",
+          "version": "20260820163441",
+          "name": "sync_plus_verified_badge",
+          "sha256": "a82360f2efcf981d1e334a075e6479431bf282bc0452ef8e6c02f30f17b116a3",
+          "boundary_md5": "d68b9182e95c5060301aa03072bf6325",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260820163535",
+      "remote_name": "fix_personalized_price_alert_claim_ambiguity",
+      "association": "same_version",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260820163535_fix_personalized_price_alert_claim_ambiguity.sql",
+          "version": "20260820163535",
+          "name": "fix_personalized_price_alert_claim_ambiguity",
+          "sha256": "7fab928bfd1a400cec3deb965a0120a481c23689a6708dcec06a92f66feaed27",
+          "boundary_md5": "d52097fff7e21a661dc310b6b5dbd320",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260820163711",
+      "remote_name": "fix_personalized_price_alert_fk_indexes",
+      "association": "same_version",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260820163711_fix_personalized_price_alert_fk_indexes.sql",
+          "version": "20260820163711",
+          "name": "fix_personalized_price_alert_fk_indexes",
+          "sha256": "193f8e169d4f77749d38ff451cc4ca78b9f1cb06775291e5c3c949cfa90364ae",
+          "boundary_md5": "11adc4658c182f8c9e16970f19c7c1ee",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260820165618",
+      "remote_name": "price_alert_rule_emoji",
+      "association": "same_version",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260820165618_price_alert_rule_emoji.sql",
+          "version": "20260820165618",
+          "name": "price_alert_rule_emoji",
+          "sha256": "764227cbe413546adbe717e186142c57ca4573ad1defa89ce584dfbf6fc4353a",
+          "boundary_md5": "8d768e78d6fac58c62168fcacb79faef",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260820170935",
+      "remote_name": "personalized_alert_new_arrivals",
+      "association": "same_version",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260820170935_personalized_alert_new_arrivals.sql",
+          "version": "20260820170935",
+          "name": "personalized_alert_new_arrivals",
+          "sha256": "97af012370451a96512df403072286a96f0a8271c3b827d27f9a68c3536d678e",
+          "boundary_md5": "5e721eacc1609dbd6e34f5bc68904366",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260821130300",
+      "remote_name": "onboarding_integrity",
+      "association": "same_version",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260821130300_onboarding_integrity.sql",
+          "version": "20260821130300",
+          "name": "onboarding_integrity",
+          "sha256": "b4c0134baab17f6c4c771c8b69b61ade4ec9cc5cd31914c6dbd1fabb5a7c5f0b",
+          "boundary_md5": "4b4e1263b805a79410cd296898dd3eb5",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260821175935",
+      "remote_name": "allow_unlimited_group_creation",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260821175745_allow_unlimited_group_creation.sql",
+          "version": "20260821175745",
+          "name": "allow_unlimited_group_creation",
+          "sha256": "fbc896d96b0d74ce29466921113fb01e604a0fad79c3669003fa40a8219cc4cb",
+          "boundary_md5": "ad4093893a40cda2ee23716123a05b39",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260821180449",
+      "remote_name": "list_item_notes",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260821175658_list_item_notes.sql",
+          "version": "20260821175658",
+          "name": "list_item_notes",
+          "sha256": "5fe36b43fe6a23d818f6c8ade0409d3b824cf74ca3940bbd2763cd1ba35658bd",
+          "boundary_md5": "ae257ffe0d0972f9d2ce9603a273cd5d",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260821182635",
+      "remote_name": "list_item_note_product",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260821181503_list_item_note_product.sql",
+          "version": "20260821181503",
+          "name": "list_item_note_product",
+          "sha256": "b4fe240dfd9e348074975dba882876ddba23f69500f7d00cf5291db93db324f5",
+          "boundary_md5": "83cde898ad5efcc7e14ce3555509a149",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260822073002",
+      "remote_name": "add_group_icon",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260822071818_add_group_icon.sql",
+          "version": "20260822071818",
+          "name": "add_group_icon",
+          "sha256": "d1019f1deb8f0dd1fe499969fa1ca646fc7afebeb6565f7a301c23ed2a1b4eb8",
+          "boundary_md5": "2b412dd39b0b0fd4e83bf8f5675852db",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260822171009",
+      "remote_name": "general_statistics",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260822165410_general_statistics.sql",
+          "version": "20260822165410",
+          "name": "general_statistics",
+          "sha256": "aa0e25b77fd9f4be28a4bf1abd3073d310852356790a9ee1248cb8a11d50f191",
+          "boundary_md5": "25a87277f233fce7abe75b4ba9ba5c41",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260822171221",
+      "remote_name": "general_statistics_private_boundary",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260822171122_general_statistics_private_boundary.sql",
+          "version": "20260822171122",
+          "name": "general_statistics_private_boundary",
+          "sha256": "5d2fe6bdfefa05a01fba5f6995895c42032945af1fb6273732edaec50ac562ce",
+          "boundary_md5": "531c7eb7dbb81a17ddb75d0902adc947",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260823064939",
+      "remote_name": "free_tier_alert_and_comparator_allowances",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260823063529_free_tier_alert_and_comparator_allowances.sql",
+          "version": "20260823063529",
+          "name": "free_tier_alert_and_comparator_allowances",
+          "sha256": "149fb8eb6ad7abb87da926d4809b1029be1217bf8f29ec741c112ef5f55af4e2",
+          "boundary_md5": "4d7d10a6e5f868cd4b9e027a1eb4f542",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260823065153",
+      "remote_name": "restrict_free_tier_usage_direct_access",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260823065123_restrict_free_tier_usage_direct_access.sql",
+          "version": "20260823065123",
+          "name": "restrict_free_tier_usage_direct_access",
+          "sha256": "821f7bfea1ba55f2887a3c740e219751793b210f772785cf8ce99e7353982592",
+          "boundary_md5": "f16b5bcbe999b89c226e8bb180b78009",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260823065550",
+      "remote_name": "enforce_free_allowances_before_paywall_launch",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260823065448_enforce_free_allowances_before_paywall_launch.sql",
+          "version": "20260823065448",
+          "name": "enforce_free_allowances_before_paywall_launch",
+          "sha256": "0a10946c9ca792ec98f6b4f6664ec3120ed99116da9606e3d3e880fa212a809f",
+          "boundary_md5": "2f42f573b3272b022b91244129709107",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260823103505",
+      "remote_name": "catalog_search_engine_v1",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260823101900_catalog_search_engine_v1.sql",
+          "version": "20260823101900",
+          "name": "catalog_search_engine_v1",
+          "sha256": "5ccbf3ec2bf1a500e8cbfdd22e7b063979bf225e3c4133bdc9fe39473f75f5ec",
+          "boundary_md5": "da87d7c1bc06c8a84e1ebd8ce8a29094",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260823103803",
+      "remote_name": "catalog_search_language_index_planner",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260823103646_catalog_search_language_index_planner.sql",
+          "version": "20260823103646",
+          "name": "catalog_search_language_index_planner",
+          "sha256": "1ce74ea45be644b9503dd3145543f3c669e90de238ec4582d77c927a95b9fef2",
+          "boundary_md5": "e8ad998215812b463f3ac999b9610d9f",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260823104828",
+      "remote_name": "catalog_search_server_sort_orders",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260823104120_catalog_search_server_sort_orders.sql",
+          "version": "20260823104120",
+          "name": "catalog_search_server_sort_orders",
+          "sha256": "585695ed609f910de88f6b4bc953e2a7a9a7ca875a724ae764144bb1b5844718",
+          "boundary_md5": "3959ef9751ba2439843c365fe6770636",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260823110849",
+      "remote_name": "catalog_feed_search_engine",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260823110039_catalog_feed_search_engine.sql",
+          "version": "20260823110039",
+          "name": "catalog_feed_search_engine",
+          "sha256": "61a1c32bc7976b1bfa07f7889305bb01e7426de458880b9982d64afc6f1b9443",
+          "boundary_md5": "76c90378844adba0b6f7440bed5f6be6",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260823193941",
+      "remote_name": "price_alert_notification_products",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260821210209_price_alert_notification_products.sql",
+          "version": "20260821210209",
+          "name": "price_alert_notification_products",
+          "sha256": "7e0d0db8bd9197de71c5fc694a5246f0cc4082725db8f95548beb98a57bd07e1",
+          "boundary_md5": "cec708dc0533f7e535aabd2c26d65ee9",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260823194159",
+      "remote_name": "targeted_price_alert_processor",
+      "association": "name_only",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260823214058_targeted_price_alert_processor.sql",
+          "version": "20260823214058",
+          "name": "targeted_price_alert_processor",
+          "sha256": "6ab75d2ea90422a4686ae49fa3a0e9be8153bc7bdad807f903b7930985ec3f5c",
+          "boundary_md5": "327cd5f79c69d3d10998a07b7a484baa",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260823194414",
+      "remote_name": "fix_targeted_price_alert_processor_alias",
+      "association": "remote_only",
+      "text_evidence": "no_candidate",
+      "local_candidates": [],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260824131133",
+      "remote_name": "extend_comparator_statement_timeout",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260824131021_extend_comparator_statement_timeout.sql",
+          "version": "20260824131021",
+          "name": "extend_comparator_statement_timeout",
+          "sha256": "218a3d918f5fdcfc50f3fb7868dddf10482f3bffa012e2289f7922ef2d37b92b",
+          "boundary_md5": "530df7ad36ace9dd3e4f8dbf535ec7ca",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260824140510",
+      "remote_name": "catalog_match_reports",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260824140037_catalog_match_reports.sql",
+          "version": "20260824140037",
+          "name": "catalog_match_reports",
+          "sha256": "d94f0da982196a05e7b77adbed3c7a7041e43528f69a9eec9e9741200ebd8df6",
+          "boundary_md5": "1705f513b19b5ca9c0d3d89bc9fe8f3e",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260824140836",
+      "remote_name": "extend_comparator_to_gadis_froiz_ahorramas",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260824140442_extend_comparator_to_gadis_froiz_ahorramas.sql",
+          "version": "20260824140442",
+          "name": "extend_comparator_to_gadis_froiz_ahorramas",
+          "sha256": "ae6c2c7ca493e4516fdd078f37b8a064213bc3c8824831ba21f7a3defea8e1e3",
+          "boundary_md5": "aef541629cb661543f481c9d5886185b",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260824141904",
+      "remote_name": "normalize_comparator_reference_units",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260824141713_normalize_comparator_reference_units.sql",
+          "version": "20260824141713",
+          "name": "normalize_comparator_reference_units",
+          "sha256": "93351520c77b1995a9bbd323715658558f43286f1c5845aacd3dd68141d33a4e",
+          "boundary_md5": "af8029059a8686a8e9049f49f47934ef",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260824143221",
+      "remote_name": "normalize_gadis_reference_units",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260824143104_normalize_gadis_reference_units.sql",
+          "version": "20260824143104",
+          "name": "normalize_gadis_reference_units",
+          "sha256": "81b90ca193f5d49f7f7c336090724d7609e111b7828523f6e3dfc06d8be1a8ae",
+          "boundary_md5": "0dac77615af28b557c3c26fb2a9883a5",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260824150622",
+      "remote_name": "extend_comparator_cache_status_stores",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260824150548_extend_comparator_cache_status_stores.sql",
+          "version": "20260824150548",
+          "name": "extend_comparator_cache_status_stores",
+          "sha256": "bd3b7e9085e5ee0d9ad1d7ac6764984d6104febe5a7b4832715bebe0a1eac94f",
+          "boundary_md5": "ea17298dd4aa76929604fed2ebef8f99",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260824170527",
+      "remote_name": "high_priority_cart_integrity",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260824165601_high_priority_cart_integrity.sql",
+          "version": "20260824165601",
+          "name": "high_priority_cart_integrity",
+          "sha256": "367d2b51d1334b4743c151e89c00e9eb22bbb27e72e447c2e4771b56cca3639c",
+          "boundary_md5": "3b18fe7855ec0aa11edb4ac47c8be895",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260824171037",
+      "remote_name": "app_active_user_metrics",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260824170826_app_active_user_metrics.sql",
+          "version": "20260824170826",
+          "name": "app_active_user_metrics",
+          "sha256": "a0e416ac73d5a07066402e212b86668a73a551ef2e9d219b26abb871a026dc3c",
+          "boundary_md5": "285c20cb992472dea9fbdcb2f069042e",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260824171226",
+      "remote_name": "app_active_user_metrics_hardening",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260824171201_app_active_user_metrics_hardening.sql",
+          "version": "20260824171201",
+          "name": "app_active_user_metrics_hardening",
+          "sha256": "bee8edc4cc231364d70b510c99bd23e74afb7cd81ece82ea464dc93e7394bb98",
+          "boundary_md5": "b6c3599116dba31c196cf732e1ef8d70",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260824172919",
+      "remote_name": "dashboard_metrics_and_match_review",
+      "association": "remote_only",
+      "text_evidence": "no_candidate",
+      "local_candidates": [],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260824174522",
+      "remote_name": "grant_legacy_all_stores_to_pre_1_3_accounts",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260824174500_grant_legacy_all_stores_to_pre_1_3_accounts.sql",
+          "version": "20260824174500",
+          "name": "grant_legacy_all_stores_to_pre_1_3_accounts",
+          "sha256": "a95591510bde0e8d795db9ee7e4e266ad227c84be2c41acce63abcd78ef80cf5",
+          "boundary_md5": "6ffaedbf7ab994d0dc91ced366e7e9d1",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260824194109",
+      "remote_name": "fix_price_alert_service_role_claim",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260824194005_fix_price_alert_service_role_claim.sql",
+          "version": "20260824194005",
+          "name": "fix_price_alert_service_role_claim",
+          "sha256": "b4430f1a4a0396712e08456d5d538816f45fa7799eaf78bc4be6799399ca5721",
+          "boundary_md5": "89abfe4cb8800789bccf7468f9a9743c",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260824213809",
+      "remote_name": "localize_comparator_results",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260824213612_localize_comparator_results.sql",
+          "version": "20260824213612",
+          "name": "localize_comparator_results",
+          "sha256": "18af792206c6bf30344c6d2c9578724145347cf4299590f9ad723252446657c1",
+          "boundary_md5": "44b836b54e16d7ff18efd5810bb4a274",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260825175141",
+      "remote_name": "event_driven_catalog_embedding_dispatch",
+      "association": "name_only",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260825174505_event_driven_catalog_embedding_dispatch.sql",
+          "version": "20260825174505",
+          "name": "event_driven_catalog_embedding_dispatch",
+          "sha256": "b22b8a246c0e38883fbfb20d71ffc49cf00f314cb7a07bc6e2414b626868635d",
+          "boundary_md5": "60774c7722ee058910fc1f860616aeb0",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260829124046",
+      "remote_name": "grant_all_registered_users_all_stores_access",
+      "association": "same_version",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260829124046_grant_all_registered_users_all_stores_access.sql",
+          "version": "20260829124046",
+          "name": "grant_all_registered_users_all_stores_access",
+          "sha256": "1632a62d30f95718967510f6c2da45c727af68745ea3b540be0cba93476f064b",
+          "boundary_md5": "bfbbe9fc6a64d11197892d6e9be4698a",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260830181142",
+      "remote_name": "bm_multizone_catalog",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260830171924_bm_multizone_catalog.sql",
+          "version": "20260830171924",
+          "name": "bm_multizone_catalog",
+          "sha256": "8ce45088dbb18bbe076881db22cefd5a7bab52e13d999ec91fe27c5fb1ae5050",
+          "boundary_md5": "3ed8f89ee362c1d32f47f1706194cc4c",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260830181414",
+      "remote_name": "bm_multizone_fk_indexes",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260830181342_bm_multizone_fk_indexes.sql",
+          "version": "20260830181342",
+          "name": "bm_multizone_fk_indexes",
+          "sha256": "0a6f53b75b27df36b3a045df254a5b3763e377d3d324add126ef0ccea4ed5130",
+          "boundary_md5": "588abdb9745723049a12b01b57826b16",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260831124403",
+      "remote_name": "community_recipes",
+      "association": "same_version",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260831124403_community_recipes.sql",
+          "version": "20260831124403",
+          "name": "community_recipes",
+          "sha256": "7401d2dc1e08e3746bbedd828d379d1c8b078e34b2b66e7990ade877078b2273",
+          "boundary_md5": "304fae2072110d4892125fe95a523230",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260831204235",
+      "remote_name": "embedding_pipeline_phase_zero_control",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260831203004_embedding_pipeline_phase_zero_control.sql",
+          "version": "20260831203004",
+          "name": "embedding_pipeline_phase_zero_control",
+          "sha256": "648e51026697d63ec2c3be524c826581ed086795236fe29ba66b768b383aa827",
+          "boundary_md5": "2a57ec1800a11d6ffb3939f469af8bf0",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260831205119",
+      "remote_name": "fix_embedding_phase_zero_special_expressions",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260831204445_fix_embedding_phase_zero_special_expressions.sql",
+          "version": "20260831204445",
+          "name": "fix_embedding_phase_zero_special_expressions",
+          "sha256": "7f97706aae65313a5ce69dfe095e2b478c5b0a902b22e2e6890b3d665d8950ce",
+          "boundary_md5": "76b6a1a0b4b71382a05267d67e2ec40c",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260831205917",
+      "remote_name": "enforce_single_canary_dispatch_budget",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260831205518_enforce_single_canary_dispatch_budget.sql",
+          "version": "20260831205518",
+          "name": "enforce_single_canary_dispatch_budget",
+          "sha256": "28b0e0f80b61804710795099caf020eb93d22f6e4e035a5541fb4e1766b7189d",
+          "boundary_md5": "5c103ec4ec0513b433fadfbe0f0f59f4",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260901061238",
+      "remote_name": "embedding_materializer_phase_one_idempotency",
+      "association": "name_only",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260831214031_embedding_materializer_phase_one_idempotency.sql",
+          "version": "20260831214031",
+          "name": "embedding_materializer_phase_one_idempotency",
+          "sha256": "04825bbd75e2a346dd855324bfbab3d273ec1b76c7bb172db3d2d3d50eb0633c",
+          "boundary_md5": "2011fa63bb5318ccd39736fa7ba947f9",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260901072452",
+      "remote_name": "embedding_worker_phase_three_batch_writes",
+      "association": "same_version",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260901072452_embedding_worker_phase_three_batch_writes.sql",
+          "version": "20260901072452",
+          "name": "embedding_worker_phase_three_batch_writes",
+          "sha256": "a9b549c73d52fe00c4d66952efb2924a5ed6e20a09b67e7938d56059aa4654e9",
+          "boundary_md5": "4bd61ad1a057083c312afcfe091db363",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260901094105",
+      "remote_name": "phase_three_single_hnsw_mutation",
+      "association": "same_version",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260901094105_phase_three_single_hnsw_mutation.sql",
+          "version": "20260901094105",
+          "name": "phase_three_single_hnsw_mutation",
+          "sha256": "c6a74a8cf56359a5e17f42ab8cda813704463fc03d39842d1d8bd93aa1f0786c",
+          "boundary_md5": "f131c0047a26b81ea0ddf5970f3ac9a8",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260901103216",
+      "remote_name": "embedding_runs_durable_settlement_and_set_based_invalidation",
+      "association": "same_version",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260901103216_embedding_runs_durable_settlement_and_set_based_invalidation.sql",
+          "version": "20260901103216",
+          "name": "embedding_runs_durable_settlement_and_set_based_invalidation",
+          "sha256": "55261ef76bfabde49bfbefe814e0de5477ae8ea22b20a470b3c7648b3db00a76",
+          "boundary_md5": "10d3fd020dca46d884279d022091e947",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260901104518",
+      "remote_name": "phase4_legacy_materializer_compatibility",
+      "association": "same_version",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260901104518_phase4_legacy_materializer_compatibility.sql",
+          "version": "20260901104518",
+          "name": "phase4_legacy_materializer_compatibility",
+          "sha256": "04b936c36759003953111743cae8c0fe23aad5bb10c0faff1e426f8fe59d18a3",
+          "boundary_md5": "64c7d68ce69396da77f295fc0a47723e",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260901104730",
+      "remote_name": "phase4_manifest_revalidate_on_close",
+      "association": "same_version",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260901104730_phase4_manifest_revalidate_on_close.sql",
+          "version": "20260901104730",
+          "name": "phase4_manifest_revalidate_on_close",
+          "sha256": "0b71dfd68bf03e100c2ed3370cb6aa8886153747eed36f6ebfafad572e9d40db",
+          "boundary_md5": "b983671dc27aa831d9867873ab5ff316",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260901115631",
+      "remote_name": "catalog_embedding_postgres_maintenance_baseline",
+      "association": "same_version",
+      "text_evidence": "boundary_text_match",
+      "local_candidates": [
+        {
+          "file": "20260901115631_catalog_embedding_postgres_maintenance_baseline.sql",
+          "version": "20260901115631",
+          "name": "catalog_embedding_postgres_maintenance_baseline",
+          "sha256": "1ad4518e003e15e6909afa1e19e0921f225d915c41b6fcbe3172c732b0120f52",
+          "boundary_md5": "2581600f73f7a869bb850ea6cba88c24",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    },
+    {
+      "remote_version": "20260901203103",
+      "remote_name": "extend_embedding_finalize_statement_timeout",
+      "association": "same_version",
+      "text_evidence": "text_equivalence_not_established",
+      "local_candidates": [
+        {
+          "file": "20260901203103_extend_embedding_finalize_statement_timeout.sql",
+          "version": "20260901203103",
+          "name": "extend_embedding_finalize_statement_timeout",
+          "sha256": "9a32b3054833c30d0ae23873211799fdf7341e9098ed16a9ed9ec2274b844c9f",
+          "boundary_md5": "cae5857ea7c063ab75fe58bf17152409",
+          "name_matches": true
+        }
+      ],
+      "remote_statement_count": 1,
+      "apply_authorized": false
+    }
+  ],
+  "local_without_history_match": [
+    {
+      "file": "20260718133958_eroski_caprabo_nutrition.sql",
+      "version": "20260718133958",
+      "name": "eroski_caprabo_nutrition",
+      "sha256": "7d436402776b652dd0c48e55eceeca0862603d2f1c0a8710b437b8f66ede66c7",
+      "boundary_md5": "40796061930f19b98597e08f1caa4c7d"
+    },
+    {
+      "file": "20260718183152_catalog_browse_indexes.sql",
+      "version": "20260718183152",
+      "name": "catalog_browse_indexes",
+      "sha256": "773d2bdba284459abb1335236e7a4bfeba32388d7b2b2e13b2489be018f480ac",
+      "boundary_md5": "48a6af5f126a8323d5494e3a6e2cc3d7"
+    },
+    {
+      "file": "20260719102703_eroski_caprabo_product_detail.sql",
+      "version": "20260719102703",
+      "name": "eroski_caprabo_product_detail",
+      "sha256": "86bdf0019a885db93226304b29e6d96737adbcebd810dd67c9e89aaa6066390b",
+      "boundary_md5": "ffd19e59a5c524d1885fa4863d6923b1"
+    },
+    {
+      "file": "20260720190224_condis_product_details.sql",
+      "version": "20260720190224",
+      "name": "condis_product_details",
+      "sha256": "58b5283d59d231da51d1e94434653642490479a9fff860c887171fea5b6673db",
+      "boundary_md5": "7160792e4db598603fe5b09fd4b412b2"
+    },
+    {
+      "file": "20260727115826_paywall_off.sql",
+      "version": "20260727115826",
+      "name": "paywall_off",
+      "sha256": "bcc13cf9e2a9b90a61ea7be58b1c84181e15dae879157e4e320c79bb158b5268",
+      "boundary_md5": "ec2287e96ea6d5653f43c5b90fc579fb"
+    },
+    {
+      "file": "20260809102018_comparator_source_unit_v2.sql",
+      "version": "20260809102018",
+      "name": "comparator_source_unit_v2",
+      "sha256": "95ec6284228d51ccc18b2c99d1262d2f64858e2c67141f03b1e02428155aba9d",
+      "boundary_md5": "9f84e5d569cd3633bc70059c65be68e5"
+    },
+    {
+      "file": "20260811112701_catalog_price_per_unit_browse_indexes.sql",
+      "version": "20260811112701",
+      "name": "catalog_price_per_unit_browse_indexes",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "boundary_md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "file": "20260811112706_catalog_price_per_unit_browse_indexes.sql",
+      "version": "20260811112706",
+      "name": "catalog_price_per_unit_browse_indexes",
+      "sha256": "286edae73ae3c27d754b26a827726a6acb613d37611d07033f61f14d780eda85",
+      "boundary_md5": "98facd7830f8ac88d0ab0e0788ccfc6c"
+    },
+    {
+      "file": "20260814170000_catalog_sync_status.sql",
+      "version": "20260814170000",
+      "name": "catalog_sync_status",
+      "sha256": "2ac297ccf75c5371dd2df9800923ece6895fd6d0ca4a866262afec77583058df",
+      "boundary_md5": "c802b81d8b63dd03c4a5e5f70899986d"
+    },
+    {
+      "file": "20260817124758_comparator_semantic_identity_guard.sql",
+      "version": "20260817124758",
+      "name": "comparator_semantic_identity_guard",
+      "sha256": "6b2c4d990026c46c12b44b1dc286dc955212f3313aacefa82b702fa36368cd9c",
+      "boundary_md5": "5198e00a22b7a4faf56ddd4a3292b240"
+    },
+    {
+      "file": "20260822090421_legacy_all_stores_access.sql",
+      "version": "20260822090421",
+      "name": "legacy_all_stores_access",
+      "sha256": "e450b4e7ad6f53132ae0728ff80a4c3862e7c1c47f1391ae3cb4328b2b10c4de",
+      "boundary_md5": "81857814b56358df336f717735f3e77d"
+    },
+    {
+      "file": "20260828164258_generalize_price_alert_processor.sql",
+      "version": "20260828164258",
+      "name": "generalize_price_alert_processor",
+      "sha256": "83aa1ab3aef1628aafbac19da099374cbb457b952d4d4d433b3636f7a232eb1b",
+      "boundary_md5": "866ca78fbabc0cc21cc20a2959bd1f09"
+    },
+    {
+      "file": "20260902122234_fix_comparator_filtered_hnsw_recall.sql",
+      "version": "20260902122234",
+      "name": "fix_comparator_filtered_hnsw_recall",
+      "sha256": "ac9fa3360afa4be72a7ae0d1e1336282a5ec1c5991d78e6e249381ffbb97646d",
+      "boundary_md5": "32bd23b6473972546e1e74098d52b607"
+    },
+    {
+      "file": "ahorramas_catalog.sql",
+      "version": null,
+      "name": "ahorramas_catalog",
+      "sha256": "8c6184e545df6e06471dcd336a057b1fece4b0c9688953c99c81f269976ca37f",
+      "boundary_md5": "186f2b7697a0881fa9398d007df773a4"
+    },
+    {
+      "file": "alcampo_catalog.sql",
+      "version": null,
+      "name": "alcampo_catalog",
+      "sha256": "3fc8955878cd035ac86aaca4a7be404a4e63dc33856cb1ba2ef693b4cd7a131e",
+      "boundary_md5": "8bedebe6a76223ca2e65f0ce77fcf990"
+    },
+    {
+      "file": "aldi_catalog.sql",
+      "version": null,
+      "name": "aldi_catalog",
+      "sha256": "148a6c5858b6a9d906882af200270a0b395391d810864514e335482fef0b5ae5",
+      "boundary_md5": "3dbfa0e8d09a8542ad221ee17a1194f8"
+    },
+    {
+      "file": "aldi_offers.sql",
+      "version": null,
+      "name": "aldi_offers",
+      "sha256": "6f457ef3d19a2d36984ec18005a1b5546f6a88a03af7ac288721189d7a97807c",
+      "boundary_md5": "587949e317c933d26252830bde635fc6"
+    },
+    {
+      "file": "ametller_catalog.sql",
+      "version": null,
+      "name": "ametller_catalog",
+      "sha256": "cbf5b9186f6273124224cf74c65e9198848a46e36a9443dadea4ed9655924eb8",
+      "boundary_md5": "91b3ec0ce750a846abb441e965c62b2e"
+    },
+    {
+      "file": "apple_credentials.sql",
+      "version": null,
+      "name": "apple_credentials",
+      "sha256": "cb0b9485a3054af49b36ed9e600aac11e46a843e654fc4490fa861ec46e145ba",
+      "boundary_md5": "dec4af3638066e1c925489a223d72cab"
+    },
+    {
+      "file": "backfill_list_category_mercadona.sql",
+      "version": null,
+      "name": "backfill_list_category_mercadona",
+      "sha256": "75cfeabc7c49f77d1569626ac9331ee8fcd1e1a93dcb5dca16c2e59bd76cce69",
+      "boundary_md5": "be8ef9740f1c1cbcb422637543cc7257"
+    },
+    {
+      "file": "bonarea_catalog_ca.sql",
+      "version": null,
+      "name": "bonarea_catalog_ca",
+      "sha256": "76d2797925a47e0eac11629e9f983956df576407e2faa3a0b4f5ef6ca433f56b",
+      "boundary_md5": "029ef7ea919ece812dc01bf2b75aeaf3"
+    },
+    {
+      "file": "bonarea_catalog.sql",
+      "version": null,
+      "name": "bonarea_catalog",
+      "sha256": "ad8d0745a01e40729530a62de8143fe05efafa511534501130cd0f3c5164c10c",
+      "boundary_md5": "b079665305bbe2adb2b532a210b8447e"
+    },
+    {
+      "file": "bonarea_off_code.sql",
+      "version": null,
+      "name": "bonarea_off_code",
+      "sha256": "de5af6e26c10d8a1adcc706057e3ddd48dfc3dfa88a24f0e12d903961e851576",
+      "boundary_md5": "0a26679ee352718df6649d5ae257a2d0"
+    },
+    {
+      "file": "bonarea_product_detail.sql",
+      "version": null,
+      "name": "bonarea_product_detail",
+      "sha256": "03b7a7f5964ac9fba1c6237caa8295d5e140dbbcc5e2b7b2c6a29bd0a7c79343",
+      "boundary_md5": "633b339424e426c0253ddfde485b8b33"
+    },
+    {
+      "file": "bonpreu_catalog_ca.sql",
+      "version": null,
+      "name": "bonpreu_catalog_ca",
+      "sha256": "685293ff79ed32cabbdba86f80ee3d156d7f7a5ef442465a41c3a0959da81558",
+      "boundary_md5": "49f500b33e963d42bb5ef561979dde89"
+    },
+    {
+      "file": "bonpreu_catalog.sql",
+      "version": null,
+      "name": "bonpreu_catalog",
+      "sha256": "2b371ee9ef15d7e62acefb366b8572cec8134891bb9f7f940aab826117b9411e",
+      "boundary_md5": "0178abe4bb60d47011fff06458c16f6a"
+    },
+    {
+      "file": "bonpreu_offers.sql",
+      "version": null,
+      "name": "bonpreu_offers",
+      "sha256": "474bef421595052353f28a709721f5df8909f449749d3c547dcfa91ff8852089",
+      "boundary_md5": "0ba14cadca8b7e4d8bd533b1b403389b"
+    },
+    {
+      "file": "caprabo_catalog.sql",
+      "version": null,
+      "name": "caprabo_catalog",
+      "sha256": "0ee67e590cffb27a4152cb62d8d2e58cf9e200afcdd5e915dd67905274851561",
+      "boundary_md5": "25a83a9ec040f5465298a7fd9a414788"
+    },
+    {
+      "file": "carrefour_catalog.sql",
+      "version": null,
+      "name": "carrefour_catalog",
+      "sha256": "0b818364bbeb9f14783e11602d1fcbddd1b7cc799455bc81b9e2a734f05c2f45",
+      "boundary_md5": "bcab621cc0a1d16535f80ffea56ae9ae"
+    },
+    {
+      "file": "carrefour_exclude_drogueria_limpieza.sql",
+      "version": null,
+      "name": "carrefour_exclude_drogueria_limpieza",
+      "sha256": "cd1a7fdd30fd2da534152042c6b5f11b4f5549cd55155ae998d227bfd9bed0b5",
+      "boundary_md5": "b6396bd6ecde94c417cad7b31eff63eb"
+    },
+    {
+      "file": "carrefour_offers.sql",
+      "version": null,
+      "name": "carrefour_offers",
+      "sha256": "3373478eac112de529b8644861d219b5efebd553ff60a9364a3893d4bacc20e5",
+      "boundary_md5": "665d8bf096efccfd56135980b8f29f77"
+    },
+    {
+      "file": "carrefour_product_detail.sql",
+      "version": null,
+      "name": "carrefour_product_detail",
+      "sha256": "8293e04f087c8b11e1039252eb7293998161ef91157b4ab13856e6c473a59671",
+      "boundary_md5": "d37b06c1373ae011fa2b700fd1db503a"
+    },
+    {
+      "file": "carrefour_regions.sql",
+      "version": null,
+      "name": "carrefour_regions",
+      "sha256": "6de9cc20f727c02ad23a970a2775cd5f3b191cf8b4bb94e55c9b94a413a31553",
+      "boundary_md5": "d40afe1f8eac73f2718cd2550fab1342"
+    },
+    {
+      "file": "catalog_first_seen.sql",
+      "version": null,
+      "name": "catalog_first_seen",
+      "sha256": "1cfdfe19cbe628abf504680cafd0810b79b2dff29a28efd313dfbebe8901313b",
+      "boundary_md5": "a5ab41e610d4c09fa085a2a56bc50337"
+    },
+    {
+      "file": "catalog_location_price_history.sql",
+      "version": null,
+      "name": "catalog_location_price_history",
+      "sha256": "7c46797db8400c3655cd84723430f96b2678f4258f21d09f4e808cd9270907cf",
+      "boundary_md5": "64a3d700dcbcbffdcb1642ec24a14e90"
+    },
+    {
+      "file": "catalog_price_changes_all_stores.sql",
+      "version": null,
+      "name": "catalog_price_changes_all_stores",
+      "sha256": "ec511ac854bc5f91049a4ce462abc8a390918dfa919f5afd6981b81c6ef0ed05",
+      "boundary_md5": "fefe3ea0b72d523f62b9b4e4f1781521"
+    },
+    {
+      "file": "catalog_price_changes.sql",
+      "version": null,
+      "name": "catalog_price_changes",
+      "sha256": "1a30a4022cd6e0ce9a32cc0c4fdda4cf961e8d336ecfb9d898923129c0bab0e0",
+      "boundary_md5": "a25c4d96853f3282db4eaeba90c3700d"
+    },
+    {
+      "file": "catalog_price_per_unit.sql",
+      "version": null,
+      "name": "catalog_price_per_unit",
+      "sha256": "0808c2b80bc2bf8a9d9dfcfab41dfc855b19e488bda07e789c04e81b8f3b7c0d",
+      "boundary_md5": "0e6e8853b2b67469757d96b776e09573"
+    },
+    {
+      "file": "catalog_unaccent_search.sql",
+      "version": null,
+      "name": "catalog_unaccent_search",
+      "sha256": "333586739fc6aa30d2c7ffe8c6176f58d9e8c9fffae726238d985e565dd9773f",
+      "boundary_md5": "b9363b46f6befbbe0b0022bf247de88e"
+    },
+    {
+      "file": "condis_catalog.sql",
+      "version": null,
+      "name": "condis_catalog",
+      "sha256": "56af3f8bacabb017adb73251ac023eb004e8bfd5ec2182123aa49322e890c33b",
+      "boundary_md5": "897bafbdb5f2c68c782e84af665e7cad"
+    },
+    {
+      "file": "consum_catalog.sql",
+      "version": null,
+      "name": "consum_catalog",
+      "sha256": "51050cf8717b88c80346af79a437c5fe78e0303b94f2f098451b4dd1706451dd",
+      "boundary_md5": "f9ddefa89996197fb143e4a4058bed25"
+    },
+    {
+      "file": "consum_offers.sql",
+      "version": null,
+      "name": "consum_offers",
+      "sha256": "3d166484cc45990153ed005e39c562e6c178ca7ce5860a54593f3c50104c1710",
+      "boundary_md5": "13faeabebd69efe0a4c0e50252426845"
+    },
+    {
+      "file": "consum_regions.sql",
+      "version": null,
+      "name": "consum_regions",
+      "sha256": "5a753479340aa370714e54302df577b0c2a601f9889744607e7f08227fc4b9d8",
+      "boundary_md5": "30459e4c79f5c432d56507680c6f604f"
+    },
+    {
+      "file": "dia_catalog.sql",
+      "version": null,
+      "name": "dia_catalog",
+      "sha256": "e71db0e3d543e217e54fa9a0cc0e318fb1e13e780948e844bc5ba3a3fd516613",
+      "boundary_md5": "000805bae8597684902d5aee0d8c12cd"
+    },
+    {
+      "file": "dia_product_detail.sql",
+      "version": null,
+      "name": "dia_product_detail",
+      "sha256": "182d182bb6494f1c25add40f7c269c8bb942cd2dfb4afef4b974ecfad4291262",
+      "boundary_md5": "bed234398a20cc1ff68b696c128f1eeb"
+    },
+    {
+      "file": "dia_regions.sql",
+      "version": null,
+      "name": "dia_regions",
+      "sha256": "81e2e1e07e3cc900099fae13d48decf6460d42266872eb7fd44b31573251f85f",
+      "boundary_md5": "f7979e877b5ec8be5066b3877fdcdeae"
+    },
+    {
+      "file": "ean_unify.sql",
+      "version": null,
+      "name": "ean_unify",
+      "sha256": "9b00cdfd52791eeb1cc6cf05eb1f54bb12acfa816453c29cd85bb32437964e8a",
+      "boundary_md5": "c2cd039a9339827067daaf3b34749928"
+    },
+    {
+      "file": "eroski_catalog.sql",
+      "version": null,
+      "name": "eroski_catalog",
+      "sha256": "209bcfd4b9e242560ebc0107b7072ce3738348fbb70cd230611c81f950284487",
+      "boundary_md5": "b0165fe294fdb89f87211c162b058adb"
+    },
+    {
+      "file": "favorites_store.sql",
+      "version": null,
+      "name": "favorites_store",
+      "sha256": "abe1468307976ec5cf8edb7e0265f7ed39e993aafcd8f90967dd45f6018463b1",
+      "boundary_md5": "8bb0e0cc667949d38f88afca1cc9c13d"
+    },
+    {
+      "file": "favorites.sql",
+      "version": null,
+      "name": "favorites",
+      "sha256": "0378c5873a9b436774ebb8b736ced191201da9f2526b53a8bb494fbfceb493bf",
+      "boundary_md5": "8236671674c86a993515ae9b8882210f"
+    },
+    {
+      "file": "fix_bonpreu_prices.sql",
+      "version": null,
+      "name": "fix_bonpreu_prices",
+      "sha256": "ccc64bcef155b9610afe108319e893c187c0224977d2f2f77248fcfe80322705",
+      "boundary_md5": "fd46df5a647e656c167e3baac6a8c3e2"
+    },
+    {
+      "file": "friendship_rate_limit.sql",
+      "version": null,
+      "name": "friendship_rate_limit",
+      "sha256": "5ed1cc9a95260d6fbbf46b6dffddd0307fe9b5cbf8a56ae26a64150d84737185",
+      "boundary_md5": "b23640f3bb749048c25f0e0ca97b80fa"
+    },
+    {
+      "file": "friendships.sql",
+      "version": null,
+      "name": "friendships",
+      "sha256": "b189baee80b109e7953bb333111e4cd25c9ffc5f1b32c432cc3f6d0c3a60993d",
+      "boundary_md5": "7fecbee38f8774b3602bf90d0ace8457"
+    },
+    {
+      "file": "froiz_catalog.sql",
+      "version": null,
+      "name": "froiz_catalog",
+      "sha256": "a5d07293dda0f5ef9fb87888ae1516cc1e0156f62a4a68ec579ed25fe8a2f566",
+      "boundary_md5": "744150b9fa37c7548507e6c26b9a8cf5"
+    },
+    {
+      "file": "gadis_catalog.sql",
+      "version": null,
+      "name": "gadis_catalog",
+      "sha256": "c2085efd444e4edff1d629584c716ec5cf717365cd1b78b4700ad08ba16c3be1",
+      "boundary_md5": "6067168fe53577c2e44606b2d14770e7"
+    },
+    {
+      "file": "group_delete_cascade.sql",
+      "version": null,
+      "name": "group_delete_cascade",
+      "sha256": "6bdf9d6b2af6678eaade05816f93f0fda699a6e2cad06f9ae50c89bc678abc27",
+      "boundary_md5": "f99e69da02673283042a4ae021d177ea"
+    },
+    {
+      "file": "hipercor_catalog.sql",
+      "version": null,
+      "name": "hipercor_catalog",
+      "sha256": "dc2e7bb7e5d95999339c907d823e6dd33507fe08be78c576c9663e46de76c3e5",
+      "boundary_md5": "49a363d317de5cc003ea154a7802f1ff"
+    },
+    {
+      "file": "hiperdino_catalog.sql",
+      "version": null,
+      "name": "hiperdino_catalog",
+      "sha256": "d2b0f340d56e6ccb7bf92cc0c0eb83b3b09bfc31e550a60cd0b84d1f1aca6b15",
+      "boundary_md5": "aa84a89b8a3f73f48032ecddbcdde33c"
+    },
+    {
+      "file": "hiperdino_offers.sql",
+      "version": null,
+      "name": "hiperdino_offers",
+      "sha256": "7469e8f693df1be68300617d25821d7395bebc0b566d658ae7dee274d2b1ca6f",
+      "boundary_md5": "a382a00af6f5b018311426ca98c37335"
+    },
+    {
+      "file": "list_items_assigned.sql",
+      "version": null,
+      "name": "list_items_assigned",
+      "sha256": "06e06d6434f4b2f8592705f8843f2b8dd139b4a5c8deba9b55054afe23e8a519",
+      "boundary_md5": "7c2c0df9c3e2e88053826b405c76b7ff"
+    },
+    {
+      "file": "list_items_category.sql",
+      "version": null,
+      "name": "list_items_category",
+      "sha256": "c76e1971c42f015b84a0286af2ac1be28c0f3e66b424a381813dd7f54af02381",
+      "boundary_md5": "825d18c3071f48043228594419d5bca9"
+    },
+    {
+      "file": "list_items_store_product_id.sql",
+      "version": null,
+      "name": "list_items_store_product_id",
+      "sha256": "516194db40eb504643e6fbad7a9b9f8cf2a47208fafa4ada3c01aa08b7f2ece2",
+      "boundary_md5": "a3ca2f2ba38df82c799457fd51a21369"
+    },
+    {
+      "file": "mercadona_catalog_ca.sql",
+      "version": null,
+      "name": "mercadona_catalog_ca",
+      "sha256": "e42cf57dbb4c4525391aedb515ebe4a0a3f6e1aa62d7c48e88c64ac60ac06bb7",
+      "boundary_md5": "d9cd64a3aaaf91555fe0235a9e1d331e"
+    },
+    {
+      "file": "mercadona_catalog.sql",
+      "version": null,
+      "name": "mercadona_catalog",
+      "sha256": "63c56fe8ae35acdfb45ef2ecc296b08e29e1c16ef3af64fbb3c437628aec9970",
+      "boundary_md5": "ea5db8f62ff72d8aa1d6b0296426cdf2"
+    },
+    {
+      "file": "mercadona_health.sql",
+      "version": null,
+      "name": "mercadona_health",
+      "sha256": "1038d252820092dea6ecf4b7881baddd1afc9c2cb2bb595d91e6f22474ca82a3",
+      "boundary_md5": "68f8ddee81cab40f30008be561ad7f57"
+    },
+    {
+      "file": "mercadona_multi_warehouse.sql",
+      "version": null,
+      "name": "mercadona_multi_warehouse",
+      "sha256": "3ea0dd461f89265eb435b0661339d6cd66faaf79e2c8b077335805a27ef1f772",
+      "boundary_md5": "f8666e0720e6b494492fc3a689eef02b"
+    },
+    {
+      "file": "mercadona_nutrition.sql",
+      "version": null,
+      "name": "mercadona_nutrition",
+      "sha256": "d01ecd76a3e8d64282a2e28ad76d8dca21fdd9756ac321375ded8e7423d22a9f",
+      "boundary_md5": "89168dfcbb8dcf00abd14b5fde0d857e"
+    },
+    {
+      "file": "mercadona_region_exclusive.sql",
+      "version": null,
+      "name": "mercadona_region_exclusive",
+      "sha256": "12e55f9aa0bc9626c204ca413e7ec07f5a31b6157343a7f00171be6ec1db506c",
+      "boundary_md5": "7c2ff2f08b4ce4bc0aa604c3fd2b609f"
+    },
+    {
+      "file": "notifications_inbox.sql",
+      "version": null,
+      "name": "notifications_inbox",
+      "sha256": "2faf968f44778cbe8ec56afa9b1bc4709e4fd06f832abc161245ab47a90f3582",
+      "boundary_md5": "7d406dd64d6dcf1b8ad19e532e13c590"
+    },
+    {
+      "file": "paywall_gates.sql",
+      "version": null,
+      "name": "paywall_gates",
+      "sha256": "6255e02c3a0f5a4740362120a7874c566425f4d75d53e139b9cf04934564c2d7",
+      "boundary_md5": "6c3c0eed43485d82f599e6177913b08b"
+    },
+    {
+      "file": "paywall_on.sql",
+      "version": null,
+      "name": "paywall_on",
+      "sha256": "9ba5b834e81221cb08ccee2b8a3937b2720781b3133bf366acaaf3e576088a01",
+      "boundary_md5": "bec2a902d4c6846bea0a06fa174e9fce"
+    },
+    {
+      "file": "plusfresc_catalog.sql",
+      "version": null,
+      "name": "plusfresc_catalog",
+      "sha256": "abd6263e7d79335904d43b430def07ede6f1659350a863f3d92da9c751952aeb",
+      "boundary_md5": "44eb678501a09e0572ee9515fc93fa5c"
+    },
+    {
+      "file": "plusfresc_offers.sql",
+      "version": null,
+      "name": "plusfresc_offers",
+      "sha256": "5ae5f387550a6f28df199b501f511926f9b48532a6399caaad077de60ebf96d1",
+      "boundary_md5": "71a79b861fff4cf3910b566efc053e82"
+    },
+    {
+      "file": "profile_catalog_stores.sql",
+      "version": null,
+      "name": "profile_catalog_stores",
+      "sha256": "346cdfc64fea05692f6939006759e25905934845dac1fe1bfd8af1faf318fef5",
+      "boundary_md5": "8b098385dbb6cdce6223354b58f430f8"
+    },
+    {
+      "file": "profile_onboarding.sql",
+      "version": null,
+      "name": "profile_onboarding",
+      "sha256": "9b632f7c0b86ae3da46721850c888d20a839572038a2ffd33b5908bfd6f66a8f",
+      "boundary_md5": "498b1b19b1c83e211e8b2df3fc8bdb39"
+    },
+    {
+      "file": "profile_premium.sql",
+      "version": null,
+      "name": "profile_premium",
+      "sha256": "a8217be07d6576eea6edad09d70766e46b16e49395491d47361510b44ab56950",
+      "boundary_md5": "488efe47c0baab7f107d2d490be6e5f7"
+    },
+    {
+      "file": "profile_region.sql",
+      "version": null,
+      "name": "profile_region",
+      "sha256": "96649c4f93d810d329610c0e8ffdcbf5f2b33176e5bdfc884b329bab2aed334a",
+      "boundary_md5": "30318f0d027560cc9fc063f3899c1c09"
+    },
+    {
+      "file": "profile_verified.sql",
+      "version": null,
+      "name": "profile_verified",
+      "sha256": "5955c5cb80b600c7e2d6e8064e170f69130fdb638772aade2ac2fc2c6f8ce959",
+      "boundary_md5": "f53a63f730729680d907aaca24948f32"
+    },
+    {
+      "file": "purchases.sql",
+      "version": null,
+      "name": "purchases",
+      "sha256": "e17dcd994ca37d018ba773674cdd7309cfbc50bef461313b746b030aa78fdb0e",
+      "boundary_md5": "760e9817c04288613de64bf6002bb266"
+    },
+    {
+      "file": "push_tokens_lang.sql",
+      "version": null,
+      "name": "push_tokens_lang",
+      "sha256": "bdc3a7ec5f8fbcfad530cd6b33ea0cd790947922792915334bb2bf7bcd08a774",
+      "boundary_md5": "47b6c4dc501edf59ffb120cd33bf1a3e"
+    },
+    {
+      "file": "push_tokens.sql",
+      "version": null,
+      "name": "push_tokens",
+      "sha256": "78753d07fcc8c11fe82769abc91774d564b61c9c10484079881fe331fa2a720f",
+      "boundary_md5": "d15ccf79223260ebdd7fbb9b757fe4c7"
+    },
+    {
+      "file": "similar_products.sql",
+      "version": null,
+      "name": "similar_products",
+      "sha256": "98c2ffce11cbbeb1c2def311f8e0f0d8d0fb0c8bc22ca086024c2930da77a470",
+      "boundary_md5": "dff59135ad5e63a6de264bb9a279ce70"
+    },
+    {
+      "file": "sorli_catalog.sql",
+      "version": null,
+      "name": "sorli_catalog",
+      "sha256": "ab73e5b2fb1aab537592af465075b3cd2dc7fc690a4e155fbb4bd562bfb82b4e",
+      "boundary_md5": "8c606b83f736890d8d91969f084575e2"
+    },
+    {
+      "file": "text_length_limits.sql",
+      "version": null,
+      "name": "text_length_limits",
+      "sha256": "e41bbd9e6d2d637785206fe1b5993fe82c45730b74fc005ffa9a6bd52961e6b2",
+      "boundary_md5": "a6feff4da54d6054fcd0a16fe8ffa5f9"
+    },
+    {
+      "file": "username_available.sql",
+      "version": null,
+      "name": "username_available",
+      "sha256": "6d48556ecf322481dc3581e9f2d421756c1c21699bbd5a84f1d02420a9c695ea",
+      "boundary_md5": "d2858c26bfb5ae0e1097339cea77a037"
+    }
+  ],
+  "multiply_claimed_local_files": [],
+  "automatic_actions": [],
+  "warning": "Unmatched local does not mean unapplied; matching history does not prove current schema. Do not db push, migration repair, delete or rename files from this report."
+}

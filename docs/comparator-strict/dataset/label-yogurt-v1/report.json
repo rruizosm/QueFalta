@@ -1,0 +1,84 @@
+{
+  "version": "ce202-yogurt-source-review-v1",
+  "date": "2026-09-03",
+  "status": "incremental_yogurt_first_annotation_not_family_complete",
+  "source_reviewed_products": 212,
+  "reviewed_by_store": {
+    "carrefour": 22,
+    "consum": 118,
+    "mercadona": 72
+  },
+  "source_review_depth": {
+    "family_attributes_and_format": 198,
+    "scope_gate_only": 14
+  },
+  "first_annotations_this_batch": 133,
+  "newly_first_annotated_corpus_pairs": 133,
+  "previous_first_annotated_corpus_pairs": 928,
+  "overlapping_previous_annotations": [],
+  "union_first_annotated_corpus_pairs": 1061,
+  "corpus_pairs_pending_first_annotation": 4939,
+  "pending_by_family": {
+    "drinking_water": 2483,
+    "yogurt": 2456
+  },
+  "yogurt_products_remaining_without_source_review": 764,
+  "decision_counts": {
+    "abstain": 39,
+    "excluded_scope": 2,
+    "rejected": 92
+  },
+  "dimension_counts": {
+    "scope": {
+      "compatible": 35,
+      "incompatible": 2,
+      "unknown": 96
+    },
+    "identity": {
+      "compatible": 60,
+      "unknown": 73
+    },
+    "variants": {
+      "conflicting": 4,
+      "incompatible": 43,
+      "unknown": 86
+    },
+    "format": {
+      "compatible": 20,
+      "incompatible": 77,
+      "unknown": 36
+    }
+  },
+  "source_dispute_products": [
+    "carrefour:522715570",
+    "carrefour:647801823",
+    "carrefour:819115325",
+    "carrefour:852100300"
+  ],
+  "source_dispute_pairs": 15,
+  "known_format_products": 164,
+  "corpus_pairs_unchanged": 6000,
+  "corpus_queries_unchanged": 1200,
+  "original_origin_count_unchanged": 600,
+  "independent_pair_by_pair_reviews_this_batch": 0,
+  "independent_reviews": 0,
+  "gold_pairs": 0,
+  "supported_full_positive_equivalences": 0,
+  "eligible_savings": 0,
+  "CE201_complete": false,
+  "CE202_complete": false,
+  "CE203_complete": false,
+  "G2_pass": false,
+  "remote_project_calls": 0,
+  "retailer_calls": 0,
+  "new_integrations": 0,
+  "commercial_ttl_hours": null,
+  "source_manifest_sha256": "15da91ad7ae616199da7a50b53dba2abca4e3c43c1420a4a413b23ad02b9abd7",
+  "specs_sha256": "2edf741a2ccd01207b37e5246bc7018a28e4caf7b35e9cf4fa7a9ad871d3a28c",
+  "hashes": {
+    "products": "7ba7e536fcf2ff274785072d444d184bdeb0fab33ed979e6f4202dc72c340a45",
+    "annotations": "cd12fdbf62a90474709c508fd78ce6f088dfa2da763ccf04aa40caa7783463a5",
+    "index": "337c783863223dab49116bfd244ecd205ba716de883c078ab17ff877918a0894"
+  },
+  "limitation": "Editorial source review and deterministic pair composition; not individual human review, gold, matcher evaluation or general-purpose extractor. Unknowns concern this projection. Only pairs with both reviewed observations are counted."
+}

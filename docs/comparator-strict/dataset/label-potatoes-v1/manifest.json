@@ -1,0 +1,54 @@
+{
+  "version": "ce202-potato-source-review-v1",
+  "corpus_manifest_sha256": "15da91ad7ae616199da7a50b53dba2abca4e3c43c1420a4a413b23ad02b9abd7",
+  "code_and_preexisting_evidence": [
+    {
+      "path": "scripts/lib/comparator-strict-potato-review-specs.mjs",
+      "sha256": "586e186b76d3b48bcb9f71a14fc886beeae002ab8e9d9ed19861db804d6c68f0"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-potato-review.mjs",
+      "sha256": "6e6bc0784325cb2142b9df58dcdd8f98b0254b99c448049b7485ad42e11c7afc"
+    },
+    {
+      "path": "scripts/prepare-comparator-strict-potato-review.mjs",
+      "sha256": "05b4be1aa1b785efb1f10870e8ff7bfeab21015c7cf8975075d0deb95ee8cbba"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-corpus-labels.mjs",
+      "sha256": "dac2bb3d1c072418be97a3e40e47c1ee9ee2e9b46269d3df1005c1686ad56431"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-corpus.mjs",
+      "sha256": "69dca18c12f1c161d0d726c0d191b92728d4225c16a8b2f1fb17b60a3e5af232"
+    },
+    {
+      "path": "scripts/lib/comparator-strict-labels.mjs",
+      "sha256": "6ec33dd1564f4f35e33dadc4154b0dee85a7c1283be6cec5d9b253cbdb2182cd"
+    },
+    {
+      "path": "docs/comparator-strict/dataset/label-corpus-v1/editorial.json",
+      "sha256": "7c4a65fceae6c1282e388b3033745f4492a87aeff724f41cd724a18bd94cfaad"
+    },
+    {
+      "path": "docs/comparator-strict/CE-202-labeling-guide.md",
+      "sha256": "e9f9197bed6f4c655678e47d428ce9e35aad203d947c8c69736891c8327393c2"
+    },
+    {
+      "path": "docs/comparator-strict/CE-202-corpus-labeling-guide.md",
+      "sha256": "315e91c20061cf1a850e4a622ed1dfbeefb6a0a608c67393338b5673a1069dbb"
+    }
+  ],
+  "hashes": {
+    "products": "a4ade71563317ecc7115935cfcf4504f35f43f5aa58c394308453844564fdc04",
+    "annotations": "99e6777ca8e404dbc4c30b9aebfbb39a9ac2522d6ec24460399f0f4f8f867d90",
+    "index": "2fccdcec02e3c80f7070582d5c790cdd7589b8c1e76d69e5c24e1a3112b60332"
+  },
+  "report_sha256": "4b0f78fd366f96dab9aa241a33e8474e750c0211b82414b3687919a70f2f616e",
+  "materialization": "Product source reviews and compact pair index stored. Full annotations reproducible by CLI and pinned by hash. Original CE-200 and v1 drafts/editorial annotations remain unchanged.",
+  "CE201_complete": false,
+  "CE202_complete": false,
+  "CE203_complete": false,
+  "G2_pass": false
+}
+

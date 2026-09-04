@@ -1,0 +1,15 @@
+{
+  "authority": "CE-BU-002",
+  "authority_file": "docs/comparator-strict/CE-BU-002-corpus-authority.md",
+  "runtime_file": "scripts/lib/comparator-strict-guard.mjs",
+  "historical_archive": "docs/comparator-strict/fixtures/f1-guard-20260903.mjs.txt",
+  "historical_sha256": "5689b11495c22cad620e035fb31553b7983f40a1a15fc8fa685ecaa624016991",
+  "current_sha256": "713a8c489390bec0f34e96c2cb31f8e45402b48172de9ea8babc6e8c09d444f9",
+  "changes": [
+    "accumulated SQL-time ceiling removed; counter retained",
+    "safe integer overflow check preserved without a time ceiling"
+  ],
+  "historical_F1_receipts_modified": false,
+  "new_corpus_reader": "scripts/lib/comparator-strict-acquisition.mjs",
+  "new_migration": "20260903101356_comparator_strict_ce200_corpus_authority.sql"
+}

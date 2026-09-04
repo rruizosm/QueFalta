@@ -21,6 +21,13 @@ const weeklySql = await readFile(
   new URL('../../supabase/migrations/20260904175757_lidl_weekly_full_fleet.sql', import.meta.url),
   'utf8',
 );
+const deleteGrantSql = await readFile(
+  new URL(
+    '../../supabase/migrations/20260904185536_lidl_catalog_sync_queue_delete_grant.sql',
+    import.meta.url,
+  ),
+  'utf8',
+);
 const orchestrator = await readFile(new URL('../sync-lidl-fleet.mjs', import.meta.url), 'utf8');
 const fleetWorkflow = await readFile(
   new URL('../../.github/workflows/sync-lidl.yml', import.meta.url),
@@ -75,6 +82,26 @@ test('las RPC de escritura de cola son exclusivas de service_role', () => {
   assert.match(weeklySql, /revoke all on function public\.schedule_all_lidl_catalog_sync_jobs\(\)[\s\S]*from public, anon, authenticated/i);
   assert.match(weeklySql, /grant execute on function public\.schedule_all_lidl_catalog_sync_jobs\(\)[\s\S]*to service_role/i);
   assert.match(weeklySql, /grant execute on function public\.claim_lidl_catalog_sync_jobs\(text,integer,integer,integer\)[\s\S]*to service_role/i);
+});
+
+test('service_role dispone de todas las operaciones usadas por las RPC SECURITY INVOKER', () => {
+  assert.match(
+    migration,
+    /grant select, insert, update on table private\.lidl_catalog_sync_queue\s+to service_role/i,
+  );
+  assert.match(
+    deleteGrantSql,
+    /grant delete on table private\.lidl_catalog_sync_queue\s+to service_role/i,
+  );
+  assert.match(
+    deleteGrantSql,
+    /revoke delete on table private\.lidl_catalog_sync_queue\s+from public, anon, authenticated/i,
+  );
+  assert.match(
+    weeklySql,
+    /create or replace function public\.schedule_all_lidl_catalog_sync_jobs\(\)[\s\S]*security invoker/i,
+  );
+  assert.doesNotMatch(deleteGrantSql, /security definer/i);
 });
 
 test('el orquestador reclama una tienda cada vez y delega en el sync aislado por store_id', () => {

@@ -1,6 +1,6 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
-## Corrección del primer run de `Sync Lidl catalog fleet` (2026-09-04)
+## Correcciones de los primeros runs de `Sync Lidl catalog fleet` (2026-09-04)
 
 - El run manual `33905985690` falló en el job `schedule`, antes de ejecutar
   ninguna RPC: `const URL` ocultaba al constructor global `URL` y
@@ -13,6 +13,13 @@
   arranca un proceso Node real en `--schedule-only`, simula `fetch` sin red y
   valida endpoint, POST, bearer y respuesta. La comprobación anterior solo
   inspeccionaba patrones del fichero y no ejecutaba su inicialización.
+- El segundo run manual (`33907980290`) superó ese arranque y falló en la RPC
+  con `42501`: a `service_role` le faltaba el permiso `DELETE` que necesita la
+  función `SECURITY INVOKER` para retirar tiendas no seleccionables. Se aplicó
+  `20260904185536_lidl_catalog_sync_queue_delete_grant.sql`, sin ampliar acceso
+  a `anon` ni `authenticated`. La prueba productiva como `service_role`
+  programó 721 tiendas dentro de una transacción; el `ROLLBACK` dejó la cola en
+  cero.
 - El primer run del directorio (`33905318554`) falló por el secreto ausente;
   `LIDL_STORES_API_KEY` ya está configurado y el segundo (`33905697909`) pasó.
   El barrido completo no se relanza automáticamente con esta corrección.
@@ -38,8 +45,9 @@
 - Verificación productiva con `ROLLBACK`: cambiar la tienda de un perfil no
   encola nada; el planificador genera exactamente 721 filas; claim, cierre y
   retry funcionan. El rollback dejó la cola en cero. El workflow está publicado
-  y `LIDL_SYNC_ENABLED=true` está activo. El primer dispatch manual falló antes
-  de llamar al planificador por el error de arranque descrito arriba.
+  y `LIDL_SYNC_ENABLED=true` está activo. Los dos primeros dispatch manuales
+  fallaron antes de encolar por los errores de arranque y permisos ya corregidos
+  arriba.
   TypeScript, ESLint, YAML, `git diff --check`, advisors y la suite completa
   (**623/623**) pasan.
 - Los tres secretos GitHub necesarios (`SUPABASE_URL`,

@@ -100,6 +100,7 @@ export default function CreateRecipeModal({ visible, onClose, onCreated }: Props
         controller.signal,
         16,
         true,
+        profile?.lidlStoreId ?? null,
       )
         .then((products) => setResults(products))
         .catch(() => {
@@ -114,7 +115,7 @@ export default function CreateRecipeModal({ visible, onClose, onCreated }: Props
       clearTimeout(timer);
       controller.abort();
     };
-  }, [visible, query, stores, profile?.region, profile?.postalCode]);
+  }, [visible, query, stores, profile?.region, profile?.postalCode, profile?.lidlStoreId]);
 
   const pickImage = async () => {
     try {

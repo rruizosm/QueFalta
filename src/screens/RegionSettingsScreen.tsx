@@ -4,7 +4,7 @@
  *  activa deja de estar disponible, el auto-salto de CatalogScreen la corrige.
  *  Guardado optimista con revert, como CatalogStoresScreen. Solo se guardan
  *  estados completos (CP válido o "Toda España"); un CP a medias no toca nada. */
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   View, Text, ScrollView,
   StyleSheet, StatusBar,
@@ -37,19 +37,32 @@ export default function RegionSettingsScreen() {
 
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
+  const lidlStoreId = profile?.lidlStoreId ?? null;
 
   // El picker mantiene el CP en edición en estado local; al revertir un fallo
   // de red se re-monta (key) para que vuelva a mostrar lo realmente guardado.
   const [pickerKey, setPickerKey] = useState(0);
+  const saveSequence = useRef(0);
+  const saveQueue = useRef<Promise<void>>(Promise.resolve());
 
   const handleChange = async (next: RegionSelection) => {
     if (!next.region) return; // CP a medias o inválido: no se guarda nada aún
-    const prev = { region, postalCode };
+    const sequence = ++saveSequence.current;
+    const prev = { region, postalCode, lidlStoreId };
     // Optimista: el catálogo se re-filtra al instante. (El háptico lo pone el picker.)
-    applyProfile({ region: next.region, postalCode: next.postalCode });
+    applyProfile({ region: next.region, postalCode: next.postalCode, lidlStoreId: next.lidlStoreId });
     try {
-      await updateProfile(userId, { region: next.region, postalCode: next.postalCode });
+      const save = saveQueue.current
+        .catch(() => undefined)
+        .then(() => updateProfile(userId, {
+          region: next.region,
+          postalCode: next.postalCode,
+          lidlStoreId: next.lidlStoreId,
+        }));
+      saveQueue.current = save;
+      await save;
     } catch {
+      if (saveSequence.current !== sequence) return;
       applyProfile(prev); // revierte si falla la red
       setPickerKey((k) => k + 1);
       toast.show(t('onboarding.saveError'), 'error');
@@ -64,7 +77,7 @@ export default function RegionSettingsScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad, paddingTop: glassInset ? glassInset + 12 : 6 }]}>
         <Text style={styles.hint}>{t('region.hint')}</Text>
-        <RegionPicker key={pickerKey} region={region} postalCode={postalCode} onChange={handleChange} />
+        <RegionPicker key={pickerKey} region={region} postalCode={postalCode} lidlStoreId={lidlStoreId} onChange={handleChange} />
       </ScrollView>
     </View>
   );

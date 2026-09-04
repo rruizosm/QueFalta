@@ -44,6 +44,10 @@ test('distingue segunda unidad, multiunidad y Club sin perder facetas combinadas
     [...offerTypesOf({ promoName: 'Lote a precio fijo', prevPrice: null })],
     ['multibuy'],
   );
+  assert.deepEqual(
+    [...offerTypesOf({ promoName: 'Lidl Plus', prevPrice: null })],
+    ['club'],
+  );
 });
 
 test('agrupa etiquetas genéricas como otras promociones', () => {
@@ -57,4 +61,5 @@ test('solo ofrece facetas útiles para cada supermercado', () => {
   assert.deepEqual([...offerTypesForStore('hiperdino')], ['discount']);
   assert.equal(offerTypesForStore('alcampo').includes('club'), true);
   assert.equal(offerTypesForStore('plusfresc').includes('multibuy'), true);
+  assert.deepEqual([...offerTypesForStore('lidl')], ['discount', 'second_unit', 'club', 'other']);
 });

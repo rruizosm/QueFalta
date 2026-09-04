@@ -33,7 +33,7 @@ const PRICE_CHANGE_TABLE: Record<CatalogStore, string> = {
   bonarea: 'bonarea_products', consum: 'consum_products', dia: 'dia_products', sorli: 'sorli_products',
   eroski: 'eroski_products', caprabo: 'caprabo_products', condis: 'condis_products',
   ametller: 'ametller_products', aldi: 'aldi_products', hiperdino: 'hiperdino_products',
-  lidl: 'lidl_products',
+  lidl: 'lidl_product_stores',
   alcampo: 'alcampo_products', plusfresc: 'plusfresc_products', gadis: 'gadis_products', froiz: 'froiz_products', ahorramas: 'ahorramas_products',
 };
 
@@ -43,7 +43,9 @@ export async function fetchProductPriceChange(
   store: CatalogStore,
   productId: string,
   postalCode: string | null = null,
+  lidlStoreId: string | null = null,
 ): Promise<ProductPriceChange | null> {
+  if (store === 'lidl' && !lidlStoreId) return null;
   const locationId = locationForPriceHistory(store, postalCode);
   if (locationId && (store === 'consum' || store === 'plusfresc')) {
     const { data, error } = await supabase
@@ -64,12 +66,13 @@ export async function fetchProductPriceChange(
     }
     return { previousPrice, direction: delta < 0 ? 'down' : 'up' };
   }
-  const { data, error } = await supabase
+  let priceChangeQuery = supabase
     .from(PRICE_CHANGE_TABLE[store])
     .select('prev_unit_price, price_delta_pct, price_changed_at')
     .eq('id', productId)
-    .gte('price_changed_at', weekAgoISO())
-    .maybeSingle();
+    .gte('price_changed_at', weekAgoISO());
+  if (store === 'lidl') priceChangeQuery = priceChangeQuery.eq('store_id', lidlStoreId!);
+  const { data, error } = await priceChangeQuery.maybeSingle();
   if (error || !data) return null;
   const previousPrice = Number(data.prev_unit_price);
   const delta = Number(data.price_delta_pct);
@@ -240,8 +243,27 @@ async function catalogFeedSearchPage(
     priceMin?: number | null;
     priceMax?: number | null;
     order?: CatalogSearchOrder;
+    lidlStoreId?: string | null;
   },
 ): Promise<any[]> {
+  if (store === 'lidl') {
+    if (!options.lidlStoreId) return [];
+    const { data, error } = await supabase.rpc('search_lidl_store_feed_products', {
+      p_query: query.trim(),
+      p_store_id: options.lidlStoreId,
+      p_feed: feed,
+      p_since: weekAgoISO(),
+      p_today: todayLocalISO(),
+      p_categories: options.categories?.length ? options.categories : null,
+      p_price_min: options.priceMin ?? null,
+      p_price_max: options.priceMax ?? null,
+      p_order: options.order ?? 'relevance',
+      p_limit: options.limit,
+      p_offset: options.offset,
+    }).select(columns);
+    if (error) throw error;
+    return (data ?? []) as any[];
+  }
   const normalizedRegion = options.region == null || options.region === REGION_ALL
     ? null
     : REGION_MERCADONA_NAME[options.region] ?? null;
@@ -1661,6 +1683,7 @@ export async function fetchAldiProductsByCategory(categoryId: string, limit = 60
 // marca, formato, precio por unidad, disponibilidad y promociones Lidl Plus.
 export interface LidlProduct {
   id: string;
+  storeId: string;
   displayName: string;
   brand: string | null;
   packaging: string | null;
@@ -1670,44 +1693,84 @@ export interface LidlProduct {
   pricePerUnit: string | null;
   categoryName: string | null;
   promoName: string | null;
+  promoText: string | null;
+  promoBasePrice: number | null;
+  promoStart: string | null;
+  promoEnd: string | null;
 }
 export interface LidlCategory {
   id: string;
   name: string;
   children: { id: string; name: string }[];
 }
-const mapLidl = (r: any): LidlProduct => ({
-  id: r.id,
-  displayName: r.display_name,
-  brand: r.brand ?? null,
-  packaging: r.packaging ?? null,
-  thumbnail: r.thumbnail ?? null,
-  unitPrice: r.unit_price != null ? Number(r.unit_price) : null,
-  priceFormat: r.price_format ?? null,
-  pricePerUnit: ppuLabel(r.price_per_unit, r.price_per_unit_unit),
-  categoryName: r.category_name ?? null,
-  promoName: r.promo_name ?? null,
-});
-const LIDL_COLS = 'id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name';
+const mapLidl = (r: any): LidlProduct => {
+  const today = todayLocalISO();
+  const promoIsLive = r.promo_name != null
+    && (r.promo_start == null || String(r.promo_start) <= today)
+    && (r.promo_end == null || String(r.promo_end) >= today);
+  const regularPrice = r.unit_price != null ? Number(r.unit_price) : null;
+  const directPromoPrice = promoIsLive && r.promo_price != null && Number(r.promo_price) > 0
+    ? Number(r.promo_price)
+    : null;
+  const unitPrice = directPromoPrice ?? regularPrice;
+  const regularPricePerUnit = r.price_per_unit != null ? Number(r.price_per_unit) : null;
+  const pricePerUnit = directPromoPrice != null && regularPrice != null && regularPrice > 0 && regularPricePerUnit != null
+    ? regularPricePerUnit * directPromoPrice / regularPrice
+    : regularPricePerUnit;
+  return {
+    id: r.id,
+    storeId: String(r.store_id),
+    displayName: r.display_name,
+    brand: r.brand ?? null,
+    packaging: r.packaging ?? null,
+    thumbnail: r.thumbnail ?? null,
+    unitPrice,
+    priceFormat: directPromoPrice != null
+      ? `${directPromoPrice.toFixed(2).replace('.', ',')} €`
+      : r.price_format ?? null,
+    pricePerUnit: ppuLabel(pricePerUnit, r.price_per_unit_unit),
+    categoryName: r.category_name ?? null,
+    promoName: promoIsLive ? r.promo_name ?? null : null,
+    promoText: promoIsLive ? r.promo_text ?? null : null,
+    promoBasePrice: promoIsLive && r.promo_base_price != null ? Number(r.promo_base_price) : null,
+    promoStart: promoIsLive ? r.promo_start ?? null : null,
+    promoEnd: promoIsLive ? r.promo_end ?? null : null,
+  };
+};
+const LIDL_COLS = 'store_id, id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name, promo_text, promo_price, promo_base_price, promo_start, promo_end';
 
-export async function searchLidlProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance'): Promise<LidlProduct[]> {
-  const rows = await catalogSearchPage('search_lidl_products', LIDL_COLS, query, { limit, offset, signal, order });
-  return rows.map(mapLidl);
+export async function searchLidlProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance', storeId: string | null = null): Promise<LidlProduct[]> {
+  const normalized = query.trim();
+  if (!storeId || normalized.length < 2) return [];
+  let request: any = supabase.rpc('search_lidl_store_products', {
+    p_query: normalized,
+    p_store_id: storeId,
+    p_order: order,
+    p_limit: limit,
+    p_offset: offset,
+  }).select(LIDL_COLS);
+  request = abortable(request, signal);
+  const { data, error } = await request;
+  if (error) throw error;
+  return (data ?? []).map(mapLidl);
 }
 
-export async function browseLidlProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending = false): Promise<BrowsePage<LidlProduct>> {
-  const { rows, nextCursor } = await keysetPage('lidl_products', LIDL_COLS, 'display_name_norm', cursor, limit, undefined, descending, signal);
+export async function browseLidlProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending: BrowseOrder = false, storeId: string | null = null): Promise<BrowsePage<LidlProduct>> {
+  if (!storeId) return { items: [], nextCursor: null };
+  const { rows, nextCursor } = await keysetPage('lidl_product_stores', LIDL_COLS, 'display_name_norm', cursor, limit, (q) => q.eq('store_id', storeId), descending, signal);
   return { items: rows.map(mapLidl), nextCursor };
 }
 
-export async function fetchLidlProduct(id: string): Promise<LidlProduct | null> {
-  const { data, error } = await supabase.from('lidl_products').select(LIDL_COLS).eq('id', id).maybeSingle();
+export async function fetchLidlProduct(id: string, storeId: string | null = null): Promise<LidlProduct | null> {
+  if (!storeId) return null;
+  const { data, error } = await supabase.from('lidl_product_stores').select(LIDL_COLS).eq('store_id', storeId).eq('id', id).maybeSingle();
   if (error) throw error;
   return data ? mapLidl(data) : null;
 }
 
-export async function fetchLidlCategoryTree(signal?: AbortSignal): Promise<LidlCategory[]> {
-  const { data, error } = await abortable(supabase.from('lidl_categories').select('id, name, parent_id, product_count').eq('published', true).order('name'), signal);
+export async function fetchLidlCategoryTree(storeId: string | null, signal?: AbortSignal): Promise<LidlCategory[]> {
+  if (!storeId) return [];
+  const { data, error } = await abortable(supabase.from('lidl_store_category_catalog').select('id, name, parent_id, product_count').eq('store_id', storeId).eq('published', true).order('name'), signal);
   if (error) throw error;
   const rows = data ?? [];
   return rows
@@ -1722,8 +1785,9 @@ export async function fetchLidlCategoryTree(signal?: AbortSignal): Promise<LidlC
     });
 }
 
-export async function fetchLidlProductsByCategory(categoryId: string, limit = 600): Promise<LidlProduct[]> {
-  const { data, error } = await supabase.from('lidl_products').select(LIDL_COLS).eq('published', true).contains('category_ids', [categoryId]).order('display_name').limit(limit);
+export async function fetchLidlProductsByCategory(categoryId: string, storeId: string | null, limit = 600): Promise<LidlProduct[]> {
+  if (!storeId) return [];
+  const { data, error } = await supabase.from('lidl_product_stores').select(LIDL_COLS).eq('store_id', storeId).eq('published', true).contains('category_ids', [categoryId]).order('display_name').limit(limit);
   if (error) throw error;
   return (data ?? []).map(mapLidl);
 }
@@ -2425,7 +2489,7 @@ const MIRROR_QUERY: Record<CatalogStore, { table: string; cols: string; toUI: (r
   condis:    { table: 'condis_products',    cols: CONDIS_COLS,    toUI: (r) => condisToUI(mapCondis(r)) },
   ametller:  { table: 'ametller_products',  cols: AMETLLER_COLS,  toUI: (r) => ametllerToUI(mapAmetller(r)) },
   aldi:      { table: 'aldi_products',       cols: ALDI_COLS,      toUI: (r) => aldiToUI(mapAldi(r)) },
-  lidl:      { table: 'lidl_products',       cols: LIDL_COLS,      toUI: (r) => lidlToUI(mapLidl(r)) },
+  lidl:      { table: 'lidl_product_stores', cols: LIDL_COLS,      toUI: (r) => lidlToUI(mapLidl(r)) },
   hiperdino: { table: 'hiperdino_products',  cols: HIPERDINO_COLS, toUI: (r) => hiperdinoToUI(mapHiperdino(r)) },
   alcampo:   { table: 'alcampo_products',    cols: ALCAMPO_COLS,   toUI: (r) => alcampoToUI(mapAlcampo(r)) },
   plusfresc: { table: 'plusfresc_products',  cols: PLUSFRESC_COLS, toUI: (r) => plusfrescToUI(mapPlusfresc(r)) },
@@ -2437,11 +2501,12 @@ const MIRROR_QUERY: Record<CatalogStore, { table: string; cols: string; toUI: (r
 /** Aplica la disponibilidad que cada espejo conoce. Los catálogos sin columnas
  * regionales se mantienen tal cual; su visibilidad global se resuelve en UI por
  * STORE_REGIONS. */
-function filterMirrorLocation(query: any, store: CatalogStore, region: RegionValue | null, postalCode: string | null): any {
+function filterMirrorLocation(query: any, store: CatalogStore, region: RegionValue | null, postalCode: string | null, lidlStoreId: string | null = null): any {
   if (store === 'mercadona' || store === 'carrefour' || store === 'consum' || store === 'dia') {
     return filterRegionalAvailability(query, region);
   }
   if (store === 'plusfresc') return filterCenterAvailability(query, plusfrescCenterFromPostalCode(postalCode));
+  if (store === 'lidl') return lidlStoreId ? query.eq('store_id', lidlStoreId) : query.eq('store_id', '__missing__');
   return query;
 }
 
@@ -2535,6 +2600,7 @@ export async function fetchWeeklyNewProducts(
   limit = 50,
   offset = 0,
   filters?: NewProductFilters,
+  lidlStoreId: string | null = null,
 ): Promise<WeeklyNewProductsPage> {
   const search = filters?.search?.trim() ?? '';
   if (store === 'mercadona') {
@@ -2586,6 +2652,7 @@ export async function fetchWeeklyNewProducts(
       priceMin: filters?.priceMin,
       priceMax: filters?.priceMax,
       order: newProductSearchOrder(filters),
+      lidlStoreId,
     });
     return {
       items: rows.map((row) => mirrorToUIAtLocation(store, row, region, postalCode)),
@@ -2595,7 +2662,7 @@ export async function fetchWeeklyNewProducts(
   let newProductsQuery = filterMirrorLocation(supabase
     .from(m.table)
     .select(m.cols, { count: 'exact' })
-    .eq('published', true), store, region, postalCode);
+    .eq('published', true), store, region, postalCode, lidlStoreId);
   // Gadisline y Froiz publican una propiedad explícita «Nuevo». La usamos
   // además de la fecha de primera aparición, así el primer sync no oculta
   // novedades reales.
@@ -2643,6 +2710,7 @@ export async function fetchWeeklyNewProducts(
       store,
       region,
       postalCode,
+      lidlStoreId,
     );
     if (publishedCountError) throw publishedCountError;
     if (publishedCount != null && ((count ?? 0) / publishedCount) >= NEW_INITIAL_FILL_CATALOG_RATIO) {
@@ -2825,6 +2893,7 @@ export async function fetchPriceChanges(
   limit = 50,
   offset = 0,
   pricePerUnitSort: 'asc' | 'desc' | null = null,
+  lidlStoreId: string | null = null,
 ): Promise<PriceChangesPage> {
   const locationId = locationForPriceHistory(store, postalCode);
   if (locationId && (store === 'consum' || store === 'plusfresc')) {
@@ -2838,7 +2907,7 @@ export async function fetchPriceChanges(
     .from(m.table)
     .select(`${m.cols}, prev_unit_price, price_delta_pct`)
     .eq('published', true)
-    .gte('price_changed_at', weekAgoISO()), store, region, postalCode);
+    .gte('price_changed_at', weekAgoISO()), store, region, postalCode, lidlStoreId);
   q = down ? q.lt('price_delta_pct', 0) : q.gt('price_delta_pct', 0);
   const orderedQuery = pricePerUnitSort
     ? q.order('price_per_unit', { ascending: pricePerUnitSort === 'asc', nullsFirst: false })
@@ -2871,7 +2940,7 @@ export async function fetchPriceChanges(
  *  esta lista, así que añadir un súper aquí + su fetch lo estrena en la UI. */
 export const OFFER_STORES: CatalogStore[] = [
   'carrefour', 'esclat', 'consum', 'dia', 'sorli', 'eroski', 'caprabo',
-  'condis', 'ametller', 'aldi', 'hiperdino', 'alcampo', 'plusfresc', 'gadis', 'ahorramas',
+  'condis', 'ametller', 'aldi', 'lidl', 'hiperdino', 'alcampo', 'plusfresc', 'gadis', 'ahorramas',
 ];
 
 type NormalizedOfferStore = 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'alcampo' | 'gadis' | 'ahorramas';
@@ -2966,13 +3035,13 @@ const offerBrowseOrder = (filters: OfferFilters | undefined): BrowseOrder => {
 // Condiciones comunes de OfferFilters sobre una query de espejo (todas se
 // AND-combinan con el filtro de oferta viva y el cursor). Con orden por precio
 // se excluyen filas sin precio: el cursor keyset no sabe compararlas.
-function applyOfferFilters(q: any, f: OfferFilters | undefined, normCol: string) {
+function applyOfferFilters(q: any, f: OfferFilters | undefined, normCol: string, priceCol = 'unit_price') {
   if (!f) return q;
   if (f.search && f.search.trim().length >= 2) q = filterByNameWords(q, f.search, normCol);
   if (f.categories && f.categories.length > 0) q = q.in('category_name', f.categories);
-  if (f.priceMin != null && f.priceMin > 0) q = q.gt('unit_price', f.priceMin);
-  if (f.priceMax != null) q = q.lte('unit_price', f.priceMax);
-  if (f.sort) q = q.not('unit_price', 'is', null);
+  if (f.priceMin != null && f.priceMin > 0) q = q.gt(priceCol, f.priceMin);
+  if (f.priceMax != null) q = q.lte(priceCol, f.priceMax);
+  if (f.sort) q = q.not(priceCol, 'is', null);
   return q;
 }
 
@@ -3001,6 +3070,7 @@ export async function fetchOfferCategories(
   store: CatalogStore,
   region: RegionValue | null,
   postalCode: string | null,
+  lidlStoreId: string | null = null,
 ): Promise<string[]> {
   try {
     const buildQuery = () => {
@@ -3059,6 +3129,15 @@ export async function fetchOfferCategories(
           .eq('published', true)
           .not('category_name', 'is', null)
           .not('promo_base_price', 'is', null)
+          .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`);
+      } else if (store === 'lidl') {
+        if (!lidlStoreId) return null;
+        q = supabase.from('lidl_product_stores').select('id, category_name')
+          .eq('store_id', lidlStoreId)
+          .eq('published', true)
+          .not('category_name', 'is', null)
+          .not('promo_name', 'is', null)
+          .or(`promo_start.is.null,promo_start.lte.${todayLocalISO()}`)
           .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`);
       } else if (store === 'gadis') {
         q = supabase.from('gadis_products').select('id, category_name')
@@ -3404,6 +3483,49 @@ export async function fetchAldiOffers(
   return { items, nextCursor };
 }
 
+/** Lidl separa el catálogo de tienda de su feed público de promociones. El
+ * sync solo enlaza una oferta tras confirmar productIds contra productCodes;
+ * aquí se muestran las filas vigentes ya normalizadas. */
+export async function fetchLidlOffers(
+  cursor: BrowseCursor | null,
+  limit = 50,
+  filters?: OfferFilters,
+  storeId: string | null = null,
+): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
+  if (!storeId) return { items: [], nextCursor: null };
+  const { rows, nextCursor } = await keysetPage(
+    'lidl_product_stores',
+    LIDL_COLS,
+    filters?.pricePerUnitSort ? 'price_per_unit' : filters?.sort ? 'offer_unit_price' : 'display_name_norm',
+    cursor,
+    limit,
+    (q) => applyOfferFilters(
+      q.eq('store_id', storeId)
+        .not('promo_name', 'is', null)
+        .or(`promo_start.is.null,promo_start.lte.${todayLocalISO()}`)
+        .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`),
+      filters,
+      'display_name_norm',
+      'offer_unit_price',
+    ),
+    filters?.pricePerUnitSort ? offerBrowseOrder(filters) : filters?.sort === 'desc',
+  );
+  const items = rows.flatMap((row: any) => {
+    const product = mapLidl(row);
+    if (!product.promoName) return [];
+    const currentPrice = product.unitPrice;
+    return [{
+      product: lidlToUI(product),
+      promoName: product.promoName,
+      promoEnd: product.promoEnd,
+      prevPrice: product.promoBasePrice != null && currentPrice != null && product.promoBasePrice > currentPrice
+        ? product.promoBasePrice
+        : null,
+    }];
+  });
+  return { items, nextCursor };
+}
+
 function plusfrescOfferAt(row: any, postalCode: string | null) {
   const center = plusfrescOfferCenter(postalCode);
   const regional = center && row.center_prices && typeof row.center_prices === 'object'
@@ -3486,6 +3608,7 @@ const offerSearchColumns = (store: CatalogStore): string => {
   if (store === 'sorli') return SORLI_COLS;
   if (store === 'hiperdino') return HIPERDINO_OFFER_COLS;
   if (store === 'aldi') return ALDI_OFFER_COLS;
+  if (store === 'lidl') return LIDL_COLS;
   if (store === 'plusfresc') return PLUSFRESC_OFFER_COLS;
   if (isNormalizedOfferStore(store)) return NORMALIZED_OFFER_CONFIG[store].columns;
   return MIRROR_QUERY[store].cols;
@@ -3585,6 +3708,18 @@ function mapOfferSearchRows(
         }]
       : []
   ));
+  if (store === 'lidl') return rows.flatMap((row) => {
+    const product = mapLidl(row);
+    if (!product.promoName) return [];
+    return [{
+      product: lidlToUI(product),
+      promoName: product.promoName,
+      promoEnd: product.promoEnd,
+      prevPrice: product.promoBasePrice != null && product.unitPrice != null && product.promoBasePrice > product.unitPrice
+        ? product.promoBasePrice
+        : null,
+    }];
+  });
   if (store === 'plusfresc') {
     const ca = getLanguage() === 'ca';
     return rows.flatMap((row) => {
@@ -3625,6 +3760,7 @@ async function fetchStoreOfferSearchPage(
   postalCode: string | null,
   limit: number,
   filters: OfferFilters,
+  lidlStoreId: string | null,
 ): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
   const selectedTypes = filters.offerTypes?.length ? new Set(filters.offerTypes) : null;
   const scanLimit = Math.max(limit, 100);
@@ -3655,6 +3791,7 @@ async function fetchStoreOfferSearchPage(
         priceMin: filters.priceMin,
         priceMax: filters.priceMax,
         order,
+        lidlStoreId,
       },
     );
     const mapped = mapOfferSearchRows(store, rows, region, postalCode);
@@ -3682,6 +3819,7 @@ function fetchStoreOfferPage(
   postalCode: string | null,
   limit = 50,
   filters?: OfferFilters,
+  lidlStoreId: string | null = null,
 ): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
   if (store === 'esclat') return fetchBonpreuOffers(cursor, limit, filters);
   if (store === 'consum') return fetchConsumOffers(cursor, region, postalCode, limit, filters);
@@ -3690,6 +3828,7 @@ function fetchStoreOfferPage(
   if (store === 'plusfresc') return fetchPlusfrescOffers(cursor, postalCode, limit, filters);
   if (store === 'hiperdino') return fetchHiperdinoOffers(cursor, limit, filters);
   if (store === 'aldi') return fetchAldiOffers(cursor, limit, filters);
+  if (store === 'lidl') return fetchLidlOffers(cursor, limit, filters, lidlStoreId);
   if (isNormalizedOfferStore(store)) return fetchNormalizedRetailerOffers(store, cursor, limit, filters);
   return fetchCarrefourOffers(cursor, region, limit, filters);
 }
@@ -3705,13 +3844,14 @@ export async function fetchStoreOffers(
   postalCode: string | null,
   limit = 50,
   filters?: OfferFilters,
+  lidlStoreId: string | null = null,
 ): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
   if (filters?.search && filters.search.trim().length >= 2) {
-    return fetchStoreOfferSearchPage(store, cursor, region, postalCode, limit, filters);
+    return fetchStoreOfferSearchPage(store, cursor, region, postalCode, limit, filters, lidlStoreId);
   }
   const selectedTypes = filters?.offerTypes?.length ? new Set(filters.offerTypes) : null;
   if (!selectedTypes) {
-    return fetchStoreOfferPage(store, cursor, region, postalCode, limit, filters);
+    return fetchStoreOfferPage(store, cursor, region, postalCode, limit, filters, lidlStoreId);
   }
 
   const serverFilters: OfferFilters = { ...filters, offerTypes: undefined };
@@ -3727,6 +3867,7 @@ export async function fetchStoreOffers(
       postalCode,
       scanLimit,
       serverFilters,
+      lidlStoreId,
     );
     items.push(...page.items.filter((offer) =>
       offerTypesOf(offer).some((type) => selectedTypes.has(type)),

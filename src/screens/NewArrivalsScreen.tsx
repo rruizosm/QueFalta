@@ -66,14 +66,16 @@ export default function NewArrivalsScreen() {
   // Solo los súpers activados en el perfil (misma regla que el catálogo).
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
+  const lidlStoreId = profile?.lidlStoreId ?? null;
   const preferredStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
   const allowedStores = useMemo(() => {
     const enabledKeys = preferredStores.filter((store) => storeInRegion(store, region));
     return enabledKeys.length > 0 ? enabledKeys : storesForRegion(region);
   }, [preferredStores, region]);
   const stores = useMemo(
-    () => CATALOG_STORES.filter((s) => allowedStores.includes(s.key)),
-    [allowedStores],
+    () => CATALOG_STORES.filter((s) => allowedStores.includes(s.key)
+      && (s.key !== 'lidl' || lidlStoreId != null)),
+    [allowedStores, lidlStoreId],
   );
   const [store, setStore] = useState<StoreSelection>(stores[0]?.key ?? 'all');
 
@@ -124,8 +126,8 @@ export default function NewArrivalsScreen() {
   const [chromeH, setChromeH] = useState(0);
 
   const cacheKeyFor = useCallback(
-    (storeKey: CatalogStore) => `${storeKey}:${region ?? 'none'}:${postalCode ?? 'none'}`,
-    [region, postalCode],
+    (storeKey: CatalogStore) => `${storeKey}:${region ?? 'none'}:${postalCode ?? 'none'}:${lidlStoreId ?? 'no-lidl'}`,
+    [region, postalCode, lidlStoreId],
   );
   useEffect(() => {
     const seq = ++loadSeq.current;
@@ -138,7 +140,7 @@ export default function NewArrivalsScreen() {
     setError(false);
     Promise.all(missingStores.map(async (storeKey) => ({
       storeKey,
-      page: await fetchWeeklyNewProducts(storeKey, region, postalCode, NEW_ARRIVALS_PAGE_SIZE),
+      page: await fetchWeeklyNewProducts(storeKey, region, postalCode, NEW_ARRIVALS_PAGE_SIZE, 0, undefined, lidlStoreId),
     })))
       .then((results) => {
         if (!cancelled && loadSeq.current === seq) setCache((current) => ({
@@ -151,7 +153,7 @@ export default function NewArrivalsScreen() {
     return () => { cancelled = true; };
     // cache a propósito fuera de deps: solo dispara al cambiar de súper.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, stores, region, postalCode]);
+  }, [store, stores, region, postalCode, lidlStoreId]);
 
   const searchActive = debouncedQuery.trim().length >= 2;
   const newFiltersForStore = useCallback((selectedStore: CatalogStore): NewProductFilters => ({
@@ -204,6 +206,7 @@ export default function NewArrivalsScreen() {
         NEW_ARRIVALS_PAGE_SIZE,
         0,
         newFiltersForStore(storeKey),
+        lidlStoreId,
       ),
     })))
       .then((results) => {
@@ -228,6 +231,7 @@ export default function NewArrivalsScreen() {
     newFiltersForStore,
     region,
     postalCode,
+    lidlStoreId,
   ]);
 
   const base = useMemo(() => {
@@ -351,6 +355,7 @@ export default function NewArrivalsScreen() {
           NEW_ARRIVALS_PAGE_SIZE,
           previous.nextOffset!,
           newFiltersForStore(storeKey),
+          lidlStoreId,
         );
         return { key, previous, page };
       }))
@@ -381,7 +386,7 @@ export default function NewArrivalsScreen() {
     Promise.all(storesWithMore.map(async (storeKey) => {
       const previous = cache[cacheKeyFor(storeKey)]!;
       const page = await fetchWeeklyNewProducts(
-        storeKey, region, postalCode, NEW_ARRIVALS_PAGE_SIZE, previous.nextOffset!,
+        storeKey, region, postalCode, NEW_ARRIVALS_PAGE_SIZE, previous.nextOffset!, undefined, lidlStoreId,
       );
       return { storeKey, previous, page };
     }))
@@ -402,7 +407,7 @@ export default function NewArrivalsScreen() {
     cache, cacheKeyFor, filteredProducts.length, loading, loadingMore, postalCode,
     region, store, stores, visibleCount, searchActive, searchLoading,
     searchLoadingMore, requestedSearchStores, searchCache, searchCacheKeyFor,
-    newFiltersForStore,
+    newFiltersForStore, lidlStoreId,
   ]);
 
   // Chrome de la pantalla (cabecera + selector + fila de búsqueda),

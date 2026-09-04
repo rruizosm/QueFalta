@@ -6,7 +6,7 @@
  * (UsernameScreen), el gate de usuarios existentes (RegionGateScreen) y
  * Ajustes (RegionSettingsScreen). Ver COMUNIDAD-AUTONOMA.md.
  *
- * Contrato: emite `{ region, postalCode }`. region null = selección incompleta
+ * Contrato: emite `{ region, postalCode, lidlStoreId }`. region null = selección incompleta
  * o CP inválido (el padre deshabilita Continuar / no guarda). "Toda España"
  * emite region 'ES' con postalCode null.
  */
@@ -28,10 +28,12 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { REGION_ALL, regionFromPostalCode, type RegionValue } from '../constants/regions';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import LidlStorePicker from './LidlStorePicker';
 
 export interface RegionSelection {
   region: RegionValue | null;
   postalCode: string | null;
+  lidlStoreId: string | null;
 }
 
 interface Props {
@@ -39,6 +41,8 @@ interface Props {
   region: RegionValue | null;
   /** CP actual guardado (semilla del input; null si no hay o eligió España). */
   postalCode: string | null;
+  /** Tienda Lidl ya confirmada para este CP. */
+  lidlStoreId: string | null;
   onChange: (next: RegionSelection) => void;
   autoFocus?: boolean;
   helperText?: string;
@@ -51,6 +55,7 @@ interface Props {
 export default function RegionPicker({
   region,
   postalCode,
+  lidlStoreId,
   onChange,
   autoFocus,
   helperText,
@@ -100,10 +105,10 @@ export default function RegionPicker({
     const next = regionFromPostalCode(digits);
     if (next) {
       Haptics.selectionAsync();
-      onChange({ region: next, postalCode: digits });
+      onChange({ region: next, postalCode: digits, lidlStoreId: null });
     } else {
       // Incompleto o inválido: deselecciona (también anula un "Toda España" previo).
-      onChange({ region: null, postalCode: null });
+      onChange({ region: null, postalCode: null, lidlStoreId: null });
     }
   };
 
@@ -111,7 +116,7 @@ export default function RegionPicker({
     if (allOn) return;
     Haptics.selectionAsync();
     setCp('');
-    onChange({ region: REGION_ALL, postalCode: null });
+    onChange({ region: REGION_ALL, postalCode: null, lidlStoreId: null });
   };
 
   const postalCodeCard = (
@@ -213,6 +218,19 @@ export default function RegionPicker({
 
       {/* Comunidad derivada (confirmación) */}
       {!inlineDetected ? detectedCard : null}
+
+      {cpRegion && cp.length === 5 ? (
+        <LidlStorePicker
+          postalCode={cp}
+          selectedStoreId={lidlStoreId}
+          onSelect={(storeId) => onChange({
+            region: cpRegion,
+            postalCode: cp,
+            lidlStoreId: storeId,
+          })}
+          inverse={inverse}
+        />
+      ) : null}
 
       {/* Escape: sin CP → toda España (sin filtro) */}
       <Text style={[styles.orAll, inverse && styles.inverseText]}>{t('region.orAll')}</Text>

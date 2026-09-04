@@ -60,14 +60,16 @@ export default function PriceChangesScreen() {
   // Solo los súpers activados en el perfil (misma regla que el catálogo).
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
+  const lidlStoreId = profile?.lidlStoreId ?? null;
   const preferredStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
   const allowedStores = useMemo(() => {
     const enabledKeys = preferredStores.filter((store) => storeInRegion(store, region));
     return enabledKeys.length > 0 ? enabledKeys : storesForRegion(region);
   }, [preferredStores, region]);
   const stores = useMemo(
-    () => CATALOG_STORES.filter((s) => allowedStores.includes(s.key)),
-    [allowedStores],
+    () => CATALOG_STORES.filter((s) => allowedStores.includes(s.key)
+      && (s.key !== 'lidl' || lidlStoreId != null)),
+    [allowedStores, lidlStoreId],
   );
   const [store, setStore] = useState<StoreSelection>(stores[0]?.key ?? 'all');
   const [direction, setDirection] = useState<Direction>('down');
@@ -96,8 +98,8 @@ export default function PriceChangesScreen() {
   // Caché por súper+dirección para no repetir consultas al alternar.
   const cacheKeyFor = useCallback(
     (storeKey: CatalogStore) =>
-      `${storeKey}:${direction}:${pricePerUnitSort ?? 'relevance'}:${region ?? 'none'}:${postalCode ?? 'none'}`,
-    [direction, pricePerUnitSort, region, postalCode],
+      `${storeKey}:${direction}:${pricePerUnitSort ?? 'relevance'}:${region ?? 'none'}:${postalCode ?? 'none'}:${lidlStoreId ?? 'no-lidl'}`,
+    [direction, pricePerUnitSort, region, postalCode, lidlStoreId],
   );
   const [cache, setCache] = useState<Record<string, PriceChangesPage>>({});
   const [loading, setLoading] = useState(true);
@@ -122,7 +124,7 @@ export default function PriceChangesScreen() {
     Promise.all(missingStores.map(async (storeKey) => ({
       storeKey,
       page: await fetchPriceChanges(
-        storeKey, direction, region, postalCode, PRICE_CHANGES_PAGE_SIZE, 0, pricePerUnitSort,
+        storeKey, direction, region, postalCode, PRICE_CHANGES_PAGE_SIZE, 0, pricePerUnitSort, lidlStoreId,
       ),
     })))
       .then((results) => {
@@ -136,7 +138,7 @@ export default function PriceChangesScreen() {
     return () => { cancelled = true; };
     // cache a propósito fuera de deps: solo dispara al cambiar súper/dirección.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, stores, direction, region, postalCode, pricePerUnitSort]);
+  }, [store, stores, direction, region, postalCode, pricePerUnitSort, lidlStoreId]);
 
   const allChanges = useMemo(() => {
     const changes = store === 'all'
@@ -220,6 +222,7 @@ export default function PriceChangesScreen() {
       const page = await fetchPriceChanges(
         storeKey, direction, region, postalCode, PRICE_CHANGES_PAGE_SIZE,
         previous.nextOffset!, pricePerUnitSort,
+        lidlStoreId,
       );
       return { storeKey, previous, page };
     }))
@@ -239,7 +242,7 @@ export default function PriceChangesScreen() {
         loadingMoreRef.current = false;
         setLoadingMore(false);
       });
-  }, [cache, cacheKeyFor, direction, loading, postalCode, pricePerUnitSort, region, store, stores]);
+  }, [cache, cacheKeyFor, direction, loading, postalCode, pricePerUnitSort, region, store, stores, lidlStoreId]);
 
   // La línea de precio de la fila pasa a "anterior tachado · actual en
   // verde/rojo · (%)" vía priceChange (lo pinta StoreProductList) →

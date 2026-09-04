@@ -34,11 +34,11 @@ export default function ProductPriceLine({
   useEffect(() => {
     let cancelled = false;
     setChange(null);
-    fetchProductPriceChange(store, productId, profile?.postalCode ?? null)
+    fetchProductPriceChange(store, productId, profile?.postalCode ?? null, profile?.lidlStoreId ?? null)
       .then((result) => { if (!cancelled) setChange(result); })
       .catch(() => undefined);
     return () => { cancelled = true; };
-  }, [store, productId, profile?.postalCode]);
+  }, [store, productId, profile?.postalCode, profile?.lidlStoreId]);
 
   const previousPrice = promotionPreviousPrice ?? (change ? euro(change.previousPrice) : fallbackPreviousPrice);
   const badgeColor = change?.direction === 'down' ? colors.ok : colors.red;

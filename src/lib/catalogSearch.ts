@@ -62,6 +62,7 @@ export async function searchCatalogStore(
   offset = 0,
   order: CatalogSearchOrder = 'relevance',
   searchLanguage?: AppLanguage,
+  lidlStoreId: string | null = null,
 ): Promise<UIProduct[]> {
   switch (store) {
     case 'mercadona': return (await searchProducts(query, region, limit, signal, offset, order, searchLanguage)).map((product) => mercadonaToUI(product));
@@ -76,7 +77,7 @@ export async function searchCatalogStore(
     case 'condis': return (await searchCondisProducts(query, limit, signal, offset, order, searchLanguage)).map(condisToUI);
     case 'ametller': return (await searchAmetllerProducts(query, limit, signal, offset, order, searchLanguage)).map(ametllerToUI);
     case 'aldi': return (await searchAldiProducts(query, limit, signal, offset, order)).map(aldiToUI);
-    case 'lidl': return (await searchLidlProducts(query, limit, signal, offset, order)).map(lidlToUI);
+    case 'lidl': return (await searchLidlProducts(query, limit, signal, offset, order, lidlStoreId)).map(lidlToUI);
     case 'gadis': return (await searchGadisProducts(query, limit, signal, offset, order)).map(gadisToUI);
     case 'froiz': return (await searchFroizProducts(query, limit, signal, offset, order)).map(froizToUI);
     case 'ahorramas': return (await searchAhorramasProducts(query, limit, signal, offset, order)).map(ahorramasToUI);
@@ -98,6 +99,7 @@ export async function searchCatalogStores(
   signal?: AbortSignal,
   limit = 40,
   searchBothLanguages = false,
+  lidlStoreId: string | null = null,
 ): Promise<UIProduct[]> {
   const perStoreLimit = Math.max(12, Math.ceil(limit / Math.max(stores.length, 1)) * 3);
   const searches: { store: CatalogStore; language?: AppLanguage }[] = [];
@@ -119,6 +121,7 @@ export async function searchCatalogStores(
       0,
       'relevance',
       language,
+      lidlStoreId,
     )),
   );
 

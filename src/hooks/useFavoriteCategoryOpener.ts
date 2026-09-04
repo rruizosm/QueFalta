@@ -10,13 +10,15 @@ import {
   fetchAlcampoCategoryTree, fetchPlusfrescCategoryTree, fetchGadisCategoryTree, fetchFroizCategoryTree, fetchAhorramasCategoryTree,
 } from '../api/catalog';
 import { useFavorites } from '../context/FavoritesContext';
+import { useProfile } from '../context/ProfileContext';
 import type { CatalogStore } from '../constants/stores';
 import type { FavoriteCategory } from '../types';
 
 // Árbol de subcategorías (N1→N2) normalizado para navegar desde un favorito.
 type MirrorTree = { id: string; name: string; children: { id: string; name: string }[] }[];
 
-const TREE_FETCHERS: Record<Exclude<CatalogStore, 'mercadona'>, () => Promise<MirrorTree>> = {
+type MirrorFetcherStore = Exclude<CatalogStore, 'mercadona' | 'lidl'>;
+const TREE_FETCHERS: Record<MirrorFetcherStore, () => Promise<MirrorTree>> = {
   esclat: fetchBonpreuCategoryTree,
   carrefour: fetchCarrefourCategoryTree,
   bonarea: fetchBonareaCategoryTree,
@@ -28,7 +30,6 @@ const TREE_FETCHERS: Record<Exclude<CatalogStore, 'mercadona'>, () => Promise<Mi
   condis: fetchCondisCategoryTree,
   ametller: fetchAmetllerCategoryTree,
   aldi: fetchAldiCategoryTree,
-  lidl: fetchLidlCategoryTree,
   hiperdino: fetchHiperdinoCategoryTree,
   alcampo: fetchAlcampoCategoryTree,
   plusfresc: fetchPlusfrescCategoryTree,
@@ -47,6 +48,7 @@ const TREE_FETCHERS: Record<Exclude<CatalogStore, 'mercadona'>, () => Promise<Mi
 export function useFavoriteCategoryOpener() {
   const navigation = useNavigation<any>();
   const { categories: favCategories } = useFavorites();
+  const { profile } = useProfile();
   const [liveCategories, setLiveCategories] = useState<N1Category[]>([]);
   const [trees, setTrees] = useState<Partial<Record<CatalogStore, MirrorTree>>>({});
 
@@ -55,14 +57,23 @@ export function useFavoriteCategoryOpener() {
     fetchCategories().then(setLiveCategories).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    setTrees((current) => current.lidl === undefined
+      ? current
+      : { ...current, lidl: undefined });
+  }, [profile?.lidlStoreId]);
+
   // Prefetch del árbol de los súpers (no-Mercadona) que tengan alguna categoría favorita.
   useEffect(() => {
     const pending = [...new Set(favCategories.map((c) => c.store))]
       .filter((s): s is Exclude<CatalogStore, 'mercadona'> => s !== 'mercadona' && !trees[s]);
     pending.forEach((s) => {
-      TREE_FETCHERS[s]().then((tree) => setTrees((prev) => ({ ...prev, [s]: tree }))).catch(() => {});
+      const request = s === 'lidl'
+        ? fetchLidlCategoryTree(profile?.lidlStoreId ?? null)
+        : TREE_FETCHERS[s]();
+      request.then((tree) => setTrees((prev) => ({ ...prev, [s]: tree }))).catch(() => {});
     });
-  }, [favCategories, trees]);
+  }, [favCategories, trees, profile?.lidlStoreId]);
 
   const goToMercadonaCategory = (cat: N1Category) => {
     const { emoji, color } = getMeta(cat.name);

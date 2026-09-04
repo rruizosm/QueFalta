@@ -52,6 +52,7 @@ function fetchMirrorProduct(
   region: RegionValue | null,
   postalCode: string | null,
   ignoreLocation = false,
+  lidlStoreId: string | null = null,
 ): Promise<MirrorProduct | null> {
   const activeRegion = ignoreLocation ? null : region;
   const activePostalCode = ignoreLocation ? null : postalCode;
@@ -66,7 +67,7 @@ function fetchMirrorProduct(
     : store === 'condis' ? fetchCondisProduct
     : store === 'ametller' ? fetchAmetllerProduct
     : store === 'aldi' ? fetchAldiProduct
-    : store === 'lidl' ? fetchLidlProduct
+    : store === 'lidl' ? (productId: string) => fetchLidlProduct(productId, lidlStoreId)
     : store === 'gadis' ? fetchGadisProduct
     : store === 'froiz' ? fetchFroizProduct
     : store === 'ahorramas' ? fetchAhorramasProduct
@@ -96,11 +97,12 @@ export default function StoreProductModal({
   const { profile } = useProfile();
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
+  const lidlStoreId = profile?.lidlStoreId ?? null;
   const targetStore = target?.store;
   const targetId = target?.id;
   const [reloadToken, setReloadToken] = useState(0);
   const requestKey = targetStore && targetId
-    ? [targetStore, targetId, region ?? '', postalCode ?? '', lang, reloadToken].join('\u001f')
+    ? [targetStore, targetId, region ?? '', postalCode ?? '', lidlStoreId ?? '', lang, reloadToken].join('\u001f')
     : null;
   const [mirrorResult, setMirrorResult] = useState<{ key: string; product: MirrorProduct } | null>(null);
   const [errorKey, setErrorKey] = useState<string | null>(null);
@@ -114,7 +116,7 @@ export default function StoreProductModal({
     (async () => {
       try {
         const store = targetStore as Exclude<CatalogStore, 'mercadona'>;
-        let product = await fetchMirrorProduct(store, targetId, region, postalCode);
+        let product = await fetchMirrorProduct(store, targetId, region, postalCode, false, lidlStoreId);
         if (!product && fallbackToGlobalCatalog && LOCATION_FILTERED_STORES.has(store)) {
           product = await fetchMirrorProduct(store, targetId, region, postalCode, true);
         }
@@ -126,7 +128,7 @@ export default function StoreProductModal({
       }
     })();
     return () => { cancelled = true; };
-  }, [fallbackToGlobalCatalog, requestKey, targetStore, targetId, region, postalCode]);
+  }, [fallbackToGlobalCatalog, requestKey, targetStore, targetId, region, postalCode, lidlStoreId]);
 
   if (!target) return null;
 

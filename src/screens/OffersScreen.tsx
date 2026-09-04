@@ -69,7 +69,8 @@ function compareOffers(sort: PriceSort | null, pricePerUnitSort: PriceSort | nul
  * marca explícitamente OFFER_PRICE; DIA vía CLUB/online y precio tachado por
  * CCAA; Sorli vía sus tipos estructurados y vigencia; Plusfresc vía sus copias
  * Oferta2; HiperDino vía su precio regular tachado; Aldi vía precio tachado y
- * vigencia de Algolia; Eroski/Caprabo vía el tile de oferta; Condis vía
+ * vigencia de Algolia; Lidl vía su feed de ofertas de tienda enlazado a
+ * Product Catalog; Eroski/Caprabo vía el tile de oferta; Condis vía
  * on_sale/on_promotion; Ametller vía productPromotions; y Alcampo vía
  * promotions/promoPrice)
  * y el selector alterna entre
@@ -79,6 +80,7 @@ function compareOffers(sort: PriceSort | null, pricePerUnitSort: PriceSort | nul
  * todas alcanzables. Requiere las migraciones carrefour_offers.sql /
  * bonpreu_offers.sql / consum_offers.sql / plusfresc_offers.sql /
  * hiperdino_offers.sql / aldi_offers.sql /
+ * 20260904122841_lidl_offers.sql /
  * 20260726200544_retailer_offers_condis_ametller_alcampo_eroski_caprabo.sql /
  * 20260723204711_dia_offers.sql / 20260723212240_sorli_offers.sql
  * (sin ellas la query falla por columna inexistente).
@@ -101,6 +103,7 @@ export default function OffersScreen() {
   const { profile } = useProfile();
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
+  const lidlStoreId = profile?.lidlStoreId ?? null;
 
   const preferredStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
   const allowedStores = useMemo(() => {
@@ -108,8 +111,10 @@ export default function OffersScreen() {
     return enabledInRegion.length > 0 ? enabledInRegion : storesForRegion(region);
   }, [preferredStores, region]);
   const stores = useMemo(
-    () => CATALOG_STORES.filter((s) => OFFER_STORES.includes(s.key) && allowedStores.includes(s.key)),
-    [allowedStores],
+    () => CATALOG_STORES.filter((s) => OFFER_STORES.includes(s.key)
+      && allowedStores.includes(s.key)
+      && (s.key !== 'lidl' || lidlStoreId != null)),
+    [allowedStores, lidlStoreId],
   );
   const [store, setStore] = useState<StoreSelection>(stores[0]?.key ?? 'all');
 
@@ -205,30 +210,30 @@ export default function OffersScreen() {
   const [categoriesLoading, setCategoriesLoading] = useState<Record<string, boolean>>({});
   const categoriesKeyForStore = useCallback(
     (selectedStore: CatalogStore) =>
-      `${selectedStore}:${region ?? 'none'}:${postalCode ?? 'none'}`,
-    [region, postalCode],
+      `${selectedStore}:${region ?? 'none'}:${postalCode ?? 'none'}:${lidlStoreId ?? 'no-lidl'}`,
+    [region, postalCode, lidlStoreId],
   );
   const categoriesKey = store === 'all' ? null : categoriesKeyForStore(store);
   useEffect(() => {
     if (store === 'all' || categoriesKey == null || categoriesCache[categoriesKey]) return;
     let cancelled = false;
-    fetchOfferCategories(store, region, postalCode)
+    fetchOfferCategories(store, region, postalCode, lidlStoreId)
       .then((cats) => { if (!cancelled) setCategoriesCache((c) => ({ ...c, [categoriesKey]: cats })); })
       .catch(() => {});
     return () => { cancelled = true; };
     // cache a propósito fuera de deps: solo dispara al cambiar de súper.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, region, postalCode, categoriesKey]);
+  }, [store, region, postalCode, lidlStoreId, categoriesKey]);
 
   const ensureOfferCategories = useCallback((selectedStore: CatalogStore) => {
     const key = categoriesKeyForStore(selectedStore);
     if (categoriesCache[key] || categoriesLoading[key]) return;
     setCategoriesLoading((current) => ({ ...current, [key]: true }));
-    fetchOfferCategories(selectedStore, region, postalCode)
+    fetchOfferCategories(selectedStore, region, postalCode, lidlStoreId)
       .then((cats) => setCategoriesCache((current) => ({ ...current, [key]: cats })))
       .catch(() => setCategoriesCache((current) => ({ ...current, [key]: [] })))
       .finally(() => setCategoriesLoading((current) => ({ ...current, [key]: false })));
-  }, [categoriesCache, categoriesLoading, categoriesKeyForStore, region, postalCode]);
+  }, [categoriesCache, categoriesLoading, categoriesKeyForStore, region, postalCode, lidlStoreId]);
 
   const categoryGroups = useMemo<FilterGroup[]>(() => stores.map((option) => {
     const key = categoriesKeyForStore(option.key);
@@ -276,6 +281,7 @@ export default function OffersScreen() {
             postalCode,
             limit,
             filtersForStore(selectedStore),
+            lidlStoreId,
           ),
         compare: compareOffers(sort, pricePerUnitSort, debouncedQuery),
       });
@@ -292,7 +298,7 @@ export default function OffersScreen() {
     }
 
     allOffersPager.current = null;
-    fetchStoreOffers(store, null, region, postalCode, 50, filtersForStore(store))
+    fetchStoreOffers(store, null, region, postalCode, 50, filtersForStore(store), lidlStoreId)
       .then((page) => {
         if (loadSeq.current !== seq) return;
         setItems(page.items);
@@ -305,6 +311,7 @@ export default function OffersScreen() {
     filtersForStore,
     region,
     postalCode,
+    lidlStoreId,
     sort,
     pricePerUnitSort,
     debouncedQuery,
@@ -332,7 +339,7 @@ export default function OffersScreen() {
         .finally(() => { if (loadSeq.current === seq) setLoadingMore(false); });
       return;
     }
-    fetchStoreOffers(store, cursor, region, postalCode, 50, filtersForStore(store))
+    fetchStoreOffers(store, cursor, region, postalCode, 50, filtersForStore(store), lidlStoreId)
       .then((page) => {
         if (loadSeq.current !== seq) return;
         setItems((prev) => [...prev, ...page.items]);
@@ -340,7 +347,7 @@ export default function OffersScreen() {
       })
       .catch(() => {}) // fallo de red al paginar: se reintenta al volver a llegar al final
       .finally(() => { if (loadSeq.current === seq) setLoadingMore(false); });
-  }, [store, filtersForStore, region, postalCode, cursor, loading, loadingMore]);
+  }, [store, filtersForStore, region, postalCode, lidlStoreId, cursor, loading, loadingMore]);
 
   // El TIPO de oferta ("3x2", "2ª ud. -70%"…) se resalta en rojo ARRIBA del
   // nombre. La línea secundaria conserva formato y precio unitario como en

@@ -164,3 +164,10 @@ LIDL_FLEET_STORE_IDS=ES0367 node scripts/sync-lidl-fleet.mjs --retry-dead-only
 
 `recover` no reinicia automáticamente `dead`. No usar `weekly` para recuperar
 un barrido parcial: volvería a programar también los catálogos ya completados.
+
+La prueba productiva posterior recuperó ES0367, ES2106 y ES4003. ES5016,
+ES5026 y ES5093 responden 204 sin contenido en `/categories` y cero productos
+al consultar fruta directamente. El sync distingue explícitamente ese estado
+como catálogo no disponible, sin intentar parsearlo ni publicarlo. Los errores
+200 con JSON truncado sí conservan reintentos. Estas tres tiendas y las 39
+canarias quedan pendientes de datos en la fuente, sin sustituciones.

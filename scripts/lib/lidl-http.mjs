@@ -21,6 +21,9 @@ export async function lidlRequest(url, init = {}, {
         continue;
       }
       if (!json) return null;
+      if (response.status === 204) {
+        throw Object.assign(new Error(`${label}: HTTP 204 sin contenido; catálogo no disponible en la fuente`), { permanent: true });
+      }
       try { return JSON.parse(body); } catch {
         lastError = new Error(`${label}: JSON incompleto o inválido (${body.length} bytes)`);
       }

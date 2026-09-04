@@ -54,3 +54,11 @@ test('only verified small stores get a narrow floor; ordinary stores retain 2200
   assert.equal(lidlMinimumProducts('ES3572'), 2200);
   assert.equal(lidlMinimumProducts('ES0951'), 2200);
 });
+
+test('204 is source unavailability, not malformed JSON or a successful catalog', async () => {
+  let calls = 0;
+  await assert.rejects(lidlRequest('https://example.invalid', {}, {
+    label:'/categories', fetchImpl:async () => { calls++; return new Response(null, {status:204}); },
+  }), /HTTP 204 sin contenido/);
+  assert.equal(calls, 1);
+});

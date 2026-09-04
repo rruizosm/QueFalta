@@ -3,6 +3,74 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
+## Main actualizado tras los merges #51 y #52 (2026-09-04)
+
+- El checkout local `main` está actualizado por fast-forward hasta `97fe3b8`,
+  incluido el comparador estricto del merge #51 y la integración de Lidl del
+  merge #52.
+- Las migraciones Lidl `20260904102903` y `20260904104441` ya constan aplicadas
+  y verificadas en producción. No se reaplicaron durante esta actualización.
+  La cautela inicial de dejar el cron desactivado queda sustituida por la
+  autorización expresa del propietario para publicar y activar el barrido
+  semanal; la revisión comercial continúa separada como requisito de producto.
+- La integración hizo obsoletas ocho aserciones temporales que exigían que tres
+  archivos de producto permaneciesen iguales para siempre. Los recibos CE
+  históricos no se reescriben: una prueba sucesora registra explícitamente los
+  hashes introducidos por `97fe3b8`, conserva la validación del resto de
+  artefactos y comprueba que la sonda CE-100 antigua continúa bloqueándose.
+
+## Lidl multitienda y orquestador desplegados; barrido pendiente (2026-09-04)
+
+- La tienda de referencia `ES3572` no es válida como precio nacional. Incluso
+  dentro de una misma `offerRegion` hay diferencias de precio, surtido y stock;
+  desde este cambio el cliente no muestra datos Lidl si el perfil no tiene una
+  tienda confirmada en `profiles.lidl_store_id`.
+- Migración aplicada en Supabase el 04-09:
+  `20260904134138_lidl_multistore_catalog.sql`. Crea `lidl_stores`,
+  `lidl_postal_stores`, `lidl_product_master`, `lidl_store_products` y
+  `lidl_store_categories`; añade vistas/RPC por tienda, RLS, grants explícitos y
+  conserva `lidl_products` como compatibilidad para las builds ya publicadas.
+  `20260904134454_lidl_multistore_fk_indexes.sql` cubre las cuatro claves
+  foráneas nuevas; el advisor no deja incidencias de seguridad ni FK sin índice
+  asociadas a estas tablas.
+- `scripts/sync-lidl-stores.mjs` cargó el directorio oficial nacional el 04-09
+  a las 13:49 UTC: 730 tiendas, 721 abiertas, 652 CP totales y 721 candidatos
+  exactos para 645 CP con tienda abierta. La clave rotatoria se obtuvo del
+  cliente web público solo para esta ejecución y no se persistió; el workflow
+  diario sigue necesitando `LIDL_STORES_API_KEY` como secreto y continúa
+  protegido por `LIDL_SYNC_ENABLED`.
+- `scripts/sync-lidl.mjs` acepta cualquier `LIDL_STORE_ID`, separa ficha común
+  y variante local, comprueba cobertura y marca obsoletos solo dentro de esa
+  tienda. Solo `ES3572` sigue actualizando además la tabla legacy.
+- Las migraciones `20260904141250_lidl_catalog_sync_queue.sql` y
+  `20260904141502_lidl_catalog_sync_queue_policy.sql` están aplicadas. La
+  corrección `20260904175757_lidl_weekly_full_fleet.sql` elimina el trigger de
+  `profiles`, las columnas/RPC de prioridad y el worker cada 15 minutos. La
+  elección del usuario ya no influye en cuándo se sincroniza una tienda.
+- `scripts/sync-lidl-fleet.mjs` procesa una tienda reclamada cada vez.
+  `.github/workflows/sync-lidl.yml` programa cada lunes todas las tiendas
+  abiertas y reparte capacidad para 768 entre 24 workers de 32 (seis
+  simultáneos). El propietario ha autorizado publicar el workflow y activar
+  la variable de repositorio `LIDL_SYNC_ENABLED=true`; no se lanza un barrido
+  manual como parte de esa activación.
+- `RegionPicker` muestra hasta tres candidatos Lidl tras un CP válido y guarda
+  la elección explícita. Catálogo, categorías, ficha, búsqueda, ofertas,
+  novedades y cambios de precio filtran por ese id. Los feeds transversales
+  omiten Lidl mientras no haya tienda confirmada, evitando precios de respaldo
+  sin etiquetar.
+- El cliente tolera el intervalo previo al despliegue: solo cuando PostgREST
+  confirma que falta `profiles.lidl_store_id` reintenta el perfil sin esa
+  columna, y el CP/comunidad se guarda con normalidad. La ausencia de
+  `find_lidl_stores` se presenta como funcionalidad pendiente, no como fallo de
+  entrada; no se ocultan errores de red o permisos.
+- Primera fase deliberada: `lidl_postal_stores` contiene ahora coincidencias de
+  CP exactas. Falta incorporar un índice geocodificado para generar las tres
+  tiendas cercanas cuando no exista coincidencia exacta. El directorio y el
+  orquestador ya están listos; todavía faltan los catálogos de las otras 720
+  tiendas abiertas, que aparecerán como «Catálogo en preparación» hasta su
+  primer sync semanal. La revisión de autorización de uso continúa siendo una
+  condición de producto independiente de la activación técnica solicitada.
+
 ## Lidl: catálogo productivo e integración cliente (2026-09-04)
 
 - Descubierta la API pública de Product Catalog de Lidl Plus:
@@ -21,9 +89,10 @@
 - Lidl está integrado localmente en el cliente: selector y logo, filtros por
   región, búsqueda/browse, categorías, ficha básica, carrito y favoritos. No se
   ha añadido al comparador semántico porque aún no hay EAN fiables.
-- El workflow semanal usa `ES3572`, reintentos y guardarraíles; el cron requiere
-  `LIDL_SYNC_ENABLED=true` en GitHub. El código sigue local, sin commit ni push,
-  por lo que la automatización aún no está publicada/activa.
+- El único workflow nacional programa todas las tiendas cada lunes. El
+  propietario ha autorizado publicar este cambio y configurar
+  `LIDL_SYNC_ENABLED=true` en GitHub; la activación no incluye un dispatch
+  manual del barrido.
 - Los ids públicos de Product Catalog son internos y no se guardan como EAN.
   `ean` permanece NULL. La masterdata con `barcode` pertenece a Scan&Go y exige
   autenticación; queda fuera de este sync.
@@ -31,6 +100,22 @@
   al menos 85 % del catálogo publicado anterior. La ficha detallada
   (ingredientes, alérgenos y `productCodes`) queda para enriquecimiento
   incremental, no para 2.500+ peticiones semanales.
+- Ofertas Lidl implementadas localmente el 04-09 desde el feed público
+  `offers.lidlplus.com/app/api/v4/ES/{storeId}/offers`. El sync acepta solo el
+  canal `Store` y vigencia activa, preselecciona pocos candidatos y confirma el
+  enlace exacto contra `productCodes` del detalle. No usa coincidencias de
+  texto como prueba ni consulta las 2.800 fichas completas.
+- DRY_RUN real: 2.810 productos, 28 campañas, 27 vigentes de tienda, 17
+  enlazadas y 10 fuera del catálogo alimentario. La app añade Lidl
+  a Ofertas con búsqueda, categorías, facetas, precio promocional/anterior y
+  caducidad. Su ficha muestra la promoción con el mismo bloque visual que
+  Bonpreu, sin superponer una etiqueta promocional sobre la imagen. La migración
+  `20260904122841_lidl_offers.sql` está aplicada y
+  verificada en producción. El sync productivo de las 12:30 UTC publicó 17
+  ofertas vigentes, 12 con precio directo; la API anónima y la búsqueda RPC se
+  verificaron con Banana a 0,99 € (antes 1,49 €).
+- Validación local posterior: `npx tsc --noEmit`, `npm run lint`, suite completa
+  `npm test` y `git diff --check` pasan.
 
 ## Reparación local de compilación en Xcode (2026-09-03)
 
@@ -2430,6 +2515,7 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - ⚠️ **Ofertas de Plusfresc** (`supabase/migrations/plusfresc_offers.sql`): columnas de promoción y `offer_centers` en `plusfresc_products`. La API crea una copia `Oferta2` por promoción con `new_value_cents`, etiqueta y fecha de fin. El sync guarda esa señal por centro; Ofertas muestra exclusivamente los centros correspondientes al CP, incluso para promos de lote con el mismo precio individual. **Ejecutarla antes del próximo sync de Plusfresc**: el UPSERT ya envía estas columnas.
 - ⚠️ **Ofertas de HiperDino** (`supabase/migrations/hiperdino_offers.sql`): columna `promo_base_price` en `hiperdino_products`. Magento entrega `final_price` y `regular_price`; el sync guarda el regular únicamente si es mayor. Ofertas filtra esa columna y no consulta el historial semanal, por lo que una variación ordinaria de precio no se presenta como promoción. **Ejecutarla antes del próximo sync de HiperDino**: el UPSERT ya envía la columna.
 - ⚠️ **Ofertas de Aldi** (`supabase/migrations/aldi_offers.sql`): columnas `promo_name`, `promo_base_price` y `promo_end` en `aldi_products`. Algolia publica `strikePrice`, etiqueta y vigencia dentro de `currentPrice`; el sync solo conserva la promoción cuando el precio tachado supera al actual. Ofertas excluye campañas caducadas y no consulta el historial semanal. **Ejecutarla antes del próximo sync de Aldi**: el UPSERT ya envía las columnas.
+- ✅ **Ofertas de Lidl** (`supabase/migrations/20260904122841_lidl_offers.sql`, aplicada en producción el 2026-09-04): añade `promo_price`, vigencia y precio efectivo generado. El feed público de tienda se cruza con Product Catalog únicamente tras validar `productIds` contra `productCodes`; se excluyen campañas online/caducadas y productos sin correspondencia exacta. Catálogo y Ofertas muestran el precio final cuando existe sin convertirlo en cambio ordinario de precio.
 - ✅ **Ofertas de DIA** (`supabase/migrations/20260723204711_dia_offers.sql`, aplicada en producción el 2026-07-23): columnas `promo_name`, `promo_text`, `promo_base_price`, `offer_regions` y `regional_offers` en `dia_products`, con backfill desde `raw`. El PLP general ya contiene la misma señal que `/ofertas`, incluidos `promotions[].description` para 3x2/2ª unidad y el precio tachado/porcentaje de CLUB Dia. El sync une esa señal por CCAA y la app la consume en catálogo (lista/cuadrícula), Ofertas y ficha.
 - ✅ **Ofertas de Sorli** (`supabase/migrations/20260723212240_sorli_offers.sql`, aplicada en producción el 2026-07-23): columnas bilingües `promo_name(_ca)`/`promo_text(_ca)`, `promo_base_price` y vigencia en `sorli_products`, con backfill desde `raw`. Sorliclic publica tipos estructurados (`Precio`, `2ª 50/70%`, `2x1`, `3x2`, `4x3`, lotes y regalo); el sync prioriza las condiciones concretas cuando contradicen el tipo genérico. La app lo consume en catálogo (lista/cuadrícula), Ofertas y ficha.
 - ✅ **Ofertas de Condis, Ametller, Alcampo, Eroski y Caprabo** (`supabase/migrations/20260726200544_retailer_offers_condis_ametller_alcampo_eroski_caprabo.sql`, aplicada en producción el 2026-07-26): las cinco tablas comparten `promo_name`, `promo_text`, `promo_price`, `promo_base_price`, `promo_start` y `promo_end`. El backfill normaliza solo señales explícitas ya presentes en `raw` (promoción/club/lote o precio regular frente al promocional), sin convertir cambios semanales en ofertas. El parser compartido de Eroski/Caprabo extrae badge, condiciones, precio promocional, precio anterior y vigencia del HTML de cada tarjeta. Tras los syncs completos del 2026-07-26, producción contiene 1.075 ofertas de Condis, 344 de Ametller, 1.521 de Alcampo, 2.378 de Eroski y 1.002 de Caprabo; la app las consume en la sección Ofertas con el precio anterior tachado solo cuando existe una rebaja directa real.

@@ -38,6 +38,7 @@ export default function UsernameScreen() {
   const [regionSelection, setRegionSelection] = useState<RegionSelection>({
     region: profile?.region ?? null,
     postalCode: profile?.postalCode ?? null,
+    lidlStoreId: profile?.lidlStoreId ?? null,
   });
   const [saving, setSaving] = useState(false);
   const validationRequest = useRef(0);
@@ -95,12 +96,14 @@ export default function UsernameScreen() {
         username: raw,
         region: regionSelection.region,
         postalCode: regionSelection.postalCode,
+        lidlStoreId: regionSelection.lidlStoreId,
         onboardingStep: 1,
       });
       applyProfile({
         username: raw,
         region: regionSelection.region,
         postalCode: regionSelection.postalCode,
+        lidlStoreId: regionSelection.lidlStoreId,
         onboardingStep: 1,
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -156,6 +159,7 @@ export default function UsernameScreen() {
         <RegionPicker
           region={regionSelection.region}
           postalCode={regionSelection.postalCode}
+          lidlStoreId={regionSelection.lidlStoreId}
           onChange={setRegionSelection}
           helperText={t('onboarding.postalCodeReason')}
           inverse

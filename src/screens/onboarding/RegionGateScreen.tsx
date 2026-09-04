@@ -21,17 +21,17 @@ export default function RegionGateScreen() {
   const toast = useToast();
   const userId = session?.user.id ?? '';
 
-  const [sel, setSel] = useState<RegionSelection>({ region: null, postalCode: null });
+  const [sel, setSel] = useState<RegionSelection>({ region: null, postalCode: null, lidlStoreId: null });
   const [saving, setSaving] = useState(false);
 
   const handleContinue = async () => {
     if (!sel.region) return;
     setSaving(true);
     try {
-      await updateProfile(userId, { region: sel.region, postalCode: sel.postalCode });
+      await updateProfile(userId, { region: sel.region, postalCode: sel.postalCode, lidlStoreId: sel.lidlStoreId });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       // Desmonta el gate: Navigation re-evalúa `!profile.region` y entra al Home.
-      applyProfile({ region: sel.region, postalCode: sel.postalCode });
+      applyProfile({ region: sel.region, postalCode: sel.postalCode, lidlStoreId: sel.lidlStoreId });
     } catch {
       toast.show(t('onboarding.saveError'), 'error');
       setSaving(false);
@@ -47,7 +47,7 @@ export default function RegionGateScreen() {
       continueLoading={saving}
       onContinue={handleContinue}
     >
-      <RegionPicker region={sel.region} postalCode={sel.postalCode} onChange={setSel} />
+      <RegionPicker region={sel.region} postalCode={sel.postalCode} lidlStoreId={sel.lidlStoreId} onChange={setSel} />
     </OnboardingLayout>
   );
 }

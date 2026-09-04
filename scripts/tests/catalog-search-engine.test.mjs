@@ -22,6 +22,10 @@ const lidlMigration = readFileSync(new URL(
   '../../supabase/migrations/20260904104441_lidl_catalog_search.sql',
   import.meta.url,
 ), 'utf8');
+const lidlOffersMigration = readFileSync(new URL(
+  '../../supabase/migrations/20260904122841_lidl_offers.sql',
+  import.meta.url,
+), 'utf8');
 const catalogApi = readFileSync(new URL('../../src/api/catalog.ts', import.meta.url), 'utf8');
 const catalogSearch = readFileSync(new URL('../../src/lib/catalogSearch.ts', import.meta.url), 'utf8');
 const productNoteSheet = readFileSync(new URL('../../src/components/ProductNoteSheet.tsx', import.meta.url), 'utf8');
@@ -100,7 +104,7 @@ test('el catálogo ofrece relevancia y carga páginas adicionales', () => {
 
 test('Novedades y Ofertas reutilizan el motor antes de paginar', () => {
   for (const store of stores) {
-    const source = store === 'lidl' ? lidlMigration : feedMigration;
+    const source = store === 'lidl' ? lidlOffersMigration : feedMigration;
     const pattern = store === 'lidl'
       ? new RegExp(`function public\\.search_${store}_feed_products\\(`)
       : new RegExp(`\\('search_${store}_feed_products',\\s+'${store}_products'`);
@@ -115,6 +119,10 @@ test('Novedades y Ofertas reutilizan el motor antes de paginar', () => {
   assert.match(feedMigration, /p_offset integer default 0/);
   assert.match(catalogApi, /catalogFeedSearchPage\(store, 'new'/);
   assert.match(catalogApi, /catalogFeedSearchPage\([\s\S]+?'offer'/);
+  assert.match(lidlOffersMigration, /p\.promo_start is null or p\.promo_start <= p_today/);
+  assert.match(lidlOffersMigration, /coalesce\(p\.promo_price, p\.unit_price\)/);
+  assert.match(catalogApi, /'aldi', 'lidl', 'hiperdino'/);
+  assert.match(catalogApi, /if \(store === 'lidl'\) return fetchLidlOffers/);
   assert.match(newArrivalsScreen, /debouncedQuery/);
   assert.match(newArrivalsScreen, /searchCache/);
   assert.match(newArrivalsScreen, /sortByRelevance/);

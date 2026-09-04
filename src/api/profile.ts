@@ -3,6 +3,23 @@ import { supabase } from '../lib/supabase';
 import { CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import type { RegionValue } from '../constants/regions';
 
+const PROFILE_COLUMNS = 'id, created_at, name, initials, color, username, avatar_url, discoverable, catalog_stores, region, postal_code, lidl_store_id, premium_until, onboarded_at, onboarding_step, verified, legacy_all_stores_access';
+const LEGACY_PROFILE_COLUMNS = 'id, created_at, name, initials, color, username, avatar_url, discoverable, catalog_stores, region, postal_code, premium_until, onboarded_at, onboarding_step, verified, legacy_all_stores_access';
+
+/** Compatibilidad durante el despliegue escalonado del catálogo Lidl. Solo
+ * reintentamos ante la ausencia inequívoca de la columna; permisos, red y
+ * cualquier otro error continúan fallando de forma visible. */
+function isMissingLidlStoreColumn(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const record = error as Record<string, unknown>;
+  const code = typeof record.code === 'string' ? record.code : '';
+  const message = [record.message, record.details, record.hint]
+    .filter((value): value is string => typeof value === 'string')
+    .join(' ')
+    .toLowerCase();
+  return ['42703', 'PGRST204'].includes(code) && message.includes('lidl_store_id');
+}
+
 export interface UserProfile {
   id: string;
   /** Fecha de creación del perfil, usada para mensajes ligados a releases. */
@@ -26,6 +43,8 @@ export interface UserProfile {
    *  exacta (precios regionales por almacén/centro). NO mostrarlo en vistas
    *  públicas de perfil. */
   postalCode: string | null;
+  /** Tienda Lidl confirmada; resuelve precio, promociones y surtido locales. */
+  lidlStoreId: string | null;
   /** Fin de la suscripción QuéFalta Plus (ISO). NULL o pasado = plan free.
    *  Solo la escribe el servidor (trigger en profile_premium.sql). */
   premiumUntil: string | null;
@@ -58,11 +77,23 @@ function normalizeCatalogStores(value: unknown): CatalogStore[] {
 }
 
 export async function fetchProfile(userId: string): Promise<UserProfile> {
-  const { data, error } = await supabase
+  const current = await supabase
     .from('profiles')
-    .select('id, created_at, name, initials, color, username, avatar_url, discoverable, catalog_stores, region, postal_code, premium_until, onboarded_at, onboarding_step, verified, legacy_all_stores_access')
+    .select(PROFILE_COLUMNS)
     .eq('id', userId)
     .single();
+
+  let data = current.data as any;
+  let error = current.error;
+  if (isMissingLidlStoreColumn(error)) {
+    const legacy = await supabase
+      .from('profiles')
+      .select(LEGACY_PROFILE_COLUMNS)
+      .eq('id', userId)
+      .single();
+    data = legacy.data as any;
+    error = legacy.error;
+  }
 
   if (error) throw error;
 
@@ -78,6 +109,7 @@ export async function fetchProfile(userId: string): Promise<UserProfile> {
     catalogStores: normalizeCatalogStores(data.catalog_stores),
     region: (data.region as RegionValue) ?? null,
     postalCode: data.postal_code ?? null,
+    lidlStoreId: data.lidl_store_id ?? null,
     premiumUntil: data.premium_until ?? null,
     onboardedAt: data.onboarded_at ?? null,
     onboardingStep: data.onboarding_step ?? 0,
@@ -97,6 +129,7 @@ export async function updateProfile(
     catalogStores?: CatalogStore[];
     region?: RegionValue | null;
     postalCode?: string | null;
+    lidlStoreId?: string | null;
     onboardingStep?: number;
   },
 ): Promise<void> {
@@ -109,14 +142,30 @@ export async function updateProfile(
   if (fields.catalogStores !== undefined) updates.catalog_stores = fields.catalogStores;
   if (fields.region !== undefined) updates.region = fields.region;
   if (fields.postalCode !== undefined) updates.postal_code = fields.postalCode;
+  if (fields.lidlStoreId !== undefined) updates.lidl_store_id = fields.lidlStoreId;
   if (fields.onboardingStep !== undefined) updates.onboarding_step = fields.onboardingStep;
 
-  const { error } = await supabase
+  const current = await supabase
     .from('profiles')
     .update(updates)
     .eq('id', userId)
     .select('id')
     .single();
+  let error = current.error;
+  if (fields.lidlStoreId !== undefined && isMissingLidlStoreColumn(error)) {
+    // El CP y la comunidad deben seguir guardándose aunque el backend aún no
+    // haya recibido la migración multitienda. La tienda se podrá confirmar al
+    // completar el despliegue y aparecer el selector con candidatos reales.
+    delete updates.lidl_store_id;
+    if (Object.keys(updates).length === 0) return;
+    const legacy = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', userId)
+      .select('id')
+      .single();
+    error = legacy.error;
+  }
   if (error) throw error;
 }
 

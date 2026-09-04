@@ -121,9 +121,10 @@ function browseCacheKey(
   lang: string,
   region: RegionValue | null,
   postalCode: string | null,
+  lidlStoreId: string | null,
   order: `${ProductSortField}:${ProductSortDirection}`,
 ): string {
-  return `${store}:${lang}:${region ?? 'all'}:${postalCode ?? 'none'}:${order}`;
+  return `${store}:${lang}:${region ?? 'all'}:${postalCode ?? 'none'}:${lidlStoreId ?? 'no-lidl'}:${order}`;
 }
 
 function startCategoryLoad<T>(
@@ -204,19 +205,20 @@ async function loadBrowsePage(
   cursor: BrowseCursor | null,
   region: RegionValue | null,
   postalCode: string | null,
+  lidlStoreId: string | null,
   signal?: AbortSignal,
   order: ProductBrowseOrder = 'priceAsc',
   limit = 50,
 ): Promise<BrowsePage<UIProduct>> {
   try {
-    return await loadBrowsePageWithOrder(store, cursor, region, postalCode, signal, order, limit);
+    return await loadBrowsePageWithOrder(store, cursor, region, postalCode, lidlStoreId, signal, order, limit);
   } catch (error) {
     // Algunas tablas antiguas de producción aún pueden no tener el índice del
     // orden activo. No permitimos que una sola consulta deje vacío el
     // catálogo combinado: recuperamos su primera página alfabética y la mezcla
     // la ordena en cliente. Las cancelaciones sí deben propagarse.
     if (signal?.aborted) throw error;
-    return loadBrowsePageWithOrder(store, cursor, region, postalCode, signal, false, limit);
+    return loadBrowsePageWithOrder(store, cursor, region, postalCode, lidlStoreId, signal, false, limit);
   }
 }
 
@@ -225,6 +227,7 @@ async function loadBrowsePageWithOrder(
   cursor: BrowseCursor | null,
   region: RegionValue | null,
   postalCode: string | null,
+  lidlStoreId: string | null,
   signal?: AbortSignal,
   order: ProductBrowseOrder | boolean = 'priceAsc',
   limit = 50,
@@ -242,7 +245,7 @@ async function loadBrowsePageWithOrder(
     case 'condis':    { const { items, nextCursor } = await browseCondisProducts(cursor, limit, signal, order as never); return { items: items.map(condisToUI), nextCursor }; }
     case 'ametller':  { const { items, nextCursor } = await browseAmetllerProducts(cursor, limit, signal, order as never); return { items: items.map(ametllerToUI), nextCursor }; }
     case 'aldi':      { const { items, nextCursor } = await browseAldiProducts(cursor, limit, signal, order as never); return { items: items.map(aldiToUI), nextCursor }; }
-    case 'lidl':      { const { items, nextCursor } = await browseLidlProducts(cursor, limit, signal, order as never); return { items: items.map(lidlToUI), nextCursor }; }
+    case 'lidl':      { const { items, nextCursor } = await browseLidlProducts(cursor, limit, signal, order as never, lidlStoreId); return { items: items.map(lidlToUI), nextCursor }; }
     case 'gadis':     { const { items, nextCursor } = await browseGadisProducts(cursor, limit, signal, order as never); return { items: items.map(gadisToUI), nextCursor }; }
     case 'froiz':     { const { items, nextCursor } = await browseFroizProducts(cursor, limit, signal, order as never); return { items: items.map(froizToUI), nextCursor }; }
     case 'ahorramas': { const { items, nextCursor } = await browseAhorramasProducts(cursor, limit, signal, order as never); return { items: items.map(ahorramasToUI), nextCursor }; }
@@ -257,12 +260,13 @@ async function loadStoreSearch(
   query: string,
   region: RegionValue | null,
   postalCode: string | null,
+  lidlStoreId: string | null,
   signal?: AbortSignal,
   limit = 50,
   offset = 0,
   order: CatalogSearchOrder = 'relevance',
 ): Promise<UIProduct[]> {
-  return searchCatalogStore(store, query, region, postalCode, signal, limit, offset, order);
+  return searchCatalogStore(store, query, region, postalCode, signal, limit, offset, order, undefined, lidlStoreId);
 }
 
 function compareProductsByPrice(order: ProductSortDirection) {
@@ -421,6 +425,7 @@ export default function CatalogScreen() {
   }, [productSearchOrder, unitPriceSortLocked]);
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
+  const lidlStoreId = profile?.lidlStoreId ?? null;
   const preferredStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
   const enabledStores = useMemo(() => {
     const enabledInRegion = preferredStores.filter((key) => storeInRegion(key, region));
@@ -666,7 +671,7 @@ export default function CatalogScreen() {
   const prodQuery = store === 'all'
     ? allSearch
     : { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch, condis: coSearch, ametller: amSearch, aldi: alSearch, lidl: liSearch, gadis: gaSearch, froiz: frSearch, ahorramas: ahSearch, hiperdino: hdSearch, alcampo: acSearch, plusfresc: pfSearch }[store];
-  const activeStoreSearchKey = `${store}:${prodQuery.trim()}:${lang}:${region ?? 'all'}:${postalCode ?? 'none'}:${productSearchOrder}`;
+  const activeStoreSearchKey = `${store}:${prodQuery.trim()}:${lang}:${region ?? 'all'}:${postalCode ?? 'none'}:${lidlStoreId ?? 'no-lidl'}:${productSearchOrder}`;
   const activeStoreSearchKeyRef = useRef(activeStoreSearchKey);
   activeStoreSearchKeyRef.current = activeStoreSearchKey;
   // Setter de búsqueda de productos del súper activo (para la fila de búsqueda
@@ -757,9 +762,9 @@ export default function CatalogScreen() {
     };
   }, [compareSearchProducts]);
   const enabledStoresKey = enabledStores.join(',');
-  const activeAllSearchKey = `${allSearch.trim()}:${lang}:${region ?? 'all'}:${postalCode ?? 'none'}:${productSearchOrder}:${enabledStoresKey}`;
+  const activeAllSearchKey = `${allSearch.trim()}:${lang}:${region ?? 'all'}:${postalCode ?? 'none'}:${lidlStoreId ?? 'no-lidl'}:${productSearchOrder}:${enabledStoresKey}`;
   const activeBrowseKey = browseCacheKey(
-    store, lang, region, postalCode, `${productSortField}:${activeProductOrder}`,
+    store, lang, region, postalCode, lidlStoreId, `${productSortField}:${activeProductOrder}`,
   ) + (store === 'all' ? `:${enabledStoresKey}` : '');
   const allBrowsePager = useRef<MultiStorePager<UIProduct> | null>(null);
   const allBrowseRequestKey = useRef<string | null>(null);
@@ -797,7 +802,7 @@ export default function CatalogScreen() {
         stores: enabledStores,
         pageSize: 12,
         loadPage: (selectedStore, cursor, limit, signal) =>
-          loadBrowsePage(selectedStore, cursor, region, postalCode, signal, browseOrder, limit),
+          loadBrowsePage(selectedStore, cursor, region, postalCode, lidlStoreId, signal, browseOrder, limit),
         compare: compareActiveProducts,
       });
       allBrowsePager.current = pager;
@@ -845,7 +850,7 @@ export default function CatalogScreen() {
     const controller = new AbortController();
     browseInitialController.current = controller;
     setBrowseRefreshing(hasCachedPage);
-    loadBrowsePage(store, null, region, postalCode, controller.signal, browseOrder)
+    loadBrowsePage(store, null, region, postalCode, lidlStoreId, controller.signal, browseOrder)
       .then((page) => {
         if (cancelled || activeBrowseKeyRef.current !== requestKey) return;
         browsePageCache.set(requestKey, { page, cachedAt: Date.now() });
@@ -867,7 +872,7 @@ export default function CatalogScreen() {
       controller.abort();
     };
   }, [
-    store, browseMode, lang, region, postalCode, activeBrowseKey, browseOrder,
+    store, browseMode, lang, region, postalCode, lidlStoreId, activeBrowseKey, browseOrder,
     compareActiveProducts, enabledStores,
   ]);
 
@@ -901,7 +906,7 @@ export default function CatalogScreen() {
     }
 
     const cursor = browseCursor;
-    loadBrowsePage(store, cursor, region, postalCode, controller.signal, browseOrder)
+    loadBrowsePage(store, cursor, region, postalCode, lidlStoreId, controller.signal, browseOrder)
       .then(({ items, nextCursor }) => {
         if (activeBrowseKeyRef.current !== requestKey) return;
         setBrowse((prev) => [...prev, ...items]);
@@ -1063,14 +1068,15 @@ export default function CatalogScreen() {
     return startProductSearch(alSearch, (q, signal) => searchAldiProducts(q, 50, signal, 0, productSearchOrder), setAlResults, setAlLoading, setAlError);
   }, [store, alSearch, productSearchOrder]);
 
+  useEffect(() => { setLiCats([]); setLiResults([]); }, [lidlStoreId]);
   useEffect(() => {
     if (tab !== 'categorias' || store !== 'lidl' || liCats.length > 0) return;
-    return startCategoryLoad(fetchLidlCategoryTree, setLiCats, setLiCatsLoading, setLiCatsError);
-  }, [store, tab, liCats.length]);
+    return startCategoryLoad((signal) => fetchLidlCategoryTree(lidlStoreId, signal), setLiCats, setLiCatsLoading, setLiCatsError);
+  }, [store, tab, liCats.length, lidlStoreId]);
   useEffect(() => {
     if (store !== 'lidl') return;
-    return startProductSearch(liSearch, (q, signal) => searchLidlProducts(q, 50, signal, 0, productSearchOrder), setLiResults, setLiLoading, setLiError);
-  }, [store, liSearch, productSearchOrder]);
+    return startProductSearch(liSearch, (q, signal) => searchLidlProducts(q, 50, signal, 0, productSearchOrder, lidlStoreId), setLiResults, setLiLoading, setLiError);
+  }, [store, liSearch, productSearchOrder, lidlStoreId]);
 
   useEffect(() => {
     if (tab !== 'categorias' || store !== 'gadis' || gaCats.length > 0) return;
@@ -1154,6 +1160,7 @@ export default function CatalogScreen() {
       prodQuery,
       region,
       postalCode,
+      lidlStoreId,
       controller.signal,
       50,
       offset,
@@ -1245,6 +1252,7 @@ export default function CatalogScreen() {
               q,
               region,
               postalCode,
+              lidlStoreId,
               pageSignal,
               limit,
               offset,
@@ -1279,7 +1287,7 @@ export default function CatalogScreen() {
       setAllSearchMore(false);
     };
   }, [
-    store, allSearch, lang, region, postalCode, productSearchOrder,
+    store, allSearch, lang, region, postalCode, lidlStoreId, productSearchOrder,
     activeAllSearchKey, allSearchComparator, enabledStoresKey, enabledStores,
   ]);
 
@@ -1429,6 +1437,9 @@ export default function CatalogScreen() {
   const renderProductsTab = (
     query: string, searchLoading: boolean, searchError: boolean, searchItems: UIProduct[],
   ) => {
+    if (store === 'lidl' && !lidlStoreId) {
+      return <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.lidlStoreRequired')}</Text></View>;
+    }
     const extraItems = store !== 'all' && storeSearchExtra.key === activeStoreSearchKey
       ? storeSearchExtra.items
       : [];
@@ -2291,8 +2302,9 @@ export default function CatalogScreen() {
 
       {/* ── Lidl ─────────────────────────────────────────────────── */}
       {store === 'lidl' && tab === 'categorias' && (
-        liCatsLoading ? <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
-        : liCatsError ? <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Lidl' })}</Text><TouchableOpacity onPress={() => { setLiCatsError(false); setLiCatsLoading(true); fetchLidlCategoryTree().then(setLiCats).catch(() => setLiCatsError(true)).finally(() => setLiCatsLoading(false)); }}><Text style={styles.retryText}>{t('common.retry')}</Text></TouchableOpacity></View>
+        !lidlStoreId ? <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.lidlStoreRequired')}</Text></View>
+        : liCatsLoading ? <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
+        : liCatsError ? <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Lidl' })}</Text><TouchableOpacity onPress={() => { setLiCatsError(false); setLiCatsLoading(true); fetchLidlCategoryTree(lidlStoreId).then(setLiCats).catch(() => setLiCatsError(true)).finally(() => setLiCatsLoading(false)); }}><Text style={styles.retryText}>{t('common.retry')}</Text></TouchableOpacity></View>
         : <FlatList data={sortedCats(liCats)} keyExtractor={(item) => item.id} renderItem={renderLiCategory} contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]} showsVerticalScrollIndicator={false} ItemSeparatorComponent={() => <View style={{ height: 8 }} />} />
       )}
       {store === 'lidl' && tab === 'productos' && renderProductsTab(liSearch, liLoading, liError, liResults.map(lidlToUI))}

@@ -86,6 +86,113 @@ function offerText(value) {
   return null;
 }
 
+const normalizeOfferCode = (value) => {
+  const digits = String(value ?? '').trim().replace(/\D/g, '');
+  return digits ? digits.replace(/^0+(?=\d)/, '') : null;
+};
+
+const normalizeOfferTitle = (value) => String(value ?? '')
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, ' ')
+  .trim();
+
+const offerCodes = (offer) => new Set(
+  (Array.isArray(offer?.productIds) ? offer.productIds : [])
+    .map(normalizeOfferCode)
+    .filter(Boolean),
+);
+
+const catalogImageCodes = (product) => {
+  const filename = String(product?.imageUrl ?? '').split('/').at(-1)?.split('?')[0] ?? '';
+  return filename
+    .split('_')
+    .filter((part) => /^\d+$/.test(part))
+    .map(normalizeOfferCode)
+    .filter(Boolean);
+};
+
+const isoDate = (value) => {
+  if (!value) return null;
+  const timestamp = Date.parse(String(value));
+  return Number.isFinite(timestamp) ? new Date(timestamp).toISOString().slice(0, 10) : null;
+};
+
+const positiveNumber = (value) => {
+  const parsed = toNumber(value);
+  return parsed != null && parsed > 0 ? parsed : null;
+};
+
+/** Solo considera las promociones de tienda activas en el instante indicado. */
+export function isLiveLidlStoreOffer(offer, now = new Date()) {
+  if (offer?.redemptionChannel !== 'Store') return false;
+  const nowMs = now instanceof Date ? now.getTime() : Date.parse(String(now));
+  if (!Number.isFinite(nowMs)) return false;
+  const startMs = offer.startValidityDate ? Date.parse(String(offer.startValidityDate)) : null;
+  const endMs = offer.endValidityDate ? Date.parse(String(offer.endValidityDate)) : null;
+  if (startMs != null && !Number.isFinite(startMs)) return false;
+  if (endMs != null && !Number.isFinite(endMs)) return false;
+  return (startMs == null || startMs <= nowMs) && (endMs == null || endMs >= nowMs);
+}
+
+/**
+ * Preselección barata antes de consultar el detalle. El código incrustado en
+ * la imagen o, como respaldo, nombre+precio ordinario reducen las peticiones;
+ * nunca bastan por sí solos para guardar una oferta.
+ */
+export function isLidlOfferCandidate(product, offer) {
+  const codes = offerCodes(offer);
+  if (!codes.size) return false;
+  if (catalogImageCodes(product).some((code) => codes.has(code))) return true;
+
+  const offerTitle = normalizeOfferTitle(offer?.title);
+  const productTitle = normalizeOfferTitle(product?.title);
+  const regularPrice = positiveNumber(offer?.priceBox?.smallPartNumeric);
+  const catalogPrice = positiveNumber(product?.price?.priceWithoutDeposit ?? product?.price?.price);
+  return Boolean(offerTitle && productTitle === offerTitle && regularPrice != null && catalogPrice === regularPrice);
+}
+
+/** Confirmación canónica: productCodes del detalle debe contener un productId de la oferta. */
+export function lidlOfferMatchesDetail(detail, offer) {
+  const codes = offerCodes(offer);
+  if (!codes.size) return false;
+  return (Array.isArray(detail?.productCodes) ? detail.productCodes : [])
+    .some((entry) => codes.has(normalizeOfferCode(entry?.code)));
+}
+
+function lidlOfferLabel(offer) {
+  const percentage = annotationText(offer?.priceBox?.largePartString);
+  const message = annotationText(offer?.priceBox?.discountMessage);
+  const parts = [];
+  const compactPercentage = percentage.replace(/\s+/g, '');
+  const compactMessage = message.replace(/\s+/g, '');
+  if (percentage && /^-\s*\d+\s*%$/.test(percentage) && !compactMessage.includes(compactPercentage)) {
+    parts.push(compactPercentage);
+  }
+  if (message) parts.push(message);
+  return parts.join(' · ') || percentage || message || 'Oferta';
+}
+
+/** Aplica al contrato de BD una oferta ya verificada contra productCodes. */
+export function applyLidlOffer(row, offer) {
+  const promoPrice = positiveNumber(offer?.priceBox?.largePartNumeric);
+  const sourceBasePrice = positiveNumber(offer?.priceBox?.smallPartNumeric);
+  const basePrice = promoPrice != null && sourceBasePrice != null && sourceBasePrice > promoPrice
+    ? sourceBasePrice
+    : null;
+  return {
+    ...row,
+    promo_name: lidlOfferLabel(offer),
+    promo_text: annotationText(offer?.priceBox?.discountMessage) || annotationText(offer?.offerType) || null,
+    promo_price: promoPrice,
+    promo_base_price: basePrice,
+    promo_start: isoDate(offer?.startValidityDate),
+    promo_end: isoDate(offer?.endValidityDate),
+    raw: { ...(row?.raw ?? {}), offer },
+  };
+}
+
 export function lidlCategoryId(parentId, categoryId) {
   return parentId ? `${parentId}:${categoryId}` : String(categoryId);
 }
@@ -124,7 +231,10 @@ export function normalizeLidlProduct(product, category) {
     price_per_unit_unit: parsed.pricePerUnitUnit,
     promo_name: hasLidlPlusOffer ? 'Lidl Plus' : (hasPublicDiscount ? 'Oferta' : null),
     promo_text: offerText(rawPrice.lidlPlusOffer ?? rawPrice.discount),
+    promo_price: null,
     promo_base_price: hasPublicDiscount ? oldPrice : null,
+    promo_start: null,
+    promo_end: null,
     is_lidl_plus_offer: hasLidlPlusOffer,
     available: stockIndicator === 'Available',
     stock_indicator: stockIndicator,
@@ -133,5 +243,72 @@ export function normalizeLidlProduct(product, category) {
     click_collect: product?.productValidForClickAndCollect === true,
     published: true,
     raw: product,
+  };
+}
+
+/** Ficha compartida entre tiendas. Nunca conserva campos locales en `raw`. */
+export function lidlProductMasterRow(row) {
+  const raw = { ...(row.raw ?? {}) };
+  delete raw.price;
+  delete raw.stockAvailability;
+  delete raw.productValidForClickAndCollect;
+  delete raw.offer;
+  return {
+    id: row.id,
+    retailer_product_id: row.retailer_product_id,
+    ean: row.ean,
+    display_name: row.display_name,
+    brand: row.brand,
+    packaging: row.packaging,
+    thumbnail: row.thumbnail,
+    product_line: row.product_line,
+    listing_type: row.listing_type,
+    published: row.published,
+    raw,
+    synced_at: row.synced_at,
+  };
+}
+
+/** Datos que solo son autoritativos para una tienda Lidl concreta. */
+export function lidlStoreProductRow(row, storeId) {
+  return {
+    store_id: storeId,
+    product_id: row.id,
+    category_id: row.category_id,
+    category_name: row.category_name,
+    category_ids: row.category_ids,
+    unit_price: row.unit_price,
+    price_format: row.price_format,
+    price_per_unit: row.price_per_unit,
+    price_per_unit_unit: row.price_per_unit_unit,
+    promo_name: row.promo_name,
+    promo_text: row.promo_text,
+    promo_price: row.promo_price,
+    promo_base_price: row.promo_base_price,
+    promo_start: row.promo_start,
+    promo_end: row.promo_end,
+    is_lidl_plus_offer: row.is_lidl_plus_offer,
+    available: row.available,
+    stock_indicator: row.stock_indicator,
+    click_collect: row.click_collect,
+    published: row.published,
+    raw: {
+      price: row.raw?.price ?? null,
+      stockAvailability: row.raw?.stockAvailability ?? null,
+      productValidForClickAndCollect: row.raw?.productValidForClickAndCollect ?? null,
+      offer: row.raw?.offer ?? null,
+    },
+    observed_at: row.synced_at,
+    synced_at: row.synced_at,
+  };
+}
+
+export function lidlStoreCategoryRow(category, storeId) {
+  return {
+    store_id: storeId,
+    category_id: category.id,
+    product_count: category.product_count,
+    published: category.published,
+    synced_at: category.synced_at,
   };
 }

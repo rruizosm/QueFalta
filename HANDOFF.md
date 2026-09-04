@@ -1,5 +1,87 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Orquestador semanal Lidl desplegado (2026-09-04)
+
+- La primera versión de la cola priorizaba una tienda cuando el usuario la
+  seleccionaba. Ese diseño se retiró por completo con la migración aplicada
+  `20260904175757_lidl_weekly_full_fleet.sql`: no queda trigger en `profiles`,
+  ni columnas/RPC de prioridad, ni workflow cada 15 minutos. Elegir tienda solo
+  decide qué catálogo lee la app.
+- `private.lidl_catalog_sync_queue` queda como cola técnica para repartir un
+  único lote semanal. Cada lunes `schedule_all_lidl_catalog_sync_jobs()` vuelve
+  a programar todas las tiendas `published + selectable`, sin consultar si un
+  usuario las ha elegido y sin excluir catálogos actualizados durante la semana.
+- `scripts/sync-lidl-fleet.mjs` reclama una tienda cada vez y delega en
+  `sync-lidl.mjs` con su `LIDL_STORE_ID`. Mantiene claims atómicos con
+  `FOR UPDATE SKIP LOCKED`, lease de 45 minutos, timeout de 35, tres intentos,
+  backoff y estado terminal `dead`.
+- `.github/workflows/sync-lidl.yml` está preparado para los lunes a las 11:20
+  UTC: 24 workers × 32 tiendas dan capacidad para 768, con hasta seis workers
+  simultáneos para cubrir las 721 tiendas abiertas actuales.
+- Verificación productiva con `ROLLBACK`: cambiar la tienda de un perfil no
+  encola nada; el planificador genera exactamente 721 filas; claim, cierre y
+  retry funcionan. El rollback dejó la cola en cero. El propietario ha
+  autorizado publicar el workflow y activar `LIDL_SYNC_ENABLED=true`; no se
+  lanza un barrido manual como parte de la activación.
+  TypeScript, ESLint, YAML, `git diff --check`, advisors y la suite completa
+  (**623/623**) pasan.
+- La publicación y activación técnica quedan autorizadas en este cambio. Deben
+  seguir comprobándose los secretos GitHub `SUPABASE_URL`/
+  `SUPABASE_SERVICE_ROLE` (y `LIDL_STORES_API_KEY` para el directorio) y la
+  revisión de autorización comercial. Hasta el primer barrido semanal continúan
+  sin catálogo las otras 720 tiendas abiertas.
+
+## Lidl multitienda y directorio nacional desplegados (2026-09-04)
+
+- Se aplicó `20260904134138_lidl_multistore_catalog.sql` en Supabase.
+  Separa ficha maestra de producto y variante `(store_id, product_id)`, guarda
+  directorio/candidatos postales y añade `profiles.lidl_store_id`. La tabla
+  `lidl_products` se mantiene para no romper las builds publicadas.
+- Se aplicó también `20260904134454_lidl_multistore_fk_indexes.sql`: cubre las
+  cuatro claves foráneas que señaló el advisor. No quedan avisos de seguridad
+  ni claves foráneas sin índice atribuibles al cambio multitienda.
+- El sync del directorio nacional se ejecutó en producción a las 13:49 UTC:
+  730 tiendas, 721 abiertas, 652 CP totales, 645 CP con tienda abierta y 721
+  candidatos exactos. Hay 71 CP con varias tiendas abiertas y hasta 3 opciones.
+  Publica por el momento candidatos de CP exacto; las tres tiendas cercanas sin
+  coincidencia exacta necesitan todavía un índice de centroides postales.
+- `LIDL_STORES_API_KEY` se resolvió de forma transitoria desde el cliente web
+  público de Lidl y no se persistió. Para que el workflow diario funcione tras
+  publicarlo, aún debe configurarse como secreto rotatorio en GitHub.
+- El sync de catálogo ya escribe master, productos y categorías por tienda;
+  los obsoletos se limitan a la tienda procesada. `ES3572` mantiene en paralelo
+  el contrato legacy. El orquestador semanal de las 721 tiendas abiertas ya
+  está desplegado en base de datos y su publicación/activación ha sido
+  autorizada por el propietario.
+- El selector vive después del CP en `RegionPicker`; no autoconfirma la tienda.
+  La app guarda el id elegido y todas las lecturas Lidl relevantes lo exigen.
+  Sin elección, Catálogo explica dónde configurarla y los feeds transversales
+  no incluyen Lidl: nunca se usa silenciosamente el precio alicantino.
+- Compatibilidad de despliegue: si `profiles.lidl_store_id` todavía no existe,
+  `fetchProfile` y `updateProfile` reintentan únicamente ese caso contra el
+  esquema anterior, de modo que comunidad y CP se siguen leyendo/guardando.
+  Si falta la RPC `find_lidl_stores`, el selector muestra un aviso neutro en vez
+  de un error; fallos de red, permisos u otros códigos no se silencian.
+- Antes de mostrar productos de tiendas adicionales hay que sincronizar sus
+  catálogos: ahora todas aparecen en el selector, pero solo `ES3572` tiene
+  productos cargados. La activación solicitada deja el primer barrido para la
+  próxima ejecución programada; no se hace dispatch manual en este cambio.
+
+## Main sincronizado e integración posterior al merge (2026-09-04)
+
+- `main` local se adelantó sin conflictos de `724058e` a `97fe3b8`; incluye
+  los merges #51 (comparador estricto/auditoría) y #52 (catálogo Lidl).
+- No hubo cambios de dependencias raíz. Las dos migraciones Lidl ya estaban
+  aplicadas en producción según la evidencia del merge y no se ejecutaron de
+  nuevo.
+- El merge #52 cambió `src/api/catalog.ts`, `StoreProductModal.tsx` y
+  `SimilarProductsSection.tsx`, que recibos históricos CE habían congelado como
+  protección temporal. Esos recibos permanecen byte-idénticos. La suite omite
+  solo las ocho aserciones ya obsoletas y las sustituye por comprobaciones que
+  aceptan exclusivamente la transición de hashes de `97fe3b8`, mantienen el
+  resto de referencias congeladas y exigen que la sonda CE-100 antigua falle
+  cerrada tras cambiar el cliente de catálogo.
+
 ## Lidl: catálogo cargado e integración cliente local (2026-09-04)
 
 - La conclusión histórica de Lidl como «sin espejo» queda superada: Product
@@ -17,9 +99,24 @@
   búsqueda, índices y `catalog_sync_status` se verificaron en producción. Lidl
   está integrado localmente en selector, categorías, browse/búsqueda, ficha,
   carrito y favoritos, pero no en comparador. TypeScript pasa.
-- Workflow semanal listo, aún no publicado: requiere commit/push y la variable
-  GitHub `LIDL_SYNC_ENABLED=true`. Siguen pendientes el contraste multi-tienda
-  y la revisión de autorización comercial. Ver `scripts/README-lidl-sync.md`.
+- Workflow semanal listo para publicarse en este cambio con la variable GitHub
+  `LIDL_SYNC_ENABLED=true`. Siguen pendientes el primer barrido completo, el
+  contraste multi-tienda y la revisión de autorización comercial. Ver
+  `scripts/README-lidl-sync.md`.
+- Ofertas implementadas después del merge: fuente pública separada
+  `offers.lidlplus.com/app/api/v4/ES/{storeId}/offers`, solo canal `Store` y
+  vigencia activa. La correspondencia solo se acepta si `productCodes` del
+  detalle contiene un `productId` de la oferta; imagen o nombre+precio sirven
+  únicamente para reducir candidatos. DRY_RUN: 28 campañas, 27 de tienda, 17
+  enlaces exactos y 10 sin producto alimentario.
+- Cliente conectado a Ofertas (selector, categorías, búsqueda, tipo, precio
+  promocional/anterior y detalle). La ficha replica el bloque de oferta de
+  Bonpreu y no superpone la promoción sobre la imagen. La migración
+  `20260904122841_lidl_offers.sql` está aplicada y verificada en producción.
+  El sync de las 12:30 UTC publicó 17 ofertas (12 con precio directo); lectura
+  anónima y RPC correctas, incluida Banana a 0,99 € frente a 1,49 €.
+- `npx tsc --noEmit`, `npm run lint`, suite completa `npm test` y
+  `git diff --check` correctos tras la integración.
 
 ## Compilación Xcode: caché de React y sesión PIF (local, 2026-09-03)
 

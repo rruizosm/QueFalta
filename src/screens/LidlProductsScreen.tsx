@@ -9,6 +9,7 @@ import { fetchLidlProductsByCategory, type LidlProduct } from '../api/catalog';
 import { getMeta } from '../constants/categoryMeta';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
+import { useProfile } from '../context/ProfileContext';
 import { lidlToUI } from '../lib/productAdapters';
 import StoreProductList from '../components/StoreProductList';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
@@ -19,6 +20,7 @@ export default function LidlProductsScreen() {
   const styles = useThemedStyles(themedStyles);
   const headerTop = useHeaderTopPadding(52);
   const { t } = useTranslation();
+  const { profile } = useProfile();
   const navigation = useNavigation<any>();
   const { categoryId, categoryName, parentName } = useRoute<RouteProps>().params;
   const [products, setProducts] = useState<LidlProduct[]>([]);
@@ -29,12 +31,12 @@ export default function LidlProductsScreen() {
     let active = true;
     setLoading(true);
     setError(false);
-    fetchLidlProductsByCategory(categoryId)
+    fetchLidlProductsByCategory(categoryId, profile?.lidlStoreId ?? null)
       .then((rows) => { if (active) setProducts(rows); })
       .catch(() => { if (active) setError(true); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [categoryId]);
+  }, [categoryId, profile?.lidlStoreId]);
 
   const uiProducts = useMemo(() => products.map(lidlToUI), [products]);
   return (

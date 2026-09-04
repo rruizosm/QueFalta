@@ -1,0 +1,29 @@
+name: Sync Lidl store directory
+
+on:
+  schedule:
+    - cron: '35 4 * * *'
+  workflow_dispatch: {}
+
+concurrency:
+  group: sync-lidl-stores
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.event_name == 'workflow_dispatch' || vars.LIDL_SYNC_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Sincronizar directorio oficial de tiendas Lidl
+        run: node scripts/sync-lidl-stores.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          LIDL_STORES_API_KEY: ${{ secrets.LIDL_STORES_API_KEY }}
+          MIN_STORES: '700'
+          MIN_OPEN_STORES: '680'

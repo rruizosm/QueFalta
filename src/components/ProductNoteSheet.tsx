@@ -138,6 +138,7 @@ export default function ProductNoteSheet({
         controller.signal,
         40,
         true,
+        profile?.lidlStoreId ?? null,
       )
         .then((products) => { if (!cancelled) setResults(products); })
         .catch(() => { if (!cancelled) setSearchError(true); })
@@ -149,7 +150,7 @@ export default function ProductNoteSheet({
       clearTimeout(handle);
       controller.abort();
     };
-  }, [noteProductLocked, pickerOpen, pickerStore, postalCode, query, region]);
+  }, [noteProductLocked, pickerOpen, pickerStore, postalCode, query, region, profile?.lidlStoreId]);
 
   const normalizedValue = normalizeNote(value);
   const changed = normalizedValue !== normalizeNote(initialValue)

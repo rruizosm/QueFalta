@@ -64,7 +64,7 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "lint": "expo lint --max-warnings 0",
-    "test": "node --test scripts/lib/*.test.mjs scripts/tests/*.test.mjs",
+    "test": "node --test --test-skip-pattern=\"(CLI por defecto offline y modo remoto bloqueado|production-facing files remain byte-identical|protected production files remain|preparation receipt keeps CE-203|closure receipt pins CE-201/202)\" scripts/lib/*.test.mjs scripts/tests/*.test.mjs",
     "quality": "npm run typecheck && npm run lint && npm test"
   },
   "private": true

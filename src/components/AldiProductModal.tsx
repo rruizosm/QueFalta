@@ -50,6 +50,20 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
   if (!product) return null;
   const price = product.priceFormat
     ?? (product.unitPrice != null ? `${product.unitPrice.toFixed(2).replace('.', ',')} €` : null);
+  const lidlPromoBasePrice = store === 'lidl' && 'promoBasePrice' in product
+    ? product.promoBasePrice
+    : null;
+  const lidlPromotion = store === 'lidl'
+    && 'promoName' in product
+    && 'promoText' in product
+    && product.promoName
+    ? { name: product.promoName, text: product.promoText }
+    : null;
+  const promotionPreviousPrice = lidlPromoBasePrice != null
+    && product.unitPrice != null
+    && lidlPromoBasePrice > product.unitPrice
+    ? `${lidlPromoBasePrice.toFixed(2).replace('.', ',')} €`
+    : null;
   const fav = isProductFavorite(store, product.id);
 
   const handleToggleFav = async () => {
@@ -116,8 +130,25 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
         <Text style={styles.name}>{product.displayName}</Text>
         {product.brand ? <Text style={styles.brand}>{product.brand}</Text> : null}
 
-        <ProductPriceLine store={store} productId={product.id} price={price} size={product.packaging} />
+        <ProductPriceLine
+          store={store}
+          productId={product.id}
+          price={price}
+          size={product.packaging}
+          promotionPreviousPrice={promotionPreviousPrice}
+          priceTone={promotionPreviousPrice ? 'down' : 'default'}
+        />
         {product.pricePerUnit ? <Text style={styles.refPrice}>{product.pricePerUnit}</Text> : null}
+
+        {lidlPromotion ? (
+          <View style={styles.promoBox}>
+            <View style={styles.promoPill}>
+              <Ionicons name="pricetags" size={12} color={colors.white} />
+              <Text style={styles.promoPillText}>{lidlPromotion.name}</Text>
+            </View>
+            {lidlPromotion.text ? <Text style={styles.promoText}>{lidlPromotion.text}</Text> : null}
+          </View>
+        ) : null}
 
         {/* Comparativa: más barato en otros súper */}
         <SimilarProductsSection productId={product.id} excludeStore={store} />
@@ -130,7 +161,7 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
           ]}
         />
 
-        <Text style={styles.note}>{t('product.fromStore', { store: store === 'gadis' ? 'Gadis' : store === 'froiz' ? 'Froiz' : store === 'ahorramas' ? 'Ahorramás' : 'Aldi' })}</Text>
+        <Text style={styles.note}>{t('product.fromStore', { store: store === 'gadis' ? 'Gadis' : store === 'froiz' ? 'Froiz' : store === 'ahorramas' ? 'Ahorramás' : store === 'lidl' ? 'Lidl' : 'Aldi' })}</Text>
       </ScrollView>
 
       {/* Pie: cantidad + añadir a la cesta */}
@@ -194,6 +225,18 @@ const themedStyles = () => StyleSheet.create({
   price: { fontSize: 28, fontFamily: fonts.bold, color: colors.accent },
   size: { fontSize: 13, fontFamily: fonts.medium, color: colors.inkSoft },
   refPrice: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
+
+  promoBox: {
+    marginTop: 14, padding: 12, gap: 8,
+    backgroundColor: colors.accentLight,
+    borderWidth: 1, borderColor: colors.accentMid,
+  },
+  promoPill: {
+    alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: colors.accent, paddingHorizontal: 8, paddingVertical: 4,
+  },
+  promoPillText: { fontSize: 12, fontFamily: fonts.bold, color: colors.white },
+  promoText: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.ink, lineHeight: 18 },
 
   note: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkFaint, marginTop: 24 },
 

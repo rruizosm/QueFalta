@@ -1,0 +1,36 @@
+name: Sync Lidl catalog
+
+on:
+  schedule:
+    - cron: '20 11 * * 1' # lunes 11:20 UTC, semanal
+  workflow_dispatch: {}
+
+concurrency:
+  group: sync-lidl
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    # El primer run productivo fue validado el 2026-09-04. El cron se activa al
+    # publicar el workflow y definir LIDL_SYNC_ENABLED=true en el repositorio.
+    if: github.event_name == 'workflow_dispatch' || vars.LIDL_SYNC_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Sincronizar catálogo público de Lidl
+        run: node scripts/sync-lidl.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          LIDL_STORE_ID: ${{ vars.LIDL_STORE_ID || 'ES3572' }}
+          CONCURRENCY: '4'
+          PAGE_SIZE: '100'
+          MIN_LEAVES: '35'
+          MIN_NONEMPTY_LEAVES: '40'
+          EMPTY_LEAF_RETRIES: '3'
+          MIN_PRODUCTS: '2200'
+          MIN_COVERAGE_RATIO: '0.85'

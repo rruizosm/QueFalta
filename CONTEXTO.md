@@ -3,6 +3,35 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
+## Lidl: catálogo productivo e integración cliente (2026-09-04)
+
+- Descubierta la API pública de Product Catalog de Lidl Plus:
+  `product-catalog.lidlplus.com/api/app/v1/ES/store/{storeId}`. Para `ES3572`,
+  los barridos iniciales explicaron la variación 2.531–2.811 por una respuesta
+  temporalmente vacía en Cosmética. El sync ahora reintenta hojas vacías y no
+  publica si no obtiene las 40 hojas con producto.
+- Primer sync productivo completado el 04-09: 2.811 productos y 43 categorías,
+  100 % con precio e imagen, 2.736 con precio por unidad y 2.633 disponibles.
+  `catalog_sync_status` registra `lidl` a las 10:36:49 UTC y «Butifarra fresca
+  de cerdo» aparece a 3,69 €.
+- Las migraciones `20260904102903_lidl_catalog` y
+  `20260904104441_lidl_catalog_search` están aplicadas en producción. RLS,
+  permisos de lectura anon/authenticated, búsqueda server-side e índices de
+  navegación/FTS se verificaron sobre el catálogo publicado.
+- Lidl está integrado localmente en el cliente: selector y logo, filtros por
+  región, búsqueda/browse, categorías, ficha básica, carrito y favoritos. No se
+  ha añadido al comparador semántico porque aún no hay EAN fiables.
+- El workflow semanal usa `ES3572`, reintentos y guardarraíles; el cron requiere
+  `LIDL_SYNC_ENABLED=true` en GitHub. El código sigue local, sin commit ni push,
+  por lo que la automatización aún no está publicada/activa.
+- Los ids públicos de Product Catalog son internos y no se guardan como EAN.
+  `ean` permanece NULL. La masterdata con `barcode` pertenece a Scan&Go y exige
+  autenticación; queda fuera de este sync.
+- Guardarraíles: árbol completo, 40 hojas no vacías, mínimo absoluto, cobertura de precio/imagen y
+  al menos 85 % del catálogo publicado anterior. La ficha detallada
+  (ingredientes, alérgenos y `productCodes`) queda para enriquecimiento
+  incremental, no para 2.500+ peticiones semanales.
+
 ## Reparación local de compilación en Xcode (2026-09-03)
 
 - Los registros de Xcode mostraban `Framework 'React' not found` y después

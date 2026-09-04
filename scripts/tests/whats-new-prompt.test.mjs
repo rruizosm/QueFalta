@@ -27,8 +27,8 @@ test('el popup es compacto y se puede cerrar por todos los caminos esperados', (
 });
 
 test('la bienvenida comunica solo las cuatro novedades listas en castellano y catalán', () => {
-  assert.match(translations, /storesTitle: '18 supermercados, ahora juntos'/);
-  assert.match(translations, /storesTitle: '18 supermercats, ara junts'/);
+  assert.match(translations, /storesTitle: '19 supermercados, ahora juntos'/);
+  assert.match(translations, /storesTitle: '19 supermercats, ara junts'/);
   assert.match(translations, /searchTitle: 'Encuentra lo que buscas'/);
   assert.match(translations, /searchTitle: 'Troba el que busques'/);
   assert.match(translations, /radarTitle: 'Nuevo Radar de ahorro'/);

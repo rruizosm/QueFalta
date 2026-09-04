@@ -287,7 +287,7 @@ export type CatalogStackParamList = {
     color?: string;
     /** Subcategorías N2. Mercadona usa ids numéricos; el resto de espejos, ids string. */
     subcategories: { id: string | number; name: string }[];
-    retailer?: 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi' | 'hiperdino' | 'alcampo' | 'plusfresc' | 'gadis' | 'froiz' | 'ahorramas';
+    retailer?: CatalogStore;
   };
   Products: {
     subcategoryId: number;
@@ -358,6 +358,11 @@ export type CatalogStackParamList = {
   };
   /** Productos de una subcategoría de Aldi (lee del espejo). */
   AldiProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentName?: string;
+  };
+  LidlProducts: {
     categoryId: string;
     categoryName: string;
     parentName?: string;

@@ -55,6 +55,7 @@ export const STORE_REGIONS: Record<CatalogStore, RegionCode[] | null> = {
   carrefour: null,
   dia:       null,
   aldi:      null,
+  lidl:      null,
   alcampo:   null,
   esclat:    ['ES-CT'],
   sorli:     ['ES-CT'],

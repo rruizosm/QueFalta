@@ -6,7 +6,7 @@ import type { MercadonaProduct, FavoriteProduct } from '../types';
 import { formatPrice, formatSize, formatReferencePrice } from '../api/mercadona';
 import type {
   BonpreuProduct, CarrefourProduct, BonareaProduct, ConsumProduct, DiaProduct, SorliProduct,
-  CondisProduct, AmetllerProduct, AldiProduct, HiperdinoProduct, AlcampoProduct, PlusfrescProduct, TapestryProduct,
+  CondisProduct, AmetllerProduct, AldiProduct, LidlProduct, HiperdinoProduct, AlcampoProduct, PlusfrescProduct, TapestryProduct,
   GadisProduct, FroizProduct,
   AhorramasProduct,
 } from '../api/catalog';
@@ -162,6 +162,17 @@ export function aldiToUI(p: AldiProduct): UIProduct {
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
+  };
+}
+
+/** Lidl: catálogo público de tienda con precio, formato y promociones Lidl Plus. */
+export function lidlToUI(p: LidlProduct): UIProduct {
+  return {
+    id: p.id, store: 'lidl', name: p.displayName, imageUrl: p.thumbnail,
+    priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit),
+    metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit,
+    categoryName: p.categoryName, offerTag: p.promoName,
   };
 }
 

@@ -5,7 +5,7 @@ import { Image as ExpoImage } from 'expo-image';
 // Fuente ÚNICA del switcher del catálogo, de la preferencia de perfil
 // "Supermercados" y del agrupado de Lista/Cesta por tienda (de aquí salen los
 // nombres e iconos). Para añadir una tienda: súmala aquí, al tipo y a storeOfItem.
-export type CatalogStore = 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi' | 'hiperdino' | 'alcampo' | 'plusfresc' | 'gadis' | 'froiz' | 'ahorramas';
+export type CatalogStore = 'mercadona' | 'esclat' | 'carrefour' | 'bonarea' | 'consum' | 'dia' | 'sorli' | 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'aldi' | 'lidl' | 'hiperdino' | 'alcampo' | 'plusfresc' | 'gadis' | 'froiz' | 'ahorramas';
 
 /** Metadatos (nombre + icono) en orden de aparición. */
 export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | null }[] = [
@@ -21,6 +21,7 @@ export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | n
   { key: 'condis',    name: 'Condis',        icon: require('../../assets/stores/condis.png') },
   { key: 'ametller',  name: 'Ametller Origen', icon: require('../../assets/stores/ametller.png') },
   { key: 'aldi',      name: 'Aldi',          icon: require('../../assets/stores/aldi.png') },
+  { key: 'lidl',      name: 'Lidl',          icon: require('../../assets/stores/lidl.png') },
   { key: 'hiperdino', name: 'HiperDino',     icon: require('../../assets/stores/hiperdino.jpg') },
   { key: 'alcampo',   name: 'Alcampo',       icon: require('../../assets/stores/alcampo.png') },
   { key: 'plusfresc', name: 'Plusfresc',     icon: require('../../assets/stores/plusfresc.png') },
@@ -76,7 +77,7 @@ export function normalizeStoreKey(value: unknown): Store | null {
 // Dominio de la miniatura guardada en list_items: bonpreuesclat.cat, mercadona.es,
 // carrefour.es, bonarea.com, cdn-consum.aktiosdigitalservices.com, dia.es,
 // cdn.sorliclic.com, eroski.es, capraboacasa.com, cdn.condis.es, ametllerorigen.com,
-// scene7.com/is/image/aldinord (Aldi), cdn.hiperdino.es (HiperDino),
+// scene7.com/is/image/aldinord (Aldi), Lidl Product Catalog, cdn.hiperdino.es (HiperDino),
 // compraonline.alcampo.es (Alcampo), compra.plusfresc.cat (Plusfresc),
 // storage.gadisline.com (Gadis), ahorramas.com (Ahorramás).
 // Mercadona también se reconoce por su id.
@@ -96,6 +97,7 @@ export function storeOfItem(it: StoreClue): Store {
   if (url.includes('condis')) return 'condis';
   if (url.includes('ametllerorigen')) return 'ametller';
   if (url.includes('scene7.com/is/image/aldinord')) return 'aldi';
+  if (url.includes('lidl')) return 'lidl';
   if (url.includes('cdn.hiperdino')) return 'hiperdino';
   if (url.includes('alcampo')) return 'alcampo';
   if (url.includes('plusfresc')) return 'plusfresc';

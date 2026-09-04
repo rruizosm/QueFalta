@@ -6,7 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
-import type { AldiProduct, GadisProduct, FroizProduct, AhorramasProduct } from '../api/catalog';
+import type { AldiProduct, LidlProduct, GadisProduct, FroizProduct, AhorramasProduct } from '../api/catalog';
 import type { CatalogStore } from '../constants/stores';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
@@ -23,8 +23,8 @@ import ActiveCartIcon from './ActiveCartIcon';
 
 interface Props {
   /** Producto a mostrar (ya cargado de aldi_products). null = oculto. */
-  product: AldiProduct | GadisProduct | FroizProduct | AhorramasProduct | null;
-  store?: Extract<CatalogStore, 'aldi' | 'gadis' | 'froiz' | 'ahorramas'>;
+  product: AldiProduct | LidlProduct | GadisProduct | FroizProduct | AhorramasProduct | null;
+  store?: Extract<CatalogStore, 'aldi' | 'lidl' | 'gadis' | 'froiz' | 'ahorramas'>;
   onClose: () => void;
   /** Padding superior de la cabecera (lo fija StoreProductModal): 56 a pantalla
    *  completa (cesta), 16 dentro de la hoja (catálogo). */
@@ -75,7 +75,7 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
     setAdding(true);
     try {
       await addToActiveCart([{
-        storeKey: 'aldi',
+        storeKey: store,
         productName: product.displayName,
         quantity: qty,
         unit: 'ud',

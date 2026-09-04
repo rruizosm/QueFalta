@@ -101,6 +101,12 @@ export default function SubCategoryScreen() {
         categoryName: item.name,
         parentName: categoryName,
       });
+    } else if (retailer === 'lidl') {
+      navigation.navigate('LidlProducts', {
+        categoryId: String(item.id),
+        categoryName: item.name,
+        parentName: categoryName,
+      });
     } else if (retailer === 'gadis') {
       navigation.navigate('GadisProducts', {
         categoryId: String(item.id), categoryName: item.name, parentCategoryName: categoryName,

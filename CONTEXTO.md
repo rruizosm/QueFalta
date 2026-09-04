@@ -3,7 +3,7 @@
 > Documento de contexto para agentes (Claude Code) y nuevos colaboradores.
 > Resume identidad, arquitectura, decisiones clave y estado. Mantener al día.
 
-## Corrección del primer arranque del barrido Lidl (2026-09-04)
+## Correcciones del primer arranque del barrido Lidl (2026-09-04)
 
 - El dispatch manual `33905985690` de `Sync Lidl catalog fleet` falló antes de
   llamar a Supabase: `const URL` contenía la URL base como texto y ocultaba al
@@ -13,6 +13,11 @@
   `SUPABASE_URL` y `SUPABASE_KEY`. Una prueba de proceso ejecuta realmente
   `--schedule-only` con `fetch` simulado y valida URL, método, autorización y
   respuesta de la RPC; la regresión ya no puede pasar solo con sintaxis válida.
+- El segundo dispatch, `33907980290`, ya alcanzó Supabase pero recibió `42501`:
+  la RPC es `SECURITY INVOKER` y a `service_role` le faltaba `DELETE` sobre la
+  cola. La migración aplicada `20260904185536` concede solo ese permiso. La RPC
+  se verificó como `service_role`: programó 721 tiendas dentro de una
+  transacción y el `ROLLBACK` confirmó de nuevo cero filas en la cola.
 - El primer dispatch del directorio falló porque aún no existía
   `LIDL_STORES_API_KEY`. El secreto se configuró después y el run
   `33905697909` terminó correctamente. Esta corrección no relanza el barrido de

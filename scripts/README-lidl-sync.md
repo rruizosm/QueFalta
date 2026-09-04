@@ -40,7 +40,9 @@ programa para consumidores privados y excluyen la participación comercial.
    debe estar presente antes de usar los syncs nuevos o esta versión del cliente.
    La cola y su política `20260904141250`/`20260904141502` también están
    desplegadas. `20260904175757_lidl_weekly_full_fleet.sql` retira la prioridad
-   por usuario y deja el planificador semanal completo.
+   por usuario y deja el planificador semanal completo. La corrección
+   `20260904185536_lidl_catalog_sync_queue_delete_grant.sql` concede a
+   `service_role` el `DELETE` que usa ese planificador `SECURITY INVOKER`.
 2. El primer sync productivo se validó el 2026-09-04: 2.811 productos y 43
    categorías, sin hojas vacías. El cliente ya incluye navegación, búsqueda,
    favoritos, carrito y ficha básica de Lidl.
@@ -62,7 +64,10 @@ programa para consumidores privados y excluyen la participación comercial.
    queda programado cada lunes a las 11:20 UTC. El primer dispatch manual falló
    antes de llamar a Supabase porque el nombre local `URL` ocultaba al
    constructor global; el orquestador usa ahora `SUPABASE_URL` y una prueba de
-   proceso cubre su arranque completo.
+   proceso cubre su arranque completo. El segundo llegó a la RPC pero falló
+   porque faltaba `DELETE` sobre la cola; la migración `20260904185536` ya está
+   aplicada y una ejecución transaccional como `service_role` programó las 721
+   tiendas antes de hacer `ROLLBACK` y dejar la cola vacía.
 
 La cola usa `pending → running → succeeded`, con `retry` exponencial y `dead`
 tras tres intentos. Cada claim tiene un lease de 45 minutos y usa

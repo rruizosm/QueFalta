@@ -3,8 +3,8 @@ import { supabase } from '../lib/supabase';
 import { CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import type { RegionValue } from '../constants/regions';
 
-const PROFILE_COLUMNS = 'id, created_at, name, initials, color, username, avatar_url, discoverable, catalog_stores, region, postal_code, lidl_store_id, premium_until, onboarded_at, onboarding_step, verified, legacy_all_stores_access';
-const LEGACY_PROFILE_COLUMNS = 'id, created_at, name, initials, color, username, avatar_url, discoverable, catalog_stores, region, postal_code, premium_until, onboarded_at, onboarding_step, verified, legacy_all_stores_access';
+const PROFILE_COLUMNS = 'id, created_at, name, initials, color, username, avatar_url, discoverable, catalog_stores, region, postal_code, lidl_store_id, premium_until, onboarded_at, onboarding_step, verified';
+const LEGACY_PROFILE_COLUMNS = 'id, created_at, name, initials, color, username, avatar_url, discoverable, catalog_stores, region, postal_code, premium_until, onboarded_at, onboarding_step, verified';
 
 /** Compatibilidad durante el despliegue escalonado del catálogo Lidl. Solo
  * reintentamos ante la ausencia inequívoca de la columna; permisos, red y
@@ -56,9 +56,6 @@ export interface UserProfile {
   /** Reflejo público de Plus para la insignia dorada. La autorización usa
    *  premiumUntil; el servidor sincroniza este booleano. */
   verified: boolean;
-  /** Señal de compatibilidad para clientes 1.3 ya publicados. Desde el
-   *  despliegue de 1.3 se concede a todas las cuentas registradas. */
-  legacyAllStoresAccess: boolean;
 }
 
 /** Normaliza la columna catalog_stores: filtra claves desconocidas y, si queda
@@ -114,7 +111,6 @@ export async function fetchProfile(userId: string): Promise<UserProfile> {
     onboardedAt: data.onboarded_at ?? null,
     onboardingStep: data.onboarding_step ?? 0,
     verified: data.verified ?? false,
-    legacyAllStoresAccess: data.legacy_all_stores_access ?? false,
   };
 }
 

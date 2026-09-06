@@ -2,7 +2,7 @@
 
 > Revisión del proyecto (2026-07-06) de cara al primer build/publicación Android.
 > Estado: la app iOS ya está enviada al App Store. El código es multiplataforma
-> (Expo SDK 54) y la mayor parte ya funciona en Android; esto lista lo que falta.
+> (Expo SDK 57) y la mayor parte ya funciona en Android; esto lista lo que falta.
 
 ## ✅ Lo que YA está listo para Android
 
@@ -23,7 +23,7 @@
 - **EAS**: `appVersionSource: remote` + `autoIncrement` → `versionCode` automático.
   Las env vars de EAS (Supabase URL/key) son por perfil, no por plataforma → los
   builds Android las heredan sin tocar nada.
-- SDK 54 compila con target API ≥ 35 → cumple el requisito vigente de Google Play.
+- SDK 57 compila con target/compile API 36.
 - **Release endurecido (2026-08-24):** el plugin local
   `plugins/withAndroidReleaseHardening.js` se reaplica en cada prebuild, elimina
   el fallback a `debug.keystore` del bloque release y activa minificación/R8 y
@@ -65,7 +65,7 @@ abrirá esos enlaces sin declararlos:
    orden: build → subir AAB → copiar huella → desplegar assetlinks.json.
 
 ### 3. Edge-to-edge: cabeceras con `paddingTop` fijo
-SDK 54 fuerza edge-to-edge en Android: el contenido se dibuja BAJO la status bar
+SDK 57 mantiene edge-to-edge en Android: el contenido se dibuja BAJO la status bar
 y su altura varía por dispositivo (24–48+ dp). Todas las cabeceras usan
 `paddingTop: 52/56` fijo (calibrado para iPhone) → en Android puede solapar con
 la status bar o quedar descompensado. Afecta a ~20 pantallas +

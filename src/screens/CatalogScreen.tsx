@@ -5,6 +5,7 @@ import {
   Text,
   Image,
   FlatList,
+  ScrollView,
   TouchableOpacity,
   TextInput,
   StyleSheet,
@@ -18,7 +19,7 @@ import {
   Platform,
   UIManager,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
@@ -76,7 +77,7 @@ import { useTranslation } from '../context/LanguageContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { useReducedMotion } from '../hooks/useReducedMotion';
-import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
+import { CATALOG_STORES, CATALOG_STORE_KEYS, storesWithLidlSecond, type CatalogStore } from '../constants/stores';
 import { storeInRegion, storesForRegion, type RegionValue } from '../constants/regions';
 import {
   mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
@@ -88,13 +89,16 @@ import { compareByName, relevanceScore, sortByName } from '../lib/sort';
 import { createMultiStorePager, type MultiStorePager } from '../lib/multiStorePager';
 import { searchCatalogStore } from '../lib/catalogSearch';
 import ActionSheet from '../components/ActionSheet';
-import StoreProductList from '../components/StoreProductList';
+import StoreProductList, { type ProductSelection } from '../components/StoreProductList';
 import { type ViewMode } from '../components/ViewModeToggle';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import SlidingSegments, { type Segment } from '../components/SlidingSegments';
 import StoreDropdown, { type StoreSelection } from '../components/StoreDropdown';
+import { useCatalogStore } from '../context/CatalogStoreContext';
 import PaywallModal from '../components/PaywallModal';
-import { limitsApply } from '../constants/limits';
+import LidlStorePicker from '../components/LidlStorePicker';
+import { updateProfile } from '../api/profile';
+import { allStoresRequiresPlus, catalogStoreRequiresPlus, limitsApply } from '../constants/limits';
 
 // Las tiendas y sus metadatos viven en constants/stores.ts (fuente única
 // compartida con la preferencia de perfil "Supermercados").
@@ -293,7 +297,15 @@ function compareProductsByPricePerUnit(order: ProductSortDirection) {
   };
 }
 
-export default function CatalogScreen() {
+interface CatalogScreenProps {
+  productSelection?: ProductSelection & {
+    title: string;
+    onClose: () => void;
+  };
+}
+
+export default function CatalogScreen({ productSelection }: CatalogScreenProps = {}) {
+  const isProductPicker = !!productSelection;
   const styles = useThemedStyles(themedStyles);
   const { scheme } = useTheme();
   const reducedMotion = useReducedMotion();
@@ -305,7 +317,10 @@ export default function CatalogScreen() {
   const { isCategoryFavorite, toggleCategoryFavorite } = useFavorites();
   const toast = useToast();
   const [sheetCat, setSheetCat] = useState<CatRow | null>(null);
-  const [store, setStore] = useState<StoreKey>('mercadona');
+  const sharedStore = useCatalogStore();
+  const [pickerStore, setPickerStore] = useState<StoreKey>('mercadona');
+  const store = isProductPicker ? pickerStore : sharedStore.store;
+  const setStore = isProductPicker ? setPickerStore : sharedStore.setStore;
   const [tab, setTab] = useState<'categorias' | 'productos'>('productos');
   const [productQueryInHeader, setProductQueryInHeader] = useState(false);
   const isAllStores = store === 'all';
@@ -375,7 +390,14 @@ export default function CatalogScreen() {
   // los súpers de fuera solo dejan de mostrarse y reaparecen si vuelve. Si la
   // intersección queda vacía (eligió solo súpers de otra región), cae a todos
   // los de la región — nunca un catálogo vacío (los nacionales están en todas).
-  const { profile, isPremium, loading: profileLoading } = useProfile();
+  const { profile, applyProfile, isPremium, loading: profileLoading } = useProfile();
+  const [lidlPickerOpen, setLidlPickerOpen] = useState(false);
+  const catalogFocused = useIsFocused();
+  const saveLidlStore = async (id: string) => {
+    if (!profile) throw new Error('Profile unavailable');
+    await updateProfile(profile.id, { lidlStoreId: id });
+    applyProfile({ lidlStoreId: id });
+  };
   const unitPriceSortLocked = !profileLoading && limitsApply(isPremium);
 
   const openUnitPricePaywall = () => {
@@ -429,10 +451,16 @@ export default function CatalogScreen() {
   const preferredStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
   const enabledStores = useMemo(() => {
     const enabledInRegion = preferredStores.filter((key) => storeInRegion(key, region));
-    return enabledInRegion.length > 0 ? enabledInRegion : storesForRegion(region);
-  }, [preferredStores, region]);
+    return enabledInRegion.length > 0 || isProductPicker ? enabledInRegion : storesForRegion(region);
+  }, [preferredStores, region, isProductPicker]);
+  const lidlLocked = catalogStoreRequiresPlus('lidl', isPremium);
+  const allStoresLocked = allStoresRequiresPlus(isPremium);
+  const accessibleStores = useMemo(
+    () => enabledStores.filter((key) => !catalogStoreRequiresPlus(key, isPremium)),
+    [enabledStores, isPremium],
+  );
   const visibleStores = useMemo(
-    () => CATALOG_STORES.filter((item) => enabledStores.includes(item.key)),
+    () => storesWithLidlSecond(CATALOG_STORES.filter((item) => enabledStores.includes(item.key))),
     [enabledStores],
   );
   const storeGridData = useMemo(
@@ -440,12 +468,18 @@ export default function CatalogScreen() {
     [visibleStores],
   );
 
-  // Si la tienda activa deja de estar permitida, salta a la primera visible.
+  // Si la tienda activa deja de estar permitida o pasa a estar bloqueada,
+  // evita conservar contenido Plus tras una expiración.
   useEffect(() => {
-    if (store !== 'all' && enabledStores.length > 0 && !enabledStores.includes(store)) {
-      setStore(enabledStores[0]);
+    if (store === 'all' && allStoresLocked) {
+      const fallback = accessibleStores[0];
+      if (fallback) setStore(fallback);
+      return;
     }
-  }, [enabledStores, store]);
+    if (store !== 'all' && !accessibleStores.includes(store)) {
+      setStore(accessibleStores[0] ?? 'all');
+    }
+  }, [accessibleStores, allStoresLocked, setStore, store]);
 
   const [categories, setCategories] = useState<N1Category[]>([]);
   const [catLoading, setCatLoading] = useState(false);
@@ -676,9 +710,8 @@ export default function CatalogScreen() {
   activeStoreSearchKeyRef.current = activeStoreSearchKey;
   // Setter de búsqueda de productos del súper activo (para la fila de búsqueda
   // única que ahora vive en el chrome, en vez de una por bloque de súper).
-  const setProdQuery = store === 'all'
-    ? setAllSearch
-    : { mercadona: setProdSearch, esclat: setBpSearch, carrefour: setCfSearch, bonarea: setBaSearch, consum: setCsSearch, dia: setDdSearch, sorli: setSoSearch, eroski: setEkSearch, caprabo: setCbSearch, condis: setCoSearch, ametller: setAmSearch, aldi: setAlSearch, lidl: setLiSearch, gadis: setGaSearch, froiz: setFrSearch, ahorramas: setAhSearch, hiperdino: setHdSearch, alcampo: setAcSearch, plusfresc: setPfSearch }[store];
+  const storeQuerySetters = { mercadona: setProdSearch, esclat: setBpSearch, carrefour: setCfSearch, bonarea: setBaSearch, consum: setCsSearch, dia: setDdSearch, sorli: setSoSearch, eroski: setEkSearch, caprabo: setCbSearch, condis: setCoSearch, ametller: setAmSearch, aldi: setAlSearch, lidl: setLiSearch, gadis: setGaSearch, froiz: setFrSearch, ahorramas: setAhSearch, hiperdino: setHdSearch, alcampo: setAcSearch, plusfresc: setPfSearch };
+  const setProdQuery = store === 'all' ? setAllSearch : storeQuerySetters[store];
   const visibleProductQuery = prodQuery.trim();
   const showProductQueryInHeader = productQueryInHeader
     && tab === 'productos'
@@ -723,7 +756,8 @@ export default function CatalogScreen() {
     setProductSearchExpanded(false);
     setProductQueryInHeader(shouldShowHeaderQuery);
   };
-  const browseMode = tab === 'productos' && prodQuery.trim().length < 2;
+  const browseMode = tab === 'productos' && prodQuery.trim().length < 2
+    && (!isProductPicker || (store !== 'all' && accessibleStores.includes(store)));
   const productSortField: ProductSortField = pricePerUnitOrder == null ? 'price' : 'pricePerUnit';
   const activeProductOrder = pricePerUnitOrder ?? productOrder;
   const activeProductSortSegment: ProductSortSegment = productSortField === 'pricePerUnit'
@@ -761,7 +795,7 @@ export default function CatalogScreen() {
       return storeDifference !== 0 ? storeDifference : a.id.localeCompare(b.id);
     };
   }, [compareSearchProducts]);
-  const enabledStoresKey = enabledStores.join(',');
+  const enabledStoresKey = accessibleStores.join(',');
   const activeAllSearchKey = `${allSearch.trim()}:${lang}:${region ?? 'all'}:${postalCode ?? 'none'}:${lidlStoreId ?? 'no-lidl'}:${productSearchOrder}:${enabledStoresKey}`;
   const activeBrowseKey = browseCacheKey(
     store, lang, region, postalCode, lidlStoreId, `${productSortField}:${activeProductOrder}`,
@@ -799,7 +833,7 @@ export default function CatalogScreen() {
       const controller = new AbortController();
       browseInitialController.current = controller;
       const pager = createMultiStorePager({
-        stores: enabledStores,
+        stores: accessibleStores,
         pageSize: 12,
         loadPage: (selectedStore, cursor, limit, signal) =>
           loadBrowsePage(selectedStore, cursor, region, postalCode, lidlStoreId, signal, browseOrder, limit),
@@ -873,7 +907,7 @@ export default function CatalogScreen() {
     };
   }, [
     store, browseMode, lang, region, postalCode, lidlStoreId, activeBrowseKey, browseOrder,
-    compareActiveProducts, enabledStores,
+    compareActiveProducts, accessibleStores,
   ]);
 
   // Siguiente página keyset al llegar al final de la lista.
@@ -1243,7 +1277,7 @@ export default function CatalogScreen() {
       allSearch,
       async (q, signal) => {
         const pager = createMultiStorePager<UIProduct, CatalogStore, number>({
-          stores: enabledStores,
+          stores: accessibleStores,
           pageSize: 12,
           loadPage: async (selectedStore, cursor, limit, pageSignal) => {
             const offset = cursor ?? 0;
@@ -1288,7 +1322,7 @@ export default function CatalogScreen() {
     };
   }, [
     store, allSearch, lang, region, postalCode, lidlStoreId, productSearchOrder,
-    activeAllSearchKey, allSearchComparator, enabledStoresKey, enabledStores,
+    activeAllSearchKey, allSearchComparator, enabledStoresKey, accessibleStores,
   ]);
 
   // Filtro de categorías por texto (cliente). Compartido por los 6 súpers: en la
@@ -1437,6 +1471,12 @@ export default function CatalogScreen() {
   const renderProductsTab = (
     query: string, searchLoading: boolean, searchError: boolean, searchItems: UIProduct[],
   ) => {
+    if (productSelection && accessibleStores.length === 0) {
+      return <View style={styles.centerBox}><Text style={styles.errorText}>{t('queCocino.creator.noIngredientStores')}</Text></View>;
+    }
+    if (productSelection && store !== 'all' && !accessibleStores.includes(store)) {
+      return <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />;
+    }
     if (store === 'lidl' && !lidlStoreId) {
       return <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.lidlStoreRequired')}</Text></View>;
     }
@@ -1457,6 +1497,7 @@ export default function CatalogScreen() {
       return renderSearchStates(
         query, searchLoading, searchError, orderedSearchItems.length === 0,
         <StoreProductList
+          selection={productSelection}
           products={orderedSearchItems}
           searchQuery={undefined}
           hideToolbar viewMode={prodViewMode} onViewModeChange={setProdViewMode}
@@ -1476,6 +1517,7 @@ export default function CatalogScreen() {
     if (browseError) return <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.searchError')}</Text></View>;
     return (
       <StoreProductList
+        selection={productSelection}
         products={browse}
         hideToolbar viewMode={prodViewMode} onViewModeChange={setProdViewMode}
         roundedCards
@@ -1694,6 +1736,28 @@ export default function CatalogScreen() {
           )}
           </View>
         )}
+        {store === 'lidl' && lidlStoreId && !productSearchExpanded ? (
+          glassAvailable || Platform.OS === 'android' ? (
+            <SlidingSegments
+              compact
+              dense
+              emphasized
+              transparentTrack={Platform.OS === 'android'}
+              segments={[
+                { key: 'store', icon: 'storefront-outline', accessibilityLabel: t('region.lidlStoreTitle') },
+              ]}
+              value={null}
+              onChange={() => setLidlPickerOpen(true)}
+            />
+          ) : (
+            <View style={[styles.viewToggle, styles.prodToggleDense]}>
+              <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn]} onPress={() => setLidlPickerOpen(true)}
+                activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('region.lidlStoreTitle')}>
+                <Ionicons name="storefront-outline" size={19} color={colors.inkSoft} />
+              </TouchableOpacity>
+            </View>
+          )
+        ) : null}
         {!productSearchExpanded && (
           <View style={styles.prodViewGroup}>
           {glassAvailable || Platform.OS === 'android' ? (
@@ -1770,21 +1834,76 @@ export default function CatalogScreen() {
   // modos; en glass va dentro de la franja de cristal flotante.
   const chrome = (
     <>
-      <View style={[styles.headerArea, { paddingTop: headerTop }]}>
+      <View style={[styles.headerArea, { paddingTop: productSelection ? 14 : headerTop }]}>
         <View style={styles.titleWrap}>
           <View style={styles.titleIcon}>
-            <Ionicons name="library" size={15} color={colors.accent} />
+            <Ionicons name={productSelection ? 'basket-outline' : 'library'} size={15} color={colors.accent} />
           </View>
-          <Text style={styles.title}>{t('catalog.title')}</Text>
+          <Text style={styles.title}>{productSelection?.title ?? t('catalog.title')}</Text>
         </View>
-        {storeSelectorBlock}
+        {productSelection ? (
+          <Pressable
+            onPress={productSelection.onClose}
+            style={styles.pickerClose}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.close')}
+          >
+            <Ionicons name="close" size={22} color={colors.ink} />
+          </Pressable>
+        ) : storeSelectorBlock}
       </View>
 
       {/* Fila única: pestañas Productos/Categorías (flex) + selector de súper
           como bloque aparte a la derecha. En iOS glass y Android, píldora de
           acento deslizante (SlidingSegments); Android elimina la pista de fondo.
           El resto del fallback conserva el segmentado estático. */}
-      <View style={styles.controlsRow}>
+      {productSelection ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.pickerStores}
+          keyboardShouldPersistTaps="handled"
+        >
+          {visibleStores.map((item) => (
+            <Pressable
+              key={item.key}
+              onPress={() => {
+                if (item.key === 'lidl' && lidlLocked) {
+                  setPaywallVisible(true);
+                  return;
+                }
+                storeQuerySetters[item.key](prodQuery);
+                handleStoreChange(item.key);
+              }}
+              style={({ pressed }) => [
+                styles.pickerStore,
+                item.key === 'lidl' && lidlLocked
+                  ? styles.pickerStoreLocked
+                  : store === item.key && styles.pickerStoreActive,
+                pressed && styles.storeCardPressed,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={item.key === 'lidl' && lidlLocked
+                ? `${item.name}. ${t('storePicker.plusOnly')}`
+                : item.name}
+              accessibilityState={{ selected: store === item.key }}
+              testID={`ingredient-store-${item.key}`}
+            >
+              {item.icon ? (
+                <Image
+                  source={item.icon}
+                  style={[styles.pickerStoreLogo, item.key === 'lidl' && styles.lidlStoreLogo]}
+                  resizeMode="contain"
+                />
+              ) : null}
+              <Text style={[styles.pickerStoreName, store === item.key && styles.pickerStoreNameActive]}>{item.name}</Text>
+              {item.key === 'lidl' && lidlLocked ? (
+                <Ionicons name="lock-closed" size={13} color={colors.inkSoft} />
+              ) : null}
+            </Pressable>
+          ))}
+        </ScrollView>
+      ) : <View style={styles.controlsRow}>
         {glassAvailable || Platform.OS === 'android' ? (
           <SlidingSegments
             style={{ flex: 1 }}
@@ -1816,7 +1935,7 @@ export default function CatalogScreen() {
             )}
           </View>
         )}
-      </View>
+      </View>}
 
       {/* Buscador de la pestaña activa (categorías compartido; productos por súper). */}
       {tab === 'categorias'
@@ -1829,19 +1948,29 @@ export default function CatalogScreen() {
     <Pressable
       style={({ pressed }) => [
         styles.storeAllCard,
-        styles.storeAllCardUnlocked,
-        store === 'all' && styles.storeAllCardUnlockedSelected,
+        allStoresLocked ? styles.storeAllCardLocked : styles.storeAllCardUnlocked,
+        !allStoresLocked && store === 'all' && styles.storeAllCardUnlockedSelected,
         pressed && styles.storeCardPressed,
       ]}
       onPress={() => {
-        handleStoreChange('all');
         setStoreMenuOpen(false);
+        if (allStoresLocked) {
+          setPaywallVisible(true);
+          return;
+        }
+        handleStoreChange('all');
       }}
       accessibilityRole="button"
-      accessibilityLabel={t('common.all')}
-      accessibilityState={{ selected: store === 'all' }}
+      accessibilityLabel={allStoresLocked
+        ? `${t('storePicker.allStores')}. ${t('storePicker.plusOnly')}`
+        : t('storePicker.allStores')}
+      accessibilityState={{ selected: !allStoresLocked && store === 'all' }}
     >
-      {store === 'all' && (
+      {allStoresLocked ? (
+        <View style={styles.storeCardLock}>
+          <Ionicons name="lock-closed" size={14} color={colors.inkSoft} />
+        </View>
+      ) : store === 'all' && (
         <View style={styles.storeCardCheck}>
           <Ionicons name="checkmark" size={14} color={colors.white} />
         </View>
@@ -1850,7 +1979,7 @@ export default function CatalogScreen() {
         <Ionicons name="apps" size={24} color={colors.accent} />
       </View>
       <Text style={styles.storeCardName}>
-        {t('common.all')}
+        {t('storePicker.allStores')}
       </Text>
     </Pressable>
   );
@@ -1863,7 +1992,7 @@ export default function CatalogScreen() {
 
       {store === 'all' && tab === 'categorias' && (
         <FlatList
-          data={visibleStores}
+          data={visibleStores.filter((item) => accessibleStores.includes(item.key))}
           keyExtractor={(item) => item.key}
           contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]}
           showsVerticalScrollIndicator={false}
@@ -2497,24 +2626,41 @@ export default function CatalogScreen() {
               }
 
               const on = item.key === store;
+              const locked = item.key === 'lidl' && lidlLocked;
               return (
                 <Pressable
                   style={({ pressed }) => [
                     styles.storeCard,
-                    on && styles.storeCardActive,
+                    locked ? styles.storeCardLocked : on && styles.storeCardActive,
                     pressed && styles.storeCardPressed,
                   ]}
-                  onPress={() => { handleStoreChange(item.key); setStoreMenuOpen(false); }}
+                  onPress={() => {
+                    setStoreMenuOpen(false);
+                    if (locked) {
+                      setPaywallVisible(true);
+                      return;
+                    }
+                    handleStoreChange(item.key);
+                  }}
                   accessibilityRole="button"
-                  accessibilityLabel={item.name}
+                  accessibilityLabel={locked
+                    ? `${item.name}. ${t('storePicker.plusOnly')}`
+                    : item.name}
                   accessibilityState={{ selected: on }}
                 >
-                  {on && (
+                  {locked ? (
+                    <View style={styles.storeCardLock}>
+                      <Ionicons name="lock-closed" size={14} color={colors.inkSoft} />
+                    </View>
+                  ) : on && (
                     <View style={styles.storeCardCheck}>
                       <Ionicons name="checkmark" size={14} color={colors.white} />
                     </View>
                   )}
-                  <View style={styles.storeCardLogoWrap}>
+                  <View style={[
+                    styles.storeCardLogoWrap,
+                    item.key === 'lidl' && styles.lidlStoreLogoWrap,
+                  ]}>
                     {item.icon ? (
                       <Image source={item.icon} style={styles.storeCardLogo} resizeMode="cover" />
                     ) : (
@@ -2531,6 +2677,10 @@ export default function CatalogScreen() {
         </View>
       </Modal>
 
+      {catalogFocused && store === 'lidl' && !lidlLocked && !profileLoading && (lidlPickerOpen || !lidlStoreId) ? (
+        <LidlStorePicker postalCode={postalCode} selectedStoreId={lidlStoreId}
+          required={!lidlStoreId} onSelect={saveLidlStore} onClose={() => setLidlPickerOpen(false)} />
+      ) : null}
       <PaywallModal
         visible={paywallVisible}
         onClose={() => setPaywallVisible(false)}
@@ -2557,6 +2707,22 @@ export default function CatalogScreen() {
 
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
+  pickerClose: {
+    width: 44, height: 44, borderRadius: 22,
+    alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceAlt,
+  },
+  pickerStores: { paddingHorizontal: 16, paddingBottom: 12, gap: 8 },
+  pickerStore: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    minHeight: 46, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16,
+    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
+  },
+  pickerStoreActive: { backgroundColor: colors.accentLight, borderColor: colors.accentMid },
+  pickerStoreLocked: { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
+  pickerStoreLogo: { width: 28, height: 28, borderRadius: 8 },
+  lidlStoreLogo: { borderRadius: 0 },
+  pickerStoreName: { fontSize: 12, fontFamily: fonts.semibold, color: colors.inkSoft },
+  pickerStoreNameActive: { color: colors.accent },
 
   headerArea: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12,
@@ -2633,7 +2799,14 @@ const themedStyles = () => StyleSheet.create({
   },
   storeCardPlaceholder: { flex: 1, aspectRatio: 1 },
   storeCardActive: { borderColor: colors.accent, backgroundColor: colors.accentLight },
+  storeCardLocked: { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
   storeCardPressed: { transform: [{ scale: 0.96 }], opacity: 0.9 },
+  storeCardLock: {
+    position: 'absolute', top: 8, right: 8,
+    width: 22, height: 22, borderRadius: 11,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.paper,
+  },
   storeCardCheck: {
     position: 'absolute', top: 8, right: 8,
     width: 22, height: 22, borderRadius: 11,
@@ -2645,6 +2818,7 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.white,
   },
+  lidlStoreLogoWrap: { borderRadius: 0, overflow: 'visible' },
   storeCardLogo: { width: '100%', height: '100%' },
   storeCardName: { fontSize: 14, fontFamily: fonts.semibold, color: colors.ink, textAlign: 'center' },
   storeCardNameActive: { color: colors.accent },
@@ -2737,7 +2911,7 @@ const themedStyles = () => StyleSheet.create({
   },
   prodSearchBoxGlass: { height: 40 },
   prodSearchBoxFallback: { height: 44 },
-  prodSearchActivator: { ...StyleSheet.absoluteFillObject },
+  prodSearchActivator: { ...StyleSheet.absoluteFill },
   prodSortGroup: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   prodViewGroup: { alignItems: 'center', justifyContent: 'center' },
   prodToggleDense: { padding: 3, gap: 3, borderRadius: 12 },
@@ -2785,7 +2959,7 @@ const themedStyles = () => StyleSheet.create({
   prodUnitSortLockedBtnFirst: { borderTopLeftRadius: 17, borderBottomLeftRadius: 17 },
   prodUnitSortLockedBtnLast: { borderTopRightRadius: 17, borderBottomRightRadius: 17 },
   prodUnitSortLockedTextWrap: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center', justifyContent: 'center',
   },
   prodUnitSortLockedText: {

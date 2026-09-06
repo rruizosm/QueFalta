@@ -38,6 +38,7 @@ const TERMS_URL = 'https://quefalta.es/condiciones';
 const PRIVACY_URL = 'https://quefalta.es/privacidad';
 
 const BENEFITS: { icon: IoniconName; key: string; color: string; background: string }[] = [
+  { icon: 'apps-outline', key: 'lidl', color: colors.blue, background: 'rgba(47,108,181,0.13)' },
   { icon: 'swap-vertical-outline', key: 'unitPrice', color: colors.blue, background: 'rgba(47,108,181,0.13)' },
   { icon: 'search-circle-outline', key: 'savingsRadar', color: '#3f8f4f', background: 'rgba(63,143,79,0.14)' },
   { icon: 'notifications-outline', key: 'alerts', color: colors.purple, background: 'rgba(122,79,181,0.14)' },
@@ -434,14 +435,14 @@ const themedStyles = () => StyleSheet.create({
   },
   planCardActive: { backgroundColor: colors.accentLight },
   planActiveBorder: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 1,
     borderWidth: 2,
     borderColor: colors.accent,
     borderRadius: 18,
   },
   annualSweepClip: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderRadius: 17,
     overflow: 'hidden',
   },

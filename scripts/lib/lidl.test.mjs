@@ -3,6 +3,7 @@ import test from 'node:test';
 import {
   applyLidlOffer,
   isLidlOfferCandidate,
+  isLidlMinimumQuantityOffer,
   isLiveLidlStoreOffer,
   lidlCategoryId,
   lidlOfferMatchesDetail,
@@ -116,6 +117,33 @@ test('conserva promos de segunda unidad sin inventar precio directo', () => {
   assert.equal(row.promo_base_price, null);
 });
 
+test('no convierte el coste efectivo de un lote Lidl en precio individual', () => {
+  const offer = {
+    ...bananaOffer,
+    title: 'Floopies',
+    packaging: 'Compra min. 3 uds',
+    priceBox: {
+      largePartNumeric: 0.49,
+      smallPartNumeric: 0.59,
+      discountMessage: '3x1,49€',
+    },
+  };
+  const row = applyLidlOffer({ unit_price: 0.59 }, offer);
+
+  assert.equal(isLidlMinimumQuantityOffer(offer), true);
+  assert.equal(row.promo_name, '3x1,49€');
+  assert.equal(row.promo_text, null);
+  assert.equal(row.promo_price, null);
+  assert.equal(row.promo_base_price, null);
+  assert.equal(row.unit_price, 0.59);
+});
+
+test('detecta el lote por el 3x aunque Lidl omita la compra mínima', () => {
+  assert.equal(isLidlMinimumQuantityOffer({
+    priceBox: { discountMessage: '3 x 1.49 €', largePartNumeric: 0.49 },
+  }), true);
+});
+
 test('separa la ficha maestra de precio, stock y oferta locales', () => {
   const normalized = {
     ...normalizeLidlProduct({
@@ -128,6 +156,7 @@ test('separa la ficha maestra de precio, stock y oferta locales', () => {
     synced_at: '2026-09-04T12:00:00.000Z',
   };
   const promoted = applyLidlOffer(normalized, bananaOffer);
+  promoted.raw.campaign = { key: 'weekly', offerRegion: '38' };
   const master = lidlProductMasterRow(promoted);
   const local = lidlStoreProductRow(promoted, 'ES3572');
 
@@ -135,11 +164,13 @@ test('separa la ficha maestra de precio, stock y oferta locales', () => {
   assert.equal('unit_price' in master, false);
   assert.equal('stockAvailability' in master.raw, false);
   assert.equal('price' in master.raw, false);
+  assert.equal('campaign' in master.raw, false);
   assert.equal('offer' in master.raw, false);
   assert.equal(local.store_id, 'ES3572');
   assert.equal(local.product_id, 'p1');
   assert.equal(local.unit_price, 1.05);
   assert.equal(local.available, true);
+  assert.equal(local.raw.campaign.key, 'weekly');
   assert.equal(local.raw.offer.id, 'offer-banana');
 });
 

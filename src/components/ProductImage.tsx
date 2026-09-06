@@ -45,7 +45,7 @@ export default function ProductImage({
 const styles = StyleSheet.create({
   frame: { overflow: 'hidden' },
   placeholder: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(150,132,114,0.10)',

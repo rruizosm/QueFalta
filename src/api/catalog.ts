@@ -1703,13 +1703,19 @@ export interface LidlCategory {
   name: string;
   children: { id: string; name: string }[];
 }
+const isLidlMinimumQuantityPromo = (...values: unknown[]) => {
+  const text = values.map((value) => String(value ?? '').trim()).filter(Boolean).join(' ');
+  return /\b\d+\s*[x×]\s*\d+(?:[.,]\d+)?\s*€?/iu.test(text)
+    || /\bcompra\s+m[ií]n(?:imo|\.)?\s*\d+\s*(?:uds?\.?|unidades?)\b/iu.test(text);
+};
 const mapLidl = (r: any): LidlProduct => {
   const today = todayLocalISO();
   const promoIsLive = r.promo_name != null
     && (r.promo_start == null || String(r.promo_start) <= today)
     && (r.promo_end == null || String(r.promo_end) >= today);
   const regularPrice = r.unit_price != null ? Number(r.unit_price) : null;
-  const directPromoPrice = promoIsLive && r.promo_price != null && Number(r.promo_price) > 0
+  const minimumQuantityPromo = isLidlMinimumQuantityPromo(r.promo_name, r.promo_text);
+  const directPromoPrice = promoIsLive && !minimumQuantityPromo && r.promo_price != null && Number(r.promo_price) > 0
     ? Number(r.promo_price)
     : null;
   const unitPrice = directPromoPrice ?? regularPrice;

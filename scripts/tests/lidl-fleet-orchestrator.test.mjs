@@ -116,6 +116,14 @@ test('el orquestador reclama una tienda cada vez y delega en el sync aislado por
   assert.match(orchestrator, /timeout: STORE_TIMEOUT_MINUTES \* 60_000/);
 });
 
+test('cada worker comparte una sola caché privada de campañas con sus tiendas', () => {
+  assert.match(orchestrator, /fetchLidlCampaignCatalog/);
+  assert.match(orchestrator, /mkdtemp\(join\(tmpdir\(\), 'quefalta-lidl-campaigns-'\)\)/);
+  assert.match(orchestrator, /LIDL_CAMPAIGNS_FILE: campaignFile/);
+  assert.match(orchestrator, /LIDL_CAMPAIGNS_DISABLED: '1'/);
+  assert.match(orchestrator, /cleanupCampaignCache/);
+});
+
 test('el orquestador arranca y programa el barrido con la RPC esperada', async () => {
   const bootstrap = `
     globalThis.fetch = async (input, init) => {

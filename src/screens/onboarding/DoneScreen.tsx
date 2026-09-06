@@ -19,7 +19,7 @@ import { useTranslation } from '../../context/LanguageContext';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { requestHomeTransition } from '../../lib/homeTransition';
 import type { OnboardingStackParamList } from '../../types';
-import OnboardingSlats from './OnboardingSlats';
+import AmbientBubbleBackdrop from '../../components/AmbientBubbleBackdrop';
 
 const MASCOT = require('../../../assets/mascot/berenjena-sentada-ok.png');
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'Done'>;
@@ -54,7 +54,7 @@ export default function DoneScreen({ route }: Props) {
   return (
     <View style={[styles.screen, { paddingTop: insets.top + 28, paddingBottom: insets.bottom + 28 }]}>
       <StatusBar barStyle="light-content" backgroundColor={colors.blue} />
-      <OnboardingSlats />
+      <AmbientBubbleBackdrop showGradient={false} onBlue />
       <Animated.View
         style={[
           styles.content,

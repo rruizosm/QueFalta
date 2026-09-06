@@ -3,9 +3,8 @@ import { useTranslation } from '../context/LanguageContext';
 import { colors } from '../constants/colors';
 
 /**
- * Insignia de cuenta QuéFalta Plus: sello festoneado con el acento de la app
- * y check blanco. La cabecera del perfil puede conservar explícitamente la
- * variante dorada. En el perfil propio se deriva directamente de isPremium; en
+ * Insignia dorada de cuenta QuéFalta Plus: sello festoneado con degradado oro
+ * y check blanco. En el perfil propio se deriva directamente de isPremium; en
  * superficies públicas usa `profiles.verified`, reflejo protegido de
  * `premium_until`. Ver supabase/migrations/profile_verified.sql.
  *
@@ -15,7 +14,7 @@ import { colors } from '../constants/colors';
 export default function VerifiedBadge({
   size = 15,
   marginLeft = 4,
-  tone = 'accent',
+  tone = 'gold',
 }: {
   size?: number;
   marginLeft?: number;

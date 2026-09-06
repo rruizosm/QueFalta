@@ -15,10 +15,10 @@ import {
   type BrowseCursor, type StoreOffer, type OfferFilters, type OfferType,
 } from '../api/catalog';
 import type { UIProduct } from '../lib/productAdapters';
-import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
+import { CATALOG_STORES, CATALOG_STORE_KEYS, storesWithLidlSecond, type CatalogStore } from '../constants/stores';
 import { storeInRegion, storesForRegion } from '../constants/regions';
 import StoreProductList from '../components/StoreProductList';
-import StoreDropdown, { type StoreSelection } from '../components/StoreDropdown';
+import StoreDropdown from '../components/StoreDropdown';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import { type ViewMode } from '../components/ViewModeToggle';
 import SlidingSegments from '../components/SlidingSegments';
@@ -27,6 +27,8 @@ import ProductFilterSheet, {
   type FilterGroup,
   type PriceSort,
 } from '../components/ProductFilterSheet';
+import { catalogStoreRequiresPlus } from '../constants/limits';
+import { useCatalogStore } from '../context/CatalogStoreContext';
 
 const euro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 const FACET_SEPARATOR = '\u001f';
@@ -100,7 +102,7 @@ export default function OffersScreen() {
   const navigation = useNavigation<any>();
   const { t } = useTranslation();
   const headerTop = useHeaderTopPadding(52);
-  const { profile } = useProfile();
+  const { profile, isPremium } = useProfile();
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
   const lidlStoreId = profile?.lidlStoreId ?? null;
@@ -110,13 +112,16 @@ export default function OffersScreen() {
     const enabledInRegion = preferredStores.filter((store) => storeInRegion(store, region));
     return enabledInRegion.length > 0 ? enabledInRegion : storesForRegion(region);
   }, [preferredStores, region]);
-  const stores = useMemo(
-    () => CATALOG_STORES.filter((s) => OFFER_STORES.includes(s.key)
-      && allowedStores.includes(s.key)
-      && (s.key !== 'lidl' || lidlStoreId != null)),
+  const storeOptions = useMemo(
+    () => storesWithLidlSecond(CATALOG_STORES.filter((s) => allowedStores.includes(s.key)
+      && (s.key !== 'lidl' || lidlStoreId != null))),
     [allowedStores, lidlStoreId],
   );
-  const [store, setStore] = useState<StoreSelection>(stores[0]?.key ?? 'all');
+  const stores = useMemo(
+    () => storeOptions.filter((option) => !catalogStoreRequiresPlus(option.key, isPremium)),
+    [isPremium, storeOptions],
+  );
+  const { store, setStore } = useCatalogStore();
 
   const [items, setItems] = useState<StoreOffer[]>([]);
   const [cursor, setCursor] = useState<BrowseCursor | null>(null);
@@ -163,12 +168,17 @@ export default function OffersScreen() {
     pricePerUnitSort,
   }), [store, debouncedQuery, category, selectedOfferTypes, priceRange, sort, pricePerUnitSort]);
 
-  const offerStoreKeys = useMemo(() => stores.map((option) => option.key), [stores]);
+  const availableStoreKeys = useMemo(() => stores.map((option) => option.key), [stores]);
+  const offerStores = useMemo(
+    () => stores.filter((option) => OFFER_STORES.includes(option.key)),
+    [stores],
+  );
+  const offerStoreKeys = useMemo(() => offerStores.map((option) => option.key), [offerStores]);
   useEffect(() => {
-    if (store !== 'all' && !offerStoreKeys.includes(store)) {
+    if (store !== 'all' && !availableStoreKeys.includes(store)) {
       setStore(stores[0]?.key ?? 'all');
     }
-  }, [store, stores, offerStoreKeys]);
+  }, [store, stores, availableStoreKeys, setStore]);
   const filteredOfferStores = useMemo(() => {
     let filtered = store === 'all' && filterStores.length > 0
       ? offerStoreKeys.filter((key) => filterStores.includes(key))
@@ -199,7 +209,7 @@ export default function OffersScreen() {
     other: t('offers.typeOther'),
   }), [t]);
   const offerTypeOptions = useMemo(() => {
-    return store === 'all'
+    return store === 'all' || !OFFER_STORES.includes(store)
       ? []
       : offerTypesForStore(store).map((value) => ({ value, label: offerTypeLabels[value] }));
   }, [store, offerTypeLabels]);
@@ -213,11 +223,14 @@ export default function OffersScreen() {
       `${selectedStore}:${region ?? 'none'}:${postalCode ?? 'none'}:${lidlStoreId ?? 'no-lidl'}`,
     [region, postalCode, lidlStoreId],
   );
-  const categoriesKey = store === 'all' ? null : categoriesKeyForStore(store);
+  const categoriesKey = store === 'all' || !OFFER_STORES.includes(store)
+    ? null
+    : categoriesKeyForStore(store);
   useEffect(() => {
     if (store === 'all' || categoriesKey == null || categoriesCache[categoriesKey]) return;
+    const selectedStore: CatalogStore = store;
     let cancelled = false;
-    fetchOfferCategories(store, region, postalCode, lidlStoreId)
+    fetchOfferCategories(selectedStore, region, postalCode, lidlStoreId)
       .then((cats) => { if (!cancelled) setCategoriesCache((c) => ({ ...c, [categoriesKey]: cats })); })
       .catch(() => {});
     return () => { cancelled = true; };
@@ -235,7 +248,7 @@ export default function OffersScreen() {
       .finally(() => setCategoriesLoading((current) => ({ ...current, [key]: false })));
   }, [categoriesCache, categoriesLoading, categoriesKeyForStore, region, postalCode, lidlStoreId]);
 
-  const categoryGroups = useMemo<FilterGroup[]>(() => stores.map((option) => {
+  const categoryGroups = useMemo<FilterGroup[]>(() => offerStores.map((option) => {
     const key = categoriesKeyForStore(option.key);
     return {
       key: option.key,
@@ -246,16 +259,16 @@ export default function OffersScreen() {
         label: categoryName,
       })),
     };
-  }), [stores, categoriesCache, categoriesLoading, categoriesKeyForStore]);
+  }), [offerStores, categoriesCache, categoriesLoading, categoriesKeyForStore]);
 
-  const offerTypeGroups = useMemo<FilterGroup[]>(() => stores.map((option) => ({
+  const offerTypeGroups = useMemo<FilterGroup[]>(() => offerStores.map((option) => ({
     key: option.key,
     label: option.name,
     options: offerTypesForStore(option.key).map((value) => ({
       value: facetValue(option.key, value),
       label: offerTypeLabels[value],
     })),
-  })), [stores, offerTypeLabels]);
+  })), [offerStores, offerTypeLabels]);
 
   // Solo en glass: view mode controlado (el toggle vive en el chrome de cristal)
   // y alto medido del chrome para que la lista pase por debajo.
@@ -298,6 +311,10 @@ export default function OffersScreen() {
     }
 
     allOffersPager.current = null;
+    if (!OFFER_STORES.includes(store)) {
+      setLoading(false);
+      return;
+    }
     fetchStoreOffers(store, null, region, postalCode, 50, filtersForStore(store), lidlStoreId)
       .then((page) => {
         if (loadSeq.current !== seq) return;
@@ -386,7 +403,7 @@ export default function OffersScreen() {
         <Text style={styles.title} numberOfLines={1}>{t('offers.title')}</Text>
         {/* Siempre visible (aunque haya un solo súper con ofertas): es lo que dice
             de qué súper son las ofertas que se están viendo. */}
-        <StoreDropdown stores={stores} value={store} onChange={setStore} includeAll labeled />
+        <StoreDropdown stores={storeOptions} value={store} onChange={setStore} includeAll labeled />
       </View>
 
       {/* Fila filtros + buscador + toggle (mismo diseño que Novedades/catálogo). */}
@@ -489,7 +506,7 @@ export default function OffersScreen() {
         selectedOfferTypes={selectedOfferTypes}
         onOfferTypes={setSelectedOfferTypes}
         stores={store === 'all'
-          ? stores.map((option) => ({ value: option.key, label: option.name }))
+          ? offerStores.map((option) => ({ value: option.key, label: option.name }))
           : []}
         selectedStores={filterStores}
         onStores={(values) => setFilterStores(values as CatalogStore[])}

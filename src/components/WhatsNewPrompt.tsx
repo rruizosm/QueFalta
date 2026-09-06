@@ -17,11 +17,10 @@ import { useTranslation } from '../context/LanguageContext';
 import { useProfile } from '../context/ProfileContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import { VERSION_1_3_RELEASED_AT } from '../constants/limits';
 
 const WHATS_NEW_VERSION = '1.3.0';
 const WHATS_NEW_STORAGE_PREFIX = '@whats_new_seen:';
-const VERSION_1_3_RELEASED_AT = Date.parse('2026-08-29T12:38:05Z');
-
 type FeatureIcon = React.ComponentProps<typeof Ionicons>['name'];
 
 function whatsNewStorageKey(userId: string) {
@@ -31,8 +30,8 @@ function whatsNewStorageKey(userId: string) {
 /**
  * Bienvenida compacta a la 1.3 para cuentas anteriores a esta versión.
  *
- * `createdAt` distingue las cuentas anteriores al despliegue sin reutilizar el
- * permiso de "Todos", que ahora está incluido para cualquier cuenta registrada.
+ * `createdAt` distingue las cuentas anteriores al despliegue sin reutilizar la
+ * señal histórica de acceso a "Todos".
  * El cierre se recuerda por usuario y dispositivo para no compartir estado
  * entre cuentas del mismo móvil.
  */

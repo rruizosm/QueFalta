@@ -26,13 +26,12 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { fetchMyGroups, type GroupSummary, type GroupItem } from '../api/groups';
+import type { GroupItem } from '../api/groups';
 import { fetchListItems } from '../api/lists';
 import { fetchPurchases, fetchPurchaseItems, type Purchase } from '../api/purchases';
 import { favoriteToUI, type UIProduct } from '../lib/productAdapters';
 import { STORE_META } from '../constants/stores';
 import ProgressBar from '../components/ProgressBar';
-import MemberAvatars from '../components/MemberAvatars';
 import HardShadow from '../components/HardShadow';
 import UserAvatar from '../components/UserAvatar';
 import NotificationsSheet from '../components/NotificationsSheet';
@@ -90,16 +89,9 @@ export default function HomeScreen() {
 
   const userId = profile?.id ?? null;
 
-  const groupsCacheKey = userId ? startupKeys.groups(userId) : null;
-  const cachedGroups = groupsCacheKey ? peekStartupCache<GroupSummary[]>(groupsCacheKey) : null;
   const cachedCartItems = userId && activeCart
     ? peekStartupCache<GroupItem[]>(startupKeys.listItems(userId, activeCart.listId))
     : null;
-  const [groups, setGroups] = useState<GroupSummary[]>(cachedGroups ?? []);
-  const [groupsLoading, setGroupsLoading] = useState(
-    groupsCacheKey ? !hasStartupCache(groupsCacheKey) : true,
-  );
-  const [groupsError, setGroupsError] = useState(false);
   const [cartItems, setCartItems] = useState<GroupItem[]>(cachedCartItems ?? []);
   // Grupo cuyos artículos ya hemos traído frescos de la red. Distingue "aún
   // cargando" de "carrito vacío de verdad" sin un flag que haga parpadear
@@ -121,15 +113,6 @@ export default function HomeScreen() {
   const cartRequestIdRef = useRef(0);
 
   const load = useCallback(() => {
-    const groupsP = fetchMyGroups(userId ?? undefined)
-      .then((next) => {
-        setGroupsError(false);
-        setGroups(next);
-        if (userId) writeStartupCache(startupKeys.groups(userId), next);
-      })
-      .catch(() => setGroupsError(true))
-      .finally(() => setGroupsLoading(false));
-
     const purchasesP = fetchPurchases()
       .then((list) => {
         const next = list[0] ?? null;
@@ -160,7 +143,7 @@ export default function HomeScreen() {
       loadedGroupRef.current = null;
       setLoadedGroup(null);
     }
-    return Promise.all([groupsP, cartP, purchasesP]);
+    return Promise.all([cartP, purchasesP]);
   }, [activeCart, userId]);
 
   useFocusEffect(useCallback(() => {
@@ -177,7 +160,7 @@ export default function HomeScreen() {
     return () => clearTimeout(id);
   }, [entryCoverVisible]);
 
-  const homeDataReady = !groupsLoading && !favoritesLoading && !purchaseLoading;
+  const homeDataReady = !favoritesLoading && !purchaseLoading;
   useEffect(() => {
     if (!entryCoverVisible || !layoutReady || (!homeDataReady && !revealDeadlineReached)) return;
     if (reducedMotion) {
@@ -618,59 +601,6 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* Mis grupos */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{t('home.myGroups')}</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Groups')}>
-            <Text style={styles.seeAll}>{t('home.seeAll')}</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.groupsBlock}>
-          {groupsLoading ? (
-            <ActivityIndicator color={colors.accent} style={{ marginVertical: 16 }} />
-          ) : groupsError ? (
-            <TouchableOpacity
-              style={styles.groupsRetry}
-              onPress={() => {
-                setGroupsLoading(true);
-                setGroupsError(false);
-                void load();
-              }}
-              accessibilityRole="button"
-            >
-              <Ionicons name="refresh" size={17} color={colors.accent} />
-              <Text style={styles.groupsRetryText}>{t('common.retry')}</Text>
-            </TouchableOpacity>
-          ) : groups.length === 0 ? (
-            <Text style={styles.noGroups}>{t('home.noGroups')}</Text>
-          ) : (
-            groups.map((group) => (
-              <TouchableOpacity
-                key={group.id}
-                style={styles.groupRow}
-                onPress={() =>
-                  navigation.navigate('Groups', {
-                    screen: 'GroupDetail',
-                    params: { groupId: group.id },
-                  })
-                }
-                activeOpacity={0.8}
-              >
-                <View style={styles.groupRowLeft}>
-                  <Text style={styles.groupRowName}>{group.name}</Text>
-                  <Text style={styles.groupRowSub}>
-                    {group.members.length} {group.members.length === 1 ? t('home.member') : t('home.members')}
-                    {activeCart?.groupId === group.id ? t('home.cartActiveSuffix') : ''}
-                  </Text>
-                </View>
-                {group.members.length > 0 && (
-                  <MemberAvatars members={group.members} maxVisible={3} size={28} />
-                )}
-              </TouchableOpacity>
-            ))
-          )}
-        </View>
-
       </ScrollView>
 
       {glassAvailable && (
@@ -706,7 +636,7 @@ const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
   scroll: { padding: 16, paddingBottom: 32 },
   entryCover: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 100,
     alignItems: 'center',
     justifyContent: 'center',
@@ -752,7 +682,7 @@ const themedStyles = () => StyleSheet.create({
     borderRadius: 18,
     overflow: 'hidden',
   },
-  cartBackdrop: { ...StyleSheet.absoluteFillObject },
+  cartBackdrop: { ...StyleSheet.absoluteFill },
   cartGlowLarge: {
     position: 'absolute', width: 172, height: 172, borderRadius: 86,
     backgroundColor: 'rgba(255,255,255,0.34)', right: -58, top: -92, opacity: 0.5,
@@ -906,31 +836,6 @@ const themedStyles = () => StyleSheet.create({
   ctaTextCol: { flex: 1, minWidth: 0 },
   ctaTitle: { fontSize: 15, fontFamily: fonts.bold, color: colors.ink },
   ctaSub: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
-
-  // ── Groups ────────────────────────────────────────────────────
-  // 16 + los 8 del último groupRow = 24, igual que el hueco entre secciones (sectionWrap).
-  groupsBlock: { marginBottom: 16 },
-  groupsRetry: {
-    minHeight: 48,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginBottom: 16,
-    borderRadius: 16,
-    backgroundColor: colors.accentLight,
-  },
-  groupsRetryText: { fontSize: 13, fontFamily: fonts.bold, color: colors.accent },
-  noGroups: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, marginBottom: 16 },
-  groupRow: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    backgroundColor: colors.white,
-    padding: 14, marginBottom: 8,
-    borderWidth: 1, borderColor: colors.border, borderRadius: 18,
-  },
-  groupRowLeft: { flex: 1 },
-  groupRowName: { fontSize: 14, fontFamily: fonts.semibold, color: colors.ink },
-  groupRowSub: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2 },
 
   // ── Cabecera Glass ─────────────────────────────────────────────
   chrome: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },

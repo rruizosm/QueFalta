@@ -1,7 +1,7 @@
 # Notificaciones — Estado y hoja de ruta
 
 > Última actualización: 2026-08-28
-> SDK actual: **Expo SDK 54** · Push real requiere **dev/prod build** (no Expo Go)
+> SDK actual: **Expo SDK 57** · Push real requiere **dev/prod build** (no Expo Go)
 
 Documento de seguimiento para las notificaciones de la app. Resume qué está
 hecho, qué funciona hoy y qué falta para tener notificaciones push completas.
@@ -22,7 +22,7 @@ hecho, qué funciona hoy y qué falta para tener notificaciones push completas.
 
 Hay **dos tipos** de notificaciones, no confundir:
 
-| Tipo | Qué es | ¿Funciona en Expo Go SDK 54? |
+| Tipo | Qué es | ¿Funciona en Expo Go SDK 57? |
 |------|--------|------------------------------|
 | **Locales** | Las dispara la propia app en el dispositivo (recordatorios, avisos in-app) | ✅ Sí |
 | **Push (remotas)** | Las envía un servidor aunque la app esté cerrada ("Rubén añadió leche al carrito") | ❌ No — requiere *development build* |

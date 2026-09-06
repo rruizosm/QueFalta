@@ -32,6 +32,12 @@ interface Props {
   badgeLabel?: string;
 }
 
+const distinctPromotionText = (name: string, text: string | null) => {
+  if (!text) return null;
+  const normalize = (value: string) => value.trim().replace(/\s+/g, ' ').toLowerCase();
+  return normalize(text) === normalize(name) ? null : text;
+};
+
 /** Detalle de un producto de Aldi. Pinta los datos ya cargados (el catálogo va
  *  por el espejo en Supabase). Aldi da marca y formato del envase, pero no ficha
  *  (ingredientes/nutrición) → solo la categoría, como Consum. */
@@ -57,7 +63,7 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
     && 'promoName' in product
     && 'promoText' in product
     && product.promoName
-    ? { name: product.promoName, text: product.promoText }
+    ? { name: product.promoName, text: distinctPromotionText(product.promoName, product.promoText) }
     : null;
   const promotionPreviousPrice = lidlPromoBasePrice != null
     && product.unitPrice != null

@@ -1,4 +1,4 @@
-import { Image, Platform, StatusBar, View, StyleSheet } from 'react-native';
+import { Platform, View, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
@@ -8,10 +8,12 @@ import { SpaceGrotesk_600SemiBold } from '@expo-google-fonts/space-grotesk/600Se
 import { SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk/700Bold';
 import * as SplashScreen from 'expo-splash-screen';
 import Navigation from './src/navigation';
+import BootLoader from './src/components/BootLoader';
 import { LanguageProvider } from './src/context/LanguageContext';
 import { ThemeProvider } from './src/context/ThemeContext';
 import { AuthProvider } from './src/context/AuthContext';
 import { ProfileProvider } from './src/context/ProfileContext';
+import { CatalogStoreProvider } from './src/context/CatalogStoreContext';
 import { NotificationsProvider } from './src/context/NotificationsContext';
 import { CartProvider } from './src/context/CartContext';
 import { FavoritesProvider } from './src/context/FavoritesContext';
@@ -28,25 +30,6 @@ SplashScreen.setOptions({ duration: 280, fade: true });
 setTimeout(() => { SplashScreen.hideAsync().catch(() => {}); }, 4000);
 configureNotificationHandler();
 
-const STARTUP_LOGO = require('./assets/quefalta-logo-blue.png');
-
-/** Respaldo pintado por React mientras expo-font termina. Tiene exactamente el
- * mismo fondo e imagen que el storyboard nativo, así el watchdog nunca descubre
- * una ventana negra aunque una inicialización tarde más de lo previsto. */
-function FontBootstrapScreen() {
-  return (
-    <View
-      style={startup.container}
-      onLayout={() => SplashScreen.hideAsync().catch(() => {})}
-      accessibilityRole="progressbar"
-      accessibilityLabel="Cargando"
-    >
-      <StatusBar barStyle="dark-content" backgroundColor="#E1EBF7" />
-      <Image source={STARTUP_LOGO} resizeMode="contain" style={startup.logo} accessible={false} />
-    </View>
-  );
-}
-
 export default function App() {
   const [fontsLoaded, fontError] = useFonts({
     SpaceGrotesk_400Regular,
@@ -57,29 +40,31 @@ export default function App() {
 
   // Si la carga de fuentes FALLA hay que arrancar igualmente (con la fuente del
   // sistema): quedarse en null dejaría el splash nativo en pantalla para siempre.
-  if (!fontsLoaded && !fontError) return <FontBootstrapScreen />;
+  if (!fontsLoaded && !fontError) return <BootLoader />;
 
   const inner = (
     // SafeAreaProvider en la raíz: expone los insets del sistema (barra de
     // navegación de Android, home indicator de iOS) a toda la app, incluida la
     // barra de pestañas, para que nada se solape con los botones del sistema.
     <SafeAreaProvider>
-    {/* LanguageProvider retiene el render hasta aplicar el idioma. El tema vive
+    {/* LanguageProvider expone cuándo termina de aplicar el idioma. El tema vive
         bajo AuthProvider para aislar sus preferencias locales por cuenta. */}
     <LanguageProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <AuthProvider>
           <ThemeProvider>
             <ProfileProvider>
-              <NotificationsProvider>
-                <CartProvider>
-                  <FavoritesProvider>
-                    <ToastProvider>
-                      <Navigation />
-                    </ToastProvider>
-                  </FavoritesProvider>
-                </CartProvider>
-              </NotificationsProvider>
+              <CatalogStoreProvider>
+                <NotificationsProvider>
+                  <CartProvider>
+                    <FavoritesProvider>
+                      <ToastProvider>
+                        <Navigation />
+                      </ToastProvider>
+                    </FavoritesProvider>
+                  </CartProvider>
+                </NotificationsProvider>
+              </CatalogStoreProvider>
             </ProfileProvider>
           </ThemeProvider>
         </AuthProvider>
@@ -117,18 +102,5 @@ const web = StyleSheet.create({
     shadowOffset: { width: 0, height: 24 },
     shadowOpacity: 0.6,
     shadowRadius: 48,
-  },
-});
-
-const startup = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#E1EBF7',
-  },
-  logo: {
-    width: 180,
-    height: 150,
   },
 });

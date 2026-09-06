@@ -31,6 +31,14 @@ const GRID_GAP = 8;
 const stripAccents = (s: string) =>
   s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
+/** Selección para otro formulario; no modifica la cesta ni los favoritos. */
+export interface ProductSelection {
+  onSelect: (product: UIProduct) => void;
+  selectedKeys: ReadonlySet<string>;
+  accessibilityLabel: (product: UIProduct) => string;
+  bottomInset: number;
+}
+
 interface Props {
   /** Productos ya normalizados (de cualquier súper, mezclables). */
   products: UIProduct[];
@@ -82,6 +90,7 @@ interface Props {
   /** Permite al padre reaccionar al inicio del desplazamiento de productos. */
   onScrollBeginDrag?: () => void;
   showStoreLogo?: boolean;
+  selection?: ProductSelection;
 }
 
 /** Lista de productos reutilizable (subcategorías y búsqueda): imagen, stepper +
@@ -94,7 +103,7 @@ export default function StoreProductList({
   hideToolbar = false, viewMode: viewModeProp, onViewModeChange,
   pageSize, onEndReached, loadingMore = false, keepOrder = false,
   topInset = 0, roundedCards = false, badgeLabel, onScrollBeginDrag,
-  showStoreLogo = false,
+  showStoreLogo = false, selection,
 }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { width: windowWidth } = useWindowDimensions();
@@ -107,7 +116,7 @@ export default function StoreProductList({
   // Con tab bar de cristal: eleva la barra "Añadir" (cartBar) por encima del
   // cristal y agranda el paddingBottom de lista/cuadrícula en la misma medida.
   const tabBarOffset = useTabBarBottomPadding(0);
-  const bottomPad = 110 + tabBarOffset;
+  const bottomPad = selection ? selection.bottomInset + 24 : 110 + tabBarOffset;
   const { t } = useTranslation();
   const emptyLabel = emptyText ?? t('product.emptyDefault');
   const errorLabel = errorText ?? t('product.errorDefault');
@@ -263,15 +272,21 @@ export default function StoreProductList({
       badgeLabel={badgeLabel}
       offerTag={item.offerTag}
       storeLogo={showStoreLogo ? CATALOG_STORES.find((store) => store.key === item.store)?.icon : null}
-      onPress={() => setDetail({ store: item.store, id: item.id })}
+      onPress={() => selection ? selection.onSelect(item) : setDetail({ store: item.store, id: item.id })}
+      selectionState={selection ? selection.selectedKeys.has(quantityKey(item)) ? 'selected' : 'available' : undefined}
+      accessibilityLabel={selection?.accessibilityLabel(item)}
     />
   );
 
   const renderItem = ({ item, index }: { item: UIProduct; index: number }) => {
     const qty = quantities[quantityKey(item)] ?? 0;
-    const active = qty > 0;
+    const active = selection ? selection.selectedKeys.has(quantityKey(item)) : qty > 0;
     const fav = isProductFavorite(item.store, item.id);
-    const stepper = (
+    const stepper = selection ? (
+      <View style={styles.selectionButton}>
+        <Ionicons name={active ? 'checkmark' : 'add'} size={22} color={colors.accent} />
+      </View>
+    ) : (
       <QuantityStepper
         vertical
         value={qty}
@@ -279,25 +294,13 @@ export default function StoreProductList({
         onDecrement={() => decrement(item)}
       />
     );
-    return (
-      <Swipeable
-        friction={1}
-        leftThreshold={48}
-        overshootFriction={8}
-        renderLeftActions={renderFavAction}
-        onSwipeableOpen={(direction, swipeable) => {
-          if (direction === 'left') {
-            handleSwipeFav(item);
-            swipeable.close();
-          }
-        }}
-      >
+    const row = (
         <GlassSurface
           style={[styles.row, roundedCards && styles.rowRounded, active && styles.rowActive]}
           tintColor={active ? colors.accentLight : undefined}
           fallbackColor={active ? colors.accentLight : colors.white}
         >
-          {fav && <View style={styles.favBar} />}
+          {!selection && fav && <View style={styles.favBar} />}
           {showStoreLogo && (
             <View style={styles.storeLogoBadge} pointerEvents="none">
               <Image
@@ -307,7 +310,7 @@ export default function StoreProductList({
               />
             </View>
           )}
-          <TouchableOpacity activeOpacity={0.7} onPress={() => setDetail({ store: item.store, id: item.id })}>
+          <TouchableOpacity disabled={!!selection} activeOpacity={0.7} onPress={() => setDetail({ store: item.store, id: item.id })}>
             {item.imageUrl ? (
               <ProductImage uri={item.imageUrl} style={styles.thumb} />
             ) : (
@@ -354,6 +357,36 @@ export default function StoreProductList({
           </View>
           {stepper}
         </GlassSurface>
+    );
+    if (selection) {
+      return (
+        <TouchableOpacity
+          onPress={() => selection.onSelect(item)}
+          disabled={active}
+          activeOpacity={0.75}
+          accessibilityRole="button"
+          accessibilityLabel={selection.accessibilityLabel(item)}
+          accessibilityState={{ selected: active, disabled: active }}
+        >
+          {row}
+        </TouchableOpacity>
+      );
+    }
+    return (
+      <Swipeable
+        containerStyle={roundedCards ? styles.swipeRounded : undefined}
+        friction={1}
+        leftThreshold={48}
+        overshootFriction={8}
+        renderLeftActions={renderFavAction}
+        onSwipeableOpen={(direction, swipeable) => {
+          if (direction === 'left') {
+            handleSwipeFav(item);
+            swipeable.close();
+          }
+        }}
+      >
+        {row}
       </Swipeable>
     );
   };
@@ -450,7 +483,7 @@ export default function StoreProductList({
         />
       )}
 
-      {cartCount > 0 && (
+      {!selection && cartCount > 0 && (
         <View style={[styles.cartBarWrap, { bottom: tabBarOffset + 8 }]}>
           <GlassSurface
             style={styles.cartBar}
@@ -489,18 +522,22 @@ export default function StoreProductList({
         </View>
       )}
 
-      <StoreProductModal
+      {!selection && <StoreProductModal
         target={detail}
         onClose={() => setDetail(null)}
         fullScreen
         badgeLabel={badgeLabel}
-      />
+      />}
     </View>
   );
 }
 
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1 },
+  selectionButton: {
+    width: 44, height: 44, borderRadius: 16, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.accentLight,
+  },
   toolbar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end',
     gap: 10, paddingHorizontal: 16, paddingBottom: 8,
@@ -531,6 +568,7 @@ const themedStyles = () => StyleSheet.create({
   },
   rowActive: { backgroundColor: colors.accentLight, borderColor: colors.accentMid },
   rowRounded: { borderRadius: 18, overflow: 'hidden' },
+  swipeRounded: { borderRadius: 18 },
   favBar: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 5, backgroundColor: colors.accent },
   storeLogoBadge: {
     position: 'absolute', top: 0, left: 0, zIndex: 2,

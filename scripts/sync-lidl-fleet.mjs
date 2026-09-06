@@ -10,9 +10,12 @@
 //      LIDL_FLEET_MAX_ATTEMPTS=3
 // Uso: node scripts/sync-lidl-fleet.mjs [--schedule-only|--work-only]
 import { spawn } from 'node:child_process';
-import { hostname } from 'node:os';
+import { hostname, tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { appendFileSync } from 'node:fs';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { fetchLidlCampaignCatalog } from './lib/lidl-campaigns.mjs';
 import { isLidlAccessFailure } from './lib/lidl-http.mjs';
 
 const args = new Set(process.argv.slice(2));
@@ -56,6 +59,9 @@ const IDLE_MINUTES = integerEnv('LIDL_FLEET_IDLE_MINUTES', 35, 0, 60);
 const WORK_MINUTES = integerEnv('LIDL_FLEET_WORK_MINUTES', 300, 1, 330);
 const ACCESS_FAILURE_LIMIT = integerEnv('LIDL_FLEET_ACCESS_FAILURE_LIMIT', 2, 1, 10);
 const STORE_SYNC_PATH = fileURLToPath(new URL('./sync-lidl.mjs', import.meta.url));
+const CAMPAIGNS_DISABLED = process.env.LIDL_CAMPAIGNS_DISABLED === '1';
+let campaignCachePromise;
+let campaignCacheDir;
 
 if (STORE_TIMEOUT_MINUTES >= LEASE_MINUTES) {
   throw new Error('LIDL_FLEET_STORE_TIMEOUT_MINUTES debe ser menor que LIDL_FLEET_LEASE_MINUTES');
@@ -89,12 +95,38 @@ async function rpc(name, body) {
   return response.json();
 }
 
-function runStoreSync(storeId) {
+async function prepareCampaignCache() {
+  if (CAMPAIGNS_DISABLED) return null;
+  if (!campaignCachePromise) campaignCachePromise = (async () => {
+    try {
+      const catalog = await fetchLidlCampaignCatalog();
+      campaignCacheDir = await mkdtemp(join(tmpdir(), 'quefalta-lidl-campaigns-'));
+      const path = join(campaignCacheDir, 'campaigns.json');
+      await writeFile(path, JSON.stringify(catalog), { encoding: 'utf8', mode: 0o600 });
+      console.log(`[lidl-fleet] campañas web cacheadas: ${catalog.campaigns.reduce((sum, campaign) => sum + campaign.products.length, 0)} productos`);
+      return path;
+    } catch (error) {
+      console.warn(`[lidl-fleet] campañas web no disponibles: ${error.message}`);
+      return null;
+    }
+  })();
+  return campaignCachePromise;
+}
+
+async function cleanupCampaignCache() {
+  if (campaignCacheDir) await rm(campaignCacheDir, { recursive: true, force: true });
+}
+
+async function runStoreSync(storeId) {
+  const campaignFile = await prepareCampaignCache();
   return new Promise((resolve, reject) => {
     const childEnv = {
       ...process.env,
       LIDL_STORE_ID: storeId,
       DRY_RUN: '0',
+      ...(campaignFile
+        ? { LIDL_CAMPAIGNS_FILE: campaignFile }
+        : { LIDL_CAMPAIGNS_DISABLED: '1' }),
     };
     delete childEnv.MAX_LEAVES;
 
@@ -216,7 +248,13 @@ async function report() {
 }
 
 if (SHOULD_SCHEDULE) await schedule();
-if (SHOULD_WORK) await work();
+if (SHOULD_WORK) {
+  try {
+    await work();
+  } finally {
+    await cleanupCampaignCache();
+  }
+}
 if (args.has('--report-only')) await report();
 if (args.has('--retry-dead-only')) {
   if (!STORE_IDS) throw new Error('Recuperar dead requiere LIDL_FLEET_STORE_IDS explícitos');

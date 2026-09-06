@@ -107,7 +107,6 @@ export const navigationRef = createNavigationContainerRef<RootTabParamList>();
  *  datos) `booting` no se apagaría nunca y el logo quedaba clavado hasta matar
  *  la app. Pasado el tope se arranca con lo que haya. */
 const BOOT_MAX_MS = 10000;
-const BOOT_MIN_MS = 350;
 
 function AppTabBar(props: BottomTabBarProps) {
   return glassAvailable ? <LiquidGlassTabBar {...props} /> : <BottomTabBar {...props} />;
@@ -325,19 +324,11 @@ export default function Navigation() {
     || !themeReady
     || (!!session && (profileLoading || !cartHydrated));
 
-  // Evita que el loader animado aparezca y desaparezca dentro de su propia
-  // entrada (320 ms), que producía un flash parcial entre splash y Login.
-  const [bootMinimumElapsed, setBootMinimumElapsed] = useState(false);
-  useEffect(() => {
-    const id = setTimeout(() => setBootMinimumElapsed(true), BOOT_MIN_MS);
-    return () => clearTimeout(id);
-  }, []);
-
   // Tope de arranque: si esta fase no acaba en BOOT_MAX_MS (fetch colgado),
   // fuerza la salida. Sin sesión → login (si el refresh llega después,
   // onAuthStateChange mete al usuario solo); con sesión y sin perfil → pantalla
   // recuperable de reintento. El flag se re-arma por fase (arranque, login)
-  // para no saltarse el mínimo del login.
+  // para conservar la recuperación también tras iniciar sesión.
   const [bootTimedOut, setBootTimedOut] = useState(false);
   useEffect(() => {
     if (!bootingRaw) {
@@ -348,7 +339,7 @@ export default function Navigation() {
     return () => clearTimeout(id);
   }, [bootingRaw]);
 
-  const booting = (bootingRaw || !bootMinimumElapsed) && !bootTimedOut;
+  const booting = bootingRaw && !bootTimedOut;
   if (booting) {
     if (session && loginWasShown) {
       return (
@@ -388,17 +379,10 @@ export default function Navigation() {
     );
   }
 
-  // Usuario ya incorporado pero sin comunidad autónoma (columna nueva → todos
-  // los existentes empiezan con region NULL): gate de UNA sola pregunta, sin
-  // repetir el asistente. Los nuevos nunca llegan aquí (el onboarding ya fija
-  // region en su paso 3). Al guardar, applyProfile re-renderiza y entra al Home.
-  if (profile && profile.onboardedAt && !profile.region) {
-    return (
-      <NavigationContainer theme={theme}>
-        <RegionGateScreen />
-      </NavigationContainer>
-    );
-  }
+  // En 1.3.1 todas las cuentas ya incorporadas necesitan un código postal. La
+  // app se monta detrás para que el requisito aparezca como modal real; el gate
+  // no admite cierre y desaparece únicamente cuando el perfil guarda un CP.
+  const needsPostalCode = !!profile?.onboardedAt && !profile.postalCode;
 
   return (<>
     <NavigationContainer ref={navigationRef} theme={theme} onReady={flushPendingPush}>
@@ -468,7 +452,8 @@ export default function Navigation() {
         <Tab.Screen name="Groups"    component={GroupsNavigator}   options={{ title: t('tabs.groups') }} />
       </Tab.Navigator>
     </NavigationContainer>
-    <WhatsNewPrompt />
-    <NativeStoreReviewPrompt />
+    {needsPostalCode ? <RegionGateScreen /> : null}
+    {!needsPostalCode ? <WhatsNewPrompt /> : null}
+    {!needsPostalCode ? <NativeStoreReviewPrompt /> : null}
   </>);
 }

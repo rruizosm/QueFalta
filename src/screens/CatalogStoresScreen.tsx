@@ -15,7 +15,7 @@ import { useTranslation } from '../context/LanguageContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { updateProfile } from '../api/profile';
-import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
+import { CATALOG_STORES, CATALOG_STORE_KEYS, storesWithLidlSecond, type CatalogStore } from '../constants/stores';
 import { storeInRegion } from '../constants/regions';
 import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
 import { glassAvailable } from '../components/GlassSurface';
@@ -39,7 +39,7 @@ export default function CatalogStoresScreen() {
   // "Toda España". La preferencia guardada puede contener súpers de fuera de
   // la región (no se destruye al cambiar de CCAA); simplemente no se listan.
   const region = profile?.region ?? null;
-  const shown = CATALOG_STORES.filter((s) => storeInRegion(s.key, region));
+  const shown = storesWithLidlSecond(CATALOG_STORES.filter((s) => storeInRegion(s.key, region)));
 
   const toggle = async (key: CatalogStore) => {
     const isOn = selected.includes(key);
@@ -83,7 +83,11 @@ export default function CatalogStoresScreen() {
                 style={[styles.row, !last && styles.rowBorder]}
               >
                 {s.icon ? (
-                  <Image source={s.icon} style={styles.storeIcon} resizeMode="cover" />
+                  <Image
+                    source={s.icon}
+                    style={[styles.storeIcon, s.key === 'lidl' && styles.lidlStoreIcon]}
+                    resizeMode="cover"
+                  />
                 ) : (
                   <View style={[styles.storeIcon, styles.storeIconEmpty]}>
                     <Ionicons name="storefront" size={16} color={colors.inkSoft} />
@@ -124,6 +128,7 @@ const themedStyles = () => StyleSheet.create({
   },
   rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
   storeIcon: { width: 28, height: 28, borderRadius: 8 },
+  lidlStoreIcon: { borderRadius: 0 },
   storeIconEmpty: { alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceAlt },
   rowLabel: { flex: 1, fontSize: 15, fontFamily: fonts.semibold, color: colors.ink },
 });

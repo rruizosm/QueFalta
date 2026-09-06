@@ -26,7 +26,7 @@ de implementación; no un comportamiento ya desplegado.
 
 | | Free | Plus |
 |---|---|---|
-| Catálogo, búsqueda, favoritos, novedades | ✅ incluido; «Todos» disponible | ✅ incluido |
+| Catálogo, búsqueda, favoritos, novedades | ✅ por supermercado, salvo Lidl; «Todos» bloqueado | ✅ «Todos tus supermercados», también Lidl |
 | Unirse a grupos (enlace de invitación) | ✅ **ilimitado, siempre** | ✅ |
 | Crear grupos | ✅ ilimitados | ✅ ilimitados |
 | Comparador "Más barato en otros súper" | 3 búsquedas por cuenta; después abre Plus | Ilimitado |
@@ -40,6 +40,7 @@ de implementación; no un comportamiento ya desplegado.
 ## Beneficios comunicados en el paywall (2026-08-11)
 
 - Ordenar los productos por precio unitario para comparar por kg, litro o unidad.
+- Consultar el catálogo Lidl, sus novedades, ofertas y cambios de precio.
 - **Radar de ahorro ilimitado:** seguir encontrando alternativas similares después de las 3 búsquedas gratuitas.
 - Aplicar filtros avanzados en Ofertas, Cambios de precio y Novedades.
 - Crear alertas personalizadas ilimitadas después de la primera gratuita.
@@ -126,10 +127,8 @@ búsquedas del comparador; Plus amplía ambos beneficios sin límite.
 - [x] Novedades: los dos sentidos del orden por precio unitario requieren Plus.
       En free abren el paywall sin aplicar el orden; una expiración limpia la
       selección unitaria que siguiera activa. El orden por precio total es libre.
-- [x] Selector «Todos»: desde el despliegue de 1.3 está incluido para cualquier
-      cuenta registrada en Catálogo, Novedades, Ofertas y Cambios de precio.
-      `profiles.legacy_all_stores_access` queda como compatibilidad para el
-      cliente 1.3 publicado, con `DEFAULT true` y escritura protegida.
+- [x] Selector «Todos tus supermercados»: requiere Plus en Catálogo, Novedades,
+      Ofertas y Cambios de precio para todas las cuentas, sin concesión heredada.
 - [x] Paywall: `src/components/PaywallModal.tsx` — beneficios, 2 planes (anual
       preseleccionado con "7 días gratis"), CTA placeholder (toast hasta Fase 3),
       "Restaurar compras" y enlaces a quefalta.es/condiciones y /privacidad
@@ -209,9 +208,10 @@ verificó en producción el 2026-08-25 para enviar la versión 1.3 a revisión.
       restore, y `premium_until` moviéndose en BD.
 
 **Día de lanzamiento (orden):**
-1. [x] Tras publicar 1.3, «Todos» se abrió a todas las cuentas mediante
+1. [x] Tras publicar 1.3, «Todos» se abrió históricamente a todas las cuentas mediante
        `20260829124046_grant_all_registered_users_all_stores_access.sql`; el
-       default `true` cubre también las altas futuras.
+       default `true` cubre también las altas futuras. El cliente actual vuelve
+       a reservar la vista conjunta a Plus sin modificar esa migración histórica.
 2. [ ] Regalar Plus a los testers: `ops/grant_plus_testers.sql` (opción A).
 3. [x] Encender servidor: `migrations/paywall_on.sql` aplicado y
        `paywall_enabled() = true` verificado el 2026-08-25.

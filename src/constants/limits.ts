@@ -23,6 +23,23 @@ export const PRICE_COMPARISON_ENABLED = true;
 export const FREE_PRICE_ALERT_LIMIT = 1;
 export const FREE_COMPARATOR_SEARCH_LIMIT = 3;
 
+/** Catálogos reservados a QuéFalta Plus. La preferencia puede guardarse para
+ * cualquier cuenta (incluido onboarding); este gate se aplica al consultarlos. */
+export const PLUS_CATALOG_STORES = ['lidl'] as const;
+
+export const catalogStoreRequiresPlus = (
+  store: string,
+  isPremium: boolean,
+): boolean => limitsApply(isPremium)
+  && (PLUS_CATALOG_STORES as readonly string[]).includes(store);
+
+/** Instante de publicación de 1.3, usado por el aviso histórico de novedades. */
+export const VERSION_1_3_RELEASED_AT = Date.parse('2026-08-29T12:38:05Z');
+
+/** «Todos tus supermercados» es exclusivo de QuéFalta Plus. */
+export const allStoresRequiresPlus = (isPremium: boolean): boolean =>
+  limitsApply(isPremium);
+
 /** QuéCocino vuelve a formar parte del árbol de navegación mientras se desarrolla
  *  su contenido real sobre la implementación preliminar existente. */
 export const QUE_COCINO_ENABLED = true;

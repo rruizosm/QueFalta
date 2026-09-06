@@ -3,7 +3,7 @@
  *  solo al guardar (deriva de profile.region vía ProfileContext); si la tienda
  *  activa deja de estar disponible, el auto-salto de CatalogScreen la corrige.
  *  Guardado optimista con revert, como CatalogStoresScreen. Solo se guardan
- *  estados completos (CP válido o "Toda España"); un CP a medias no toca nada. */
+ *  estados completos (CP válido); un CP a medias no toca nada. */
 import { useRef, useState } from 'react';
 import {
   View, Text, ScrollView,
@@ -77,7 +77,14 @@ export default function RegionSettingsScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad, paddingTop: glassInset ? glassInset + 12 : 6 }]}>
         <Text style={styles.hint}>{t('region.hint')}</Text>
-        <RegionPicker key={pickerKey} region={region} postalCode={postalCode} lidlStoreId={lidlStoreId} onChange={handleChange} />
+        <RegionPicker
+          key={pickerKey}
+          region={region}
+          postalCode={postalCode}
+          lidlStoreId={lidlStoreId}
+          onChange={handleChange}
+          allowAll={false}
+        />
       </ScrollView>
     </View>
   );

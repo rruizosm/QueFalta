@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Materializa los 18 catálogos en catalog_product_embeddings.
+// Materializa los 19 catálogos en catalog_product_embeddings.
 // Solo los cambios del input semántico efectivo disparan un nuevo trabajo pgmq.
 
 import { readFileSync } from 'node:fs';
@@ -32,6 +32,7 @@ const NORMALIZATION_ONLY = process.env.NORMALIZATION_ONLY === '1';
 const ANOMALY_OVERRIDE = process.env.EMBEDDING_ANOMALY_OVERRIDE === '1';
 
 const STORES = [
+  ['lidl', 'lidl_comparator_products', ['id', 'display_name', 'brand', 'packaging', 'ean', 'category_name', 'price_per_unit_unit']],
   ['mercadona', 'mercadona_products', ['id', 'display_name', 'display_name_ca', 'packaging', 'ean', 'category_name', 'price_per_unit_unit', 'raw']],
   ['esclat', 'bonpreu_products', ['id', 'display_name', 'display_name_ca', 'brand', 'packaging', 'ean', 'category_name', 'price_per_unit_unit']],
   ['carrefour', 'carrefour_products', ['id', 'display_name', 'ean', 'category_name', 'price_per_unit_unit']],

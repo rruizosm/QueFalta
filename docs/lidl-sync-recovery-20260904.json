@@ -1,0 +1,237 @@
+{
+  "date": "2026-09-04",
+  "source_run": "https://github.com/rruizosm/QueFalta/actions/runs/33909268291",
+  "initial": {
+    "succeeded": 643,
+    "retry": 78
+  },
+  "small_catalog_validation": [
+    {
+      "products": 2145,
+      "categories": 43,
+      "priced": 2145,
+      "unit_priced": 2094,
+      "imaged": 2145,
+      "available": 1919,
+      "store_id": "ES0367",
+      "full_leaves": true
+    },
+    {
+      "products": 2151,
+      "categories": 43,
+      "priced": 2151,
+      "unit_priced": 2099,
+      "imaged": 2151,
+      "available": 1896,
+      "store_id": "ES0431",
+      "full_leaves": true
+    },
+    {
+      "products": 2195,
+      "categories": 43,
+      "priced": 2195,
+      "unit_priced": 2141,
+      "imaged": 2195,
+      "available": 1893,
+      "store_id": "ES0529",
+      "full_leaves": true
+    },
+    {
+      "products": 2166,
+      "categories": 43,
+      "priced": 2166,
+      "unit_priced": 2107,
+      "imaged": 2166,
+      "available": 1838,
+      "store_id": "ES0530",
+      "full_leaves": true
+    },
+    {
+      "products": 2146,
+      "categories": 43,
+      "priced": 2146,
+      "unit_priced": 2090,
+      "imaged": 2146,
+      "available": 1886,
+      "store_id": "ES0848",
+      "full_leaves": true
+    }
+  ],
+  "source_unavailable": {
+    "canary_samples": [
+      "ES0951",
+      "ES0953",
+      "ES9100"
+    ],
+    "canary_http": 200,
+    "canary_product_count": 0,
+    "no_content_stores": [
+      "ES5016",
+      "ES5026",
+      "ES5093"
+    ],
+    "categories_status": 204,
+    "direct_fruit_product_count": 0
+  },
+  "migration": "20260904210752_lidl_fleet_recovery",
+  "merge_commit": "451df4b6245ada1fb1dfc912bb4601652215a924",
+  "pr": "https://github.com/rruizosm/QueFalta/pull/56",
+  "workflow_canary": "https://github.com/rruizosm/QueFalta/actions/runs/33920142081",
+  "quality_main": "https://github.com/rruizosm/QueFalta/actions/runs/33920588521",
+  "tests": 637,
+  "final": {
+    "succeeded": 679,
+    "retry_source_unavailable": 42,
+    "running": 0,
+    "dead": 0,
+    "original_successes_preserved": 643,
+    "recovered": 36,
+    "published_counts_match_downloads": true
+  },
+  "recovered_catalogs": [
+    {
+      "store_id": "ES0367",
+      "published_products": 2145
+    },
+    {
+      "store_id": "ES0431",
+      "published_products": 2151
+    },
+    {
+      "store_id": "ES0529",
+      "published_products": 2195
+    },
+    {
+      "store_id": "ES0530",
+      "published_products": 2166
+    },
+    {
+      "store_id": "ES0848",
+      "published_products": 2146
+    },
+    {
+      "store_id": "ES2106",
+      "published_products": 2846
+    },
+    {
+      "store_id": "ES2107",
+      "published_products": 2879
+    },
+    {
+      "store_id": "ES2108",
+      "published_products": 2893
+    },
+    {
+      "store_id": "ES2109",
+      "published_products": 2921
+    },
+    {
+      "store_id": "ES2110",
+      "published_products": 2879
+    },
+    {
+      "store_id": "ES2111",
+      "published_products": 2878
+    },
+    {
+      "store_id": "ES2114",
+      "published_products": 2752
+    },
+    {
+      "store_id": "ES2115",
+      "published_products": 2900
+    },
+    {
+      "store_id": "ES2122",
+      "published_products": 2891
+    },
+    {
+      "store_id": "ES2123",
+      "published_products": 2921
+    },
+    {
+      "store_id": "ES2125",
+      "published_products": 2888
+    },
+    {
+      "store_id": "ES2126",
+      "published_products": 2919
+    },
+    {
+      "store_id": "ES2127",
+      "published_products": 2884
+    },
+    {
+      "store_id": "ES2128",
+      "published_products": 2858
+    },
+    {
+      "store_id": "ES2129",
+      "published_products": 2633
+    },
+    {
+      "store_id": "ES2133",
+      "published_products": 2502
+    },
+    {
+      "store_id": "ES2134",
+      "published_products": 2893
+    },
+    {
+      "store_id": "ES2135",
+      "published_products": 2885
+    },
+    {
+      "store_id": "ES2136",
+      "published_products": 2848
+    },
+    {
+      "store_id": "ES2137",
+      "published_products": 2887
+    },
+    {
+      "store_id": "ES2138",
+      "published_products": 2887
+    },
+    {
+      "store_id": "ES2139",
+      "published_products": 2901
+    },
+    {
+      "store_id": "ES2140",
+      "published_products": 2863
+    },
+    {
+      "store_id": "ES2142",
+      "published_products": 2875
+    },
+    {
+      "store_id": "ES2144",
+      "published_products": 2691
+    },
+    {
+      "store_id": "ES2146",
+      "published_products": 2905
+    },
+    {
+      "store_id": "ES2150",
+      "published_products": 2894
+    },
+    {
+      "store_id": "ES4003",
+      "published_products": 2803
+    },
+    {
+      "store_id": "ES6012",
+      "published_products": 2856
+    },
+    {
+      "store_id": "ES6032",
+      "published_products": 2755
+    },
+    {
+      "store_id": "ES6039",
+      "published_products": 2839
+    }
+  ]
+}

@@ -1,5 +1,500 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Filtros de recetas fijos (local, 2026-09-06)
+
+- `QueCocinoScreen` renderiza la toolbar de filtros fuera del `ScrollView`, en
+  posición absoluta bajo la altura medida de la cabecera (`zIndex: 9`; cabecera
+  Liquid Glass: 10).
+- El padding superior reserva `RECIPE_FILTER_HEIGHT=48`; se mantienen 12 pt de
+  separación antes del filtro y antes de la primera receta. Funciona igual en
+  cabecera clásica y Liquid Glass.
+
+## Insignia Plus dorada global (local, 2026-09-06)
+
+- El tono predeterminado de `VerifiedBadge` pasa de `accent` a `gold`; todas las
+  insignias Plus sin override, incluida la del autor en el preview de recetas,
+  usan el degradado `#F7D25A` → `#D2900F` y check blanco.
+- Cambio exclusivamente visual; no altera `verified`, `premium_until` ni gates.
+
+## Liquid Glass en acciones de recetas (local, 2026-09-05)
+
+- `RecipeEngagementActions` envuelve las superficies visuales de Me gusta y
+  Guardar con `GlassSurface interactive`; siguen siendo dos círculos de 48 pt,
+  solo icono, superpuestos a la imagen del detalle.
+- Los filtros y el Guardar de `QueCocinoScreen` usan el mismo patrón y conservan
+  texto/contador, accesibilidad y estados. Todos comparten base blanca/acento,
+  borde y pulsación con opacidad 0,84 y escala 0,93.
+- Los iconos inactivos usan `colors.ink` para no perderse sobre el cristal; los
+  activos se mantienen blancos sobre el tinte de acento.
+- Sin `GlassView` directo, rama de plataforma ni migración.
+- TypeScript, ESLint focalizado, 677 pruebas y `git diff --check` correctos.
+
+## Insignia Plus en autores de recetas (local, 2026-09-05)
+
+- `fetchCommunityRecipes` incluye `verified` en la relación con `profiles` y
+  `CommunityRecipe.author` lo normaliza a booleano; el fallback de una receta
+  recién creada usa `profile.verified`.
+- `QueCocinoScreen` coloca `VerifiedBadge` de 14 pt inmediatamente después del
+  nombre del autor en el preview. No se añade al detalle ni se consulta la fecha
+  privada `premium_until`. Sin migración.
+- Verificado en producción mediante consulta agregada de solo lectura: columna
+  booleana y FK disponibles. TypeScript, ESLint focalizado, 9 pruebas y
+  `git diff --check` correctos.
+
+## Separación simétrica alrededor de filtros de recetas (local, 2026-09-05)
+
+- `QueCocinoScreen` reutiliza `RECIPE_FILTER_GAP=12` para el espacio desde la
+  cabecera hasta los filtros y desde estos hasta la primera tarjeta.
+- Cubre las variantes Liquid Glass y clásica; cambio solo visual.
+- TypeScript, ESLint focalizado, 5 pruebas de recetas y `git diff --check`
+  correctos.
+
+## Campañas web semanales de Lidl (local, 2026-09-05)
+
+- `scripts/lib/lidl-campaigns.mjs` descubre desde `lidl.es` y parsea las cinco
+  campañas alimentarias acordadas: XXL, Ofertas semanales, Super finde, Precios
+  imbatibles y Bajadas permanentes. Consume el JSON SSR de las tarjetas, con
+  precio/región/fechas/Lidl Plus; no hay OCR ni autenticación.
+- `sync-lidl.mjs` obtiene `offer_region` de `lidl_stores`, elige su
+  `regionPriceId` y exige coincidencia final `nat`/`ians` ↔ `productCodes`.
+  Aplica primero la campaña y después el feed de tienda, que conserva prioridad.
+  Las filas sin enlace exacto se omiten y los nombres solo reducen candidatos.
+- `sync-lidl-fleet.mjs` descarga una caché temporal por worker y la pasa a todos
+  sus procesos de tienda mediante `LIDL_CAMPAIGNS_FILE`; si la web falla, omite
+  el complemento para todo ese worker en vez de repetir cinco descargas por
+  tienda. No hay migración SQL.
+- DRY_RUN completo real `ES0219`, región 26: 2.807 productos, 117 anuncios, 116
+  regionales y 31 productos de campaña confirmados exactamente. El feed vigente
+  confirmó además 27 campañas/37 productos. Pendiente publicar/ejecutar en
+  producción; no se ha escrito en Supabase.
+
+## Me gusta y Guardar sobre la imagen de la receta (local, 2026-09-05)
+
+- `CommunityRecipeDetailModal` monta `RecipeEngagementActions` en la cabecera
+  superpuesta de la imagen, alineado a la derecha frente al botón de volver.
+- `RecipeEngagementActions` queda como dos botones circulares de 42 pt, solo
+  icono, con estado activo en acento y toda la semántica accesible previa. Ya no
+  existe la fila de acciones bajo la imagen.
+- TypeScript, ESLint, 674 pruebas y `git diff --check` correctos.
+
+## Ingredientes vinculados a los pasos de una receta (local, 2026-09-05)
+
+- `CreateRecipeModal` ofrece en cada paso chips seleccionables de todos los
+  ingredientes añadidos. Al borrar un ingrediente elimina también sus vínculos
+  y los pasos vacíos no desajustan los índices al publicar.
+- La persistencia conserva `recipes.steps` como `string[]` por compatibilidad
+  con las builds anteriores. Cada snapshot de ingrediente puede incorporar
+  `stepIndexes: number[]`; no requiere migración porque `ingredients` ya es
+  JSONB. La lectura deduplica, ordena y limita los índices al número de pasos.
+- `CommunityRecipeDetailModal` enseña los ingredientes asociados y sus
+  cantidades dentro de cada paso. Copy localizado en castellano y catalán.
+- TypeScript, ESLint focalizado, 666 pruebas y `git diff --check` correctos.
+
+## Lidl en comparador (2026-09-05)
+
+- Petición explícita del propietario: integrar Lidl en el comparador actual.
+  No es activación de CE-1. Migración local `20260905175806_lidl_comparator_multistore.sql`
+  aplicada por MCP y `catalog-embed` v14 desplegado. La prueba previa con rollback
+  devolvió 3.321 productos únicos; permisos de lectura solo para service_role.
+- El materializador admite la vista `lidl_comparator_products`. Backfill de 3.321
+  filas aplicado con override exclusivamente para la primera carga; run
+  `4989d170-a884-4c9d-8494-a4d21871abc3`. No repetir el override en cron.
+- Procesamiento inicial secuencial filtrado a Lidl mediante el SQL de
+  `supabase/ops/dispatch-lidl-embedding-batch.sql`; primer canario HTTP 3176,
+  20 completed, cero failed/stale/deferred. El pipeline global sigue paused y
+  los 155 mensajes previos de Gadis/Ahorramás no se reclaman en esta operación.
+- Cliente, workflow y runner PowerShell modificados localmente. El resultado
+  respeta tienda del perfil/Plus/stock/promociones y se invalida al cambiar tienda.
+  El workflow admite fallos parciales porque cada surtido publicado ya está validado.
+- `scripts/test-lidl-comparator-sql-local.mjs` prueba el SQL real con fixtures
+  ficticios en PGlite: origen/destino, dos precios/tiendas, stock, Plus, auth,
+  promociones, hashes obsoletos, desaparición de surtido y permisos. PASS.
+- El único fallo inicial de la suite era el hash histórico de SimilarProductsSection;
+  registrada la transición autorizada en el helper, conservando las evidencias.
+- Cierre confirmado a las 18:24 UTC: 3.321/3.321 vectores vigentes y 511/511 altas
+  multitienda cubiertas. 35 requests HTTP 200 (20 + 33×100 + 1), cero fallos,
+  obsoletos o diferidos; run `settled`, generación 2, cola Lidl vacía. Se conservan
+  107 Gadis + 48 Ahorramás con read_ct=0, pipeline paused y cron 17 inactivo.
+- TypeScript, ESLint, 663 pruebas y SQL ficticio PASS. Caché real comprobada con
+  rollback en ambos sentidos (20 Lidl→Mercadona y 9 Mercadona→Lidl); no se consumió
+  cuota de búsqueda ni se guardaron esas cachés de prueba. El perfil habitual
+  carece de lidl_store_id en producción: el resolver se abstiene correctamente.
+- Estado de mantenimiento: autovacuum en `vacuuming indexes`, IO/DataFileRead,
+  sin blockers; HNSW válido/listo, aviso por 5,666 % de tuplas muertas mientras
+  termina. No se canceló ni se lanzó VACUUM/REINDEX o cambio de compute.
+  Evidencia final en `docs/lidl-comparator-20260905.json`. Cliente/workflow sin publicar.
+- Segunda simulación final: 3.321 unchanged, cero upserts y cero embeddings
+  previstos; confirmada la idempotencia del catálogo Lidl materializado.
+
+
+## Precio individual correcto en lotes Lidl (local, 2026-09-05)
+
+- Reproducido en producción con Floopy pistacho: `unit_price=0,59`, promoción
+  `3x1,49€`, compra mínima de 3 y `largePartNumeric=0,49`. El último valor es
+  el coste efectivo por unidad del lote, no un precio individual.
+- `scripts/lib/lidl.mjs` detecta la cantidad mínima por la condición `NxPrecio`
+  o por `Compra min. N uds.` y deja `promo_price`/`promo_base_price` a NULL.
+  `mapLidl` aplica la misma defensa a filas antiguas para mostrar 0,59 €.
+- Regresión añadida en `scripts/lib/lidl.test.mjs`; sin migración de esquema.
+- La ficha Lidl a pantalla completa representa las rebajas directas como precio
+  anterior tachado + precio rebajado y mantiene los lotes sin falso descuento
+  individual. `AldiProductModal` elimina el detalle Lidl cuando repite la
+  etiqueta exacta. Las tarjetas/listados de Ofertas no cambian.
+- TypeScript, ESLint focalizado, 17 pruebas Lidl/ofertas y `git diff --check`
+  correctos. La suite global queda bloqueada por un hash de
+  `SimilarProductsSection` modificado en paralelo y ajeno a esta corrección.
+
+## Migración a Expo SDK 57 (local, 2026-09-05)
+
+- `package.json` y el lockfile están actualizados a Expo 57.0.20, React Native
+  0.86.3, React 19.2.3, TypeScript 6.0.3 y todas las versiones compatibles que
+  resolvió `expo install --fix`.
+- `app.json` declara SDK 57 y añade los plugins requeridos por los módulos que
+  ya usa la app. El runtime basado en `sdkVersion` cambia, por lo que hace falta
+  una build nativa nueva; no publicar este salto como OTA para builds SDK 54.
+- iOS adopta mínimo 16.4, el Podfile/AppDelegate de SDK 57 y módulos Expo
+  precompilados. Android adopta el host RN 0.86, Hermes externo y Gradle 9.3.1;
+  se conserva el hardening de release y Google Services existente.
+- Verificado: Expo Doctor 21/21, `npm run typecheck`, `npm run lint`, 658 tests y
+  build Debug iOS en iPhone 15 Pro / iOS 26.5. Android queda por compilar en un
+  entorno con JDK; esta máquina no tiene Java ni el JDK de Android Studio.
+
+## Supermercado compartido entre listados (local, 2026-09-05)
+
+- `CatalogStoreProvider`, montado sobre ambos navegadores, mantiene una sola
+  selección para `CatalogScreen`, `NewArrivalsScreen`, `OffersScreen` y
+  `PriceChangesScreen`; se reinicia al cambiar el usuario autenticado.
+- `CatalogScreen` conserva un estado aparte únicamente en `productSelection`,
+  por lo que el selector de ingredientes de recetas no contamina la navegación.
+- Ofertas ofrece el mismo conjunto de supermercados que los demás listados. Su
+  carga y sus filtros siguen limitados a `OFFER_STORES`; para una cadena sin
+  feed muestra vacío y nunca cae implícitamente en Carrefour.
+- Sin SQL ni dependencias. Regresión en `shared-catalog-store.test.mjs`.
+
+## Logo de Lidl sin redondeo en selectores (local, 2026-09-05)
+
+- `CatalogStoresScreen` anula el `borderRadius` únicamente para el logo de Lidl;
+  `StoreDropdown` hace lo mismo tanto en la rejilla como en el botón de la
+  selección activa. El selector propio «Elige supermercado» de `CatalogScreen`
+  y su fila para ingredientes también eliminan el recorte de Lidl. Los demás
+  logos y los contenedores no cambian.
+
+## Lidl en segunda posición en selectores de supermercados (local, 2026-09-05)
+
+- `CatalogStoresScreen` usa un orden visual local que sitúa Lidl justo después
+  de Mercadona. `CATALOG_STORES` y el orden guardado no cambian.
+- `storesWithLidlSecond` aplica el mismo orden visual en Catálogo, Ofertas,
+  Cambios de precio y Novedades, incluidos sus modales de selección.
+
+## Popup Lidl reubicado en Catálogo (local, 2026-09-05)
+
+- Botón de tienda igualado al diseño de ordenación/vista, reutilizando sus
+  componentes y estilos para cristal, Android y fallback clásico.
+- `RegionPicker` ya no monta el selector. `CatalogScreen` monta `LidlStorePicker`
+  cuando Lidl está activo y la pantalla enfocada: obligatorio sin tienda, o
+  mediante botón storefront entre ordenación y lista/cuadrícula si hay tienda.
+- `LidlStorePicker` es ahora un modal controlado; la selección espera el guardado
+  de `lidl_store_id` antes de actualizar ProfileContext y habilitar productos.
+  Bloquea doble escritura y expone errores de carga/guardado. Sin nueva migración.
+- TypeScript, lint focalizado y 12 pruebas Lidl/onboarding correctos. Compilado
+  e instalado en iPhone 15 Pro / iOS 26.5; verificados posición del botón y popup
+  con dirección y mapa reales. No se modificó la tienda de la cuenta usada.
+
+
+## Error nativo del mapa Lidl resuelto (2026-09-05)
+
+- `RNCWebViewModule could not be found`: el simulador ejecutaba un binario sin
+  la dependencia nativa. Recompilado e instalado Debug con XcodeBuildMCP.
+- Apertura real verificada en iPhone 15 Pro / iOS 26.5: mapa de Badalona (08915),
+  logos Lidl y selección persistida visibles, sin el error. No se cambió la tienda.
+
+
+## Mapa Lidl (local, 2026-09-05)
+
+- `LidlStoreMap` sustituye el listado inicial por un mapa interactivo; todas las
+  tiendas tienen el logo local embebido y coordenadas reales. Solo un marcador
+  seleccionado, reflejando el `lidl_store_id` del perfil y su rollback existente.
+- CP transmitido desde `RegionPicker`; geocodificación Zippopotam.us con timeout
+  de 8 s y cancelación. Si falla, aviso y navegación nacional/búsqueda disponibles.
+- Leaflet 1.9.4 con SRI y OpenStreetMap con atribución; WebView 13.16.1 está en el
+  lockfile. Hace falta recompilar la app: no desplegar únicamente por OTA.
+- Prueba del mapa real en Chrome: cartografía, logos, clic y selección única
+  correctos con tiendas de prueba. Captura temporal: `/private/tmp/lidl-map-check.png`.
+  Pendiente prueba visual de la hoja nativa en dispositivo.
+
+
+## Ajustes de Comunidad Autónoma sin «Toda España» (local, 2026-09-05)
+
+- `RegionSettingsScreen` pasa `allowAll={false}` a `RegionPicker`: la sección
+  elimina por completo la tarjeta y el separador de «Toda España».
+- El copy de ayuda en ES/CA pide el CP para adaptar supermercados y precios.
+  Sin SQL ni cambio del sentinel histórico almacenado.
+
+## Selector nacional de tiendas Lidl (local, 2026-09-05)
+
+- `LidlStorePicker` ya no consulta `find_lidl_stores` por CP: carga las tiendas
+  `published + selectable` de `lidl_stores` y ofrece un modal virtualizado con
+  búsqueda por ciudad, dirección, nombre o CP.
+- La selección aparece en Perfil → Comunidad autónoma cuando ya existe una
+  región válida. El CP y `lidl_store_id` son independientes: cambiar de CP
+  conserva la tienda confirmada.
+- Sin migración: la tabla ya tiene RLS y `SELECT` para la app. Falta publicar
+  el cliente para que llegue a usuarios instalados.
+
+## Código postal obligatorio para cuentas existentes en 1.3.1 (local, 2026-09-05)
+
+- `Navigation` monta la app y superpone `RegionGateScreen` a todo perfil ya
+  incorporado cuyo `postalCode` sea nulo. El modal no admite cierre ni «Toda
+  España» y bloquea hasta guardar un CP válido.
+- El mensaje explica precios locales y comparaciones más relevantes entre
+  productos y supermercados. Mientras el gate está activo no se muestran
+  `WhatsNewPrompt` ni `NativeStoreReviewPrompt`.
+- Guarda región y CP en Supabase/ProfileContext y oculta el selector de tienda
+  Lidl. El CP persistido es el sello; no necesita migración adicional.
+
+
+## Arranque sin segunda animación de logo (local, 2026-09-05)
+
+- Fuentes y estado inicial reutilizan el mismo `BootLoader` estático, con el
+  fondo y el logo de 180 pt del splash nativo. Se retiran el latido, la entrada
+  animada, el nombre adicional y los puntos de carga.
+- Eliminado el mínimo artificial de 350 ms: se abre Login/onboarding/Inicio
+  en cuanto se resuelven los requisitos existentes. Se mantienen la espera de
+  sesión, perfil, idioma, tema y carrito, los watchdogs y el reintento de perfil.
+- Cambio solo de cliente, sin dependencias, migraciones ni despliegue.
+- TypeScript, ESLint de los archivos modificados, 652 pruebas y
+  `git diff --check` correctos. Pendiente revisión visual en dispositivo.
+
+## «Todos tus supermercados»: exclusivo de Plus (local + backend, 2026-09-05)
+
+- `StoreDropdown` y `CatalogScreen` permiten «Todos» únicamente a Plus; cualquier
+  cuenta gratuita ve candado y abre `PaywallModal`, sin excepción histórica.
+- Los cuatro listados abandonan la selección combinada al vencer Plus y evitan
+  usar «Todos» como fallback de Lidl.
+- El primer beneficio del paywall comunica la vista conjunta e incluye Lidl.
+- La migración `20260905120906_remove_legacy_all_stores_access.sql`, aplicada en
+  producción, mantiene el default a false y deja los 6.948 perfiles sin el flag,
+  protegiendo también las builds antiguas. Verificación: cero permisos activos.
+
+## Inicio sin «Mis grupos» (local, 2026-09-05)
+
+- Retirada la sección completa de grupos de `HomeScreen`, junto con su consulta,
+  estado y estilos. La pestaña Grupos y la caché compartida siguen intactas.
+- La transición desde onboarding ya no espera esa consulta; solo espera Favoritos
+  y Última compra, con el mismo límite de 900 ms.
+
+## Código postal obligatorio en onboarding (local, 2026-09-05)
+
+- `UsernameScreen` oculta la salida «¿Prefieres no darlo?»/«Toda España» y solo
+  habilita Continuar cuando hay un código postal válido, además del @ disponible.
+- La ayuda bajo el CP indica que se usa para mostrar supermercados y precios de
+  la zona, con copy equivalente en castellano y catalán.
+- Eliminado `OnboardingSlats`: todos los pasos y la confirmación final reutilizan
+  `AmbientBubbleBackdrop` con la variante `onBlue`, sin rayas horizontales.
+- Eliminado también `bottomRail` de los cinco pasos que lo dibujaban: ya no hay
+  una franja azul oscura fija en el borde inferior.
+- `UsernameScreen` pasa `showLidlStorePicker={false}`: validar el CP ya no revela
+  el bloque Lidl durante el alta; otros consumidores del picker lo mantienen.
+- `StoresScreen` fija su título a una sola línea con ajuste automático de tamaño
+  y ancho explícito para evitar saltos en castellano y catalán.
+- `StoresScreen` usa un orden visual local que inserta Lidl justo después de
+  Mercadona; `CATALOG_STORES` y el resto de pantallas no cambian.
+- `RegionPicker` expone `allowAll` con valor predeterminado `true`, de modo que
+  Ajustes y el gate de cuentas antiguas mantienen su comportamiento. Sin SQL.
+
+## Versión comercial 1.3.1 (local, 2026-09-05)
+
+- `app.json`, el `MARKETING_VERSION` de iOS y el `versionName` de Android están
+  alineados en `1.3.1`.
+- No se modifican `CURRENT_PROJECT_VERSION` ni `versionCode`: producción usa
+  las versiones remotas y el autoincremento configurados en EAS.
+- El aviso de novedades conserva su clave `1.3.0` deliberadamente para no
+  reaparecer a quienes ya vieron las novedades de la versión 1.3.
+
+## Separación entre productos de la cesta (local, 2026-09-05)
+
+- `ListScreen` usa un separador de 2 pt entre las filas de producto de cada
+  categoría. No deja espacio adicional después del último producto.
+- Cambio solo visual, sin SQL ni dependencias.
+
+## Lidl incluido en QuéFalta Plus (local, 2026-09-05)
+
+- El onboarding y Perfil permiten seleccionar Lidl en cualquier cuenta. El gate
+  se aplica al consultar contenido: Catálogo, Novedades, Ofertas y Cambios de
+  precio lo muestran con candado y abren el paywall para cuentas gratuitas.
+- Lidl y «Todos tus supermercados» requieren Plus. Una expiración retira ambas
+  selecciones protegidas y vuelve al primer supermercado individual gratuito.
+- El beneficio se añadió al paywall en ES/CA. Sin SQL ni cambio de preferencias.
+- `npm run quality` pasa: TypeScript, ESLint y 649 pruebas; `git diff --check`
+  sin errores.
+
+## Etiqueta del selector combinado (local, 2026-09-05)
+
+- «Todos» se muestra como «Todos tus supermercados» en el selector de Catálogo,
+  Novedades, Ofertas y Cambios de precio, con equivalente catalán. Otros usos
+  genéricos de «Todos» permanecen intactos.
+
+## Categorías completadas de la cesta (local, 2026-09-05)
+
+- `CompletedZoneHeader` anima el acento y el texto blanco de izquierda a derecha
+  mediante capas recortadas y transformaciones nativas. Comparte 520 ms con el
+  plegado vertical de productos y omite la animación con Reducir movimiento.
+
+- `ListScreen` detecta la transición de una zona/categoría a completada y la
+  pliega al marcar su último producto como recogido. La cabecera completada usa
+  `colors.accent`, por lo que sigue la opción activa de Apariencia.
+- Una categoría completada admite reapertura manual. El estado distingue los
+  pliegues automáticos para reabrirlos ante una reversión del cambio optimista,
+  sin alterar las decisiones manuales.
+- Regresión en `scripts/tests/list-category-completion.test.mjs`. Sin SQL ni
+  dependencias nuevas.
+- ESLint de `ListScreen`, 10 pruebas focalizadas y `git diff --check` pasan. La
+  suite global queda en 647/648 por la regresión legacy de Todos frente a los
+  cambios ajenos en `StoreDropdown`/`PaywallModal`; TypeScript se detiene antes
+  en el estilo ausente `pickerStoreLocked` de `CatalogScreen`, también ajeno.
+
+## Favoritos: scroll y filas redondeadas (local, 2026-09-05)
+
+- Eliminado el `TouchableWithoutFeedback` que envolvía toda la pantalla y
+  competía con los gestos del `FlatList`/`Swipeable`; el scroll vertical vuelve
+  a llegar directamente a la lista y sigue cerrando el teclado al arrastrar.
+- `FavoritesScreen` activa `roundedCards`. El contenedor de `Swipeable` recibe
+  también el radio de 18 pt, por lo que recorta el fondo verde de la acción y
+  evita esquinas cuadradas al marcar o mostrar un favorito en vista de fila.
+- Sin dependencias ni SQL. TypeScript, ESLint, la prueba de regresión específica
+  y `git diff --check` correctos.
+
+## Orden de recetas por interacción (local, 2026-09-05)
+
+- QuéCocino muestra encima de la primera receta dos opciones excluyentes:
+  «Más gustados» y «Más guardados». Ordenan todas las recetas de mayor a
+  menor por su contador correspondiente; al desactivar la opción se recupera
+  el orden original por fecha.
+- La ordenación reutiliza `likeCount` y `saveCount`, responde a las acciones
+  optimistas de las tarjetas y no añade consultas, dependencias ni migraciones.
+- TypeScript, lint, 644 pruebas y `git diff --check` correctos.
+
+## Investigación de los 42 Lidl pendientes (2026-09-04)
+
+- Diagnóstico refinado: ES5016, ES5026 y ES5093 son outlets `(FD)-Non Food Restanten`; su selección por estar abiertos es un defecto del filtro alimentario, no un fallo transitorio de JSON.
+- Censo de las 39 tiendas abiertas de Canarias: categorías HTTP 200 y fruta vacía en todas; dos controles peninsulares devuelven 138 productos. El barrido anterior ya comprobó todas las hojas vacías. No hay causa interna regional confirmada ni garantía de recuperación por reintentar.
+- Ofertas idénticas incluso con ES0000: no usar ese feed como prueba de cobertura/precios locales. Lidl Plus sí opera en Canarias.
+- Investigación sin cambios en producción. Pendiente excluir los tres outlets y contrastar la fuente regional con la app oficial. Evidencia y límites en `docs/lidl-42-investigation-20260904.md` y JSON adjunto.
+
+## Selector de ingredientes basado en Catálogo (local, 2026-09-04)
+
+- «Buscar un producto» abre `RecipeIngredientPickerModal`, una hoja sobre
+  «Nueva receta» que reutiliza `CatalogScreen` en modo `productSelection`.
+  No muestra Productos/Categorías ni el botón selector de supermercados.
+- En esa posición aparece una fila horizontal de supermercados del perfil,
+  con logo, nombre y selección visible. Respeta la disponibilidad regional;
+  si no hay coincidencias muestra un estado vacío, sin añadir otros súpers.
+- Conserva búsqueda, ordenación, paginación, lista/cuadrícula y restricciones
+  del catálogo. Al cambiar de supermercado mantiene el texto de búsqueda.
+  Los datos siguen usando idioma, región, CP y tienda Lidl del perfil.
+- `StoreProductList` y `ProductGridCard` aceptan selección para formularios:
+  tocar un producto lo devuelve a la receta y cierra el popup; los existentes
+  quedan marcados y deshabilitados. Esta variante no abre fichas ni añade a
+  la cesta ni modifica favoritos. El catálogo normal mantiene su flujo.
+- La cantidad previa se conserva al elegir; cerrar sin elegir mantiene el
+  borrador. El formulario de fondo queda oculto a accesibilidad mientras el
+  popup está abierto. Sin dependencias nuevas, SQL ni despliegue.
+- Validado en iPhone 15 Pro/iOS 26.5: búsqueda «arroz» en Mercadona y
+  BonpreuEsclat, cambio de tienda conservando consulta, selección en cuadrícula,
+  retorno con 250 g, bloqueo visual de duplicados y cierre sin añadir.
+  `npx tsc --noEmit`, `npm run lint`, 642 pruebas y `git diff --check` pasan.
+
+## Ingredientes de receta al carrito (local, 2026-09-04)
+
+- El detalle incluye «Añadir ingredientes al carrito» en un pie fijo exclusivo
+  de Ingredientes, con el nombre del carrito activo y estados de carga/éxito.
+  Usa `CartContext.addToActiveCart` y una única inserción para toda la receta;
+  bloquea dobles toques y avisa si falta carrito o falla la escritura.
+- Cada ingrediente añade un envase y conserva la cantidad culinaria como nota
+  (p. ej. «250 g»), sin multiplicar el precio del envase por gramos. Mantiene
+  supermercado, id, imagen, precio y `categoryName` para la agrupación por zonas.
+- Las recetas nuevas guardan categoría y precio numérico en el JSON existente.
+  Las antiguas admiten campos ausentes y recuperan solo precios simples en
+  euros del snapshot; categorías desconocidas van a Otros. Sin migraciones.
+- TypeScript, ESLint de los archivos editados y 9 pruebas de recetas/carrito
+  correctos. Pantalla revisada en iPhone 15 Pro (iOS 26.5); envío y rechazo
+  verificados con API simulada, sin modificar una lista compartida real.
+
+## Recuperación de fallos Lidl (2026-09-04)
+
+- Corrección integrada en `main` con PR #56 (`451df4b`): escrituras con orden estable y reintentos acotados,
+  errores reales por IPC, pausa tras dos rechazos 403/429, recuperación filtrada
+  que conserva éxitos y verificación final de la cola en Actions.
+- La migración `20260904210752_lidl_fleet_recovery.sql` está aplicada y probada
+  transaccionalmente como `service_role`: filtro, propietario del lease, reset
+  exclusivo de dead y conservación de tiendas exitosas. Ninguna de las tres
+  RPC nuevas admite anon/authenticated; son `SECURITY INVOKER`.
+- Los cinco catálogos pequeños repiten exactamente su recuento en tres
+  observaciones completas: ES0367=2145, ES0431=2151, ES0529=2195,
+  ES0530=2166 y ES0848=2146, 40 hojas y 100 % de precio/imagen. Solo esos IDs
+  usan un mínimo del 98 % del recuento validado; sigue activo el control de
+  cobertura frente al catálogo anterior. Ver `scripts/README-lidl-sync.md`.
+- Diagnóstico de fuente: las 39 tiendas canarias devolvieron todas las hojas
+  vacías en el barrido inicial. La muestra posterior de tres islas/tiendas
+  repitió HTTP 200 con cero productos. ES5016, ES5026 y ES5093 devuelven
+  HTTP 204 en categorías y cero productos al consultar fruta. No confundir
+  estos tres 204 con JSON truncado ni publicar catálogos de sustitución.
+- Canary productivo: ES0367, ES2106 y ES4003 recuperadas; ES5016 conserva
+  el bloqueo de fuente. Actions `33920142081` PASS verifica el modo canary
+  sobre las tres completadas, sin reprogramarlas y con informe final.
+- Validación local: TypeScript, lint, 637 pruebas y `git diff --check` correctos.
+  Recuperación final: 36 tiendas (3 canary + 33 en dos workers, sin fallos en
+  la tanda ampliada). Cola: 679 succeeded y 42 retry por ausencia de fuente,
+  cero running/dead. Las 643 completadas del barrido original conservaron su
+  fecha de cierre; no se reprocesaron. Los 36 recuentos publicados coinciden
+  exactamente con las descargas. Evidencia: `docs/lidl-sync-recovery-20260904.json`.
+  CI del merge `33920588521` PASS; `LIDL_SYNC_ENABLED=true` verificado.
+
+
+## Nueva receta: ingredientes y preparación (local, 2026-09-04)
+
+- `CreateRecipeModal` usa fichas con numeración persistente a la izquierda: la
+  ficha «Por añadir» muestra el siguiente número incluso con la receta vacía.
+  Ingrediente y cantidad tienen espacio propio; la cantidad del borrador se
+  conserva al seleccionar el producto y se reinicia para el siguiente.
+- La búsqueda de ingredientes se trasladó al popup del catálogo descrito
+  arriba; la ficha numerada conserva su papel como entrada al selector.
+- Preparación como secuencia vertical de tarjetas, guía con ejemplo, foco visual
+  y controles de 44 pt. Los pasos tienen identidad estable al borrar, conservan
+  el texto y se renumeran; al añadir uno se enfoca y desplaza el formulario.
+- Superficies opacas, paleta dinámica claro/oscuro/acento y textos ES/CA.
+  ScrollView ajusta los insets del teclado de forma nativa en iOS; Android
+  conserva el ajuste de ventana del sistema. Sin dependencias ni migraciones.
+- Verificado en iPhone 15 Pro (simulador iOS 26.5): estado vacío numerado,
+  búsqueda real, cantidad previa conservada, edición/borrado y renumeración de
+  pasos. TypeScript, ESLint de los archivos editados y las cuatro pruebas de
+  recetas pasan. Sin publicar receta de prueba ni desplegar la app.
+
+## Recetas solo de la comunidad (local, 2026-09-04)
+
+- QuéCocino queda fijado a Comunidad y oculta por completo el selector
+  Comunidad/Supermercados mientras no exista una fuente oficial. La cabecera
+  «Recetas de la comunidad» también se eliminó para reservar ese hueco a los
+  filtros futuros, sin añadir aún ningún control provisional.
+- Eliminadas las cuatro ideas de muestra y la rama provisional de recetas de
+  supermercados. La pantalla enseña únicamente filas reales de `recipes` y un
+  estado vacío ES/CA cuando no hay publicaciones.
+- En la tarjeta, Me gusta sigue en la fila de metadatos con ingredientes y pasos.
+  Guardar aparece sobre la esquina superior derecha de la imagen, con contador y
+  un objetivo táctil de al menos 48 pt. El detalle conserva las acciones completas;
+  ambas vistas actualizan la misma receta de forma optimista, con reversión y toast
+  en caso de error.
+- `20260904190745_recipe_engagement.sql` está aplicada en producción: añade
+  contadores protegidos en `recipes`, relaciones privadas `recipe_likes` y
+  `recipe_saves`, RLS de propietario y triggers de recuento en `private`.
+  La prueba transaccional remota confirmó insert/delete, recuentos y que otro
+  usuario no puede leer la interacción. Los advisors no muestran avisos de
+  seguridad para estas tablas o funciones; los índices nuevos figuran como
+  no usados porque aún no han recibido tráfico real.
+- Crear receta y abrir su detalle siguen activos. Las regresiones viven en
+  `scripts/tests/community-recipes-ui.test.mjs` y
+  `scripts/tests/community-recipes-schema.test.mjs`.
+
 ## Correcciones de los primeros runs de `Sync Lidl catalog fleet` (2026-09-04)
 
 - El run manual `33905985690` falló en el job `schedule`, antes de ejecutar
@@ -804,6 +1299,10 @@
 
 ## «Todos» para todas las cuentas registradas (local + backend, 2026-08-29)
 
+> Estado histórico, sustituido en el cliente local del 2026-09-05: la vista
+> conjunta es ahora exclusiva de Plus. La concesión universal y después la
+> heredada quedaron retiradas en producción con `20260905120906`.
+
 - La versión 1.3 ya está desplegada. La regla cambia: Catálogo, Novedades,
   Ofertas y Cambios de precio permiten seleccionar «Todos» a cualquier cuenta
   registrada, no solo a Plus o a cuentas anteriores a 1.3.
@@ -960,7 +1459,7 @@
 ## Beneficios del paywall de QuéFalta Plus (local, 2026-08-24)
 
 - Se ha retirado «Filtros avanzados» / «Filtres avançats» de la lista de
-  beneficios. Los seis restantes mantienen tipografías e iconos legibles, con
+  beneficios. Los beneficios restantes mantienen tipografías e iconos legibles, con
   descripciones ES/CA más directas y separaciones verticales ajustadas.
 - El contenedor usa toda la altura de pantalla y el bloque «Elige tu plan»,
   planes, CTA y enlaces queda anclado abajo mediante `marginTop: 'auto'`. El
@@ -970,7 +1469,7 @@
 ## Teclado del editor de alertas personalizadas (local, 2026-08-24)
 
 - `PriceAlertEditorModal` usa `KeyboardAvoidingView` con padding en iOS y
-  Android, necesario también con edge-to-edge de Expo SDK 54. La hoja deja de
+  Android, necesario también con edge-to-edge de Expo SDK 57. La hoja deja de
   quedar tapada al escribir el nombre y el formulario se puede desplazar o
   cerrar el teclado arrastrando.
 - Regresión incluida en `scripts/tests/price-alerts-ui.test.mjs`. Sin backend.
@@ -1862,11 +2361,11 @@
 
 - La pestaña QuéCocino vuelve al árbol de navegación mediante
   `QUE_COCINO_ENABLED = true`, tanto en Liquid Glass como en la variante clásica.
-- La pantalla, el icono y sus traducciones siguen siendo una implementación
-  preliminar: muestra cuatro recetas de ejemplo escritas en el cliente y el
-  espacio reservado para recetas oficiales de supermercados.
-- Todavía no existe backend, persistencia ni detalle de receta. El contenido de
-  muestra no debe interpretarse como contenido publicado por usuarios reales.
+- La reactivación original incluía cuatro recetas locales de ejemplo y un área
+  reservada a supermercados. Ambos contenidos provisionales se retiraron el
+  2026-09-04; el selector Comunidad/Supermercados queda oculto.
+- Ya existe backend, persistencia, creación y detalle para recetas comunitarias.
+  No existe todavía una fuente de recetas oficiales de supermercados.
 
 ## Push de solicitudes de amistad (local + backend desplegado, 2026-08-20)
 
@@ -2221,7 +2720,8 @@ La lista **completa y anotada** está en CONTEXTO.md. Aquí, lo esencial y el OR
 - **Notificaciones:** bandeja server-side (`notifications` + `send-push` la rellena) e idioma por dispositivo
   (`push_tokens.lang`, es/ca). Faltan `notifications_inbox.sql` + `push_tokens_lang.sql` + redeploy `send-push`.
 - **Sign in with Apple:** flujo nativo iOS funcionando. Revocación de token al borrar cuenta montada, **pendiente
-  `.p8` + secrets + deploy**. (Nota: `AGENTS.md`/`AGENTS` viejo decía Expo v56 — el proyecto es SDK 54.)
+  `.p8` + secrets + deploy**. (Nota histórica: el proyecto era SDK 54 antes de
+  la migración local a SDK 57 del 2026-09-05.)
 - **Insignia Plus** (dorada): `profiles.verified` es un reflejo público protegido
   de `premium_until` + `VerifiedBadge`. Backfill/trigger desplegados en remoto.
   `revenuecat-webhook` aún no existe en producción: antes de desplegarlo hay que

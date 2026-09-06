@@ -174,17 +174,42 @@ function lidlOfferLabel(offer) {
   return parts.join(' · ') || percentage || message || 'Oferta';
 }
 
+/**
+ * Lidl rellena `largePartNumeric` con el coste efectivo por unidad de algunos
+ * lotes (p. ej. 0,49 para «3x1,49€»). Ese importe exige comprar varias
+ * unidades, así que no es un precio individual directo.
+ */
+export function isLidlMinimumQuantityOffer(offer) {
+  const text = [
+    offer?.priceBox?.discountMessage,
+    offer?.priceBox?.largePartString,
+    offer?.priceBox?.smallPartString,
+    offer?.packaging,
+  ].map(annotationText).filter(Boolean).join(' ');
+  return /\b\d+\s*[x×]\s*\d+(?:[.,]\d+)?\s*€?/iu.test(text)
+    || /\bcompra\s+m[ií]n(?:imo|\.)?\s*\d+\s*(?:uds?\.?|unidades?)\b/iu.test(text);
+}
+
 /** Aplica al contrato de BD una oferta ya verificada contra productCodes. */
 export function applyLidlOffer(row, offer) {
-  const promoPrice = positiveNumber(offer?.priceBox?.largePartNumeric);
+  const promoPrice = isLidlMinimumQuantityOffer(offer)
+    ? null
+    : positiveNumber(offer?.priceBox?.largePartNumeric);
   const sourceBasePrice = positiveNumber(offer?.priceBox?.smallPartNumeric);
   const basePrice = promoPrice != null && sourceBasePrice != null && sourceBasePrice > promoPrice
     ? sourceBasePrice
     : null;
+  const promoName = lidlOfferLabel(offer);
+  const sourcePromoText = annotationText(offer?.priceBox?.discountMessage)
+    || annotationText(offer?.offerType)
+    || null;
+  const promoText = sourcePromoText?.toLowerCase() === promoName.toLowerCase()
+    ? null
+    : sourcePromoText;
   return {
     ...row,
-    promo_name: lidlOfferLabel(offer),
-    promo_text: annotationText(offer?.priceBox?.discountMessage) || annotationText(offer?.offerType) || null,
+    promo_name: promoName,
+    promo_text: promoText,
     promo_price: promoPrice,
     promo_base_price: basePrice,
     promo_start: isoDate(offer?.startValidityDate),
@@ -252,6 +277,7 @@ export function lidlProductMasterRow(row) {
   delete raw.price;
   delete raw.stockAvailability;
   delete raw.productValidForClickAndCollect;
+  delete raw.campaign;
   delete raw.offer;
   return {
     id: row.id,
@@ -296,6 +322,7 @@ export function lidlStoreProductRow(row, storeId) {
       price: row.raw?.price ?? null,
       stockAvailability: row.raw?.stockAvailability ?? null,
       productValidForClickAndCollect: row.raw?.productValidForClickAndCollect ?? null,
+      campaign: row.raw?.campaign ?? null,
       offer: row.raw?.offer ?? null,
     },
     observed_at: row.synced_at,

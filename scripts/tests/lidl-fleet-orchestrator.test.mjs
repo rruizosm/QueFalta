@@ -193,6 +193,40 @@ test('recovery forwards the filter, never schedules and preserves successful job
   assert.match(stdout, /completadas=0 fallidas=0/);
 });
 
+test('weekly y recovery interpretan un filtro vacío de GitHub Actions como flota completa', async () => {
+  for (const emptyValue of ['', '   ']) {
+    const { stdout } = await runFleetScenario('--recover-only', `
+      globalThis.fetch = async (url, init) => {
+        const body = JSON.parse(init.body);
+        if (body.p_store_ids !== null) throw new Error('empty filter was not normalized');
+        if (url.endsWith('claim_lidl_catalog_sync_jobs_filtered')) return Response.json([]);
+        if (url.endsWith('lidl_catalog_sync_report')) return Response.json([]);
+        throw new Error('unexpected RPC ' + url);
+      };
+    `, { LIDL_FLEET_STORE_IDS: emptyValue });
+    assert.match(stdout, /completadas=0 fallidas=0/);
+  }
+});
+
+test('el filtro de recuperación rechaza segmentos vacíos y elimina IDs duplicados', async () => {
+  await assert.rejects(
+    runFleetScenario('--recover-only', 'globalThis.fetch = async () => Response.json([]);', {
+      LIDL_FLEET_STORE_IDS: 'ES0367,,ES2106',
+    }),
+    /LIDL_FLEET_STORE_IDS inválido/,
+  );
+
+  await runFleetScenario('--recover-only', `
+    globalThis.fetch = async (url, init) => {
+      const body = JSON.parse(init.body);
+      if (JSON.stringify(body.p_store_ids) !== '["ES0367"]') throw new Error('filter was not deduplicated');
+      if (url.endsWith('claim_lidl_catalog_sync_jobs_filtered')) return Response.json([]);
+      if (url.endsWith('lidl_catalog_sync_report')) return Response.json([]);
+      throw new Error('unexpected RPC ' + url);
+    };
+  `, { LIDL_FLEET_STORE_IDS: 'ES0367, ES0367' });
+});
+
 test('final report fails for unfinished or missing stores and passes only complete scopes', async () => {
   for (const rows of [[], [{store_id:'ES0367',status:'retry'}], [{store_id:'ES0367',status:'dead'}]]) {
     await assert.rejects(runFleetScenario('--report-only',

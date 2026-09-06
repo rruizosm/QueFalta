@@ -1,109 +1,144 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator, Image, Pressable, ScrollView, StatusBar, StyleSheet, Text, View,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
-import { STORE_META, type Store } from '../constants/stores';
+import { useAuth } from '../context/AuthContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
+import { useToast } from '../context/ToastContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
-import HardShadow from '../components/HardShadow';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
-import SlidingSegments, { type Segment } from '../components/SlidingSegments';
 import CreateRecipeModal from '../components/CreateRecipeModal';
 import CommunityRecipeDetailModal from '../components/CommunityRecipeDetailModal';
-import { fetchCommunityRecipes, type CommunityRecipe } from '../api/recipes';
+import VerifiedBadge from '../components/VerifiedBadge';
+import {
+  fetchCommunityRecipes,
+  setRecipeLiked,
+  setRecipeSaved,
+  type CommunityRecipe,
+} from '../api/recipes';
 
-type RecipeSource = 'community' | 'supermarkets';
-
-type Recipe = {
-  id: string;
-  titleKey: string;
-  descriptionKey: string;
-  difficultyKey: string;
-  author: string;
-  initials: string;
-  emoji: string;
-  minutes: number;
-  likes: number;
-  gradient: readonly [string, string];
-};
-
-const OFFICIAL_STORES: Store[] = ['mercadona', 'carrefour', 'dia', 'eroski'];
-
-const SAMPLE_RECIPES: Recipe[] = [
-  {
-    id: 'tortilla', titleKey: 'queCocino.recipes.tortilla.title',
-    descriptionKey: 'queCocino.recipes.tortilla.description',
-    difficultyKey: 'queCocino.difficulty.easy', author: '@lauraencasa', initials: 'L',
-    emoji: '🥔', minutes: 35, likes: 128, gradient: ['#F7CF63', '#E99434'],
-  },
-  {
-    id: 'pasta', titleKey: 'queCocino.recipes.pasta.title',
-    descriptionKey: 'queCocino.recipes.pasta.description',
-    difficultyKey: 'queCocino.difficulty.easy', author: '@marcocina', initials: 'M',
-    emoji: '🍝', minutes: 25, likes: 94, gradient: ['#F2A86F', '#D85F45'],
-  },
-  {
-    id: 'curry', titleKey: 'queCocino.recipes.curry.title',
-    descriptionKey: 'queCocino.recipes.curry.description',
-    difficultyKey: 'queCocino.difficulty.medium', author: '@nuria_alplato', initials: 'N',
-    emoji: '🥘', minutes: 40, likes: 211, gradient: ['#E6B94A', '#C56B2D'],
-  },
-  {
-    id: 'salad', titleKey: 'queCocino.recipes.salad.title',
-    descriptionKey: 'queCocino.recipes.salad.description',
-    difficultyKey: 'queCocino.difficulty.veryEasy', author: '@paucomebien', initials: 'P',
-    emoji: '🥗', minutes: 15, likes: 76, gradient: ['#7BCB83', '#2E8B62'],
-  },
-];
+type EngagementKind = 'like' | 'save';
+type RecipeSort = 'likes' | 'saves' | null;
+const RECIPE_FILTER_GAP = 12;
+const RECIPE_FILTER_HEIGHT = 48;
 
 export default function QueCocinoScreen() {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
+  const { session } = useAuth();
+  const toast = useToast();
+  const userId = session?.user.id ?? '';
   const headerTop = useHeaderTopPadding(52);
   const bottomPad = useTabBarBottomPadding(40);
   const [headerH, setHeaderH] = useState(0);
-  const [source, setSource] = useState<RecipeSource>('community');
   const [createVisible, setCreateVisible] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<CommunityRecipe | null>(null);
   const [communityRecipes, setCommunityRecipes] = useState<CommunityRecipe[]>([]);
   const [recipesLoading, setRecipesLoading] = useState(true);
   const [recipesError, setRecipesError] = useState(false);
+  const [recipeSort, setRecipeSort] = useState<RecipeSort>(null);
+  const [interactionBusy, setInteractionBusy] = useState<Record<string, boolean>>({});
   const loadRecipes = useCallback(async () => {
+    if (!userId) {
+      setCommunityRecipes([]);
+      setRecipesLoading(false);
+      return;
+    }
     setRecipesLoading(true);
     setRecipesError(false);
     try {
-      setCommunityRecipes(await fetchCommunityRecipes());
+      setCommunityRecipes(await fetchCommunityRecipes(userId));
     } catch {
       setRecipesError(true);
     } finally {
       setRecipesLoading(false);
     }
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
-    if (source === 'community') loadRecipes();
-  }, [source, loadRecipes]);
-  const sourceSegments: Segment<RecipeSource>[] = [
-    {
-      key: 'community',
-      label: t('queCocino.sourceCommunity'),
-      icon: 'people-outline',
-    },
-    {
-      key: 'supermarkets',
-      label: t('queCocino.sourceSupermarkets'),
-      icon: 'storefront-outline',
-    },
-  ];
+    loadRecipes();
+  }, [loadRecipes]);
+
+  const sortedRecipes = useMemo(() => {
+    if (!recipeSort) return communityRecipes;
+    const countKey = recipeSort === 'likes' ? 'likeCount' : 'saveCount';
+    return communityRecipes
+      .map((recipe, index) => ({ recipe, index }))
+      .sort((a, b) => b.recipe[countKey] - a.recipe[countKey] || a.index - b.index)
+      .map(({ recipe }) => recipe);
+  }, [communityRecipes, recipeSort]);
+
+  const updateRecipe = useCallback((
+    recipeId: string,
+    update: (recipe: CommunityRecipe) => CommunityRecipe,
+  ) => {
+    setCommunityRecipes((current) => current.map((recipe) => (
+      recipe.id === recipeId ? update(recipe) : recipe
+    )));
+    setSelectedRecipe((current) => (
+      current?.id === recipeId ? update(current) : current
+    ));
+  }, []);
+
+  const toggleEngagement = useCallback(async (
+    recipe: CommunityRecipe,
+    kind: EngagementKind,
+  ) => {
+    if (!userId) return;
+    const key = `${kind}:${recipe.id}`;
+    if (interactionBusy[key]) return;
+
+    const stateKey = kind === 'like' ? 'isLiked' : 'isSaved';
+    const countKey = kind === 'like' ? 'likeCount' : 'saveCount';
+    const nextActive = !recipe[stateKey];
+    const countDelta = nextActive ? 1 : -1;
+
+    setInteractionBusy((current) => ({ ...current, [key]: true }));
+    updateRecipe(recipe.id, (current) => ({
+      ...current,
+      [stateKey]: nextActive,
+      [countKey]: Math.max(0, current[countKey] + countDelta),
+    }));
+    Haptics.selectionAsync().catch(() => {});
+
+    try {
+      if (kind === 'like') {
+        await setRecipeLiked(recipe.id, userId, nextActive);
+      } else {
+        await setRecipeSaved(recipe.id, userId, nextActive);
+      }
+    } catch {
+      updateRecipe(recipe.id, (current) => ({
+        ...current,
+        [stateKey]: !nextActive,
+        [countKey]: Math.max(0, current[countKey] - countDelta),
+      }));
+      toast.show(t('queCocino.engagementError'), 'error');
+    } finally {
+      setInteractionBusy((current) => {
+        const next = { ...current };
+        delete next[key];
+        return next;
+      });
+    }
+  }, [interactionBusy, t, toast, updateRecipe, userId]);
+
+  const recipeFiltersVisible = communityRecipes.length > 0;
   const glassInset = glassAvailable ? headerH : 0;
   const header = (
-    <View style={[styles.header, { paddingTop: headerTop }]}>
+    <View
+      style={[styles.header, { paddingTop: headerTop }]}
+      onLayout={(event) => {
+        const next = event.nativeEvent.layout.height;
+        setHeaderH((current) => Math.abs(current - next) > 0.5 ? next : current);
+      }}
+    >
       <View style={styles.titleWrap}>
         <View style={styles.headerIcon}>
           <Ionicons name="restaurant-outline" size={15} color={colors.accent} />
@@ -134,59 +169,14 @@ export default function QueCocinoScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.scroll,
-          { paddingBottom: bottomPad, paddingTop: glassInset ? glassInset + 12 : 8 },
+          {
+            paddingBottom: bottomPad,
+            paddingTop: glassInset
+              ? glassInset + RECIPE_FILTER_GAP + (recipeFiltersVisible ? RECIPE_FILTER_HEIGHT : 0)
+              : RECIPE_FILTER_GAP + (recipeFiltersVisible ? RECIPE_FILTER_HEIGHT : 0),
+          },
         ]}
       >
-        <SlidingSegments
-          style={styles.sourceSelector}
-          emphasized
-          segments={sourceSegments}
-          value={source}
-          onChange={setSource}
-        />
-
-        {source === 'supermarkets' ? (
-          <>
-        <SectionHeading
-          icon="storefront-outline"
-          title={t('queCocino.supermarketsTitle')}
-          subtitle={t('queCocino.supermarketsSubtitle')}
-          styles={styles}
-        />
-
-        <HardShadow style={styles.officialCard}>
-          <View style={styles.officialTop}>
-            <View style={styles.officialIcon}>
-              <Ionicons name="book-outline" size={23} color={colors.accent} />
-            </View>
-            <View style={styles.officialCopy}>
-              <Text style={styles.officialTitle}>{t('queCocino.officialComingTitle')}</Text>
-              <Text style={styles.officialText}>{t('queCocino.officialComingText')}</Text>
-            </View>
-            <View style={styles.soonBadge}>
-              <Text style={styles.soonBadgeText}>{t('queCocino.soon')}</Text>
-            </View>
-          </View>
-          <View style={styles.storeStrip}>
-            {OFFICIAL_STORES.map((store) => (
-              <View key={store} style={styles.storePill}>
-                <Image source={STORE_META[store].icon} style={styles.storeLogo} resizeMode="contain" />
-                <Text style={styles.storeName} numberOfLines={1}>{STORE_META[store].name}</Text>
-              </View>
-            ))}
-          </View>
-        </HardShadow>
-          </>
-        ) : (
-          <>
-        <SectionHeading
-          icon="people-outline"
-          title={t('queCocino.communityTitle')}
-          subtitle={t('queCocino.communitySubtitle')}
-          badge={communityRecipes.length === 0 ? t('queCocino.sample') : undefined}
-          styles={styles}
-        />
-
         {recipesLoading ? (
           <View style={styles.recipeStatus}>
             <ActivityIndicator color={colors.accent} />
@@ -205,107 +195,221 @@ export default function QueCocinoScreen() {
           </Pressable>
         ) : null}
 
-        {communityRecipes.length > 0 ? (
+        {sortedRecipes.length > 0 ? (
           <View style={styles.recipeList}>
-            {communityRecipes.map((recipe) => (
-              <Pressable
-                key={recipe.id}
-                onPress={() => setSelectedRecipe(recipe)}
-                style={({ pressed }) => [
-                  styles.communityRecipeCard,
-                  pressed && styles.recipeCardPressed,
-                ]}
-                accessibilityRole="button"
-                accessibilityLabel={t('queCocino.openRecipe', { name: recipe.title })}
-              >
-                <Image source={{ uri: recipe.imageUrl }} style={styles.communityRecipeImage} resizeMode="cover" />
-                <View style={styles.communityRecipeBody}>
-                  <View style={styles.authorRow}>
-                    {recipe.author.avatarUrl ? (
-                      <Image source={{ uri: recipe.author.avatarUrl }} style={styles.realAuthorAvatar} />
-                    ) : (
-                      <View style={[styles.authorAvatar, { backgroundColor: recipe.author.color }]}>
-                        <Text style={styles.realAuthorInitial}>{recipe.author.initials}</Text>
+            {sortedRecipes.map((recipe) => (
+              <View key={recipe.id} style={styles.communityRecipeCard}>
+                <Pressable
+                  onPress={() => setSelectedRecipe(recipe)}
+                  style={({ pressed }) => pressed && styles.recipeCardPressed}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('queCocino.openRecipe', { name: recipe.title })}
+                >
+                  <Image source={{ uri: recipe.imageUrl }} style={styles.communityRecipeImage} resizeMode="cover" />
+                  <View style={styles.communityRecipeBody}>
+                    <View style={styles.authorRow}>
+                      {recipe.author.avatarUrl ? (
+                        <Image source={{ uri: recipe.author.avatarUrl }} style={styles.realAuthorAvatar} />
+                      ) : (
+                        <View style={[styles.authorAvatar, { backgroundColor: recipe.author.color }]}>
+                          <Text style={styles.realAuthorInitial}>{recipe.author.initials}</Text>
+                        </View>
+                      )}
+                      <View style={styles.authorIdentity}>
+                        <Text style={styles.authorName} numberOfLines={1}>
+                          {recipe.author.username ? `@${recipe.author.username}` : recipe.author.name}
+                        </Text>
+                        {recipe.author.verified ? <VerifiedBadge size={14} /> : null}
                       </View>
-                    )}
-                    <Text style={styles.authorName} numberOfLines={1}>
-                      {recipe.author.username ? `@${recipe.author.username}` : recipe.author.name}
+                    </View>
+                    <Text style={styles.communityRecipeTitle} numberOfLines={2}>{recipe.title}</Text>
+                  </View>
+                </Pressable>
+                <Pressable
+                  onPress={() => toggleEngagement(recipe, 'save')}
+                  disabled={Boolean(interactionBusy[`save:${recipe.id}`])}
+                  testID={`recipe-save-${recipe.id}`}
+                  style={({ pressed }) => [
+                    styles.recipeSaveButton,
+                    pressed && styles.recipeSaveButtonPressed,
+                    interactionBusy[`save:${recipe.id}`] && styles.recipeSaveButtonBusy,
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={t(
+                    recipe.isSaved ? 'queCocino.unsaveRecipe' : 'queCocino.saveRecipe',
+                    { name: recipe.title, n: recipe.saveCount },
+                  )}
+                  accessibilityState={{
+                    selected: recipe.isSaved,
+                    busy: Boolean(interactionBusy[`save:${recipe.id}`]),
+                    disabled: Boolean(interactionBusy[`save:${recipe.id}`]),
+                  }}
+                >
+                  <GlassSurface
+                    style={[
+                      styles.recipeSaveSurface,
+                      recipe.isSaved && styles.recipeSaveSurfaceActive,
+                    ]}
+                    glassEffectStyle="regular"
+                    tintColor={recipe.isSaved ? colors.accent : colors.white}
+                    fallbackColor={recipe.isSaved ? colors.accent : colors.white}
+                    interactive
+                  >
+                    <Ionicons
+                      name={recipe.isSaved ? 'bookmark' : 'bookmark-outline'}
+                      size={21}
+                      color={recipe.isSaved ? colors.white : colors.ink}
+                    />
+                    <Text style={[
+                      styles.recipeSaveButtonText,
+                      recipe.isSaved && styles.recipeSaveButtonTextActive,
+                    ]}>
+                      {recipe.saveCount}
                     </Text>
+                  </GlassSurface>
+                </Pressable>
+                <View style={styles.recipeMeta}>
+                  <View style={styles.metaItem}>
+                    <Ionicons name="basket-outline" size={14} color={colors.inkSoft} />
+                    <Text style={styles.metaText}>{t('queCocino.ingredientsCount', { n: recipe.ingredients.length })}</Text>
                   </View>
-                  <Text style={styles.communityRecipeTitle} numberOfLines={2}>{recipe.title}</Text>
-                  <View style={styles.recipeMeta}>
-                    <View style={styles.metaItem}>
-                      <Ionicons name="basket-outline" size={14} color={colors.inkSoft} />
-                      <Text style={styles.metaText}>{t('queCocino.ingredientsCount', { n: recipe.ingredients.length })}</Text>
-                    </View>
-                    <View style={styles.metaDot} />
-                    <View style={styles.metaItem}>
-                      <Ionicons name="list-outline" size={14} color={colors.inkSoft} />
-                      <Text style={styles.metaText}>{t('queCocino.stepsCount', { n: recipe.steps.length })}</Text>
-                    </View>
+                  <View style={styles.metaDot} />
+                  <View style={styles.metaItem}>
+                    <Ionicons name="list-outline" size={14} color={colors.inkSoft} />
+                    <Text style={styles.metaText}>{t('queCocino.stepsCount', { n: recipe.steps.length })}</Text>
                   </View>
+                  <View style={styles.metaDot} />
+                  <Pressable
+                    onPress={() => toggleEngagement(recipe, 'like')}
+                    disabled={Boolean(interactionBusy[`like:${recipe.id}`])}
+                    hitSlop={5}
+                    testID={`recipe-like-${recipe.id}`}
+                    style={({ pressed }) => [
+                      styles.metaAction,
+                      pressed && styles.metaActionPressed,
+                      interactionBusy[`like:${recipe.id}`] && styles.metaActionBusy,
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={t(
+                      recipe.isLiked ? 'queCocino.unlikeRecipe' : 'queCocino.likeRecipe',
+                      { name: recipe.title, n: recipe.likeCount },
+                    )}
+                    accessibilityState={{
+                      selected: recipe.isLiked,
+                      busy: Boolean(interactionBusy[`like:${recipe.id}`]),
+                      disabled: Boolean(interactionBusy[`like:${recipe.id}`]),
+                    }}
+                  >
+                    <Ionicons
+                      name={recipe.isLiked ? 'heart' : 'heart-outline'}
+                      size={14}
+                      color={recipe.isLiked ? colors.accent : colors.inkSoft}
+                    />
+                    <Text style={[styles.metaText, recipe.isLiked && styles.metaTextActive]}>
+                      {recipe.likeCount}
+                    </Text>
+                  </Pressable>
                 </View>
-              </Pressable>
+              </View>
             ))}
           </View>
         ) : null}
 
-        {communityRecipes.length > 0 ? (
-          <View style={styles.sampleDivider}>
-            <View style={styles.sampleDividerLine} />
-            <Text style={styles.sampleDividerText}>{t('queCocino.sampleIdeas')}</Text>
-            <View style={styles.sampleDividerLine} />
+        {!recipesLoading && !recipesError && communityRecipes.length === 0 ? (
+          <View style={styles.emptyRecipes}>
+            <View style={styles.emptyRecipesIcon}>
+              <Ionicons name="restaurant-outline" size={24} color={colors.accent} />
+            </View>
+            <Text style={styles.emptyRecipesTitle}>{t('queCocino.emptyTitle')}</Text>
+            <Text style={styles.emptyRecipesText}>{t('queCocino.emptyText')}</Text>
           </View>
         ) : null}
-
-        <View style={styles.recipeList}>
-          {SAMPLE_RECIPES.map((recipe) => (
-            <View key={recipe.id} style={styles.recipeCard}>
-              <LinearGradient colors={recipe.gradient} style={styles.recipeVisual}>
-                <View style={styles.recipeVisualGlow} />
-                <Text style={styles.recipeEmoji}>{recipe.emoji}</Text>
-              </LinearGradient>
-              <View style={styles.recipeContent}>
-                <View style={styles.recipeTopRow}>
-                  <View style={styles.authorRow}>
-                    <View style={styles.authorAvatar}>
-                      <Text style={styles.authorInitial}>{recipe.initials}</Text>
-                    </View>
-                    <Text style={styles.authorName} numberOfLines={1}>{recipe.author}</Text>
-                  </View>
-                  <View style={styles.likeRow}>
-                    <Ionicons name="heart-outline" size={14} color={colors.accent} />
-                    <Text style={styles.likeText}>{recipe.likes}</Text>
-                  </View>
-                </View>
-                <Text style={styles.recipeTitle} numberOfLines={2}>{t(recipe.titleKey)}</Text>
-                <Text style={styles.recipeDescription} numberOfLines={2}>{t(recipe.descriptionKey)}</Text>
-                <View style={styles.recipeMeta}>
-                  <View style={styles.metaItem}>
-                    <Ionicons name="time-outline" size={14} color={colors.inkSoft} />
-                    <Text style={styles.metaText}>{t('queCocino.minutes', { n: recipe.minutes })}</Text>
-                  </View>
-                  <View style={styles.metaDot} />
-                  <View style={styles.metaItem}>
-                    <Ionicons name="speedometer-outline" size={14} color={colors.inkSoft} />
-                    <Text style={styles.metaText}>{t(recipe.difficultyKey)}</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.communityNote}>
-          <Ionicons name="information-circle-outline" size={18} color={colors.accent} />
-          <Text style={styles.communityNoteText}>{t('queCocino.sampleNotice')}</Text>
-        </View>
-          </>
-        )}
       </ScrollView>
 
+      {recipeFiltersVisible ? (
+        <View
+          style={[styles.recipeFilters, styles.recipeFiltersFixed, { top: headerH + RECIPE_FILTER_GAP }]}
+          accessibilityRole="toolbar"
+        >
+          <Pressable
+            onPress={() => {
+              setRecipeSort((current) => current === 'likes' ? null : 'likes');
+              Haptics.selectionAsync().catch(() => {});
+            }}
+            testID="recipe-filter-liked"
+            style={({ pressed }) => [
+              styles.recipeFilter,
+              pressed && styles.recipeSaveButtonPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={t('queCocino.filters.mostLiked')}
+            accessibilityState={{ selected: recipeSort === 'likes' }}
+          >
+            <GlassSurface
+              style={[
+                styles.recipeFilterSurface,
+                recipeSort === 'likes' && styles.recipeFilterSurfaceActive,
+              ]}
+              glassEffectStyle="regular"
+              tintColor={recipeSort === 'likes' ? colors.accent : colors.white}
+              fallbackColor={recipeSort === 'likes' ? colors.accent : colors.white}
+              interactive
+            >
+              <Ionicons
+                name={recipeSort === 'likes' ? 'heart' : 'heart-outline'}
+                size={17}
+                color={recipeSort === 'likes' ? colors.white : colors.ink}
+              />
+              <Text style={[
+                styles.recipeFilterText,
+                recipeSort === 'likes' && styles.recipeFilterTextActive,
+              ]}>
+                {t('queCocino.filters.mostLiked')}
+              </Text>
+            </GlassSurface>
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              setRecipeSort((current) => current === 'saves' ? null : 'saves');
+              Haptics.selectionAsync().catch(() => {});
+            }}
+            testID="recipe-filter-saved"
+            style={({ pressed }) => [
+              styles.recipeFilter,
+              pressed && styles.recipeSaveButtonPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={t('queCocino.filters.mostSaved')}
+            accessibilityState={{ selected: recipeSort === 'saves' }}
+          >
+            <GlassSurface
+              style={[
+                styles.recipeFilterSurface,
+                recipeSort === 'saves' && styles.recipeFilterSurfaceActive,
+              ]}
+              glassEffectStyle="regular"
+              tintColor={recipeSort === 'saves' ? colors.accent : colors.white}
+              fallbackColor={recipeSort === 'saves' ? colors.accent : colors.white}
+              interactive
+            >
+              <Ionicons
+                name={recipeSort === 'saves' ? 'bookmark' : 'bookmark-outline'}
+                size={17}
+                color={recipeSort === 'saves' ? colors.white : colors.ink}
+              />
+              <Text style={[
+                styles.recipeFilterText,
+                recipeSort === 'saves' && styles.recipeFilterTextActive,
+              ]}>
+                {t('queCocino.filters.mostSaved')}
+              </Text>
+            </GlassSurface>
+          </Pressable>
+        </View>
+      ) : null}
+
       {glassAvailable && (
-        <View style={styles.chrome} onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)}>
+        <View style={styles.chrome}>
           <GlassSurface style={styles.chromeGlass} fallbackColor={colors.paper}>
             {header}
           </GlassSurface>
@@ -317,38 +421,16 @@ export default function QueCocinoScreen() {
         onClose={() => setCreateVisible(false)}
         onCreated={(recipe) => {
           setCommunityRecipes((current) => [recipe, ...current.filter((item) => item.id !== recipe.id)]);
-          setSource('community');
         }}
       />
       <CommunityRecipeDetailModal
         recipe={selectedRecipe}
         onClose={() => setSelectedRecipe(null)}
+        onToggleLike={(recipe) => toggleEngagement(recipe, 'like')}
+        onToggleSave={(recipe) => toggleEngagement(recipe, 'save')}
+        likeBusy={selectedRecipe ? Boolean(interactionBusy[`like:${selectedRecipe.id}`]) : false}
+        saveBusy={selectedRecipe ? Boolean(interactionBusy[`save:${selectedRecipe.id}`]) : false}
       />
-    </View>
-  );
-}
-
-function SectionHeading({
-  icon, title, subtitle, badge, styles,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  title: string;
-  subtitle: string;
-  badge?: string;
-  styles: ReturnType<typeof themedStyles>;
-}) {
-  return (
-    <View style={styles.sectionHeading}>
-      <View style={styles.sectionIcon}>
-        <Ionicons name={icon} size={18} color={colors.accent} />
-      </View>
-      <View style={styles.sectionCopy}>
-        <View style={styles.sectionTitleRow}>
-          <Text style={styles.sectionTitle}>{title}</Text>
-          {badge ? <Text style={styles.sampleBadge}>{badge}</Text> : null}
-        </View>
-        <Text style={styles.sectionSubtitle}>{subtitle}</Text>
-      </View>
     </View>
   );
 }
@@ -384,127 +466,95 @@ const themedStyles = () => StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.border,
   },
-  sourceSelector: { marginTop: 2, marginBottom: 2 },
-
-  sectionHeading: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    marginTop: 24, marginBottom: 10,
-  },
-  sectionIcon: {
-    width: 36, height: 36, borderRadius: 12,
-    backgroundColor: colors.accentLight,
-    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-  },
-  sectionCopy: { flex: 1, minWidth: 0 },
-  sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  sectionTitle: { flexShrink: 1, fontSize: 17, fontFamily: fonts.bold, color: colors.ink },
-  sectionSubtitle: {
-    fontSize: 12, lineHeight: 16, fontFamily: fonts.medium,
-    color: colors.inkSoft, marginTop: 1,
-  },
-  sampleBadge: {
-    fontSize: 9, fontFamily: fonts.bold, color: colors.accent,
-    backgroundColor: colors.accentLight, overflow: 'hidden',
-    paddingHorizontal: 7, paddingVertical: 3, borderRadius: 8,
-    textTransform: 'uppercase', letterSpacing: 0.5,
-  },
-
-  officialCard: { padding: 14, borderColor: colors.border, borderRadius: 18 },
-  officialTop: { flexDirection: 'row', alignItems: 'center', gap: 11 },
-  officialIcon: {
-    width: 45, height: 45, borderRadius: 15,
-    backgroundColor: colors.accentLight,
-    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-  },
-  officialCopy: { flex: 1, minWidth: 0 },
-  officialTitle: { fontSize: 14.5, fontFamily: fonts.bold, color: colors.ink },
-  officialText: {
-    fontSize: 11.5, lineHeight: 16, fontFamily: fonts.medium,
-    color: colors.inkSoft, marginTop: 2,
-  },
-  soonBadge: {
-    paddingHorizontal: 8, paddingVertical: 5, borderRadius: 10,
-    backgroundColor: colors.surfaceAlt, flexShrink: 0,
-  },
-  soonBadgeText: { fontSize: 9, fontFamily: fonts.bold, color: colors.inkSoft, textTransform: 'uppercase' },
-  storeStrip: { flexDirection: 'row', gap: 7, marginTop: 14 },
-  storePill: {
-    flex: 1, minWidth: 0, alignItems: 'center', gap: 5,
-    paddingHorizontal: 4, paddingVertical: 8, borderRadius: 12,
-    backgroundColor: colors.surfaceAlt,
-  },
-  storeLogo: { width: 26, height: 26, borderRadius: 7 },
-  storeName: { width: '100%', fontSize: 8.5, fontFamily: fonts.semibold, color: colors.inkSoft, textAlign: 'center' },
-
   recipeStatus: {
     minHeight: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    marginBottom: 11, borderRadius: 16, backgroundColor: colors.white,
+    marginTop: 8, marginBottom: 11, borderRadius: 16, backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border,
   },
   recipeStatusText: { fontSize: 12, fontFamily: fonts.semibold, color: colors.inkSoft },
-  recipeList: { gap: 11 },
+  recipeFilters: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+  },
+  recipeFiltersFixed: {
+    position: 'absolute', left: 16, right: 16, zIndex: 9, elevation: 3,
+  },
+  recipeFilter: {
+    minHeight: 48, borderRadius: 24,
+  },
+  recipeFilterSurface: {
+    minHeight: 48, paddingHorizontal: 14, borderRadius: 24,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    borderWidth: 1, borderColor: colors.border,
+  },
+  recipeFilterSurfaceActive: { borderColor: colors.accent },
+  recipeFilterText: { fontSize: 12, fontFamily: fonts.semibold, color: colors.inkSoft },
+  recipeFilterTextActive: { color: colors.white },
+  recipeList: { gap: 11, paddingTop: RECIPE_FILTER_GAP },
   communityRecipeCard: {
     overflow: 'hidden', backgroundColor: colors.white,
     borderWidth: 1, borderColor: colors.border, borderRadius: 18,
   },
+  recipeSaveButton: {
+    position: 'absolute', top: 12, right: 12, zIndex: 1, elevation: 2,
+    minWidth: 48, minHeight: 48, borderRadius: 24,
+  },
+  recipeSaveSurface: {
+    minWidth: 48, minHeight: 48, paddingHorizontal: 12, borderRadius: 24,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5,
+    borderWidth: 1, borderColor: colors.border,
+  },
+  recipeSaveSurfaceActive: { borderColor: colors.accent },
+  recipeSaveButtonPressed: { opacity: 0.84, transform: [{ scale: 0.93 }] },
+  recipeSaveButtonBusy: { opacity: 0.55 },
+  recipeSaveButtonText: { fontSize: 12, fontFamily: fonts.bold, color: colors.inkSoft },
+  recipeSaveButtonTextActive: { color: colors.white },
   recipeCardPressed: { opacity: 0.86, transform: [{ scale: 0.985 }] },
   communityRecipeImage: { width: '100%', height: 178, backgroundColor: colors.photoPlaceholder },
-  communityRecipeBody: { padding: 13 },
+  communityRecipeBody: { paddingHorizontal: 13, paddingTop: 13 },
   communityRecipeTitle: {
     fontSize: 17, lineHeight: 21, fontFamily: fonts.bold,
     color: colors.ink, marginTop: 9,
   },
   realAuthorAvatar: { width: 24, height: 24, borderRadius: 9, backgroundColor: colors.photoPlaceholder },
   realAuthorInitial: { fontSize: 10, fontFamily: fonts.bold, color: '#ffffff' },
-  sampleDivider: { flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 18 },
-  sampleDividerLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: colors.border },
-  sampleDividerText: {
-    fontSize: 9.5, fontFamily: fonts.bold, color: colors.inkSoft,
-    letterSpacing: 0.5, textTransform: 'uppercase',
-  },
-  recipeCard: {
-    minHeight: 154, flexDirection: 'row', overflow: 'hidden',
-    backgroundColor: colors.white,
-    borderWidth: 1, borderColor: colors.border, borderRadius: 18,
-  },
-  recipeVisual: {
-    width: 104, alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
-  },
-  recipeVisualGlow: {
-    position: 'absolute', width: 100, height: 100, borderRadius: 50,
-    top: -44, left: -30, backgroundColor: 'rgba(255,255,255,0.24)',
-  },
-  recipeEmoji: { fontSize: 43 },
-  recipeContent: { flex: 1, minWidth: 0, padding: 12 },
-  recipeTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 7 },
   authorRow: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 5 },
+  authorIdentity: {
+    flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center',
+  },
   authorAvatar: {
     width: 22, height: 22, borderRadius: 8,
     backgroundColor: colors.accentLight, alignItems: 'center', justifyContent: 'center',
   },
-  authorInitial: { fontSize: 10, fontFamily: fonts.bold, color: colors.accent },
-  authorName: { flex: 1, fontSize: 10.5, fontFamily: fonts.semibold, color: colors.inkSoft },
-  likeRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  likeText: { fontSize: 10.5, fontFamily: fonts.semibold, color: colors.inkSoft },
-  recipeTitle: {
-    fontSize: 15.5, lineHeight: 19, fontFamily: fonts.bold,
-    color: colors.ink, marginTop: 8,
+  authorName: { flexShrink: 1, fontSize: 10.5, fontFamily: fonts.semibold, color: colors.inkSoft },
+  recipeMeta: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 13, paddingTop: 8, paddingBottom: 13,
   },
-  recipeDescription: {
-    fontSize: 11.5, lineHeight: 16, fontFamily: fonts.medium,
-    color: colors.inkSoft, marginTop: 3,
-  },
-  recipeMeta: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 'auto', paddingTop: 8 },
   metaItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  metaText: { fontSize: 10.5, fontFamily: fonts.semibold, color: colors.inkSoft },
-  metaDot: { width: 3, height: 3, borderRadius: 2, backgroundColor: colors.border },
-  communityNote: {
-    flexDirection: 'row', alignItems: 'flex-start', gap: 8,
-    marginTop: 13, padding: 12, borderRadius: 15,
-    backgroundColor: colors.accentLight,
+  metaAction: {
+    minHeight: 28, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 4, paddingHorizontal: 1,
   },
-  communityNoteText: {
-    flex: 1, fontSize: 11.5, lineHeight: 16,
-    fontFamily: fonts.medium, color: colors.inkSoft,
+  metaActionPressed: { opacity: 0.62, transform: [{ scale: 0.95 }] },
+  metaActionBusy: { opacity: 0.5 },
+  metaText: { fontSize: 10.5, fontFamily: fonts.semibold, color: colors.inkSoft },
+  metaTextActive: { color: colors.accent },
+  metaDot: { width: 3, height: 3, borderRadius: 2, backgroundColor: colors.border },
+  emptyRecipes: {
+    alignItems: 'center', marginTop: 8, paddingHorizontal: 24, paddingVertical: 30,
+    borderWidth: 1, borderColor: colors.border, borderRadius: 18,
+    backgroundColor: colors.white,
+  },
+  emptyRecipesIcon: {
+    width: 48, height: 48, borderRadius: 16,
+    alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accentLight,
+  },
+  emptyRecipesTitle: {
+    marginTop: 12, fontSize: 15, fontFamily: fonts.bold, color: colors.ink,
+    textAlign: 'center',
+  },
+  emptyRecipesText: {
+    marginTop: 4, fontSize: 12, lineHeight: 17, fontFamily: fonts.medium,
+    color: colors.inkSoft, textAlign: 'center',
   },
 });

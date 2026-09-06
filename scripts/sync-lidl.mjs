@@ -13,8 +13,17 @@
 //      DRY_RUN=1, MAX_LEAVES=N (solo permitido con DRY_RUN)
 import { lidlMinimumProducts } from './lib/lidl-store-coverage.mjs';
 import { lidlRequest, sortedLidlRows } from './lib/lidl-http.mjs';
+import { readFile } from 'node:fs/promises';
 import { markStale } from './lib/stale.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
+import {
+  applyLidlCampaign,
+  assertLidlCampaignCatalog,
+  fetchLidlCampaignCatalog,
+  isLidlCampaignCandidate,
+  lidlCampaignMatchesDetail,
+  lidlCampaignPriceForRegion,
+} from './lib/lidl-campaigns.mjs';
 import {
   applyLidlOffer,
   isLidlOfferCandidate,
@@ -43,6 +52,10 @@ const EMPTY_LEAF_RETRIES = Math.max(0, Number(process.env.EMPTY_LEAF_RETRIES || 
 const MIN_COVERAGE_RATIO = Math.min(1, Math.max(0.5, Number(process.env.MIN_COVERAGE_RATIO || 0.85)));
 const MAX_LEAVES = process.env.MAX_LEAVES ? Math.max(1, Number(process.env.MAX_LEAVES)) : Infinity;
 const REQUEST_DELAY_MS = Math.max(0, Number(process.env.REQUEST_DELAY_MS || 50));
+const CAMPAIGNS_FILE = String(process.env.LIDL_CAMPAIGNS_FILE || '').trim() || null;
+const CAMPAIGNS_DISABLED = process.env.LIDL_CAMPAIGNS_DISABLED === '1';
+const CAMPAIGNS_REQUIRED = process.env.LIDL_CAMPAIGNS_REQUIRED === '1';
+const ENV_OFFER_REGION = String(process.env.LIDL_OFFER_REGION || '').trim() || null;
 const runStart = new Date().toISOString();
 const BASE = `https://product-catalog.lidlplus.com/api/app/v1/${COUNTRY}/store/${STORE_ID}`;
 const OFFERS_URL = `https://offers.lidlplus.com/app/api/v4/${COUNTRY}/${STORE_ID}/offers`;
@@ -213,6 +226,88 @@ async function mergeCurrentOffers(rows) {
   return { live: liveOffers.length, matched };
 }
 
+async function loadCampaignCatalog() {
+  if (CAMPAIGNS_DISABLED) return null;
+  try {
+    const catalog = CAMPAIGNS_FILE
+      ? JSON.parse(await readFile(CAMPAIGNS_FILE, 'utf8'))
+      : await fetchLidlCampaignCatalog({ fetchedAt: runStart });
+    return assertLidlCampaignCatalog(catalog);
+  } catch (error) {
+    if (CAMPAIGNS_REQUIRED) throw error;
+    console.warn(`[lidl] campañas web omitidas: ${error.message}`);
+    return null;
+  }
+}
+
+async function mergeWeeklyCampaigns(rows, offerRegion) {
+  if (!offerRegion) {
+    console.warn('[lidl] campañas web omitidas: la tienda no tiene offer_region');
+    return { source: 0, regional: 0, matched: 0 };
+  }
+  const catalog = await loadCampaignCatalog();
+  if (!catalog) return { source: 0, regional: 0, matched: 0 };
+
+  const priority = new Map([
+    ['weekend', 50],
+    ['weekly', 40],
+    ['xxl', 30],
+    ['price_drops', 20],
+    ['unbeatable', 10],
+  ]);
+  const entries = catalog.campaigns
+    .flatMap((campaign) => campaign.products.map((product) => ({ campaign, product })))
+    .sort((a, b) => (priority.get(b.campaign.key) ?? 0) - (priority.get(a.campaign.key) ?? 0));
+  const regionalEntries = entries.filter(({ product }) =>
+    lidlCampaignPriceForRegion(product, offerRegion, runStart));
+  const detailCache = new Map();
+  const detailFor = (id) => {
+    if (!detailCache.has(id)) detailCache.set(id, getJson(`/products/${encodeURIComponent(id)}`));
+    return detailCache.get(id);
+  };
+  const queue = regionalEntries.map((entry, index) => ({ ...entry, index }));
+  const resolved = new Array(regionalEntries.length);
+  await Promise.all(Array.from({ length: CONCURRENCY }, async () => {
+    for (;;) {
+      const queued = queue.shift();
+      if (!queued) break;
+      const candidates = rows.filter((row) => isLidlCampaignCandidate(row.raw, queued.product));
+      const verified = [];
+      for (const candidate of candidates) {
+        if (lidlCampaignMatchesDetail(await detailFor(candidate.id), queued.product)) verified.push(candidate);
+      }
+      resolved[queued.index] = { ...queued, candidates: candidates.length, verified };
+      if (REQUEST_DELAY_MS) await sleep(REQUEST_DELAY_MS);
+    }
+  }));
+
+  const promotedIds = new Set();
+  let matched = 0;
+  let matchedProducts = 0;
+  const unmatched = [];
+  for (const result of resolved) {
+    let applied = 0;
+    for (const row of result.verified) {
+      if (promotedIds.has(row.id)) continue;
+      const promoted = applyLidlCampaign(row, result.campaign, result.product, offerRegion, runStart);
+      if (!promoted) continue;
+      Object.assign(row, promoted);
+      promotedIds.add(row.id);
+      matchedProducts++;
+      applied++;
+    }
+    if (applied) matched++;
+    else if (!result.verified.length) unmatched.push(`${result.product.fullTitle ?? result.product.title} (${result.candidates} candidatos)`);
+  }
+  console.log(`[lidl] campañas web: ${entries.length} productos · ${regionalEntries.length} regionales · ${matched} anuncios enlazados a ${matchedProducts} productos · ${unmatched.length} sin enlace`);
+  if (unmatched.length) {
+    const shown = unmatched.slice(0, 20);
+    const suffix = unmatched.length > shown.length ? ` · … y ${unmatched.length - shown.length} más` : '';
+    console.warn(`[lidl] campañas web sin producto verificable: ${shown.join(' · ')}${suffix}`);
+  }
+  return { source: entries.length, regional: regionalEntries.length, matched };
+}
+
 async function upsert(table, rows) {
   for (const batch of chunks(sortedLidlRows(rows), 250)) {
     await lidlRequest(`${URL}/rest/v1/${table}`, {
@@ -244,7 +339,7 @@ async function currentPublishedCount() {
 }
 
 async function assertStoreExists() {
-  const response = await fetch(`${URL}/rest/v1/lidl_stores?select=id&id=eq.${encodeURIComponent(STORE_ID)}&published=eq.true&limit=1`, {
+  const response = await fetch(`${URL}/rest/v1/lidl_stores?select=id,offer_region&id=eq.${encodeURIComponent(STORE_ID)}&published=eq.true&limit=1`, {
     headers: { apikey: KEY, Authorization: `Bearer ${KEY}` },
   });
   if (!response.ok) throw new Error(`consulta lidl_stores/${STORE_ID}: HTTP ${response.status} ${await response.text()}`);
@@ -252,6 +347,7 @@ async function assertStoreExists() {
   if (!Array.isArray(rows) || rows.length !== 1) {
     throw new Error(`la tienda ${STORE_ID} no existe o no está publicada; sincroniza primero el directorio Lidl`);
   }
+  return rows[0];
 }
 
 async function markStoreRowsStale(table, storeColumn) {
@@ -273,6 +369,8 @@ async function markStoreRowsStale(table, storeColumn) {
 
 async function main() {
   console.log(`[lidl] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} tienda=${STORE_ID}`);
+  const store = DRY_RUN ? { id: STORE_ID, offer_region: ENV_OFFER_REGION } : await assertStoreExists();
+  if (!DRY_RUN && !store.offer_region) throw new Error(`la tienda ${STORE_ID} no tiene offer_region`);
   const { roots, categories, leaves: allLeaves } = await discoverCategories();
   const leaves = allLeaves.slice(0, MAX_LEAVES);
   console.log(`[lidl] ${roots.length} raíces · ${allLeaves.length} hojas${leaves.length !== allLeaves.length ? ` · prueba limitada a ${leaves.length}` : ''}`);
@@ -310,7 +408,11 @@ async function main() {
   }));
 
   const rows = [...products.values()];
+  const campaignStats = await mergeWeeklyCampaigns(rows, store.offer_region);
   const offerStats = await mergeCurrentOffers(rows);
+  const promoted = rows.filter((row) => row.promo_name != null).length;
+  const withCampaignEvidence = rows.filter((row) => row.raw?.campaign != null).length;
+  console.log(`[lidl] promociones finales: ${promoted} productos · ${withCampaignEvidence} con evidencia de campaña web · feed=${offerStats.matched} · web=${campaignStats.matched}`);
   for (const row of rows) for (const categoryId of row.category_ids) {
     const category = categories.get(categoryId);
     if (category) category.product_count++;
@@ -347,7 +449,6 @@ async function main() {
   if (offerStats.live > 0 && offerStats.matched < MIN_MATCHED_OFFERS) {
     throw new Error(`ninguna oferta Lidl enlazada (< ${MIN_MATCHED_OFFERS}); contrato o correspondencia posiblemente cambiados`);
   }
-  await assertStoreExists();
   const previousCount = await currentPublishedCount();
   if (previousCount && rows.length / previousCount < MIN_COVERAGE_RATIO) {
     throw new Error(`cobertura frente al catálogo anterior insuficiente: ${rows.length}/${previousCount} (< ${MIN_COVERAGE_RATIO})`);

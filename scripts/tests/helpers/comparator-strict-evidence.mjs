@@ -9,8 +9,9 @@ import { readFileSync } from 'node:fs';
 const AUTHORIZED_SUCCESSORS = {
   'src/components/SimilarProductsSection.tsx': {
     from: 'd2e594cfd4ba184e839e13c0fd5e049917a16900dfea4fa2f884992234a1127e',
-    to: '03dde3d04ea1388cc960df256bf35b5edb5a4ffac5391c5d44919f7e5b385098',
-    reason: 'Lidl catalog integration in 97fe3b8',
+    via: '03dde3d04ea1388cc960df256bf35b5edb5a4ffac5391c5d44919f7e5b385098',
+    to: '130f0490a3d0384d5267a2f011f664c9009731f643db90c58f22cfc1428e6096',
+    reason: 'Lidl catalog integration in 97fe3b8, then owner-authorized Lidl comparator integration on 2026-09-05',
   },
   'src/components/StoreProductModal.tsx': {
     from: 'f467d6a7604f797e7b944a543310f1c30bfe3bafc40e3f8fa5cf7d4e696a45c4',
@@ -22,8 +23,9 @@ const AUTHORIZED_SUCCESSORS = {
     from: 'bd35cdc8820661b52993a652ebc3a06b41963981df11183a9ba0880a4058bb05',
     via: '91dae040d5b3dce6c34370fa5622e718a69a73aeb4de7d28c3c84c8ae081e201',
     offers: '7833f3014f445f35d03ec00432e6ef9f64a865292afa16d1129243309e34531a',
-    to: 'c6c257b1896e08e470f1eb38bacde097418daf1103db58fd1a0cad5624befa11',
-    reason: 'Lidl catalog and offers integration followed by store-specific Lidl catalog reads',
+    storeSpecific: 'c6c257b1896e08e470f1eb38bacde097418daf1103db58fd1a0cad5624befa11',
+    to: '4769092070d0222b02103a43af96e4420fdff53cf1af53591a4eb7d02b149633',
+    reason: 'Lidl catalog and offers integration, store-specific reads and minimum-quantity offer price safety',
   },
 };
 

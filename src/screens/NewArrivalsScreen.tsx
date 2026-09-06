@@ -12,16 +12,18 @@ import {
   type NewProductFilters,
   type WeeklyNewProductsPage,
 } from '../api/catalog';
-import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
+import { CATALOG_STORES, CATALOG_STORE_KEYS, storesWithLidlSecond, type CatalogStore } from '../constants/stores';
 import { storeInRegion, storesForRegion } from '../constants/regions';
 import StoreProductList from '../components/StoreProductList';
-import StoreDropdown, { type StoreSelection } from '../components/StoreDropdown';
+import StoreDropdown from '../components/StoreDropdown';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import { type ViewMode } from '../components/ViewModeToggle';
 import SlidingSegments from '../components/SlidingSegments';
 import ProductFilterSheet, { PRICE_RANGES, type FilterGroup, type PriceSort } from '../components/ProductFilterSheet';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { sortByRelevance } from '../lib/sort';
+import { catalogStoreRequiresPlus } from '../constants/limits';
+import { useCatalogStore } from '../context/CatalogStoreContext';
 
 // Misma normalización que la búsqueda del catálogo (insensible a acentos/mayúsculas).
 const stripAccents = (s: string) =>
@@ -60,7 +62,7 @@ export default function NewArrivalsScreen() {
   const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
   const { t } = useTranslation();
-  const { profile } = useProfile();
+  const { profile, isPremium } = useProfile();
   const headerTop = useHeaderTopPadding(56);
 
   // Solo los súpers activados en el perfil (misma regla que el catálogo).
@@ -72,19 +74,23 @@ export default function NewArrivalsScreen() {
     const enabledKeys = preferredStores.filter((store) => storeInRegion(store, region));
     return enabledKeys.length > 0 ? enabledKeys : storesForRegion(region);
   }, [preferredStores, region]);
-  const stores = useMemo(
-    () => CATALOG_STORES.filter((s) => allowedStores.includes(s.key)
-      && (s.key !== 'lidl' || lidlStoreId != null)),
+  const storeOptions = useMemo(
+    () => storesWithLidlSecond(CATALOG_STORES.filter((s) => allowedStores.includes(s.key)
+      && (s.key !== 'lidl' || lidlStoreId != null))),
     [allowedStores, lidlStoreId],
   );
-  const [store, setStore] = useState<StoreSelection>(stores[0]?.key ?? 'all');
+  const stores = useMemo(
+    () => storeOptions.filter((option) => !catalogStoreRequiresPlus(option.key, isPremium)),
+    [isPremium, storeOptions],
+  );
+  const { store, setStore } = useCatalogStore();
 
   // Si la preferencia cambia y la tienda activa deja de estar, salta a la primera.
   useEffect(() => {
     if (stores.length > 0 && store !== 'all' && !stores.some((s) => s.key === store)) {
-      setStore('all');
+      setStore(stores[0].key);
     }
-  }, [stores, store]);
+  }, [setStore, stores, store]);
 
   // Caché por súper para no repetir la consulta al alternar en el selector.
   const [cache, setCache] = useState<Record<string, WeeklyNewProductsPage>>({});
@@ -425,8 +431,8 @@ export default function NewArrivalsScreen() {
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
         <Text style={styles.title} numberOfLines={1}>{t('newArrivals.title')}</Text>
-        {stores.length > 0 ? (
-          <StoreDropdown stores={stores} value={store} onChange={setStore} includeAll labeled />
+        {storeOptions.length > 0 ? (
+          <StoreDropdown stores={storeOptions} value={store} onChange={setStore} includeAll labeled />
         ) : (
           <View style={styles.headerSpacer} />
         )}

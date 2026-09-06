@@ -18,7 +18,7 @@ export default function ProductDetailImage({ uri, style, badgeLabel, alertTarget
   return (
     <View style={[style, styles.frame]}>
       {uri ? (
-        <ProductImage uri={uri} style={StyleSheet.absoluteFillObject} />
+        <ProductImage uri={uri} style={StyleSheet.absoluteFill} />
       ) : (
         <Ionicons name="image-outline" size={48} color={colors.inkFaint} />
       )}

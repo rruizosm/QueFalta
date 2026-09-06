@@ -23,6 +23,7 @@ const workflowStores = new Map([
 ]);
 
 const localRunnerStores = new Map([
+  ['run-lidl-sync.ps1', { store: 'lidl', sourceScript: 'sync-lidl.mjs' }],
   ['run-alcampo-playwright.ps1', { store: 'alcampo', sourceScript: 'sync-alcampo-playwright.mjs', realRunGuard: /\$code -eq 0 -and \$Publish/ }],
   ['run-bonarea-sync.ps1', { store: 'bonarea', sourceScript: 'sync-bonarea.mjs' }],
   ['run-caprabo-sync.ps1', { store: 'caprabo', sourceScript: 'sync-caprabo.mjs' }],
@@ -60,6 +61,16 @@ test('Bonpreu materializa solo cuando termina el ciclo encadenado', () => {
     workflow,
     /Actualizar capa del comparador al completar el ciclo[\s\S]*?if: success\(\) && steps\.sync\.outputs\.continue_sync != 'true'[\s\S]*?STORES:\s*esclat/,
   );
+});
+
+test('Lidl materializa una vez tras todos los workers, también con fallos parciales de fuente', () => {
+  const workflow = readWorkflow('sync-lidl.yml');
+  const job = workflow.slice(workflow.indexOf('  comparator:'));
+  assert.match(job, /needs: \[schedule, sync\]/);
+  assert.match(job, /needs\.sync\.result == 'failure'/);
+  assert.match(job, /STORES: lidl/);
+  assert.equal((workflow.match(/run: node scripts\/sync-comparator-embedding-catalog\.mjs/g) ?? []).length, 1);
+  assert.doesNotMatch(job, /EMBEDDING_ANOMALY_OVERRIDE/);
 });
 
 test('Gadis deja margen para materializar en lotes incrementales tras el rastreo', () => {

@@ -17,3 +17,14 @@ test('la ficha Lidl usa el bloque promocional de Bonpreu', () => {
   assert.match(sharedModal, /backgroundColor: colors\.accentLight/);
   assert.match(sharedModal, /borderColor: colors\.accentMid/);
 });
+
+test('la ficha Lidl no repite una condición de oferta idéntica', () => {
+  assert.match(sharedModal, /distinctPromotionText/);
+  assert.match(sharedModal, /normalize\(text\) === normalize\(name\) \? null : text/);
+});
+
+test('la ficha Lidl muestra el precio anterior tachado solo para una rebaja directa', () => {
+  assert.match(sharedModal, /lidlPromoBasePrice > product\.unitPrice/);
+  assert.match(sharedModal, /promotionPreviousPrice=\{promotionPreviousPrice\}/);
+  assert.match(sharedModal, /priceTone=\{promotionPreviousPrice \? 'down' : 'default'\}/);
+});

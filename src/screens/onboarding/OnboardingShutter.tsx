@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../constants/colors';
 import { fonts } from '../../constants/typography';
 import { useTranslation } from '../../context/LanguageContext';
-import OnboardingSlats from './OnboardingSlats';
+import AmbientBubbleBackdrop from '../../components/AmbientBubbleBackdrop';
 
 const SEATED_MASCOT = require('../../../assets/mascot/berenjena-sentada-ok.png');
 const APP_BLUE = colors.blue;
@@ -46,8 +46,7 @@ export default function OnboardingShutter({ children, onSettled }: Props) {
       <StatusBar barStyle="light-content" backgroundColor={APP_BLUE} />
 
       <View style={styles.shutterSurface}>
-        <OnboardingSlats />
-
+        <AmbientBubbleBackdrop showGradient={false} onBlue />
         <KeyboardAvoidingView
           style={styles.keyboardAvoider}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -92,7 +91,6 @@ export default function OnboardingShutter({ children, onSettled }: Props) {
           </ScrollView>
         </KeyboardAvoidingView>
       </View>
-      <View style={styles.bottomRail} pointerEvents="none" />
     </View>
   );
 }
@@ -104,7 +102,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fbf6ee',
   },
   shutterSurface: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     overflow: 'hidden',
     backgroundColor: APP_BLUE,
   },
@@ -152,14 +150,5 @@ const styles = StyleSheet.create({
   },
   form: {
     marginTop: 24,
-  },
-  bottomRail: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 14,
-    zIndex: 3,
-    backgroundColor: '#255b9c',
   },
 });

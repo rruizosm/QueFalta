@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, TextInput,
-  StyleSheet, StatusBar, Keyboard, TouchableWithoutFeedback, Platform,
+  StyleSheet, StatusBar, Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -272,8 +272,6 @@ export default function FavoritesScreen() {
   );
 
   return (
-    // Al tocar fuera de los buscadores (cabecera, pestañas, lista…) se cierra el teclado.
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
     <View style={styles.container}>
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
@@ -312,6 +310,7 @@ export default function FavoritesScreen() {
           onViewModeChange={setViewMode}
           pageSize={50}
           topInset={glassInset}
+          roundedCards
         />
       )}
 
@@ -343,7 +342,6 @@ export default function FavoritesScreen() {
         />
       )}
     </View>
-    </TouchableWithoutFeedback>
   );
 }
 

@@ -1,0 +1,386 @@
+{
+  "project_id": "gkffvigcnsesbaihycay",
+  "migration": "20260905175806_lidl_comparator_multistore.sql",
+  "edge_function": {
+    "slug": "catalog-embed",
+    "version": 14
+  },
+  "backfill_run_id": "4989d170-a884-4c9d-8494-a4d21871abc3",
+  "verification": {
+    "run": {
+      "status": "settled",
+      "expected": 3321,
+      "completed": 3321,
+      "generation": 2,
+      "settled_at": "2026-09-05T18:23:43.034968+00:00",
+      "terminal_failed": 0
+    },
+    "cron": false,
+    "lidl": {
+      "ready": 3321,
+      "total": 3321,
+      "published": 3321,
+      "with_unit": 3241
+    },
+    "queue": [
+      {
+        "jobs": 48,
+        "store": "ahorramas",
+        "in_flight": 0,
+        "max_read_count": 0
+      },
+      {
+        "jobs": 107,
+        "store": "gadis",
+        "in_flight": 0,
+        "max_read_count": 0
+      }
+    ],
+    "pipeline": "paused",
+    "captured_at": "2026-09-05T18:24:28.508445+00:00",
+    "maintenance": {
+      "hnsw": {
+        "live": true,
+        "ready": true,
+        "valid": true,
+        "indexBytes": 597745664,
+        "indexScans": 4165,
+        "lastIndexScan": "2026-09-05T18:14:54.034293+00:00"
+      },
+      "table": {
+        "deadTuples": 12394,
+        "liveTuples": 206347,
+        "tableBytes": 169394176,
+        "totalBytes": 1488322560,
+        "deadTupleAlert": true,
+        "deadTupleRatio": 0.056661,
+        "lastAutovacuum": "2026-09-01T13:09:59.266613+00:00",
+        "autovacuumCount": 7,
+        "lastAutoanalyze": "2026-09-05T18:03:39.731072+00:00",
+        "autoanalyzeCount": 14,
+        "deadTuplePercent": 5.666,
+        "modifiedSinceAnalyze": 3321,
+        "deadTupleAlertThreshold": 0.05
+      },
+      "autovacuum": {
+        "vacuumThreshold": 50,
+        "analyzeThreshold": 50,
+        "vacuumScaleFactor": 0.05,
+        "analyzeScaleFactor": 0.02,
+        "estimatedVacuumTriggerTuples": 10368,
+        "estimatedAnalyzeTriggerChanges": 4177
+      },
+      "observedAt": "2026-09-05T18:24:28.508445+00:00",
+      "maintenance": {
+        "vacuumInProgress": 1,
+        "indexMaintenanceInProgress": 0
+      },
+      "pgvectorVersion": "0.8.0",
+      "requiresAttention": true
+    },
+    "lidl_failures": 0,
+    "new_multistore": {
+      "ready": 511,
+      "total": 511
+    }
+  },
+  "batches": [
+    {
+      "request_id": 3176,
+      "completed": 20
+    },
+    {
+      "request_id": 3177,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3178,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3179,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3180,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3181,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3182,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3183,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3184,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3185,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3186,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3187,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3188,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3189,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3190,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3191,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3192,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3193,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3194,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3195,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3196,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3198,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3199,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3200,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3201,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3202,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3203,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3204,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3205,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3206,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3207,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3208,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3209,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3210,
+      "completed": 100,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    },
+    {
+      "request_id": 3211,
+      "completed": 1,
+      "failed": 0,
+      "stale": 0,
+      "deferred": 0,
+      "dispatched": 0
+    }
+  ],
+  "checks": {
+    "typecheck": "PASS",
+    "eslint": "PASS",
+    "node_tests": {
+      "passed": 663,
+      "failed": 0
+    },
+    "sql_fixtures": "PASS: bidirectional pricing, selected store, missing reference price, stock, Plus, auth, promotions, stale vectors, source removal, permissions",
+    "real_cache_rollback": {
+      "lidl_to_mercadona": 20,
+      "mercadona_to_lidl": 9,
+      "commercial_quota_used": 0
+    }
+  },
+  "rollout": {
+    "backend": "deployed",
+    "client": "local, not published",
+    "workflow": "local, not published",
+    "global_pipeline": "paused; future jobs queue until explicitly processed"
+  },
+  "maintenance_note": "Autovacuum on catalog_product_embeddings in vacuuming indexes, IO/DataFileRead, no blocking sessions; warning at 5.666% dead tuples while maintenance is running. No manual VACUUM/REINDEX, cancellation or compute changes."
+}

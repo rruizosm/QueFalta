@@ -477,7 +477,7 @@ const themedStyles = () => StyleSheet.create({
     flex: 1,
   },
   loginBackdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     overflow: 'hidden',
   },
   scrollContent: {

@@ -26,10 +26,15 @@ import { useTranslation } from '../../context/LanguageContext';
 import { updateProfile } from '../../api/profile';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../../constants/stores';
 import { storeInRegion } from '../../constants/regions';
-import OnboardingSlats from './OnboardingSlats';
+import AmbientBubbleBackdrop from '../../components/AmbientBubbleBackdrop';
 
 const CART_MASCOT = require('../../../assets/mascot/berenjena-carrito-transicion.png');
 const APP_BLUE = colors.blue;
+const lidlStore = CATALOG_STORES.find((store) => store.key === 'lidl');
+const ONBOARDING_STORES = CATALOG_STORES.flatMap((store) => {
+  if (store.key === 'lidl') return [];
+  return store.key === 'mercadona' && lidlStore ? [store, lidlStore] : [store];
+});
 
 export default function StoresScreen() {
   const { height, width } = useWindowDimensions();
@@ -43,7 +48,7 @@ export default function StoresScreen() {
 
   // Solo los súpers de la CCAA elegida en el paso anterior ('ES' = todos).
   const region = profile?.region ?? null;
-  const shown = CATALOG_STORES.filter((store) => storeInRegion(store.key, region));
+  const shown = ONBOARDING_STORES.filter((store) => storeInRegion(store.key, region));
 
   // En una entrada nueva empieza vacío. Si el paso ya se guardó y se vuelve
   // atrás desde una reanudación, recupera exactamente la selección persistida.
@@ -88,8 +93,7 @@ export default function StoresScreen() {
   return (
     <View style={styles.screen}>
       <StatusBar barStyle="light-content" backgroundColor={APP_BLUE} />
-
-      <OnboardingSlats />
+      <AmbientBubbleBackdrop showGradient={false} onBlue />
 
       <TouchableOpacity
         onPress={() => navigation.navigate('Username')}
@@ -131,6 +135,9 @@ export default function StoresScreen() {
         />
         <Text
           style={[styles.title, compactHeight && styles.titleCompact]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.68}
           maxFontSizeMultiplier={1.5}
         >
           {t('onboarding.storesTitle')}
@@ -209,7 +216,6 @@ export default function StoresScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.bottomRail} pointerEvents="none" />
     </View>
   );
 }
@@ -239,6 +245,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   title: {
+    alignSelf: 'stretch',
     color: '#ffffff',
     fontSize: 30,
     lineHeight: 36,
@@ -343,14 +350,5 @@ const styles = StyleSheet.create({
     fontSize: 15.5,
     fontFamily: fonts.bold,
     color: APP_BLUE,
-  },
-  bottomRail: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 4,
-    height: 14,
-    backgroundColor: '#255b9c',
   },
 });

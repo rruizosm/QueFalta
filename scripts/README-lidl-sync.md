@@ -5,12 +5,16 @@ española concreta. Recorre el árbol completo de categorías y
 guarda nombre, marca, precio, precio canónico por kg/L/ud, imagen,
 disponibilidad, tipo de producto y promociones visibles. En la misma pasada
 consulta el feed público de ofertas de tienda, pero conserva separado el precio
-ordinario del promocional.
+ordinario del promocional. También incorpora las campañas semanales públicas de
+`lidl.es` cuando puede confirmar el mismo producto en el catálogo de la tienda.
 
 ## Fuente y alcance
 
 - API: `product-catalog.lidlplus.com/api/app/v1/ES/store/{storeId}`.
 - Ofertas: `offers.lidlplus.com/app/api/v4/{country}/{storeId}/offers`.
+- Campañas web: Formato ahorro XXL, Ofertas semanales, Fin de semana a lo
+  grande, Precios imbatibles y Bajamos los precios. Las URLs se descubren desde
+  `https://www.lidl.es/`; no se fijan los ids CMS semanales.
 - Tienda por defecto del script: `ES3572`. Cada ejecución guarda precio,
   disponibilidad y surtido bajo ese `store_id`; nunca los publica como datos
   nacionales ni reemplaza la variante de otra tienda.
@@ -25,6 +29,20 @@ ordinario del promocional.
 - Se excluye `redemptionChannel=OnlineShop` y toda campaña aún no iniciada o
   caducada. Las ofertas de plantas, bazar u otras familias ausentes del Product
   Catalog alimentario se omiten si no hay producto verificable.
+- Las páginas de campaña entregan `regionsV2` y `regionsPrices`, no tiendas. El
+  sync consulta `lidl_stores.offer_region`, selecciona ese precio regional y
+  conserva Product Catalog como autoridad de surtido/disponibilidad. `nat` o
+  `ians` deben coincidir con `productCodes`; el título o código de imagen solo
+  sirven para evitar descargar todas las fichas.
+- El fleet descarga las cinco páginas una vez por worker y comparte una caché
+  temporal privada entre sus tiendas. El feed de ofertas de tienda se aplica
+  después y prevalece si el mismo producto aparece en ambas fuentes.
+- En promociones con compra mínima (`3x1,49€`, `6x2€`, etc.), el feed publica
+  también el coste efectivo por unidad. Se conserva la condición como texto,
+  pero no se guarda ese coste como `promo_price`: el precio individual sigue
+  siendo el precio ordinario del catálogo.
+- Si el detalle promocional repite exactamente la etiqueta, se guarda una sola
+  copia en `promo_name` y `promo_text` queda vacío.
 - No se descargan todas las fichas una a una. Ingredientes y alérgenos siguen
   reservados para una fase de enriquecimiento incremental.
 
@@ -75,8 +93,32 @@ tras tres intentos. Cada claim tiene un lease de 45 minutos y usa
 misma tienda a la vez. Las RPC de programación/claim/cierre solo conceden
 `EXECUTE` a `service_role`.
 
-Lidl ya está integrado en el catálogo del cliente. El comparador semántico se
-mantiene fuera hasta validar cobertura multi-tienda y disponer de EAN reales.
+Lidl está integrado en el comparador mediante
+`20260905175806_lidl_comparator_multistore.sql`. El materializador consulta
+`lidl_comparator_products`: una ficha por `lidl_product_master.id`, con categoría
+y unidad de referencia de un surtido publicado. No incorpora precios, stock o
+identificadores de tienda al texto semántico ni interpreta IDs internos como EAN.
+El servidor resuelve precio y disponibilidad de origen y destino desde la tienda
+del perfil; Lidl exige Plus y una tienda seleccionada. Las ofertas directas vigentes
+ajustan también el precio unitario; compras mínimas y promociones caducadas se excluyen.
+Si falta precio por kg/L/ud, el motor se abstiene: no presenta un origen de precio
+desconocido como la opción más económica. El producto conserva su embedding.
+
+El job `comparator` se ejecuta una sola vez después de los workers, incluso ante
+fallos parciales: solo lee los productos que los syncs individuales publicaron
+tras sus validaciones. `run-lidl-sync.ps1` también materializa después de un sync
+real correcto. Ambos respetan el interruptor global de embeddings y los límites
+de anomalías. Si el pipeline está pausado, las altas quedan encoladas hasta su
+procesamiento explícito; añadir Lidl no reactiva el cron ni los otros catálogos.
+
+La primera carga de 3.321 productos requiere `STORES=lidl` y el override de
+anomalía revisado, porque supera el límite incremental. No guardar ese override
+en workflows. `supabase/ops/dispatch-lidl-embedding-batch.sql` procesa explícitamente
+un lote máximo de 100 mensajes Lidl con el pipeline pausado. Esperar el resultado
+del worker y verificar fallos antes de repetir; no programar ese script en cron.
+
+Prueba SQL local con datos ficticios (módulo PGlite temporal externo al proyecto):
+`node scripts/test-lidl-comparator-sql-local.mjs /ruta/absoluta/a/pglite/dist/index.js`.
 
 ## Variables
 
@@ -85,6 +127,10 @@ mantiene fuera hasta validar cobertura multi-tienda y disponer de EAN reales.
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE` | destino; obligatorias salvo DRY_RUN |
 | `LIDL_STORE_ID=ES3572` | tienda concreta que se sincroniza |
 | `LIDL_STORES_API_KEY` | clave rotatoria del directorio oficial; solo para `sync-lidl-stores.mjs` |
+| `LIDL_CAMPAIGNS_FILE` | caché JSON creada por el fleet; en ejecución directa se descarga desde la web |
+| `LIDL_CAMPAIGNS_DISABLED=1` | omite expresamente el complemento de campañas web |
+| `LIDL_CAMPAIGNS_REQUIRED=1` | convierte un fallo de campañas en fallo del sync; por defecto conserva el catálogo/feed |
+| `LIDL_OFFER_REGION=26` | región explícita solo para DRY_RUN sin conexión a `lidl_stores` |
 | `LIDL_FLEET_JOB_LIMIT=10` | máximo por worker; el workflow semanal lo fija en `32` |
 | `LIDL_FLEET_LEASE_MINUTES=45` | reserva recuperable de una tienda por worker |
 | `LIDL_FLEET_STORE_TIMEOUT_MINUTES=35` | tope por tienda; debe ser menor que el lease |
@@ -102,8 +148,10 @@ Prueba local completa, sin escritura:
 
 ```powershell
 $env:DRY_RUN='1'
+$env:LIDL_OFFER_REGION='26'
 node scripts/sync-lidl.mjs
 Remove-Item Env:DRY_RUN
+Remove-Item Env:LIDL_OFFER_REGION
 ```
 
 ## Recuperación y resistencia del barrido (2026-09-04)

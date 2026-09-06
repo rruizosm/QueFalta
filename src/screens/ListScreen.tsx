@@ -17,6 +17,7 @@ import {
   Modal,
   Pressable,
   Animated,
+  Easing,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -81,6 +82,7 @@ type PreparedCartStore = {
 
 const EMPTY_CART_ITEMS: MergedCartItem[] = [];
 const ZONE_DOUBLE_TAP_MS = 300;
+const ZONE_COMPLETION_MS = 520;
 
 const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 
@@ -150,6 +152,11 @@ export default function ListScreen() {
   // zona oculta solo sus productos.
   const [collapsedStores, setCollapsedStores] = useState<Set<string>>(new Set());
   const [collapsedZones, setCollapsedZones] = useState<Set<string>>(new Set());
+  // Distingue los pliegues automáticos de los elegidos por la persona. Así,
+  // si falla el guardado del último check y el estado optimista se revierte,
+  // solo reabrimos la zona que habíamos cerrado nosotros.
+  const automaticallyCollapsedZones = useRef<Set<string>>(new Set());
+  const previouslyCompletedZones = useRef<Set<string>>(new Set());
   // El primer toque se aplica sin demora. Si el siguiente llega sobre la misma
   // zona dentro del umbral, extendemos esa misma dirección a toda la tienda.
   const lastZoneTap = useRef<{
@@ -184,6 +191,8 @@ export default function ListScreen() {
 
   const toggleZone = useCallback((key: string) => {
     Haptics.selectionAsync();
+    // Desde este momento el estado de esta cabecera es una elección manual.
+    automaticallyCollapsedZones.current.delete(key);
     // Una sola transición de layout evita animar altura/opacidad en cada fila
     // desde JavaScript, que generaba trabajo proporcional al tamaño de la zona.
     if (!reducedMotion) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -436,6 +445,56 @@ export default function ListScreen() {
     }))
   ), [merged]);
 
+  // Al marcar el último producto recogido, pliega su categoría. La detección
+  // por transición permite volver a abrir una categoría completada sin que un
+  // render posterior la cierre otra vez. También revierte el pliegue automático
+  // si la escritura remota falla o reaparece un artículo pendiente al recargar.
+  useEffect(() => {
+    const completedZones = new Set<string>();
+    preparedStores.forEach((group) => {
+      group.zones.forEach((zoneGroup) => {
+        if (zoneGroup.count > 0 && zoneGroup.inCart === zoneGroup.count) {
+          completedZones.add(`${group.store}:${zoneGroup.zone.key}`);
+        }
+      });
+    });
+
+    const newlyCompleted = [...completedZones]
+      .filter((key) => !previouslyCompletedZones.current.has(key));
+    const noLongerCompleted = [...previouslyCompletedZones.current]
+      .filter((key) => !completedZones.has(key));
+    previouslyCompletedZones.current = completedZones;
+
+    if (newlyCompleted.length === 0 && noLongerCompleted.length === 0) return;
+    if (!reducedMotion && newlyCompleted.length > 0) {
+      LayoutAnimation.configureNext({
+        duration: ZONE_COMPLETION_MS,
+        update: { type: LayoutAnimation.Types.easeInEaseOut },
+        delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.scaleY },
+        create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+      });
+    }
+    setCollapsedZones((prev) => {
+      const next = new Set(prev);
+      let changed = false;
+
+      newlyCompleted.forEach((key) => {
+        if (!next.has(key)) {
+          next.add(key);
+          automaticallyCollapsedZones.current.add(key);
+          changed = true;
+        }
+      });
+      noLongerCompleted.forEach((key) => {
+        if (automaticallyCollapsedZones.current.delete(key) && next.delete(key)) {
+          changed = true;
+        }
+      });
+
+      return changed ? next : prev;
+    });
+  }, [preparedStores, reducedMotion]);
+
   const handleZonePress = useCallback((section: CartSection) => {
     const now = Date.now();
     const previousTap = lastZoneTap.current;
@@ -457,6 +516,9 @@ export default function ListScreen() {
     if (!store) return;
 
     const shouldCollapse = !previousTap.wasCollapsed;
+    store.zones.forEach(({ zone }) => {
+      automaticallyCollapsedZones.current.delete(`${section.store}:${zone.key}`);
+    });
     Haptics.selectionAsync();
     if (!reducedMotion) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setCollapsedZones((prev) => {
@@ -623,8 +685,11 @@ export default function ListScreen() {
             sections={sections}
             keyExtractor={(item) => item.ids[0]}
             renderItem={renderItem}
+            ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
             renderSectionHeader={({ section }) => {
               const meta = STORE_META[section.store];
+              const zoneCompleted = section.zoneCount > 0
+                && section.zoneInCart === section.zoneCount;
               return (
                 <View>
                   {section.firstOfStore && (
@@ -651,23 +716,15 @@ export default function ListScreen() {
                     </TouchableOpacity>
                   )}
                   {section.zone && (
-                    <TouchableOpacity
-                      style={styles.zoneHeader}
-                      activeOpacity={0.6}
+                    <CompletedZoneHeader
+                      completed={zoneCompleted}
+                      collapsed={section.zoneCollapsed}
+                      label={t(`zones.${section.zone.key}`)}
+                      emoji={section.zone.emoji}
+                      count={`${section.zoneInCart}/${section.zoneCount}`}
                       onPress={() => handleZonePress(section)}
-                      accessibilityRole="button"
                       accessibilityLabel={t('list.toggleZoneA11y', { zone: t(`zones.${section.zone.key}`) })}
-                      accessibilityState={{ expanded: !section.zoneCollapsed }}
-                    >
-                      <Text style={styles.zoneHeaderEmoji}>{section.zone.emoji}</Text>
-                      <Text style={styles.zoneHeaderText}>{t(`zones.${section.zone.key}`)}</Text>
-                      <Text style={styles.zoneHeaderCount}>{section.zoneInCart}/{section.zoneCount}</Text>
-                      <Ionicons
-                        name={section.zoneCollapsed ? 'chevron-forward' : 'chevron-down'}
-                        size={13}
-                        color={colors.inkFaint}
-                      />
-                    </TouchableOpacity>
+                    />
                   )}
                 </View>
               );
@@ -803,6 +860,79 @@ export default function ListScreen() {
         onCancel={() => setConfirmClear(false)}
       />
     </View>
+  );
+}
+
+// Una única capa se desplaza por la cabecera; el driver nativo mantiene el
+// barrido fluido mientras LayoutAnimation contrae las filas de la categoría.
+function CompletedZoneHeader({ completed, collapsed, label, emoji, count, onPress, accessibilityLabel }: {
+  completed: boolean;
+  collapsed: boolean;
+  label: string;
+  emoji: string;
+  count: string;
+  onPress: () => void;
+  accessibilityLabel: string;
+}) {
+  const styles = useThemedStyles(themedStyles);
+  const reducedMotion = useReducedMotion();
+  const progress = useRef(new Animated.Value(completed ? 1 : 0)).current;
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    if (reducedMotion) {
+      progress.setValue(completed ? 1 : 0);
+      return;
+    }
+    const animation = Animated.timing(progress, {
+      toValue: completed ? 1 : 0,
+      duration: ZONE_COMPLETION_MS,
+      easing: Easing.inOut(Easing.cubic),
+      useNativeDriver: true,
+    });
+    animation.start();
+    return () => animation.stop();
+  }, [completed, progress, reducedMotion]);
+
+  return (
+    <TouchableOpacity
+      style={styles.zoneHeader}
+      activeOpacity={0.6}
+      onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ expanded: !collapsed }}
+    >
+      <Animated.View
+        pointerEvents="none"
+        style={[StyleSheet.absoluteFill, styles.zoneHeaderDone, {
+          opacity: width > 0 ? 1 : 0,
+          transform: [{ translateX: progress.interpolate({ inputRange: [0, 1], outputRange: [-width, 0] }) }],
+        }]}
+      />
+      <Text style={styles.zoneHeaderEmoji}>{emoji}</Text>
+      <Text style={styles.zoneHeaderText}>{label}</Text>
+      <Text style={styles.zoneHeaderCount}>{count}</Text>
+      <Ionicons name={collapsed ? 'chevron-forward' : 'chevron-down'} size={13} color={colors.inkFaint} />
+      <Animated.View
+        pointerEvents="none"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={[StyleSheet.absoluteFill, { overflow: 'hidden', opacity: width > 0 ? 1 : 0,
+          transform: [{ translateX: progress.interpolate({ inputRange: [0, 1], outputRange: [-width, 0] }) }],
+        }]}
+      >
+        <Animated.View style={[styles.zoneHeaderForeground, {
+          transform: [{ translateX: progress.interpolate({ inputRange: [0, 1], outputRange: [width, 0] }) }],
+        }]}>
+        <Text style={styles.zoneHeaderEmoji}>{emoji}</Text>
+        <Text style={[styles.zoneHeaderText, styles.zoneHeaderTextDone]}>{label}</Text>
+        <Text style={[styles.zoneHeaderCount, styles.zoneHeaderTextDone]}>{count}</Text>
+        <Ionicons name={collapsed ? 'chevron-forward' : 'chevron-down'} size={13} color="#ffffff" />
+        </Animated.View>
+      </Animated.View>
+    </TouchableOpacity>
   );
 }
 
@@ -1041,13 +1171,21 @@ const themedStyles = () => StyleSheet.create({
     minHeight: 34, marginTop: 2, marginBottom: 8,
     paddingHorizontal: 10, paddingVertical: 7,
     backgroundColor: colors.surfaceAlt, borderRadius: 18,
+    overflow: 'hidden',
   },
+  zoneHeaderForeground: {
+    ...StyleSheet.absoluteFill,
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 10, paddingVertical: 7,
+  },
+  zoneHeaderDone: { backgroundColor: colors.accent },
   zoneHeaderEmoji: { fontSize: 12 },
   zoneHeaderText: {
     flex: 1, fontSize: 10.5, fontFamily: fonts.bold, color: colors.inkSoft,
     textTransform: 'uppercase', letterSpacing: 1.2,
   },
   zoneHeaderCount: { fontSize: 10.5, fontFamily: fonts.semibold, color: colors.inkFaint },
+  zoneHeaderTextDone: { color: '#ffffff' },
 
   // ── Item rows ─────────────────────────────────────────────────
   itemCard: {
@@ -1061,6 +1199,7 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.accentLight,
     borderColor: colors.accent,
   },
+  itemSeparator: { height: 2 },
   itemRow: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 13, paddingVertical: 12,

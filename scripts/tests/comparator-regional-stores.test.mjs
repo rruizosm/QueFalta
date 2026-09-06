@@ -36,7 +36,7 @@ const stores = [
 ];
 
 test('el snapshot semántico materializa Froiz, Gadis y Ahorramás', () => {
-  assert.match(materializer, /Materializa los 18 catálogos/);
+  assert.match(materializer, /Materializa los 19 catálogos/);
   for (const [store, table] of stores) {
     assert.match(materializer, new RegExp(`\\['${store}',\\s*'${table}'`));
     assert.match(migration, new RegExp(`'${store}'`));

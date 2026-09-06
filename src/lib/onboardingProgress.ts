@@ -26,7 +26,7 @@ export function canSubmitUsername(
   state: 'idle' | 'checking' | 'ok' | 'taken' | 'invalid',
   validatedUsername: string | null,
   currentUsername: string,
-  hasRegion: boolean,
+  hasValidPostalCode: boolean,
 ): boolean {
-  return state === 'ok' && validatedUsername === currentUsername && hasRegion;
+  return state === 'ok' && validatedUsername === currentUsername && hasValidPostalCode;
 }

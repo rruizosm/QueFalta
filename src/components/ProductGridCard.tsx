@@ -18,6 +18,8 @@ export default function ProductGridCard({
   offerTag,
   storeLogo,
   onPress,
+  selectionState,
+  accessibilityLabel,
 }: {
   width: number;
   uri: string | null;
@@ -33,14 +35,20 @@ export default function ProductGridCard({
   offerTag?: string | null;
   storeLogo?: number | null;
   onPress: () => void;
+  selectionState?: 'available' | 'selected';
+  accessibilityLabel?: string;
 }) {
   const styles = useThemedStyles(themedStyles);
   const hasStoreLogo = storeLogo != null;
   return (
     <TouchableOpacity
-      style={[styles.card, rounded && styles.cardRounded, { width }]}
+      style={[styles.card, rounded && styles.cardRounded, selectionState === 'selected' && styles.cardSelected, { width }]}
       activeOpacity={0.7}
       onPress={onPress}
+      disabled={selectionState === 'selected'}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={selectionState ? { selected: selectionState === 'selected', disabled: selectionState === 'selected' } : undefined}
     >
       {hasStoreLogo ? (
         <View style={styles.storeLogoBadge} pointerEvents="none">
@@ -75,6 +83,11 @@ export default function ProductGridCard({
           </View>
         ) : null}
       </GlassSurface>
+      {selectionState ? (
+        <View style={styles.selectionBadge} pointerEvents="none">
+          <Ionicons name={selectionState === 'selected' ? 'checkmark' : 'add'} size={19} color={colors.accent} />
+        </View>
+      ) : null}
       <Text style={styles.name} numberOfLines={2}>{name}</Text>
       {priceChange ? (
         <View style={styles.changeRow}>
@@ -95,6 +108,12 @@ export default function ProductGridCard({
 
 const themedStyles = () => StyleSheet.create({
   card: { position: 'relative' },
+  cardSelected: { borderColor: colors.accentMid, backgroundColor: colors.accentLight },
+  selectionBadge: {
+    position: 'absolute', right: 12, top: 12, width: 30, height: 30, borderRadius: 15,
+    alignItems: 'center', justifyContent: 'center', backgroundColor: colors.white,
+    borderWidth: 1, borderColor: colors.accentMid,
+  },
   cardRounded: {
     padding: 8,
     backgroundColor: colors.white,

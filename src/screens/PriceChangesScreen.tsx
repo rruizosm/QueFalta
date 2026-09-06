@@ -10,10 +10,10 @@ import { useTranslation } from '../context/LanguageContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { fetchPriceChanges, type PriceChangesPage } from '../api/catalog';
 import type { UIProduct } from '../lib/productAdapters';
-import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
+import { CATALOG_STORES, CATALOG_STORE_KEYS, storesWithLidlSecond, type CatalogStore } from '../constants/stores';
 import { storeInRegion, storesForRegion } from '../constants/regions';
 import StoreProductList from '../components/StoreProductList';
-import StoreDropdown, { type StoreSelection } from '../components/StoreDropdown';
+import StoreDropdown from '../components/StoreDropdown';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import SlidingSegments from '../components/SlidingSegments';
 import { type ViewMode } from '../components/ViewModeToggle';
@@ -22,6 +22,8 @@ import ProductFilterSheet, {
   type FilterGroup,
   type PriceSort,
 } from '../components/ProductFilterSheet';
+import { catalogStoreRequiresPlus } from '../constants/limits';
+import { useCatalogStore } from '../context/CatalogStoreContext';
 
 type Direction = 'down' | 'up';
 const PRICE_CHANGES_PAGE_SIZE = 50;
@@ -55,7 +57,7 @@ export default function PriceChangesScreen() {
   const navigation = useNavigation<any>();
   const { t } = useTranslation();
   const headerTop = useHeaderTopPadding(52);
-  const { profile } = useProfile();
+  const { profile, isPremium } = useProfile();
 
   // Solo los súpers activados en el perfil (misma regla que el catálogo).
   const region = profile?.region ?? null;
@@ -66,12 +68,16 @@ export default function PriceChangesScreen() {
     const enabledKeys = preferredStores.filter((store) => storeInRegion(store, region));
     return enabledKeys.length > 0 ? enabledKeys : storesForRegion(region);
   }, [preferredStores, region]);
-  const stores = useMemo(
-    () => CATALOG_STORES.filter((s) => allowedStores.includes(s.key)
-      && (s.key !== 'lidl' || lidlStoreId != null)),
+  const storeOptions = useMemo(
+    () => storesWithLidlSecond(CATALOG_STORES.filter((s) => allowedStores.includes(s.key)
+      && (s.key !== 'lidl' || lidlStoreId != null))),
     [allowedStores, lidlStoreId],
   );
-  const [store, setStore] = useState<StoreSelection>(stores[0]?.key ?? 'all');
+  const stores = useMemo(
+    () => storeOptions.filter((option) => !catalogStoreRequiresPlus(option.key, isPremium)),
+    [isPremium, storeOptions],
+  );
+  const { store, setStore } = useCatalogStore();
   const [direction, setDirection] = useState<Direction>('down');
 
   // Filtros locales sobre las páginas cargadas. Las categorías de "Todos" se
@@ -89,9 +95,9 @@ export default function PriceChangesScreen() {
 
   useEffect(() => {
     if (stores.length > 0 && store !== 'all' && !stores.some((s) => s.key === store)) {
-      setStore('all');
+      setStore(stores[0].key);
     }
-  }, [stores, store]);
+  }, [setStore, stores, store]);
 
   useEffect(() => { setCategory([]); }, [store]);
 
@@ -276,8 +282,8 @@ export default function PriceChangesScreen() {
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
         <Text style={styles.title} numberOfLines={1}>{t('priceChanges.title')}</Text>
-        {stores.length > 0 ? (
-          <StoreDropdown stores={stores} value={store} onChange={setStore} includeAll labeled />
+        {storeOptions.length > 0 ? (
+          <StoreDropdown stores={storeOptions} value={store} onChange={setStore} includeAll labeled />
         ) : (
           <View style={{ width: 38 }} />
         )}

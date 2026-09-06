@@ -73,7 +73,7 @@ function resolveScheme(mode: ThemeMode, system: ColorScheme): ColorScheme {
  *  usuario lo fuerce distinto del sistema. En 'system' se limpia el override
  *  (vuelve a seguir al dispositivo). */
 function applyNativeScheme(mode: ThemeMode) {
-  Appearance.setColorScheme(mode === 'system' ? null : mode);
+  Appearance.setColorScheme(mode === 'system' ? 'unspecified' : mode);
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {

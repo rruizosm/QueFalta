@@ -1,5 +1,15 @@
 # Privacidad y seguridad — Estado y runbook
 
+## Mapa Lidl (cliente local, 2026-09-05)
+
+El mapa consulta el código postal introducido a `api.zippopotam.us` para centrar
+la vista. Carga cartografía de `tile.openstreetmap.org` y Leaflet 1.9.4 desde
+`unpkg.com` con integridad SRI. Estos proveedores reciben las peticiones de red
+correspondientes; no se incluyen sesión, id de usuario ni credenciales Supabase.
+No se solicita GPS. El puente WebView admite únicamente IDs del directorio cargado
+y bloquea navegación externa salvo el enlace de atribución OpenStreetMap.
+
+
 > Última actualización: 2026-08-21
 
 Pantalla: `src/screens/PrivacySecurityScreen.tsx` (Perfil → "Privacidad y seguridad").

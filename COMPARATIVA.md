@@ -17,6 +17,21 @@
 > equivalente de producto íntegro. CE-203 ha congelado 1.336 casos ciegos para
 > revisión del propietario, todavía 0/1.336; gold, evaluación y G2 siguen pendientes.
 
+## Lidl en el motor actual (2026-09-05)
+
+- Lidl se incorpora como origen y destino al motor híbrido existente. Es
+  independiente del proyecto CE-1 y no modifica sus umbrales ni sus fases.
+- El snapshot semántico tiene una entrada por producto maestro; los precios
+  y el surtido se resuelven en cada consulta con la tienda Lidl del perfil.
+  Requiere Plus, tienda guardada, producto publicado/disponible y precio válido.
+- Los IDs internos no se consideran EAN. La ausencia de un EAN no impide
+  evaluar candidatos semánticos; tampoco demuestra equivalencia por sí misma.
+- El materializador y el worker admiten 19 catálogos. Los syncs de Lidl encolan
+  altas/cambios semánticos, sujetos al interruptor global del pipeline.
+- La migración y el worker están desplegados. El cambio del cliente y del
+  workflow permanece local hasta su publicación. Operación en
+  [scripts/README-lidl-sync.md](scripts/README-lidl-sync.md).
+
 ## Presentación de resultados actual (2026-08-22)
 
 - La búsqueda bajo demanda muestra únicamente los supermercados con matches,

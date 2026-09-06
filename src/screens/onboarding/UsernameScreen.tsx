@@ -84,12 +84,12 @@ export default function UsernameScreen() {
     state,
     validatedUsername,
     rawUsername,
-    !!regionSelection.region,
+    !!regionSelection.postalCode,
   );
 
   const handleContinue = async () => {
     const raw = username.trim().toLowerCase();
-    if (!canContinue || !regionSelection.region) return;
+    if (!canContinue || !regionSelection.region || !regionSelection.postalCode) return;
     setSaving(true);
     try {
       await updateProfile(userId, {
@@ -164,6 +164,8 @@ export default function UsernameScreen() {
           helperText={t('onboarding.postalCodeReason')}
           inverse
           inlineDetected
+          allowAll={false}
+          showLidlStorePicker={false}
         />
 
         <TouchableOpacity

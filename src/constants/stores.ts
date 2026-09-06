@@ -30,6 +30,16 @@ export const CATALOG_STORES: { key: CatalogStore; name: string; icon: number | n
   { key: 'ahorramas', name: 'Ahorramás',     icon: require('../../assets/stores/ahorramas.jpg') },
 ];
 
+/** Orden visual para selectores: conserva Mercadona primero y sitúa Lidl justo después. */
+export function storesWithLidlSecond<T extends { key: CatalogStore }>(stores: readonly T[]): T[] {
+  const lidl = stores.find((store) => store.key === 'lidl');
+  if (!lidl || !stores.some((store) => store.key === 'mercadona')) return [...stores];
+  return stores.flatMap((store) => {
+    if (store.key === 'lidl') return [];
+    return store.key === 'mercadona' ? [store, lidl] : [store];
+  });
+}
+
 /** Orden canónico de las claves (para normalizar/ordenar selecciones). */
 export const CATALOG_STORE_KEYS: CatalogStore[] = CATALOG_STORES.map((s) => s.key);
 

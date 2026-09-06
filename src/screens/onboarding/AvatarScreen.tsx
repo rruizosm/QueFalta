@@ -24,7 +24,7 @@ import { useProfile } from '../../context/ProfileContext';
 import { useToast } from '../../context/ToastContext';
 import { useTranslation } from '../../context/LanguageContext';
 import { updateProfile, uploadAvatar } from '../../api/profile';
-import OnboardingSlats from './OnboardingSlats';
+import AmbientBubbleBackdrop from '../../components/AmbientBubbleBackdrop';
 
 const SELFIE_MASCOT = require('../../../assets/mascot/berenjena-selfie.png');
 const APP_BLUE = colors.blue;
@@ -111,8 +111,7 @@ export default function AvatarScreen() {
   return (
     <View style={styles.screen}>
       <StatusBar barStyle="light-content" backgroundColor={APP_BLUE} />
-
-      <OnboardingSlats />
+      <AmbientBubbleBackdrop showGradient={false} onBlue />
 
       <TouchableOpacity
         onPress={() => navigation.navigate('Stores')}
@@ -235,7 +234,6 @@ export default function AvatarScreen() {
         ) : null}
       </View>
 
-      <View style={styles.bottomRail} pointerEvents="none" />
     </View>
   );
 }
@@ -365,14 +363,5 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     fontFamily: fonts.semibold,
     color: 'rgba(255,255,255,0.9)',
-  },
-  bottomRail: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 4,
-    height: 14,
-    backgroundColor: '#255b9c',
   },
 });

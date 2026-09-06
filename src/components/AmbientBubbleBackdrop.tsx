@@ -21,8 +21,10 @@ const BUBBLES = [
  */
 const AmbientBubbleBackdrop = memo(function AmbientBubbleBackdrop({
   showGradient = true,
+  onBlue = false,
 }: {
   showGradient?: boolean;
+  onBlue?: boolean;
 }) {
   const styles = useThemedStyles(themedStyles);
 
@@ -42,15 +44,15 @@ const AmbientBubbleBackdrop = memo(function AmbientBubbleBackdrop({
           style={StyleSheet.absoluteFill}
         />
       )}
-      <View style={styles.halo} />
-      <View style={styles.ring} />
-      <View style={styles.lowerWash} />
+      <View style={[styles.halo, onBlue && styles.haloOnBlue]} />
+      <View style={[styles.ring, onBlue && styles.ringOnBlue]} />
+      <View style={[styles.lowerWash, onBlue && styles.lowerWashOnBlue]} />
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
         <Defs>
           <RadialGradient id="ambient-bubble" cx="38%" cy="34%" rx="62%" ry="62%">
-            <Stop offset="0" stopColor={colors.accent} stopOpacity={0.2} />
-            <Stop offset="0.5" stopColor={colors.accent} stopOpacity={0.1} />
-            <Stop offset="1" stopColor={colors.accent} stopOpacity={0} />
+            <Stop offset="0" stopColor={onBlue ? '#ffffff' : colors.accent} stopOpacity={onBlue ? 0.14 : 0.2} />
+            <Stop offset="0.5" stopColor={onBlue ? '#ffffff' : colors.accent} stopOpacity={onBlue ? 0.06 : 0.1} />
+            <Stop offset="1" stopColor={onBlue ? '#ffffff' : colors.accent} stopOpacity={0} />
           </RadialGradient>
         </Defs>
         {BUBBLES.map(([cx, cy, radius], index) => (
@@ -63,7 +65,7 @@ const AmbientBubbleBackdrop = memo(function AmbientBubbleBackdrop({
 
 const themedStyles = () => StyleSheet.create({
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     overflow: 'hidden',
   },
   halo: {
@@ -72,6 +74,7 @@ const themedStyles = () => StyleSheet.create({
     top: -190, left: -100,
     backgroundColor: colors.accentLight,
   },
+  haloOnBlue: { backgroundColor: 'rgba(255,255,255,0.08)' },
   ring: {
     position: 'absolute',
     width: 270, height: 270, borderRadius: 135,
@@ -79,6 +82,7 @@ const themedStyles = () => StyleSheet.create({
     borderWidth: 1.5, borderColor: colors.accentMid,
     opacity: 0.42,
   },
+  ringOnBlue: { borderColor: 'rgba(255,255,255,0.18)', opacity: 1 },
   lowerWash: {
     position: 'absolute',
     width: 340, height: 340, borderRadius: 170,
@@ -86,6 +90,7 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.accentLight,
     opacity: 0.38,
   },
+  lowerWashOnBlue: { backgroundColor: 'rgba(255,255,255,0.07)', opacity: 1 },
 });
 
 export default AmbientBubbleBackdrop;

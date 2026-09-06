@@ -1,8 +1,8 @@
 /**
  * RegionPicker — selector de zona por CÓDIGO POSTAL: input de 5 dígitos que
  * deriva y confirma la comunidad autónoma (provincia = 2 primeros dígitos,
- * regionFromPostalCode), más la opción "Toda España" (sentinel 'ES', sin CP)
- * para quien no quiere darlo. Lo comparten el primer paso de onboarding
+ * regionFromPostalCode), más una opción configurable "Toda España" (sentinel
+ * 'ES', sin CP). Lo comparten el primer paso de onboarding
  * (UsernameScreen), el gate de usuarios existentes (RegionGateScreen) y
  * Ajustes (RegionSettingsScreen). Ver COMUNIDAD-AUTONOMA.md.
  *
@@ -28,7 +28,6 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { REGION_ALL, regionFromPostalCode, type RegionValue } from '../constants/regions';
 import { useReducedMotion } from '../hooks/useReducedMotion';
-import LidlStorePicker from './LidlStorePicker';
 
 export interface RegionSelection {
   region: RegionValue | null;
@@ -50,6 +49,10 @@ interface Props {
   inverse?: boolean;
   /** En onboarding, revela la comunidad a la derecha y reparte la fila al 50 %. */
   inlineDetected?: boolean;
+  /** Permite continuar sin CP eligiendo "Toda España". */
+  allowAll?: boolean;
+  /** Muestra el mapa nacional Lidl, centrado inicialmente en el CP. */
+  showLidlStorePicker?: boolean;
 }
 
 export default function RegionPicker({
@@ -61,6 +64,7 @@ export default function RegionPicker({
   helperText,
   inverse = false,
   inlineDetected = false,
+  allowAll = true,
 }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
@@ -105,10 +109,10 @@ export default function RegionPicker({
     const next = regionFromPostalCode(digits);
     if (next) {
       Haptics.selectionAsync();
-      onChange({ region: next, postalCode: digits, lidlStoreId: null });
+      onChange({ region: next, postalCode: digits, lidlStoreId });
     } else {
       // Incompleto o inválido: deselecciona (también anula un "Toda España" previo).
-      onChange({ region: null, postalCode: null, lidlStoreId: null });
+      onChange({ region: null, postalCode: null, lidlStoreId });
     }
   };
 
@@ -116,7 +120,7 @@ export default function RegionPicker({
     if (allOn) return;
     Haptics.selectionAsync();
     setCp('');
-    onChange({ region: REGION_ALL, postalCode: null, lidlStoreId: null });
+    onChange({ region: REGION_ALL, postalCode: null, lidlStoreId });
   };
 
   const postalCodeCard = (
@@ -219,43 +223,35 @@ export default function RegionPicker({
       {/* Comunidad derivada (confirmación) */}
       {!inlineDetected ? detectedCard : null}
 
-      {cpRegion && cp.length === 5 ? (
-        <LidlStorePicker
-          postalCode={cp}
-          selectedStoreId={lidlStoreId}
-          onSelect={(storeId) => onChange({
-            region: cpRegion,
-            postalCode: cp,
-            lidlStoreId: storeId,
-          })}
-          inverse={inverse}
-        />
-      ) : null}
 
-      {/* Escape: sin CP → toda España (sin filtro) */}
-      <Text style={[styles.orAll, inverse && styles.inverseText]}>{t('region.orAll')}</Text>
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={selectAll}
-        accessibilityRole="button"
-        accessibilityLabel={t('region.all')}
-        accessibilityState={{ selected: allOn }}
-        style={[
-          styles.card,
-          inverse && styles.surfaceInverse,
-          allOn && (inverse ? styles.surfaceOnInverse : styles.cardOn),
-        ]}
-      >
-        <View style={[styles.iconWrap, inverse && styles.iconWrapInverse]}>
-          <Ionicons name="earth-outline" size={18} color={allOn ? activeColor : colors.inkSoft} />
-        </View>
-        <Text style={[styles.cardName, inverse && styles.cardNameInverse]} numberOfLines={1}>{t('region.all')}</Text>
-        <Ionicons
-          name={allOn ? 'checkmark-circle' : 'ellipse-outline'}
-          size={22}
-          color={allOn ? activeColor : colors.inkFaint}
-        />
-      </TouchableOpacity>
+      {allowAll ? (
+        <>
+          {/* Escape: sin CP → toda España (sin filtro) */}
+          <Text style={[styles.orAll, inverse && styles.inverseText]}>{t('region.orAll')}</Text>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={selectAll}
+            accessibilityRole="button"
+            accessibilityLabel={t('region.all')}
+            accessibilityState={{ selected: allOn }}
+            style={[
+              styles.card,
+              inverse && styles.surfaceInverse,
+              allOn && (inverse ? styles.surfaceOnInverse : styles.cardOn),
+            ]}
+          >
+            <View style={[styles.iconWrap, inverse && styles.iconWrapInverse]}>
+              <Ionicons name="earth-outline" size={18} color={allOn ? activeColor : colors.inkSoft} />
+            </View>
+            <Text style={[styles.cardName, inverse && styles.cardNameInverse]} numberOfLines={1}>{t('region.all')}</Text>
+            <Ionicons
+              name={allOn ? 'checkmark-circle' : 'ellipse-outline'}
+              size={22}
+              color={allOn ? activeColor : colors.inkFaint}
+            />
+          </TouchableOpacity>
+        </>
+      ) : null}
     </View>
   );
 }

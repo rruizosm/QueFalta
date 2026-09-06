@@ -46,7 +46,7 @@
     + Metro en caliente, como en Android. El preview basta si se prefiere solo-updates.
 - Hace falta un **iPhone con iOS 26** (sin Mac no hay simulador). En iOS ≤ 18 se ve el
   fallback.
-- SDK 54 en EAS ya compila con Xcode 26 → no hay que tocar nada de imágenes de build.
+- SDK 57 requiere Xcode 26.4 o posterior; las imágenes actuales de EAS lo soportan.
 
 ---
 

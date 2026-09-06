@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View, Text, Image, Modal, Pressable, TouchableOpacity, FlatList, StyleSheet,
 } from 'react-native';
@@ -8,8 +8,11 @@ import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
+import { useProfile } from '../context/ProfileContext';
 import type { CatalogStore } from '../constants/stores';
+import { allStoresRequiresPlus, catalogStoreRequiresPlus } from '../constants/limits';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import PaywallModal from './PaywallModal';
 
 interface StoreOption { key: CatalogStore; name: string; icon: number | null }
 export type StoreSelection = CatalogStore | 'all';
@@ -44,10 +47,12 @@ export default function StoreDropdown<T extends StoreSelection>({
   const styles = useThemedStyles(themedStyles);
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { isPremium, loading: profileLoading } = useProfile();
   const reducedMotion = useReducedMotion();
   const [internalOpen, setInternalOpen] = useState(false);
+  const [paywallVisible, setPaywallVisible] = useState(false);
   const open = controlledOpen ?? internalOpen;
-  const allLabel = t('common.all');
+  const allLabel = t('storePicker.allStores');
   const active = value === 'all' && includeAll
     ? { key: 'all' as const, name: allLabel, icon: null }
     : stores.find((s) => s.key === value) ?? stores[0];
@@ -55,6 +60,21 @@ export default function StoreDropdown<T extends StoreSelection>({
     if (controlledOpen == null) setInternalOpen(nextOpen);
     onOpenChange?.(nextOpen);
   };
+
+  const lidlLocked = !profileLoading && catalogStoreRequiresPlus('lidl', isPremium);
+  const allLocked = allStoresRequiresPlus(isPremium);
+
+  // Si Plus vence, no se conserva una selección protegida en pantalla.
+  useEffect(() => {
+    const protectedSelection = (value === 'all' && includeAll && allLocked)
+      || (value === 'lidl' && lidlLocked);
+    if (!protectedSelection) return;
+    const fallback = stores.find((item) => !catalogStoreRequiresPlus(item.key, isPremium));
+    if (fallback) {
+      onChange(fallback.key as T);
+      return;
+    }
+  }, [allLocked, includeAll, isPremium, lidlLocked, onChange, stores, value]);
 
   const gridStores: (StoreOption | null)[] = stores.length % 2 === 0
     ? stores
@@ -73,24 +93,36 @@ export default function StoreDropdown<T extends StoreSelection>({
     }
 
     const on = item.key === value;
+    const locked = item.key === 'lidl' && lidlLocked;
     return (
       <Pressable
         style={({ pressed }) => [
           styles.card,
-          on && styles.cardActive,
+          locked ? styles.cardLocked : on && styles.cardActive,
           pressed && styles.cardPressed,
         ]}
-        onPress={() => { onChange(item.key as T); setMenuOpen(false); }}
+        onPress={() => {
+          setMenuOpen(false);
+          if (locked) {
+            setPaywallVisible(true);
+            return;
+          }
+          onChange(item.key as T);
+        }}
         accessibilityRole="button"
-        accessibilityLabel={item.name}
+        accessibilityLabel={locked ? `${item.name}. ${t('storePicker.plusOnly')}` : item.name}
         accessibilityState={{ selected: on }}
       >
-        {on && (
+        {locked ? (
+          <View style={styles.cardLock}>
+            <Ionicons name="lock-closed" size={14} color={colors.inkSoft} />
+          </View>
+        ) : on && (
           <View style={styles.cardCheck}>
             <Ionicons name="checkmark" size={14} color={colors.white} />
           </View>
         )}
-        <View style={styles.cardLogoWrap}>
+        <View style={[styles.cardLogoWrap, item.key === 'lidl' && styles.lidlLogoWrap]}>
           {item.icon ? (
             <Image source={item.icon} style={styles.cardLogo} resizeMode="cover" />
           ) : (
@@ -108,18 +140,27 @@ export default function StoreDropdown<T extends StoreSelection>({
     <Pressable
       style={({ pressed }) => [
         styles.allCard,
-        styles.allCardUnlocked,
-        value === 'all' && styles.allCardUnlockedSelected,
+        allLocked ? styles.allCardLocked : styles.allCardUnlocked,
+        !allLocked && value === 'all' && styles.allCardUnlockedSelected,
         pressed && styles.cardPressed,
       ]}
       onPress={() => {
-        onChange('all' as T);
         setMenuOpen(false);
+        if (allLocked) {
+          setPaywallVisible(true);
+          return;
+        }
+        onChange('all' as T);
       }}
       accessibilityRole="button"
-      accessibilityState={{ selected: value === 'all' }}
+      accessibilityLabel={allLocked ? `${allLabel}. ${t('storePicker.plusOnly')}` : allLabel}
+      accessibilityState={{ selected: !allLocked && value === 'all' }}
     >
-      {value === 'all' && (
+      {allLocked ? (
+        <View style={styles.cardLock}>
+          <Ionicons name="lock-closed" size={14} color={colors.inkSoft} />
+        </View>
+      ) : value === 'all' && (
         <View style={styles.cardCheck}>
           <Ionicons name="checkmark" size={14} color={colors.white} />
         </View>
@@ -155,7 +196,11 @@ export default function StoreDropdown<T extends StoreSelection>({
           accessibilityHint={t('storePicker.title')}
           accessibilityState={{ expanded: open }}
         >
-          <View style={[styles.chipLogoWrap, labeled && styles.chipLogoLabeled]}>
+          <View style={[
+            styles.chipLogoWrap,
+            labeled && styles.chipLogoLabeled,
+            active?.key === 'lidl' && styles.lidlLogoWrap,
+          ]}>
             {active?.icon ? (
               <Image source={active.icon} style={styles.chipLogo} resizeMode="cover" />
             ) : (
@@ -205,6 +250,7 @@ export default function StoreDropdown<T extends StoreSelection>({
           </View>
         </Modal>
       )}
+      <PaywallModal visible={paywallVisible} onClose={() => setPaywallVisible(false)} />
     </>
   );
 }
@@ -303,7 +349,14 @@ const themedStyles = () => StyleSheet.create({
   },
   cardPlaceholder: { flex: 1, aspectRatio: 1 },
   cardActive: { borderColor: colors.accent, backgroundColor: colors.accentLight },
+  cardLocked: { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
   cardPressed: { transform: [{ scale: 0.96 }], opacity: 0.9 },
+  cardLock: {
+    position: 'absolute', top: 8, right: 8,
+    width: 22, height: 22, borderRadius: 11,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.paper,
+  },
   cardCheck: {
     position: 'absolute', top: 8, right: 8,
     width: 22, height: 22, borderRadius: 11,
@@ -315,6 +368,7 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.white,
   },
+  lidlLogoWrap: { borderRadius: 0, overflow: 'visible' },
   cardLogo: { width: '100%', height: '100%' },
   cardName: {
     fontSize: 14, fontFamily: fonts.semibold, color: colors.ink,

@@ -112,3 +112,25 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
           LIDL_FLEET_STORE_IDS: ${{ inputs.store_ids }}
+
+  comparator:
+    # Cada tienda publica solo después de validar su sync. Los fallos de otras
+    # tiendas (p. ej. fuente vacía) no bloquean las altas válidas ya publicadas.
+    if: always() && needs.schedule.result == 'success' && (needs.sync.result == 'success' || needs.sync.result == 'failure')
+    needs: [schedule, sync]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: materialize-lidl-comparator
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Actualizar capa del comparador tras terminar los workers
+        run: node scripts/sync-comparator-embedding-catalog.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          STORES: lidl

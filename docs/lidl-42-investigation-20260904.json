@@ -1,0 +1,1172 @@
+{
+  "checkedAt": "2026-09-04T21:36:16.763Z",
+  "results": [
+    {
+      "id": "ES0367",
+      "directory_object_number": "ES00367",
+      "name": "Alfaz del Pí",
+      "zone": "PEN",
+      "city": "Alfaz del Pí",
+      "offer_region": "38",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1261,
+          "roots": 7
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 12006,
+          "total": 138,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0951",
+      "directory_object_number": "ES00951",
+      "name": "CAN-TF-Puerto de la Cruz",
+      "zone": "CAN",
+      "city": "Puerto de la Cruz (Tenerife)",
+      "offer_region": "49",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0952",
+      "directory_object_number": "ES00952",
+      "name": "CAN-TF-Granadilla",
+      "zone": "CAN",
+      "city": "Granadilla de Abona (Tenerife)",
+      "offer_region": "49",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0953",
+      "directory_object_number": "ES00953",
+      "name": "CAN-GC-Agüimes",
+      "zone": "CAN",
+      "city": "Agüimes",
+      "offer_region": "55",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0954",
+      "directory_object_number": "ES00954",
+      "name": "CAN-TF-La Laguna",
+      "zone": "CAN",
+      "city": "San Cristóbal de La Laguna",
+      "offer_region": "49",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0955",
+      "directory_object_number": "ES00955",
+      "name": "CAN-TF-Adeje",
+      "zone": "CAN",
+      "city": "Adeje",
+      "offer_region": "49",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0956",
+      "directory_object_number": "ES00956",
+      "name": "CAN-TF-Las Chafiras",
+      "zone": "CAN",
+      "city": "San Miguel de Abona (Tenerife)",
+      "offer_region": "49",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0958",
+      "directory_object_number": "ES00958",
+      "name": "CAN-GC-Ingenio",
+      "zone": "CAN",
+      "city": "Ingenio (Gran Canaria)",
+      "offer_region": "55",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0959",
+      "directory_object_number": "ES00959",
+      "name": "CAN-FT-Puerto del Rosario",
+      "zone": "CAN",
+      "city": "Puerto del Rosario (Fuerteventura)",
+      "offer_region": "53",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0961",
+      "directory_object_number": "ES00961",
+      "name": "CAN-LZ-Arrecife",
+      "zone": "CAN",
+      "city": "Arrecife (Lanzarote)",
+      "offer_region": "54",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0962",
+      "directory_object_number": "ES00962",
+      "name": "CAN-GC-Telde",
+      "zone": "CAN",
+      "city": "Telde",
+      "offer_region": "55",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0963",
+      "directory_object_number": "ES00963",
+      "name": "CAN-LP-Santa Cruz",
+      "zone": "CAN",
+      "city": "Breña Alta",
+      "offer_region": "50",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0964",
+      "directory_object_number": "ES00964",
+      "name": "CAN-GC-Santa Lucía de Tirajana-Vecindario",
+      "zone": "CAN",
+      "city": "Santa Lucía de Tirajana",
+      "offer_region": "55",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0966",
+      "directory_object_number": "ES00966",
+      "name": "CAN-TF-El Toscal",
+      "zone": "CAN",
+      "city": "Los Realejos (Tenerife)",
+      "offer_region": "49",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0967",
+      "directory_object_number": "ES00967",
+      "name": "CAN-TF-Santa Cruz-Añaza",
+      "zone": "CAN",
+      "city": "Santa Cruz de Tenerife",
+      "offer_region": "49",
+      "status": "temp_closed",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0969",
+      "directory_object_number": "ES00969",
+      "name": "CAN-TF-Los Realejos",
+      "zone": "CAN",
+      "city": "Los Realejos",
+      "offer_region": "49",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0973",
+      "directory_object_number": "ES00973",
+      "name": "CAN-TF-Los Gigantes",
+      "zone": "CAN",
+      "city": "Santiago del Teide (Tenerife)",
+      "offer_region": "49",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0976",
+      "directory_object_number": "ES00976",
+      "name": "CAN-GC-Gáldar",
+      "zone": "CAN",
+      "city": "Gáldar",
+      "offer_region": "55",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0977",
+      "directory_object_number": "ES00977",
+      "name": "CAN-GC-Maspalomas",
+      "zone": "CAN",
+      "city": "San Bartolomé de Tirajana",
+      "offer_region": "55",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0978",
+      "directory_object_number": "ES00978",
+      "name": "CAN-GC-LP-Juan Carlos I",
+      "zone": "CAN",
+      "city": "Las Palmas de Gran Canaria (Gran Canaria)",
+      "offer_region": "55",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0982",
+      "directory_object_number": "ES00982",
+      "name": "CAN-LP-Los Llanos de Aridane",
+      "zone": "CAN",
+      "city": "Los Llanos de Aridane (La Palma)",
+      "offer_region": "50",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0984",
+      "directory_object_number": "ES00984",
+      "name": "CAN-TF-Valle de Güímar",
+      "zone": "CAN",
+      "city": "Arafo",
+      "offer_region": "49",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0985",
+      "directory_object_number": "ES00985",
+      "name": "CAN-LZ-Puerto del Carmen",
+      "zone": "CAN",
+      "city": "Tías (Lanzarote)",
+      "offer_region": "54",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0986",
+      "directory_object_number": "ES00986",
+      "name": "CAN-GC-LP-Tamaraceite",
+      "zone": "CAN",
+      "city": "Las Palmas de Gran Canaria (Gran Canaria)",
+      "offer_region": "55",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0987",
+      "directory_object_number": "ES00987",
+      "name": "CAN-TF-La Laguna-La Cuesta",
+      "zone": "CAN",
+      "city": "San Cristóbal de La Laguna (Tenerife)",
+      "offer_region": "49",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0988",
+      "directory_object_number": "ES00988",
+      "name": "CAN-TF-Santa Úrsula-Avda. Las Palmeras",
+      "zone": "CAN",
+      "city": "Santa Úrsula (Tenerife)",
+      "offer_region": "49",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0989",
+      "directory_object_number": "ES00989",
+      "name": "CAN-TF-Santa Cruz-Tres de Mayo",
+      "zone": "CAN",
+      "city": "Santa Cruz de Tenerife (Tenerife)",
+      "offer_region": "49",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0990",
+      "directory_object_number": "ES00990",
+      "name": "CAN-GC-LP-Miller",
+      "zone": "CAN",
+      "city": "Las Palmas de Gran Canaria",
+      "offer_region": "55",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0993",
+      "directory_object_number": "ES00993",
+      "name": "CAN-LZ-Playa Honda",
+      "zone": "CAN",
+      "city": "San Bartolomé (Lanzarote)",
+      "offer_region": "54",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0994",
+      "directory_object_number": "ES00994",
+      "name": "CAN-GC-Telde-Cruce de Melenara",
+      "zone": "CAN",
+      "city": "Telde (Gran Canaria)",
+      "offer_region": "55",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0996",
+      "directory_object_number": "ES00996",
+      "name": "CAN-FT-Antigua-El Castillo",
+      "zone": "CAN",
+      "city": "Antigua",
+      "offer_region": "53",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES0999",
+      "directory_object_number": "ES00999",
+      "name": "CAN-TF-Tacoronte-El Torreón",
+      "zone": "CAN",
+      "city": "Tacoronte (Tenerife)",
+      "offer_region": "49",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES3572",
+      "directory_object_number": "ES03572",
+      "name": "Sant Joan d'Alacant-Benimagrell",
+      "zone": "PEN",
+      "city": "Sant Joan d'Alacant",
+      "offer_region": "38",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1261,
+          "roots": 7
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 12004,
+          "total": 138,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES5016",
+      "directory_object_number": "ES05016",
+      "name": "Pinto-Tenería (FD)-Non Food Restanten",
+      "zone": "PEN",
+      "city": "Pinto",
+      "offer_region": "28",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 204,
+          "bytes": 0
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES5026",
+      "directory_object_number": "ES05026",
+      "name": "Mad-PAU Vallecas (FD)-Non Food Restanten",
+      "zone": "PEN",
+      "city": "Madrid",
+      "offer_region": "28",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 204,
+          "bytes": 0
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES5093",
+      "directory_object_number": "ES05093",
+      "name": "Alcalá de Henares-(FD)-Non Food Restanten",
+      "zone": "PEN",
+      "city": "Alcalá de Henares",
+      "offer_region": "28",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 204,
+          "bytes": 0
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES9100",
+      "directory_object_number": "ES09100",
+      "name": "CAN-FT-Corralejo-El Guirre",
+      "zone": "CAN",
+      "city": "La Oliva (Fuerteventura)",
+      "offer_region": "53",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES9101",
+      "directory_object_number": "ES09101",
+      "name": "CAN-LZ-Yaiza-Playa Blanca",
+      "zone": "CAN",
+      "city": "Yaiza (Lanzarote)",
+      "offer_region": "54",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES9102",
+      "directory_object_number": "ES09102",
+      "name": "CAN-TF-Icod de los Vinos-Buen Paso",
+      "zone": "CAN",
+      "city": "Icod de los Vinos (Tenerife)",
+      "offer_region": "49",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES9103",
+      "directory_object_number": "ES09103",
+      "name": "CAN-GC-Telde-Arnao",
+      "zone": "CAN",
+      "city": "Telde",
+      "offer_region": "55",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES9104",
+      "directory_object_number": "ES09104",
+      "name": "CAN-TF-Adeje-Barranco del Inglés",
+      "zone": "CAN",
+      "city": "Adeje",
+      "offer_region": "49",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES9105",
+      "directory_object_number": "ES09105",
+      "name": "CAN-TF-Santa Cruz-El Chorrillo",
+      "zone": "CAN",
+      "city": "Santa Cruz de Tenerife",
+      "offer_region": "49",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES9106",
+      "directory_object_number": "ES09106",
+      "name": "CAN-LZ-Arrecife-Argana",
+      "zone": "CAN",
+      "city": "Arrecife",
+      "offer_region": "54",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES9110",
+      "directory_object_number": "ES09110",
+      "name": "CAN-TF-Granadilla de Abona-El Médano",
+      "zone": "CAN",
+      "city": "Granadilla de Abona",
+      "offer_region": "49",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ES9114",
+      "directory_object_number": "ES09114",
+      "name": "CAN-LZ-Costa Teguise",
+      "zone": "CAN",
+      "city": "Teguise",
+      "offer_region": "54",
+      "status": "open",
+      "probes": [
+        {
+          "path": "/categories",
+          "status": 200,
+          "bytes": 1437,
+          "roots": 8
+        },
+        {
+          "path": "/categories/10/products?skip=0&limit=20",
+          "status": 200,
+          "bytes": 123,
+          "total": 0,
+          "config": {
+            "shoppingListHiddenWithGroceryPickup": true
+          }
+        }
+      ]
+    }
+  ]
+}

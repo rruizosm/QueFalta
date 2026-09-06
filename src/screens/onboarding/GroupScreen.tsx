@@ -26,7 +26,7 @@ import { useToast } from '../../context/ToastContext';
 import { useTranslation } from '../../context/LanguageContext';
 import { createGroup, createGroupRequestKey } from '../../api/groups';
 import { completeOnboarding } from '../../api/profile';
-import OnboardingSlats from './OnboardingSlats';
+import AmbientBubbleBackdrop from '../../components/AmbientBubbleBackdrop';
 
 const GROUP_MASCOT = require('../../../assets/mascot/berenjena-grupo.png');
 const APP_BLUE = colors.blue;
@@ -111,8 +111,7 @@ export default function GroupScreen() {
   return (
     <View style={styles.screen}>
       <StatusBar barStyle="light-content" backgroundColor={APP_BLUE} />
-
-      <OnboardingSlats />
+      <AmbientBubbleBackdrop showGradient={false} onBlue />
 
       <TouchableOpacity
         onPress={() => navigation.navigate('Friends')}
@@ -227,7 +226,6 @@ export default function GroupScreen() {
         </View>
       </KeyboardAvoidingView>
 
-      <View style={styles.bottomRail} pointerEvents="none" />
     </View>
   );
 }
@@ -392,14 +390,5 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.9)',
     fontSize: 13.5,
     fontFamily: fonts.semibold,
-  },
-  bottomRail: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 4,
-    height: 14,
-    backgroundColor: '#255b9c',
   },
 });

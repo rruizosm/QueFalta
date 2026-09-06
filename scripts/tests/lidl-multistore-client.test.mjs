@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const source = async (relative) => readFile(new URL(`../../${relative}`, import.meta.url), 'utf8');
+
 const [catalog, profile, storeApi, storePicker, regionPicker, catalogScreen, offers, arrivals, changes] = await Promise.all([
   source('src/api/catalog.ts'),
   source('src/api/profile.ts'),
@@ -18,9 +19,13 @@ const [catalog, profile, storeApi, storePicker, regionPicker, catalogScreen, off
 test('perfil y selector conservan una confirmación de tienda distinta del CP', () => {
   assert.match(profile, /lidlStoreId: string \| null/);
   assert.match(profile, /lidl_store_id/);
-  assert.match(regionPicker, /<LidlStorePicker/);
-  assert.match(regionPicker, /onChange\(\{[\s\S]*lidlStoreId: storeId/);
-  assert.match(regionPicker, /postalCode: digits, lidlStoreId: null/);
+  assert.doesNotMatch(regionPicker, /<LidlStorePicker/);
+  assert.match(catalogScreen, /<LidlStorePicker/);
+  assert.match(catalogScreen, /required=\{!lidlStoreId\}/);
+  assert.match(regionPicker, /postalCode: digits, lidlStoreId \}/);
+  assert.match(storePicker, /fetchLidlStores\(\)/);
+  assert.match(storeApi, /from\('lidl_stores'\)[\s\S]*eq\('selectable', true\)/);
+  assert.match(storePicker, /lidlStoreSearch/);
 });
 
 test('el CP sigue funcionando durante el despliegue escalonado del esquema Lidl', () => {

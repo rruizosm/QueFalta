@@ -11,11 +11,6 @@ export interface LidlStoreCandidate {
   longitude: number;
   offerRegion: string | null;
   zone: string;
-  distanceKm: number | null;
-  matchKind: 'exact' | 'nearby';
-  rank: number;
-  isDefault: boolean;
-  catalogSyncedAt: string | null;
 }
 
 export class LidlStoreDirectoryUnavailableError extends Error {
@@ -37,18 +32,25 @@ function isDirectorySchemaMissing(error: unknown): boolean {
     && (message.includes('find_lidl_stores') || message.includes('lidl_stores'));
 }
 
-export async function fetchLidlStoreCandidates(
-  postalCode: string,
-  limit = 3,
-): Promise<LidlStoreCandidate[]> {
-  if (!/^\d{5}$/.test(postalCode)) return [];
-  const { data, error } = await supabase.rpc('find_lidl_stores', {
-    p_postal_code: postalCode,
-    p_limit: limit,
-  });
-  if (isDirectorySchemaMissing(error)) throw new LidlStoreDirectoryUnavailableError();
-  if (error) throw error;
-  return (data ?? []).map((row: any) => ({
+export async function fetchLidlStores(): Promise<LidlStoreCandidate[]> {
+  const pageSize = 1000;
+  const rows: any[] = [];
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await supabase
+      .from('lidl_stores')
+      .select('id, name, street, street_number, postal_code, city, latitude, longitude, offer_region, zone')
+      .eq('published', true)
+      .eq('selectable', true)
+      .order('city')
+      .order('name')
+      .order('id')
+      .range(from, from + pageSize - 1);
+    if (isDirectorySchemaMissing(error)) throw new LidlStoreDirectoryUnavailableError();
+    if (error) throw error;
+    rows.push(...(data ?? []));
+    if ((data?.length ?? 0) < pageSize) break;
+  }
+  return rows.map((row: any) => ({
     id: String(row.id),
     name: String(row.name),
     street: row.street ?? null,
@@ -59,10 +61,5 @@ export async function fetchLidlStoreCandidates(
     longitude: Number(row.longitude),
     offerRegion: row.offer_region ?? null,
     zone: String(row.zone),
-    distanceKm: row.distance_km == null ? null : Number(row.distance_km),
-    matchKind: row.match_kind === 'nearby' ? 'nearby' : 'exact',
-    rank: Number(row.candidate_rank),
-    isDefault: row.is_default === true,
-    catalogSyncedAt: row.catalog_synced_at ?? null,
   }));
 }

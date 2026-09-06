@@ -32,6 +32,16 @@ Set-Location $repo
 $ErrorActionPreference = 'Continue'
 & node scripts/sync-lidl.mjs *>&1 | Tee-Object -FilePath $log -Append
 $code = $LASTEXITCODE
+if ($code -eq 0 -and $env:DRY_RUN -ne '1') {
+  $previousStores = $env:STORES
+  try {
+    $env:STORES = 'lidl'
+    & node scripts/sync-comparator-embedding-catalog.mjs *>&1 | Tee-Object -FilePath $log -Append
+    $code = $LASTEXITCODE
+  } finally {
+    $env:STORES = $previousStores
+  }
+}
 $ErrorActionPreference = 'Stop'
 "=== fin (exit $code) $(Get-Date -Format 'u') ===" | Tee-Object -FilePath $log -Append
 

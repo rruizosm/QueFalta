@@ -52,8 +52,15 @@ const STORE_TIMEOUT_MINUTES = integerEnv('LIDL_FLEET_STORE_TIMEOUT_MINUTES', 35,
 const MAX_ATTEMPTS = integerEnv('LIDL_FLEET_MAX_ATTEMPTS', 3, 1, 10);
 const SHOULD_SCHEDULE = args.size === 0 || args.has('--schedule-only');
 const SHOULD_WORK = args.size === 0 || args.has('--work-only') || args.has('--recover-only');
-const STORE_IDS = process.env.LIDL_FLEET_STORE_IDS?.split(',').map((id) => id.trim()).filter(Boolean) || null;
-if (STORE_IDS && (!STORE_IDS.length || STORE_IDS.some((id) => !/^ES\d+$/.test(id)))) throw new Error('LIDL_FLEET_STORE_IDS inválido');
+
+function parseStoreIds(raw) {
+  if (raw == null || raw.trim() === '') return null;
+  const ids = raw.split(',').map((id) => id.trim());
+  if (ids.some((id) => !/^ES\d+$/.test(id))) throw new Error('LIDL_FLEET_STORE_IDS inválido');
+  return [...new Set(ids)];
+}
+
+const STORE_IDS = parseStoreIds(process.env.LIDL_FLEET_STORE_IDS);
 if (SHOULD_SCHEDULE && STORE_IDS) throw new Error('El filtro de tiendas solo se admite en recuperación');
 const IDLE_MINUTES = integerEnv('LIDL_FLEET_IDLE_MINUTES', 35, 0, 60);
 const WORK_MINUTES = integerEnv('LIDL_FLEET_WORK_MINUTES', 300, 1, 330);

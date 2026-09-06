@@ -1,5 +1,14 @@
 # QuéFalta — Contexto del proyecto
 
+## Filtro vacío del sync Lidl (local, 2026-09-06)
+
+- El orquestador interpreta `LIDL_FLEET_STORE_IDS` ausente, vacío o compuesto
+  solo por espacios como ausencia de filtro. Esto permite que `weekly` y
+  `recover` procesen toda la flota cuando GitHub Actions materializa el input
+  opcional como `""`.
+- Los filtros explícitos continúan exigiendo IDs `ES...`; se rechazan segmentos
+  vacíos y se eliminan duplicados. Sin migración ni cambio de datos.
+
 ## Filtros de recetas fijos (local, 2026-09-06)
 
 - «Más gustados» y «Más guardados» quedan fijados justo debajo de la cabecera;

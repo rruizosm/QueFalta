@@ -1,5 +1,14 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Filtro vacío del sync Lidl (local, 2026-09-06)
+
+- `sync-lidl-fleet.mjs` normaliza el input vacío que GitHub Actions pasa en
+  `weekly`/`recover` a `null`, en vez de producir `[]` y abortar los workers con
+  `LIDL_FLEET_STORE_IDS inválido`.
+- Regresiones cubren cadena vacía, espacios, segmentos inválidos y duplicados.
+  Tras publicar, ejecutar `recover` sin `store_ids` para consumir la cola ya
+  programada; no volver a ejecutar `weekly` para esa recuperación.
+
 ## Filtros de recetas fijos (local, 2026-09-06)
 
 - `QueCocinoScreen` renderiza la toolbar de filtros fuera del `ScrollView`, en

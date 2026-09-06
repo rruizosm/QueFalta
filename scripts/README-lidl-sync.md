@@ -210,6 +210,10 @@ node scripts/sync-lidl-fleet.mjs --report-only
 LIDL_FLEET_STORE_IDS=ES0367 node scripts/sync-lidl-fleet.mjs --retry-dead-only
 ```
 
+En `weekly` y en una recuperación de toda la cola, `LIDL_FLEET_STORE_IDS` se
+deja sin definir o vacío. El orquestador normaliza ambos casos como ausencia de
+filtro; los valores no vacíos deben ser IDs `ES...` separados por comas.
+
 `recover` no reinicia automáticamente `dead`. No usar `weekly` para recuperar
 un barrido parcial: volvería a programar también los catálogos ya completados.
 

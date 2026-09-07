@@ -1,5 +1,14 @@
 # QuéFalta — Contexto del proyecto
 
+## Aviso en fichas Lidl sin imagen (2026-09-07)
+
+- Cuando Lidl entrega una miniatura nula o su placeholder remoto, la ficha de
+  producto sustituye el icono genérico por «Lidl no ofrece una imagen para este
+  producto. Sentimos las molestias.». El resto de supermercados conserva su
+  fallback habitual.
+- Cambio solo de cliente, localizado en castellano y catalán. Sin migración ni
+  sincronización.
+
 ## Bloque de oferta Lidl alineado con Carrefour (2026-09-07)
 
 - El detalle Lidl usa las dimensiones del bloque promocional de Carrefour:

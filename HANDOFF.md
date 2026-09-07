@@ -1,5 +1,12 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Aviso en fichas Lidl sin imagen (2026-09-07)
+
+- `ProductDetailImage` admite `emptyMessage` y considera sin imagen tanto URI
+  nula como el placeholder de Lidl descartado por `productImageSource`.
+- `AldiProductModal` pasa el aviso únicamente para Lidl; el área de la foto
+  explica que Lidl no ofrece imagen y pide disculpas. Sin SQL ni sync.
+
 ## Bloque de oferta Lidl alineado con Carrefour (2026-09-07)
 
 - `AldiProductModal` conserva la condición y vigencia Lidl con el bloque de

@@ -53,6 +53,7 @@ test('only verified small stores get a narrow floor; ordinary stores retain 2200
   }
   assert.equal(lidlMinimumProducts('ES3572'), 2200);
   assert.equal(lidlMinimumProducts('ES0951'), 2200);
+  assert.equal(lidlMinimumProducts('ES0548'), 2155);
 });
 
 test('204 is source unavailability, not malformed JSON or a successful catalog', async () => {

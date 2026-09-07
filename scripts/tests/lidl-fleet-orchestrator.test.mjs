@@ -161,6 +161,7 @@ test('el orquestador arranca y programa el barrido con la RPC esperada', async (
 test('el único workflow ejecuta capacidad para todo el censo cada lunes', () => {
   assert.match(fleetWorkflow, /cron: '20 11 \* \* 1'/);
   assert.match(fleetWorkflow, /workers=\[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24\]/);
+  assert.match(fleetWorkflow, /recover\) echo 'workers=\[1,2,3,4,5,6,7,8\]'/);
   assert.match(fleetWorkflow, /LIDL_FLEET_JOB_LIMIT:.*'100'/);
   assert.match(fleetWorkflow, /--report-only/);
   assert.match(fleetWorkflow, /default: recover/);

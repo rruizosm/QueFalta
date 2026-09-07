@@ -11,7 +11,7 @@ const WEB_BASE_URL = 'https://quefalta.es';
 const MEMBER_COLS = 'id, name, username, initials, color, avatar_url, verified';
 
 /** Fila cruda de profiles → GroupMember (avatar_url → avatarUrl). */
-const toMember = (p: any): GroupMember => ({
+const toMember = (p: any, role?: string): GroupMember => ({
   id: p.id,
   name: p.name,
   username: p.username ?? null,
@@ -19,6 +19,7 @@ const toMember = (p: any): GroupMember => ({
   color: p.color,
   avatarUrl: p.avatar_url ?? null,
   verified: p.verified ?? false,
+  isAdmin: role === 'admin',
 });
 
 export interface GroupSummary {
@@ -27,7 +28,7 @@ export interface GroupSummary {
   iconEmoji: string | null;
   /** Who created the group (immutable). */
   createdBy: string | null;
-  /** Current admin/owner (changes on transfer). */
+  /** Legacy single-owner field kept for compatibility with published builds. */
   ownerId: string | null;
   createdAt: string;
   members: GroupMember[];
@@ -56,7 +57,7 @@ const groupsRequests = new Map<string, Promise<GroupSummary[]>>();
 async function requestMyGroups(): Promise<GroupSummary[]> {
   const { data, error } = await supabase
     .from('groups')
-    .select(`id, name, icon_emoji, created_by, owner_id, created_at, group_members(profiles(${MEMBER_COLS}))`)
+    .select(`id, name, icon_emoji, created_by, owner_id, created_at, group_members(role, profiles(${MEMBER_COLS}))`)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -69,9 +70,8 @@ async function requestMyGroups(): Promise<GroupSummary[]> {
     ownerId: g.owner_id ?? null,
     createdAt: g.created_at,
     members: (g.group_members ?? [])
-      .map((m: any) => m.profiles)
-      .filter(Boolean)
-      .map(toMember),
+      .filter((m: any) => Boolean(m.profiles))
+      .map((m: any) => toMember(m.profiles, m.role)),
   }));
 }
 
@@ -113,7 +113,7 @@ export async function createGroup(
 export async function fetchGroupDetail(groupId: string): Promise<GroupSummary> {
   const { data, error } = await supabase
     .from('groups')
-    .select(`id, name, icon_emoji, created_by, owner_id, created_at, group_members(profiles(${MEMBER_COLS}))`)
+    .select(`id, name, icon_emoji, created_by, owner_id, created_at, group_members(role, profiles(${MEMBER_COLS}))`)
     .eq('id', groupId)
     .single();
 
@@ -127,9 +127,8 @@ export async function fetchGroupDetail(groupId: string): Promise<GroupSummary> {
     ownerId: (data as any).owner_id ?? null,
     createdAt: data.created_at,
     members: ((data as any).group_members ?? [])
-      .map((m: any) => m.profiles)
-      .filter(Boolean)
-      .map(toMember),
+      .filter((m: any) => Boolean(m.profiles))
+      .map((m: any) => toMember(m.profiles, m.role)),
   };
 }
 
@@ -252,65 +251,87 @@ export async function addMemberToGroup(groupId: string, userId: string): Promise
 export async function fetchGroupMembers(groupId: string): Promise<GroupMember[]> {
   const { data, error } = await supabase
     .from('group_members')
-    .select(`profiles(${MEMBER_COLS})`)
+    .select(`role, profiles(${MEMBER_COLS})`)
     .eq('group_id', groupId);
 
   if (error) throw error;
-  return (data ?? []).map((m: any) => m.profiles).filter(Boolean).map(toMember);
+  return (data ?? [])
+    .filter((m: any) => Boolean(m.profiles))
+    .map((m: any) => toMember(m.profiles, m.role));
 }
 
-/** Renombra el grupo. Solo el admin (la policy UPDATE de groups exige owner_id). */
+/** Renombra el grupo. RLS exige que el usuario sea uno de sus administradores. */
 export async function renameGroup(groupId: string, name: string): Promise<void> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('groups')
     .update({ name: name.trim() })
-    .eq('id', groupId);
+    .eq('id', groupId)
+    .select('id')
+    .maybeSingle();
 
   if (error) throw error;
+  if (!data) throw new Error('Group rename was not authorized');
 }
 
-/** Cambia el icono compartido del grupo. Solo el admin puede actualizar groups. */
+/** Cambia el icono compartido. RLS exige un administrador del grupo. */
 export async function updateGroupIcon(groupId: string, iconEmoji: string): Promise<void> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('groups')
     .update({ icon_emoji: iconEmoji })
-    .eq('id', groupId);
+    .eq('id', groupId)
+    .select('id')
+    .maybeSingle();
 
   if (error) throw error;
+  if (!data) throw new Error('Group icon update was not authorized');
 }
 
-/** Transfers group admin to another member (sets groups.owner_id). Admin only (RLS).
- *  created_by stays as the original creator. */
-export async function transferGroupAdmin(groupId: string, newAdminId: string): Promise<void> {
-  const { error } = await supabase
-    .from('groups')
-    .update({ owner_id: newAdminId })
-    .eq('id', groupId);
+/** Añade o retira permisos de administrador a un miembro. El creador no puede
+ * perderlos mientras continúe en el grupo. */
+export async function setGroupMemberAdmin(
+  groupId: string,
+  memberId: string,
+  isAdmin: boolean,
+): Promise<void> {
+  const { data, error } = await supabase
+    .from('group_members')
+    .update({ role: isAdmin ? 'admin' : 'member' })
+    .eq('group_id', groupId)
+    .eq('user_id', memberId)
+    .select('id')
+    .maybeSingle();
 
   if (error) throw error;
+  if (!data) throw new Error('Group member role update was not authorized');
 }
 
-/** Borra el grupo entero (solo el admin, por RLS). Los FK con ON DELETE CASCADE
+/** Borra el grupo entero (solo su creador, por RLS). Los FK con ON DELETE CASCADE
  *  (group_delete_cascade.sql) arrastran miembros, listas, ítems y compras. */
 export async function deleteGroup(groupId: string): Promise<void> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('groups')
     .delete()
-    .eq('id', groupId);
+    .eq('id', groupId)
+    .select('id')
+    .maybeSingle();
 
   if (error) throw error;
+  if (!data) throw new Error('Group deletion was not authorized');
 }
 
 /** Removes a member from a group. Used for both "leave" (self) and admin removal.
- *  RLS decides who is allowed: the member themselves, or the group admin. */
+ *  RLS protects the creator membership and authorizes the rest by role. */
 export async function removeGroupMember(groupId: string, memberId: string): Promise<void> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('group_members')
     .delete()
     .eq('group_id', groupId)
-    .eq('user_id', memberId);
+    .eq('user_id', memberId)
+    .select('id')
+    .maybeSingle();
 
   if (error) throw error;
+  if (!data) throw new Error('Group member removal was not authorized');
 }
 
 /** Shareable https link (Universal Link) that lets another user join the group. */

@@ -16,7 +16,7 @@ import { appendFileSync } from 'node:fs';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fetchLidlCampaignCatalog } from './lib/lidl-campaigns.mjs';
-import { isLidlAccessFailure } from './lib/lidl-http.mjs';
+import { isLidlAccessFailure, isLidlCatalogUnavailable } from './lib/lidl-http.mjs';
 
 const args = new Set(process.argv.slice(2));
 const allowedArgs = new Set(['--schedule-only', '--work-only', '--recover-only', '--report-only', '--retry-dead-only', '--help']);
@@ -65,6 +65,7 @@ if (SHOULD_SCHEDULE && STORE_IDS) throw new Error('El filtro de tiendas solo se 
 const IDLE_MINUTES = integerEnv('LIDL_FLEET_IDLE_MINUTES', 35, 0, 60);
 const WORK_MINUTES = integerEnv('LIDL_FLEET_WORK_MINUTES', 300, 1, 330);
 const ACCESS_FAILURE_LIMIT = integerEnv('LIDL_FLEET_ACCESS_FAILURE_LIMIT', 2, 1, 10);
+const MASTER_STORE_ID = String(process.env.LIDL_MASTER_STORE_ID || 'ES3572').trim().toUpperCase();
 const STORE_SYNC_PATH = fileURLToPath(new URL('./sync-lidl.mjs', import.meta.url));
 const CAMPAIGNS_DISABLED = process.env.LIDL_CAMPAIGNS_DISABLED === '1';
 let campaignCachePromise;
@@ -73,6 +74,7 @@ let campaignCacheDir;
 if (STORE_TIMEOUT_MINUTES >= LEASE_MINUTES) {
   throw new Error('LIDL_FLEET_STORE_TIMEOUT_MINUTES debe ser menor que LIDL_FLEET_LEASE_MINUTES');
 }
+if (!/^ES\d+$/.test(MASTER_STORE_ID)) throw new Error('LIDL_MASTER_STORE_ID inválido');
 
 function workerId() {
   const parts = [
@@ -124,12 +126,13 @@ async function cleanupCampaignCache() {
   if (campaignCacheDir) await rm(campaignCacheDir, { recursive: true, force: true });
 }
 
-async function runStoreSync(storeId) {
+async function runStoreSync(storeId, sourceStoreId = storeId) {
   const campaignFile = await prepareCampaignCache();
   return new Promise((resolve, reject) => {
     const childEnv = {
       ...process.env,
       LIDL_STORE_ID: storeId,
+      LIDL_SOURCE_STORE_ID: sourceStoreId,
       DRY_RUN: '0',
       ...(campaignFile
         ? { LIDL_CAMPAIGNS_FILE: campaignFile }
@@ -208,6 +211,28 @@ async function work() {
       accessFailures = 0;
       console.log(`[lidl-fleet] ${storeId}: completada`);
     } catch (error) {
+      const primaryMessage = error instanceof Error ? error.message : String(error);
+      if (storeId !== MASTER_STORE_ID && isLidlCatalogUnavailable(primaryMessage)) {
+        console.warn(`[lidl-fleet] ${storeId}: catálogo no disponible; usando tienda maestra ${MASTER_STORE_ID}`);
+        try {
+          await runStoreSync(storeId, MASTER_STORE_ID);
+          const acknowledged = await rpc('complete_lidl_catalog_sync_job', {
+            p_store_id: storeId,
+            p_worker_id: id,
+          });
+          if (acknowledged !== true) {
+            throw new Error('Supabase rechazó el cierre del fallback: el worker ya no posee el lease');
+          }
+          completed++;
+          accessFailures = 0;
+          console.log(`[lidl-fleet] ${storeId}: completada con catálogo y ofertas de ${MASTER_STORE_ID}`);
+          continue;
+        } catch (fallbackError) {
+          const fallbackMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+          error = new Error(`${primaryMessage}; fallback ${MASTER_STORE_ID}: ${fallbackMessage}`);
+        }
+      }
+
       failed++;
       const message = error instanceof Error ? error.message : String(error);
       accessFailures = isLidlAccessFailure(message) ? accessFailures + 1 : 0;

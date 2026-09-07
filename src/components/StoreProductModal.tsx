@@ -1,5 +1,9 @@
+import { peekLidlDetail } from '../lib/productDetailLoading';
+import type { UIProduct } from '../lib/productAdapters';
+import ProductLoadingPreview from './ProductLoadingPreview';
+import { cacheCatalogRequest, catalogRequestKey, peekCatalogRequest } from '../lib/catalogRequestCache';
 import { useEffect, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -22,6 +26,7 @@ import { useReducedMotion } from '../hooks/useReducedMotion';
 export interface ProductRef {
   store: CatalogStore;
   id: string;
+  preview?: UIProduct;
 }
 
 interface Props {
@@ -102,24 +107,32 @@ export default function StoreProductModal({
   const targetId = target?.id;
   const [reloadToken, setReloadToken] = useState(0);
   const requestKey = targetStore && targetId
-    ? [targetStore, targetId, region ?? '', postalCode ?? '', lidlStoreId ?? '', lang, reloadToken].join('\u001f')
+    ? [targetStore, targetId, region ?? '', postalCode ?? '', lidlStoreId ?? '', lang, fallbackToGlobalCatalog, reloadToken].join('\u001f')
     : null;
   const [mirrorResult, setMirrorResult] = useState<{ key: string; product: MirrorProduct } | null>(null);
   const [errorKey, setErrorKey] = useState<string | null>(null);
-  const mirror = requestKey && mirrorResult?.key === requestKey ? mirrorResult.product : null;
+  const detailCacheKey = catalogRequestKey('mirrorDetail', requestKey);
+  const lidlSnapshot = targetStore === 'lidl'
+    ? peekLidlDetail(target?.preview?.lidlDetail, targetId, lidlStoreId) : null;
+  const mirror = requestKey && mirrorResult?.key === requestKey
+    ? mirrorResult.product : peekCatalogRequest<MirrorProduct | null>(detailCacheKey) ?? lidlSnapshot;
   const loadError = requestKey != null && errorKey === requestKey;
 
   useEffect(() => {
     setErrorKey(null);
     if (!targetStore || !targetId || targetStore === 'mercadona' || !requestKey) return;
+    if (lidlSnapshot) { setMirrorResult({ key: requestKey, product: lidlSnapshot }); return; }
     let cancelled = false;
     (async () => {
       try {
         const store = targetStore as Exclude<CatalogStore, 'mercadona'>;
-        let product = await fetchMirrorProduct(store, targetId, region, postalCode, false, lidlStoreId);
-        if (!product && fallbackToGlobalCatalog && LOCATION_FILTERED_STORES.has(store)) {
-          product = await fetchMirrorProduct(store, targetId, region, postalCode, true);
-        }
+        const product = await cacheCatalogRequest(detailCacheKey, async () => {
+          let product = await fetchMirrorProduct(store, targetId, region, postalCode, false, lidlStoreId);
+          if (!product && fallbackToGlobalCatalog && LOCATION_FILTERED_STORES.has(store)) {
+            product = await fetchMirrorProduct(store, targetId, region, postalCode, true);
+          }
+          return product;
+        });
         if (cancelled) return;
         if (product) setMirrorResult({ key: requestKey, product });
         else setErrorKey(requestKey);
@@ -128,7 +141,7 @@ export default function StoreProductModal({
       }
     })();
     return () => { cancelled = true; };
-  }, [fallbackToGlobalCatalog, requestKey, targetStore, targetId, region, postalCode, lidlStoreId]);
+  }, [lidlSnapshot, detailCacheKey, fallbackToGlobalCatalog, requestKey, targetStore, targetId, region, postalCode, lidlStoreId]);
 
   if (!target) return null;
 
@@ -142,7 +155,7 @@ export default function StoreProductModal({
   let content;
   if (target.store === 'mercadona') {
     const ProductDetailModal = require('./ProductDetailModal').default;
-    content = <ProductDetailModal productId={target.id} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
+    content = <ProductDetailModal key={requestKey} preview={target.preview} productId={target.id} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
   } else if (loadError) {
     content = (
       <View style={styles.loadState}>
@@ -175,8 +188,15 @@ export default function StoreProductModal({
     );
   } else if (!mirror) {
     content = (
-      <View style={styles.loading}>
-        <ActivityIndicator size="large" color={colors.accent} />
+      <View style={styles.loadState}>
+        <View style={[styles.loadHeader, { paddingTop: topInset }]}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('common.close')} onPress={onClose} style={styles.closeButton}>
+            <Ionicons name="close" size={24} color={colors.ink} />
+          </TouchableOpacity>
+          <Text style={styles.loadHeaderTitle}>{t('product.detailTitle')}</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+        <ProductLoadingPreview product={target.preview} />
       </View>
     );
   } else if (target.store === 'esclat') {

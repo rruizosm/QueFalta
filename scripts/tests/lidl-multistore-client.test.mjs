@@ -37,11 +37,12 @@ test('el CP sigue funcionando durante el despliegue escalonado del esquema Lidl'
   assert.match(storePicker, /lidlStoreUnavailable/);
 });
 
-test('catálogo Lidl lee la vista y RPC filtradas por store_id', () => {
+test('catálogo Lidl lee la vista y RPC filtradas por store_id', async () => {
   assert.match(catalog, /rpc\('search_lidl_store_products'/);
   assert.match(catalog, /from\('lidl_product_stores'\)[\s\S]*eq\('store_id', storeId\)/);
   assert.match(catalog, /from\('lidl_store_category_catalog'\)[\s\S]*eq\('store_id', storeId\)/);
-  assert.match(catalogScreen, /browseLidlProducts\([\s\S]*lidlStoreId\)/);
+  assert.match(catalogScreen, /loadBrowsePage\([\s\S]*lidlStoreId/);
+  assert.match(await source('src/api/catalogBrowse.ts'), /browseLidlProducts\([\s\S]*lidlStoreId\)/);
   assert.match(catalogScreen, /catalog\.lidlStoreRequired/);
 });
 

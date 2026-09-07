@@ -1,3 +1,4 @@
+import { cacheCatalogRequest, catalogRequestKey, peekCatalogRequest } from '../lib/catalogRequestCache';
 // Lecturas del espejo del catálogo de Mercadona en Supabase
 // (tabla mercadona_products, rellenada 1×/semana por scripts/sync-catalog.mjs).
 //
@@ -1697,6 +1698,7 @@ export interface LidlProduct {
   promoBasePrice: number | null;
   promoStart: string | null;
   promoEnd: string | null;
+  isLidlPlusOffer: boolean;
 }
 export interface LidlCategory {
   id: string;
@@ -1741,9 +1743,10 @@ const mapLidl = (r: any): LidlProduct => {
     promoBasePrice: promoIsLive && r.promo_base_price != null ? Number(r.promo_base_price) : null,
     promoStart: promoIsLive ? r.promo_start ?? null : null,
     promoEnd: promoIsLive ? r.promo_end ?? null : null,
+    isLidlPlusOffer: promoIsLive && r.is_lidl_plus_offer === true,
   };
 };
-const LIDL_COLS = 'store_id, id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name, promo_text, promo_price, promo_base_price, promo_start, promo_end';
+const LIDL_COLS = 'store_id, id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, promo_name, promo_text, promo_price, promo_base_price, promo_start, promo_end, is_lidl_plus_offer';
 
 export async function searchLidlProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance', storeId: string | null = null): Promise<LidlProduct[]> {
   const normalized = query.trim();
@@ -1792,6 +1795,10 @@ export async function fetchLidlCategoryTree(storeId: string | null, signal?: Abo
 }
 
 export async function fetchLidlProductsByCategory(categoryId: string, storeId: string | null, limit = 600): Promise<LidlProduct[]> {
+  return cacheCatalogRequest(catalogRequestKey("lidlCategoryProducts", [getLanguage(), categoryId, storeId, limit]), () => fetchLidlProductsByCategoryUncached(categoryId, storeId, limit));
+}
+
+async function fetchLidlProductsByCategoryUncached(categoryId: string, storeId: string | null, limit = 600): Promise<LidlProduct[]> {
   if (!storeId) return [];
   const { data, error } = await supabase.from('lidl_product_stores').select(LIDL_COLS).eq('store_id', storeId).eq('published', true).contains('category_ids', [categoryId]).order('display_name').limit(limit);
   if (error) throw error;
@@ -2608,6 +2615,30 @@ export async function fetchWeeklyNewProducts(
   filters?: NewProductFilters,
   lidlStoreId: string | null = null,
 ): Promise<WeeklyNewProductsPage> {
+  return cacheCatalogRequest(catalogRequestKey("fetchWeeklyNewProducts", [getLanguage(), store, region, postalCode, limit, offset, filters ?? {}, lidlStoreId]), () => fetchWeeklyNewProductsUncached(store, region, postalCode, limit, offset, filters ?? {}, lidlStoreId));
+}
+
+export function peekWeeklyNewProducts(
+  store: CatalogStore,
+  region: RegionValue | null,
+  postalCode: string | null,
+  limit = 50,
+  offset = 0,
+  filters?: NewProductFilters,
+  lidlStoreId: string | null = null,
+): WeeklyNewProductsPage | undefined {
+  return peekCatalogRequest(catalogRequestKey("fetchWeeklyNewProducts", [getLanguage(), store, region, postalCode, limit, offset, filters ?? {}, lidlStoreId]));
+}
+
+async function fetchWeeklyNewProductsUncached(
+  store: CatalogStore,
+  region: RegionValue | null,
+  postalCode: string | null,
+  limit = 50,
+  offset = 0,
+  filters?: NewProductFilters,
+  lidlStoreId: string | null = null,
+): Promise<WeeklyNewProductsPage> {
   const search = filters?.search?.trim() ?? '';
   if (store === 'mercadona') {
     // El raw de new-arrivals no trae `categories` → categoryName null y el
@@ -2892,6 +2923,32 @@ async function fetchLocationPriceChanges(
  *  mayor bajada/subida primero; opcionalmente pagina por precio unitario con
  *  los productos sin dato al final. */
 export async function fetchPriceChanges(
+  store: CatalogStore,
+  direction: 'down' | 'up',
+  region: RegionValue | null,
+  postalCode: string | null,
+  limit = 50,
+  offset = 0,
+  pricePerUnitSort: 'asc' | 'desc' | null = null,
+  lidlStoreId: string | null = null,
+): Promise<PriceChangesPage> {
+  return cacheCatalogRequest(catalogRequestKey("fetchPriceChanges", [getLanguage(), store, direction, region, postalCode, limit, offset, pricePerUnitSort, lidlStoreId]), () => fetchPriceChangesUncached(store, direction, region, postalCode, limit, offset, pricePerUnitSort, lidlStoreId));
+}
+
+export function peekPriceChanges(
+  store: CatalogStore,
+  direction: 'down' | 'up',
+  region: RegionValue | null,
+  postalCode: string | null,
+  limit = 50,
+  offset = 0,
+  pricePerUnitSort: 'asc' | 'desc' | null = null,
+  lidlStoreId: string | null = null,
+): PriceChangesPage | undefined {
+  return peekCatalogRequest(catalogRequestKey("fetchPriceChanges", [getLanguage(), store, direction, region, postalCode, limit, offset, pricePerUnitSort, lidlStoreId]));
+}
+
+async function fetchPriceChangesUncached(
   store: CatalogStore,
   direction: 'down' | 'up',
   region: RegionValue | null,
@@ -3844,6 +3901,30 @@ function fetchStoreOfferPage(
  * se devuelve la página filtrada entera para no saltarse coincidencias cuando
  * el cursor avance al siguiente bloque crudo. */
 export async function fetchStoreOffers(
+  store: CatalogStore,
+  cursor: BrowseCursor | null,
+  region: RegionValue | null,
+  postalCode: string | null,
+  limit = 50,
+  filters?: OfferFilters,
+  lidlStoreId: string | null = null,
+): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
+  return cacheCatalogRequest(catalogRequestKey("fetchStoreOffers", [getLanguage(), store, cursor, region, postalCode, limit, filters ?? {}, lidlStoreId]), () => fetchStoreOffersUncached(store, cursor, region, postalCode, limit, filters ?? {}, lidlStoreId));
+}
+
+export function peekStoreOffers(
+  store: CatalogStore,
+  cursor: BrowseCursor | null,
+  region: RegionValue | null,
+  postalCode: string | null,
+  limit = 50,
+  filters?: OfferFilters,
+  lidlStoreId: string | null = null,
+): { items: StoreOffer[]; nextCursor: BrowseCursor | null } | undefined {
+  return peekCatalogRequest(catalogRequestKey("fetchStoreOffers", [getLanguage(), store, cursor, region, postalCode, limit, filters ?? {}, lidlStoreId]));
+}
+
+async function fetchStoreOffersUncached(
   store: CatalogStore,
   cursor: BrowseCursor | null,
   region: RegionValue | null,

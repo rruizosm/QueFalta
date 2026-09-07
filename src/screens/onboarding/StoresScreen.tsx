@@ -27,6 +27,7 @@ import { updateProfile } from '../../api/profile';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../../constants/stores';
 import { storeInRegion } from '../../constants/regions';
 import AmbientBubbleBackdrop from '../../components/AmbientBubbleBackdrop';
+import { writeLidlReleaseAnswer } from '../../lib/lidlReleasePrompt';
 
 const CART_MASCOT = require('../../../assets/mascot/berenjena-carrito-transicion.png');
 const APP_BLUE = colors.blue;
@@ -81,6 +82,9 @@ export default function StoresScreen() {
     try {
       await updateProfile(userId, { catalogStores: selected, onboardingStep: 2 });
       applyProfile({ catalogStores: selected, onboardingStep: 2 });
+      // Las altas nuevas ya han respondido explícitamente en esta cuadrícula;
+      // no deben recibir después el diálogo destinado a quienes actualizan.
+      await writeLidlReleaseAnswer(userId, selected.includes('lidl') ? 'yes' : 'no').catch(() => {});
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       navigation.navigate('Avatar');
     } catch {

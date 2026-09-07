@@ -3,6 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import type { CatalogStore } from '../constants/stores';
+import { productImageSource } from '../lib/productImageSource';
 import ProductImage from './ProductImage';
 import ProductAlertButton from './ProductAlertButton';
 
@@ -11,14 +12,19 @@ interface Props {
   style: StyleProp<ViewStyle>;
   badgeLabel?: string;
   alertTarget?: { store: CatalogStore; productId: string };
+  emptyMessage?: string;
 }
 
 /** Imagen principal de la ficha con una etiqueta contextual dentro del marco. */
-export default function ProductDetailImage({ uri, style, badgeLabel, alertTarget }: Props) {
+export default function ProductDetailImage({ uri, style, badgeLabel, alertTarget, emptyMessage }: Props) {
+  const fallback = emptyMessage ? <Text style={styles.emptyMessage}>{emptyMessage}</Text> : null;
+  const hasUsableImage = Boolean(uri && productImageSource(uri));
   return (
     <View style={[style, styles.frame]}>
-      {uri ? (
-        <ProductImage uri={uri} style={StyleSheet.absoluteFill} />
+      {hasUsableImage && uri ? (
+        <ProductImage uri={uri} style={StyleSheet.absoluteFill} fallback={fallback} />
+      ) : fallback ? (
+        fallback
       ) : (
         <Ionicons name="image-outline" size={48} color={colors.inkFaint} />
       )}
@@ -63,5 +69,14 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bold,
     color: colors.ink,
     letterSpacing: 0.2,
+  },
+  emptyMessage: {
+    maxWidth: 280,
+    paddingHorizontal: 24,
+    textAlign: 'center',
+    fontSize: 13.5,
+    lineHeight: 20,
+    fontFamily: fonts.medium,
+    color: colors.inkSoft,
   },
 });

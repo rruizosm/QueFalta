@@ -11,13 +11,17 @@ ordinario del promocional. También incorpora las campañas semanales públicas 
 ## Fuente y alcance
 
 - API: `product-catalog.lidlplus.com/api/app/v1/ES/store/{storeId}`.
-- Ofertas: `offers.lidlplus.com/app/api/v4/{country}/{storeId}/offers`.
+- Ofertas: `offers.lidlplus.com/app/api/v4/{country}/{storeId}/offers`; tras
+  verificar cada enlace, consulta también `/offers/{id}` para guardar la
+  condición publicada en `characteristicsDescription`.
 - Campañas web: Formato ahorro XXL, Ofertas semanales, Fin de semana a lo
   grande, Precios imbatibles y Bajamos los precios. Las URLs se descubren desde
   `https://www.lidl.es/`; no se fijan los ids CMS semanales.
 - Tienda por defecto del script: `ES3572`. Cada ejecución guarda precio,
-  disponibilidad y surtido bajo ese `store_id`; nunca los publica como datos
-  nacionales ni reemplaza la variante de otra tienda.
+  disponibilidad y surtido bajo ese `store_id`. El fleet puede usarla como
+  fuente maestra para una tienda sin datos, manteniendo siempre como destino el
+  `store_id` solicitado y registrando la procedencia en
+  `raw.fallbackSourceStoreId`.
 - No se inicia sesión y no se consulta Scan&Go.
 - Los ids como `8807709681515_ES` son identificadores internos. El sync guarda
   `ean=NULL`; no intenta deducir el código de barras.
@@ -41,6 +45,12 @@ ordinario del promocional. También incorpora las campañas semanales públicas 
   también el coste efectivo por unidad. Se conserva la condición como texto,
   pero no se guarda ese coste como `promo_price`: el precio individual sigue
   siendo el precio ordinario del catálogo.
+- El feed identifica los precios exclusivos para clientes Lidl Plus con
+  `offerType=StoreSpecialPriceDiscount`. El sync lo conserva de forma
+  estructurada en `is_lidl_plus_offer`; el resto de tipos del feed quedan a
+  `false`. Product Catalog (`price.lidlPlusOffer`) y las campañas web
+  (`currentLidlPlusPrice`/`futureLidlPlusPrices`) mantienen sus señales
+  explícitas propias.
 - Si el detalle promocional repite exactamente la etiqueta, se guarda una sola
   copia en `promo_name` y `promo_text` queda vacío.
 - No se descargan todas las fichas una a una. Ingredientes y alérgenos siguen
@@ -93,6 +103,14 @@ tras tres intentos. Cada claim tiene un lease de 45 minutos y usa
 misma tienda a la vez. Las RPC de programación/claim/cierre solo conceden
 `EXECUTE` a `service_role`.
 
+Si Product Catalog devuelve HTTP 204 sin cuerpo en categorías, el árbol raíz
+está vacío o pan, fruta y carne siguen vacíos tras sus reintentos, el fleet
+vuelve a ejecutar la tienda con `ES3572`
+como fuente. También obtiene de la maestra el feed de ofertas y la región de
+las campañas web. El fallback no cubre 403/429, red, JSON truncado, catálogos
+parciales ni incumplimientos de cobertura. Si falla también la maestra, el
+trabajo conserva ambos errores y sigue el ciclo normal de `retry`/`dead`.
+
 Lidl está integrado en el comparador mediante
 `20260905175806_lidl_comparator_multistore.sql`. El materializador consulta
 `lidl_comparator_products`: una ficha por `lidl_product_master.id`, con categoría
@@ -126,6 +144,8 @@ Prueba SQL local con datos ficticios (módulo PGlite temporal externo al proyect
 |---|---|
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE` | destino; obligatorias salvo DRY_RUN |
 | `LIDL_STORE_ID=ES3572` | tienda concreta que se sincroniza |
+| `LIDL_SOURCE_STORE_ID=ES3572` | fuente del catálogo/ofertas; por defecto coincide con el destino |
+| `LIDL_MASTER_STORE_ID=ES3572` | fuente de respaldo usada por el fleet ante ausencia total |
 | `LIDL_STORES_API_KEY` | clave rotatoria del directorio oficial; solo para `sync-lidl-stores.mjs` |
 | `LIDL_CAMPAIGNS_FILE` | caché JSON creada por el fleet; en ejecución directa se descarga desde la web |
 | `LIDL_CAMPAIGNS_DISABLED=1` | omite expresamente el complemento de campañas web |

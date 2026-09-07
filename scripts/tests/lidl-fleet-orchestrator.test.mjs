@@ -109,6 +109,8 @@ test('el orquestador reclama una tienda cada vez y delega en el sync aislado por
   assert.match(orchestrator, /p_limit: 1/);
   assert.match(orchestrator, /schedule_all_lidl_catalog_sync_jobs/);
   assert.match(orchestrator, /LIDL_STORE_ID: storeId/);
+  assert.match(orchestrator, /LIDL_SOURCE_STORE_ID: sourceStoreId/);
+  assert.match(orchestrator, /isLidlCatalogUnavailable/);
   assert.match(orchestrator, /complete_lidl_catalog_sync_job/);
   assert.match(orchestrator, /fail_lidl_catalog_sync_job/);
   assert.doesNotMatch(orchestrator, /MIN_PRIORITY|job_priority|job_source/);
@@ -267,4 +269,48 @@ test('child error is persisted and repeated 403 stops claims after two stores', 
     };
     process.on('exit', () => { if (claimed !== 2 || failed !== 2) process.exitCode = 99; });
   `), (error) => error.code === 1 && error.stderr.includes('pausa: rechazos HTTP repetidos'));
+});
+
+test('catálogo ausente se completa con la tienda maestra y no se registra como fallo', async () => {
+  const { stdout, stderr } = await runFleetScenario('--recover-only', `
+    import childProcess from 'node:child_process';
+    import { EventEmitter } from 'node:events';
+    import { syncBuiltinESMExports } from 'node:module';
+    let spawns = 0;
+    childProcess.spawn = (_command, _args, options) => {
+      const child = new EventEmitter();
+      const source = options.env.LIDL_SOURCE_STORE_ID;
+      queueMicrotask(() => {
+        spawns++;
+        if (spawns === 1) {
+          if (source !== 'ES0951') throw new Error('el primer intento no usó la tienda destino');
+          child.emit('message', { type:'lidl-error', message:'LIDL_CATALOG_EMPTY ES0951: ramas vacías' });
+          child.emit('close', 1, null);
+        } else {
+          if (source !== 'ES3572') throw new Error('el fallback no usó la tienda maestra');
+          child.emit('close', 0, null);
+        }
+      });
+      return child;
+    };
+    syncBuiltinESMExports();
+    let claimed = false, completed = false;
+    globalThis.fetch = async (url) => {
+      if (url.endsWith('claim_lidl_catalog_sync_jobs_filtered')) {
+        if (claimed) return Response.json([]);
+        claimed = true;
+        return Response.json([{job_store_id:'ES0951',job_attempts:1}]);
+      }
+      if (url.endsWith('complete_lidl_catalog_sync_job')) {
+        completed = true;
+        return Response.json(true);
+      }
+      if (url.endsWith('lidl_catalog_sync_report')) return Response.json([{store_id:'ES0951',status:'succeeded'}]);
+      if (url.endsWith('fail_lidl_catalog_sync_job')) throw new Error('no debía registrar fallo');
+      throw new Error('unexpected RPC ' + url);
+    };
+    process.on('exit', () => { if (spawns !== 2 || !completed) process.exitCode = 99; });
+  `, { LIDL_CAMPAIGNS_DISABLED: '1' });
+  assert.match(stderr, /catálogo no disponible; usando tienda maestra ES3572/);
+  assert.match(stdout, /completada con catálogo y ofertas de ES3572/);
 });

@@ -5,7 +5,8 @@
 // de barcode autorizada.
 //
 // Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE
-//      LIDL_STORE_ID=ES3572, LIDL_COUNTRY=ES, LIDL_LANGUAGE=es
+//      LIDL_STORE_ID=ES3572, LIDL_SOURCE_STORE_ID=ES3572
+//      LIDL_COUNTRY=ES, LIDL_LANGUAGE=es
 //      CONCURRENCY=4, PAGE_SIZE=100, MIN_PRODUCTS=2200, MIN_LEAVES=35
 //      MIN_NONEMPTY_LEAVES=40, EMPTY_LEAF_RETRIES=3
 //      MIN_MATCHED_OFFERS=1
@@ -41,10 +42,11 @@ const KEY = process.env.SUPABASE_SERVICE_ROLE;
 const DRY_RUN = process.env.DRY_RUN === '1';
 const COUNTRY = String(process.env.LIDL_COUNTRY || 'ES').toUpperCase();
 const STORE_ID = String(process.env.LIDL_STORE_ID || 'ES3572').toUpperCase();
+const SOURCE_STORE_ID = String(process.env.LIDL_SOURCE_STORE_ID || STORE_ID).toUpperCase();
 const LANGUAGE = String(process.env.LIDL_LANGUAGE || 'es').toLowerCase();
 const CONCURRENCY = Math.min(8, Math.max(1, Number(process.env.CONCURRENCY || 4)));
 const PAGE_SIZE = Math.min(500, Math.max(20, Number(process.env.PAGE_SIZE || 100)));
-const MIN_PRODUCTS = lidlMinimumProducts(STORE_ID, Math.max(1, Number(process.env.MIN_PRODUCTS || 2200)));
+const MIN_PRODUCTS = lidlMinimumProducts(SOURCE_STORE_ID, Math.max(1, Number(process.env.MIN_PRODUCTS || 2200)));
 const MIN_LEAVES = Math.max(1, Number(process.env.MIN_LEAVES || 35));
 const MIN_NONEMPTY_LEAVES = Math.max(1, Number(process.env.MIN_NONEMPTY_LEAVES || 40));
 const MIN_MATCHED_OFFERS = Math.max(0, Number(process.env.MIN_MATCHED_OFFERS || 1));
@@ -57,8 +59,8 @@ const CAMPAIGNS_DISABLED = process.env.LIDL_CAMPAIGNS_DISABLED === '1';
 const CAMPAIGNS_REQUIRED = process.env.LIDL_CAMPAIGNS_REQUIRED === '1';
 const ENV_OFFER_REGION = String(process.env.LIDL_OFFER_REGION || '').trim() || null;
 const runStart = new Date().toISOString();
-const BASE = `https://product-catalog.lidlplus.com/api/app/v1/${COUNTRY}/store/${STORE_ID}`;
-const OFFERS_URL = `https://offers.lidlplus.com/app/api/v4/${COUNTRY}/${STORE_ID}/offers`;
+const BASE = `https://product-catalog.lidlplus.com/api/app/v1/${COUNTRY}/store/${SOURCE_STORE_ID}`;
+const OFFERS_URL = `https://offers.lidlplus.com/app/api/v4/${COUNTRY}/${SOURCE_STORE_ID}/offers`;
 const headers = {
   Accept: 'application/json',
   'Accept-Language': LANGUAGE,
@@ -67,6 +69,7 @@ const headers = {
 
 if (!/^[A-Z]{2}$/.test(COUNTRY)) throw new Error(`LIDL_COUNTRY inválido: ${COUNTRY}`);
 if (!/^[A-Z]{2}\d+$/.test(STORE_ID)) throw new Error(`LIDL_STORE_ID inválido: ${STORE_ID}`);
+if (!/^[A-Z]{2}\d+$/.test(SOURCE_STORE_ID)) throw new Error(`LIDL_SOURCE_STORE_ID inválido: ${SOURCE_STORE_ID}`);
 if (!DRY_RUN && (!URL || !KEY)) throw new Error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE (o usa DRY_RUN=1)');
 if (!DRY_RUN && Number.isFinite(MAX_LEAVES)) throw new Error('MAX_LEAVES solo se permite con DRY_RUN=1');
 
@@ -79,6 +82,10 @@ async function getJson(path, tries = 5) {
 
 async function getOffersJson(tries = 5) {
   return lidlRequest(OFFERS_URL, { headers }, { label: 'ofertas', attempts: tries });
+}
+
+async function getOfferDetailJson(id, tries = 5) {
+  return lidlRequest(`${OFFERS_URL}/${encodeURIComponent(id)}`, { headers }, { label: `oferta ${id}`, attempts: tries });
 }
 
 async function discoverCategories() {
@@ -196,7 +203,15 @@ async function mergeCurrentOffers(rows) {
         const detail = await detailFor(candidate.id);
         if (lidlOfferMatchesDetail(detail, offer)) verified.push(candidate);
       }
-      resolved[index] = { offer, candidates: candidates.length, verified };
+      let enrichedOffer = offer;
+      if (verified.length > 0) {
+        const offerDetail = await getOfferDetailJson(offer.id);
+        if (!offerDetail || String(offerDetail.id) !== String(offer.id)) {
+          throw new Error(`detalle incoherente para la oferta ${offer.id}`);
+        }
+        enrichedOffer = { ...offer, ...offerDetail, productIds: offer.productIds };
+      }
+      resolved[index] = { offer: enrichedOffer, candidates: candidates.length, verified };
       if (REQUEST_DELAY_MS) await sleep(REQUEST_DELAY_MS);
     }
   }));
@@ -338,14 +353,14 @@ async function currentPublishedCount() {
   return total;
 }
 
-async function assertStoreExists() {
-  const response = await fetch(`${URL}/rest/v1/lidl_stores?select=id,offer_region&id=eq.${encodeURIComponent(STORE_ID)}&published=eq.true&limit=1`, {
+async function assertStoreExists(storeId) {
+  const response = await fetch(`${URL}/rest/v1/lidl_stores?select=id,offer_region&id=eq.${encodeURIComponent(storeId)}&published=eq.true&limit=1`, {
     headers: { apikey: KEY, Authorization: `Bearer ${KEY}` },
   });
-  if (!response.ok) throw new Error(`consulta lidl_stores/${STORE_ID}: HTTP ${response.status} ${await response.text()}`);
+  if (!response.ok) throw new Error(`consulta lidl_stores/${storeId}: HTTP ${response.status} ${await response.text()}`);
   const rows = await response.json();
   if (!Array.isArray(rows) || rows.length !== 1) {
-    throw new Error(`la tienda ${STORE_ID} no existe o no está publicada; sincroniza primero el directorio Lidl`);
+    throw new Error(`la tienda ${storeId} no existe o no está publicada; sincroniza primero el directorio Lidl`);
   }
   return rows[0];
 }
@@ -368,9 +383,13 @@ async function markStoreRowsStale(table, storeColumn) {
 }
 
 async function main() {
-  console.log(`[lidl] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} tienda=${STORE_ID}`);
-  const store = DRY_RUN ? { id: STORE_ID, offer_region: ENV_OFFER_REGION } : await assertStoreExists();
-  if (!DRY_RUN && !store.offer_region) throw new Error(`la tienda ${STORE_ID} no tiene offer_region`);
+  const fallbackLabel = SOURCE_STORE_ID === STORE_ID ? '' : ` fuente=${SOURCE_STORE_ID} (fallback)`;
+  console.log(`[lidl] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} tienda=${STORE_ID}${fallbackLabel}`);
+  const targetStore = DRY_RUN ? { id: STORE_ID } : await assertStoreExists(STORE_ID);
+  const sourceStore = DRY_RUN
+    ? { id: SOURCE_STORE_ID, offer_region: ENV_OFFER_REGION }
+    : SOURCE_STORE_ID === STORE_ID ? targetStore : await assertStoreExists(SOURCE_STORE_ID);
+  if (!DRY_RUN && !sourceStore.offer_region) throw new Error(`la tienda fuente ${SOURCE_STORE_ID} no tiene offer_region`);
   const { roots, categories, leaves: allLeaves } = await discoverCategories();
   const leaves = allLeaves.slice(0, MAX_LEAVES);
   console.log(`[lidl] ${roots.length} raíces · ${allLeaves.length} hojas${leaves.length !== allLeaves.length ? ` · prueba limitada a ${leaves.length}` : ''}`);
@@ -408,7 +427,7 @@ async function main() {
   }));
 
   const rows = [...products.values()];
-  const campaignStats = await mergeWeeklyCampaigns(rows, store.offer_region);
+  const campaignStats = await mergeWeeklyCampaigns(rows, sourceStore.offer_region);
   const offerStats = await mergeCurrentOffers(rows);
   const promoted = rows.filter((row) => row.promo_name != null).length;
   const withCampaignEvidence = rows.filter((row) => row.raw?.campaign != null).length;
@@ -457,7 +476,7 @@ async function main() {
   const sharedCategories = categoryRows.map(({ product_count: _count, ...category }) => category);
   await upsert('lidl_categories', sharedCategories);
   await upsert('lidl_product_master', rows.map(lidlProductMasterRow));
-  await upsert('lidl_store_products', rows.map((row) => lidlStoreProductRow(row, STORE_ID)));
+  await upsert('lidl_store_products', rows.map((row) => lidlStoreProductRow(row, STORE_ID, SOURCE_STORE_ID)));
   await upsert('lidl_store_categories', categoryRows.map((category) => lidlStoreCategoryRow(category, STORE_ID)));
   await markStoreRowsStale('lidl_store_products', 'store_id');
   await markStoreRowsStale('lidl_store_categories', 'store_id');

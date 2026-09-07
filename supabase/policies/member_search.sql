@@ -1,6 +1,6 @@
 -- Añadir miembros a un grupo buscando por @usuario.
 --
--- El admin (owner) puede añadir a otros usuarios, PERO solo si el destinatario
+-- Un administrador puede añadir a otros usuarios, PERO solo si el destinatario
 -- es `discoverable = true` (igual que la búsqueda de la UI, que solo devuelve
 -- perfiles visibles). Esto evita que un admin malicioso añada a alguien por su
 -- UUID sin consentimiento — lo que, además, expondría el perfil de la víctima a
@@ -29,6 +29,7 @@ drop policy if exists "group_members insert: admin adds" on public.group_members
 create policy "group_members insert: admin adds"
 on public.group_members for insert to authenticated
 with check (
-  public.is_group_admin(group_id)
+  role = 'member'
+  and (select private.is_group_admin(group_id))
   and public.is_discoverable(user_id)
 );

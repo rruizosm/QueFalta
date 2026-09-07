@@ -15,7 +15,14 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { deleteGroup, fetchGroupDetail, removeGroupMember, renameGroup, transferGroupAdmin, type GroupSummary } from '../api/groups';
+import {
+  deleteGroup,
+  fetchGroupDetail,
+  removeGroupMember,
+  renameGroup,
+  setGroupMemberAdmin,
+  type GroupSummary,
+} from '../api/groups';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { useReducedMotion } from '../hooks/useReducedMotion';
@@ -26,7 +33,7 @@ import NameInputSheet from '../components/NameInputSheet';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 
 type MembersRouteProp = RouteProp<GroupsStackParamList, 'GroupMembers'>;
-type PendingMemberAction = { type: 'transfer' | 'remove'; member: GroupMember };
+type PendingMemberAction = { type: 'promote' | 'demote' | 'remove'; member: GroupMember };
 
 const memberLabel = (member: GroupMember) => member.username ? `@${member.username}` : member.name;
 
@@ -65,18 +72,18 @@ export default function GroupMembersScreen() {
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  const adminId = group?.ownerId ?? null;
-  const isAdmin = !!adminId && adminId === userId;
+  const isCreator = group?.createdBy === userId;
+  const isAdmin = group?.members.some((member) => member.id === userId && member.isAdmin) ?? false;
 
-  const doTransfer = async (member: GroupMember) => {
+  const doSetAdmin = async (member: GroupMember, nextIsAdmin: boolean) => {
     setBusyId(member.id);
     try {
-      await transferGroupAdmin(groupId, member.id);
+      await setGroupMemberAdmin(groupId, member.id, nextIsAdmin);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show(t('group.transferred', { name: memberLabel(member) }));
+      toast.show(t(nextIsAdmin ? 'group.promoted' : 'group.demoted', { name: memberLabel(member) }));
       load();
     } catch {
-      toast.show(t('group.transferError'), 'error');
+      toast.show(t(nextIsAdmin ? 'group.promoteError' : 'group.demoteError'), 'error');
     } finally {
       setBusyId(null);
     }
@@ -105,7 +112,8 @@ export default function GroupMembersScreen() {
     const pending = pendingMemberAction;
     setPendingMemberAction(null);
     if (!pending) return;
-    if (pending.type === 'transfer') void doTransfer(pending.member);
+    if (pending.type === 'promote') void doSetAdmin(pending.member, true);
+    else if (pending.type === 'demote') void doSetAdmin(pending.member, false);
     else void doRemove(pending.member);
   };
 
@@ -242,9 +250,10 @@ export default function GroupMembersScreen() {
 
           <View style={styles.section}>
             {group.members.map((m, i) => {
-              const isMemberAdmin = m.id === adminId;
+              const isMemberAdmin = m.isAdmin;
+              const isMemberCreator = m.id === group.createdBy;
               const isMe = m.id === userId;
-              const canRemove = isAdmin && !isMemberAdmin;
+              const canManage = isAdmin && !isMe && !isMemberCreator;
               return (
                 <View key={m.id} style={[styles.row, i < group.members.length - 1 && styles.rowBorder]}>
                   <UserAvatar avatarUrl={m.avatarUrl} initials={m.initials} color={m.color} size={38} />
@@ -255,14 +264,16 @@ export default function GroupMembersScreen() {
                       </Text>
                       {m.verified ? <VerifiedBadge size={14} /> : null}
                     </View>
-                    {isMemberAdmin && (
+                    {(isMemberCreator || isMemberAdmin) && (
                       <View style={styles.adminBadge}>
                         <Ionicons name="star" size={10} color={colors.accent} />
-                        <Text style={styles.adminBadgeText}>{t('group.adminBadge')}</Text>
+                        <Text style={styles.adminBadgeText}>
+                          {t(isMemberCreator ? 'group.creatorBadge' : 'group.adminBadge')}
+                        </Text>
                       </View>
                     )}
                   </View>
-                  {canRemove && (
+                  {canManage && (
                     busyId === m.id ? (
                       <ActivityIndicator size="small" color={colors.inkSoft} />
                     ) : (
@@ -282,10 +293,10 @@ export default function GroupMembersScreen() {
             })}
           </View>
 
-          {/* Leave / admin note */}
-          {isAdmin ? (
+          {/* El creador conserva en exclusiva la eliminación del grupo. */}
+          {isCreator ? (
             <>
-              <Text style={styles.adminNote}>{t('group.adminNote')}</Text>
+              <Text style={styles.adminNote}>{t('group.creatorNote')}</Text>
               <TouchableOpacity
                 style={styles.leaveBtn}
                 onPress={() => setDeleteVisible(true)}
@@ -304,22 +315,25 @@ export default function GroupMembersScreen() {
               </TouchableOpacity>
             </>
           ) : (
-            <TouchableOpacity
-              style={styles.leaveBtn}
-              onPress={() => setLeaveVisible(true)}
-              disabled={busyId === userId}
-              accessibilityRole="button"
-              accessibilityState={{ disabled: busyId === userId, busy: busyId === userId }}
-            >
-              {busyId === userId ? (
-                <ActivityIndicator size="small" color="#d6452b" />
-              ) : (
-                <>
-                  <Ionicons name="exit-outline" size={18} color="#d6452b" />
-                  <Text style={styles.leaveText}>{t('group.leaveGroup')}</Text>
-                </>
-              )}
-            </TouchableOpacity>
+            <>
+              {isAdmin && <Text style={styles.adminNote}>{t('group.adminNote')}</Text>}
+              <TouchableOpacity
+                style={styles.leaveBtn}
+                onPress={() => setLeaveVisible(true)}
+                disabled={busyId === userId}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: busyId === userId, busy: busyId === userId }}
+              >
+                {busyId === userId ? (
+                  <ActivityIndicator size="small" color="#d6452b" />
+                ) : (
+                  <>
+                    <Ionicons name="exit-outline" size={18} color="#d6452b" />
+                    <Text style={styles.leaveText}>{t('group.leaveGroup')}</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </>
           )}
         </ScrollView>
       )}
@@ -348,11 +362,13 @@ export default function GroupMembersScreen() {
               <TouchableOpacity
                 style={styles.sheetAction}
                 activeOpacity={0.7}
-                onPress={() => requestMemberAction('transfer', actionMember)}
+                onPress={() => requestMemberAction(actionMember.isAdmin ? 'demote' : 'promote', actionMember)}
                 accessibilityRole="button"
               >
-                <Ionicons name="star-outline" size={20} color={colors.accent} />
-                <Text style={styles.sheetActionText}>{t('group.makeAdmin')}</Text>
+                <Ionicons name={actionMember.isAdmin ? 'star-half-outline' : 'star-outline'} size={20} color={colors.accent} />
+                <Text style={styles.sheetActionText}>
+                  {t(actionMember.isAdmin ? 'group.removeAdmin' : 'group.makeAdmin')}
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -380,17 +396,23 @@ export default function GroupMembersScreen() {
 
       <ConfirmDialog
         visible={!!pendingMemberAction}
-        title={t(pendingMemberAction?.type === 'transfer'
-          ? 'group.transferTitle'
-          : 'group.removeMemberTitle')}
-        message={t(pendingMemberAction?.type === 'transfer'
-          ? 'group.transferMessage'
-          : 'group.removeMemberMessage', {
+        title={t(pendingMemberAction?.type === 'promote'
+          ? 'group.promoteTitle'
+          : pendingMemberAction?.type === 'demote'
+            ? 'group.demoteTitle'
+            : 'group.removeMemberTitle')}
+        message={t(pendingMemberAction?.type === 'promote'
+          ? 'group.promoteMessage'
+          : pendingMemberAction?.type === 'demote'
+            ? 'group.demoteMessage'
+            : 'group.removeMemberMessage', {
           name: pendingMemberAction ? memberLabel(pendingMemberAction.member) : '',
         })}
-        confirmLabel={t(pendingMemberAction?.type === 'transfer'
-          ? 'group.transferConfirm'
-          : 'group.removeMemberConfirm')}
+        confirmLabel={t(pendingMemberAction?.type === 'promote'
+          ? 'group.promoteConfirm'
+          : pendingMemberAction?.type === 'demote'
+            ? 'group.demoteConfirm'
+            : 'group.removeMemberConfirm')}
         destructive={pendingMemberAction?.type === 'remove'}
         onConfirm={confirmPendingMemberAction}
         onCancel={() => setPendingMemberAction(null)}

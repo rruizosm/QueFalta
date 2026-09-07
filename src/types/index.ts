@@ -54,6 +54,7 @@ export interface GroupMember {
   initials: string;
   color: string;
   avatarUrl?: string | null;
+  isAdmin: boolean;
 }
 
 export interface ActivityEntry {

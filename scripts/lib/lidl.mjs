@@ -86,6 +86,28 @@ function offerText(value) {
   return null;
 }
 
+function decodeHtmlEntities(value) {
+  return annotationText(value)
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&quot;/gi, '"')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>');
+}
+
+/** Condición de compra publicada en la ficha de la oferta de Lidl Plus. */
+export function lidlOfferConditions(offer) {
+  for (const value of [
+    offer?.characteristicsDescription,
+    offer?.characteristicsTitle,
+    offer?.termsAndConditionsDescription,
+  ]) {
+    const text = decodeHtmlEntities(value);
+    if (text) return text;
+  }
+  return null;
+}
+
 const normalizeOfferCode = (value) => {
   const digits = String(value ?? '').trim().replace(/\D/g, '');
   return digits ? digits.replace(/^0+(?=\d)/, '') : null;
@@ -190,6 +212,15 @@ export function isLidlMinimumQuantityOffer(offer) {
     || /\bcompra\s+m[ií]n(?:imo|\.)?\s*\d+\s*(?:uds?\.?|unidades?)\b/iu.test(text);
 }
 
+/**
+ * El feed de tienda distingue los precios exclusivos para clientes Lidl Plus
+ * mediante StoreSpecialPriceDiscount. Se mantiene una lista cerrada para no
+ * presentar como condicionada una promoción cuyo contrato aún no conocemos.
+ */
+export function isLidlPlusStoreOffer(offer) {
+  return String(offer?.offerType ?? '').trim() === 'StoreSpecialPriceDiscount';
+}
+
 /** Aplica al contrato de BD una oferta ya verificada contra productCodes. */
 export function applyLidlOffer(row, offer) {
   const promoPrice = isLidlMinimumQuantityOffer(offer)
@@ -200,9 +231,7 @@ export function applyLidlOffer(row, offer) {
     ? sourceBasePrice
     : null;
   const promoName = lidlOfferLabel(offer);
-  const sourcePromoText = annotationText(offer?.priceBox?.discountMessage)
-    || annotationText(offer?.offerType)
-    || null;
+  const sourcePromoText = lidlOfferConditions(offer);
   const promoText = sourcePromoText?.toLowerCase() === promoName.toLowerCase()
     ? null
     : sourcePromoText;
@@ -214,6 +243,7 @@ export function applyLidlOffer(row, offer) {
     promo_base_price: basePrice,
     promo_start: isoDate(offer?.startValidityDate),
     promo_end: isoDate(offer?.endValidityDate),
+    is_lidl_plus_offer: isLidlPlusStoreOffer(offer),
     raw: { ...(row?.raw ?? {}), offer },
   };
 }
@@ -296,7 +326,7 @@ export function lidlProductMasterRow(row) {
 }
 
 /** Datos que solo son autoritativos para una tienda Lidl concreta. */
-export function lidlStoreProductRow(row, storeId) {
+export function lidlStoreProductRow(row, storeId, sourceStoreId = storeId) {
   return {
     store_id: storeId,
     product_id: row.id,
@@ -324,6 +354,7 @@ export function lidlStoreProductRow(row, storeId) {
       productValidForClickAndCollect: row.raw?.productValidForClickAndCollect ?? null,
       campaign: row.raw?.campaign ?? null,
       offer: row.raw?.offer ?? null,
+      ...(sourceStoreId !== storeId ? { fallbackSourceStoreId: sourceStoreId } : {}),
     },
     observed_at: row.synced_at,
     synced_at: row.synced_at,

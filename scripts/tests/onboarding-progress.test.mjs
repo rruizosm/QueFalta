@@ -86,7 +86,7 @@ test('Lidl appears next to Mercadona in onboarding and the main store pickers', 
 test('1.3.1 blocks onboarded accounts until they save a valid postal code', () => {
   assert.match(navigation, /needsPostalCode = !!profile\?\.onboardedAt && !profile\.postalCode/);
   assert.match(navigation, /needsPostalCode \? <RegionGateScreen \/>/);
-  assert.match(navigation, /!needsPostalCode \? <WhatsNewPrompt \/>/);
+  assert.match(navigation, /!needsPostalCode && lidlPromptResolved \? <WhatsNewPrompt \/>/);
   assert.match(regionGate, /<Modal[\s\S]*onRequestClose=\{\(\) => \{\}\}/);
   assert.match(regionGate, /!!selection\.region && !!selection\.postalCode/);
   assert.match(regionGate, /allowAll=\{false\}/);

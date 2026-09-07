@@ -1,5 +1,223 @@
 # QuéFalta — Contexto del proyecto
 
+## Ofertas exclusivas Lidl Plus identificadas (local + backend, 2026-09-07)
+
+- El feed de tienda clasifica `StoreSpecialPriceDiscount` como precio exclusivo
+  para clientes Lidl Plus. `applyLidlOffer` escribe siempre el booleano
+  `is_lidl_plus_offer`, también a `false` cuando una oferta posterior ordinaria
+  reemplaza una señal Plus anterior. Product Catalog y las campañas web
+  conservan sus señales explícitas existentes.
+- El cliente selecciona y normaliza el booleano. Listas y cuadrícula combinan
+  la etiqueta de descuento con «Lidl Plus» sin duplicarla; la ficha añade un
+  bloque «Requisito» que explica que hay que identificarse con la tarjeta al
+  pagar, sin afirmar que sea necesario activar un cupón. Copy ES/CA.
+- Backfill aplicado en producción desde el JSON crudo ya almacenado, sin nueva
+  descarga ni migración: 17.535 filas multitienda y 28 legacy cambiaron. Las
+  18.600 filas publicadas de `StoreSpecialPriceDiscount` están marcadas, ningún
+  otro tipo del feed conserva el flag y las 480 ofertas vigentes de Escalopín
+  de vacuno están corregidas.
+- Pruebas focalizadas, TypeScript, ESLint y suite completa (716/716)
+  correctos; `git diff --check` limpio.
+
+## Productos Lidl admitidos en carrito e histórico (local + backend, 2026-09-07)
+
+- Corregido el rechazo al añadir productos Lidl: las restricciones
+  `list_items_store_key_allowed` y `purchase_items_store_key_allowed` todavía
+  enumeraban solo los supermercados anteriores y no aceptaban `store_key='lidl'`.
+- La migración `20260907111958_allow_lidl_cart_items.sql` está aplicada en
+  producción. También alinea las restricciones de productos de catálogo
+  vinculados a comentarios (`*_note_product_shape`) para admitir Lidl.
+- Verificación SQL sobre tablas temporales clonadas del esquema real: dos filas
+  Lidl aceptadas en carrito y dos en histórico, cubriendo producto principal y
+  producto vinculado. Prueba de regresión local añadida. No requiere una nueva
+  build del cliente; las versiones que ya envían `store_key='lidl'` funcionan
+  con el cambio de backend.
+
+## Aviso en fichas Lidl sin imagen (local, 2026-09-07)
+
+- Cuando Lidl entrega una miniatura nula o su placeholder remoto, la ficha de
+  producto sustituye el icono genérico por «Lidl no ofrece una imagen para este
+  producto. Sentimos las molestias.». El resto de supermercados conserva su
+  fallback habitual.
+- Cambio solo de cliente, localizado en castellano y catalán. Sin migración ni
+  sincronización.
+
+## Decisión obligatoria de Lidl al actualizar a 1.3.1 (local, 2026-09-07)
+
+- Tras resolver el código postal, las cuentas incorporadas ven un diálogo sin
+  cierre con el logo de Lidl y deben responder si quieren añadirlo a sus
+  supermercados seleccionados. «Sí» lo incorpora y «No» lo excluye.
+- La respuesta actualiza `profiles.catalog_stores`, refresca inmediatamente el
+  `ProfileContext` y se recuerda en AsyncStorage con clave por versión y usuario.
+  Un fallo de guardado mantiene abierto el diálogo con opción de reintento.
+- Las altas nuevas registran la elección hecha en el onboarding y no reciben
+  después el diálogo de actualización. Los avisos de novedades y valoración no
+  se montan hasta resolver esta decisión, evitando modales superpuestos.
+- Lidl deja de activarse silenciosamente al normalizar una selección antigua
+  completa o nula. La versión comercial queda alineada en 1.3.1 para Expo, iOS
+  y Android; no cambian los números de build ni se necesita migración SQL.
+- TypeScript, ESLint focalizado, 18 pruebas de arranque/versión y la suite
+  completa (708/708) correctos; `git diff --check` limpio.
+
+## Condiciones y vigencia en el detalle de ofertas Lidl (local, 2026-09-07)
+
+- La ficha Lidl muestra las condiciones de la promoción con una etiqueta
+  explícita y presenta su vigencia como intervalo, fecha de inicio o fecha de
+  fin según los datos disponibles. Si Lidl no publica una condición, el bloque
+  se omite; `promo_name` sigue siendo solo la etiqueta del descuento.
+- El listado `/offers` no incluye las condiciones. El sync consulta ahora
+  `/offers/{id}` solo para las campañas que ya enlazó con un producto y guarda
+  `characteristicsDescription` en `promo_text`, con respaldo en
+  `characteristicsTitle` y `termsAndConditionsDescription`.
+- Backfill de producción aplicado sobre 40 campañas vigentes y 16.883 filas.
+  Las 480 variantes por tienda de Plátano de Canarias muestran «Limitado a 4
+  uds. o kg en artículos de peso variable» y vigencia 07/09/2026–13/09/2026.
+  Quedan 15 filas de campañas cuyo detalle ya no responde; no se les inventa
+  una condición. No requiere migración.
+
+## Fallback de tienda maestra Lidl (local, 2026-09-07)
+
+- Cuando Product Catalog confirma ausencia total para una tienda —HTTP 204 sin
+  cuerpo en categorías, árbol raíz vacío o las tres ramas de control de pan,
+  fruta y carne vacías tras sus reintentos— el fleet repite esa tienda usando
+  `ES3572` como fuente maestra.
+  Conserva el `store_id` solicitado como destino y publica catálogo, categorías,
+  precios, disponibilidad y ofertas de la maestra.
+- El fallback no se activa ante 403/429, errores de red, JSON incompleto,
+  catálogos parciales ni guardarraíles de cobertura: esos casos siguen fallando
+  para no ocultar una incidencia real. Si también falla la maestra, se conserva
+  el error original y el del fallback en la cola.
+- La procedencia queda en `lidl_store_products.raw.fallbackSourceStoreId`; no
+  requiere migración. Esta decisión sustituye la política anterior de dejar las
+  39 tiendas canarias y los tres outlets sin catálogo y de no usar respaldo.
+- DRY_RUN real `ES0951 ← ES3572`: 2.812 productos, 43 categorías, 100 % con
+  precio e imagen y 29 productos promocionados desde el feed de ofertas. Las
+  campañas web se omitieron en esa lectura porque la portada no expuso Formato
+  ahorro XXL; el feed de ofertas de la maestra sí quedó validado.
+
+## Varios administradores por grupo (local + backend, 2026-09-07)
+
+- `group_members.role` (`member`/`admin`) sustituye a `groups.owner_id` como
+  fuente de autorización. Cualquier administrador puede promocionar o degradar
+  a otros miembros, gestionar miembros y editar nombre/icono; el creador no
+  puede perder su rol de administrador mientras conserve la membresía.
+- `groups.created_by` conserva una facultad exclusiva e intransferible: solo el
+  creador puede eliminar el grupo. `owner_id` queda únicamente para que las
+  versiones ya publicadas puedan seguir leyendo el registro.
+- Migraciones `20260907084525_multiple_group_admins.sql` y
+  `20260907085000_backfill_adminless_group_admins.sql` aplicadas en producción.
+  El backfill preservó como administradores a creadores y antiguos propietarios
+  que aún eran miembros. Dos grupos huérfanos, cuyo creador y propietario ya no
+  tenían cuenta, promocionaron a su único miembro restante; pueden administrarse
+  pero no eliminarse en nombre del creador ausente.
+- Las policies RLS separan edición, gestión de roles y borrado; los helpers
+  `SECURITY DEFINER` viven en `private`, fijan `search_path` y tienen permisos
+  explícitos. El cliente muestra badges de creador/administrador y acciones para
+  añadir o retirar administradores. Pruebas de comportamiento SQL, invariantes
+  de cliente/RLS, TypeScript, lint completo y suite completa (695/695)
+  correctos. El advisor posterior no añadió hallazgos de esta funcionalidad.
+
+## Cesta integrada en el bloque del detalle de grupo (local, 2026-09-07)
+
+- La cabecera «Cesta del grupo», el progreso, las agrupaciones por tienda/zona
+  y los productos vuelven a formar visualmente una sola tarjeta continua.
+- Se corrige la regresión introducida al virtualizar el detalle con
+  `SectionList`: la cabecera conservaba su cierre redondeado mientras las filas
+  se dibujaban como superficies externas. Se mantiene la virtualización y se
+  cierra el borde únicamente tras el último producto. Sin migración.
+- TypeScript, ESLint focalizado, 4 pruebas de auditoría y `git diff --check`
+  correctos.
+
+## Icono y gestión alineados en el detalle de grupo (local, 2026-09-07)
+
+- Para los administradores, el acceso al selector de icono y el botón «Gestionar»
+  comparten ahora una única fila en la parte superior del detalle: icono a la
+  izquierda y gestión a la derecha, como acciones independientes y accesibles.
+- Se elimina la tarjeta vertical separada del selector. Los miembros que no son
+  propietarios conservan los avatares a la izquierda y «Gestionar» a la derecha.
+  Cambio exclusivamente visual, sin migración.
+
+## Fondo ambiental propio en Grupos (local, 2026-09-07)
+
+- La pestaña Grupos incorpora el fondo de burbujas ambientales de Inicio en
+  todos sus estados, con una variante visual propia: 18 burbujas con radios y
+  ubicaciones diferentes, además de halo, anillo y lavado recolocados.
+- La variante continúa siguiendo el acento de Apariencia, queda fuera de
+  accesibilidad y no intercepta gestos. Inicio y Carrito mantienen intacta su
+  composición compartida. Grupos mantiene el papel plano, sin el difuminado
+  superior izquierdo de Inicio. Cambio exclusivamente visual, sin migración.
+- TypeScript, ESLint focalizado y `git diff --check` correctos.
+
+## Etiquetas de oferta compactas en cuadrícula (local, 2026-09-07)
+
+- Las promociones de todos los supermercados en la vista de cuadrícula usan una etiqueta más
+  pequeña, ajustada al contenido y limitada al 68 % del ancho de la imagen.
+  La vista de lista no cambia.
+- La ficha de detalle Lidl usa el mismo bloque promocional de Carrefour: ancho
+  disponible completo, padding de 12 pt, icono y etiqueta de 12 pt y texto de
+  12,5 pt. Mantiene Condiciones y Vigencia como campos separados.
+- TypeScript, ESLint focalizado, 6 pruebas de ofertas y `git diff --check`
+  correctos. Cambio
+  exclusivamente visual de cliente, sin migración ni publicación.
+
+## Imágenes Lidl verificadas en Xcode (local, 2026-09-07)
+
+- Corregida la optimización anterior de 192 px: disparaba una transformación
+  CDN lenta y con caché de solo 300 segundos. Lista, cuadrícula, ficha y precarga
+  comparten ahora la variante publicada de 384 px, con caché larga. Los
+  placeholders remotos de Lidl se sustituyen por el icono local.
+- Precarga compartida entre pantallas: máximo dos descargas simultáneas,
+  deduplicación, 24 trabajos y doce imágenes por solicitud; cancelar una
+  pantalla retira sus pendientes sin cancelar trabajos compartidos.
+- Medición real en simulador iPhone 15 Pro / iOS 26.5: mismas 16 imágenes sin
+  caché local, mediana 5.257 → 627 ms y máximo 8.065 → 835 ms. Con caché de
+  disco: mediana 5,5 ms. Cuadrícula y ficha comprobadas visualmente; la ficha
+  reutiliza memoria (2–8 ms). Red/CDN no controlados; no es un benchmark de
+  dispositivo físico. Evidencia: `docs/lidl-image-performance-20260907.json`.
+- Compilación nativa Xcode, TypeScript, ESLint focalizado y 14 pruebas
+  focalizadas correctos; `git diff --check` limpio. Instrumentación y borrado
+  temporal de cachés retirados. Sin migraciones ni publicación.
+
+
+## Carga de catálogo, feeds y fichas optimizada (local, 2026-09-07)
+
+- Caché compartida en memoria de primeras páginas/paginación de Catálogo,
+  Ofertas, Novedades y Cambios, con TTL de cinco minutos, límite de 180 entradas
+  y deduplicación de peticiones en curso. Incluye idioma, supermercado, región,
+  CP, tienda Lidl, orden, filtros y cursor; se limpia al cambiar de cuenta y
+  descarta escrituras de peticiones pertenecientes a la sesión anterior.
+- El selector compartido precarga solo el supermercado individual accesible:
+  empieza a los 800 ms, con dos consultas simultáneas como máximo. No bloquea
+  el arranque ni precarga todos los supermercados. La navegación paginada se
+  comparte en `src/api/catalogBrowse.ts`; una cancelación de pantalla no corta
+  la petición que también puede estar utilizando otra pantalla.
+- Novedades/Cambios/Ofertas recuperan la primera página antes de pintar el
+  estado de carga. Las fichas muestran el snapshot de la lista mientras llega
+  el detalle; los detalles completos se reutilizan durante cinco minutos.
+  Mercadona consulta API y espejo en paralelo, conservando el fallback regional.
+  Lidl reutiliza su ficha básica ya completa solo para el mismo producto/tienda
+  y durante cinco minutos. Las subcategorías Lidl reutilizan sus consultas.
+- Imágenes Lidl: variante común de 384 px y precarga compartida; ver la
+  corrección validada en Xcode más arriba. La prueba inicial a 192 px reducía
+  bytes pero empeoraba la latencia por transformación y caché del CDN.
+- Validación: TypeScript y ESLint focalizado correctos; suite completa de 686
+  pruebas y 10 pruebas focalizadas finales (incluida cancelación por lector)
+  correctas. Exportación del bundle Hermes iOS correcta.
+- Solo cliente, sin migraciones, sincronizaciones ni publicación. El arranque
+  sin caché y los fallos de red aún pueden mostrar carga. Pendiente validación
+  visual y medición de navegación en dispositivo.
+
+## Recetas desactivadas para publicación (local, 2026-09-07)
+
+- `QUE_COCINO_ENABLED = false` retira Recetas del árbol de navegación tanto en
+  la barra clásica como en Liquid Glass. Quedan cuatro pestañas: Inicio,
+  Catálogo, Carrito y Grupos.
+- La pantalla no se monta ni consulta recetas; creación, detalle, Me gusta,
+  Guardar y añadir ingredientes al carrito quedan inaccesibles en esta versión.
+- Se conservan código y datos para una futura reactivación. Cambio solo de
+  cliente, sin migración ni despliegue remoto. Sustituye la activación histórica
+  para desarrollo descrita más abajo.
+
 ## Capacidad de recuperación Lidl y ES0548 (local, 2026-09-07)
 
 - El modo manual `recover` pasa de 2 a 8 workers, manteniendo 100 trabajos por
@@ -3039,9 +3257,8 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - `list_items`: columna `image_url text`.
 - Edge Function `delete-account` desplegada.
 - (Futuro Fase 2) tabla `push_tokens`.
-- **`group_members` INSERT policy** `with check (user_id = auth.uid())` — IMPRESCINDIBLE para que las invitaciones por enlace funcionen (si falta, `joinGroup` da 42501 y el grupo no carga). Está en `supabase/policies/group_join.sql`.
-- **Modelo de admin de grupo** (`supabase/policies/groups_owner.sql`): `groups.created_by` = creador (inmutable), `groups.owner_id` = admin actual (cambia al transferir). Incluye `is_group_admin(gid)` (SECURITY DEFINER, evita recursión), la policy UPDATE de groups (admin) y la DELETE de group_members (abandonar/expulsar). El admin se calcula con `owner_id`, NO con `created_by`.
-- **Borrado de grupo por el admin** (`supabase/migrations/group_delete_cascade.sql`): recrea los FK de group_members/shopping_lists/list_items con ON DELETE CASCADE para que borrar el grupo arrastre miembros, listas e ítems. La policy DELETE ya está en groups_owner.sql (owner_id).
+- **Administración de grupos** (`supabase/migrations/20260907084525_multiple_group_admins.sql`): `group_members.role` es la fuente vigente de permisos y admite varios administradores. Las invitaciones siguen permitiendo el alta propia, siempre como miembro normal; un administrador solo puede añadir perfiles `discoverable`. `groups_owner.sql` queda obsoleto y no debe reejecutarse.
+- **Borrado exclusivo por el creador**: `groups.created_by` es inmutable y la policy DELETE solo autoriza esa cuenta. `supabase/migrations/group_delete_cascade.sql` conserva los FK `ON DELETE CASCADE` para arrastrar miembros, listas e ítems después de que RLS autorice el borrado.
 - **Catálogo Consum** (`supabase/migrations/consum_catalog.sql`): tablas `consum_products`/`consum_categories`. Tras ejecutarla, lanzar el sync (workflow `sync-consum.yml` o `scripts/run-consum-sync.ps1`). Ver `scripts/README-consum-sync.md`.
 - **Catálogo Dia** (`supabase/migrations/dia_catalog.sql`): tablas `dia_products`/`dia_categories`. Tras ejecutarla, lanzar el sync (workflow `sync-dia.yml` o `scripts/run-dia-sync.ps1`). Ver `scripts/README-dia-sync.md`.
 - **Catálogo Sorli** (`supabase/migrations/sorli_catalog.sql`): tablas `sorli_products`/`sorli_categories` (7º súper, catalán). Migración AUTOCONTENIDA: incluye ya las columnas que en los otros súpers añadieron migraciones posteriores (`display_name_norm`+`display_name_ca_norm` para búsqueda sin acentos bilingüe, `first_seen_at` para novedades, `prev_unit_price`/`price_changed_at`/`price_delta_pct` + trigger para cambios de precio). Sorli tiene API JSON propia protegida por un token de sesión que firma su SPA → el sync (`scripts/sync-sorli.mjs`) ARRANCA la sesión con navegador headless (Playwright, como Bonpreu) y luego pagina el catálogo entero (~9.460 productos) con fetch, en 2 pasadas es/ca (bilingüe). Tras ejecutarla, lanzar el sync (workflow `sync-sorli.yml` o `scripts/run-sorli-sync.ps1`) y **re-ejecutar `similar_products.sql`** (ya incluye el brazo de Sorli). Ver `scripts/README-sorli-sync.md`.

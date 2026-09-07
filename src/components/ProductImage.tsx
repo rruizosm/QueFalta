@@ -1,41 +1,50 @@
-import { useEffect, useState } from 'react';
+import { productImageSource } from '../lib/productImageSource';
+import { useState } from 'react';
 import { Image } from 'expo-image';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, View, type ImageStyle, type StyleProp, type ViewStyle } from 'react-native';
+import type { ReactNode } from 'react';
+
 
 /**
  * Imagen de producto con caché en memoria+disco (expo-image). Sustituye al
  * <Image> de react-native, que apenas cachea en disco y obliga a re-descargar
  * cada miniatura al reentrar en una subcategoría (la causa del "tarda en cargar
- * las imágenes"). En listas: la primera carga hace una transición suave y las
- * reentradas/scroll son instantáneas. `recyclingKey` evita que al reciclar una
+ * las imágenes"). Las miniaturas se muestran sin transición adicional y Lidl utiliza
+ * la variante publicada de 384 px en lista, cuadrícula y ficha. `recyclingKey` evita que al reciclar una
  * fila de FlatList se vea un instante la imagen del producto anterior.
  */
 export default function ProductImage({
   uri,
   style,
+  fallback,
 }: {
   uri: string;
   style: StyleProp<ImageStyle>;
+  fallback?: ReactNode;
 }) {
-  const [failed, setFailed] = useState(false);
-
-  useEffect(() => setFailed(false), [uri]);
+  const optimizedUri = productImageSource(uri);
+  const [failure, setFailure] = useState<{ request: string; source: string } | null>(null);
+  const failedSource = failure?.request === optimizedUri ? failure.source : null;
+  const source = failedSource === optimizedUri ? uri : optimizedUri;
+  const failed = failedSource === uri;
 
   return (
     <View style={[styles.frame, style as StyleProp<ViewStyle>]}>
       <View style={styles.placeholder} pointerEvents="none">
-        <Ionicons name="basket-outline" size={20} color="rgba(105,96,88,0.38)" />
+        {failed && fallback ? fallback : (
+          <Ionicons name="basket-outline" size={20} color="rgba(105,96,88,0.38)" />
+        )}
       </View>
-      {!failed && (
+      {!!source && !failed && (
         <Image
-          source={uri}
+          source={source}
           style={StyleSheet.absoluteFill}
           contentFit="contain"
           cachePolicy="memory-disk"
-          transition={150}
-          recyclingKey={uri}
-          onError={() => setFailed(true)}
+          transition={0}
+          recyclingKey={source}
+          onError={() => setFailure({ request: optimizedUri, source })}
         />
       )}
     </View>

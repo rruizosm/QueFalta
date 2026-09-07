@@ -1,0 +1,324 @@
+{
+  "date": "2026-09-07",
+  "environment": "Xcode Debug, iPhone 15 Pro simulator, iOS 26.5",
+  "method": "Temporary expo-image onLoadStart/onLoad/onDisplay instrumentation, removed after measurement. Same 16 real list images; remote placeholders excluded. Cold-after clears memory and disk while Lidl is offscreen before reopening. cacheType none verified on all 16 before and cold-after loads.",
+  "limitations": [
+    "Observational runs over live network; CDN cache not controlled.",
+    "Native build ran during baseline; these timings are not a controlled benchmark.",
+    "No physical device measurement."
+  ],
+  "runs": {
+    "before": {
+      "count": 16,
+      "minDisplayMs": 2226,
+      "medianDisplayMs": 5257.0,
+      "maxDisplayMs": 8065,
+      "images": [
+        {
+          "file": "6434680_1007509_1007509_v0_highres.png",
+          "loadMs": 2362,
+          "cacheType": "none",
+          "displayMs": 2363
+        },
+        {
+          "file": "5690336_5718619_v0_highres.png",
+          "loadMs": 2220,
+          "cacheType": "none",
+          "displayMs": 2226
+        },
+        {
+          "file": "5192391_184424_v0_highres.png",
+          "loadMs": 3088,
+          "cacheType": "none",
+          "displayMs": 3089
+        },
+        {
+          "file": "5661946_184425_v1_highres.png",
+          "loadMs": 2227,
+          "cacheType": "none",
+          "displayMs": 2227
+        },
+        {
+          "file": "2422035_164790_v0_highres.png",
+          "loadMs": 3177,
+          "cacheType": "none",
+          "displayMs": 3178
+        },
+        {
+          "file": "6404785_2_v0_highres.png",
+          "loadMs": 2341,
+          "cacheType": "none",
+          "displayMs": 2341
+        },
+        {
+          "file": "5655141_5708806_v0_highres.png",
+          "loadMs": 5918,
+          "cacheType": "none",
+          "displayMs": 5919
+        },
+        {
+          "file": "2426161_159264_v0_highres.png",
+          "loadMs": 4432,
+          "cacheType": "none",
+          "displayMs": 4434
+        },
+        {
+          "file": "6289980_5706464_v0_highres.png",
+          "loadMs": 5388,
+          "cacheType": "none",
+          "displayMs": 5388
+        },
+        {
+          "file": "5707881_9460_v1_highres.png",
+          "loadMs": 5877,
+          "cacheType": "none",
+          "displayMs": 5878
+        },
+        {
+          "file": "2422053_5900915_v1_highres.png",
+          "loadMs": 5739,
+          "cacheType": "none",
+          "displayMs": 5739
+        },
+        {
+          "file": "6125138_5718866_v0_highres.png",
+          "loadMs": 5125,
+          "cacheType": "none",
+          "displayMs": 5126
+        },
+        {
+          "file": "5650819_5719045_v0_highres.png",
+          "loadMs": 6358,
+          "cacheType": "none",
+          "displayMs": 6359
+        },
+        {
+          "file": "5813107_1011646_v0_highres.png",
+          "loadMs": 7360,
+          "cacheType": "none",
+          "displayMs": 7361
+        },
+        {
+          "file": "5994552_5722982_v1_highres.png",
+          "loadMs": 7763,
+          "cacheType": "none",
+          "displayMs": 7763
+        },
+        {
+          "file": "5925128_5721612_v0_highres.png",
+          "loadMs": 8064,
+          "cacheType": "none",
+          "displayMs": 8065
+        }
+      ]
+    },
+    "cold-after": {
+      "count": 16,
+      "minDisplayMs": 428,
+      "medianDisplayMs": 627.0,
+      "maxDisplayMs": 835,
+      "images": [
+        {
+          "file": "6434680_1007509_1007509_v0_highres.png",
+          "loadMs": 627,
+          "cacheType": "none",
+          "displayMs": 627
+        },
+        {
+          "file": "5690336_5718619_v0_highres.png",
+          "loadMs": 479,
+          "cacheType": "none",
+          "displayMs": 480
+        },
+        {
+          "file": "5192391_184424_v0_highres.png",
+          "loadMs": 427,
+          "cacheType": "none",
+          "displayMs": 428
+        },
+        {
+          "file": "5661946_184425_v1_highres.png",
+          "loadMs": 450,
+          "cacheType": "none",
+          "displayMs": 450
+        },
+        {
+          "file": "2422035_164790_v0_highres.png",
+          "loadMs": 598,
+          "cacheType": "none",
+          "displayMs": 599
+        },
+        {
+          "file": "6404785_2_v0_highres.png",
+          "loadMs": 460,
+          "cacheType": "none",
+          "displayMs": 460
+        },
+        {
+          "file": "5655141_5708806_v0_highres.png",
+          "loadMs": 735,
+          "cacheType": "none",
+          "displayMs": 736
+        },
+        {
+          "file": "2426161_159264_v0_highres.png",
+          "loadMs": 614,
+          "cacheType": "none",
+          "displayMs": 614
+        },
+        {
+          "file": "6289980_5706464_v0_highres.png",
+          "loadMs": 616,
+          "cacheType": "none",
+          "displayMs": 618
+        },
+        {
+          "file": "5707881_9460_v1_highres.png",
+          "loadMs": 627,
+          "cacheType": "none",
+          "displayMs": 627
+        },
+        {
+          "file": "2422053_5900915_v1_highres.png",
+          "loadMs": 791,
+          "cacheType": "none",
+          "displayMs": 792
+        },
+        {
+          "file": "6125138_5718866_v0_highres.png",
+          "loadMs": 835,
+          "cacheType": "none",
+          "displayMs": 835
+        },
+        {
+          "file": "5650819_5719045_v0_highres.png",
+          "loadMs": 797,
+          "cacheType": "none",
+          "displayMs": 798
+        },
+        {
+          "file": "5813107_1011646_v0_highres.png",
+          "loadMs": 805,
+          "cacheType": "none",
+          "displayMs": 806
+        },
+        {
+          "file": "5994552_5722982_v1_highres.png",
+          "loadMs": 634,
+          "cacheType": "none",
+          "displayMs": 635
+        },
+        {
+          "file": "5925128_5721612_v0_highres.png",
+          "loadMs": 640,
+          "cacheType": "none",
+          "displayMs": 641
+        }
+      ]
+    },
+    "after": {
+      "count": 16,
+      "minDisplayMs": 2,
+      "medianDisplayMs": 5.5,
+      "maxDisplayMs": 179,
+      "images": [
+        {
+          "file": "6434680_1007509_1007509_v0_highres.png",
+          "loadMs": 7,
+          "cacheType": "disk",
+          "displayMs": 8
+        },
+        {
+          "file": "5690336_5718619_v0_highres.png",
+          "loadMs": 46,
+          "cacheType": "disk",
+          "displayMs": 47
+        },
+        {
+          "file": "5192391_184424_v0_highres.png",
+          "loadMs": 45,
+          "cacheType": "disk",
+          "displayMs": 45
+        },
+        {
+          "file": "5661946_184425_v1_highres.png",
+          "loadMs": 45,
+          "cacheType": "disk",
+          "displayMs": 45
+        },
+        {
+          "file": "2422035_164790_v0_highres.png",
+          "loadMs": 45,
+          "cacheType": "disk",
+          "displayMs": 45
+        },
+        {
+          "file": "6404785_2_v0_highres.png",
+          "loadMs": 45,
+          "cacheType": "disk",
+          "displayMs": 45
+        },
+        {
+          "file": "5655141_5708806_v0_highres.png",
+          "loadMs": 46,
+          "cacheType": "disk",
+          "displayMs": 47
+        },
+        {
+          "file": "2426161_159264_v0_highres.png",
+          "loadMs": 179,
+          "cacheType": "disk",
+          "displayMs": 179
+        },
+        {
+          "file": "6289980_5706464_v0_highres.png",
+          "loadMs": 2,
+          "cacheType": "disk",
+          "displayMs": 2
+        },
+        {
+          "file": "5707881_9460_v1_highres.png",
+          "loadMs": 1,
+          "cacheType": "disk",
+          "displayMs": 2
+        },
+        {
+          "file": "2422053_5900915_v1_highres.png",
+          "loadMs": 2,
+          "cacheType": "disk",
+          "displayMs": 2
+        },
+        {
+          "file": "6125138_5718866_v0_highres.png",
+          "loadMs": 2,
+          "cacheType": "disk",
+          "displayMs": 3
+        },
+        {
+          "file": "5650819_5719045_v0_highres.png",
+          "loadMs": 3,
+          "cacheType": "disk",
+          "displayMs": 3
+        },
+        {
+          "file": "5813107_1011646_v0_highres.png",
+          "loadMs": 3,
+          "cacheType": "disk",
+          "displayMs": 3
+        },
+        {
+          "file": "5994552_5722982_v1_highres.png",
+          "loadMs": 1,
+          "cacheType": "disk",
+          "displayMs": 2
+        },
+        {
+          "file": "5925128_5721612_v0_highres.png",
+          "loadMs": 1,
+          "cacheType": "disk",
+          "displayMs": 2
+        }
+      ]
+    }
+  }
+}

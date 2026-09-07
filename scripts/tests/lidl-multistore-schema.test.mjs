@@ -47,6 +47,8 @@ test('el sincronizador limita obsoletos a la tienda y aísla el contrato legacy'
   assert.match(sync, /if \(STORE_ID === 'ES3572'\) \{[\s\S]*upsert\('lidl_products', rows\)/);
   assert.match(sync, /upsert\('lidl_product_master'/);
   assert.match(sync, /upsert\('lidl_store_products'/);
+  assert.match(sync, /LIDL_SOURCE_STORE_ID/);
+  assert.match(sync, /lidlStoreProductRow\(row, STORE_ID, SOURCE_STORE_ID\)/);
 });
 
 test('todas las claves foráneas Lidl tienen índice de cobertura', () => {

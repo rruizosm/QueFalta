@@ -14,6 +14,8 @@ import type {
 export type NutriScoreGrade = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export interface UIProduct {
+  /** Lidl's listing already contains its complete basic detail, scoped to a store. */
+  lidlDetail?: { product: LidlProduct; fetchedAt: number };
   id: string;
   store: CatalogStore;
   name: string;
@@ -167,12 +169,16 @@ export function aldiToUI(p: AldiProduct): UIProduct {
 
 /** Lidl: catálogo público de tienda con precio, formato y promociones Lidl Plus. */
 export function lidlToUI(p: LidlProduct): UIProduct {
+  const offerTag = p.promoName && p.isLidlPlusOffer && !/lidl\s*plus/i.test(p.promoName)
+    ? `${p.promoName} · Lidl Plus`
+    : p.promoName;
   return {
+    lidlDetail: { product: p, fetchedAt: Date.now() },
     id: p.id, store: 'lidl', name: p.displayName, imageUrl: p.thumbnail,
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit,
-    categoryName: p.categoryName, offerTag: p.promoName,
+    categoryName: p.categoryName, offerTag,
   };
 }
 

@@ -38,6 +38,13 @@ const distinctPromotionText = (name: string, text: string | null) => {
   return normalize(text) === normalize(name) ? null : text;
 };
 
+const formatOfferDate = (value: string | null) => {
+  if (!value) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return value;
+  return `${Number(match[3])}/${Number(match[2])}/${match[1]}`;
+};
+
 /** Detalle de un producto de Aldi. Pinta los datos ya cargados (el catálogo va
  *  por el espejo en Supabase). Aldi da marca y formato del envase, pero no ficha
  *  (ingredientes/nutrición) → solo la categoría, como Consum. */
@@ -59,12 +66,32 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
   const lidlPromoBasePrice = store === 'lidl' && 'promoBasePrice' in product
     ? product.promoBasePrice
     : null;
+  const lidlPlusOnly = store === 'lidl'
+    && 'isLidlPlusOffer' in product
+    && product.isLidlPlusOffer;
   const lidlPromotion = store === 'lidl'
     && 'promoName' in product
     && 'promoText' in product
+    && 'promoStart' in product
+    && 'promoEnd' in product
     && product.promoName
-    ? { name: product.promoName, text: distinctPromotionText(product.promoName, product.promoText) }
+    ? {
+        name: product.promoName,
+        label: lidlPlusOnly && !/lidl\s*plus/i.test(product.promoName)
+          ? `${product.promoName} · Lidl Plus`
+          : product.promoName,
+        condition: distinctPromotionText(product.promoName, product.promoText),
+        start: formatOfferDate(product.promoStart),
+        end: formatOfferDate(product.promoEnd),
+      }
     : null;
+  const lidlOfferValidity = lidlPromotion?.start && lidlPromotion.end
+    ? t('product.offerValidityRange', { start: lidlPromotion.start, end: lidlPromotion.end })
+    : lidlPromotion?.start
+      ? t('product.offerValidityFrom', { start: lidlPromotion.start })
+      : lidlPromotion?.end
+        ? t('product.offerValidityUntil', { end: lidlPromotion.end })
+        : null;
   const promotionPreviousPrice = lidlPromoBasePrice != null
     && product.unitPrice != null
     && lidlPromoBasePrice > product.unitPrice
@@ -131,7 +158,13 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} alertTarget={{ store, productId: product.id }} />
+        <ProductDetailImage
+          uri={product.thumbnail}
+          style={styles.photo}
+          badgeLabel={badgeLabel}
+          alertTarget={{ store, productId: product.id }}
+          emptyMessage={store === 'lidl' ? t('product.lidlImageUnavailable') : undefined}
+        />
 
         <Text style={styles.name}>{product.displayName}</Text>
         {product.brand ? <Text style={styles.brand}>{product.brand}</Text> : null}
@@ -150,9 +183,26 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
           <View style={styles.promoBox}>
             <View style={styles.promoPill}>
               <Ionicons name="pricetags" size={12} color={colors.white} />
-              <Text style={styles.promoPillText}>{lidlPromotion.name}</Text>
+              <Text style={styles.promoPillText}>{lidlPromotion.label}</Text>
             </View>
-            {lidlPromotion.text ? <Text style={styles.promoText}>{lidlPromotion.text}</Text> : null}
+            {lidlPlusOnly ? (
+              <View style={styles.promoDetail}>
+                <Text style={styles.promoDetailLabel}>{t('product.offerRequirement')}</Text>
+                <Text style={styles.promoText}>{t('product.lidlPlusRequirement')}</Text>
+              </View>
+            ) : null}
+            {lidlPromotion.condition ? (
+              <View style={styles.promoDetail}>
+                <Text style={styles.promoDetailLabel}>{t('product.offerConditions')}</Text>
+                <Text style={styles.promoText}>{lidlPromotion.condition}</Text>
+              </View>
+            ) : null}
+            {lidlOfferValidity ? (
+              <View style={styles.promoDetail}>
+                <Text style={styles.promoDetailLabel}>{t('product.offerValidity')}</Text>
+                <Text style={styles.promoText}>{lidlOfferValidity}</Text>
+              </View>
+            ) : null}
           </View>
         ) : null}
 
@@ -242,6 +292,8 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.accent, paddingHorizontal: 8, paddingVertical: 4,
   },
   promoPillText: { fontSize: 12, fontFamily: fonts.bold, color: colors.white },
+  promoDetail: { gap: 2 },
+  promoDetailLabel: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.inkSoft },
   promoText: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.ink, lineHeight: 18 },
 
   note: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkFaint, marginTop: 24 },

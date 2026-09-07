@@ -10,6 +10,16 @@
   Las 480 variantes de Plátano de Canarias muestran «Limitado a 4 uds. o kg en
   artículos de peso variable» y vigencia 07/09/2026–13/09/2026. Sin migración.
 
+## Capacidad de recuperación Lidl y ES0548 (local, 2026-09-07)
+
+- El modo manual `recover` pasa de 2 a 8 workers, manteniendo 100 trabajos por
+  worker y `max-parallel: 3`; una ejecución puede consumir hasta 800 filas sin
+  reprogramar las tiendas ya completadas.
+- `ES0548` queda registrada como catálogo pequeño verificado: tres lecturas
+  completas e idénticas de 2.199 productos, 40/40 hojas y 100 % con precio e
+  imagen. Su mínimo defensivo es 2.155 (98 %), conservando el control adicional
+  de cobertura respecto al catálogo publicado. Sin migración.
+
 ## Filtro vacío del sync Lidl (local, 2026-09-06)
 
 - El orquestador interpreta `LIDL_FLEET_STORE_IDS` ausente, vacío o compuesto

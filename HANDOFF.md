@@ -9,6 +9,15 @@
   la condición esperada en 480 tiendas; 15 filas antiguas quedan sin condición
   porque sus UUID ya no devuelven detalle. Sin migración.
 
+## Capacidad de recuperación Lidl y ES0548 (local, 2026-09-07)
+
+- Tras el recover `34053713271`, la cola quedó en 199 `succeeded`, 1 `retry`
+  (`ES0548`) y 521 `pending`: el límite anterior de 2×100 no podía vaciarla.
+- `recover` usa ahora ocho workers (hasta 800 trabajos) sin reprogramar éxitos.
+  `ES0548` se añade a `LIDL_VERIFIED_SMALL_CATALOGS` con 2.199 productos y suelo
+  2.155 después de tres observaciones completas coincidentes.
+- Pendiente publicar y ejecutar `recover` sin `store_ids`. Sin migración SQL.
+
 ## Filtro vacío del sync Lidl (local, 2026-09-06)
 
 - `sync-lidl-fleet.mjs` normaliza el input vacío que GitHub Actions pasa en

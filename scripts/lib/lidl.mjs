@@ -86,6 +86,28 @@ function offerText(value) {
   return null;
 }
 
+function decodeHtmlEntities(value) {
+  return annotationText(value)
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&quot;/gi, '"')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>');
+}
+
+/** Condición de compra publicada en la ficha de la oferta de Lidl Plus. */
+export function lidlOfferConditions(offer) {
+  for (const value of [
+    offer?.characteristicsDescription,
+    offer?.characteristicsTitle,
+    offer?.termsAndConditionsDescription,
+  ]) {
+    const text = decodeHtmlEntities(value);
+    if (text) return text;
+  }
+  return null;
+}
+
 const normalizeOfferCode = (value) => {
   const digits = String(value ?? '').trim().replace(/\D/g, '');
   return digits ? digits.replace(/^0+(?=\d)/, '') : null;
@@ -200,9 +222,7 @@ export function applyLidlOffer(row, offer) {
     ? sourceBasePrice
     : null;
   const promoName = lidlOfferLabel(offer);
-  const sourcePromoText = annotationText(offer?.priceBox?.discountMessage)
-    || annotationText(offer?.offerType)
-    || null;
+  const sourcePromoText = lidlOfferConditions(offer);
   const promoText = sourcePromoText?.toLowerCase() === promoName.toLowerCase()
     ? null
     : sourcePromoText;

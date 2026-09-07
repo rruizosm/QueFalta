@@ -81,6 +81,10 @@ async function getOffersJson(tries = 5) {
   return lidlRequest(OFFERS_URL, { headers }, { label: 'ofertas', attempts: tries });
 }
 
+async function getOfferDetailJson(id, tries = 5) {
+  return lidlRequest(`${OFFERS_URL}/${encodeURIComponent(id)}`, { headers }, { label: `oferta ${id}`, attempts: tries });
+}
+
 async function discoverCategories() {
   const payload = await getJson('/categories');
   const roots = Array.isArray(payload?.categories) ? payload.categories : [];
@@ -196,7 +200,15 @@ async function mergeCurrentOffers(rows) {
         const detail = await detailFor(candidate.id);
         if (lidlOfferMatchesDetail(detail, offer)) verified.push(candidate);
       }
-      resolved[index] = { offer, candidates: candidates.length, verified };
+      let enrichedOffer = offer;
+      if (verified.length > 0) {
+        const offerDetail = await getOfferDetailJson(offer.id);
+        if (!offerDetail || String(offerDetail.id) !== String(offer.id)) {
+          throw new Error(`detalle incoherente para la oferta ${offer.id}`);
+        }
+        enrichedOffer = { ...offer, ...offerDetail, productIds: offer.productIds };
+      }
+      resolved[index] = { offer: enrichedOffer, candidates: candidates.length, verified };
       if (REQUEST_DELAY_MS) await sleep(REQUEST_DELAY_MS);
     }
   }));

@@ -23,6 +23,17 @@ test('la ficha Lidl no repite una condición de oferta idéntica', () => {
   assert.match(sharedModal, /normalize\(text\) === normalize\(name\) \? null : text/);
 });
 
+test('la ficha Lidl identifica las condiciones y la vigencia de la oferta', () => {
+  assert.match(sharedModal, /t\('product\.offerConditions'\)/);
+  assert.match(sharedModal, /t\('product\.offerValidity'\)/);
+  assert.match(sharedModal, /condition: distinctPromotionText\(product\.promoName, product\.promoText\)/);
+  assert.doesNotMatch(sharedModal, /condition: distinctPromotionText\([^\n]+\) \?\? product\.promoName/);
+  assert.match(sharedModal, /\{lidlPromotion\.condition \? \(/);
+  assert.match(sharedModal, /offerValidityRange/);
+  assert.match(sharedModal, /offerValidityFrom/);
+  assert.match(sharedModal, /offerValidityUntil/);
+});
+
 test('la ficha Lidl muestra el precio anterior tachado solo para una rebaja directa', () => {
   assert.match(sharedModal, /lidlPromoBasePrice > product\.unitPrice/);
   assert.match(sharedModal, /promotionPreviousPrice=\{promotionPreviousPrice\}/);

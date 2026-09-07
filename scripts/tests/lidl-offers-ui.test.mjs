@@ -4,6 +4,8 @@ import test from 'node:test';
 
 const lidlModal = readFileSync(new URL('../../src/components/LidlProductModal.tsx', import.meta.url), 'utf8');
 const sharedModal = readFileSync(new URL('../../src/components/AldiProductModal.tsx', import.meta.url), 'utf8');
+const detailImage = readFileSync(new URL('../../src/components/ProductDetailImage.tsx', import.meta.url), 'utf8');
+const productImage = readFileSync(new URL('../../src/components/ProductImage.tsx', import.meta.url), 'utf8');
 
 test('la oferta Lidl no se superpone como etiqueta en la imagen', () => {
   assert.doesNotMatch(lidlModal, /badgeLabel=.*promoName/);
@@ -48,4 +50,11 @@ test('la ficha Lidl muestra el precio anterior tachado solo para una rebaja dire
   assert.match(sharedModal, /lidlPromoBasePrice > product\.unitPrice/);
   assert.match(sharedModal, /promotionPreviousPrice=\{promotionPreviousPrice\}/);
   assert.match(sharedModal, /priceTone=\{promotionPreviousPrice \? 'down' : 'default'\}/);
+});
+
+test('la ficha Lidl explica y lamenta que el proveedor no publique una imagen', () => {
+  assert.match(sharedModal, /emptyMessage=\{store === 'lidl' \? t\('product\.lidlImageUnavailable'\) : undefined\}/);
+  assert.match(detailImage, /ImagePlaceholder/);
+  assert.match(detailImage, /<ProductImage uri=\{uri\}[\s\S]*?fallback=\{fallback\}/);
+  assert.match(productImage, /failed && fallback \? fallback/);
 });

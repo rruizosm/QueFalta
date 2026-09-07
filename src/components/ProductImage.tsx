@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Image } from 'expo-image';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, View, type ImageStyle, type StyleProp, type ViewStyle } from 'react-native';
+import type { ReactNode } from 'react';
 
 /**
  * Imagen de producto con caché en memoria+disco (expo-image). Sustituye al
@@ -14,9 +15,11 @@ import { StyleSheet, View, type ImageStyle, type StyleProp, type ViewStyle } fro
 export default function ProductImage({
   uri,
   style,
+  fallback,
 }: {
   uri: string;
   style: StyleProp<ImageStyle>;
+  fallback?: ReactNode;
 }) {
   const [failed, setFailed] = useState(false);
 
@@ -25,7 +28,9 @@ export default function ProductImage({
   return (
     <View style={[styles.frame, style as StyleProp<ViewStyle>]}>
       <View style={styles.placeholder} pointerEvents="none">
-        <Ionicons name="basket-outline" size={20} color="rgba(105,96,88,0.38)" />
+        {failed && fallback ? fallback : (
+          <Ionicons name="basket-outline" size={20} color="rgba(105,96,88,0.38)" />
+        )}
       </View>
       {!failed && (
         <Image

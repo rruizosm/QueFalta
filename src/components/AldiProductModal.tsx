@@ -152,7 +152,13 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        <ProductDetailImage uri={product.thumbnail} style={styles.photo} badgeLabel={badgeLabel} alertTarget={{ store, productId: product.id }} />
+        <ProductDetailImage
+          uri={product.thumbnail}
+          style={styles.photo}
+          badgeLabel={badgeLabel}
+          alertTarget={{ store, productId: product.id }}
+          emptyMessage={store === 'lidl' ? t('product.lidlImageUnavailable') : undefined}
+        />
 
         <Text style={styles.name}>{product.displayName}</Text>
         {product.brand ? <Text style={styles.brand}>{product.brand}</Text> : null}

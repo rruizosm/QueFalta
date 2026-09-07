@@ -1,5 +1,14 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Condiciones y vigencia en el detalle de ofertas Lidl (2026-09-07)
+
+- `sync-lidl.mjs` enriquece las campañas enlazadas con `/offers/{id}` y
+  `lidlOfferConditions` prioriza `characteristicsDescription`. El modal Lidl
+  muestra Condiciones solo con `promoText` real y siempre separa la vigencia.
+- Backfill de producción: 40 campañas, 16.883 filas. Plátano de Canarias tiene
+  la condición esperada en 480 tiendas; 15 filas antiguas quedan sin condición
+  porque sus UUID ya no devuelven detalle. Sin migración.
+
 ## Capacidad de recuperación Lidl y ES0548 (local, 2026-09-07)
 
 - Tras el recover `34053713271`, la cola quedó en 199 `succeeded`, 1 `retry`

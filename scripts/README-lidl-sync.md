@@ -11,7 +11,9 @@ ordinario del promocional. También incorpora las campañas semanales públicas 
 ## Fuente y alcance
 
 - API: `product-catalog.lidlplus.com/api/app/v1/ES/store/{storeId}`.
-- Ofertas: `offers.lidlplus.com/app/api/v4/{country}/{storeId}/offers`.
+- Ofertas: `offers.lidlplus.com/app/api/v4/{country}/{storeId}/offers`; tras
+  verificar cada enlace, consulta también `/offers/{id}` para guardar la
+  condición publicada en `characteristicsDescription`.
 - Campañas web: Formato ahorro XXL, Ofertas semanales, Fin de semana a lo
   grande, Precios imbatibles y Bajamos los precios. Las URLs se descubren desde
   `https://www.lidl.es/`; no se fijan los ids CMS semanales.

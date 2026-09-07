@@ -1,5 +1,15 @@
 # QuéFalta — Contexto del proyecto
 
+## Condiciones y vigencia en el detalle de ofertas Lidl (2026-09-07)
+
+- El sync consulta `/offers/{id}` para cada campaña verificada y guarda
+  `characteristicsDescription` en `promo_text`; el listado de ofertas solo
+  incluye precio, descuento y fechas. La ficha muestra la condición y la
+  vigencia por separado y omite Condiciones cuando Lidl no publica ninguna.
+- Backfill aplicado en producción sobre 40 campañas y 16.883 filas vigentes.
+  Las 480 variantes de Plátano de Canarias muestran «Limitado a 4 uds. o kg en
+  artículos de peso variable» y vigencia 07/09/2026–13/09/2026. Sin migración.
+
 ## Capacidad de recuperación Lidl y ES0548 (local, 2026-09-07)
 
 - El modo manual `recover` pasa de 2 a 8 workers, manteniendo 100 trabajos por

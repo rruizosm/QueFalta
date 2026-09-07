@@ -6,6 +6,7 @@ import {
   isLidlMinimumQuantityOffer,
   isLiveLidlStoreOffer,
   lidlCategoryId,
+  lidlOfferConditions,
   lidlOfferMatchesDetail,
   lidlProductMasterRow,
   lidlStoreCategoryRow,
@@ -104,7 +105,27 @@ test('normaliza precio, base, etiqueta y fechas de una oferta verificada', () =>
   assert.equal(row.promo_base_price, 1.49);
   assert.equal(row.promo_start, '2026-08-31');
   assert.equal(row.promo_end, '2026-09-06');
+  assert.equal(row.promo_text, null);
   assert.equal(row.raw.offer.id, 'offer-banana');
+});
+
+test('extrae de la ficha de oferta la condición real de compra', () => {
+  const offer = {
+    ...bananaOffer,
+    characteristicsTitle: 'Limitado a 4 uds. o kg en artículos de peso variable',
+    characteristicsDescription: 'Limitado a 4 uds. o kg en artículos de peso variable',
+    termsAndConditionsDescription: 'Promoción válida. Oferta sujeta a disponibilidad.',
+  };
+  const row = applyLidlOffer({}, offer);
+
+  assert.equal(lidlOfferConditions(offer), 'Limitado a 4 uds. o kg en artículos de peso variable');
+  assert.equal(row.promo_text, 'Limitado a 4 uds. o kg en artículos de peso variable');
+});
+
+test('usa las condiciones completas si Lidl no publica una característica corta', () => {
+  assert.equal(lidlOfferConditions({
+    termsAndConditionsDescription: 'Promoción válida. Haz click en &#39;código de los productos&#39;.',
+  }), "Promoción válida. Haz click en 'código de los productos'.");
 });
 
 test('conserva promos de segunda unidad sin inventar precio directo', () => {

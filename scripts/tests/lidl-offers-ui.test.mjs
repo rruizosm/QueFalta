@@ -18,6 +18,16 @@ test('la ficha Lidl usa el bloque promocional de Bonpreu', () => {
   assert.match(sharedModal, /borderColor: colors\.accentMid/);
 });
 
+test('la oferta Lidl usa las mismas dimensiones y tipografía que Carrefour', () => {
+  assert.doesNotMatch(sharedModal, /maxWidth: '68%'/);
+  assert.match(sharedModal, /promoBox: \{[\s\S]*?marginTop: 14, padding: 12, gap: 8/);
+  assert.match(sharedModal, /backgroundColor: colors\.accent, paddingHorizontal: 8, paddingVertical: 4/);
+  assert.match(sharedModal, /<Ionicons name="pricetags" size=\{12\}/);
+  assert.match(sharedModal, /promoPillText: \{ fontSize: 12/);
+  assert.match(sharedModal, /promoDetailLabel: \{ fontSize: 12\.5/);
+  assert.match(sharedModal, /promoText: \{ fontSize: 12\.5[\s\S]*?lineHeight: 18/);
+});
+
 test('la ficha Lidl no repite una condición de oferta idéntica', () => {
   assert.match(sharedModal, /distinctPromotionText/);
   assert.match(sharedModal, /normalize\(text\) === normalize\(name\) \? null : text/);

@@ -1,5 +1,12 @@
 # QuéFalta — Contexto del proyecto
 
+## Bloque de oferta Lidl alineado con Carrefour (2026-09-07)
+
+- El detalle Lidl usa las dimensiones del bloque promocional de Carrefour:
+  ancho completo, padding 12, gap 8, icono y etiqueta de 12 pt y textos de
+  12,5 pt con interlineado 18. Condiciones y Vigencia conservan sus datos.
+- Cambio solo de cliente, sin migración ni sincronización.
+
 ## Condiciones y vigencia en el detalle de ofertas Lidl (2026-09-07)
 
 - El sync consulta `/offers/{id}` para cada campaña verificada y guarda

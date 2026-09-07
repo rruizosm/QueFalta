@@ -1,5 +1,11 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Bloque de oferta Lidl alineado con Carrefour (2026-09-07)
+
+- `AldiProductModal` conserva la condición y vigencia Lidl con el bloque de
+  oferta de Carrefour: ancho, padding, separación, icono y tipografías iguales.
+- Regresión en `lidl-offers-ui.test.mjs`; sin SQL ni sync.
+
 ## Condiciones y vigencia en el detalle de ofertas Lidl (2026-09-07)
 
 - `sync-lidl.mjs` enriquece las campañas enlazadas con `/offers/{id}` y

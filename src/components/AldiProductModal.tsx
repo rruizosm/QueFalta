@@ -275,7 +275,7 @@ const themedStyles = () => StyleSheet.create({
   },
   promoPillText: { fontSize: 12, fontFamily: fonts.bold, color: colors.white },
   promoDetail: { gap: 2 },
-  promoDetailLabel: { fontSize: 11, fontFamily: fonts.bold, color: colors.inkSoft },
+  promoDetailLabel: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.inkSoft },
   promoText: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.ink, lineHeight: 18 },
 
   note: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkFaint, marginTop: 24 },

@@ -629,7 +629,7 @@ const es: TranslationTree = {
     category: 'Categoría',
     offerConditions: 'Condiciones',
     offerRequirement: 'Requisito',
-    lidlPlusRequirement: 'Oferta exclusiva con Lidl Plus. Identifícate con tu tarjeta Lidl Plus al pagar.',
+    lidlPlusRequirement: 'Oferta exclusiva con Lidl Plus.',
     offerValidity: 'Vigencia',
     offerValidityRange: 'Del {{start}} al {{end}}',
     offerValidityFrom: 'Desde el {{start}}',
@@ -767,8 +767,10 @@ const es: TranslationTree = {
   paywall: {
     benefitsHeading: 'Todo lo que desbloqueas',
     benefits: {
-      lidlTitle: 'Todos tus supermercados',
-      lidlText: 'Consulta todos tus catálogos juntos, incluido Lidl.',
+      lidlTitle: 'Lidl',
+      lidlText: 'Consulta su catálogo, ofertas, novedades y cambios de precio.',
+      storesTitle: 'Todos tus supermercados',
+      storesText: 'Consulta todos tus catálogos juntos.',
       unitPriceTitle: 'Orden por precio unitario', unitPriceText: 'Ordena por kg, litro o unidad',
       savingsRadarTitle: 'Radar de ahorro ilimitado', savingsRadarText: 'Alternativas sin límite tras 3 búsquedas',
       alertsTitle: 'Alertas personalizadas ilimitadas', alertsText: 'Todas las alertas que quieras tras la gratuita',
@@ -1744,7 +1746,7 @@ const ca: TranslationTree = {
     category: 'Categoria',
     offerConditions: 'Condicions',
     offerRequirement: 'Requisit',
-    lidlPlusRequirement: "Oferta exclusiva amb Lidl Plus. Identifica't amb la teva targeta Lidl Plus en pagar.",
+    lidlPlusRequirement: 'Oferta exclusiva amb Lidl Plus.',
     offerValidity: 'Vigència',
     offerValidityRange: 'Del {{start}} al {{end}}',
     offerValidityFrom: 'Des del {{start}}',
@@ -1882,8 +1884,10 @@ const ca: TranslationTree = {
   paywall: {
     benefitsHeading: 'Tot el que desbloqueges',
     benefits: {
-      lidlTitle: 'Tots els teus supermercats',
-      lidlText: 'Consulta tots els teus catàlegs junts, inclòs Lidl.',
+      lidlTitle: 'Lidl',
+      lidlText: 'Consulta el seu catàleg, ofertes, novetats i canvis de preu.',
+      storesTitle: 'Tots els teus supermercats',
+      storesText: 'Consulta tots els teus catàlegs junts.',
       unitPriceTitle: 'Ordre per preu unitari', unitPriceText: 'Ordena per kg, litre o unitat',
       savingsRadarTitle: "Radar d'estalvi il·limitat", savingsRadarText: 'Alternatives sense límit després de 3 cerques',
       alertsTitle: 'Alertes personalitzades il·limitades', alertsText: 'Tantes com vulguis després de la gratuïta',

@@ -9,7 +9,8 @@
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
 import {
   View, Text, Modal, TouchableOpacity, Animated, Easing,
-  ScrollView, StyleSheet, Platform, Linking, ActivityIndicator,
+  ScrollView, StyleSheet, Platform, Linking, ActivityIndicator, Image,
+  type ImageSourcePropType,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -31,14 +32,25 @@ import PlusWelcomeTransition from './PlusWelcomeTransition';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
+type Benefit = {
+  key: string;
+  color: string;
+  background: string;
+} & (
+  | { icon: IoniconName; image?: never }
+  | { image: ImageSourcePropType; icon?: never }
+);
 
 // Páginas legales que Apple exige enlazar en todo paywall.
 // Crearlas en quefalta-web es tarea de Fase 0 (MONETIZACION.md).
 const TERMS_URL = 'https://quefalta.es/condiciones';
 const PRIVACY_URL = 'https://quefalta.es/privacidad';
 
-const BENEFITS: { icon: IoniconName; key: string; color: string; background: string }[] = [
-  { icon: 'apps-outline', key: 'lidl', color: colors.blue, background: 'rgba(47,108,181,0.13)' },
+const LIDL_LOGO = require('../../assets/stores/lidl.png');
+
+const BENEFITS: Benefit[] = [
+  { image: LIDL_LOGO, key: 'lidl', color: colors.blue, background: 'rgba(47,108,181,0.13)' },
+  { icon: 'apps-outline', key: 'stores', color: colors.blue, background: 'rgba(47,108,181,0.13)' },
   { icon: 'swap-vertical-outline', key: 'unitPrice', color: colors.blue, background: 'rgba(47,108,181,0.13)' },
   { icon: 'search-circle-outline', key: 'savingsRadar', color: '#3f8f4f', background: 'rgba(63,143,79,0.14)' },
   { icon: 'notifications-outline', key: 'alerts', color: colors.purple, background: 'rgba(122,79,181,0.14)' },
@@ -201,11 +213,7 @@ export default function PaywallModal({ visible, onClose }: Props) {
           ]}
           accessibilityViewIsModal
         >
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
-          >
-            <View style={styles.header}>
+          <View style={styles.header}>
               <View style={styles.heroGlowLarge} />
               <View style={styles.heroGlowSmall} />
               <TouchableOpacity
@@ -222,17 +230,24 @@ export default function PaywallModal({ visible, onClose }: Props) {
                 <VerifiedBadge size={34} marginLeft={0} />
                 <Text style={styles.title}>QuéFalta Plus</Text>
               </View>
-            </View>
+          </View>
 
-            <View style={styles.sectionHeadingRow}>
-              <Text style={styles.sectionHeading}>{t('paywall.benefitsHeading')}</Text>
-            </View>
+          <View style={styles.sectionHeadingRow}>
+            <Text style={styles.sectionHeading}>{t('paywall.benefitsHeading')}</Text>
+          </View>
 
-            <View style={styles.benefits}>
+          <ScrollView
+            style={styles.benefitsScroll}
+            contentContainerStyle={styles.benefits}
+            showsVerticalScrollIndicator={false}
+            nestedScrollEnabled
+          >
               {BENEFITS.map((b) => (
                 <View key={b.key} style={styles.benefitRow}>
                   <View style={[styles.benefitIcon, { backgroundColor: b.background }]}>
-                    <Ionicons name={b.icon} size={20} color={b.color} />
+                    {b.image
+                      ? <Image source={b.image} style={styles.benefitLogo} resizeMode="contain" />
+                      : <Ionicons name={b.icon} size={20} color={b.color} />}
                   </View>
                   <View style={styles.benefitCopy}>
                     <Text style={styles.benefitTitle}>{t(`paywall.benefits.${b.key}Title`)}</Text>
@@ -240,9 +255,9 @@ export default function PaywallModal({ visible, onClose }: Props) {
                   </View>
                 </View>
               ))}
-            </View>
+          </ScrollView>
 
-            <View style={styles.bottomSection}>
+          <View style={styles.bottomSection}>
               <Text style={styles.planHeading}>{t('paywall.choosePlan')}</Text>
               <View style={styles.plans}>
               <TouchableOpacity
@@ -368,8 +383,7 @@ export default function PaywallModal({ visible, onClose }: Props) {
                   <Text style={styles.footerLink}>{t('paywall.privacy')}</Text>
                 </TouchableOpacity>
               </View>
-            </View>
-          </ScrollView>
+          </View>
           <PlusWelcomeTransition visible={welcomeVisible} onDismiss={dismissWelcome} />
         </View>
       </View>
@@ -383,8 +397,6 @@ const themedStyles = () => StyleSheet.create({
     flex: 1, backgroundColor: colors.paper, overflow: 'hidden',
     // Insets inline: el fondo llega a los bordes y el contenido respeta las zonas seguras.
   },
-  scrollContent: { flexGrow: 1, paddingBottom: 2 },
-
   header: {
     marginHorizontal: 14, marginTop: 8, paddingHorizontal: 18, paddingTop: 14, paddingBottom: 14,
     borderRadius: 24, backgroundColor: colors.accentLight, overflow: 'hidden',
@@ -409,7 +421,8 @@ const themedStyles = () => StyleSheet.create({
     paddingHorizontal: 18, marginTop: 10, marginBottom: 6,
   },
   sectionHeading: { fontSize: 17, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.25 },
-  benefits: { paddingHorizontal: 14, gap: 6 },
+  benefitsScroll: { flex: 1, minHeight: 0 },
+  benefits: { paddingHorizontal: 14, paddingBottom: 6, gap: 6 },
   benefitRow: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 7, gap: 10,
     backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, borderRadius: 18,
@@ -417,11 +430,12 @@ const themedStyles = () => StyleSheet.create({
   benefitIcon: {
     width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center',
   },
+  benefitLogo: { width: 30, height: 30, borderRadius: 6 },
   benefitCopy: { flex: 1 },
   benefitTitle: { fontSize: 13.5, fontFamily: fonts.bold, color: colors.ink, lineHeight: 18 },
   benefitText: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1, lineHeight: 15 },
 
-  bottomSection: { marginTop: 'auto', paddingTop: 8 },
+  bottomSection: { flexShrink: 0, paddingTop: 8 },
   planHeading: {
     fontSize: 17, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.25,
     paddingHorizontal: 18, marginBottom: 6,

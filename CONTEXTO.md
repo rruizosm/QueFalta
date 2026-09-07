@@ -1,5 +1,55 @@
 # QuéFalta — Contexto del proyecto
 
+## Tecla «Done» retirada del código postal (local, 2026-09-07)
+
+- El campo compartido de código postal deja de solicitar la tecla de retorno
+  `done` al teclado numérico. El cambio afecta al onboarding, al gate postal y
+  a los ajustes de región; la validación y el guardado permanecen intactos.
+- Cambio solo de cliente, sin migración ni publicación.
+
+## Lidl como beneficio propio de QuéFalta Plus (local, 2026-09-07)
+
+- Lidl ocupa una fila propia en el paywall, con el logo oficial local y una
+  descripción de su catálogo, ofertas, novedades y cambios de precio.
+- «Todos tus supermercados» permanece como un beneficio independiente para la
+  consulta conjunta de catálogos. Copy localizado en castellano y catalán.
+- La cabecera, «Todo lo que desbloqueas» y el bloque completo desde «Elige tu
+  plan» hasta los enlaces legales permanecen siempre visibles. Solo la lista de
+  beneficios ocupa el espacio flexible central y hace scroll si no cabe.
+- Cambio solo de cliente, sin migración ni publicación.
+
+## Carrefour reconciliado y drenaje preventivo de embeddings (producción, 2026-09-07)
+
+- Reconciliación autorizada de Carrefour ejecutada con
+  `EMBEDDING_ANOMALY_OVERRIDE=1`: 33.529 productos fuente, 6.375 upserts,
+  1.671 despublicaciones y 3.998 embeddings previstos (3.864 altas y 134
+  cambios semánticos). El run durable
+  `0117af2e-21c4-4ce0-9d65-e2eae987f2c9` registró exactamente 3.998
+  dependencias y quedó en `draining`, sin error.
+- Preflight sano: HNSW válido/listo/vivo, sin vacuum, reindex, consultas largas
+  ni jobs en vuelo. Canario de 100 mensajes: HTTP 200, 99 completados, 1
+  obsoleto, 0 fallos y 0 diferidos.
+- Drenaje temporal con un único worker encadenado y cron 17 siempre inactivo.
+  La cola bajó 4.571→3.171 mensajes: el backlog previo quedó reducido a un solo
+  Ahorramás y Carrefour completó 828/3.998; quedan 3.170 Carrefour + 1
+  Ahorramás, todos disponibles, con 0 en vuelo, reintentos o fallos.
+- Pausa preventiva aplicada a las 14:29 CEST antes del umbral de autovacuum del
+  HNSW. Estado final a las 14:30 CEST: pipeline `paused`, cron 17 inactivo,
+  HNSW sano, sin mantenimiento en curso y 9.232 tuplas muertas (4,199 %, alerta
+  al 5 %). No reanudar el drenaje mientras un vacuum del índice esté activo;
+  reevaluar mantenimiento antes del siguiente tramo.
+
+## Acciones rápidas de Instagram y sugerencias en Perfil (local, 2026-09-07)
+
+- Instagram sale de la sección Soporte y pasa a una fila de acciones rápidas
+  situada inmediatamente bajo la identidad del usuario y antes de Cuenta. Su
+  botón es compacto para reservar más ancho a la sugerencia.
+- En la misma fila se añade «Sugerir una función», que conserva el flujo de
+  Ayuda y mantiene la etiqueta en una sola línea: abre un correo a
+  contacto@quefalta.es con asunto de sugerencia y los datos de versión y
+  sistema. El acceso original de Ayuda se mantiene.
+- Cambio solo de cliente, sin migración ni publicación.
+
 ## Ofertas exclusivas Lidl Plus identificadas (local + backend, 2026-09-07)
 
 - El feed de tienda clasifica `StoreSpecialPriceDiscount` como precio exclusivo
@@ -9,8 +59,8 @@
   conservan sus señales explícitas existentes.
 - El cliente selecciona y normaliza el booleano. Listas y cuadrícula combinan
   la etiqueta de descuento con «Lidl Plus» sin duplicarla; la ficha añade un
-  bloque «Requisito» que explica que hay que identificarse con la tarjeta al
-  pagar, sin afirmar que sea necesario activar un cupón. Copy ES/CA.
+  bloque «Requisito» que indica que la oferta es exclusiva con Lidl Plus.
+  Copy ES/CA.
 - Backfill aplicado en producción desde el JSON crudo ya almacenado, sin nueva
   descarga ni migración: 17.535 filas multitienda y 28 legacy cambiaron. Las
   18.600 filas publicadas de `StoreSpecialPriceDiscount` están marcadas, ningún

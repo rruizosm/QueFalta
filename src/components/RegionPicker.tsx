@@ -143,7 +143,6 @@ export default function RegionPicker({
         keyboardType="number-pad"
         maxLength={5}
         autoFocus={autoFocus}
-        returnKeyType="done"
         accessibilityLabel={t('region.postalCodePlaceholder')}
         accessibilityHint={helperText}
         accessibilityValue={{

@@ -1,5 +1,47 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Tecla «Done» retirada del código postal (local, 2026-09-07)
+
+- `RegionPicker` ya no define `returnKeyType="done"` en el `TextInput` de
+  código postal. Al ser un componente compartido, desaparece en onboarding,
+  gate postal y ajustes de región, sin cambiar validación ni persistencia.
+- Cambio solo de cliente, sin migración.
+
+## Lidl como beneficio propio de QuéFalta Plus (local, 2026-09-07)
+
+- El paywall presenta Lidl en una fila independiente con su logo local y deja
+  «Todos tus supermercados» en otra fila para la consulta conjunta. Copy ES/CA
+  y regresión en `scripts/tests/plus-activation.test.mjs`.
+- Cabecera, título de beneficios y bloque de planes/CTA/legal quedan fijos; solo
+  la lista central de beneficios se desplaza cuando no cabe. Sin migración.
+
+## Carrefour reconciliado y drenaje preventivo de embeddings (producción, 2026-09-07)
+
+- Con autorización explícita del propietario se ejecutó
+  `EMBEDDING_ANOMALY_OVERRIDE=1 STORES=carrefour` tras un DRY_RUN idéntico:
+  33.529 productos, 6.375 upserts, 1.671 despublicaciones y 3.998 embeddings
+  (3.864 altas + 134 cambios semánticos). Run
+  `0117af2e-21c4-4ce0-9d65-e2eae987f2c9`, manifiesto 3.998/3.998, estado
+  `draining`, sin error.
+- Canario request 3380: HTTP 200, 99 completed, 1 stale, 0 failed/deferred.
+  Después se abrió `active` temporal con un solo worker inicial; el cron 17 no
+  se activó. La cola descendió 4.571→3.171 y se volvió a `paused` para no cruzar
+  el umbral preventivo de autovacuum.
+- Estado final 14:30 CEST: Carrefour 828/3.998 completados y 3.170 pendientes;
+  queda además 1 Ahorramás. Total 3.171 disponibles, 0 en vuelo, 0 fallos
+  abiertos/archivados, cron inactivo. HNSW válido/listo/vivo, sin vacuum ni
+  reindex y 9.232 tuplas muertas (4,199 %, alerta 5 %). Antes de reanudar,
+  consultar `catalog_embedding_maintenance_status()` y no solapar el drenaje
+  con mantenimiento del índice.
+
+## Acciones rápidas de Instagram y sugerencias en Perfil (local, 2026-09-07)
+
+- `ProfileScreen` muestra debajo de la tarjeta de identidad y antes de Cuenta
+  una fila con Instagram compacto y «Sugerir una función» en una sola línea;
+  Instagram ya no se repite en Soporte.
+- La sugerencia replica el correo de `HelpScreen`, incluido el asunto y el pie
+  con versión/plataforma. El botón de Ayuda permanece intacto. Sin migración.
+
 ## Ofertas exclusivas Lidl Plus identificadas (local + producción, 2026-09-07)
 
 - `scripts/lib/lidl.mjs` interpreta el tipo confirmado
@@ -9,7 +51,7 @@
   sustituye.
 - `LidlProduct` y `LIDL_COLS` exponen `is_lidl_plus_offer`. `lidlToUI` añade
   «Lidl Plus» a la etiqueta sin duplicados y `AldiProductModal` muestra
-  «Requisito» con la identificación mediante tarjeta al pagar. Localizado ES/CA.
+  «Requisito» indicando que la oferta es exclusiva con Lidl Plus. Localizado ES/CA.
 - Backfill productivo ejecutado sobre `lidl_store_products` y `lidl_products`
   usando `raw.offer.offerType`: 17.535 + 28 filas actualizadas. Verificación:
   18.600/18.600 filas publicadas `StoreSpecialPriceDiscount` a `true`, cero

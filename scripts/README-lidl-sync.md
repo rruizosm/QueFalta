@@ -154,7 +154,7 @@ Remove-Item Env:DRY_RUN
 Remove-Item Env:LIDL_OFFER_REGION
 ```
 
-## Recuperación y resistencia del barrido (2026-09-04)
+## Recuperación y resistencia del barrido (actualizado 2026-09-07)
 
 El run `33909268291` terminó con 643 tiendas completadas y 78 en `retry`.
 Las 39 tiendas que devolvieron cero productos pertenecen a Canarias. Una
@@ -163,8 +163,8 @@ obtener HTTP 200 y `totalProducts=0`; ES2106, que había dado 403, volvió a
 responder con 144 y 111 productos en esas ramas. No se usan precios peninsulares
 como sustituto y no se rebajan los controles de las tiendas vacías.
 
-Las cinco tiendas pequeñas repitieron exactamente sus recuentos en los dos
-intentos del run y un DRY_RUN secuencial posterior (concurrencia 1, pausa 250 ms):
+Estas tiendas pequeñas repitieron exactamente sus recuentos en tres
+observaciones completas (intentos del fleet y DRY_RUN secuenciales):
 
 | Tienda | Productos | Mínimo específico (98 %) |
 |---|---:|---:|
@@ -172,6 +172,7 @@ intentos del run y un DRY_RUN secuencial posterior (concurrencia 1, pausa 250 ms
 | ES0431 | 2151 | 2107 |
 | ES0529 | 2195 | 2151 |
 | ES0530 | 2166 | 2122 |
+| ES0548 | 2199 | 2155 |
 | ES0848 | 2146 | 2103 |
 
 Todas completaron las 40 hojas, con 100 % de precio e imagen y ofertas
@@ -189,7 +190,8 @@ ramas alimentarias antes de barrer las restantes; no se publica nada.
 - La migración `20260904210752_lidl_fleet_recovery.sql` está aplicada. Añade claim
   filtrado, informe y recuperación explícita de `dead`, con `SECURITY INVOKER`
   y `EXECUTE` exclusivo de `service_role`. No reinicializa trabajos al desplegar.
-- El workflow manual tiene modo `recover` por defecto (dos workers), `canary`
+- El workflow manual tiene modo `recover` por defecto (ocho workers, capacidad
+  para 800 trabajos por ejecución), `canary`
   (un worker, máximo cinco intentos, IDs obligatorios) y `weekly` (censo completo).
   El cron sigue siendo semanal. Cada worker admite hasta 100 intentos y espera
   hasta 35 minutos a reintentos diferidos, con un tope total de 300 minutos.

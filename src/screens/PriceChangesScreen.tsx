@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { peekPriceChanges } from '../api/catalog';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, StatusBar, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -55,7 +56,7 @@ const pctLabel = (n: number) =>
 export default function PriceChangesScreen() {
   const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const headerTop = useHeaderTopPadding(52);
   const { profile, isPremium } = useProfile();
 
@@ -104,8 +105,8 @@ export default function PriceChangesScreen() {
   // Caché por súper+dirección para no repetir consultas al alternar.
   const cacheKeyFor = useCallback(
     (storeKey: CatalogStore) =>
-      `${storeKey}:${direction}:${pricePerUnitSort ?? 'relevance'}:${region ?? 'none'}:${postalCode ?? 'none'}:${lidlStoreId ?? 'no-lidl'}`,
-    [direction, pricePerUnitSort, region, postalCode, lidlStoreId],
+      `${lang}:${storeKey}:${direction}:${pricePerUnitSort ?? 'relevance'}:${region ?? 'none'}:${postalCode ?? 'none'}:${lidlStoreId ?? 'no-lidl'}`,
+    [lang, direction, pricePerUnitSort, region, postalCode, lidlStoreId],
   );
   const [cache, setCache] = useState<Record<string, PriceChangesPage>>({});
   const [loading, setLoading] = useState(true);
@@ -117,12 +118,18 @@ export default function PriceChangesScreen() {
   const loadingMoreRef = useRef(false);
   const loadSeq = useRef(0);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const seq = ++loadSeq.current;
     loadingMoreRef.current = false;
     setLoadingMore(false);
     const requestedStores = store === 'all' ? stores.map((item) => item.key) : [store];
-    const missingStores = requestedStores.filter((storeKey) => !cache[cacheKeyFor(storeKey)]);
+    const shared: Record<string, PriceChangesPage> = {};
+    for (const storeKey of requestedStores) {
+      const page = peekPriceChanges(storeKey, direction, region, postalCode, PRICE_CHANGES_PAGE_SIZE, 0, pricePerUnitSort, lidlStoreId);
+      if (page) shared[cacheKeyFor(storeKey)] = page;
+    }
+    if (Object.keys(shared).length) setCache((current) => ({ ...current, ...shared }));
+    const missingStores = requestedStores.filter((storeKey) => !shared[cacheKeyFor(storeKey)]);
     if (missingStores.length === 0) { setLoading(false); setError(false); return; }
     let cancelled = false;
     setLoading(true);
@@ -144,7 +151,7 @@ export default function PriceChangesScreen() {
     return () => { cancelled = true; };
     // cache a propósito fuera de deps: solo dispara al cambiar súper/dirección.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, stores, direction, region, postalCode, pricePerUnitSort, lidlStoreId]);
+  }, [store, stores, lang, direction, region, postalCode, pricePerUnitSort, lidlStoreId]);
 
   const allChanges = useMemo(() => {
     const changes = store === 'all'

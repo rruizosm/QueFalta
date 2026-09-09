@@ -26,6 +26,7 @@ import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { peekStartupCache, startupKeys, writeStartupCache } from '../lib/startupCache';
+import AmbientBubbleBackdrop from '../components/AmbientBubbleBackdrop';
 
 // CTA "crear grupo" del estado vacío, con el ancla del tour (paso 1). Es un
 // componente propio para que el ancla se monte/desmonte CON el botón: al crear
@@ -161,7 +162,7 @@ export default function GroupsScreen() {
           <View style={styles.cardHeader}>
             <View style={styles.cardTitleRow}>
               <Text style={styles.cardName}>{item.name}</Text>
-              {item.ownerId === userId && (
+              {item.createdBy === userId && (
                 <View style={styles.ownerBadge}>
                   <Text style={styles.ownerBadgeText}>{t('group.ownerBadge')}</Text>
                 </View>
@@ -218,6 +219,7 @@ export default function GroupsScreen() {
 
   return (
     <View style={styles.container}>
+      <AmbientBubbleBackdrop variant="groups" showGradient={false} />
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
 
       {!glassAvailable && header}

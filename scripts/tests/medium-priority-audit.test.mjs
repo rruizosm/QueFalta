@@ -36,9 +36,11 @@ test('Altas y acciones sensibles de miembros están serializadas y confirmadas',
   assert.match(addMember, /if \(addingRef\.current \|\| memberIds\.has\(f\.id\)\) return/);
   assert.match(addMember, /disabled=\{addingId !== null\}/);
   assert.match(groupMembers, /pendingMemberAction/);
-  assert.match(groupMembers, /requestMemberAction\('transfer'/);
+  assert.match(groupMembers, /requestMemberAction\(actionMember\.isAdmin \? 'demote' : 'promote'/);
   assert.match(groupMembers, /requestMemberAction\('remove'/);
   assert.match(groupMembers, /visible=\{!!pendingMemberAction\}/);
+  assert.match(groupMembers, /const isCreator = group\?\.createdBy === userId/);
+  assert.match(groupMembers, /isMemberCreator \|\| isMemberAdmin/);
 });
 
 test('Catálogo responde al ancho actual y mantiene fallback visual', () => {
@@ -47,6 +49,6 @@ test('Catálogo responde al ancho actual y mantiene fallback visual', () => {
   assert.match(productList, /key=\{`grid-\$\{gridColumns\}`\}/);
   assert.match(catalog, /accessibilityLabel: t\('product\.viewList'\)/);
   assert.match(catalog, /accessibilityLabel: t\('product\.viewGrid'\)/);
-  assert.match(productImage, /onError=\{\(\) => setFailed\(true\)\}/);
+  assert.match(productImage, /onError=\{\(\) => setFailure\(\{ request: optimizedUri, source \}\)\}/);
   assert.match(productImage, /name="basket-outline"/);
 });

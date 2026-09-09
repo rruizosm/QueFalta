@@ -90,6 +90,7 @@ import ProfileLoadErrorScreen from '../screens/ProfileLoadErrorScreen';
 import BootLoader       from '../components/BootLoader';
 import NativeStoreReviewPrompt from '../components/NativeStoreReviewPrompt';
 import WhatsNewPrompt from '../components/WhatsNewPrompt';
+import LidlReleasePrompt from '../components/LidlReleasePrompt';
 import { glassAvailable } from '../components/GlassSurface';
 import LiquidGlassTabBar, {
   LIQUID_TABBAR_HEIGHT, liquidTabBarBottom,
@@ -223,6 +224,11 @@ export default function Navigation() {
   // Un tap puede llegar mientras aun se resuelve sesion/perfil o antes de que
   // React Navigation monte el arbol autenticado. Se conserva hasta onReady.
   const [pendingPushData, setPendingPushData] = useState<PushData | null>(null);
+  const [lidlPromptResolvedFor, setLidlPromptResolvedFor] = useState<string | null>(null);
+  const lidlPromptResolved = !!userId && lidlPromptResolvedFor === userId;
+  const handleLidlPromptResolved = useCallback(() => {
+    if (userId) setLidlPromptResolvedFor(userId);
+  }, [userId]);
   useEffect(() => {
     if (!loading && !session) setLoginWasShown(true);
   }, [loading, session]);
@@ -453,7 +459,10 @@ export default function Navigation() {
       </Tab.Navigator>
     </NavigationContainer>
     {needsPostalCode ? <RegionGateScreen /> : null}
-    {!needsPostalCode ? <WhatsNewPrompt /> : null}
-    {!needsPostalCode ? <NativeStoreReviewPrompt /> : null}
+    {!needsPostalCode && !lidlPromptResolved ? (
+      <LidlReleasePrompt onResolved={handleLidlPromptResolved} />
+    ) : null}
+    {!needsPostalCode && lidlPromptResolved ? <WhatsNewPrompt /> : null}
+    {!needsPostalCode && lidlPromptResolved ? <NativeStoreReviewPrompt /> : null}
   </>);
 }

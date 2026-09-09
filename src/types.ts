@@ -193,6 +193,8 @@ export interface GroupMember {
   avatarUrl?: string | null;
   /** Insignia pública de una cuenta con QuéFalta Plus activo. */
   verified?: boolean;
+  /** Puede gestionar el grupo y sus miembros. */
+  isAdmin: boolean;
 }
 
 export interface ActivityEntry {

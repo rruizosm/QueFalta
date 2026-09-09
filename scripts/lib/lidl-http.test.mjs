@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { lidlRequest, sortedLidlRows, isLidlAccessFailure } from './lidl-http.mjs';
+import {
+  isLidlAccessFailure,
+  isLidlCatalogUnavailable,
+  lidlRequest,
+  sortedLidlRows,
+} from './lidl-http.mjs';
 
 test('shared rows use the same lock order regardless of download order and batch boundary', () => {
   const rows = Array.from({ length: 600 }, (_, i) => ({ id: String(i).padStart(5, '0') }));
@@ -62,4 +67,13 @@ test('204 is source unavailability, not malformed JSON or a successful catalog',
     label:'/categories', fetchImpl:async () => { calls++; return new Response(null, {status:204}); },
   }), /HTTP 204 sin contenido/);
   assert.equal(calls, 1);
+});
+
+test('solo la ausencia total de catálogo activa el fallback maestro', () => {
+  assert.equal(isLidlCatalogUnavailable('LIDL_CATALOG_EMPTY ES0951: ramas vacías'), true);
+  assert.equal(isLidlCatalogUnavailable('Lidl no devolvió categorías raíz'), true);
+  assert.equal(isLidlCatalogUnavailable('/categories: HTTP 204 sin contenido; catálogo no disponible en la fuente'), true);
+  assert.equal(isLidlCatalogUnavailable('/products/p1: HTTP 204 sin contenido; catálogo no disponible en la fuente'), false);
+  assert.equal(isLidlCatalogUnavailable('/categories: HTTP 403 denied'), false);
+  assert.equal(isLidlCatalogUnavailable('solo 2100 productos; catálogo posiblemente parcial'), false);
 });

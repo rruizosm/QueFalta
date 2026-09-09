@@ -1,7 +1,8 @@
 -- Borrado de grupo por el administrador (Miembros → "Eliminar grupo").
 --
--- La policy DELETE sobre groups ya existe (groups_owner.sql la realinea a
--- owner_id = auth.uid()). Lo que falta es que borrar el grupo ARRASTRE lo que
+-- La policy DELETE vigente sobre groups exige created_by = auth.uid()
+-- (20260907084525_multiple_group_admins.sql). Este fichero hace que el borrado
+-- exclusivo del creador ARRASTRE lo que
 -- cuelga de él: miembros, listas e ítems. Los FK del esquema base no se crearon
 -- con ON DELETE CASCADE → aquí se recrean con cascade.
 --

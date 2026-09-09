@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { peekWeeklyNewProducts } from '../api/catalog';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -61,7 +62,7 @@ const facetValuesForStore = (values: string[], store: CatalogStore) =>
 export default function NewArrivalsScreen() {
   const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const { profile, isPremium } = useProfile();
   const headerTop = useHeaderTopPadding(56);
 
@@ -132,14 +133,20 @@ export default function NewArrivalsScreen() {
   const [chromeH, setChromeH] = useState(0);
 
   const cacheKeyFor = useCallback(
-    (storeKey: CatalogStore) => `${storeKey}:${region ?? 'none'}:${postalCode ?? 'none'}:${lidlStoreId ?? 'no-lidl'}`,
-    [region, postalCode, lidlStoreId],
+    (storeKey: CatalogStore) => `${lang}:${storeKey}:${region ?? 'none'}:${postalCode ?? 'none'}:${lidlStoreId ?? 'no-lidl'}`,
+    [lang, region, postalCode, lidlStoreId],
   );
-  useEffect(() => {
+  useLayoutEffect(() => {
     const seq = ++loadSeq.current;
     setVisibleCount(NEW_ARRIVALS_PAGE_SIZE);
     const requestedStores = store === 'all' ? stores.map((item) => item.key) : [store];
-    const missingStores = requestedStores.filter((storeKey) => !cache[cacheKeyFor(storeKey)]);
+    const shared: Record<string, WeeklyNewProductsPage> = {};
+    for (const storeKey of requestedStores) {
+      const page = peekWeeklyNewProducts(storeKey, region, postalCode, NEW_ARRIVALS_PAGE_SIZE, 0, undefined, lidlStoreId);
+      if (page) shared[cacheKeyFor(storeKey)] = page;
+    }
+    if (Object.keys(shared).length) setCache((current) => ({ ...current, ...shared }));
+    const missingStores = requestedStores.filter((storeKey) => !shared[cacheKeyFor(storeKey)]);
     if (missingStores.length === 0) { setLoading(false); setError(false); return; }
     let cancelled = false;
     setLoading(true);
@@ -159,7 +166,7 @@ export default function NewArrivalsScreen() {
     return () => { cancelled = true; };
     // cache a propósito fuera de deps: solo dispara al cambiar de súper.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, stores, region, postalCode, lidlStoreId]);
+  }, [store, stores, lang, region, postalCode, lidlStoreId]);
 
   const searchActive = debouncedQuery.trim().length >= 2;
   const newFiltersForStore = useCallback((selectedStore: CatalogStore): NewProductFilters => ({

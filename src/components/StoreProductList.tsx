@@ -1,3 +1,4 @@
+import { prefetchProductImages } from '../lib/prefetchProductImages';
 import { useEffect, useMemo, useState } from 'react';
 import {
   View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Image, useWindowDimensions,
@@ -163,6 +164,9 @@ export default function StoreProductList({
       : sortByName(filtered, (p) => p.name);
   }, [products, query, searchQuery, keepOrder]);
 
+  const firstImageUris = useMemo(() => shown.slice(0, 12).map((p) => p.imageUrl), [shown]);
+  useEffect(() => prefetchProductImages(firstImageUris), [firstImageUris]);
+
   // Ventana local (paginación de favoritos): se pinta solo lo revelado y crece
   // de `pageSize` en `pageSize` al hacer scroll. Sin `pageSize`, se pinta todo
   // (el catálogo pagina en el padre vía onEndReached). Se reinicia al cambiar la
@@ -272,7 +276,7 @@ export default function StoreProductList({
       badgeLabel={badgeLabel}
       offerTag={item.offerTag}
       storeLogo={showStoreLogo ? CATALOG_STORES.find((store) => store.key === item.store)?.icon : null}
-      onPress={() => selection ? selection.onSelect(item) : setDetail({ store: item.store, id: item.id })}
+      onPress={() => selection ? selection.onSelect(item) : setDetail({ store: item.store, id: item.id, preview: item })}
       selectionState={selection ? selection.selectedKeys.has(quantityKey(item)) ? 'selected' : 'available' : undefined}
       accessibilityLabel={selection?.accessibilityLabel(item)}
     />
@@ -310,7 +314,7 @@ export default function StoreProductList({
               />
             </View>
           )}
-          <TouchableOpacity disabled={!!selection} activeOpacity={0.7} onPress={() => setDetail({ store: item.store, id: item.id })}>
+          <TouchableOpacity disabled={!!selection} activeOpacity={0.7} onPress={() => setDetail({ store: item.store, id: item.id, preview: item })}>
             {item.imageUrl ? (
               <ProductImage uri={item.imageUrl} style={styles.thumb} />
             ) : (

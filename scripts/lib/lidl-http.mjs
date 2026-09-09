@@ -43,3 +43,11 @@ export function sortedLidlRows(rows) {
 export function isLidlAccessFailure(message) {
   return /(?:categor|ofertas|\/products).*HTTP (403|429)\b/i.test(message);
 }
+
+/** Ausencia total confirmada de catálogo, apta para usar la tienda maestra. */
+export function isLidlCatalogUnavailable(message) {
+  const detail = String(message);
+  return /\bLIDL_CATALOG_EMPTY\b/.test(detail)
+    || /Lidl no devolvió categorías raíz/i.test(detail)
+    || /\/categories: HTTP 204 sin contenido; catálogo no disponible en la fuente/i.test(detail);
+}

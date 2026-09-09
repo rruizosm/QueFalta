@@ -1,5 +1,18 @@
 # Privacidad y seguridad — Estado y runbook
 
+## Autorización de grupos (producción, 2026-09-07)
+
+- Los permisos operativos se derivan de `group_members.role`, no del antiguo
+  `groups.owner_id`: un grupo puede tener varios administradores.
+- Solo `groups.created_by` puede borrar el grupo. Ningún administrador añadido
+  puede asumir esa capacidad, degradar al creador ni expulsarlo.
+- La migración `20260907084525_multiple_group_admins.sql` separa las policies RLS
+  de UPDATE/DELETE, limita los grants de UPDATE a `role`, `name` e `icon_emoji`
+  y mantiene los helpers `SECURITY DEFINER` fuera del esquema público, con
+  `search_path` fijo y EXECUTE explícito. La migración
+  `20260907085000_backfill_adminless_group_admins.sql` asigna un administrador
+  operativo a los grupos heredados que aún tenían miembros pero ninguno activo.
+
 ## Mapa Lidl (cliente local, 2026-09-05)
 
 El mapa consulta el código postal introducido a `api.zippopotam.us` para centrar
@@ -35,7 +48,7 @@ Todos idempotentes. Orden recomendado:
 | Fichero | Qué hace |
 |---|---|
 | `supabase/policies/profiles_visibility.sql` | **CRÍTICO.** Cierra la fuga de `profiles` (era legible por `anon` por la policy `ver todos USING(true)`). Deja un perfil visible solo a: uno mismo, co-miembros, amigos y perfiles `discoverable`. |
-| `supabase/policies/member_search.sql` | El admin solo añade al grupo a perfiles `discoverable` (helper `is_discoverable`). |
+| `supabase/policies/member_search.sql` | Compatibilidad del buscador: cualquier administrador solo añade perfiles `discoverable` como miembros normales. Requiere el modelo multi-admin vigente. |
 | `supabase/policies/storage_avatars.sql` | Bucket `avatars` público con límite 5 MB + solo imágenes; escritura restringida a `{uid}/`. Borra antes cualquier policy de escritura permisiva creada desde el dashboard. |
 | `supabase/migrations/text_length_limits.sql` | CHECK de longitud en columnas de texto libres. |
 | `supabase/migrations/username_available.sql` | RPC `username_available` (comprueba @ libre sin filtrar perfiles). |

@@ -3,6 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import type { CatalogStore } from '../constants/stores';
+import { productImageSource } from '../lib/productImageSource';
 import ProductImage from './ProductImage';
 import ProductAlertButton from './ProductAlertButton';
 
@@ -17,7 +18,7 @@ interface Props {
 /** Imagen principal de la ficha con una etiqueta contextual dentro del marco. */
 export default function ProductDetailImage({ uri, style, badgeLabel, alertTarget, emptyMessage }: Props) {
   const fallback = emptyMessage ? <Text style={styles.emptyMessage}>{emptyMessage}</Text> : null;
-  const hasUsableImage = Boolean(uri && !/\/images\/common\/ImagePlaceholder[^/]*\.png(?:\?|$)/i.test(uri));
+  const hasUsableImage = Boolean(uri && productImageSource(uri));
   return (
     <View style={[style, styles.frame]}>
       {hasUsableImage && uri ? (

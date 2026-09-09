@@ -90,6 +90,7 @@ export default function GroupDetailScreen() {
   const [headerHeight, setHeaderHeight] = useState(0);
   const [iconPickerVisible, setIconPickerVisible] = useState(false);
   const [savingIcon, setSavingIcon] = useState(false);
+  const isAdmin = group?.members.some((member) => member.id === session?.user.id && member.isAdmin) ?? false;
 
   const load = useCallback(() => {
     setError(false);
@@ -169,13 +170,13 @@ export default function GroupDetailScreen() {
     })
   ), [merged]);
 
-  const renderCartItem = (item: MergedCartItem, big = false) => {
+  const renderCartItem = (item: MergedCartItem, big = false, last = false) => {
     const lineTotal = item.unitPrice != null ? item.unitPrice * item.quantity : null;
     const detailTarget = productRefOf(item);
     return (
       <View
         key={item.ids[0]}
-        style={[styles.listItem, item.inCart && styles.listItemDone]}
+        style={[styles.listItem, last && styles.listItemLast, item.inCart && styles.listItemDone]}
       >
         {(item.imageUrl || item.categoryEmoji) ? (
           <TouchableOpacity
@@ -342,9 +343,20 @@ export default function GroupDetailScreen() {
         <SectionList
           sections={cartSections}
           keyExtractor={(item) => item.ids[0]}
-          renderItem={({ item }) => (
-            <View style={styles.cartRowsSurface}>{renderCartItem(item)}</View>
-          )}
+          renderItem={({ item, index, section }) => {
+            const lastSection = cartSections[cartSections.length - 1];
+            const isLastCartItem = section.key === lastSection?.key
+              && index === section.data.length - 1;
+
+            return (
+              <View style={[
+                styles.cartRowsSurface,
+                isLastCartItem && styles.cartRowsSurfaceLast,
+              ]}>
+                {renderCartItem(item, false, isLastCartItem)}
+              </View>
+            );
+          }}
           renderSectionHeader={({ section }) => renderCartSectionHeader(section)}
           stickySectionHeadersEnabled={false}
           showsVerticalScrollIndicator={false}
@@ -363,46 +375,44 @@ export default function GroupDetailScreen() {
           windowSize={7}
           ListHeaderComponent={(
             <>
-              <TouchableOpacity
-                style={[styles.section, styles.membersSection]}
-                activeOpacity={0.7}
-                onPress={() => navigation.navigate('GroupMembers', { groupId })}
-                accessibilityRole="button"
-                accessibilityLabel={t('group.membersTitle', { n: group.members.length })}
-              >
+              <View style={[styles.section, styles.membersSection]}>
                 <View style={styles.memberSummaryRow}>
-                  <View style={styles.memberAvatarsWrap}>
-                    {group.members.length > 0 ? (
-                      <MemberAvatars members={group.members} maxVisible={4} size={30} />
-                    ) : (
-                      <Ionicons name="people-outline" size={20} color={colors.accent} />
-                    )}
-                  </View>
-                  <View style={styles.manageBtn}>
+                  {isAdmin ? (
+                    <TouchableOpacity
+                      style={styles.groupIconButton}
+                      activeOpacity={0.72}
+                      onPress={() => setIconPickerVisible(true)}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('group.iconAction')}
+                    >
+                      <View style={styles.groupIconPreview}>
+                        <Text style={styles.groupIconEmoji}>{group.iconEmoji ?? DEFAULT_GROUP_ICON}</Text>
+                      </View>
+                      <Text style={styles.groupIconButtonText} numberOfLines={1}>
+                        {t('group.iconAction')}
+                      </Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <View style={styles.memberAvatarsWrap}>
+                      {group.members.length > 0 ? (
+                        <MemberAvatars members={group.members} maxVisible={4} size={30} />
+                      ) : (
+                        <Ionicons name="people-outline" size={20} color={colors.accent} />
+                      )}
+                    </View>
+                  )}
+                  <TouchableOpacity
+                    style={styles.manageBtn}
+                    activeOpacity={0.72}
+                    onPress={() => navigation.navigate('GroupMembers', { groupId })}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('group.membersTitle', { n: group.members.length })}
+                  >
                     <Text style={styles.manageHintText}>{t('group.manage')}</Text>
                     <Ionicons name="chevron-forward" size={17} color={colors.accent} />
-                  </View>
+                  </TouchableOpacity>
                 </View>
-              </TouchableOpacity>
-
-              {group.ownerId === session?.user.id && (
-                <TouchableOpacity
-                  style={[styles.section, styles.iconSection]}
-                  activeOpacity={0.72}
-                  onPress={() => setIconPickerVisible(true)}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('group.iconAction')}
-                >
-                  <View style={styles.groupIconPreview}>
-                    <Text style={styles.groupIconEmoji}>{group.iconEmoji ?? DEFAULT_GROUP_ICON}</Text>
-                  </View>
-                  <View style={styles.groupIconCopy}>
-                    <Text style={styles.groupIconTitle}>{t('group.iconAction')}</Text>
-                    <Text style={styles.groupIconSubtitle}>{t('group.iconActionSubtitle')}</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color={colors.accent} />
-                </TouchableOpacity>
-              )}
+              </View>
 
               <View style={[styles.section, items.length > 0 && styles.cartIntroSection]}>
                 <View style={styles.sectionHeader}>
@@ -561,13 +571,25 @@ const themedStyles = () => StyleSheet.create({
     borderWidth: 1, borderColor: colors.border,
     padding: 13, marginBottom: 10, gap: 9, borderRadius: 18,
   },
-  cartIntroSection: { marginBottom: 6 },
+  cartIntroSection: {
+    marginBottom: 0,
+    borderBottomWidth: 0,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    paddingBottom: 7,
+  },
   cartRowsSurface: {
     backgroundColor: colors.white,
     paddingHorizontal: 13,
     borderLeftWidth: 1,
     borderRightWidth: 1,
     borderColor: colors.border,
+  },
+  cartRowsSurfaceLast: {
+    borderBottomWidth: 1,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
+    overflow: 'hidden',
   },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -583,22 +605,24 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', borderRadius: 15,
   },
   membersSection: { paddingVertical: 11 },
-  iconSection: {
-    minHeight: 64,
+  groupIconButton: {
+    minWidth: 0,
+    maxWidth: '68%',
+    height: 38,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 11,
-    paddingVertical: 10,
+    gap: 7,
+    paddingRight: 10,
+    borderRadius: 19,
+    backgroundColor: colors.accentLight,
   },
   groupIconPreview: {
-    width: 42, height: 42, borderRadius: 14,
-    backgroundColor: colors.accentLight,
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: colors.white,
     alignItems: 'center', justifyContent: 'center',
   },
-  groupIconEmoji: { fontSize: 24, lineHeight: 30 },
-  groupIconCopy: { flex: 1, minWidth: 0 },
-  groupIconTitle: { fontSize: 13.5, fontFamily: fonts.bold, color: colors.ink },
-  groupIconSubtitle: { marginTop: 2, fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft },
+  groupIconEmoji: { fontSize: 21, lineHeight: 27 },
+  groupIconButtonText: { flexShrink: 1, fontSize: 12.5, fontFamily: fonts.bold, color: colors.accent },
   memberSummaryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   memberAvatarsWrap: {
     minWidth: 38, height: 38, justifyContent: 'center',
@@ -643,6 +667,7 @@ const themedStyles = () => StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: colors.border,
     gap: 10,
   },
+  listItemLast: { borderBottomWidth: 0 },
   listItemDone: { opacity: 0.55 },
   listItemThumb: {
     width: 34, height: 34, borderRadius: 10,

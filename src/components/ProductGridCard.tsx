@@ -78,7 +78,7 @@ export default function ProductGridCard({
             hasStoreLogo && !badgeLabel && styles.offerTagBelowStoreLogo,
             badgeLabel && hasStoreLogo && styles.offerTagBelowBadgeAndStoreLogo,
           ]}>
-            <Ionicons name="pricetag" size={9} color={colors.white} />
+            <Ionicons name="pricetag" size={8} color={colors.white} />
             <Text style={styles.offerTagText} numberOfLines={1}>{offerTag}</Text>
           </View>
         ) : null}
@@ -155,22 +155,22 @@ const themedStyles = () => StyleSheet.create({
     position: 'absolute',
     top: 6,
     left: 6,
-    right: 6,
-    minHeight: 21,
+    maxWidth: '68%',
+    minHeight: 18,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
     backgroundColor: colors.red,
     borderRadius: 5,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
   },
   offerTagBelowBadge: { top: 32 },
   offerTagBelowStoreLogo: { top: 44 },
   offerTagBelowBadgeAndStoreLogo: { top: 70 },
   offerTagText: {
     flexShrink: 1,
-    fontSize: 9,
+    fontSize: 8,
     fontFamily: fonts.bold,
     color: colors.white,
     letterSpacing: 0.1,

@@ -1,3 +1,6 @@
+import { cacheCatalogRequest, catalogRequestKey, peekCatalogRequest } from '../lib/catalogRequestCache';
+import type { UIProduct } from '../lib/productAdapters';
+import ProductLoadingPreview from './ProductLoadingPreview';
 import { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
@@ -32,6 +35,7 @@ interface Props {
    *  56 a pantalla completa (cesta, despeja el notch); 16 en la hoja (catálogo). */
   topInset?: number;
   badgeLabel?: string;
+  preview?: UIProduct;
 }
 
 const formatEuro = (s?: string | null): string | null => {
@@ -56,24 +60,38 @@ const clean = (text?: string | null): string | null => {
   return out || null;
 };
 
-export default function ProductDetailModal({ productId, onClose, topInset = 16, badgeLabel }: Props) {
+export default function ProductDetailModal({ productId, onClose, topInset = 16, badgeLabel, preview }: Props) {
   const styles = useThemedStyles(themedStyles);
   const footerPaddingBottom = useProductDetailFooterPadding();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const { isProductFavorite, toggleProductFavorite } = useFavorites();
   const { activeCart, addToActiveCart } = useCart();
   const toast = useToast();
-  const [product, setProduct] = useState<MercadonaProductDetail | null>(null);
-  const [loading, setLoading] = useState(false);
+  const detailKey = catalogRequestKey('mercadonaDetail', [productId, lang]);
+  type Detail = { product: MercadonaProductDetail; mirror: Awaited<ReturnType<typeof fetchProductMirror>> };
+  const cachedDetail = peekCatalogRequest<Detail>(detailKey);
+  const [product, setProduct] = useState<MercadonaProductDetail | null>(cachedDetail?.product ?? null);
+  const [loading, setLoading] = useState(!cachedDetail && !!productId);
   const [error, setError] = useState(false);
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
-  const [mirrorEan, setMirrorEan] = useState<string | null>(null);
-  const [mirrorNutrition, setMirrorNutrition] = useState<unknown | null>(null);
-  const [mirrorCategoryName, setMirrorCategoryName] = useState<string | null>(null);
+  const [mirrorEan, setMirrorEan] = useState<string | null>(cachedDetail?.mirror.ean ?? null);
+  const [mirrorNutrition, setMirrorNutrition] = useState<unknown | null>(cachedDetail?.mirror.nutrition ?? null);
+  const [mirrorCategoryName, setMirrorCategoryName] = useState<string | null>(cachedDetail?.mirror.categoryName ?? null);
 
   useEffect(() => {
     if (!productId) { setProduct(null); return; }
+    const cached = peekCatalogRequest<Detail>(detailKey);
+    if (cached) {
+      setProduct(cached.product);
+      setMirrorEan(cached.mirror.ean);
+      setMirrorNutrition(cached.mirror.nutrition);
+      setMirrorCategoryName(cached.mirror.categoryName);
+      setLoading(false);
+      setError(false);
+      setQty(1);
+      return;
+    }
     setLoading(true);
     setError(false);
     setProduct(null);
@@ -84,16 +102,17 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16, 
     let cancelled = false;
     (async () => {
       try {
-        let p: MercadonaProductDetail;
-        const mirror = await fetchProductMirror(productId);
-        try {
-          p = await fetchProduct(productId);
-        } catch {
-          // Producto regional: el almacén por defecto (mad1) no lo tiene → 404.
-          // El espejo da un almacén que sí lo tiene para reintentar.
-          if (!mirror.wh) throw new Error('sin almacén');
-          p = await fetchProduct(productId, mirror.wh);
-        }
+        const { product: p, mirror } = await cacheCatalogRequest(detailKey, async () => {
+          const mirrorRequest = fetchProductMirror(productId);
+          // Start both sources together; only regional fallback needs the mirror.
+          const productRequest = fetchProduct(productId).catch(async (error: unknown) => {
+            const mirror = await mirrorRequest;
+            if (!mirror.wh) throw error;
+            return fetchProduct(productId, mirror.wh);
+          });
+          const [product, mirror] = await Promise.all([productRequest, mirrorRequest]);
+          return { product, mirror };
+        });
         if (!cancelled) {
           setProduct(p);
           setMirrorEan(mirror.ean);
@@ -107,7 +126,7 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16, 
       }
     })();
     return () => { cancelled = true; };
-  }, [productId]);
+  }, [productId, detailKey]);
 
   const photo =
     product?.photos?.[0]?.regular ??
@@ -219,7 +238,7 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16, 
         </View>
 
         {loading ? (
-          <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 80 }} />
+          <ProductLoadingPreview product={preview} />
         ) : error || !product ? (
           <View style={styles.centerBox}>
             <Ionicons name="alert-circle-outline" size={44} color={colors.inkFaint} />

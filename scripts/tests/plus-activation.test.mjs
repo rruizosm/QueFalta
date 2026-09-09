@@ -55,17 +55,28 @@ test('an early stale profile refresh cannot undo a validated purchase', () => {
   assert.match(paywall, /confirmPlusSubscription\(\)[\s\S]*\.then\(\(\) => refresh\(\)\)/);
 });
 
-test('the Plus paywall anchors the plans below its current advertised benefits', () => {
+test('the Plus paywall keeps its header and plans fixed while only benefits scroll', () => {
   const paywall = read('src/components/PaywallModal.tsx');
   const translations = read('src/i18n/translations.ts');
 
+  assert.match(paywall, /LIDL_LOGO = require\('\.\.\/\.\.\/assets\/stores\/lidl\.png'\)/);
+  assert.match(paywall, /image: LIDL_LOGO, key: 'lidl'/);
+  assert.match(paywall, /key: 'stores'/);
+  assert.match(paywall, /<Image source=\{b\.image\} style=\{styles\.benefitLogo\}/);
+  assert.match(translations, /lidlTitle: 'Lidl'/);
+  assert.match(translations, /lidlText: 'Consulta su catálogo, ofertas, novedades y cambios de precio\.'/);
+  assert.match(translations, /storesTitle: 'Todos tus supermercados'/);
+  assert.match(translations, /storesText: 'Consulta todos tus catálogos juntos\.'/);
+  assert.match(translations, /lidlText: 'Consulta el seu catàleg, ofertes, novetats i canvis de preu\.'/);
+  assert.match(translations, /storesTitle: 'Tots els teus supermercats'/);
   assert.doesNotMatch(paywall, /key: 'filters'/);
-  assert.doesNotMatch(paywall, /key: 'stores'/);
   assert.doesNotMatch(translations, /filtersTitle: 'Filtros avanzados'/);
   assert.doesNotMatch(translations, /filtersTitle: 'Filtres avançats'/);
-  assert.match(paywall, /<View style=\{styles\.bottomSection\}>[\s\S]*paywall\.choosePlan/);
-  assert.match(paywall, /scrollContent: \{ flexGrow: 1/);
-  assert.match(paywall, /bottomSection: \{ marginTop: 'auto'/);
+  assert.match(paywall, /<View style=\{styles\.header\}>[\s\S]*<View style=\{styles\.sectionHeadingRow\}>[\s\S]*<ScrollView[\s\S]*style=\{styles\.benefitsScroll\}[\s\S]*<View style=\{styles\.bottomSection\}>/);
+  assert.match(paywall, /contentContainerStyle=\{styles\.benefits\}/);
+  assert.doesNotMatch(paywall, /contentContainerStyle=\{styles\.scrollContent\}/);
+  assert.match(paywall, /benefitsScroll: \{ flex: 1, minHeight: 0 \}/);
+  assert.match(paywall, /bottomSection: \{ flexShrink: 0, paddingTop: 8 \}/);
 });
 
 test('the annual free trial is advertised only after store eligibility is confirmed', () => {

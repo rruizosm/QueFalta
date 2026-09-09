@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, StatusBar, ActivityIndicator, Linking, Alert, AppState,
+  StyleSheet, StatusBar, ActivityIndicator, Linking, Alert, AppState, Platform,
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -95,6 +95,18 @@ export default function ProfileScreen() {
   );
 
   const handleSignOut = () => setSignOutVisible(true);
+
+  const handleSuggestFeature = () => {
+    const version = Constants.expoConfig?.version ?? '1.0.0';
+    const footer = `\n\n\n— — —\nQuéFalta v${version}\n${Platform.OS} ${Platform.Version}`;
+    const url =
+      'mailto:contacto@quefalta.es' +
+      `?subject=${encodeURIComponent('QuéFalta — Sugerencia')}` +
+      `&body=${encodeURIComponent(footer)}`;
+    Linking.openURL(url).catch(() =>
+      Alert.alert(t('help.title'), t('help.emailError')),
+    );
+  };
 
   const handlePlusPress = async () => {
     if (!isPremium) {
@@ -217,6 +229,39 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
 
+          <View style={styles.profileActions}>
+            <TouchableOpacity
+              style={[styles.profileAction, styles.instagramAction]}
+              onPress={() => Linking.openURL('https://www.instagram.com/quefalta.app/')}
+              activeOpacity={0.7}
+            >
+              <View style={styles.profileActionIcon}>
+                <Ionicons name="logo-instagram" size={18} color={colors.accent} />
+              </View>
+              <Text style={[styles.profileActionText, styles.instagramActionText]}>
+                {t('profile.instagram')}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.profileAction, styles.suggestAction]}
+              onPress={handleSuggestFeature}
+              activeOpacity={0.7}
+            >
+              <View style={styles.profileActionIcon}>
+                <Ionicons name="bulb-outline" size={18} color={colors.accent} />
+              </View>
+              <Text
+                style={styles.profileActionText}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.85}
+              >
+                {t('help.suggestFeature')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           {/* CUENTA */}
           <Text style={styles.sectionLabel}>{t('profile.sectionAccount')}</Text>
           <View style={styles.section}>
@@ -320,12 +365,6 @@ export default function ProfileScreen() {
           <Text style={styles.sectionLabel}>{t('profile.sectionSupport')}</Text>
           <View style={styles.section}>
             <ProfileRow
-              icon="logo-instagram"
-              label={t('profile.instagram')}
-              onPress={() => Linking.openURL('https://www.instagram.com/quefalta.app/')}
-              rounded
-            />
-            <ProfileRow
               icon="help-circle-outline"
               label={t('profile.help')}
               onPress={() => navigation.navigate('Help')}
@@ -424,6 +463,30 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.accent,
   },
   editBtnText: { fontSize: 12, fontFamily: fonts.bold, color: colors.white },
+
+  profileActions: {
+    flexDirection: 'row', gap: 10, marginTop: 12,
+  },
+  profileAction: {
+    minHeight: 58,
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingHorizontal: 12, paddingVertical: 10, borderRadius: 18,
+    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
+  },
+  instagramAction: {
+    paddingHorizontal: 10, gap: 8,
+  },
+  instagramActionText: { flex: 0 },
+  suggestAction: { flex: 1 },
+  profileActionIcon: {
+    width: 34, height: 34, borderRadius: 11,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.accentLight,
+  },
+  profileActionText: {
+    flex: 1, fontSize: 13, lineHeight: 17,
+    fontFamily: fonts.semibold, color: colors.ink,
+  },
 
   // ── Sections ──────────────────────────────────────────────────
   sectionLabel: {

@@ -66,6 +66,9 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
   const lidlPromoBasePrice = store === 'lidl' && 'promoBasePrice' in product
     ? product.promoBasePrice
     : null;
+  const lidlPlusOnly = store === 'lidl'
+    && 'isLidlPlusOffer' in product
+    && product.isLidlPlusOffer;
   const lidlPromotion = store === 'lidl'
     && 'promoName' in product
     && 'promoText' in product
@@ -74,6 +77,9 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
     && product.promoName
     ? {
         name: product.promoName,
+        label: lidlPlusOnly && !/lidl\s*plus/i.test(product.promoName)
+          ? `${product.promoName} · Lidl Plus`
+          : product.promoName,
         condition: distinctPromotionText(product.promoName, product.promoText),
         start: formatOfferDate(product.promoStart),
         end: formatOfferDate(product.promoEnd),
@@ -177,8 +183,14 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
           <View style={styles.promoBox}>
             <View style={styles.promoPill}>
               <Ionicons name="pricetags" size={12} color={colors.white} />
-              <Text style={styles.promoPillText}>{lidlPromotion.name}</Text>
+              <Text style={styles.promoPillText}>{lidlPromotion.label}</Text>
             </View>
+            {lidlPlusOnly ? (
+              <View style={styles.promoDetail}>
+                <Text style={styles.promoDetailLabel}>{t('product.offerRequirement')}</Text>
+                <Text style={styles.promoText}>{t('product.lidlPlusRequirement')}</Text>
+              </View>
+            ) : null}
             {lidlPromotion.condition ? (
               <View style={styles.promoDetail}>
                 <Text style={styles.promoDetailLabel}>{t('product.offerConditions')}</Text>

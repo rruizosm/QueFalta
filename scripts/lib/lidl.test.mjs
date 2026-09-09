@@ -4,6 +4,7 @@ import {
   applyLidlOffer,
   isLidlOfferCandidate,
   isLidlMinimumQuantityOffer,
+  isLidlPlusStoreOffer,
   isLiveLidlStoreOffer,
   lidlCategoryId,
   lidlOfferConditions,
@@ -105,8 +106,24 @@ test('normaliza precio, base, etiqueta y fechas de una oferta verificada', () =>
   assert.equal(row.promo_base_price, 1.49);
   assert.equal(row.promo_start, '2026-08-31');
   assert.equal(row.promo_end, '2026-09-06');
+  assert.equal(row.is_lidl_plus_offer, true);
   assert.equal(row.promo_text, null);
   assert.equal(row.raw.offer.id, 'offer-banana');
+});
+
+test('clasifica solo el tipo confirmado como precio exclusivo Lidl Plus', () => {
+  assert.equal(isLidlPlusStoreOffer({ offerType: 'StoreSpecialPriceDiscount' }), true);
+  assert.equal(isLidlPlusStoreOffer({ offerType: 'StorePercentageOnProductDiscount' }), false);
+  assert.equal(isLidlPlusStoreOffer({ offerType: 'StorePercentageOnXUnitDiscount' }), false);
+  assert.equal(isLidlPlusStoreOffer({}), false);
+});
+
+test('una oferta posterior sustituye un indicador Lidl Plus anterior', () => {
+  const row = applyLidlOffer({ is_lidl_plus_offer: true }, {
+    ...bananaOffer,
+    offerType: 'StorePercentageOnXUnitDiscount',
+  });
+  assert.equal(row.is_lidl_plus_offer, false);
 });
 
 test('extrae de la ficha de oferta la condición real de compra', () => {
@@ -202,4 +219,10 @@ test('genera el conteo de categoría por tienda', () => {
     store_id: 'ES2103', category_id: '10:2', product_count: 17,
     published: true, synced_at: 'now',
   });
+});
+
+test('registra la procedencia solo cuando una tienda usa el catálogo maestro', () => {
+  const row = { id: 'p1', category_ids: [], raw: {}, synced_at: 'now' };
+  assert.equal(lidlStoreProductRow(row, 'ES0951', 'ES3572').raw.fallbackSourceStoreId, 'ES3572');
+  assert.equal('fallbackSourceStoreId' in lidlStoreProductRow(row, 'ES3572').raw, false);
 });

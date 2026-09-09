@@ -1,26 +1,236 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
-## Aviso en fichas Lidl sin imagen (2026-09-07)
+## Tecla «Done» retirada del código postal (local, 2026-09-07)
+
+- `RegionPicker` ya no define `returnKeyType="done"` en el `TextInput` de
+  código postal. Al ser un componente compartido, desaparece en onboarding,
+  gate postal y ajustes de región, sin cambiar validación ni persistencia.
+- Cambio solo de cliente, sin migración.
+
+## Lidl como beneficio propio de QuéFalta Plus (local, 2026-09-07)
+
+- El paywall presenta Lidl en una fila independiente con su logo local y deja
+  «Todos tus supermercados» en otra fila para la consulta conjunta. Copy ES/CA
+  y regresión en `scripts/tests/plus-activation.test.mjs`.
+- Cabecera, título de beneficios y bloque de planes/CTA/legal quedan fijos; solo
+  la lista central de beneficios se desplaza cuando no cabe. Sin migración.
+
+## Carrefour reconciliado y drenaje preventivo de embeddings (producción, 2026-09-07)
+
+- Con autorización explícita del propietario se ejecutó
+  `EMBEDDING_ANOMALY_OVERRIDE=1 STORES=carrefour` tras un DRY_RUN idéntico:
+  33.529 productos, 6.375 upserts, 1.671 despublicaciones y 3.998 embeddings
+  (3.864 altas + 134 cambios semánticos). Run
+  `0117af2e-21c4-4ce0-9d65-e2eae987f2c9`, manifiesto 3.998/3.998, estado
+  `draining`, sin error.
+- Canario request 3380: HTTP 200, 99 completed, 1 stale, 0 failed/deferred.
+  Después se abrió `active` temporal con un solo worker inicial; el cron 17 no
+  se activó. La cola descendió 4.571→3.171 y se volvió a `paused` para no cruzar
+  el umbral preventivo de autovacuum.
+- Estado final 14:30 CEST: Carrefour 828/3.998 completados y 3.170 pendientes;
+  queda además 1 Ahorramás. Total 3.171 disponibles, 0 en vuelo, 0 fallos
+  abiertos/archivados, cron inactivo. HNSW válido/listo/vivo, sin vacuum ni
+  reindex y 9.232 tuplas muertas (4,199 %, alerta 5 %). Antes de reanudar,
+  consultar `catalog_embedding_maintenance_status()` y no solapar el drenaje
+  con mantenimiento del índice.
+
+## Acciones rápidas de Instagram y sugerencias en Perfil (local, 2026-09-07)
+
+- `ProfileScreen` muestra debajo de la tarjeta de identidad y antes de Cuenta
+  una fila con Instagram compacto y «Sugerir una función» en una sola línea;
+  Instagram ya no se repite en Soporte.
+- La sugerencia replica el correo de `HelpScreen`, incluido el asunto y el pie
+  con versión/plataforma. El botón de Ayuda permanece intacto. Sin migración.
+
+## Ofertas exclusivas Lidl Plus identificadas (local + producción, 2026-09-07)
+
+- `scripts/lib/lidl.mjs` interpreta el tipo confirmado
+  `StoreSpecialPriceDiscount` como exclusivo de Lidl Plus y asigna siempre
+  `is_lidl_plus_offer`; otros tipos del feed lo limpian para evitar conservar
+  el valor de una campaña previa cuando el feed, que tiene prioridad, la
+  sustituye.
+- `LidlProduct` y `LIDL_COLS` exponen `is_lidl_plus_offer`. `lidlToUI` añade
+  «Lidl Plus» a la etiqueta sin duplicados y `AldiProductModal` muestra
+  «Requisito» indicando que la oferta es exclusiva con Lidl Plus. Localizado ES/CA.
+- Backfill productivo ejecutado sobre `lidl_store_products` y `lidl_products`
+  usando `raw.offer.offerType`: 17.535 + 28 filas actualizadas. Verificación:
+  18.600/18.600 filas publicadas `StoreSpecialPriceDiscount` a `true`, cero
+  filas de otros tipos a `true` y 480/480 ofertas vigentes del Escalopín de
+  vacuno correctamente marcadas. Sin migración ni nueva descarga.
+- Pruebas Lidl/UI (34/34), TypeScript, ESLint y suite completa (716/716)
+  correctos; `git diff --check` limpio.
+
+## Productos Lidl admitidos en carrito e histórico (local + producción, 2026-09-07)
+
+- Causa resuelta: el modal enviaba correctamente `store_key='lidl'`, pero los
+  checks de `list_items` y `purchase_items` no contenían Lidl y Postgres
+  rechazaba la inserción.
+- `20260907111958_allow_lidl_cart_items.sql` ya está aplicada en producción y
+  actualiza los checks del producto principal y del producto vinculado a notas.
+- Verificación real del esquema mediante clones temporales: 2/2 inserciones
+  aceptadas en `list_items` y 2/2 en `purchase_items`. Regresión local en
+  `scripts/tests/lidl-cart-schema.test.mjs`. No requiere publicar cliente.
+
+## Aviso en fichas Lidl sin imagen (local, 2026-09-07)
 
 - `ProductDetailImage` admite `emptyMessage` y considera sin imagen tanto URI
   nula como el placeholder de Lidl descartado por `productImageSource`.
 - `AldiProductModal` pasa el aviso únicamente para Lidl; el área de la foto
   explica que Lidl no ofrece imagen y pide disculpas. Sin SQL ni sync.
 
-## Bloque de oferta Lidl alineado con Carrefour (2026-09-07)
+## Decisión obligatoria de Lidl al actualizar a 1.3.1 (local, 2026-09-07)
 
-- `AldiProductModal` conserva la condición y vigencia Lidl con el bloque de
-  oferta de Carrefour: ancho, padding, separación, icono y tipografías iguales.
-- Regresión en `lidl-offers-ui.test.mjs`; sin SQL ni sync.
+- `LidlReleasePrompt` se monta después del gate postal y no admite cierre,
+  gesto exterior ni botón atrás. Muestra el logo local y obliga a elegir «Sí,
+  añadir Lidl» o «No, gracias»; si Supabase falla, permanece abierto y muestra
+  el error para reintentar.
+- Ambas respuestas escriben la selección canónica en `profiles.catalog_stores`
+  y actualizan `ProfileContext`. AsyncStorage recuerda `yes`/`no` por
+  `1.3.1:userId`; `StoresScreen` registra la elección equivalente para que las
+  altas que ya eligieron en onboarding no vean el popup de actualización.
+- `normalizeCatalogStores` conserva las selecciones antiguas sin añadir Lidl de
+  forma automática. WhatsNew y la valoración nativa esperan a que la decisión
+  quede resuelta. Expo, iOS y Android declaran 1.3.1; build numbers intactos.
+- Cambio solo de cliente y documentación, sin migración ni publicación.
+- TypeScript, ESLint focalizado, 18 pruebas específicas y suite completa
+  (708/708) correctos; `git diff --check` limpio.
 
-## Condiciones y vigencia en el detalle de ofertas Lidl (2026-09-07)
+## Condiciones y vigencia en el detalle de ofertas Lidl (local, 2026-09-07)
 
-- `sync-lidl.mjs` enriquece las campañas enlazadas con `/offers/{id}` y
-  `lidlOfferConditions` prioriza `characteristicsDescription`. El modal Lidl
-  muestra Condiciones solo con `promoText` real y siempre separa la vigencia.
-- Backfill de producción: 40 campañas, 16.883 filas. Plátano de Canarias tiene
-  la condición esperada en 480 tiendas; 15 filas antiguas quedan sin condición
-  porque sus UUID ya no devuelven detalle. Sin migración.
+- `AldiProductModal`, reutilizado por Lidl, etiqueta la condición como
+  «Condiciones» y muestra `promoStart`/`promoEnd` bajo «Vigencia» con formato
+  día/mes/año. Si `promoText` es nulo, omite Condiciones; nunca usa el porcentaje
+  de `promoName` como si fuera una condición.
+- `sync-lidl.mjs` consulta `/offers/{id}` para cada campaña verificada y
+  `lidlOfferConditions` prioriza `characteristicsDescription`, el campo que usa
+  la app de Lidl. Conserva respaldos para otras formas del contrato.
+- Backfill aplicado en producción: 40 campañas, 16.883 filas vigentes. Plátano
+  de Canarias tiene la condición esperada en sus 480 tiendas y vigencia del
+  07/09/2026 al 13/09/2026. Quedan 15 filas sin condición porque seis UUID de
+  campaña ya no devuelven detalle. Sin migración.
+
+## Fallback de tienda maestra Lidl (local, 2026-09-07)
+
+- `sync-lidl-fleet.mjs` reintenta con la fuente maestra `ES3572` únicamente
+  cuando la fuente devuelve HTTP 204 sin cuerpo en categorías, un árbol raíz
+  vacío o confirma pan, fruta y carne vacíos tras reintentos. La tienda
+  reclamada sigue siendo el destino; se copian catálogo, categorías, precios,
+  stock y ofertas de la
+  maestra y el trabajo se cierra como `succeeded`.
+- `sync-lidl.mjs` separa `LIDL_STORE_ID` (destino) de
+  `LIDL_SOURCE_STORE_ID` (fuente). Las promociones del feed y las campañas web
+  se consultan y regionalizan con la fuente maestra. La variante guarda
+  `raw.fallbackSourceStoreId=ES3572` para conservar procedencia.
+- 403/429, fallos de red, JSON truncado y catálogos parciales no activan el
+  fallback. No hay migración. Esta política reemplaza la decisión previa de no
+  publicar sustitutos para las 39 tiendas canarias y los tres outlets.
+- Pruebas focalizadas correctas y DRY_RUN real `ES0951 ← ES3572`: 2.812
+  productos, 43 categorías y 29 productos con oferta; sin escrituras. Pendiente
+  publicar el código y ejecutar `recover` para rellenar las tiendas afectadas.
+
+## Varios administradores por grupo (local + producción, 2026-09-07)
+
+- `group_members.role` (`member`/`admin`) es ya la autoridad operativa. Todos
+  los administradores pueden promocionar/degradar miembros, expulsar, añadir,
+  renombrar y cambiar el icono. El creador queda protegido frente a degradación
+  o expulsión y es la única cuenta autorizada para eliminar el grupo.
+- El cliente deja de transferir un único `owner_id`: carga el rol de cada
+  miembro, muestra «Creador»/«Administrador» y ofrece añadir o retirar permisos.
+  El borrado solo aparece al creador y la API comprueba que UPDATE/DELETE hayan
+  afectado una fila para no convertir una denegación RLS en éxito aparente.
+- Aplicadas en producción `20260907084525_multiple_group_admins.sql` y
+  `20260907085000_backfill_adminless_group_admins.sql`. El backfill conserva
+  creadores/owners históricos presentes y resolvió dos grupos huérfanos
+  promocionando a su único miembro. Al no existir ya sus creadores, esos grupos
+  pueden gestionarse pero no eliminarse desde otra identidad.
+- RLS, grants por columna, helpers privados y wrapper RPC revisados. PGlite
+  valida promoción, degradación, protección del creador y borrado exclusivo;
+  las pruebas de fuente cubren cliente y policies. TypeScript, lint completo,
+  suite completa (695/695) y `git diff --check` correctos. El advisor posterior
+  no añadió hallazgos de esta funcionalidad. `supabase/policies/groups_owner.sql`
+  es solo una advertencia de compatibilidad y no debe ejecutarse.
+
+## Cesta integrada en el bloque del detalle de grupo (local, 2026-09-07)
+
+- Corregida la regresión visual de `GroupDetailScreen` causada por la migración
+  histórica de `ScrollView` a `SectionList`: la cabecera de cesta ya no termina
+  como tarjeta independiente antes de las filas.
+- Cabecera, progreso, tiendas, zonas y productos forman una superficie continua;
+  la última fila aporta el borde y radios inferiores. Se conserva la
+  virtualización para cestas grandes. Sin migración.
+- TypeScript, ESLint focalizado, 4 pruebas de auditoría y `git diff --check`
+  correctos.
+
+## Icono y gestión alineados en el detalle de grupo (local, 2026-09-07)
+
+- `GroupDetailScreen` sustituye las tarjetas apiladas de miembros/icono por una
+  fila de dos acciones independientes para los administradores: selector de icono a
+  la izquierda y «Gestionar» a la derecha. El selector mantiene el mismo sheet,
+  guardado, haptics y actualización del carrito activo.
+- Los no propietarios conservan avatares a la izquierda y gestión a la derecha.
+  Cambio de cliente sin migración.
+
+## Fondo ambiental propio en Grupos (local, 2026-09-07)
+
+- `GroupsScreen` monta `AmbientBubbleBackdrop` en todos sus estados mediante la
+  variante `groups`, con 18 burbujas de radios/posiciones distintos a Inicio y
+  una geometría propia para halo, anillo y lavado inferior.
+- Sigue el acento del tema, no intercepta gestos y no modifica la composición
+  predeterminada que comparten Inicio, Carrito y onboarding. En Grupos se
+  desactiva el degradado superior izquierdo y se conserva el papel plano. Sin
+  migración.
+- TypeScript, ESLint focalizado y `git diff --check` correctos.
+
+## Etiquetas de oferta compactas en cuadrícula (local, 2026-09-07)
+
+- `ProductGridCard` usa la etiqueta compacta para las ofertas de todos los
+  supermercados: ancho máximo del 68 %, padding, icono y texto reducidos.
+- La vista de lista conserva su diseño. Cambio solo de cliente; sin migración ni
+  publicación. TypeScript, ESLint focalizado, 6 pruebas de ofertas y
+  `git diff --check` correctos.
+- El bloque promocional de la ficha Lidl recupera exactamente las dimensiones
+  de Carrefour: ancho completo, padding 12, gap 8, icono/etiqueta 12 y cuerpo
+  12,5/18. Conserva Condiciones y Vigencia dentro del bloque.
+
+## Imágenes Lidl verificadas en Xcode (local, 2026-09-07)
+
+- Corregida la optimización anterior de 192 px: disparaba una transformación
+  CDN lenta y con caché de solo 300 segundos. Lista, cuadrícula, ficha y precarga
+  comparten ahora la variante publicada de 384 px, con caché larga. Los
+  placeholders remotos de Lidl se sustituyen por el icono local.
+- Precarga compartida entre pantallas: máximo dos descargas simultáneas,
+  deduplicación, 24 trabajos y doce imágenes por solicitud; cancelar una
+  pantalla retira sus pendientes sin cancelar trabajos compartidos.
+- Medición real en simulador iPhone 15 Pro / iOS 26.5: mismas 16 imágenes sin
+  caché local, mediana 5.257 → 627 ms y máximo 8.065 → 835 ms. Con caché de
+  disco: mediana 5,5 ms. Cuadrícula y ficha comprobadas visualmente; la ficha
+  reutiliza memoria (2–8 ms). Red/CDN no controlados; no es un benchmark de
+  dispositivo físico. Evidencia: `docs/lidl-image-performance-20260907.json`.
+- Compilación nativa Xcode, TypeScript, ESLint focalizado y 14 pruebas
+  focalizadas correctos; `git diff --check` limpio. Instrumentación y borrado
+  temporal de cachés retirados. Sin migraciones ni publicación.
+
+
+## Rendimiento de navegación e imágenes (local, 2026-09-07)
+
+- Catálogo/Ofertas/Novedades/Cambios comparten caché acotada de cinco minutos,
+  deduplicación y precarga del supermercado individual seleccionado.
+- Fichas con vista previa inmediata, caché de detalle, fuentes Mercadona en
+  paralelo y ficha Lidl reutilizada por producto/tienda. Imágenes Lidl corregidas
+  a 384 px y medidas en Xcode, según el apartado anterior.
+- TypeScript, ESLint, 686 pruebas de suite, 10 focalizadas finales y bundle
+  Hermes iOS correctos.
+- Ver el apartado de rendimiento en CONTEXTO.md. Sin migraciones ni despliegue;
+  imágenes verificadas en simulador; pendiente validar en dispositivo físico.
+
+## Recetas desactivadas para publicación (local, 2026-09-07)
+
+- `src/constants/limits.ts`: `QUE_COCINO_ENABLED = false`. Recetas queda fuera
+  del navegador y de ambas barras de pestañas; no se monta ni ejecuta consultas.
+- Todos sus flujos (crear, consultar detalle, Me gusta, guardar y añadir
+  ingredientes al carrito) quedan inaccesibles. Código y datos conservados.
+- Cambio preparado para la siguiente versión, sin publicar ni modificar el
+  backend. Esta decisión sustituye la reactivación de desarrollo del 2026-08-30.
 
 ## Capacidad de recuperación Lidl y ES0548 (local, 2026-09-07)
 
@@ -1575,7 +1785,9 @@
 - `AddMemberScreen` ya no silencia cargas parciales, ofrece reintento, evita
   presentar como disponible a un miembro existente y serializa incluso dobles
   toques mediante un guard síncrono. Su geometría queda alineada con Grupos.
-- Transferir administración y expulsar abren `ConfirmDialog` antes de escribir.
+- La transferencia única descrita en esta auditoría histórica abría
+  `ConfirmDialog`; desde 2026-09-07 fue sustituida por promoción/degradación de
+  varios administradores, también con confirmación. Expulsar sigue confirmando.
   La cuadrícula de productos responde al ancho actual con 3/4/5 columnas y las
   imágenes fallidas conservan un placeholder visible.
 - Regresiones en `scripts/tests/medium-priority-audit.test.mjs`. Validación:

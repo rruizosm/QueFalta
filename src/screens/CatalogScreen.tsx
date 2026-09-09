@@ -1,3 +1,4 @@
+import { loadBrowsePage, peekBrowsePage } from '../api/catalogBrowse';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fonts } from '../constants/typography';
 import {
@@ -47,10 +48,6 @@ import {
   searchHiperdinoProducts, fetchHiperdinoCategoryTree,
   searchAlcampoProducts, fetchAlcampoCategoryTree,
   searchPlusfrescProducts, fetchPlusfrescCategoryTree,
-  browseProducts, browseBonpreuProducts, browseCarrefourProducts,
-  browseBonareaProducts, browseConsumProducts, browseDiaProducts, browseSorliProducts,
-  browseEroskiProducts, browseCapraboProducts, browseCondisProducts, browseAmetllerProducts,
-  browseAldiProducts, browseLidlProducts, browseGadisProducts, browseFroizProducts, browseAhorramasProducts, browseHiperdinoProducts, browseAlcampoProducts, browsePlusfrescProducts,
   type BonpreuProduct, type BonpreuCategory,
   type CarrefourProduct, type CarrefourCategory,
   type BonareaProduct, type BonareaCategory,
@@ -67,7 +64,7 @@ import {
   type AlcampoProduct, type AlcampoCategory,
   type PlusfrescProduct, type PlusfrescCategory,
   type TapestryProduct, type TapestryCategory,
-  type BrowseCursor, type BrowsePage, type CatalogSearchOrder,
+  type BrowseCursor, type CatalogSearchOrder,
 } from '../api/catalog';
 import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../context/ToastContext';
@@ -109,16 +106,7 @@ type ProductBrowseOrder = 'priceAsc' | 'priceDesc' | 'pricePerUnitAsc' | 'priceP
 type ProductSearchOrder = CatalogSearchOrder;
 type ProductSortSegment = ProductSearchOrder;
 
-// Primera página por súper/contexto durante la sesión. El catálogo se
-// sincroniza semanalmente, pero un TTL corto permite mostrar al instante una
-// revisita y revalidar silenciosamente si la copia ya tiene unos minutos.
-const BROWSE_CACHE_TTL_MS = 5 * 60 * 1000;
 const ALL_SEARCH_MAX_RESULTS = 200;
-interface BrowseCacheEntry {
-  page: BrowsePage<UIProduct>;
-  cachedAt: number;
-}
-const browsePageCache = new Map<string, BrowseCacheEntry>();
 
 function browseCacheKey(
   store: StoreKey,
@@ -204,61 +192,6 @@ interface CatRow {
 /** Carga una página de navegación del catálogo del súper activo y la normaliza a
  *  UIProduct (cada súper tiene su browse + adaptador). El cursor lo gestiona el
  *  llamante; aquí solo se traduce store → (browse, adapter). */
-async function loadBrowsePage(
-  store: CatalogStore,
-  cursor: BrowseCursor | null,
-  region: RegionValue | null,
-  postalCode: string | null,
-  lidlStoreId: string | null,
-  signal?: AbortSignal,
-  order: ProductBrowseOrder = 'priceAsc',
-  limit = 50,
-): Promise<BrowsePage<UIProduct>> {
-  try {
-    return await loadBrowsePageWithOrder(store, cursor, region, postalCode, lidlStoreId, signal, order, limit);
-  } catch (error) {
-    // Algunas tablas antiguas de producción aún pueden no tener el índice del
-    // orden activo. No permitimos que una sola consulta deje vacío el
-    // catálogo combinado: recuperamos su primera página alfabética y la mezcla
-    // la ordena en cliente. Las cancelaciones sí deben propagarse.
-    if (signal?.aborted) throw error;
-    return loadBrowsePageWithOrder(store, cursor, region, postalCode, lidlStoreId, signal, false, limit);
-  }
-}
-
-async function loadBrowsePageWithOrder(
-  store: CatalogStore,
-  cursor: BrowseCursor | null,
-  region: RegionValue | null,
-  postalCode: string | null,
-  lidlStoreId: string | null,
-  signal?: AbortSignal,
-  order: ProductBrowseOrder | boolean = 'priceAsc',
-  limit = 50,
-): Promise<BrowsePage<UIProduct>> {
-  switch (store) {
-    case 'mercadona': { const { items, nextCursor } = await browseProducts(cursor, region, limit, signal, order as never); return { items: items.map((p) => mercadonaToUI(p)), nextCursor }; }
-    case 'esclat':    { const { items, nextCursor } = await browseBonpreuProducts(cursor, limit, signal, order as never); return { items: items.map(bonpreuToUI), nextCursor }; }
-    case 'carrefour': { const { items, nextCursor } = await browseCarrefourProducts(cursor, region, limit, signal, order as never); return { items: items.map(carrefourToUI), nextCursor }; }
-    case 'bonarea':   { const { items, nextCursor } = await browseBonareaProducts(cursor, limit, signal, order as never); return { items: items.map(bonareaToUI), nextCursor }; }
-    case 'consum':    { const { items, nextCursor } = await browseConsumProducts(cursor, region, postalCode, limit, signal, order as never); return { items: items.map(consumToUI), nextCursor }; }
-    case 'dia':       { const { items, nextCursor } = await browseDiaProducts(cursor, region, limit, signal, order as never); return { items: items.map(diaToUI), nextCursor }; }
-    case 'sorli':     { const { items, nextCursor } = await browseSorliProducts(cursor, limit, signal, order as never); return { items: items.map(sorliToUI), nextCursor }; }
-    case 'eroski':    { const { items, nextCursor } = await browseEroskiProducts(cursor, limit, signal, order as never); return { items: items.map(eroskiToUI), nextCursor }; }
-    case 'caprabo':   { const { items, nextCursor } = await browseCapraboProducts(cursor, limit, signal, order as never); return { items: items.map(capraboToUI), nextCursor }; }
-    case 'condis':    { const { items, nextCursor } = await browseCondisProducts(cursor, limit, signal, order as never); return { items: items.map(condisToUI), nextCursor }; }
-    case 'ametller':  { const { items, nextCursor } = await browseAmetllerProducts(cursor, limit, signal, order as never); return { items: items.map(ametllerToUI), nextCursor }; }
-    case 'aldi':      { const { items, nextCursor } = await browseAldiProducts(cursor, limit, signal, order as never); return { items: items.map(aldiToUI), nextCursor }; }
-    case 'lidl':      { const { items, nextCursor } = await browseLidlProducts(cursor, limit, signal, order as never, lidlStoreId); return { items: items.map(lidlToUI), nextCursor }; }
-    case 'gadis':     { const { items, nextCursor } = await browseGadisProducts(cursor, limit, signal, order as never); return { items: items.map(gadisToUI), nextCursor }; }
-    case 'froiz':     { const { items, nextCursor } = await browseFroizProducts(cursor, limit, signal, order as never); return { items: items.map(froizToUI), nextCursor }; }
-    case 'ahorramas': { const { items, nextCursor } = await browseAhorramasProducts(cursor, limit, signal, order as never); return { items: items.map(ahorramasToUI), nextCursor }; }
-    case 'hiperdino': { const { items, nextCursor } = await browseHiperdinoProducts(cursor, limit, signal, order as never); return { items: items.map(hiperdinoToUI), nextCursor }; }
-    case 'alcampo':   { const { items, nextCursor } = await browseAlcampoProducts(cursor, limit, signal, order as never); return { items: items.map(alcampoToUI), nextCursor }; }
-    case 'plusfresc': { const { items, nextCursor } = await browsePlusfrescProducts(cursor, postalCode, limit, signal, order as never); return { items: items.map(plusfrescToUI), nextCursor }; }
-  }
-}
-
 async function loadStoreSearch(
   store: CatalogStore,
   query: string,
@@ -690,7 +623,6 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   const [browse, setBrowse] = useState<UIProduct[]>([]);
   const [browseCursor, setBrowseCursor] = useState<BrowseCursor | null>(null);
   const [browseLoading, setBrowseLoading] = useState(false); // página inicial
-  const [browseRefreshing, setBrowseRefreshing] = useState(false); // SWR sin spinner
   const [browseMore, setBrowseMore] = useState(false);       // páginas siguientes
   const [browseError, setBrowseError] = useState(false);
   const browseInitialController = useRef<AbortController | null>(null);
@@ -815,7 +747,6 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
     browseInitialController.current = null;
     browseMoreController.current = null;
     if (!browseMode) {
-      setBrowseRefreshing(false);
       setBrowseMore(false);
       return;
     }
@@ -827,7 +758,6 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
       setBrowseError(false);
       setBrowseMore(false);
       setBrowseLoading(true);
-      setBrowseRefreshing(false);
 
       let cancelled = false;
       const controller = new AbortController();
@@ -863,15 +793,14 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
     allBrowsePager.current = null;
     allBrowseRequestKey.current = null;
-    const cached = browsePageCache.get(requestKey);
-    const hasCachedPage = cached != null;
+    const cached = peekBrowsePage(store, null, region, postalCode, lidlStoreId, undefined, browseOrder);
     if (cached) {
-      setBrowse(cached.page.items);
-      setBrowseCursor(cached.page.nextCursor);
+      setBrowse(cached.items);
+      setBrowseCursor(cached.nextCursor);
       setBrowseLoading(false);
       setBrowseError(false);
       setBrowseMore(false);
-      if (Date.now() - cached.cachedAt < BROWSE_CACHE_TTL_MS) return;
+      return;
     } else {
       setBrowse([]);
       setBrowseCursor(null);
@@ -883,23 +812,20 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
     let cancelled = false;
     const controller = new AbortController();
     browseInitialController.current = controller;
-    setBrowseRefreshing(hasCachedPage);
     loadBrowsePage(store, null, region, postalCode, lidlStoreId, controller.signal, browseOrder)
       .then((page) => {
         if (cancelled || activeBrowseKeyRef.current !== requestKey) return;
-        browsePageCache.set(requestKey, { page, cachedAt: Date.now() });
         setBrowse(page.items);
         setBrowseCursor(page.nextCursor);
         setBrowseError(false);
       })
       .catch(() => {
-        if (!cancelled && !hasCachedPage) setBrowseError(true);
+        if (!cancelled) setBrowseError(true);
       })
       .finally(() => {
         if (cancelled) return;
         if (browseInitialController.current === controller) browseInitialController.current = null;
         setBrowseLoading(false);
-        setBrowseRefreshing(false);
       });
     return () => {
       cancelled = true;
@@ -912,7 +838,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
   // Siguiente página keyset al llegar al final de la lista.
   const loadMoreBrowse = () => {
-    if (browseLoading || browseRefreshing || browseMore || browseCursor == null) return;
+    if (browseLoading || browseMore || browseCursor == null) return;
     const requestKey = activeBrowseKey;
     const controller = new AbortController();
     browseMoreController.current?.abort();

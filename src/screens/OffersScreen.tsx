@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { peekStoreOffers } from '../api/catalog';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -100,7 +101,7 @@ function compareOffers(sort: PriceSort | null, pricePerUnitSort: PriceSort | nul
 export default function OffersScreen() {
   const styles = useThemedStyles(themedStyles);
   const navigation = useNavigation<any>();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const headerTop = useHeaderTopPadding(52);
   const { profile, isPremium } = useProfile();
   const region = profile?.region ?? null;
@@ -277,7 +278,7 @@ export default function OffersScreen() {
 
   // Primera página: recarga al cambiar de súper Y al cambiar cualquier filtro
   // (el keyset arranca de cero con las nuevas condiciones).
-  useEffect(() => {
+  useLayoutEffect(() => {
     const seq = ++loadSeq.current;
     setItems([]);
     setCursor(null);
@@ -315,6 +316,13 @@ export default function OffersScreen() {
       setLoading(false);
       return;
     }
+    const cached = peekStoreOffers(store, null, region, postalCode, 50, filtersForStore(store), lidlStoreId);
+    if (cached) {
+      setItems(cached.items);
+      setCursor(cached.nextCursor);
+      setLoading(false);
+      return;
+    }
     fetchStoreOffers(store, null, region, postalCode, 50, filtersForStore(store), lidlStoreId)
       .then((page) => {
         if (loadSeq.current !== seq) return;
@@ -326,6 +334,7 @@ export default function OffersScreen() {
   }, [
     store,
     filtersForStore,
+    lang,
     region,
     postalCode,
     lidlStoreId,

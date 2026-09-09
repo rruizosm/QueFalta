@@ -26,6 +26,7 @@ test('la oferta Lidl de la ficha usa el mismo diseño y tipografía que Carrefou
   assert.match(sharedModal, /promoBox: \{[\s\S]*?marginTop: 14, padding: 12, gap: 8/);
   assert.match(sharedModal, /backgroundColor: colors\.accent, paddingHorizontal: 8, paddingVertical: 4/);
   assert.match(sharedModal, /promoPillText: \{ fontSize: 12/);
+  assert.match(sharedModal, /promoDetailLabel: \{ fontSize: 12\.5/);
   assert.match(sharedModal, /promoText: \{ fontSize: 12\.5[\s\S]*?lineHeight: 18/);
   assert.match(sharedModal, /<Ionicons name="pricetags" size=\{12\}/);
 });

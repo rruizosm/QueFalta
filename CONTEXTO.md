@@ -1864,7 +1864,7 @@
   claro/oscuro, color de acento, texto grande y castellano/catalán.
 - Comunica cuatro novedades ya listas: 18 supermercados y conservación de
   «Todos», búsqueda por relevancia con tolerancia a erratas, Radar de ahorro
-  con tres usos gratuitos, y comentarios/iconos/grupos ilimitados.
+  con tres usos gratuitos, y notas/iconos/grupos ilimitados.
 - Las alertas personalizadas quedan deliberadamente fuera hasta activar y
   validar su entrega general. Regresión en
   `scripts/tests/whats-new-prompt.test.mjs`.
@@ -2260,14 +2260,14 @@
 - Cambios de precio conserva su fila de precio anterior, actual y porcentaje, y
   recupera debajo el formato/cantidad y el precio unitario del producto.
 
-## Producto alternativo en comentarios reservado a Plus (2026-08-21)
+## Producto alternativo en notas reservado a Plus (2026-08-21)
 
-- Escribir y editar comentarios de productos en la cesta continúa siendo
+- Escribir y editar notas de productos en la cesta continúa siendo
   gratuito. «Asignar producto» y «Cambiar» son funciones QuéFalta Plus.
 - En cuentas gratuitas, intentar abrir el selector muestra el paywall antes de
   buscar. Una alternativa existente permanece visible, puede conservarse al
-  editar el comentario y puede quitarse sin suscripción.
-- El paywall incluye «Productos en comentarios» entre sus beneficios, también
+  editar las notas y puede quitarse sin suscripción.
+- El paywall incluye «Productos en notas» entre sus beneficios, también
   en catalán. No hay cambios de esquema ni de persistencia.
 
 ## Historial de compra gratuito e ilimitado (2026-08-21)
@@ -2312,12 +2312,12 @@
   Inicio muestra «¡Prepara la compra!», con su versión catalana. Carrito no
   muestra este mensaje.
 
-## Comentarios y producto alternativo en el carrito (2026-08-21)
+## Notas y producto alternativo en el carrito (2026-08-21)
 
 - Cada tarjeta del carrito incorpora un pie compacto unido al bloque principal
-  y separado por un divisor punteado. Vacío muestra «Añade comentarios sobre el
-  producto»; al tocarlo abre un editor multilínea de hasta 280 caracteres.
-- El editor permite además asignar un producto alternativo al comentario. Abre
+  y separado por un divisor punteado. La acción se llama «Notas» y abre un
+  editor multilínea de hasta 280 caracteres.
+- El editor permite además asignar un producto alternativo a las notas. Abre
   un buscador sobre los supermercados activos del perfil y disponibles en su
   CCAA/CP; el usuario puede seleccionar, cambiar o quitar la alternativa.
   El caso esperado es escribir «Si no queda, compra esto:» y enlazar el producto.
@@ -3277,6 +3277,9 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - **Tema (color de la app):** Perfil → Apariencia permite elegir el accent (`ACCENT_OPTIONS` en `constants/colors.ts`; persistido en AsyncStorage `@accent_color`). `colors.accent/accentLight/accentMid` son **getters** sobre un valor mutable (`applyAccent`). Los `StyleSheet.create` que usan accent NO pueden ser estáticos: se definen como fábrica `const themedStyles = () => StyleSheet.create({...})` y se consumen con `const styles = useThemedStyles(themedStyles)` (de `ThemeContext`), que los recrea al cambiar el color. Si añades una pantalla/componente nuevo que use `colors.accent*` en su StyleSheet, sigue ese patrón; si solo lo usa inline en JSX basta con que el padre re-renderice (no hay React.memo en el código).
 
 ## Migraciones SQL pendientes en Supabase (ejecutar a mano)
+- ✅ **Producto no disponible para la próxima compra:**
+  `20260911173959_defer_unavailable_products.sql` desplegada en producción como
+  `20260911180408_defer_unavailable_products`. Columna y RPC verificados.
 - ✅ **Estadísticas generales:**
   `20260822165410_general_statistics.sql` y su frontera privada
   `20260822171122_general_statistics_private_boundary.sql` desplegadas como
@@ -3369,7 +3372,7 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - ⏳ **Eroski (8º) y Caprabo (9º) añadidos** (2026-07-11): comparten backend (Apache Tapestry) → un scraper compartido `scripts/lib/eroski-tapestry.mjs` (GET de la página de categoría —SSR del 1er lote de 20— y después `POST supermarket:loadpage` con cookies de sesión + Origin/Referer; saca cada producto del JSON `data-metrics` del tile: id/nombre/marca/categoría/precio; ⚠️ la paginación `?pageNumber=N` original DEJÓ de funcionar el 2026-07-11: el server devuelve "No se obtuvieron resultados") y dos syncs mínimos (`sync-eroski.mjs`, `sync-caprabo.mjs`). Solo castellano, SIN €/unidad ni EAN, pero con nutrición de ficha HTML incremental normalizada para el Índice Alimentario. DRY_RUN completo OK (2026-07-11, ya con loadpage): **Eroski 21.073 productos** / 803 hojas / 0% sin tiles; **Caprabo 10.657** / 750 hojas (8% sin tiles por 429 de rate-limit tras encadenar crawls desde la misma IP — en CI no pasa). OJO: los crawls con `?pageNumber` daban 10.694 en Eroski = LA MITAD del catálogo (solo el 1er lote de cada hoja). GUARDARRAÍL anti-throttling: bajo carga el server sirve la página sin productos (o 429, con backoff largo + Retry-After) → reintentos en la pág. 1 + aborta el run si >20% de hojas llegan SIN TILES (para que markStale no despublique productos vivos); las hojas cuyo contenido ya se vio en otras categorías (~60 por súper, solapamiento del árbol) se cuentan APARTE como "solo-duplicados" y no disparan el aborto (la 1ª versión las mezclaba y abortó el run de CI del 2026-07-11 con un falso "56% vacías"). App: tipo/adaptador/modal (`TapestryProductModal`)/pantalla (`TapestryProductsScreen`) COMPARTIDOS por ambos, con funciones de `catalog.ts` por tabla. Migraciones `eroski_catalog.sql`+`caprabo_catalog.sql` (autocontenidas, es-only) + ampliación `20260718133958_eroski_caprabo_nutrition.sql` para tablas ya creadas. Pendientes: ejecutar las migraciones, re-ejecutar `similar_products.sql` (ya con ambos brazos), primer run (`sync-eroski.yml` lunes 09:00 / `sync-caprabo.yml` 09:30) y validar en device. Logos en `assets/stores/{eroski,caprabo}.png`. Ver `scripts/README-eroski-caprabo-sync.md`.
 - ⏳ **Lista agrupada por zonas del súper** (2026-06-12): Lista y cesta de grupo agrupan Tienda → Zona ("pasillo": Fruta y verdura, Congelados al final…) con alfabético dentro. Mapeo de N1 de los 6 supers → ~15 zonas canónicas por keywords en `src/constants/zones.ts` (solo cliente, afinable sin migrar). La categoría se captura al añadir (`list_items.category_name`); manuales/históricos → "Otros". ⚠️ Si se añade un nuevo punto de "añadir a la cesta", pasar `categoryName`. Pendiente: ejecutar `list_items_category.sql`.
 - 🧪 Comparativa de productos similares entre supers (detalle de producto) — **ACTIVADA PARA TESTERS** con `PRICE_COMPARISON_ENABLED = true`: funciona bajo demanda, usa la capa híbrida/caché y el cliente ya apunta a `catalog_cheaper_products_v5`. Antes de distribuir ese cliente debe desplegarse `20260817124758_comparator_semantic_identity_guard.sql`; la RPC v4 permanece disponible para builds anteriores.
-- Monetización «QuéFalta Plus» (3,99 €/mes · 19,99 €/año): **ACTIVA DESDE LA VERSIÓN 1.3**. El paywall presenta «Todos tus supermercados» —incluido Lidl—, orden por precio unitario, Radar de ahorro ilimitado, alertas personalizadas ilimitadas, productos asociados a comentarios y estadísticas. Cliente `PAYWALL_ENABLED = true` y servidor `paywall_enabled() = true`.
+- Monetización «QuéFalta Plus» (3,99 €/mes · 19,99 €/año): **ACTIVA DESDE LA VERSIÓN 1.3**. El paywall presenta «Todos tus supermercados» —incluido Lidl—, orden por precio unitario, Radar de ahorro ilimitado, alertas personalizadas ilimitadas, productos asociados a notas y estadísticas. Cliente `PAYWALL_ENABLED = true` y servidor `paywall_enabled() = true`.
 - Configuración externa de Plus (2026-08-22): Apple ya tiene los productos
   `com.quefalta.app.plus.monthly` y `.annual` (3,99/19,99 €, prueba anual de
   7 días) y RevenueCat ya enlaza Apple/Google/Test Store en `plus` → `default`

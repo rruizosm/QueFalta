@@ -100,6 +100,7 @@ export interface ListItemRow {
   quantity: number;
   unit: string;
   inCart: boolean;
+  deferredToNextPurchase: boolean;
   categoryEmoji: string | null;
   categoryName: string | null;
   unitPrice: number | null;
@@ -113,13 +114,36 @@ export interface ListItemRow {
   assignedTo: string | null;
 }
 
+const LIST_ITEMS_SELECT = 'id, product_name, quantity, unit, in_cart, deferred_to_next_purchase, category_emoji, category_name, unit_price, image_url, mercadona_product_id, store_product_id, store_key, assigned_to, note, note_product_store, note_product_id, note_product_name, note_product_image_url, note_product_unit_price';
+const LEGACY_LIST_ITEMS_SELECT = 'id, product_name, quantity, unit, in_cart, category_emoji, category_name, unit_price, image_url, mercadona_product_id, store_product_id, store_key, assigned_to, note, note_product_store, note_product_id, note_product_name, note_product_image_url, note_product_unit_price';
+
+const isMissingDeferredColumn = (error: { code?: string; message?: string } | null) =>
+  !!error
+  && (error.code === '42703' || error.code === 'PGRST204')
+  && (error.message ?? '').includes('deferred_to_next_purchase');
+
 /** All items of a single shopping list, oldest first. */
 export async function fetchListItems(listId: string): Promise<ListItemRow[]> {
-  const { data, error } = await supabase
+  const primary = await supabase
     .from('list_items')
-    .select('id, product_name, quantity, unit, in_cart, category_emoji, category_name, unit_price, image_url, mercadona_product_id, store_product_id, store_key, assigned_to, note, note_product_store, note_product_id, note_product_name, note_product_image_url, note_product_unit_price')
+    .select(LIST_ITEMS_SELECT)
     .eq('list_id', listId)
     .order('created_at', { ascending: true });
+  let data: any[] | null = primary.data;
+  let error = primary.error;
+
+  // Durante un despliegue escalonado, una versión nueva del cliente puede
+  // llegar antes que la migración. En ese caso seguimos cargando la lista y
+  // tratamos los artículos como no aplazados hasta que el backend esté listo.
+  if (isMissingDeferredColumn(error)) {
+    const legacy = await supabase
+      .from('list_items')
+      .select(LEGACY_LIST_ITEMS_SELECT)
+      .eq('list_id', listId)
+      .order('created_at', { ascending: true });
+    data = legacy.data;
+    error = legacy.error;
+  }
 
   if (error) throw error;
 
@@ -135,6 +159,7 @@ export async function fetchListItems(listId: string): Promise<ListItemRow[]> {
       quantity: Number(it.quantity),
       unit: it.unit,
       inCart: it.in_cart,
+      deferredToNextPurchase: it.deferred_to_next_purchase === true,
       categoryEmoji: it.category_emoji,
       categoryName: it.category_name ?? null,
       unitPrice: it.unit_price != null ? Number(it.unit_price) : null,
@@ -157,6 +182,7 @@ export interface MergedCartItem {
   quantity: number;
   unit: string;
   inCart: boolean;
+  deferredToNextPurchase: boolean;
   unitPrice: number | null;
   imageUrl: string | null;
   categoryEmoji: string | null;
@@ -171,6 +197,7 @@ export interface MergedCartItem {
 
 type MergeInput = {
   id: string; productName: string; quantity: number; unit: string; inCart: boolean;
+  deferredToNextPurchase?: boolean;
   unitPrice: number | null; imageUrl: string | null; categoryEmoji: string | null;
   mercadonaProductId: string | null; assignedTo?: string | null; categoryName?: string | null;
   storeProductId?: string | null;
@@ -196,6 +223,8 @@ export function mergeCartItems(items: MergeInput[]): MergedCartItem[] {
       ex.ids.push(it.id);
       ex.quantity += it.quantity;
       ex.inCart = ex.inCart && it.inCart;
+      ex.deferredToNextPurchase = ex.deferredToNextPurchase
+        && (it.deferredToNextPurchase ?? false);
       if (ex.assignedTo !== (it.assignedTo ?? null)) ex.assignedTo = null;
       if (!ex.categoryName && it.categoryName) ex.categoryName = it.categoryName;
       if (!ex.storeProductId && it.storeProductId) ex.storeProductId = it.storeProductId;
@@ -208,6 +237,7 @@ export function mergeCartItems(items: MergeInput[]): MergedCartItem[] {
         quantity: it.quantity,
         unit: it.unit,
         inCart: it.inCart,
+        deferredToNextPurchase: it.deferredToNextPurchase ?? false,
         unitPrice: it.unitPrice,
         imageUrl: it.imageUrl,
         categoryEmoji: it.categoryEmoji,
@@ -233,6 +263,21 @@ export async function setListItemsInCart(itemIds: string[], inCart: boolean): Pr
   });
   if (error) throw error;
   if (Number(data) !== new Set(itemIds).size) throw new Error('Not all list items were updated');
+}
+
+/** Marca o desmarca productos como no disponibles para conservarlos al cerrar. */
+export async function setListItemsDeferred(
+  itemIds: string[],
+  deferredToNextPurchase: boolean,
+): Promise<void> {
+  if (itemIds.length === 0) return;
+  const ids = [...new Set(itemIds)];
+  const { data, error } = await supabase.rpc('set_list_items_deferred', {
+    p_item_ids: ids,
+    p_deferred: deferredToNextPurchase,
+  });
+  if (error) throw error;
+  if (Number(data) !== ids.length) throw new Error('Not all list items were deferred');
 }
 
 /** Sets a single row's quantity (used to add/subtract units of a product). */

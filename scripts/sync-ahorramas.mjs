@@ -3,18 +3,24 @@
 // listado son HTML público; no se autentica ni se muta ninguna cesta. Ahorramás
 // asigna una tienda por CP: esta primera pasada conserva el surtido de referencia.
 import { readFileSync } from 'node:fs';
+import {
+  expandAhorramasPageSize,
+  shouldPaginateAhorramasCategory,
+} from './lib/ahorramas-catalog.mjs';
+import { createAhorramasRequester } from './lib/ahorramas-http.mjs';
 import { markStale } from './lib/stale.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
 
 const BASE = 'https://www.ahorramas.com';
 const ROOTS = new Set(['alimentacion', 'frescos', 'bebidas', 'lacteos', 'limpieza', 'cuidado-personal', 'congelados', 'hogar', 'bebe', 'mascotas']);
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL;
-const KEY = process.env.SUPABASE_SERVICE_ROLE;
-const DRY = process.env.DRY_RUN === '1';
-const MAX_CATEGORIES = Number(process.env.MAX_CATEGORIES || Infinity);
-const MIN_PRODUCTS = Number(process.env.MIN_PRODUCTS || 5000);
-const runStart = new Date().toISOString();
-const cookies = new Map();
+
+function integerEnv(name, fallback, min, max) {
+  const value = process.env[name] == null ? fallback : Number(process.env[name]);
+  if (!Number.isInteger(value) || value < min || value > max) {
+    throw new Error(`${name} debe ser un entero entre ${min} y ${max}`);
+  }
+  return value;
+}
 
 function loadEnvLocal() {
   try {
@@ -25,27 +31,36 @@ function loadEnvLocal() {
   } catch (error) { if (error?.code !== 'ENOENT') throw error; }
 }
 loadEnvLocal();
+
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL;
+const KEY = process.env.SUPABASE_SERVICE_ROLE;
+const DRY = process.env.DRY_RUN === '1';
+const MAX_CATEGORIES = Number(process.env.MAX_CATEGORIES || Infinity);
+const MIN_PRODUCTS = Number(process.env.MIN_PRODUCTS || 5000);
+const PAGE_SIZE = integerEnv('AHORRAMAS_PAGE_SIZE', 40, 20, 200);
+const REQUEST_DELAY_MS = integerEnv('AHORRAMAS_REQUEST_DELAY_MS', 3_000, 0, 10_000);
+const MAX_REQUEST_ATTEMPTS = integerEnv('AHORRAMAS_MAX_REQUEST_ATTEMPTS', 6, 1, 10);
+const BASE_RETRY_DELAY_MS = integerEnv('AHORRAMAS_BASE_RETRY_DELAY_MS', 60_000, 1_000, 600_000);
+const MAX_RETRY_DELAY_MS = integerEnv('AHORRAMAS_MAX_RETRY_DELAY_MS', 300_000, BASE_RETRY_DELAY_MS, 900_000);
+const REQUEST_TIMEOUT_MS = integerEnv('AHORRAMAS_REQUEST_TIMEOUT_MS', 60_000, 10_000, 180_000);
+const runStart = new Date().toISOString();
+
 if (!DRY && (!SUPABASE_URL || !KEY)) throw new Error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE (o usa DRY_RUN=1)');
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const htmlDecode = (value = '') => value.replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&quot;/gi, '"').replace(/&#(?:x([0-9a-f]+)|([0-9]+));/gi, (_, hex, dec) => String.fromCodePoint(parseInt(hex || dec, hex ? 16 : 10))).replace(/&[a-z]+;/gi, (entity) => ({ '&aacute;':'á','&eacute;':'é','&iacute;':'í','&oacute;':'ó','&uacute;':'ú','&ntilde;':'ñ','&uuml;':'ü','&euro;':'€' }[entity.toLowerCase()] ?? entity));
 const clean = (value = '') => htmlDecode(value.replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ').trim();
 const number = (value) => { const parsed = Number(String(value ?? '').replace(',', '.').replace(/[^\d.-]/g, '')); return Number.isFinite(parsed) ? parsed : null; };
 const dateISO = (value) => { const m = String(value ?? '').match(/(\d{2})\/(\d{2})\/(\d{2,4})/); return m ? `${m[3].length === 2 ? `20${m[3]}` : m[3]}-${m[2]}-${m[1]}` : null; };
 const chunks = (rows, size) => Array.from({ length: Math.ceil(rows.length / size) }, (_, i) => rows.slice(i * size, i * size + size));
 
-async function request(path, retries = 3) {
-  const target = path.startsWith('http') ? path : `${BASE}${path}`;
-  for (let attempt = 0; attempt < retries; attempt++) {
-    try {
-      const response = await fetch(target, { headers: { Accept: 'text/html,application/xhtml+xml', 'User-Agent': 'QueFalta catalog sync/1.0 (+https://quefalta.es)', ...(cookies.size ? { Cookie: [...cookies].map(([k, v]) => `${k}=${v}`).join('; ') } : {}) }, signal: AbortSignal.timeout(30000) });
-      for (const header of response.headers.getSetCookie?.() ?? []) { const [pair] = header.split(';'); const i = pair.indexOf('='); if (i > 0) cookies.set(pair.slice(0, i), pair.slice(i + 1)); }
-      if (response.ok) return response.text();
-      if (response.status < 429 || attempt === retries - 1) throw new Error(`${response.status} ${target}`);
-    } catch (error) { if (attempt === retries - 1) throw error; }
-    await sleep(750 * (attempt + 1));
-  }
-}
+const request = createAhorramasRequester({
+  baseUrl: BASE,
+  requestDelayMs: REQUEST_DELAY_MS,
+  maxAttempts: MAX_REQUEST_ATTEMPTS,
+  baseRetryDelayMs: BASE_RETRY_DELAY_MS,
+  maxRetryDelayMs: MAX_RETRY_DELAY_MS,
+  timeoutMs: REQUEST_TIMEOUT_MS,
+});
 
 function categoryPath(href) {
   try {
@@ -96,9 +111,15 @@ function productTiles(html, path) {
   return out;
 }
 
-function nextPage(html) {
+function nextPage(html, previousUrl) {
   const value = html.match(/class="btn[^"']*more[^"']*"[\s\S]{0,300}?data-url="([^"]+)"/i)?.[1];
-  return value ? htmlDecode(value).replace(/&amp;/g, '&') : null;
+  return value
+    ? expandAhorramasPageSize(
+      htmlDecode(value).replace(/&amp;/g, '&'),
+      PAGE_SIZE,
+      previousUrl,
+    )
+    : null;
 }
 
 async function upsert(table, rows) {
@@ -115,20 +136,42 @@ async function main() {
   while (queue.length && seen.size < MAX_CATEGORIES) {
     const path = queue.shift(); if (seen.has(path)) continue; seen.add(path);
     const html = await request(`/${path}/`);
-    for (const [child, name] of categoryLinks(html)) if (!seen.has(child)) queue.push(child);
+    const pageCategories = categoryLinks(html);
+    const hasChildren = [...pageCategories.keys()].some((child) => child.startsWith(`${path}/`));
+    for (const child of pageCategories.keys()) if (!seen.has(child)) queue.push(child);
     const parts = path.split('/');
     for (let i = 0; i < parts.length; i++) {
       const id = parts.slice(0, i + 1).join('/');
       categories.set(id, { id, name: i === parts.length - 1 ? (categoryLinks(home).get(path) ?? parts[i].replace(/-/g, ' ')) : parts[i].replace(/-/g, ' '), parent_id: i ? parts.slice(0, i).join('/') : null, product_count: 0, published: true, synced_at: runStart });
     }
     let page = html;
+    let pageCount = 1;
+    let currentPageUrl = null;
+    const categoryProductIds = new Set();
+    const paginationUrls = new Set();
     for (;;) {
-      for (const row of productTiles(page, path)) products.set(row.id, row);
-      const more = nextPage(page); if (!more) break;
-      page = await request(more); await sleep(100);
+      const before = categoryProductIds.size;
+      const pageRows = productTiles(page, path);
+      for (const row of pageRows) {
+        categoryProductIds.add(row.id);
+        products.set(row.id, row);
+      }
+      if (pageCount > 1 && categoryProductIds.size === before && pageRows.length > 0) {
+        break;
+      }
+      if (pageRows.length === 0) break;
+      if (!shouldPaginateAhorramasCategory(path, hasChildren)) break;
+      const more = nextPage(page, currentPageUrl); if (!more) break;
+      if (paginationUrls.has(more)) throw new Error(`ciclo de paginación en ${path}: ${more}`);
+      paginationUrls.add(more);
+      page = await request(more);
+      currentPageUrl = more;
+      pageCount++;
+      if (pageCount % 10 === 0) {
+        console.log(`[ahorramas] ${path}: ${pageCount} páginas · ${products.size} productos únicos`);
+      }
     }
     if (seen.size % 25 === 0) console.log(`[ahorramas] ${seen.size} categorías · ${products.size} productos`);
-    await sleep(80);
   }
   const rows = [...products.values()];
   for (const row of rows) for (const id of row.category_ids) { const category = categories.get(id); if (category) category.product_count++; }

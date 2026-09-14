@@ -2152,9 +2152,9 @@
 - Cambios de precio mantiene anterior/actual/porcentaje y vuelve a mostrar
   debajo el formato/cantidad y el precio unitario.
 
-## Producto alternativo de comentarios pasa a Plus (local, 2026-08-21)
+## Producto alternativo de notas pasa a Plus (local, 2026-08-21)
 
-- Los comentarios de la cesta siguen abiertos a todas las cuentas, pero
+- Las notas de la cesta siguen abiertas a todas las cuentas, pero
   «Asignar producto» y «Cambiar» requieren Plus.
 - El gate vive en `ProductNoteSheet`: abre el paywall antes de iniciar una
   búsqueda y vuelve a validarse al elegir y guardar. Las alternativas existentes
@@ -2212,11 +2212,11 @@
 > ⚠️ Fechas y detalles reflejan lo que era cierto el 2026-07-15. **Verifica contra `git log` y
 > contra Supabase antes de fiarte** — algo puede haberse commiteado/ejecutado después.
 
-## Comentarios y producto alternativo en el carrito (local + backend, 2026-08-21)
+## Notas y producto alternativo en el carrito (local + backend, 2026-08-21)
 
 - El carrito añade a cada producto una extensión inferior unida a su tarjeta y
-  separada con puntos. El texto vacío es «Añade comentarios sobre el producto»
-  y abre un editor multilínea; una nota existente se muestra directamente.
+  separada con puntos. La acción se llama «Notas» y abre un editor multilínea;
+  una nota existente se muestra directamente.
 - Desde el mismo editor se puede elegir entre los supermercados activos y
   buscar dentro de uno para asignar, sustituir o quitar un producto alternativo.
   El buscador respeta CCAA, CP y preferencias del perfil. La extensión muestra
@@ -2225,7 +2225,7 @@
   mediante su logotipo y nombre; el buscador permanece inactivo hasta hacerlo.
   Una única tienda se preselecciona sin mostrar este paso y cambiar de opción
   descarta la búsqueda anterior para no mezclar productos.
-- Comentarios compartidos y optimistas: actualizar un producto fusionado cambia
+- Notas compartidas y optimistas: actualizar un producto fusionado cambia
   todas sus filas y revierte si falla. Se archivan/restauran con el historial y
   se muestran también en el detalle del grupo; el producto asociado sigue el
   mismo ciclo de persistencia.

@@ -12,6 +12,7 @@ const key = (userId: string, resource: string) => `@startup:v1:${userId}:${resou
 export const startupKeys = {
   profile: (userId: string) => key(userId, 'profile'),
   favorites: (userId: string) => key(userId, 'favorites'),
+  recipes: (userId: string) => key(userId, 'recipes'),
   groups: (userId: string) => key(userId, 'groups'),
   lastPurchase: (userId: string) => key(userId, 'lastPurchase'),
   listItems: (userId: string, listId: string) => key(userId, `listItems:${listId}`),
@@ -31,6 +32,8 @@ export async function readStartupCache<T>(cacheKey: string): Promise<T | null> {
   if (memory.has(cacheKey)) return peekStartupCache<T>(cacheKey);
   try {
     const raw = await AsyncStorage.getItem(cacheKey);
+    // A network response may have populated memory while the disk read was pending.
+    if (memory.has(cacheKey)) return peekStartupCache<T>(cacheKey);
     if (!raw) return null;
     const value = JSON.parse(raw) as T;
     memory.set(cacheKey, value);
@@ -52,6 +55,7 @@ export async function primeTabCaches(
 ): Promise<void> {
   const keys = [
     startupKeys.favorites(userId),
+    startupKeys.recipes(userId),
     startupKeys.groups(userId),
     startupKeys.lastPurchase(userId),
   ];

@@ -8,17 +8,36 @@ const actionsUrl = new URL('../../src/components/RecipeEngagementActions.tsx', i
 const detailUrl = new URL('../../src/components/CommunityRecipeDetailModal.tsx', import.meta.url);
 const badgeUrl = new URL('../../src/components/VerifiedBadge.tsx', import.meta.url);
 const translationsUrl = new URL('../../src/i18n/translations.ts', import.meta.url);
+const limitsUrl = new URL('../../src/constants/limits.ts', import.meta.url);
+const navigationUrl = new URL('../../src/navigation/index.tsx', import.meta.url);
 
-test('recipes only show real community content without source or community headers', async () => {
+test('recipes are enabled and mounted as a tab', async () => {
+  const [limits, navigation] = await Promise.all([
+    readFile(limitsUrl, 'utf8'),
+    readFile(navigationUrl, 'utf8'),
+  ]);
+
+  assert.match(limits, /export const QUE_COCINO_ENABLED = true/);
+  assert.match(navigation, /\{QUE_COCINO_ENABLED && \([\s\S]*name="QueCocino"[\s\S]*component=\{QueCocinoScreen\}/);
+});
+
+test('recipe sources separate community content from the unavailable supermarket catalog', async () => {
   const [screen, translations] = await Promise.all([
     readFile(screenUrl, 'utf8'),
     readFile(translationsUrl, 'utf8'),
   ]);
 
-  assert.match(screen, /fetchCommunityRecipes\(userId\)/);
+  assert.match(screen, /useRecipeFeed\(userId\)/);
   assert.match(screen, /sortedRecipes\.map/);
   assert.match(screen, /!recipesLoading && !recipesError && communityRecipes\.length === 0/);
-  assert.doesNotMatch(screen, /SectionHeading|SlidingSegments|sourceSegments|SAMPLE_RECIPES|OFFICIAL_STORES|supermarkets/);
+  assert.doesNotMatch(screen, /SectionHeading|SAMPLE_RECIPES|OFFICIAL_STORES/);
+  assert.match(screen, /useState<RecipeSource>\('users'\)/);
+  assert.match(screen, /<SlidingSegments<RecipeSource>[\s\S]*emphasized[\s\S]*value=\{recipeSource\}[\s\S]*onChange=\{selectRecipeSource\}/);
+  assert.match(screen, /recipeSource === 'users' \? <>[\s\S]*sortedRecipes\.map[\s\S]*<\/\> : \([\s\S]*queCocino\.supermarketEmptyTitle/);
+  assert.match(screen, /recipeFiltersVisible = recipeSource === 'users' && communityRecipes.length > 0/);
+  assert.match(screen, /scrollRef\.current\?\.scrollTo\(\{ y: 0, animated: false \}\)/);
+  assert.match(translations, /sources: \{ users: 'Usuarios', supermarket: 'Supermercado' \}/);
+  assert.match(translations, /sources: \{ users: 'Usuaris', supermarket: 'Supermercat' \}/);
   assert.doesNotMatch(translations, /communityTitle|communitySubtitle|sourceCommunity|sourceSupermarkets|sampleIdeas|sampleNotice|queCocino\.recipes/);
 });
 
@@ -34,7 +53,7 @@ test('recipe previews expose persistent like and save actions with counts', asyn
   assert.match(screen, /recipe\.saveCount/);
   assert.match(screen, /testID=\{`recipe-like-\$\{recipe\.id\}`\}/);
   assert.match(screen, /testID=\{`recipe-save-\$\{recipe\.id\}`\}/);
-  assert.match(screen, /recipeSaveButton:\s*\{[\s\S]*position: 'absolute', top: 12, right: 12[\s\S]*minHeight: 48/);
+  assert.match(screen, /recipeSaveButton:\s*\{[\s\S]*position: 'absolute', top: 12, right: 12[\s\S]*minHeight: 36/);
   assert.match(screen, /<GlassSurface[\s\S]*styles\.recipeSaveSurface[\s\S]*glassEffectStyle="regular"[\s\S]*interactive/);
   assert.match(screen, /tintColor=\{recipe\.isSaved \? colors\.accent : colors\.white\}/);
   assert.match(screen, /fallbackColor=\{recipe\.isSaved \? colors\.accent : colors\.white\}/);
@@ -43,8 +62,8 @@ test('recipe previews expose persistent like and save actions with counts', asyn
   assert.doesNotMatch(screen, /<RecipeEngagementActions/);
   assert.match(screen, /setRecipeLiked/);
   assert.match(screen, /setRecipeSaved/);
-  assert.match(api, /\.from\('recipe_likes'\)/);
-  assert.match(api, /\.from\('recipe_saves'\)/);
+  assert.match(api, /recipe_likes!recipe_likes_recipe_id_fkey\(user_id\)/);
+  assert.match(api, /recipe_saves!recipe_saves_recipe_id_fkey\(user_id\)/);
   assert.match(api, /like_count, save_count/);
   assert.match(actions, /recipe\.likeCount/);
   assert.match(actions, /recipe\.saveCount/);
@@ -90,11 +109,11 @@ test('recipe detail overlays circular icon-only like and save buttons on the ima
   ]);
 
   assert.match(detail, /heroHeader[\s\S]*<RecipeEngagementActions/);
-  assert.ok(detail.indexOf('<RecipeEngagementActions') < detail.indexOf('<View style={styles.heroCopy}>'));
+  assert.ok(detail.indexOf('<RecipeEngagementActions') < detail.indexOf('style={styles.heroCopy}'));
   assert.doesNotMatch(detail, /engagementActions/);
   assert.match(actions, /name=\{recipe\.isLiked \? 'heart' : 'heart-outline'\}/);
   assert.match(actions, /name=\{recipe\.isSaved \? 'bookmark' : 'bookmark-outline'\}/);
-  assert.match(actions, /width: 48,[\s\S]*height: 48,[\s\S]*borderRadius: 24/);
+  assert.match(actions, /width: 36,[\s\S]*height: 36,[\s\S]*borderRadius: 18/);
   assert.equal((actions.match(/<GlassSurface/g) ?? []).length, 2);
   assert.equal((actions.match(/\binteractive\b/g) ?? []).length, 2);
   assert.match(actions, /tintColor=\{recipe\.isLiked \? colors\.accent : colors\.white\}/);
@@ -112,7 +131,7 @@ test('recipe filters keep the same gap from the header and first recipe', async 
   const screen = await readFile(screenUrl, 'utf8');
 
   assert.match(screen, /const RECIPE_FILTER_GAP = 12/);
-  assert.match(screen, /const RECIPE_FILTER_HEIGHT = 48/);
+  assert.match(screen, /const RECIPE_FILTER_HEIGHT = 36/);
   assert.match(screen, /glassInset \+ RECIPE_FILTER_GAP \+ \(recipeFiltersVisible \? RECIPE_FILTER_HEIGHT : 0\)/);
   assert.match(screen, /: RECIPE_FILTER_GAP \+ \(recipeFiltersVisible \? RECIPE_FILTER_HEIGHT : 0\)/);
   assert.match(screen, /top: headerH \+ RECIPE_FILTER_GAP/);

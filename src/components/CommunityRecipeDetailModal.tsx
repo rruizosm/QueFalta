@@ -15,6 +15,8 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, { cancelAnimation, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import type { CommunityRecipe, RecipeIngredient } from '../api/recipes';
 import { STORE_META } from '../constants/stores';
 import { colors } from '../constants/colors';
@@ -25,6 +27,7 @@ import { useCart } from '../context/CartContext';
 import { recipeIngredientsToListItems } from '../lib/recipeCart';
 import SlidingSegments, { type Segment } from './SlidingSegments';
 import RecipeEngagementActions from './RecipeEngagementActions';
+import RecipeImageViewer from './RecipeImageViewer';
 
 type DetailSection = 'ingredients' | 'steps';
 
@@ -51,6 +54,15 @@ export default function CommunityRecipeDetailModal({
   const { height } = useWindowDimensions();
   const { activeCart, addToActiveCart, busy: cartBusy, hydrated } = useCart();
   const [section, setSection] = useState<DetailSection>('ingredients');
+  const [imageVisible, setImageVisible] = useState(false);
+  const heroRef = useRef<View>(null);
+  const [imageRatio, setImageRatio] = useState(1);
+  const imageProgress = useSharedValue(0);
+  const reducedMotion = useReducedMotion();
+  const heroHeight = Math.min(Math.max(height * 0.45, 290), 390);
+  const contentMotion = useAnimatedStyle(() => ({
+    transform: [{ translateY: reducedMotion ? 0 : imageProgress.value * (height - heroHeight + 22) }],
+  }));
   const [adding, setAdding] = useState(false);
   const addingRef = useRef(false);
   const [addedTo, setAddedTo] = useState<{ recipeId: string; listId: string } | null>(null);
@@ -59,8 +71,12 @@ export default function CommunityRecipeDetailModal({
 
   useEffect(() => {
     setSection('ingredients');
+    setImageVisible(false);
+    cancelAnimation(imageProgress);
+    imageProgress.set(0);
+    setImageRatio(1);
     setAddedTo(null);
-  }, [recipeId]);
+  }, [recipeId, imageProgress]);
 
   const handleAddIngredients = async () => {
     if (!recipe || !recipe.ingredients.length || addingRef.current || cartBusy || !hydrated || added) return;
@@ -100,7 +116,6 @@ export default function CommunityRecipeDetailModal({
   const addButtonLabel = t(adding
     ? 'queCocino.detail.addingIngredients'
     : added ? 'queCocino.detail.ingredientsAdded' : 'queCocino.detail.addIngredients');
-  const heroHeight = Math.min(Math.max(height * 0.45, 290), 390);
   const authorName = recipe.author.username
     ? `@${recipe.author.username}`
     : recipe.author.name;
@@ -115,14 +130,27 @@ export default function CommunityRecipeDetailModal({
       <View style={styles.root}>
         <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
-        <View style={[styles.hero, { height: heroHeight }]}>
-          <Image source={{ uri: recipe.imageUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        <View ref={heroRef} collapsable={false} style={[styles.hero, { height: heroHeight }]}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setImageVisible(true)}
+            accessibilityRole="button"
+            accessibilityLabel={t('queCocino.openImage', { name: recipe.title })}
+          >
+            <Image source={{ uri: recipe.imageUrl }} style={StyleSheet.absoluteFill} resizeMode="cover"
+              onLoad={({ nativeEvent }) => {
+                const { width, height: imageHeight } = nativeEvent.source;
+                if (width > 0 && imageHeight > 0) setImageRatio(width / imageHeight);
+              }}
+            />
+          </Pressable>
           <LinearGradient
+            pointerEvents="none"
             colors={['rgba(0,0,0,0.32)', 'transparent', 'rgba(0,0,0,0.76)']}
             locations={[0, 0.46, 1]}
             style={StyleSheet.absoluteFill}
           />
-          <View style={[styles.heroHeader, { paddingTop: insets.top + 8 }]}>
+          <View pointerEvents="box-none" style={[styles.heroHeader, { paddingTop: insets.top + 8 }]}>
             <Pressable
               onPress={onClose}
               style={({ pressed }) => [styles.closeButton, pressed && styles.pressed]}
@@ -139,7 +167,7 @@ export default function CommunityRecipeDetailModal({
               saveBusy={saveBusy}
             />
           </View>
-          <View style={styles.heroCopy}>
+          <View pointerEvents="none" style={styles.heroCopy}>
             <Text style={styles.recipeTitle}>{recipe.title}</Text>
             <View style={styles.authorRow}>
               {recipe.author.avatarUrl ? (
@@ -154,7 +182,7 @@ export default function CommunityRecipeDetailModal({
           </View>
         </View>
 
-        <View style={styles.contentPanel}>
+        <Animated.View style={[styles.contentPanel, contentMotion]}>
           <SlidingSegments
             emphasized
             style={styles.sectionSelector}
@@ -196,6 +224,13 @@ export default function CommunityRecipeDetailModal({
                     </View>
                     <View style={styles.stepCopy}>
                       <Text style={styles.stepText}>{step}</Text>
+                      {recipe.stepImageUrls?.[index] ? (
+                        <Image
+                          source={{ uri: recipe.stepImageUrls[index]! }}
+                          style={styles.stepPhoto} resizeMode="contain"
+                          accessibilityLabel={t('queCocino.creator.stepImage', { n: index + 1 })}
+                        />
+                      ) : null}
                       {stepIngredients.length > 0 ? (
                         <View style={styles.stepIngredients}>
                           <Text style={styles.stepIngredientsLabel}>
@@ -274,7 +309,18 @@ export default function CommunityRecipeDetailModal({
               </Pressable>
             </View>
           )}
-        </View>
+        </Animated.View>
+        {imageVisible && (
+          <RecipeImageViewer
+            key={recipe.id}
+            uri={recipe.imageUrl}
+            title={recipe.title}
+            sourceRef={heroRef}
+            imageRatio={imageRatio}
+            progress={imageProgress}
+            onClose={() => setImageVisible(false)}
+          />
+        )}
       </View>
     </Modal>
   );
@@ -409,6 +455,10 @@ const themedStyles = () => StyleSheet.create({
     fontFamily: fonts.medium, color: colors.ink,
   },
   stepCopy: { flex: 1, minWidth: 0 },
+  stepPhoto: {
+    width: '100%', aspectRatio: 4 / 3, borderRadius: 14,
+    marginTop: 12, backgroundColor: colors.photoPlaceholder,
+  },
   stepIngredients: {
     marginTop: 12, paddingTop: 10,
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border,

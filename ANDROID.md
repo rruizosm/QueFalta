@@ -4,6 +4,22 @@
 > Estado: la app iOS ya está enviada al App Store. El código es multiplataforma
 > (Expo SDK 57) y la mayor parte ya funciona en Android; esto lista lo que falta.
 
+## Correcciones de Play Console (2026-09-09)
+
+- R8 completo: el plugin de hardening cambia la plantilla Expo de
+  `proguard-android.txt` a `proguard-android-optimize.txt` y, como SDK 57 usa
+  AGP 8.12, fija `android.r8.optimizedResourceShrinking=true`. La prueba aislada
+  AGP 9.0.1 compila, pero su AAB todavía indica `isOptimizationsEnabled=false`;
+  no considerar resuelto el aviso de optimización (ver HANDOFF.md). Se mantienen
+  minificación y recorte de recursos solo para release.
+- Pantallas grandes: `orientation: default` genera `screenOrientation="unspecified"`
+  en `MainActivity`, también en prebuild incremental sobre un manifest vertical.
+  El final del onboarding permite scroll en ventanas bajas. Validar horizontal,
+  tablet, plegable y multiventana antes de promocionar el siguiente AAB. iOS
+  conserva sus orientaciones anteriores de forma explícita en `infoPlist`.
+- Estos avisos están ligados al bundle analizado por Play y solo se actualizarán
+  después de subir una nueva compilación.
+
 ## ✅ Lo que YA está listo para Android
 
 - `android.package` = `com.quefalta.app`, adaptive icon completo (foreground +

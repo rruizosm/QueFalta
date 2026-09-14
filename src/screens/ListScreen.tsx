@@ -29,7 +29,7 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { fetchListItems, setListItemsInCart, assignListItems, clearListItems, deleteListItems, updateListItemQuantity, updateListItemsComment, mergeCartItems, type LinkedNoteProduct, type ListItemRow, type MergedCartItem } from '../api/lists';
+import { fetchListItems, setListItemsInCart, setListItemsDeferred, assignListItems, clearListItems, deleteListItems, updateListItemQuantity, updateListItemsComment, mergeCartItems, type LinkedNoteProduct, type ListItemRow, type MergedCartItem } from '../api/lists';
 import { fetchMercadonaNames } from '../api/catalog';
 import { fetchGroupMembers, type GroupSummary } from '../api/groups';
 import { finishPurchase } from '../api/purchases';
@@ -267,12 +267,28 @@ export default function ListScreen() {
 
   const handleFinish = async () => {
     if (!activeCart || finishing || items.length === 0) return;
+    const remainingItems = items
+      .filter((item) => item.deferredToNextPurchase)
+      .map((item) => ({
+        ...item,
+        inCart: false,
+        deferredToNextPurchase: false,
+        assignedTo: null,
+      }));
+    const remainingProducts = merged
+      .filter((item) => item.deferredToNextPurchase).length;
     setFinishing(true);
     try {
       await finishPurchase(activeCart.listId);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show(t('list.purchaseDone'));
-      setItems([]);
+      toast.show(remainingProducts > 0
+        ? t('list.purchaseDoneWithSaved', { n: remainingProducts })
+        : t('list.purchaseDone'));
+      setItems(remainingItems);
+      setCollapsedStores(new Set());
+      setCollapsedZones(new Set());
+      automaticallyCollapsedZones.current.clear();
+      previouslyCompletedZones.current.clear();
     } catch {
       toast.show(t('list.purchaseError'), 'error');
     } finally {
@@ -373,6 +389,21 @@ export default function ListScreen() {
   }, [items, noteItem, noteSaving, t, toast]);
 
   const toggle = useCallback(async (item: MergedCartItem) => {
+    if (item.deferredToNextPurchase) {
+      const ids = new Set(item.ids);
+      const prev = items;
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      setItems((current) => current.map((row) => (
+        ids.has(row.id) ? { ...row, deferredToNextPurchase: false, inCart: false } : row
+      )));
+      try {
+        await setListItemsDeferred(item.ids, false);
+      } catch {
+        setItems(prev);
+        toast.show(t('list.updateError'), 'error');
+      }
+      return;
+    }
     const next = !item.inCart;
     const ids = new Set(item.ids);
     const prevState = new Map(items.filter((it) => ids.has(it.id)).map((it) => [it.id, it.inCart]));
@@ -383,6 +414,25 @@ export default function ListScreen() {
       await setListItemsInCart(item.ids, next);
     } catch {
       setItems((prev) => prev.map((it) => (ids.has(it.id) ? { ...it, inCart: prevState.get(it.id) ?? it.inCart } : it)));
+      toast.show(t('list.updateError'), 'error');
+    }
+  }, [items, reducedMotion, t, toast]);
+
+  const toggleDeferred = useCallback(async (item: MergedCartItem) => {
+    const next = !item.deferredToNextPurchase;
+    const ids = new Set(item.ids);
+    const prev = items;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (!reducedMotion) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setItems((current) => current.map((row) => (
+      ids.has(row.id)
+        ? { ...row, deferredToNextPurchase: next, inCart: next ? false : row.inCart }
+        : row
+    )));
+    try {
+      await setListItemsDeferred(item.ids, next);
+    } catch {
+      setItems(prev);
       toast.show(t('list.updateError'), 'error');
     }
   }, [items, reducedMotion, t, toast]);
@@ -419,14 +469,16 @@ export default function ListScreen() {
   // Fusiona duplicados del mismo producto sumando unidades.
   const merged = useMemo(() => mergeCartItems(localizedItems), [localizedItems]);
 
-  const { doneItems, totalCost, hasPrices } = useMemo(() => ({
-    doneItems: merged.filter((i) => i.inCart).length,
+  const { doneItems, purchasedItems, totalCost, hasPrices } = useMemo(() => ({
+    doneItems: merged.filter((i) => i.inCart || i.deferredToNextPurchase).length,
+    purchasedItems: merged.filter((i) => i.inCart).length,
     totalCost: merged.reduce(
       (sum, i) => sum + (i.unitPrice != null ? i.unitPrice * i.quantity : 0),
       0,
     ),
     hasPrices: merged.some((i) => i.unitPrice != null),
   }), [merged]);
+  const canFinish = doneItems === merged.length && purchasedItems > 0;
 
   // El agrupado, sus contadores y el orden alfabético dependen de los
   // productos, no de si una cabecera está plegada. Prepararlos una sola vez
@@ -435,11 +487,11 @@ export default function ListScreen() {
     groupByStore(merged).map((group) => ({
       store: group.store,
       count: group.data.length,
-      inCart: group.data.filter((item) => item.inCart).length,
+      inCart: group.data.filter((item) => item.inCart || item.deferredToNextPurchase).length,
       zones: groupByZone(group.data).map((zoneGroup) => ({
         zone: zoneGroup.zone,
         count: zoneGroup.data.length,
-        inCart: zoneGroup.data.filter((item) => item.inCart).length,
+        inCart: zoneGroup.data.filter((item) => item.inCart || item.deferredToNextPurchase).length,
         data: sortZoneItems(zoneGroup.data),
       })),
     }))
@@ -583,8 +635,9 @@ export default function ListScreen() {
       onRemove={doRemove}
       onDecrement={doDecrement}
       onEditNote={setNoteItem}
+      onToggleDeferred={toggleDeferred}
     />
-  ), [members, toggle, doRemove, doDecrement]);
+  ), [members, toggle, doRemove, doDecrement, toggleDeferred]);
 
   // ── Shared screen shell ───────────────────────────────────────
   // Cabecera compartida por todos los estados. En glass vive en una franja
@@ -752,8 +805,9 @@ export default function ListScreen() {
             </View>
           )}
 
-          {/* Done bar — covers total bar when complete */}
-          {doneItems === merged.length && merged.length > 0 && (
+          {/* Todos los productos deben estar recogidos o marcados para la
+              próxima compra; al menos uno debe haberse recogido realmente. */}
+          {canFinish && (
             <View style={[styles.doneBar, { bottom: tabBarOffset + 8 }]}>
               <Text style={styles.doneBarEmoji}>🎉</Text>
               <Text style={styles.doneBarText}>{t('list.listCompleted')}</Text>
@@ -940,7 +994,7 @@ function CompletedZoneHeader({ completed, collapsed, label, emoji, count, onPres
 // "En cesta", la zona central (foto + nombre) abre el detalle del producto y
 // la papelera elimina en un toque — tacha el artículo, lo desvanece y entonces
 // borra. Si el borrado en servidor falla, la fila reaparece.
-const CartItemRow = memo(function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove, onDecrement, onEditNote }: {
+const CartItemRow = memo(function CartItemRow({ item, members, onToggle, onOpenDetail, onAssign, onRemove, onDecrement, onEditNote, onToggleDeferred }: {
   item: MergedCartItem;
   members: GroupMember[];
   onToggle: (item: MergedCartItem) => void;
@@ -949,6 +1003,7 @@ const CartItemRow = memo(function CartItemRow({ item, members, onToggle, onOpenD
   onRemove: (item: MergedCartItem) => Promise<boolean>;
   onDecrement: (item: MergedCartItem) => void;
   onEditNote: (item: MergedCartItem) => void;
+  onToggleDeferred: (item: MergedCartItem) => void;
 }) {
   const styles = useThemedStyles(themedStyles);
   const reducedMotion = useReducedMotion();
@@ -982,20 +1037,40 @@ const CartItemRow = memo(function CartItemRow({ item, members, onToggle, onOpenD
   const detailTarget = productRefOf(item);
 
   return (
-    <Animated.View style={[styles.itemCard, item.inCart && styles.itemCardDone, { opacity }]}>
+    <Animated.View style={[
+      styles.itemCard,
+      (item.inCart || item.deferredToNextPurchase) && styles.itemCardDone,
+      { opacity },
+    ]}>
       <View style={styles.itemRow}>
         <TouchableOpacity
           hitSlop={10}
           disabled={removing}
           onPress={() => onToggle(item)}
           accessibilityRole="checkbox"
-          accessibilityLabel={t(item.inCart ? 'list.markPendingA11y' : 'list.markPurchasedA11y', {
-            product: item.productName,
-          })}
-          accessibilityState={{ checked: item.inCart, disabled: removing }}
+          accessibilityLabel={t(
+            item.deferredToNextPurchase
+              ? 'list.removeFromNextPurchaseA11y'
+              : item.inCart
+                ? 'list.markPendingA11y'
+                : 'list.markPurchasedA11y',
+            { product: item.productName },
+          )}
+          accessibilityState={{
+            checked: item.inCart || item.deferredToNextPurchase,
+            disabled: removing,
+          }}
         >
-          <View style={[styles.checkbox, item.inCart && styles.checkboxChecked]}>
-            {item.inCart && <Ionicons name="checkmark" size={13} color={colors.white} />}
+          <View style={[
+            styles.checkbox,
+            item.inCart && styles.checkboxChecked,
+            item.deferredToNextPurchase && styles.checkboxDeferred,
+          ]}>
+            {item.inCart ? (
+              <Ionicons name="checkmark" size={13} color={colors.white} />
+            ) : item.deferredToNextPurchase ? (
+              <Ionicons name="bookmark" size={12} color={colors.white} />
+            ) : null}
           </View>
         </TouchableOpacity>
 
@@ -1013,7 +1088,10 @@ const CartItemRow = memo(function CartItemRow({ item, members, onToggle, onOpenD
             </View>
           ) : null}
           <View style={styles.itemContent}>
-            <Text style={[styles.itemName, (item.inCart || removing) && styles.itemNameDone]}>
+            <Text style={[
+              styles.itemName,
+              (item.inCart || item.deferredToNextPurchase || removing) && styles.itemNameDone,
+            ]}>
               {item.productName}
             </Text>
             <View style={styles.itemUnitRow}>
@@ -1069,47 +1147,64 @@ const CartItemRow = memo(function CartItemRow({ item, members, onToggle, onOpenD
         </View>
       </View>
 
-      <TouchableOpacity
-        style={[styles.noteExtension, item.inCart && styles.noteExtensionDone]}
-        activeOpacity={0.7}
-        disabled={removing}
-        onPress={() => onEditNote(item)}
-        accessibilityRole="button"
-        accessibilityLabel={item.note || item.noteProduct
-          ? t('list.noteEditA11y', { note: item.note ?? item.noteProduct?.name ?? '' })
-          : t('list.notePlaceholder')}
-      >
-        <Ionicons
-          name={item.note || item.noteProduct ? 'chatbubble-ellipses' : 'chatbubble-ellipses-outline'}
-          size={14}
-          color={item.note || item.noteProduct ? colors.accent : colors.inkFaint}
-        />
-        <View style={styles.noteContent}>
-          {item.note ? (
-            <Text style={[styles.noteText, styles.noteTextFilled]} numberOfLines={2}>
-              {item.note}
-            </Text>
-          ) : !item.noteProduct ? (
-            <Text style={styles.noteText} numberOfLines={1}>{t('list.notePlaceholder')}</Text>
-          ) : null}
-          {item.noteProduct && (
-            <View style={styles.noteProductRow}>
-              {item.noteProduct.imageUrl ? (
-                <ProductImage uri={item.noteProduct.imageUrl} style={styles.noteProductImage} />
-              ) : (
-                <Ionicons name="link-outline" size={12} color={colors.accent} />
+      {item.deferredToNextPurchase ? (
+        <TouchableOpacity
+          style={[styles.itemFooter, styles.deferredStatus]}
+          activeOpacity={0.7}
+          disabled={removing}
+          onPress={() => onToggleDeferred(item)}
+          accessibilityRole="button"
+          accessibilityLabel={t('list.removeFromNextPurchaseA11y', { product: item.productName })}
+          accessibilityState={{ selected: true }}
+        >
+          <Ionicons name="bookmark" size={15} color={colors.accent} />
+          <Text style={styles.deferredStatusText}>{t('list.includedNextPurchase')}</Text>
+          <Ionicons name="close-circle-outline" size={15} color={colors.inkFaint} />
+        </TouchableOpacity>
+      ) : (
+        <View style={[styles.itemFooter, item.inCart && styles.itemFooterDone]}>
+          <TouchableOpacity
+            style={styles.footerAction}
+            activeOpacity={0.7}
+            disabled={removing}
+            onPress={() => onEditNote(item)}
+            accessibilityRole="button"
+            accessibilityLabel={item.note || item.noteProduct
+              ? t('list.noteEditA11y', { note: item.note ?? item.noteProduct?.name ?? '' })
+              : t('list.notePlaceholder')}
+          >
+            <Ionicons
+              name={item.note || item.noteProduct ? 'document-text' : 'document-text-outline'}
+              size={15}
+              color={item.note || item.noteProduct ? colors.accent : colors.inkFaint}
+            />
+            <View style={styles.footerActionContent}>
+              <Text style={styles.footerActionTitle}>{t('list.notePlaceholder')}</Text>
+              {(item.note || item.noteProduct) && (
+                <Text style={styles.footerActionDetail} numberOfLines={1}>
+                  {item.note ?? item.noteProduct?.name}
+                </Text>
               )}
-              <Text style={styles.noteProductText} numberOfLines={1}>
-                {t('list.noteLinkedProduct', {
-                  product: item.noteProduct.name,
-                  store: STORE_META[item.noteProduct.store].name,
-                })}
-              </Text>
             </View>
-          )}
+          </TouchableOpacity>
+
+          <View style={styles.footerDivider} />
+
+          <TouchableOpacity
+            style={styles.footerAction}
+            activeOpacity={0.7}
+            disabled={removing}
+            onPress={() => onToggleDeferred(item)}
+            accessibilityRole="button"
+            accessibilityLabel={t('list.notInStoreA11y', { product: item.productName })}
+          >
+            <Ionicons name="bookmark-outline" size={15} color={colors.inkFaint} />
+            <Text style={styles.footerActionTitle} numberOfLines={2}>
+              {t('list.notInStore')}
+            </Text>
+          </TouchableOpacity>
         </View>
-        <Ionicons name="chevron-forward" size={13} color={colors.inkFaint} />
-      </TouchableOpacity>
+      )}
     </Animated.View>
   );
 });
@@ -1211,6 +1306,7 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   checkboxChecked: { backgroundColor: colors.accent, borderColor: colors.accent },
+  checkboxDeferred: { backgroundColor: colors.accent, borderColor: colors.accent },
   itemThumb: { width: 50, height: 50, borderRadius: 10, backgroundColor: colors.white },
   itemThumbPlaceholder: {
     width: 50, height: 50, borderRadius: 10,
@@ -1250,29 +1346,47 @@ const themedStyles = () => StyleSheet.create({
     borderWidth: 1.5, borderColor: colors.inkFaint, borderStyle: 'dashed',
   },
 
-  // Pie unido a la tarjeta. El divisor punteado lo diferencia del bloque
-  // principal sin convertirlo en una segunda tarjeta flotante.
-  noteExtension: {
-    minHeight: 34,
-    flexDirection: 'row', alignItems: 'center', gap: 7,
-    paddingHorizontal: 13, paddingVertical: 8,
+  // Pie unido a la tarjeta: Notas a la izquierda y la acción de producto no
+  // disponible a la derecha. Al aplazarlo, ambas desaparecen y queda el estado.
+  itemFooter: {
+    minHeight: 48,
+    flexDirection: 'row', alignItems: 'stretch',
     borderTopWidth: 1,
     borderTopColor: colors.border,
     borderStyle: 'dotted',
   },
-  noteExtensionDone: { borderTopColor: colors.accentMid },
-  noteText: {
-    fontSize: 11.5,
-    lineHeight: 16,
-    fontFamily: fonts.medium,
-    color: colors.inkFaint,
+  itemFooterDone: { borderTopColor: colors.accentMid },
+  footerAction: {
+    flex: 1, minWidth: 0,
+    flexDirection: 'row', alignItems: 'center', gap: 7,
+    paddingHorizontal: 12, paddingVertical: 8,
   },
-  noteTextFilled: { color: colors.inkSoft },
-  noteContent: { flex: 1, gap: 4 },
-  noteProductRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  noteProductImage: { width: 18, height: 18, borderRadius: 5, backgroundColor: colors.white },
-  noteProductText: {
-    flex: 1, fontSize: 10.5, lineHeight: 14,
+  footerActionContent: { flex: 1, minWidth: 0 },
+  footerActionTitle: {
+    flexShrink: 1,
+    fontSize: 11.5, lineHeight: 15,
+    fontFamily: fonts.semibold, color: colors.inkSoft,
+  },
+  footerActionDetail: {
+    fontSize: 10, lineHeight: 13,
+    fontFamily: fonts.medium, color: colors.inkFaint,
+  },
+  footerDivider: {
+    width: StyleSheet.hairlineWidth,
+    marginVertical: 8,
+    backgroundColor: colors.border,
+  },
+  deferredStatus: {
+    minHeight: 44,
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 13, paddingVertical: 10,
+    backgroundColor: colors.accentLight,
+    borderTopColor: colors.accentMid,
+  },
+  deferredStatusText: {
+    flex: 1,
+    fontSize: 11.5, lineHeight: 15,
     fontFamily: fonts.semibold, color: colors.accent,
   },
 

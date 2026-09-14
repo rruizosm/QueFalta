@@ -9,6 +9,7 @@ import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 import GlassSurface from './GlassSurface';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import { structureNutritionText } from '../lib/nutritionDisplay';
 
 // LayoutAnimation necesita habilitarse a mano en Android para animar el desplegado.
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -59,6 +60,7 @@ function Row({ item }: { item: ProductInfoItem }) {
   const reducedMotion = useReducedMotion();
   const [expanded, setExpanded] = useState(false);
   const value = item.text?.trim() ?? null;
+  const structuredNutrition = item.key === 'nutrition';
 
   const toggle = () => {
     if (item.onPress) {
@@ -86,7 +88,7 @@ function Row({ item }: { item: ProductInfoItem }) {
         </View>
         <View style={styles.body}>
           <Text style={styles.title}>{item.title}</Text>
-          {value ? (
+          {value && (!structuredNutrition || !expanded) ? (
             <Text style={styles.value} numberOfLines={expanded ? undefined : 1}>
               {value}
             </Text>
@@ -99,7 +101,32 @@ function Row({ item }: { item: ProductInfoItem }) {
           style={{ transform: [{ rotate: expanded ? '90deg' : '0deg' }] }}
         />
       </View>
+      {value && structuredNutrition && expanded ? (
+        <StructuredNutritionValue value={value} />
+      ) : null}
     </TouchableOpacity>
+  );
+}
+
+function StructuredNutritionValue({ value }: { value: string }) {
+  const styles = useThemedStyles(themedStyles);
+  const lines = structureNutritionText(value);
+
+  return (
+    <View style={styles.nutritionList}>
+      {lines.map((line, index) => (
+        <View key={`${line.label}:${index}`}>
+          {index > 0 ? <View style={styles.nutritionSeparator} /> : null}
+          <View style={styles.nutritionRow}>
+            <View style={styles.nutritionIcon}>
+              <Ionicons name={line.icon} size={17} color={colors.accent} />
+            </View>
+            <Text style={styles.nutritionLabel}>{line.label}</Text>
+            {line.value ? <Text style={styles.nutritionValue}>{line.value}</Text> : null}
+          </View>
+        </View>
+      ))}
+    </View>
   );
 }
 
@@ -129,4 +156,50 @@ const themedStyles = () => StyleSheet.create({
   value: { fontSize: 13, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2, lineHeight: 18 },
   // El separador arranca a la altura del texto (deja libre el icono), como en la referencia.
   separator: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginLeft: 70 },
+  nutritionList: {
+    marginHorizontal: 14,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 14,
+    backgroundColor: colors.surfaceAlt,
+    overflow: 'hidden',
+  },
+  nutritionRow: {
+    minHeight: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  nutritionIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.accentLight,
+  },
+  nutritionLabel: {
+    flex: 1,
+    minWidth: 0,
+    fontSize: 12.5,
+    lineHeight: 16,
+    fontFamily: fonts.semibold,
+    color: colors.ink,
+  },
+  nutritionValue: {
+    maxWidth: '48%',
+    fontSize: 12.5,
+    lineHeight: 17,
+    fontFamily: fonts.bold,
+    color: colors.accent,
+    textAlign: 'right',
+  },
+  nutritionSeparator: {
+    height: StyleSheet.hairlineWidth,
+    marginLeft: 54,
+    backgroundColor: colors.border,
+  },
 });

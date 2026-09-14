@@ -16,7 +16,7 @@ test('Cesta no anima una altura por fila y expone controles accesibles', () => {
   assert.doesNotMatch(listScreen, /AnimatedZoneRow|ZONE_STAGGER_WINDOW_MS|useNativeDriver:\s*false/);
   assert.match(listScreen, /data: zoneCollapsed \? EMPTY_CART_ITEMS : zoneGroup\.data/);
   assert.match(listScreen, /accessibilityRole="checkbox"/);
-  assert.match(listScreen, /accessibilityState=\{\{ checked: item\.inCart/);
+  assert.match(listScreen, /checked: item\.inCart \|\| item\.deferredToNextPurchase/);
   assert.match(listScreen, /accessibilityLabel=\{t\('list\.assignAllTitle'\)\}/);
   assert.match(listScreen, /accessibilityLabel=\{t\('list\.clearConfirm'\)\}/);
 });

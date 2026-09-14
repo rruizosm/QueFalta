@@ -221,6 +221,16 @@ Consum via `ProductInfoSections`).
 
 ## Estado
 
+- **Selector de recetas (2026-09-12, local):** «Usuarios / Supermercado» ocupa
+  el espacio derecho de la cabecera mediante `SlidingSegments emphasized`
+  sobre su `GlassSurface` existente. Sin cristal anidado; cabecera con ajuste
+  a otra fila si no cabe, altura medida e insets del scroll conservados.
+- **Palabra de hoy (2026-09-12, local):** cabecera superpuesta con selector
+  Jugar/Ranking restaurado, periodos sobre cristal y teclado flotante.
+  Retirado solo el bloque fecha/letras/idioma. Usa `GlassSurface` y
+  `SlidingSegments`, con un único material detrás de todas las teclas;
+  alturas medidas para compensar scroll. Tablero y resultados opacos, fondo
+  ambiental temado y fallback sin cristal conservado. Sin cambios nativos/SQL.
 - ✅ F0 (2026-07-08) · 🔄 F1 (código ✅ 2026-07-08 + test1 fix tema + F1b barra flotante
   con píldora ✅ 2026-07-09; falta validar en device) · 🔄 F2 (código ✅ 2026-07-09,
   falta validar) · 🔄 F3 (piloto Cambios de precios ✅ 2026-07-10, falta validar;

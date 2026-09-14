@@ -33,6 +33,8 @@ export interface CommunityRecipe {
   imageUrl: string;
   ingredients: RecipeIngredient[];
   steps: string[];
+  /** Una foto opcional por paso; conserva el contrato de texto de versiones anteriores. */
+  stepImageUrls?: (string | null)[];
   createdAt: string;
   likeCount: number;
   saveCount: number;
@@ -67,6 +69,9 @@ type RecipeRow = {
   image_path: string;
   ingredients: unknown;
   steps: unknown;
+  step_image_paths?: unknown;
+  recipe_likes?: { user_id: string }[];
+  recipe_saves?: { user_id: string }[];
   created_at: string;
   like_count: number;
   save_count: number;
@@ -100,10 +105,6 @@ const publicImageUrl = (path: string): string => (
   supabase.storage.from('recipe-images').getPublicUrl(path).data.publicUrl
 );
 
-type RecipeInteractionRow = {
-  recipe_id: string;
-};
-
 function rowToRecipe(
   row: RecipeRow,
   profileFallback?: UserProfile | null,
@@ -136,6 +137,12 @@ function rowToRecipe(
         })) as RecipeIngredient[]
       : [],
     steps,
+    stepImageUrls: steps.map((_, index) => {
+      const path: unknown = Array.isArray(row.step_image_paths) ? row.step_image_paths[index] : null;
+      return typeof path === 'string' && path.startsWith(`${row.author_id}/`)
+        && /^[\w/-]+\.jpg$/.test(path) && !path.includes('..')
+        ? publicImageUrl(path) : null;
+    }),
     createdAt: row.created_at,
     likeCount: Math.max(0, Number(row.like_count) || 0),
     saveCount: Math.max(0, Number(row.save_count) || 0),
@@ -153,46 +160,31 @@ function rowToRecipe(
 }
 
 export async function fetchCommunityRecipes(userId: string, limit = 50): Promise<CommunityRecipe[]> {
-  const { data, error } = await supabase
-    .from('recipes')
-    .select('id, author_id, title, image_path, ingredients, steps, created_at, like_count, save_count, profiles!recipes_author_id_fkey(name, username, initials, color, avatar_url, verified)')
-    .order('created_at', { ascending: false })
-    .limit(limit);
+  if (!userId) return [];
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12_000);
+  try {
+    const { data, error } = await supabase
+      .from('recipes')
+      .select('id, author_id, title, image_path, ingredients, steps, step_image_paths, created_at, like_count, save_count, profiles!recipes_author_id_fkey(name, username, initials, color, avatar_url, verified), recipe_likes!recipe_likes_recipe_id_fkey(user_id), recipe_saves!recipe_saves_recipe_id_fkey(user_id)')
+      // Left embeds preserve recipes with no interactions; RLS also limits these to the viewer.
+      .eq('recipe_likes.user_id', userId)
+      .eq('recipe_saves.user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+      .abortSignal(controller.signal);
 
-  if (error) throw error;
-  const rows = (data ?? []) as unknown as RecipeRow[];
-  const recipeIds = rows.map((row) => row.id);
-  if (recipeIds.length === 0) return [];
-
-  const [likesResult, savesResult] = await Promise.all([
-    supabase
-      .from('recipe_likes')
-      .select('recipe_id')
-      .eq('user_id', userId)
-      .in('recipe_id', recipeIds),
-    supabase
-      .from('recipe_saves')
-      .select('recipe_id')
-      .eq('user_id', userId)
-      .in('recipe_id', recipeIds),
-  ]);
-
-  if (likesResult.error) throw likesResult.error;
-  if (savesResult.error) throw savesResult.error;
-
-  const likedIds = new Set(
-    ((likesResult.data ?? []) as RecipeInteractionRow[]).map((item) => item.recipe_id),
-  );
-  const savedIds = new Set(
-    ((savesResult.data ?? []) as RecipeInteractionRow[]).map((item) => item.recipe_id),
-  );
-
-  return rows.map((row) => rowToRecipe(
-    row,
-    null,
-    likedIds.has(row.id),
-    savedIds.has(row.id),
-  ));
+    if (error) throw error;
+    const rows = (data ?? []) as unknown as RecipeRow[];
+    return rows.map((row) => rowToRecipe(
+      row,
+      null,
+      row.recipe_likes?.some((item) => item.user_id === userId) ?? false,
+      row.recipe_saves?.some((item) => item.user_id === userId) ?? false,
+    ));
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 async function setRecipeInteraction(
@@ -225,8 +217,8 @@ export function setRecipeSaved(recipeId: string, userId: string, saved: boolean)
   return setRecipeInteraction('recipe_saves', recipeId, userId, saved);
 }
 
-export async function createCommunityRecipe(input: CreateRecipeInput): Promise<CommunityRecipe> {
-  const context = ImageManipulator.manipulate(input.imageUri);
+async function uploadRecipeImage(userId: string, imageUri: string): Promise<string> {
+  const context = ImageManipulator.manipulate(imageUri);
   context.resize({ width: 1200 });
   const rendered = await context.renderAsync();
   const { uri } = await rendered.saveAsync({
@@ -236,15 +228,38 @@ export async function createCommunityRecipe(input: CreateRecipeInput): Promise<C
 
   const response = await fetch(uri);
   const bytes = await response.arrayBuffer();
-  const imagePath = `${input.userId}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.jpg`;
+  const imagePath = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.jpg`;
   const storage = supabase.storage.from('recipe-images');
   const { error: uploadError } = await storage.upload(imagePath, bytes, {
     contentType: 'image/jpeg',
     upsert: false,
   });
   if (uploadError) throw uploadError;
+  return imagePath;
+}
 
+export async function createCommunityRecipe(input: CreateRecipeInput): Promise<CommunityRecipe> {
+  if (input.steps.some((step) => step.imageUri && !step.text.trim())) {
+    throw new Error('A step with a photo requires a description');
+  }
   const cleanSteps = cleanRecipeSteps(input.steps);
+  const storage = supabase.storage.from('recipe-images');
+  const uploadedPaths: string[] = [];
+  const stepImagePaths: (string | null)[] = [];
+  let imagePath: string;
+  try {
+    imagePath = await uploadRecipeImage(input.userId, input.imageUri);
+    uploadedPaths.push(imagePath);
+    // Keep memory bounded and retain null slots so images never shift to another step.
+    for (const step of cleanSteps) {
+      const path = step.imageUri ? await uploadRecipeImage(input.userId, step.imageUri) : null;
+      if (path) uploadedPaths.push(path);
+      stepImagePaths.push(path);
+    }
+  } catch (error) {
+    if (uploadedPaths.length > 0) await storage.remove(uploadedPaths).catch(() => {});
+    throw error;
+  }
   const ingredients = input.ingredients.map((ingredient) => ingredientFromProduct(
     ingredient,
     stepIndexesForIngredient(cleanSteps, recipeProductKey(ingredient.product)),
@@ -257,12 +272,14 @@ export async function createCommunityRecipe(input: CreateRecipeInput): Promise<C
       image_path: imagePath,
       ingredients,
       steps: cleanSteps.map((step) => step.text),
+      step_image_paths: stepImagePaths,
     })
-    .select('id, author_id, title, image_path, ingredients, steps, created_at, like_count, save_count')
+    .select('id, author_id, title, image_path, ingredients, steps, step_image_paths, created_at, like_count, save_count')
     .single();
 
   if (error) {
-    await storage.remove([imagePath]).catch(() => {});
+    // Only remove after a definite database rejection, not an uncertain network response.
+    if (error.code) await storage.remove(uploadedPaths).catch(() => {});
     throw error;
   }
 

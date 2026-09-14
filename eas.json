@@ -4,6 +4,11 @@
     "appVersionSource": "remote"
   },
   "build": {
+    "agp9-audit": {
+      "extends": "production",
+      "autoIncrement": false,
+      "env": { "QUEFALTA_AGP9": "1" }
+    },
     "development": {
       "developmentClient": true,
       "distribution": "internal",

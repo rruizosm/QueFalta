@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import {
   AccessibilityInfo,
   Animated,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -52,9 +53,21 @@ export default function DoneScreen({ route }: Props) {
   };
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top + 28, paddingBottom: insets.bottom + 28 }]}>
+    <View style={styles.screen}>
       <StatusBar barStyle="light-content" backgroundColor={colors.blue} />
       <AmbientBubbleBackdrop showGradient={false} onBlue />
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingTop: insets.top + 28,
+            paddingBottom: insets.bottom + 28,
+            paddingLeft: insets.left + 24,
+            paddingRight: insets.right + 24,
+          },
+        ]}
+      >
       <Animated.View
         style={[
           styles.content,
@@ -80,6 +93,7 @@ export default function DoneScreen({ route }: Props) {
           <Ionicons name="arrow-forward" size={19} color={colors.blue} />
         </TouchableOpacity>
       </Animated.View>
+      </ScrollView>
     </View>
   );
 }
@@ -87,11 +101,13 @@ export default function DoneScreen({ route }: Props) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+    backgroundColor: colors.blue,
+  },
+  scroll: { flex: 1 },
+  scrollContent: {
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 24,
-    overflow: 'hidden',
-    backgroundColor: colors.blue,
   },
   content: { width: '100%', maxWidth: 520, alignItems: 'center', zIndex: 1 },
   successBadge: {

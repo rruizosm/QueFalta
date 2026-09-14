@@ -39,7 +39,11 @@ test('Todos conserva resultados parciales y el release Android queda endurecido'
   assert.match(pager, /state\.done = true/);
   assert.match(androidPlugin, /android\.enableMinifyInReleaseBuilds/);
   assert.match(androidPlugin, /android\.enableShrinkResourcesInReleaseBuilds/);
+  assert.match(androidPlugin, /android\.r8\.optimizedResourceShrinking/);
+  assert.match(androidPlugin, /proguard-android-optimize\.txt/);
   assert.match(androidPlugin, /never fall back to the debug key/);
+  assert.doesNotMatch(appConfig, /"orientation"\s*:\s*"portrait"/);
+  assert.match(appConfig, /"UISupportedInterfaceOrientations"/);
   for (const permission of [
     'android.permission.RECORD_AUDIO',
     'android.permission.READ_EXTERNAL_STORAGE',

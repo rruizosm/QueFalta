@@ -1,11 +1,13 @@
 export interface RecipeStepInput {
   text: string;
   ingredientKeys: readonly string[];
+  imageUri?: string | null;
 }
 
 export interface CleanRecipeStep {
   text: string;
   ingredientKeys: string[];
+  imageUri?: string;
 }
 
 export const recipeProductKey = (product: { store: string; id: string }): string => (
@@ -20,6 +22,7 @@ export function cleanRecipeSteps(steps: readonly RecipeStepInput[]): CleanRecipe
     return [{
       text,
       ingredientKeys: [...new Set(step.ingredientKeys.filter((key) => !!key))],
+      ...(step.imageUri ? { imageUri: step.imageUri } : {}),
     }];
   });
 }

@@ -254,6 +254,7 @@ export type RootTabParamList = {
 
 export type HomeStackParamList = {
   HomeMain: undefined;
+  DailyWord: undefined;
   Favorites: undefined;
   NewArrivals: undefined;
   PriceChanges: undefined;

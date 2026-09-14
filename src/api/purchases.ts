@@ -68,7 +68,7 @@ const statisticItems = (rows: unknown): PurchaseStatisticItem[] =>
     }))
     : [];
 
-/** Archiva y vacía una lista en una única transacción del servidor. */
+/** Archiva lo recogido y conserva para la próxima compra lo marcado como no disponible. */
 export async function finishPurchase(listId: string): Promise<string> {
   const { data, error } = await supabase.rpc('finish_list_purchase', { p_list_id: listId });
   if (error) throw error;

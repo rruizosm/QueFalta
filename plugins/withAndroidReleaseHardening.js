@@ -26,13 +26,25 @@ module.exports = function withAndroidReleaseHardening(config) {
       'android.enableShrinkResourcesInReleaseBuilds',
       'true',
     );
+    // AGP 8.12 supports the integrated code/resource graph, but only enables
+    // it automatically from AGP 9 onwards.
+    upsertGradleProperty(
+      gradleConfig.modResults,
+      'android.r8.optimizedResourceShrinking',
+      'true',
+    );
     return gradleConfig;
   });
 
   return withAppBuildGradle(config, (gradleConfig) => {
     if (gradleConfig.modResults.language !== 'groovy') return gradleConfig;
 
-    const source = gradleConfig.modResults.contents;
+    const legacyDefaultRules = 'getDefaultProguardFile("proguard-android.txt")';
+    const optimizedDefaultRules = 'getDefaultProguardFile("proguard-android-optimize.txt")';
+    const source = gradleConfig.modResults.contents.replaceAll(
+      legacyDefaultRules,
+      optimizedDefaultRules,
+    );
     const buildTypesStart = source.indexOf('buildTypes {');
     const releaseStart = source.indexOf('release {', buildTypesStart);
     const releaseEnd = source.indexOf('\n        }', releaseStart);
@@ -50,7 +62,7 @@ module.exports = function withAndroidReleaseHardening(config) {
         source.slice(0, signingStart)
         + '// Release signing is injected by EAS Build; never fall back to the debug key.'
         + source.slice(signingStart + unsafeSigning.length);
-    }
+    } else gradleConfig.modResults.contents = source;
     return gradleConfig;
   });
 };

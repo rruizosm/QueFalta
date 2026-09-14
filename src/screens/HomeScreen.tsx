@@ -39,6 +39,7 @@ import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import ProductImage from '../components/ProductImage';
 import AmbientBubbleBackdrop from '../components/AmbientBubbleBackdrop';
 import ActiveCartIcon from '../components/ActiveCartIcon';
+import DailyWordButton from '../components/DailyWordButton';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { useReducedMotion } from '../hooks/useReducedMotion';
@@ -292,9 +293,7 @@ export default function HomeScreen() {
 
   const header = (
     <View style={[styles.header, { paddingTop: headerTop }]}>
-      <Text style={styles.headerPrompt} numberOfLines={1}>
-        {t('home.headerPrompt')}
-      </Text>
+      <DailyWordButton onPress={() => navigation.navigate('DailyWord')} />
       <View style={styles.headerActions}>
         <TouchableOpacity
           onPress={() => setNotifOpen(true)}
@@ -646,13 +645,6 @@ const themedStyles = () => StyleSheet.create({
   header: {
     flexDirection: 'row', alignItems: 'center',
     gap: 10, paddingHorizontal: 16, paddingBottom: 12,
-  },
-  headerPrompt: {
-    flex: 1,
-    fontSize: 20,
-    fontFamily: fonts.bold,
-    color: colors.ink,
-    letterSpacing: -0.3,
   },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   avatarRing: { borderWidth: 1, borderColor: colors.accent },

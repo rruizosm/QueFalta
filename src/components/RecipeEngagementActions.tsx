@@ -54,7 +54,7 @@ export default function RecipeEngagementActions({
         >
           <Ionicons
             name={recipe.isLiked ? 'heart' : 'heart-outline'}
-            size={21}
+            size={17}
             color={recipe.isLiked ? colors.white : colors.ink}
           />
         </GlassSurface>
@@ -86,7 +86,7 @@ export default function RecipeEngagementActions({
         >
           <Ionicons
             name={recipe.isSaved ? 'bookmark' : 'bookmark-outline'}
-            size={20}
+            size={17}
             color={recipe.isSaved ? colors.white : colors.ink}
           />
         </GlassSurface>
@@ -98,14 +98,14 @@ export default function RecipeEngagementActions({
 const themedStyles = () => StyleSheet.create({
   row: { flexDirection: 'row', gap: 8 },
   action: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
   },
   actionSurface: {
     flex: 1,
     width: '100%',
-    borderRadius: 24,
+    borderRadius: 18,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1,
     borderColor: colors.border,

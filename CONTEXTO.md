@@ -1,5 +1,279 @@
 # QuéFalta — Contexto del proyecto
 
+## Sync Ahorramás robusto (local, 2026-09-14)
+
+- Corregido el fallo diario por `HTTP 429`: cliente con cookies de SFCC,
+  cadencia global de 3 s, `Retry-After`, backoff exponencial con jitter, seis
+  intentos, timeout de 60 s y distinción entre errores transitorios y `4xx`
+  definitivos. Las variables se validan y `.env.local` se carga antes de leerlas.
+- El crawler pagina completamente raíces y hojas, evita repetir los surtidos de
+  ramas intermedias, pide bloques estables de 40 y avanza el offset que SFCC deja
+  congelado. Termina limpiamente ante el último bloque repetido y bloquea ciclos
+  de URL. Mantiene la garantía de no escribir hasta descargar y validar todo.
+- Workflow actualizado a Node 22 y 120 min. Simulación integral real correcta:
+  7.498 productos, 776 categorías y 1.251 ofertas, sin `429` ni escrituras.
+- Producción verificada después: permanece en 7.472 productos/775 categorías y
+  `catalog_sync_status=2026-09-07T12:24:12Z`. Ahorramás conserva un único trabajo
+  de embedding pendiente (`53270`); pipeline `paused`, cron 17 inactivo y cero
+  trabajos en vuelo. La cola global es 4.630 por actividad de otros catálogos.
+- Pruebas dirigidas, integración del comparador, sintaxis y typecheck correctos.
+  Suite completa: 768/769; solo falla la prueba preexistente de Lidl porque este
+  checkout no contiene `android/app/build.gradle`. Pendiente publicar los cambios
+  y ejecutar el workflow real; no se ha hecho commit, push ni despliegue.
+
+## Información nutricional estructurada (local, 2026-09-14)
+
+- Al desplegar «Información nutricional» en la ficha, el texto del catálogo se
+  presenta como una lista estructurada: referencia, nombre del nutriente y valor.
+  Cada entrada incorpora un icono semántico (energía, grasas, saturadas,
+  hidratos, azúcares, fibra, proteínas y sal) y conserva un icono genérico para
+  campos no reconocidos, sin ocultar datos de la fuente.
+- El detalle del Índice alimentario comparte la misma jerarquía visual: cabeceras
+  con icono, iconos por componente y punto, totales en insignia y valores por
+  100 g/ml en una tarjeta legible. Se adapta al tema, al color principal y a
+  castellano/catalán.
+- El parser visual admite las líneas reales de Carrefour sin dos puntos y los
+  formatos `Etiqueta: valor` de otros catálogos. Cambio solo de cliente; sin SQL
+  ni publicación. Typecheck, lint dirigido y 7 pruebas focalizadas correctos.
+  Suite general 768/769: solo falla la regresión previa de Lidl que requiere el
+  generado ausente `android/app/build.gradle`.
+
+## Ficha completa de Carrefour e índice alimentario (local, 2026-09-14)
+
+- La ficha de Carrefour muestra explícitamente valores nutricionales junto a
+  ingredientes, alérgenos, conservación, preparación, denominación legal, país de
+  origen y operador. Las filas vacías se omiten por producto.
+- Se conserva la resolución ya compartida con Mercadona: consulta Open Food Facts
+  por EAN y usa la tabla nutricional del espejo como respaldo para calcular y
+  mostrar el Índice alimentario. No se ha creado una segunda integración.
+- Producción verificada en lectura: 33.660 productos publicados; 11.398 fichas
+  comprobadas, 5.480 con nutrición y 9.818 con EAN. La cobertura restante depende
+  del backfill incremental de fichas y EAN, no de una migración nueva.
+- Prueba del parser cubre el objeto `nutrition_info` completo de Carrefour.
+  Typecheck, lint dirigido, 2 pruebas nuevas y `git diff --check` correctos. Suite
+  general 764/765: solo falla la regresión previa de Lidl que requiere el generado
+  ausente `android/app/build.gradle`. Cambio de cliente y pruebas; sin cambios de
+  esquema ni escrituras remotas.
+
+## Recetas reactivadas (local, 2026-09-12)
+
+- Carga optimizada: recetas, autor y estados propios Me gusta/Guardar en una
+  única consulta con relaciones izquierdas (antes tres peticiones en dos tandas).
+  Caché por cuenta en memoria/disco, frescura de 60 s y restauración de hasta
+  24 h; la revalidación al enfocar conserva el contenido visible. Precarga tras
+  el primer render de Inicio y de las cuatro primeras fotos; `expo-image` con
+  caché de memoria/disco. Peticiones compartidas y protección frente a respuestas
+  anteriores a cambios locales; creador montado solo al abrirlo.
+  Typecheck, lint dirigido y 37 pruebas correctos. SQL equivalente en producción:
+  0,455 ms de ejecución para tres recetas (no mide red ni render). Sin nueva
+  migración; pendiente medir apertura real en dispositivo y publicar cliente.
+- Foto opcional por paso: añadir desde la galería, previsualizar, cambiar y
+  quitar; también se muestra en el detalle. No se exige imagen en ningún paso.
+  Las fotos se comprimen a JPEG y se guardan al publicar en `recipe-images`.
+  `recipes.step_image_paths` conserva posiciones nulas y el contrato `steps: string[]`.
+  Migración local `20260912164705_recipe_step_images.sql` aplicada como
+  `20260912165038_recipe_step_images`; las tres recetas existentes permanecen
+  intactas. Typecheck, lint, 22 pruebas y SQL local/remoto correctos. Pendiente
+  QA visual nativa y publicación del cliente.
+- En «Nueva receta», «Ingredientes» y «Pasos a seguir» comparten la tipografía
+  de «Nombre de la receta» (13 pt, negrita), sin iconos en sus cabeceras.
+- «Nueva receta» se expande desde el botón flotante «Crear receta» y vuelve
+  a contraerse hacia él al cerrar o guardar. Transición Reanimated de 420/340 ms,
+  posición/tamaño medidos al abrir y cerrar, contenido sin deformación y
+  soporte de Reducir movimiento. Modal transparente sin deslizamiento nativo;
+  mantiene el formulario montado hasta terminar el cierre. Sin cambios de backend.
+  Typecheck, lint dirigido y 15 pruebas de recetas correctos; pendiente QA visual nativa.
+- La foto del detalle se abre al tocarla en `RecipeImageViewer`: pantalla
+  completa con imagen sin recorte, fondo oscuro, título y cierre Liquid Glass.
+  Transición coordinada con Reanimated (380 ms entrada / 360 ms salida): la
+  imagen vuelve al encuadre medido de la cabecera sin deformarse y el panel de
+  receta sube desde abajo. Se mide de nuevo al cerrar para admitir rotación;
+  sin movimiento con Reducir movimiento. Cierre por botón, atrás de Android o
+  gesto de accesibilidad; carga/error con reintento y textos ES/CA.
+- Me gusta y Guardar en el detalle reducidos a círculos de 36 pt (antes 48),
+  con iconos de 17 pt; conservan Liquid Glass y `hitSlop` de 4 pt.
+- Guardar en el preview reducido de 48 a 36 pt de altura, icono de 17 pt y
+  contador de 11 pt. Conserva Liquid Glass y amplía 4 pt el área de pulsación.
+- Filtros «Más gustados / Más guardados» compactados de 48 a 36 pt de altura,
+  con radios y espacio del scroll ajustados; conservan Liquid Glass.
+- La cabecera incorpora «Usuarios / Supermercado» con `SlidingSegments` sobre
+  Liquid Glass, selección exclusiva y textos ES/CA. Usuarios es la vista inicial;
+  Supermercado muestra un estado vacío explícito porque aún no hay catálogo
+  conectado. Los filtros de interacción solo aparecen en Usuarios. Al cambiar
+  de origen se vuelve al inicio del scroll; crear una receta vuelve a Usuarios.
+- «Crear receta» solo aparece en Usuarios, fijo abajo a la derecha por encima
+  de la barra de pestañas, también con la lista vacía. Área táctil mínima de
+  44 pt y espacio al final del scroll según la altura real del botón.
+- La pestaña «Recetas» vuelve a estar disponible entre Catálogo y Carrito al
+  activar `QUE_COCINO_ENABLED` en el interruptor central del cliente.
+- Se recuperan los flujos ya existentes de consulta, creación, detalle, Me gusta,
+  guardado y añadido de ingredientes al carrito. No cambia el backend ni requiere
+  migración SQL; el cliente todavía no se ha publicado.
+
+## Palabra de hoy (cliente local + backend, 2026-09-11)
+
+- Premios cancelados a petición del usuario: retirados botón regalo, popup,
+  componente específico y textos ES/CA. No había adjudicación automática ni
+  suscripciones concedidas por este flujo. Mascota compartida conservada.
+- La ayuda usa `WordGameInfoModal`, con tarjeta y pie opacos en
+  `colors.paper` (claro/oscuro), sin material nativo translúcido ni GlassSurface.
+  Fondo exterior atenuado, texto desplazable y cierre visible/atrás en Android.
+- Alineación final del podio: las tres tarjetas comparten base inferior, sin
+  desplazamientos superiores; se conservan sus tamaños decrecientes por puesto.
+- Podio compactado: segundo y tercero alineados a 16 pt respecto al primero;
+  reducidos márgenes y rellenos verticales sin reducir fotos ni tipografía.
+  Ajuste posterior: tercer puesto con tarjeta más baja (8 pt menos de relleno
+  vertical y avatar hasta 8 pt menor), conservando alineación superior y textos.
+- Demo del ranking retirada: eliminados cinco perfiles ficticios, selector y
+  textos de demostración. Solo se muestran resultados reales, también en desarrollo.
+  No se borraron cuentas ni partidas: la demo nunca se guardó en Supabase.
+- Podio del ranking (2026-09-12): `WordRankingPodium` coloca las primeras tres
+  entradas en orden 2–1–3. Rediseñado a petición del usuario: sin cilindros,
+  tarjetas redondeadas con tintes oro/plata/bronce, retratos enmarcados,
+  medalla circular superpuesta y primer puesto elevado con sombra suave.
+  Adaptación al ancho disponible, tema claro/oscuro y nombres largos;
+  @ sobre foto, insignia dorada `VerifiedBadge` para Plus y avatar de reserva.
+  La elevación/medallas siguen el puesto real en empates; el resto sigue en lista.
+  La RPC añade avatarUrl/isPlus solo para perfiles descubribles o el propio;
+  Plus se deriva de premium_until sin exponer su fecha. No cambia puntuación.
+  Migración local `20260912154950_word_ranking_podium.sql` aplicada como
+  `20260912155231_word_ranking_podium`. Typecheck, lint, 20 pruebas del motor y
+  PGlite correctos (privacidad, Plus caducado, cuatro periodos, datos intactos).
+  Producción sin partidas completadas al verificar: campos comprobados en función,
+  rankings ES/CA iguales; no se añadieron resultados. Pendiente revisión visual
+  en dispositivo y publicación del cliente.
+- Unificación en castellano (2026-09-12): una misma palabra y cuatro rankings
+  comunes para toda la app. UI catalana conservada; aviso en catalán antes de
+  activar el juego, palabras/teclado siempre ES (Ñ, sin Ç), borrador por cuenta
+  con la clave ES anterior. Backend aplicado: local
+  `20260912153336_spanish_only_word_game.sql` → remota
+  `20260912153657_spanish_only_word_game`. Fuerza ES también para clientes antiguos;
+  bloquea partidas CA y deshabilita sus 386 palabras; 439 ES activas. Sin partidas
+  CA previas, sin borrar ni alterar intentos/puntuaciones existentes (huellas iguales).
+  Typecheck, ESLint, 20 pruebas del motor y PGlite correctos; reto y rankings
+  ES/CA idénticos verificados en remoto. Popup pendiente de prueba visual; cliente
+  local sin publicar.
+- Revelado de intentos (2026-09-12): `DailyWordTile` gira cada casilla sobre el
+  eje vertical, con dos caras, 420 ms por giro y desfase de 180 ms entre letras.
+  El color aparece durante el giro de izquierda a derecha; el teclado incorpora
+  cada pista al completar su casilla. Se espera a la última letra para mostrar
+  victoria/derrota y emitir su vibración. Solo se anima el intento recién enviado;
+  filas recuperadas y Reducir movimiento se muestran directamente. Cambiar de
+  pestaña, cuenta, día o pasar a segundo plano cancela el efecto y libera controles.
+- Ajuste visual (2026-09-12): las casillas evaluadas ya no muestran los
+  símbolos ✓, ↔ y ·. El estado se comunica visualmente mediante el color y se
+  conserva completo en las etiquetas de accesibilidad y en la leyenda.
+- Diccionario ampliado (2026-09-12): **439 ES activas / 386 CA hoy deshabilitadas**.
+  Incluye acciones de cocina, utensilios/equipamiento, compra, hostelería y más
+  alimentos. Migración local `20260912120048_expand_word_game_dictionary.sql`
+  aplicada como `20260912120558_expand_word_game_dictionary`. Solo inserta palabras;
+  conserva retos existentes, partidas y flags de habilitación. Todos los ejemplos
+  del usuario verificados por RPC en PGlite, con repetición idempotente; recuentos
+  y huella de retos sin cambios verificados en remoto. Ayuda ES/CA actualizada.
+- Simplificación visual (2026-09-12): eliminado solo el bloque de fecha/letras/idioma,
+  sin hueco reservado. Restaurados el selector Jugar/Ranking y la sección Ranking
+  con sus cuatro periodos a petición del usuario. Se conservan Liquid Glass,
+  lógica, resultados y backend de puntuaciones/rankings.
+- Funcionalidad endurecida: motor `WordGameSession` separado de la pantalla,
+  borrador local por cuenta/partida/intento, conservación al volver y
+  confirmación de envíos inciertos incluso tras reiniciar. Peticiones con
+  límite de 15 s y validación de respuestas. Medianoche bloquea el reto anterior
+  y reintenta cada 30 s si no hay red. 19 pruebas del motor y prueba integrada
+  cliente → RPC → PostgreSQL (victoria, derrota, respuesta perdida y rankings).
+  Liquid Glass conservado; backend existente verificado, sin migración nueva.
+- Diseño actualizado a Liquid Glass nativo: cabecera y Jugar/Ranking flotantes,
+  selector deslizante de periodos y teclado sobre una única superficie de
+  cristal. Fondo ambiental, medidas reales para los insets del scroll y
+  fallback opaco. Tablero y resultados mantienen su legibilidad. Cambio de
+  cliente; sin nueva migración. Typecheck, lint dirigido y revisión iOS 26.5.
+- Inicio sustituye «¡Prepara la compra!» por un botón de brillo animado. Abre
+  una pantalla propia con Jugar/Ranking, tablero de 4–6 letras, seis intentos,
+  teclado fijo, ayuda, cuenta atrás y resultado compartible. Localizada ES/CA.
+- Una partida por cuenta/día (Europe/Madrid), reanudable desde otros dispositivos;
+  el primer intento válido fija el idioma. Solución, evaluación y puntuación
+  calculadas exclusivamente en servidor; reenvíos idempotentes y bloqueo entre
+  dispositivos. Rankings diario, semanal, mensual e histórico por idioma.
+- Cuatro tablas privadas: `word_dictionary`, `word_games`, `word_plays` y
+  `word_guesses`. Banco inicial 168 ES / 161 CA; reto automático sin cron,
+  excluyendo las soluciones de los últimos 30 días. RLS sin acceso directo;
+  tres RPC públicas invoker delegan en funciones privadas autenticadas.
+- Migración local `20260911184021_daily_word_game.sql` aplicada en producción
+  como `20260911184500_daily_word_game`. Verificación local PGlite y prueba
+  remota transaccional correctas; datos de prueba remotos revertidos.
+- TypeScript y lint dirigido correctos. Suite general 736/737: solo falla la
+  prueba previa de Lidl que depende del generado `android/app/build.gradle`.
+  Cliente pendiente de publicación. Detalle y mantenimiento: `PALABRA-DE-HOY.md`.
+
+## Comparativa de huevos para Instagram (local, 2026-09-11)
+
+- `marketing/instagram-egg-comparison/comparativa-huevos-instagram.png`: pieza
+  4:5, 1080 × 1350, con diseño editorial suave, logos locales de Mercadona,
+  Carrefour, Lidl y Aldi y fotografías de producto del catálogo de producción.
+- Compara huevos frescos M de 12 unidades: Mercadona 2,85 €, Carrefour 2,85 €
+  y Lidl 2,84 €, según el catálogo sincronizado el 07/09/2026. La tarjeta de
+  Aldi declara «Sin dato disponible» porque el espejo no contiene huevos
+  frescos; no se inventan precio ni imagen.
+- Fuente editable y procedencia en `marketing/instagram-egg-comparison/`.
+  No se ha publicado en redes y no modifica la app ni la base de datos.
+
+## Producto no disponible para la próxima compra (local, 2026-09-11)
+
+- El pie de cada producto se divide en dos acciones: «Notas» a la izquierda y
+  «No estaba en la tienda» a la derecha. Se eliminan de la cabecera el botón
+  global de guardar pendientes, sus confirmaciones y toda su lógica.
+- Al marcar un producto como no disponible, el pie de notas desaparece y se
+  sustituye por «Producto incluido en la próxima compra». El producto cuenta
+  como gestionado y se tacha, pero su control muestra el marcador relleno que
+  ya usan las recetas en lugar del tick de recogido. La acción se puede deshacer.
+- La columna `list_items.deferred_to_next_purchase` persiste ese estado para
+  todo el grupo. Los RPC atómicos mantienen excluyentes «recogido» y «aplazado».
+  `finish_list_purchase(uuid)` conserva su firma compatible con builds antiguas:
+  archiva solo los productos recogidos y reinicia los aplazados como pendientes,
+  sin responsable anterior, para la siguiente compra.
+- Migración local `20260911173959_defer_unavailable_products.sql` aplicada en
+  producción como `20260911180408_defer_unavailable_products`. La columna, los
+  RPC, la exclusión mutua, los permisos y el flujo real de marcar/desmarcar se
+  verificaron tras el despliegue. La carga conserva además su consulta legacy
+  de respaldo para despliegues escalonados.
+- Textos y accesibilidad incluidos en castellano y catalán. La compra solo se
+  puede finalizar si todos los productos están recogidos o aplazados y existe
+  al menos un producto realmente recogido.
+
+## Vídeo promocional social (2026-09-09)
+
+- `marketing/promo-social/quefalta-promo-vertical.mp4`: pieza vertical de 20 s,
+  1080 × 1920, con música original, logo y mascotas locales. Tema: organizar
+  la compra con una lista compartida. Demostración de lista ilustrativa,
+  identificada como tal; sin afirmar número de supermercados ni ofertas.
+- Portada, storyboard, guion y fuente reproducible en la misma carpeta.
+  Creado para TikTok/Reels, sin publicación en redes. No modifica la app.
+
+## Validación AGP 9 (2026-09-09)
+
+- Perfil aislado `agp9-audit` compila con AGP 9.0.1 tras adaptaciones opt-in
+  de Expo/React Native. Producción no lo activa. Detalles e intentos en HANDOFF.md.
+- AAB del intento `cba45904-d8d7-473a-a216-95c39f7c471c` confirma R8 9.0.32,
+  reducción optimizada de recursos activa, pero optimización de código todavía
+  **desactivada**. No dar el aviso R8 por resuelto: falta inspeccionar configuración
+  fusionada y validar flujos en dispositivo antes de producción.
+
+## Configuración R8 y Android adaptable (local, 2026-09-09)
+
+- El release Android usa ahora las reglas predeterminadas optimizadas de R8
+  (`proguard-android-optimize.txt`) y activa el grafo integrado de reducción de
+  recursos de AGP 8.12 con `android.r8.optimizedResourceShrinking=true`, además
+  de mantener minificación y `shrinkResources` activos.
+- Se declara `orientation: default` en Expo, sustituyendo también restricciones
+  antiguas en prebuilds incrementales por `screenOrientation="unspecified"`. El manifest ya
+  no fuerza `MainActivity` a vertical y permite rotación, multiventana,
+  plegables y tablets conforme al comportamiento de Android 16. Las
+  orientaciones de iPhone/iPad se conservan explícitamente en `ios.infoPlist`
+  para que el cambio sea exclusivamente Android.
+- La pantalla final del onboarding incorpora scroll e insets laterales para
+  mantener accesible su botón en ventanas bajas. Pendiente validación visual.
+- Cambios solo de cliente/configuración nativa; sin migración SQL. Requieren un
+  nuevo AAB para que Play Console analice la configuración corregida.
+
 ## Tecla «Done» retirada del código postal (local, 2026-09-07)
 
 - El campo compartido de código postal deja de solicitar la tecla de retorno
@@ -76,7 +350,7 @@
   enumeraban solo los supermercados anteriores y no aceptaban `store_key='lidl'`.
 - La migración `20260907111958_allow_lidl_cart_items.sql` está aplicada en
   producción. También alinea las restricciones de productos de catálogo
-  vinculados a comentarios (`*_note_product_shape`) para admitir Lidl.
+  vinculados a notas (`*_note_product_shape`) para admitir Lidl.
 - Verificación SQL sobre tablas temporales clonadas del esquema real: dos filas
   Lidl aceptadas en carrito y dos en histórico, cubriendo producto principal y
   producto vinculado. Prueba de regresión local añadida. No requiere una nueva
@@ -1864,7 +2138,7 @@
   claro/oscuro, color de acento, texto grande y castellano/catalán.
 - Comunica cuatro novedades ya listas: 18 supermercados y conservación de
   «Todos», búsqueda por relevancia con tolerancia a erratas, Radar de ahorro
-  con tres usos gratuitos, y comentarios/iconos/grupos ilimitados.
+  con tres usos gratuitos, y notas/iconos/grupos ilimitados.
 - Las alertas personalizadas quedan deliberadamente fuera hasta activar y
   validar su entrega general. Regresión en
   `scripts/tests/whats-new-prompt.test.mjs`.
@@ -2260,14 +2534,14 @@
 - Cambios de precio conserva su fila de precio anterior, actual y porcentaje, y
   recupera debajo el formato/cantidad y el precio unitario del producto.
 
-## Producto alternativo en comentarios reservado a Plus (2026-08-21)
+## Producto alternativo en notas reservado a Plus (2026-08-21)
 
-- Escribir y editar comentarios de productos en la cesta continúa siendo
+- Escribir y editar notas de productos en la cesta continúa siendo
   gratuito. «Asignar producto» y «Cambiar» son funciones QuéFalta Plus.
 - En cuentas gratuitas, intentar abrir el selector muestra el paywall antes de
   buscar. Una alternativa existente permanece visible, puede conservarse al
-  editar el comentario y puede quitarse sin suscripción.
-- El paywall incluye «Productos en comentarios» entre sus beneficios, también
+  editar las notas y puede quitarse sin suscripción.
+- El paywall incluye «Productos en notas» entre sus beneficios, también
   en catalán. No hay cambios de esquema ni de persistencia.
 
 ## Historial de compra gratuito e ilimitado (2026-08-21)
@@ -2312,12 +2586,12 @@
   Inicio muestra «¡Prepara la compra!», con su versión catalana. Carrito no
   muestra este mensaje.
 
-## Comentarios y producto alternativo en el carrito (2026-08-21)
+## Notas y producto alternativo en el carrito (2026-08-21)
 
 - Cada tarjeta del carrito incorpora un pie compacto unido al bloque principal
-  y separado por un divisor punteado. Vacío muestra «Añade comentarios sobre el
-  producto»; al tocarlo abre un editor multilínea de hasta 280 caracteres.
-- El editor permite además asignar un producto alternativo al comentario. Abre
+  y separado por un divisor punteado. La acción se llama «Notas» y abre un
+  editor multilínea de hasta 280 caracteres.
+- El editor permite además asignar un producto alternativo a las notas. Abre
   un buscador sobre los supermercados activos del perfil y disponibles en su
   CCAA/CP; el usuario puede seleccionar, cambiar o quitar la alternativa.
   El caso esperado es escribir «Si no queda, compra esto:» y enlazar el producto.
@@ -3277,6 +3551,9 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - **Tema (color de la app):** Perfil → Apariencia permite elegir el accent (`ACCENT_OPTIONS` en `constants/colors.ts`; persistido en AsyncStorage `@accent_color`). `colors.accent/accentLight/accentMid` son **getters** sobre un valor mutable (`applyAccent`). Los `StyleSheet.create` que usan accent NO pueden ser estáticos: se definen como fábrica `const themedStyles = () => StyleSheet.create({...})` y se consumen con `const styles = useThemedStyles(themedStyles)` (de `ThemeContext`), que los recrea al cambiar el color. Si añades una pantalla/componente nuevo que use `colors.accent*` en su StyleSheet, sigue ese patrón; si solo lo usa inline en JSX basta con que el padre re-renderice (no hay React.memo en el código).
 
 ## Migraciones SQL pendientes en Supabase (ejecutar a mano)
+- ✅ **Producto no disponible para la próxima compra:**
+  `20260911173959_defer_unavailable_products.sql` desplegada en producción como
+  `20260911180408_defer_unavailable_products`. Columna y RPC verificados.
 - ✅ **Estadísticas generales:**
   `20260822165410_general_statistics.sql` y su frontera privada
   `20260822171122_general_statistics_private_boundary.sql` desplegadas como
@@ -3369,7 +3646,7 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - ⏳ **Eroski (8º) y Caprabo (9º) añadidos** (2026-07-11): comparten backend (Apache Tapestry) → un scraper compartido `scripts/lib/eroski-tapestry.mjs` (GET de la página de categoría —SSR del 1er lote de 20— y después `POST supermarket:loadpage` con cookies de sesión + Origin/Referer; saca cada producto del JSON `data-metrics` del tile: id/nombre/marca/categoría/precio; ⚠️ la paginación `?pageNumber=N` original DEJÓ de funcionar el 2026-07-11: el server devuelve "No se obtuvieron resultados") y dos syncs mínimos (`sync-eroski.mjs`, `sync-caprabo.mjs`). Solo castellano, SIN €/unidad ni EAN, pero con nutrición de ficha HTML incremental normalizada para el Índice Alimentario. DRY_RUN completo OK (2026-07-11, ya con loadpage): **Eroski 21.073 productos** / 803 hojas / 0% sin tiles; **Caprabo 10.657** / 750 hojas (8% sin tiles por 429 de rate-limit tras encadenar crawls desde la misma IP — en CI no pasa). OJO: los crawls con `?pageNumber` daban 10.694 en Eroski = LA MITAD del catálogo (solo el 1er lote de cada hoja). GUARDARRAÍL anti-throttling: bajo carga el server sirve la página sin productos (o 429, con backoff largo + Retry-After) → reintentos en la pág. 1 + aborta el run si >20% de hojas llegan SIN TILES (para que markStale no despublique productos vivos); las hojas cuyo contenido ya se vio en otras categorías (~60 por súper, solapamiento del árbol) se cuentan APARTE como "solo-duplicados" y no disparan el aborto (la 1ª versión las mezclaba y abortó el run de CI del 2026-07-11 con un falso "56% vacías"). App: tipo/adaptador/modal (`TapestryProductModal`)/pantalla (`TapestryProductsScreen`) COMPARTIDOS por ambos, con funciones de `catalog.ts` por tabla. Migraciones `eroski_catalog.sql`+`caprabo_catalog.sql` (autocontenidas, es-only) + ampliación `20260718133958_eroski_caprabo_nutrition.sql` para tablas ya creadas. Pendientes: ejecutar las migraciones, re-ejecutar `similar_products.sql` (ya con ambos brazos), primer run (`sync-eroski.yml` lunes 09:00 / `sync-caprabo.yml` 09:30) y validar en device. Logos en `assets/stores/{eroski,caprabo}.png`. Ver `scripts/README-eroski-caprabo-sync.md`.
 - ⏳ **Lista agrupada por zonas del súper** (2026-06-12): Lista y cesta de grupo agrupan Tienda → Zona ("pasillo": Fruta y verdura, Congelados al final…) con alfabético dentro. Mapeo de N1 de los 6 supers → ~15 zonas canónicas por keywords en `src/constants/zones.ts` (solo cliente, afinable sin migrar). La categoría se captura al añadir (`list_items.category_name`); manuales/históricos → "Otros". ⚠️ Si se añade un nuevo punto de "añadir a la cesta", pasar `categoryName`. Pendiente: ejecutar `list_items_category.sql`.
 - 🧪 Comparativa de productos similares entre supers (detalle de producto) — **ACTIVADA PARA TESTERS** con `PRICE_COMPARISON_ENABLED = true`: funciona bajo demanda, usa la capa híbrida/caché y el cliente ya apunta a `catalog_cheaper_products_v5`. Antes de distribuir ese cliente debe desplegarse `20260817124758_comparator_semantic_identity_guard.sql`; la RPC v4 permanece disponible para builds anteriores.
-- Monetización «QuéFalta Plus» (3,99 €/mes · 19,99 €/año): **ACTIVA DESDE LA VERSIÓN 1.3**. El paywall presenta «Todos tus supermercados» —incluido Lidl—, orden por precio unitario, Radar de ahorro ilimitado, alertas personalizadas ilimitadas, productos asociados a comentarios y estadísticas. Cliente `PAYWALL_ENABLED = true` y servidor `paywall_enabled() = true`.
+- Monetización «QuéFalta Plus» (3,99 €/mes · 19,99 €/año): **ACTIVA DESDE LA VERSIÓN 1.3**. El paywall presenta «Todos tus supermercados» —incluido Lidl—, orden por precio unitario, Radar de ahorro ilimitado, alertas personalizadas ilimitadas, productos asociados a notas y estadísticas. Cliente `PAYWALL_ENABLED = true` y servidor `paywall_enabled() = true`.
 - Configuración externa de Plus (2026-08-22): Apple ya tiene los productos
   `com.quefalta.app.plus.monthly` y `.annual` (3,99/19,99 €, prueba anual de
   7 días) y RevenueCat ya enlaza Apple/Google/Test Store en `plus` → `default`

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import {
   NavigationContainer, createNavigationContainerRef,
-  DefaultTheme, DarkTheme, type Theme,
+  DefaultTheme, DarkTheme, getFocusedRouteNameFromRoute, type Theme,
 } from '@react-navigation/native';
 import {
   createBottomTabNavigator, BottomTabBar, type BottomTabBarProps,
@@ -29,6 +29,8 @@ import { useTranslation } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
 import { useCart } from '../context/CartContext';
 import { joinGroup } from '../api/groups';
+import { recipeFeed } from '../lib/recipeFeed';
+import { prefetchProductImages } from '../lib/prefetchProductImages';
 import {
   addNotificationResponseListener,
   consumeInitialNotificationData,
@@ -36,6 +38,7 @@ import {
 } from '../lib/notifications';
 
 import HomeScreen       from '../screens/HomeScreen';
+import DailyWordScreen from '../screens/DailyWordScreen';
 import QueCocinoScreen  from '../screens/QueCocinoScreen';
 import FavoritesScreen  from '../screens/FavoritesScreen';
 import NewArrivalsScreen from '../screens/NewArrivalsScreen';
@@ -110,6 +113,8 @@ export const navigationRef = createNavigationContainerRef<RootTabParamList>();
 const BOOT_MAX_MS = 10000;
 
 function AppTabBar(props: BottomTabBarProps) {
+  const route = props.state.routes[props.state.index];
+  if (route.name === 'Home' && getFocusedRouteNameFromRoute(route) === 'DailyWord') return null;
   return glassAvailable ? <LiquidGlassTabBar {...props} /> : <BottomTabBar {...props} />;
 }
 
@@ -124,6 +129,7 @@ function HomeNavigator() {
   return (
     <HomeStack.Navigator screenOptions={{ headerShown: false }}>
       <HomeStack.Screen name="HomeMain"    component={HomeScreen} />
+      <HomeStack.Screen name="DailyWord" component={DailyWordScreen} />
       <HomeStack.Screen name="Favorites"   component={FavoritesScreen} />
       <HomeStack.Screen name="NewArrivals" component={NewArrivalsScreen} />
       <HomeStack.Screen name="PriceChanges" component={PriceChangesScreen} />
@@ -329,6 +335,25 @@ export default function Navigation() {
     || loading
     || !themeReady
     || (!!session && (profileLoading || !cartHydrated));
+
+  const canWarmRecipes = QUE_COCINO_ENABLED && !bootingRaw && !!profile?.onboardedAt;
+  useEffect(() => {
+    if (!userId || !canWarmRecipes) return;
+    let cancelled = false;
+    let cancelImages: (() => void) | undefined;
+    const warmImages = () => {
+      cancelImages?.();
+      cancelImages = prefetchProductImages(
+        (recipeFeed.snapshot(userId).recipes ?? []).slice(0, 4).map((recipe) => recipe.imageUrl),
+      );
+    };
+    // Start after Home's first render, without mounting the recipe tab or blocking boot.
+    const timer = setTimeout(() => {
+      warmImages();
+      void recipeFeed.refresh(userId).then(() => { if (!cancelled) warmImages(); });
+    }, 350);
+    return () => { cancelled = true; clearTimeout(timer); cancelImages?.(); };
+  }, [canWarmRecipes, userId]);
 
   // Tope de arranque: si esta fase no acaba en BOOT_MAX_MS (fetch colgado),
   // fuerza la salida. Sin sesión → login (si el refresh llega después,

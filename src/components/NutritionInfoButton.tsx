@@ -45,6 +45,34 @@ const pointLabelKey: Record<string, string> = {
   proteins: 'nutrition.index.points.proteins',
 };
 
+type NutritionIcon = keyof typeof Ionicons.glyphMap;
+
+interface NutritionValueRow {
+  key: string;
+  label: string;
+  value: string;
+  icon: NutritionIcon;
+}
+
+type OptionalNutritionValueRow = Omit<NutritionValueRow, 'value'> & { value: string | null };
+
+const pointIcon: Record<string, NutritionIcon> = {
+  energy: 'flash-outline',
+  sugars: 'cube-outline',
+  saturated_fat: 'contrast-outline',
+  salt: 'sparkles-outline',
+  sweeteners: 'flask-outline',
+  fiber: 'leaf-outline',
+  fruits_vegetables_legumes: 'nutrition-outline',
+  proteins: 'barbell-outline',
+};
+
+const componentIcon: Record<FoodIndexComponentId, NutritionIcon> = {
+  nutrition: 'nutrition-outline',
+  processing: 'layers-outline',
+  sustainability: 'leaf-outline',
+};
+
 const levelKey = (score: number) => {
   if (score >= 80) return 'nutrition.index.levelExcellent';
   if (score >= 60) return 'nutrition.index.levelGood';
@@ -252,21 +280,40 @@ export function useNutritionInfoDisclosure({
     }
   };
 
-  const rows = currentInfo ? [
-    [t('nutrition.energy'), fmt(currentInfo.nutriments.energyKcal, 'kcal', locale)],
-    [t('nutrition.fat'), fmt(currentInfo.nutriments.fat, 'g', locale)],
-    [t('nutrition.saturatedFat'), fmt(currentInfo.nutriments.saturatedFat, 'g', locale)],
-    [t('nutrition.carbohydrates'), fmt(currentInfo.nutriments.carbohydrates, 'g', locale)],
-    [t('nutrition.sugars'), fmt(currentInfo.nutriments.sugars, 'g', locale)],
-    [t('nutrition.fiber'), fmt(currentInfo.nutriments.fiber, 'g', locale)],
-    [t('nutrition.proteins'), fmt(currentInfo.nutriments.proteins, 'g', locale)],
-    [t('nutrition.salt'), fmt(currentInfo.nutriments.salt, 'g', locale)],
-  ].filter((row): row is [string, string] => !!row[1]) : [];
+  const optionalRows: OptionalNutritionValueRow[] = currentInfo ? [
+    { key: 'energy', label: t('nutrition.energy'), value: fmt(currentInfo.nutriments.energyKcal, 'kcal', locale), icon: 'flash-outline' },
+    { key: 'fat', label: t('nutrition.fat'), value: fmt(currentInfo.nutriments.fat, 'g', locale), icon: 'water-outline' },
+    { key: 'saturatedFat', label: t('nutrition.saturatedFat'), value: fmt(currentInfo.nutriments.saturatedFat, 'g', locale), icon: 'contrast-outline' },
+    { key: 'carbohydrates', label: t('nutrition.carbohydrates'), value: fmt(currentInfo.nutriments.carbohydrates, 'g', locale), icon: 'restaurant-outline' },
+    { key: 'sugars', label: t('nutrition.sugars'), value: fmt(currentInfo.nutriments.sugars, 'g', locale), icon: 'cube-outline' },
+    { key: 'fiber', label: t('nutrition.fiber'), value: fmt(currentInfo.nutriments.fiber, 'g', locale), icon: 'leaf-outline' },
+    { key: 'proteins', label: t('nutrition.proteins'), value: fmt(currentInfo.nutriments.proteins, 'g', locale), icon: 'barbell-outline' },
+    { key: 'salt', label: t('nutrition.salt'), value: fmt(currentInfo.nutriments.salt, 'g', locale), icon: 'sparkles-outline' },
+  ] : [];
+  const rows = optionalRows.filter((row): row is NutritionValueRow => row.value !== null);
 
   const index = currentInfo?.foodIndex ?? null;
   const formula = index?.components
     .map((component) => `${component.weight}% ${t(componentLabelKey[component.id]).toLocaleLowerCase()}`)
     .join(' + ');
+
+  const renderSectionHeading = (
+    titleKey: string,
+    icon: NutritionIcon,
+    hintKey?: string,
+    trailing?: ReactNode,
+  ) => (
+    <View style={styles.sectionHeading}>
+      <View style={styles.sectionIcon}>
+        <Ionicons name={icon} size={18} color={colors.accent} />
+      </View>
+      <View style={styles.sectionHeadingBody}>
+        <Text style={styles.sectionTitle}>{t(titleKey)}</Text>
+        {hintKey ? <Text style={styles.sectionHint}>{t(hintKey)}</Text> : null}
+      </View>
+      {trailing}
+    </View>
+  );
 
   const renderPoints = (
     titleKey: string,
@@ -278,10 +325,18 @@ export function useNutritionInfoDisclosure({
     const maximum = points.reduce((sum, point) => sum + point.pointsMax, 0);
     return (
       <View style={styles.pointSection}>
-      <Text style={styles.sectionTitle}>
-        {maximum > 0 ? `${t(titleKey)}: ${total}/${maximum}` : t(titleKey)}
-      </Text>
-      <Text style={styles.sectionHint}>{t(hintKey)}</Text>
+      {renderSectionHeading(
+        titleKey,
+        titleKey === 'nutrition.index.positiveTitle'
+          ? 'add-circle-outline'
+          : 'alert-circle-outline',
+        hintKey,
+        maximum > 0 ? (
+          <View style={styles.sectionBadge}>
+            <Text style={styles.sectionBadgeText}>{total}/{maximum}</Text>
+          </View>
+        ) : undefined,
+      )}
       {points.length > 0 ? (
         <View style={styles.pointList}>
           {points.map((point) => {
@@ -291,7 +346,13 @@ export function useNutritionInfoDisclosure({
             return (
               <View key={`${point.kind}:${point.id}`} style={styles.pointRow}>
                 <View style={styles.pointHeader}>
-                  <View style={[styles.pointDot, { backgroundColor: color }]} />
+                  <View style={[styles.pointIcon, { borderColor: color }]}>
+                    <Ionicons
+                      name={pointIcon[point.id] ?? 'ellipse-outline'}
+                      size={16}
+                      color={color}
+                    />
+                  </View>
                   <View style={styles.pointBody}>
                     <Text style={styles.pointLabel}>{label}</Text>
                     <Text style={styles.pointValue}>{pointValue(point, locale)}</Text>
@@ -333,16 +394,18 @@ export function useNutritionInfoDisclosure({
     emptyKey: string,
     items: { label: string; detail: string }[],
     color: string,
+    icon: NutritionIcon,
   ) => (
     <View style={styles.pointSection}>
-      <Text style={styles.sectionTitle}>{t(titleKey)}</Text>
-      <Text style={styles.sectionHint}>{t(hintKey)}</Text>
+      {renderSectionHeading(titleKey, icon, hintKey)}
       {items.length > 0 ? (
         <View style={styles.pointList}>
           {items.map((item) => (
             <View key={item.label} style={styles.pointRow}>
               <View style={styles.pointHeader}>
-                <View style={[styles.pointDot, { backgroundColor: color }]} />
+                <View style={[styles.pointIcon, { borderColor: color }]}>
+                  <Ionicons name={icon} size={16} color={color} />
+                </View>
                 <View style={styles.pointBody}>
                   <Text style={styles.pointLabel}>{item.label}</Text>
                   <Text style={styles.pointValue}>{item.detail}</Text>
@@ -413,17 +476,29 @@ export function useNutritionInfoDisclosure({
                       </View>
                     </View> : null}
 
-                    <Text style={styles.sectionTitle}>{t('nutrition.index.howCalculated')}</Text>
-                    <Text style={styles.sectionHint}>{t('nutrition.index.calculationNote')}</Text>
+                    {renderSectionHeading(
+                      'nutrition.index.howCalculated',
+                      'calculator-outline',
+                      'nutrition.index.calculationNote',
+                    )}
                     <View style={styles.componentList}>
                       {index.components.map((component) => {
                         const color = foodIndexColor(component.score);
                         return (
                           <View key={component.id} style={styles.componentRow}>
                             <View style={styles.componentHeader}>
-                              <Text style={styles.componentLabel}>
-                                {t(componentLabelKey[component.id])}
-                              </Text>
+                              <View style={styles.componentIdentity}>
+                                <View style={styles.componentIcon}>
+                                  <Ionicons
+                                    name={componentIcon[component.id]}
+                                    size={15}
+                                    color={colors.accent}
+                                  />
+                                </View>
+                                <Text style={styles.componentLabel}>
+                                  {t(componentLabelKey[component.id])}
+                                </Text>
+                              </View>
                               <Text style={styles.componentValue}>
                                 {t('nutrition.index.componentResult', {
                                   score: Math.round(component.score),
@@ -480,6 +555,7 @@ export function useNutritionInfoDisclosure({
                         detail: t('nutrition.processing.ultraProcessedDetail'),
                       }] : [],
                       '#c83b32',
+                      'layers-outline',
                     )}
                     {renderInfoSection(
                       'nutrition.additives.title',
@@ -490,17 +566,31 @@ export function useNutritionInfoDisclosure({
                         detail: additive.name ?? t('nutrition.additives.itemDetail'),
                       })),
                       '#d09a23',
+                      'flask-outline',
                     )}
                   </>
                 ) : null}
 
-                <Text style={styles.sectionTitle}>{t('nutrition.index.valuesTitle')}</Text>
+                {renderSectionHeading(
+                  'nutrition.index.valuesTitle',
+                  'nutrition-outline',
+                  undefined,
+                  <View style={styles.referenceBadge}>
+                    <Text style={styles.referenceBadgeText}>{t('nutrition.referenceAmount')}</Text>
+                  </View>,
+                )}
                 {rows.length > 0 ? (
                   <View style={styles.rows}>
-                    {rows.map(([label, value]) => (
-                      <View key={label} style={styles.row}>
-                        <Text style={styles.rowLabel}>{label}</Text>
-                        <Text style={styles.rowValue}>{value}</Text>
+                    {rows.map((row, rowIndex) => (
+                      <View key={row.key}>
+                        {rowIndex > 0 ? <View style={styles.rowSeparator} /> : null}
+                        <View style={styles.row}>
+                          <View style={styles.rowIcon}>
+                            <Ionicons name={row.icon} size={18} color={colors.accent} />
+                          </View>
+                          <Text style={styles.rowLabel}>{row.label}</Text>
+                          <Text style={styles.rowValue}>{row.value}</Text>
+                        </View>
                       </View>
                     ))}
                   </View>
@@ -684,11 +774,25 @@ const themedStyles = () => StyleSheet.create({
     color: colors.inkSoft,
     marginTop: 5,
   },
+  sectionHeading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 20,
+  },
+  sectionIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.accentLight,
+  },
+  sectionHeadingBody: { flex: 1, minWidth: 0 },
   sectionTitle: {
     fontSize: 15,
     fontFamily: fonts.bold,
     color: colors.ink,
-    marginTop: 20,
   },
   sectionHint: {
     fontSize: 12,
@@ -696,6 +800,30 @@ const themedStyles = () => StyleSheet.create({
     fontFamily: fonts.medium,
     color: colors.inkSoft,
     marginTop: 3,
+  },
+  sectionBadge: {
+    minWidth: 46,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 9,
+    alignItems: 'center',
+    backgroundColor: colors.surfaceAlt,
+  },
+  sectionBadgeText: {
+    fontSize: 11,
+    fontFamily: fonts.bold,
+    color: colors.inkSoft,
+  },
+  referenceBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 9,
+    backgroundColor: colors.accentLight,
+  },
+  referenceBadgeText: {
+    fontSize: 10.5,
+    fontFamily: fonts.bold,
+    color: colors.accent,
   },
   componentList: {
     marginTop: 10,
@@ -710,8 +838,23 @@ const themedStyles = () => StyleSheet.create({
   componentHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'baseline',
+    alignItems: 'center',
     gap: 12,
+  },
+  componentIdentity: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  componentIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.accentLight,
   },
   componentLabel: {
     flex: 1,
@@ -764,7 +907,15 @@ const themedStyles = () => StyleSheet.create({
     borderBottomColor: colors.border,
   },
   pointHeader: { flexDirection: 'row', alignItems: 'center', gap: 9 },
-  pointDot: { width: 10, height: 10, borderRadius: 5 },
+  pointIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceAlt,
+  },
   pointBody: { flex: 1, minWidth: 0 },
   pointLabel: { fontSize: 12.5, fontFamily: fonts.bold, color: colors.ink },
   pointValue: {
@@ -787,7 +938,7 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.surfaceAlt,
     overflow: 'hidden',
     marginTop: 8,
-    marginLeft: 19,
+    marginLeft: 41,
   },
   pointFill: { height: '100%', borderRadius: 3 },
   emptyPoints: {
@@ -799,19 +950,46 @@ const themedStyles = () => StyleSheet.create({
   },
   rows: {
     marginTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 14,
+    backgroundColor: colors.white,
+    overflow: 'hidden',
   },
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 16,
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 56,
+    paddingHorizontal: 11,
     paddingVertical: 9,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
-  rowLabel: { fontSize: 13, fontFamily: fonts.medium, color: colors.inkSoft },
-  rowValue: { fontSize: 13, fontFamily: fonts.bold, color: colors.ink },
+  rowIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.accentLight,
+  },
+  rowLabel: {
+    flex: 1,
+    minWidth: 0,
+    fontSize: 13.5,
+    fontFamily: fonts.semibold,
+    color: colors.ink,
+  },
+  rowValue: {
+    fontSize: 13,
+    fontFamily: fonts.bold,
+    color: colors.accent,
+    textAlign: 'right',
+  },
+  rowSeparator: {
+    height: StyleSheet.hairlineWidth,
+    marginLeft: 57,
+    backgroundColor: colors.border,
+  },
   source: {
     fontSize: 11,
     lineHeight: 15,

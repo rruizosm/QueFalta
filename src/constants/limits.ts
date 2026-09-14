@@ -40,9 +40,8 @@ export const VERSION_1_3_RELEASED_AT = Date.parse('2026-08-29T12:38:05Z');
 export const allStoresRequiresPlus = (isPremium: boolean): boolean =>
   limitsApply(isPremium);
 
-/** Recetas desactivadas para la próxima publicación: retira toda la sección del
- *  árbol de navegación y conserva la implementación para reactivarla más adelante. */
-export const QUE_COCINO_ENABLED = false;
+/** Recetas activadas: muestra la sección comunitaria en el árbol de navegación. */
+export const QUE_COCINO_ENABLED = true;
 
 /** Fuente única para autorizar Plus en el cliente. `verified` es solo el reflejo
  * público de este estado para pintar la insignia, nunca un gate de acceso. */

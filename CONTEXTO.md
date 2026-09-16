@@ -1,17 +1,5 @@
 # QuéFalta — Contexto del proyecto
 
-## Lanzador de DIA en Windows PowerShell 5.1 (local, 2026-09-16)
-
-- El primer run desde Windows se interrumpió durante la resolución de zonas al
-  imprimir el aviso esperado de la provincia 35 (Canarias). El `console.warn`
-  de Node llegaba a `*>&1` como `NativeCommandError` y, con
-  `$ErrorActionPreference = 'Stop'`, terminaba el lanzador antes del barrido.
-- `scripts/run-dia-sync.ps1` ahora une stdout/stderr dentro de `cmd.exe` antes de
-  pasarlos a `Tee-Object`, tanto para DIA como para el comparador. Mantiene el
-  código de salida real de Node y el log; no modifica el crawler ni Supabase.
-- Pendiente probar el runner actualizado en Windows y verificar `[dia] OK`,
-  actualización del comparador y `=== fin (exit 0) ===`.
-
 ## Número de personas por receta (local, 2026-09-15)
 
 - El creador de recetas incluye, justo antes de Ingredientes, un selector de

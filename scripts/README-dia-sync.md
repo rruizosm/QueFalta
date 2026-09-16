@@ -121,10 +121,6 @@ $env:DRY_RUN='1'; $env:MAX_ZONES='2'; $env:MAX_PAGES='8'; $env:SKIP_DETAIL='1'; 
 Debe terminar con `[dia] OK`. El log queda en `scripts/logs/dia-sync-<fecha>.log`.
 No encadenes el run real en la misma consola del ejemplo `DRY_RUN`: esas variables
 de entorno limitarían también la ejecución siguiente.
-Los avisos `provincia 35/38/52: sin servicio` son normales: Dia no sirve esas
-provincias y el barrido continúa. El lanzador captura tanto avisos como errores
-reales en el log; solo un código de salida distinto de 0 detiene el comparador.
-Si se interrumpe, comprueba el `=== fin (exit N) ===` del último log.
 
 Resultado del DRY_RUN completo multi-zona (API, 2026-07-14): **48 zonas** (una por
 provincia; Canarias/Melilla sin servicio) → **7.367 productos únicos** (vs 5.551 de

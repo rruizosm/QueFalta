@@ -160,7 +160,7 @@ export default function CarrefourProductModal({ product, onClose, topInset = 16,
         {/* Características del producto (del __INITIAL_STATE__ de Carrefour; null si aún no rastreada) */}
         <ProductInfoSections
           items={[
-            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition },
+            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition, nutritionInfo: nutrition.info },
             { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: product.ingredients },
             { key: 'allergens', icon: 'alert-circle-outline', title: t('product.sections.allergens'), text: product.allergens },
             { key: 'storage', icon: 'time-outline', title: t('product.sections.storage'), text: product.conservation },

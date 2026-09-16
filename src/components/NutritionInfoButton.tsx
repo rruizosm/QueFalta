@@ -47,15 +47,6 @@ const pointLabelKey: Record<string, string> = {
 
 type NutritionIcon = keyof typeof Ionicons.glyphMap;
 
-interface NutritionValueRow {
-  key: string;
-  label: string;
-  value: string;
-  icon: NutritionIcon;
-}
-
-type OptionalNutritionValueRow = Omit<NutritionValueRow, 'value'> & { value: string | null };
-
 const pointIcon: Record<string, NutritionIcon> = {
   energy: 'flash-outline',
   sugars: 'cube-outline',
@@ -80,11 +71,6 @@ const levelKey = (score: number) => {
   if (score >= 20) return 'nutrition.index.levelLow';
   return 'nutrition.index.levelVeryLow';
 };
-
-const fmt = (value: number | null, unit: string, locale: string) =>
-  value == null
-    ? null
-    : `${value.toLocaleString(locale, { maximumFractionDigits: 1 })} ${unit}`;
 
 const pointValue = (point: FoodIndexPoint, locale: string) => {
   if (point.id === 'sweeteners') return locale.startsWith('ca') ? 'Present' : 'Presente';
@@ -279,18 +265,6 @@ export function useNutritionInfoDisclosure({
       setLoading(false);
     }
   };
-
-  const optionalRows: OptionalNutritionValueRow[] = currentInfo ? [
-    { key: 'energy', label: t('nutrition.energy'), value: fmt(currentInfo.nutriments.energyKcal, 'kcal', locale), icon: 'flash-outline' },
-    { key: 'fat', label: t('nutrition.fat'), value: fmt(currentInfo.nutriments.fat, 'g', locale), icon: 'water-outline' },
-    { key: 'saturatedFat', label: t('nutrition.saturatedFat'), value: fmt(currentInfo.nutriments.saturatedFat, 'g', locale), icon: 'contrast-outline' },
-    { key: 'carbohydrates', label: t('nutrition.carbohydrates'), value: fmt(currentInfo.nutriments.carbohydrates, 'g', locale), icon: 'restaurant-outline' },
-    { key: 'sugars', label: t('nutrition.sugars'), value: fmt(currentInfo.nutriments.sugars, 'g', locale), icon: 'cube-outline' },
-    { key: 'fiber', label: t('nutrition.fiber'), value: fmt(currentInfo.nutriments.fiber, 'g', locale), icon: 'leaf-outline' },
-    { key: 'proteins', label: t('nutrition.proteins'), value: fmt(currentInfo.nutriments.proteins, 'g', locale), icon: 'barbell-outline' },
-    { key: 'salt', label: t('nutrition.salt'), value: fmt(currentInfo.nutriments.salt, 'g', locale), icon: 'sparkles-outline' },
-  ] : [];
-  const rows = optionalRows.filter((row): row is NutritionValueRow => row.value !== null);
 
   const index = currentInfo?.foodIndex ?? null;
   const formula = index?.components
@@ -571,33 +545,6 @@ export function useNutritionInfoDisclosure({
                   </>
                 ) : null}
 
-                {renderSectionHeading(
-                  'nutrition.index.valuesTitle',
-                  'nutrition-outline',
-                  undefined,
-                  <View style={styles.referenceBadge}>
-                    <Text style={styles.referenceBadgeText}>{t('nutrition.referenceAmount')}</Text>
-                  </View>,
-                )}
-                {rows.length > 0 ? (
-                  <View style={styles.rows}>
-                    {rows.map((row, rowIndex) => (
-                      <View key={row.key}>
-                        {rowIndex > 0 ? <View style={styles.rowSeparator} /> : null}
-                        <View style={styles.row}>
-                          <View style={styles.rowIcon}>
-                            <Ionicons name={row.icon} size={18} color={colors.accent} />
-                          </View>
-                          <Text style={styles.rowLabel}>{row.label}</Text>
-                          <Text style={styles.rowValue}>{row.value}</Text>
-                        </View>
-                      </View>
-                    ))}
-                  </View>
-                ) : (
-                  <Text style={styles.message}>{t('nutrition.noNutrients')}</Text>
-                )}
-
                 <Text style={styles.source}>
                   {t(
                     currentInfo.source === 'mercadona'
@@ -814,17 +761,6 @@ const themedStyles = () => StyleSheet.create({
     fontFamily: fonts.bold,
     color: colors.inkSoft,
   },
-  referenceBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 9,
-    backgroundColor: colors.accentLight,
-  },
-  referenceBadgeText: {
-    fontSize: 10.5,
-    fontFamily: fonts.bold,
-    color: colors.accent,
-  },
   componentList: {
     marginTop: 10,
     gap: 12,
@@ -947,48 +883,6 @@ const themedStyles = () => StyleSheet.create({
     fontFamily: fonts.medium,
     color: colors.inkSoft,
     marginTop: 9,
-  },
-  rows: {
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 14,
-    backgroundColor: colors.white,
-    overflow: 'hidden',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    minHeight: 56,
-    paddingHorizontal: 11,
-    paddingVertical: 9,
-  },
-  rowIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 11,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.accentLight,
-  },
-  rowLabel: {
-    flex: 1,
-    minWidth: 0,
-    fontSize: 13.5,
-    fontFamily: fonts.semibold,
-    color: colors.ink,
-  },
-  rowValue: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
-    color: colors.accent,
-    textAlign: 'right',
-  },
-  rowSeparator: {
-    height: StyleSheet.hairlineWidth,
-    marginLeft: 57,
-    backgroundColor: colors.border,
   },
   source: {
     fontSize: 11,

@@ -1,0 +1,7 @@
+{
+  "name": "pager-blur",
+  "version": "1.0.0",
+  "description": "UI-thread UIKit backdrop for the bottom tabs pager",
+  "private": true,
+  "license": "MIT"
+}

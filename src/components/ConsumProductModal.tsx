@@ -135,6 +135,7 @@ export default function ConsumProductModal({ product, onClose, topInset = 16, ba
          *  mismo diseño de tarjeta que el resto de súpers. */}
         <ProductInfoSections
           items={[
+            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), nutritionInfo: nutrition.info },
             { key: 'category', icon: 'pricetags-outline', title: t('product.category'), text: product.categoryName },
           ]}
         />

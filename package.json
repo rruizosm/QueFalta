@@ -58,6 +58,7 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
+    "demo:tabs": "EXPO_NO_DOTENV=1 EXPO_PUBLIC_BOTTOM_TABS_DEMO=1 expo start --dev-client",
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",

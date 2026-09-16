@@ -10,6 +10,10 @@ const engagementMigrationUrl = new URL(
   '../../supabase/migrations/20260904190745_recipe_engagement.sql',
   import.meta.url,
 );
+const servingsMigrationUrl = new URL(
+  '../../supabase/migrations/20260915062836_add_recipe_servings.sql',
+  import.meta.url,
+);
 
 test('community recipes schema is protected and tied to catalog products', async () => {
   const sql = await readFile(migrationUrl, 'utf8');
@@ -46,4 +50,14 @@ test('recipe engagement keeps identities private and counters server-controlled'
   assert.match(sql, /revoke all on function private\.sync_recipe_like_count\(\)[\s\S]*from public, anon, authenticated/i);
   assert.match(sql, /revoke update on table public\.recipes from authenticated/i);
   assert.match(sql, /grant update \(title, image_path, ingredients, steps, updated_at\)/i);
+});
+
+test('recipe servings are optional for legacy rows, bounded, and author-editable', async () => {
+  const sql = await readFile(servingsMigrationUrl, 'utf8');
+
+  assert.match(sql, /add column servings smallint/i);
+  assert.match(sql, /constraint recipes_servings_range/i);
+  assert.match(sql, /servings is null or servings between 1 and 99/i);
+  assert.doesNotMatch(sql, /servings smallint (?:not null|default)/i);
+  assert.match(sql, /grant update \(servings\) on table public\.recipes to authenticated/i);
 });

@@ -16,7 +16,8 @@ import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductDetailImage from '../components/ProductDetailImage';
 import ProductInfoSections from '../components/ProductInfoSections';
-import SimilarProductsSection from '../components/SimilarProductsSection';
+import { useNutritionInfoDisclosure } from '../components/NutritionInfoButton';
+import ProductDetailDiscoverySection from '../components/ProductDetailDiscoverySection';
 import ProductPriceLine from '../components/ProductPriceLine';
 import ActiveCartIcon from './ActiveCartIcon';
 
@@ -41,6 +42,18 @@ export default function BonareaProductModal({ product, onClose, topInset = 16, b
   const { t } = useTranslation();
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
+
+  // bonÀrea no publica EAN: el índice se calcula exclusivamente con la tabla
+  // nutricional de su ficha y nuestra fórmula local. Al omitir `ean`, este
+  // flujo nunca consulta Open Food Facts.
+  const nutrition = useNutritionInfoDisclosure({
+    store: 'bonarea',
+    inline: true,
+    fallbackNutrition: product?.nutrition,
+    fallbackProductName: product?.displayName,
+    fallbackCategoryName: product?.categoryName,
+    fallbackIngredients: product?.ingredients,
+  });
 
   useEffect(() => { setQty(1); }, [product?.id]);
 
@@ -115,8 +128,11 @@ export default function BonareaProductModal({ product, onClose, topInset = 16, b
         <ProductPriceLine store="bonarea" productId={product.id} price={price} />
         {product.pricePerUnit ? <Text style={styles.refPrice}>{product.pricePerUnit}</Text> : null}
 
-        {/* Comparativa: más barato en otros súper */}
-        <SimilarProductsSection productId={product.id} excludeStore="bonarea" />
+        <ProductDetailDiscoverySection
+          nutrition={nutrition}
+          productId={product.id}
+          excludeStore="bonarea"
+        />
 
         {/* Características del producto (de la página de bonÀrea; null si aún no rastreada) */}
         <ProductInfoSections
@@ -124,7 +140,7 @@ export default function BonareaProductModal({ product, onClose, topInset = 16, b
             { key: 'description', icon: 'reader-outline', title: t('product.sections.description'), text: product.description },
             { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: product.ingredients },
             { key: 'allergens', icon: 'alert-circle-outline', title: t('product.sections.allergens'), text: product.allergens },
-            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition },
+            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition, nutritionInfo: nutrition.info },
             { key: 'storage', icon: 'time-outline', title: t('product.sections.storage'), text: product.conservation },
             { key: 'origin', icon: 'location-outline', title: t('product.sections.origin'), text: product.origin },
             { key: 'legalName', icon: 'document-text-outline', title: t('product.sections.legalName'), text: product.denomination },

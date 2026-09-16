@@ -1,9 +1,9 @@
+import { PagerNativeFlatList as FlatList } from '../components/bottom-tabs-pager/PagerNativeScroll';
 import { useCallback, useState } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
   Text,
-  FlatList,
   TouchableOpacity,
   StyleSheet,
   StatusBar,
@@ -262,7 +262,7 @@ export default function GroupsScreen() {
           </TouchableOpacity>
         </View>
       ) : (
-        <FlatList
+        <FlatList tabBarScroll
           data={groups}
           keyExtractor={(item) => item.id}
           renderItem={renderGroup}

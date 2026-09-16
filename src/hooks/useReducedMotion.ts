@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { AccessibilityInfo } from 'react-native';
+import { useReducedMotion as useInitialReducedMotion } from 'react-native-reanimated';
 
 /**
- * Sigue la preferencia del sistema "Reducir movimiento". El valor inicial es
- * conservador y se actualiza en cuanto React Native resuelve el ajuste nativo.
+ * Sigue la preferencia del sistema "Reducir movimiento". El valor inicial
+ * síncrono evita animar el primer frame antes de resolver el ajuste asíncrono.
  */
 export function useReducedMotion(): boolean {
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const initialReducedMotion = useInitialReducedMotion();
+  const [reducedMotion, setReducedMotion] = useState(initialReducedMotion);
 
   useEffect(() => {
     let mounted = true;

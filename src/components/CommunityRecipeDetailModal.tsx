@@ -113,6 +113,9 @@ export default function CommunityRecipeDetailModal({
 
   if (!recipe) return null;
 
+  const recipeServings = typeof recipe.servings === 'number'
+    && Number.isInteger(recipe.servings) && recipe.servings >= 1 && recipe.servings <= 99
+    ? recipe.servings : null;
   const addButtonLabel = t(adding
     ? 'queCocino.detail.addingIngredients'
     : added ? 'queCocino.detail.ingredientsAdded' : 'queCocino.detail.addIngredients');
@@ -190,6 +193,17 @@ export default function CommunityRecipeDetailModal({
             value={section}
             onChange={setSection}
           />
+
+          {recipeServings !== null ? (
+            <View style={styles.servingsSummary}>
+              <Ionicons name="people-outline" size={17} color={colors.accent} />
+              <Text style={styles.servingsSummaryText}>
+                {t(recipeServings === 1
+                  ? 'queCocino.detail.servingsOne'
+                  : 'queCocino.detail.servingsMany', { n: recipeServings })}
+              </Text>
+            </View>
+          ) : null}
 
           <ScrollView
             style={styles.scroll}
@@ -398,6 +412,12 @@ const themedStyles = () => StyleSheet.create({
     overflow: 'hidden', backgroundColor: colors.paper,
   },
   sectionSelector: { marginHorizontal: 16, marginBottom: 13 },
+  servingsSummary: {
+    minHeight: 38, alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 7,
+    marginHorizontal: 16, marginBottom: 12, paddingHorizontal: 12, paddingVertical: 8,
+    borderRadius: 13, backgroundColor: colors.accentLight,
+  },
+  servingsSummaryText: { fontSize: 12, lineHeight: 17, fontFamily: fonts.bold, color: colors.accent },
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: 16 },
   cartFooter: {

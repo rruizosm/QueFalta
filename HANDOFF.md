@@ -1,5 +1,469 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Número de personas por receta (local, 2026-09-15)
+
+- El formulario de nueva receta muestra antes de Ingredientes un stepper de
+  1–99 personas, inicializado en 2, y persiste el valor. El detalle lo enseña
+  con singular/plural en castellano y catalán; las recetas antiguas omiten el
+  indicador porque su valor se normaliza a `null`.
+- SQL creado: `supabase/migrations/20260915062836_add_recipe_servings.sql`
+  (`smallint`, `CHECK` 1–99, nullable por compatibilidad y permiso de actualización
+  para autores autenticados). **Pendiente de aplicar en Supabase** antes de abrir
+  esta versión del cliente. Typecheck, lint, 31 pruebas focalizadas y SQL/RLS en
+  PGlite correctos. Suite 798/799; el único fallo es el previo de Lidl por faltar
+  `android/app/build.gradle`. Sin publicación, despliegue ni escritura remota.
+
+## Nueva receta: transición modal desde el CTA (local, 2026-09-14)
+
+- Sustituye la expansión de tamaño del 12 de septiembre por native-stack raíz
+  `Tabs`/`NewRecipe`, modal transparente sin animación nativa, spring vertical,
+  backdrop al 28 %, pill del CTA hacia Publicar y entradas por bloques a 50 ms.
+- `CreateRecipeButton` mide su origen; el contexto solo guarda referencia/estado
+  visual efímeros. El formulario conserva diseño y datos. Arranque coordinado
+  con presentación/layout nativos para que el spring no transcurra fuera de vista.
+- Swipe desde la cabecera en ambos SO, cancelación con spring, X/atrás/publicar
+  con salida inversa, medición al cerrar y respaldo si desaparece el origen.
+  Reducir movimiento: fade de 200 ms y lectura síncrona del ajuste al montar.
+- Enlaces/notificaciones usan el stack de pestañas existente con `pop: true`.
+  Se mantiene Reanimated 4.5.1 de Expo 57; no se añaden dependencias.
+- Typecheck, lint y 40 pruebas dirigidas correctos; build/QA iPhone 15 Pro iOS
+  26.5 y bundle Android correctos. Android nativo/rotación/fps físicos pendientes.
+  Predictive back interactivo no disponible en el native-stack/config actuales;
+  atrás Android sí conserva el cierre animado. Sin publicación ni migración.
+- Detalle y limitaciones: `RECIPE-CREATOR-TRANSITION.md`.
+
+## Compactación de la barra inferior al hacer scroll (local, 2026-09-14)
+
+- La cápsula existente se compacta continuamente al bajar: altura 64→62 pt,
+  escala 0,94, icono/label al 90 % y desplazamiento inferior de 4 pt. Conserva
+  colores, iconos, selección, badges y pager horizontal. Valores en
+  `src/components/bottom-tabs-pager/tabBarScrollPhysics.ts`.
+- `TabBarScrollContext` + `useTabBarScroll` usan shared values/worklets:
+  zona muerta de 18 pt al bajar, 10 pt de intención al subir y spring suave.
+  Tap en fondo/tab, cambio de pestaña o foco expanden y cancelan la respuesta
+  a la inercia anterior; cada pantalla conserva su offset. Reducir movimiento
+  mantiene la barra grande. También se inhibe la compactación si el ancho
+  disponible no permite mantener objetivos táctiles de 44 pt.
+- Integradas las cinco pestañas y listas de catálogo mediante opt-in
+  `tabBarScroll` en los adaptadores PagerNative. Un spacer animado sustituye
+  parte del padding inferior y sigue la geometría real de la cápsula; acciones
+  flotantes de cesta/añadir/crear receta acompañan el mismo desplazamiento.
+  Carruseles, selectores y formularios modales no controlan la barra.
+- Se conserva Reanimated 4.5.1 del stack Expo 57 (sin downgrade a v3).
+  Typecheck, lint dirigido, 15 pruebas de física/scroll, bundles Hermes iOS y
+  Android y compilación Xcode Debug correctos. En iPhone 15 Pro/iOS 26.5 se
+  verificaron compactación al bajar y expansión por tap activo sin mover la
+  lista. QA nativa parcial por interacciones/recargas concurrentes del simulador;
+  pendientes matriz completa de gestos, Reducir movimiento, Android y fps físicos.
+- Ejemplos y matriz de QA en `src/components/bottom-tabs-pager/README.md`.
+  Sin migraciones, publicación ni commit.
+
+
+## Pager inferior integrado en la app (local, 2026-09-14)
+
+- La app normal usa `createAppPagerNavigator` y `AppPagerTabBar`: Inicio,
+  Catálogo, Recetas, Carrito y Grupos, conservando TabRouter, stacks, foco,
+  eventos, badges y navegación externa. Ya no hace falta abrir una demo para verlo.
+- `Pager` y `useTabAnimation` comparten progreso en UI para páginas, pill,
+  stretch y blur. Se precargan vecinas tras el primer render y se conservan
+  páginas visitadas. Barra flotante con `GlassSurface` y safe areas en ambos SO.
+- En iOS el detector vive dentro de cada pantalla nativa (`screenLayout`). Los
+  scrolls verticales ceden al pan horizontal; carruseles mantienen su gesto.
+  En la raíz de Catálogo el pager tiene prioridad sobre swipe-to-favorite de
+  filas; favoritos siguen en la ficha. En listas de detalle se conserva ese swipe.
+  Stacks de detalle mantienen el back nativo; DailyWord sigue ocultando la barra.
+- Demo social opcional: `npm run demo:tabs`, cinco placeholders independientes.
+  Arranque real: `npm start` y Run en `ios/QuFalta.xcworkspace` (scheme QuFalta).
+- Módulo iOS local `modules/pager-blur`, enlazado en Pods; requiere recompilar
+  el binario para blur (sin módulo el pager funciona nítido). UIKit usa intensidad
+  aproximada, no sigma exacto. Android usa filtro GPU API 31+; anteriores sin blur.
+- QA en iPhone 15 Pro / simulador iOS 26.5: tap, swipe entre las cinco pestañas,
+  swipe corto que vuelve, flick rápido y scroll vertical. Typecheck y lint
+  dirigidos correctos; física y regresiones de navegación verificadas. La prueba
+  previa de Lidl sigue bloqueada por faltar `android/app/build.gradle`.
+- Compilación nativa del target PagerBlur y bundles iOS/Android comprobados en
+  la entrega inicial. Pendientes QA Android y medición de fps en dispositivos
+  físicos; no se garantiza 60 fps por simulador. Sin publicación ni migraciones.
+  Detalles en `src/components/bottom-tabs-pager/README.md`.
+
+## Sync DIA trasladado a Windows (local, 2026-09-14)
+
+- GitHub/Azure ya no es una ruta operativa fiable para DIA: los runs
+  `34855549704` (`eastus2`) y `34861658987` (`westus3`) resolvieron las 48 zonas,
+  recibieron `404` del BFF retirado y después `403 Access Denied` de Akamai en
+  `/congelados/pescado-y-marisco/c/L2132`. Script y workflow eran idénticos a
+  los del run correcto anterior; no hubo escrituras parciales.
+- Producción sigue en el último éxito del 2026-09-07: 6.403 productos DIA
+  publicados. Un dry-run local limitado validó el fallback SSR actual (28 N1,
+  273 categorías y 3.521 productos acumulados en una zona) sin tocar Supabase.
+- Se eliminó el cron alojado de `sync-dia.yml`, se actualizó su diagnóstico
+  manual a Node 22 y se estableció `scripts/run-dia-sync.ps1` como vía operativa.
+  El README contiene la Tarea Programada semanal de Windows (lunes 09:50 local,
+  `StartWhenAvailable`, límite 2 h, sin solapamiento). Pendiente primer run real
+  desde Windows y verificación de `[dia] OK`, comparador y `exit 0`.
+
+## Índice alimentario de Condis sin EAN (local, 2026-09-14)
+
+- `CondisProductModal` calcula el índice local con nutrición, nombre, categoría e
+  ingredientes, sin `ean` y sin Open Food Facts. Se integra mediante
+  `ProductDetailDiscoverySection` y pasa la nutrición normalizada a la fila propia.
+- `parseCatalogNutrition` admite ahora `GR`, el formato real de Condis, además de
+  `g`. Producción: 7.585 publicados, 3.797 con nutrición, 4.314 con ingredientes,
+  cero con EAN y todas las fichas comprobadas. Sin migración ni escritura remota.
+- Typecheck, lint dirigido, `git diff --check`, 9 pruebas focalizadas y parser con
+  una tabla real correctos. Suite general 775/776; solo falla la prueba previa de
+  Lidl por la ausencia de `android/app/build.gradle`. Pendiente QA y publicación.
+
+## Índice alimentario de DIA sin EAN (local, 2026-09-14)
+
+- `DiaProductModal` reutiliza `useNutritionInfoDisclosure` sin `ean`, usando
+  nutrición, nombre, categoría e ingredientes. Calcula con `parseCatalogNutrition`
+  y no llama a Open Food Facts.
+- `ProductDetailDiscoverySection` muestra coordinadamente el índice y el comparador;
+  la fila nutricional recibe el resultado normalizado para el desglose estructurado.
+- Producción verificada en lectura: 6.403 publicados, 3.893 con nutrición, 4.373 con
+  ingredientes, cero con EAN y 6.403 fichas comprobadas. Sin migración, despliegue
+  ni escritura remota.
+- Typecheck, lint dirigido, `git diff --check`, 6 pruebas focalizadas y parser con
+  tabla real correctos. Suite general 772/773; el único fallo es la prueba previa
+  de Lidl por la ausencia de `android/app/build.gradle`. Pendiente QA visual y
+  publicación del cliente.
+
+## Índice alimentario de bonÀrea sin EAN (local, 2026-09-14)
+
+- `BonareaProductModal` reutiliza `useNutritionInfoDisclosure` sin `ean`, con
+  nutrición, nombre, categoría e ingredientes como entrada. Por contrato no llama
+  a Open Food Facts y calcula el índice con `parseCatalogNutrition`.
+- El índice y el comparador se revelan coordinados mediante
+  `ProductDetailDiscoverySection`; la fila nutricional recibe también el resultado
+  normalizado para mostrar valores estructurados.
+- El parser textual acepta comparadores `<`/`≤`, presentes en tablas reales de
+  bonÀrea. Producción: 3.148 publicados, 2.537 con nutrición ES, 2.542 CA y
+  3.148 fichas comprobadas. Sin migración, despliegue ni escritura remota.
+- Typecheck, lint dirigido, `git diff --check`, 5 pruebas focalizadas y parser
+  ejecutado con una tabla representativa correctos. Suite general 771/772; solo
+  falla la prueba previa de Lidl porque falta `android/app/build.gradle`.
+  Pendiente QA visual y publicación del cliente.
+
+## Sync Ahorramás robusto (local, 2026-09-14)
+
+- `sync-ahorramas.mjs` ya no dispara ráfagas: usa 3 s entre peticiones, conserva
+  cookies, respeta `Retry-After`, reintenta 429/408/425/5xx/red con backoff y
+  jitter, y aplica timeout configurable. `.env.local` se carga antes del config.
+- Paginación adaptada al SFCC real: tamaño 40, offset monotónico aunque el botón
+  repita `start`, corte ante el último bloque repetido y detección de ciclos.
+  Raíces y hojas se paginan completas; ramas intermedias solo una vez para evitar
+  surtidos agregados repetidos sin perder cobertura global ni taxonomía fina.
+- Dry-run integral completado: 7.498 productos, 776 categorías, 1.251 ofertas,
+  sin 429 y sin tocar Supabase. Producción sigue en 7.472/775 con sync del 7-Sep.
+  Embeddings Ahorramás: solo `53270` pendiente; pipeline pausado, cron 17 apagado,
+  cero en vuelo. Cola global actual 4.630 disponibles por otros catálogos.
+- Workflow: Node 22, timeout 120 min. Pruebas dirigidas/integración/typecheck OK;
+  suite 768/769 con el único fallo conocido de Lidl por ausencia de
+  `android/app/build.gradle`. Falta commit/push y lanzar el workflow productivo.
+
+## Información nutricional estructurada (local, 2026-09-14)
+
+- La nutrición normalizada se pasa como `nutritionInfo` a `ProductInfoSections`
+  en las once fichas que resuelven el Índice. Se muestra como primera fila dentro
+  de la misma tarjeta que ingredientes, alérgenos, conservación y el resto de
+  características, también cuando no existe `foodIndex`. Se retiró la tarjeta
+  independiente `NutritionValuesSummary` para no duplicar superficies.
+- `NutritionInfoButton` ya no repite los valores por 100 g/ml dentro del detalle
+  expandido del Índice. Estos quedan exclusivamente en la fila «Información
+  nutricional»; el cálculo y el desglose de puntos del Índice no cambian.
+- `ProductInfoSections` detecta la fila `nutrition` y, al desplegarla, sustituye
+  el bloque de texto por filas estructuradas con icono, etiqueta y valor. El
+  parser compartido `nutritionDisplay` reconoce castellano/catalán, formatos
+  con dos puntos y la salida real de Carrefour sin separador; los campos
+  desconocidos se conservan con icono genérico.
+- `ProductInfoSections.Row` mantiene el contenido nutricional siempre montado y
+  anima un contenedor recortado con altura, opacidad, desplazamiento y chevron
+  durante 360 ms. Así no hay montaje/desmontaje entre pulsaciones. La respuesta
+  táctil usa `activeOpacity=0.94` (antes 0,6), se excluye `LayoutAnimation` y
+  Reducir movimiento fija directamente el estado final.
+- `NutritionInfoButton` rediseña también el detalle expandido del Índice
+  alimentario con cabeceras visuales por sección e iconos en componentes/puntos.
+  Colores y superficies usan tokens temados; textos ES/CA completos.
+- Cambio local de cliente, sin backend ni migración. `npx tsc --noEmit`, ESLint
+  dirigido, `git diff --check` y 9 pruebas focalizadas correctos. Suite general
+  775/776: solo falla la regresión previa de Lidl por el generado ausente
+  `android/app/build.gradle`. Pendiente QA visual en dispositivo y publicación.
+
+## Ficha completa de Carrefour e índice alimentario (local, 2026-09-14)
+
+- `CarrefourProductModal` incluye ahora la tabla nutricional como fila explícita
+  y mantiene las filas existentes de ingredientes, alérgenos, conservación,
+  preparación, origen, denominación legal y operador.
+- La conexión por EAN con Open Food Facts y el `FoodIndexSummary` ya estaban
+  implementados mediante `useNutritionInfoDisclosure`; se conservan, con
+  `product.nutrition` como respaldo cuando OFF no aporta Nutri-Score aplicable.
+- Auditoría remota de solo lectura: 33.660 publicados; 11.398 con ficha revisada,
+  5.480 con nutrición, 9.818 con EAN. Para ampliar cobertura hay que continuar
+  los backfills incrementales del sync/`backfill-carrefour-ean.mjs`; no falta SQL.
+- Añadida prueba unitaria del parser de ficha completa. Typecheck, lint dirigido,
+  2 pruebas nuevas y `git diff --check` correctos. Suite general 764/765: solo
+  falla `lidl-release-prompt.test.mjs` por el generado ausente
+  `android/app/build.gradle`, regresión previa y ajena. Sin migración, despliegue
+  ni escritura en producción.
+
+## Recetas reactivadas (local, 2026-09-12)
+
+- Rendimiento de apertura: `fetchCommunityRecipes` integra `recipe_likes` y
+  `recipe_saves` por FK, filtradas por userId y RLS, en la consulta original.
+  Tres peticiones → una; conserva recetas sin interacciones y contadores públicos.
+  Timeout abortable de 12 s para no retener indefinidamente una petición compartida.
+- `recipeFeedCache` + `recipeFeed` + `useRecipeFeed`: snapshot por cuenta,
+  lectura síncrona desde memoria, hidratación de disco concurrente con red,
+  deduplicación, frescura de 60 s y snapshots persistidos válidos hasta 24 h.
+  Revalidación al enfocar sin vaciar lista ni mostrar carga encima de contenido.
+  Creación, optimismo y rollback actualizan caché; revisiones y bloqueo de
+  mutaciones evitan que un fetch tardío deshaga cambios. Errores permiten reintento.
+- `startupKeys.recipes(userId)` se hidrata con las otras pestañas; corregida
+  carrera disco/red en `readStartupCache`. Navegación precarga a los 350 ms de
+  estar listo Inicio, sin bloquearlo ni montar Recetas; anticipa hasta cuatro fotos
+  en la cola compartida. Previews usan `expo-image` con `memory-disk`; el creador
+  solo se monta al abrirlo. Typecheck, lint y 37 pruebas dirigidas correctos.
+  Consulta SQL equivalente validada con rol authenticated en producción: 0,455 ms,
+  tres filas, índices de interacciones usados. No es medición de red/UI; pendiente
+  QA y tiempos en dispositivo. Sin cambios remotos ni nueva migración.
+- Fotos opcionales de pasos completas en creador/API/detalle, ES/CA. Una foto
+  por paso, con añadir/cambiar/quitar y vista previa. Solo se suben al publicar;
+  pasos con foto requieren descripción para no descartarla al limpiar vacíos.
+  Compresión JPEG a 1200 px, subida secuencial y limpieza ante fallo de subida
+  o rechazo definitivo de BD. Respuestas de inserción inciertas conservan las
+  fotos por si la receta llegó a guardarse. No se añaden fotos obligatorias.
+- `recipes.step_image_paths text[]` con default vacío y null por paso sin foto;
+  se mantiene `steps` como textos para clientes antiguos. Migración local
+  `20260912164705_recipe_step_images.sql` → remota `20260912165038` aplicada.
+  RLS/bucket existentes conservados; tres recetas con huella idéntica tras migrar.
+  Typecheck, lint, 22 pruebas (incluyen subida/lectura/alineación/fallos) y prueba
+  PGlite de defaults/constraints/RLS correctos. SQL remoto en tabla temporal
+  verificado y revertido; sin nuevos avisos de seguridad. Pendiente galería y
+  revisión visual en dispositivo; cliente sin publicar.
+- `CreateRecipeModal`: retirados los iconos de las cabeceras «Ingredientes» y
+  «Pasos a seguir»; ambos reutilizan `fieldLabel` (13 pt, negrita), como
+  «Nombre de la receta». Se mantienen contadores y textos de ayuda.
+- Apertura/cierre de «Nueva receta» desde/hacia «Crear receta» mediante
+  `useRecipeCreatorTransition`: mide botón y raíz del modal en coordenadas de
+  ventana, anima contorno/color en Reanimated (420/340 ms) y revela el formulario
+  sin escalar sus textos. Remide al cerrar, oculta teclado, evita cierres duplicados
+  y respeta Reducir movimiento. Cerrar, escape accesible, atrás Android y guardar
+  completado comparten transición; no se permite cerrar durante guardado.
+  Typecheck, lint dirigido y 15 pruebas existentes correctos. Pendiente QA visual
+  nativa de animación/rotación/teclado. Cliente local; sin SQL ni publicación.
+- Visor de foto a pantalla completa desde la imagen del detalle: nuevo
+  `RecipeImageViewer`, imagen completa y transición Reanimated 380/360 ms.
+  Comparte progreso con el panel del detalle: al cerrar la imagen regresa al
+  encuadre real de la cabecera y el contenido sube desde abajo. Geometría medida
+  al abrir/cerrar, proporción preservada mediante recorte progresivo.
+  Cierre accesible sobre cristal y reintento de carga. Respeta Reducir movimiento,
+  conserva la ficha debajo y no requiere backend. Pendiente QA visual nativa.
+- `RecipeEngagementActions`: Me gusta y Guardar del detalle ahora miden
+  36 × 36 pt, radio de 18 pt e iconos de 17 pt. Cristal y `hitSlop={4}` conservados.
+- Guardar en previews compactado a 36 pt, radio de 18 pt, icono de 17 pt y
+  contador de 11 pt; `hitSlop={4}` mantiene el área táctil. Cristal conservado.
+- Filtros de Usuarios reducidos a 36 pt (antes 48), con radio de 18 pt y
+  padding horizontal de 12 pt. Inset del scroll sincronizado; cristal conservado.
+- Selector «Usuarios / Supermercado» en la cabecera con `SlidingSegments`
+  sobre el cristal existente, sin superficies anidadas y con fallback temado.
+  Usuarios conserva las recetas reales y sus filtros; Supermercado todavía no
+  tiene fuente conectada y muestra un aviso vacío. Localizado ES/CA; sin SQL.
+- «Crear receta» fijo abajo a la derecha en `QueCocinoScreen`, fuera del scroll
+  y solo en Usuarios (también sin recetas). Compensa la barra de pestañas con
+  `useTabBarBottomPadding` y reserva su altura real al final del contenido.
+- `src/constants/limits.ts` vuelve a declarar `QUE_COCINO_ENABLED = true`.
+  «Recetas» reaparece como quinta pestaña entre Catálogo y Carrito tanto en la
+  barra clásica como en Liquid Glass.
+- La implementación y el backend ya existían: vuelven a ser accesibles consulta,
+  creación, detalle, Me gusta, guardado y añadido de ingredientes al carrito.
+  Sin migración SQL ni publicación del cliente.
+
+## Palabra de hoy (cliente local + backend, 2026-09-11)
+
+- Premios cancelados a petición del usuario: retirados botón regalo, popup,
+  componente específico y textos ES/CA. No había adjudicación automática ni
+  suscripciones concedidas por este flujo. Mascota compartida conservada.
+- La ayuda usa `WordGameInfoModal`, con tarjeta y pie opacos en
+  `colors.paper` (claro/oscuro), sin material nativo translúcido ni GlassSurface.
+  Fondo exterior atenuado, texto desplazable y cierre visible/atrás en Android.
+- Alineación final del podio: las tres tarjetas comparten base inferior, sin
+  desplazamientos superiores; se conservan sus tamaños decrecientes por puesto.
+- Podio compactado: segundo y tercero alineados a 16 pt respecto al primero;
+  reducidos márgenes y rellenos verticales sin reducir fotos ni tipografía.
+  Ajuste posterior: tercer puesto con tarjeta más baja (8 pt menos de relleno
+  vertical y avatar hasta 8 pt menor), conservando alineación superior y textos.
+- Demo del ranking retirada: eliminados cinco perfiles ficticios, selector y
+  textos de demostración. Solo se muestran resultados reales, también en desarrollo.
+  No se borraron cuentas ni partidas: la demo nunca se guardó en Supabase.
+- Podio del ranking (2026-09-12): `WordRankingPodium` coloca las primeras tres
+  entradas en orden 2–1–3. Rediseñado a petición del usuario: sin cilindros,
+  tarjetas redondeadas con tintes oro/plata/bronce, retratos enmarcados,
+  medalla circular superpuesta y primer puesto elevado con sombra suave.
+  Adaptación al ancho disponible, tema claro/oscuro y nombres largos;
+  @ sobre foto, insignia dorada `VerifiedBadge` para Plus y avatar de reserva.
+  La elevación/medallas siguen el puesto real en empates; el resto sigue en lista.
+  La RPC añade avatarUrl/isPlus solo para perfiles descubribles o el propio;
+  Plus se deriva de premium_until sin exponer su fecha. No cambia puntuación.
+  Migración local `20260912154950_word_ranking_podium.sql` aplicada como
+  `20260912155231_word_ranking_podium`. Typecheck, lint, 20 pruebas del motor y
+  PGlite correctos (privacidad, Plus caducado, cuatro periodos, datos intactos).
+  Producción sin partidas completadas al verificar: campos comprobados en función,
+  rankings ES/CA iguales; no se añadieron resultados. Pendiente revisión visual
+  en dispositivo y publicación del cliente.
+- Unificación en castellano (2026-09-12): una misma palabra y cuatro rankings
+  comunes para toda la app. UI catalana conservada; aviso en catalán antes de
+  activar el juego, palabras/teclado siempre ES (Ñ, sin Ç), borrador por cuenta
+  con la clave ES anterior. Backend aplicado: local
+  `20260912153336_spanish_only_word_game.sql` → remota
+  `20260912153657_spanish_only_word_game`. Fuerza ES también para clientes antiguos;
+  bloquea partidas CA y deshabilita sus 386 palabras; 439 ES activas. Sin partidas
+  CA previas, sin borrar ni alterar intentos/puntuaciones existentes (huellas iguales).
+  Typecheck, ESLint, 20 pruebas del motor y PGlite correctos; reto y rankings
+  ES/CA idénticos verificados en remoto. Popup pendiente de prueba visual; cliente
+  local sin publicar.
+- Animación de revisión 2026-09-12: nuevo `DailyWordTile` con giro horizontal
+  (rotateY), frente neutro y reverso evaluado; 420 ms por letra/180 ms de desfase.
+  `DailyWordScreen` coordina el intento enviado y bloquea entrada mientras revela;
+  resultado final y feedback háptico esperan al final. Historial no se reanima.
+  Cancelación al salir/cambiar pestaña/cuenta/día y soporte de Reducir movimiento.
+  Typecheck y ESLint focalizado correctos. Sin cambios en reglas, datos ni API.
+- Ajuste visual 2026-09-12: retiradas las marcas ✓/↔/· de cada letra enviada.
+  Colores, leyenda y etiquetas accesibles siguen indicando el resultado.
+- Ampliación 2026-09-12 desplegada: **439 ES activas / 386 CA hoy deshabilitadas** (antes 168/161).
+  Local `20260912120048_expand_word_game_dictionary.sql` → remota
+  `20260912120558_expand_word_game_dictionary`. Añade 271 ES y 225 CA mediante
+  INSERT por lotes con ON CONFLICT DO NOTHING; no altera soluciones ni progreso.
+  Se admiten LAVAR/COCER/PELAR/PLATOS/NEVERA/BUFFET/OFERTA/SUPER/REBAJA.
+  PGlite comprueba todos esos ejemplos, equivalentes CA, idempotencia y conservación
+  de datos previos. Typecheck, lint de textos y 19 pruebas del motor correctos.
+  No requiere nueva build para aceptar palabras; cambios de ayuda siguen locales.
+- Cambio visual 2026-09-12: `DailyWordScreen` ya no muestra el bloque fecha/letras/idioma.
+  Revertida la retirada del selector Jugar/Ranking: ambos destinos y los cuatro
+  periodos vuelven a funcionar, con su diseño glass y fallback. No se borran
+  datos ni se modifica la API. El bloque informativo permanece eliminado.
+- Lógica completada en `src/lib/wordGameSession.ts` y `useWordGame`: operaciones
+  serializadas, borrador AsyncStorage por usuario con validez por partida
+  e intento, recuperación segura tras timeout/reinicio, protección frente a
+  refrescos tardíos y cambio de día con reintento espaciado. API valida payloads
+  y limita esperas a 15 s. No se modifica el esquema ni se publica la app.
+- 19 pruebas ejecutables del motor en `scripts/tests/word-game-session.test.mjs`.
+  La prueba PGlite ahora conecta el cliente real a los RPC SQL y comprueba
+  victoria/derrota, recuperación de respuesta perdida y los cuatro rankings.
+  Reanudación del borrador verificada en iOS 26.5 sin enviar una palabra válida.
+- Ajuste visual solicitado: `DailyWordScreen` usa Liquid Glass mediante el
+  wrapper existente. Cabecera superpuesta con `SlidingSegments`, selector de
+  periodos glass, teclado flotante con una sola superficie nativa y fondo
+  `AmbientBubbleBackdrop`. Alturas medidas para no tapar el contenido; ningún
+  cristal anidado. Fallback previo conservado. Sin cambios SQL.
+- Implementados `DailyWordButton`, `DailyWordScreen`, API `wordGame` y copy
+  ES/CA. Acceso desde la antigua frase de la cabecera de Inicio. Ruta
+  `Home → DailyWord`; oculta la barra general solo mientras está abierta.
+- Juego real de 4–6 letras y seis intentos; teclado fijo, estados de red,
+  reanudación, resultado compartible y rankings por los cuatro periodos.
+- Backend ya desplegado: migración local
+  `20260911184021_daily_word_game.sql` → remota `20260911184500_daily_word_game`.
+  Tablas en `private`, no en `public`; respuestas y puntuaciones solo se
+  escriben mediante RPC. Una partida/día por usuario aunque cambie idioma.
+  Banco activo de 439 ES, selección diaria aleatoria sin repetir 30 días.
+- PGlite valida la migración real y los casos de integridad; prueba real bajo
+  rol autenticado revertida por completo. En el simulador se validó escritura
+  de borrador y rechazo de palabra inválida sin consumir la partida.
+- Typecheck, lint focalizado y diff-check correctos. Suite 736/737: fallo
+  ajeno en `lidl-release-prompt.test.mjs` por `android/app/build.gradle` ausente.
+  No publicar ni afirmar que ya llegó a App Store/Play: cliente todavía local.
+- Ver reglas, tablas, mantenimiento del vocabulario y comprobaciones en
+  `PALABRA-DE-HOY.md`. El ranking histórico suma puntos; no usa medias ni rachas.
+
+## Comparativa de huevos para Instagram (local, 2026-09-11)
+
+- Nueva pieza `marketing/instagram-egg-comparison/comparativa-huevos-instagram.png`
+  (1080 × 1350), con fuente HTML, fondo generado, logos locales y fotos de
+  Mercadona, Carrefour y Lidl tomadas de las URL guardadas en producción.
+- Datos del 07/09/2026: Mercadona M 12 ud 2,85 €, Carrefour M suelo 12 ud
+  2,85 € y Lidl M 12 ud 2,84 €. Aldi se muestra sin dato porque su espejo no
+  contiene una docena de huevos frescos, ni publicada ni despublicada.
+- No se ha publicado ni desplegado nada. La carpeta incluye `README.md` con los
+  ids exactos y la limitación de Aldi.
+
+## Producto no disponible para la próxima compra (local, 2026-09-11)
+
+- `ListScreen` divide el pie de cada tarjeta entre «Notas» y «No estaba en la
+  tienda». Ya no existe botón global de guardar en la cabecera, diálogo ni modo
+  general. El marcador por producto usa el mismo `bookmark` relleno de recetas.
+- El producto aplazado queda tachado y cuenta como gestionado, pero muestra
+  «Producto incluido en la próxima compra» en lugar de las notas. Se puede
+  deshacer desde el propio estado. Solo se finaliza cuando todos están recogidos
+  o aplazados y al menos uno se ha recogido realmente.
+- Nueva migración `20260911173959_defer_unavailable_products.sql`: añade
+  `deferred_to_next_purchase`, los RPC atómicos para alternarlo y la exclusión
+  mutua con `in_cart`. `finish_list_purchase(uuid)` mantiene la firma legacy,
+  archiva únicamente lo recogido y deja lo aplazado como pendiente normal,
+  sin responsable anterior, para la siguiente compra. Mantiene `SECURITY
+  INVOKER`, RLS, permisos solo para `authenticated`, bloqueo por lista y
+  controles de filas afectadas.
+- Desplegada en producción como migración remota
+  `20260911180408_defer_unavailable_products`. Se verificaron columna `NOT
+  NULL DEFAULT false`, RPC invoker con `search_path` vacío, ejecución exclusiva
+  de `authenticated`, exclusión de `anon` y cero estados incompatibles. El
+  botón se probó marcando y desmarcando un producto real en el simulador; el
+  estado de prueba quedó completamente revertido.
+- Verificación local cerrada: TypeScript, lint dirigido, 13 pruebas focalizadas,
+  `git diff --check` y prueba SQL PGlite de aplazado, exclusión mutua,
+  finalización parcial, compatibilidad legacy, atomicidad y RLS correctos. La
+  suite completa queda en 718/719 únicamente porque la regresión previa de
+  `lidl-release-prompt.test.mjs` exige el fichero generado y actualmente ausente
+  `android/app/build.gradle`; no está relacionada con este cambio.
+
+## Prueba AGP 9.0.1 preparada (2026-09-09)
+
+- Perfil EAS `agp9-audit` hereda producción sin incrementar versión y activa
+  `QUEFALTA_AGP9=1`. El plugin `withAndroidAgp9` fija AGP 9.0.1 y conserva
+  temporalmente Kotlin externo y DSL antiguo, usados por Expo/RN.
+- Prebuild temporal verificado. Tras autorización explícita se ejecutó EAS
+  `33f0b6b2-a00d-4e1d-8e39-028859abe13c`: falló al configurar `:expo` por
+  `LibraryDefaultConfig.setTargetSdk(java.lang.Integer)`, API retirada en AGP 9
+  que utiliza el plugin nativo de Expo. No generó AAB ni se publicó nada.
+  Producción no activa este experimento.
+- Adaptaciones aisladas en el plugin opt-in: target SDK de biblioteca Expo pasa
+  a `lint.targetSdk`; los callbacks globales de React Native se registran solo
+  desde el plugin de aplicación para evitar registrar `finalizeDsl` demasiado tarde.
+  El segundo intento `6df181b2-5e9a-466d-9305-18a1ba194f7b` detectó ese problema
+  de callbacks; el tercero `082f6800-e4b2-4df7-85df-61c5dea2968f` lo superó y
+  falló por los Provider en sourceSets de Expo. Se añadió la compatibilidad
+  `android.sourceset.disallowProvider=false`: Expo ya declara la dependencia
+  `preBuild -> generatePackagesList` explícitamente.
+- Cuarto intento `cba45904-d8d7-473a-a216-95c39f7c471c` **FINISHED**, Gradle
+  exitoso en 28m23s. AAB local `/private/tmp/quefalta-agp9-audit.aab`:
+  AGP **9.0.1**, R8 **9.0.32**, `isOptimizedShrinkingEnabled=true`, pero
+  **`isOptimizationsEnabled=false` y `noOptimizationPercentage=100`**.
+  La actualización de AGP compila, pero NO resuelve todavía el aviso de optimización.
+  No se ha promovido a producción ni publicado en Play. Siguiente diagnóstico:
+  obtener `configuration.txt` fusionado de R8 y localizar el origen del bloqueo;
+  no aparece `-dontoptimize` en fuentes locales ni en `proguard.txt` de AAR locales.
+- Typecheck y tres pruebas aisladas del plugin pasan (opt-in, idempotencia y
+  detección de cambios incompatibles). ESLint dirigido a estos archivos falla
+  por configuración de `@typescript-eslint/no-require-imports` sin plugin registrado.
+  R8 advierte sobre stack maps de amazon-appstore-sdk 3.0.5. Pendiente prueba real.
+- Verificar metadata R8 y flujos nativos antes de adoptar AGP 9 en producción.
+
+## R8 completo y Android adaptable (local, 2026-09-09)
+
+- `withAndroidReleaseHardening` sustituye las reglas antiguas
+  `proguard-android.txt` por `proguard-android-optimize.txt` y añade
+  `android.r8.optimizedResourceShrinking=true` para AGP 8.12. El AAB anterior
+  reducía y ofuscaba, pero su metadata confirmaba optimización de código y
+  reducción optimizada de recursos desactivadas.
+- `app.json` fija `orientation: default`; el prebuild genera
+  `MainActivity` con `android:screenOrientation="unspecified"`, incluso si el
+  manifest anterior estaba bloqueado en vertical. iOS conserva explícitamente
+  sus orientaciones anteriores mediante `UISupportedInterfaceOrientations`.
+- `DoneScreen` permite desplazar todo su contenido cuando no cabe en horizontal
+  o multiventana y respeta también los insets laterales. Pendiente prueba visual.
+- Pendiente publicar un nuevo AAB y confirmar en su metadata `r8.json` que
+  `isOptimizationsEnabled` e `isOptimizedShrinkingEnabled` sean `true`, además
+  de validar visualmente horizontal, tablet y multiventana.
+
 ## Tecla «Done» retirada del código postal (local, 2026-09-07)
 
 - `RegionPicker` ya no define `returnKeyType="done"` en el `TextInput` de

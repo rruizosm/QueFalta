@@ -1,3 +1,4 @@
+import { PagerNativeScrollView as ScrollView } from '../components/bottom-tabs-pager/PagerNativeScroll';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fonts } from '../constants/typography';
@@ -5,7 +6,6 @@ import {
   View,
   Text,
   Image,
-  ScrollView,
   TouchableOpacity,
   StyleSheet,
   StatusBar,
@@ -339,7 +339,7 @@ export default function HomeScreen() {
         backgroundColor={entryCoverVisible ? colors.blue : colors.paper}
       />
       {!glassAvailable && header}
-      <ScrollView
+      <ScrollView tabBarScroll
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.scroll,

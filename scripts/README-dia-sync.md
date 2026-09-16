@@ -1,16 +1,19 @@
 # Sync de Dia — espejo del catálogo en Supabase
 
-dia.es es una SPA **Vike (vite-plugin-ssr)** con una **API REST JSON abierta**
-(`/api/v1/plp-back`). Desde 2026-07-11 el sync usa esa API en vez de raspar el SSR
-(la API antes daba 422 fuera del navegador; ya no). Es más robusta —versionada,
-~20 KB JSON/página vs ~150 KB de HTML— y da la misma data; la lección de Eroski
-(retiraron `?pageNumber=N` y rompió su scraper) empuja a preferir la API. No hay
-que parsear HTML ni usar navegador headless, y **no hay Cloudflare**.
+dia.es es una SPA **Vike (vite-plugin-ssr)**. Su antigua API REST JSON
+(`/api/v1/plp-back`) devuelve `404`, por lo que el sync usa el fallback SSR con
+`vike_pageContext`. El frontal es **Akamai/EdgeSuite** y desde 2026-09-14 devuelve
+`403 Access Denied` de forma consistente a los runners alojados de GitHub/Azure.
+El mismo flujo funciona desde una conexión residencial.
 
-- **Vía recomendada:** workflow [`.github/workflows/sync-dia.yml`](../.github/workflows/sync-dia.yml)
-  (cron semanal lunes 07:50 UTC + botón "Run workflow"). Usa los secrets `SUPABASE_URL`
-  y `SUPABASE_SERVICE_ROLE` que ya existen en el repo. Solo node (fetch nativo).
-- **Local (opcional):** `scripts/run-dia-sync.ps1`, útil para probar a mano.
+- **Vía operativa:** Windows mediante [`scripts/run-dia-sync.ps1`](run-dia-sync.ps1),
+  manualmente o con la Tarea Programada semanal descrita más abajo. Lee
+  `SUPABASE_URL`/`EXPO_PUBLIC_SUPABASE_URL` y `SUPABASE_SERVICE_ROLE` de
+  `.env.local`, ejecuta el catálogo y, si termina bien, actualiza el comparador.
+- **Diagnóstico únicamente:** workflow [`.github/workflows/sync-dia.yml`](../.github/workflows/sync-dia.yml).
+  No tiene cron; conserva `workflow_dispatch` para comprobar en el futuro si
+  DIA ha dejado de bloquear las IP de GitHub. Mientras responda `403`, no usarlo
+  para el sync operativo.
 
 ## Multi-zona por código postal (2026-07-14)
 
@@ -110,11 +113,14 @@ Igual que el resto: añade en `MercaAppMobile/.env.local` (gitignored) la línea
 # Prueba rápida sin escribir (2 zonas, 8 páginas cada una, sin ficha):
 $env:DRY_RUN='1'; $env:MAX_ZONES='2'; $env:MAX_PAGES='8'; $env:SKIP_DETAIL='1'; node scripts/sync-dia.mjs
 
-# Run real (escribe en Supabase, lee secretos de .env.local):
-& "C:\Users\ruben\OneDrive\Escritorio\MercaApp\MercaAppMobile\scripts\run-dia-sync.ps1"
+# Run real desde la raíz del repo y en una PowerShell nueva
+# (escribe en Supabase y lee los secretos de .env.local):
+& '.\scripts\run-dia-sync.ps1'
 ```
 
 Debe terminar con `[dia] OK`. El log queda en `scripts/logs/dia-sync-<fecha>.log`.
+No encadenes el run real en la misma consola del ejemplo `DRY_RUN`: esas variables
+de entorno limitarían también la ejecución siguiente.
 
 Resultado del DRY_RUN completo multi-zona (API, 2026-07-14): **48 zonas** (una por
 provincia; Canarias/Melilla sin servicio) → **7.367 productos únicos** (vs 5.551 de
@@ -152,22 +158,29 @@ es bilingüe). El sync la descarga **incremental**: solo de productos sin ficha 
 `detail_synced_at` más viejo que `DETAIL_TTL_DAYS`; el resto arrastra la guardada (el upsert de
 precios no la toca). En DRY_RUN se imprime la ficha de los 3 primeros productos para verificar.
 
-## 4. Programarlo 1×/semana (si se prefiere local en vez de Actions)
+## 4. Programarlo 1×/semana en Windows
 
 ```powershell
-$ps1 = "C:\Users\ruben\OneDrive\Escritorio\MercaApp\MercaAppMobile\scripts\run-dia-sync.ps1"
+# Ejecutar desde la raíz del repositorio en una PowerShell normal.
+$ps1 = (Resolve-Path '.\scripts\run-dia-sync.ps1').Path
 $action   = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$ps1`""
-$trigger  = New-ScheduledTaskTrigger -Daily -At 9:45am
-$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 45)
+$trigger  = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday -At 9:50am
+$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 2) -MultipleInstances IgnoreNew
 Register-ScheduledTask -TaskName 'QueFalta - Sync Dia' -Action $action -Trigger $trigger -Settings $settings -Description 'Sincroniza el catalogo de Dia a Supabase' -Force
 ```
+
+La tarea usa la zona horaria local de Windows. El equipo debe estar encendido y
+con red; `StartWhenAvailable` recupera la ejecución si estaba apagado a las 09:50.
+Los logs quedan en `scripts/logs/dia-sync-<fecha>.log` y el lanzador conserva los
+14 más recientes.
 
 ## Notas
 
 - **Marcas blancas Dia con el nombre dentro:** "Selección de Dia", "Dia Láctea",
   "Dia Mari Marinera"… El `catalog_clean_name` de la comparativa ya las quita del
   needle (ver similar_products.sql).
-- **Geobloqueo:** las pruebas funcionaron desde fuera de España → GitHub Actions
-  debería ir bien; si algún día da 403/500 persistente, mover a local como Carrefour.
+- **Bloqueo de datacenter:** el 2026-09-14 dos ejecuciones consecutivas, desde
+  Azure `eastus2` y `westus3`, recibieron `403` de Akamai en la primera categoría
+  SSR. No es un error de Supabase ni del parser. Ejecutar desde Windows/local.
 - **Carrito (futuro):** existe `/api/v1/cart`; seguramente exija sesión/CP. No
   bloquea catálogo+búsqueda+comparativa.

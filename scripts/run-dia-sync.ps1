@@ -1,6 +1,6 @@
-# Lanza el sync de Dia desde tu PC (pensado para una Tarea Programada diaria).
-# dia.es NO está tras Cloudflare (SSR abierto), así que esto TAMBIÉN puede correr
-# en GitHub Actions; este runner es para ejecutarlo en local junto a los demás.
+# Lanza el sync de Dia desde Windows, a mano o mediante una Tarea Programada semanal.
+# Esta es la vía operativa desde 2026-09-14: Akamai bloquea con HTTP 403 el SSR
+# de dia.es desde los runners alojados de GitHub/Azure.
 # Ver README-dia-sync.md.
 #
 # Lee los secretos de MercaAppMobile/.env.local (gitignored). Necesita en ese fichero:
@@ -8,6 +8,10 @@
 #   SUPABASE_SERVICE_ROLE=...        (la service_role key, la misma del secret de GitHub)
 
 $ErrorActionPreference = 'Stop'
+
+if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
+  throw 'No se encuentra Node.js en PATH. Instala Node.js 22 y abre una PowerShell nueva.'
+}
 
 $repo   = Split-Path -Parent $PSScriptRoot          # ...\MercaAppMobile
 $envFile = Join-Path $repo '.env.local'

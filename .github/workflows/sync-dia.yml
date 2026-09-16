@@ -1,9 +1,11 @@
-name: Sync Dia catalog
+name: Sync Dia catalog (manual diagnostic)
 
 on:
-  schedule:
-    - cron: '50 7 * * 1'   # lunes 07:50 UTC (tras Consum), semanal
-  workflow_dispatch: {}     # botón "Run workflow" para lanzarlo a mano / probar
+  # Desde 2026-09-14 Akamai devuelve 403 al SSR de dia.es desde runners
+  # alojados de GitHub/Azure. El sync operativo se ejecuta en Windows con
+  # scripts/run-dia-sync.ps1; este workflow queda solo para comprobar a mano
+  # si DIA levanta el bloqueo en el futuro.
+  workflow_dispatch: {}
 
 concurrency:
   group: sync-dia
@@ -17,8 +19,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-      # dia.es NO tiene Cloudflare: SSR abierto (vike_pageContext JSON). Solo fetch de node.
+          node-version: 22
+      # El SSR es Vike, pero su frontal Akamai puede bloquear IPs de datacenter.
       - run: node scripts/sync-dia.mjs
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

@@ -157,6 +157,7 @@ export default function BonpreuProductModal({ product, onClose, topInset = 16, b
         {/* Características extraídas de la ficha pública mediante el sync. */}
         <ProductInfoSections
           items={[
+            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition, nutritionInfo: nutrition.info },
             { key: 'product_info', icon: 'reader-outline', title: t('product.sections.productInfo'), text: product.productInfo },
             { key: 'brand', icon: 'ribbon-outline', title: t('product.sections.brand'), text: product.brand },
             { key: 'supplier_name', icon: 'business-outline', title: t('product.sections.supplierName'), text: product.supplierName },

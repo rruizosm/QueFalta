@@ -36,9 +36,22 @@ function setup(cached = null) {
 test('a warm visit shows recipes synchronously with no new request or loading indicator', async () => {
   const { feed, requests } = setup({ recipes: [recipe('cached')], updatedAt: clock - 1000 });
   assert.equal(feed.snapshot('a').recipes[0].id, 'cached');
+  assert.equal(feed.snapshot('a').recipes[0].servings, null);
   await feed.refresh('a');
   assert.equal(feed.snapshot('a').loading, false);
   assert.equal(requests.length, 0);
+});
+
+test('persisted recipe servings are normalized without rejecting legacy snapshots', () => {
+  const cached = setup({
+    recipes: [
+      recipe('legacy'),
+      { ...recipe('valid'), servings: 6 },
+      { ...recipe('invalid'), servings: 100 },
+    ],
+    updatedAt: clock,
+  }).feed.snapshot('a').recipes;
+  assert.deepEqual(Array.from(cached, ({ servings }) => servings), [null, 6, null]);
 });
 
 test('prefetch and tab focus share the same request; stale content stays visible', async () => {

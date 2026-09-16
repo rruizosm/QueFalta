@@ -31,6 +31,8 @@ export interface CommunityRecipe {
   authorId: string;
   title: string;
   imageUrl: string;
+  /** Personas para las que están calculadas las cantidades; null en recetas antiguas. */
+  servings: number | null;
   ingredients: RecipeIngredient[];
   steps: string[];
   /** Una foto opcional por paso; conserva el contrato de texto de versiones anteriores. */
@@ -54,6 +56,7 @@ export interface CreateRecipeInput {
   userId: string;
   title: string;
   imageUri: string;
+  servings: number;
   ingredients: {
     product: UIProduct;
     quantity: string;
@@ -67,6 +70,7 @@ type RecipeRow = {
   author_id: string;
   title: string;
   image_path: string;
+  servings?: unknown;
   ingredients: unknown;
   steps: unknown;
   step_image_paths?: unknown;
@@ -105,6 +109,11 @@ const publicImageUrl = (path: string): string => (
   supabase.storage.from('recipe-images').getPublicUrl(path).data.publicUrl
 );
 
+function normalizeRecipeServings(value: unknown): number | null {
+  const servings = Number(value);
+  return Number.isInteger(servings) && servings >= 1 && servings <= 99 ? servings : null;
+}
+
 function rowToRecipe(
   row: RecipeRow,
   profileFallback?: UserProfile | null,
@@ -129,6 +138,7 @@ function rowToRecipe(
     authorId: row.author_id,
     title: row.title,
     imageUrl: publicImageUrl(row.image_path),
+    servings: normalizeRecipeServings(row.servings),
     ingredients: Array.isArray(row.ingredients)
       ? (row.ingredients as Partial<RecipeIngredient>[]).map((ingredient) => ({
           ...ingredient,
@@ -166,7 +176,7 @@ export async function fetchCommunityRecipes(userId: string, limit = 50): Promise
   try {
     const { data, error } = await supabase
       .from('recipes')
-      .select('id, author_id, title, image_path, ingredients, steps, step_image_paths, created_at, like_count, save_count, profiles!recipes_author_id_fkey(name, username, initials, color, avatar_url, verified), recipe_likes!recipe_likes_recipe_id_fkey(user_id), recipe_saves!recipe_saves_recipe_id_fkey(user_id)')
+      .select('id, author_id, title, image_path, servings, ingredients, steps, step_image_paths, created_at, like_count, save_count, profiles!recipes_author_id_fkey(name, username, initials, color, avatar_url, verified), recipe_likes!recipe_likes_recipe_id_fkey(user_id), recipe_saves!recipe_saves_recipe_id_fkey(user_id)')
       // Left embeds preserve recipes with no interactions; RLS also limits these to the viewer.
       .eq('recipe_likes.user_id', userId)
       .eq('recipe_saves.user_id', userId)
@@ -239,6 +249,9 @@ async function uploadRecipeImage(userId: string, imageUri: string): Promise<stri
 }
 
 export async function createCommunityRecipe(input: CreateRecipeInput): Promise<CommunityRecipe> {
+  if (!Number.isInteger(input.servings) || input.servings < 1 || input.servings > 99) {
+    throw new Error('Recipe servings must be an integer between 1 and 99');
+  }
   if (input.steps.some((step) => step.imageUri && !step.text.trim())) {
     throw new Error('A step with a photo requires a description');
   }
@@ -270,11 +283,12 @@ export async function createCommunityRecipe(input: CreateRecipeInput): Promise<C
       author_id: input.userId,
       title: input.title.trim(),
       image_path: imagePath,
+      servings: input.servings,
       ingredients,
       steps: cleanSteps.map((step) => step.text),
       step_image_paths: stepImagePaths,
     })
-    .select('id, author_id, title, image_path, ingredients, steps, step_image_paths, created_at, like_count, save_count')
+    .select('id, author_id, title, image_path, servings, ingredients, steps, step_image_paths, created_at, like_count, save_count')
     .single();
 
   if (error) {

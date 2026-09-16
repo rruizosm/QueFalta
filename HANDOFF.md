@@ -1,5 +1,14 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## DIA en Windows: aviso de provincia 35 abortaba el runner (2026-09-16)
+
+- El primer intento en Windows terminó en `NativeCommandError` al emitir Node
+  el aviso esperado `provincia 35: sin servicio`. No llegó al barrido ni a los
+  upserts. Causa: PowerShell 5.1 + `*>&1` + `$ErrorActionPreference = 'Stop'`.
+- El runner pasa stdout/stderr por `cmd.exe` antes de `Tee-Object`, en el sync y
+  el comparador, y conserva `$LASTEXITCODE`. Pendiente probar desde Windows;
+  el éxito exige `[dia] OK` y `=== fin (exit 0) ===`.
+
 ## Número de personas por receta (local, 2026-09-15)
 
 - El formulario de nueva receta muestra antes de Ingredientes un stepper de

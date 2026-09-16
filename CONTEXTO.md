@@ -514,7 +514,7 @@
   enumeraban solo los supermercados anteriores y no aceptaban `store_key='lidl'`.
 - La migración `20260907111958_allow_lidl_cart_items.sql` está aplicada en
   producción. También alinea las restricciones de productos de catálogo
-  vinculados a notas (`*_note_product_shape`) para admitir Lidl.
+  vinculados a comentarios (`*_note_product_shape`) para admitir Lidl.
 - Verificación SQL sobre tablas temporales clonadas del esquema real: dos filas
   Lidl aceptadas en carrito y dos en histórico, cubriendo producto principal y
   producto vinculado. Prueba de regresión local añadida. No requiere una nueva

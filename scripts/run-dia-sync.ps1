@@ -42,12 +42,16 @@ $env:CONCURRENCY           = '4'
 # --- Ejecutar el sync ---
 Set-Location $repo
 "=== Dia sync $(Get-Date -Format 'u') ===" | Tee-Object -FilePath $log
-& node scripts/sync-dia.mjs *>&1 | Tee-Object -FilePath $log -Append
+# Windows PowerShell 5.1 convierte el stderr de Node en NativeCommandError al
+# mezclarlo con *>&1; con ErrorActionPreference=Stop abortaría ante un aviso.
+# cmd.exe mezcla ambos flujos antes de entregarlos a PowerShell, conservando
+# el código de salida real de Node para decidir si continuar.
+& cmd.exe /d /c 'node scripts/sync-dia.mjs 2>&1' | Tee-Object -FilePath $log -Append
 $code = $LASTEXITCODE
 if ($code -eq 0 -and $env:DRY_RUN -ne '1') {
   "=== Actualizando comparador (dia) ===" | Tee-Object -FilePath $log -Append
   $env:STORES = 'dia'
-  & node scripts/sync-comparator-embedding-catalog.mjs *>&1 | Tee-Object -FilePath $log -Append
+  & cmd.exe /d /c 'node scripts/sync-comparator-embedding-catalog.mjs 2>&1' | Tee-Object -FilePath $log -Append
   $code = $LASTEXITCODE
 }
 "=== fin (exit $code) $(Get-Date -Format 'u') ===" | Tee-Object -FilePath $log -Append

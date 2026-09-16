@@ -96,6 +96,14 @@ test('los runners locales materializan tras un sync real correcto', () => {
   }
 });
 
+test('Dia captura los avisos de Node sin que PowerShell 5.1 aborte el runner', () => {
+  const runner = readRunner('run-dia-sync.ps1');
+  assert.match(runner, /& cmd\.exe \/d \/c 'node scripts\/sync-dia\.mjs 2>&1' \| Tee-Object/);
+  assert.match(runner, /& cmd\.exe \/d \/c 'node scripts\/sync-comparator-embedding-catalog\.mjs 2>&1' \| Tee-Object/);
+  assert.doesNotMatch(runner, /& node scripts\/[^\r\n]*\*>&1/);
+  assert.equal((runner.match(/\$code = \$LASTEXITCODE/g) ?? []).length, 2);
+});
+
 test('Froiz y Alcampo no tienen cron productivo en GitHub Actions', () => {
   for (const file of ['sync-froiz.yml', 'sync-alcampo.yml']) {
     const workflow = readWorkflow(file);

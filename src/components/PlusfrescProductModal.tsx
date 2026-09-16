@@ -139,9 +139,9 @@ export default function PlusfrescProductModal({ product, onClose, topInset = 16,
         {/* Ficha del producto (de la API de Plusfresc; null si sin dato) */}
         <ProductInfoSections
           items={[
+            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition, nutritionInfo: nutrition.info },
             { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: product.ingredients },
             { key: 'allergens', icon: 'alert-circle-outline', title: t('product.sections.allergens'), text: product.allergens },
-            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition },
             { key: 'storage', icon: 'time-outline', title: t('product.sections.storage'), text: product.conservation },
             { key: 'category', icon: 'pricetags-outline', title: t('product.category'), text: product.categoryName },
           ]}

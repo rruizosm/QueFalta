@@ -16,7 +16,8 @@ import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductDetailImage from '../components/ProductDetailImage';
 import ProductInfoSections from '../components/ProductInfoSections';
-import SimilarProductsSection from '../components/SimilarProductsSection';
+import { useNutritionInfoDisclosure } from '../components/NutritionInfoButton';
+import ProductDetailDiscoverySection from '../components/ProductDetailDiscoverySection';
 import ProductPriceLine from '../components/ProductPriceLine';
 import ActiveCartIcon from './ActiveCartIcon';
 
@@ -41,6 +42,17 @@ export default function CondisProductModal({ product, onClose, topInset = 16, ba
   const { t } = useTranslation();
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
+
+  // Condis no publica EAN: calculamos el índice con su tabla nutricional y la
+  // fórmula local compartida, sin consultar Open Food Facts.
+  const nutrition = useNutritionInfoDisclosure({
+    store: 'condis',
+    inline: true,
+    fallbackNutrition: product?.nutrition,
+    fallbackProductName: product?.displayName,
+    fallbackCategoryName: product?.categoryName,
+    fallbackIngredients: product?.ingredients,
+  });
 
   useEffect(() => { setQty(1); }, [product?.id]);
 
@@ -116,14 +128,17 @@ export default function CondisProductModal({ product, onClose, topInset = 16, ba
         <ProductPriceLine store="condis" productId={product.id} price={price} />
         {product.pricePerUnit ? <Text style={styles.refPrice}>{product.pricePerUnit}</Text> : null}
 
-        {/* Comparativa: más barato en otros súper */}
-        <SimilarProductsSection productId={product.id} excludeStore="condis" />
+        <ProductDetailDiscoverySection
+          nutrition={nutrition}
+          productId={product.id}
+          excludeStore="condis"
+        />
 
         {/* Características extraídas de la ficha pública mediante el sync. */}
         <ProductInfoSections
           items={[
             { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: product.ingredients },
-            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition },
+            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition, nutritionInfo: nutrition.info },
             { key: 'conservation', icon: 'snow-outline', title: t('product.sections.storage'), text: product.conservation },
             { key: 'manufacturer', icon: 'business-outline', title: t('product.sections.manufacturer'), text: product.manufacturer },
             { key: 'category', icon: 'pricetags-outline', title: t('product.category'), text: product.categoryName },

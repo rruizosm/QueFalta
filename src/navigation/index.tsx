@@ -1,15 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Platform } from 'react-native';
 import {
   NavigationContainer, createNavigationContainerRef,
-  DefaultTheme, DarkTheme, getFocusedRouteNameFromRoute, type Theme,
+  DefaultTheme, DarkTheme, type Theme,
 } from '@react-navigation/native';
-import {
-  createBottomTabNavigator, BottomTabBar, type BottomTabBarProps,
-} from '@react-navigation/bottom-tabs';
+import CreateRecipeModal from '../components/CreateRecipeModal';
+import { RecipeCreatorProvider } from '../context/RecipeCreatorContext';
+import { recipeCreatorOptions, type AppStackParamList } from './recipeCreator';
+import { createAppPagerNavigator } from './createAppPagerNavigator';
+import { PagerGestureBoundary } from '../components/bottom-tabs-pager/PagerGestureBoundary';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Linking from 'expo-linking';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
@@ -94,29 +93,20 @@ import BootLoader       from '../components/BootLoader';
 import NativeStoreReviewPrompt from '../components/NativeStoreReviewPrompt';
 import WhatsNewPrompt from '../components/WhatsNewPrompt';
 import LidlReleasePrompt from '../components/LidlReleasePrompt';
-import { glassAvailable } from '../components/GlassSurface';
-import LiquidGlassTabBar, {
-  LIQUID_TABBAR_HEIGHT, liquidTabBarBottom,
-} from '../components/LiquidGlassTabBar';
 
-const Tab          = createBottomTabNavigator<RootTabParamList>();
+const Tab          = createAppPagerNavigator<RootTabParamList>();
+const AppStack = createNativeStackNavigator<AppStackParamList>();
 const HomeStack    = createNativeStackNavigator<HomeStackParamList>();
 const CatalogStack = createNativeStackNavigator<CatalogStackParamList>();
 const GroupsStack  = createNativeStackNavigator<GroupsStackParamList>();
 
-export const navigationRef = createNavigationContainerRef<RootTabParamList>();
+export const navigationRef = createNavigationContainerRef<AppStackParamList>();
 
 /** Tope del arranque: las llamadas de sesión/perfil van SIN timeout, así que con
  *  la red colgada (típico en Android al abrir la app mientras renegocia Wi-Fi/
  *  datos) `booting` no se apagaría nunca y el logo quedaba clavado hasta matar
  *  la app. Pasado el tope se arranca con lo que haya. */
 const BOOT_MAX_MS = 10000;
-
-function AppTabBar(props: BottomTabBarProps) {
-  const route = props.state.routes[props.state.index];
-  if (route.name === 'Home' && getFocusedRouteNameFromRoute(route) === 'DailyWord') return null;
-  return glassAvailable ? <LiquidGlassTabBar {...props} /> : <BottomTabBar {...props} />;
-}
 
 function parseInviteUrl(url: string): string | null {
   const parsed = Linking.parse(url);
@@ -125,9 +115,13 @@ function parseInviteUrl(url: string): string | null {
   return idx >= 0 && segments[idx + 1] ? segments[idx + 1] : null;
 }
 
+function pagerScreenLayout({ children }: { children: React.ReactNode }) {
+  return <PagerGestureBoundary>{children}</PagerGestureBoundary>;
+}
+
 function HomeNavigator() {
   return (
-    <HomeStack.Navigator screenOptions={{ headerShown: false }}>
+    <HomeStack.Navigator screenOptions={{ headerShown: false }} screenLayout={pagerScreenLayout}>
       <HomeStack.Screen name="HomeMain"    component={HomeScreen} />
       <HomeStack.Screen name="DailyWord" component={DailyWordScreen} />
       <HomeStack.Screen name="Favorites"   component={FavoritesScreen} />
@@ -157,7 +151,7 @@ function HomeNavigator() {
 
 function CatalogNavigator() {
   return (
-    <CatalogStack.Navigator screenOptions={{ headerShown: false }}>
+    <CatalogStack.Navigator screenOptions={{ headerShown: false }} screenLayout={pagerScreenLayout}>
       <CatalogStack.Screen name="CatalogHome" component={CatalogScreen} />
       <CatalogStack.Screen name="SubCategory" component={SubCategoryScreen} />
       <CatalogStack.Screen name="Products"    component={ProductsScreen} />
@@ -185,7 +179,7 @@ function CatalogNavigator() {
 
 function GroupsNavigator() {
   return (
-    <GroupsStack.Navigator screenOptions={{ headerShown: false }}>
+    <GroupsStack.Navigator screenOptions={{ headerShown: false }} screenLayout={pagerScreenLayout}>
       <GroupsStack.Screen name="GroupsHome"   component={GroupsScreen} />
       <GroupsStack.Screen name="GroupDetail"  component={GroupDetailScreen} />
       <GroupsStack.Screen name="GroupMembers" component={GroupMembersScreen} />
@@ -220,7 +214,6 @@ export default function Navigation() {
   const { t, ready: languageReady } = useTranslation();
   const { show: showToast } = useToast();
   const { profile, loading: profileLoading, error: profileError, refresh: refreshProfile } = useProfile();
-  const { unreadCount } = useNotifications();
   const { hydrated: cartHydrated } = useCart();
   const userId = session?.user.id;
   // Si esta instancia ya ha mostrado el login, una sesión nueva procede de ese
@@ -238,19 +231,6 @@ export default function Navigation() {
   useEffect(() => {
     if (!loading && !session) setLoginWasShown(true);
   }, [loading, session]);
-  // Solo Android lo necesita: con edge-to-edge dibuja la barra bajo los botones de
-  // navegación y, al fijarle una `height` numérica, BottomTabBar deja de reservar
-  // ese hueco solo (de ahí el solape). En iOS la barra ya se veía bien con la
-  // altura fija, así que ahí no sumamos nada.
-  const insets = useSafeAreaInsets();
-  const bottomInset = Platform.OS === 'android' ? insets.bottom : 0;
-  // Con la barra flotante de cristal (iOS 26) el "alto" que reserva react-nav
-  // para que useTabBarBottomPadding empuje el contenido = alto de la barra + su
-  // separación real al borde inferior (la barra se pinta en absolute; ver
-  // LiquidGlassTabBar). liquidTabBarBottom ya mete la barra dentro del área
-  // segura, así que NO se vuelve a sumar insets.bottom.
-  const glassTabBarHeight = LIQUID_TABBAR_HEIGHT + liquidTabBarBottom(insets.bottom);
-
   useEffect(() => {
     if (!userId) return;
 
@@ -266,10 +246,9 @@ export default function Navigation() {
         }
       } catch { /* already a member or RLS */ }
       if (navigationRef.isReady()) {
-        (navigationRef.navigate as any)('Groups', {
-          screen: 'GroupDetail',
-          params: { groupId },
-        });
+        navigationRef.navigate('Tabs', { screen: 'Groups', params: {
+          screen: 'GroupDetail', params: { groupId },
+        } }, { pop: true });
       }
     };
 
@@ -281,26 +260,25 @@ export default function Navigation() {
   const openPushDestination = useCallback((data: PushData): boolean => {
     if (!navigationRef.isReady()) return false;
     if ((data.type === 'cart' || data.type === 'group_invite') && data.groupId) {
-      (navigationRef.navigate as any)('Groups', {
-        screen: 'GroupDetail',
-        params: { groupId: data.groupId },
-      });
+      navigationRef.navigate('Tabs', { screen: 'Groups', params: {
+        screen: 'GroupDetail', params: { groupId: data.groupId },
+      } }, { pop: true });
       return true;
     }
     if (data.type === 'friend') {
       // Amigos vive dentro del stack de Perfil/Inicio.
-      (navigationRef.navigate as any)('Home', { screen: 'Friends' });
+      navigationRef.navigate('Tabs', { screen: 'Home', params: { screen: 'Friends' } }, { pop: true });
       return true;
     }
     if (data.type === 'price_alert') {
-      (navigationRef.navigate as any)('Home', data.notificationId ? {
+      navigationRef.navigate('Tabs', { screen: 'Home', params: data.notificationId ? {
         screen: 'PriceAlertResults',
         params: {
           notificationId: data.notificationId,
           ruleId: data.ruleId,
           title: data.rule,
         },
-      } : { screen: 'PriceAlerts' });
+      } : { screen: 'PriceAlerts' } }, { pop: true });
       return true;
     }
     return false;
@@ -417,46 +395,33 @@ export default function Navigation() {
 
   return (<>
     <NavigationContainer ref={navigationRef} theme={theme} onReady={flushPendingPush}>
+      <RecipeCreatorProvider>
+        <AppStack.Navigator screenOptions={{ headerShown: false }}>
+          <AppStack.Screen name="Tabs" component={AppTabs} />
+          <AppStack.Screen name="NewRecipe" component={CreateRecipeModal} options={recipeCreatorOptions} />
+        </AppStack.Navigator>
+      </RecipeCreatorProvider>
+    </NavigationContainer>
+    {needsPostalCode ? <RegionGateScreen /> : null}
+    {!needsPostalCode && !lidlPromptResolved ? (
+      <LidlReleasePrompt onResolved={handleLidlPromptResolved} />
+    ) : null}
+    {!needsPostalCode && lidlPromptResolved ? <WhatsNewPrompt /> : null}
+    {!needsPostalCode && lidlPromptResolved ? <NativeStoreReviewPrompt /> : null}
+  </>);
+}
+
+function AppTabs() {
+  const { t } = useTranslation();
+  const { unreadCount } = useNotifications();
+  return (
       <Tab.Navigator
-        tabBar={(props) => <AppTabBar {...props} />}
-        screenOptions={({ route }) => ({
+        screenOptions={{
           headerShown: false,
-          // Monta cada pestaña al visitarla: evita que Catálogo/Lista/Grupos
-          // ejecuten consultas y construyan árboles durante el arranque de Home.
           lazy: true,
-          freezeOnBlur: true,
-          tabBarActiveTintColor:   colors.accent,
-          tabBarInactiveTintColor: colors.inkSoft,
-          // Con glass (iOS 26) la barra la pinta LiquidGlassTabBar (flotante,
-          // con su propio cristal e iconos); aquí solo importa `height`, que
-          // alimenta useBottomTabBarHeight → useTabBarBottomPadding. Sin glass,
-          // la BottomTabBar clásica con el estilo de siempre (Android intacto).
-          tabBarStyle: glassAvailable
-            ? { height: glassTabBarHeight, backgroundColor: 'transparent', borderTopWidth: 0 }
-            : {
-                backgroundColor: colors.white,
-                borderTopColor:  colors.border,
-                borderTopWidth:  1,
-                paddingBottom:   10 + bottomInset,
-                paddingTop:       6,
-                height:          70 + bottomInset,
-              },
-          tabBarLabelStyle: {
-            fontSize:    11,
-            fontFamily:  fonts.bold,
-          },
-          tabBarIcon: ({ color, focused }) => {
-            const iconMap: Record<string, { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }> = {
-              Home:      { active: 'home',   inactive: 'home-outline' },
-              Catalog:   { active: 'library', inactive: 'library-outline' },
-              QueCocino: { active: 'restaurant', inactive: 'restaurant-outline' },
-              List:      { active: 'basket', inactive: 'basket-outline' },
-              Groups:    { active: 'people', inactive: 'people-outline' },
-            };
-            const icons = iconMap[route.name];
-            return <Ionicons name={focused ? icons.active : icons.inactive} size={22} color={color} />;
-          },
-        })}
+          // The custom pager keeps visited scenes mounted and warms neighbors.
+          // Navigation/focus is still owned by React Navigation's TabRouter.
+        }}
       >
         <Tab.Screen
           name="Home"
@@ -482,12 +447,5 @@ export default function Navigation() {
         <Tab.Screen name="List"      component={ListScreen}        options={{ title: t('tabs.cart') }} />
         <Tab.Screen name="Groups"    component={GroupsNavigator}   options={{ title: t('tabs.groups') }} />
       </Tab.Navigator>
-    </NavigationContainer>
-    {needsPostalCode ? <RegionGateScreen /> : null}
-    {!needsPostalCode && !lidlPromptResolved ? (
-      <LidlReleasePrompt onResolved={handleLidlPromptResolved} />
-    ) : null}
-    {!needsPostalCode && lidlPromptResolved ? <WhatsNewPrompt /> : null}
-    {!needsPostalCode && lidlPromptResolved ? <NativeStoreReviewPrompt /> : null}
-  </>);
+  );
 }

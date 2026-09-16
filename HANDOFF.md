@@ -1,5 +1,150 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Número de personas por receta (local, 2026-09-15)
+
+- El formulario de nueva receta muestra antes de Ingredientes un stepper de
+  1–99 personas, inicializado en 2, y persiste el valor. El detalle lo enseña
+  con singular/plural en castellano y catalán; las recetas antiguas omiten el
+  indicador porque su valor se normaliza a `null`.
+- SQL creado: `supabase/migrations/20260915062836_add_recipe_servings.sql`
+  (`smallint`, `CHECK` 1–99, nullable por compatibilidad y permiso de actualización
+  para autores autenticados). **Pendiente de aplicar en Supabase** antes de abrir
+  esta versión del cliente. Typecheck, lint, 31 pruebas focalizadas y SQL/RLS en
+  PGlite correctos. Suite 798/799; el único fallo es el previo de Lidl por faltar
+  `android/app/build.gradle`. Sin publicación, despliegue ni escritura remota.
+
+## Nueva receta: transición modal desde el CTA (local, 2026-09-14)
+
+- Sustituye la expansión de tamaño del 12 de septiembre por native-stack raíz
+  `Tabs`/`NewRecipe`, modal transparente sin animación nativa, spring vertical,
+  backdrop al 28 %, pill del CTA hacia Publicar y entradas por bloques a 50 ms.
+- `CreateRecipeButton` mide su origen; el contexto solo guarda referencia/estado
+  visual efímeros. El formulario conserva diseño y datos. Arranque coordinado
+  con presentación/layout nativos para que el spring no transcurra fuera de vista.
+- Swipe desde la cabecera en ambos SO, cancelación con spring, X/atrás/publicar
+  con salida inversa, medición al cerrar y respaldo si desaparece el origen.
+  Reducir movimiento: fade de 200 ms y lectura síncrona del ajuste al montar.
+- Enlaces/notificaciones usan el stack de pestañas existente con `pop: true`.
+  Se mantiene Reanimated 4.5.1 de Expo 57; no se añaden dependencias.
+- Typecheck, lint y 40 pruebas dirigidas correctos; build/QA iPhone 15 Pro iOS
+  26.5 y bundle Android correctos. Android nativo/rotación/fps físicos pendientes.
+  Predictive back interactivo no disponible en el native-stack/config actuales;
+  atrás Android sí conserva el cierre animado. Sin publicación ni migración.
+- Detalle y limitaciones: `RECIPE-CREATOR-TRANSITION.md`.
+
+## Compactación de la barra inferior al hacer scroll (local, 2026-09-14)
+
+- La cápsula existente se compacta continuamente al bajar: altura 64→62 pt,
+  escala 0,94, icono/label al 90 % y desplazamiento inferior de 4 pt. Conserva
+  colores, iconos, selección, badges y pager horizontal. Valores en
+  `src/components/bottom-tabs-pager/tabBarScrollPhysics.ts`.
+- `TabBarScrollContext` + `useTabBarScroll` usan shared values/worklets:
+  zona muerta de 18 pt al bajar, 10 pt de intención al subir y spring suave.
+  Tap en fondo/tab, cambio de pestaña o foco expanden y cancelan la respuesta
+  a la inercia anterior; cada pantalla conserva su offset. Reducir movimiento
+  mantiene la barra grande. También se inhibe la compactación si el ancho
+  disponible no permite mantener objetivos táctiles de 44 pt.
+- Integradas las cinco pestañas y listas de catálogo mediante opt-in
+  `tabBarScroll` en los adaptadores PagerNative. Un spacer animado sustituye
+  parte del padding inferior y sigue la geometría real de la cápsula; acciones
+  flotantes de cesta/añadir/crear receta acompañan el mismo desplazamiento.
+  Carruseles, selectores y formularios modales no controlan la barra.
+- Se conserva Reanimated 4.5.1 del stack Expo 57 (sin downgrade a v3).
+  Typecheck, lint dirigido, 15 pruebas de física/scroll, bundles Hermes iOS y
+  Android y compilación Xcode Debug correctos. En iPhone 15 Pro/iOS 26.5 se
+  verificaron compactación al bajar y expansión por tap activo sin mover la
+  lista. QA nativa parcial por interacciones/recargas concurrentes del simulador;
+  pendientes matriz completa de gestos, Reducir movimiento, Android y fps físicos.
+- Ejemplos y matriz de QA en `src/components/bottom-tabs-pager/README.md`.
+  Sin migraciones, publicación ni commit.
+
+
+## Pager inferior integrado en la app (local, 2026-09-14)
+
+- La app normal usa `createAppPagerNavigator` y `AppPagerTabBar`: Inicio,
+  Catálogo, Recetas, Carrito y Grupos, conservando TabRouter, stacks, foco,
+  eventos, badges y navegación externa. Ya no hace falta abrir una demo para verlo.
+- `Pager` y `useTabAnimation` comparten progreso en UI para páginas, pill,
+  stretch y blur. Se precargan vecinas tras el primer render y se conservan
+  páginas visitadas. Barra flotante con `GlassSurface` y safe areas en ambos SO.
+- En iOS el detector vive dentro de cada pantalla nativa (`screenLayout`). Los
+  scrolls verticales ceden al pan horizontal; carruseles mantienen su gesto.
+  En la raíz de Catálogo el pager tiene prioridad sobre swipe-to-favorite de
+  filas; favoritos siguen en la ficha. En listas de detalle se conserva ese swipe.
+  Stacks de detalle mantienen el back nativo; DailyWord sigue ocultando la barra.
+- Demo social opcional: `npm run demo:tabs`, cinco placeholders independientes.
+  Arranque real: `npm start` y Run en `ios/QuFalta.xcworkspace` (scheme QuFalta).
+- Módulo iOS local `modules/pager-blur`, enlazado en Pods; requiere recompilar
+  el binario para blur (sin módulo el pager funciona nítido). UIKit usa intensidad
+  aproximada, no sigma exacto. Android usa filtro GPU API 31+; anteriores sin blur.
+- QA en iPhone 15 Pro / simulador iOS 26.5: tap, swipe entre las cinco pestañas,
+  swipe corto que vuelve, flick rápido y scroll vertical. Typecheck y lint
+  dirigidos correctos; física y regresiones de navegación verificadas. La prueba
+  previa de Lidl sigue bloqueada por faltar `android/app/build.gradle`.
+- Compilación nativa del target PagerBlur y bundles iOS/Android comprobados en
+  la entrega inicial. Pendientes QA Android y medición de fps en dispositivos
+  físicos; no se garantiza 60 fps por simulador. Sin publicación ni migraciones.
+  Detalles en `src/components/bottom-tabs-pager/README.md`.
+
+## Sync DIA trasladado a Windows (local, 2026-09-14)
+
+- GitHub/Azure ya no es una ruta operativa fiable para DIA: los runs
+  `34855549704` (`eastus2`) y `34861658987` (`westus3`) resolvieron las 48 zonas,
+  recibieron `404` del BFF retirado y después `403 Access Denied` de Akamai en
+  `/congelados/pescado-y-marisco/c/L2132`. Script y workflow eran idénticos a
+  los del run correcto anterior; no hubo escrituras parciales.
+- Producción sigue en el último éxito del 2026-09-07: 6.403 productos DIA
+  publicados. Un dry-run local limitado validó el fallback SSR actual (28 N1,
+  273 categorías y 3.521 productos acumulados en una zona) sin tocar Supabase.
+- Se eliminó el cron alojado de `sync-dia.yml`, se actualizó su diagnóstico
+  manual a Node 22 y se estableció `scripts/run-dia-sync.ps1` como vía operativa.
+  El README contiene la Tarea Programada semanal de Windows (lunes 09:50 local,
+  `StartWhenAvailable`, límite 2 h, sin solapamiento). Pendiente primer run real
+  desde Windows y verificación de `[dia] OK`, comparador y `exit 0`.
+
+## Índice alimentario de Condis sin EAN (local, 2026-09-14)
+
+- `CondisProductModal` calcula el índice local con nutrición, nombre, categoría e
+  ingredientes, sin `ean` y sin Open Food Facts. Se integra mediante
+  `ProductDetailDiscoverySection` y pasa la nutrición normalizada a la fila propia.
+- `parseCatalogNutrition` admite ahora `GR`, el formato real de Condis, además de
+  `g`. Producción: 7.585 publicados, 3.797 con nutrición, 4.314 con ingredientes,
+  cero con EAN y todas las fichas comprobadas. Sin migración ni escritura remota.
+- Typecheck, lint dirigido, `git diff --check`, 9 pruebas focalizadas y parser con
+  una tabla real correctos. Suite general 775/776; solo falla la prueba previa de
+  Lidl por la ausencia de `android/app/build.gradle`. Pendiente QA y publicación.
+
+## Índice alimentario de DIA sin EAN (local, 2026-09-14)
+
+- `DiaProductModal` reutiliza `useNutritionInfoDisclosure` sin `ean`, usando
+  nutrición, nombre, categoría e ingredientes. Calcula con `parseCatalogNutrition`
+  y no llama a Open Food Facts.
+- `ProductDetailDiscoverySection` muestra coordinadamente el índice y el comparador;
+  la fila nutricional recibe el resultado normalizado para el desglose estructurado.
+- Producción verificada en lectura: 6.403 publicados, 3.893 con nutrición, 4.373 con
+  ingredientes, cero con EAN y 6.403 fichas comprobadas. Sin migración, despliegue
+  ni escritura remota.
+- Typecheck, lint dirigido, `git diff --check`, 6 pruebas focalizadas y parser con
+  tabla real correctos. Suite general 772/773; el único fallo es la prueba previa
+  de Lidl por la ausencia de `android/app/build.gradle`. Pendiente QA visual y
+  publicación del cliente.
+
+## Índice alimentario de bonÀrea sin EAN (local, 2026-09-14)
+
+- `BonareaProductModal` reutiliza `useNutritionInfoDisclosure` sin `ean`, con
+  nutrición, nombre, categoría e ingredientes como entrada. Por contrato no llama
+  a Open Food Facts y calcula el índice con `parseCatalogNutrition`.
+- El índice y el comparador se revelan coordinados mediante
+  `ProductDetailDiscoverySection`; la fila nutricional recibe también el resultado
+  normalizado para mostrar valores estructurados.
+- El parser textual acepta comparadores `<`/`≤`, presentes en tablas reales de
+  bonÀrea. Producción: 3.148 publicados, 2.537 con nutrición ES, 2.542 CA y
+  3.148 fichas comprobadas. Sin migración, despliegue ni escritura remota.
+- Typecheck, lint dirigido, `git diff --check`, 5 pruebas focalizadas y parser
+  ejecutado con una tabla representativa correctos. Suite general 771/772; solo
+  falla la prueba previa de Lidl porque falta `android/app/build.gradle`.
+  Pendiente QA visual y publicación del cliente.
+
 ## Sync Ahorramás robusto (local, 2026-09-14)
 
 - `sync-ahorramas.mjs` ya no dispara ráfagas: usa 3 s entre peticiones, conserva
@@ -19,18 +164,30 @@
 
 ## Información nutricional estructurada (local, 2026-09-14)
 
+- La nutrición normalizada se pasa como `nutritionInfo` a `ProductInfoSections`
+  en las once fichas que resuelven el Índice. Se muestra como primera fila dentro
+  de la misma tarjeta que ingredientes, alérgenos, conservación y el resto de
+  características, también cuando no existe `foodIndex`. Se retiró la tarjeta
+  independiente `NutritionValuesSummary` para no duplicar superficies.
+- `NutritionInfoButton` ya no repite los valores por 100 g/ml dentro del detalle
+  expandido del Índice. Estos quedan exclusivamente en la fila «Información
+  nutricional»; el cálculo y el desglose de puntos del Índice no cambian.
 - `ProductInfoSections` detecta la fila `nutrition` y, al desplegarla, sustituye
   el bloque de texto por filas estructuradas con icono, etiqueta y valor. El
   parser compartido `nutritionDisplay` reconoce castellano/catalán, formatos
   con dos puntos y la salida real de Carrefour sin separador; los campos
   desconocidos se conservan con icono genérico.
+- `ProductInfoSections.Row` mantiene el contenido nutricional siempre montado y
+  anima un contenedor recortado con altura, opacidad, desplazamiento y chevron
+  durante 360 ms. Así no hay montaje/desmontaje entre pulsaciones. La respuesta
+  táctil usa `activeOpacity=0.94` (antes 0,6), se excluye `LayoutAnimation` y
+  Reducir movimiento fija directamente el estado final.
 - `NutritionInfoButton` rediseña también el detalle expandido del Índice
-  alimentario: cabeceras visuales por sección, iconos en componentes/puntos y
-  tarjeta de valores nutricionales con referencia explícita por 100 g/ml.
+  alimentario con cabeceras visuales por sección e iconos en componentes/puntos.
   Colores y superficies usan tokens temados; textos ES/CA completos.
 - Cambio local de cliente, sin backend ni migración. `npx tsc --noEmit`, ESLint
-  dirigido, `git diff --check` y 7 pruebas focalizadas correctos. Suite general
-  768/769: solo falla la regresión previa de Lidl por el generado ausente
+  dirigido, `git diff --check` y 9 pruebas focalizadas correctos. Suite general
+  775/776: solo falla la regresión previa de Lidl por el generado ausente
   `android/app/build.gradle`. Pendiente QA visual en dispositivo y publicación.
 
 ## Ficha completa de Carrefour e índice alimentario (local, 2026-09-14)

@@ -1,3 +1,5 @@
+import type { OpenFoodFactsNutrition } from '../api/openFoodFacts';
+
 export type NutritionDisplayIcon =
   | 'analytics-outline'
   | 'barbell-outline'
@@ -14,6 +16,35 @@ export interface StructuredNutritionLine {
   label: string;
   value: string | null;
   icon: NutritionDisplayIcon;
+}
+
+export interface NutritionValueRow {
+  key: string;
+  label: string;
+  value: string;
+  icon: NutritionDisplayIcon;
+}
+
+const formatNutritionValue = (value: number | null, unit: string, locale: string) => value == null
+  ? null
+  : `${value.toLocaleString(locale, { maximumFractionDigits: 1 })} ${unit}`;
+
+export function nutritionValueRows(
+  info: OpenFoodFactsNutrition,
+  labels: Record<string, string>,
+  locale: string,
+): NutritionValueRow[] {
+  const optionalRows: (Omit<NutritionValueRow, 'value'> & { value: string | null })[] = [
+    { key: 'energy', label: labels.energy, value: formatNutritionValue(info.nutriments.energyKcal, 'kcal', locale), icon: 'flash-outline' },
+    { key: 'fat', label: labels.fat, value: formatNutritionValue(info.nutriments.fat, 'g', locale), icon: 'water-outline' },
+    { key: 'saturatedFat', label: labels.saturatedFat, value: formatNutritionValue(info.nutriments.saturatedFat, 'g', locale), icon: 'contrast-outline' },
+    { key: 'carbohydrates', label: labels.carbohydrates, value: formatNutritionValue(info.nutriments.carbohydrates, 'g', locale), icon: 'restaurant-outline' },
+    { key: 'sugars', label: labels.sugars, value: formatNutritionValue(info.nutriments.sugars, 'g', locale), icon: 'cube-outline' },
+    { key: 'fiber', label: labels.fiber, value: formatNutritionValue(info.nutriments.fiber, 'g', locale), icon: 'leaf-outline' },
+    { key: 'proteins', label: labels.proteins, value: formatNutritionValue(info.nutriments.proteins, 'g', locale), icon: 'barbell-outline' },
+    { key: 'salt', label: labels.salt, value: formatNutritionValue(info.nutriments.salt, 'g', locale), icon: 'sparkles-outline' },
+  ];
+  return optionalRows.flatMap((row) => row.value === null ? [] : [{ ...row, value: row.value }]);
 }
 
 const normalizeNutritionLabel = (value: string) => value

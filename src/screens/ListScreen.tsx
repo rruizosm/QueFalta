@@ -1,9 +1,11 @@
+import Reanimated from 'react-native-reanimated';
+import { useTabBarScrollOffsetStyle } from '../hooks/useTabBarScroll';
+import { PagerNativeSectionList as SectionList } from '../components/bottom-tabs-pager/PagerNativeScroll';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
   Text,
-  SectionList,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
@@ -110,6 +112,7 @@ export default function ListScreen() {
   // Con tab bar de cristal: eleva las barras fijas (total/completada) por encima
   // del cristal y agranda el paddingBottom de la lista en la misma medida.
   const tabBarOffset = useTabBarBottomPadding(0);
+  const tabBarOffsetStyle = useTabBarScrollOffsetStyle();
   const insets = useSafeAreaInsets();
   const { t, lang } = useTranslation();
   const { session } = useAuth();
@@ -734,7 +737,7 @@ export default function ListScreen() {
       {screenState ?? (
         <>
           {/* List */}
-          <SectionList
+          <SectionList tabBarScroll
             sections={sections}
             keyExtractor={(item) => item.ids[0]}
             renderItem={renderItem}
@@ -799,16 +802,16 @@ export default function ListScreen() {
 
           {/* Total bar */}
           {hasPrices && (
-            <View style={[styles.totalBar, { bottom: tabBarOffset + 8 }]}>
+            <Reanimated.View style={[styles.totalBar, { bottom: tabBarOffset + 8 }, tabBarOffsetStyle]}>
               <Text style={styles.totalBarLabel}>{t('list.totalEstimated')}</Text>
               <Text style={styles.totalBarAmount}>{formatEuro(totalCost)}</Text>
-            </View>
+            </Reanimated.View>
           )}
 
           {/* Todos los productos deben estar recogidos o marcados para la
               próxima compra; al menos uno debe haberse recogido realmente. */}
           {canFinish && (
-            <View style={[styles.doneBar, { bottom: tabBarOffset + 8 }]}>
+            <Reanimated.View style={[styles.doneBar, { bottom: tabBarOffset + 8 }, tabBarOffsetStyle]}>
               <Text style={styles.doneBarEmoji}>🎉</Text>
               <Text style={styles.doneBarText}>{t('list.listCompleted')}</Text>
               <TouchableOpacity
@@ -820,7 +823,7 @@ export default function ListScreen() {
                   ? <ActivityIndicator size="small" color={colors.accent} />
                   : <Text style={styles.doneBarBtnText}>{t('list.finish')}</Text>}
               </TouchableOpacity>
-            </View>
+            </Reanimated.View>
           )}
         </>
       )}

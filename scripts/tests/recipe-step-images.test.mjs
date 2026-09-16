@@ -76,7 +76,7 @@ function setup({ uploadFailure, insertError, fetchedRows = [] } = {}) {
 }
 
 const input = {
-  userId: 'author', title: ' Arroz ', imageUri: 'cover.jpg', profile: null,
+  userId: 'author', title: ' Arroz ', imageUri: 'cover.jpg', servings: 4, profile: null,
   ingredients: [{ quantity: '250 g', product: { store: 'mercadona', id: 'rice', name: 'Arroz' } }],
   steps: [
     { text: ' ', ingredientKeys: [] },
@@ -91,6 +91,8 @@ test('optional photos stay aligned after empty steps are removed and survive a r
   const recipe = await api.createCommunityRecipe(input);
   assert.deepEqual(api.processed, ['cover.jpg', 'wash.jpg', 'serve.jpg']);
   const row = api.writes[0];
+  assert.equal(row.servings, 4);
+  assert.equal(recipe.servings, 4);
   assert.deepEqual(plain(row.steps), ['Lava.', 'Cuece.', 'Sirve.']);
   assert.deepEqual(plain(row.ingredients[0].stepIndexes), [0]);
   assert.equal(row.step_image_paths[0], api.uploads[1].path);
@@ -102,6 +104,7 @@ test('optional photos stay aligned after empty steps are removed and survive a r
   const reader = setup({ fetchedRows: [{ ...row, id: 'saved' }] });
   const [saved] = await reader.fetchCommunityRecipes('author');
   assert.deepEqual(plain(saved.stepImageUrls), plain(recipe.stepImageUrls));
+  assert.equal(saved.servings, 4);
 });
 
 test('all steps may be text-only and legacy recipes still load', async () => {
@@ -109,9 +112,19 @@ test('all steps may be text-only and legacy recipes still load', async () => {
   const recipe = await api.createCommunityRecipe({ ...input, steps: [{ text: 'Cuece.', ingredientKeys: [] }] });
   assert.equal(api.uploads.length, 1);
   assert.deepEqual(plain(recipe.stepImageUrls), [null]);
-  const { step_image_paths, ...legacy } = api.writes[0];
+  const { step_image_paths, servings, ...legacy } = api.writes[0];
   const reader = setup({ fetchedRows: [legacy] });
-  assert.deepEqual(plain((await reader.fetchCommunityRecipes('author'))[0].stepImageUrls), [null]);
+  const [legacyRecipe] = await reader.fetchCommunityRecipes('author');
+  assert.deepEqual(plain(legacyRecipe.stepImageUrls), [null]);
+  assert.equal(legacyRecipe.servings, null);
+});
+
+test('invalid servings are rejected before uploading recipe photos', async () => {
+  for (const servings of [0, 100, 2.5, Number.NaN]) {
+    const api = setup();
+    await assert.rejects(api.createCommunityRecipe({ ...input, servings }), /between 1 and 99/);
+    assert.equal(api.uploads.length, 0);
+  }
 });
 
 test('a failed step upload cleans earlier photos and does not publish a partial recipe', async () => {

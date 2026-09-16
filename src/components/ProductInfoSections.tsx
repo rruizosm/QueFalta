@@ -3,13 +3,18 @@ import {
   View, Text, TouchableOpacity, StyleSheet,
   LayoutAnimation, Platform, UIManager,
 } from 'react-native';
+import Animated, {
+  Easing, useAnimatedStyle, useDerivedValue, withTiming,
+} from 'react-native-reanimated';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 import GlassSurface from './GlassSurface';
 import { useReducedMotion } from '../hooks/useReducedMotion';
-import { structureNutritionText } from '../lib/nutritionDisplay';
+import type { OpenFoodFactsNutrition } from '../api/openFoodFacts';
+import { nutritionValueRows, structureNutritionText } from '../lib/nutritionDisplay';
+import { useTranslation } from '../context/LanguageContext';
 
 // LayoutAnimation necesita habilitarse a mano en Android para animar el desplegado.
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -23,6 +28,8 @@ export interface ProductInfoItem {
   title: string;
   /** Texto de la característica. Si viene vacío/nulo, la fila no se pinta. */
   text?: string | null;
+  /** Nutrición normalizada para mostrarla dentro de la tarjeta de características. */
+  nutritionInfo?: OpenFoodFactsNutrition | null;
   onPress?: () => void;
 }
 
@@ -35,7 +42,7 @@ export interface ProductInfoItem {
 export default function ProductInfoSections({ items }: { items: ProductInfoItem[] }) {
   const styles = useThemedStyles(themedStyles);
   const visible = items
-    .filter((i) => (i.text && i.text.trim().length > 0) || i.onPress)
+    .filter((i) => (i.text && i.text.trim().length > 0) || i.nutritionInfo || i.onPress)
     .sort((a, b) => {
       if (a.key === 'nutrition') return -1;
       if (b.key === 'nutrition') return 1;
@@ -58,16 +65,32 @@ export default function ProductInfoSections({ items }: { items: ProductInfoItem[
 function Row({ item }: { item: ProductInfoItem }) {
   const styles = useThemedStyles(themedStyles);
   const reducedMotion = useReducedMotion();
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
+  const [nutritionHeight, setNutritionHeight] = useState(0);
   const value = item.text?.trim() ?? null;
-  const structuredNutrition = item.key === 'nutrition';
+  const structuredNutrition = item.key === 'nutrition' && (!!value || !!item.nutritionInfo);
+  const revealProgress = useDerivedValue(() => {
+    const target = expanded ? 1 : 0;
+    return reducedMotion
+      ? target
+      : withTiming(target, { duration: 360, easing: Easing.inOut(Easing.cubic) });
+  }, [expanded, reducedMotion]);
+  const chevronStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${revealProgress.value * 90}deg` }],
+  }));
+  const nutritionRevealStyle = useAnimatedStyle(() => ({
+    height: nutritionHeight * revealProgress.value,
+    opacity: revealProgress.value,
+    transform: [{ translateY: (1 - revealProgress.value) * -4 }],
+  }));
 
   const toggle = () => {
     if (item.onPress) {
       item.onPress();
       return;
     }
-    if (!reducedMotion) {
+    if (!structuredNutrition && !reducedMotion) {
       LayoutAnimation.configureNext(
         LayoutAnimation.create(160, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity),
       );
@@ -77,7 +100,7 @@ function Row({ item }: { item: ProductInfoItem }) {
 
   return (
     <TouchableOpacity
-      activeOpacity={0.6}
+      activeOpacity={structuredNutrition ? 0.94 : 0.6}
       onPress={toggle}
       accessibilityRole="button"
       accessibilityState={item.onPress ? undefined : { expanded }}
@@ -88,29 +111,57 @@ function Row({ item }: { item: ProductInfoItem }) {
         </View>
         <View style={styles.body}>
           <Text style={styles.title}>{item.title}</Text>
-          {value && (!structuredNutrition || !expanded) ? (
+          {item.nutritionInfo && !expanded ? (
+            <Text style={styles.value}>{t('nutrition.referenceAmount')}</Text>
+          ) : value && (!structuredNutrition || !expanded) ? (
             <Text style={styles.value} numberOfLines={expanded ? undefined : 1}>
               {value}
             </Text>
           ) : null}
         </View>
-        <Ionicons
-          name="chevron-forward"
-          size={18}
-          color={colors.inkFaint}
-          style={{ transform: [{ rotate: expanded ? '90deg' : '0deg' }] }}
-        />
+        <Animated.View style={chevronStyle}>
+          <Ionicons name="chevron-forward" size={18} color={colors.inkFaint} />
+        </Animated.View>
       </View>
-      {value && structuredNutrition && expanded ? (
-        <StructuredNutritionValue value={value} />
+      {structuredNutrition ? (
+        <Animated.View
+          style={[styles.nutritionReveal, nutritionRevealStyle]}
+          pointerEvents={expanded ? 'auto' : 'none'}
+          accessibilityElementsHidden={!expanded}
+          importantForAccessibility={expanded ? 'auto' : 'no-hide-descendants'}
+        >
+          <View
+            style={styles.nutritionMeasure}
+            onLayout={(event) => setNutritionHeight(event.nativeEvent.layout.height)}
+          >
+            <StructuredNutritionValue value={value} info={item.nutritionInfo} />
+          </View>
+        </Animated.View>
       ) : null}
     </TouchableOpacity>
   );
 }
 
-function StructuredNutritionValue({ value }: { value: string }) {
+function StructuredNutritionValue({
+  value,
+  info,
+}: {
+  value: string | null;
+  info?: OpenFoodFactsNutrition | null;
+}) {
   const styles = useThemedStyles(themedStyles);
-  const lines = structureNutritionText(value);
+  const { t, lang } = useTranslation();
+  const locale = lang === 'ca' ? 'ca-ES' : 'es-ES';
+  const lines = info ? nutritionValueRows(info, {
+    energy: t('nutrition.energy'),
+    fat: t('nutrition.fat'),
+    saturatedFat: t('nutrition.saturatedFat'),
+    carbohydrates: t('nutrition.carbohydrates'),
+    sugars: t('nutrition.sugars'),
+    fiber: t('nutrition.fiber'),
+    proteins: t('nutrition.proteins'),
+    salt: t('nutrition.salt'),
+  }, locale) : structureNutritionText(value ?? '');
 
   return (
     <View style={styles.nutritionList}>
@@ -162,8 +213,18 @@ const themedStyles = () => StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 14,
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: 'transparent',
     overflow: 'hidden',
+  },
+  nutritionReveal: {
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  nutritionMeasure: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
   },
   nutritionRow: {
     minHeight: 52,

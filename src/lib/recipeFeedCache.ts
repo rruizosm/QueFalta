@@ -37,7 +37,14 @@ export function createRecipeFeedCache(deps: Dependencies) {
     if (!recipes.every((r) => r && typeof r.id === 'string' && typeof r.title === 'string'
       && typeof r.imageUrl === 'string' && r.author && typeof r.author.name === 'string'
       && Array.isArray(r.ingredients) && Array.isArray(r.steps))) return null;
-    return { recipes, updatedAt };
+    const normalizedRecipes = recipes.map((recipe) => {
+      const servings = Number(recipe.servings);
+      return {
+        ...recipe,
+        servings: Number.isInteger(servings) && servings >= 1 && servings <= 99 ? servings : null,
+      };
+    });
+    return { recipes: normalizedRecipes, updatedAt };
   };
   const entry = (userId: string) => {
     let found = entries.get(userId);

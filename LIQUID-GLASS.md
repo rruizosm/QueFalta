@@ -5,6 +5,16 @@
 > Cada fase es visible y evaluable por separado: se implementa, se mira en el
 > dispositivo, y se decide si gusta antes de pasar a la siguiente.
 
+## Navegación por pager (2026-09-14)
+
+Por petición posterior del usuario, la barra flotante con pill continuo y swipe
+se aplica ahora a iOS **y Android**, sustituyendo la presentación anterior de tabs.
+`AppPagerTabBar` mantiene `GlassSurface` como wrapper y su fallback temado.
+El blur breve del contenido durante swipes rápidos es un efecto de movimiento
+independiente: módulo local PagerBlur en iOS y filtro GPU en Android 12+.
+El contenido vuelve a estar nítido en reposo. Este módulo iOS requiere nuevo
+binario; no modifica la política de no publicar sin validar.
+
 ## Reglas del proyecto (NO romper)
 
 - **Nunca usar `GlassView` directo en pantallas.** Toda superficie de cristal pasa por

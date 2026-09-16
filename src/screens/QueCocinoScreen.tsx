@@ -1,6 +1,7 @@
+import { PagerNativeScrollView as ScrollView } from '../components/bottom-tabs-pager/PagerNativeScroll';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator, Pressable, ScrollView, StatusBar, StyleSheet, Text, View,
+  ActivityIndicator, Pressable, StatusBar, StyleSheet, Text, View,
 } from 'react-native';
 import { Image } from 'expo-image';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -17,7 +18,7 @@ import { useRecipeFeed } from '../hooks/useRecipeFeed';
 import { recipeFeed } from '../lib/recipeFeed';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
 import SlidingSegments from '../components/SlidingSegments';
-import CreateRecipeModal from '../components/CreateRecipeModal';
+import CreateRecipeButton from '../components/CreateRecipeButton';
 import CommunityRecipeDetailModal from '../components/CommunityRecipeDetailModal';
 import VerifiedBadge from '../components/VerifiedBadge';
 import {
@@ -46,8 +47,6 @@ export default function QueCocinoScreen() {
   const [headerH, setHeaderH] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
   const [recipeSource, setRecipeSource] = useState<RecipeSource>('users');
-  const [createVisible, setCreateVisible] = useState(false);
-  const createButtonRef = useRef<View>(null);
   const [selectedRecipe, setSelectedRecipe] = useState<CommunityRecipe | null>(null);
   const feed = useRecipeFeed(userId);
   const communityRecipes = feed.recipes ?? EMPTY_RECIPES;
@@ -164,7 +163,7 @@ export default function QueCocinoScreen() {
       <StatusBar barStyle={colors.statusBar} backgroundColor={colors.paper} />
       {!glassAvailable && header}
 
-      <ScrollView
+      <ScrollView tabBarScroll
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
@@ -428,33 +427,10 @@ export default function QueCocinoScreen() {
       )}
 
       {recipeSource === 'users' && (
-        <Pressable
-          ref={createButtonRef}
-          collapsable={false}
-          onPress={() => setCreateVisible(true)}
-          onLayout={(event) => setCreateButtonH(event.nativeEvent.layout.height)}
-          style={({ pressed }) => [
-            styles.createButton,
-            { bottom: createButtonBottom },
-            pressed && styles.createButtonPressed,
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel={t('queCocino.createRecipe')}
-        >
-          <Ionicons name="add" size={18} color={colors.white} />
-          <Text style={styles.createButtonText}>{t('queCocino.createRecipe')}</Text>
-        </Pressable>
+        <CreateRecipeButton bottom={createButtonBottom}
+          onLayout={(event) => setCreateButtonH(event.nativeEvent.layout.height)} />
       )}
 
-      {createVisible && <CreateRecipeModal
-        visible={createVisible}
-        sourceRef={createButtonRef}
-        onClose={() => setCreateVisible(false)}
-        onCreated={(recipe) => {
-          setCommunityRecipes((current) => [recipe, ...current.filter((item) => item.id !== recipe.id)]);
-          selectRecipeSource('users');
-        }}
-      />}
       <CommunityRecipeDetailModal
         recipe={selectedRecipe}
         onClose={() => setSelectedRecipe(null)}
@@ -487,14 +463,7 @@ const themedStyles = () => StyleSheet.create({
     flex: 1, fontSize: 20, fontFamily: fonts.bold,
     color: colors.ink, letterSpacing: -0.3,
   },
-  createButton: {
-    position: 'absolute', right: 16, zIndex: 11, elevation: 4,
-    minHeight: 44, paddingHorizontal: 14, borderRadius: 22,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
-    backgroundColor: colors.accent,
-  },
   createButtonPressed: { opacity: 0.82 },
-  createButtonText: { color: colors.white, fontFamily: fonts.bold, fontSize: 13 },
   chrome: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
   chromeGlass: {
     borderBottomWidth: StyleSheet.hairlineWidth,

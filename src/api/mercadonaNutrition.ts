@@ -57,8 +57,8 @@ const amountFromText = (text: string, pattern: RegExp) => {
 };
 
 /** Convierte las tablas textuales de los catálogos a la estructura usada por el
- * cálculo local. Carrefour, Ametller y Plusfresc publican los valores por 100
- * g/ml como texto, a diferencia de Mercadona, que los entrega estructurados. */
+ * cálculo local. Carrefour, Ametller, Plusfresc, bonÀrea, DIA y Condis publican los
+ * valores por 100 g/ml como texto; Mercadona los entrega estructurados. */
 export function parseCatalogNutrition(
   value: unknown,
   context: MercadonaNutritionContext = {},
@@ -70,19 +70,19 @@ export function parseCatalogNutrition(
 
   const energyKj = amountFromText(text, /(\d+(?:[.,]\d+)?)\s*k(?:j|joules?)\b/i);
   const energyKcal = amountFromText(text, /(\d+(?:[.,]\d+)?)\s*k(?:cal|calor[ií]as?)\b/i);
-  const fat = amountFromText(text, /(?:\bgrasas?\b|\bgreixos?\b)\s*[:\-]?\s*(\d+(?:[.,]\d+)?)\s*g\b/i);
+  const fat = amountFromText(text, /(?:\bgrasas?\b|\bgreixos?\b)\s*[:\-]?\s*[<≤]?\s*(\d+(?:[.,]\d+)?)\s*g(?:r)?\b/i);
   const saturatedFat = amountFromText(
     text,
-    /(?:(?:\bgrasas?\b|\bgreixos?\b)\s*)?(?:saturadas?|saturats?|saturados?)\s*[:\-]?\s*(\d+(?:[.,]\d+)?)\s*g\b/i,
+    /(?:(?:\bgrasas?\b|\bgreixos?\b)\s*)?(?:saturadas?|saturats?|saturados?)\s*[:\-]?\s*[<≤]?\s*(\d+(?:[.,]\d+)?)\s*g(?:r)?\b/i,
   );
   const carbohydrates = amountFromText(
     text,
-    /(?:hidratos? de carbono|carbohidratos?|carbohidrats?|hidrats? de carboni)\s*[:\-]?\s*(\d+(?:[.,]\d+)?)\s*g\b/i,
+    /(?:hidratos? de carbono|carbohidratos?|carbohidrats?|hidrats? de carboni)\s*[:\-]?\s*[<≤]?\s*(\d+(?:[.,]\d+)?)\s*g(?:r)?\b/i,
   );
-  const sugars = amountFromText(text, /(?:az[uú]cares?|sucres?)\s*[:\-]?\s*(\d+(?:[.,]\d+)?)\s*g\b/i);
-  const fiber = amountFromText(text, /(?:fibra)(?:\s+(?:alimentaria|alimentària))?\s*[:\-]?\s*(\d+(?:[.,]\d+)?)\s*g\b/i);
-  const proteins = amountFromText(text, /(?:prote[ií]nas?|prote[iï](?:nes?|na))\s*[:\-]?\s*(\d+(?:[.,]\d+)?)\s*g\b/i);
-  const salt = amountFromText(text, /(?:sal)(?:\s+(?:equivalente|equivalent))?\s*[:\-]?\s*(\d+(?:[.,]\d+)?)\s*g\b/i);
+  const sugars = amountFromText(text, /(?:az[uú]cares?|sucres?)\s*[:\-]?\s*[<≤]?\s*(\d+(?:[.,]\d+)?)\s*g(?:r)?\b/i);
+  const fiber = amountFromText(text, /(?:fibra)(?:\s+(?:alimentaria|alimentària))?\s*[:\-]?\s*[<≤]?\s*(\d+(?:[.,]\d+)?)\s*g(?:r)?\b/i);
+  const proteins = amountFromText(text, /(?:prote[ií]nas?|prote[iï](?:nes?|na))\s*[:\-]?\s*[<≤]?\s*(\d+(?:[.,]\d+)?)\s*g(?:r)?\b/i);
+  const salt = amountFromText(text, /(?:sal)(?:\s+(?:equivalente|equivalent))?\s*[:\-]?\s*[<≤]?\s*(\d+(?:[.,]\d+)?)\s*g(?:r)?\b/i);
 
   const nutrients: [string, number | null][] = [
     ['Grasas', fat],

@@ -264,6 +264,7 @@ export default function ProductDetailModal({ productId, onClose, topInset = 16, 
             {/* Características del producto */}
             <ProductInfoSections
               items={[
+                { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), nutritionInfo: nutrition.info },
                 { key: 'description', icon: 'reader-outline', title: t('product.sections.description'), text: clean(d?.description) },
                 { key: 'info', icon: 'information-circle-outline', title: t('product.sections.info'), text: clean(d?.counter_info) },
                 { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: clean(ingredients) },

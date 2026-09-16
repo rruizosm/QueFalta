@@ -1,12 +1,12 @@
+import { PagerNativeScrollView as ScrollView, PagerNativeFlatList as FlatList } from '../components/bottom-tabs-pager/PagerNativeScroll';
 import { loadBrowsePage, peekBrowsePage } from '../api/catalogBrowse';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
+  FlatList as NativeFlatList,
   Text,
   Image,
-  FlatList,
-  ScrollView,
   TouchableOpacity,
   TextInput,
   StyleSheet,
@@ -1917,7 +1917,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
       {!glassAvailable && chrome}
 
       {store === 'all' && tab === 'categorias' && (
-        <FlatList
+        <FlatList tabBarScroll
           data={visibleStores.filter((item) => accessibleStores.includes(item.key))}
           keyExtractor={(item) => item.key}
           contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]}
@@ -1963,7 +1963,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
               </TouchableOpacity>
             </View>
           ) : (
-            <FlatList
+            <FlatList tabBarScroll
               data={sortedCats(categories)}
               keyExtractor={(item) => String(item.id)}
               renderItem={renderCategory}
@@ -1997,7 +1997,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
               </TouchableOpacity>
             </View>
           ) : (
-            <FlatList
+            <FlatList tabBarScroll
               data={sortedCats(bpCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderBpCategory}
@@ -2031,7 +2031,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
               </TouchableOpacity>
             </View>
           ) : (
-            <FlatList
+            <FlatList tabBarScroll
               data={sortedCats(cfCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderCfCategory}
@@ -2065,7 +2065,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
               </TouchableOpacity>
             </View>
           ) : (
-            <FlatList
+            <FlatList tabBarScroll
               data={sortedCats(baCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderBaCategory}
@@ -2099,7 +2099,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
               </TouchableOpacity>
             </View>
           ) : (
-            <FlatList
+            <FlatList tabBarScroll
               data={sortedCats(csCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderCsCategory}
@@ -2133,7 +2133,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
               </TouchableOpacity>
             </View>
           ) : (
-            <FlatList
+            <FlatList tabBarScroll
               data={sortedCats(ddCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderDdCategory}
@@ -2167,7 +2167,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
               </TouchableOpacity>
             </View>
           ) : (
-            <FlatList
+            <FlatList tabBarScroll
               data={sortedCats(soCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderSoCategory}
@@ -2201,7 +2201,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
               </TouchableOpacity>
             </View>
           ) : (
-            <FlatList
+            <FlatList tabBarScroll
               data={sortedCats(ekCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderEkCategory}
@@ -2235,7 +2235,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
               </TouchableOpacity>
             </View>
           ) : (
-            <FlatList
+            <FlatList tabBarScroll
               data={sortedCats(cbCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderCbCategory}
@@ -2269,7 +2269,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
               </TouchableOpacity>
             </View>
           ) : (
-            <FlatList
+            <FlatList tabBarScroll
               data={sortedCats(coCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderCoCategory}
@@ -2303,7 +2303,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
               </TouchableOpacity>
             </View>
           ) : (
-            <FlatList
+            <FlatList tabBarScroll
               data={sortedCats(amCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderAmCategory}
@@ -2337,7 +2337,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
               </TouchableOpacity>
             </View>
           ) : (
-            <FlatList
+            <FlatList tabBarScroll
               data={sortedCats(alCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderAlCategory}
@@ -2360,7 +2360,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
         !lidlStoreId ? <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.lidlStoreRequired')}</Text></View>
         : liCatsLoading ? <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
         : liCatsError ? <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Lidl' })}</Text><TouchableOpacity onPress={() => { setLiCatsError(false); setLiCatsLoading(true); fetchLidlCategoryTree(lidlStoreId).then(setLiCats).catch(() => setLiCatsError(true)).finally(() => setLiCatsLoading(false)); }}><Text style={styles.retryText}>{t('common.retry')}</Text></TouchableOpacity></View>
-        : <FlatList data={sortedCats(liCats)} keyExtractor={(item) => item.id} renderItem={renderLiCategory} contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]} showsVerticalScrollIndicator={false} ItemSeparatorComponent={() => <View style={{ height: 8 }} />} />
+        : <FlatList tabBarScroll data={sortedCats(liCats)} keyExtractor={(item) => item.id} renderItem={renderLiCategory} contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]} showsVerticalScrollIndicator={false} ItemSeparatorComponent={() => <View style={{ height: 8 }} />} />
       )}
       {store === 'lidl' && tab === 'productos' && renderProductsTab(liSearch, liLoading, liError, liResults.map(lidlToUI))}
 
@@ -2368,7 +2368,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
       {store === 'gadis' && tab === 'categorias' && (
         gaCatsLoading ? <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
         : gaCatsError ? <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Gadis' })}</Text><TouchableOpacity onPress={() => { setGaCatsError(false); setGaCatsLoading(true); fetchGadisCategoryTree().then(setGaCats).catch(() => setGaCatsError(true)).finally(() => setGaCatsLoading(false)); }}><Text style={styles.retryText}>{t('common.retry')}</Text></TouchableOpacity></View>
-        : <FlatList data={sortedCats(gaCats)} keyExtractor={(item) => item.id} renderItem={renderGaCategory} contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]} showsVerticalScrollIndicator={false} ItemSeparatorComponent={() => <View style={{ height: 8 }} />} />
+        : <FlatList tabBarScroll data={sortedCats(gaCats)} keyExtractor={(item) => item.id} renderItem={renderGaCategory} contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]} showsVerticalScrollIndicator={false} ItemSeparatorComponent={() => <View style={{ height: 8 }} />} />
       )}
       {store === 'gadis' && tab === 'productos' && renderProductsTab(gaSearch, gaLoading, gaError, gaResults.map(gadisToUI))}
 
@@ -2376,7 +2376,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
       {store === 'froiz' && tab === 'categorias' && (
         frCatsLoading ? <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
         : frCatsError ? <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Froiz' })}</Text><TouchableOpacity onPress={() => { setFrCatsError(false); setFrCatsLoading(true); fetchFroizCategoryTree().then(setFrCats).catch(() => setFrCatsError(true)).finally(() => setFrCatsLoading(false)); }}><Text style={styles.retryText}>{t('common.retry')}</Text></TouchableOpacity></View>
-        : <FlatList data={sortedCats(frCats)} keyExtractor={(item) => item.id} renderItem={renderFrCategory} contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]} showsVerticalScrollIndicator={false} ItemSeparatorComponent={() => <View style={{ height: 8 }} />} />
+        : <FlatList tabBarScroll data={sortedCats(frCats)} keyExtractor={(item) => item.id} renderItem={renderFrCategory} contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]} showsVerticalScrollIndicator={false} ItemSeparatorComponent={() => <View style={{ height: 8 }} />} />
       )}
       {store === 'froiz' && tab === 'productos' && renderProductsTab(frSearch, frLoading, frError, frResults.map(froizToUI))}
 
@@ -2384,7 +2384,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
       {store === 'ahorramas' && tab === 'categorias' && (
         ahCatsLoading ? <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
         : ahCatsError ? <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'Ahorramás' })}</Text><TouchableOpacity onPress={() => { setAhCatsError(false); setAhCatsLoading(true); fetchAhorramasCategoryTree().then(setAhCats).catch(() => setAhCatsError(true)).finally(() => setAhCatsLoading(false)); }}><Text style={styles.retryText}>{t('common.retry')}</Text></TouchableOpacity></View>
-        : <FlatList data={sortedCats(ahCats)} keyExtractor={(item) => item.id} renderItem={renderAhCategory} contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]} showsVerticalScrollIndicator={false} ItemSeparatorComponent={() => <View style={{ height: 8 }} />}/>
+        : <FlatList tabBarScroll data={sortedCats(ahCats)} keyExtractor={(item) => item.id} renderItem={renderAhCategory} contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]} showsVerticalScrollIndicator={false} ItemSeparatorComponent={() => <View style={{ height: 8 }} />}/>
       )}
       {store === 'ahorramas' && tab === 'productos' && renderProductsTab(ahSearch, ahLoading, ahError, ahResults.map(ahorramasToUI))}
 
@@ -2404,7 +2404,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
               </TouchableOpacity>
             </View>
           ) : (
-            <FlatList
+            <FlatList tabBarScroll
               data={sortedCats(hdCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderHdCategory}
@@ -2438,7 +2438,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
               </TouchableOpacity>
             </View>
           ) : (
-            <FlatList
+            <FlatList tabBarScroll
               data={sortedCats(acCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderAcCategory}
@@ -2472,7 +2472,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
               </TouchableOpacity>
             </View>
           ) : (
-            <FlatList
+            <FlatList tabBarScroll
               data={sortedCats(pfCats)}
               keyExtractor={(item) => item.id}
               renderItem={renderPfCategory}
@@ -2528,7 +2528,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
             </TouchableOpacity>
           </View>
 
-          <FlatList
+          <NativeFlatList
             data={storeGridData}
             keyExtractor={(s, index) => s?.key ?? `store-placeholder-${index}`}
             numColumns={2}

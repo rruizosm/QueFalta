@@ -140,6 +140,7 @@ export default function TapestryProductModal({ product, store, storeLabel, onClo
 
         <ProductInfoSections
           items={[
+            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition, nutritionInfo: nutrition.info },
             { key: 'category', icon: 'pricetags-outline', title: t('product.category'), text: product.categoryName },
           ]}
         />

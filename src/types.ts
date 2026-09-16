@@ -1,3 +1,4 @@
+import type { NavigatorScreenParams } from '@react-navigation/native';
 import type { CatalogStore } from './constants/stores';
 
 // ─── Mercadona API types ──────────────────────────────────────────────────────
@@ -245,11 +246,11 @@ export interface FavoriteProduct {
 // ─── Navigation param types ───────────────────────────────────────────────────
 
 export type RootTabParamList = {
-  Home: undefined;
-  Catalog: undefined;
+  Home: NavigatorScreenParams<HomeStackParamList> | undefined;
+  Catalog: NavigatorScreenParams<CatalogStackParamList> | undefined;
   QueCocino: undefined;
   List: undefined;
-  Groups: undefined;
+  Groups: NavigatorScreenParams<GroupsStackParamList> | undefined;
 };
 
 export type HomeStackParamList = {

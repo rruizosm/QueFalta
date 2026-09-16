@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
   Image,
   Keyboard,
-  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,12 +10,17 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown, ReduceMotion, interpolate, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
+import { GestureDetector } from 'react-native-gesture-handler';
+import { StackActions, usePreventRemove, type NavigationAction } from '@react-navigation/native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { AppStackParamList } from '../navigation/recipeCreator';
+import { recipeFeed } from '../lib/recipeFeed';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { createCommunityRecipe, type CommunityRecipe } from '../api/recipes';
+import { createCommunityRecipe } from '../api/recipes';
 import { STORE_META } from '../constants/stores';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -29,13 +33,6 @@ import RecipeIngredientPickerModal from './RecipeIngredientPickerModal';
 import type { UIProduct } from '../lib/productAdapters';
 import { cleanRecipeSteps, recipeProductKey } from '../lib/recipeSteps';
 import { useRecipeCreatorTransition } from '../hooks/useRecipeCreatorTransition';
-
-interface Props {
-  visible: boolean;
-  sourceRef: RefObject<View | null>;
-  onClose: () => void;
-  onCreated: (recipe: CommunityRecipe) => void;
-}
 
 interface SelectedIngredient {
   product: UIProduct;
@@ -50,8 +47,11 @@ interface RecipeStepDraft {
 }
 
 const emptyStep = (id: number): RecipeStepDraft => ({ id, text: '', ingredientKeys: [] });
+const MIN_RECIPE_SERVINGS = 1;
+const MAX_RECIPE_SERVINGS = 99;
+const RECIPE_FORM_SECTION_COUNT = 5;
 
-export default function CreateRecipeModal({ visible, sourceRef, onClose, onCreated }: Props) {
+export default function CreateRecipeModal({ navigation, route }: NativeStackScreenProps<AppStackParamList, 'NewRecipe'>) {
   const styles = useThemedStyles(themedStyles);
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
@@ -60,6 +60,7 @@ export default function CreateRecipeModal({ visible, sourceRef, onClose, onCreat
   const { profile } = useProfile();
   const [title, setTitle] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const [servings, setServings] = useState(2);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [ingredients, setIngredients] = useState<SelectedIngredient[]>([]);
   const [draftQuantity, setDraftQuantity] = useState('');
@@ -69,7 +70,22 @@ export default function CreateRecipeModal({ visible, sourceRef, onClose, onCreat
   const scrollToNewStep = useRef(false);
   const [focusedStep, setFocusedStep] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
-  const transition = useRecipeCreatorTransition(sourceRef, onClose);
+  const pendingRemoval = useRef<NavigationAction | null>(null);
+  const [allowRemoval, setAllowRemoval] = useState(false);
+  const completeClose = useCallback(() => setAllowRemoval(true), []);
+  const transition = useRecipeCreatorTransition(route.params.origin, completeClose, saving || pickerOpen);
+  const onPresented = transition.onPresented;
+  useLayoutEffect(() => navigation.addListener('transitionEnd', ({ data }) => {
+    if (!data.closing) onPresented();
+  }), [navigation, onPresented]);
+  usePreventRemove(!allowRemoval, ({ data }) => {
+    if (saving) return;
+    pendingRemoval.current = data.action;
+    void transition.close();
+  });
+  useEffect(() => {
+    if (allowRemoval) navigation.dispatch(pendingRemoval.current ?? StackActions.pop());
+  }, [allowRemoval, navigation]);
   const requestClose = () => {
     if (!saving) transition.close();
   };
@@ -78,20 +94,6 @@ export default function CreateRecipeModal({ visible, sourceRef, onClose, onCreat
     () => new Set(ingredients.map(({ product }) => recipeProductKey(product))),
     [ingredients],
   );
-
-  useEffect(() => {
-    if (!visible) return;
-    setTitle('');
-    setImageUri(null);
-    setPickerOpen(false);
-    setIngredients([]);
-    setDraftQuantity('');
-    setSteps([emptyStep(0)]);
-    nextStepId.current = 1;
-    scrollToNewStep.current = false;
-    setFocusedStep(null);
-    setSaving(false);
-  }, [visible]);
 
   const pickImage = async (stepId?: number) => {
     if (saving) return;
@@ -143,6 +145,14 @@ export default function CreateRecipeModal({ visible, sourceRef, onClose, onCreat
     )));
   };
 
+  const adjustServings = (delta: number) => {
+    setServings((current) => Math.min(
+      MAX_RECIPE_SERVINGS,
+      Math.max(MIN_RECIPE_SERVINGS, current + delta),
+    ));
+    void Haptics.selectionAsync();
+  };
+
   const updateStep = (id: number, text: string) => {
     setSteps((current) => current.map((step) => step.id === id ? { ...step, text } : step));
   };
@@ -184,11 +194,12 @@ export default function CreateRecipeModal({ visible, sourceRef, onClose, onCreat
         userId,
         title,
         imageUri,
+        servings,
         ingredients,
         steps: cleanSteps,
         profile,
       });
-      onCreated(recipe);
+      recipeFeed.update(userId, (current) => [recipe, ...current.filter((item) => item.id !== recipe.id)]);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show(t('queCocino.creator.created'));
       transition.close();
@@ -204,40 +215,27 @@ export default function CreateRecipeModal({ visible, sourceRef, onClose, onCreat
     && steps.some((step) => step.text.trim()) && !saving;
 
   return (
-    <Modal
-      visible={visible} transparent animationType="none" presentationStyle="overFullScreen"
-      statusBarTranslucent navigationBarTranslucent
-      onShow={transition.open} onRequestClose={requestClose}
+    <View
+      ref={transition.rootRef} collapsable={false} style={styles.screen}
+      onLayout={transition.onLayout} accessibilityViewIsModal
+      onAccessibilityEscape={requestClose}
+      onStartShouldSetResponder={() => transition.closing}
     >
-      <View
-        ref={transition.rootRef}
-        collapsable={false}
-        style={{ flex: 1 }}
-        onLayout={({ nativeEvent }) => transition.setSize({
-          width: nativeEvent.layout.width, height: nativeEvent.layout.height,
-        })}
-        accessibilityViewIsModal
-        onAccessibilityEscape={requestClose}
-        pointerEvents={transition.closing ? 'none' : 'auto'}
-      >
-      <Animated.View style={[styles.transitionSurface, transition.surfaceStyle]}>
-      <Animated.View
-        pointerEvents="none" accessible={false} accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-        style={[styles.transitionButton, transition.buttonStyle]}
-      >
-        <Ionicons name="add" size={18} color={colors.white} />
-        <Text style={styles.transitionButtonText}>{t('queCocino.createRecipe')}</Text>
-      </Animated.View>
-      <Animated.View style={[transition.size, transition.contentStyle]}>
+      <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.backdrop, transition.backdropStyle]} />
+      <Animated.View style={[StyleSheet.absoluteFill, styles.transitionSurface, transition.surfaceStyle]}>
+      {transition.started && <>
       <View
         style={styles.root}
+        pointerEvents={transition.closing ? 'none' : 'auto'}
         accessibilityElementsHidden={pickerOpen}
         importantForAccessibility={pickerOpen ? 'no-hide-descendants' : 'auto'}
       >
-        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+        <GestureDetector gesture={transition.dismissGesture}>
+        <Animated.View entering={sectionEntering(0, transition.reducedMotion)}
+          style={[styles.header, { paddingTop: insets.top + 8 }]}>
+
           <Pressable
-            onPress={requestClose}
+            onPress={requestClose} hitSlop={5}
             disabled={saving}
             style={({ pressed }) => [styles.headerButton, pressed && styles.pressed]}
             accessibilityRole="button"
@@ -246,8 +244,9 @@ export default function CreateRecipeModal({ visible, sourceRef, onClose, onCreat
             <Ionicons name="close" size={22} color={colors.ink} />
           </Pressable>
           <Text style={styles.headerTitle}>{t('queCocino.creator.title')}</Text>
+          <Animated.View collapsable={false} onLayout={transition.onPublishLayout} style={transition.publishStyle}>
           <Pressable
-            onPress={save}
+            onPress={save} hitSlop={4}
             disabled={!canSave}
             style={({ pressed }) => [styles.saveButton, !canSave && styles.saveButtonDisabled, pressed && styles.pressed]}
             accessibilityRole="button"
@@ -257,9 +256,12 @@ export default function CreateRecipeModal({ visible, sourceRef, onClose, onCreat
               <Text style={styles.saveButtonText}>{t('queCocino.creator.save')}</Text>
             )}
           </Pressable>
-        </View>
+          </Animated.View>
+        </Animated.View>
+        </GestureDetector>
 
         <ScrollView
+          contentInsetAdjustmentBehavior="never"
           ref={scrollRef}
           automaticallyAdjustKeyboardInsets
           onContentSizeChange={() => {
@@ -273,6 +275,7 @@ export default function CreateRecipeModal({ visible, sourceRef, onClose, onCreat
           keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}
         >
+          <RecipeFormSection index={1} transition={transition}>
           <Text style={styles.fieldLabel}>{t('queCocino.creator.name')}</Text>
           <TextInput
             value={title}
@@ -285,6 +288,8 @@ export default function CreateRecipeModal({ visible, sourceRef, onClose, onCreat
             returnKeyType="done"
           />
 
+          </RecipeFormSection>
+          <RecipeFormSection index={2} transition={transition}>
           <Text style={styles.fieldLabel}>{t('queCocino.creator.resultImage')}</Text>
           <Pressable
             onPress={() => pickImage()}
@@ -310,6 +315,59 @@ export default function CreateRecipeModal({ visible, sourceRef, onClose, onCreat
             )}
           </Pressable>
 
+          </RecipeFormSection>
+          <RecipeFormSection index={3} transition={transition}>
+          <Text style={styles.fieldLabel} accessibilityRole="header">
+            {t('queCocino.creator.servings')}
+          </Text>
+          <View style={styles.servingsCard}>
+            <View style={styles.servingsIcon}>
+              <Ionicons name="people-outline" size={22} color={colors.accent} />
+            </View>
+            <View style={styles.servingsCopy}>
+              <Text style={styles.servingsValue} accessibilityLiveRegion="polite">
+                {t(servings === 1
+                  ? 'queCocino.creator.servingsOne'
+                  : 'queCocino.creator.servingsMany', { n: servings })}
+              </Text>
+              <Text style={styles.servingsHint}>{t('queCocino.creator.servingsHint')}</Text>
+            </View>
+            <View style={styles.servingsControls}>
+              <Pressable
+                testID="recipe-servings-decrease"
+                onPress={() => adjustServings(-1)}
+                disabled={servings === MIN_RECIPE_SERVINGS}
+                accessibilityRole="button"
+                accessibilityLabel={t('queCocino.creator.decreaseServings')}
+                accessibilityState={{ disabled: servings === MIN_RECIPE_SERVINGS }}
+                style={({ pressed }) => [
+                  styles.servingsButton,
+                  servings === MIN_RECIPE_SERVINGS && styles.servingsButtonDisabled,
+                  pressed && styles.pressed,
+                ]}
+              >
+                <Ionicons name="remove" size={20} color={colors.accent} />
+              </Pressable>
+              <Pressable
+                testID="recipe-servings-increase"
+                onPress={() => adjustServings(1)}
+                disabled={servings === MAX_RECIPE_SERVINGS}
+                accessibilityRole="button"
+                accessibilityLabel={t('queCocino.creator.increaseServings')}
+                accessibilityState={{ disabled: servings === MAX_RECIPE_SERVINGS }}
+                style={({ pressed }) => [
+                  styles.servingsButton,
+                  servings === MAX_RECIPE_SERVINGS && styles.servingsButtonDisabled,
+                  pressed && styles.pressed,
+                ]}
+              >
+                <Ionicons name="add" size={20} color={colors.accent} />
+              </Pressable>
+            </View>
+          </View>
+
+          </RecipeFormSection>
+          <RecipeFormSection index={4} transition={transition}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionCopy}>
               <View style={styles.sectionTitleRow}>
@@ -386,6 +444,8 @@ export default function CreateRecipeModal({ visible, sourceRef, onClose, onCreat
             </View>
           </View>
 
+          </RecipeFormSection>
+          <RecipeFormSection index={5} transition={transition}>
           <View style={[styles.sectionHeader, styles.stepsHeader]}>
             <View style={styles.sectionCopy}>
               <View style={styles.sectionTitleRow}>
@@ -552,11 +612,19 @@ export default function CreateRecipeModal({ visible, sourceRef, onClose, onCreat
               <Text style={styles.addStepText}>{t('queCocino.creator.addStep')}</Text>
             </Pressable>
           ) : null}
+          </RecipeFormSection>
         </ScrollView>
       </View>
+      </>}
       </Animated.View>
+      <Animated.View pointerEvents="none" accessible={false} accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={[styles.transitionButton, transition.pillStyle]}>
+        <Animated.View style={[styles.transitionButtonLabel, transition.pillLabelStyle]}>
+          <Ionicons name="add" size={18} color={colors.white} />
+          <Text style={styles.transitionButtonText}>{t('queCocino.createRecipe')}</Text>
+        </Animated.View>
       </Animated.View>
-      </View>
       {pickerOpen && (
         <RecipeIngredientPickerModal
           selectedKeys={selectedIngredientKeys}
@@ -564,8 +632,33 @@ export default function CreateRecipeModal({ visible, sourceRef, onClose, onCreat
           onClose={() => setPickerOpen(false)}
         />
       )}
-    </Modal>
+    </View>
   );
+}
+
+function sectionEntering(index: number, reducedMotion: boolean) {
+  return reducedMotion
+    ? FadeIn.duration(200).reduceMotion(ReduceMotion.Never)
+    : FadeInDown.withInitialValues({ opacity: 0, transform: [{ translateY: 14 }] })
+      .duration(200).delay(35 + index * 50);
+}
+
+function RecipeFormSection({ children, index, transition }: {
+  children: ReactNode;
+  index: number;
+  transition: { progress: SharedValue<number>; closing: boolean; reducedMotion: boolean };
+}) {
+  const { progress, closing, reducedMotion } = transition;
+  const exitStyle = useAnimatedStyle(() => {
+    const exit = closing ? 1 - progress.value : 0;
+    const amount = reducedMotion ? 0 : interpolate(exit,
+      [(RECIPE_FORM_SECTION_COUNT - index) * 0.035,
+        0.4 + (RECIPE_FORM_SECTION_COUNT - index) * 0.035], [0, 1], 'clamp');
+    return { opacity: 1 - amount, transform: [{ translateY: 14 * amount }] };
+  });
+  return <Animated.View entering={sectionEntering(index, reducedMotion)}>
+    <Animated.View style={exitStyle}>{children}</Animated.View>
+  </Animated.View>;
 }
 
 function QuantityField({ value, onChangeText, accessibilityLabel }: {
@@ -607,9 +700,14 @@ function ProductImage({ product, style }: { product: UIProduct; style: object })
 }
 
 const themedStyles = () => StyleSheet.create({
-  transitionSurface: { position: 'absolute', overflow: 'hidden' },
+  screen: { flex: 1, backgroundColor: 'transparent' },
+  backdrop: { backgroundColor: '#000000' },
+  transitionSurface: { backgroundColor: colors.paper, position: 'absolute', overflow: 'hidden' },
   transitionButton: {
-    position: 'absolute', top: 0, right: 0, bottom: 0, left: 0,
+    position: 'absolute', backgroundColor: colors.accent,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  transitionButtonLabel: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
   },
   transitionButtonText: { color: colors.white, fontFamily: fonts.bold, fontSize: 13 },
@@ -657,6 +755,25 @@ const themedStyles = () => StyleSheet.create({
     paddingHorizontal: 11, paddingVertical: 8, borderRadius: 14, backgroundColor: 'rgba(43,37,33,0.82)',
   },
   changeImageText: { fontSize: 11, fontFamily: fonts.bold, color: '#ffffff' },
+  servingsCard: {
+    minHeight: 84, flexDirection: 'row', alignItems: 'center', gap: 12,
+    padding: 14, marginBottom: 26, borderRadius: 20,
+    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
+  },
+  servingsIcon: {
+    width: 42, height: 42, borderRadius: 14,
+    alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accentLight,
+  },
+  servingsCopy: { flex: 1, minWidth: 0 },
+  servingsValue: { fontSize: 15, lineHeight: 20, fontFamily: fonts.bold, color: colors.ink },
+  servingsHint: { marginTop: 3, fontSize: 11, lineHeight: 16, fontFamily: fonts.medium, color: colors.inkSoft },
+  servingsControls: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  servingsButton: {
+    width: 44, height: 44, borderRadius: 15,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.accentLight, borderWidth: 1, borderColor: colors.accentMid,
+  },
+  servingsButtonDisabled: { opacity: 0.38 },
   sectionHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 18 },
   sectionCopy: { flex: 1, minWidth: 0 },
   sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },

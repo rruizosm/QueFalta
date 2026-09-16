@@ -6,6 +6,7 @@ const screenUrl = new URL('../../src/screens/QueCocinoScreen.tsx', import.meta.u
 const apiUrl = new URL('../../src/api/recipes.ts', import.meta.url);
 const actionsUrl = new URL('../../src/components/RecipeEngagementActions.tsx', import.meta.url);
 const detailUrl = new URL('../../src/components/CommunityRecipeDetailModal.tsx', import.meta.url);
+const creatorUrl = new URL('../../src/components/CreateRecipeModal.tsx', import.meta.url);
 const badgeUrl = new URL('../../src/components/VerifiedBadge.tsx', import.meta.url);
 const translationsUrl = new URL('../../src/i18n/translations.ts', import.meta.url);
 const limitsUrl = new URL('../../src/constants/limits.ts', import.meta.url);
@@ -154,4 +155,30 @@ test('recipe previews show the golden public Plus badge beside verified authors'
   assert.match(badge, /tone = 'gold'/);
   assert.match(badge, /tone === 'gold' \? '#F7D25A'/);
   assert.match(badge, /tone === 'gold' \? '#D2900F'/);
+});
+
+test('recipe servings are selected before ingredients, persisted, and shown in detail', async () => {
+  const [creator, detail, api, translations] = await Promise.all([
+    readFile(creatorUrl, 'utf8'),
+    readFile(detailUrl, 'utf8'),
+    readFile(apiUrl, 'utf8'),
+    readFile(translationsUrl, 'utf8'),
+  ]);
+
+  const servingsSection = creator.indexOf("t('queCocino.creator.servings')");
+  const ingredientsSection = creator.indexOf("t('queCocino.creator.ingredients')");
+  assert(servingsSection > 0);
+  assert(servingsSection < ingredientsSection);
+  assert.match(creator, /const \[servings, setServings\] = useState\(2\)/);
+  assert.match(creator, /MIN_RECIPE_SERVINGS = 1/);
+  assert.match(creator, /MAX_RECIPE_SERVINGS = 99/);
+  assert.match(creator, /testID="recipe-servings-decrease"/);
+  assert.match(creator, /testID="recipe-servings-increase"/);
+  assert.match(creator, /createCommunityRecipe\(\{[\s\S]*servings,[\s\S]*ingredients,/);
+  assert.match(api, /servings: normalizeRecipeServings\(row\.servings\)/);
+  assert.match(api, /image_path, servings, ingredients/);
+  assert.match(api, /servings: input\.servings/);
+  assert.match(detail, /recipeServings !== null[\s\S]*queCocino\.detail\.servingsMany/);
+  assert.match(translations, /servings: '¿Para cuántas personas\?'/);
+  assert.match(translations, /servings: 'Per a quantes persones\?'/);
 });

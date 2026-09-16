@@ -138,6 +138,7 @@ export default function AlcampoProductModal({ product, onClose, topInset = 16, b
         {/* Ficha (del HTML de la PDP de Alcampo; null si aún no rastreada) */}
         <ProductInfoSections
           items={[
+            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition, nutritionInfo: nutrition.info },
             { key: 'description', icon: 'reader-outline', title: t('product.sections.description'), text: product.description },
             { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: product.ingredients },
             { key: 'storage', icon: 'time-outline', title: t('product.sections.storage'), text: product.conservation },

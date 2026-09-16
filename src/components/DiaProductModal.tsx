@@ -16,7 +16,8 @@ import { useTranslation } from '../context/LanguageContext';
 import QuantityStepper from '../components/QuantityStepper';
 import ProductDetailImage from '../components/ProductDetailImage';
 import ProductInfoSections from '../components/ProductInfoSections';
-import SimilarProductsSection from '../components/SimilarProductsSection';
+import { useNutritionInfoDisclosure } from '../components/NutritionInfoButton';
+import ProductDetailDiscoverySection from '../components/ProductDetailDiscoverySection';
 import ProductPriceLine from '../components/ProductPriceLine';
 import ActiveCartIcon from './ActiveCartIcon';
 
@@ -42,6 +43,17 @@ export default function DiaProductModal({ product, onClose, topInset = 16, badge
   const { t } = useTranslation();
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
+
+  // DIA no publica EAN: el índice se obtiene de la tabla nutricional de la
+  // ficha con la fórmula local compartida, sin consultar Open Food Facts.
+  const nutrition = useNutritionInfoDisclosure({
+    store: 'dia',
+    inline: true,
+    fallbackNutrition: product?.nutrition,
+    fallbackProductName: product?.displayName,
+    fallbackCategoryName: product?.categoryName,
+    fallbackIngredients: product?.ingredients,
+  });
 
   useEffect(() => { setQty(1); }, [product?.id]);
 
@@ -138,15 +150,18 @@ export default function DiaProductModal({ product, onClose, topInset = 16, badge
           </View>
         ) : null}
 
-        {/* Comparativa: más barato en otros súper */}
-        <SimilarProductsSection productId={product.id} excludeStore="dia" />
+        <ProductDetailDiscoverySection
+          nutrition={nutrition}
+          productId={product.id}
+          excludeStore="dia"
+        />
 
         {/* Características del producto (del vike_pageContext de Dia; null si aún no rastreada) */}
         <ProductInfoSections
           items={[
             { key: 'description', icon: 'reader-outline', title: t('product.sections.description'), text: product.description },
             { key: 'ingredients', icon: 'leaf-outline', title: t('product.sections.ingredients'), text: product.ingredients },
-            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition },
+            { key: 'nutrition', icon: 'nutrition-outline', title: t('product.sections.nutrition'), text: product.nutrition, nutritionInfo: nutrition.info },
             { key: 'storage', icon: 'time-outline', title: t('product.sections.storage'), text: product.conservation },
             { key: 'preparation', icon: 'restaurant-outline', title: t('product.sections.preparation'), text: product.preparation },
             { key: 'legalName', icon: 'document-text-outline', title: t('product.sections.legalName'), text: product.denomination },

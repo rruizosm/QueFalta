@@ -1,7 +1,11 @@
+import Reanimated from 'react-native-reanimated';
+import { useTabBarScrollOffsetStyle } from '../hooks/useTabBarScroll';
+import { PagerNativeFlatList as FlatList } from './bottom-tabs-pager/PagerNativeScroll';
 import { prefetchProductImages } from '../lib/prefetchProductImages';
-import { useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { PagerGestureContext } from './bottom-tabs-pager/PagerGestureContext';
 import {
-  View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Image, useWindowDimensions,
+  View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Image, useWindowDimensions,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -106,6 +110,8 @@ export default function StoreProductList({
   topInset = 0, roundedCards = false, badgeLabel, onScrollBeginDrag,
   showStoreLogo = false, selection,
 }: Props) {
+  const pagerGesture = useContext(PagerGestureContext);
+  const pagerRef = useMemo(() => ({ current: pagerGesture }), [pagerGesture]);
   const styles = useThemedStyles(themedStyles);
   const { width: windowWidth } = useWindowDimensions();
   // Se recalcula en rotación, Split View y ventanas Android redimensionables.
@@ -117,6 +123,7 @@ export default function StoreProductList({
   // Con tab bar de cristal: eleva la barra "Añadir" (cartBar) por encima del
   // cristal y agranda el paddingBottom de lista/cuadrícula en la misma medida.
   const tabBarOffset = useTabBarBottomPadding(0);
+  const tabBarOffsetStyle = useTabBarScrollOffsetStyle();
   const bottomPad = selection ? selection.bottomInset + 24 : 110 + tabBarOffset;
   const { t } = useTranslation();
   const emptyLabel = emptyText ?? t('product.emptyDefault');
@@ -378,6 +385,8 @@ export default function StoreProductList({
     }
     return (
       <Swipeable
+        // Root-tab drags navigate pages; nested product lists retain swipe-to-favorite.
+        waitFor={pagerGesture ? pagerRef : undefined}
         containerStyle={roundedCards ? styles.swipeRounded : undefined}
         friction={1}
         leftThreshold={48}
@@ -436,7 +445,7 @@ export default function StoreProductList({
       ) : error ? (
         <View style={[styles.center, topInset > 0 && { marginTop: topInset }]}><Text style={styles.emptyText}>{errorLabel}</Text></View>
       ) : viewMode === 'grid' ? (
-        <FlatList
+        <FlatList tabBarScroll={!selection}
           key={`grid-${gridColumns}`}
           data={visible}
           keyExtractor={(item) => `${item.store}:${item.id}`}
@@ -463,7 +472,7 @@ export default function StoreProductList({
           ListEmptyComponent={emptyNode}
         />
       ) : (
-        <FlatList
+        <FlatList tabBarScroll={!selection}
           key="list"
           data={visible}
           keyExtractor={(item) => `${item.store}:${item.id}`}
@@ -488,7 +497,7 @@ export default function StoreProductList({
       )}
 
       {!selection && cartCount > 0 && (
-        <View style={[styles.cartBarWrap, { bottom: tabBarOffset + 8 }]}>
+        <Reanimated.View style={[styles.cartBarWrap, { bottom: tabBarOffset + 8 }, tabBarOffsetStyle]}>
           <GlassSurface
             style={styles.cartBar}
             tintColor={colors.accentLight}
@@ -523,7 +532,7 @@ export default function StoreProductList({
               )}
             </TouchableOpacity>
           </GlassSurface>
-        </View>
+        </Reanimated.View>
       )}
 
       {!selection && <StoreProductModal

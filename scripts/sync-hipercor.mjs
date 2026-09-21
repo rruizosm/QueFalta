@@ -7,8 +7,10 @@
 // el centro público que entrega la web sin dirección de usuario.
 //
 // Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE, DRY_RUN=1, MIN_PRODUCTS=10000,
-//      MAX_PAGES_PER_CATEGORY=N, PW_CHANNEL=chrome, HEADLESS=0.
+//      MAX_PAGES_PER_CATEGORY=N, PW_CHANNEL=chrome, HEADLESS=0, RESUME=1.
 import { chromium } from 'playwright';
+import { mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
 import { markStale } from './lib/stale.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
 
@@ -19,6 +21,15 @@ const DRY = process.env.DRY_RUN === '1';
 const MIN_PRODUCTS = positiveInteger(process.env.MIN_PRODUCTS, 10_000);
 const MAX_PAGES_PER_CATEGORY = positiveInteger(process.env.MAX_PAGES_PER_CATEGORY, Infinity);
 const NAV_TIMEOUT = positiveInteger(process.env.NAV_TIMEOUT_MS, 45_000);
+const PAGE_DELAY_MIN = nonNegativeInteger(process.env.PAGE_DELAY_MIN_MS, 1_500);
+const PAGE_DELAY_MAX = Math.max(PAGE_DELAY_MIN, nonNegativeInteger(process.env.PAGE_DELAY_MAX_MS, 3_000));
+const CATEGORY_DELAY = nonNegativeInteger(process.env.CATEGORY_DELAY_MS, 15_000);
+const RETRY_DELAY = positiveInteger(process.env.RETRY_DELAY_MS, 5_000);
+const WAF_COOLDOWN = positiveInteger(process.env.WAF_COOLDOWN_MS, 90_000);
+const MAX_ATTEMPTS = positiveInteger(process.env.MAX_ATTEMPTS, 3);
+const CHECKPOINT_PATH = process.env.HIPERCOR_CHECKPOINT || 'scripts/logs/hipercor-sync-checkpoint.json';
+const CHECKPOINT_MAX_AGE_HOURS = positiveInteger(process.env.HIPERCOR_CHECKPOINT_MAX_AGE_HOURS, 24);
+const RESUME = process.env.RESUME === '1';
 const runStart = new Date().toISOString();
 
 // Cada raíz ya incluye todos sus descendientes. Así evitamos recorrer las
@@ -36,6 +47,8 @@ const ROOT_CATEGORIES = [
   { id: 'drogueria-y-limpieza', path: 'drogueria-y-limpieza', name: 'Droguería y limpieza' },
   { id: 'mascotas', path: 'mascotas', name: 'Mascotas' },
 ];
+const CHECKPOINT_VERSION = 1;
+const CHECKPOINT_SIGNATURE = ROOT_CATEGORIES.map(({ id, path }) => `${id}:${path}`).join('|');
 
 if (!DRY && (!SUPABASE_URL || !KEY)) throw new Error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE (o usa DRY_RUN=1)');
 
@@ -45,6 +58,42 @@ const chunks = (rows, size) => Array.from({ length: Math.ceil(rows.length / size
 function positiveInteger(value, fallback) {
   const parsed = Number(value);
   return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function nonNegativeInteger(value, fallback) {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+function randomInteger(min, max) {
+  return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+async function politeDelay() {
+  const delay = randomInteger(PAGE_DELAY_MIN, PAGE_DELAY_MAX);
+  if (delay > 0) await sleep(delay);
+}
+
+class WafBlockError extends Error {
+  constructor(label, { status, title, reference, url, retryAfterMs }) {
+    const details = [
+      status ? `HTTP ${status}` : null,
+      title || null,
+      reference || null,
+      url || null,
+    ].filter(Boolean).join(' · ');
+    super(`Akamai/WAF bloqueo ${label}${details ? `: ${details}` : ''}`);
+    this.name = 'WafBlockError';
+    this.retryAfterMs = retryAfterMs;
+  }
+}
+
+function parseRetryAfter(value) {
+  if (!value) return 0;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) return Math.round(seconds * 1_000);
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? Math.max(0, timestamp - Date.now()) : 0;
 }
 
 function pageUrl(slug, pageNumber) {
@@ -70,11 +119,19 @@ function chromeUserAgent(version) {
   return `Mozilla/5.0 (${platform}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${version} Safari/537.36`;
 }
 
-async function assertCatalogPage(page, label, allowEmpty = false) {
+async function assertCatalogPage(page, response, label, allowEmpty = false) {
   const title = await page.title().catch(() => '');
   const body = await page.locator('body').innerText().catch(() => '');
-  if (/request could not be satisfied|access denied|human verification/i.test(`${title}\n${body}`)) {
-    throw new Error(`Akamai/WAF bloqueo ${label}: ${title || 'respuesta sin titulo'}`);
+  const status = response?.status?.() || null;
+  if (status === 403 || status === 429 || /request could not be satisfied|access denied|human verification/i.test(`${title}\n${body}`)) {
+    const reference = body.match(/Reference\s*#[^\s<]+/i)?.[0] || null;
+    throw new WafBlockError(label, {
+      status,
+      title: title || 'respuesta sin título',
+      reference,
+      url: page.url(),
+      retryAfterMs: parseRetryAfter(response?.headers?.()['retry-after']),
+    });
   }
   try {
     await page.locator('li[data-type="item"][data-pagination]').first().waitFor({ state: 'attached', timeout: NAV_TIMEOUT });
@@ -88,12 +145,12 @@ async function assertCatalogPage(page, label, allowEmpty = false) {
 async function readPage(page, slug, pageNumber) {
   const url = pageUrl(slug, pageNumber);
   let lastError;
-  for (let attempt = 1; attempt <= 3; attempt++) {
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
-      await page.goto(url, { waitUntil: 'domcontentloaded' });
-      const hasProducts = await assertCatalogPage(page, `${slug} página ${pageNumber}`, pageNumber > 1);
+      const response = await page.goto(url, { waitUntil: 'domcontentloaded' });
+      const hasProducts = await assertCatalogPage(page, response, `${slug} página ${pageNumber}`, pageNumber > 1);
       if (!hasProducts) return { products: [], centerId: null, declaredCount: null, totalPages: null, empty: true };
-      return await page.evaluate(() => {
+      const result = await page.evaluate(() => {
         const text = document.body.innerText || '';
         const declared = text.match(/\(\s*([\d.]+)\s*\)/)?.[1];
         const pagination = [...document.querySelectorAll('[data-pagination]')]
@@ -121,12 +178,61 @@ async function readPage(page, slug, pageNumber) {
         }).filter((product) => product.id && product.name);
         return { products, centerId, declaredCount: declared ? Number(declared.replace(/\./g, '')) : null, totalPages: pagination?.totalPages || null, empty: false };
       });
+      await politeDelay();
+      return result;
     } catch (error) {
       lastError = error;
-      if (attempt < 3) await sleep(1_000 * attempt);
+      if (attempt < MAX_ATTEMPTS) {
+        const blocked = error instanceof WafBlockError;
+        const waitMs = blocked ? Math.max(WAF_COOLDOWN, error.retryAfterMs || 0) : RETRY_DELAY * attempt;
+        console.warn(`[hipercor] ${error.message} · reintento ${attempt + 1}/${MAX_ATTEMPTS} en ${Math.round(waitMs / 1_000)} s`);
+        await sleep(waitMs);
+      }
     }
   }
   throw lastError;
+}
+
+async function loadCheckpoint() {
+  let checkpoint;
+  try {
+    checkpoint = JSON.parse(await readFile(CHECKPOINT_PATH, 'utf8'));
+  } catch (error) {
+    throw new Error(`no se pudo cargar el checkpoint ${CHECKPOINT_PATH}: ${error.message}`);
+  }
+  if (checkpoint.version !== CHECKPOINT_VERSION || checkpoint.signature !== CHECKPOINT_SIGNATURE) {
+    throw new Error(`checkpoint incompatible: elimina ${CHECKPOINT_PATH} y comienza de nuevo`);
+  }
+  const nextCategoryIndex = Number(checkpoint.nextCategoryIndex);
+  if (!Number.isInteger(nextCategoryIndex) || nextCategoryIndex < 0 || nextCategoryIndex > ROOT_CATEGORIES.length) {
+    throw new Error(`checkpoint inválido: nextCategoryIndex=${checkpoint.nextCategoryIndex}`);
+  }
+  const products = Array.isArray(checkpoint.products) ? checkpoint.products : [];
+  const savedAt = Date.parse(checkpoint.savedAt);
+  const ageMs = Date.now() - savedAt;
+  if (!Number.isFinite(savedAt) || ageMs < 0 || ageMs > CHECKPOINT_MAX_AGE_HOURS * 60 * 60 * 1_000) {
+    throw new Error(`checkpoint caducado o sin fecha válida: elimina ${CHECKPOINT_PATH} y comienza de nuevo`);
+  }
+  return { nextCategoryIndex, products };
+}
+
+async function saveCheckpoint(nextCategoryIndex, products) {
+  await mkdir(dirname(CHECKPOINT_PATH), { recursive: true });
+  const temporary = `${CHECKPOINT_PATH}.tmp`;
+  await writeFile(temporary, JSON.stringify({
+    version: CHECKPOINT_VERSION,
+    signature: CHECKPOINT_SIGNATURE,
+    savedAt: new Date().toISOString(),
+    nextCategoryIndex,
+    products: [...products.values()],
+  }));
+  await rename(temporary, CHECKPOINT_PATH);
+}
+
+async function removeCheckpoint() {
+  await unlink(CHECKPOINT_PATH).catch((error) => {
+    if (error?.code !== 'ENOENT') throw error;
+  });
 }
 
 function normalize(product, slug, categoryName, centerId) {
@@ -172,19 +278,35 @@ async function upsert(table, rows) {
 }
 
 async function main() {
+  console.log(
+    `[hipercor] inicio ${runStart}${DRY ? ' (DRY RUN)' : ''} · pausa ${PAGE_DELAY_MIN}-${PAGE_DELAY_MAX} ms/página · `
+    + `${CATEGORY_DELAY} ms/categoría · checkpoint=${CHECKPOINT_PATH}`,
+  );
   const browser = await chromium.launch({ channel: process.env.PW_CHANNEL || 'chrome', headless: process.env.HEADLESS !== '0', args: ['--disable-blink-features=AutomationControlled'] });
   try {
     const context = await browser.newContext({ locale: 'es-ES', userAgent: chromeUserAgent(browser.version()) });
     const page = await context.newPage();
     page.setDefaultNavigationTimeout(NAV_TIMEOUT);
     const products = new Map();
-    const categories = [];
     const centers = new Set();
-    for (const category of ROOT_CATEGORIES) {
+    let startIndex = 0;
+    if (RESUME) {
+      const checkpoint = await loadCheckpoint();
+      startIndex = checkpoint.nextCategoryIndex;
+      for (const row of checkpoint.products) {
+        if (row?.id) products.set(row.id, row);
+        if (row?.raw?.centerId) centers.add(row.raw.centerId);
+      }
+      const resumeAt = startIndex < ROOT_CATEGORIES.length ? `${startIndex + 1}/${ROOT_CATEGORIES.length}` : 'publicación final';
+      console.log(`[hipercor] reanudando en ${resumeAt} · ${products.size} productos guardados`);
+    } else {
+      await removeCheckpoint();
+    }
+    for (let categoryIndex = startIndex; categoryIndex < ROOT_CATEGORIES.length; categoryIndex++) {
+      const category = ROOT_CATEGORIES[categoryIndex];
       const { id, path, name } = category;
-      let first = await readPage(page, path, 1);
+      const first = await readPage(page, path, 1);
       const pages = Math.min(first.totalPages || 1, MAX_PAGES_PER_CATEGORY);
-      categories.push({ id, name, parent_id: null, product_count: 0, published: true, synced_at: runStart });
       for (const result of [first]) {
         if (result.centerId) centers.add(result.centerId);
         for (const product of result.products) products.set(product.id, normalize(product, id, name, result.centerId));
@@ -200,18 +322,35 @@ async function main() {
         for (const product of result.products) products.set(product.id, normalize(product, id, name, result.centerId));
       }
       console.log(`[hipercor] ${name}: ${pages} páginas · ${products.size} productos únicos`);
-      await sleep(100);
+      await saveCheckpoint(categoryIndex + 1, products);
+      if (categoryIndex + 1 < ROOT_CATEGORIES.length && CATEGORY_DELAY > 0) await sleep(CATEGORY_DELAY);
     }
     const rows = [...products.values()];
-    for (const row of rows) categories.find((category) => category.id === row.category_id).product_count++;
+    for (const row of rows) {
+      row.published = true;
+      row.synced_at = runStart;
+    }
+    const categories = ROOT_CATEGORIES.map(({ id, name }) => ({
+      id,
+      name,
+      parent_id: null,
+      product_count: rows.filter((row) => row.category_id === id).length,
+      published: true,
+      synced_at: runStart,
+    }));
     console.log(`[hipercor] ${rows.length} productos · ${categories.length} categorías · centros ${[...centers].join(', ') || 'no observado'} · ${rows.filter((row) => row.promo_name).length} ofertas`);
-    if (DRY) return;
     if (rows.length < MIN_PRODUCTS) throw new Error(`solo ${rows.length} productos (< ${MIN_PRODUCTS}); posible catálogo parcial`);
+    if (DRY) {
+      await removeCheckpoint();
+      return;
+    }
     await upsert('hipercor_categories', categories);
     await upsert('hipercor_products', rows);
     await markStale({ url: SUPABASE_URL, key: KEY, table: 'hipercor_categories', runStart });
     await markStale({ url: SUPABASE_URL, key: KEY, table: 'hipercor_products', runStart });
     await recordCatalogSync({ url: SUPABASE_URL, key: KEY, store: 'hipercor' });
+    await removeCheckpoint();
+    console.log('[hipercor] OK');
   } finally {
     await browser.close();
   }

@@ -96,8 +96,8 @@ test('los runners locales materializan tras un sync real correcto', () => {
   }
 });
 
-test('Froiz y Alcampo no tienen cron productivo en GitHub Actions', () => {
-  for (const file of ['sync-froiz.yml', 'sync-alcampo.yml']) {
+test('los catálogos bloqueados por datacenter no tienen cron productivo en GitHub Actions', () => {
+  for (const file of ['sync-froiz.yml', 'sync-alcampo.yml', 'sync-hipercor.yml']) {
     const workflow = readWorkflow(file);
     assert.match(workflow, /^\s*workflow_dispatch:/m, `${file}: debe conservar el diagnóstico manual`);
     assert.doesNotMatch(workflow, /^\s*schedule:/m, `${file}: no debe ejecutarse por cron en GitHub`);
@@ -128,11 +128,13 @@ test('Froiz y Alcampo registran la fecha que muestra Actualización de catálogo
 
 test('Hipercor queda fuera hasta que la capa transversal lo admita', () => {
   const workflow = readWorkflow('sync-hipercor.yml');
+  const runner = readRunner('run-hipercor-sync.ps1');
   const materializer = readFileSync(new URL(
     '../sync-comparator-embedding-catalog.mjs',
     import.meta.url,
   ), 'utf8');
 
   assert.doesNotMatch(workflow, /sync-comparator-embedding-catalog/);
+  assert.doesNotMatch(runner, /sync-comparator-embedding-catalog/);
   assert.doesNotMatch(materializer, /\['hipercor',\s*'hipercor_products'/);
 });

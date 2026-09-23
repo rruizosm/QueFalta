@@ -470,9 +470,18 @@ async function enrichProducts(context, products, categories) {
 
 async function upsert(table, rows) {
   const headers = { apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}`, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' };
-  for (let offset = 0; offset < rows.length; offset += 200) {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, { method: 'POST', headers, body: JSON.stringify(rows.slice(offset, offset + 200)) });
-    if (!response.ok) throw new Error(`upsert ${table} ${response.status}: ${await response.text()}`);
+  const rowsByShape = new Map();
+  for (const row of rows) {
+    const shape = Object.keys(row).sort().join('\u0000');
+    const matchingRows = rowsByShape.get(shape) || [];
+    matchingRows.push(row);
+    rowsByShape.set(shape, matchingRows);
+  }
+  for (const matchingRows of rowsByShape.values()) {
+    for (let offset = 0; offset < matchingRows.length; offset += 200) {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, { method: 'POST', headers, body: JSON.stringify(matchingRows.slice(offset, offset + 200)) });
+      if (!response.ok) throw new Error(`upsert ${table} ${response.status}: ${await response.text()}`);
+    }
   }
 }
 

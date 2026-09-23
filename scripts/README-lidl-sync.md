@@ -81,8 +81,9 @@ programa para consumidores privados y excluyen la participación comercial.
    actualizó `catalog_sync_status` a las 12:30 UTC.
 3. `sync-lidl-stores.mjs` se ejecutó en producción el 2026-09-04: cargó 730
    tiendas, 721 abiertas y 721 candidatos exactos para 645 códigos postales.
-   Reejecutarlo diariamente con `LIDL_STORES_API_KEY` mantiene el directorio
-   nacional al día. Las tiendas cercanas para CP sin coincidencia exacta
+   Reejecutarlo semanalmente, antes del barrido de catálogos, con
+   `LIDL_STORES_API_KEY` mantiene el directorio nacional al día. Las tiendas
+   cercanas para CP sin coincidencia exacta
    requieren todavía el índice geocodificado.
 4. `sync-lidl-fleet.mjs` programa todas las tiendas abiertas y reclama una cada
    vez. El sync valida y despublica solo dentro de esa tienda; únicamente

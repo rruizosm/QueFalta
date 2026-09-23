@@ -2,7 +2,7 @@ name: Sync Lidl store directory
 
 on:
   schedule:
-    - cron: '35 4 * * *'
+    - cron: '35 4 * * 1' # lunes 04:35 UTC, antes del fleet semanal de las 11:20 UTC
   workflow_dispatch: {}
 
 concurrency:

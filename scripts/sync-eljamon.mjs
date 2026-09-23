@@ -23,6 +23,7 @@ import { recordCatalogSync } from './lib/sync-status.mjs';
 
 const BASE = 'https://www.supermercadoseljamon.com';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
+const CONTEXT_OPTIONS = { userAgent: UA, locale: 'es-ES', viewport: { width: 1440, height: 1000 }, extraHTTPHeaders: { 'Accept-Language': 'es-ES,es;q=0.9' } };
 const ROOT_CATEGORIES = [
   { id: '01', name: 'Despensa', path: '/categorias/la-despensa/01' },
   { id: '02', name: 'Desayuno y dulce', path: '/categorias/desayuno-y-dulces/02' },
@@ -57,6 +58,8 @@ const MAX_CATEGORIES = positiveInt(process.env.MAX_CATEGORIES, ROOT_CATEGORIES.l
 const MAX_PAGES = positiveInt(process.env.MAX_PAGES, Infinity);
 const DETAILS_LIMIT = nonNegativeInt(process.env.ELJAMON_DETAILS_LIMIT, 0);
 const DETAIL_CONCURRENCY = positiveInt(process.env.ELJAMON_DETAIL_CONCURRENCY, 2);
+const CATEGORY_DETAIL_CONCURRENCY = positiveInt(process.env.ELJAMON_CATEGORY_DETAIL_CONCURRENCY, 6);
+const CATEGORY_DETAIL_RETRIES = positiveInt(process.env.ELJAMON_CATEGORY_DETAIL_RETRIES, 3);
 const PAGE_DELAY_MS = nonNegativeInt(process.env.ELJAMON_PAGE_DELAY_MS, 250);
 const WAIT_MS = positiveInt(process.env.ELJAMON_WAIT_MS, 45000);
 const MIN_PRODUCTS = positiveInt(process.env.MIN_PRODUCTS, 5000);
@@ -84,6 +87,15 @@ function nonNegativeInt(value, fallback) {
 
 function clean(value) {
   return typeof value === 'string' ? value.replace(/\s+/g, ' ').trim() || null : null;
+}
+
+function normalizeCategoryName(value) {
+  return clean(value)
+    ?.normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim() || null;
 }
 
 function categoryIdFromUrl(href) {
@@ -263,7 +275,7 @@ async function extractDetails(page, product) {
   await page.goto(product.product_url, { waitUntil: 'domcontentloaded', timeout: WAIT_MS });
   await page.locator('h1.tituloProducto').waitFor({ state: 'attached', timeout: WAIT_MS });
   return page.locator('#main-content').evaluate((main) => {
-    const categoryPath = [...main.querySelectorAll('a[href*="/categorias/"]')].map((anchor) => ({
+    const categoryPath = [...main.querySelectorAll('[id*="CaminoMigasFoodPortlet"] a[href*="/categorias/"]')].map((anchor) => ({
       id: anchor.href.split('/').filter(Boolean).at(-1),
       name: anchor.textContent?.replace(/\s+/g, ' ').trim(),
       url: anchor.href,
@@ -280,12 +292,160 @@ async function extractDetails(page, product) {
   });
 }
 
+function categoryPathForId(categoryId, categories) {
+  const path = [];
+  const visited = new Set();
+  let current = categories.get(categoryId);
+  while (current && !visited.has(current.id)) {
+    visited.add(current.id);
+    path.push(current);
+    current = current.parent_id ? categories.get(current.parent_id) : null;
+  }
+  return path.reverse();
+}
+
+function applyCategoryPath(product, path, categories, resolution) {
+  const normalizedPath = path
+    .filter((item) => item?.id && item?.name)
+    .filter((item, index, items) => index === 0 || item.id !== items[index - 1].id);
+  if (!normalizedPath.length || normalizedPath[0].id !== product.category_ids[0]) return false;
+  product.category_ids = normalizedPath.map((item) => item.id);
+  product.category_id = normalizedPath.at(-1).id;
+  product.category_name = normalizedPath.at(-1).name;
+  product.raw = { ...product.raw, category_resolution: resolution };
+  for (let index = 0; index < normalizedPath.length; index++) {
+    const item = normalizedPath[index];
+    categories.set(item.id, {
+      id: item.id,
+      name: item.name,
+      parent_id: normalizedPath[index - 1]?.id || null,
+      source_url: item.source_url || item.url || categories.get(item.id)?.source_url || null,
+    });
+  }
+  return true;
+}
+
+function resolveCategoriesFromListing(products, categories) {
+  const candidatesByRootAndName = new Map();
+  for (const category of categories.values()) {
+    const path = categoryPathForId(category.id, categories);
+    const rootId = path[0]?.id;
+    const normalizedName = normalizeCategoryName(category.name);
+    if (!rootId || !normalizedName) continue;
+    const key = `${rootId}:${normalizedName}`;
+    const candidates = candidatesByRootAndName.get(key) || [];
+    candidates.push(category.id);
+    candidatesByRootAndName.set(key, candidates);
+  }
+
+  const stats = { unique: 0, ambiguous: 0, no_match: 0, missing_source_name: 0 };
+  const unresolved = [];
+  for (const product of products) {
+    const rootId = product.category_ids[0];
+    const sourceName = normalizeCategoryName(product.source_category_name);
+    const candidates = sourceName ? candidatesByRootAndName.get(`${rootId}:${sourceName}`) || [] : [];
+    if (candidates.length === 1) {
+      const path = categoryPathForId(candidates[0], categories);
+      if (applyCategoryPath(product, path, categories, 'source_name_unique')) {
+        stats.unique++;
+        continue;
+      }
+    }
+    if (!sourceName) stats.missing_source_name++;
+    else if (candidates.length > 1) stats.ambiguous++;
+    else stats.no_match++;
+    product.raw = { ...product.raw, category_resolution: 'unresolved' };
+    unresolved.push(product);
+  }
+  return { stats, unresolved };
+}
+
+function categoryParentFallback(product, categories) {
+  const rootId = product.category_ids[0];
+  const sourceName = normalizeCategoryName(product.source_category_name);
+  if (!sourceName) return null;
+  const candidates = [...categories.values()].filter((category) => {
+    if (category.id === rootId) return false;
+    const path = categoryPathForId(category.id, categories);
+    const categoryName = normalizeCategoryName(category.name);
+    return path[0]?.id === rootId && categoryName && sourceName.startsWith(`${categoryName} `);
+  });
+  if (!candidates.length) return null;
+  const longestLength = Math.max(...candidates.map((category) => normalizeCategoryName(category.name).length));
+  const longest = candidates.filter((category) => normalizeCategoryName(category.name).length === longestLength);
+  return longest.length === 1 ? categoryPathForId(longest[0].id, categories) : null;
+}
+
+function applyProductDetails(product, details) {
+  product.ingredients = clean(details.ingredients);
+  product.allergens = clean(details.allergens);
+  product.nutrition = clean(details.nutrition);
+  product.conservation = clean(details.conservation);
+  product.detail_synced_at = new Date().toISOString();
+}
+
+async function extractDetailsWithRetry(page, product) {
+  let lastError;
+  for (let attempt = 1; attempt <= CATEGORY_DETAIL_RETRIES; attempt++) {
+    try {
+      return await extractDetails(page, product);
+    } catch (error) {
+      lastError = error;
+      if (attempt < CATEGORY_DETAIL_RETRIES) await sleep(500 * attempt);
+    }
+  }
+  throw lastError;
+}
+
+async function resolveCategoriesFromDetails(context, products, categories) {
+  const selected = products.filter((product) => product.product_url);
+  const stats = { requested: products.length, resolved: 0, parent_fallback: 0, failed: products.length - selected.length };
+  if (!selected.length) return stats;
+  let cursor = 0;
+  const workers = Array.from({ length: Math.min(CATEGORY_DETAIL_CONCURRENCY, selected.length) }, async () => {
+    // Comerzzia conserva la última ruta de categoría en la sesión. Una sesión
+    // compartida entre pestañas mezcla breadcrumbs cuando navegan en paralelo.
+    const workerContext = await context.browser().newContext(CONTEXT_OPTIONS);
+    const page = await workerContext.newPage();
+    try {
+      for (;;) {
+        const index = cursor++;
+        if (index >= selected.length) break;
+        const product = selected[index];
+        try {
+          const details = await extractDetailsWithRetry(page, product);
+          applyProductDetails(product, details);
+          if (details.categoryPath.length > 1 && applyCategoryPath(product, details.categoryPath, categories, 'detail_breadcrumb')) {
+            stats.resolved++;
+          } else {
+            const fallbackPath = categoryParentFallback(product, categories);
+            if (fallbackPath && applyCategoryPath(product, fallbackPath, categories, 'source_name_parent')) {
+              stats.resolved++;
+              stats.parent_fallback++;
+            } else stats.failed++;
+          }
+        } catch (error) {
+          stats.failed++;
+          console.warn(`[eljamon] categoría detalle ${product.id}: ${error.message.split('\n')[0]}`);
+        }
+        if ((index + 1) % 25 === 0 || index + 1 === selected.length) console.log(`[eljamon] categorías por ficha ${index + 1}/${selected.length}`);
+        if (PAGE_DELAY_MS) await sleep(PAGE_DELAY_MS);
+      }
+    } finally {
+      await workerContext.close();
+    }
+  });
+  await Promise.all(workers);
+  return stats;
+}
+
 async function enrichProducts(context, products, categories) {
-  const selected = products.filter((product) => product.product_url).slice(0, DETAILS_LIMIT);
+  const selected = products.filter((product) => product.product_url && !product.detail_synced_at).slice(0, DETAILS_LIMIT);
   if (!selected.length) return;
   let cursor = 0;
   const workers = Array.from({ length: Math.min(DETAIL_CONCURRENCY, selected.length) }, async () => {
-    const page = await context.newPage();
+    const workerContext = await context.browser().newContext(CONTEXT_OPTIONS);
+    const page = await workerContext.newPage();
     try {
       for (;;) {
         const index = cursor++;
@@ -293,20 +453,8 @@ async function enrichProducts(context, products, categories) {
         const product = selected[index];
         try {
           const details = await extractDetails(page, product);
-          product.ingredients = clean(details.ingredients);
-          product.allergens = clean(details.allergens);
-          product.nutrition = clean(details.nutrition);
-          product.conservation = clean(details.conservation);
-          product.detail_synced_at = new Date().toISOString();
-          if (details.categoryPath.length) {
-            product.category_ids = details.categoryPath.map((item) => item.id);
-            product.category_id = product.category_ids.at(-1);
-            product.category_name = details.categoryPath.at(-1).name;
-            for (let i = 0; i < details.categoryPath.length; i++) {
-              const item = details.categoryPath[i];
-              categories.set(item.id, { id: item.id, name: item.name, parent_id: details.categoryPath[i - 1]?.id || null, source_url: item.url });
-            }
-          }
+          applyProductDetails(product, details);
+          if (details.categoryPath.length > 1) applyCategoryPath(product, details.categoryPath, categories, 'detail_enrichment');
         } catch (error) {
           console.warn(`[eljamon] detalle ${product.id}: ${error.message.split('\n')[0]}`);
         }
@@ -314,7 +462,7 @@ async function enrichProducts(context, products, categories) {
         if (PAGE_DELAY_MS) await sleep(PAGE_DELAY_MS);
       }
     } finally {
-      await page.close();
+      await workerContext.close();
     }
   });
   await Promise.all(workers);
@@ -337,16 +485,21 @@ async function saveSnapshot(payload) {
 async function main() {
   console.log(`[eljamon] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''}`);
   const browser = await chromium.launch({ headless: HEADLESS });
-  const context = await browser.newContext({ userAgent: UA, locale: 'es-ES', viewport: { width: 1440, height: 1000 }, extraHTTPHeaders: { 'Accept-Language': 'es-ES,es;q=0.9' } });
+  const context = await browser.newContext(CONTEXT_OPTIONS);
   const page = await context.newPage();
   const products = new Map();
   const categories = new Map();
   const crawl = [];
+  let categoryResolution;
   let store;
   try {
     store = await selectReferencePickupStore(page);
     console.log(`[eljamon] centro de recogida: ${store.selected ? `${store.label} (${store.id})` : 'sin selección explícita'}`);
     for (const root of ROOT_CATEGORIES.slice(0, MAX_CATEGORIES)) crawl.push({ root: root.id, ...(await crawlRoot(page, root, products, categories)) });
+    const listingResolution = resolveCategoriesFromListing([...products.values()], categories);
+    console.log(`[eljamon] categorías por nombre único: ${listingResolution.stats.unique}; fichas pendientes: ${listingResolution.unresolved.length}`);
+    const detailResolution = await resolveCategoriesFromDetails(context, listingResolution.unresolved, categories);
+    categoryResolution = { ...listingResolution.stats, ...detailResolution };
     await enrichProducts(context, [...products.values()], categories);
   } finally {
     await browser.close();
@@ -365,6 +518,8 @@ async function main() {
     new_products: rows.filter((row) => row.is_new).length,
     missing_prices: rows.filter((row) => row.unit_price == null).length,
     enriched_details: rows.filter((row) => Object.hasOwn(row, 'nutrition')).length,
+    category_resolution: categoryResolution,
+    unresolved_categories: rows.filter((row) => row.raw?.category_resolution === 'unresolved' || row.category_ids.length < 2).length,
   };
   console.log(`[eljamon] ${report.products} productos · ${report.categories} categorías · ${report.offers} ofertas · ${report.new_products} nuevos`);
   await saveSnapshot({ source: BASE, synced_at: runStart, common_catalog: true, report, crawl, categories: categoryRows, products: rows });
@@ -373,6 +528,7 @@ async function main() {
   const completeRoots = MAX_CATEGORIES >= ROOT_CATEGORIES.length && MAX_PAGES === Infinity;
   if (!completeRoots) throw new Error('publicación bloqueada: MAX_CATEGORIES/MAX_PAGES limitan el catálogo');
   if (rows.length < MIN_PRODUCTS) throw new Error(`publicación bloqueada: ${rows.length} productos (< MIN_PRODUCTS=${MIN_PRODUCTS})`);
+  if (report.unresolved_categories) throw new Error(`publicación bloqueada: ${report.unresolved_categories} productos sin subcategoría resuelta`);
   await upsert('eljamon_categories', categoryRows);
   await upsert('eljamon_products', rows);
   await markStale({ url: SUPABASE_URL, key: SERVICE_ROLE, table: 'eljamon_products', runStart });

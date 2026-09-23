@@ -1,0 +1,33 @@
+name: Sync El Jamón catalog
+
+on:
+  workflow_dispatch: {}
+
+concurrency:
+  group: sync-eljamon
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Instalar Chromium para Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Sincronizar catálogo común de El Jamón
+        run: node scripts/sync-eljamon.mjs
+        env:
+          DRY_RUN: '0'
+          HEADLESS: '1'
+          MIN_PRODUCTS: '6000'
+          ELJAMON_REFERENCE_STORE: '268'
+          ELJAMON_DETAILS_LIMIT: '0'
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}

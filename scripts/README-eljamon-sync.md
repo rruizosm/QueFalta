@@ -24,7 +24,16 @@ Por producto:
 - Precio vigente y, cuando existe, precio anterior tachado.
 - Precio por kilo, litro, 100 ml, 100 g o unidad.
 - Oferta, tipo de promoción visible, producto nuevo y demás distintivos.
-- Categoría raíz y nombre de categoría que Comerzzia incluye al añadir a cesta.
+- Ruta completa de categoría y nombre de categoría que Comerzzia incluye al
+  añadir a cesta.
+
+La ruta se resuelve primero comparando ese nombre con el árbol de la categoría
+raíz. Cuando el nombre solo aparece una vez, se asigna su ruta completa sin abrir
+la ficha. Si es ambiguo, no existe en el árbol o viene vacío, el sync abre la
+ficha y usa su breadcrumb. La publicación se bloquea si queda algún producto sin
+resolver para evitar volver a guardar todo el catálogo en las categorías raíz.
+Si la propia ficha solo publica la raíz, se conserva el ancestro inequívoco del
+nombre de Comerzzia; por ejemplo, `Postres vegetales` se asigna a `Postres`.
 
 Las fichas de detalle se pueden consultar para recuperar la ruta exacta de
 categorías y campos descriptivos si la web los publica. En las fichas muestreadas
@@ -82,7 +91,9 @@ DRY_RUN=1 ELJAMON_DETAILS_LIMIT=100 node scripts/sync-eljamon.mjs
 | `ELJAMON_REFERENCE_STORE` | `268` | Centro de recogida de referencia. |
 | `ELJAMON_SELECT_STORE` | `1` | Usa `0` para no seleccionar centro. |
 | `ELJAMON_DETAILS_LIMIT` | `0` | Número de fichas que se enriquecen. |
-| `ELJAMON_DETAIL_CONCURRENCY` | `2` | Pestañas simultáneas para fichas. |
+| `ELJAMON_DETAIL_CONCURRENCY` | `2` | Pestañas simultáneas para enriquecimiento opcional. |
+| `ELJAMON_CATEGORY_DETAIL_CONCURRENCY` | `6` | Fichas simultáneas para resolver categorías ambiguas. |
+| `ELJAMON_CATEGORY_DETAIL_RETRIES` | `3` | Intentos por ficha al resolver su breadcrumb. |
 | `ELJAMON_PAGE_DELAY_MS` | `250` | Pausa entre páginas y fichas. |
 | `ELJAMON_OUTPUT` | `logs/eljamon-catalog.json` | Snapshot JSON. |
 | `MIN_PRODUCTS` | `5000` | Guardia mínima antes de publicar. |

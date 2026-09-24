@@ -2,6 +2,7 @@ param(
   [switch]$Publish,
   [switch]$Resume,
   [int]$MaxLeaves = 0,
+  [int]$MaxPromotionLeaves = 0,
   [int]$DelayMs = 4500,
   [int]$WaitMs = 90000
 )
@@ -16,6 +17,7 @@ $env:RESUME = if ($Resume) { '1' } else { '0' }
 $env:DELAY_MS = [string]$DelayMs
 $env:WAIT_MS = [string]$WaitMs
 if ($MaxLeaves -gt 0) { $env:MAX_LEAVES = [string]$MaxLeaves } else { Remove-Item Env:MAX_LEAVES -ErrorAction SilentlyContinue }
+if ($MaxPromotionLeaves -gt 0) { $env:MAX_PROMOTION_LEAVES = [string]$MaxPromotionLeaves } else { Remove-Item Env:MAX_PROMOTION_LEAVES -ErrorAction SilentlyContinue }
 
 # Node usa stderr para avisos recuperables; la autoridad es el exit code.
 $ErrorActionPreference = 'Continue'

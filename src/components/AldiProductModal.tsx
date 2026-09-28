@@ -63,13 +63,13 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
   if (!product) return null;
   const price = product.priceFormat
     ?? (product.unitPrice != null ? `${product.unitPrice.toFixed(2).replace('.', ',')} €` : null);
-  const promoBasePrice = (store === 'lidl' || store === 'eljamon') && 'promoBasePrice' in product
+  const promoBasePrice = (store === 'lidl' || store === 'bm' || store === 'eljamon') && 'promoBasePrice' in product
     ? product.promoBasePrice
     : null;
   const lidlPlusOnly = store === 'lidl'
     && 'isLidlPlusOffer' in product
     && product.isLidlPlusOffer;
-  const promotion = (store === 'lidl' || store === 'eljamon')
+  const promotion = (store === 'lidl' || store === 'bm' || store === 'eljamon')
     && 'promoName' in product
     && 'promoText' in product
     && 'promoStart' in product

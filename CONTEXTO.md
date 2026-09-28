@@ -1,5 +1,32 @@
 # QuéFalta — Contexto del proyecto
 
+## BM: fuente nutricional integrada (2026-09-28)
+
+- La tabla nutricional BM está en un JSON público separado por EAN, no en la
+  respuesta de `/catalog/product/code/{code}`. Cuatro alimentos devolvieron
+  valores estructurados, ingredientes y alérgenos; dos artículos no alimentarios
+  respondieron 200 con JSON sin tabla, pese a tener `nutritional.info.date`.
+- La ficha de un mismo producto fue idéntica en Gipuzkoa y Madrid. El sync
+  consulta el CDN una vez por EAN, conserva los campos existentes si falla la
+  consulta, revalida cada 90 días y limita cada ejecución a 1.000 EAN por
+  defecto (`DETAIL_MAX`). Guarda tabla nutricional, ingredientes, alérgenos y
+  conservación en `bm_products`; la vista `bm_product_locations` los expone.
+  La migración `20260928124545_bm_nutrition_details.sql` está aplicada en
+  producción. El backfill completo del 2026-09-28 consultó los 10.197 EAN
+  publicados sin fallos: 4.873 productos con tabla nutricional, 5.437 con
+  ingredientes, 3.730 con alérgenos y 4.962 con conservación. No hay
+  desajustes entre `ean` y `detail_ean`. El cliente todavía no lee estos campos
+  en la ficha ni calcula el Índice alimentario BM. Esquema y límites en
+  `scripts/README-bm-poc.md`.
+
+## Ofertas BM en la ficha de producto (local, 2026-09-28)
+
+- El detalle BM muestra el mismo bloque de promoción que Lidl y El Jamón:
+  etiqueta, condiciones distintas del nombre y vigencia, con precio anterior
+  tachado cuando el precio de oferta es menor que el base.
+- `BmProduct` incorpora `promoStart` desde la vista multizona existente. Cambio
+  solo de cliente, sin migración SQL.
+
 ## Información de supermercados en Android (local, 2026-09-28)
 
 - Las «i» de las tarjetas «Todos tus supermercados» y Lidl en Canarias usan un

@@ -2485,6 +2485,7 @@ export interface BmProduct {
   categoryName: string | null;
   promoName: string | null;
   promoText: string | null;
+  promoStart: string | null;
   promoEnd: string | null;
   promoBasePrice: number | null;
 }
@@ -2505,6 +2506,7 @@ const mapBm = (row: any): BmProduct => ({
   categoryName: row.cart_category_name ?? row.category_name ?? null,
   promoName: row.promo_name ?? null,
   promoText: row.promo_text ?? null,
+  promoStart: row.promo_start ?? null,
   promoEnd: row.promo_end ?? null,
   promoBasePrice: row.promo_base_price != null ? Number(row.promo_base_price) : null,
 });

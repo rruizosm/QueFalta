@@ -1,5 +1,18 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## BM: nutrición sincronizada en Supabase (2026-09-28)
+
+- `scripts/sync-bm.mjs` consulta el JSON nutricional público por EAN después
+  del control de cobertura de las siete zonas. Guarda `nutrition`,
+  `ingredients`, `allergens` y `conservation` en `bm_products`, con TTL de 90
+  días, límite por run, deduplicación por EAN y conservación ante errores.
+- Migración `20260928124545_bm_nutrition_details.sql` aplicada en producción;
+  la vista `bm_product_locations` expone los cuatro campos. Dos syncs reales
+  completaron el backfill: 10.197 EAN comprobados, 4.873 con nutrición y cero
+  fallos de descarga. TypeScript y pruebas BM correctos.
+- **Pendiente de cliente:** leer los campos en la ficha BM y conectar el Índice
+  alimentario. Esta tarea cubrió el sync y almacenamiento, no la interfaz.
+
 ## Información de supermercados en Android (local, 2026-09-28)
 
 - «Todos tus supermercados» y Lidl en Canarias comparten botón de información

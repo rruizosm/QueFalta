@@ -25,6 +25,7 @@ import { useToast } from '../../context/ToastContext';
 import { useTranslation } from '../../context/LanguageContext';
 import { updateProfile, uploadAvatar } from '../../api/profile';
 import AmbientBubbleBackdrop from '../../components/AmbientBubbleBackdrop';
+import UserAvatar from '../../components/UserAvatar';
 
 const SELFIE_MASCOT = require('../../../assets/mascot/berenjena-selfie.png');
 const APP_BLUE = colors.blue;
@@ -81,7 +82,7 @@ export default function AvatarScreen() {
     if (!pickedUri) { await handleSkip(); return; }
     setSaving(true);
     try {
-      const url = await uploadAvatar(userId, pickedUri);
+      const url = await uploadAvatar(userId, pickedUri, profile?.avatarFriendsOnly ?? false);
       await updateProfile(userId, { avatarUrl: url, onboardingStep: 3 });
       applyProfile({ avatarUrl: url, onboardingStep: 3 });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -160,12 +161,14 @@ export default function AvatarScreen() {
           accessibilityLabel={avatarLabel}
         >
           <View style={styles.avatarWrap}>
-            {preview ? (
+            {pickedUri ? (
               <Image
-                source={{ uri: preview }}
+                source={{ uri: pickedUri }}
                 style={[styles.avatar, { width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2 }]}
                 accessible={false}
               />
+            ) : profile?.avatarUrl ? (
+              <UserAvatar avatarUrl={profile.avatarUrl} userId={userId} initials={initials} color={bg} size={avatarSize} />
             ) : (
               <View
                 style={[

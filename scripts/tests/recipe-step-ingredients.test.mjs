@@ -55,7 +55,7 @@ test('stored step indexes are deduplicated and constrained to existing steps', (
 test('recipe UI stores links without changing the legacy string steps contract', () => {
   const api = readFileSync(new URL('../../src/api/recipes.ts', import.meta.url), 'utf8');
   const creator = readFileSync(
-    new URL('../../src/components/CreateRecipeModal.tsx', import.meta.url),
+    new URL('../../src/components/RecipeForm.tsx', import.meta.url),
     'utf8',
   );
   const detail = readFileSync(

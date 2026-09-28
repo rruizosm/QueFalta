@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8');
@@ -11,8 +11,10 @@ const navigation = read('src/navigation/index.tsx');
 const onboarding = read('src/screens/onboarding/StoresScreen.tsx');
 const translations = read('src/i18n/translations.ts');
 const appConfig = read('app.json');
-const androidConfig = read('android/app/build.gradle');
-const iosConfig = read('ios/QuFalta.xcodeproj/project.pbxproj');
+const androidConfig = existsSync(new URL('../../android/app/build.gradle', import.meta.url))
+  ? read('android/app/build.gradle') : null;
+const iosConfig = existsSync(new URL('../../ios/QuFalta.xcodeproj/project.pbxproj', import.meta.url))
+  ? read('ios/QuFalta.xcodeproj/project.pbxproj') : null;
 
 test('1.3.1 pide una respuesta obligatoria con el logo de Lidl', () => {
   assert.match(prompt, /LIDL_LOGO = require\('\.\.\/\.\.\/assets\/stores\/lidl\.png'\)/);
@@ -40,14 +42,14 @@ test('la decisión se aísla por versión y usuario, y las altas nuevas quedan m
 test('los avisos no se solapan con el requisito postal ni con la decisión de Lidl', () => {
   assert.match(navigation, /!needsPostalCode && !lidlPromptResolved/);
   assert.match(navigation, /<LidlReleasePrompt onResolved=\{handleLidlPromptResolved\} \/>/);
-  assert.match(navigation, /!needsPostalCode && lidlPromptResolved \? <WhatsNewPrompt \/>/);
-  assert.match(navigation, /!needsPostalCode && lidlPromptResolved \? <NativeStoreReviewPrompt \/>/);
+  assert.match(navigation, /!needsPostalCode && lidlPromptResolved && bmPromptResolved && eljamonPromptResolved \? <WhatsNewPrompt \/>/);
+  assert.match(navigation, /!needsPostalCode && lidlPromptResolved && bmPromptResolved && eljamonPromptResolved \? <NativeStoreReviewPrompt \/>/);
 });
 
 test('Lidl deja de activarse silenciosamente al normalizar perfiles antiguos', () => {
-  assert.match(profileApi, /const allBeforeLidl = CATALOG_STORE_KEYS\.filter\(\(key\) => key !== 'lidl'\)/);
-  assert.match(profileApi, /return valid\.length \? valid : allBeforeLidl/);
-  assert.doesNotMatch(profileApi, /allBeforeLidl\.every/);
+  assert.match(profileApi, /const historicalStores = CATALOG_STORE_KEYS\.filter\(\(key\) => key !== 'lidl' && key !== 'bm' && key !== 'eljamon'\)/);
+  assert.match(profileApi, /return valid\.length \? valid : historicalStores/);
+  assert.doesNotMatch(profileApi, /historicalStores\.every/);
 });
 
 test('copy obligatorio disponible en castellano y catalán', () => {
@@ -59,8 +61,10 @@ test('copy obligatorio disponible en castellano y catalán', () => {
   assert.match(translations, /yes: 'Sí, afegeix Lidl'/);
 });
 
-test('la versión comercial queda alineada en Expo, Android e iOS', () => {
-  assert.equal(JSON.parse(appConfig).expo.version, '1.3.1');
-  assert.match(androidConfig, /versionName "1\.3\.1"/);
-  assert.equal((iosConfig.match(/MARKETING_VERSION = 1\.3\.1;/g) ?? []).length, 2);
+test('la versión comercial queda alineada en Expo y los proyectos nativos presentes', () => {
+  const version = JSON.parse(appConfig).expo.version;
+  assert.match(version, /^1\.3\.\d+$/);
+  const pattern = version.replaceAll('.', '\\.');
+  if (androidConfig != null) assert.match(androidConfig, new RegExp(`versionName \"${pattern}\"`));
+  if (iosConfig != null) assert.equal((iosConfig.match(new RegExp(`MARKETING_VERSION = ${pattern};`, 'g')) ?? []).length, 2);
 });

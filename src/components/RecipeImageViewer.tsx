@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import Animated, { cancelAnimation, Easing, interpolate, useAnimatedStyle, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fonts } from '../constants/typography';
@@ -30,6 +31,8 @@ export default function RecipeImageViewer({ uri, title, onClose, sourceRef, imag
   const rootRef = useRef<View>(null);
   const mounted = useRef(true);
   const source = useSharedValue<{ x: number; y: number; width: number; height: number } | null>(null);
+  const zoom = useSharedValue(1);
+  const pinchStart = useSharedValue(1);
   const closing = useRef(false);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
@@ -115,6 +118,19 @@ export default function RecipeImageViewer({ uri, title, onClose, sourceRef, imag
       height: coverHeight + (targetHeight - coverHeight) * p,
     };
   });
+  const zoomStyle = useAnimatedStyle(() => ({ transform: [{ scale: zoom.value }] }));
+  const imageGestures = Gesture.Simultaneous(
+    Gesture.Pinch()
+      .onBegin(() => { pinchStart.set(zoom.value); })
+      .onUpdate((event) => { zoom.set(Math.min(5, Math.max(1, pinchStart.value * event.scale))); })
+      .onEnd(() => { pinchStart.set(zoom.value); }),
+    Gesture.Tap()
+      .numberOfTaps(2)
+      .onEnd(() => {
+        zoom.set(withTiming(zoom.value > 1.05 ? 1 : 2.5, { duration: 180 }));
+        pinchStart.set(zoom.value);
+      }),
+  );
 
   return (
     <Modal
@@ -127,10 +143,11 @@ export default function RecipeImageViewer({ uri, title, onClose, sourceRef, imag
         accessibilityViewIsModal onAccessibilityEscape={close}>
         <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
         <Animated.View pointerEvents="none" style={[styles.backdrop, fadeStyle]} />
+        <GestureDetector gesture={imageGestures}>
         <Animated.View style={[styles.imageArea, frameStyle]}>
           <Animated.Image
             key={attempt}
-            source={{ uri }} style={[styles.image, imageStyle]} resizeMode="contain"
+            source={{ uri }} style={[styles.image, imageStyle, zoomStyle]} resizeMode="contain"
             accessible accessibilityLabel={title}
             onLoad={() => setLoading(false)}
             onError={() => { setLoading(false); setFailed(true); }}
@@ -146,6 +163,7 @@ export default function RecipeImageViewer({ uri, title, onClose, sourceRef, imag
             </Pressable>
           )}
         </Animated.View>
+        </GestureDetector>
         <Animated.View style={[
           styles.header, { top: insets.top + 8, right: Math.max(insets.right, 16) }, fadeStyle,
         ]}>

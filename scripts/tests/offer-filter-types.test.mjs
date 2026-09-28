@@ -62,4 +62,12 @@ test('solo ofrece facetas útiles para cada supermercado', () => {
   assert.equal(offerTypesForStore('alcampo').includes('club'), true);
   assert.equal(offerTypesForStore('plusfresc').includes('multibuy'), true);
   assert.deepEqual([...offerTypesForStore('lidl')], ['discount', 'second_unit', 'club', 'other']);
+  assert.equal(offerTypesForStore('carrefour').includes('shipping'), true);
+});
+
+test('Carrefour usa tipos estructurados de todas las promociones sin inferir descuentos combinados', () => {
+  assert.deepEqual(
+    [...offerTypesOf({ promoName: '3x2', prevPrice: null, promotionKinds: ['multibuy', 'shipping'] })],
+    ['multibuy', 'shipping'],
+  );
 });

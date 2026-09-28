@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
@@ -21,6 +21,7 @@ import { GroupsStackParamList } from '../types';
 import {
   fetchGroupDetail,
   fetchGroupItems,
+  fetchMyCartMemberships,
   getInviteLink,
   updateGroupIcon,
   type GroupSummary,
@@ -28,6 +29,7 @@ import {
 } from '../api/groups';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
@@ -43,6 +45,9 @@ import { groupByZone, sortZoneItems, type ShopZone } from '../constants/zones';
 import { mergeCartItems, type MergedCartItem } from '../api/lists';
 import GroupIconPickerSheet from '../components/GroupIconPickerSheet';
 import { DEFAULT_GROUP_ICON } from '../constants/groupIcons';
+import { groupCartIsLocked } from '../lib/groupCartLimit';
+import { GROUP_CART_LIMIT_RELEASE_ENABLED } from '../lib/groupCartRelease';
+import PaywallModal from '../components/PaywallModal';
 
 type GroupDetailRouteProp = RouteProp<GroupsStackParamList, 'GroupDetail'>;
 type GroupCartSection = {
@@ -74,6 +79,8 @@ export default function GroupDetailScreen() {
   const tabBarOffset = useTabBarBottomPadding(0);
   const { t } = useTranslation();
   const { session } = useAuth();
+  const viewerId = session?.user.id;
+  const { isPremium, loading: profileLoading } = useProfile();
   const { updateActiveCartIcon } = useCart();
   const toast = useToast();
   const navigation = useNavigation<any>();
@@ -82,6 +89,8 @@ export default function GroupDetailScreen() {
 
   const [group, setGroup] = useState<GroupSummary | null>(null);
   const [items, setItems] = useState<GroupItem[]>([]);
+  const [cartLocked, setCartLocked] = useState(false);
+  const [paywallVisible, setPaywallVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [cartExpanded, setCartExpanded] = useState(false);
@@ -90,17 +99,44 @@ export default function GroupDetailScreen() {
   const [headerHeight, setHeaderHeight] = useState(0);
   const [iconPickerVisible, setIconPickerVisible] = useState(false);
   const [savingIcon, setSavingIcon] = useState(false);
+  const loadVersion = useRef(0);
   const isAdmin = group?.members.some((member) => member.id === session?.user.id && member.isAdmin) ?? false;
 
   const load = useCallback(() => {
+    if (GROUP_CART_LIMIT_RELEASE_ENABLED && (profileLoading || !viewerId)) return Promise.resolve();
+    const version = ++loadVersion.current;
     setError(false);
-    return Promise.all([fetchGroupDetail(groupId), fetchGroupItems(groupId)])
-      .then(([g, its]) => { setGroup(g); setItems(its); })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
-  }, [groupId]);
+    if (!GROUP_CART_LIMIT_RELEASE_ENABLED) {
+      return Promise.all([fetchGroupDetail(groupId), fetchGroupItems(groupId)])
+        .then(([g, its]) => {
+          if (version !== loadVersion.current) return;
+          setGroup(g);
+          setItems(its);
+        })
+        .catch(() => { if (version === loadVersion.current) setError(true); })
+        .finally(() => { if (version === loadVersion.current) setLoading(false); });
+    }
+    if (!viewerId) return Promise.resolve();
+    setLoading(true);
+    setItems([]);
+    setCartExpanded(false);
+    return Promise.all([fetchGroupDetail(groupId), fetchMyCartMemberships(viewerId)])
+      .then(async ([g, groups]) => {
+        const locked = groupCartIsLocked(groups, groupId, isPremium);
+        const its = locked ? [] : await fetchGroupItems(groupId);
+        if (version !== loadVersion.current) return;
+        setGroup(g);
+        setCartLocked(locked);
+        setItems(its);
+      })
+      .catch(() => { if (version === loadVersion.current) setError(true); })
+      .finally(() => { if (version === loadVersion.current) setLoading(false); });
+  }, [groupId, isPremium, profileLoading, viewerId]);
 
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  useFocusEffect(useCallback(() => {
+    load();
+    return () => { loadVersion.current += 1; };
+  }, [load]));
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -414,7 +450,7 @@ export default function GroupDetailScreen() {
                 </View>
               </View>
 
-              <View style={[styles.section, items.length > 0 && styles.cartIntroSection]}>
+              <View style={[styles.section, !cartLocked && items.length > 0 && styles.cartIntroSection]}>
                 <View style={styles.sectionHeader}>
                   <View style={styles.sectionTitleRow}>
                     <View style={styles.sectionIcon}>
@@ -422,7 +458,7 @@ export default function GroupDetailScreen() {
                     </View>
                     <Text style={styles.sectionTitle}>{t('group.groupCart')}</Text>
                   </View>
-                  {items.length > 0 && (
+                  {!cartLocked && items.length > 0 && (
                     <TouchableOpacity
                       onPress={() => setCartExpanded(true)}
                       style={styles.expandBtn}
@@ -435,7 +471,21 @@ export default function GroupDetailScreen() {
                   )}
                 </View>
 
-                {items.length > 0 ? (
+                {cartLocked ? (
+                  <View style={styles.lockedCart}>
+                    <Ionicons name="lock-closed" size={28} color={colors.accent} />
+                    <Text style={styles.lockedCartTitle}>{t('group.lockedCartTitle')}</Text>
+                    <Text style={styles.lockedCartText}>{t('group.lockedCartText')}</Text>
+                    <TouchableOpacity
+                      style={styles.unlockBtn}
+                      onPress={() => setPaywallVisible(true)}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('group.unlockCart')}
+                    >
+                      <Text style={styles.unlockBtnText}>{t('group.unlockCart')}</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : items.length > 0 ? (
                   <View style={styles.progressWrap}>
                     <ProgressBar progress={progress} height={6} />
                     <Text style={styles.progressSub}>
@@ -452,7 +502,7 @@ export default function GroupDetailScreen() {
       )}
 
       {/* Total bar */}
-      {!cartExpanded && hasPrices && items.length > 0 && (
+      {!cartLocked && !cartExpanded && hasPrices && items.length > 0 && (
         <GlassSurface
           style={[styles.totalBar, { bottom: tabBarOffset + 8 }]}
           tintColor={colors.accentLight}
@@ -528,6 +578,8 @@ export default function GroupDetailScreen() {
         onSave={handleSaveIcon}
         onClose={() => { if (!savingIcon) setIconPickerVisible(false); }}
       />
+
+      <PaywallModal visible={paywallVisible} onClose={() => setPaywallVisible(false)} />
 
       {glassAvailable && !cartExpanded && (
         <View style={styles.chrome} onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}>
@@ -639,6 +691,11 @@ const themedStyles = () => StyleSheet.create({
   progressSub: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'right' },
 
   emptyCart: { fontSize: 14, fontFamily: fonts.medium, color: colors.inkSoft, paddingVertical: 6 },
+  lockedCart: { alignItems: 'center', paddingVertical: 20, paddingHorizontal: 12, gap: 8 },
+  lockedCartTitle: { fontSize: 16, fontFamily: fonts.bold, color: colors.ink },
+  lockedCartText: { fontSize: 13, lineHeight: 18, fontFamily: fonts.medium, color: colors.inkSoft, textAlign: 'center' },
+  unlockBtn: { marginTop: 6, paddingHorizontal: 18, paddingVertical: 10, borderRadius: 16, backgroundColor: colors.accent },
+  unlockBtnText: { fontSize: 13, fontFamily: fonts.bold, color: colors.white },
 
   // ── Store sub-header dentro de la cesta ───────────────────────
   storeHeader: {

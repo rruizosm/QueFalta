@@ -1,7 +1,7 @@
 import { runOnUI, useAnimatedReaction } from 'react-native-reanimated';
 import { TabBarScrollContext, TabBarScrollRouteContext, useTabBarScrollController } from '../context/TabBarScrollContext';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import {
   CommonActions, createNavigatorFactory, getFocusedRouteNameFromRoute, TabRouter, useNavigationBuilder,
   type NavigatorTypeBagBase, type ParamListBase, type StaticConfig, type TabActionHelpers,
@@ -90,7 +90,9 @@ function AppPagerView({ state, navigation, descriptors }: Omit<BottomTabBarProps
     if (index !== state.index) void Haptics.selectionAsync().catch(() => {});
     goTo(index);
   };
-  const bottom = Math.max(insets.bottom, 8) + L.bottomGap;
+  const bottom = Platform.OS === 'ios'
+    ? L.iosBottomOffset
+    : Math.max(insets.bottom, 8) + L.bottomGap;
   const barHeight = hidden ? 0 : bottom + L.height;
   const tabs = state.routes.map((route, index) => ({
     key: route.key, label: descriptors[route.key].options.title ?? route.name, icon: 'circle' as const,

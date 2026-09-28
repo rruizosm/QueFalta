@@ -11,7 +11,7 @@ import {
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
-import { CatalogStackParamList } from '../types';
+import type { CatalogCategoryNode, CatalogStackParamList } from '../types';
 import { getSubcategoryEmoji } from '../constants/subcategoryEmojis';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
@@ -21,7 +21,7 @@ import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import GlassSurface from '../components/GlassSurface';
 
 type SubCategoryRouteProp = RouteProp<CatalogStackParamList, 'SubCategory'>;
-type Subcat = { id: string | number; name: string };
+type Subcat = CatalogCategoryNode & { allProducts?: boolean; targetCategoryId?: string };
 
 export default function SubCategoryScreen() {
   // useThemedStyles suscribe al tema (recrea estilos y refresca colors.accent /
@@ -32,10 +32,36 @@ export default function SubCategoryScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const route = useRoute<SubCategoryRouteProp>();
-  const { categoryName, emoji = '🛒', color = colors.accent, subcategories = [], retailer = 'mercadona' } = route.params;
+  const {
+    categoryName, categoryId, parentName, emoji = '🛒', color = colors.accent,
+    subcategories = [], retailer = 'mercadona',
+  } = route.params;
+
+  const nestedParentName = parentName ? `${parentName} › ${categoryName}` : categoryName;
+  const rows: Subcat[] = retailer === 'eljamon' && categoryId
+    ? [{ id: `all:${categoryId}`, targetCategoryId: categoryId, name: t('catalog.allProducts'), allProducts: true }, ...subcategories]
+    : subcategories;
 
   const openSubcategory = (item: Subcat) => {
-    if (retailer === 'esclat') {
+    if (retailer === 'eljamon') {
+      if (!item.allProducts && item.children?.length) {
+        navigation.push('SubCategory', {
+          categoryId: String(item.id),
+          categoryName: item.name,
+          parentName: nestedParentName,
+          emoji: getSubcategoryEmoji(item.name, emoji),
+          color,
+          subcategories: item.children,
+          retailer,
+        });
+      } else {
+        navigation.navigate('EljamonProducts', {
+          categoryId: item.targetCategoryId ?? String(item.id),
+          categoryName: item.allProducts ? categoryName : item.name,
+          parentName: item.allProducts ? parentName : nestedParentName,
+        });
+      }
+    } else if (retailer === 'esclat') {
       navigation.navigate('BonpreuProducts', {
         categoryId: String(item.id),
         categoryName: item.name,
@@ -103,6 +129,12 @@ export default function SubCategoryScreen() {
       });
     } else if (retailer === 'lidl') {
       navigation.navigate('LidlProducts', {
+        categoryId: String(item.id),
+        categoryName: item.name,
+        parentName: categoryName,
+      });
+    } else if (retailer === 'bm') {
+      navigation.navigate('BmProducts', {
         categoryId: String(item.id),
         categoryName: item.name,
         parentName: categoryName,
@@ -184,7 +216,7 @@ export default function SubCategoryScreen() {
       </View>
 
       <FlatList
-        data={sortByName(subcategories, (s) => s.name)}
+        data={itemSort(rows)}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
         contentContainerStyle={[styles.list, { paddingBottom: bottomPad }]}
@@ -232,3 +264,9 @@ const themedStyles = () => StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceAlt,
   },
 });
+
+const itemSort = (items: Subcat[]): Subcat[] => {
+  const all = items.find((item) => item.allProducts);
+  const categories = sortByName(items.filter((item) => !item.allProducts), (item) => item.name);
+  return all ? [all, ...categories] : categories;
+};

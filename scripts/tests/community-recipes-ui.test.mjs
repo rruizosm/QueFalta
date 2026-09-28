@@ -6,11 +6,12 @@ const screenUrl = new URL('../../src/screens/QueCocinoScreen.tsx', import.meta.u
 const apiUrl = new URL('../../src/api/recipes.ts', import.meta.url);
 const actionsUrl = new URL('../../src/components/RecipeEngagementActions.tsx', import.meta.url);
 const detailUrl = new URL('../../src/components/CommunityRecipeDetailModal.tsx', import.meta.url);
-const creatorUrl = new URL('../../src/components/CreateRecipeModal.tsx', import.meta.url);
+const creatorUrl = new URL('../../src/components/RecipeForm.tsx', import.meta.url);
 const badgeUrl = new URL('../../src/components/VerifiedBadge.tsx', import.meta.url);
 const translationsUrl = new URL('../../src/i18n/translations.ts', import.meta.url);
 const limitsUrl = new URL('../../src/constants/limits.ts', import.meta.url);
 const navigationUrl = new URL('../../src/navigation/index.tsx', import.meta.url);
+const transitionUrl = new URL('../../src/hooks/useRecipeCreatorTransition.ts', import.meta.url);
 
 test('recipes are enabled and mounted as a tab', async () => {
   const [limits, navigation] = await Promise.all([
@@ -22,7 +23,7 @@ test('recipes are enabled and mounted as a tab', async () => {
   assert.match(navigation, /\{QUE_COCINO_ENABLED && \([\s\S]*name="QueCocino"[\s\S]*component=\{QueCocinoScreen\}/);
 });
 
-test('recipe sources separate community content from the unavailable supermarket catalog', async () => {
+test('recipes show community content without exposing an unavailable supermarket selector', async () => {
   const [screen, translations] = await Promise.all([
     readFile(screenUrl, 'utf8'),
     readFile(translationsUrl, 'utf8'),
@@ -32,13 +33,9 @@ test('recipe sources separate community content from the unavailable supermarket
   assert.match(screen, /sortedRecipes\.map/);
   assert.match(screen, /!recipesLoading && !recipesError && communityRecipes\.length === 0/);
   assert.doesNotMatch(screen, /SectionHeading|SAMPLE_RECIPES|OFFICIAL_STORES/);
-  assert.match(screen, /useState<RecipeSource>\('users'\)/);
-  assert.match(screen, /<SlidingSegments<RecipeSource>[\s\S]*emphasized[\s\S]*value=\{recipeSource\}[\s\S]*onChange=\{selectRecipeSource\}/);
-  assert.match(screen, /recipeSource === 'users' \? <>[\s\S]*sortedRecipes\.map[\s\S]*<\/\> : \([\s\S]*queCocino\.supermarketEmptyTitle/);
-  assert.match(screen, /recipeFiltersVisible = recipeSource === 'users' && communityRecipes.length > 0/);
-  assert.match(screen, /scrollRef\.current\?\.scrollTo\(\{ y: 0, animated: false \}\)/);
-  assert.match(translations, /sources: \{ users: 'Usuarios', supermarket: 'Supermercado' \}/);
-  assert.match(translations, /sources: \{ users: 'Usuaris', supermarket: 'Supermercat' \}/);
+  assert.match(screen, /recipeFiltersVisible = communityRecipes.length > 0/);
+  assert.match(screen, /<CreateRecipeButton bottom=\{createButtonBottom\}/);
+  assert.doesNotMatch(screen, /SlidingSegments|RecipeSource|recipeSource|selectRecipeSource|supermarketEmpty/);
   assert.doesNotMatch(translations, /communityTitle|communitySubtitle|sourceCommunity|sourceSupermarkets|sampleIdeas|sampleNotice|queCocino\.recipes/);
 });
 
@@ -157,28 +154,41 @@ test('recipe previews show the golden public Plus badge beside verified authors'
   assert.match(badge, /tone === 'gold' \? '#D2900F'/);
 });
 
-test('recipe servings are selected before ingredients, persisted, and shown in detail', async () => {
-  const [creator, detail, api, translations] = await Promise.all([
-    readFile(creatorUrl, 'utf8'),
+test('only recipe owners see an immediate horizontal editor with top-level confirmed deletion', async () => {
+  const [screen, detail, creator, api, translations, transition] = await Promise.all([
+    readFile(screenUrl, 'utf8'),
     readFile(detailUrl, 'utf8'),
+    readFile(creatorUrl, 'utf8'),
     readFile(apiUrl, 'utf8'),
     readFile(translationsUrl, 'utf8'),
+    readFile(transitionUrl, 'utf8'),
   ]);
 
-  const servingsSection = creator.indexOf("t('queCocino.creator.servings')");
-  const ingredientsSection = creator.indexOf("t('queCocino.creator.ingredients')");
-  assert(servingsSection > 0);
-  assert(servingsSection < ingredientsSection);
-  assert.match(creator, /const \[servings, setServings\] = useState\(2\)/);
-  assert.match(creator, /MIN_RECIPE_SERVINGS = 1/);
-  assert.match(creator, /MAX_RECIPE_SERVINGS = 99/);
-  assert.match(creator, /testID="recipe-servings-decrease"/);
-  assert.match(creator, /testID="recipe-servings-increase"/);
-  assert.match(creator, /createCommunityRecipe\(\{[\s\S]*servings,[\s\S]*ingredients,/);
-  assert.match(api, /servings: normalizeRecipeServings\(row\.servings\)/);
-  assert.match(api, /image_path, servings, ingredients/);
-  assert.match(api, /servings: input\.servings/);
-  assert.match(detail, /recipeServings !== null[\s\S]*queCocino\.detail\.servingsMany/);
-  assert.match(translations, /servings: '¿Para cuántas personas\?'/);
-  assert.match(translations, /servings: 'Per a quantes persones\?'/);
+  const flow = await readFile(new URL('../../src/components/RecipeFlowModal.tsx', import.meta.url), 'utf8');
+  assert.match(flow, /recipe.authorId === session\?\.user.id/);
+  assert.match(flow, /initialRouteName="RecipeDetail"/);
+  assert.match(flow, /name="EditRecipe" component=\{EditRecipeScreen\}/);
+  assert.match(detail, /testID="recipe-edit"[\s\S]*name="pencil"/);
+  assert.match(flow, /navigation.navigate\('EditRecipe', \{ recipe: current \}\)/);
+  assert.match(creator, /useState\(editingRecipe\?\.title \?\? ''\)/);
+  assert.match(creator, /recipeIngredients\(editingRecipe\)/);
+  assert.match(creator, /recipeSteps\(editingRecipe\)/);
+  assert.match(creator, /updateCommunityRecipe/);
+  assert.match(creator, /Alert\.alert\([\s\S]*deleteTitle[\s\S]*style: 'destructive'/);
+  assert.match(creator, /testID="recipe-delete"/);
+  assert.ok(creator.indexOf('testID="recipe-delete"') < creator.indexOf('contentInsetAdjustmentBehavior'));
+  assert.doesNotMatch(creator, /deleteSection|deleteHint/);
+  assert.match(flow, /animationType="none"/);
+  assert.match(detail, /style=\{\[styles\.root, detailMotion\]\}/);
+  assert.match(detail, /onPress=\{openEditor\}/);
+  assert.doesNotMatch(detail, /onDismiss=|openingEditor/);
+  assert.match(detail, /detailProgress\.set\(withTiming\(0/);
+  assert.doesNotMatch(screen, /requestAnimationFrame\(\(\) => navigation\.navigate\('NewRecipe'/);
+  assert.doesNotMatch(transition, /presentation === 'edit'/);
+  assert.match(transition, /translateY:[\s\S]*size\.value\.height/);
+  assert.match(transition, /const bounds = origin \? await localSource\(origin\) : null/);
+  assert.match(api, /input\.recipe\.authorId !== input\.userId/);
+  assert.match(api, /recipe\.authorId !== userId/);
+  assert.match(translations, /editTitle: 'Editar receta'/);
+  assert.match(translations, /deleteTitle: '¿Eliminar esta receta\?'/);
 });

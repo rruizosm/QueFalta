@@ -2,6 +2,12 @@ param(
   [switch]$Publish,
   [switch]$Resume,
   [switch]$Visible,
+  [string]$PostalCodes = '',
+  [string]$PostalCodesFile = '',
+  [switch]$DiscoverProvinces,
+  [switch]$LocationOnly,
+  [int]$MaxPostalCodes = 0,
+  [int]$MaxCenters = 0,
   [int]$PageDelayMinMs = 1500,
   [int]$PageDelayMaxMs = 3000,
   [int]$CategoryDelayMs = 15000,
@@ -22,6 +28,12 @@ if ($PageDelayMinMs -lt 0 -or $PageDelayMaxMs -lt $PageDelayMinMs) {
 if ($CategoryDelayMs -lt 0 -or $WafCooldownMs -le 0) {
   throw 'CategoryDelayMs debe ser >= 0 y WafCooldownMs debe ser > 0.'
 }
+if ($MaxPostalCodes -lt 0 -or $MaxCenters -lt 0) {
+  throw 'MaxPostalCodes y MaxCenters deben ser >= 0 (0 = sin límite).'
+}
+if ($LocationOnly -and -not ($PostalCodes -or $PostalCodesFile -or $DiscoverProvinces)) {
+  throw 'LocationOnly requiere PostalCodes, PostalCodesFile o DiscoverProvinces.'
+}
 
 $repo = Split-Path -Parent $PSScriptRoot
 $envFile = Join-Path $repo '.env.local'
@@ -29,6 +41,8 @@ $logDir = Join-Path $PSScriptRoot 'logs'
 if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Path $logDir | Out-Null }
 $log = Join-Path $logDir ("hipercor-sync-{0}.log" -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
 $checkpoint = Join-Path $logDir 'hipercor-sync-checkpoint.json'
+$locationCheckpoint = Join-Path $logDir 'hipercor-location-checkpoint.json'
+$locationReport = Join-Path $logDir 'hipercor-location-report.json'
 
 # Publicar exige -Publish explícito. Las pruebas normales recorren todo el
 # catálogo y validan su volumen, pero no leen credenciales ni escriben Supabase.
@@ -41,7 +55,27 @@ $env:PAGE_DELAY_MAX_MS = [string]$PageDelayMaxMs
 $env:CATEGORY_DELAY_MS = [string]$CategoryDelayMs
 $env:WAF_COOLDOWN_MS = [string]$WafCooldownMs
 $env:HIPERCOR_CHECKPOINT = $checkpoint
+$env:HIPERCOR_LOCATION_CHECKPOINT = $locationCheckpoint
+$env:HIPERCOR_LOCATION_REPORT = $locationReport
 $env:MIN_PRODUCTS = '10000'
+$env:HIPERCOR_POSTAL_CODES = $PostalCodes
+$env:HIPERCOR_DISCOVER_PROVINCES = if ($DiscoverProvinces) { '1' } else { '0' }
+$env:HIPERCOR_LOCATION_ONLY = if ($LocationOnly) { '1' } else { '0' }
+if ($PostalCodesFile) {
+  $env:HIPERCOR_POSTAL_CODES_FILE = (Resolve-Path $PostalCodesFile).Path
+} else {
+  Remove-Item Env:HIPERCOR_POSTAL_CODES_FILE -ErrorAction SilentlyContinue
+}
+if ($MaxPostalCodes -gt 0) {
+  $env:HIPERCOR_MAX_POSTAL_CODES = [string]$MaxPostalCodes
+} else {
+  Remove-Item Env:HIPERCOR_MAX_POSTAL_CODES -ErrorAction SilentlyContinue
+}
+if ($MaxCenters -gt 0) {
+  $env:HIPERCOR_MAX_CENTERS = [string]$MaxCenters
+} else {
+  Remove-Item Env:HIPERCOR_MAX_CENTERS -ErrorAction SilentlyContinue
+}
 
 if ($Publish) {
   if (-not (Test-Path $envFile)) { throw "No existe $envFile" }
@@ -64,7 +98,7 @@ if ($Publish) {
 }
 
 Set-Location $repo
-"=== Hipercor sync $(Get-Date -Format 'u') · publish=$Publish · resume=$Resume ===" | Tee-Object -FilePath $log
+"=== Hipercor sync $(Get-Date -Format 'u') · publish=$Publish · resume=$Resume · locationOnly=$LocationOnly ===" | Tee-Object -FilePath $log
 # cmd.exe mezcla stdout/stderr antes de entregarlos a Windows PowerShell 5.1;
 # así un console.warn de Node no se convierte en NativeCommandError.
 & cmd.exe /d /c 'node scripts/sync-hipercor.mjs 2>&1' | Tee-Object -FilePath $log -Append

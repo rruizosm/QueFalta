@@ -39,7 +39,8 @@ export default function CatalogStoresScreen() {
   // "Toda España". La preferencia guardada puede contener súpers de fuera de
   // la región (no se destruye al cambiar de CCAA); simplemente no se listan.
   const region = profile?.region ?? null;
-  const shown = storesWithLidlSecond(CATALOG_STORES.filter((s) => storeInRegion(s.key, region)));
+  const postalCode = profile?.postalCode ?? null;
+  const shown = storesWithLidlSecond(CATALOG_STORES.filter((s) => storeInRegion(s.key, region, postalCode)));
 
   const toggle = async (key: CatalogStore) => {
     const isOn = selected.includes(key);

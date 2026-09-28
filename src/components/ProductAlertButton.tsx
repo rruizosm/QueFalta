@@ -122,14 +122,14 @@ export default function ProductAlertButton({ store, productId, overlay = false }
 const themedStyles = () => StyleSheet.create({
   buttonBackground: {
     alignSelf: 'flex-start', marginTop: 8, borderRadius: 10,
-    backgroundColor: colors.accentLight,
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: colors.accentMid,
+    borderColor: colors.accent,
   },
   button: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     paddingHorizontal: 9, paddingVertical: 7, borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: colors.white,
   },
   overlay: {
     position: 'absolute', top: 10, right: 10, zIndex: 3, marginTop: 0,

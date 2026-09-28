@@ -11,10 +11,11 @@ async function source(path) {
   return import(`data:text/javascript;base64,${Buffer.from(outputText).toString('base64')}`);
 }
 const { WordGameSession, wordDraftKey } = await source('src/lib/wordGameSession.ts');
-const { parseDailyWord, parseWordRanking } = await source('src/lib/wordGamePayload.ts');
+const { parseDailyWord, parseWordRanking, parseWordRankingWindow } = await source('src/lib/wordGamePayload.ts');
 const emptyGame = (patch = {}) => ({
   id: 'day-one', day: '2026-09-11', language: 'es', length: 5, status: 'playing',
-  guesses: [], score: 0, solution: null, serverNow: '2026-09-11T12:00:00Z', endsAt: '2026-09-11T22:00:00Z', ...patch,
+  guesses: [], score: 0, scoringVersion: 1, startedAt: '2026-09-11T12:00:00Z', durationSeconds: null,
+  solution: null, serverNow: '2026-09-11T12:00:00Z', endsAt: '2026-09-11T22:00:00Z', ...patch,
 });
 const turn = (word, correct = false) => ({ word, feedback: Array(word.length).fill(correct ? 'correct' : 'absent') });
 const flush = () => new Promise((resolve) => setImmediate(resolve));
@@ -24,6 +25,7 @@ function fixture() {
   const storageKey = `test-user-${++fixtureId}`;
   const f = { game: emptyGame(), saved: null, now: 0, calls: [], reads: 0, offline: false };
   f.today = async () => { f.reads++; if (f.offline) throw Error('offline'); return structuredClone(f.game); };
+  f.start = async () => { if (f.offline) throw Error('offline'); f.game.startedAt ??= f.game.serverNow; return structuredClone(f.game); };
   f.submit = async (id, word, attempts) => {
     f.calls.push({ id, word, attempts });
     if (f.offline) throw Error('offline');
@@ -36,14 +38,34 @@ function fixture() {
     f.game.status = won ? 'won' : f.game.guesses.length === 6 ? 'lost' : 'playing';
     f.game.score = won ? 1000 - 150 * attempts : 0;
     f.game.solution = f.game.status === 'playing' ? null : 'ARROZ';
+    f.game.durationSeconds = f.game.status === 'playing' ? null : Math.floor(f.now / 1000);
     return structuredClone(f.game);
   };
-  f.create = () => new WordGameSession({ storageKey, today: () => f.today(), submit: (...args) => f.submit(...args),
+  f.create = () => new WordGameSession({ storageKey, today: () => f.today(), start: () => f.start(), submit: (...args) => f.submit(...args),
     now: () => f.now, readDraft: async () => f.saved, writeDraft: async (value) => { f.saved = value; } });
   f.session = f.create();
   f.type = (word, session = f.session) => { for (const letter of word) session.key(letter); };
   return f;
 }
+
+test('el tiempo empieza solo tras confirmar el inicio y avanza en bloques de 20 s', async () => {
+  const f = fixture(); f.game = emptyGame({ scoringVersion: 2, startedAt: null });
+  await f.session.refresh();
+  f.type('QUESO'); assert.equal(f.session.state.draft, '');
+  await f.session.start();
+  assert.equal(f.session.state.game.startedAt, f.game.serverNow);
+  f.type('QUESO'); assert.equal(f.session.state.draft, 'QUESO');
+  f.session.setActive(true); await flush(); f.now = 20_000; f.session.tick();
+  assert.equal(f.session.state.elapsed, 20);
+});
+
+test('un inicio incierto se recupera sin reiniciar el cronómetro', async () => {
+  const f = fixture(); f.game = emptyGame({ scoringVersion: 2, startedAt: null });
+  f.start = async () => { f.game.startedAt = f.game.serverNow; throw Error('network'); };
+  await f.session.refresh(); await f.session.start();
+  assert.equal(f.session.state.game.startedAt, f.game.serverNow);
+  assert.equal(f.session.state.error, '');
+});
 
 test('4–6 letras: entrada limitada, borrado y longitud requerida', async () => {
   for (const length of [4, 5, 6]) {
@@ -57,6 +79,41 @@ test('borrador persiste al refrescar y al recrear la sesión', async () => {
   const f = fixture(); await f.session.refresh(); f.type('QUE');
   await f.session.refresh(); assert.equal(f.session.state.draft, 'QUE');
   const next = f.create(); await next.refresh(); assert.equal(next.state.draft, 'QUE');
+});
+test('permite escribir en una casilla elegida, rellenar huecos y enviar solo la fila completa', async () => {
+  const f = fixture(); await f.session.refresh();
+  f.session.selectCell(4); f.session.key('O');
+  assert.equal(f.session.state.draft, '    O');
+  assert.equal(f.session.state.cursor, 0);
+  await f.session.send();
+  assert.equal(f.session.state.error, 'length');
+  assert.equal(f.calls.length, 0);
+  f.type('QUES');
+  assert.equal(f.session.state.draft, 'QUESO');
+  assert.equal(f.session.state.cursor, 5);
+  assert.equal(await f.session.send(), 'playing');
+  assert.equal(f.calls[0].word, 'QUESO');
+});
+test('al tocar una letra escrita la sustituye sin mover el resto y borrar actúa sobre la selección', async () => {
+  const f = fixture(); await f.session.refresh(); f.type('QUESO');
+  f.session.selectCell(1); f.session.key('⌫');
+  assert.equal(f.session.state.draft, 'Q ESO');
+  assert.equal(f.session.state.cursor, 1);
+  f.session.key('A');
+  assert.equal(f.session.state.draft, 'QAESO');
+  f.session.key('B');
+  assert.equal(f.session.state.draft, 'QAESO');
+  f.session.selectCell(4); f.session.key('B');
+  assert.equal(f.session.state.draft, 'QAESB');
+});
+test('conserva la casilla seleccionada al reabrir y acepta borradores antiguos', async () => {
+  const f = fixture(); await f.session.refresh(); f.type('QU'); f.session.selectCell(4);
+  const next = f.create(); await next.refresh();
+  assert.equal(next.state.draft, 'QU');
+  assert.equal(next.state.cursor, 4);
+  next.key('O'); assert.equal(next.state.draft, 'QU  O');
+  const old = fixture(); old.saved = JSON.stringify({ gameId: 'day-one', attempts: 0, word: 'QUE', pending: false });
+  await old.session.refresh(); assert.equal(old.session.state.cursor, 3);
 });
 test('borrador antiguo se descarta si avanzó en otro dispositivo', async () => {
   const f = fixture(); await f.session.refresh(); f.type('QUE');
@@ -96,9 +153,11 @@ test('inválida y repetida no consumen intentos; permiten corregir', async () =>
   assert.equal(f.session.state.uncertain, false);
 });
 test('victoria y puntuación del servidor; no deja jugar tras terminar', async () => {
-  const f = fixture(); await f.session.refresh(); f.type('QUESO'); await f.session.send();
+  const f = fixture(); await f.session.refresh(); f.type('QUESO'); await f.session.send(); f.now = 42_000;
   f.type('ARROZ'); assert.equal(await f.session.send(), 'won');
   assert.equal(f.session.state.game.score, 850); assert.equal(f.session.state.game.solution, 'ARROZ');
+  assert.equal(f.session.state.elapsed, 42);
+  f.now = 300_000; await f.session.refresh(); assert.equal(f.session.state.elapsed, 42);
   f.type('LECHE'); await f.session.send(); assert.equal(f.calls.length, 2); assert.equal(f.session.state.draft, '');
 });
 test('seis fallos cierran la partida sin puntos', async () => {
@@ -163,7 +222,10 @@ test('no consulta periódicamente estando en segundo plano; reanuda al volver', 
 });
 test('acepta payloads reales y rechaza respuestas que romperían el tablero', () => {
   assert.equal(parseDailyWord(emptyGame()).length, 5);
-  for (const patch of [{ length: 9 }, { endsAt: null }, { serverNow: 'bad' }, { guesses: null },
+  const v2Win = emptyGame({ scoringVersion: 2, status: 'won', guesses: [turn('ARROZ', true)], solution: 'ARROZ', score: 120, durationSeconds: 19 });
+  assert.equal(parseDailyWord(v2Win).score, 120);
+  assert.throws(() => parseDailyWord({ ...v2Win, score: 281 }), /WORD_BAD_RESPONSE/);
+  for (const patch of [{ length: 9 }, { endsAt: null }, { serverNow: 'bad' }, { guesses: null }, { durationSeconds: -1 },
     { guesses: [{ word: 'QUESO', feedback: ['correct'] }] }, { solution: 'ARROZ' },
     { status: 'lost' }, { status: 'won', guesses: [turn('ARROZ', true)], solution: 'ARROZ', score: 42 }]) {
     assert.throws(() => parseDailyWord(emptyGame(patch)), /WORD_BAD_RESPONSE/);
@@ -177,7 +239,14 @@ test('ranking valida filas y posición propia antes de renderizar', () => {
   assert.deepEqual(parseWordRanking({ leaders: [podium], me: podium }).me, podium);
   for (const data of [null, {}, { leaders: [{ ...row, score: '1000' }], me: null },
     { leaders: [{ ...row, avatarUrl: 123 }], me: null }, { leaders: [{ ...row, isPlus: 'yes' }], me: null },
-    { leaders: [], me: { ...row, isMe: false } }, { leaders: Array(51).fill(row), me: null }]) {
+    { leaders: [], me: { ...row, isMe: false } }, { leaders: Array(151).fill(row), me: null }]) {
     assert.throws(() => parseWordRanking(data), /WORD_BAD_RESPONSE/);
+  }
+});
+test('ranking histórico valida las fechas y la navegación recibidas del servidor', () => {
+  const period = { leaders: [], me: null, periodStart: '2026-09-16', periodEnd: '2026-09-16', offset: 1, hasPrevious: false };
+  assert.deepEqual(parseWordRankingWindow(period), period);
+  for (const patch of [{ periodStart: 'ayer' }, { periodEnd: '2026-09-15' }, { offset: -1 }, { hasPrevious: 'sí' }]) {
+    assert.throws(() => parseWordRankingWindow({ ...period, ...patch }), /WORD_BAD_RESPONSE/);
   }
 });

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator, Alert,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator, Alert, Linking,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
@@ -42,6 +42,7 @@ export default function CarrefourProductModal({ product, onClose, topInset = 16,
   const { t } = useTranslation();
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
+  const [showAllPromotions, setShowAllPromotions] = useState(false);
 
   const nutrition = useNutritionInfoDisclosure({
     store: 'carrefour',
@@ -53,20 +54,19 @@ export default function CarrefourProductModal({ product, onClose, topInset = 16,
     fallbackIngredients: product?.ingredients,
   });
 
-  useEffect(() => { setQty(1); }, [product?.id]);
+  useEffect(() => { setQty(1); setShowAllPromotions(false); }, [product?.id]);
 
   if (!product) return null;
   const price = product.priceFormat
     ?? (product.unitPrice != null ? `${product.unitPrice.toFixed(2).replace('.', ',')} €` : null);
   const fav = isProductFavorite('carrefour', product.id);
-  // Oferta (ver carrefour_offers.sql). Los datos son del sync semanal, así que
-  // una promo puede caducar a mitad de semana: promo_end la oculta al vencer
-  // (comparación de fechas ISO en LOCAL; null = el badge no traía fecha).
-  const d = new Date();
-  const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  const promoActive = product.promoName != null && (product.promoEnd == null || product.promoEnd >= today);
   const prevPrice = product.strikethroughPrice != null
     ? `${product.strikethroughPrice.toFixed(2).replace('.', ',')} €` : null;
+  const formatDate = (value: string) => value.slice(0, 10).split('-').reverse().join('/');
+  const promoValidity = (start: string | null, end: string | null) =>
+    start && end ? t('product.offerValidityRange', { start: formatDate(start), end: formatDate(end) })
+      : start ? t('product.offerValidityFrom', { start: formatDate(start) })
+        : end ? t('product.offerValidityUntil', { end: formatDate(end) }) : null;
 
   const handleToggleFav = async () => {
     try {
@@ -139,15 +139,45 @@ export default function CarrefourProductModal({ product, onClose, topInset = 16,
         />
         {product.pricePerUnit ? <Text style={styles.refPrice}>{product.pricePerUnit}</Text> : null}
 
-        {/* Promo de lote ("3x2", "2ª unidad -70%"…) con sus condiciones completas
-            (el texto de Carrefour ya incluye la validez: "Válido del … al …"). */}
-        {promoActive ? (
+        {product.promotions.length > 0 ? (
           <View style={styles.promoBox}>
-            <View style={styles.promoPill}>
-              <Ionicons name="pricetags" size={12} color={colors.white} />
-              <Text style={styles.promoPillText}>{product.promoName}</Text>
-            </View>
-            {product.promoText ? <Text style={styles.promoText}>{product.promoText}</Text> : null}
+            {product.promotions.slice(0, showAllPromotions ? undefined : 1).map((promotion, index) => (
+              <View key={`${promotion.kind}:${promotion.name}:${index}`} style={index > 0 ? styles.additionalPromo : undefined}>
+                <View style={styles.promoPill}>
+                  <Ionicons name="pricetags" size={12} color={colors.white} />
+                  <Text style={styles.promoPillText}>{promotion.name}</Text>
+                </View>
+                {promotion.text ? (
+                  <View style={styles.promoDetail}>
+                    <Text style={styles.promoDetailLabel}>{t('product.offerConditions')}</Text>
+                    <Text style={styles.promoText}>{promotion.text}</Text>
+                  </View>
+                ) : null}
+                {promoValidity(promotion.start, promotion.end) ? (
+                  <View style={styles.promoDetail}>
+                    <Text style={styles.promoDetailLabel}>{t('product.offerValidity')}</Text>
+                    <Text style={styles.promoText}>{promoValidity(promotion.start, promotion.end)}</Text>
+                  </View>
+                ) : null}
+                {promotion.link?.startsWith('https://') ? (
+                  <TouchableOpacity onPress={() => Linking.openURL(promotion.link!)} accessibilityRole="link">
+                    <Text style={styles.promoLink}>{t('product.carrefourPromoLink')}</Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+            ))}
+            {product.promotions.length > 1 ? (
+              <TouchableOpacity onPress={() => setShowAllPromotions((shown) => !shown)} accessibilityRole="button">
+                <Text style={styles.morePromos}>{showAllPromotions
+                  ? t('product.carrefourLessPromotions')
+                  : t(product.promotions.length === 2
+                    ? 'product.carrefourOneMorePromotion' : 'product.carrefourMorePromotions',
+                    { count: product.promotions.length - 1 })}</Text>
+              </TouchableOpacity>
+            ) : null}
+            {product.promotions.length > 1 ? (
+              <Text style={styles.promoDisclaimer}>{t('product.carrefourOfferCompatibility')}</Text>
+            ) : null}
           </View>
         ) : null}
 
@@ -244,6 +274,7 @@ const themedStyles = () => StyleSheet.create({
     marginTop: 14, padding: 12, gap: 8,
     backgroundColor: colors.accentLight,
     borderWidth: 1, borderColor: colors.accentMid,
+    borderRadius: 16,
   },
   promoPill: {
     alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 5,
@@ -251,6 +282,12 @@ const themedStyles = () => StyleSheet.create({
   },
   promoPillText: { fontSize: 12, fontFamily: fonts.bold, color: colors.white },
   promoText: { fontSize: 12.5, fontFamily: fonts.medium, color: colors.ink, lineHeight: 18 },
+  promoDetail: { marginTop: 7, gap: 2 },
+  promoDetailLabel: { fontSize: 11, fontFamily: fonts.bold, color: colors.inkSoft },
+  additionalPromo: { borderTopWidth: 1, borderTopColor: colors.accentMid, paddingTop: 10, marginTop: 3 },
+  morePromos: { color: colors.accent, fontFamily: fonts.bold, fontSize: 13, paddingVertical: 7 },
+  promoLink: { color: colors.accent, fontFamily: fonts.semibold, fontSize: 12.5, marginTop: 7 },
+  promoDisclaimer: { color: colors.inkSoft, fontFamily: fonts.medium, fontSize: 11.5, lineHeight: 17 },
 
   note: { fontSize: 11.5, fontFamily: fonts.medium, color: colors.inkFaint, marginTop: 24 },
 

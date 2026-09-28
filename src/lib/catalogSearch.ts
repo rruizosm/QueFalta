@@ -1,3 +1,4 @@
+import { assertCatalogSearchGeneration, getCatalogSearchGeneration } from './catalogSearchScope';
 import {
   searchProducts,
   searchBonpreuProducts,
@@ -12,6 +13,8 @@ import {
   searchAmetllerProducts,
   searchAldiProducts,
   searchLidlProducts,
+  searchBmProducts,
+  searchEljamonProducts,
   searchGadisProducts,
   searchFroizProducts,
   searchAhorramasProducts,
@@ -37,6 +40,8 @@ import {
   ametllerToUI,
   aldiToUI,
   lidlToUI,
+  bmToUI,
+  eljamonToUI,
   gadisToUI,
   froizToUI,
   ahorramasToUI,
@@ -78,6 +83,8 @@ export async function searchCatalogStore(
     case 'ametller': return (await searchAmetllerProducts(query, limit, signal, offset, order, searchLanguage)).map(ametllerToUI);
     case 'aldi': return (await searchAldiProducts(query, limit, signal, offset, order)).map(aldiToUI);
     case 'lidl': return (await searchLidlProducts(query, limit, signal, offset, order, lidlStoreId)).map(lidlToUI);
+    case 'bm': return (await searchBmProducts(query, postalCode, limit, signal, offset, order)).map(bmToUI);
+    case 'eljamon': return (await searchEljamonProducts(query, limit, signal, offset, order)).map(eljamonToUI);
     case 'gadis': return (await searchGadisProducts(query, limit, signal, offset, order)).map(gadisToUI);
     case 'froiz': return (await searchFroizProducts(query, limit, signal, offset, order)).map(froizToUI);
     case 'ahorramas': return (await searchAhorramasProducts(query, limit, signal, offset, order)).map(ahorramasToUI);
@@ -101,6 +108,7 @@ export async function searchCatalogStores(
   searchBothLanguages = false,
   lidlStoreId: string | null = null,
 ): Promise<UIProduct[]> {
+  const generation = getCatalogSearchGeneration();
   const perStoreLimit = Math.max(12, Math.ceil(limit / Math.max(stores.length, 1)) * 3);
   const searches: { store: CatalogStore; language?: AppLanguage }[] = [];
   for (const store of stores) {
@@ -125,6 +133,7 @@ export async function searchCatalogStores(
     )),
   );
 
+  assertCatalogSearchGeneration(generation);
   if (signal?.aborted) throw new Error('Catalog search aborted');
   const successful = settled.filter(
     (result): result is PromiseFulfilledResult<UIProduct[]> => result.status === 'fulfilled',

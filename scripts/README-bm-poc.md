@@ -78,3 +78,82 @@ El catalogo limita cada bloque a 20 productos y pagina mediante `offset`;
 entre 937 y 992 nodos y profundidad maxima 6. En muestras deterministas de 40
 productos ya aparecen diferencias de surtido, precio y tipo de oferta entre
 zonas, por lo que la integracion productiva debe conservar el contexto postal.
+
+## Integración en la app (2026-09-20)
+
+El catálogo BM se muestra en QuéFalta para cualquier código postal de las siete
+provincias representadas en la tabla anterior. La app traduce el prefijo del CP
+al CP de referencia sincronizado, resuelve `bm_postal_locations.location_id` y
+usa esa ubicación en búsqueda, listados, categorías, fichas, ofertas, novedades
+y cambios de precio.
+
+Para ampliar cobertura a otra provincia hay que validar un CP de referencia con
+el explorador, incorporarlo al sync y mantener en paridad las referencias en:
+
+- `scripts/lib/bm.mjs`, fuente del sincronizador;
+- `src/constants/retailerZones.ts`, guardia visible del cliente.
+
+La prueba `scripts/tests/bm-app-integration.test.mjs` falla si ambas listas dejan
+de coincidir. El workflow productivo continúa manual hasta que se valide su
+operación recurrente.
+
+## Validación de la fuente nutricional (2026-09-28)
+
+- La ficha `/api/rest/V1.0/catalog/product/code/{code}` devuelve el EAN, pero no
+  la tabla nutricional. La tienda carga un segundo JSON usando ese EAN; la ruta
+  observada en el `config.json` público es
+  `https://cdn-bm.aktiosdigitalservices.com/tol/bm/media/product/nutritional-info/{ean}.json`.
+  El listado `/catalog/product` ya incluye `ean`, que el sync guarda en
+  `bm_products.ean`; el futuro enriquecimiento puede consultar el CDN
+  directamente, sin descargar antes cada ficha `/code/{code}`. Reservar
+  `global_gtin` para la consulta externa a Open Food Facts.
+- Los JSON de cuatro alimentos reales —leche condensada `67714`, tarta helada
+  `7433`, bocaditos al cacao `87976` y leche entera `76411`— respondieron 200
+  con `nutrilabel.productInformation.nutritionalValues[].values`. Cada valor
+  contiene nombre, cantidad, unidad y `servingSize`; los nutrientes subordinados
+  (saturadas, azúcares) van en `children`. El mismo objeto ofrece
+  `ingredientsInformation` y `allergensInformation`; `messages` aporta, entre
+  otros datos, conservación. La web rotula la tabla «por 100g» incluso para la
+  leche de 1 l; no se debe convertirla implícitamente a 100 ml.
+- La presencia de `nutritional.info.date` en los atributos de la ficha no prueba
+  que exista tabla. Los artículos no alimentarios `24377` y `47424` tenían esa
+  señal, pero sus JSON respondieron 200 con solo `{"messages":[]}`. El parser
+  debe comprobar `nutritionalValues`, no solo el estado HTTP ni el atributo.
+- La ficha del producto `67714` se consultó con las cabeceras de Gipuzkoa
+  (`20009`) y Madrid (`28008`): devolvió el mismo EAN y contenido JSON. El CDN
+  usa una ruta por EAN sin parámetros de zona. Esto avala guardar el detalle en
+  `bm_products`, manteniendo los precios y ofertas en las tablas zonales. No se
+  ha medido la cobertura nutricional de todo el catálogo.
+- La validación inicial fue de solo lectura. La app todavía no presenta la
+  información nutricional ni el Índice alimentario BM.
+
+## Sync nutricional (2026-09-28)
+
+`scripts/sync-bm.mjs` descarga el JSON del CDN por cada EAN único después de
+validar la cobertura de las siete zonas. Normaliza nutrientes y unidades en
+`nutrition` (incluyendo valores anidados), quita HTML de `ingredients`, reúne
+`allergens` y extrae los mensajes de `conservation`. Guarda los cuatro campos
+en `bm_products`; `bm_product_locations` los expone junto al precio zonal.
+La migración `20260928124545_bm_nutrition_details.sql` está aplicada.
+
+- `DETAIL_MAX=1000`: límite por ejecución; `DETAIL_MAX=10000` sirve para un
+  backfill excepcional. Los productos pendientes se retoman en el siguiente
+  run, sin borrar lo ya publicado.
+- `DETAIL_TTL_DAYS=90`: vuelve a consultar un EAN tras ese plazo.
+- `DETAIL_CONCURRENCY=3`: descargas simultáneas, sujetas además al retardo
+  global `REQUEST_DELAY_MS`.
+- `DRY_DETAIL_MAX=3`: muestras consultadas en `DRY_RUN=1`; nunca escribe.
+- `SKIP_DETAIL=1`: conserva el detalle existente y omite el CDN.
+
+Un JSON 200 sin contenido cuenta como comprobado si el producto no tenía ficha.
+Si ya tenía datos, se conservan y se reintenta en el próximo sync. Los errores
+de red también dejan intactos los campos previos; un 403/429 detiene el lote
+nutricional para no insistir contra el CDN. Un cambio de EAN invalida la ficha
+anterior. El primer sync productivo consultó 1.000 EAN sin errores: 515 tablas
+nutricionales, 561 listas de ingredientes y 289 listas de alérgenos en productos
+publicados. Un segundo sync, con `DETAIL_MAX=10000`, completó los 9.197 EAN
+restantes sin fallos. Verificación final en Supabase: 10.197 productos
+publicados y consultados; 4.873 con tabla nutricional, 5.437 con ingredientes,
+3.730 con alérgenos y 4.962 con conservación. La vista zonal expone 28.288
+filas publicadas con tabla nutricional. El producto `67714` mostró el mismo
+detalle en tres ubicaciones comprobadas.

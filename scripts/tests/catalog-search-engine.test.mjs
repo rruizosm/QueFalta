@@ -121,7 +121,7 @@ test('Novedades y Ofertas reutilizan el motor antes de paginar', () => {
   assert.match(catalogApi, /catalogFeedSearchPage\([\s\S]+?'offer'/);
   assert.match(lidlOffersMigration, /p\.promo_start is null or p\.promo_start <= p_today/);
   assert.match(lidlOffersMigration, /coalesce\(p\.promo_price, p\.unit_price\)/);
-  assert.match(catalogApi, /'aldi', 'lidl', 'hiperdino'/);
+  assert.match(catalogApi, /'aldi', 'lidl', 'bm', 'eljamon', 'hiperdino'/);
   assert.match(catalogApi, /if \(store === 'lidl'\) return fetchLidlOffers/);
   assert.match(newArrivalsScreen, /debouncedQuery/);
   assert.match(newArrivalsScreen, /searchCache/);

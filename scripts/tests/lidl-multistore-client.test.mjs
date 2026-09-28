@@ -30,7 +30,7 @@ test('perfil y selector conservan una confirmación de tienda distinta del CP', 
 
 test('el CP sigue funcionando durante el despliegue escalonado del esquema Lidl', () => {
   assert.match(profile, /isMissingLidlStoreColumn/);
-  assert.match(profile, /LEGACY_PROFILE_COLUMNS/);
+  assert.match(profile, /columns = columns\.replace\('lidl_store_id, ', ''\)/);
   assert.match(profile, /delete updates\.lidl_store_id/);
   assert.match(storeApi, /LidlStoreDirectoryUnavailableError/);
   assert.match(storeApi, /PGRST202/);

@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
@@ -13,6 +13,8 @@ interface Props {
   letter: string;
   state?: LetterState;
   active: boolean;
+  selected?: boolean;
+  onSelect?: () => void;
   size: number;
   label: string;
   pendingLabel: string;
@@ -22,7 +24,7 @@ interface Props {
 }
 
 /** Two faces keep the result hidden until the tile turns about its vertical axis. */
-function DailyWordTile({ letter, state, active, size, label, pendingLabel, column, revealId, onRevealed }: Props) {
+function DailyWordTile({ letter, state, active, selected, onSelect, size, label, pendingLabel, column, revealId, onRevealed }: Props) {
   const styles = useThemedStyles(themedStyles);
   const progress = useRef(new Animated.Value(0)).current;
   const [finished, setFinished] = useState(false);
@@ -47,13 +49,23 @@ function DailyWordTile({ letter, state, active, size, label, pendingLabel, colum
   }, [animate, column, onRevealed, progress, revealId]);
 
   const dimensions = { width: size, height: size };
-  const letterStyle = [styles.letter, { fontSize: Math.min(26, size * 0.5) }];
+  const visibleLetter = letter === 'I' ? 'I\u200B' : letter;
+  const letterStyle = [styles.letter, { fontSize: Math.min(28, size * 0.52) }];
   const resultStyle = state && { backgroundColor: wordTileColors[state], borderColor: wordTileColors[state] };
+
+  if (!animate && active && onSelect) return (
+    <Pressable onPress={onSelect} accessibilityRole="button" accessibilityLabel={label}
+      accessibilityState={{ selected: !!selected }}
+      style={[styles.cell, dimensions, styles.active, !!letter && styles.filled, selected && styles.selected]}>
+      <Text style={letterStyle}>{visibleLetter}</Text>
+      {selected && <View pointerEvents="none" style={styles.cursorMark} />}
+    </Pressable>
+  );
 
   if (!animate) return (
     <View accessible accessibilityLabel={label}
       style={[styles.cell, dimensions, active && styles.active, !!letter && !state && styles.filled, resultStyle]}>
-      <Text style={[letterStyle, state && styles.white]}>{letter}</Text>
+      <Text style={[letterStyle, state && styles.white]}>{visibleLetter}</Text>
     </View>
   );
 
@@ -65,14 +77,14 @@ function DailyWordTile({ letter, state, active, size, label, pendingLabel, colum
           opacity: progress.interpolate({ inputRange: [0, 0.499, 0.5, 1], outputRange: [1, 1, 0, 0] }),
           transform: [{ perspective: 600 }, { rotateY: progress.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }) }],
         },
-      ]}><Text style={letterStyle}>{letter}</Text></Animated.View>
+      ]}><Text style={letterStyle}>{visibleLetter}</Text></Animated.View>
       <Animated.View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[
         styles.cell, styles.face, resultStyle,
         {
           opacity: progress.interpolate({ inputRange: [0, 0.499, 0.5, 1], outputRange: [0, 0, 1, 1] }),
           transform: [{ perspective: 600 }, { rotateY: progress.interpolate({ inputRange: [0, 1], outputRange: ['-180deg', '0deg'] }) }],
         },
-      ]}><Text style={[letterStyle, styles.white]}>{letter}</Text></Animated.View>
+      ]}><Text style={[letterStyle, styles.white]}>{visibleLetter}</Text></Animated.View>
     </View>
   );
 }
@@ -81,6 +93,8 @@ const themedStyles = () => StyleSheet.create({
   cell: { borderRadius: 10, backgroundColor: colors.surfaceAlt, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
   active: { backgroundColor: colors.white, borderColor: colors.accentMid, borderWidth: 2 },
   filled: { borderColor: colors.accent },
+  selected: { borderColor: colors.accent, borderWidth: 3 },
+  cursorMark: { position: 'absolute', bottom: 3, width: 12, height: 2, borderRadius: 1, backgroundColor: colors.accent },
   face: { ...StyleSheet.absoluteFill, backfaceVisibility: 'hidden' },
   letter: { fontFamily: fonts.bold, color: colors.ink },
   white: { color: '#fff' },

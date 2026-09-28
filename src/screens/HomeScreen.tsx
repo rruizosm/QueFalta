@@ -1,18 +1,16 @@
 import { PagerNativeScrollView as ScrollView } from '../components/bottom-tabs-pager/PagerNativeScroll';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fonts } from '../constants/typography';
 import {
   View,
   Text,
-  Image,
   TouchableOpacity,
   StyleSheet,
   StatusBar,
   ActivityIndicator,
   Animated,
   RefreshControl,
-  Alert,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -22,24 +20,22 @@ import { colors } from '../constants/colors';
 import { useCart } from '../context/CartContext';
 import { useProfile } from '../context/ProfileContext';
 import { useNotifications } from '../context/NotificationsContext';
-import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import type { GroupItem } from '../api/groups';
 import { fetchListItems } from '../api/lists';
 import { fetchPurchases, fetchPurchaseItems, type Purchase } from '../api/purchases';
-import { favoriteToUI, type UIProduct } from '../lib/productAdapters';
-import { STORE_META } from '../constants/stores';
 import ProgressBar from '../components/ProgressBar';
 import HardShadow from '../components/HardShadow';
 import UserAvatar from '../components/UserAvatar';
 import NotificationsSheet from '../components/NotificationsSheet';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
-import ProductImage from '../components/ProductImage';
 import AmbientBubbleBackdrop from '../components/AmbientBubbleBackdrop';
 import ActiveCartIcon from '../components/ActiveCartIcon';
 import DailyWordButton from '../components/DailyWordButton';
+import PaywallModal from '../components/PaywallModal';
+import { GroupCartLimitError } from '../lib/groupCartLimit';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { useReducedMotion } from '../hooks/useReducedMotion';
@@ -68,14 +64,9 @@ export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const { t, lang } = useTranslation();
   const locale = lang === 'ca' ? 'ca-ES' : 'es-ES';
-  const { activeCart, addToActiveCart, loadItemsIntoGroupCart } = useCart();
+  const { activeCart, loadItemsIntoGroupCart } = useCart();
   const { profile } = useProfile();
   const { unreadCount } = useNotifications();
-  const {
-    products: favProducts,
-    loading: favoritesLoading,
-    refresh: refreshFavorites,
-  } = useFavorites();
   const toast = useToast();
   const [notifOpen, setNotifOpen] = useState(false);
   // En iOS Liquid Glass la cabecera mide de forma determinista 108 pt
@@ -108,9 +99,7 @@ export default function HomeScreen() {
     purchaseCacheKey ? !hasStartupCache(purchaseCacheKey) : true,
   );
   const [repeating, setRepeating] = useState(false);
-  // Favoritos en vuelo hacia el carrito (clave `store:id`): pinta el spinner en
-  // su tesela y evita el doble toque, sin bloquear el resto del carrusel.
-  const [addingFavs, setAddingFavs] = useState<Record<string, boolean>>({});
+  const [paywallVisible, setPaywallVisible] = useState(false);
   const cartRequestIdRef = useRef(0);
 
   const load = useCallback(() => {
@@ -161,7 +150,7 @@ export default function HomeScreen() {
     return () => clearTimeout(id);
   }, [entryCoverVisible]);
 
-  const homeDataReady = !favoritesLoading && !purchaseLoading;
+  const homeDataReady = !purchaseLoading;
   useEffect(() => {
     if (!entryCoverVisible || !layoutReady || (!homeDataReady && !revealDeadlineReached)) return;
     if (reducedMotion) {
@@ -203,9 +192,9 @@ export default function HomeScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.allSettled([load(), refreshFavorites()]);
+    await load();
     setRefreshing(false);
-  }, [load, refreshFavorites]);
+  }, [load]);
 
   const doneItems = cartItems.filter((item) => item.inCart).length;
   const totalItems = cartItems.length;
@@ -219,46 +208,6 @@ export default function HomeScreen() {
       screen: 'GroupDetail',
       params: { groupId: activeCart.groupId },
     });
-  };
-
-  // Carrusel: los favoritos más recientes (el contexto ya los ordena así).
-  const favTiles = useMemo(() => favProducts.slice(0, 10).map(favoriteToUI), [favProducts]);
-
-  // Añade 1 ud del favorito al carrito activo. Mismo item que construye
-  // StoreProductList; los favoritos no guardan categoría → zona "Otros".
-  const addFavToCart = async (p: UIProduct) => {
-    if (!activeCart) {
-      Alert.alert(t('product.noCartTitle'), t('product.noCartMsg'));
-      return;
-    }
-    const k = `${p.store}:${p.id}`;
-    setAddingFavs((m) => ({ ...m, [k]: true }));
-    try {
-      await addToActiveCart([{
-        storeKey: p.store,
-        productName: p.name,
-        quantity: 1,
-        unit: 'ud',
-        categoryEmoji: null,
-        categoryName: p.categoryName,
-        mercadonaProductId: p.store === 'mercadona' ? p.id : null,
-        storeProductId: p.id,
-        unitPrice: p.unitPrice,
-        imageUrl: p.imageUrl,
-      }]);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show(t('product.addedOne', { n: 1, group: activeCart.groupName }));
-      load(); // revalida el "Quedan N artículos" de la tarjeta del carrito
-    } catch {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      toast.show(t('product.addError'), 'error');
-    } finally {
-      setAddingFavs((m) => {
-        const next = { ...m };
-        delete next[k];
-        return next;
-      });
-    }
   };
 
   // "Repetir compra" de la más reciente: mismo flujo que HistoryScreen. La más
@@ -284,8 +233,9 @@ export default function HomeScreen() {
         group: lastPurchase.groupName ?? t('history.theGroupFallback'),
       }));
       navigation.navigate('List');
-    } catch {
-      toast.show(t('history.repeatError'), 'error');
+    } catch (cause) {
+      if (cause instanceof GroupCartLimitError) setPaywallVisible(true);
+      else toast.show(t('history.repeatError'), 'error');
     } finally {
       setRepeating(false);
     }
@@ -321,6 +271,7 @@ export default function HomeScreen() {
         >
           <UserAvatar
             avatarUrl={profile?.avatarUrl ?? null}
+            userId={profile?.id}
             initials={profile?.initials ?? 'RU'}
             color={profile?.color ?? colors.accent}
             size={40}
@@ -438,119 +389,51 @@ export default function HomeScreen() {
           </TouchableOpacity>
         )}
 
-        {/* Accesos rápidos: novedades, ofertas y cambios de precio. Un bloque
-            rectangular por cada uno, apilados. Antes eran círculos glass en la
-            cabecera (y ocupaban el sitio de la tarjeta de carrito activo). */}
+        {/* Accesos rápidos a los cuatro listados secundarios. Favoritos vive
+            aquí como destino propio: Inicio ya no renderiza sus productos. */}
         <View style={styles.quickBlocks}>
           {[
-            { key: 'newArrivals', route: 'NewArrivals', icon: 'sparkles-outline' },
-            { key: 'offers', route: 'Offers', icon: 'pricetags-outline' },
-            { key: 'priceChanges', route: 'PriceChanges', icon: 'trending-down-outline' },
+            { key: 'newArrivals', route: 'NewArrivals', icon: 'sparkles-outline', mark: 'NOV' },
+            { key: 'offers', route: 'Offers', icon: 'pricetags-outline', mark: 'OFE' },
+            { key: 'priceChanges', route: 'PriceChanges', icon: 'trending-down-outline', mark: 'PRE' },
+            { key: 'favorites', route: 'Favorites', icon: 'star-outline', mark: 'FAV' },
           ].map((b) => (
             <TouchableOpacity
               key={b.key}
               onPress={() => navigation.navigate(b.route)}
+              style={styles.quickTile}
               activeOpacity={0.85}
-              accessibilityLabel={t(`${b.key}.a11yOpen`)}
+              accessibilityRole="button"
+              accessibilityLabel={b.key === 'favorites'
+                ? t('home.favCtaTitle')
+                : t(`${b.key}.a11yOpen`)}
             >
               <HardShadow style={styles.quickInner}>
-                <View style={styles.quickIconBox}>
-                  <Ionicons name={b.icon as any} size={22} color={colors.white} />
+                <Text
+                  aria-hidden
+                  accessible={false}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no-hide-descendants"
+                  pointerEvents="none"
+                  style={styles.quickWatermark}
+                >
+                  {b.mark}
+                </Text>
+                <View style={styles.quickTopRow}>
+                  <View style={styles.quickIconBox}>
+                    <Ionicons name={b.icon as any} size={22} color={colors.white} />
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={colors.inkFaint} />
                 </View>
                 <View style={styles.quickTextCol}>
-                  <Text style={styles.quickTitle}>{t(`${b.key}.title`)}</Text>
-                  <Text style={styles.quickSub}>{t(`${b.key}.subtitle`)}</Text>
+                  <Text style={styles.quickTitle} numberOfLines={2}>
+                    {b.key === 'favorites' ? t('home.favCtaTitle') : t(`${b.key}.title`)}
+                  </Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} />
               </HardShadow>
             </TouchableOpacity>
           ))}
         </View>
-
-        {/* Tus favoritos: carrusel con añadido de un toque. Sin favoritos aún,
-            la tarjeta CTA de siempre como puerta de entrada a la pantalla. */}
-        {favoritesLoading ? (
-          <View style={styles.favoritesLoading}>
-            <ActivityIndicator color={colors.accent} />
-          </View>
-        ) : favTiles.length > 0 ? (
-          <View style={styles.sectionWrap}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>{t('home.yourFavorites')}</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Favorites')}>
-                <Text style={styles.seeAll}>{t('home.seeAll')}</Text>
-              </TouchableOpacity>
-            </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.favStrip}
-              contentContainerStyle={styles.favStripContent}
-            >
-              {favTiles.map((p) => {
-                const k = `${p.store}:${p.id}`;
-                const adding = !!addingFavs[k];
-                return (
-                  <TouchableOpacity
-                    key={k}
-                    style={styles.favTile}
-                    onPress={() => addFavToCart(p)}
-                    activeOpacity={0.7}
-                    disabled={adding}
-                    accessibilityLabel={p.name}
-                  >
-                    <View style={styles.favImgWrap}>
-                      {p.imageUrl ? (
-                        <ProductImage uri={p.imageUrl} style={styles.favImg} />
-                      ) : (
-                        <Ionicons name="basket-outline" size={24} color={colors.accent} />
-                      )}
-                      {STORE_META[p.store]?.icon ? (
-                        <Image source={STORE_META[p.store].icon} style={styles.favStoreIcon} resizeMode="contain" />
-                      ) : null}
-                      <View style={styles.favAddBadge}>
-                        {adding ? (
-                          <ActivityIndicator size="small" color={colors.white} />
-                        ) : (
-                          <Ionicons name="add" size={17} color={colors.white} />
-                        )}
-                      </View>
-                    </View>
-                    <Text style={styles.favName} numberOfLines={2}>{p.name}</Text>
-                    {p.priceLabel ? <Text style={styles.favPrice}>{p.priceLabel}</Text> : null}
-                  </TouchableOpacity>
-                );
-              })}
-              {favProducts.length > favTiles.length && (
-                <TouchableOpacity
-                  style={styles.favMoreTile}
-                  onPress={() => navigation.navigate('Favorites')}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons name="star" size={20} color={colors.accent} />
-                  <Text style={styles.favMoreText}>{t('home.seeAll')}</Text>
-                </TouchableOpacity>
-              )}
-            </ScrollView>
-          </View>
-        ) : (
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Favorites')}
-            activeOpacity={0.85}
-            style={styles.ctaWrap}
-          >
-            <HardShadow style={styles.ctaInner}>
-              <View style={styles.ctaIconBox}>
-                <Ionicons name="star-outline" size={22} color={colors.white} />
-              </View>
-              <View style={styles.ctaTextCol}>
-                <Text style={styles.ctaTitle}>{t('home.favCtaTitle')}</Text>
-                <Text style={styles.ctaSub}>{t('home.favCtaSub')}</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} />
-            </HardShadow>
-          </TouchableOpacity>
-        )}
 
         {/* Última compra: repetirla con un toque; la tarjeta abre el historial */}
         {lastPurchase && (
@@ -617,6 +500,7 @@ export default function HomeScreen() {
       )}
 
       <NotificationsSheet visible={notifOpen} onClose={() => setNotifOpen(false)} />
+      <PaywallModal visible={paywallVisible} onClose={() => setPaywallVisible(false)} />
       {entryCoverVisible && (
         <Animated.View
           pointerEvents="auto"
@@ -730,70 +614,40 @@ const themedStyles = () => StyleSheet.create({
     fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 2,
   },
 
-  // ── Bloques rápidos (novedades / ofertas / cambios de precio) ──
-  quickBlocks: { gap: 10, marginBottom: 10 },
+  // ── Accesos rápidos 2 × 2 ─────────────────────────────────────
+  quickBlocks: {
+    flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20,
+  },
+  quickTile: { flexBasis: '47%', flexGrow: 1, minWidth: 0, minHeight: 112 },
   quickInner: {
-    flexDirection: 'row', alignItems: 'center', gap: 12, padding: 13,
+    flex: 1, padding: 13, position: 'relative', overflow: 'hidden', isolation: 'isolate',
     borderColor: colors.border, borderRadius: 18,
+  },
+  quickTopRow: {
+    zIndex: 1, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between',
   },
   quickIconBox: {
     width: 42, height: 42, borderRadius: 14, flexShrink: 0,
     backgroundColor: colors.accent,
     alignItems: 'center', justifyContent: 'center',
   },
-  quickTextCol: { flex: 1, minWidth: 0 },
+  quickTextCol: { zIndex: 1, flex: 1, minWidth: 0, justifyContent: 'flex-end', marginTop: 12 },
   quickTitle: { fontSize: 15, fontFamily: fonts.bold, color: colors.ink },
-  quickSub: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
+  quickWatermark: {
+    position: 'absolute', right: -5, bottom: -15, zIndex: 0,
+    fontSize: 70, lineHeight: 76, fontWeight: '800', letterSpacing: -6,
+    color: colors.accent, opacity: 0.1, filter: [{ blur: 1.8 }],
+    transform: [{ rotate: '-8deg' }],
+  },
 
   // ── Sections ──────────────────────────────────────────────────
   sectionWrap: { marginBottom: 20 },
-  favoritesLoading: {
-    minHeight: 72,
-    marginBottom: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   sectionHeader: {
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'center', marginBottom: 10,
   },
   sectionTitle: { fontSize: 16, fontFamily: fonts.bold, color: colors.ink },
   seeAll: { fontSize: 13, fontFamily: fonts.semibold, color: colors.accent },
-
-  // ── Carrusel de favoritos ─────────────────────────────────────
-  // El strip sangra hasta los bordes de la pantalla (compensa el padding 16
-  // del scroll) para que las teselas entren/salgan por el borde real.
-  favStrip: { marginHorizontal: -16 },
-  favStripContent: { paddingHorizontal: 16, gap: 10 },
-  favTile: {
-    width: 104, padding: 7, borderRadius: 18,
-    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,
-  },
-  favImgWrap: {
-    width: '100%', aspectRatio: 1,
-    backgroundColor: colors.accentLight,
-    borderWidth: 1, borderColor: colors.border,
-    alignItems: 'center', justifyContent: 'center',
-    borderRadius: 12, marginBottom: 6, overflow: 'hidden',
-  },
-  favImg: { width: '100%', height: '100%' },
-  favStoreIcon: { position: 'absolute', top: 4, left: 4, width: 14, height: 14 },
-  favAddBadge: {
-    position: 'absolute', bottom: 0, right: 0,
-    width: 24, height: 24, borderTopLeftRadius: 10,
-    backgroundColor: colors.accent,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  // minHeight reserva 2 líneas → precios alineados (igual que ProductGridCard).
-  favName: { fontSize: 11.5, fontFamily: fonts.semibold, color: colors.ink, lineHeight: 14, minHeight: 28 },
-  favPrice: { fontSize: 12, fontFamily: fonts.bold, color: colors.accent, marginTop: 2 },
-  favMoreTile: {
-    width: 104, aspectRatio: 1, borderRadius: 18,
-    backgroundColor: colors.accentLight,
-    borderWidth: 1, borderColor: colors.border,
-    alignItems: 'center', justifyContent: 'center', gap: 6,
-  },
-  favMoreText: { fontSize: 12, fontFamily: fonts.bold, color: colors.accent },
 
   // ── Última compra ─────────────────────────────────────────────
   lastBuyInner: { padding: 14, borderColor: colors.border, borderRadius: 18 },
@@ -813,21 +667,6 @@ const themedStyles = () => StyleSheet.create({
     paddingVertical: 11, marginTop: 12, borderRadius: 14,
   },
   repeatText: { fontSize: 13, fontFamily: fonts.bold, color: colors.white },
-
-  // ── CTA de favoritos (solo cuando aún no hay favoritos) ───────
-  ctaWrap: { marginBottom: 20 },
-  ctaInner: {
-    flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14,
-    borderColor: colors.border, borderRadius: 18,
-  },
-  ctaIconBox: {
-    width: 42, height: 42, borderRadius: 14, flexShrink: 0,
-    backgroundColor: colors.accent,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  ctaTextCol: { flex: 1, minWidth: 0 },
-  ctaTitle: { fontSize: 15, fontFamily: fonts.bold, color: colors.ink },
-  ctaSub: { fontSize: 12, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 1 },
 
   // ── Cabecera Glass ─────────────────────────────────────────────
   chrome: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },

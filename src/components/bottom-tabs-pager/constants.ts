@@ -19,6 +19,7 @@ export const TAB_MOTION = {
 export const TAB_LAYOUT = {
   height: 64,
   margin: 18,
+  iosBottomOffset: 20,
   bottomGap: 10,
   maxWidth: 460,
   padding: 8,

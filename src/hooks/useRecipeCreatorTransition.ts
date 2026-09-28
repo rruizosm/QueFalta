@@ -31,6 +31,7 @@ export function useRecipeCreatorTransition(
   const presentationFrame = useRef<number | null>(null);
   const mounted = useRef(true);
   const closingRef = useRef(false);
+  // Creation mounts after measuring the source of the button morph.
   const [started, setStarted] = useState(false);
   const [closing, setClosing] = useState(false);
   const progress = useSharedValue(0);
@@ -58,7 +59,8 @@ export function useRecipeCreatorTransition(
   }, []);
 
   const startWhenPresented = useCallback(() => {
-    if (!layoutReady.current || !formReady.current || !presented.current || openingStarted.current || closingRef.current) return;
+    const ready = layoutReady.current && formReady.current && presented.current;
+    if (!ready || openingStarted.current || closingRef.current) return;
     openingStarted.current = true;
     progress.set(reducedMotion
       ? withTiming(1, FADE, (done) => { if (done) canDrag.set(true); })
@@ -79,12 +81,12 @@ export function useRecipeCreatorTransition(
       return;
     }
     initialized.current = true;
-    const bounds = await localSource(origin);
+    // No measurement is needed when the source CTA is unavailable.
+    const bounds = origin ? await localSource(origin) : null;
     if (!mounted.current || closingRef.current) return;
     source.set(bounds);
     layoutReady.current = true;
-    // Mount the form below the viewport first. Its initial native layout must
-    // finish before the spring, otherwise that work consumes visible frames.
+    // Mount the form before animating the button to its target layout.
     setStarted(true);
     // Native-stack can lay out the screen before presenting its native surface.
     // Starting then consumes the spring offscreen and looks like a hard cut.
@@ -146,11 +148,13 @@ export function useRecipeCreatorTransition(
       progress.set(reducedMotion ? 1 : withSpring(1, RETURN_SPRING));
     });
 
-  const surfaceStyle = useAnimatedStyle(() => ({
-    opacity: reducedMotion ? progress.value : 1,
-    borderRadius: reducedMotion ? 0 : 24 * (1 - progress.value),
-    transform: [{ translateY: reducedMotion ? 0 : size.value.height * (1 - progress.value) }],
-  }));
+  const surfaceStyle = useAnimatedStyle(() => {
+    return {
+      opacity: reducedMotion ? progress.value : 1,
+      borderRadius: reducedMotion ? 0 : 24 * (1 - progress.value),
+      transform: [{ translateY: reducedMotion ? 0 : size.value.height * (1 - progress.value) }],
+    };
+  });
   const backdropStyle = useAnimatedStyle(() => ({ opacity: 0.28 * progress.value }));
   const pillStyle = useAnimatedStyle(() => {
     const p = progress.value;
@@ -178,6 +182,7 @@ export function useRecipeCreatorTransition(
   }));
 
   return { rootRef, onLayout, onPresented, started, closing, close, progress, reducedMotion,
+    horizontal: false,
     surfaceStyle, backdropStyle, pillStyle, pillLabelStyle, publishStyle, dismissGesture,
     onPublishLayout: ({ nativeEvent: { layout } }: LayoutChangeEvent) => {
       target.set(layout);

@@ -81,10 +81,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       setProfile(reconciled.profile);
       writeStartupCache(startupKeys.profile(userId), reconciled.profile);
 
-      // Calienta la caché en disco de expo-image en cuanto sabemos la URL, así
-      // la foto ya está lista la primera vez que el usuario abre Perfil (sin el
-      // retardo de descargarla al navegar). No-op si ya está cacheada.
-      if (p.avatarUrl) Image.prefetch(p.avatarUrl).catch(() => {});
+      if (p.avatarUrl?.startsWith('https://')) Image.prefetch(p.avatarUrl).catch(() => {});
+
     } catch {
       // keep whatever we had cached
       if (activeUserId.current === userId) setError(true);
@@ -124,7 +122,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         setProfile(cached);
         setResolvedUserId(userId);
         setLoading(false);
-        if (cached.avatarUrl) Image.prefetch(cached.avatarUrl).catch(() => {});
+        if (cached.avatarUrl?.startsWith('https://')) Image.prefetch(cached.avatarUrl).catch(() => {});
       }
       // Sin caché esperamos a la red como antes; con caché, revalidamos sin
       // desmontar la app ni reabrir los gates de onboarding durante la espera.

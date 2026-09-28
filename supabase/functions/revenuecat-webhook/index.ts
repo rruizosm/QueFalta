@@ -4,8 +4,10 @@
 // profiles.premium_until (fuente de verdad del acceso QuéFalta Plus) y su
 // reflejo público profiles.verified (insignia dorada).
 //
-// La lógica es deliberadamente simple: para cualquier evento relevante,
-// premium_until = expiration_at_ms del evento. Eso cubre todo el ciclo:
+// Para suscripciones, premium_until = expiration_at_ms del evento. Para el
+// producto vitalicio, RevenueCat envía una compra no renovable sin expiración y
+// se persiste el sentinel máximo compartido con la confirmación bajo demanda.
+// Eso cubre todo el ciclo:
 //   - INITIAL_PURCHASE / RENEWAL / UNCANCELLATION → fecha futura → Plus activo.
 //   - CANCELLATION solo apaga la auto-renovación: expiration sigue en el
 //     futuro → el usuario conserva Plus hasta el final del periodo pagado.
@@ -25,6 +27,7 @@
 //  comparando la cabecera Authorization con el token secreto.)
 
 import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { LIFETIME_PREMIUM_UNTIL } from '../_shared/revenuecat-subscription.ts';
 
 // Comparación en tiempo constante (patrón double-HMAC): no filtra ni el
 // contenido ni la longitud del token por timing. Web Crypto va nativo en Deno.
@@ -45,8 +48,9 @@ async function safeEqual(a: string, b: string): Promise<boolean> {
   return diff === 0;
 }
 
-// Tipos de evento que mueven la ventana de acceso. El resto (TEST, TRANSFER,
-// NON_RENEWING_PURCHASE…) se ignora con 200 para que RevenueCat no reintente.
+// Tipos de evento que mueven la ventana de acceso. Los pagos únicos llegan como
+// NON_RENEWING_PURCHASE y los reembolsos revertidos como REFUND_REVERSED; el
+// resto (TEST, TRANSFER…) se ignora con 200 para evitar reintentos.
 const RELEVANT = new Set([
   'INITIAL_PURCHASE',
   'RENEWAL',
@@ -56,6 +60,8 @@ const RELEVANT = new Set([
   'BILLING_ISSUE',
   'PRODUCT_CHANGE',
   'SUBSCRIPTION_EXTENDED',
+  'NON_RENEWING_PURCHASE',
+  'REFUND_REVERSED',
 ]);
 
 Deno.serve(async (req) => {
@@ -84,8 +90,23 @@ Deno.serve(async (req) => {
     }
 
     const expirationMs: number | null = event?.expiration_at_ms ?? null;
-    const premiumUntil = expirationMs != null ? new Date(expirationMs).toISOString() : null;
-    const verified = expirationMs != null && expirationMs > Date.now();
+    const entitlementIds = Array.isArray(event?.entitlement_ids)
+      ? event.entitlement_ids.filter((id: unknown): id is string => typeof id === 'string')
+      : [];
+    const isLifetimeGrantEvent = type === 'NON_RENEWING_PURCHASE' || type === 'REFUND_REVERSED';
+    const relatesToPlus = entitlementIds.includes('plus') || event?.entitlement_id === 'plus';
+    if (isLifetimeGrantEvent && !relatesToPlus) {
+      return json({ ignored: 'non-plus non-renewing purchase' }, 200);
+    }
+    const grantsLifetime = isLifetimeGrantEvent
+      && expirationMs == null
+      && relatesToPlus;
+    const premiumUntil = grantsLifetime
+      ? LIFETIME_PREMIUM_UNTIL
+      : expirationMs != null
+        ? new Date(expirationMs).toISOString()
+        : null;
+    const verified = grantsLifetime || (expirationMs != null && expirationMs > Date.now());
 
     const admin = createClient(
       Deno.env.get('SUPABASE_URL')!,

@@ -1,3 +1,4 @@
+import { type ReactNode } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
@@ -5,8 +6,8 @@ import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 
 /** Solid app-owned surface: native alerts may use translucent system material. */
-export default function WordGameInfoModal({ visible, title, body, closeLabel, onClose }: {
-  visible: boolean; title: string; body: string; closeLabel: string; onClose: () => void;
+export default function WordGameInfoModal({ visible, title, body, closeLabel, onClose, children, compact = false }: {
+  visible: boolean; title: string; body: string; closeLabel: string; onClose: () => void; children?: ReactNode; compact?: boolean;
 }) {
   const styles = useThemedStyles(themedStyles);
   const { height } = useWindowDimensions();
@@ -17,7 +18,8 @@ export default function WordGameInfoModal({ visible, title, body, closeLabel, on
       <View accessibilityViewIsModal style={[styles.card, { maxHeight: height - insets.top - insets.bottom - 40 }]}>
         <ScrollView contentContainerStyle={styles.content} bounces={false}>
           <Text accessibilityRole="header" style={styles.title}>{title}</Text>
-          <Text style={styles.body}>{body}</Text>
+          {!compact && <Text style={styles.body}>{body}</Text>}
+          {children}
         </ScrollView>
         <TouchableOpacity onPress={onClose} accessibilityRole="button" style={styles.close}>
           <Text style={styles.closeText}>{closeLabel}</Text>

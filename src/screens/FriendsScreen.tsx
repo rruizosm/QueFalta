@@ -24,8 +24,8 @@ import VerifiedBadge from '../components/VerifiedBadge';
 import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
 import { glassAvailable } from '../components/GlassSurface';
 
-function Avatar({ color, initials, avatarUrl }: { color: string; initials: string; avatarUrl?: string | null }) {
-  return <UserAvatar avatarUrl={avatarUrl} initials={initials} color={color} size={42} />;
+function Avatar({ id, color, initials, avatarUrl }: { id: string; color: string; initials: string; avatarUrl?: string | null }) {
+  return <UserAvatar avatarUrl={avatarUrl} userId={id} initials={initials} color={color} size={42} />;
 }
 
 export default function FriendsScreen() {
@@ -115,7 +115,7 @@ export default function FriendsScreen() {
                 const incomingFid = incomingById.get(u.id);
                 return (
                   <View key={u.id} style={styles.row}>
-                    <Avatar color={u.color} initials={u.initials} avatarUrl={u.avatarUrl} />
+                    <Avatar id={u.id} color={u.color} initials={u.initials} avatarUrl={u.avatarUrl} />
                     <View style={styles.info}>
                       <View style={styles.nameRow}>
                         <Text style={styles.name} numberOfLines={1}>{u.name}</Text>
@@ -150,7 +150,7 @@ export default function FriendsScreen() {
                   <Text style={styles.sectionLabel}>{t('friends.requestsTitle', { n: incoming.length })}</Text>
                   {incoming.map((f) => (
                     <View key={f.friendshipId} style={styles.row}>
-                      <Avatar color={f.color} initials={f.initials} avatarUrl={f.avatarUrl} />
+                      <Avatar id={f.id} color={f.color} initials={f.initials} avatarUrl={f.avatarUrl} />
                       <View style={styles.info}>
                         <View style={styles.nameRow}>
                           <Text style={styles.name} numberOfLines={1}>{f.name}</Text>
@@ -183,7 +183,7 @@ export default function FriendsScreen() {
               ) : (
                 friends.map((f) => (
                   <View key={f.friendshipId} style={styles.row}>
-                    <Avatar color={f.color} initials={f.initials} avatarUrl={f.avatarUrl} />
+                    <Avatar id={f.id} color={f.color} initials={f.initials} avatarUrl={f.avatarUrl} />
                     <View style={styles.info}>
                       <View style={styles.nameRow}>
                         <Text style={styles.name} numberOfLines={1}>{f.name}</Text>

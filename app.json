@@ -2,7 +2,7 @@
   "expo": {
     "name": "QuéFalta",
     "slug": "quefalta",
-    "version": "1.3.1",
+    "version": "1.3.2",
     "sdkVersion": "57.0.0",
     "scheme": "quefalta",
     "orientation": "default",
@@ -53,6 +53,11 @@
               "scheme": "https",
               "host": "quefalta.es",
               "pathPrefix": "/join"
+            },
+            {
+              "scheme": "https",
+              "host": "quefalta.es",
+              "pathPrefix": "/inicio"
             }
           ],
           "category": [

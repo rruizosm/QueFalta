@@ -23,7 +23,7 @@ No se solicita GPS. El puente WebView admite únicamente IDs del directorio carg
 y bloquea navegación externa salvo el enlace de atribución OpenStreetMap.
 
 
-> Última actualización: 2026-08-21
+> Última actualización: 2026-09-24
 
 Pantalla: `src/screens/PrivacySecurityScreen.tsx` (Perfil → "Privacidad y seguridad").
 
@@ -35,6 +35,7 @@ Pantalla: `src/screens/PrivacySecurityScreen.tsx` (Perfil → "Privacidad y segu
 |---------|--------|-------|
 | Cerrar sesión en todos los dispositivos | ✅ | `signOut('global')` en AuthContext |
 | Visible para otros (`discoverable`) | ✅ | Ya se aplica: la búsqueda y la visibilidad de perfiles lo respetan (ver §3) |
+| Foto solo para amigos (`avatar_friends_only`) | ⚠️ | Migración aplicada el 2026-09-24; falta validación con dos cuentas y publicar el cliente. |
 | Política de privacidad / Qué datos guardamos | ✅ | Enlace a quefalta.es/privacidad + diálogo |
 | Eliminar cuenta | ⚠️ | Requiere desplegar la Edge Function (§4) |
 | Tokens en almacén cifrado | ⚠️ | Código listo; requiere build nuevo (§5) |
@@ -43,16 +44,23 @@ Pantalla: `src/screens/PrivacySecurityScreen.tsx` (Perfil → "Privacidad y segu
 
 ## 2. SQL de seguridad a ejecutar en Supabase (SQL Editor)
 
-Todos idempotentes. Orden recomendado:
+Orden recomendado para una instalación nueva. La configuración pública de
+`storage_avatars.sql` funciona antes y después de la migración:
 
 | Fichero | Qué hace |
 |---|---|
 | `supabase/policies/profiles_visibility.sql` | **CRÍTICO.** Cierra la fuga de `profiles` (era legible por `anon` por la policy `ver todos USING(true)`). Deja un perfil visible solo a: uno mismo, co-miembros, amigos y perfiles `discoverable`. |
 | `supabase/policies/member_search.sql` | Compatibilidad del buscador: cualquier administrador solo añade perfiles `discoverable` como miembros normales. Requiere el modelo multi-admin vigente. |
-| `supabase/policies/storage_avatars.sql` | Bucket `avatars` público con límite 5 MB + solo imágenes; escritura restringida a `{uid}/`. Borra antes cualquier policy de escritura permisiva creada desde el dashboard. |
+| `supabase/policies/storage_avatars.sql` | Configura el bucket público `avatars` y la escritura propia; respeta la preferencia si ya existe. |
 | `supabase/migrations/text_length_limits.sql` | CHECK de longitud en columnas de texto libres. |
 | `supabase/migrations/username_available.sql` | RPC `username_available` (comprueba @ libre sin filtrar perfiles). |
 | `supabase/migrations/friendship_rate_limit.sql` | Trigger anti-spam: máx. 20 solicitudes de amistad/hora por usuario. |
+| `supabase/migrations/20260924143007_private_friend_avatars.sql` | Añade la preferencia y el bucket privado `avatars-private`. Mantiene públicas las fotos normales, restringe las privadas al titular y a amistades aceptadas y bloquea nuevas subidas públicas con la opción activa. Aplicada en producción el 2026-09-24. |
+
+Despliegue: la migración ya está aplicada; falta publicar el cliente. El
+cliente traslada la foto al activar/desactivar el interruptor. Una URL pública
+antigua puede permanecer en cachés ajenas después del borrado; la opción impide
+nuevas descargas desde Storage, pero no retira copias descargadas previamente.
 
 Verificación de la fuga (no debe salir ninguna policy SELECT con `qual = true` ni rol `{public}`/`{anon}`):
 

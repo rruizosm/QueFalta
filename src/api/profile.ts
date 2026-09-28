@@ -3,8 +3,41 @@ import { supabase } from '../lib/supabase';
 import { CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import type { RegionValue } from '../constants/regions';
 
-const PROFILE_COLUMNS = 'id, created_at, name, initials, color, username, avatar_url, discoverable, catalog_stores, region, postal_code, lidl_store_id, premium_until, onboarded_at, onboarding_step, verified';
-const LEGACY_PROFILE_COLUMNS = 'id, created_at, name, initials, color, username, avatar_url, discoverable, catalog_stores, region, postal_code, premium_until, onboarded_at, onboarding_step, verified';
+const PROFILE_COLUMNS = 'id, created_at, name, initials, color, username, avatar_url, discoverable, avatar_friends_only, catalog_stores, region, postal_code, lidl_store_id, premium_until, onboarded_at, onboarding_step, verified';
+const PRIVATE_AVATAR_PREFIX = 'private:';
+
+export function privateAvatarPath(avatarUrl: string | null): string | null {
+  if (!avatarUrl?.startsWith(PRIVATE_AVATAR_PREFIX)) return null;
+  const path = avatarUrl.slice(PRIVATE_AVATAR_PREFIX.length).split('?')[0];
+  return /^[0-9a-f-]{36}\/avatar\.jpg$/i.test(path) ? path : null;
+}
+
+function publicAvatarUrl(userId: string): string {
+  const path = `${userId}/avatar.jpg`;
+  const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+  return `${data.publicUrl}?v=${Date.now()}`;
+}
+
+function privateAvatarUrl(userId: string): string {
+  return `${PRIVATE_AVATAR_PREFIX}${userId}/avatar.jpg?v=${Date.now()}`;
+}
+
+async function readAvatarBytes(bucket: 'avatars' | 'avatars-private', path: string): Promise<ArrayBuffer> {
+  let url: string;
+  if (bucket === 'avatars') {
+    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+    url = `${data.publicUrl}?v=${Date.now()}`;
+  } else {
+    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 60);
+    if (error || !data) throw error ?? new Error('Private avatar unavailable');
+    url = data.signedUrl;
+  }
+  // React Native Blob no implementa siempre arrayBuffer(). Response sí lo
+  // implementa y es la misma vía usada arriba al subir una foto local.
+  const response = await fetch(url);
+  if (!response.ok) throw new Error('Avatar download failed');
+  return response.arrayBuffer();
+}
 
 /** Compatibilidad durante el despliegue escalonado del catálogo Lidl. Solo
  * reintentamos ante la ausencia inequívoca de la columna; permisos, red y
@@ -20,6 +53,17 @@ function isMissingLidlStoreColumn(error: unknown): boolean {
   return ['42703', 'PGRST204'].includes(code) && message.includes('lidl_store_id');
 }
 
+function isMissingAvatarVisibilityColumn(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const record = error as Record<string, unknown>;
+  const code = typeof record.code === 'string' ? record.code : '';
+  const message = [record.message, record.details, record.hint]
+    .filter((value): value is string => typeof value === 'string')
+    .join(' ')
+    .toLowerCase();
+  return ['42703', 'PGRST204'].includes(code) && message.includes('avatar_friends_only');
+}
+
 export interface UserProfile {
   id: string;
   /** Fecha de creación del perfil, usada para mensajes ligados a releases. */
@@ -31,6 +75,8 @@ export interface UserProfile {
   avatarUrl: string | null;
   /** Si otros usuarios pueden encontrarte por @usuario (privacidad de descubrimiento). */
   discoverable: boolean;
+  /** Si la foto solo se muestra a amistades aceptadas. */
+  avatarFriendsOnly: boolean;
   /** Supermercados que se muestran en el catálogo. Vacío/null en BD = todos. */
   catalogStores: CatalogStore[];
   /** Comunidad autónoma (ISO 3166-2:ES) para filtrar los súpers del catálogo.
@@ -59,36 +105,38 @@ export interface UserProfile {
 }
 
 /** Normaliza la columna catalog_stores: filtra claves desconocidas y, si queda
- *  vacía (usuario antiguo sin preferencia), cae a todos los supermercados que
- *  existían antes de Lidl. La 1.3.1 pide una decisión explícita antes de
- *  añadirlo; nunca se activa una cadena nueva de forma silenciosa. */
+ *  vacía (usuario antiguo sin preferencia), cae al conjunto histórico. Las
+ *  cadenas añadidas después requieren una decisión explícita y nunca se
+ *  activan de forma silenciosa. */
 function normalizeCatalogStores(value: unknown): CatalogStore[] {
   const valid = Array.isArray(value)
     ? CATALOG_STORE_KEYS.filter((k) => (value as unknown[]).includes(k))
     : [];
-  const allBeforeLidl = CATALOG_STORE_KEYS.filter((key) => key !== 'lidl');
-  return valid.length ? valid : allBeforeLidl;
+  const historicalStores = CATALOG_STORE_KEYS.filter((key) => key !== 'lidl' && key !== 'bm' && key !== 'eljamon');
+  return valid.length ? valid : historicalStores;
 }
 
 export async function fetchProfile(userId: string): Promise<UserProfile> {
-  const current = await supabase
-    .from('profiles')
-    .select(PROFILE_COLUMNS)
-    .eq('id', userId)
-    .single();
-
-  let data = current.data as any;
-  let error = current.error;
-  if (isMissingLidlStoreColumn(error)) {
-    const legacy = await supabase
+  let columns = PROFILE_COLUMNS;
+  let data: any;
+  let error: any;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const result = await supabase
       .from('profiles')
-      .select(LEGACY_PROFILE_COLUMNS)
+      .select(columns)
       .eq('id', userId)
       .single();
-    data = legacy.data as any;
-    error = legacy.error;
+    data = result.data;
+    error = result.error;
+    if (!error) break;
+    if (isMissingAvatarVisibilityColumn(error)) {
+      columns = columns.replace('avatar_friends_only, ', '');
+    } else if (isMissingLidlStoreColumn(error)) {
+      columns = columns.replace('lidl_store_id, ', '');
+    } else {
+      throw error;
+    }
   }
-
   if (error) throw error;
 
   return {
@@ -100,6 +148,7 @@ export async function fetchProfile(userId: string): Promise<UserProfile> {
     username: data.username ?? null,
     avatarUrl: data.avatar_url ?? null,
     discoverable: data.discoverable ?? true,
+    avatarFriendsOnly: data.avatar_friends_only ?? false,
     catalogStores: normalizeCatalogStores(data.catalog_stores),
     region: (data.region as RegionValue) ?? null,
     postalCode: data.postal_code ?? null,
@@ -119,6 +168,7 @@ export async function updateProfile(
     username?: string | null;
     avatarUrl?: string | null;
     discoverable?: boolean;
+    avatarFriendsOnly?: boolean;
     catalogStores?: CatalogStore[];
     region?: RegionValue | null;
     postalCode?: string | null;
@@ -132,6 +182,7 @@ export async function updateProfile(
   if (fields.username !== undefined) updates.username = fields.username;
   if (fields.avatarUrl !== undefined) updates.avatar_url = fields.avatarUrl;
   if (fields.discoverable !== undefined) updates.discoverable = fields.discoverable;
+  if (fields.avatarFriendsOnly !== undefined) updates.avatar_friends_only = fields.avatarFriendsOnly;
   if (fields.catalogStores !== undefined) updates.catalog_stores = fields.catalogStores;
   if (fields.region !== undefined) updates.region = fields.region;
   if (fields.postalCode !== undefined) updates.postal_code = fields.postalCode;
@@ -145,6 +196,11 @@ export async function updateProfile(
     .select('id')
     .single();
   let error = current.error;
+  if (fields.avatarFriendsOnly !== undefined && isMissingAvatarVisibilityColumn(error)) {
+    // No simular que la preferencia se ha guardado durante un despliegue
+    // escalonado: la pantalla la revierte y comunica el fallo.
+    throw error;
+  }
   if (fields.lidlStoreId !== undefined && isMissingLidlStoreColumn(error)) {
     // El CP y la comunidad deben seguir guardándose aunque el backend aún no
     // haya recibido la migración multitienda. La tienda se podrá confirmar al
@@ -184,7 +240,7 @@ export async function isUsernameAvailable(username: string): Promise<boolean> {
   return data === true;
 }
 
-export async function uploadAvatar(userId: string, uri: string): Promise<string> {
+export async function uploadAvatar(userId: string, uri: string, friendsOnly = false): Promise<string> {
   // Redimensiona a máx. 512px de ancho y recomprime a JPEG ANTES de subir: una
   // foto de móvil (1–3 MB) baja a ~50–100 KB, sin pérdida visible en un avatar
   // pequeño. Reduce ~20× el coste de storage y egress en Supabase. El picker ya
@@ -205,15 +261,84 @@ export async function uploadAvatar(userId: string, uri: string): Promise<string>
   const response = await fetch(resizedUri);
   const arrayBuffer = await response.arrayBuffer();
 
-  const { error } = await supabase.storage.from('avatars').upload(path, arrayBuffer, {
+  const { error } = await supabase.storage.from(friendsOnly ? 'avatars-private' : 'avatars').upload(path, arrayBuffer, {
     upsert: true,
     contentType: 'image/jpeg',
   });
   if (error) throw error;
 
-  // La ruta es fija (avatar.jpg) → la URL pública no cambia entre subidas. Sin
-  // cache-busting, el CDN y la caché de Image mostrarían la foto anterior al
-  // cambiarla; el ?v= fuerza recargar la nueva.
-  const { data } = supabase.storage.from('avatars').getPublicUrl(path);
-  return `${data.publicUrl}?v=${Date.now()}`;
+  // Los clientes ya publicados necesitan la URL pública habitual mientras el
+  // usuario no restrinja la foto. La ruta privada es un marcador, nunca una URL
+  // descargable: UserAvatar solicita una URL firmada con RLS.
+  return friendsOnly ? privateAvatarUrl(userId) : publicAvatarUrl(userId);
+}
+
+/** Traslada una foto entre buckets al cambiar la preferencia. La copia pública
+ * se elimina antes de confirmar el modo privado; si falla, el toggle se revierte. */
+export async function setAvatarFriendsOnly(profile: UserProfile, friendsOnly: boolean): Promise<string | null> {
+  const { id, avatarUrl } = profile;
+  if (profile.avatarFriendsOnly === friendsOnly) return avatarUrl;
+  const path = `${id}/avatar.jpg`;
+  const publicStorage = supabase.storage.from('avatars');
+  const privateStorage = supabase.storage.from('avatars-private');
+
+  if (friendsOnly) {
+    let bytes: ArrayBuffer | null = null;
+    if (avatarUrl) {
+      bytes = await readAvatarBytes('avatars', path);
+      const copied = await privateStorage.upload(path, bytes, { upsert: true, contentType: 'image/jpeg' });
+      if (copied.error) throw copied.error;
+      const privateList = await privateStorage.list(id, { search: 'avatar.jpg', limit: 10 });
+      if (privateList.error || !privateList.data?.some((file) => file.name === 'avatar.jpg')) {
+        throw privateList.error ?? new Error('Private avatar copy missing');
+      }
+    }
+    try {
+      const removed = await publicStorage.remove([path]);
+      if (removed.error) throw removed.error;
+      const listed = await publicStorage.list(id, { search: 'avatar.jpg', limit: 10 });
+      if (listed.error || listed.data?.some((file) => file.name === 'avatar.jpg')) {
+        throw listed.error ?? new Error('Public avatar still exists');
+      }
+      const nextUrl = avatarUrl ? privateAvatarUrl(id) : null;
+      await updateProfile(id, { avatarFriendsOnly: true, avatarUrl: nextUrl });
+      return nextUrl;
+    } catch (error) {
+      // La fila sigue en modo público; restaurar la foto si falla el traslado.
+      if (bytes) await publicStorage.upload(path, bytes, { upsert: true, contentType: 'image/jpeg' });
+      throw error;
+    }
+  }
+
+  const isPrivate = privateAvatarPath(avatarUrl);
+  if (!isPrivate) {
+    await updateProfile(id, { avatarFriendsOnly: false });
+    return avatarUrl;
+  }
+  const bytes = await readAvatarBytes('avatars-private', path);
+  const nextUrl = publicAvatarUrl(id);
+  await updateProfile(id, { avatarFriendsOnly: false, avatarUrl: nextUrl });
+  const copied = await publicStorage.upload(path, bytes, { upsert: true, contentType: 'image/jpeg' });
+  const publicList = copied.error
+    ? null
+    : await publicStorage.list(id, { search: 'avatar.jpg', limit: 10 });
+  if (copied.error || publicList?.error || !publicList?.data?.some((file) => file.name === 'avatar.jpg')) {
+    await updateProfile(id, { avatarFriendsOnly: true, avatarUrl });
+    throw copied.error ?? publicList?.error ?? new Error('Public avatar copy missing');
+  }
+  // Una copia privada sobrante no expone la foto a desconocidos. No fallar la
+  // preferencia ya guardada si la limpieza de esa copia falla.
+  await privateStorage.remove([path]);
+  return nextUrl;
+}
+
+export async function removeAvatar(userId: string, avatarUrl: string): Promise<void> {
+  const bucket = privateAvatarPath(avatarUrl) ? 'avatars-private' : 'avatars';
+  const storage = supabase.storage.from(bucket);
+  const { error } = await storage.remove([`${userId}/avatar.jpg`]);
+  if (error) throw error;
+  const listed = await storage.list(userId, { search: 'avatar.jpg', limit: 10 });
+  if (listed.error || listed.data?.some((file) => file.name === 'avatar.jpg')) {
+    throw listed.error ?? new Error('Avatar still exists');
+  }
 }

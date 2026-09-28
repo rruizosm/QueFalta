@@ -199,7 +199,7 @@ export default function ProfileScreen() {
           {/* Identity card */}
           <View style={styles.identityCard}>
             <View style={styles.avatarFrame}>
-              <UserAvatar avatarUrl={avatarUrl} initials={initials} color={avatarBg} size={60} />
+              <UserAvatar avatarUrl={avatarUrl} userId={profile?.id} initials={initials} color={avatarBg} size={60} />
             </View>
 
             {/* Public identity */}

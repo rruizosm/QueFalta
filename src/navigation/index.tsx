@@ -30,6 +30,7 @@ import { useCart } from '../context/CartContext';
 import { joinGroup } from '../api/groups';
 import { recipeFeed } from '../lib/recipeFeed';
 import { prefetchProductImages } from '../lib/prefetchProductImages';
+import { parseAppLink, type AppLinkDestination } from '../lib/appLinks';
 import {
   addNotificationResponseListener,
   consumeInitialNotificationData,
@@ -45,6 +46,7 @@ import PriceChangesScreen from '../screens/PriceChangesScreen';
 import OffersScreen from '../screens/OffersScreen';
 import ProfileScreen    from '../screens/ProfileScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
+import WordStatisticsScreen from '../screens/WordStatisticsScreen';
 import PrivacySecurityScreen from '../screens/PrivacySecurityScreen';
 import CatalogStoresScreen from '../screens/CatalogStoresScreen';
 import AppearanceScreen from '../screens/AppearanceScreen';
@@ -68,10 +70,12 @@ import BonareaProductsScreen from '../screens/BonareaProductsScreen';
 import ConsumProductsScreen from '../screens/ConsumProductsScreen';
 import DiaProductsScreen from '../screens/DiaProductsScreen';
 import SorliProductsScreen from '../screens/SorliProductsScreen';
+import EljamonProductsScreen from '../screens/EljamonProductsScreen';
 import CondisProductsScreen from '../screens/CondisProductsScreen';
 import AmetllerProductsScreen from '../screens/AmetllerProductsScreen';
 import AldiProductsScreen from '../screens/AldiProductsScreen';
 import LidlProductsScreen from '../screens/LidlProductsScreen';
+import BmProductsScreen from '../screens/BmProductsScreen';
 import GadisProductsScreen from '../screens/GadisProductsScreen';
 import FroizProductsScreen from '../screens/FroizProductsScreen';
 import AhorramasProductsScreen from '../screens/AhorramasProductsScreen';
@@ -93,6 +97,9 @@ import BootLoader       from '../components/BootLoader';
 import NativeStoreReviewPrompt from '../components/NativeStoreReviewPrompt';
 import WhatsNewPrompt from '../components/WhatsNewPrompt';
 import LidlReleasePrompt from '../components/LidlReleasePrompt';
+import StoreReleasePrompt from '../components/StoreReleasePrompt';
+import { bmAvailableForPostalCode } from '../constants/retailerZones';
+import { regionFromPostalCode, storeInRegion } from '../constants/regions';
 
 const Tab          = createAppPagerNavigator<RootTabParamList>();
 const AppStack = createNativeStackNavigator<AppStackParamList>();
@@ -107,13 +114,6 @@ export const navigationRef = createNavigationContainerRef<AppStackParamList>();
  *  datos) `booting` no se apagaría nunca y el logo quedaba clavado hasta matar
  *  la app. Pasado el tope se arranca con lo que haya. */
 const BOOT_MAX_MS = 10000;
-
-function parseInviteUrl(url: string): string | null {
-  const parsed = Linking.parse(url);
-  const segments = [parsed.hostname, ...(parsed.path ? parsed.path.split('/') : [])].filter(Boolean) as string[];
-  const idx = segments.indexOf('join');
-  return idx >= 0 && segments[idx + 1] ? segments[idx + 1] : null;
-}
 
 function pagerScreenLayout({ children }: { children: React.ReactNode }) {
   return <PagerGestureBoundary>{children}</PagerGestureBoundary>;
@@ -130,6 +130,7 @@ function HomeNavigator() {
       <HomeStack.Screen name="Offers"      component={OffersScreen} />
       <HomeStack.Screen name="Profile"     component={ProfileScreen} />
       <HomeStack.Screen name="EditProfile" component={EditProfileScreen} />
+      <HomeStack.Screen name="WordStatistics" component={WordStatisticsScreen} />
       <HomeStack.Screen name="PrivacySecurity" component={PrivacySecurityScreen} />
       <HomeStack.Screen name="CatalogStores" component={CatalogStoresScreen} />
       <HomeStack.Screen name="RegionSettings" component={RegionSettingsScreen} />
@@ -167,6 +168,8 @@ function CatalogNavigator() {
       <CatalogStack.Screen name="AmetllerProducts" component={AmetllerProductsScreen} />
       <CatalogStack.Screen name="AldiProducts" component={AldiProductsScreen} />
       <CatalogStack.Screen name="LidlProducts" component={LidlProductsScreen} />
+      <CatalogStack.Screen name="BmProducts" component={BmProductsScreen} />
+      <CatalogStack.Screen name="EljamonProducts" component={EljamonProductsScreen} />
       <CatalogStack.Screen name="GadisProducts" component={GadisProductsScreen} />
       <CatalogStack.Screen name="FroizProducts" component={FroizProductsScreen} />
       <CatalogStack.Screen name="AhorramasProducts" component={AhorramasProductsScreen} />
@@ -223,25 +226,62 @@ export default function Navigation() {
   // Un tap puede llegar mientras aun se resuelve sesion/perfil o antes de que
   // React Navigation monte el arbol autenticado. Se conserva hasta onReady.
   const [pendingPushData, setPendingPushData] = useState<PushData | null>(null);
+  const [pendingAppLink, setPendingAppLink] = useState<AppLinkDestination | null>(null);
+  const [appNavigationReady, setAppNavigationReady] = useState(false);
   const [lidlPromptResolvedFor, setLidlPromptResolvedFor] = useState<string | null>(null);
   const lidlPromptResolved = !!userId && lidlPromptResolvedFor === userId;
   const handleLidlPromptResolved = useCallback(() => {
     if (userId) setLidlPromptResolvedFor(userId);
   }, [userId]);
+  const promptScope = userId && profile?.postalCode ? `${userId}:${profile.postalCode}` : null;
+  const [bmPromptResolvedFor, setBmPromptResolvedFor] = useState<string | null>(null);
+  const bmPromptResolved = !!promptScope && bmPromptResolvedFor === promptScope;
+  const handleBmPromptResolved = useCallback(() => {
+    if (promptScope) setBmPromptResolvedFor(promptScope);
+  }, [promptScope]);
+  const [eljamonPromptResolvedFor, setEljamonPromptResolvedFor] = useState<string | null>(null);
+  const eljamonPromptResolved = !!promptScope && eljamonPromptResolvedFor === promptScope;
+  const handleEljamonPromptResolved = useCallback(() => {
+    if (promptScope) setEljamonPromptResolvedFor(promptScope);
+  }, [promptScope]);
   useEffect(() => {
     if (!loading && !session) setLoginWasShown(true);
   }, [loading, session]);
+  // Captura tanto el arranque en frío como enlaces recibidos con la app
+  // abierta. El destino queda en cola mientras cargan sesión, perfil u
+  // onboarding; así nunca se pierde antes de montar el árbol autenticado.
   useEffect(() => {
-    if (!userId) return;
-
-    const handleUrl = async (url: string | null) => {
+    const queueUrl = (url: string | null) => {
       if (!url) return;
-      const groupId = parseInviteUrl(url);
-      if (!groupId) return;
+      const destination = parseAppLink(url);
+      if (destination) setPendingAppLink(destination);
+    };
+    void Linking.getInitialURL().then(queueUrl).catch(() => {});
+    const sub = Linking.addEventListener('url', ({ url }) => queueUrl(url));
+    return () => sub.remove();
+  }, []);
+
+  useEffect(() => {
+    if (!userId) setAppNavigationReady(false);
+  }, [userId]);
+
+  useEffect(() => {
+    if (!pendingAppLink || !userId || !appNavigationReady || !navigationRef.isReady()) return;
+    setPendingAppLink(null);
+
+    if (pendingAppLink.type === 'home') {
+      navigationRef.navigate('Tabs', {
+        screen: 'Home', params: { screen: 'HomeMain' },
+      }, { pop: true });
+      return;
+    }
+
+    const { groupId } = pendingAppLink;
+    void (async () => {
       try {
         const joined = await joinGroup(groupId, userId);
         if (joined) {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           showToast(t('nav.joinedGroup'));
         }
       } catch { /* already a member or RLS */ }
@@ -250,12 +290,8 @@ export default function Navigation() {
           screen: 'GroupDetail', params: { groupId },
         } }, { pop: true });
       }
-    };
-
-    Linking.getInitialURL().then(handleUrl);
-    const sub = Linking.addEventListener('url', (e) => handleUrl(e.url));
-    return () => sub.remove();
-  }, [showToast, t, userId]);
+    })();
+  }, [appNavigationReady, pendingAppLink, showToast, t, userId]);
 
   const openPushDestination = useCallback((data: PushData): boolean => {
     if (!navigationRef.isReady()) return false;
@@ -392,9 +428,17 @@ export default function Navigation() {
   // app se monta detrás para que el requisito aparezca como modal real; el gate
   // no admite cierre y desaparece únicamente cuando el perfil guarda un CP.
   const needsPostalCode = !!profile?.onboardedAt && !profile.postalCode;
+  const promptPostalCode = profile?.postalCode ?? null;
+  const promptRegion = promptPostalCode ? regionFromPostalCode(promptPostalCode) : null;
+  const bmPromptAvailable = !!promptPostalCode && bmAvailableForPostalCode(promptPostalCode);
+  const eljamonPromptAvailable = !!promptPostalCode && !!promptRegion
+    && storeInRegion('eljamon', promptRegion, promptPostalCode);
 
   return (<>
-    <NavigationContainer ref={navigationRef} theme={theme} onReady={flushPendingPush}>
+    <NavigationContainer ref={navigationRef} theme={theme} onReady={() => {
+      setAppNavigationReady(true);
+      flushPendingPush();
+    }}>
       <RecipeCreatorProvider>
         <AppStack.Navigator screenOptions={{ headerShown: false }}>
           <AppStack.Screen name="Tabs" component={AppTabs} />
@@ -406,8 +450,14 @@ export default function Navigation() {
     {!needsPostalCode && !lidlPromptResolved ? (
       <LidlReleasePrompt onResolved={handleLidlPromptResolved} />
     ) : null}
-    {!needsPostalCode && lidlPromptResolved ? <WhatsNewPrompt /> : null}
-    {!needsPostalCode && lidlPromptResolved ? <NativeStoreReviewPrompt /> : null}
+    {!needsPostalCode && lidlPromptResolved && !bmPromptResolved ? (
+      <StoreReleasePrompt store="bm" available={bmPromptAvailable} onResolved={handleBmPromptResolved} />
+    ) : null}
+    {!needsPostalCode && lidlPromptResolved && bmPromptResolved && !eljamonPromptResolved ? (
+      <StoreReleasePrompt store="eljamon" available={eljamonPromptAvailable} onResolved={handleEljamonPromptResolved} />
+    ) : null}
+    {!needsPostalCode && lidlPromptResolved && bmPromptResolved && eljamonPromptResolved ? <WhatsNewPrompt /> : null}
+    {!needsPostalCode && lidlPromptResolved && bmPromptResolved && eljamonPromptResolved ? <NativeStoreReviewPrompt /> : null}
   </>);
 }
 

@@ -1,15 +1,17 @@
 -- ─────────────────────────────────────────────────────────────
 -- Bucket `avatars` + policies de Storage (scoping por usuario).
 -- ─────────────────────────────────────────────────────────────
--- src/api/profile.ts → uploadAvatar() sube a `{userId}/avatar.{ext}` con
+-- src/api/profile.ts → uploadAvatar() sube a `{userId}/avatar.jpg` con
 -- upsert:true y luego usa getPublicUrl(). Sin estas policies, el control de
 -- quién puede escribir queda solo en el dashboard (fácil de olvidar): si la
 -- policy de escritura no fuerza que la primera carpeta del path == auth.uid(),
 -- cualquier usuario autenticado podría SOBREESCRIBIR el avatar de otro o subir
 -- ficheros arbitrarios al bucket.
 --
--- Modelo: lectura pública (avatar visible por URL), escritura solo en TU carpeta.
--- Idempotente. Ejecutar en: Supabase → SQL Editor.
+-- Modelo: lectura pública, escritura solo en TU carpeta. La migración
+-- 20260924143007_private_friend_avatars.sql añade el bucket privado opcional.
+-- La comprobación con to_jsonb mantiene este fichero compatible tanto antes
+-- como después de añadir avatar_friends_only. Supabase → SQL Editor.
 
 -- ── Bucket público con límites de tamaño y tipo (anti-abuso) ───
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -26,7 +28,7 @@ on conflict (id) do update
 -- ── Lectura: pública (bucket público; avatares visibles por URL) ─
 drop policy if exists "avatars read" on storage.objects;
 create policy "avatars read"
-  on storage.objects for select
+on storage.objects for select
   using (bucket_id = 'avatars');
 
 -- ── Subir: solo a tu propia carpeta {uid}/... ─────────────────
@@ -36,6 +38,11 @@ create policy "avatars insert own"
   with check (
     bucket_id = 'avatars'
     and (storage.foldername(name))[1] = auth.uid()::text
+    and exists (
+      select 1 from public.profiles p
+      where p.id = auth.uid()
+        and coalesce((to_jsonb(p)->>'avatar_friends_only')::boolean, false) = false
+    )
   );
 
 -- ── Actualizar (upsert sobreescribe → UPDATE): solo lo tuyo ────
@@ -45,10 +52,20 @@ create policy "avatars update own"
   using (
     bucket_id = 'avatars'
     and (storage.foldername(name))[1] = auth.uid()::text
+    and exists (
+      select 1 from public.profiles p
+      where p.id = auth.uid()
+        and coalesce((to_jsonb(p)->>'avatar_friends_only')::boolean, false) = false
+    )
   )
   with check (
     bucket_id = 'avatars'
     and (storage.foldername(name))[1] = auth.uid()::text
+    and exists (
+      select 1 from public.profiles p
+      where p.id = auth.uid()
+        and coalesce((to_jsonb(p)->>'avatar_friends_only')::boolean, false) = false
+    )
   );
 
 -- ── Borrar: solo lo tuyo ──────────────────────────────────────

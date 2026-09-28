@@ -28,6 +28,7 @@ import { CATALOG_STORES, CATALOG_STORE_KEYS, type CatalogStore } from '../../con
 import { storeInRegion } from '../../constants/regions';
 import AmbientBubbleBackdrop from '../../components/AmbientBubbleBackdrop';
 import { writeLidlReleaseAnswer } from '../../lib/lidlReleasePrompt';
+import { writeStoreReleaseAnswer } from '../../lib/storeReleasePrompt';
 
 const CART_MASCOT = require('../../../assets/mascot/berenjena-carrito-transicion.png');
 const APP_BLUE = colors.blue;
@@ -49,7 +50,8 @@ export default function StoresScreen() {
 
   // Solo los súpers de la CCAA elegida en el paso anterior ('ES' = todos).
   const region = profile?.region ?? null;
-  const shown = ONBOARDING_STORES.filter((store) => storeInRegion(store.key, region));
+  const postalCode = profile?.postalCode ?? null;
+  const shown = ONBOARDING_STORES.filter((store) => storeInRegion(store.key, region, postalCode));
 
   // En una entrada nueva empieza vacío. Si el paso ya se guardó y se vuelve
   // atrás desde una reanudación, recupera exactamente la selección persistida.
@@ -85,6 +87,11 @@ export default function StoresScreen() {
       // Las altas nuevas ya han respondido explícitamente en esta cuadrícula;
       // no deben recibir después el diálogo destinado a quienes actualizan.
       await writeLidlReleaseAnswer(userId, selected.includes('lidl') ? 'yes' : 'no').catch(() => {});
+      for (const store of ['bm', 'eljamon'] as const) {
+        if (shown.some((item) => item.key === store)) {
+          await writeStoreReleaseAnswer(store, userId, selected.includes(store) ? 'yes' : 'no').catch(() => {});
+        }
+      }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       navigation.navigate('Avatar');
     } catch {

@@ -155,7 +155,7 @@ export default function AddMemberScreen() {
               const isMember = memberIds.has(f.id);
               return (
                 <View key={f.id} style={styles.row}>
-                  <UserAvatar avatarUrl={f.avatarUrl} initials={f.initials} color={f.color} size={42} />
+                  <UserAvatar avatarUrl={f.avatarUrl} userId={f.id} initials={f.initials} color={f.color} size={42} />
                   <View style={styles.info}>
                     <View style={styles.nameRow}>
                       <Text style={styles.name} numberOfLines={1}>{f.name}</Text>

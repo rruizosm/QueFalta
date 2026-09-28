@@ -61,6 +61,8 @@ interface Props {
   onSort: (s: PriceSort | null) => void;
   /** Oculta precio y orden cuando la pantalla solo necesita otras facetas. */
   showPriceControls?: boolean;
+  /** Permite mover la ordenación fuera de la hoja sin ocultar el rango de precio. */
+  showSortControls?: boolean;
   /** Índice en PRICE_CHANGE_RANGES, o null = cualquier magnitud. */
   priceChangeRange?: number | null;
   onPriceChangeRange?: (i: number | null) => void;
@@ -97,6 +99,7 @@ export default function ProductFilterSheet({
   priceRange, onPriceRange,
   sort, onSort,
   showPriceControls = true,
+  showSortControls = true,
   priceChangeRange = null, onPriceChangeRange,
   pricePerUnitSort = null, onPricePerUnitSort,
   appearance = 'standard', showCategoryIcons = false,
@@ -158,14 +161,15 @@ export default function ProductFilterSheet({
     },
     onPanResponderTerminationRequest: () => false,
   })).current;
-  const hasFilters = category.length > 0 || priceRange != null || sort != null || priceChangeRange != null
-    || pricePerUnitSort != null || selectedOfferTypes.length > 0 || selectedStores.length > 0;
+  const hasFilters = category.length > 0 || priceRange != null || priceChangeRange != null
+    || (showSortControls && (sort != null || pricePerUnitSort != null))
+    || selectedOfferTypes.length > 0 || selectedStores.length > 0;
   const clearAll = () => {
     onCategory([]);
     onPriceRange(null);
-    onSort(null);
+    if (showSortControls) onSort(null);
     onPriceChangeRange?.(null);
-    onPricePerUnitSort?.(null);
+    if (showSortControls) onPricePerUnitSort?.(null);
     onOfferTypes?.([]);
     onStores?.([]);
   };
@@ -420,7 +424,7 @@ export default function ProductFilterSheet({
             </>
           )}
           {/* Orden por precio (primero en los listados que lo admiten). */}
-          {showPriceControls ? (
+          {showPriceControls && showSortControls ? (
             <>
               {sectionHeading(t('filters.sort'), 'swap-vertical-outline', stores.length <= 1)}
               <View style={styles.chipWrap}>
@@ -430,7 +434,7 @@ export default function ProductFilterSheet({
             </>
           ) : null}
 
-          {onPricePerUnitSort ? (
+          {showSortControls && onPricePerUnitSort ? (
             <>
               {sectionHeading(t('filters.unitPriceSort'), 'unitPrice', !showPriceControls && stores.length <= 1)}
               {unitPriceSortLocked ? (

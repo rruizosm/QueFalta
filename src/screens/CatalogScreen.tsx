@@ -1,6 +1,8 @@
+import { useCatalogSearchGeneration } from '../hooks/useCatalogSearchGeneration';
+import { assertCatalogSearchGeneration, getCatalogSearchGeneration } from '../lib/catalogSearchScope';
 import { PagerNativeScrollView as ScrollView, PagerNativeFlatList as FlatList } from '../components/bottom-tabs-pager/PagerNativeScroll';
 import { loadBrowsePage, peekBrowsePage } from '../api/catalogBrowse';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
@@ -19,6 +21,7 @@ import {
   Easing,
   Platform,
   UIManager,
+  Alert,
 } from 'react-native';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -43,6 +46,8 @@ import {
   searchAmetllerProducts, fetchAmetllerCategoryTree,
   searchAldiProducts, fetchAldiCategoryTree,
   searchLidlProducts, fetchLidlCategoryTree,
+  searchBmProducts, fetchBmCategoryTree,
+  searchEljamonProducts, fetchEljamonCategoryTree,
   searchGadisProducts, fetchGadisCategoryTree, searchFroizProducts, fetchFroizCategoryTree,
   searchAhorramasProducts, fetchAhorramasCategoryTree,
   searchHiperdinoProducts, fetchHiperdinoCategoryTree,
@@ -58,6 +63,8 @@ import {
   type AmetllerProduct, type AmetllerCategory,
   type AldiProduct, type AldiCategory,
   type LidlProduct, type LidlCategory,
+  type BmProduct, type BmCategory,
+  type EljamonProduct, type EljamonCategory,
   type GadisProduct, type GadisCategory, type FroizProduct, type FroizCategory,
   type AhorramasProduct, type AhorramasCategory,
   type HiperdinoProduct, type HiperdinoCategory,
@@ -75,11 +82,11 @@ import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { CATALOG_STORES, CATALOG_STORE_KEYS, storesWithLidlSecond, type CatalogStore } from '../constants/stores';
-import { storeInRegion, storesForRegion, type RegionValue } from '../constants/regions';
+import { regionFromPostalCode, storeInRegion, storesForRegion, type RegionValue } from '../constants/regions';
 import {
   mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
   eroskiToUI, capraboToUI, condisToUI, ametllerToUI, aldiToUI, lidlToUI, gadisToUI, froizToUI, ahorramasToUI, hiperdinoToUI, alcampoToUI,
-  plusfrescToUI,
+  plusfrescToUI, bmToUI, eljamonToUI,
   type UIProduct,
 } from '../lib/productAdapters';
 import { compareByName, relevanceScore, sortByName } from '../lib/sort';
@@ -93,9 +100,12 @@ import SlidingSegments, { type Segment } from '../components/SlidingSegments';
 import StoreDropdown, { type StoreSelection } from '../components/StoreDropdown';
 import { useCatalogStore } from '../context/CatalogStoreContext';
 import PaywallModal from '../components/PaywallModal';
+import AllStoresInfoModal from '../components/AllStoresInfoModal';
+import StoreInfoButton from '../components/StoreInfoButton';
 import LidlStorePicker from '../components/LidlStorePicker';
 import { updateProfile } from '../api/profile';
 import { allStoresRequiresPlus, catalogStoreRequiresPlus, limitsApply } from '../constants/limits';
+import type { CatalogCategoryNode } from '../types';
 
 // Las tiendas y sus metadatos viven en constants/stores.ts (fuente única
 // compartida con la preferencia de perfil "Supermercados").
@@ -155,6 +165,7 @@ function startProductSearch<T>(
   setLoading: (loading: boolean) => void,
   setError: (error: boolean) => void,
 ): (() => void) | undefined {
+  const generation = getCatalogSearchGeneration();
   const query = rawQuery.trim();
   if (query.length < 2) {
     setItems([]);
@@ -168,7 +179,10 @@ function startProductSearch<T>(
   setError(false);
   const handle = setTimeout(() => {
     load(query, controller.signal)
-      .then((items) => { if (!cancelled) setItems(items); })
+      .then((items) => {
+        assertCatalogSearchGeneration(generation);
+        if (!cancelled) setItems(items);
+      })
       .catch(() => { if (!cancelled) setError(true); })
       .finally(() => { if (!cancelled) setLoading(false); });
   }, 300);
@@ -238,6 +252,7 @@ interface CatalogScreenProps {
 }
 
 export default function CatalogScreen({ productSelection }: CatalogScreenProps = {}) {
+  const searchGeneration = useCatalogSearchGeneration();
   const isProductPicker = !!productSelection;
   const styles = useThemedStyles(themedStyles);
   const { scheme } = useTheme();
@@ -316,6 +331,12 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   // columnas (mismo diseño que Ofertas/Novedades/Cambios de precios).
   const [storeMenuOpen, setStoreMenuOpen] = useState(false);
   const [paywallVisible, setPaywallVisible] = useState(false);
+  const [allStoresInfoVisible, setAllStoresInfoVisible] = useState(false);
+  const [lidlCanaryInfoVisible, setLidlCanaryInfoVisible] = useState(false);
+
+  const openAllStoresNotice = () => {
+    setAllStoresInfoVisible(true);
+  };
 
   // Solo se muestran los supermercados elegidos en el perfil ∩ los disponibles
   // en su comunidad autónoma (regionales solo en su zona; con region 'ES' o
@@ -380,12 +401,14 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   }, [productSearchOrder, unitPriceSortLocked]);
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
+  const isCanaryUser = region === 'ES-CN'
+    || regionFromPostalCode(postalCode ?? '') === 'ES-CN';
   const lidlStoreId = profile?.lidlStoreId ?? null;
   const preferredStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
   const enabledStores = useMemo(() => {
-    const enabledInRegion = preferredStores.filter((key) => storeInRegion(key, region));
-    return enabledInRegion.length > 0 || isProductPicker ? enabledInRegion : storesForRegion(region);
-  }, [preferredStores, region, isProductPicker]);
+    const enabledInRegion = preferredStores.filter((key) => storeInRegion(key, region, postalCode));
+    return enabledInRegion.length > 0 || isProductPicker ? enabledInRegion : storesForRegion(region, postalCode);
+  }, [preferredStores, region, postalCode, isProductPicker]);
   const lidlLocked = catalogStoreRequiresPlus('lidl', isPremium);
   const allStoresLocked = allStoresRequiresPlus(isPremium);
   const accessibleStores = useMemo(
@@ -400,6 +423,18 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
     () => visibleStores.length % 2 === 0 ? visibleStores : [...visibleStores, null],
     [visibleStores],
   );
+
+  const openLidlCanaryNotice = () => {
+    if (Platform.OS === 'ios') {
+      Alert.alert(
+        t('storePicker.lidlCanaryNoticeTitle'),
+        t('storePicker.lidlCanaryNoticeBody'),
+        [{ text: t('common.ok') }],
+      );
+      return;
+    }
+    setLidlCanaryInfoVisible(true);
+  };
 
   // Si la tienda activa deja de estar permitida o pasa a estar bloqueada,
   // evita conservar contenido Plus tras una expiración.
@@ -562,6 +597,23 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   const [liCatsLoading, setLiCatsLoading] = useState(false);
   const [liCatsError, setLiCatsError] = useState(false);
 
+  // BM se resuelve por el código postal exacto del perfil.
+  const [bmSearch, setBmSearch] = useState('');
+  const [bmResults, setBmResults] = useState<BmProduct[]>([]);
+  const [bmLoading, setBmLoading] = useState(false);
+  const [bmError, setBmError] = useState(false);
+  const [bmCats, setBmCats] = useState<BmCategory[]>([]);
+  const [bmCatsLoading, setBmCatsLoading] = useState(false);
+  const [bmCatsError, setBmCatsError] = useState(false);
+
+  const [ejSearch, setEjSearch] = useState('');
+  const [ejResults, setEjResults] = useState<EljamonProduct[]>([]);
+  const [ejLoading, setEjLoading] = useState(false);
+  const [ejError, setEjError] = useState(false);
+  const [ejCats, setEjCats] = useState<EljamonCategory[]>([]);
+  const [ejCatsLoading, setEjCatsLoading] = useState(false);
+  const [ejCatsError, setEjCatsError] = useState(false);
+
   const [gaSearch, setGaSearch] = useState('');
   const [gaResults, setGaResults] = useState<GadisProduct[]>([]);
   const [gaLoading, setGaLoading] = useState(false);
@@ -636,13 +688,13 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   // Texto de búsqueda del súper activo: con <2 letras estamos en modo navegación.
   const prodQuery = store === 'all'
     ? allSearch
-    : { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch, condis: coSearch, ametller: amSearch, aldi: alSearch, lidl: liSearch, gadis: gaSearch, froiz: frSearch, ahorramas: ahSearch, hiperdino: hdSearch, alcampo: acSearch, plusfresc: pfSearch }[store];
-  const activeStoreSearchKey = `${store}:${prodQuery.trim()}:${lang}:${region ?? 'all'}:${postalCode ?? 'none'}:${lidlStoreId ?? 'no-lidl'}:${productSearchOrder}`;
+    : { mercadona: prodSearch, esclat: bpSearch, carrefour: cfSearch, bonarea: baSearch, consum: csSearch, dia: ddSearch, sorli: soSearch, eroski: ekSearch, caprabo: cbSearch, condis: coSearch, ametller: amSearch, aldi: alSearch, lidl: liSearch, bm: bmSearch, eljamon: ejSearch, gadis: gaSearch, froiz: frSearch, ahorramas: ahSearch, hiperdino: hdSearch, alcampo: acSearch, plusfresc: pfSearch }[store];
+  const activeStoreSearchKey = `${searchGeneration}:${store}:${prodQuery.trim()}:${lang}:${region ?? 'all'}:${postalCode ?? 'none'}:${lidlStoreId ?? 'no-lidl'}:${productSearchOrder}`;
   const activeStoreSearchKeyRef = useRef(activeStoreSearchKey);
   activeStoreSearchKeyRef.current = activeStoreSearchKey;
   // Setter de búsqueda de productos del súper activo (para la fila de búsqueda
   // única que ahora vive en el chrome, en vez de una por bloque de súper).
-  const storeQuerySetters = { mercadona: setProdSearch, esclat: setBpSearch, carrefour: setCfSearch, bonarea: setBaSearch, consum: setCsSearch, dia: setDdSearch, sorli: setSoSearch, eroski: setEkSearch, caprabo: setCbSearch, condis: setCoSearch, ametller: setAmSearch, aldi: setAlSearch, lidl: setLiSearch, gadis: setGaSearch, froiz: setFrSearch, ahorramas: setAhSearch, hiperdino: setHdSearch, alcampo: setAcSearch, plusfresc: setPfSearch };
+  const storeQuerySetters = { mercadona: setProdSearch, esclat: setBpSearch, carrefour: setCfSearch, bonarea: setBaSearch, consum: setCsSearch, dia: setDdSearch, sorli: setSoSearch, eroski: setEkSearch, caprabo: setCbSearch, condis: setCoSearch, ametller: setAmSearch, aldi: setAlSearch, lidl: setLiSearch, bm: setBmSearch, eljamon: setEjSearch, gadis: setGaSearch, froiz: setFrSearch, ahorramas: setAhSearch, hiperdino: setHdSearch, alcampo: setAcSearch, plusfresc: setPfSearch };
   const setProdQuery = store === 'all' ? setAllSearch : storeQuerySetters[store];
   const visibleProductQuery = prodQuery.trim();
   const showProductQueryInHeader = productQueryInHeader
@@ -728,7 +780,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
     };
   }, [compareSearchProducts]);
   const enabledStoresKey = accessibleStores.join(',');
-  const activeAllSearchKey = `${allSearch.trim()}:${lang}:${region ?? 'all'}:${postalCode ?? 'none'}:${lidlStoreId ?? 'no-lidl'}:${productSearchOrder}:${enabledStoresKey}`;
+  const activeAllSearchKey = `${searchGeneration}:${allSearch.trim()}:${lang}:${region ?? 'all'}:${postalCode ?? 'none'}:${lidlStoreId ?? 'no-lidl'}:${productSearchOrder}:${enabledStoresKey}`;
   const activeBrowseKey = browseCacheKey(
     store, lang, region, postalCode, lidlStoreId, `${productSortField}:${activeProductOrder}`,
   ) + (store === 'all' ? `:${enabledStoresKey}` : '');
@@ -896,13 +948,13 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   useEffect(() => {
     if (store !== 'mercadona') return;
     return startProductSearch(prodSearch, (q, signal) => searchProducts(q, region, 50, signal, 0, productSearchOrder), setProdResults, setProdLoading, setProdError);
-  }, [store, prodSearch, lang, region, productSearchOrder]);
+  }, [searchGeneration, store, prodSearch, lang, region, productSearchOrder]);
 
   // BonpreuEsclat: búsqueda server-side con debounce.
   useEffect(() => {
     if (store !== 'esclat') return;
     return startProductSearch(bpSearch, (q, signal) => searchBonpreuProducts(q, 50, signal, 0, productSearchOrder), setBpResults, setBpLoading, setBpError);
-  }, [store, bpSearch, lang, productSearchOrder]);
+  }, [searchGeneration, store, bpSearch, lang, productSearchOrder]);
 
   // Carga perezosa de categorías Carrefour la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -914,7 +966,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   useEffect(() => {
     if (store !== 'carrefour') return;
     return startProductSearch(cfSearch, (q, signal) => searchCarrefourProducts(q, region, 50, signal, 0, productSearchOrder), setCfResults, setCfLoading, setCfError);
-  }, [store, cfSearch, region, productSearchOrder]);
+  }, [searchGeneration, store, cfSearch, region, productSearchOrder]);
 
   // Carga perezosa de categorías bonÀrea la primera vez que se entra a esa tienda.
   useEffect(() => { setBaCats([]); }, [lang]);
@@ -927,7 +979,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   useEffect(() => {
     if (store !== 'bonarea') return;
     return startProductSearch(baSearch, (q, signal) => searchBonareaProducts(q, 50, signal, 0, productSearchOrder), setBaResults, setBaLoading, setBaError);
-  }, [store, baSearch, lang, productSearchOrder]);
+  }, [searchGeneration, store, baSearch, lang, productSearchOrder]);
 
   // Carga perezosa de categorías Consum la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -939,7 +991,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   useEffect(() => {
     if (store !== 'consum') return;
     return startProductSearch(csSearch, (q, signal) => searchConsumProducts(q, region, postalCode, 50, signal, 0, productSearchOrder), setCsResults, setCsLoading, setCsError);
-  }, [store, csSearch, region, postalCode, productSearchOrder]);
+  }, [searchGeneration, store, csSearch, region, postalCode, productSearchOrder]);
 
   // Carga perezosa de categorías Dia la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -951,7 +1003,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   useEffect(() => {
     if (store !== 'dia') return;
     return startProductSearch(ddSearch, (q, signal) => searchDiaProducts(q, region, 50, signal, 0, productSearchOrder), setDdResults, setDdLoading, setDdError);
-  }, [store, ddSearch, region, productSearchOrder]);
+  }, [searchGeneration, store, ddSearch, region, productSearchOrder]);
 
   // Carga perezosa de categorías Sorli la primera vez que se entra a esa tienda.
   useEffect(() => { setSoCats([]); }, [lang]);
@@ -964,7 +1016,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   useEffect(() => {
     if (store !== 'sorli') return;
     return startProductSearch(soSearch, (q, signal) => searchSorliProducts(q, 50, signal, 0, productSearchOrder), setSoResults, setSoLoading, setSoError);
-  }, [store, soSearch, lang, productSearchOrder]);
+  }, [searchGeneration, store, soSearch, lang, productSearchOrder]);
 
   // Carga perezosa de categorías Eroski la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -976,7 +1028,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   useEffect(() => {
     if (store !== 'eroski') return;
     return startProductSearch(ekSearch, (q, signal) => searchEroskiProducts(q, 50, signal, 0, productSearchOrder), setEkResults, setEkLoading, setEkError);
-  }, [store, ekSearch, productSearchOrder]);
+  }, [searchGeneration, store, ekSearch, productSearchOrder]);
 
   // Carga perezosa de categorías Caprabo la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -988,7 +1040,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   useEffect(() => {
     if (store !== 'caprabo') return;
     return startProductSearch(cbSearch, (q, signal) => searchCapraboProducts(q, 50, signal, 0, productSearchOrder), setCbResults, setCbLoading, setCbError);
-  }, [store, cbSearch, productSearchOrder]);
+  }, [searchGeneration, store, cbSearch, productSearchOrder]);
 
   // Carga perezosa de categorías Condis la primera vez que se entra a esa tienda.
   useEffect(() => { setCoCats([]); }, [lang]);
@@ -1001,7 +1053,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   useEffect(() => {
     if (store !== 'condis') return;
     return startProductSearch(coSearch, (q, signal) => searchCondisProducts(q, 50, signal, 0, productSearchOrder), setCoResults, setCoLoading, setCoError);
-  }, [store, coSearch, lang, productSearchOrder]);
+  }, [searchGeneration, store, coSearch, lang, productSearchOrder]);
 
   // Carga perezosa de categorías Ametller la primera vez que se entra a esa tienda.
   useEffect(() => { setAmCats([]); }, [lang]);
@@ -1014,7 +1066,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   useEffect(() => {
     if (store !== 'ametller') return;
     return startProductSearch(amSearch, (q, signal) => searchAmetllerProducts(q, 50, signal, 0, productSearchOrder), setAmResults, setAmLoading, setAmError);
-  }, [store, amSearch, lang, productSearchOrder]);
+  }, [searchGeneration, store, amSearch, lang, productSearchOrder]);
 
   // Carga perezosa de categorías Aldi la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -1026,7 +1078,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   useEffect(() => {
     if (store !== 'aldi') return;
     return startProductSearch(alSearch, (q, signal) => searchAldiProducts(q, 50, signal, 0, productSearchOrder), setAlResults, setAlLoading, setAlError);
-  }, [store, alSearch, productSearchOrder]);
+  }, [searchGeneration, store, alSearch, productSearchOrder]);
 
   useEffect(() => { setLiCats([]); setLiResults([]); }, [lidlStoreId]);
   useEffect(() => {
@@ -1036,7 +1088,26 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   useEffect(() => {
     if (store !== 'lidl') return;
     return startProductSearch(liSearch, (q, signal) => searchLidlProducts(q, 50, signal, 0, productSearchOrder, lidlStoreId), setLiResults, setLiLoading, setLiError);
-  }, [store, liSearch, productSearchOrder, lidlStoreId]);
+  }, [searchGeneration, store, liSearch, productSearchOrder, lidlStoreId]);
+
+  useEffect(() => { setBmCats([]); setBmResults([]); }, [postalCode]);
+  useEffect(() => {
+    if (tab !== 'categorias' || store !== 'bm' || bmCats.length > 0) return;
+    return startCategoryLoad(fetchBmCategoryTree, setBmCats, setBmCatsLoading, setBmCatsError);
+  }, [store, tab, bmCats.length, postalCode]);
+  useEffect(() => {
+    if (store !== 'bm') return;
+    return startProductSearch(bmSearch, (query, signal) => searchBmProducts(query, postalCode, 50, signal, 0, productSearchOrder), setBmResults, setBmLoading, setBmError);
+  }, [searchGeneration, store, bmSearch, postalCode, productSearchOrder]);
+
+  useEffect(() => {
+    if (tab !== 'categorias' || store !== 'eljamon' || ejCats.length > 0) return;
+    return startCategoryLoad(fetchEljamonCategoryTree, setEjCats, setEjCatsLoading, setEjCatsError);
+  }, [store, tab, ejCats.length]);
+  useEffect(() => {
+    if (store !== 'eljamon') return;
+    return startProductSearch(ejSearch, (query, signal) => searchEljamonProducts(query, 50, signal, 0, productSearchOrder), setEjResults, setEjLoading, setEjError);
+  }, [searchGeneration, store, ejSearch, productSearchOrder]);
 
   useEffect(() => {
     if (tab !== 'categorias' || store !== 'gadis' || gaCats.length > 0) return;
@@ -1045,7 +1116,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   useEffect(() => {
     if (store !== 'gadis') return;
     return startProductSearch(gaSearch, (q, signal) => searchGadisProducts(q, 50, signal, 0, productSearchOrder), setGaResults, setGaLoading, setGaError);
-  }, [store, gaSearch, productSearchOrder]);
+  }, [searchGeneration, store, gaSearch, productSearchOrder]);
 
   useEffect(() => {
     if (tab !== 'categorias' || store !== 'froiz' || frCats.length > 0) return;
@@ -1054,7 +1125,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   useEffect(() => {
     if (store !== 'froiz') return;
     return startProductSearch(frSearch, (q, signal) => searchFroizProducts(q, 50, signal, 0, productSearchOrder), setFrResults, setFrLoading, setFrError);
-  }, [store, frSearch, productSearchOrder]);
+  }, [searchGeneration, store, frSearch, productSearchOrder]);
 
   useEffect(() => {
     if (tab !== 'categorias' || store !== 'ahorramas' || ahCats.length > 0) return;
@@ -1063,7 +1134,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   useEffect(() => {
     if (store !== 'ahorramas') return;
     return startProductSearch(ahSearch, (q, signal) => searchAhorramasProducts(q, 50, signal, 0, productSearchOrder), setAhResults, setAhLoading, setAhError);
-  }, [store, ahSearch, productSearchOrder]);
+  }, [searchGeneration, store, ahSearch, productSearchOrder]);
 
   // Carga perezosa de categorías HiperDino la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -1075,7 +1146,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   useEffect(() => {
     if (store !== 'hiperdino') return;
     return startProductSearch(hdSearch, (q, signal) => searchHiperdinoProducts(q, 50, signal, 0, productSearchOrder), setHdResults, setHdLoading, setHdError);
-  }, [store, hdSearch, productSearchOrder]);
+  }, [searchGeneration, store, hdSearch, productSearchOrder]);
 
   // Carga perezosa de categorías Alcampo la primera vez que se entra a esa tienda.
   useEffect(() => {
@@ -1087,7 +1158,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   useEffect(() => {
     if (store !== 'alcampo') return;
     return startProductSearch(acSearch, (q, signal) => searchAlcampoProducts(q, 50, signal, 0, productSearchOrder), setAcResults, setAcLoading, setAcError);
-  }, [store, acSearch, productSearchOrder]);
+  }, [searchGeneration, store, acSearch, productSearchOrder]);
 
   // Carga perezosa de categorías Plusfresc la primera vez que se entra a esa tienda.
   useEffect(() => { setPfCats([]); }, [lang]);
@@ -1100,7 +1171,32 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   useEffect(() => {
     if (store !== 'plusfresc') return;
     return startProductSearch(pfSearch, (q, signal) => searchPlusfrescProducts(q, postalCode, 50, signal, 0, productSearchOrder), setPfResults, setPfLoading, setPfError);
-  }, [store, pfSearch, lang, postalCode, productSearchOrder]);
+  }, [searchGeneration, store, pfSearch, lang, postalCode, productSearchOrder]);
+
+  useLayoutEffect(() => {
+    setProdResults([]);
+    setBpResults([]);
+    setCfResults([]);
+    setBaResults([]);
+    setCsResults([]);
+    setDdResults([]);
+    setSoResults([]);
+    setEkResults([]);
+    setCbResults([]);
+    setCoResults([]);
+    setAmResults([]);
+    setAlResults([]);
+    setLiResults([]);
+    setBmResults([]);
+    setEjResults([]);
+    setGaResults([]);
+    setFrResults([]);
+    setAhResults([]);
+    setHdResults([]);
+    setAcResults([]);
+    setPfResults([]);
+    setAllResults([]);
+  }, [searchGeneration]);
 
   const loadMoreStoreSearch = (offset: number) => {
     if (
@@ -1203,6 +1299,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
       allSearch,
       async (q, signal) => {
         const pager = createMultiStorePager<UIProduct, CatalogStore, number>({
+          assertContext: () => assertCatalogSearchGeneration(searchGeneration),
           stores: accessibleStores,
           pageSize: 12,
           loadPage: async (selectedStore, cursor, limit, pageSignal) => {
@@ -1248,7 +1345,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
     };
   }, [
     store, allSearch, lang, region, postalCode, lidlStoreId, productSearchOrder,
-    activeAllSearchKey, allSearchComparator, enabledStoresKey, accessibleStores,
+    searchGeneration, activeAllSearchKey, allSearchComparator, enabledStoresKey, accessibleStores,
   ]);
 
   // Filtro de categorías por texto (cliente). Compartido por los 6 súpers: en la
@@ -1273,11 +1370,12 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
   const goToMirrorSubcategories = (
     retailer: Exclude<CatalogStore, 'mercadona'>,
-    cat: { name: string; children: { id: string; name: string }[] },
+    cat: { id: string; name: string; children: CatalogCategoryNode[] },
   ) => {
     const { emoji, color } = getMeta(cat.name);
     navigation.navigate('SubCategory', {
       categoryName: cat.name,
+      categoryId: retailer === 'eljamon' ? cat.id : undefined,
       emoji,
       color,
       subcategories: cat.children,
@@ -1363,6 +1461,12 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
         ? navigation.navigate('LidlProducts', { categoryId: item.id, categoryName: item.name })
         : goToMirrorSubcategories('lidl', item),
     });
+
+  const renderBmCategory = ({ item }: { item: BmCategory }) =>
+    renderCatRow({ store: 'bm', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('bm', item) });
+
+  const renderEjCategory = ({ item }: { item: EljamonCategory }) =>
+    renderCatRow({ store: 'eljamon', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('eljamon', item) });
 
   const renderGaCategory = ({ item }: { item: GadisCategory }) =>
     renderCatRow({ store: 'gadis', refId: item.id, name: item.name, subcount: item.children.length, onOpen: () => goToMirrorSubcategories('gadis', item) });
@@ -2364,6 +2468,22 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
       )}
       {store === 'lidl' && tab === 'productos' && renderProductsTab(liSearch, liLoading, liError, liResults.map(lidlToUI))}
 
+      {/* ── BM ───────────────────────────────────────────────────── */}
+      {store === 'bm' && tab === 'categorias' && (
+        bmCatsLoading ? <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
+        : bmCatsError ? <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'BM' })}</Text><TouchableOpacity onPress={() => { setBmCatsError(false); setBmCatsLoading(true); fetchBmCategoryTree().then(setBmCats).catch(() => setBmCatsError(true)).finally(() => setBmCatsLoading(false)); }}><Text style={styles.retryText}>{t('common.retry')}</Text></TouchableOpacity></View>
+        : <FlatList tabBarScroll data={sortedCats(bmCats)} keyExtractor={(item) => item.id} renderItem={renderBmCategory} contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]} showsVerticalScrollIndicator={false} ItemSeparatorComponent={() => <View style={{ height: 8 }} />} />
+      )}
+      {store === 'bm' && tab === 'productos' && renderProductsTab(bmSearch, bmLoading, bmError, bmResults.map(bmToUI))}
+
+      {/* ── El Jamón ────────────────────────────────────────────── */}
+      {store === 'eljamon' && tab === 'categorias' && (
+        ejCatsLoading ? <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
+        : ejCatsError ? <View style={styles.centerBox}><Text style={styles.errorText}>{t('catalog.loadErrorStore', { store: 'El Jamón' })}</Text><TouchableOpacity onPress={() => { setEjCatsError(false); setEjCatsLoading(true); fetchEljamonCategoryTree().then(setEjCats).catch(() => setEjCatsError(true)).finally(() => setEjCatsLoading(false)); }}><Text style={styles.retryText}>{t('common.retry')}</Text></TouchableOpacity></View>
+        : <FlatList tabBarScroll data={sortedCats(ejCats)} keyExtractor={(item) => item.id} renderItem={renderEjCategory} contentContainerStyle={[styles.list, { paddingBottom: bottomPad, paddingTop: 4 + glassInset }]} showsVerticalScrollIndicator={false} ItemSeparatorComponent={() => <View style={{ height: 8 }} />} />
+      )}
+      {store === 'eljamon' && tab === 'productos' && renderProductsTab(ejSearch, ejLoading, ejError, ejResults.map(eljamonToUI))}
+
       {/* ── Gadis ────────────────────────────────────────────────── */}
       {store === 'gadis' && tab === 'categorias' && (
         gaCatsLoading ? <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + glassInset }} />
@@ -2512,7 +2632,11 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
         visible={storeMenuOpen}
         animationType={reducedMotion ? 'none' : 'slide'}
         statusBarTranslucent
-        onRequestClose={() => setStoreMenuOpen(false)}
+        onRequestClose={() => {
+          if (lidlCanaryInfoVisible) setLidlCanaryInfoVisible(false);
+          else if (allStoresInfoVisible) setAllStoresInfoVisible(false);
+          else setStoreMenuOpen(false);
+        }}
       >
         <View style={[styles.storeSheet, { paddingTop: insets.top }]}>
           <View style={styles.storeSheetHeader}>
@@ -2537,7 +2661,16 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
             contentContainerStyle={[styles.storeGrid, { paddingBottom: insets.bottom + 24 }]}
             showsVerticalScrollIndicator={false}
             ListHeaderComponent={(
-              <View style={styles.storeAllCardBackground}>{storeAllCardContent}</View>
+              <View style={styles.storeAllCardBackground}>
+                {storeAllCardContent}
+                {allStoresLocked ? (
+                  <StoreInfoButton
+                    style={styles.storeAllInfoButton}
+                    onPress={openAllStoresNotice}
+                    accessibilityLabel={t('storePicker.allStoresInfoLabel')}
+                  />
+                ) : null}
+              </View>
             )}
             renderItem={({ item }) => {
               if (!item) {
@@ -2553,59 +2686,81 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
               const on = item.key === store;
               const locked = item.key === 'lidl' && lidlLocked;
+              const showLidlInfo = item.key === 'lidl' && isCanaryUser;
               return (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.storeCard,
-                    locked ? styles.storeCardLocked : on && styles.storeCardActive,
-                    pressed && styles.storeCardPressed,
-                  ]}
-                  onPress={() => {
-                    setStoreMenuOpen(false);
-                    if (locked) {
-                      setPaywallVisible(true);
-                      return;
-                    }
-                    handleStoreChange(item.key);
-                  }}
-                  accessibilityRole="button"
-                  accessibilityLabel={locked
-                    ? `${item.name}. ${t('storePicker.plusOnly')}`
-                    : item.name}
-                  accessibilityState={{ selected: on }}
-                >
-                  {locked ? (
-                    <View style={styles.storeCardLock}>
-                      <Ionicons name="lock-closed" size={14} color={colors.inkSoft} />
-                    </View>
-                  ) : on && (
-                    <View style={styles.storeCardCheck}>
-                      <Ionicons name="checkmark" size={14} color={colors.white} />
-                    </View>
-                  )}
-                  <View style={[
-                    styles.storeCardLogoWrap,
-                    item.key === 'lidl' && styles.lidlStoreLogoWrap,
-                  ]}>
-                    {item.icon ? (
-                      <Image source={item.icon} style={styles.storeCardLogo} resizeMode="cover" />
-                    ) : (
-                      <Ionicons name="storefront" size={30} color={colors.accent} />
+                <View style={styles.storeCardBackground}>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.storeCard,
+                      locked ? styles.storeCardLocked : on && styles.storeCardActive,
+                      pressed && styles.storeCardPressed,
+                    ]}
+                    onPress={() => {
+                      setStoreMenuOpen(false);
+                      if (locked) {
+                        setPaywallVisible(true);
+                        return;
+                      }
+                      handleStoreChange(item.key);
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel={locked
+                      ? `${item.name}. ${t('storePicker.plusOnly')}`
+                      : item.name}
+                    accessibilityState={{ selected: on }}
+                  >
+                    {locked ? (
+                      <View style={styles.storeCardLock}>
+                        <Ionicons name="lock-closed" size={14} color={colors.inkSoft} />
+                      </View>
+                    ) : on && (
+                      <View style={styles.storeCardCheck}>
+                        <Ionicons name="checkmark" size={14} color={colors.white} />
+                      </View>
                     )}
-                  </View>
-                  <Text style={[styles.storeCardName, on && styles.storeCardNameActive]} numberOfLines={2}>
-                    {item.name}
-                  </Text>
-                </Pressable>
+                    <View style={[
+                      styles.storeCardLogoWrap,
+                      item.key === 'lidl' && styles.lidlStoreLogoWrap,
+                    ]}>
+                      {item.icon ? (
+                        <Image source={item.icon} style={styles.storeCardLogo} resizeMode="cover" />
+                      ) : (
+                        <Ionicons name="storefront" size={30} color={colors.accent} />
+                      )}
+                    </View>
+                    <Text style={[styles.storeCardName, on && styles.storeCardNameActive]} numberOfLines={2}>
+                      {item.name}
+                    </Text>
+                  </Pressable>
+                  {showLidlInfo ? (
+                    <StoreInfoButton
+                      style={styles.storeLidlInfoButton}
+                      onPress={openLidlCanaryNotice}
+                      accessibilityLabel={t('storePicker.lidlCanaryInfoLabel')}
+                    />
+                  ) : null}
+                </View>
               );
             }}
           />
         </View>
+        <AllStoresInfoModal
+          contained
+          visible={allStoresInfoVisible}
+          onClose={() => setAllStoresInfoVisible(false)}
+        />
+        <AllStoresInfoModal
+          contained
+          variant="lidlCanary"
+          visible={lidlCanaryInfoVisible}
+          onClose={() => setLidlCanaryInfoVisible(false)}
+        />
       </Modal>
 
       {catalogFocused && store === 'lidl' && !lidlLocked && !profileLoading && (lidlPickerOpen || !lidlStoreId) ? (
         <LidlStorePicker postalCode={postalCode} selectedStoreId={lidlStoreId}
-          required={!lidlStoreId} onSelect={saveLidlStore} onClose={() => setLidlPickerOpen(false)} />
+          required={!lidlStoreId} onSelect={saveLidlStore} onClose={() => setLidlPickerOpen(false)}
+          showCanaryNotice={isCanaryUser} />
       ) : null}
       <PaywallModal
         visible={paywallVisible}
@@ -2692,6 +2847,10 @@ const themedStyles = () => StyleSheet.create({
     height: 78,
     marginBottom: 12,
   },
+  storeAllInfoButton: {
+    position: 'absolute', left: 8, bottom: 4,
+    zIndex: 1,
+  },
   storeAllCard: {
     flex: 1,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
@@ -2716,13 +2875,14 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.accentLight,
   },
   storeCard: {
-    flex: 1, aspectRatio: 1,
+    flex: 1,
     alignItems: 'center', justifyContent: 'center', gap: 10,
     paddingHorizontal: 10,
     backgroundColor: colors.white,
     borderRadius: 20,
     borderWidth: 1, borderColor: colors.border,
   },
+  storeCardBackground: { flex: 1, aspectRatio: 1 },
   storeCardPlaceholder: { flex: 1, aspectRatio: 1 },
   storeCardActive: { borderColor: colors.accent, backgroundColor: colors.accentLight },
   storeCardLocked: { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
@@ -2748,6 +2908,10 @@ const themedStyles = () => StyleSheet.create({
   storeCardLogo: { width: '100%', height: '100%' },
   storeCardName: { fontSize: 14, fontFamily: fonts.semibold, color: colors.ink, textAlign: 'center' },
   storeCardNameActive: { color: colors.accent },
+  storeLidlInfoButton: {
+    position: 'absolute', left: 4, bottom: 4,
+    zIndex: 1,
+  },
   // ── Fila de pestañas + selector de súper (un bloque aparte) ───
   controlsRow: {
     flexDirection: 'row', alignItems: 'center', gap: 10,

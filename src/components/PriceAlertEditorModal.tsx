@@ -76,7 +76,9 @@ export default function PriceAlertEditorModal({
     if (!profile) return [];
     const preferred = new Set(profile.catalogStores);
     return CATALOG_STORES.filter((store) => (
-      preferred.has(store.key) && storeInRegion(store.key, profile.region)
+      store.key !== 'eljamon'
+      && preferred.has(store.key)
+      && storeInRegion(store.key, profile.region, profile.postalCode)
     ));
   }, [profile]);
   const allowedStoreKeys = useMemo(

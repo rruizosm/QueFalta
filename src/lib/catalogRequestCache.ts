@@ -17,7 +17,8 @@ function canonical(value: unknown): unknown {
 }
 
 export function catalogRequestKey(resource: string, context: unknown): string {
-  return JSON.stringify([resource, canonical(context)]);
+  // Cleared on identity changes so a session cannot reuse another user's page.
+  return JSON.stringify([resource, canonical(context), generation]);
 }
 
 export function peekCatalogRequest<T>(key: string): T | undefined {
@@ -37,15 +38,21 @@ export function seedCatalogRequest<T>(key: string, value: T): T {
 }
 
 export function cacheCatalogRequest<T>(key: string, load: () => Promise<T>): Promise<T> {
+  const startedGeneration = generation;
+  const checkGeneration = () => {
+    if (generation !== startedGeneration) {
+      throw Object.assign(new Error('Catalog cache context changed'), {
+        name: 'AbortError', code: 'CATALOG_SEARCH_CONTEXT_CHANGED',
+      });
+    }
+  };
   const cached = peekCatalogRequest<T>(key);
-  if (cached !== undefined) return Promise.resolve(cached);
+  if (cached !== undefined) return Promise.resolve().then(() => { checkGeneration(); return cached; });
   const inflight = pending.get(key);
   if (inflight) return inflight as Promise<T>;
-  const startedGeneration = generation;
   const promise = Promise.resolve().then(load).then((value) => {
-    if (generation === startedGeneration) {
-      seedCatalogRequest(key, value);
-    }
+    checkGeneration();
+    seedCatalogRequest(key, value);
     return value;
   }).finally(() => { if (pending.get(key) === promise) pending.delete(key); });
   pending.set(key, promise);

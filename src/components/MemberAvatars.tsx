@@ -23,6 +23,7 @@ export default function MemberAvatars({ members, maxVisible = 4, size = 32 }: Pr
         <UserAvatar
           key={member.id}
           avatarUrl={member.avatarUrl}
+          userId={member.id}
           initials={member.initials}
           color={member.color}
           size={size}

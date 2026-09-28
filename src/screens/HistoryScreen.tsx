@@ -20,6 +20,8 @@ import { fetchPurchases, fetchPurchaseItems, type Purchase } from '../api/purcha
 import type { NewListItem } from '../api/lists';
 import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
 import { glassAvailable } from '../components/GlassSurface';
+import PaywallModal from '../components/PaywallModal';
+import { GroupCartLimitError } from '../lib/groupCartLimit';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -42,6 +44,7 @@ export default function HistoryScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [repeatingId, setRepeatingId] = useState<string | null>(null);
+  const [paywallVisible, setPaywallVisible] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [itemsCache, setItemsCache] = useState<Record<string, NewListItem[]>>({});
   const [itemsLoadingId, setItemsLoadingId] = useState<string | null>(null);
@@ -94,8 +97,9 @@ export default function HistoryScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show(t('history.loaded', { n: items.length, group: p.groupName ?? t('history.theGroupFallback') }));
       navigation.navigate('List');
-    } catch {
-      toast.show(t('history.repeatError'), 'error');
+    } catch (cause) {
+      if (cause instanceof GroupCartLimitError) setPaywallVisible(true);
+      else toast.show(t('history.repeatError'), 'error');
     } finally {
       setRepeatingId(null);
     }
@@ -233,6 +237,7 @@ export default function HistoryScreen() {
         </ScrollView>
       )}
 
+      <PaywallModal visible={paywallVisible} onClose={() => setPaywallVisible(false)} />
     </View>
   );
 }

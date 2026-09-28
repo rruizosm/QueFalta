@@ -6,7 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
-import type { AldiProduct, LidlProduct, GadisProduct, FroizProduct, AhorramasProduct } from '../api/catalog';
+import type { AldiProduct, LidlProduct, GadisProduct, FroizProduct, AhorramasProduct, BmProduct, EljamonProduct } from '../api/catalog';
 import type { CatalogStore } from '../constants/stores';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
@@ -23,8 +23,8 @@ import ActiveCartIcon from './ActiveCartIcon';
 
 interface Props {
   /** Producto a mostrar (ya cargado de aldi_products). null = oculto. */
-  product: AldiProduct | LidlProduct | GadisProduct | FroizProduct | AhorramasProduct | null;
-  store?: Extract<CatalogStore, 'aldi' | 'lidl' | 'gadis' | 'froiz' | 'ahorramas'>;
+  product: AldiProduct | LidlProduct | GadisProduct | FroizProduct | AhorramasProduct | BmProduct | EljamonProduct | null;
+  store?: Extract<CatalogStore, 'aldi' | 'lidl' | 'bm' | 'eljamon' | 'gadis' | 'froiz' | 'ahorramas'>;
   onClose: () => void;
   /** Padding superior de la cabecera (lo fija StoreProductModal): 56 a pantalla
    *  completa (cesta), 16 dentro de la hoja (catálogo). */
@@ -63,13 +63,13 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
   if (!product) return null;
   const price = product.priceFormat
     ?? (product.unitPrice != null ? `${product.unitPrice.toFixed(2).replace('.', ',')} €` : null);
-  const lidlPromoBasePrice = store === 'lidl' && 'promoBasePrice' in product
+  const promoBasePrice = (store === 'lidl' || store === 'eljamon') && 'promoBasePrice' in product
     ? product.promoBasePrice
     : null;
   const lidlPlusOnly = store === 'lidl'
     && 'isLidlPlusOffer' in product
     && product.isLidlPlusOffer;
-  const lidlPromotion = store === 'lidl'
+  const promotion = (store === 'lidl' || store === 'eljamon')
     && 'promoName' in product
     && 'promoText' in product
     && 'promoStart' in product
@@ -85,17 +85,17 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
         end: formatOfferDate(product.promoEnd),
       }
     : null;
-  const lidlOfferValidity = lidlPromotion?.start && lidlPromotion.end
-    ? t('product.offerValidityRange', { start: lidlPromotion.start, end: lidlPromotion.end })
-    : lidlPromotion?.start
-      ? t('product.offerValidityFrom', { start: lidlPromotion.start })
-      : lidlPromotion?.end
-        ? t('product.offerValidityUntil', { end: lidlPromotion.end })
+  const offerValidity = promotion?.start && promotion.end
+    ? t('product.offerValidityRange', { start: promotion.start, end: promotion.end })
+    : promotion?.start
+      ? t('product.offerValidityFrom', { start: promotion.start })
+      : promotion?.end
+        ? t('product.offerValidityUntil', { end: promotion.end })
         : null;
-  const promotionPreviousPrice = lidlPromoBasePrice != null
+  const promotionPreviousPrice = promoBasePrice != null
     && product.unitPrice != null
-    && lidlPromoBasePrice > product.unitPrice
-    ? `${lidlPromoBasePrice.toFixed(2).replace('.', ',')} €`
+    && promoBasePrice > product.unitPrice
+    ? `${promoBasePrice.toFixed(2).replace('.', ',')} €`
     : null;
   const fav = isProductFavorite(store, product.id);
 
@@ -162,7 +162,7 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
           uri={product.thumbnail}
           style={styles.photo}
           badgeLabel={badgeLabel}
-          alertTarget={{ store, productId: product.id }}
+          alertTarget={store === 'eljamon' ? undefined : { store, productId: product.id }}
           emptyMessage={store === 'lidl' ? t('product.lidlImageUnavailable') : undefined}
         />
 
@@ -179,11 +179,11 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
         />
         {product.pricePerUnit ? <Text style={styles.refPrice}>{product.pricePerUnit}</Text> : null}
 
-        {lidlPromotion ? (
+        {promotion ? (
           <View style={styles.promoBox}>
             <View style={styles.promoPill}>
               <Ionicons name="pricetags" size={12} color={colors.white} />
-              <Text style={styles.promoPillText}>{lidlPromotion.label}</Text>
+              <Text style={styles.promoPillText}>{promotion.label}</Text>
             </View>
             {lidlPlusOnly ? (
               <View style={styles.promoDetail}>
@@ -191,16 +191,16 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
                 <Text style={styles.promoText}>{t('product.lidlPlusRequirement')}</Text>
               </View>
             ) : null}
-            {lidlPromotion.condition ? (
+            {promotion.condition ? (
               <View style={styles.promoDetail}>
                 <Text style={styles.promoDetailLabel}>{t('product.offerConditions')}</Text>
-                <Text style={styles.promoText}>{lidlPromotion.condition}</Text>
+                <Text style={styles.promoText}>{promotion.condition}</Text>
               </View>
             ) : null}
-            {lidlOfferValidity ? (
+            {offerValidity ? (
               <View style={styles.promoDetail}>
                 <Text style={styles.promoDetailLabel}>{t('product.offerValidity')}</Text>
-                <Text style={styles.promoText}>{lidlOfferValidity}</Text>
+                <Text style={styles.promoText}>{offerValidity}</Text>
               </View>
             ) : null}
           </View>
@@ -214,10 +214,17 @@ export default function AldiProductModal({ product, store = 'aldi', onClose, top
         <ProductInfoSections
           items={[
             { key: 'category', icon: 'pricetags-outline', title: t('product.category'), text: product.categoryName },
+            ...('description' in product ? [
+              { key: 'description', icon: 'information-circle-outline' as const, title: t('product.sections.description'), text: product.description },
+              { key: 'ingredients', icon: 'leaf-outline' as const, title: t('product.sections.ingredients'), text: product.ingredients },
+              { key: 'allergens', icon: 'warning-outline' as const, title: t('product.sections.allergens'), text: product.allergens },
+              { key: 'nutrition', icon: 'nutrition-outline' as const, title: t('product.sections.nutrition'), text: product.nutrition },
+              { key: 'conservation', icon: 'snow-outline' as const, title: t('product.sections.storage'), text: product.conservation },
+            ] : []),
           ]}
         />
 
-        <Text style={styles.note}>{t('product.fromStore', { store: store === 'gadis' ? 'Gadis' : store === 'froiz' ? 'Froiz' : store === 'ahorramas' ? 'Ahorramás' : store === 'lidl' ? 'Lidl' : 'Aldi' })}</Text>
+        <Text style={styles.note}>{t('product.fromStore', { store: store === 'gadis' ? 'Gadis' : store === 'froiz' ? 'Froiz' : store === 'ahorramas' ? 'Ahorramás' : store === 'lidl' ? 'Lidl' : store === 'bm' ? 'BM' : store === 'eljamon' ? 'El Jamón' : 'Aldi' })}</Text>
       </ScrollView>
 
       {/* Pie: cantidad + añadir a la cesta */}

@@ -1,24 +1,28 @@
 import type { DailyWord } from '../api/wordGame';
 
-export type WordGameError = '' | 'loadError' | 'sendError' | 'invalid' | 'repeated' | 'length' | 'stale' | 'expired' | 'notSent';
+export type WordGameError = '' | 'loadError' | 'startError' | 'sendError' | 'invalid' | 'repeated' | 'length' | 'stale' | 'expired' | 'notSent';
 export interface WordGameState {
   game: DailyWord | null;
   draft: string;
+  cursor: number;
   loading: boolean;
   sending: boolean;
+  starting: boolean;
   uncertain: boolean;
   error: WordGameError;
   remaining: number;
+  elapsed: number;
 }
 interface Dependencies {
   storageKey: string;
   today: () => Promise<DailyWord>;
+  start: (id: string) => Promise<DailyWord>;
   submit: (id: string, word: string, attempts: number) => Promise<DailyWord>;
   readDraft: () => Promise<string | null>;
   writeDraft: (value: string) => Promise<unknown>;
   now?: () => number;
 }
-interface Draft { gameId: string; attempts: number; word: string; pending: boolean }
+interface Draft { gameId: string; attempts: number; word: string; pending: boolean; cursor?: number }
 const draftWrites = new Map<string, Promise<unknown>>();
 
 export function wordDraftKey(userId: string) {
@@ -27,10 +31,11 @@ export function wordDraftKey(userId: string) {
 
 /** Only drafts live on the device. Attempts, feedback and scores are server-owned. */
 export class WordGameSession {
-  state: WordGameState = { game: null, draft: '', loading: true, sending: false, uncertain: false, error: '', remaining: 0 };
+  state: WordGameState = { game: null, draft: '', cursor: 0, loading: true, sending: false, starting: false, uncertain: false, error: '', remaining: 0, elapsed: 0 };
   private listeners = new Set<(state: WordGameState) => void>();
   private active = false;
   private deadline = 0;
+  private startClock = 0;
   private retryAt = 0;
   private operation = false;
   private refreshAfterSend = false;
@@ -50,9 +55,9 @@ export class WordGameSession {
   }
 
   private persist() {
-    const { game, draft, uncertain } = this.state;
+    const { game, draft, cursor, uncertain } = this.state;
     if (!game) return Promise.resolve();
-    const value = JSON.stringify({ gameId: game.id, attempts: game.guesses.length, word: draft, pending: uncertain } satisfies Draft);
+    const value = JSON.stringify({ gameId: game.id, attempts: game.guesses.length, word: draft, pending: uncertain, cursor } satisfies Draft);
     // Preserve write order when typing quickly or leaving during a submission.
     const key = this.deps.storageKey;
     const write = (draftWrites.get(key) ?? Promise.resolve()).then(() => this.deps.writeDraft(value)).catch(() => {});
@@ -68,8 +73,9 @@ export class WordGameSession {
       if (!saved || typeof saved !== 'object') return null;
       const value = saved as Draft;
       if (value.gameId !== game.id || value.attempts !== game.guesses.length ||
-        typeof value.word !== 'string' || !/^[A-ZÑ]*$/.test(value.word) || value.word.length > game.length ||
-        typeof value.pending !== 'boolean' || (value.pending && value.word.length !== game.length)) return null;
+        typeof value.word !== 'string' || !/^[A-ZÑ ]*$/.test(value.word) || value.word.length > game.length ||
+        (value.cursor !== undefined && (!Number.isInteger(value.cursor) || value.cursor < 0 || value.cursor > game.length)) ||
+        typeof value.pending !== 'boolean' || (value.pending && !this.complete(value.word, game.length))) return null;
       return value;
     } catch { return null; }
   }
@@ -77,10 +83,16 @@ export class WordGameSession {
   private accept(game: DailyWord, draft?: Draft | null) {
     const duration = Math.max(0, Date.parse(game.endsAt) - Date.parse(game.serverNow));
     this.deadline = this.now() + duration;
+    this.startClock = game.startedAt ? this.now() - Math.max(0, Date.parse(game.serverNow) - Date.parse(game.startedAt)) : 0;
     const sameSlot = this.state.game?.id === game.id && this.state.game.guesses.length === game.guesses.length;
     const word = game.status === 'playing' ? (draft?.word ?? (sameSlot ? this.state.draft : '')) : '';
     const pending = game.status === 'playing' && (draft?.pending ?? (sameSlot && this.state.uncertain));
-    this.update({ game, draft: word, uncertain: pending, remaining: Math.ceil(duration / 1000), error: pending ? 'sendError' : '' });
+    const cursor = game.status === 'playing'
+      ? (draft ? (draft.cursor ?? this.nextEmpty(word, game.length)) : sameSlot ? this.state.cursor : 0)
+      : 0;
+    this.update({ game, draft: word, cursor, uncertain: pending, remaining: Math.ceil(duration / 1000),
+      elapsed: game.durationSeconds ?? (game.startedAt ? Math.floor((this.now() - this.startClock) / 1000) : 0),
+      error: pending ? 'sendError' : '' });
     // Reads do not rewrite storage: a late refresh from a closed screen must
     // not overwrite typing in its replacement. Old slots are ignored on load.
   }
@@ -113,23 +125,80 @@ export class WordGameSession {
     if (!this.active) return;
     const remaining = Math.max(0, Math.ceil((this.deadline - this.now()) / 1000));
     if (remaining !== this.state.remaining) this.update({ remaining });
+    if (this.state.game?.startedAt && this.state.game.status === 'playing') {
+      const elapsed = Math.max(0, Math.floor((this.now() - this.startClock) / 1000));
+      if (elapsed !== this.state.elapsed) this.update({ elapsed });
+    }
     // Errors never permanently block the new day. Back off when offline.
     if ((!this.state.game || remaining === 0) && !this.operation && this.now() >= this.retryAt) void this.refresh();
   }
 
+  async start() {
+    const game = this.state.game;
+    if (!game || game.status !== 'playing' || game.startedAt || this.operation) return;
+    if (this.now() >= this.deadline) { await this.refresh(); return; }
+    this.operation = true;
+    this.update({ starting: true, error: '' });
+    try {
+      this.accept(await this.deps.start(game.id));
+    } catch {
+      try {
+        const current = await this.deps.today();
+        this.accept(current);
+        if (!current.startedAt) this.update({ error: 'startError' });
+      } catch { this.update({ error: 'startError' }); }
+    } finally {
+      this.operation = false;
+      this.update({ starting: false });
+    }
+  }
+
+  private complete(word: string, length: number) {
+    return word.length === length && /^[A-ZÑ]+$/.test(word);
+  }
+
+  private nextEmpty(word: string, length: number, after = -1) {
+    for (let step = 1; step <= length; step++) {
+      const index = (after + step) % length;
+      if (!word[index] || word[index] === ' ') return index;
+    }
+    return length;
+  }
+
+  selectCell(index: number) {
+    const { game, uncertain } = this.state;
+    if (!game || !game.startedAt || this.operation || uncertain || game.status !== 'playing' || this.now() >= this.deadline ||
+      !Number.isInteger(index) || index < 0 || index >= game.length) return;
+    this.update({ cursor: index });
+    void this.persist();
+  }
+
   key(letter: string) {
-    const { game, draft, uncertain } = this.state;
-    if (!game || this.operation || uncertain || game.status !== 'playing' || this.now() >= this.deadline) return;
+    const { game, draft, cursor, uncertain } = this.state;
+    if (!game || !game.startedAt || this.operation || uncertain || game.status !== 'playing' || this.now() >= this.deadline) return;
     if (letter !== '⌫' && !/^[A-ZÑ]$/.test(letter)) return;
-    this.update({ draft: letter === '⌫' ? draft.slice(0, -1) : (draft.length < game.length ? draft + letter : draft), error: '' });
+    const cells = Array.from({ length: game.length }, (_, index) => draft[index] === ' ' ? '' : draft[index] ?? '');
+    if (letter === '⌫') {
+      let target = cursor < game.length && cells[cursor] ? cursor : Math.min(cursor - 1, game.length - 1);
+      while (target >= 0 && !cells[target]) target--;
+      if (target < 0) return;
+      cells[target] = '';
+      this.update({ draft: cells.join('').length ? cells.map((cell) => cell || ' ').join('').trimEnd() : '', cursor: target, error: '' });
+    } else {
+      const target = cursor < game.length ? cursor : this.nextEmpty(draft, game.length);
+      if (target === game.length) return;
+      cells[target] = letter;
+      const word = cells.map((cell) => cell || ' ').join('').trimEnd();
+      this.update({ draft: word, cursor: this.nextEmpty(word, game.length, target), error: '' });
+    }
     void this.persist();
   }
 
   async send(): Promise<DailyWord['status'] | undefined> {
     const { game, draft } = this.state;
-    if (!game || this.operation || game.status !== 'playing') return;
+    if (!game || !game.startedAt || this.operation || game.status !== 'playing') return;
     if (this.now() >= this.deadline) { await this.refresh(); return; }
-    if (draft.length !== game.length) { this.update({ error: 'length' }); return; }
+    if (!this.complete(draft, game.length)) { this.update({ error: 'length' }); return; }
     this.operation = true;
     this.update({ sending: true, uncertain: true, error: '' });
     await this.persist();

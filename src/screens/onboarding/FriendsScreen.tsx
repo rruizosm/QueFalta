@@ -183,6 +183,7 @@ export default function FriendsScreen() {
                   <View key={u.id} style={styles.row}>
                     <UserAvatar
                       avatarUrl={u.avatarUrl}
+                      userId={u.id}
                       initials={u.initials}
                       color={u.color}
                       size={42}

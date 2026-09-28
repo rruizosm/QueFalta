@@ -31,7 +31,25 @@ export interface GroupSummary {
   /** Legacy single-owner field kept for compatibility with published builds. */
   ownerId: string | null;
   createdAt: string;
+  /** Momento en que la cuenta actual se incorporó al grupo (solo en Mis grupos). */
+  joinedAt: string | null;
   members: GroupMember[];
+}
+
+/** Solo los datos necesarios para decidir qué cestas puede usar la cuenta. */
+export interface GroupCartMembership {
+  id: string;
+  joinedAt: string;
+}
+
+export async function fetchMyCartMemberships(userId: string): Promise<GroupCartMembership[]> {
+  const { data, error } = await supabase
+    .from('group_members')
+    .select('group_id, joined_at')
+    .eq('user_id', userId)
+    .order('joined_at', { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map((row) => ({ id: row.group_id, joinedAt: row.joined_at }));
 }
 
 export interface GroupItem {
@@ -54,10 +72,10 @@ export interface GroupItem {
 /** Groups the current user belongs to, with their member profiles. */
 const groupsRequests = new Map<string, Promise<GroupSummary[]>>();
 
-async function requestMyGroups(): Promise<GroupSummary[]> {
+async function requestMyGroups(userId: string): Promise<GroupSummary[]> {
   const { data, error } = await supabase
     .from('groups')
-    .select(`id, name, icon_emoji, created_by, owner_id, created_at, group_members(role, profiles(${MEMBER_COLS}))`)
+    .select(`id, name, icon_emoji, created_by, owner_id, created_at, group_members(user_id, joined_at, role, profiles(${MEMBER_COLS}))`)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -69,19 +87,20 @@ async function requestMyGroups(): Promise<GroupSummary[]> {
     createdBy: g.created_by,
     ownerId: g.owner_id ?? null,
     createdAt: g.created_at,
+    joinedAt: (g.group_members ?? []).find((m: any) => m.user_id === userId)?.joined_at ?? null,
     members: (g.group_members ?? [])
       .filter((m: any) => Boolean(m.profiles))
       .map((m: any) => toMember(m.profiles, m.role)),
   }));
 }
 
-export function fetchMyGroups(userId?: string): Promise<GroupSummary[]> {
+export function fetchMyGroups(userId: string): Promise<GroupSummary[]> {
   // CartContext, Home y Grupos pueden revalidar a la vez durante el arranque.
   // Comparten la misma petición en vuelo para no triplicar el SELECT pesado.
-  const requestKey = userId ?? '__current_session__';
+  const requestKey = userId;
   const pending = groupsRequests.get(requestKey);
   if (pending) return pending;
-  const request = requestMyGroups().finally(() => {
+  const request = requestMyGroups(userId).finally(() => {
     if (groupsRequests.get(requestKey) === request) groupsRequests.delete(requestKey);
   });
   groupsRequests.set(requestKey, request);
@@ -126,6 +145,7 @@ export async function fetchGroupDetail(groupId: string): Promise<GroupSummary> {
     createdBy: data.created_by,
     ownerId: (data as any).owner_id ?? null,
     createdAt: data.created_at,
+    joinedAt: null,
     members: ((data as any).group_members ?? [])
       .filter((m: any) => Boolean(m.profiles))
       .map((m: any) => toMember(m.profiles, m.role)),

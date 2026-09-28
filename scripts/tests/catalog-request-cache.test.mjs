@@ -33,7 +33,7 @@ test('logout discards pending writes without removing a new session request', as
   clearCatalogRequests();
   const fresh = cacheCatalogRequest('page', async () => 'new session');
   resolveOld('previous session');
-  await old;
+  await assert.rejects(old, { code: 'CATALOG_SEARCH_CONTEXT_CHANGED' });
   await fresh;
   assert.equal(peekCatalogRequest('page'), 'new session');
 });

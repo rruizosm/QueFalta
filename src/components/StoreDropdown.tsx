@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  View, Text, Image, Modal, Pressable, TouchableOpacity, FlatList, StyleSheet,
+  View, Text, Image, Modal, Pressable, TouchableOpacity, FlatList, StyleSheet, Alert, Platform,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,9 +10,13 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useProfile } from '../context/ProfileContext';
 import type { CatalogStore } from '../constants/stores';
+import { regionFromPostalCode } from '../constants/regions';
 import { allStoresRequiresPlus, catalogStoreRequiresPlus } from '../constants/limits';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import PaywallModal from './PaywallModal';
+import { glassAvailable } from './GlassSurface';
+import AllStoresInfoModal from './AllStoresInfoModal';
+import StoreInfoButton from './StoreInfoButton';
 
 interface StoreOption { key: CatalogStore; name: string; icon: number | null }
 export type StoreSelection = CatalogStore | 'all';
@@ -47,10 +51,12 @@ export default function StoreDropdown<T extends StoreSelection>({
   const styles = useThemedStyles(themedStyles);
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
-  const { isPremium, loading: profileLoading } = useProfile();
+  const { profile, isPremium, loading: profileLoading } = useProfile();
   const reducedMotion = useReducedMotion();
   const [internalOpen, setInternalOpen] = useState(false);
   const [paywallVisible, setPaywallVisible] = useState(false);
+  const [allStoresInfoVisible, setAllStoresInfoVisible] = useState(false);
+  const [lidlCanaryInfoVisible, setLidlCanaryInfoVisible] = useState(false);
   const open = controlledOpen ?? internalOpen;
   const allLabel = t('storePicker.allStores');
   const active = value === 'all' && includeAll
@@ -63,6 +69,25 @@ export default function StoreDropdown<T extends StoreSelection>({
 
   const lidlLocked = !profileLoading && catalogStoreRequiresPlus('lidl', isPremium);
   const allLocked = allStoresRequiresPlus(isPremium);
+  const isCanaryUser = profile?.region === 'ES-CN'
+    || regionFromPostalCode(profile?.postalCode ?? '') === 'ES-CN';
+  const showLidlCanaryNotice = value === 'lidl' && isCanaryUser;
+
+  const openLidlCanaryNotice = () => {
+    if (Platform.OS === 'ios') {
+      Alert.alert(
+        t('storePicker.lidlCanaryNoticeTitle'),
+        t('storePicker.lidlCanaryNoticeBody'),
+        [{ text: t('common.ok') }],
+      );
+      return;
+    }
+    setLidlCanaryInfoVisible(true);
+  };
+
+  const openAllStoresNotice = () => {
+    setAllStoresInfoVisible(true);
+  };
 
   // Si Plus vence, no se conserva una selección protegida en pantalla.
   useEffect(() => {
@@ -94,45 +119,53 @@ export default function StoreDropdown<T extends StoreSelection>({
 
     const on = item.key === value;
     const locked = item.key === 'lidl' && lidlLocked;
+    const showLidlInfo = item.key === 'lidl' && isCanaryUser;
     return (
-      <Pressable
-        style={({ pressed }) => [
-          styles.card,
-          locked ? styles.cardLocked : on && styles.cardActive,
-          pressed && styles.cardPressed,
-        ]}
-        onPress={() => {
-          setMenuOpen(false);
-          if (locked) {
-            setPaywallVisible(true);
-            return;
-          }
-          onChange(item.key as T);
-        }}
-        accessibilityRole="button"
-        accessibilityLabel={locked ? `${item.name}. ${t('storePicker.plusOnly')}` : item.name}
-        accessibilityState={{ selected: on }}
-      >
-        {locked ? (
-          <View style={styles.cardLock}>
-            <Ionicons name="lock-closed" size={14} color={colors.inkSoft} />
-          </View>
-        ) : on && (
-          <View style={styles.cardCheck}>
-            <Ionicons name="checkmark" size={14} color={colors.white} />
-          </View>
-        )}
-        <View style={[styles.cardLogoWrap, item.key === 'lidl' && styles.lidlLogoWrap]}>
-          {item.icon ? (
-            <Image source={item.icon} style={styles.cardLogo} resizeMode="cover" />
-          ) : (
-            <Ionicons name="storefront" size={30} color={colors.accent} />
+      <View style={styles.cardBackground}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.card,
+            locked ? styles.cardLocked : on && styles.cardActive,
+            pressed && styles.cardPressed,
+          ]}
+          onPress={() => {
+            setMenuOpen(false);
+            if (locked) {
+              setPaywallVisible(true);
+              return;
+            }
+            onChange(item.key as T);
+          }}
+          accessibilityRole="button"
+          accessibilityLabel={locked ? `${item.name}. ${t('storePicker.plusOnly')}` : item.name}
+          accessibilityState={{ selected: on }}
+        >
+          {locked ? (
+            <View style={styles.cardLock}>
+              <Ionicons name="lock-closed" size={14} color={colors.inkSoft} />
+            </View>
+          ) : on && (
+            <View style={styles.cardCheck}>
+              <Ionicons name="checkmark" size={14} color={colors.white} />
+            </View>
           )}
-        </View>
-        <Text style={[styles.cardName, on && styles.cardNameActive]} numberOfLines={2}>
-          {item.name}
-        </Text>
-      </Pressable>
+          <View style={[styles.cardLogoWrap, item.key === 'lidl' && styles.lidlLogoWrap]}>
+            {item.icon ? (
+              <Image source={item.icon} style={styles.cardLogo} resizeMode="cover" />
+            ) : (
+              <Ionicons name="storefront" size={30} color={colors.accent} />
+            )}
+          </View>
+          <Text style={[styles.cardName, on && styles.cardNameActive]} numberOfLines={2}>
+            {item.name}
+          </Text>
+        </Pressable>
+        {showLidlInfo ? <StoreInfoButton
+          style={styles.lidlCardInfoButton}
+          onPress={openLidlCanaryNotice}
+          accessibilityLabel={t('storePicker.lidlCanaryInfoLabel')}
+        /> : null}
+      </View>
     );
   };
 
@@ -175,13 +208,27 @@ export default function StoreDropdown<T extends StoreSelection>({
   ) : null;
 
   const allRow = includeAll ? (
-    <View style={styles.allCardBackground}>{allCardContent}</View>
+    <View style={styles.allCardBackground}>
+      {allCardContent}
+      {allLocked ? (
+        <StoreInfoButton
+          style={styles.allCardInfoButton}
+          onPress={openAllStoresNotice}
+          accessibilityLabel={t('storePicker.allStoresInfoLabel')}
+        />
+      ) : null}
+    </View>
   ) : null;
 
   return (
     <>
       {/* Trigger compacto o pastilla explícita, según la cabecera. */}
-      <View ref={triggerRef} collapsable={false} onLayout={onTriggerLayout}>
+      <View
+        ref={triggerRef}
+        collapsable={false}
+        onLayout={onTriggerLayout}
+        style={styles.triggerRow}
+      >
         <Pressable
           style={({ pressed }) => [
             styles.chip,
@@ -213,6 +260,20 @@ export default function StoreDropdown<T extends StoreSelection>({
             </View>
           )}
         </Pressable>
+        {showLidlCanaryNotice && (glassAvailable ? (
+          <Pressable
+            style={({ pressed }) => [styles.infoButton, pressed && styles.infoButtonPressed]}
+            onPress={openLidlCanaryNotice}
+            hitSlop={4}
+            accessibilityRole="button"
+            accessibilityLabel={t('storePicker.lidlCanaryInfoLabel')}
+          >
+            <Ionicons name="information-circle-outline" size={24} color={colors.accent} />
+          </Pressable>
+        ) : <StoreInfoButton
+          onPress={openLidlCanaryNotice}
+          accessibilityLabel={t('storePicker.lidlCanaryInfoLabel')}
+        />)}
       </View>
 
       {/* Rejilla a pantalla completa. */}
@@ -221,7 +282,11 @@ export default function StoreDropdown<T extends StoreSelection>({
           visible={open}
           animationType={reducedMotion ? 'none' : 'slide'}
           statusBarTranslucent
-          onRequestClose={() => setMenuOpen(false)}
+          onRequestClose={() => {
+            if (lidlCanaryInfoVisible) setLidlCanaryInfoVisible(false);
+            else if (allStoresInfoVisible) setAllStoresInfoVisible(false);
+            else setMenuOpen(false);
+          }}
         >
           <View style={[styles.sheet, { paddingTop: insets.top }]}>
             <View style={styles.sheetHeader}>
@@ -248,8 +313,24 @@ export default function StoreDropdown<T extends StoreSelection>({
               showsVerticalScrollIndicator={false}
             />
           </View>
+          <AllStoresInfoModal
+            contained
+            visible={allStoresInfoVisible}
+            onClose={() => setAllStoresInfoVisible(false)}
+          />
+          <AllStoresInfoModal
+            contained
+            variant="lidlCanary"
+            visible={lidlCanaryInfoVisible}
+            onClose={() => setLidlCanaryInfoVisible(false)}
+          />
         </Modal>
       )}
+      <AllStoresInfoModal
+        variant="lidlCanary"
+        visible={lidlCanaryInfoVisible && (!open || !modal)}
+        onClose={() => setLidlCanaryInfoVisible(false)}
+      />
       <PaywallModal visible={paywallVisible} onClose={() => setPaywallVisible(false)} />
     </>
   );
@@ -258,6 +339,22 @@ export default function StoreDropdown<T extends StoreSelection>({
 const CHIP = 40;
 
 const themedStyles = () => StyleSheet.create({
+  triggerRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+  },
+  infoButton: {
+    width: 44, height: 44, borderRadius: 17,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.white,
+    borderWidth: 1, borderColor: colors.border,
+    shadowColor: colors.ink, shadowOpacity: 0.09, shadowRadius: 7,
+    shadowOffset: { width: 0, height: 3 }, elevation: 2,
+  },
+  infoButtonPressed: {
+    transform: [{ scale: 0.94 }],
+    backgroundColor: colors.accentLight,
+    borderColor: colors.accent,
+  },
   // ── Botón redondo (trigger, en la cabecera) ───────────────────
   chip: {
     width: CHIP, height: CHIP, borderRadius: CHIP / 2,
@@ -316,6 +413,10 @@ const themedStyles = () => StyleSheet.create({
     height: 78,
     marginBottom: 12,
   },
+  allCardInfoButton: {
+    position: 'absolute', left: 8, bottom: 4,
+    zIndex: 1,
+  },
   allCard: {
     flex: 1,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
@@ -340,13 +441,14 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.accentLight,
   },
   card: {
-    flex: 1, aspectRatio: 1,
+    flex: 1,
     alignItems: 'center', justifyContent: 'center', gap: 10,
     paddingHorizontal: 10,
     backgroundColor: colors.white,
     borderRadius: 20,
     borderWidth: 1, borderColor: colors.border,
   },
+  cardBackground: { flex: 1, aspectRatio: 1 },
   cardPlaceholder: { flex: 1, aspectRatio: 1 },
   cardActive: { borderColor: colors.accent, backgroundColor: colors.accentLight },
   cardLocked: { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
@@ -375,4 +477,8 @@ const themedStyles = () => StyleSheet.create({
     textAlign: 'center',
   },
   cardNameActive: { color: colors.accent },
+  lidlCardInfoButton: {
+    position: 'absolute', left: 4, bottom: 4,
+    zIndex: 1,
+  },
 });

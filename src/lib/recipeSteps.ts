@@ -2,12 +2,15 @@ export interface RecipeStepInput {
   text: string;
   ingredientKeys: readonly string[];
   imageUri?: string | null;
+  /** Existing owned storage path, used to keep an unchanged photo while editing. */
+  existingImagePath?: string | null;
 }
 
 export interface CleanRecipeStep {
   text: string;
   ingredientKeys: string[];
   imageUri?: string;
+  existingImagePath?: string;
 }
 
 export const recipeProductKey = (product: { store: string; id: string }): string => (
@@ -23,6 +26,7 @@ export function cleanRecipeSteps(steps: readonly RecipeStepInput[]): CleanRecipe
       text,
       ingredientKeys: [...new Set(step.ingredientKeys.filter((key) => !!key))],
       ...(step.imageUri ? { imageUri: step.imageUri } : {}),
+      ...(step.existingImagePath ? { existingImagePath: step.existingImagePath } : {}),
     }];
   });
 }

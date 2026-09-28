@@ -1,0 +1,13 @@
+{
+  "audioDecodedFloatSamples" : 960000,
+  "audioPeakDbFS" : -0.94014233350753784,
+  "audioReaderCompleted" : true,
+  "duration" : 10,
+  "videoCodecs" : [
+    1635148593
+  ],
+  "audioRmsDbFS" : -14.18563720762031,
+  "decodedVideoSamples" : 600,
+  "lastPresentationTime" : 10.016666666666667,
+  "videoReaderCompleted" : true
+}

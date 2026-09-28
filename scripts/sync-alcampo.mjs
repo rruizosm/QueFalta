@@ -260,6 +260,8 @@ function normalize(p, { n1, n2 }, catName) {
     promo_base_price: offer?.promo_base_price ?? null,
     promo_start: offer?.promo_start ?? null,
     promo_end: offer?.promo_end ?? null,
+    promo_online_only: offer?.promo_online_only ?? false,
+    promo_details: offer?.promo_details ?? [],
     price_per_unit: ppu?.value ?? null,
     price_per_unit_unit: ppu?.unit ?? null,
     available: p.available !== false,

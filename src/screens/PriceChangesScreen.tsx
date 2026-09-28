@@ -1,12 +1,15 @@
 import { peekPriceChanges } from '../api/catalog';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, StatusBar, Platform } from 'react-native';
+import {
+  Animated, Easing, LayoutAnimation, Platform, StatusBar, StyleSheet, Text,
+  TextInput, TouchableOpacity, UIManager, View,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useProfile } from '../context/ProfileContext';
-import { useThemedStyles } from '../context/ThemeContext';
+import { useTheme, useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { fetchPriceChanges, type PriceChangesPage } from '../api/catalog';
@@ -23,10 +26,13 @@ import ProductFilterSheet, {
   type FilterGroup,
   type PriceSort,
 } from '../components/ProductFilterSheet';
-import { catalogStoreRequiresPlus } from '../constants/limits';
+import { catalogStoreRequiresPlus, limitsApply } from '../constants/limits';
 import { useCatalogStore } from '../context/CatalogStoreContext';
+import { useReducedMotion } from '../hooks/useReducedMotion';
+import PaywallModal from '../components/PaywallModal';
 
 type Direction = 'down' | 'up';
+type ChangeSortSegment = Direction | 'pricePerUnitAsc' | 'pricePerUnitDesc';
 const PRICE_CHANGES_PAGE_SIZE = 50;
 const FACET_SEPARATOR = '\u001f';
 
@@ -34,12 +40,14 @@ const euro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 // "−8,5 %" / "+3,2 %" (el % ya viene redondeado a 1 decimal de la BD).
 const pctLabel = (n: number) =>
   `${n > 0 ? '+' : '-'}${Math.abs(n).toFixed(1).replace('.', ',')} %`;
+const stripAccents = (value: string) =>
+  value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
 /**
  * PriceChangesScreen — "Cambios de precios" (botón de la cabecera del Home).
- * Pestañas Bajadas/Subidas + selector de súper; cada fila muestra precio
+ * Buscador, orden Bajadas/Subidas y selector de súper; cada fila muestra precio
  * anterior, actual y porcentaje, y debajo formato/cantidad y precio unitario.
- * Por defecto conserva la magnitud del cambio del servidor; el filtro permite
+ * Por defecto conserva la magnitud del cambio del servidor; la cabecera permite
  * sustituirla por orden unitario ascendente o descendente. Los datos los deja
  * el trigger del sync semanal: ver supabase/migrations/catalog_price_changes.sql
  * (sin ejecutarla no hay datos y se muestra el vacío).
@@ -55,10 +63,12 @@ const pctLabel = (n: number) =>
  */
 export default function PriceChangesScreen() {
   const styles = useThemedStyles(themedStyles);
+  const { scheme } = useTheme();
+  const reducedMotion = useReducedMotion();
   const navigation = useNavigation<any>();
   const { t, lang } = useTranslation();
   const headerTop = useHeaderTopPadding(52);
-  const { profile, isPremium } = useProfile();
+  const { profile, isPremium, loading: profileLoading } = useProfile();
 
   // Solo los súpers activados en el perfil (misma regla que el catálogo).
   const region = profile?.region ?? null;
@@ -66,9 +76,9 @@ export default function PriceChangesScreen() {
   const lidlStoreId = profile?.lidlStoreId ?? null;
   const preferredStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
   const allowedStores = useMemo(() => {
-    const enabledKeys = preferredStores.filter((store) => storeInRegion(store, region));
-    return enabledKeys.length > 0 ? enabledKeys : storesForRegion(region);
-  }, [preferredStores, region]);
+    const enabledKeys = preferredStores.filter((store) => storeInRegion(store, region, postalCode));
+    return enabledKeys.length > 0 ? enabledKeys : storesForRegion(region, postalCode);
+  }, [preferredStores, region, postalCode]);
   const storeOptions = useMemo(
     () => storesWithLidlSecond(CATALOG_STORES.filter((s) => allowedStores.includes(s.key)
       && (s.key !== 'lidl' || lidlStoreId != null))),
@@ -87,7 +97,85 @@ export default function PriceChangesScreen() {
   const [category, setCategory] = useState<string[]>([]);
   const [priceChangeRange, setPriceChangeRange] = useState<number | null>(null);
   const [pricePerUnitSort, setPricePerUnitSort] = useState<PriceSort | null>(null);
-  const filtersActive = category.length > 0 || priceChangeRange != null || pricePerUnitSort != null;
+  const [query, setQuery] = useState('');
+  const [productSearchExpanded, setProductSearchExpanded] = useState(false);
+  const [queryInHeader, setQueryInHeader] = useState(false);
+  const [sortPaywallVisible, setSortPaywallVisible] = useState(false);
+  const sheetFiltersActive = category.length > 0 || priceChangeRange != null;
+  const unitPriceSortLocked = !profileLoading && limitsApply(isPremium);
+  const activeSortSegment: ChangeSortSegment = pricePerUnitSort
+    ? `pricePerUnit${pricePerUnitSort === 'asc' ? 'Asc' : 'Desc'}`
+    : direction;
+
+  useEffect(() => {
+    if (Platform.OS === 'android') UIManager.setLayoutAnimationEnabledExperimental?.(true);
+  }, []);
+
+  const setProductSearchFocus = (expanded: boolean) => {
+    const hidesHeaderQuery = expanded && queryInHeader;
+    if (expanded === productSearchExpanded && !hidesHeaderQuery) return;
+    if (!reducedMotion) {
+      LayoutAnimation.configureNext({
+        duration: 360,
+        create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+        update: { type: LayoutAnimation.Types.easeInEaseOut },
+        delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+      });
+    }
+    if (expanded) setQueryInHeader(false);
+    setProductSearchExpanded(expanded);
+  };
+
+  const selectSortSegment = (segment: ChangeSortSegment) => {
+    if (segment === 'down' || segment === 'up') {
+      setDirection(segment);
+      setPricePerUnitSort(null);
+      return;
+    }
+    if (profileLoading) return;
+    if (unitPriceSortLocked) {
+      setSortPaywallVisible(true);
+      return;
+    }
+    setPricePerUnitSort(segment === 'pricePerUnitAsc' ? 'asc' : 'desc');
+  };
+
+  useEffect(() => {
+    if (unitPriceSortLocked && pricePerUnitSort != null) {
+      setPricePerUnitSort(null);
+      setDirection('down');
+    }
+  }, [pricePerUnitSort, unitPriceSortLocked]);
+
+  const queryReveal = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const target = queryInHeader && query.trim().length > 0 ? 1 : 0;
+    if (reducedMotion) {
+      queryReveal.setValue(target);
+      return;
+    }
+    const animation = Animated.timing(queryReveal, {
+      toValue: target, duration: target === 1 ? 420 : 360,
+      easing: Easing.bezier(0.22, 1, 0.36, 1), useNativeDriver: false,
+    });
+    animation.start();
+    return () => animation.stop();
+  }, [query, queryInHeader, queryReveal, reducedMotion]);
+
+  const handleProductScrollBegin = () => {
+    const shouldShowHeaderQuery = query.trim().length > 0;
+    if (!productSearchExpanded && queryInHeader === shouldShowHeaderQuery) return;
+    if (!reducedMotion) {
+      LayoutAnimation.configureNext({
+        duration: 360,
+        update: { type: LayoutAnimation.Types.easeInEaseOut },
+        create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+        delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+      });
+    }
+    setProductSearchExpanded(false);
+    setQueryInHeader(shouldShowHeaderQuery);
+  };
 
   // View mode controlado: el toggle vive junto a las pestañas en ambos modos.
   // La altura medida solo se usa en glass para que la lista pase por debajo.
@@ -204,7 +292,12 @@ export default function PriceChangesScreen() {
 
   const filteredChanges = useMemo(() => {
     const range = priceChangeRange != null ? PRICE_CHANGE_RANGES[priceChangeRange] : null;
+    const words = stripAccents(query).trim().split(/\s+/).filter((word) => word.length >= 2);
     return allChanges.filter(({ product, deltaPct }) => {
+      if (words.length > 0) {
+        const name = stripAccents(product.name);
+        if (!words.every((word) => name.includes(word))) return false;
+      }
       if (category.length > 0) {
         const categoryKey = store === 'all'
           ? `${product.store}${FACET_SEPARATOR}${product.categoryName ?? ''}`
@@ -218,7 +311,7 @@ export default function PriceChangesScreen() {
       }
       return true;
     });
-  }, [allChanges, category, priceChangeRange, store]);
+  }, [allChanges, category, priceChangeRange, query, store]);
 
   const loadMore = useCallback(() => {
     if (loading || loadingMoreRef.current) return;
@@ -257,6 +350,18 @@ export default function PriceChangesScreen() {
       });
   }, [cache, cacheKeyFor, direction, loading, postalCode, pricePerUnitSort, region, store, stores, lidlStoreId]);
 
+  // La búsqueda es local porque el historial no expone FTS. Mientras haya una
+  // consulta válida, completa las páginas pendientes para no limitar los
+  // resultados a los primeros 50 cambios cargados.
+  useEffect(() => {
+    const searching = stripAccents(query).trim().split(/\s+/).some((word) => word.length >= 2);
+    if (!searching || loading || loadingMore) return;
+    const requestedStores = store === 'all' ? stores.map((item) => item.key) : [store];
+    if (requestedStores.some((storeKey) => cache[cacheKeyFor(storeKey)]?.nextOffset != null)) {
+      loadMore();
+    }
+  }, [cache, cacheKeyFor, loadMore, loading, loadingMore, query, store, stores]);
+
   // La línea de precio de la fila pasa a "anterior tachado · actual en
   // verde/rojo · (%)" vía priceChange (lo pinta StoreProductList) →
   // StoreProductList se reutiliza tal cual, con stepper/cesta/favoritos/ficha.
@@ -272,6 +377,74 @@ export default function PriceChangesScreen() {
       }));
     },
     [filteredChanges, direction],
+  );
+
+  const lockedUnitPriceSortButton = (sortDirection: PriceSort) => (
+    <TouchableOpacity
+      key={sortDirection}
+      style={[
+        styles.prodUnitSortLockedBtn,
+        glassAvailable ? styles.prodUnitSortLockedBtnGlass : styles.prodUnitSortLockedBtnFallback,
+        sortDirection === 'asc' ? styles.prodUnitSortLockedBtnFirst : styles.prodUnitSortLockedBtnLast,
+      ]}
+      onPress={() => selectSortSegment(sortDirection === 'asc' ? 'pricePerUnitAsc' : 'pricePerUnitDesc')}
+      activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={t(sortDirection === 'asc' ? 'catalog.sortPricePerUnitAsc' : 'catalog.sortPricePerUnitDesc')}
+      accessibilityHint={t('paywall.benefits.unitPriceText')}
+    >
+      <Text style={styles.prodUnitSortLockedText}>{sortDirection === 'asc' ? '€/u↑' : '€/u↓'}</Text>
+    </TouchableOpacity>
+  );
+
+  const lockedUnitPriceSortGroup = (
+    <View style={[
+      glassAvailable ? styles.prodUnitSortLockedBackgroundGlass : styles.prodUnitSortLockedBackgroundFallback,
+      Platform.OS === 'android' && styles.prodUnitSortLockedBackgroundAndroid,
+      glassAvailable && (scheme === 'dark'
+        ? styles.prodUnitSortLockedBackgroundGlassDark
+        : styles.prodUnitSortLockedBackgroundGlassLight),
+    ]}>
+      {glassAvailable && <View pointerEvents="none" style={styles.prodUnitSortLockedHighlight} />}
+      <View style={[
+        styles.prodUnitSortLockedButtons,
+        glassAvailable ? styles.prodUnitSortLockedButtonsGlass : styles.prodUnitSortLockedButtonsFallback,
+      ]}>
+        {lockedUnitPriceSortButton('asc')}
+        {lockedUnitPriceSortButton('desc')}
+      </View>
+    </View>
+  );
+
+  const fallbackSortSegments = (includeUnitPrice: boolean) => (
+    <View style={[styles.viewToggle, styles.prodToggleDense]}>
+      {(['down', 'up'] as const).map((segment) => (
+        <TouchableOpacity
+          key={segment}
+          style={[styles.viewBtn, styles.prodViewBtn, activeSortSegment === segment && styles.viewBtnOn]}
+          onPress={() => selectSortSegment(segment)}
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel={t(segment === 'down' ? 'priceChanges.down' : 'priceChanges.up')}
+        >
+          <Ionicons name={segment === 'down' ? 'arrow-down' : 'arrow-up'} size={18} color={activeSortSegment === segment ? colors.white : colors.inkSoft} />
+        </TouchableOpacity>
+      ))}
+      {includeUnitPrice && (['pricePerUnitAsc', 'pricePerUnitDesc'] as const).map((segment) => (
+        <TouchableOpacity
+          key={segment}
+          style={[styles.viewBtn, styles.prodViewBtn, activeSortSegment === segment && styles.viewBtnOn]}
+          onPress={() => selectSortSegment(segment)}
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel={t(segment === 'pricePerUnitAsc' ? 'catalog.sortPricePerUnitAsc' : 'catalog.sortPricePerUnitDesc')}
+        >
+          <Text style={[styles.prodUnitSortText, { color: activeSortSegment === segment ? colors.white : colors.inkSoft }]}>
+            {segment === 'pricePerUnitAsc' ? '€/u↑' : '€/u↓'}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
   );
 
   // Chrome de la pantalla (cabecera + selector + pestañas), idéntico
@@ -296,94 +469,127 @@ export default function PriceChangesScreen() {
         )}
       </View>
 
-      {glassAvailable || Platform.OS === 'android' ? (
-        // Filtro independiente + pestañas deslizantes + vista en una fila.
-        <View style={[styles.glassControls, Platform.OS === 'android' && styles.glassControlsAndroid]}>
-          <TouchableOpacity
-            style={[styles.filterBtn, filtersActive && styles.filterBtnOn]}
-            onPress={() => setFilterOpen(true)}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel={t('priceChanges.filterA11y')}
-          >
-            <Ionicons name="options-outline" size={20} color={filtersActive ? colors.white : colors.inkSoft} />
-          </TouchableOpacity>
-          <SlidingSegments
-            style={{ flex: 1 }}
-            emphasized={Platform.OS === 'android'}
-            transparentTrack={Platform.OS === 'android'}
-            segments={[
-              { key: 'down', label: t('priceChanges.down'), icon: 'arrow-down' },
-              { key: 'up', label: t('priceChanges.up'), icon: 'arrow-up' },
-            ]}
-            value={direction}
-            onChange={setDirection}
-          />
-          {/* Mismo toggle lista/cuadrícula que el catálogo (SlidingSegments compacto). */}
-          <SlidingSegments
-            compact
-            dense={Platform.OS === 'android'}
-            emphasized={Platform.OS === 'android'}
-            transparentTrack={Platform.OS === 'android'}
-            segments={[
-              { key: 'list', icon: 'list' },
-              { key: 'grid', icon: 'grid' },
-            ]}
-            value={viewMode}
-            onChange={setViewMode}
-          />
-        </View>
-      ) : (
-        <View style={styles.fallbackControls}>
-          <TouchableOpacity
-            style={[styles.filterBtn, filtersActive && styles.filterBtnOn]}
-            onPress={() => setFilterOpen(true)}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel={t('priceChanges.filterA11y')}
-          >
-            <Ionicons name="options-outline" size={20} color={filtersActive ? colors.white : colors.inkSoft} />
-          </TouchableOpacity>
-          <View style={styles.tabs}>
-            <TouchableOpacity
-              style={[styles.tab, direction === 'down' && styles.tabActive]}
-              onPress={() => setDirection('down')}
-              activeOpacity={0.8}
-            >
-              <View style={styles.tabInner}>
-                <Ionicons name="arrow-down" size={13} color={direction === 'down' ? colors.ink : colors.inkSoft} />
-                <Text style={[styles.tabText, direction === 'down' && styles.tabTextActive]}>{t('priceChanges.down')}</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.tab, direction === 'up' && styles.tabActive]}
-              onPress={() => setDirection('up')}
-              activeOpacity={0.8}
-            >
-              <View style={styles.tabInner}>
-                <Ionicons name="arrow-up" size={13} color={direction === 'up' ? colors.ink : colors.inkSoft} />
-                <Text style={[styles.tabText, direction === 'up' && styles.tabTextActive]}>{t('priceChanges.up')}</Text>
-              </View>
-            </TouchableOpacity>
+      <View style={styles.prodSearchBlock}>
+        <View style={styles.prodSearchRow}>
+          <View style={[
+            styles.searchBar,
+            styles.prodSearchBox,
+            glassAvailable ? styles.prodSearchBoxGlass : styles.prodSearchBoxFallback,
+            productSearchExpanded ? styles.prodSearchBoxExpanded : styles.prodSearchBoxCollapsed,
+          ]}>
+            <Ionicons name="search-outline" size={20} color={colors.inkSoft} />
+            {productSearchExpanded ? (
+              <>
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder={t('catalog.searchProducts')}
+                  placeholderTextColor={colors.inkFaint}
+                  value={query}
+                  onChangeText={setQuery}
+                  onFocus={() => setProductSearchFocus(true)}
+                  onBlur={() => setProductSearchFocus(false)}
+                  returnKeyType="search"
+                  autoCorrect={false}
+                  autoFocus
+                />
+                {query.length > 0 && (
+                  <TouchableOpacity onPress={() => setQuery('')} accessibilityRole="button" accessibilityLabel={t('common.clear')}>
+                    <Ionicons name="close-circle" size={18} color={colors.inkFaint} />
+                  </TouchableOpacity>
+                )}
+              </>
+            ) : (
+              <TouchableOpacity style={styles.prodSearchActivator} onPress={() => setProductSearchFocus(true)} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.searchProducts')} />
+            )}
           </View>
-          <View style={styles.viewToggle}>
-            <TouchableOpacity
-              style={[styles.viewBtn, viewMode === 'list' && styles.viewBtnOn]}
-              onPress={() => setViewMode('list')}
-              activeOpacity={0.85}
-            >
-              <Ionicons name="list" size={19} color={viewMode === 'list' ? colors.white : colors.inkSoft} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.viewBtn, viewMode === 'grid' && styles.viewBtnOn]}
-              onPress={() => setViewMode('grid')}
-              activeOpacity={0.85}
-            >
-              <Ionicons name="grid" size={17} color={viewMode === 'grid' ? colors.white : colors.inkSoft} />
-            </TouchableOpacity>
-          </View>
+
+          {!productSearchExpanded && (
+            <>
+              <View style={styles.prodSortGroup}>
+                {unitPriceSortLocked ? (
+                  <>
+                    {glassAvailable || Platform.OS === 'android' ? (
+                      <SlidingSegments
+                        compact dense emphasized transparentTrack={Platform.OS === 'android'}
+                        segments={[
+                          { key: 'down', icon: 'arrow-down', accessibilityLabel: t('priceChanges.down') },
+                          { key: 'up', icon: 'arrow-up', accessibilityLabel: t('priceChanges.up') },
+                        ]}
+                        value={activeSortSegment}
+                        onChange={selectSortSegment}
+                      />
+                    ) : fallbackSortSegments(false)}
+                    {lockedUnitPriceSortGroup}
+                  </>
+                ) : glassAvailable || Platform.OS === 'android' ? (
+                  <SlidingSegments
+                    compact dense emphasized transparentTrack={Platform.OS === 'android'}
+                    segments={[
+                      { key: 'down', icon: 'arrow-down', accessibilityLabel: t('priceChanges.down') },
+                      { key: 'up', icon: 'arrow-up', accessibilityLabel: t('priceChanges.up') },
+                      { key: 'pricePerUnitAsc', label: '€/u↑', accessibilityLabel: t('catalog.sortPricePerUnitAsc') },
+                      { key: 'pricePerUnitDesc', label: '€/u↓', accessibilityLabel: t('catalog.sortPricePerUnitDesc') },
+                    ]}
+                    value={activeSortSegment}
+                    onChange={selectSortSegment}
+                  />
+                ) : fallbackSortSegments(true)}
+              </View>
+
+              {glassAvailable || Platform.OS === 'android' ? (
+                <SlidingSegments
+                  compact dense emphasized allowReselect transparentTrack={Platform.OS === 'android'}
+                  segments={[{ key: 'filters', icon: 'options-outline', accessibilityLabel: t('priceChanges.filterA11y') }]}
+                  value={sheetFiltersActive ? 'filters' : null}
+                  onChange={() => setFilterOpen(true)}
+                />
+              ) : (
+                <TouchableOpacity style={[styles.filterBtn, sheetFiltersActive && styles.filterBtnOn]} onPress={() => setFilterOpen(true)} activeOpacity={0.8} accessibilityRole="button" accessibilityLabel={t('priceChanges.filterA11y')}>
+                  <Ionicons name="options-outline" size={20} color={sheetFiltersActive ? colors.white : colors.inkSoft} />
+                </TouchableOpacity>
+              )}
+
+              <View style={styles.prodViewGroup}>
+                {glassAvailable || Platform.OS === 'android' ? (
+                  <SlidingSegments
+                    compact dense emphasized transparentTrack={Platform.OS === 'android'}
+                    segments={[
+                      { key: 'list', icon: 'list', accessibilityLabel: t('product.viewList') },
+                      { key: 'grid', icon: 'grid', accessibilityLabel: t('product.viewGrid') },
+                    ]}
+                    value={viewMode}
+                    onChange={(value) => setViewMode(value as ViewMode)}
+                  />
+                ) : (
+                  <View style={[styles.viewToggle, styles.prodToggleDense]}>
+                    <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, viewMode === 'list' && styles.viewBtnOn]} onPress={() => setViewMode('list')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('product.viewList')}>
+                      <Ionicons name="list" size={19} color={viewMode === 'list' ? colors.white : colors.inkSoft} />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, viewMode === 'grid' && styles.viewBtnOn]} onPress={() => setViewMode('grid')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('product.viewGrid')}>
+                      <Ionicons name="grid" size={17} color={viewMode === 'grid' ? colors.white : colors.inkSoft} />
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            </>
+          )}
         </View>
-      )}
+        <Animated.View
+          pointerEvents="none"
+          accessibilityElementsHidden={!queryInHeader}
+          importantForAccessibility={queryInHeader ? 'auto' : 'no-hide-descendants'}
+          style={[
+            styles.prodSearchQueryClip,
+            {
+              height: queryReveal.interpolate({ inputRange: [0, 1], outputRange: [0, 28] }),
+              opacity: queryReveal,
+              transform: [{ translateY: queryReveal.interpolate({ inputRange: [0, 1], outputRange: [-3, 0] }) }],
+            },
+          ]}
+        >
+          <Text style={styles.prodSearchQuery} numberOfLines={1}>{query.trim()}</Text>
+        </Animated.View>
+      </View>
     </>
   );
 
@@ -397,7 +603,7 @@ export default function PriceChangesScreen() {
         products={products}
         loading={loading}
         error={error}
-        emptyText={filtersActive ? t('filters.noMatches') : t('priceChanges.empty')}
+        emptyText={sheetFiltersActive || query.trim().length > 0 ? t('filters.noMatches') : t('priceChanges.empty')}
         errorText={t('priceChanges.error')}
         keepOrder
         onEndReached={loadMore}
@@ -408,6 +614,7 @@ export default function PriceChangesScreen() {
         onViewModeChange={setViewMode}
         roundedCards
         showStoreLogo={store === 'all'}
+        onScrollBeginDrag={handleProductScrollBegin}
       />
 
       <ProductFilterSheet
@@ -421,6 +628,7 @@ export default function PriceChangesScreen() {
         sort={null}
         onSort={() => {}}
         showPriceControls={false}
+        showSortControls={false}
         pricePerUnitSort={pricePerUnitSort}
         onPricePerUnitSort={setPricePerUnitSort}
         priceChangeRange={priceChangeRange}
@@ -429,6 +637,8 @@ export default function PriceChangesScreen() {
         showCategoryIcons
         categoryGroups={categoryGroups}
       />
+
+      <PaywallModal visible={sortPaywallVisible} onClose={() => setSortPaywallVisible(false)} />
 
       {/* Chrome de cristal: al FINAL del árbol para pintarse encima; la lista
           se refracta al pasar por debajo. El StoreDropdown puede seguir dentro:
@@ -472,7 +682,7 @@ const themedStyles = () => StyleSheet.create({
   },
 
   filterBtn: {
-    width: glassAvailable ? 40 : 44, height: glassAvailable ? 40 : 44, borderRadius: 18,
+    width: 44, height: 44, borderRadius: 18,
     alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.surfaceAlt,
     borderWidth: 1, borderColor: 'transparent',
@@ -511,6 +721,59 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.accent,
     shadowColor: colors.accent, shadowOpacity: 0.4, shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 }, elevation: 2,
+  },
+  searchBar: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white,
+    paddingHorizontal: 16, gap: 11, borderRadius: 16,
+    borderWidth: 1, borderColor: colors.border,
+    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
+  },
+  searchInput: { flex: 1, fontSize: 14, color: colors.ink, padding: 0, fontFamily: fonts.medium },
+  prodSearchBlock: { marginHorizontal: 16, marginBottom: 8 },
+  prodSearchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  prodSearchQueryClip: { overflow: 'hidden' },
+  prodSearchQuery: {
+    marginTop: 4, fontSize: 13, lineHeight: 20,
+    fontFamily: fonts.medium, fontStyle: 'italic', color: colors.inkSoft,
+  },
+  prodSearchBox: { marginHorizontal: 0, marginBottom: 0, minWidth: 0, paddingVertical: 0, borderRadius: 999 },
+  prodSearchBoxExpanded: { flex: 1 },
+  prodSearchBoxCollapsed: { width: 40, height: 40, paddingHorizontal: 0, gap: 0, justifyContent: 'center' },
+  prodSearchBoxGlass: { height: 40 },
+  prodSearchBoxFallback: { height: 44 },
+  prodSearchActivator: { ...StyleSheet.absoluteFill },
+  prodSortGroup: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  prodViewGroup: { alignItems: 'center', justifyContent: 'center' },
+  prodToggleDense: { padding: 3, gap: 3, borderRadius: 12 },
+  prodViewBtn: { width: 32, height: 38, borderRadius: 9 },
+  prodUnitSortText: { fontSize: 10, fontFamily: fonts.bold },
+  prodUnitSortLockedBackgroundGlass: {
+    width: 72, height: 40, borderRadius: 20, borderWidth: 1,
+    shadowColor: '#000', shadowOpacity: 0.11, shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 }, elevation: 3,
+  },
+  prodUnitSortLockedBackgroundGlassLight: { backgroundColor: 'rgba(255,255,255,0.38)', borderColor: 'rgba(43,37,33,0.10)' },
+  prodUnitSortLockedBackgroundGlassDark: { backgroundColor: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.20)' },
+  prodUnitSortLockedHighlight: {
+    position: 'absolute', top: 1, left: 10, right: 10, height: 1, borderRadius: 1,
+    backgroundColor: 'rgba(255,255,255,0.58)',
+  },
+  prodUnitSortLockedBackgroundFallback: {
+    width: 73, height: 44, borderRadius: 12, borderWidth: 1,
+    borderColor: colors.border, backgroundColor: colors.surfaceAlt,
+  },
+  prodUnitSortLockedBackgroundAndroid: { borderWidth: 0, backgroundColor: 'transparent' },
+  prodUnitSortLockedButtons: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  prodUnitSortLockedButtonsGlass: { padding: 3 },
+  prodUnitSortLockedButtonsFallback: { padding: 3, gap: 3 },
+  prodUnitSortLockedBtn: { width: 32, alignItems: 'center', justifyContent: 'center' },
+  prodUnitSortLockedBtnGlass: { height: 32 },
+  prodUnitSortLockedBtnFallback: { height: 38, borderRadius: 9 },
+  prodUnitSortLockedBtnFirst: { borderTopLeftRadius: 17, borderBottomLeftRadius: 17 },
+  prodUnitSortLockedBtnLast: { borderTopRightRadius: 17, borderBottomRightRadius: 17 },
+  prodUnitSortLockedText: {
+    fontSize: 10, lineHeight: 12, fontFamily: fonts.bold,
+    color: colors.accent, textAlign: 'center', includeFontPadding: false,
   },
 
   // ── Chrome de cristal (solo glassAvailable, F3) ───────────────

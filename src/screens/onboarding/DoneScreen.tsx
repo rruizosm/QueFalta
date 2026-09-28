@@ -16,9 +16,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../constants/colors';
 import { fonts } from '../../constants/typography';
 import { useProfile } from '../../context/ProfileContext';
+import { requestHomeTransition } from '../../lib/homeTransition';
 import { useTranslation } from '../../context/LanguageContext';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
-import { requestHomeTransition } from '../../lib/homeTransition';
 import type { OnboardingStackParamList } from '../../types';
 import AmbientBubbleBackdrop from '../../components/AmbientBubbleBackdrop';
 
@@ -27,8 +27,8 @@ type Props = NativeStackScreenProps<OnboardingStackParamList, 'Done'>;
 
 export default function DoneScreen({ route }: Props) {
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
   const { applyProfile } = useProfile();
+  const insets = useSafeAreaInsets();
   const reducedMotion = useReducedMotion();
   const entrance = useRef(new Animated.Value(reducedMotion ? 1 : 0)).current;
 

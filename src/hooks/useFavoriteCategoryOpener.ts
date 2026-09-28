@@ -8,14 +8,16 @@ import {
   fetchEroskiCategoryTree, fetchCapraboCategoryTree, fetchCondisCategoryTree,
   fetchAmetllerCategoryTree, fetchAldiCategoryTree, fetchLidlCategoryTree, fetchHiperdinoCategoryTree,
   fetchAlcampoCategoryTree, fetchPlusfrescCategoryTree, fetchGadisCategoryTree, fetchFroizCategoryTree, fetchAhorramasCategoryTree,
+  fetchBmCategoryTree,
+  fetchEljamonCategoryTree,
 } from '../api/catalog';
 import { useFavorites } from '../context/FavoritesContext';
 import { useProfile } from '../context/ProfileContext';
 import type { CatalogStore } from '../constants/stores';
-import type { FavoriteCategory } from '../types';
+import type { CatalogCategoryNode, FavoriteCategory } from '../types';
 
 // Árbol de subcategorías (N1→N2) normalizado para navegar desde un favorito.
-type MirrorTree = { id: string; name: string; children: { id: string; name: string }[] }[];
+type MirrorTree = (CatalogCategoryNode & { id: string; children: CatalogCategoryNode[] })[];
 
 type MirrorFetcherStore = Exclude<CatalogStore, 'mercadona' | 'lidl'>;
 const TREE_FETCHERS: Record<MirrorFetcherStore, () => Promise<MirrorTree>> = {
@@ -36,6 +38,8 @@ const TREE_FETCHERS: Record<MirrorFetcherStore, () => Promise<MirrorTree>> = {
   gadis: fetchGadisCategoryTree,
   froiz: fetchFroizCategoryTree,
   ahorramas: fetchAhorramasCategoryTree,
+  bm: fetchBmCategoryTree,
+  eljamon: fetchEljamonCategoryTree,
 };
 
 /**
@@ -100,7 +104,14 @@ export function useFavoriteCategoryOpener() {
         const { emoji, color } = getMeta(node.name);
         return navigation.navigate('Catalog', {
           screen: 'SubCategory',
-          params: { categoryName: node.name, emoji, color, subcategories: node.children, retailer: fav.store },
+          params: {
+            categoryName: node.name,
+            categoryId: fav.store === 'eljamon' ? node.id : undefined,
+            emoji,
+            color,
+            subcategories: node.children,
+            retailer: fav.store,
+          },
         });
       }
     }

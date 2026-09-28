@@ -23,6 +23,10 @@ try {
 
 /** Identificador del entitlement de RevenueCat que representa QuéFalta Plus. */
 export const PLUS_ENTITLEMENT = 'plus';
+export const ANNUAL_UPGRADE_OFFERING = 'annual_lifetime_upgrade';
+/** PostgreSQL necesita una fecha para el gate existente; RevenueCat representa
+ * el acceso vitalicio con expirationDate=null. Año máximo ISO/Postgres. */
+export const LIFETIME_PREMIUM_UNTIL = '9999-12-31T23:59:59.999Z';
 
 const API_KEY =
   Platform.select({
@@ -67,6 +71,10 @@ export async function logOutPurchases(): Promise<void> {
 export interface PlusOfferings {
   monthly: PurchasesPackage | null;
   annual: PurchasesPackage | null;
+  lifetime: PurchasesPackage | null;
+  lifetimeAnnualUpgrade: PurchasesPackage | null;
+  annualUpgradeEligible: boolean;
+  annualManagementURL: string | null;
   /** Solo es true cuando la tienda publica una prueba gratuita de una semana
    *  y confirma que la cuenta actual puede canjearla. */
   annualFreeTrialEligible: boolean;
@@ -90,6 +98,8 @@ export type PlusSubscriptionManagement =
       expirationDate: string | null;
       willRenew: boolean;
       periodType: string;
+      activeAnnualSubscription: boolean;
+      annualUpgradeEligible: boolean;
     }
   | { kind: 'none' }
   | { kind: 'unavailable' };
@@ -98,10 +108,12 @@ function activePlusEntitlement(
   info: import('react-native-purchases').CustomerInfo,
 ): ActivePlusEntitlement | null {
   const entitlement = info.entitlements.active[PLUS_ENTITLEMENT];
-  return entitlement ? { expirationDate: entitlement.expirationDate } : null;
+  return entitlement
+    ? { expirationDate: entitlement.expirationDate ?? LIFETIME_PREMIUM_UNTIL }
+    : null;
 }
 
-/** Paquetes mensual/anual de la offering actual de RevenueCat.
+/** Paquetes mensual/anual/vitalicio de la offering actual de RevenueCat.
  *  null = nada montado todavía (o sin red) → PaywallModal usa el placeholder. */
 export async function getPlusOfferings(): Promise<PlusOfferings | null> {
   if (!Purchases || !configured) return null;
@@ -109,6 +121,17 @@ export async function getPlusOfferings(): Promise<PlusOfferings | null> {
     const offerings = await Purchases.getOfferings();
     const current = offerings.current;
     if (!current) return null;
+    const customerInfo = await Purchases.getCustomerInfo().catch(() => null);
+    const plusEntitlement = customerInfo?.entitlements.active[PLUS_ENTITLEMENT];
+    const annualIdentifiers = [
+      plusEntitlement?.productIdentifier,
+      plusEntitlement?.productPlanIdentifier,
+      ...(customerInfo?.activeSubscriptions ?? []),
+    ].filter((value): value is string => typeof value === 'string');
+    const annualUpgradeEligible = annualIdentifiers.some((value) => (
+      value.toLowerCase().includes('annual')
+    )) && plusEntitlement?.periodType.toUpperCase() !== 'TRIAL';
+    const annualUpgradeOffering = offerings.all[ANNUAL_UPGRADE_OFFERING] ?? null;
     const annual = current.annual ?? null;
     let annualFreeTrialEligible = false;
 
@@ -149,6 +172,10 @@ export async function getPlusOfferings(): Promise<PlusOfferings | null> {
     return {
       monthly: current.monthly ?? null,
       annual,
+      lifetime: current.lifetime ?? null,
+      lifetimeAnnualUpgrade: annualUpgradeOffering?.lifetime ?? null,
+      annualUpgradeEligible,
+      annualManagementURL: annualUpgradeEligible ? customerInfo?.managementURL ?? null : null,
       annualFreeTrialEligible,
     };
   } catch {
@@ -211,6 +238,9 @@ export async function getPlusSubscriptionManagement(): Promise<PlusSubscriptionM
     const info = await Purchases.getCustomerInfo();
     const entitlement = info.entitlements.active[PLUS_ENTITLEMENT];
     if (!entitlement) return { kind: 'none' };
+    const activeAnnualSubscription = info.activeSubscriptions.some((identifier) => (
+      identifier.toLowerCase().includes('annual')
+    ));
     return {
       kind: 'store',
       managementURL: info.managementURL,
@@ -219,6 +249,9 @@ export async function getPlusSubscriptionManagement(): Promise<PlusSubscriptionM
       expirationDate: entitlement.expirationDate,
       willRenew: entitlement.willRenew,
       periodType: entitlement.periodType,
+      activeAnnualSubscription,
+      annualUpgradeEligible: activeAnnualSubscription
+        && entitlement.periodType.toUpperCase() !== 'TRIAL',
     };
   } catch {
     return { kind: 'unavailable' };

@@ -1,12 +1,15 @@
 import { peekWeeklyNewProducts } from '../api/catalog';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, Platform } from 'react-native';
+import {
+  Animated, Easing, LayoutAnimation, Platform, StatusBar, StyleSheet, Text,
+  TextInput, TouchableOpacity, UIManager, View,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useProfile } from '../context/ProfileContext';
-import { useThemedStyles } from '../context/ThemeContext';
+import { useTheme, useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import {
   fetchWeeklyNewProducts,
@@ -23,8 +26,12 @@ import SlidingSegments from '../components/SlidingSegments';
 import ProductFilterSheet, { PRICE_RANGES, type FilterGroup, type PriceSort } from '../components/ProductFilterSheet';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { sortByRelevance } from '../lib/sort';
-import { catalogStoreRequiresPlus } from '../constants/limits';
+import { catalogStoreRequiresPlus, limitsApply } from '../constants/limits';
 import { useCatalogStore } from '../context/CatalogStoreContext';
+import { useReducedMotion } from '../hooks/useReducedMotion';
+import PaywallModal from '../components/PaywallModal';
+
+type ProductSortSegment = 'priceAsc' | 'priceDesc' | 'pricePerUnitAsc' | 'pricePerUnitDesc';
 
 // Misma normalización que la búsqueda del catálogo (insensible a acentos/mayúsculas).
 const stripAccents = (s: string) =>
@@ -45,10 +52,9 @@ const facetValuesForStore = (values: string[], store: CatalogStore) =>
  * espejo (productos que aparecieron en el último sync semanal). Ver
  * supabase/migrations/catalog_first_seen.sql.
  *
- * Bajo la cabecera va la fila buscador + filtros (mismo diseño que la pestaña
- * Productos del catálogo): búsqueda FTS/trigram en servidor, botón de filtros (categoría
- * de las disponibles, rango de precio y orden por precio, en hoja inferior
- * ProductFilterSheet, incluido precio unitario) y toggle lista/cuadrícula.
+ * Bajo la cabecera va la misma fila compacta de Productos del catálogo:
+ * buscador expandible, orden por precio, filtros y toggle lista/cuadrícula.
+ * La hoja inferior conserva supermercado, categoría y rango de precio.
  * Sin texto se conserva el feed ligero; al buscar, filtros y orden se aplican
  * antes de paginar para no limitarse a las novedades ya descargadas.
  *
@@ -61,9 +67,11 @@ const facetValuesForStore = (values: string[], store: CatalogStore) =>
  */
 export default function NewArrivalsScreen() {
   const styles = useThemedStyles(themedStyles);
+  const { scheme } = useTheme();
+  const reducedMotion = useReducedMotion();
   const navigation = useNavigation<any>();
   const { t, lang } = useTranslation();
-  const { profile, isPremium } = useProfile();
+  const { profile, isPremium, loading: profileLoading } = useProfile();
   const headerTop = useHeaderTopPadding(56);
 
   // Solo los súpers activados en el perfil (misma regla que el catálogo).
@@ -72,9 +80,9 @@ export default function NewArrivalsScreen() {
   const lidlStoreId = profile?.lidlStoreId ?? null;
   const preferredStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
   const allowedStores = useMemo(() => {
-    const enabledKeys = preferredStores.filter((store) => storeInRegion(store, region));
-    return enabledKeys.length > 0 ? enabledKeys : storesForRegion(region);
-  }, [preferredStores, region]);
+    const enabledKeys = preferredStores.filter((store) => storeInRegion(store, region, postalCode));
+    return enabledKeys.length > 0 ? enabledKeys : storesForRegion(region, postalCode);
+  }, [preferredStores, region, postalCode]);
   const storeOptions = useMemo(
     () => storesWithLidlSecond(CATALOG_STORES.filter((s) => allowedStores.includes(s.key)
       && (s.key !== 'lidl' || lidlStoreId != null))),
@@ -114,10 +122,89 @@ export default function NewArrivalsScreen() {
   const [category, setCategory] = useState<string[]>([]); // multi; [] = todas
   const [filterStores, setFilterStores] = useState<CatalogStore[]>([]);
   const [priceRange, setPriceRange] = useState<number | null>(null); // índice en PRICE_RANGES
-  const [sort, setSort] = useState<PriceSort | null>(null);
+  const [sort, setSort] = useState<PriceSort | null>('asc');
   const [pricePerUnitSort, setPricePerUnitSort] = useState<PriceSort | null>(null);
-  const filtersActive = category.length > 0 || filterStores.length > 0
-    || priceRange != null || sort != null || pricePerUnitSort != null;
+  const [productSearchExpanded, setProductSearchExpanded] = useState(false);
+  const [queryInHeader, setQueryInHeader] = useState(false);
+  const [sortPaywallVisible, setSortPaywallVisible] = useState(false);
+  const sheetFiltersActive = category.length > 0 || filterStores.length > 0 || priceRange != null;
+  const unitPriceSortLocked = !profileLoading && limitsApply(isPremium);
+  const activeSortSegment: ProductSortSegment = pricePerUnitSort
+    ? `pricePerUnit${pricePerUnitSort === 'asc' ? 'Asc' : 'Desc'}`
+    : `price${sort === 'desc' ? 'Desc' : 'Asc'}`;
+
+  useEffect(() => {
+    if (Platform.OS === 'android') UIManager.setLayoutAnimationEnabledExperimental?.(true);
+  }, []);
+
+  const setProductSearchFocus = (expanded: boolean) => {
+    const hidesHeaderQuery = expanded && queryInHeader;
+    if (expanded === productSearchExpanded && !hidesHeaderQuery) return;
+    if (!reducedMotion) {
+      LayoutAnimation.configureNext({
+        duration: 360,
+        create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+        update: { type: LayoutAnimation.Types.easeInEaseOut },
+        delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+      });
+    }
+    if (expanded) setQueryInHeader(false);
+    setProductSearchExpanded(expanded);
+  };
+
+  const selectSortSegment = (segment: ProductSortSegment) => {
+    if (segment === 'priceAsc' || segment === 'priceDesc') {
+      setSort(segment === 'priceAsc' ? 'asc' : 'desc');
+      setPricePerUnitSort(null);
+      return;
+    }
+    if (profileLoading) return;
+    if (unitPriceSortLocked) {
+      setSortPaywallVisible(true);
+      return;
+    }
+    setPricePerUnitSort(segment === 'pricePerUnitAsc' ? 'asc' : 'desc');
+    setSort(null);
+  };
+
+  useEffect(() => {
+    if (unitPriceSortLocked && pricePerUnitSort != null) {
+      setPricePerUnitSort(null);
+      setSort('asc');
+    }
+  }, [pricePerUnitSort, unitPriceSortLocked]);
+
+  const queryReveal = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const target = queryInHeader && query.trim().length > 0 ? 1 : 0;
+    if (reducedMotion) {
+      queryReveal.setValue(target);
+      return;
+    }
+    const animation = Animated.timing(queryReveal, {
+      toValue: target,
+      duration: target === 1 ? 420 : 360,
+      easing: Easing.bezier(0.22, 1, 0.36, 1),
+      useNativeDriver: false,
+    });
+    animation.start();
+    return () => animation.stop();
+  }, [query, queryInHeader, queryReveal, reducedMotion]);
+
+  const handleProductScrollBegin = () => {
+    const shouldShowHeaderQuery = query.trim().length > 0;
+    if (!productSearchExpanded && queryInHeader === shouldShowHeaderQuery) return;
+    if (!reducedMotion) {
+      LayoutAnimation.configureNext({
+        duration: 360,
+        update: { type: LayoutAnimation.Types.easeInEaseOut },
+        create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+        delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
+      });
+    }
+    setProductSearchExpanded(false);
+    setQueryInHeader(shouldShowHeaderQuery);
+  };
 
   useEffect(() => {
     const id = setTimeout(() => setDebouncedQuery(query), 300);
@@ -423,6 +510,74 @@ export default function NewArrivalsScreen() {
     newFiltersForStore, lidlStoreId,
   ]);
 
+  const lockedUnitPriceSortButton = (direction: PriceSort) => (
+    <TouchableOpacity
+      key={direction}
+      style={[
+        styles.prodUnitSortLockedBtn,
+        glassAvailable ? styles.prodUnitSortLockedBtnGlass : styles.prodUnitSortLockedBtnFallback,
+        direction === 'asc' ? styles.prodUnitSortLockedBtnFirst : styles.prodUnitSortLockedBtnLast,
+      ]}
+      onPress={() => selectSortSegment(direction === 'asc' ? 'pricePerUnitAsc' : 'pricePerUnitDesc')}
+      activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={t(direction === 'asc' ? 'catalog.sortPricePerUnitAsc' : 'catalog.sortPricePerUnitDesc')}
+      accessibilityHint={t('paywall.benefits.unitPriceText')}
+    >
+      <Text style={styles.prodUnitSortLockedText}>{direction === 'asc' ? '€/u↑' : '€/u↓'}</Text>
+    </TouchableOpacity>
+  );
+
+  const lockedUnitPriceSortGroup = (
+    <View style={[
+      glassAvailable ? styles.prodUnitSortLockedBackgroundGlass : styles.prodUnitSortLockedBackgroundFallback,
+      Platform.OS === 'android' && styles.prodUnitSortLockedBackgroundAndroid,
+      glassAvailable && (scheme === 'dark'
+        ? styles.prodUnitSortLockedBackgroundGlassDark
+        : styles.prodUnitSortLockedBackgroundGlassLight),
+    ]}>
+      {glassAvailable && <View pointerEvents="none" style={styles.prodUnitSortLockedHighlight} />}
+      <View style={[
+        styles.prodUnitSortLockedButtons,
+        glassAvailable ? styles.prodUnitSortLockedButtonsGlass : styles.prodUnitSortLockedButtonsFallback,
+      ]}>
+        {lockedUnitPriceSortButton('asc')}
+        {lockedUnitPriceSortButton('desc')}
+      </View>
+    </View>
+  );
+
+  const fallbackSortSegments = (includeUnitPrice: boolean) => (
+    <View style={[styles.viewToggle, styles.prodToggleDense]}>
+      {(['priceAsc', 'priceDesc'] as const).map((segment) => (
+        <TouchableOpacity
+          key={segment}
+          style={[styles.viewBtn, styles.prodViewBtn, activeSortSegment === segment && styles.viewBtnOn]}
+          onPress={() => selectSortSegment(segment)}
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel={t(segment === 'priceAsc' ? 'catalog.sortPriceAsc' : 'catalog.sortPriceDesc')}
+        >
+          <Ionicons name={segment === 'priceAsc' ? 'arrow-up' : 'arrow-down'} size={18} color={activeSortSegment === segment ? colors.white : colors.inkSoft} />
+        </TouchableOpacity>
+      ))}
+      {includeUnitPrice && (['pricePerUnitAsc', 'pricePerUnitDesc'] as const).map((segment) => (
+        <TouchableOpacity
+          key={segment}
+          style={[styles.viewBtn, styles.prodViewBtn, activeSortSegment === segment && styles.viewBtnOn]}
+          onPress={() => selectSortSegment(segment)}
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel={t(segment === 'pricePerUnitAsc' ? 'catalog.sortPricePerUnitAsc' : 'catalog.sortPricePerUnitDesc')}
+        >
+          <Text style={[styles.prodUnitSortText, { color: activeSortSegment === segment ? colors.white : colors.inkSoft }]}>
+            {segment === 'pricePerUnitAsc' ? '€/u↑' : '€/u↓'}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+
   // Chrome de la pantalla (cabecera + selector + fila de búsqueda),
   // idéntico en ambos modos salvo el back sin caja sobre el cristal y el toggle
   // (SlidingSegments en glass / pastilla estática en fallback, como el catálogo).
@@ -445,65 +600,126 @@ export default function NewArrivalsScreen() {
         )}
       </View>
 
-      {/* Fila buscador + filtros + toggle (mismo diseño que el catálogo). */}
-      <View style={styles.searchRow}>
-        <TouchableOpacity
-          style={[styles.filterBtn, filtersActive && styles.filterBtnOn]}
-          onPress={() => setFilterOpen(true)}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          accessibilityLabel={t('filters.a11yOpen')}
-        >
-          <Ionicons name="options-outline" size={20} color={filtersActive ? colors.white : colors.inkSoft} />
-        </TouchableOpacity>
-        <View style={styles.searchBar}>
-          <Ionicons name="search-outline" size={18} color={colors.inkSoft} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder={t('catalog.searchProducts')}
-            placeholderTextColor={colors.inkFaint}
-            value={query}
-            onChangeText={setQuery}
-            returnKeyType="search"
-            autoCorrect={false}
-          />
-          {query.length > 0 && (
-            <TouchableOpacity onPress={() => setQuery('')}>
-              <Ionicons name="close-circle" size={18} color={colors.inkFaint} />
-            </TouchableOpacity>
+      <View style={styles.prodSearchBlock}>
+        <View style={styles.prodSearchRow}>
+          <View style={[
+            styles.searchBar,
+            styles.prodSearchBox,
+            glassAvailable ? styles.prodSearchBoxGlass : styles.prodSearchBoxFallback,
+            productSearchExpanded ? styles.prodSearchBoxExpanded : styles.prodSearchBoxCollapsed,
+          ]}>
+            <Ionicons name="search-outline" size={20} color={colors.inkSoft} />
+            {productSearchExpanded ? (
+              <>
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder={t('catalog.searchProducts')}
+                  placeholderTextColor={colors.inkFaint}
+                  value={query}
+                  onChangeText={setQuery}
+                  onFocus={() => setProductSearchFocus(true)}
+                  onBlur={() => setProductSearchFocus(false)}
+                  returnKeyType="search"
+                  autoCorrect={false}
+                  autoFocus
+                />
+                {query.length > 0 && (
+                  <TouchableOpacity onPress={() => setQuery('')} accessibilityRole="button" accessibilityLabel={t('common.clear')}>
+                    <Ionicons name="close-circle" size={18} color={colors.inkFaint} />
+                  </TouchableOpacity>
+                )}
+              </>
+            ) : (
+              <TouchableOpacity style={styles.prodSearchActivator} onPress={() => setProductSearchFocus(true)} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('catalog.searchProducts')} />
+            )}
+          </View>
+
+          {!productSearchExpanded && (
+            <>
+              <View style={styles.prodSortGroup}>
+                {unitPriceSortLocked ? (
+                  <>
+                    {glassAvailable || Platform.OS === 'android' ? (
+                      <SlidingSegments
+                        compact dense emphasized transparentTrack={Platform.OS === 'android'}
+                        segments={[
+                          { key: 'priceAsc', icon: 'arrow-up', accessibilityLabel: t('catalog.sortPriceAsc') },
+                          { key: 'priceDesc', icon: 'arrow-down', accessibilityLabel: t('catalog.sortPriceDesc') },
+                        ]}
+                        value={activeSortSegment}
+                        onChange={selectSortSegment}
+                      />
+                    ) : fallbackSortSegments(false)}
+                    {lockedUnitPriceSortGroup}
+                  </>
+                ) : glassAvailable || Platform.OS === 'android' ? (
+                  <SlidingSegments
+                    compact dense emphasized transparentTrack={Platform.OS === 'android'}
+                    segments={[
+                      { key: 'priceAsc', icon: 'arrow-up', accessibilityLabel: t('catalog.sortPriceAsc') },
+                      { key: 'priceDesc', icon: 'arrow-down', accessibilityLabel: t('catalog.sortPriceDesc') },
+                      { key: 'pricePerUnitAsc', label: '€/u↑', accessibilityLabel: t('catalog.sortPricePerUnitAsc') },
+                      { key: 'pricePerUnitDesc', label: '€/u↓', accessibilityLabel: t('catalog.sortPricePerUnitDesc') },
+                    ]}
+                    value={activeSortSegment}
+                    onChange={selectSortSegment}
+                  />
+                ) : fallbackSortSegments(true)}
+              </View>
+
+              {glassAvailable || Platform.OS === 'android' ? (
+                <SlidingSegments
+                  compact dense emphasized allowReselect transparentTrack={Platform.OS === 'android'}
+                  segments={[{ key: 'filters', icon: 'options-outline', accessibilityLabel: t('filters.a11yOpen') }]}
+                  value={sheetFiltersActive ? 'filters' : null}
+                  onChange={() => setFilterOpen(true)}
+                />
+              ) : (
+                <TouchableOpacity style={[styles.filterBtn, sheetFiltersActive && styles.filterBtnOn]} onPress={() => setFilterOpen(true)} activeOpacity={0.8} accessibilityRole="button" accessibilityLabel={t('filters.a11yOpen')}>
+                  <Ionicons name="options-outline" size={20} color={sheetFiltersActive ? colors.white : colors.inkSoft} />
+                </TouchableOpacity>
+              )}
+
+              <View style={styles.prodViewGroup}>
+                {glassAvailable || Platform.OS === 'android' ? (
+                  <SlidingSegments
+                    compact dense emphasized transparentTrack={Platform.OS === 'android'}
+                    segments={[
+                      { key: 'list', icon: 'list', accessibilityLabel: t('product.viewList') },
+                      { key: 'grid', icon: 'grid', accessibilityLabel: t('product.viewGrid') },
+                    ]}
+                    value={viewMode}
+                    onChange={(value) => setViewMode(value as ViewMode)}
+                  />
+                ) : (
+                  <View style={[styles.viewToggle, styles.prodToggleDense]}>
+                    <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, viewMode === 'list' && styles.viewBtnOn]} onPress={() => setViewMode('list')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('product.viewList')}>
+                      <Ionicons name="list" size={19} color={viewMode === 'list' ? colors.white : colors.inkSoft} />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[styles.viewBtn, styles.prodViewBtn, viewMode === 'grid' && styles.viewBtnOn]} onPress={() => setViewMode('grid')} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('product.viewGrid')}>
+                      <Ionicons name="grid" size={17} color={viewMode === 'grid' ? colors.white : colors.inkSoft} />
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            </>
           )}
         </View>
-        {glassAvailable || Platform.OS === 'android' ? (
-          <SlidingSegments
-            compact
-            dense={Platform.OS === 'android'}
-            emphasized={Platform.OS === 'android'}
-            transparentTrack={Platform.OS === 'android'}
-            segments={[
-              { key: 'list', icon: 'list' },
-              { key: 'grid', icon: 'grid' },
-            ]}
-            value={viewMode}
-            onChange={setViewMode}
-          />
-        ) : (
-          <View style={styles.viewToggle}>
-            <TouchableOpacity
-              style={[styles.viewBtn, viewMode === 'list' && styles.viewBtnOn]}
-              onPress={() => setViewMode('list')}
-              activeOpacity={0.85}
-            >
-              <Ionicons name="list" size={19} color={viewMode === 'list' ? colors.white : colors.inkSoft} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.viewBtn, viewMode === 'grid' && styles.viewBtnOn]}
-              onPress={() => setViewMode('grid')}
-              activeOpacity={0.85}
-            >
-              <Ionicons name="grid" size={17} color={viewMode === 'grid' ? colors.white : colors.inkSoft} />
-            </TouchableOpacity>
-          </View>
-        )}
+        <Animated.View
+          pointerEvents="none"
+          accessibilityElementsHidden={!queryInHeader}
+          importantForAccessibility={queryInHeader ? 'auto' : 'no-hide-descendants'}
+          style={[
+            styles.prodSearchQueryClip,
+            {
+              height: queryReveal.interpolate({ inputRange: [0, 1], outputRange: [0, 28] }),
+              opacity: queryReveal,
+              transform: [{ translateY: queryReveal.interpolate({ inputRange: [0, 1], outputRange: [-3, 0] }) }],
+            },
+          ]}
+        >
+          <Text style={styles.prodSearchQuery} numberOfLines={1}>{query.trim()}</Text>
+        </Animated.View>
       </View>
     </>
   );
@@ -518,7 +734,7 @@ export default function NewArrivalsScreen() {
         products={products}
         loading={searchActive ? searchLoading : loading}
         error={searchActive ? searchError : error}
-        emptyText={filtersActive || query.trim().length > 0 ? t('filters.noMatches') : t('newArrivals.empty')}
+        emptyText={sheetFiltersActive || query.trim().length > 0 ? t('filters.noMatches') : t('newArrivals.empty')}
         errorText={t('newArrivals.error')}
         keepOrder
         onEndReached={loadMore}
@@ -530,6 +746,7 @@ export default function NewArrivalsScreen() {
         roundedCards
         showStoreLogo={store === 'all'}
         badgeLabel={t('newArrivals.badge')}
+        onScrollBeginDrag={handleProductScrollBegin}
       />
 
       {/* Hoja de filtros: categoría / precio / orden, aplica en vivo. */}
@@ -553,11 +770,14 @@ export default function NewArrivalsScreen() {
         }}
         appearance="plus"
         showCategoryIcons
+        showSortControls={false}
         stores={store === 'all' ? stores.map((item) => ({ value: item.key, label: item.name })) : []}
         selectedStores={filterStores}
         onStores={(values) => setFilterStores(values as CatalogStore[])}
         categoryGroups={categoryGroups}
       />
+
+      <PaywallModal visible={sortPaywallVisible} onClose={() => setSortPaywallVisible(false)} />
 
       {/* Chrome de cristal: al FINAL del árbol para pintarse encima; la lista
           se refracta al pasar por debajo. El StoreDropdown puede seguir dentro
@@ -597,24 +817,19 @@ const themedStyles = () => StyleSheet.create({
   },
   headerSpacer: { width: 38, height: 38 },
 
-  // ── Fila buscador + filtro + vista (diseño del catálogo) ──────
-  searchRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    marginHorizontal: 16, marginBottom: 8,
-  },
+  // ── Fila de productos (mismo diseño que Catálogo/Ofertas) ─────
   filterBtn: {
-    width: glassAvailable ? 40 : 44, height: glassAvailable ? 40 : 44, borderRadius: 18,
+    width: 44, height: 44, borderRadius: 18,
     alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.surfaceAlt,
   },
   filterBtnOn: { backgroundColor: colors.accent, borderColor: colors.accent },
   searchBar: {
-    flex: 1, flexDirection: 'row', alignItems: 'center',
+    flexDirection: 'row', alignItems: 'center',
     backgroundColor: colors.white,
-    height: glassAvailable ? 40 : 44, paddingHorizontal: 16,
-    gap: 11,
-    borderRadius: 18,
+    paddingHorizontal: 16, gap: 11, borderRadius: 16,
     borderWidth: 1, borderColor: colors.border,
+    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
   },
   searchInput: {
     flex: 1, fontSize: 14, color: colors.ink, padding: 0,
@@ -622,18 +837,64 @@ const themedStyles = () => StyleSheet.create({
   },
   // Toggle lista/cuadrícula en fallback (misma pastilla que el catálogo).
   viewToggle: {
-    flexDirection: 'row', gap: 3,
+    flexDirection: 'row', gap: 5,
     backgroundColor: colors.surfaceAlt,
-    padding: 4, borderRadius: 18,
+    padding: 5, borderRadius: 14,
   },
   viewBtn: {
-    width: 36, height: 36, borderRadius: 14,
+    width: 40, height: 40, borderRadius: 10,
     alignItems: 'center', justifyContent: 'center',
   },
   viewBtnOn: {
     backgroundColor: colors.accent,
     shadowColor: colors.accent, shadowOpacity: 0.4, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
     elevation: 2,
+  },
+  prodSearchBlock: { marginHorizontal: 16, marginBottom: 8 },
+  prodSearchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  prodSearchQueryClip: { overflow: 'hidden' },
+  prodSearchQuery: {
+    marginTop: 4, fontSize: 13, lineHeight: 20,
+    fontFamily: fonts.medium, fontStyle: 'italic', color: colors.inkSoft,
+  },
+  prodSearchBox: { marginHorizontal: 0, marginBottom: 0, minWidth: 0, paddingVertical: 0, borderRadius: 999 },
+  prodSearchBoxExpanded: { flex: 1 },
+  prodSearchBoxCollapsed: { width: 40, height: 40, paddingHorizontal: 0, gap: 0, justifyContent: 'center' },
+  prodSearchBoxGlass: { height: 40 },
+  prodSearchBoxFallback: { height: 44 },
+  prodSearchActivator: { ...StyleSheet.absoluteFill },
+  prodSortGroup: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  prodViewGroup: { alignItems: 'center', justifyContent: 'center' },
+  prodToggleDense: { padding: 3, gap: 3, borderRadius: 12 },
+  prodViewBtn: { width: 32, height: 38, borderRadius: 9 },
+  prodUnitSortText: { fontSize: 10, fontFamily: fonts.bold },
+  prodUnitSortLockedBackgroundGlass: {
+    width: 72, height: 40, borderRadius: 20, borderWidth: 1,
+    shadowColor: '#000', shadowOpacity: 0.11, shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 }, elevation: 3,
+  },
+  prodUnitSortLockedBackgroundGlassLight: { backgroundColor: 'rgba(255,255,255,0.38)', borderColor: 'rgba(43,37,33,0.10)' },
+  prodUnitSortLockedBackgroundGlassDark: { backgroundColor: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.20)' },
+  prodUnitSortLockedHighlight: {
+    position: 'absolute', top: 1, left: 10, right: 10, height: 1, borderRadius: 1,
+    backgroundColor: 'rgba(255,255,255,0.58)',
+  },
+  prodUnitSortLockedBackgroundFallback: {
+    width: 73, height: 44, borderRadius: 12, borderWidth: 1,
+    borderColor: colors.border, backgroundColor: colors.surfaceAlt,
+  },
+  prodUnitSortLockedBackgroundAndroid: { borderWidth: 0, backgroundColor: 'transparent' },
+  prodUnitSortLockedButtons: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  prodUnitSortLockedButtonsGlass: { padding: 3 },
+  prodUnitSortLockedButtonsFallback: { padding: 3, gap: 3 },
+  prodUnitSortLockedBtn: { width: 32, alignItems: 'center', justifyContent: 'center' },
+  prodUnitSortLockedBtnGlass: { height: 32 },
+  prodUnitSortLockedBtnFallback: { height: 38, borderRadius: 9 },
+  prodUnitSortLockedBtnFirst: { borderTopLeftRadius: 17, borderBottomLeftRadius: 17 },
+  prodUnitSortLockedBtnLast: { borderTopRightRadius: 17, borderBottomRightRadius: 17 },
+  prodUnitSortLockedText: {
+    fontSize: 10, lineHeight: 12, fontFamily: fonts.bold,
+    color: colors.accent, textAlign: 'center', includeFontPadding: false,
   },
 
   // ── Chrome de cristal (solo glassAvailable, F3) ───────────────

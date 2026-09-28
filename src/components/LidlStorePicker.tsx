@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator, FlatList, Modal, SafeAreaView,
+  ActivityIndicator, Alert, FlatList, Modal, Platform, SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
@@ -18,6 +18,8 @@ import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useTranslation } from '../context/LanguageContext';
 import { useThemedStyles } from '../context/ThemeContext';
+import { glassAvailable } from './GlassSurface';
+import AllStoresInfoModal from './AllStoresInfoModal';
 import LidlStoreMap from './LidlStoreMap';
 
 interface Props {
@@ -27,6 +29,7 @@ interface Props {
   required: boolean;
   onClose: () => void;
   inverse?: boolean;
+  showCanaryNotice?: boolean;
 }
 
 function normalizeSearch(value: string): string {
@@ -40,6 +43,7 @@ export default function LidlStorePicker({
   inverse = false,
   required,
   onClose,
+  showCanaryNotice = false,
 }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
@@ -59,6 +63,18 @@ export default function LidlStorePicker({
     finally { lock.current = false; setSaving(false); }
   };
   const [query, setQuery] = useState('');
+  const [canaryInfoVisible, setCanaryInfoVisible] = useState(false);
+  const openCanaryInfo = () => {
+    if (Platform.OS === 'ios') {
+      Alert.alert(
+        t('storePicker.lidlCanaryNoticeTitle'),
+        t('storePicker.lidlCanaryNoticeBody'),
+        [{ text: t('common.ok') }],
+      );
+      return;
+    }
+    setCanaryInfoVisible(true);
+  };
 
   useEffect(() => {
     let active = true;
@@ -130,14 +146,28 @@ export default function LidlStorePicker({
   };
 
   return (
-          <Modal visible={open} animationType="slide" presentationStyle={required ? "fullScreen" : "pageSheet"} onRequestClose={() => { if (!required && !saving) onClose(); }}>
+          <Modal visible={open} animationType="slide" presentationStyle={required ? "fullScreen" : "pageSheet"} onRequestClose={() => {
+            if (canaryInfoVisible) setCanaryInfoVisible(false);
+            else if (!required && !saving) onClose();
+          }}>
             <SafeAreaView style={styles.modalScreen}>
               <View style={styles.modalHeader}>
                 {!required ? <TouchableOpacity disabled={saving} onPress={onClose} accessibilityRole="button" accessibilityLabel={t('common.close')} style={styles.closeButton}>
                   <Ionicons name="close" size={23} color={colors.ink} />
                 </TouchableOpacity> : <View style={styles.closeButton} />}
                 <Text style={styles.modalTitle}>{t('region.lidlStoreTitle')}</Text>
-                <View style={styles.closeButton} />
+                {showCanaryNotice ? (
+                  <TouchableOpacity
+                    onPress={openCanaryInfo}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('storePicker.lidlCanaryInfoLabel')}
+                    style={styles.closeButton}
+                  >
+                    <View style={[styles.headerInfoSurface, !glassAvailable && styles.headerInfoSurfaceFallback]}>
+                      <Ionicons name="information-circle-outline" size={21} color={colors.accent} />
+                    </View>
+                  </TouchableOpacity>
+                ) : <View style={styles.closeButton} />}
               </View>
               {selectedStore ? <View style={styles.selectedStoreContainer}>{storeCard(selectedStore)}</View> : <Text style={styles.mapHint}>{t('catalog.lidlStoreRequired')}</Text>}
               {loading ? <ActivityIndicator /> : unavailable || error ? <View style={styles.card}>
@@ -185,6 +215,12 @@ export default function LidlStorePicker({
                 ListEmptyComponent={<Text style={styles.empty}>{t('region.lidlStoreNoResults')}</Text>}
               /> : <Text style={styles.mapHint}>{t('region.lidlMapHint')}</Text>}
             </SafeAreaView>
+            <AllStoresInfoModal
+              contained
+              variant="lidlCanary"
+              visible={canaryInfoVisible}
+              onClose={() => setCanaryInfoVisible(false)}
+            />
           </Modal>
   );
 }
@@ -230,6 +266,13 @@ const themedStyles = () => StyleSheet.create({
   },
   modalTitle: { color: colors.ink, fontFamily: fonts.bold, fontSize: 17 },
   closeButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  headerInfoSurface: {
+    width: 34, height: 34, borderRadius: 17,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.accentLight,
+    borderWidth: 1, borderColor: colors.border,
+  },
+  headerInfoSurfaceFallback: { borderWidth: 0 },
   searchBox: {
     margin: 16, marginBottom: 6, minHeight: 48, paddingHorizontal: 14, borderRadius: 16,
     backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border,

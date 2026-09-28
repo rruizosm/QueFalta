@@ -45,7 +45,7 @@ test('los avisos no se solapan con el requisito postal ni con la decisión de Li
 });
 
 test('Lidl deja de activarse silenciosamente al normalizar perfiles antiguos', () => {
-  assert.match(profileApi, /const allBeforeLidl = CATALOG_STORE_KEYS\.filter\(\(key\) => key !== 'lidl'\)/);
+  assert.match(profileApi, /const allBeforeLidl = CATALOG_STORE_KEYS\.filter\(\(key\) => key !== 'lidl' && key !== 'bm'\)/);
   assert.match(profileApi, /return valid\.length \? valid : allBeforeLidl/);
   assert.doesNotMatch(profileApi, /allBeforeLidl\.every/);
 });

@@ -15,11 +15,12 @@ import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { updateProfile, uploadAvatar, isUsernameAvailable } from '../api/profile';
+import { updateProfile, uploadAvatar, removeAvatar, isUsernameAvailable } from '../api/profile';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import ProfileSubscreenHeader from '../components/ProfileSubscreenHeader';
 import { glassAvailable } from '../components/GlassSurface';
+import UserAvatar from '../components/UserAvatar';
 
 const USERNAME_RE = /^[a-z0-9_.]{3,20}$/;
 
@@ -119,8 +120,10 @@ export default function EditProfileScreen() {
 
       if (avatarUri) {
         setUploading(true);
-        finalAvatarUrl = await uploadAvatar(userId, avatarUri);
+        finalAvatarUrl = await uploadAvatar(userId, avatarUri, profile?.avatarFriendsOnly ?? false);
         setUploading(false);
+      } else if (!finalAvatarUrl && profile?.avatarUrl) {
+        await removeAvatar(userId, profile.avatarUrl);
       }
 
       await updateProfile(userId, {
@@ -147,7 +150,6 @@ export default function EditProfileScreen() {
     }
   };
 
-  const displayAvatar = avatarUri ?? avatarUrl;
   const avatarBg      = profile?.color ?? colors.accent;
   const initials      = profile?.initials ?? '??';
 
@@ -191,8 +193,10 @@ export default function EditProfileScreen() {
           {/* Photo */}
           <View style={styles.photoSection}>
             <View style={styles.avatarWrap}>
-              {displayAvatar ? (
-                <Image source={{ uri: displayAvatar }} style={styles.avatar} />
+              {avatarUri ? (
+                <Image source={{ uri: avatarUri }} style={styles.avatar} />
+              ) : avatarUrl ? (
+                <UserAvatar avatarUrl={avatarUrl} userId={userId} initials={initials} color={avatarBg} size={76} style={styles.avatar} />
               ) : (
                 <View style={[styles.avatar, { backgroundColor: avatarBg }]}>
                   {uploading

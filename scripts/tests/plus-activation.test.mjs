@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { activePlusExpirationFromRevenueCat } from '../../supabase/functions/_shared/revenuecat-subscription.ts';
+import {
+  activePlusExpirationFromRevenueCat,
+  LIFETIME_PREMIUM_UNTIL,
+} from '../../supabase/functions/_shared/revenuecat-subscription.ts';
 
 const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8');
 
@@ -25,6 +28,32 @@ test('RevenueCat confirmation accepts only a future Plus entitlement', () => {
     },
   }, now), null);
   assert.equal(activePlusExpirationFromRevenueCat({ subscriber: { entitlements: {} } }, now), null);
+});
+
+test('RevenueCat confirmation persists lifetime Plus without inventing a renewable period', () => {
+  assert.equal(activePlusExpirationFromRevenueCat({
+    subscriber: {
+      entitlements: {
+        plus: {
+          expires_date: null,
+          purchase_date: '2026-09-24T10:00:00.000Z',
+          refunded_at: null,
+        },
+      },
+    },
+  }), LIFETIME_PREMIUM_UNTIL);
+
+  assert.equal(activePlusExpirationFromRevenueCat({
+    subscriber: {
+      entitlements: {
+        plus: {
+          expires_date: null,
+          purchase_date: '2026-09-24T10:00:00.000Z',
+          refunded_at: '2026-09-24T11:00:00.000Z',
+        },
+      },
+    },
+  }), null);
 });
 
 test('server confirmation derives the account from the JWT and never trusts client premium data', () => {
@@ -77,6 +106,36 @@ test('the Plus paywall keeps its header and plans fixed while only benefits scro
   assert.doesNotMatch(paywall, /contentContainerStyle=\{styles\.scrollContent\}/);
   assert.match(paywall, /benefitsScroll: \{ flex: 1, minHeight: 0 \}/);
   assert.match(paywall, /bottomSection: \{ flexShrink: 0, paddingTop: 8 \}/);
+  assert.match(paywall, /type Plan = 'annual' \| 'monthly'/);
+  assert.doesNotMatch(paywall, /setPlan\('lifetime'\)/);
+  assert.doesNotMatch(paywall, /offerings\?\.lifetime/);
+  assert.match(paywall, /plans: \{ flexDirection: 'row', alignItems: 'stretch'/);
+});
+
+test('lifetime purchases activate Plus through RevenueCat and the webhook', () => {
+  const purchases = read('src/lib/purchases.ts');
+  const webhook = read('supabase/functions/revenuecat-webhook/index.ts');
+
+  assert.match(purchases, /lifetime: current\.lifetime \?\? null/);
+  assert.match(purchases, /entitlement\.expirationDate \?\? LIFETIME_PREMIUM_UNTIL/);
+  assert.match(webhook, /'NON_RENEWING_PURCHASE'/);
+  assert.match(webhook, /'REFUND_REVERSED'/);
+  assert.match(webhook, /entitlementIds\.includes\('plus'\)/);
+  assert.match(webhook, /isLifetimeGrantEvent && !relatesToPlus[\s\S]*ignored: 'non-plus non-renewing purchase'/);
+  assert.match(webhook, /grantsLifetime[\s\S]*LIFETIME_PREMIUM_UNTIL/);
+});
+
+test('lifetime packages stay prepared but hidden from the restored paywall', () => {
+  const purchases = read('src/lib/purchases.ts');
+  const paywall = read('src/components/PaywallModal.tsx');
+  const profile = read('src/screens/ProfileScreen.tsx');
+
+  assert.match(purchases, /ANNUAL_UPGRADE_OFFERING = 'annual_lifetime_upgrade'/);
+  assert.match(purchases, /plusEntitlement\?\.periodType\.toUpperCase\(\) !== 'TRIAL'/);
+  assert.match(purchases, /annualUpgradeOffering\?\.lifetime \?\? null/);
+  assert.doesNotMatch(paywall, /lifetime/);
+  assert.doesNotMatch(paywall, /annualUpgradeEligible/);
+  assert.doesNotMatch(profile, /annualUpgradeEligible[\s\S]*setPaywallVisible\(true\)/);
 });
 
 test('the annual free trial is advertised only after store eligibility is confirmed', () => {

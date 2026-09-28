@@ -13,8 +13,9 @@ de implementación; no un comportamiento ya desplegado.
 
 ## Decisiones cerradas
 
-- **Plan:** suscripción "QuéFalta Plus" — **3,99 €/mes** y **19,99 €/año** (con prueba
-  gratis de 7 días en el anual como oferta introductoria).
+- **Planes mostrados:** QuéFalta Plus — **3,99 €/mes** y **19,99 €/año** (con
+  prueba gratis de 7 días como oferta introductoria). El pago único vitalicio
+  queda aparcado y no se presenta en el paywall.
 - **Premium es por usuario, no por grupo.** Si en una pareja paga uno, el otro sigue
   en free. El paywall habla de "tu cuenta", no de "tu grupo".
 - **Neto real por suscriptor mensual:** ~2,80 € (3,99 € − IVA 21% − 15% Apple
@@ -29,16 +30,19 @@ de implementación; no un comportamiento ya desplegado.
 | Catálogo, búsqueda, favoritos, novedades | ✅ por supermercado, salvo Lidl; «Todos» bloqueado | ✅ «Todos tus supermercados», también Lidl |
 | Unirse a grupos (enlace de invitación) | ✅ **ilimitado, siempre** | ✅ |
 | Crear grupos | ✅ ilimitados | ✅ ilimitados |
+| Activar y consultar cestas de grupo | Los 3 grupos más antiguos por fecha de incorporación | Todos los grupos |
 | Comparador "Más barato en otros súper" | 3 búsquedas por cuenta; después abre Plus | Ilimitado |
 | Consultar y repetir compras del historial | ✅ ilimitado | ✅ ilimitado |
 | Asignar productos alternativos a comentarios de la cesta | Bloqueado 🔒 | ✅ |
 | Ordenar Novedades por precio unitario | Bloqueado 🔒 | ✅ |
 | Alertas personalizadas de precio y ofertas | 1 alerta | Ilimitadas |
 | Estadísticas personales de compra (supermercados, categorías y productos) | — | ✅ |
+| Puesto propio y mejores puestos de Palabra de hoy en ranking general | 🔒; podio y números de puesto visibles, resto difuminado desde el 4.º | ✅; Grupo siempre libre |
 | Extra cosmético: accents exclusivos | — | ✅ |
 
 ## Beneficios comunicados en el paywall (2026-08-11)
 
+- Activar y consultar las cestas de todos los grupos sin el límite gratuito de 3.
 - Ordenar los productos por precio unitario para comparar por kg, litro o unidad.
 - Consultar el catálogo Lidl, sus novedades, ofertas y cambios de precio.
 - **Radar de ahorro ilimitado:** seguir encontrando alternativas similares después de las 3 búsquedas gratuitas.
@@ -50,8 +54,8 @@ de implementación; no un comportamiento ya desplegado.
 El modal de altura completa presenta estos beneficios como propuesta comercial principal. Su
 cabecera compacta muestra el sello dorado que identifica una cuenta Plus junto
 a «QuéFalta Plus», sin un bloque de eslogan independiente ni la etiqueta
-«Incluido» junto a los beneficios. Mensual y Anual se muestran en dos columnas
-de una sola fila; el anual sigue preseleccionado, ofrece 7 días gratis y lleva
+«Incluido» junto a los beneficios. Mensual y Anual se muestran en dos tarjetas
+paralelas; el anual sigue preseleccionado, ofrece 7 días gratis y lleva
 un barrido azul difuminado basado en el antiguo botón QuéCocino. Su etiqueta
 «Mejor precio» conserva el fondo dorado animado de `PremiumGoldBackground`.
 La prueba solo se anuncia cuando la tienda confirma que la cuenta es elegible:
@@ -68,8 +72,14 @@ localizados y enlaces legales conservan el flujo de RevenueCat existente.
 No muestra tirador ni admite cierre por arrastre o toque exterior. El contenido
 respeta las zonas seguras y el cierre queda en la X o Atrás del sistema.
 
-**Regla de oro:** crear grupos, unirse a ellos y colaborar en tiempo real jamás
-se paywallea. Las cuentas gratuitas conservan una alerta personalizada y tres
+**Regla vigente:** crear grupos y unirse a ellos no tiene límite. La cuenta
+gratuita puede activar y consultar las cestas de sus tres primeras membresías
+(`group_members.joined_at`, con desempate por id); las posteriores muestran
+candado y abren el paywall. Plus permite usar todas las cestas. La membresía
+y la administración del grupo siguen disponibles aunque su cesta esté bloqueada.
+Este gate, el aviso y el beneficio «Grupos ilimitados» empiezan en la versión
+nativa 1.3.2; una OTA sobre una build anterior conserva el comportamiento previo.
+Las cuentas gratuitas conservan además una alerta personalizada y tres
 búsquedas del comparador; Plus amplía ambos beneficios sin límite.
 
 ## Fases
@@ -82,6 +92,9 @@ búsquedas del comparador; Plus amplía ambos beneficios sin límite.
       productos en el nivel 1: `com.quefalta.app.plus.monthly` (3,99 €/mes) y
       `com.quefalta.app.plus.annual` (19,99 €/año), con prueba introductoria de
       7 días en el anual. Disponibilidad inicial: España; localizaciones ES/CA.
+- [ ] **Aparcado:** crear el producto no consumible de pago único (37,99 €) en App Store
+      Connect y Google Play; asociarlo al entitlement `plus` y al paquete
+      `$rc_lifetime` de la offering `default` en RevenueCat.
 - [x] App iOS `com.quefalta.app` conectada a RevenueCat. La clave de compras dentro
       de la app figura como válida; la clave de App Store Connect para importación
       automática de productos continúa pendiente.
@@ -129,7 +142,7 @@ búsquedas del comparador; Plus amplía ambos beneficios sin límite.
       selección unitaria que siguiera activa. El orden por precio total es libre.
 - [x] Selector «Todos tus supermercados»: requiere Plus en Catálogo, Novedades,
       Ofertas y Cambios de precio para todas las cuentas, sin concesión heredada.
-- [x] Paywall: `src/components/PaywallModal.tsx` — beneficios, 2 planes (anual
+- [x] Paywall: `src/components/PaywallModal.tsx` — beneficios, 3 planes (anual
       preseleccionado con "7 días gratis"), CTA placeholder (toast hasta Fase 3),
       "Restaurar compras" y enlaces a quefalta.es/condiciones y /privacidad
       (⚠️ esas páginas hay que crearlas en el repo web — Fase 0). Es un **Modal
@@ -168,6 +181,17 @@ búsquedas del comparador; Plus amplía ambos beneficios sin límite.
       ya su producto de Test Store, Apple (`com.quefalta.app.plus.monthly` /
       `.annual`) y Google (`quefalta_plus:monthly` / `:annual`). App Android
       `com.quefalta.app` creada en RevenueCat.
+- [ ] **Aparcado — RevenueCat, pago único:** añadir el producto no consumible de 37,99 €
+      a `$rc_lifetime` dentro de `default`. El cliente ya consume
+      `current.lifetime`; backend local ya persiste y restaura el acceso sin
+      caducidad, pero las Edge Functions modificadas siguen sin desplegar.
+- [ ] **Aparcado — migración anual → pago único:** crear otro producto no consumible de
+      18,00 € (37,99 − 19,99), vincularlo también a `plus` y colocarlo como
+      `$rc_lifetime` en la offering `annual_lifetime_upgrade`. Solo se presenta
+      con una anual activa ya cobrada; `TRIAL` queda excluido. El precio normal
+      se tacha y siempre se cobra el precio localizado del producto reducido.
+      Comprar el no consumible no cancela la anual: al terminar, la app abre la
+      gestión oficial para que el usuario desactive su renovación.
 - [ ] **RevenueCat — credenciales:** copiar la API key pública iOS y la pública
       Android a `.env.local` y a EAS; añadir la clave App Store Connect para
       importación/sincronización, el JSON de cuenta de servicio de Google Play y

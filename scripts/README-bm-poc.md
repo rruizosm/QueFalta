@@ -78,3 +78,21 @@ El catalogo limita cada bloque a 20 productos y pagina mediante `offset`;
 entre 937 y 992 nodos y profundidad maxima 6. En muestras deterministas de 40
 productos ya aparecen diferencias de surtido, precio y tipo de oferta entre
 zonas, por lo que la integracion productiva debe conservar el contexto postal.
+
+## Integración en la app (2026-09-20)
+
+El catálogo BM se muestra en QuéFalta para cualquier código postal de las siete
+provincias representadas en la tabla anterior. La app traduce el prefijo del CP
+al CP de referencia sincronizado, resuelve `bm_postal_locations.location_id` y
+usa esa ubicación en búsqueda, listados, categorías, fichas, ofertas, novedades
+y cambios de precio.
+
+Para ampliar cobertura a otra provincia hay que validar un CP de referencia con
+el explorador, incorporarlo al sync y mantener en paridad las referencias en:
+
+- `scripts/lib/bm.mjs`, fuente del sincronizador;
+- `src/constants/retailerZones.ts`, guardia visible del cliente.
+
+La prueba `scripts/tests/bm-app-integration.test.mjs` falla si ambas listas dejan
+de coincidir. El workflow productivo continúa manual hasta que se valide su
+operación recurrente.

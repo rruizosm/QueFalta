@@ -1,8 +1,12 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from './AuthContext';
+import { useProfile } from './ProfileContext';
 import { getOrCreateGroupList, addItemsToList, type NewListItem } from '../api/lists';
-import { fetchMyGroups } from '../api/groups';
+import { fetchMyCartMemberships, fetchMyGroups } from '../api/groups';
+import { GroupCartLimitError, groupCartIsLocked } from '../lib/groupCartLimit';
+import { limitsApply } from '../constants/limits';
+import { GROUP_CART_LIMIT_RELEASE_ENABLED } from '../lib/groupCartRelease';
 import { primeTabCaches, startupKeys, writeStartupCache } from '../lib/startupCache';
 
 // Clave base. El carrito activo se persiste POR USUARIO (`${KEY}:${userId}`)
@@ -51,6 +55,7 @@ const CartContext = createContext<CartContextValue>({
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const { session } = useAuth();
+  const { isPremium, loading: profileLoading } = useProfile();
   const userId = session?.user.id;
 
   // Clave por usuario (evita que el carrito se filtre entre cuentas).
@@ -89,6 +94,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const activateCart = (groupId: string, groupName: string, groupIcon?: string | null) => {
     if (!userId) return Promise.resolve();
     return runCartOperation(async () => {
+      if (GROUP_CART_LIMIT_RELEASE_ENABLED && limitsApply(isPremium)) {
+        const groups = await fetchMyCartMemberships(userId);
+        if (groupCartIsLocked(groups, groupId, isPremium)) throw new GroupCartLimitError();
+      }
       const listId = await getOrCreateGroupList(groupId, groupName, userId);
       const current = activeCartRef.current;
       const next = {
@@ -107,6 +116,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Restore persisted active cart on launch / login.
   useEffect(() => {
     if (!userId) { updateActiveCartState(null); setHydratedUserId(null); return; }
+    if (GROUP_CART_LIMIT_RELEASE_ENABLED) {
+      if (profileLoading) { updateActiveCartState(null); setHydratedUserId(null); return; }
+      updateActiveCartState(null);
+      setHydratedUserId(null);
+    }
     let cancelled = false;
     const restoreOperationVersion = cartOperationVersionRef.current;
 
@@ -133,50 +147,87 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         } catch { /* ignore */ }
       }
 
-      // Una acción iniciada mientras se leía el disco tiene prioridad sobre la
-      // restauración antigua (p. ej. activar desde un enlace profundo).
-      if (cartOperationVersionRef.current === restoreOperationVersion) {
-        updateActiveCartState(restoredCart);
+      // En builds anteriores a 1.3.2 se conserva el comportamiento anterior,
+      // incluso si reciben este JS por OTA con runtimeVersion de SDK compartido.
+      if (!GROUP_CART_LIMIT_RELEASE_ENABLED) {
+        if (cartOperationVersionRef.current === restoreOperationVersion) {
+          updateActiveCartState(restoredCart);
+        }
+        await primeTabCaches(userId, restoredCart);
+        if (cancelled) return;
+        setHydratedUserId(userId);
+        const cartToVerify = restoredCart;
+        if (cartToVerify) {
+          try {
+            const groups = await fetchMyGroups(userId);
+            writeStartupCache(startupKeys.groups(userId), groups);
+            if (cancelled) return;
+            const current = activeCartRef.current;
+            if (
+              cartOperationVersionRef.current !== restoreOperationVersion
+              || current?.groupId !== cartToVerify.groupId
+              || current.listId !== cartToVerify.listId
+            ) return;
+            const restoredGroup = groups.find((g) => g.id === cartToVerify.groupId);
+            if (!restoredGroup) {
+              await AsyncStorage.removeItem(cartKey);
+              if (!cancelled) updateActiveCartState(null);
+            } else {
+              const synced = {
+                ...cartToVerify,
+                groupName: restoredGroup.name,
+                groupIcon: restoredGroup.iconEmoji ?? null,
+              };
+              if (!cancelled) updateActiveCartState(synced);
+              await AsyncStorage.setItem(cartKey, JSON.stringify(synced));
+            }
+          } catch { /* sin red: mantener lo guardado */ }
+        }
+        return;
       }
 
-      // Antes de montar Home, precarga del disco todo lo que consumen las
-      // pestañas. Es lectura local y evita que cada pantalla nazca vacía.
-      await primeTabCaches(userId, restoredCart);
-      if (cancelled) return;
-      setHydratedUserId(userId);
-
-      // Valida que siga apuntando a un grupo REAL del usuario: cubre el grupo
-      // borrado o del que se salió. Si la red falla, conserva lo guardado.
+      // Valida antes de mostrar datos del carrito guardado. Un cambio de
+      // membresía o el vencimiento de Plus puede haberlo dejado bloqueado.
       if (restoredCart) {
+        const restoredGroupId = restoredCart.groupId;
         try {
           const groups = await fetchMyGroups(userId);
           writeStartupCache(startupKeys.groups(userId), groups);
           if (cancelled) return;
-          const current = activeCartRef.current;
-          if (
-            cartOperationVersionRef.current !== restoreOperationVersion
-            || current?.groupId !== restoredCart.groupId
-            || current.listId !== restoredCart.listId
-          ) return;
-          const restoredGroup = groups.find((g) => g.id === restoredCart.groupId);
-          if (!restoredGroup) {
+          if (cartOperationVersionRef.current !== restoreOperationVersion) {
+            await primeTabCaches(userId, activeCartRef.current);
+            if (!cancelled) setHydratedUserId(userId);
+            return;
+          }
+          const restoredGroup = groups.find((g) => g.id === restoredGroupId);
+          if (!restoredGroup || groupCartIsLocked(groups, restoredGroupId, isPremium)) {
             await AsyncStorage.removeItem(cartKey);
-            if (!cancelled) updateActiveCartState(null);
+            restoredCart = null;
           } else {
-            const synced = {
+            restoredCart = {
               ...restoredCart,
               groupName: restoredGroup.name,
               groupIcon: restoredGroup.iconEmoji ?? null,
             };
-            if (!cancelled) updateActiveCartState(synced);
-            await AsyncStorage.setItem(cartKey, JSON.stringify(synced));
+            await AsyncStorage.setItem(cartKey, JSON.stringify(restoredCart));
           }
-        } catch { /* sin red: mantener lo guardado */ }
+        } catch {
+          // Sin verificación remota, no reabrir una cesta que quizá ya no esté
+          // disponible. El dato persiste para recuperarlo al volver la red.
+          restoredCart = null;
+        }
       }
+
+      if (cancelled) return;
+      // Una operación iniciada durante la lectura tiene prioridad.
+      const shouldRestore = cartOperationVersionRef.current === restoreOperationVersion;
+      if (shouldRestore) updateActiveCartState(restoredCart);
+      await primeTabCaches(userId, shouldRestore ? restoredCart : activeCartRef.current);
+      if (!cancelled) setHydratedUserId(userId);
     })();
 
     return () => { cancelled = true; };
-  }, [cartKey, dgKey, updateActiveCartState, userId]);
+  }, [cartKey, dgKey, isPremium, profileLoading, updateActiveCartState, userId]);
 
   const deactivateCart = () => runCartOperation(async () => {
     updateActiveCartState(null);
@@ -194,6 +245,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addToActiveCart = (items: NewListItem[]) => runCartOperation(async () => {
     const current = activeCartRef.current;
     if (!current || !userId) throw new Error('No hay carrito activo');
+    if (GROUP_CART_LIMIT_RELEASE_ENABLED && limitsApply(isPremium)) {
+      const groups = await fetchMyCartMemberships(userId);
+      if (groupCartIsLocked(groups, current.groupId, isPremium)) throw new GroupCartLimitError();
+    }
     await addItemsToList(current.listId, items, userId);
   });
 
@@ -205,6 +260,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   ) => {
     if (!userId) return Promise.resolve();
     return runCartOperation(async () => {
+      if (GROUP_CART_LIMIT_RELEASE_ENABLED && limitsApply(isPremium)) {
+        const groups = await fetchMyCartMemberships(userId);
+        if (groupCartIsLocked(groups, groupId, isPremium)) throw new GroupCartLimitError();
+      }
       const listId = await getOrCreateGroupList(groupId, groupName, userId);
       const current = activeCartRef.current;
       const next = {

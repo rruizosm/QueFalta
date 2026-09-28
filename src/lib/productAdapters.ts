@@ -7,7 +7,7 @@ import { formatPrice, formatSize, formatReferencePrice } from '../api/mercadona'
 import type {
   BonpreuProduct, CarrefourProduct, BonareaProduct, ConsumProduct, DiaProduct, SorliProduct,
   CondisProduct, AmetllerProduct, AldiProduct, LidlProduct, HiperdinoProduct, AlcampoProduct, PlusfrescProduct, TapestryProduct,
-  GadisProduct, FroizProduct,
+  GadisProduct, FroizProduct, BmProduct, EljamonProduct,
   AhorramasProduct,
 } from '../api/catalog';
 
@@ -91,6 +91,7 @@ export function carrefourToUI(p: CarrefourProduct): UIProduct {
     priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     metaLabel: null, pricePerUnitLabel: p.pricePerUnit, categoryName: p.categoryName,
+    offerTag: p.promoName,
   };
 }
 
@@ -179,6 +180,29 @@ export function lidlToUI(p: LidlProduct): UIProduct {
     pricePerUnit: numericPricePerUnit(p.pricePerUnit),
     metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit,
     categoryName: p.categoryName, offerTag,
+  };
+}
+
+/** BM: precio, surtido y promociones ya vienen resueltos para el CP activo. */
+export function bmToUI(p: BmProduct): UIProduct {
+  return {
+    id: p.id, store: 'bm', name: p.displayName, imageUrl: p.thumbnail,
+    priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit),
+    metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit,
+    categoryName: p.categoryName,
+    offerTag: p.promoName ?? p.promoText,
+  };
+}
+
+/** El Jamón: catálogo común de recogida con promociones ya normalizadas. */
+export function eljamonToUI(p: EljamonProduct): UIProduct {
+  return {
+    id: p.id, store: 'eljamon', name: p.displayName, imageUrl: p.thumbnail,
+    priceLabel: p.priceFormat ?? euro(p.unitPrice), unitPrice: p.unitPrice,
+    pricePerUnit: numericPricePerUnit(p.pricePerUnit),
+    metaLabel: p.packaging ?? null, pricePerUnitLabel: p.pricePerUnit,
+    categoryName: p.categoryName, offerTag: p.promoName ?? p.promoText,
   };
 }
 

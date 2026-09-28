@@ -9,7 +9,7 @@
 2. **[HANDOFF.md](HANDOFF.md)** — **estado EN VUELO** (trabajo local sin commitear, supers
    implementados pero sin migrar, SQL pendientes, multi-zona). Esto vivía en la memoria de
    Claude Code y NO está en git de forma completa. Léelo o repetirás trabajo ya hecho.
-3. Docs temáticos según la tarea: [ONBOARDING.md](ONBOARDING.md), [NOTIFICACIONES.md](NOTIFICACIONES.md),
+3. Docs temáticos según la tarea: [HIPERCOR.md](HIPERCOR.md), [ONBOARDING.md](ONBOARDING.md), [NOTIFICACIONES.md](NOTIFICACIONES.md),
    [PRIVACIDAD-SEGURIDAD.md](PRIVACIDAD-SEGURIDAD.md), [COMPARATIVA.md](COMPARATIVA.md),
    [MONETIZACION.md](MONETIZACION.md), [COMUNIDAD-AUTONOMA.md](COMUNIDAD-AUTONOMA.md),
    [LIQUID-GLASS.md](LIQUID-GLASS.md), [ANDROID.md](ANDROID.md), [MEJORAS-FUTURAS.md](MEJORAS-FUTURAS.md),

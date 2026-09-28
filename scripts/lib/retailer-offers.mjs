@@ -32,17 +32,89 @@ const compactPercentSpacing = (value) => value
   .trim() ?? null;
 
 const isoDateFromSpanish = (value) => {
-  const match = String(value ?? '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  return match ? `${match[3]}-${match[2]}-${match[1]}` : null;
+  const match = String(value ?? '').match(/^(\d{2})\/(\d{2})\/(\d{4}|\d{2})$/);
+  if (!match) return null;
+  const year = match[3].length === 2 ? `20${match[3]}` : match[3];
+  return `${year}-${match[2]}-${match[1]}`;
 };
 
 const validityFromText = (value) => {
-  const match = String(value ?? '').match(/(\d{2}\/\d{2}\/\d{4})\s*-\s*(\d{2}\/\d{2}\/\d{4})/);
+  const dateRangePattern = /(\d{2}\/\d{2}\/(?:\d{4}|\d{2}))\s*[-_]\s*(\d{2}\/\d{2}\/(?:\d{4}|\d{2}))/;
+  const match = String(value ?? '').match(dateRangePattern);
   return {
     promo_start: isoDateFromSpanish(match?.[1]),
     promo_end: isoDateFromSpanish(match?.[2]),
   };
 };
+
+const isOnlineOnlyText = (value) => {
+  const text = cleanOfferText(value)?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() ?? '';
+  return /\b(?:solo|exclusiv[ao]s?)\s+online\b|\bonline\s+exclusiv[ao]s?\b/.test(text);
+};
+
+const promotionKey = (promotion) => [
+  promotion.retailer_promotion_id,
+  promotion.id,
+  promotion.description,
+].find(Boolean) ?? JSON.stringify(promotion);
+
+export function mergeAlcampoPromotionDetails(...groups) {
+  const merged = new Map();
+  for (const promotion of groups.flat().filter(Boolean)) {
+    const key = promotionKey(promotion);
+    const previous = merged.get(key);
+    if (!previous) {
+      merged.set(key, {
+        ...promotion,
+        source_paths: unique(promotion.source_paths ?? []),
+      });
+      continue;
+    }
+    merged.set(key, {
+      ...previous,
+      ...promotion,
+      online_only: Boolean(previous.online_only || promotion.online_only),
+      source_paths: unique([...(previous.source_paths ?? []), ...(promotion.source_paths ?? [])]).slice(0, 8),
+    });
+  }
+  return [...merged.values()];
+}
+
+export function extractAlcampoPromotionDetails(product, {
+  sourceOnlineOnly = false,
+  sourcePath = null,
+} = {}) {
+  // El endpoint JSON usa `promotions`; el SSR de Playwright usa `offers` y, en
+  // algunos productos, además deja una oferta singular en `offer`.
+  const rawPromotions = [
+    ...(Array.isArray(product?.promotions) ? product.promotions : []),
+    ...(Array.isArray(product?.offers) ? product.offers : []),
+    ...(product?.offer ? [product.offer] : []),
+  ];
+
+  return mergeAlcampoPromotionDetails(rawPromotions
+    .filter((promotion) => promotion?.limitReached !== true)
+    .map((promotion) => {
+      const description = cleanOfferText(promotion?.description);
+      const validity = validityFromText(description);
+      return {
+        id: promotion?.id != null ? String(promotion.id) : null,
+        retailer_promotion_id: promotion?.retailerPromotionId != null
+          ? String(promotion.retailerPromotionId)
+          : null,
+        description,
+        type: cleanOfferText(promotion?.type),
+        presentation_mode: cleanOfferText(promotion?.presentationMode),
+        required_product_quantity: promotion?.requiredProductQuantity == null
+          ? null
+          : num(promotion.requiredProductQuantity),
+        promo_start: validity.promo_start,
+        promo_end: validity.promo_end,
+        online_only: Boolean(sourceOnlineOnly || isOnlineOnlyText(description)),
+        source_paths: sourcePath ? [sourcePath] : [],
+      };
+    }));
+}
 
 export function normalizeCondisOffer(product) {
   const current = num(product?.price?.current);
@@ -83,36 +155,45 @@ export function normalizeAmetllerOffer(product) {
   };
 }
 
-export function normalizeAlcampoOffer(product) {
-  // El endpoint JSON usa `promotions`; el SSR de Playwright usa `offers` y, en
-  // algunos productos, además deja una oferta singular en `offer`.
-  const rawPromotions = Array.isArray(product?.promotions)
-    ? product.promotions
-    : [
-      ...(Array.isArray(product?.offers) ? product.offers : []),
-      ...(product?.offer ? [product.offer] : []),
-    ];
-  const promotions = rawPromotions.filter((promotion) => promotion?.limitReached !== true);
-  const descriptions = unique(promotions.map((promotion) => cleanOfferText(promotion?.description)));
-  const regular = num(product?.price?.amount ?? product?.price?.current?.amount);
-  const candidate = num(product?.promoPrice?.amount ?? product?.promoPrice?.current?.amount);
-  const promoPrice = candidate != null && regular != null && candidate > 0 && candidate < regular
-    ? candidate
-    : null;
+export function normalizeAlcampoOffer(product, {
+  additionalPromotions = [],
+  sourceOnlineOnly = false,
+  sourcePath = null,
+} = {}) {
+  const promotions = mergeAlcampoPromotionDetails(
+    extractAlcampoPromotionDetails(product, { sourceOnlineOnly, sourcePath }),
+    additionalPromotions,
+  );
+  const descriptions = unique(promotions.map((promotion) => promotion.description));
+
+  // El JSON antiguo usa price.amount + promoPrice.amount. El SSR actual ya deja
+  // el precio final en price.current y el tachado en price.original.
+  const listedCurrent = num(product?.price?.current?.amount);
+  const explicitPromo = num(product?.promoPrice?.current?.amount ?? product?.promoPrice?.amount);
+  const current = explicitPromo != null && (listedCurrent == null || explicitPromo < listedCurrent)
+    ? explicitPromo
+    : listedCurrent;
+  const regular = num(product?.price?.original?.amount ?? product?.price?.amount ?? listedCurrent);
+  const direct = current != null && regular != null && current > 0 && regular > current;
+  const promoPrice = direct ? current : null;
+  const promoBasePrice = direct ? regular : null;
   if (promotions.length === 0 && promoPrice == null) return null;
 
   const fullText = descriptions.join(' · ') || null;
   const firstLabel = descriptions[0]
-    ?.replace(/\s*\(\d{2}\/\d{2}\/\d{4}\s*-\s*\d{2}\/\d{2}\/\d{4}\)\s*$/i, '')
+    ?.replace(/\s*\(\d{2}\/\d{2}\/(?:\d{4}|\d{2})\s*[-_]\s*\d{2}\/\d{2}\/(?:\d{4}|\d{2})\)\s*$/i, '')
     .trim();
-  const validity = validityFromText(fullText);
+  const firstDatedPromotion = promotions.find((promotion) => promotion.promo_start || promotion.promo_end);
 
   return {
     promo_name: firstLabel || (promoPrice != null ? 'Precio rebajado' : 'Promoción'),
     promo_text: fullText,
     promo_price: promoPrice,
-    promo_base_price: promoPrice != null ? regular : null,
-    ...validity,
+    promo_base_price: promoBasePrice,
+    promo_start: firstDatedPromotion?.promo_start ?? null,
+    promo_end: firstDatedPromotion?.promo_end ?? null,
+    promo_online_only: promotions.some((promotion) => promotion.online_only),
+    promo_details: promotions,
   };
 }
 

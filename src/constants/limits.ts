@@ -19,9 +19,12 @@ export const PAYWALL_ENABLED = true;
 /** Kill-switch del comparador bajo demanda. ACTIVADO para validación en dispositivo. */
 export const PRICE_COMPARISON_ENABLED = true;
 
-/** Cupos incluidos en una cuenta gratuita; el servidor replica estos valores. */
+/** Cupos incluidos en una cuenta gratuita. Alertas y comparador tienen gate servidor;
+ * el de cestas de grupo se aplica de momento en el cliente. */
 export const FREE_PRICE_ALERT_LIMIT = 1;
 export const FREE_COMPARATOR_SEARCH_LIMIT = 3;
+/** Número de cestas de grupo disponibles sin Plus. Unirse y crear sigue libre. */
+export const FREE_GROUP_CART_LIMIT = 3;
 
 /** Catálogos reservados a QuéFalta Plus. La preferencia puede guardarse para
  * cualquier cuenta (incluido onboarding); este gate se aplica al consultarlos. */
@@ -41,7 +44,7 @@ export const allStoresRequiresPlus = (isPremium: boolean): boolean =>
   limitsApply(isPremium);
 
 /** Recetas activadas: muestra la sección comunitaria en el árbol de navegación. */
-export const QUE_COCINO_ENABLED = true;
+export const QUE_COCINO_ENABLED = false;
 
 /** Fuente única para autorizar Plus en el cliente. `verified` es solo el reflejo
  * público de este estado para pintar la insignia, nunca un gate de acceso. */

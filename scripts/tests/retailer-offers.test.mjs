@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  extractAlcampoPromotionDetails,
+  mergeAlcampoPromotionDetails,
   normalizeAlcampoOffer,
   normalizeAmetllerOffer,
   normalizeCondisOffer,
@@ -81,12 +83,61 @@ test('Alcampo conserva texto, precio final y vigencia explícitos', () => {
     promo_base_price: 3.19,
     promo_start: '2026-07-20',
     promo_end: '2026-07-26',
+    promo_online_only: false,
+    promo_details: [{
+      id: null,
+      retailer_promotion_id: null,
+      description: 'Especial BBQ (20/07/2026 - 26/07/2026)',
+      type: 'OFFER',
+      presentation_mode: null,
+      required_product_quantity: null,
+      promo_start: '2026-07-20',
+      promo_end: '2026-07-26',
+      online_only: false,
+      source_paths: [],
+    }],
   });
 
   assert.equal(normalizeAlcampoOffer({
     price: { amount: '3.19' },
     promotions: [],
   }), null);
+});
+
+test('Alcampo reconoce ofertas SSR, fechas cortas y exclusividad online', () => {
+  const offer = normalizeAlcampoOffer({
+    price: { original: { amount: '4.84' }, current: { amount: '3.84' } },
+    offers: [{
+      id: 'offer-1',
+      retailerPromotionId: 'promo-online-1',
+      type: 'OFFER',
+      description: 'Cupón 1€ descuento. Solo Online. (13/08/26 - 26/08/26)',
+      limitReached: false,
+    }],
+  });
+
+  assert.equal(offer?.promo_name, 'Cupón 1€ descuento. Solo Online.');
+  assert.equal(offer?.promo_price, 3.84);
+  assert.equal(offer?.promo_base_price, 4.84);
+  assert.equal(offer?.promo_start, '2026-08-13');
+  assert.equal(offer?.promo_end, '2026-08-26');
+  assert.equal(offer?.promo_online_only, true);
+  assert.equal(offer?.promo_details[0].online_only, true);
+});
+
+test('Alcampo conserva y deduplica varias promociones con su origen', () => {
+  const base = extractAlcampoPromotionDetails({
+    offers: [{ id: 'same', retailerPromotionId: 'promo-1', description: '2ª unidad -50%' }],
+  });
+  const campaign = extractAlcampoPromotionDetails({
+    offer: { id: 'same', retailerPromotionId: 'promo-1', description: '2ª unidad -50%' },
+    offers: [{ id: 'other', retailerPromotionId: 'promo-2', description: 'Exclusivo Online' }],
+  }, { sourceOnlineOnly: true, sourcePath: '/promotions/campanas/ofertas-exclusivas-online/x' });
+  const merged = mergeAlcampoPromotionDetails(base, campaign);
+
+  assert.equal(merged.length, 2);
+  assert.equal(merged.find((item) => item.retailer_promotion_id === 'promo-1')?.online_only, true);
+  assert.equal(merged.find((item) => item.retailer_promotion_id === 'promo-2')?.source_paths.length, 1);
 });
 
 test('Eroski y Caprabo extraen descuento directo y segunda unidad del tile', () => {

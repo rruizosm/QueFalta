@@ -7,11 +7,12 @@ import { cacheCatalogRequest, catalogRequestKey, peekCatalogRequest } from '../l
 // MercadonaProduct completo.
 import { supabase } from '../lib/supabase';
 import { offerTypesOf, type OfferType } from '../lib/offerTypes';
+import { resolveCarrefourOffers, type CarrefourPromotion } from '../lib/carrefourOffers';
 import { getLanguage, type AppLanguage } from '../i18n';
 import type { MercadonaProduct } from '../types';
 import type { CatalogStore } from '../constants/stores';
 import { REGION_ALL, REGION_MERCADONA_NAME, type RegionValue } from '../constants/regions';
-import { consumZoneFromPostalCode, plusfrescCenterFromPostalCode } from '../constants/retailerZones';
+import { bmReferencePostalCode, consumZoneFromPostalCode, plusfrescCenterFromPostalCode } from '../constants/retailerZones';
 import { fetchNewArrivals, resolveWarehouseForPostalCode } from './mercadona';
 import { sortByRelevance } from '../lib/sort';
 // Solo type-only en sentido inverso (productAdapters importa los tipos de este
@@ -19,6 +20,7 @@ import { sortByRelevance } from '../lib/sort';
 import {
   mercadonaToUI, bonpreuToUI, carrefourToUI, bonareaToUI, consumToUI, diaToUI, sorliToUI,
   condisToUI, eroskiToUI, capraboToUI, ametllerToUI, aldiToUI, lidlToUI, gadisToUI, froizToUI, ahorramasToUI, hiperdinoToUI, alcampoToUI, plusfrescToUI,
+  bmToUI, eljamonToUI,
   type UIProduct,
 } from '../lib/productAdapters';
 export { offerTypesForStore } from '../lib/offerTypes';
@@ -35,6 +37,8 @@ const PRICE_CHANGE_TABLE: Record<CatalogStore, string> = {
   eroski: 'eroski_products', caprabo: 'caprabo_products', condis: 'condis_products',
   ametller: 'ametller_products', aldi: 'aldi_products', hiperdino: 'hiperdino_products',
   lidl: 'lidl_product_stores',
+  bm: 'catalog_location_price_changes',
+  eljamon: 'eljamon_products',
   alcampo: 'alcampo_products', plusfresc: 'plusfresc_products', gadis: 'gadis_products', froiz: 'froiz_products', ahorramas: 'ahorramas_products',
 };
 
@@ -47,6 +51,26 @@ export async function fetchProductPriceChange(
   lidlStoreId: string | null = null,
 ): Promise<ProductPriceChange | null> {
   if (store === 'lidl' && !lidlStoreId) return null;
+  if (store === 'bm') {
+    const locationId = await resolveBmLocationId(postalCode);
+    if (!locationId) return null;
+    const { data, error } = await supabase
+      .from('catalog_location_price_changes')
+      .select('prev_unit_price, new_unit_price, price_delta_pct, changed_at')
+      .eq('store', 'bm')
+      .eq('location_id', locationId)
+      .eq('product_id', productId)
+      .gte('changed_at', weekAgoISO())
+      .order('changed_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error || !data) return null;
+    const previousPrice = Number(data.prev_unit_price);
+    const delta = Number(data.price_delta_pct);
+    return Number.isFinite(previousPrice) && previousPrice >= 0 && Number.isFinite(delta) && delta !== 0
+      ? { previousPrice, direction: delta < 0 ? 'down' : 'up' }
+      : null;
+  }
   const locationId = locationForPriceHistory(store, postalCode);
   if (locationId && (store === 'consum' || store === 'plusfresc')) {
     const { data, error } = await supabase
@@ -145,6 +169,8 @@ type CatalogSearchRpc =
   | 'search_ametller_products'
   | 'search_aldi_products'
   | 'search_lidl_products'
+  | 'search_bm_products'
+  | 'search_eljamon_products'
   | 'search_gadis_products'
   | 'search_froiz_products'
   | 'search_ahorramas_products'
@@ -166,6 +192,8 @@ type CatalogFeedSearchRpc =
   | 'search_ametller_feed_products'
   | 'search_aldi_feed_products'
   | 'search_lidl_feed_products'
+  | 'search_bm_feed_products'
+  | 'search_eljamon_feed_products'
   | 'search_gadis_feed_products'
   | 'search_froiz_feed_products'
   | 'search_ahorramas_feed_products'
@@ -187,6 +215,8 @@ const CATALOG_FEED_SEARCH_RPC: Record<CatalogStore, CatalogFeedSearchRpc> = {
   ametller: 'search_ametller_feed_products',
   aldi: 'search_aldi_feed_products',
   lidl: 'search_lidl_feed_products',
+  bm: 'search_bm_feed_products',
+  eljamon: 'search_eljamon_feed_products',
   gadis: 'search_gadis_feed_products',
   froiz: 'search_froiz_feed_products',
   ahorramas: 'search_ahorramas_feed_products',
@@ -216,7 +246,7 @@ async function catalogSearchPage(
   const region = options.region == null || options.region === REGION_ALL
     ? null
     : REGION_MERCADONA_NAME[options.region] ?? null;
-  const request = supabase.rpc(rpc, {
+  const params = {
     p_query: q,
     p_lang: options.language ?? getLanguage(),
     p_region: region,
@@ -224,8 +254,8 @@ async function catalogSearchPage(
     p_order: options.order ?? 'relevance',
     p_limit: options.limit,
     p_offset: options.offset,
-  }).select(columns);
-  const { data, error } = await abortable(request, options.signal);
+  };
+  const { data, error } = await abortable(supabase.rpc(rpc, params).select(columns), options.signal);
   if (error) throw error;
   return (data ?? []) as any[];
 }
@@ -247,9 +277,72 @@ async function catalogFeedSearchPage(
     lidlStoreId?: string | null;
   },
 ): Promise<any[]> {
+  // El Jamón se añadió después del motor RPC común. Su catálogo es pequeño
+  // (menos de 7.000 SKU) y ya dispone de índices sobre nombre/precio, así que
+  // la misma búsqueda se resuelve directamente con PostgREST sin depender de
+  // una función remota adicional.
+  if (store === 'eljamon') {
+    let request: any = supabase
+      .from('eljamon_products')
+      .select(columns)
+      .eq('published', true);
+    request = filterByNameWords(request, query);
+    if (feed === 'new') {
+      // Comerzzia publica una insignia explícita «Nuevo». Evita convertir el
+      // primer llenado completo del espejo en miles de falsas novedades.
+      request = request.eq('is_new', true);
+    } else {
+      request = request
+        .not('promo_name', 'is', null)
+        .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`);
+    }
+    if (options.categories?.length) request = request.in('category_name', options.categories);
+    if (options.priceMin != null) request = request.gt('unit_price', options.priceMin);
+    if (options.priceMax != null) request = request.lte('unit_price', options.priceMax);
+    const order = options.order ?? 'relevance';
+    const orderColumn = order === 'pricePerUnitAsc' || order === 'pricePerUnitDesc'
+      ? 'price_per_unit'
+      : order === 'priceAsc' || order === 'priceDesc'
+        ? 'unit_price'
+        : 'display_name_norm';
+    const descending = order === 'priceDesc' || order === 'pricePerUnitDesc';
+    const fetchFrom = order === 'relevance' ? 0 : options.offset;
+    const fetchTo = order === 'relevance'
+      ? Math.min(999, options.offset + Math.max(options.limit * 6, 200) - 1)
+      : options.offset + options.limit - 1;
+    const { data, error } = await request
+      .order(orderColumn, { ascending: !descending, nullsFirst: false })
+      .order('id', { ascending: true })
+      .range(fetchFrom, fetchTo);
+    if (error) throw error;
+    const rows = (data ?? []) as any[];
+    return order === 'relevance'
+      ? sortByRelevance(rows, (row) => row.display_name, query).slice(options.offset, options.offset + options.limit)
+      : rows;
+  }
+  if (store === 'bm') {
+    const locationId = await resolveBmLocationId(options.postalCode ?? null);
+    if (!locationId) return [];
+    const params = {
+      p_query: query.trim(),
+      p_location_id: locationId,
+      p_feed: feed,
+      p_since: weekAgoISO(),
+      p_today: todayLocalISO(),
+      p_categories: options.categories?.length ? options.categories : null,
+      p_price_min: options.priceMin ?? null,
+      p_price_max: options.priceMax ?? null,
+      p_order: options.order ?? 'relevance',
+      p_limit: options.limit,
+      p_offset: options.offset,
+    };
+    const { data, error } = await supabase.rpc('search_bm_feed_products', params).select(columns);
+    if (error) throw error;
+    return (data ?? []) as any[];
+  }
   if (store === 'lidl') {
     if (!options.lidlStoreId) return [];
-    const { data, error } = await supabase.rpc('search_lidl_store_feed_products', {
+    const params = {
       p_query: query.trim(),
       p_store_id: options.lidlStoreId,
       p_feed: feed,
@@ -261,14 +354,15 @@ async function catalogFeedSearchPage(
       p_order: options.order ?? 'relevance',
       p_limit: options.limit,
       p_offset: options.offset,
-    }).select(columns);
+    };
+    const { data, error } = await supabase.rpc('search_lidl_store_feed_products', params).select(columns);
     if (error) throw error;
     return (data ?? []) as any[];
   }
   const normalizedRegion = options.region == null || options.region === REGION_ALL
     ? null
     : REGION_MERCADONA_NAME[options.region] ?? null;
-  const { data, error } = await supabase.rpc(CATALOG_FEED_SEARCH_RPC[store], {
+  const params = {
     p_query: query.trim(),
     p_feed: feed,
     p_lang: getLanguage(),
@@ -287,7 +381,8 @@ async function catalogFeedSearchPage(
     p_order: options.order ?? 'relevance',
     p_limit: options.limit,
     p_offset: options.offset,
-  }).select(columns);
+  };
+  const { data, error } = await supabase.rpc(CATALOG_FEED_SEARCH_RPC[store], params).select(columns);
   if (error) throw error;
   return (data ?? []) as any[];
 }
@@ -674,12 +769,14 @@ export interface CarrefourProduct {
   pricePerUnit: string | null;  // etiqueta €/unidad canónica ("192,50 €/kg")
   categoryName: string | null;
   ean: string | null;
-  // Oferta (solo en fetchCarrefourProduct; null en listados/búsqueda). Ver
-  // carrefour_offers.sql. promoText incluye las condiciones y la validez.
+  // Oferta resuelta para la CCAA activa; las tarjetas y la ficha comparten
+  // esta selección. Las columnas legacy siguen dando compatibilidad.
   promoName: string | null;         // "3x2", "2ª unidad -70%"…
   promoText: string | null;
+  promoStart: string | null;
   promoEnd: string | null;          // ISO "2026-07-13" (para ocultar caducadas)
   strikethroughPrice: number | null; // precio ANTERIOR (unitPrice ya es el rebajado)
+  promotions: CarrefourPromotion[];
   // Ficha (solo en fetchCarrefourProduct; null en listados/búsqueda). La rellena
   // scripts/sync-carrefour.mjs del window.__INITIAL_STATE__. Ver carrefour_product_detail.sql.
   ingredients: string | null;
@@ -702,6 +799,7 @@ const mapCarrefour = (r: any, region: RegionValue | null = null): CarrefourProdu
   const regional = community && r.regional_prices && typeof r.regional_prices === 'object'
     ? r.regional_prices[community]
     : null;
+  const offers = resolveCarrefourOffers(r, community ?? null, todayLocalISO());
   return {
   id: r.id,
   displayName: r.display_name,
@@ -711,11 +809,13 @@ const mapCarrefour = (r: any, region: RegionValue | null = null): CarrefourProdu
   pricePerUnit: regional?.ppu != null ? ppuLabel(regional.ppu, regional.ppuu) : ppuLabel(r.price_per_unit, r.price_per_unit_unit),
   categoryName: r.category_name ?? null,
   ean: r.ean ?? null,
-  // Solo presentes cuando se piden (detalle); en listados quedan undefined → null.
-  promoName: r.promo_name ?? null,
-  promoText: r.promo_text ?? null,
-  promoEnd: r.promo_end ?? null,
-  strikethroughPrice: r.strikethrough_price != null ? Number(r.strikethrough_price) : null,
+  // La proyección ligera incluye solo el subárbol de ofertas, no raw completo.
+  promoName: offers.primary?.name ?? null,
+  promoText: offers.primary?.text ?? null,
+  promoStart: offers.primary?.start ?? null,
+  promoEnd: offers.primary?.end ?? null,
+  strikethroughPrice: offers.strikethroughPrice,
+  promotions: offers.promotions,
   ingredients: r.ingredients ?? null,
   allergens: r.allergens ?? null,
   nutrition: r.nutrition ?? null,
@@ -730,10 +830,10 @@ const mapCarrefour = (r: any, region: RegionValue | null = null): CarrefourProdu
 // El €/unidad de medida del raw venía sin unidad ("192,50 €"); se usa el €/unidad
 // canónico (columnas l/kg/ud) para mostrar "192,50 €/kg" como en el resto de supers.
 const CARREFOUR_COLS =
-  'id, display_name, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, regional_prices';
-// Columnas de ficha + oferta: solo para el detalle (no se piden en listados).
+  'id, display_name, thumbnail, unit_price, price_format, category_name, price_per_unit, price_per_unit_unit, regional_prices, promo_name, promo_text, promo_start, promo_end, strikethrough_price, quefalta_offers:raw->quefalta_offers';
+// Datos de ficha: solo se piden al abrir el detalle.
 const CARREFOUR_DETAIL_COLS =
-  `${CARREFOUR_COLS}, promo_name, promo_text, promo_end, strikethrough_price`
+  `${CARREFOUR_COLS}`
   + `, ean, ingredients, allergens, nutrition, conservation, preparation, denomination, origin, operator`;
 
 /** Búsqueda por nombre en el catálogo de Carrefour (server-side). */
@@ -1751,17 +1851,16 @@ const LIDL_COLS = 'store_id, id, display_name, brand, packaging, thumbnail, unit
 export async function searchLidlProducts(query: string, limit = 50, signal?: AbortSignal, offset = 0, order: CatalogSearchOrder = 'relevance', storeId: string | null = null): Promise<LidlProduct[]> {
   const normalized = query.trim();
   if (!storeId || normalized.length < 2) return [];
-  let request: any = supabase.rpc('search_lidl_store_products', {
+  const params = {
     p_query: normalized,
     p_store_id: storeId,
     p_order: order,
     p_limit: limit,
     p_offset: offset,
-  }).select(LIDL_COLS);
-  request = abortable(request, signal);
-  const { data, error } = await request;
+  };
+  const { data, error } = await abortable(supabase.rpc('search_lidl_store_products', params).select(LIDL_COLS), signal);
   if (error) throw error;
-  return (data ?? []).map(mapLidl);
+  return ((data ?? []) as any[]).map(mapLidl);
 }
 
 export async function browseLidlProducts(cursor: BrowseCursor | null, limit = 50, signal?: AbortSignal, descending: BrowseOrder = false, storeId: string | null = null): Promise<BrowsePage<LidlProduct>> {
@@ -2373,6 +2472,339 @@ export async function fetchPlusfrescProductsByCategory(categoryId: string, posta
   return (data ?? []).map((r: any) => mapPlusfresc(r, postalCode));
 }
 
+// ─── BM (catálogo multizona por código postal) ──────────────────────────────
+export interface BmProduct {
+  id: string;
+  displayName: string;
+  brand: string | null;
+  packaging: string | null;
+  thumbnail: string | null;
+  unitPrice: number | null;
+  priceFormat: string | null;
+  pricePerUnit: string | null;
+  categoryName: string | null;
+  promoName: string | null;
+  promoText: string | null;
+  promoEnd: string | null;
+  promoBasePrice: number | null;
+}
+
+const BM_COLS = 'location_id, id, display_name, brand, packaging, thumbnail, unit_price, price_format, category_name, cart_category_name, price_per_unit, price_per_unit_unit, promo_type, promo_name, promo_text, promo_price, promo_base_price, promo_start, promo_end, available, is_new, first_seen_at';
+
+const mapBm = (row: any): BmProduct => ({
+  id: row.id,
+  displayName: row.display_name,
+  brand: row.brand ?? null,
+  packaging: row.packaging ?? null,
+  thumbnail: row.thumbnail ?? null,
+  unitPrice: row.unit_price != null ? Number(row.unit_price) : null,
+  priceFormat: row.price_format ?? null,
+  pricePerUnit: ppuLabel(row.price_per_unit, row.price_per_unit_unit),
+  // BM guarda el nombre de la subcategoría en category_name; la ruta para la
+  // cesta añade el N1 (p. ej. Congelados › Verduras y hortalizas).
+  categoryName: row.cart_category_name ?? row.category_name ?? null,
+  promoName: row.promo_name ?? null,
+  promoText: row.promo_text ?? null,
+  promoEnd: row.promo_end ?? null,
+  promoBasePrice: row.promo_base_price != null ? Number(row.promo_base_price) : null,
+});
+
+const bmLocationPromises = new Map<string, Promise<string | null>>();
+
+/** Resuelve el CP del usuario mediante el catálogo provincial de referencia. */
+export function resolveBmLocationId(postalCode: string | null): Promise<string | null> {
+  const referencePostalCode = bmReferencePostalCode(postalCode);
+  if (!referencePostalCode) return Promise.resolve(null);
+  const cached = bmLocationPromises.get(referencePostalCode);
+  if (cached) return cached;
+  const request = (async () => {
+    const { data, error } = await supabase
+      .from('bm_postal_locations')
+      .select('location_id')
+      .eq('postal_code', referencePostalCode)
+      .eq('enabled', true)
+      .eq('is_preferred', true)
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return data?.location_id ?? null;
+  })();
+  bmLocationPromises.set(referencePostalCode, request);
+  request.then((locationId) => {
+    // Un sync posterior puede habilitar el CP durante la misma sesión. Los
+    // resultados positivos sí son estables; un miss debe poder reintentarse.
+    if (!locationId) bmLocationPromises.delete(referencePostalCode);
+  }).catch(() => bmLocationPromises.delete(referencePostalCode));
+  return request;
+}
+
+export async function searchBmProducts(
+  query: string,
+  postalCode: string | null,
+  limit = 50,
+  signal?: AbortSignal,
+  offset = 0,
+  order: CatalogSearchOrder = 'relevance',
+): Promise<BmProduct[]> {
+  const locationId = await resolveBmLocationId(postalCode);
+  const normalized = query.trim();
+  if (!locationId || normalized.length < 2) return [];
+  const params = {
+    p_query: normalized,
+    p_location_id: locationId,
+    p_order: order,
+    p_limit: limit,
+    p_offset: offset,
+  };
+  const { data, error } = await abortable(supabase.rpc('search_bm_products', params).select(BM_COLS), signal);
+  if (error) throw error;
+  return ((data ?? []) as any[]).map(mapBm);
+}
+
+export async function browseBmProducts(
+  cursor: BrowseCursor | null,
+  postalCode: string | null,
+  limit = 50,
+  signal?: AbortSignal,
+  order: BrowseOrder = false,
+): Promise<BrowsePage<BmProduct>> {
+  const locationId = await resolveBmLocationId(postalCode);
+  if (!locationId) return { items: [], nextCursor: null };
+  const { rows, nextCursor } = await keysetPage(
+    'bm_product_locations',
+    BM_COLS,
+    'display_name_norm',
+    cursor,
+    limit,
+    (query) => query.eq('location_id', locationId).eq('published', true).eq('available', true),
+    order,
+    signal,
+  );
+  return { items: rows.map(mapBm), nextCursor };
+}
+
+export async function fetchBmProduct(id: string, postalCode: string | null): Promise<BmProduct | null> {
+  const locationId = await resolveBmLocationId(postalCode);
+  if (!locationId) return null;
+  const { data, error } = await supabase
+    .from('bm_product_locations')
+    .select(BM_COLS)
+    .eq('location_id', locationId)
+    .eq('id', id)
+    .eq('published', true)
+    .eq('available', true)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapBm(data) : null;
+}
+
+export interface BmCategory {
+  id: string;
+  name: string;
+  children: { id: string; name: string }[];
+}
+
+export async function fetchBmCategoryTree(signal?: AbortSignal): Promise<BmCategory[]> {
+  const { data, error } = await abortable(supabase
+    .from('bm_categories')
+    .select('id, name, parent_id, product_count')
+    .eq('published', true)
+    .order('name'), signal);
+  if (error) throw error;
+  const rows = data ?? [];
+  return rows
+    .filter((row: any) => row.parent_id == null)
+    .map((root: any) => ({
+      id: root.id,
+      name: root.name,
+      children: rows
+        .filter((child: any) => child.parent_id === root.id && (child.product_count ?? 0) > 0)
+        .map((child: any) => ({ id: child.id, name: child.name })),
+    }))
+    .filter((root) => root.children.length > 0);
+}
+
+export async function fetchBmProductsByCategory(
+  categoryId: string,
+  postalCode: string | null,
+  limit = 600,
+): Promise<BmProduct[]> {
+  const locationId = await resolveBmLocationId(postalCode);
+  if (!locationId) return [];
+  const { data, error } = await supabase
+    .from('bm_product_locations')
+    .select(BM_COLS)
+    .eq('location_id', locationId)
+    .eq('published', true)
+    .eq('available', true)
+    .contains('category_ids', [categoryId])
+    .order('display_name')
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(mapBm);
+}
+
+// ─── Supermercados El Jamón (catálogo común para Andalucía) ────────────────
+export interface EljamonProduct {
+  id: string;
+  displayName: string;
+  brand: string | null;
+  packaging: string | null;
+  thumbnail: string | null;
+  unitPrice: number | null;
+  priceFormat: string | null;
+  pricePerUnit: string | null;
+  categoryName: string | null;
+  promoName: string | null;
+  promoText: string | null;
+  promoStart: string | null;
+  promoEnd: string | null;
+  promoBasePrice: number | null;
+  description: string | null;
+  ingredients: string | null;
+  allergens: string | null;
+  nutrition: string | null;
+  conservation: string | null;
+}
+
+const ELJAMON_COLS =
+  'id, display_name, brand, packaging, thumbnail, unit_price, price_format, price_per_unit, price_per_unit_unit, category_name, promo_name, promo_text, promo_start, promo_end, promo_base_price, is_new, first_seen_at';
+const ELJAMON_DETAIL_COLS = `${ELJAMON_COLS}, description, ingredients, allergens, nutrition, conservation`;
+const ELJAMON_OFFER_COLS = ELJAMON_COLS;
+
+const mapEljamon = (row: any): EljamonProduct => ({
+  id: String(row.id),
+  displayName: row.display_name,
+  brand: row.brand ?? null,
+  packaging: row.packaging ?? null,
+  thumbnail: row.thumbnail ?? null,
+  unitPrice: row.unit_price != null ? Number(row.unit_price) : null,
+  priceFormat: row.price_format ?? null,
+  pricePerUnit: ppuLabel(row.price_per_unit, row.price_per_unit_unit),
+  categoryName: row.category_name ?? null,
+  promoName: row.promo_name ?? null,
+  promoText: row.promo_text ?? null,
+  promoStart: row.promo_start ?? null,
+  promoEnd: row.promo_end ?? null,
+  promoBasePrice: row.promo_base_price != null ? Number(row.promo_base_price) : null,
+  description: row.description ?? null,
+  ingredients: row.ingredients ?? null,
+  allergens: row.allergens ?? null,
+  nutrition: row.nutrition ?? null,
+  conservation: row.conservation ?? null,
+});
+
+export async function searchEljamonProducts(
+  query: string,
+  limit = 50,
+  signal?: AbortSignal,
+  offset = 0,
+  order: CatalogSearchOrder = 'relevance',
+): Promise<EljamonProduct[]> {
+  if (query.trim().length < 2) return [];
+  let request: any = filterByNameWords(supabase
+    .from('eljamon_products')
+    .select(ELJAMON_COLS)
+    .eq('published', true), query);
+  const orderColumn = order === 'pricePerUnitAsc' || order === 'pricePerUnitDesc'
+    ? 'price_per_unit'
+    : order === 'priceAsc' || order === 'priceDesc'
+      ? 'unit_price'
+      : 'display_name_norm';
+  const descending = order === 'priceDesc' || order === 'pricePerUnitDesc';
+  const fetchFrom = order === 'relevance' ? 0 : offset;
+  const fetchTo = order === 'relevance'
+    ? Math.min(999, offset + Math.max(limit * 6, 200) - 1)
+    : offset + limit - 1;
+  request = request
+    .order(orderColumn, { ascending: !descending, nullsFirst: false })
+    .order('id', { ascending: true })
+    .range(fetchFrom, fetchTo);
+  const { data, error } = await abortable(request, signal);
+  if (error) throw error;
+  const products: EljamonProduct[] = ((data ?? []) as any[]).map(mapEljamon);
+  return order === 'relevance'
+    ? sortByRelevance(products, (product) => product.displayName, query).slice(offset, offset + limit)
+    : products;
+}
+
+export async function browseEljamonProducts(
+  cursor: BrowseCursor | null,
+  limit = 50,
+  signal?: AbortSignal,
+  order: BrowseOrder = false,
+): Promise<BrowsePage<EljamonProduct>> {
+  const { rows, nextCursor } = await keysetPage(
+    'eljamon_products', ELJAMON_COLS, 'display_name_norm', cursor, limit, undefined, order, signal,
+  );
+  return { items: rows.map(mapEljamon), nextCursor };
+}
+
+export async function fetchEljamonProduct(id: string): Promise<EljamonProduct | null> {
+  const { data, error } = await supabase
+    .from('eljamon_products')
+    .select(ELJAMON_DETAIL_COLS)
+    .eq('id', id)
+    .eq('published', true)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapEljamon(data) : null;
+}
+
+export interface EljamonCategory {
+  id: string;
+  name: string;
+  children: EljamonCategory[];
+}
+
+/** Árbol completo de Comerzzia. Mantiene los tres niveles de subcategoría. */
+export async function fetchEljamonCategoryTree(signal?: AbortSignal): Promise<EljamonCategory[]> {
+  const { data, error } = await abortable(supabase
+    .from('eljamon_categories')
+    .select('id, name, parent_id, product_count')
+    .eq('published', true)
+    .gt('product_count', 0)
+    .order('name'), signal);
+  if (error) throw error;
+  const nodes = new Map<string, EljamonCategory>();
+  for (const row of data ?? []) {
+    nodes.set(String(row.id), { id: String(row.id), name: row.name, children: [] });
+  }
+  const roots: EljamonCategory[] = [];
+  for (const row of data ?? []) {
+    const node = nodes.get(String(row.id))!;
+    const parent = row.parent_id == null ? null : nodes.get(String(row.parent_id));
+    if (parent) parent.children.push(node);
+    else roots.push(node);
+  }
+  const sortTree = (items: EljamonCategory[]) => {
+    items.sort((left, right) => left.name.localeCompare(right.name, 'es'));
+    items.forEach((item) => sortTree(item.children));
+  };
+  sortTree(roots);
+  return roots;
+}
+
+/** Devuelve todos los productos del nodo y de sus descendientes. */
+export async function fetchEljamonProductsByCategory(categoryId: string): Promise<EljamonProduct[]> {
+  const rows: any[] = [];
+  const pageSize = 1000;
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await supabase
+      .from('eljamon_products')
+      .select(ELJAMON_COLS)
+      .eq('published', true)
+      .contains('category_ids', [categoryId])
+      .order('display_name_norm')
+      .order('id')
+      .range(from, from + pageSize - 1);
+    if (error) throw error;
+    rows.push(...(data ?? []));
+    if ((data?.length ?? 0) < pageSize) break;
+  }
+  return rows.map(mapEljamon);
+}
+
 // ─── Comparativa: producto similar más barato entre supers (RPC v7) ───
 export interface SimilarProduct {
   store: CatalogStore;
@@ -2503,6 +2935,8 @@ const MIRROR_QUERY: Record<CatalogStore, { table: string; cols: string; toUI: (r
   ametller:  { table: 'ametller_products',  cols: AMETLLER_COLS,  toUI: (r) => ametllerToUI(mapAmetller(r)) },
   aldi:      { table: 'aldi_products',       cols: ALDI_COLS,      toUI: (r) => aldiToUI(mapAldi(r)) },
   lidl:      { table: 'lidl_product_stores', cols: LIDL_COLS,      toUI: (r) => lidlToUI(mapLidl(r)) },
+  bm:        { table: 'bm_product_locations', cols: BM_COLS,        toUI: (r) => bmToUI(mapBm(r)) },
+  eljamon:   { table: 'eljamon_products',      cols: ELJAMON_COLS,  toUI: (r) => eljamonToUI(mapEljamon(r)) },
   hiperdino: { table: 'hiperdino_products',  cols: HIPERDINO_COLS, toUI: (r) => hiperdinoToUI(mapHiperdino(r)) },
   alcampo:   { table: 'alcampo_products',    cols: ALCAMPO_COLS,   toUI: (r) => alcampoToUI(mapAlcampo(r)) },
   plusfresc: { table: 'plusfresc_products',  cols: PLUSFRESC_COLS, toUI: (r) => plusfrescToUI(mapPlusfresc(r)) },
@@ -2514,22 +2948,31 @@ const MIRROR_QUERY: Record<CatalogStore, { table: string; cols: string; toUI: (r
 /** Aplica la disponibilidad que cada espejo conoce. Los catálogos sin columnas
  * regionales se mantienen tal cual; su visibilidad global se resuelve en UI por
  * STORE_REGIONS. */
-function filterMirrorLocation(query: any, store: CatalogStore, region: RegionValue | null, postalCode: string | null, lidlStoreId: string | null = null): any {
+function filterMirrorLocation(
+  query: any,
+  store: CatalogStore,
+  region: RegionValue | null,
+  postalCode: string | null,
+  lidlStoreId: string | null = null,
+  bmLocationId: string | null = null,
+): any {
   if (store === 'mercadona' || store === 'carrefour' || store === 'consum' || store === 'dia') {
     return filterRegionalAvailability(query, region);
   }
   if (store === 'plusfresc') return filterCenterAvailability(query, plusfrescCenterFromPostalCode(postalCode));
   if (store === 'lidl') return lidlStoreId ? query.eq('store_id', lidlStoreId) : query.eq('store_id', '__missing__');
+  if (store === 'bm') return bmLocationId ? query.eq('location_id', bmLocationId).eq('available', true) : query.eq('location_id', '__missing__');
   return query;
 }
 
 /** Mismo adaptador que el catálogo principal, pero conservando la ubicación del
  * perfil al pintar feeds transversales (Novedades/Cambios de precios). */
-function mirrorToUIAtLocation(store: CatalogStore, row: any, region: RegionValue | null, postalCode: string | null): UIProduct {
+export function mirrorToUIAtLocation(store: CatalogStore, row: any, region: RegionValue | null, postalCode: string | null): UIProduct {
   if (store === 'carrefour') return carrefourToUI(mapCarrefour(row, region));
   if (store === 'consum') return consumToUI(mapConsum(row, postalCode));
   if (store === 'dia') return diaToUI(mapDia(row, region));
   if (store === 'plusfresc') return plusfrescToUI(mapPlusfresc(row, postalCode));
+  if (store === 'bm') return bmToUI(mapBm(row));
   return MIRROR_QUERY[store].toUI(row);
 }
 
@@ -2679,6 +3122,8 @@ async function fetchWeeklyNewProductsUncached(
     };
   }
   const m = MIRROR_QUERY[store];
+  const bmLocationId = store === 'bm' ? await resolveBmLocationId(postalCode) : null;
+  if (store === 'bm' && !bmLocationId) return { items: [], nextOffset: null };
   if (search.length >= 2) {
     const rows = await catalogFeedSearchPage(store, 'new', m.cols, search, {
       limit,
@@ -2699,11 +3144,13 @@ async function fetchWeeklyNewProductsUncached(
   let newProductsQuery = filterMirrorLocation(supabase
     .from(m.table)
     .select(m.cols, { count: 'exact' })
-    .eq('published', true), store, region, postalCode, lidlStoreId);
+    .eq('published', true), store, region, postalCode, lidlStoreId, bmLocationId);
   // Gadisline y Froiz publican una propiedad explícita «Nuevo». La usamos
   // además de la fecha de primera aparición, así el primer sync no oculta
   // novedades reales.
-  newProductsQuery = store === 'gadis' || store === 'froiz'
+  newProductsQuery = store === 'eljamon'
+    ? newProductsQuery.eq('is_new', true)
+    : store === 'gadis' || store === 'froiz'
     ? newProductsQuery.or(`first_seen_at.gte.${weekAgoISO()},is_new.eq.true`)
     : newProductsQuery.gte('first_seen_at', weekAgoISO());
   let { data, error, count } = await newProductsQuery
@@ -2720,11 +3167,11 @@ async function fetchWeeklyNewProductsUncached(
       filterMirrorLocation(
         supabase.from(m.table).select('id', { count: 'exact', head: true })
           .eq('published', true).gte('first_seen_at', weekAgoISO()),
-        store, region, postalCode,
+        store, region, postalCode, lidlStoreId, bmLocationId,
       ),
       filterMirrorLocation(
         supabase.from(m.table).select('id', { count: 'exact', head: true }).eq('published', true),
-        store, region, postalCode,
+        store, region, postalCode, lidlStoreId, bmLocationId,
       ),
     ]);
     if (recentCountError) throw recentCountError;
@@ -2732,7 +3179,7 @@ async function fetchWeeklyNewProductsUncached(
     if (publishedCount != null && ((recentCount ?? 0) / publishedCount) >= NEW_INITIAL_FILL_CATALOG_RATIO) {
       ({ data, error, count } = await filterMirrorLocation(
         supabase.from(m.table).select(m.cols, { count: 'exact' }).eq('published', true).eq('is_new', true),
-        store, region, postalCode,
+        store, region, postalCode, lidlStoreId, bmLocationId,
       )
         .order('first_seen_at', { ascending: false })
         .order('display_name', { ascending: true })
@@ -2748,6 +3195,7 @@ async function fetchWeeklyNewProductsUncached(
       region,
       postalCode,
       lidlStoreId,
+      bmLocationId,
     );
     if (publishedCountError) throw publishedCountError;
     if (publishedCount != null && ((count ?? 0) / publishedCount) >= NEW_INITIAL_FILL_CATALOG_RATIO) {
@@ -2786,7 +3234,7 @@ function locationForPriceHistory(
 /** Price changes in the normalized location history. Product data is read from
  * the catalog mirror afterwards so modals, cart and favorites keep working. */
 async function fetchLocationPriceChanges(
-  store: 'consum' | 'plusfresc',
+  store: 'consum' | 'plusfresc' | 'bm',
   locationId: string,
   direction: 'down' | 'up',
   region: RegionValue | null,
@@ -2835,7 +3283,7 @@ async function fetchLocationPriceChanges(
         .from(m.table)
         .select(m.cols)
         .in('id', ids)
-        .eq('published', true), store, region, postalCode);
+        .eq('published', true), store, region, postalCode, null, store === 'bm' ? locationId : null);
       if (error) throw error;
       productRows.push(...(data ?? []));
     }
@@ -2899,7 +3347,7 @@ async function fetchLocationPriceChanges(
     .from(m.table)
     .select(m.cols)
     .in('id', productIds)
-    .eq('published', true), store, region, postalCode);
+    .eq('published', true), store, region, postalCode, null, store === 'bm' ? locationId : null);
   if (productsError) throw productsError;
   const productById = new Map((products ?? []).map((product: any) => [product.id, product]));
 
@@ -2958,12 +3406,15 @@ async function fetchPriceChangesUncached(
   pricePerUnitSort: 'asc' | 'desc' | null = null,
   lidlStoreId: string | null = null,
 ): Promise<PriceChangesPage> {
-  const locationId = locationForPriceHistory(store, postalCode);
-  if (locationId && (store === 'consum' || store === 'plusfresc')) {
+  const locationId = store === 'bm'
+    ? await resolveBmLocationId(postalCode)
+    : locationForPriceHistory(store, postalCode);
+  if (locationId && (store === 'consum' || store === 'plusfresc' || store === 'bm')) {
     return fetchLocationPriceChanges(
       store, locationId, direction, region, postalCode, limit, offset, pricePerUnitSort,
     );
   }
+  if (store === 'bm') return { items: [], nextOffset: null };
   const m = MIRROR_QUERY[store];
   const down = direction === 'down';
   let q = filterMirrorLocation(supabase
@@ -3003,10 +3454,10 @@ async function fetchPriceChangesUncached(
  *  esta lista, así que añadir un súper aquí + su fetch lo estrena en la UI. */
 export const OFFER_STORES: CatalogStore[] = [
   'carrefour', 'esclat', 'consum', 'dia', 'sorli', 'eroski', 'caprabo',
-  'condis', 'ametller', 'aldi', 'lidl', 'hiperdino', 'alcampo', 'plusfresc', 'gadis', 'ahorramas',
+  'condis', 'ametller', 'aldi', 'lidl', 'bm', 'eljamon', 'hiperdino', 'alcampo', 'plusfresc', 'gadis', 'ahorramas',
 ];
 
-type NormalizedOfferStore = 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'alcampo' | 'gadis' | 'ahorramas';
+type NormalizedOfferStore = 'eroski' | 'caprabo' | 'condis' | 'ametller' | 'alcampo' | 'gadis' | 'ahorramas' | 'eljamon';
 
 const NORMALIZED_OFFER_CONFIG: Record<NormalizedOfferStore, {
   table: string;
@@ -3052,17 +3503,24 @@ const NORMALIZED_OFFER_CONFIG: Record<NormalizedOfferStore, {
     table: 'ahorramas_products', columns: AHORRAMAS_OFFER_COLS, bilingual: false,
     toUI: (row) => ahorramasToUI(mapAhorramas(row)),
   },
+  eljamon: {
+    table: 'eljamon_products', columns: ELJAMON_OFFER_COLS, bilingual: false,
+    toUI: (row) => eljamonToUI(mapEljamon(row)),
+  },
 };
 
 const isNormalizedOfferStore = (store: CatalogStore): store is NormalizedOfferStore =>
   store === 'eroski' || store === 'caprabo' || store === 'condis'
-  || store === 'ametller' || store === 'alcampo' || store === 'gadis' || store === 'ahorramas';
+  || store === 'ametller' || store === 'alcampo' || store === 'gadis' || store === 'ahorramas'
+  || store === 'eljamon';
 
 export interface CarrefourOffer {
   product: UIProduct;        // con el precio ACTUAL (rebajado si es descuento directo)
   promoName: string | null;  // "3x2", "2ª unidad -70%"… (null en descuento directo puro)
   promoEnd: string | null;   // fin de validez ISO ("2026-07-13"), null si el badge no lo traía
   prevPrice: number | null;  // precio anterior tachado (null en promos de lote)
+  promotionKinds?: CarrefourPromotion['kind'][];
+  promotionCount?: number;
 }
 /** Alias genérico: una oferta cualquiera de la pantalla "Ofertas" (varios súpers). */
 export type StoreOffer = CarrefourOffer;
@@ -3120,14 +3578,16 @@ const todayLocalISO = () => {
 const plusfrescOfferCenter = (postalCode: string | null) =>
   plusfrescCenterFromPostalCode(postalCode) ?? '12';
 
-// Filtro PostgREST de "oferta viva" de Carrefour (compartido por el listado y
-// el recuento de categorías): precio tachado o promo de lote no caducada.
-const carrefourOfferLiveness = () =>
-  `strikethrough_price.not.is.null,and(promo_name.not.is.null,or(promo_end.is.null,promo_end.gte.${todayLocalISO()}))`;
+// Prefiltro amplio. La vigencia y el override regional se resuelven en cliente
+// antes de contar o paginar: PostgREST no puede expresar la prioridad regional
+// ni buscar en cada elemento del array JSON sin una función nueva en producción.
+const carrefourOfferCandidates =
+  'promo_name.not.is.null,strikethrough_price.not.is.null,raw->quefalta_offers.not.is.null,regional_prices.not.is.null';
 
 /** Categorías con ofertas vivas del súper (para la hoja de filtros).
  * PostgREST tiene los agregados deshabilitados en producción (PGRST123), así
  * que se leen solo id+categoría en páginas de 1.000 y se deduplican en cliente.
+ * Carrefour reutiliza el resolvedor regional y recorre todas sus ofertas.
  * El resultado se cachea por súper/ubicación en OffersScreen. */
 export async function fetchOfferCategories(
   store: CatalogStore,
@@ -3136,6 +3596,19 @@ export async function fetchOfferCategories(
   lidlStoreId: string | null = null,
 ): Promise<string[]> {
   try {
+    if (store === 'carrefour') {
+      const categories = new Set<string>();
+      let cursor: BrowseCursor | null = null;
+      do {
+        const page = await fetchCarrefourOffers(cursor, region, 200);
+        for (const offer of page.items) {
+          if (offer.product.categoryName) categories.add(offer.product.categoryName);
+        }
+        cursor = page.nextCursor;
+      } while (cursor);
+      return [...categories].sort((a, b) => a.localeCompare(b, 'es'));
+    }
+    const bmLocationId = store === 'bm' ? await resolveBmLocationId(postalCode) : null;
     const buildQuery = () => {
       let q: any;
       if (store === 'esclat') {
@@ -3202,6 +3675,15 @@ export async function fetchOfferCategories(
           .not('promo_name', 'is', null)
           .or(`promo_start.is.null,promo_start.lte.${todayLocalISO()}`)
           .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`);
+      } else if (store === 'bm') {
+        if (!bmLocationId) return null;
+        q = supabase.from('bm_product_locations').select('id, category_name')
+          .eq('location_id', bmLocationId)
+          .eq('published', true)
+          .eq('available', true)
+          .not('category_name', 'is', null)
+          .not('promo_type', 'is', null)
+          .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`);
       } else if (store === 'gadis') {
         q = supabase.from('gadis_products').select('id, category_name')
           .eq('published', true).not('category_name', 'is', null)
@@ -3219,13 +3701,7 @@ export async function fetchOfferCategories(
           .not('category_name', 'is', null)
           .not('promo_name', 'is', null)
           .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`);
-      } else {
-        q = filterRegionalAvailability(
-          supabase.from('carrefour_products').select('id, category_name')
-            .eq('published', true).not('category_name', 'is', null).or(carrefourOfferLiveness()),
-          region,
-        );
-      }
+      } else return null;
       return q;
     };
 
@@ -3248,34 +3724,81 @@ export async function fetchOfferCategories(
   }
 }
 
-/** Ofertas vivas de Carrefour, paginadas por keyset (orden alfabético, todas
- *  alcanzables — nada de un limit sin order). Una fila tiene oferta viva si
- *  conserva precio tachado o si su promo de lote no ha caducado (promo_end
- *  null = el badge no traía fecha → se muestra hasta que el sync la retire).
- *  Los datos son del último sync semanal; el filtro de caducidad evita enseñar
- *  promos que expiraron a mitad de semana. */
+/** Ofertas de Carrefour: recorre páginas crudas hasta completar una página de
+ * promociones válidas. El cursor siempre apunta a la última fila examinada. */
+const carrefourSortedOffers = new Map<string, { at: number; items: CarrefourOffer[] }>();
+
 export async function fetchCarrefourOffers(
   cursor: BrowseCursor | null,
   region: RegionValue | null,
   limit = 50,
   filters?: OfferFilters,
 ): Promise<{ items: CarrefourOffer[]; nextCursor: BrowseCursor | null }> {
-  const { rows, nextCursor } = await keysetPage(
-    'carrefour_products',
-    `${CARREFOUR_COLS}, promo_name, promo_end, strikethrough_price`,
-    offerOrderColumn(filters, 'display_name_norm'),
-    cursor,
-    limit,
-    (q) => applyOfferFilters(filterRegionalAvailability(q.or(carrefourOfferLiveness()), region), filters, 'display_name_norm'),
-    offerBrowseOrder(filters),
-  );
-  const items = rows.map((r: any) => ({
-    product: carrefourToUI(mapCarrefour(r, region)),
-    promoName: r.promo_name ?? null,
-    promoEnd: r.promo_end ?? null,
-    prevPrice: r.strikethrough_price != null ? Number(r.strikethrough_price) : null,
-  }));
-  return { items, nextCursor };
+  const items: CarrefourOffer[] = [];
+  let scanCursor: BrowseCursor | null = cursor;
+  // Los precios regionales pueden diferir de Madrid. Para ordenar o filtrar
+  // por ellos hay que agotar candidatos y usar el precio ya resuelto.
+  const needsGlobalOrder = Boolean(filters?.sort || filters?.pricePerUnitSort);
+  const sortedKey = needsGlobalOrder ? JSON.stringify([region, filters, todayLocalISO()]) : null;
+  const cached = sortedKey ? carrefourSortedOffers.get(sortedKey) : null;
+  if (cached && Date.now() - cached.at < 5 * 60_000) {
+    const offset = typeof cursor?.name === 'number' ? cursor.name : 0;
+    return { items: cached.items.slice(offset, offset + limit), nextCursor: offset + limit < cached.items.length
+      ? { name: offset + limit, id: 'carrefour-regional' } : null };
+  }
+  if (needsGlobalOrder) scanCursor = null;
+  const selectedTypes = filters?.offerTypes?.length ? new Set(filters.offerTypes) : null;
+  for (;;) {
+    const page = await keysetPage(
+      'carrefour_products', CARREFOUR_COLS, 'display_name_norm', scanCursor,
+      Math.max(limit, needsGlobalOrder ? 500 : 200),
+      (q) => {
+        let query = filterRegionalAvailability(q.or(carrefourOfferCandidates), region);
+        if (filters?.search && filters.search.trim().length >= 2) {
+          query = filterByNameWords(query, filters.search, 'display_name_norm');
+        }
+        if (filters?.categories?.length) query = query.in('category_name', filters.categories);
+        return query;
+      },
+    );
+    for (const row of page.rows) {
+      const product = mapCarrefour(row, region);
+      if (!product.promotions.length) continue;
+      if (filters?.priceMin != null && (product.unitPrice == null || product.unitPrice <= filters.priceMin)) continue;
+      if (filters?.priceMax != null && (product.unitPrice == null || product.unitPrice > filters.priceMax)) continue;
+      const offer: CarrefourOffer = {
+        product: carrefourToUI(product), promoName: product.promoName,
+        promoEnd: product.promoEnd, prevPrice: product.strikethroughPrice,
+        promotionKinds: product.promotions.map((promotion) => promotion.kind),
+        promotionCount: product.promotions.length,
+      };
+      if (selectedTypes && !offerTypesOf(offer).some((type) => selectedTypes.has(type))) continue;
+      items.push(offer);
+    }
+    if (!page.nextCursor || (!needsGlobalOrder && items.length >= limit)) {
+      if (needsGlobalOrder) {
+        const direction = filters?.pricePerUnitSort ?? filters?.sort;
+        const unit = Boolean(filters?.pricePerUnitSort);
+        items.sort((a, b) => {
+          const left = unit ? a.product.pricePerUnit : a.product.unitPrice;
+          const right = unit ? b.product.pricePerUnit : b.product.unitPrice;
+          if (left == null) return right == null ? a.product.id.localeCompare(b.product.id) : 1;
+          if (right == null) return -1;
+          return (direction === 'desc' ? right - left : left - right) || a.product.id.localeCompare(b.product.id);
+        });
+        if (sortedKey) {
+          if (carrefourSortedOffers.size > 12) carrefourSortedOffers.clear();
+          carrefourSortedOffers.set(sortedKey, { at: Date.now(), items });
+        }
+        // Orden regional exige un cursor por posición, no el keyset de Madrid.
+        const offset = typeof cursor?.name === 'number' ? cursor.name : 0;
+        return { items: items.slice(offset, offset + limit), nextCursor: offset + limit < items.length
+          ? { name: offset + limit, id: 'carrefour-regional' } : null };
+      }
+      return { items, nextCursor: page.nextCursor };
+    }
+    scanCursor = page.nextCursor;
+  }
 }
 
 /** Ofertas de BonpreuEsclat: productos de la categoría "Ofertas" (bilingüe), que
@@ -3589,6 +4112,48 @@ export async function fetchLidlOffers(
   return { items, nextCursor };
 }
 
+/** Ofertas BM vigentes para la zona resuelta por el código postal del perfil. */
+export async function fetchBmOffers(
+  cursor: BrowseCursor | null,
+  postalCode: string | null,
+  limit = 50,
+  filters?: OfferFilters,
+): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
+  const locationId = await resolveBmLocationId(postalCode);
+  if (!locationId) return { items: [], nextCursor: null };
+  const { rows, nextCursor } = await keysetPage(
+    'bm_product_locations',
+    BM_COLS,
+    offerOrderColumn(filters, 'display_name_norm'),
+    cursor,
+    limit,
+    (query) => applyOfferFilters(
+      query.eq('location_id', locationId)
+        .eq('published', true)
+        .eq('available', true)
+        .not('promo_type', 'is', null)
+        .or(`promo_end.is.null,promo_end.gte.${todayLocalISO()}`),
+      filters,
+      'display_name_norm',
+    ),
+    offerBrowseOrder(filters),
+  );
+  const items = rows.map((row: any) => {
+    const product = mapBm(row);
+    return {
+      product: bmToUI(product),
+      promoName: product.promoName ?? product.promoText,
+      promoEnd: product.promoEnd,
+      prevPrice: product.promoBasePrice != null
+        && product.unitPrice != null
+        && product.promoBasePrice > product.unitPrice
+        ? product.promoBasePrice
+        : null,
+    };
+  });
+  return { items, nextCursor };
+}
+
 function plusfrescOfferAt(row: any, postalCode: string | null) {
   const center = plusfrescOfferCenter(postalCode);
   const regional = center && row.center_prices && typeof row.center_prices === 'object'
@@ -3664,7 +4229,7 @@ export async function fetchPlusfrescOffers(
 }
 
 const offerSearchColumns = (store: CatalogStore): string => {
-  if (store === 'carrefour') return `${CARREFOUR_COLS}, promo_name, promo_end, strikethrough_price`;
+  if (store === 'carrefour') return CARREFOUR_COLS;
   if (store === 'esclat') return BONPREU_COLS;
   if (store === 'consum') return CONSUM_OFFER_COLS;
   if (store === 'dia') return DIA_OFFER_COLS;
@@ -3672,6 +4237,7 @@ const offerSearchColumns = (store: CatalogStore): string => {
   if (store === 'hiperdino') return HIPERDINO_OFFER_COLS;
   if (store === 'aldi') return ALDI_OFFER_COLS;
   if (store === 'lidl') return LIDL_COLS;
+  if (store === 'bm') return BM_COLS;
   if (store === 'plusfresc') return PLUSFRESC_OFFER_COLS;
   if (isNormalizedOfferStore(store)) return NORMALIZED_OFFER_CONFIG[store].columns;
   return MIRROR_QUERY[store].cols;
@@ -3686,12 +4252,15 @@ function mapOfferSearchRows(
   region: RegionValue | null,
   postalCode: string | null,
 ): StoreOffer[] {
-  if (store === 'carrefour') return rows.map((row) => ({
-    product: carrefourToUI(mapCarrefour(row, region)),
-    promoName: row.promo_name ?? null,
-    promoEnd: row.promo_end ?? null,
-    prevPrice: row.strikethrough_price != null ? Number(row.strikethrough_price) : null,
-  }));
+  if (store === 'carrefour') return rows.flatMap((row) => {
+    const product = mapCarrefour(row, region);
+    return product.promotions.length ? [{
+      product: carrefourToUI(product), promoName: product.promoName,
+      promoEnd: product.promoEnd, prevPrice: product.strikethroughPrice,
+      promotionKinds: product.promotions.map((promotion) => promotion.kind),
+      promotionCount: product.promotions.length,
+    }] : [];
+  });
   if (store === 'esclat') {
     const ca = getLanguage() === 'ca';
     return rows.map((row) => ({
@@ -3782,6 +4351,19 @@ function mapOfferSearchRows(
         ? product.promoBasePrice
         : null,
     }];
+  });
+  if (store === 'bm') return rows.map((row) => {
+    const product = mapBm(row);
+    return {
+      product: bmToUI(product),
+      promoName: product.promoName ?? product.promoText,
+      promoEnd: product.promoEnd,
+      prevPrice: product.promoBasePrice != null
+        && product.unitPrice != null
+        && product.promoBasePrice > product.unitPrice
+        ? product.promoBasePrice
+        : null,
+    };
   });
   if (store === 'plusfresc') {
     const ca = getLanguage() === 'ca';
@@ -3892,6 +4474,7 @@ function fetchStoreOfferPage(
   if (store === 'hiperdino') return fetchHiperdinoOffers(cursor, limit, filters);
   if (store === 'aldi') return fetchAldiOffers(cursor, limit, filters);
   if (store === 'lidl') return fetchLidlOffers(cursor, limit, filters, lidlStoreId);
+  if (store === 'bm') return fetchBmOffers(cursor, postalCode, limit, filters);
   if (isNormalizedOfferStore(store)) return fetchNormalizedRetailerOffers(store, cursor, limit, filters);
   return fetchCarrefourOffers(cursor, region, limit, filters);
 }
@@ -3933,6 +4516,7 @@ async function fetchStoreOffersUncached(
   filters?: OfferFilters,
   lidlStoreId: string | null = null,
 ): Promise<{ items: StoreOffer[]; nextCursor: BrowseCursor | null }> {
+  if (store === 'carrefour') return fetchCarrefourOffers(cursor, region, limit, filters);
   if (filters?.search && filters.search.trim().length >= 2) {
     return fetchStoreOfferSearchPage(store, cursor, region, postalCode, limit, filters, lidlStoreId);
   }

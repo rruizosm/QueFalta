@@ -1,5 +1,5 @@
 import { PagerNativeScrollView as ScrollView } from '../components/bottom-tabs-pager/PagerNativeScroll';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator, Pressable, StatusBar, StyleSheet, Text, View,
 } from 'react-native';
@@ -17,10 +17,10 @@ import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { useRecipeFeed } from '../hooks/useRecipeFeed';
 import { recipeFeed } from '../lib/recipeFeed';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
-import SlidingSegments from '../components/SlidingSegments';
 import CreateRecipeButton from '../components/CreateRecipeButton';
-import CommunityRecipeDetailModal from '../components/CommunityRecipeDetailModal';
+import RecipeFlowModal from '../components/RecipeFlowModal';
 import VerifiedBadge from '../components/VerifiedBadge';
+import UserAvatar from '../components/UserAvatar';
 import {
   setRecipeLiked,
   setRecipeSaved,
@@ -29,7 +29,6 @@ import {
 
 type EngagementKind = 'like' | 'save';
 type RecipeSort = 'likes' | 'saves' | null;
-type RecipeSource = 'users' | 'supermarket';
 const RECIPE_FILTER_GAP = 12;
 const RECIPE_FILTER_HEIGHT = 36;
 const EMPTY_RECIPES: CommunityRecipe[] = [];
@@ -45,8 +44,6 @@ export default function QueCocinoScreen() {
   const createButtonBottom = useTabBarBottomPadding(16);
   const [createButtonH, setCreateButtonH] = useState(44);
   const [headerH, setHeaderH] = useState(0);
-  const scrollRef = useRef<ScrollView>(null);
-  const [recipeSource, setRecipeSource] = useState<RecipeSource>('users');
   const [selectedRecipe, setSelectedRecipe] = useState<CommunityRecipe | null>(null);
   const feed = useRecipeFeed(userId);
   const communityRecipes = feed.recipes ?? EMPTY_RECIPES;
@@ -125,11 +122,7 @@ export default function QueCocinoScreen() {
     }
   }, [interactionBusy, t, toast, updateRecipe, userId]);
 
-  const selectRecipeSource = (source: RecipeSource) => {
-    setRecipeSource(source);
-    scrollRef.current?.scrollTo({ y: 0, animated: false });
-  };
-  const recipeFiltersVisible = recipeSource === 'users' && communityRecipes.length > 0;
+  const recipeFiltersVisible = communityRecipes.length > 0;
   const glassInset = glassAvailable ? headerH : 0;
   const header = (
     <View
@@ -145,16 +138,6 @@ export default function QueCocinoScreen() {
         </View>
         <Text style={styles.headerTitle}>{t('queCocino.title')}</Text>
       </View>
-      <SlidingSegments<RecipeSource>
-        emphasized
-        style={styles.recipeSources}
-        value={recipeSource}
-        onChange={selectRecipeSource}
-        segments={[
-          { key: 'users', label: t('queCocino.sources.users') },
-          { key: 'supermarket', label: t('queCocino.sources.supermarket') },
-        ]}
-      />
     </View>
   );
 
@@ -164,19 +147,18 @@ export default function QueCocinoScreen() {
       {!glassAvailable && header}
 
       <ScrollView tabBarScroll
-        ref={scrollRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.scroll,
           {
-            paddingBottom: bottomPad + (recipeSource === 'users' ? createButtonH : 0),
+            paddingBottom: bottomPad + createButtonH,
             paddingTop: glassInset
               ? glassInset + RECIPE_FILTER_GAP + (recipeFiltersVisible ? RECIPE_FILTER_HEIGHT : 0)
               : RECIPE_FILTER_GAP + (recipeFiltersVisible ? RECIPE_FILTER_HEIGHT : 0),
           },
         ]}
       >
-        {recipeSource === 'users' ? <>
+        <>
           {recipesLoading ? (
             <View style={styles.recipeStatus}>
               <ActivityIndicator color={colors.accent} />
@@ -208,13 +190,7 @@ export default function QueCocinoScreen() {
                     <Image source={{ uri: recipe.imageUrl }} style={styles.communityRecipeImage} contentFit="cover" cachePolicy="memory-disk" />
                     <View style={styles.communityRecipeBody}>
                       <View style={styles.authorRow}>
-                        {recipe.author.avatarUrl ? (
-                          <Image source={{ uri: recipe.author.avatarUrl }} style={styles.realAuthorAvatar} cachePolicy="memory-disk" />
-                        ) : (
-                          <View style={[styles.authorAvatar, { backgroundColor: recipe.author.color }]}>
-                            <Text style={styles.realAuthorInitial}>{recipe.author.initials}</Text>
-                          </View>
-                        )}
+                        <UserAvatar avatarUrl={recipe.author.avatarUrl} userId={recipe.authorId} initials={recipe.author.initials} color={recipe.author.color} size={36} style={styles.realAuthorAvatar} />
                         <View style={styles.authorIdentity}>
                           <Text style={styles.authorName} numberOfLines={1}>
                             {recipe.author.username ? `@${recipe.author.username}` : recipe.author.name}
@@ -325,15 +301,7 @@ export default function QueCocinoScreen() {
               <Text style={styles.emptyRecipesText}>{t('queCocino.emptyText')}</Text>
             </View>
           ) : null}
-        </> : (
-          <View style={styles.emptyRecipes}>
-            <View style={styles.emptyRecipesIcon}>
-              <Ionicons name="storefront-outline" size={24} color={colors.accent} />
-            </View>
-            <Text style={styles.emptyRecipesTitle}>{t('queCocino.supermarketEmptyTitle')}</Text>
-            <Text style={styles.emptyRecipesText}>{t('queCocino.supermarketEmptyText')}</Text>
-          </View>
-        )}
+        </>
       </ScrollView>
 
       {recipeFiltersVisible ? (
@@ -426,19 +394,17 @@ export default function QueCocinoScreen() {
         </View>
       )}
 
-      {recipeSource === 'users' && (
-        <CreateRecipeButton bottom={createButtonBottom}
-          onLayout={(event) => setCreateButtonH(event.nativeEvent.layout.height)} />
-      )}
+      <CreateRecipeButton bottom={createButtonBottom}
+        onLayout={(event) => setCreateButtonH(event.nativeEvent.layout.height)} />
 
-      <CommunityRecipeDetailModal
+      {selectedRecipe && <RecipeFlowModal
         recipe={selectedRecipe}
         onClose={() => setSelectedRecipe(null)}
         onToggleLike={(recipe) => toggleEngagement(recipe, 'like')}
         onToggleSave={(recipe) => toggleEngagement(recipe, 'save')}
         likeBusy={selectedRecipe ? Boolean(interactionBusy[`like:${selectedRecipe.id}`]) : false}
         saveBusy={selectedRecipe ? Boolean(interactionBusy[`save:${selectedRecipe.id}`]) : false}
-      />
+      />}
     </View>
   );
 }
@@ -453,7 +419,6 @@ const themedStyles = () => StyleSheet.create({
   titleWrap: {
     flexGrow: 1, minWidth: 116, flexDirection: 'row', alignItems: 'center', gap: 10,
   },
-  recipeSources: { width: 224, maxWidth: '100%', marginLeft: 'auto' },
   headerIcon: {
     width: 28, height: 28, borderRadius: 14,
     backgroundColor: colors.accentLight,

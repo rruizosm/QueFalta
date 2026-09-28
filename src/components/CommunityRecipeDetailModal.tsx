@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -15,7 +15,9 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { cancelAnimation, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import Animated, {
+  cancelAnimation, Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming,
+} from 'react-native-reanimated';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import type { CommunityRecipe, RecipeIngredient } from '../api/recipes';
 import { STORE_META } from '../constants/stores';
@@ -28,6 +30,7 @@ import { recipeIngredientsToListItems } from '../lib/recipeCart';
 import SlidingSegments, { type Segment } from './SlidingSegments';
 import RecipeEngagementActions from './RecipeEngagementActions';
 import RecipeImageViewer from './RecipeImageViewer';
+import UserAvatar from './UserAvatar';
 
 type DetailSection = 'ingredients' | 'steps';
 
@@ -36,8 +39,10 @@ interface Props {
   onClose: () => void;
   onToggleLike: (recipe: CommunityRecipe) => void;
   onToggleSave: (recipe: CommunityRecipe) => void;
+  onEdit?: (recipe: CommunityRecipe) => void;
   likeBusy?: boolean;
   saveBusy?: boolean;
+  embedded?: boolean;
 }
 
 export default function CommunityRecipeDetailModal({
@@ -45,8 +50,10 @@ export default function CommunityRecipeDetailModal({
   onClose,
   onToggleLike,
   onToggleSave,
+  onEdit,
   likeBusy = false,
   saveBusy = false,
+  embedded = false,
 }: Props) {
   const styles = useThemedStyles(themedStyles);
   const { t } = useTranslation();
@@ -55,13 +62,18 @@ export default function CommunityRecipeDetailModal({
   const { activeCart, addToActiveCart, busy: cartBusy, hydrated } = useCart();
   const [section, setSection] = useState<DetailSection>('ingredients');
   const [imageVisible, setImageVisible] = useState(false);
+  const detailClosing = useRef(false);
   const heroRef = useRef<View>(null);
   const [imageRatio, setImageRatio] = useState(1);
   const imageProgress = useSharedValue(0);
+  const detailProgress = useSharedValue(0);
   const reducedMotion = useReducedMotion();
   const heroHeight = Math.min(Math.max(height * 0.45, 290), 390);
   const contentMotion = useAnimatedStyle(() => ({
     transform: [{ translateY: reducedMotion ? 0 : imageProgress.value * (height - heroHeight + 22) }],
+  }));
+  const detailMotion = useAnimatedStyle(() => ({
+    transform: [{ translateY: reducedMotion ? 0 : height * (1 - detailProgress.value) }],
   }));
   const [adding, setAdding] = useState(false);
   const addingRef = useRef(false);
@@ -72,11 +84,36 @@ export default function CommunityRecipeDetailModal({
   useEffect(() => {
     setSection('ingredients');
     setImageVisible(false);
+    detailClosing.current = false;
     cancelAnimation(imageProgress);
     imageProgress.set(0);
+    cancelAnimation(detailProgress);
+    detailProgress.set(reducedMotion
+      ? 1
+      : withTiming(1, { duration: 300, easing: Easing.out(Easing.cubic) }));
     setImageRatio(1);
     setAddedTo(null);
-  }, [recipeId, imageProgress]);
+  }, [detailProgress, imageProgress, recipeId, reducedMotion]);
+
+  const openEditor = () => {
+    if (recipe) onEdit?.(recipe);
+  };
+
+  const closeDetail = () => {
+    if (detailClosing.current) return;
+    detailClosing.current = true;
+    cancelAnimation(detailProgress);
+    if (reducedMotion) {
+      onClose();
+      return;
+    }
+    detailProgress.set(withTiming(0, {
+      duration: 260,
+      easing: Easing.in(Easing.cubic),
+    }, (done) => {
+      if (done) runOnJS(onClose)();
+    }));
+  };
 
   const handleAddIngredients = async () => {
     if (!recipe || !recipe.ingredients.length || addingRef.current || cartBusy || !hydrated || added) return;
@@ -113,9 +150,6 @@ export default function CommunityRecipeDetailModal({
 
   if (!recipe) return null;
 
-  const recipeServings = typeof recipe.servings === 'number'
-    && Number.isInteger(recipe.servings) && recipe.servings >= 1 && recipe.servings <= 99
-    ? recipe.servings : null;
   const addButtonLabel = t(adding
     ? 'queCocino.detail.addingIngredients'
     : added ? 'queCocino.detail.ingredientsAdded' : 'queCocino.detail.addIngredients');
@@ -123,14 +157,14 @@ export default function CommunityRecipeDetailModal({
     ? `@${recipe.author.username}`
     : recipe.author.name;
 
+  const Container = embedded ? Fragment : Modal;
+  const containerProps = embedded ? {} : {
+    visible: true, animationType: 'none' as const,
+    presentationStyle: 'fullScreen' as const, onRequestClose: closeDetail,
+  };
   return (
-    <Modal
-      visible
-      animationType="slide"
-      presentationStyle="fullScreen"
-      onRequestClose={onClose}
-    >
-      <View style={styles.root}>
+    <Container {...containerProps}>
+      <Animated.View style={[styles.root, detailMotion]}>
         <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
         <View ref={heroRef} collapsable={false} style={[styles.hero, { height: heroHeight }]}>
@@ -155,7 +189,7 @@ export default function CommunityRecipeDetailModal({
           />
           <View pointerEvents="box-none" style={[styles.heroHeader, { paddingTop: insets.top + 8 }]}>
             <Pressable
-              onPress={onClose}
+              onPress={closeDetail}
               style={({ pressed }) => [styles.closeButton, pressed && styles.pressed]}
               accessibilityRole="button"
               accessibilityLabel={t('common.close')}
@@ -170,17 +204,23 @@ export default function CommunityRecipeDetailModal({
               saveBusy={saveBusy}
             />
           </View>
-          <View pointerEvents="none" style={styles.heroCopy}>
+          <View pointerEvents="box-none" style={styles.heroCopy}>
             <Text style={styles.recipeTitle}>{recipe.title}</Text>
             <View style={styles.authorRow}>
-              {recipe.author.avatarUrl ? (
-                <Image source={{ uri: recipe.author.avatarUrl }} style={styles.authorAvatar} />
-              ) : (
-                <View style={[styles.authorAvatar, styles.authorFallback, { backgroundColor: recipe.author.color }]}>
-                  <Text style={styles.authorInitial}>{recipe.author.initials}</Text>
-                </View>
-              )}
+              <UserAvatar avatarUrl={recipe.author.avatarUrl} userId={recipe.authorId} initials={recipe.author.initials} color={recipe.author.color} size={34} style={styles.authorAvatar} />
               <Text style={styles.authorName}>{authorName}</Text>
+              {onEdit ? (
+                <Pressable
+                  testID="recipe-edit"
+                  onPress={openEditor}
+                  hitSlop={8}
+                  style={({ pressed }) => [styles.editButton, pressed && styles.pressed]}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('queCocino.detail.editRecipe', { name: recipe.title })}
+                >
+                  <Ionicons name="pencil" size={15} color="#ffffff" />
+                </Pressable>
+              ) : null}
             </View>
           </View>
         </View>
@@ -193,17 +233,6 @@ export default function CommunityRecipeDetailModal({
             value={section}
             onChange={setSection}
           />
-
-          {recipeServings !== null ? (
-            <View style={styles.servingsSummary}>
-              <Ionicons name="people-outline" size={17} color={colors.accent} />
-              <Text style={styles.servingsSummaryText}>
-                {t(recipeServings === 1
-                  ? 'queCocino.detail.servingsOne'
-                  : 'queCocino.detail.servingsMany', { n: recipeServings })}
-              </Text>
-            </View>
-          ) : null}
 
           <ScrollView
             style={styles.scroll}
@@ -335,8 +364,8 @@ export default function CommunityRecipeDetailModal({
             onClose={() => setImageVisible(false)}
           />
         )}
-      </View>
-    </Modal>
+      </Animated.View>
+    </Container>
   );
 }
 
@@ -406,18 +435,18 @@ const themedStyles = () => StyleSheet.create({
   authorFallback: { alignItems: 'center', justifyContent: 'center' },
   authorInitial: { fontSize: 10, fontFamily: fonts.bold, color: '#ffffff' },
   authorName: { fontSize: 12, fontFamily: fonts.semibold, color: 'rgba(255,255,255,0.90)' },
+  editButton: {
+    width: 30, height: 30, borderRadius: 15, marginLeft: 1,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(25,21,18,0.58)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.28)',
+  },
   contentPanel: {
     flex: 1, marginTop: -22, paddingTop: 16,
     borderTopLeftRadius: 26, borderTopRightRadius: 26,
     overflow: 'hidden', backgroundColor: colors.paper,
   },
   sectionSelector: { marginHorizontal: 16, marginBottom: 13 },
-  servingsSummary: {
-    minHeight: 38, alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 7,
-    marginHorizontal: 16, marginBottom: 12, paddingHorizontal: 12, paddingVertical: 8,
-    borderRadius: 13, backgroundColor: colors.accentLight,
-  },
-  servingsSummaryText: { fontSize: 12, lineHeight: 17, fontFamily: fonts.bold, color: colors.accent },
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: 16 },
   cartFooter: {

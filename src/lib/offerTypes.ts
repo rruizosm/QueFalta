@@ -1,11 +1,12 @@
-export type OfferType = 'discount' | 'second_unit' | 'multibuy' | 'club' | 'other';
+export type OfferType = 'discount' | 'second_unit' | 'multibuy' | 'club' | 'shipping' | 'other';
 
 export interface OfferTypeSource {
   promoName: string | null;
   prevPrice: number | null;
+  promotionKinds?: ('discount' | 'second_unit' | 'multibuy' | 'club' | 'shipping')[];
 }
 
-const ALL_OFFER_TYPES: OfferType[] = ['discount', 'second_unit', 'multibuy', 'club', 'other'];
+const ALL_OFFER_TYPES: OfferType[] = ['discount', 'second_unit', 'multibuy', 'club', 'shipping', 'other'];
 
 const OFFER_TYPE_SUPPORT: Record<string, OfferType[]> = {
   carrefour: ALL_OFFER_TYPES,
@@ -41,6 +42,7 @@ const normalizeOfferLabel = (value: string | null | undefined) =>
 /** Clasifica las etiquetas heterogéneas de los retailers en facetas estables.
  * Una promoción puede pertenecer a varias (p. ej. "Club · 2ª unidad"). */
 export function offerTypesOf(offer: OfferTypeSource): OfferType[] {
+  if (offer.promotionKinds) return [...new Set(offer.promotionKinds)];
   const label = normalizeOfferLabel(offer.promoName);
   const secondUnit = /(?:\b2\s*a?s?\s*(?:ud|uds|unidad|unidades|unitat|unitats)\b|\bsegunda\s+unidad\b|\bsegona\s+unitat\b)/.test(label);
   const multibuy = /(?:\b[2-9]\s*x\s*[1-9]\b|\b[2-9]\s*(?:uds?|unidades?|unitats?)\s*(?:por|per|a)\b|\b(?:dos|tres|cuatro)\s+(?:por|per|a)\b|\blotes?\b|\blots?\b|\bpack\b|\bllevate\s*\d+\s*y\s*paga\s*\d+\b|\b(?:unidades?|unitats?)\s+(?:regalo|regal)\b)/.test(label);

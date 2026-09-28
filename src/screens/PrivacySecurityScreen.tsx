@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
   StyleSheet, StatusBar, Alert, Linking, ActivityIndicator,
@@ -13,7 +13,7 @@ import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
-import { updateProfile } from '../api/profile';
+import { setAvatarFriendsOnly as saveAvatarVisibility, updateProfile } from '../api/profile';
 import { deleteAccount } from '../api/account';
 import ProfileRow from '../components/ProfileRow';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -28,16 +28,21 @@ export default function PrivacySecurityScreen() {
   const bottomPad = useTabBarBottomPadding(40);
   const { t } = useTranslation();
   const { signOut } = useAuth();
-  const { profile, applyProfile } = useProfile();
+  const { profile, applyProfile, refresh } = useProfile();
   const toast = useToast();
 
   const [discoverable, setDiscoverable] = useState(profile?.discoverable ?? true);
   const [savingDiscoverable, setSavingDiscoverable] = useState(false);
+  const [avatarFriendsOnly, setAvatarFriendsOnly] = useState(profile?.avatarFriendsOnly ?? false);
+  const [savingAvatarVisibility, setSavingAvatarVisibility] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [signOutAllVisible, setSignOutAllVisible] = useState(false);
   const [deleteVisible, setDeleteVisible] = useState(false);
   const [headerH, setHeaderH] = useState(0);
   const glassInset = glassAvailable ? headerH : 0;
+
+  useEffect(() => { setDiscoverable(profile?.discoverable ?? true); }, [profile?.discoverable]);
+  useEffect(() => { setAvatarFriendsOnly(profile?.avatarFriendsOnly ?? false); }, [profile?.avatarFriendsOnly]);
 
   const handleToggleDiscoverable = async (value: boolean) => {
     if (!profile) return;
@@ -51,6 +56,24 @@ export default function PrivacySecurityScreen() {
       toast.show(t('privacy.saveError'), 'error');
     } finally {
       setSavingDiscoverable(false);
+    }
+  };
+
+  const handleToggleAvatarVisibility = async (value: boolean) => {
+    if (!profile) return;
+    setAvatarFriendsOnly(value);
+    setSavingAvatarVisibility(true);
+    try {
+      const avatarUrl = await saveAvatarVisibility(profile, value);
+      applyProfile({ avatarFriendsOnly: value, avatarUrl });
+    } catch {
+      setAvatarFriendsOnly(!value);
+      toast.show(t('privacy.saveError'), 'error');
+      // Una operación de Storage y otra de perfil no comparten transacción.
+      // Revalidamos para reflejar el estado real si una compensación falló.
+      await refresh();
+    } finally {
+      setSavingAvatarVisibility(false);
     }
   };
 
@@ -88,10 +111,18 @@ export default function PrivacySecurityScreen() {
             right="switch"
             switchValue={discoverable}
             onSwitchChange={savingDiscoverable ? undefined : handleToggleDiscoverable}
+          />
+          <ProfileRow
+            icon="images-outline"
+            label={t('privacy.avatarFriendsOnly')}
+            right="switch"
+            switchValue={avatarFriendsOnly}
+            onSwitchChange={savingAvatarVisibility ? undefined : handleToggleAvatarVisibility}
             last
           />
         </View>
         <Text style={styles.hint}>{t('privacy.discoverableHint')}</Text>
+        <Text style={styles.hint}>{t('privacy.avatarFriendsOnlyHint')}</Text>
 
         {/* SEGURIDAD */}
         <Text style={styles.sectionLabel}>{t('privacy.sectionSecurity')}</Text>

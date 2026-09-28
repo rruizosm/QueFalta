@@ -1,0 +1,15 @@
+{
+  "duration": 10,
+  "sampleRate": 48000,
+  "bpm": 144,
+  "beats": 24,
+  "peak_dbfs": -1.0,
+  "rms_dbfs": -14.18,
+  "transition_seconds": [
+    1.666667,
+    3.333333,
+    5.833333,
+    7.5
+  ],
+  "source": "Original procedural composition. No third-party recordings."
+}

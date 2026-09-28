@@ -43,7 +43,7 @@ export function CatalogStoreProvider({ children }: { children: React.ReactNode }
   const enabledStores = profile?.catalogStores;
   useEffect(() => {
     if (!userId || !profile || store === 'all' || catalogStoreRequiresPlus(store, isPremium)
-      || !storeInRegion(store, region) || (enabledStores && !enabledStores.includes(store))
+      || !storeInRegion(store, region, postalCode) || (enabledStores && !enabledStores.includes(store))
       || (store === 'lidl' && !lidlStoreId)) return;
     let cancelled = false;
     let stopImages = () => {};

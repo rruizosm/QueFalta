@@ -30,6 +30,7 @@ import PremiumGoldBackground, { PREMIUM_GOLD_INK } from './PremiumGoldBackground
 import VerifiedBadge from './VerifiedBadge';
 import PlusWelcomeTransition from './PlusWelcomeTransition';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import { GROUP_CART_LIMIT_RELEASE_ENABLED } from '../lib/groupCartRelease';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 type Benefit = {
@@ -49,6 +50,9 @@ const PRIVACY_URL = 'https://quefalta.es/privacidad';
 const LIDL_LOGO = require('../../assets/stores/lidl.png');
 
 const BENEFITS: Benefit[] = [
+  ...(GROUP_CART_LIMIT_RELEASE_ENABLED
+    ? [{ icon: 'people-outline' as const, key: 'groups', color: colors.blue, background: 'rgba(47,108,181,0.13)' }]
+    : []),
   { image: LIDL_LOGO, key: 'lidl', color: colors.blue, background: 'rgba(47,108,181,0.13)' },
   { icon: 'apps-outline', key: 'stores', color: colors.blue, background: 'rgba(47,108,181,0.13)' },
   { icon: 'swap-vertical-outline', key: 'unitPrice', color: colors.blue, background: 'rgba(47,108,181,0.13)' },
@@ -56,6 +60,7 @@ const BENEFITS: Benefit[] = [
   { icon: 'notifications-outline', key: 'alerts', color: colors.purple, background: 'rgba(122,79,181,0.14)' },
   { icon: 'link-outline', key: 'noteProducts', color: colors.teal, background: 'rgba(31,138,143,0.14)' },
   { icon: 'pie-chart-outline', key: 'statistics', color: colors.blue, background: 'rgba(47,108,181,0.13)' },
+  { icon: 'trophy-outline', key: 'wordRanking', color: colors.blue, background: 'rgba(47,108,181,0.13)' },
 ];
 
 type Plan = 'annual' | 'monthly';

@@ -1,5 +1,5 @@
 import { useCallback, useImperativeHandle, useRef, useState, type Ref } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { TAB_LAYOUT as L } from './constants';
@@ -36,7 +36,9 @@ export function BottomTabsPager({ tabs, initialIndex = 0, onIndexChange, ref }: 
   }, []);
   const animation = useTabAnimation({ width, count: tabs.length, initialIndex: initial, reducedMotion, onSettled });
   useImperativeHandle(ref, () => ({ goTo: animation.goTo }), [animation.goTo]);
-  const bottom = Math.max(insets.bottom, 8) + L.bottomGap;
+  const bottom = Platform.OS === 'ios'
+    ? L.iosBottomOffset
+    : Math.max(insets.bottom, 8) + L.bottomGap;
   const barWidth = Math.min(L.maxWidth, Math.max(0, width - 2 * (L.margin + Math.max(insets.left, insets.right))));
 
   return (

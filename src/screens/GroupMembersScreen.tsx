@@ -256,7 +256,7 @@ export default function GroupMembersScreen() {
               const canManage = isAdmin && !isMe && !isMemberCreator;
               return (
                 <View key={m.id} style={[styles.row, i < group.members.length - 1 && styles.rowBorder]}>
-                  <UserAvatar avatarUrl={m.avatarUrl} initials={m.initials} color={m.color} size={38} />
+                  <UserAvatar avatarUrl={m.avatarUrl} userId={m.id} initials={m.initials} color={m.color} size={38} />
                   <View style={styles.memberInfo}>
                     <View style={styles.memberNameRow}>
                       <Text style={styles.memberName} numberOfLines={1}>
@@ -354,7 +354,7 @@ export default function GroupMembersScreen() {
               fallbackColor={colors.paper}
             >
               <View style={styles.sheetHeader}>
-                <UserAvatar avatarUrl={actionMember.avatarUrl} initials={actionMember.initials} color={actionMember.color} size={40} />
+                <UserAvatar avatarUrl={actionMember.avatarUrl} userId={actionMember.id} initials={actionMember.initials} color={actionMember.color} size={40} />
                 <Text style={styles.sheetTitle} numberOfLines={1}>{memberLabel(actionMember)}</Text>
                 {actionMember.verified ? <VerifiedBadge size={16} /> : null}
               </View>

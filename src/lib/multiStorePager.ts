@@ -20,6 +20,8 @@ export interface MultiStorePager<T> {
 }
 
 interface MultiStorePagerOptions<T, Store extends string, Cursor> {
+  /** Optional context guard for search sessions; browsing keeps its behavior. */
+  assertContext?: () => void;
   stores: Store[];
   pageSize?: number;
   loadPage: (
@@ -41,6 +43,7 @@ export function createMultiStorePager<T, Store extends string, Cursor = BrowseCu
   pageSize = 50,
   loadPage,
   compare,
+  assertContext,
 }: MultiStorePagerOptions<T, Store, Cursor>): MultiStorePager<T> {
   const states = new Map<Store, StorePageState<T, Cursor>>(
     stores.map((store) => [store, {
@@ -52,10 +55,14 @@ export function createMultiStorePager<T, Store extends string, Cursor = BrowseCu
     }]),
   );
 
-  const fill = async (store: Store, state: StorePageState<T, Cursor>, signal?: AbortSignal) => {
+  const fill = async (store: Store, state: StorePageState<T, Cursor>, remaining: number, signal?: AbortSignal) => {
     while (!state.done && state.index >= state.items.length) {
       if (signal?.aborted) throw abortedError();
-      const page = await loadPage(store, state.started ? state.cursor : null, pageSize, signal);
+      // Sondeo inicial pequeño por supermercado. Si uno domina el orden,
+      // rellenar lo que falta de la página global evita encadenar hasta cinco
+      // viajes de red de 12 filas para mostrar los primeros 50 productos.
+      const requestSize = state.started ? Math.max(pageSize, remaining) : pageSize;
+      const page = await loadPage(store, state.started ? state.cursor : null, requestSize, signal);
       state.started = true;
       state.items = page.items;
       state.index = 0;
@@ -68,16 +75,18 @@ export function createMultiStorePager<T, Store extends string, Cursor = BrowseCu
   };
 
   const nextPage = async (limit: number, signal?: AbortSignal): Promise<T[]> => {
+    assertContext?.();
     const result: T[] = [];
 
     while (result.length < limit) {
       const pending = [...states.entries()]
         .filter(([, state]) => !state.done && state.index >= state.items.length);
       const settled = await Promise.allSettled(
-        pending.map(([store, state]) => fill(store, state, signal)),
+        pending.map(([store, state]) => fill(store, state, limit - result.length, signal)),
       );
       if (signal?.aborted) throw abortedError();
 
+      assertContext?.();
       const failures: unknown[] = [];
       settled.forEach((outcome, index) => {
         if (outcome.status === 'fulfilled') return;

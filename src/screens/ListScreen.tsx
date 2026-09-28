@@ -884,7 +884,7 @@ export default function ListScreen() {
                       activeOpacity={0.7}
                       onPress={() => (assignAllVisible ? doAssignAll(m.id) : doAssign(assignItem!, m.id))}
                     >
-                      <UserAvatar avatarUrl={m.avatarUrl} initials={m.initials} color={m.color} size={38} />
+                      <UserAvatar avatarUrl={m.avatarUrl} userId={m.id} initials={m.initials} color={m.color} size={38} />
                       <Text style={styles.sheetRowText} numberOfLines={1}>{m.name}</Text>
                       {selected && <Ionicons name="checkmark" size={20} color={colors.accent} />}
                     </TouchableOpacity>
@@ -1116,7 +1116,7 @@ const CartItemRow = memo(function CartItemRow({ item, members, onToggle, onOpenD
           accessibilityLabel={t('list.whoBrings', { product: item.productName })}
         >
           {assignee ? (
-            <UserAvatar avatarUrl={assignee.avatarUrl} initials={assignee.initials} color={assignee.color} size={28} />
+            <UserAvatar avatarUrl={assignee.avatarUrl} userId={assignee.id} initials={assignee.initials} color={assignee.color} size={28} />
           ) : (
             <View style={styles.assignEmpty}>
               <Ionicons name="person-add-outline" size={15} color={colors.inkFaint} />

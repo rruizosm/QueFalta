@@ -1,4 +1,6 @@
-import { View, Text, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { useRef, useState } from 'react';
+import { Pressable, View, Text, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { useSharedValue } from 'react-native-reanimated';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -6,6 +8,8 @@ import type { CatalogStore } from '../constants/stores';
 import { productImageSource } from '../lib/productImageSource';
 import ProductImage from './ProductImage';
 import ProductAlertButton from './ProductAlertButton';
+import RecipeImageViewer from './RecipeImageViewer';
+import { useTranslation } from '../context/LanguageContext';
 
 interface Props {
   uri: string | null | undefined;
@@ -17,17 +21,30 @@ interface Props {
 
 /** Imagen principal de la ficha con una etiqueta contextual dentro del marco. */
 export default function ProductDetailImage({ uri, style, badgeLabel, alertTarget, emptyMessage }: Props) {
+  const { t } = useTranslation();
+  const [viewerVisible, setViewerVisible] = useState(false);
+  const imageRef = useRef<View>(null);
+  const imageProgress = useSharedValue(0);
   const fallback = emptyMessage ? <Text style={styles.emptyMessage}>{emptyMessage}</Text> : null;
   const hasUsableImage = Boolean(uri && productImageSource(uri));
   return (
     <View style={[style, styles.frame]}>
-      {hasUsableImage && uri ? (
-        <ProductImage uri={uri} style={StyleSheet.absoluteFill} fallback={fallback} />
-      ) : fallback ? (
-        fallback
-      ) : (
-        <Ionicons name="image-outline" size={48} color={colors.inkFaint} />
-      )}
+      <View ref={imageRef} collapsable={false} style={StyleSheet.absoluteFill}>
+        {hasUsableImage && uri ? (
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setViewerVisible(true)}
+            accessibilityRole="button"
+            accessibilityLabel={t('product.detailTitle')}
+          >
+            <ProductImage uri={uri} style={StyleSheet.absoluteFill} fallback={fallback} />
+          </Pressable>
+        ) : fallback ? (
+          fallback
+        ) : (
+          <Ionicons name="image-outline" size={48} color={colors.inkFaint} />
+        )}
+      </View>
       {alertTarget ? (
         <ProductAlertButton
           store={alertTarget.store}
@@ -36,6 +53,16 @@ export default function ProductDetailImage({ uri, style, badgeLabel, alertTarget
         />
       ) : null}
       {badgeLabel ? <ProductDetailBadge label={badgeLabel} /> : null}
+      {viewerVisible && uri ? (
+        <RecipeImageViewer
+          uri={uri}
+          title={t('product.detailTitle')}
+          sourceRef={imageRef}
+          imageRatio={1}
+          progress={imageProgress}
+          onClose={() => setViewerVisible(false)}
+        />
+      ) : null}
     </View>
   );
 }

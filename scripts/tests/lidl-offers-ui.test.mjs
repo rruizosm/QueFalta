@@ -14,7 +14,7 @@ test('la oferta Lidl no se superpone como etiqueta en la imagen', () => {
 });
 
 test('la ficha Lidl usa el bloque promocional de Bonpreu', () => {
-  assert.match(sharedModal, /const lidlPromotion = store === 'lidl'/);
+  assert.match(sharedModal, /const promotion = \(store === 'lidl' \|\| store === 'bm' \|\| store === 'eljamon'\)/);
   assert.match(sharedModal, /<View style=\{styles\.promoBox\}>/);
   assert.match(sharedModal, /<View style=\{styles\.promoPill\}>/);
   assert.match(sharedModal, /backgroundColor: colors\.accentLight/);
@@ -48,7 +48,7 @@ test('la ficha Lidl identifica las condiciones y la vigencia de la oferta', () =
   assert.match(sharedModal, /t\('product\.offerValidity'\)/);
   assert.match(sharedModal, /condition: distinctPromotionText\(product\.promoName, product\.promoText\)/);
   assert.doesNotMatch(sharedModal, /condition: distinctPromotionText\([^\n]+\) \?\? product\.promoName/);
-  assert.match(sharedModal, /\{lidlPromotion\.condition \? \(/);
+  assert.match(sharedModal, /\{promotion\.condition \? \(/);
   assert.match(sharedModal, /offerValidityRange/);
   assert.match(sharedModal, /offerValidityFrom/);
   assert.match(sharedModal, /offerValidityUntil/);
@@ -63,7 +63,7 @@ test('la ficha Lidl identifica las ofertas exclusivas para Lidl Plus', () => {
 });
 
 test('la ficha Lidl muestra el precio anterior tachado solo para una rebaja directa', () => {
-  assert.match(sharedModal, /lidlPromoBasePrice > product\.unitPrice/);
+  assert.match(sharedModal, /promoBasePrice > product\.unitPrice/);
   assert.match(sharedModal, /promotionPreviousPrice=\{promotionPreviousPrice\}/);
   assert.match(sharedModal, /priceTone=\{promotionPreviousPrice \? 'down' : 'default'\}/);
 });

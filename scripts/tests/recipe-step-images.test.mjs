@@ -23,8 +23,8 @@ function load(path, dependencies = {}, globals = {}) {
 const stepsLib = load('../../src/lib/recipeSteps.ts');
 const plain = (value) => JSON.parse(JSON.stringify(value));
 
-function setup({ uploadFailure, insertError, fetchedRows = [] } = {}) {
-  const uploads = [], removed = [], writes = [], processed = [], queries = [];
+function setup({ uploadFailure, insertError, updateError, deleteError, deleteData = { id: 'recipe' }, fetchedRows = [] } = {}) {
+  const uploads = [], removed = [], writes = [], updates = [], deletions = [], processed = [], queries = [];
   const storage = {
     getPublicUrl: (path) => ({ data: { publicUrl: `https://images.test/${path}` } }),
     async upload(path, bytes, options) {
@@ -43,6 +43,33 @@ function setup({ uploadFailure, insertError, fetchedRows = [] } = {}) {
             error: insertError ?? null,
             data: { ...row, id: 'recipe', created_at: '2026-09-12', like_count: 0, save_count: 0 },
           }) }) };
+        },
+        update(row) {
+          const mutation = { row, filters: [] };
+          updates.push(mutation);
+          const builder = {
+            eq(key, value) { mutation.filters.push([key, value]); return builder; },
+            select: () => ({ single: async () => ({
+              error: updateError ?? null,
+              data: {
+                ...row, id: 'recipe', author_id: 'author', created_at: '2026-09-12',
+                like_count: 3, save_count: 2,
+              },
+            }) }),
+          };
+          return builder;
+        },
+        delete() {
+          const mutation = { filters: [] };
+          deletions.push(mutation);
+          const builder = {
+            eq(key, value) { mutation.filters.push([key, value]); return builder; },
+            select: () => ({ maybeSingle: async () => ({
+              error: deleteError ?? null,
+              data: deleteData,
+            }) }),
+          };
+          return builder;
         },
         select() {
           if (table === 'recipes') {
@@ -72,7 +99,7 @@ function setup({ uploadFailure, insertError, fetchedRows = [] } = {}) {
       } },
     },
   }, { fetch: async () => ({ arrayBuffer: async () => new ArrayBuffer(4) }) });
-  return { ...api, uploads, removed, writes, processed, queries };
+  return { ...api, uploads, removed, writes, updates, deletions, processed, queries };
 }
 
 const input = {
@@ -179,4 +206,67 @@ test('the feed uses one query and includes recipes with no likes or saves', asyn
   assert.equal(rows[0].likeCount, 4);
   assert.equal(rows[1].isLiked, true);
   assert.equal(rows[1].isSaved, true);
+});
+
+const existingRecipe = {
+  id: 'recipe', authorId: 'author', title: 'Arroz', imagePath: 'author/cover.jpg',
+  imageUrl: 'https://images.test/author/cover.jpg', servings: 4,
+  ingredients: [{ store: 'mercadona', productId: 'rice', productName: 'Arroz',
+    productImageUrl: null, priceLabel: '1,00 €', metaLabel: null, quantity: '250 g', stepIndexes: [0] }],
+  steps: ['Cuece.'], stepImagePaths: ['author/step.jpg'],
+  stepImageUrls: ['https://images.test/author/step.jpg'], createdAt: '2026-09-12',
+  likeCount: 3, saveCount: 2, isLiked: true, isSaved: false,
+  author: { name: 'Ana', username: 'ana', initials: 'A', color: '#000000', avatarUrl: null, verified: false },
+};
+
+const editInput = {
+  userId: 'author', title: ' Arroz mejorado ', imageUri: existingRecipe.imageUrl,
+  servings: 5, profile: null, recipe: existingRecipe,
+  ingredients: [{ quantity: '300 g', product: {
+    store: 'mercadona', id: 'rice', name: 'Arroz', imageUrl: null, priceLabel: '1,00 €',
+    unitPrice: 1, metaLabel: null, pricePerUnitLabel: null, categoryName: 'Arroz',
+  } }],
+  steps: [{ text: 'Cuece más.', ingredientKeys: ['mercadona:rice'],
+    imageUri: existingRecipe.stepImageUrls[0], existingImagePath: existingRecipe.stepImagePaths[0] }],
+};
+
+test('editing text keeps unchanged owned photos without uploading or deleting them', async () => {
+  const api = setup();
+  const recipe = await api.updateCommunityRecipe(editInput);
+  assert.equal(api.uploads.length, 0);
+  assert.equal(api.removed.length, 0);
+  assert.deepEqual(api.updates[0].filters, [['id', 'recipe'], ['author_id', 'author']]);
+  assert.equal(api.updates[0].row.image_path, 'author/cover.jpg');
+  assert.deepEqual(plain(api.updates[0].row.step_image_paths), ['author/step.jpg']);
+  assert.equal(recipe.title, 'Arroz mejorado');
+  assert.equal(recipe.isLiked, true);
+});
+
+test('editing photos uploads replacements and removes obsolete owned paths after the update', async () => {
+  const api = setup();
+  await api.updateCommunityRecipe({
+    ...editInput,
+    imageUri: 'new-cover.jpg',
+    steps: [{ text: 'Cuece más.', ingredientKeys: [], imageUri: null,
+      existingImagePath: 'author/step.jpg' }],
+  });
+  assert.deepEqual(api.processed, ['new-cover.jpg']);
+  assert.equal(api.uploads.length, 1);
+  assert.deepEqual(api.removed, [['author/cover.jpg', 'author/step.jpg']]);
+});
+
+test('editing and deleting reject a non-author before touching storage or rows', async () => {
+  const api = setup();
+  await assert.rejects(api.updateCommunityRecipe({ ...editInput, userId: 'viewer' }), /Only the author/);
+  await assert.rejects(api.deleteCommunityRecipe(existingRecipe, 'viewer'), /Only the author/);
+  assert.equal(api.uploads.length, 0);
+  assert.equal(api.updates.length, 0);
+  assert.equal(api.deletions.length, 0);
+});
+
+test('deleting filters by recipe and author, then removes all owned photos', async () => {
+  const api = setup();
+  await api.deleteCommunityRecipe(existingRecipe, 'author');
+  assert.deepEqual(api.deletions[0].filters, [['id', 'recipe'], ['author_id', 'author']]);
+  assert.deepEqual(api.removed, [['author/cover.jpg', 'author/step.jpg']]);
 });

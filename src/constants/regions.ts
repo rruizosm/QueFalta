@@ -15,6 +15,7 @@
  * afinable sin migrar nada (solo cliente), igual que zones.ts.
  */
 import { CATALOG_STORE_KEYS, type CatalogStore } from './stores';
+import { bmAvailableForPostalCode } from './retailerZones';
 
 /** Códigos ISO 3166-2:ES de las 17 CCAA + Ceuta/Melilla. */
 export type RegionCode =
@@ -56,6 +57,8 @@ export const STORE_REGIONS: Record<CatalogStore, RegionCode[] | null> = {
   dia:       null,
   aldi:      null,
   lidl:      null,
+  bm:        ['ES-PV', 'ES-CB', 'ES-NC', 'ES-RI', 'ES-MD'],
+  eljamon:   ['ES-AN'],
   alcampo:   null,
   esclat:    ['ES-CT'],
   sorli:     ['ES-CT'],
@@ -138,15 +141,20 @@ export function regionFromPostalCode(cp: string): RegionCode | null {
 }
 
 /** ¿Está `store` disponible en `region`?  'ES'/null → todos visibles. */
-export function storeInRegion(store: CatalogStore, region: RegionValue | null): boolean {
+export function storeInRegion(
+  store: CatalogStore,
+  region: RegionValue | null,
+  postalCode: string | null = null,
+): boolean {
+  if (store === 'bm' && !bmAvailableForPostalCode(postalCode)) return false;
   if (region == null || region === REGION_ALL) return true;
   const regions = STORE_REGIONS[store];
   return regions == null || regions.includes(region);
 }
 
 /** Súpers disponibles en una CCAA (en el orden canónico de CATALOG_STORE_KEYS). */
-export function storesForRegion(region: RegionValue | null): CatalogStore[] {
-  return CATALOG_STORE_KEYS.filter((s) => storeInRegion(s, region));
+export function storesForRegion(region: RegionValue | null, postalCode: string | null = null): CatalogStore[] {
+  return CATALOG_STORE_KEYS.filter((s) => storeInRegion(s, region, postalCode));
 }
 
 /** Solo los súpers nacionales (fallback si la preferencia ∩ región queda vacía). */

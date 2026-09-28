@@ -1,3 +1,4 @@
+import { useCatalogSearchGeneration } from '../hooks/useCatalogSearchGeneration';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -71,6 +72,7 @@ export default function ProductNoteSheet({
   onSave,
   onClose,
 }: Props) {
+  const searchGeneration = useCatalogSearchGeneration();
   const styles = useThemedStyles(themedStyles);
   const insets = useSafeAreaInsets();
   const reducedMotion = useReducedMotion();
@@ -91,9 +93,9 @@ export default function ProductNoteSheet({
   const postalCode = profile?.postalCode ?? null;
   const preferredStores = profile?.catalogStores ?? CATALOG_STORE_KEYS;
   const enabledStores = useMemo(() => {
-    const enabledInRegion = preferredStores.filter((store) => storeInRegion(store, region));
-    return enabledInRegion.length > 0 ? enabledInRegion : storesForRegion(region);
-  }, [preferredStores, region]);
+    const enabledInRegion = preferredStores.filter((store) => storeInRegion(store, region, postalCode));
+    return enabledInRegion.length > 0 ? enabledInRegion : storesForRegion(region, postalCode);
+  }, [preferredStores, region, postalCode]);
 
   useEffect(() => {
     if (!visible) {
@@ -127,6 +129,7 @@ export default function ProductNoteSheet({
 
     const controller = new AbortController();
     let cancelled = false;
+    setResults([]);
     setSearching(true);
     setSearchError(false);
     const handle = setTimeout(() => {
@@ -150,7 +153,7 @@ export default function ProductNoteSheet({
       clearTimeout(handle);
       controller.abort();
     };
-  }, [noteProductLocked, pickerOpen, pickerStore, postalCode, query, region, profile?.lidlStoreId]);
+  }, [searchGeneration, noteProductLocked, pickerOpen, pickerStore, postalCode, query, region, profile?.lidlStoreId]);
 
   const normalizedValue = normalizeNote(value);
   const changed = normalizedValue !== normalizeNote(initialValue)

@@ -1,5 +1,6 @@
 import { PagerNativeFlatList as FlatList } from '../components/bottom-tabs-pager/PagerNativeScroll';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fonts } from '../constants/typography';
 import {
   View,
@@ -16,10 +17,11 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/colors';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useProfile } from '../context/ProfileContext';
 import { useToast } from '../context/ToastContext';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { fetchMyGroups, createGroup, type GroupSummary } from '../api/groups';
+import { fetchMyGroups, fetchMyCartMemberships, createGroup, type GroupSummary } from '../api/groups';
 import MemberAvatars from '../components/MemberAvatars';
 import NameInputSheet from '../components/NameInputSheet';
 import GlassSurface, { glassAvailable } from '../components/GlassSurface';
@@ -27,6 +29,10 @@ import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
 import { peekStartupCache, startupKeys, writeStartupCache } from '../lib/startupCache';
 import AmbientBubbleBackdrop from '../components/AmbientBubbleBackdrop';
+import PaywallModal from '../components/PaywallModal';
+import { FREE_GROUP_CART_LIMIT, limitsApply } from '../constants/limits';
+import { GroupCartLimitError, groupCartIsLocked } from '../lib/groupCartLimit';
+import { GROUP_CART_LIMIT_MIN_VERSION, GROUP_CART_LIMIT_RELEASE_ENABLED } from '../lib/groupCartRelease';
 
 // CTA "crear grupo" del estado vacío, con el ancla del tour (paso 1). Es un
 // componente propio para que el ancla se monte/desmonte CON el botón: al crear
@@ -40,6 +46,7 @@ export default function GroupsScreen() {
   const { session } = useAuth();
   const userId = session?.user.id;
   const { isActive, activateCart, deactivateCart, busy } = useCart();
+  const { isPremium, loading: profileLoading } = useProfile();
   const toast = useToast();
   const [activatingId, setActivatingId] = useState<string | null>(null);
 
@@ -47,6 +54,16 @@ export default function GroupsScreen() {
   const [groups, setGroups] = useState<GroupSummary[]>(cachedGroups ?? []);
   const [loading, setLoading] = useState(cachedGroups === null);
   const [error, setError] = useState(false);
+  const [hasGroupSnapshot, setHasGroupSnapshot] = useState(cachedGroups !== null);
+  // Las cachés anteriores al límite no incluían joinedAt: no pueden decidir
+  // qué tres cestas son gratuitas hasta recuperar las membresías.
+  const groupsReady = hasGroupSnapshot && (
+    !GROUP_CART_LIMIT_RELEASE_ENABLED || !limitsApply(isPremium)
+    || groups.every((group) => typeof group.joinedAt === 'string')
+  );
+  const [paywallVisible, setPaywallVisible] = useState(false);
+  const [limitNoticePreference, setLimitNoticePreference] = useState<{ userId: string; dismissed: boolean } | null>(null);
+  const limitNoticeKey = userId ? `groupCartLimitNoticeDismissed:${GROUP_CART_LIMIT_MIN_VERSION}:${userId}` : null;
 
   const [modalVisible, setModalVisible] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -54,11 +71,55 @@ export default function GroupsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
 
+  useEffect(() => {
+    if (!GROUP_CART_LIMIT_RELEASE_ENABLED || !userId || !limitNoticeKey) return;
+    let cancelled = false;
+    AsyncStorage.getItem(limitNoticeKey)
+      .then((value) => {
+        if (!cancelled) setLimitNoticePreference({ userId, dismissed: value === '1' });
+      })
+      .catch(() => {
+        if (!cancelled) setLimitNoticePreference({ userId, dismissed: false });
+      });
+    return () => { cancelled = true; };
+  }, [limitNoticeKey, userId]);
+
+  useEffect(() => {
+    if (!GROUP_CART_LIMIT_RELEASE_ENABLED || !userId || !cachedGroups?.some((group) => !group.joinedAt)) return;
+    let cancelled = false;
+    // La consulta ligera resuelve el estado de un snapshot antiguo mientras
+    // fetchMyGroups actualiza nombres, miembros y avatares por separado.
+    fetchMyCartMemberships(userId).then((memberships) => {
+      if (cancelled) return;
+      const joinedAtByGroup = new Map(memberships.map((member) => [member.id, member.joinedAt]));
+      setGroups((current) => current.every((group) => group.joinedAt)
+        ? current
+        : current.filter((group) => joinedAtByGroup.has(group.id)).map((group) => ({
+          ...group,
+          joinedAt: joinedAtByGroup.get(group.id)!,
+        })));
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [cachedGroups, userId]);
+
+  const dismissLimitNotice = () => {
+    if (!userId || !limitNoticeKey) return;
+    setLimitNoticePreference({ userId, dismissed: true });
+    AsyncStorage.setItem(limitNoticeKey, '1').catch(() => {});
+  };
+
   const load = useCallback(() => {
     setError(false);
+    if (!userId) {
+      setGroups([]);
+      setHasGroupSnapshot(false);
+      setLoading(false);
+      return Promise.resolve();
+    }
     return fetchMyGroups(userId)
       .then((next) => {
         setGroups(next);
+        setHasGroupSnapshot(true);
         if (userId) writeStartupCache(startupKeys.groups(userId), next);
       })
       .catch(() => setError(true))
@@ -74,7 +135,11 @@ export default function GroupsScreen() {
   }, [load]);
 
   const handleToggleActive = async (group: GroupSummary) => {
-    if (busy) return;
+    if (busy || (GROUP_CART_LIMIT_RELEASE_ENABLED && (!groupsReady || profileLoading))) return;
+    if (groupCartIsLocked(groups, group.id, isPremium)) {
+      setPaywallVisible(true);
+      return;
+    }
     const wasActive = isActive(group.id);
     setActivatingId(group.id);
     try {
@@ -82,6 +147,9 @@ export default function GroupsScreen() {
       else await activateCart(group.id, group.name, group.iconEmoji);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       toast.show(wasActive ? t('banner.deactivated') : t('banner.activated', { group: group.name }));
+    } catch (cause) {
+      if (cause instanceof GroupCartLimitError) setPaywallVisible(true);
+      else toast.show(t('group.activationError'), 'error');
     } finally {
       setActivatingId(null);
     }
@@ -120,23 +188,27 @@ export default function GroupsScreen() {
     }
   };
 
-  const renderGroup = ({ item, index }: { item: GroupSummary; index: number }) => {
-    const active = isActive(item.id);
+  const renderGroup = ({ item }: { item: GroupSummary }) => {
+    const locked = groupsReady && !profileLoading && groupCartIsLocked(groups, item.id, isPremium);
+    const active = !locked && isActive(item.id);
+    const accessPending = GROUP_CART_LIMIT_RELEASE_ENABLED && (!groupsReady || profileLoading);
     // Activate button — el del PRIMER grupo lleva el ancla del tour (paso 1).
     const activateBtn = (
       <TouchableOpacity
-        style={[styles.activateBtn, active && styles.activateBtnActive, busy && styles.activateBtnDisabled]}
+        style={[styles.activateBtn, active && styles.activateBtnActive, (busy || locked || accessPending) && styles.activateBtnDisabled]}
         onPress={() => handleToggleActive(item)}
-        disabled={busy}
+        disabled={busy || accessPending}
         activeOpacity={0.85}
         accessibilityRole="button"
-        accessibilityLabel={active ? t('group.cartActive') : t('group.activate')}
+        accessibilityLabel={locked ? t('group.cartLocked') : active ? t('group.cartActive') : t('group.activate')}
       >
         {busy && activatingId === item.id ? (
           <ActivityIndicator size="small" color={active ? colors.white : colors.accent} />
         ) : (
           <>
-            {active ? (
+            {locked ? (
+              <Ionicons name="lock-closed" size={15} color={colors.inkSoft} />
+            ) : active ? (
               <Ionicons name="checkmark" size={15} color={colors.white} />
             ) : item.iconEmoji ? (
               <Text style={styles.activateBtnEmoji}>{item.iconEmoji}</Text>
@@ -144,7 +216,7 @@ export default function GroupsScreen() {
               <Ionicons name="cart-outline" size={15} color={colors.accent} />
             )}
             <Text style={[styles.activateBtnText, active && styles.activateBtnTextActive]}>
-              {active ? t('group.cartActive') : t('group.activate')}
+              {locked ? t('group.cartLocked') : active ? t('group.cartActive') : t('group.activate')}
             </Text>
           </>
         )}
@@ -230,7 +302,7 @@ export default function GroupsScreen() {
           color={colors.accent}
           style={{ marginTop: (glassAvailable ? headerHeight : 0) + 48 }}
         />
-      ) : error ? (
+      ) : error && (groups.length === 0 || (GROUP_CART_LIMIT_RELEASE_ENABLED && !groupsReady)) ? (
         <View style={[styles.centerBox, glassAvailable && { paddingTop: headerHeight }]}>
           <Text style={styles.emptyText}>{t('group.loadError')}</Text>
           <TouchableOpacity
@@ -266,6 +338,29 @@ export default function GroupsScreen() {
           data={groups}
           keyExtractor={(item) => item.id}
           renderItem={renderGroup}
+          ListHeaderComponent={GROUP_CART_LIMIT_RELEASE_ENABLED
+            && !profileLoading
+            && !isPremium
+            && groupsReady
+            && groups.length > FREE_GROUP_CART_LIMIT
+            && limitNoticePreference?.userId === userId
+            && limitNoticePreference?.dismissed === false ? (
+            <View style={styles.limitNotice}>
+              <Ionicons name="information-circle-outline" size={20} color={colors.accent} />
+              <Text style={styles.limitNoticeText}>
+                {t('group.freeGroupLimitNotice')}
+              </Text>
+              <TouchableOpacity
+                style={styles.limitNoticeClose}
+                onPress={dismissLimitNotice}
+                accessibilityRole="button"
+                accessibilityLabel={t('group.dismissLimitNotice')}
+                hitSlop={6}
+              >
+                <Ionicons name="close" size={18} color={colors.inkSoft} />
+              </TouchableOpacity>
+            </View>
+          ) : null}
           contentContainerStyle={[
             styles.list,
             { paddingTop: glassAvailable ? headerHeight + 8 : 0, paddingBottom: bottomPad },
@@ -288,6 +383,8 @@ export default function GroupsScreen() {
         onSubmit={handleCreate}
         onClose={() => setModalVisible(false)}
       />
+
+      <PaywallModal visible={paywallVisible} onClose={() => setPaywallVisible(false)} />
 
       {glassAvailable && (
         <View style={styles.chrome} onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}>
@@ -323,6 +420,13 @@ const themedStyles = () => StyleSheet.create({
   newBtnText: { color: colors.white, fontFamily: fonts.bold, fontSize: 13 },
 
   list: { paddingHorizontal: 16, paddingBottom: 24 },
+  limitNotice: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: 9,
+    marginBottom: 12, padding: 13, borderRadius: 16,
+    borderWidth: 1, borderColor: colors.accentMid, backgroundColor: colors.accentLight,
+  },
+  limitNoticeText: { flex: 1, fontSize: 13, lineHeight: 18, fontFamily: fonts.medium, color: colors.ink },
+  limitNoticeClose: { width: 30, height: 30, marginTop: -6, marginRight: -6, alignItems: 'center', justifyContent: 'center' },
 
   // ── Group card ────────────────────────────────────────────────
   card: {

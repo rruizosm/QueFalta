@@ -1,5 +1,888 @@
 # QuéFalta — Contexto del proyecto
 
+## BM: fuente nutricional integrada (2026-09-28)
+
+- La tabla nutricional BM está en un JSON público separado por EAN, no en la
+  respuesta de `/catalog/product/code/{code}`. Cuatro alimentos devolvieron
+  valores estructurados, ingredientes y alérgenos; dos artículos no alimentarios
+  respondieron 200 con JSON sin tabla, pese a tener `nutritional.info.date`.
+- La ficha de un mismo producto fue idéntica en Gipuzkoa y Madrid. El sync
+  consulta el CDN una vez por EAN, conserva los campos existentes si falla la
+  consulta, revalida cada 90 días y limita cada ejecución a 1.000 EAN por
+  defecto (`DETAIL_MAX`). Guarda tabla nutricional, ingredientes, alérgenos y
+  conservación en `bm_products`; la vista `bm_product_locations` los expone.
+  La migración `20260928124545_bm_nutrition_details.sql` está aplicada en
+  producción. El backfill completo del 2026-09-28 consultó los 10.197 EAN
+  publicados sin fallos: 4.873 productos con tabla nutricional, 5.437 con
+  ingredientes, 3.730 con alérgenos y 4.962 con conservación. No hay
+  desajustes entre `ean` y `detail_ean`. El cliente todavía no lee estos campos
+  en la ficha ni calcula el Índice alimentario BM. Esquema y límites en
+  `scripts/README-bm-poc.md`.
+
+## Ofertas BM en la ficha de producto (local, 2026-09-28)
+
+- El detalle BM muestra el mismo bloque de promoción que Lidl y El Jamón:
+  etiqueta, condiciones distintas del nombre y vigencia, con precio anterior
+  tachado cuando el precio de oferta es menor que el base.
+- `BmProduct` incorpora `promoStart` desde la vista multizona existente. Cambio
+  solo de cliente, sin migración SQL.
+
+## Información de supermercados en Android (local, 2026-09-28)
+
+- Las «i» de las tarjetas «Todos tus supermercados» y Lidl en Canarias usan un
+  control compartido: objetivo táctil de 44 pt y círculo de acento suave de
+  34 pt en Android. El acceso junto al selector de Lidl y el de la pantalla de
+  elección de tienda siguen el mismo aspecto. iOS conserva su presentación.
+- En Android, el aviso de Lidl utiliza la misma tarjeta de información de la
+  app que «Todos tus supermercados»: cabecera, tipografía, cierre y botón de
+  confirmación. Se muestra dentro del modal que ya esté abierto para evitar
+  apilar modales nativos. El texto ES/CA y el aviso nativo de iOS se conservan.
+- Cambio solo de cliente, sin migración. Prueba dirigida, TypeScript y lint
+  focalizado correctos; falta revisión visual en un dispositivo Android.
+
+## Palabra de hoy: controles de Android con contraste (local, 2026-09-28)
+
+- Jugar/Ranking/Grupo y los cinco periodos usan una pista opaca y una selección
+  sólida con el acento de la cuenta cuando Liquid Glass no está disponible. El
+  texto e icono activos son blancos; se mantienen las medidas y la animación.
+- Volver, Premios e Info usan en Android el mismo botón transparente de 44 × 44 pt
+  que en iOS, sin el círculo blanco ni el borde del fallback anterior.
+- Cambio visual del cliente, sin migración SQL. TypeScript y lint focalizado
+  correctos; falta comprobación visual en un dispositivo Android.
+
+## Palabra de hoy: aviso de idioma una sola vez (local, 2026-09-28)
+
+- El aviso en catalán sobre la palabra y el teclado en castellano se guarda en
+  AsyncStorage por cuenta y dispositivo al pulsar «Entesos». Al volver al juego,
+  se consulta esa aceptación antes de mostrar el aviso o activar la partida.
+- Cambio de cliente sin migración SQL.
+
+## Palabra de hoy: teclado con teclas más visibles (local, 2026-09-28)
+
+- Las teclas del juego usan fondo blanco opaco también sobre Liquid Glass,
+  borde y sombra suave para delimitar cada bloque. Crecen a 56 pt de alto,
+  con letras de 22 pt; borrar tiene fondo gris. Se conservan los colores de
+  las pistas, la animación al pulsar y la respuesta háptica.
+- Cambio visual del cliente, sin migración SQL ni cambio de reglas.
+
+## Palabra de hoy: casillas y letras más grandes (local, 2026-09-28)
+
+- El tablero aumenta ligeramente sus casillas máximas de 40 a 44 pt en
+  pantallas normales y de 50 a 54 pt en pantallas altas. Conserva el límite
+  calculado por ancho para palabras de seis letras; las letras crecen con
+  la casilla, hasta 28 pt. Se aplica durante la partida y en el resultado.
+- Cambio visual de cliente, sin migración SQL ni cambios en la lógica del juego.
+
+## PostHog: diferido a la siguiente versión (2026-09-27)
+
+- Por decisión del usuario, se retiró la integración local de PostHog de esta
+  versión: sin SDK, eventos, consentimiento, variables ni módulos nativos nuevos.
+  La métrica propia de actividad DAU/WAU/MAU en Supabase permanece.
+- En la siguiente versión: pedir consentimiento previo, medir aperturas del
+  paywall y su origen, y actualizar la política pública y el flujo de supresión
+  antes de distribuir una build nueva.
+
+## Palabra de hoy: participantes ficticios retirados (2026-09-27)
+
+- La migración `20260927090604_remove_four_word_ranking_demo_users.sql` retira
+  `demo_001`–`demo_004` del ranking general y de las mejores posiciones de
+  Perfil. Hoy, Ayer y periodos agregados se calculan solo con partidas reales.
+- No había cuentas ni partidas ficticias guardadas; esas cuatro filas se
+  generaban en las funciones SQL, así que no fue necesario borrar datos de
+  usuario. Aplicada en Supabase como versión `20260927090604`; la consulta
+  remota confirmó cero filas ficticias en Hoy y Ayer. La integración PGlite
+  comprueba la creación histórica, la retirada y los puestos reales.
+
+
+## Palabra de hoy: puestos del ranking general con Plus (local, 2026-09-26)
+
+- En el ranking general, la cuenta sin Plus ve el podio y el número de puesto
+  (`#n`); desde el cuarto puesto se difuminan identidad, foto, aciertos y
+  puntuación de las filas reales. El lector de pantalla solo anuncia `#n` en
+  esas filas. No hay texto explicativo
+  adicional, no se añade su fila fuera de las primeras 150 ni se marca como
+  propia. «Mi posición» abre el paywall. Se aplica también a Ayer y a los demás
+  periodos cerrados e históricos.
+- Grupo conserva la lista y «Mi posición» sin restricciones. Las mejores
+  posiciones del perfil se reservan a Plus; la racha y el calendario siguen
+  disponibles. Se usa el gate común `limitsApply(isPremium)` y `expo-blur`.
+- Cambio de cliente, sin migración SQL. Las RPC actuales siguen devolviendo
+  posiciones a clientes antiguos; la restricción aquí es de presentación.
+  La build instalada anteriormente mostró «Unimplemented component» porque no
+  incluía el módulo nativo. Se ha restaurado `expo-blur` para la nueva build de
+  Xcode.
+- Rediseño del 27-09: cada fila cerrada desde el cuarto puesto usa un material
+  azul translúcido de 48 pt y radio 16, blur nativo sobre el contenido real,
+  tinte con alfa hacia transparente, borde, highlight, sombra y micrograno. El
+  `#n` queda fuera, con `#` Medium y cifra Bold. Pulsar la barra abre Plus;
+  los contenidos ocultos siguen fuera de accesibilidad. Tokens claro/oscuro y
+  equivalentes CSS en `docs/word-ranking-glass-design.md`. Verificado en el
+  simulador iOS para las filas #4–#7 del ranking semanal; Grupo mantiene el
+  gate exento (sin grupo activo en la cuenta de prueba).
+
+## Límite de 3 cestas de grupo gratuitas (local, 2026-09-26)
+
+- La pestaña Grupos muestra «Activar carrito» o «Carrito bloqueado» desde el
+  snapshot de grupos por usuario, sin esperar la revalidación de la lista con
+  perfiles. La activación sigue comprobando la membresía actual en Supabase;
+  si falla la recarga, se conserva la lista cacheada visible. Una caché antigua
+  sin `joinedAt` se completa primero con una consulta ligera de membresías.
+- Se habilita solo si la versión **nativa instalada** es 1.3.2 o posterior.
+  Una OTA sobre una build anterior no activa el límite, el aviso ni el nuevo
+  beneficio del paywall. En Expo Go/web se usa la versión del proyecto.
+- Crear grupos y añadir o aceptar miembros sigue sin límite. Sin Plus, cada
+  cuenta puede activar y consultar la cesta de sus tres grupos más antiguos
+  según `group_members.joined_at` (desempate por id); los demás muestran el
+  botón bloqueado y abren el paywall al tocarlo.
+- El detalle del grupo mantiene miembros y administración, pero no solicita ni
+  muestra artículos, progreso o total de la cesta bloqueada. Presenta candado
+  y acceso a Plus. Un aviso informa del cambio solo a cuentas sin Plus con más
+  de tres grupos;
+  puede cerrarse con una «x» y se recuerda por usuario en este dispositivo.
+  El paywall incluye «Grupos ilimitados» en ES/CA.
+- `CartContext` valida la selección guardada y las activaciones, altas de
+  productos y repeticiones de compra. Cambio de cliente, sin migración ni
+  despliegue; los clientes ya publicados conservan el comportamiento anterior.
+
+
+## Palabra de hoy: banner de racha actual (2026-09-26)
+
+- Al completar el reto, tanto por victoria como por agotar los intentos, aparece
+  sobre la parte superior de la pantalla un banner de racha actual con el mismo
+  `flame-outline` usado en las estadísticas de Perfil. Dura exactamente 4 s,
+  respeta Reducir movimiento y está localizado en ES/CA.
+- La copia usa 18 pt y el contador destacado 24 pt. Primero muestra la racha
+  anterior y, tras 300 ms, el nuevo número entra desde abajo mientras el previo
+  sale hacia arriba. El fuego acompaña con tres pulsos ascendentes; Reducir
+  movimiento presenta directamente el valor final sin esas animaciones.
+- Solo se dispara tras una finalización hecha en esa pantalla y espera al final
+  del revelado de letras; no reaparece al abrir una partida ya terminada.
+- `word_game_profile_statistics` devuelve ahora `currentStreak`, calculada en
+  servidor sobre días terminados consecutivos hasta hoy en Europe/Madrid. La
+  migración local `20260926133620_add_current_word_streak.sql` está aplicada en
+  Supabase como `20260926134026_add_current_word_streak`.
+- Cambio compatible con el RPC anterior, sin tablas ni datos nuevos. Integración
+  PostgreSQL, permisos, prueba visual de contrato, lint, TypeScript y diff-check
+  correctos; pendiente comprobación visual en dispositivo.
+
+## Tus favoritos: cabecera unificada (local, 2026-09-26)
+
+- La pestaña Productos de Tus favoritos adopta la misma cabecera compacta que
+  Catálogo, Ofertas, Novedades y Cambios de precio: lupa expandible, ordenación
+  por precio/envase y precio unitario, y selector lista/cuadrícula.
+- No incluye botón ni popup de filtros. El orden inicial es precio de menor a
+  mayor; precio unitario conserva el gate Plus. Categorías mantiene su buscador.
+- Cambio solo de cliente, sin migración. TypeScript, lint focalizado y
+  `git diff --check` correctos; pendiente comprobación visual en dispositivo.
+
+## Botón «Avísame» opaco en las fichas (local, 2026-09-26)
+
+- La pastilla superpuesta sobre la imagen del producto usa una superficie sólida
+  del tema y borde de acento, sin las dos capas translúcidas anteriores. Texto,
+  campana y comportamiento de las alertas permanecen iguales.
+- Cambio solo de cliente, sin backend ni migración. Prueba dirigida, lint,
+  TypeScript y `git diff --check` correctos.
+
+## Cesta BM: categoría principal para agrupar por zona (2026-09-27)
+
+- BM guardaba en la cesta solo su subcategoría N2. «Congelados › Verduras y
+  hortalizas», «Pescado y marisco», «Platos preparados» o «Panificación y
+  repostería» se agrupaban por el nombre de N2 y no por Congelados.
+- La vista `bm_product_locations` expone `cart_category_name` como ruta N1 › N2;
+  el cliente la guarda al añadir desde cualquier superficie BM. La columna
+  `category_name` original sigue siendo la N2 para los filtros del catálogo.
+- `zoneOfCategory` clasifica rutas con la N1 en secciones específicas
+  (Congelados, Bebé, Bebidas, hogar, higiene y mascotas) y por la N2 cuando
+  la raíz es genérica (Alimentación, Frescos, Eco-saludable).
+  La migración `20260927080446_bm_cart_root_category.sql` se aplicó en Supabase:
+  reparó las 16 líneas BM existentes en `list_items`; no había historial BM que
+  reparar. Verificados la ruta de la vista y cero líneas pendientes. Cliente
+  validado con pruebas y TypeScript; pendiente publicar build/OTA.
+
+## Carrito: clasificación de pollo, hamburguesas y lasaña (local, 2026-09-26)
+
+- El mapa cliente de zonas reconoce ahora las categorías de Mercadona
+  `Hamburguesas y picadas`, `Aves y pollo` y `Pollo` como «Carne, pescado y
+  charcutería».
+- El fallback por nombre también clasifica `burger`/`hamburguesa`, `pollo`/
+  `pollastre`, `chicken` y `pechuga` en esa zona, y `lasaña`/`lasanya`/
+  `canelones` en «Platos preparados». Corrige en particular Burger Crunchy
+  Chicken, Filetes pechuga de pollo corte fino y Lasaña Boloñesa Hacendado
+  cuando llegan sin categoría o con «Otros».
+- La categoría explícita sigue teniendo prioridad sobre el nombre: por ejemplo,
+  un caldo de pollo permanece en Despensa y una lasaña ultracongelada permanece
+  en Congelados. Cambio solo de cliente, sin migración. Prueba dirigida, lint,
+  TypeScript y `git diff --check` correctos.
+
+## Onboarding sin paywall (local, 2026-09-26)
+
+- «Entrar en QuéFalta» aplica el perfil completado y pasa directamente a Inicio
+  con la transición existente. Retirado el paywall final y su estado temporal.
+- Los accesos a Plus fuera del onboarding conservan su comportamiento.
+- Sin cambios de backend ni migraciones.
+
+
+## Brand film vertical de 10 segundos (2026-09-26)
+
+- Entrega en `marketing/brand-film-10s/quefalta-brand-film-10s.mp4`: 1080 × 1920,
+  60 fps, H.264 y AAC estéreo, música original de 144 BPM sincronizada con el montaje.
+- Logo y marcas locales; fotos descompuestas de la captura pública de la cesta,
+  con tarjetas, etiquetas y controles reconstruidos en capas animadas. Cierre
+  en `quefalta.es`. Fuentes editables, procedencia y verificación en la misma carpeta.
+- Sin cambios en la app ni publicación en redes. Typecheck ejecutado: tres errores
+  ajenos en estilos de `StoreDropdown.tsx`; ver README de la pieza.
+
+## Información de «Todos tus supermercados» bloqueado (local, 2026-09-26)
+
+- Cuando «Todos tus supermercados» está bloqueado para una cuenta sin Plus,
+  su tarjeta muestra un botón de información accesible para cualquier región o
+  código postal. La «i» no aparece si la vista está desbloqueada. Se sitúa en
+  la esquina inferior izquierda con una superficie Liquid Glass de 30 pt dentro
+  de un objetivo táctil invisible de 44 pt; Android/iOS anteriores usan fallback.
+- El popup ES/CA explica que la vista conjunta reúne el contenido disponible de
+  los supermercados seleccionados de la zona, permite buscar en todos a la vez,
+  ordenar precios y consultar ofertas, novedades y cambios de precio sin cambiar
+  de cadena, identificando cada resultado por supermercado y conservando los
+  filtros de cada pantalla.
+- Incluye una muestra visual con el mismo diseño de lista del catálogo: tres
+  referencias reales de leche semidesnatada de Mercadona, Carrefour y Lidl,
+  verificadas el 26-09-2026, con miniatura, precio y logo de procedencia en la
+  esquina superior izquierda. Se presenta expresamente como ejemplo cuyos
+  productos y precios pueden cambiar.
+- Implementado tanto en el selector propio de Catálogo como en el selector
+  compartido de Ofertas, Novedades y Cambios de precio. El popup visual se
+  renderiza dentro del modal del selector para no intentar apilar dos modales
+  nativos en iOS. Cambio solo de cliente,
+  sin backend ni migración. Pruebas dirigidas, lint, TypeScript y diff-check
+  correctos; apertura, contenido y cierre verificados en un iPhone 15 Pro con
+  iOS 26.5 Simulator.
+
+## Aviso de catálogo Lidl para Canarias (local, 2026-09-26)
+
+- Cuando una cuenta de Canarias selecciona Lidl, el selector compartido de
+  supermercado muestra un botón de información accesible en Catálogo, Ofertas,
+  Novedades, Cambios de precio y Favoritos.
+- La «i» también aparece directamente en la esquina inferior izquierda de la
+  tarjeta Lidl dentro de las rejillas de supermercados y en la cabecera del
+  selector de tienda Lidl. La detección acepta `region = ES-CN` y, como respaldo,
+  códigos postales canarios con prefijo 35/38.
+- El aviso explica en ES/CA que Lidl no publica un catálogo específico para
+  Canarias, por lo que QuéFalta muestra como referencia el catálogo principal
+  de Madrid. Aclara que se puede seguir usando para consultar productos y
+  orientarse, pero que surtido, promociones y algunos precios pueden variar y
+  se debe confirmar el importe final en tienda.
+- Cambio solo de cliente, sin backend ni migración. Pruebas dirigidas, lint,
+  TypeScript y `git diff --check` correctos. Tarjeta Lidl, botón y aviso
+  verificados con un perfil canario en iPhone 15 Pro, iOS 26.5 Simulator.
+
+## Perfil: estadísticas de Palabra de hoy (2026-09-26)
+
+- «Mis estadísticas» no se muestra en Perfil y «Editar» recupera su diseño
+  anterior. La pantalla dedicada conserva el bloque: mejor racha de días
+  consecutivos completados, mejores puestos diario/semanal/mensual/anual del
+  ranking general y tablero mensual desplazable de los últimos 12 meses.
+  El bloque ya no se muestra directamente en Perfil.
+- Victoria y derrota cuentan igual para actividad/racha; iniciar sin terminar
+  no cuenta. Fechas según Europe/Madrid, histórico desde el reinicio v2 del 16-09.
+- Los puestos usan los mismos puntos/empates del ranking y comparan todos los
+  periodos. Se muestra la fecha del mejor periodo; si aún está abierto se marca
+  «En curso» y puede cambiar. No son máximos intradía guardados permanentemente.
+- RPC `word_game_profile_statistics` sin parámetros de usuario, con comprobación
+  de auth, implementación privada y wrapper invoker; solo devuelve datos propios.
+  Migración `20260926113035_word_profile_statistics.sql` aplicada en Supabase.
+- Cliente ES/CA, temas, carga/error/reintento y refresco al enfocar o volver a la
+  app. Datos en memoria por instancia/cuenta; ninguna clave global persistida.
+- Validación: integración PostgreSQL del juego y paridad de los cuatro récords,
+  rachas y actividad, permisos, calendario bisiesto y parser, TypeScript y lint.
+  Pendiente revisión visual en dispositivo; no se ha publicado build ni OTA.
+
+
+## Versión comercial 1.3.2 (local, 2026-09-25)
+
+- Expo e iOS quedan alineados en `1.3.2`: `app.json`, `Info.plist` y las
+  configuraciones Debug/Release de Xcode.
+- Se mantiene `CURRENT_PROJECT_VERSION = 34`; esta actualización cambia la
+  versión comercial, no el número de build. Android heredará `1.3.2` de Expo al
+  generar el proyecto nativo.
+- Las claves históricas de avisos 1.3/1.3.1 permanecen intactas.
+
+## Palabra de hoy: puntuación final destacada (local, 2026-09-25)
+
+- El resultado de una derrota ya no muestra «Mañana, otra oportunidad» ni el
+  icono del sol; conserva la solución correcta. La victoria mantiene trofeo y título.
+- La puntuación se enfatiza solo mediante la cifra a 42 pt, sin tarjeta, fondo,
+  borde ni sombra. El tiempo queda en una fila independiente justo debajo.
+- Cambio solo de cliente, sin backend ni migración. Prueba de contrato visual,
+  TypeScript y diff-check correctos; pendiente comprobación visual en dispositivo.
+
+## Novedades y Cambios de precio: cabecera unificada (local, 2026-09-25)
+
+- Ambas pantallas adoptan la cabecera compacta de Catálogo/Ofertas: lupa
+  expandible, bloque de ordenación, Filtros Liquid Glass y vista lista/cuadrícula.
+- Novedades arranca ordenada por precio de menor a mayor y mueve fuera del popup
+  tanto precio/envase como precio unitario. El popup conserva súper, categoría
+  y rango de precio.
+- Cambios de precio mantiene Bajadas como primera ordenación, ofrece Subidas y
+  precio unitario en la cabecera, y añade búsqueda por nombre. Al buscar completa
+  las páginas pendientes del historial semanal para no limitarse a las 50 primeras.
+  Su popup queda reservado para categoría y magnitud del cambio.
+- El precio unitario conserva el gate Plus en ambas pantallas. Cambio solo de
+  cliente, sin migración; TypeScript, lint focalizado y diff-check correctos.
+
+## Ofertas: cabecera alineada con Catálogo (local, 2026-09-25)
+
+- La cabecera de Ofertas replica la fila de productos de Catálogo: lupa
+  expandible, orden por precio/envase y precio unitario, botón de filtros y
+  selector lista/cuadrícula.
+- El botón de filtros queda entre ordenación y vista. La hoja inferior ya no
+  duplica los controles de ordenación; conserva supermercado, tipo de oferta,
+  categoría y rango de precio. El orden por precio unitario mantiene el gate Plus.
+- Filtros usa el mismo control Liquid Glass que Ordenación y Vista, con estado
+  acentuado cuando hay facetas activas. El orden inicial es precio de menor a mayor.
+- Cambio solo de cliente, sin migración. TypeScript, lint focalizado y
+  `git diff --check` correctos; pendiente comprobación visual en dispositivo.
+
+## Palabra de hoy: enlace compartido abre Inicio (local, 2026-09-25)
+
+- El mensaje compartido ya no muestra el idioma `ES/CA`; conserva fecha,
+  resultado, puntos, cuadrícula sin letras y enlace.
+- El resultado comparte `https://quefalta.es/inicio?v=3`; al recibirlo, la app abre
+  `Inicio > HomeMain`, nunca la pantalla del juego. Funciona con la app abierta
+  y en arranque en frío; el destino espera a sesión, perfil y onboarding.
+- El parser común conserva las invitaciones `/join/<id>` y acepta también el
+  fallback `quefalta://inicio`. Android declara `/inicio` como App Link.
+- Web implementada y desplegada en `QueFalta-Web` commit `d11fc12`: `/inicio/`
+  responde 200 con apertura/descargas y el AASA incluye `/join/*`, `/inicio` y
+  `/inicio/*`. Queda aplicar en Amplify el rewrite 200 documentado desde el
+  endpoint AASA sin extensión a su copia `.json`; el endpoint exigido por Apple
+  aún responde 301 con barra final y Apple no admite esa redirección.
+- La tarjeta social de `/inicio` replica el formato compacto de referencia: icono
+  180×180 a la izquierda y, a la derecha, «Palabra de hoy · QuéFalta» / «Un
+  pequeño reto. Una nueva palabra cada día.». `?v=3` renueva la caché anterior.
+
+## Palabra de hoy: resultado compacto (local, actualizado 2026-09-26)
+
+- El panel de resultado usa 18 pt de padding y puntos a 42 pt; el contenido se
+  reparte hasta el margen inferior seguro para aprovechar el alto libre.
+
+- Al terminar el revelado, el panel conserva icono/título solo en victoria y
+  separa los puntos de la fila de tiempo. Mantiene solución en derrota,
+  confirmación y Compartir.
+- El tablero, la separación de filas, las casillas y sus letras conservan las
+  mismas dimensiones antes y después de resolver la palabra. Conserva seis
+  filas; oculta la leyenda al acabar y vuelve al inicio al mostrar el resultado.
+- Scroll disponible como respaldo para texto de accesibilidad muy grande,
+  errores o ventanas excepcionalmente pequeñas. Pendiente validación visual.
+
+
+## Palabra de hoy: participantes ficticios retirados (2026-09-25)
+
+- Eliminados de producción los 100 participantes `demo_001`–`demo_100` y sus
+  400 resultados sintéticos del 16 al 19 de septiembre. La tabla privada
+  `private.word_ranking_fixtures` ya no existe.
+- En esa fecha, `private.word_ranking_window` volvió a calcular los periodos
+  exclusivamente desde partidas reales; el 26/09 se añadieron cuatro entradas
+  virtuales nuevas en el ranking general. Se conservan Ranking, Grupo, periodos archivados,
+  posición propia, privacidad, límite de 150 filas y compatibilidad con clientes
+  publicados.
+- Migración local `20260925092356_remove_word_ranking_demo_users.sql`, aplicada
+  en Supabase como `20260925092539_remove_word_ranking_demo_users`.
+- Verificación remota del 25/09: cero referencias a fixtures y cero entradas `demo_` en
+  Hoy, Semana, Mes, Año e Histórico; permisos de los RPC intactos. La integración
+  PostgreSQL completa también pasa. No requiere publicar una nueva versión.
+
+## Buscador experimental retirado (2026-09-25)
+
+- Eliminado por petición del usuario el motor de búsqueda v2: 160 funciones/RPC,
+  19 tablas privadas con 475.151 documentos y 246.082 registros de mantenimiento,
+  permisos y rol lector. Los catálogos fuente y el buscador vigente se conservan.
+- Rama Supabase `catalog-search-v2-test` eliminada; solo queda `main`.
+- Migración de retirada local `20260925091055_remove_catalog_search_experiment.sql`,
+  aplicada en producción como `20260925091215`. No reaplicar las antiguas
+  migraciones del experimento: se han retirado del árbol local junto al laboratorio,
+  scripts, fixtures, pruebas y documentación específicos. Historial remoto conservado
+  como auditoría; la migración de retirada documenta el estado final.
+- Verificación remota: cero funciones, relaciones o roles del experimento;
+  huella de las demás funciones idéntica. Tamaño lógico BD: 9,066 → 6,690 GB.
+- Cliente local vuelve a las búsquedas existentes, sin selector remoto ni piloto.
+  Se conserva la invalidación de caché por sesión. Sin build, OTA ni commit.
+- Validación: TypeScript, lint focalizado y 24 pruebas de búsqueda/caché/BM/
+  navegación correctos; RPC actual devuelve 10 resultados con rol authenticated.
+  Prueba adicional Lidl: fallo previo por `LEGACY_PROFILE_COLUMNS` retirado en los
+  cambios de privacidad del perfil, ajeno a esta tarea.
+
+## Avisos de incorporación BM y El Jamón (local, 2026-09-24)
+
+- Dos preguntas independientes siguen el diseño Lidl, con logos, botones Sí/No
+  y actualización de `catalog_stores`. La respuesta se guarda por cadena,
+  usuario y versión 1.3.2.
+- BM solo se pregunta para CP cubiertos por `bmAvailableForPostalCode`; El Jamón,
+  solo para CP de Andalucía. Se muestran tras Lidl y antes del popup general.
+- El onboarding registra las respuestas ya dadas en la selección de tiendas; si
+  la cadena ya figura en el perfil, no se vuelve a preguntar.
+
+## Foto de perfil solo para amigos (local, 2026-09-24)
+
+- Privacidad y seguridad incorpora el interruptor «Mostrar mi foto solo a mis
+  amigos». Al activarlo, las personas sin amistad aceptada reciben las iniciales
+  en vez de la foto. La copia pública se elimina y la foto pasa al bucket
+  `avatars-private`, desde el que se emiten URLs firmadas solo al propietario
+  y a amistades aceptadas. Las fotos no restringidas siguen en `avatars` para
+  conservar la compatibilidad con los clientes publicados.
+- Aplicada en Supabase `20260924143007_private_friend_avatars.sql` el
+  2026-09-24. Añade `profiles.avatar_friends_only`, crea el bucket privado y
+  bloquea que clientes antiguos vuelvan a subir una foto pública mientras la
+  preferencia esté activa. Bucket, columna, policies y función verificados; falta
+  probar el flujo con dos cuentas en un dispositivo antes de publicar la app.
+
+## Palabra de hoy: carrusel manual de puntuaciones (local, 2026-09-24)
+
+- Indicadores pulsables con `GlassSurface` en iOS compatible,
+  tinte de acento en el activo. Tamaño visual original: 7×7 pt y activo 20×7 pt,
+  sin separación extra; área táctil de 44 pt. Fallback anterior conservado.
+- Rebote explícito en cada pulsación, incluida la página ya seleccionada y
+  toques repetidos. Sustituye la respuesta nativa variable; respeta Reducir movimiento.
+
+- La ayuda muestra tres páginas para 4, 5 y 6 letras, con una fila por
+  intento y su puntuación. Deslizamiento horizontal manual, sin avance automático.
+- Tres indicadores pulsables y «Desliza · n de 3» señalan la página actual;
+  al reabrir empieza en 4 letras. Textos ES/CA, estilos de tema y accesibilidad.
+- Conserva los valores y las reglas de tiempo/domingo. Sin cambios de backend.
+- Pendiente comprobación visual en dispositivo.
+
+
+## Alcampo: cobertura completa de promociones (local, 2026-09-24)
+
+- El sync Playwright ya no depende únicamente de las ofertas embebidas en las
+  categorías normales: recorre también las 458 hojas de `Folletos y Promociones`
+  y `Campañas`, descubre los identificadores y abre la landing canónica de cada
+  oferta para fusionar todos sus productos con el catálogo alimentario.
+- Cada producto conserva todas sus promociones deduplicadas en `promo_details`;
+  cada entrada incluye IDs, texto, tipo, cantidad requerida, fechas, rutas de
+  origen y `online_only`. `promo_online_only` señala si existe alguna exclusiva
+  online. El resumen `promo_*` anterior se mantiene compatible con la app.
+- Corregida la normalización de fechas `DD/MM/YY`, separador `_` y precios SSR
+  `price.current`/`price.original`. El checkpoint distingue catálogo, directorio
+  promocional y landings para poder reanudar cada fase.
+- Pendiente aplicar `20260924072152_alcampo_complete_promotions.sql` antes del
+  próximo `-Publish` y ejecutar primero un DRY_RUN completo en Windows. No se ha
+  publicado ni actualizado todavía el catálogo productivo del 21-08.
+- Piloto real macOS sin escritura: 1 hoja de catálogo + 2 promocionales,
+  3 landings descubiertas y 12/12 productos del piloto fusionados, 0 incidencias.
+  La landing real `Todo a 1 €` normaliza 720/720 productos, vigencia 14-09 a
+  08-10 y 17 rebajas con precio anterior explícito. Pruebas dirigidas (10/10),
+  TypeScript y diff-check correctos. Suite global: 1.003/1.010; los 7 fallos son
+  hashes/contratos de cambios locales previos (búsqueda, Lidl y comparador), no
+  archivos Alcampo de este cambio.
+
+## QuéFalta Plus: paywall anterior restaurado (local, 2026-09-25)
+
+- El paywall vuelve exactamente al diseño anterior al pago único: dos tarjetas
+  en paralelo para Mensual y Anual, anual preseleccionado, tamaños, espaciado,
+  sello «Mejor precio», prueba y disclosure originales.
+- El pago único y la migración desde anual ya no se muestran ni se enlazan desde
+  Perfil. El soporte técnico de RevenueCat/webhook que ya estaba implementado se
+  conserva inactivo para no mezclar esta reversión visual con backend.
+- Cambio de cliente y documentación; sin migración SQL ni despliegue backend.
+  Pruebas dirigidas de Plus, TypeScript y `git diff --check` correctos; pendiente
+  comprobación visual en dispositivo.
+
+## Hipercor multicentro: tablas desplegadas en Supabase (2026-09-23)
+
+Documento canónico de la integración: [HIPERCOR.md](HIPERCOR.md).
+
+- Aplicadas en main las migraciones `20260923104530_hipercor_multicenter_catalog`
+  y `20260923104854_hipercor_multicenter_hardening`.
+- Nuevo modelo: directorio `hipercor_centers`, resolución CP+modalidad en
+  `hipercor_postal_centers`, ficha común `hipercor_product_master`, estado por
+  centro `hipercor_center_products`/`hipercor_center_categories`, historial
+  `hipercor_price_history` y auditoría privada `hipercor_sync_runs`.
+- Las tablas legado siguen intactas. Se migraron exactamente 20.338 productos y
+  10 categorías al centro `010130`; cero diferencias de precio/promoción/
+  disponibilidad frente al catálogo legado. El mapa postal queda vacío hasta
+  que el sync descubra y valide las resoluciones reales.
+- RLS y grants comprobados: clientes solo lectura de datos publicados; historial
+  y ejecuciones solo backend. Las vistas `hipercor_product_centers` y
+  `hipercor_center_category_catalog` son `security_invoker`; despublicar un centro
+  oculta su catálogo. Trigger de historial probado dentro de transacción revertida.
+- Advisors sin avisos Hipercor de seguridad ni FK sin índice. Los avisos de índices
+  recién creados sin uso son esperables hasta conectar el nuevo sync/app.
+- Sync multicentro implementado localmente: selector público de `home_delivery`,
+  CP→`page.store_id`, huella de paridad para CP que comparten centro, un crawl por
+  centro, checkpoints separados y escritura del maestro/estado local/sync runs.
+  La limpieza de obsoletos queda acotada al centro y solo `010130` se espeja en
+  tablas legacy. Runner Windows acepta lista/fichero de CP y modo `LocationOnly`.
+- Pendiente ejecutar un piloto Windows real con varios CP, revisar sus huellas y
+  publicar. La app aún NO consume el modelo multicentro; no exponer un centro nuevo
+  hasta que el sync complete su catálogo y lo marque `selectable=true`.
+- Validación local: 7 tests Hipercor pasan, `npx tsc --noEmit` y `git diff --check`
+  correctos. No se ejecutó el crawl real en macOS porque esa IP/firma sigue
+  bloqueada por Akamai; la prueba operativa corresponde al runner Windows.
+
+## Hipercor: sync productivo trasladado a Windows (local, 2026-09-21)
+
+- El último sync correcto en GitHub Actions fue el 13-09 (17.951 productos).
+  Los ocho runs del 14 al 21 fallaron igual: después de ~204 páginas de
+  Alimentación, Akamai devolvió `Access Denied` en la primera página de
+  Desayunos. Éxito y primer fallo usaron el mismo commit; no fue una regresión.
+- El workflow `sync-hipercor.yml` queda solo con `workflow_dispatch`; la vía
+  productiva pasa a `scripts/run-hipercor-sync.ps1` desde Windows/Chrome local.
+- El crawler espera 1,5–3 s entre páginas y 15 s entre categorías, aplica una
+  espera de 90 s ante WAF y registra estado HTTP, URL y referencia de Akamai.
+  Guarda checkpoint atómico después de cada categoría y admite `RESUME=1`.
+- `-Publish` es obligatorio para escribir. Un fallo conserva el checkpoint y
+  nunca ejecuta upsert, limpieza de obsoletos ni estado de sync antes de tener
+  las diez categorías y superar el guardarraíl de 10.000 productos. Hipercor
+  continúa fuera de cliente, comparador y embeddings.
+
+## BM: catálogo y onboarding por código postal (local, 2026-09-20)
+
+- El cliente incorpora BM como supermercado seleccionable, sin migración nueva:
+  reutiliza el modelo multizona desplegado el 30-08 (`bm_*`, RPC de búsqueda,
+  ofertas e historial de precios).
+- BM aparece en onboarding y Preferencias para cualquier CP de Araba (`01`),
+  Gipuzkoa (`20`), La Rioja (`26`), Madrid (`28`), Navarra (`31`), Cantabria
+  (`39`) o Bizkaia (`48`). Cada provincia se resuelve contra uno de los siete CP
+  de referencia que sincroniza y valida el importador.
+- La app obtiene el `location_id` del CP provincial de referencia publicado en
+  `bm_postal_locations` y lo aplica a búsqueda, listado general, categorías,
+  ficha, ofertas, novedades y cambios de precio. Las cuentas antiguas no reciben
+  BM activado silenciosamente.
+- Logo oficial local `assets/stores/bm.png` vinculado al metadato único de BM:
+  se muestra en onboarding, catálogo, ofertas, novedades, cambios de precio y
+  Preferencias sin duplicar recursos por pantalla.
+- BM queda fuera de la comparativa de similares v7 hasta que esa RPC admita su
+  modelo multizona. El workflow de sync continúa manual; ampliar a otra provincia
+  exige añadir su CP de referencia al sync y a `retailerZones.ts`.
+- Producción verificada por REST anónima: las siete relaciones están habilitadas
+  y preferentes, cada ubicación expone entre 7.103 y 8.420 productos publicados,
+  y `search_bm_products` devuelve resultados zonales. Cambio de cliente pendiente
+  de publicación. TypeScript y 27 pruebas focalizadas correctos. La suite
+  global llegó a 900/904 antes de actualizar tres contratos estáticos, que después
+  pasan; el cuarto no carga porque este checkout no contiene `android/`. El lint
+  global actual está bloqueado por dos errores ajenos en `RecipeImageViewer.tsx`.
+  Falta comprobar visualmente el onboarding en dispositivo.
+
+## Palabra de hoy: puntuación explicada por longitud (local, 2026-09-20)
+
+- «Cómo se juega» enumera los seis valores de cada longitud: 4 letras
+  (100/85/70/55/40/25), 5 (120/102/84/66/48/30) y 6
+  (140/119/98/77/56/35). Son valores previos al descuento por tiempo.
+- Se aclara el 5 % acumulativo por cada 20 segundos completos, el redondeo, el
+  doble del domingo y los mínimos. Textos equivalentes en castellano y catalán.
+
+## Palabra de hoy: tiempo en el resultado (2026-09-20)
+
+- Migración local `20260920165521_word_game_result_duration.sql`, aplicada en
+  producción como `20260920165802_word_game_result_duration`: el payload de la
+  partida devuelve `durationSeconds`, calculado con `finished_at - started_at`.
+  No añade consultas ni modifica partidas o puntuaciones.
+- El bloque final muestra el tiempo estable en formato `mm:ss`, incluso tras
+  recargar o abrir la partida en otro dispositivo. En una victoria se omite
+  «La palabra era…»; en una derrota se conserva para revelar la solución.
+- Contrato y sesión validados con 26 pruebas; integración PostgreSQL completa
+  correcta. Respuesta real comparada con las marcas persistidas, permisos del
+  endpoint intactos y asesores de seguridad sin cambios.
+
+## Palabra de hoy: «bonsai» aceptada (local, pendiente de migrar) (2026-09-20)
+
+- RLA-ES v2.9 omitía la forma común «bonsái», por lo que su versión normalizada
+  `BONSAI` (6 letras) era rechazada por la validación de servidor.
+- Nueva migración `20260920163807_add_bonsai_to_word_game_dictionary.sql`: alta
+  idempotente de `BONSAI`, sin cambiar partidas, retos, puntuaciones, funciones
+  ni permisos. La prueba PGlite cubre un envío real `bonsai` por RPC.
+
+## Palabra de hoy: carga de rankings optimizada (2026-09-20)
+
+- Marco de Ranking/Grupo fijo (local): fondo, borde redondeado y márgenes
+  superior/inferior viven fuera de la FlatList; el contenido se desplaza dentro.
+  Se ajustan los offsets de «Mi posición» al padding interno. TypeScript y lint
+  correctos; revisión visual pendiente (simulador ocupado editando una receta).
+- SQL aplicado como `20260920155934_word_ranking_read_optimization`:
+  separa consulta global/grupo, añade índice parcial v2 y limita perfiles/JSON
+  a 150 líderes + posición propia, después de calcular puestos y empates.
+  Los clientes antiguos usan también esta consulta. Diez hashes de resultados
+  reales idénticos antes/después; permisos e índice verificados, sin nuevos
+  avisos de seguridad. No se modifican partidas ni puntuaciones.
+- Cliente local pendiente de publicación: precarga secuencial del periodo
+  elegido para Ranking y Grupo al entrar en el juego; caché en memoria por
+  cuenta/día/grupo/resultado, máximo 12 respuestas y dos consultas concurrentes.
+  Frescura 60 s; instantánea hasta cinco minutos mientras se revalida al abrir.
+  Sin polling ni caché en disco. Cambiar cuenta/grupo/día o terminar partida
+  invalida datos y cancela solicitudes. Tirar para actualizar fuerza consulta.
+- Lista virtualizada y memorizada: monta filas cercanas, no los 150 avatares
+  a la vez, y evita repintarlas por cada tick del reloj. «Mi posición» funciona
+  sin montar antes las filas intermedias; comprobado hasta #101 en simulador.
+- PGlite: mismos resultados/privacidad/empates con 10.000 participantes;
+  mediana de cinco lecturas calientes 296,6 → 120,5 ms (~59 % menos).
+  No representa latencia de red ni carga concurrente productiva. La consulta
+  aún agrega las partidas del periodo; no garantiza tiempo constante con un
+  historial ilimitado. La apertura inmediata requiere caché/precarga disponible.
+
+## Recetas: edición y eliminación por el autor (local, 2026-09-20)
+
+- Retirada la información de personas del detalle y del formulario compartido
+  de crear/editar. Se conserva el contrato de persistencia existente por compatibilidad.
+- Cierre sin panel blanco: modal overFullScreen transparente y fondo de navegación
+  transparente; la precarga no ejecuta salida si nunca se presentó. El desmontaje
+  del flujo completo omite las animaciones de salida de sus hijos.
+
+- En el detalle, solo el propietario ve un lápiz junto a su `@`; abre el mismo
+  formulario con título «Editar receta» y todos los campos, relaciones e imágenes
+  precargados.
+- Guardar actualiza la receta y el feed local. Las fotos sin cambios se conservan;
+  las sustituidas se suben antes del `UPDATE` y las antiguas se limpian después
+  del éxito para no dejar la receta sin imágenes ante un fallo.
+- El editor ofrece «Eliminar receta» y exige una segunda acción en un aviso
+  destructivo. El borrado se filtra por receta y autor, actualiza el feed y limpia
+  las imágenes propias. RLS ya limitaba `UPDATE`/`DELETE` al autor: sin migración.
+- El detalle usa una transición vertical propia sobre un Modal nativo sin
+  animación. `RecipeFlowModal` contiene un stack con detalle y editor: editar
+  apila `EditRecipe` sobre el detalle sin cerrar la ventana ni mostrar el feed.
+  Al volver, el detalle lee la receta actualizada del feed; borrar cierra el flujo.
+  El stack nativo dentro de `Modal` bloqueaba todos los toques en iOS.
+  `RecipeModalStack` usa StackRouter con vistas normales y SlideInRight/SlideOutRight,
+  navegación independiente y raíz de gestos propia, aislada del pager.
+  Al enfocar el detalle propio se precarga y monta el editor fuera de pantalla;
+  al pulsar el lápiz se reutiliza esa ruta y empieza un translateX de 260 ms,
+  sin esperar al montaje de todos los campos. La precarga no recibe toques ni
+  aparece en accesibilidad y se renueva al volver al detalle.
+  El bloqueo de salida del formulario se registra solo con foco: una ruta
+  precargada aún no está en `state.routes` y PreventRemoveProvider rechaza su key.
+  Verificados en simulador: Pasos, abrir/cerrar edición y volver a la lista.
+  `RecipeForm` comparte campos, validación, imágenes y guardado entre ambas rutas.
+  Crear receta conserva su transición vertical. El borrado vive en la cabecera.
+- Textos en castellano y catalán. Cambio de cliente pendiente de publicar.
+
+## Palabra de hoy: selector de periodos fijo (local, 2026-09-20)
+
+- En Ranking y Grupo, el selector Hoy/Semana/Mes/Año/Histórico forma parte de
+  la misma cabecera fija que Jugar/Ranking/Grupo. La clasificación se desplaza
+  por debajo y «Mi posición» deja la fila del usuario visible.
+
+## Recetas: carga restaurada en producción (2026-09-20)
+
+- La consulta del feed ya seleccionaba `recipes.servings`, pero la migración que
+  añadía esa columna seguía pendiente; PostgREST rechazaba la consulta completa y
+  las recetas no cargaban.
+- `20260915062836_add_recipe_servings.sql` se aplicó en Supabase como
+  `20260920112528_add_recipe_servings`. Producción conserva sus tres recetas
+  anteriores con `servings = null`, añade el `CHECK` 1–99 y permite actualizar
+  esa columna a usuarios autenticados. No requiere una nueva build del cliente.
+
+## Inicio: accesos 2×2 y Favoritos como destino propio (local, 2026-09-19)
+
+- Inicio deja de mostrar el carrusel de productos favoritos, de depender de su
+  estado de carga y de refrescarlo. Favoritos permanece disponible mediante un botón.
+- Novedades, Ofertas, Cambio de precio y Favoritos forman ahora un grid 2×2
+  de tarjetas compactas con icono y título, sin texto descriptivo. Cambio solo
+  de cliente, sin migración SQL.
+- Cada tarjeta conserva su icono, chevron y label, y añade detrás una marca de
+  agua amplia, inclinada, recortada, difuminada y excluida de accesibilidad:
+  NOV/OFE/PRE/FAV.
+
+## Navegador inferior Liquid Glass a 20 pt en iOS (local, 2026-09-19)
+
+- La cápsula del navegador inferior queda en iOS a 20 pt exactos del borde
+  físico inferior, independientemente del safe area. Android mantiene su margen
+  previo. El cambio se aplica tanto al navegador real como a su demo.
+- Cambio solo de cliente, pendiente de publicar; sin migración SQL.
+
+## Palabra de hoy: avatares en todo el ranking (local, 2026-09-19)
+
+- Las filas desde el cuarto puesto muestran la foto pública del perfil entre
+  la posición y el nombre. Si el backend oculta la foto por privacidad o no
+  existe, se muestran las iniciales. El podio conserva sus retratos actuales.
+- Se aplica a Ranking, Grupo, periodos cerrados y la fila de posición propia.
+  Cambio solo de cliente, pendiente de publicar; sin migración SQL.
+
+## Palabra de hoy: compartir resultado sin letras (local, 2026-09-19)
+
+- «Compartir resultado» abre el panel nativo al terminar la partida. El mensaje
+  incluye fecha, intentos, puntos y una cuadrícula de emojis con una fila por
+  intento: verde para posición correcta, amarillo para otra posición y gris
+  oscuro para letra ausente. No incluye palabras, solución ni letras.
+- El formateador solo recibe los estados de las casillas, de modo que no puede
+  filtrar las respuestas. Prueba específica, typecheck y lint del cliente
+  correctos. Cambio local pendiente de publicar; sin cambios de backend.
+
+## Palabra de hoy: 100 participantes de demostración (histórico, retirados 2026-09-25)
+
+- Estado histórico: este contenido fue eliminado de producción el 25/09; ver
+  la sección de retirada al inicio del documento.
+- Migración `20260919102242_seed_word_ranking_demo_users.sql`, aplicada en
+  Supabase como `20260919102523_seed_word_ranking_demo_users`: añade 100
+  participantes `demo_001`–`demo_100` con resultados coherentes de los últimos
+  cuatro días. Producción verificada: 100 en Hoy, Semana, Mes y Año; ninguno en
+  Grupo ni Histórico.
+- Viven solo en `private.word_ranking_fixtures`: no son cuentas Auth, no pueden
+  iniciar sesión y no tienen perfiles ni membresías. `anon` y `authenticated`
+  no pueden leer la tabla directamente. El ranking admite hasta 150 filas para
+  mostrar los 100 demos junto con participantes reales. El cliente legacy ya
+  los recibe en Hoy/Semana/Mes; Año requiere el cliente nuevo aún sin publicar.
+
+## Directorio Lidl semanal y auditoría de syncs diarios (local, 2026-09-19)
+
+- `Sync Lidl store directory` deja de ejecutarse a diario: queda programado los
+  lunes a las 04:35 UTC, antes del fleet semanal de Lidl de las 11:20 UTC, y
+  conserva `workflow_dispatch` para recuperaciones manuales.
+- Tras el cambio quedan dos sincronizaciones de catálogo diarias en GitHub
+  Actions: Gadis (05:20 UTC) y Ahorramás (06:00 UTC). Hipercor se trasladó
+  posteriormente a Windows local por el bloqueo sostenido de Akamai.
+  `Catalog embedding maintenance` también se ejecuta a diario a las 05:20 UTC,
+  pero es una comprobación de mantenimiento, no un sync de supermercado.
+- El run diario del directorio del 19/09 falló antes de escribir por un HTTP 502
+  temporal de la API de Lidl en `offset=0`; el directorio anterior quedó intacto.
+  Cambio local pendiente de publicar en `main`; sin cambios en Supabase.
+
+## Errores residuales tras upgrade (2026-09-17, ~22:06 Madrid)
+
+- Última hora consultada: 15 errores, cero timeouts. Gateway confirma 7 llamadas
+  de actividad y 3 INSERT de carrito con rol **anon** (401), desde iOS build 52.
+  Authenticated conserva sus permisos; no relajar ACL/RLS.
+- Otros 4 errores: `set_list_items_in_cart` con sesión (403, IDs ausentes o
+  inaccesibles); 1 cierre de compra con pendientes (400). Prioridad: coherencia
+  de sesión y recarga del carrito tras errores. Las causas de esas cinco
+  operaciones no están completamente determinadas.
+- SQL sin bloqueos, 26 conexiones y cron 18 correcto. Análisis sin cambios de
+  código/producción; evidencia en `docs/incidencia-postgres-catalogo-2026-09-17.md`.
+
+## Recuperación tras upgrade de Supabase (2026-09-17, 20:25 Madrid)
+
+- Usuario amplió a Small 2 GB; reinicio a las 19:49. Revisión 20:22–20:25:
+  cero timeouts Postgres y cero 5xx de Auth desde las 20:00 hasta las 20:23,
+  CPU 21,32 % en ventana de diez minutos, cero bloqueos SQL. Cron 18 correcto.
+- Lecturas reales de 50 productos Mercadona/Carrefour/Aldi: HTTP 200 en
+  80–86 ms. Recuperación observada, estabilidad bajo picos aún no verificada.
+- Persisten cinco errores puntuales de validación de carrito/permisos de
+  actividad; las mejoras locales de catálogo siguen pendientes de publicación.
+  Detalles y límites en `docs/incidencia-postgres-catalogo-2026-09-17.md`.
+  Esta revisión actualiza el estado de las secciones históricas siguientes.
+
+## Errores Postgres y catálogo lento (2026-09-17)
+
+- Ventana de una hora durante la incidencia: 549 timeouts y 101 conexiones
+  perdidas; afectan actividad, carrito, grupos y búsqueda. Mercadona usa su
+  índice de precio en el plan de la primera página. No se ha resuelto la
+  saturación de producción ni cambiado capacidad/datos.
+- Cliente local: retirado el reintento alfabético tras fallar una página por
+  precio (duplicaba carga y mezclaba cursores). «Todos» conserva el sondeo de
+  12 filas y amplía las recargas a lo que falta de la página global: en el caso
+  de una tienda dominante, cinco viajes de red se reducen a dos para 50 filas.
+- 19 pruebas, typecheck y lint correctos. Pendiente publicar y medir en móvil;
+  diagnóstico y límites en `docs/incidencia-postgres-catalogo-2026-09-17.md`.
+
+## Incidencia de acceso en Supabase (diagnóstico, 2026-09-17)
+
+- Aproximadamente 18:30–19:40 Madrid: fallos reales e intermitentes de Auth y
+  Postgres. Una hora de Auth registra 1.316 respuestas 504 y 293 respuestas 500;
+  también fallan consultas normales y arranques de cron.
+- Instancia Micro de 1 GB: CPU indicada 96,07 %, mayoritariamente espera de E/S
+  en las muestras disponibles, swap elevado. Sin bloqueos SQL observados;
+  embeddings sigue pausado. Cuello de botella de recursos probable, desencadenante
+  y estado del almacenamiento subyacente pendientes de confirmar.
+- Diagnóstico en lectura, sin reinicio ni ampliación. Propuesta: mitigar memoria
+  con mayor compute, verificar recuperación y escalar a soporte si sigue IOwait.
+  `AuthContext` además cierra sesión ante errores transitorios: corrección pendiente.
+  Evidencia, costes y límites en `docs/incidencia-acceso-2026-09-17.md`.
+
+## Aldi: categorías recuperadas y protección del sync (2026-09-17)
+
+- El sync del 2026-09-14 terminó como correcto con solo 895 productos visibles:
+  despublicó 1.126 productos y 81 categorías, entre ellas Charcutería y
+  Limpieza y hogar. El mínimo de 800 productos no detectaba el barrido parcial.
+- Se restauraron primero los 1.126 productos despublicados en ese run y se
+  ejecutó el sync corregido contra la web pública: **1.985 productos y 129
+  categorías publicados**. Charcutería tiene 107 productos y 4 subcategorías;
+  Limpieza y hogar, 140 productos y 8 subcategorías. Se corrigieron etiquetas
+  que habían tomado el nombre de otra rama de la jerarquía.
+- `scripts/sync-aldi.mjs` local aborta antes de escribir si falla una página o
+  cae más del 20 % el número de productos/categorías frente al inventario
+  anterior. La selección de etiquetas comprueba que la jerarquía corresponde
+  al slug visitado. Descarta enlaces de componentes CMS y un enlace obsoleto
+  de cuidado infantil. Barrido real de 21 N1/116 hojas sin fallos; comparador
+  actualizado para Aldi (pipeline de embeddings pausado). Tests y
+  `npx tsc --noEmit` correctos. **Pendiente llevar
+  este script al runner de GitHub Actions antes del siguiente lunes**; la
+  reparación de datos ya está aplicada, pero el workflow remoto aún usa el
+  código anterior.
+
+## Palabra de hoy: ranking anual e historial de periodos (local, 2026-09-16)
+
+- Ranking y Grupo añaden «Año». Hoy, Semana, Mes y Año muestran el periodo
+  actual y permiten retroceder por los periodos ya cerrados desde el reinicio
+  del 16/09/2026. «Ver periodo anterior» aparece solo cuando ese periodo
+  existe; desde una vista cerrada se puede avanzar hacia la actual. Histórico
+  sigue siendo el acumulado desde el reinicio. Límites en Europe/Madrid.
+- `20260916211402_word_ranking_period_history.sql` se aplicó en Supabase como
+  `20260916211853_word_ranking_period_history`. El RPC devuelve fechas,
+  posibilidad de retroceder, podio y posición propia. Verifica membresía para
+  Grupo y conserva la privacidad de perfiles. PGlite y pruebas del cliente
+  correctas. Cliente pendiente de publicación.
+
+## Palabra de hoy: diccionario general es_ES (local, 2026-09-16)
+
+- Migración `20260916201158_replace_word_game_dictionary_es_es.sql`: sustituye
+  las 439 palabras activas locales por 31.889 formas de 4–6 letras de RLA-ES
+  `es_ES` v2.9, con plurales y sin filtro de comida/compra. Los lemas con
+  mayúscula inicial se excluyen (nombres y siglas); se conservan Ñ y la
+  normalización sin tildes.
+- Las palabras anteriores quedan deshabilitadas si no aparecen en la nueva
+  fuente; no se borran por las claves foráneas de retos históricos. Una
+  solución antigua en curso se sigue aceptando. Generador, fuente, licencia
+  y comprobaciones en `PALABRA-DE-HOY.md`.
+- PGlite verifica 31.889 entradas, plurales, vocabulario general, historia,
+  reenvío de migración y reto legacy; `npx tsc --noEmit` correcto. Migración
+  aplicada en producción como **20260916201909_replace_word_game_dictionary_es_es**.
+  Verificados 31.889 ES activos, 37 ES antiguos deshabilitados y recuentos
+  intactos de 4 retos, 2 partidas y 7 intentos. No requiere nueva build.
+
+## Palabra de hoy: puntuación por longitud y tiempo (local, 2026-09-16)
+
+- Cliente local pendiente de publicación: base por intento 100/85/70/55/40/25;
+  multiplicador de 4/5/6 letras ×1/×1,2/×1,4; cada 20 s completos desde
+  «Empezar reto» resta el 5 % de los puntos restantes. Una victoria da al menos
+  1 punto; el domingo se duplica el resultado redondeado; derrota 0.
+- El tiempo lo mide Supabase desde `word_game_start` hasta el acierto y sigue
+  corriendo al salir. El inicio es idempotente y el reenvío conserva puntos.
+  El cliente muestra el tiempo y bloquea el teclado hasta iniciar.
+- «Cómo se juega» en castellano y catalán explica el diccionario general,
+  los seis intentos, las pistas y la fórmula vigente de longitud y tiempo.
+- `20260916193755_word_game_scoring_v2` introdujo la fórmula. Después,
+  `20260916202316_word_game_start_now_reset_history` activó el corte el
+  **2026-09-16** y borró las 2 partidas previas, sus 7 intentos y los 1.250
+  puntos acumulados. Verificado en remoto: cero partidas, cero respuestas y
+  cero puntos; los 4 retos diarios y las 31.889 palabras ES activas siguen.
+  El histórico empieza desde cero.
+  **Cliente nuevo todavía sin publicar**: requiere `word_game_start`; los
+  clientes antiguos no pueden enviar intentos desde este corte. Detalle en
+  `PALABRA-DE-HOY.md`.
+
+## Palabra de hoy: clasificación de grupo (local, 2026-09-16)
+
+- El selector principal ofrece Jugar, Ranking y Grupo. Grupo muestra el mismo
+  podio y los mismos periodos, limitado a los miembros actuales del
+  carrito/grupo activo del usuario. Sin grupo activo, muestra una indicación
+  para activarlo en Grupos. Al cambiar de grupo, descarta la clasificación
+  previa. «Anterior» se retira también del RPC, pues el historial se reinició.
+- Migración `20260916210720_word_group_ranking.sql`: RPC autenticado que
+  verifica la membresía antes de leer puntos; conserva la privacidad de los
+  perfiles no descubribles. Aplicada en Supabase como
+  `20260916211123_word_group_ranking`; PGlite verifica membresía, periodos y
+  permisos. Cliente pendiente de publicación.
+
+## Lanzador de DIA en Windows PowerShell 5.1 (local, 2026-09-16)
+
+- El primer run desde Windows se interrumpió durante la resolución de zonas al
+  imprimir el aviso esperado de la provincia 35 (Canarias). El `console.warn`
+  de Node llegaba a `*>&1` como `NativeCommandError` y, con
+  `$ErrorActionPreference = 'Stop'`, terminaba el lanzador antes del barrido.
+- `scripts/run-dia-sync.ps1` ahora une stdout/stderr dentro de `cmd.exe` antes de
+  pasarlos a `Tee-Object`, tanto para DIA como para el comparador. Mantiene el
+  código de salida real de Node y el log; no modifica el crawler ni Supabase.
+- Pendiente probar el runner actualizado en Windows y verificar `[dia] OK`,
+  actualización del comparador y `=== fin (exit 0) ===`.
+
 ## Número de personas por receta (local, 2026-09-15)
 
 - El creador de recetas incluye, justo antes de Ingredientes, un selector de
@@ -8,11 +891,10 @@
 - `recipes.servings` es `smallint` con `CHECK` 1–99. Es nullable para que las
   recetas antiguas sigan cargando sin atribuirles una cantidad inventada; las
   nuevas recetas siempre lo validan y guardan desde el cliente.
-- Migración pendiente de aplicar en Supabase:
-  `20260915062836_add_recipe_servings.sql`. No publicar el cliente que selecciona
-  `servings` antes de ejecutarla, porque la consulta del feed fallaría.
-- Compatible con castellano/catalán y controles accesibles de 44 pt. Sin
-  publicación ni escritura remota. Typecheck, lint, 31 pruebas focalizadas y
+- Migración `20260915062836_add_recipe_servings.sql` aplicada en Supabase como
+  `20260920112528_add_recipe_servings`. Las recetas antiguas conservan `null`.
+- Compatible con castellano/catalán y controles accesibles de 44 pt. Sin nueva
+  publicación del cliente. Typecheck, lint, 31 pruebas focalizadas y
   migraciones/RLS en PGlite correctos. Suite general 798/799: solo falla la
   regresión previa de Lidl porque falta el generado `android/app/build.gradle`.
 
@@ -276,9 +1158,25 @@
 
 ## Palabra de hoy (cliente local + backend, 2026-09-11)
 
-- Premios cancelados a petición del usuario: retirados botón regalo, popup,
-  componente específico y textos ES/CA. No había adjudicación automática ni
-  suscripciones concedidas por este flujo. Mascota compartida conservada.
+- Fila activa editable por casilla (2026-09-16): cada celda se puede seleccionar
+  con un toque; se resalta la seleccionada. Teclear rellena o sustituye esa
+  posición y avanza al siguiente hueco; borrar limpia la celda seleccionada o
+  la anterior ocupada. El borrador conserva huecos y cursor al reabrir, admite
+  los borradores anteriores y solo permite enviar una palabra completa.
+  Ayuda visible ES/CA, sin cambiar intentos ni evaluación del servidor.
+- Teclado (2026-09-16): `WordKeyboardKey` comprime cada tecla al 90 % al
+  presionar y recupera su tamaño al soltar/cancelar, con spring nativo sin rebote.
+  Un velo del acento elegido aparece en la tecla y se desvanece al soltar;
+  se actualiza con el tema sin alterar el color persistente de las pistas.
+  Área táctil estable, pulsaciones rápidas interrumpibles, sin retrasar entrada.
+  Reducir movimiento usa solo opacidad; deshabilitar/desmontar limpia el efecto.
+  Letras y borrar comparten feedback. Sin cambios en reglas ni backend.
+- Al presionar letras, borrar o enviar (2026-09-27), el teclado emite una
+  respuesta háptica breve junto al efecto visual. En Android usa el patrón
+  nativo de tecla; en iOS, un impacto ligero. Las teclas deshabilitadas no vibran.
+- Botón de premios restaurado a petición del usuario: regalo en la cabecera y
+  popup opaco con premio mensual y premios anuales y textos ES/CA.
+  Solo informa; no hay adjudicación automática ni activación de suscripciones.
 - La ayuda usa `WordGameInfoModal`, con tarjeta y pie opacos en
   `colors.paper` (claro/oscuro), sin material nativo translúcido ni GlassSurface.
   Fondo exterior atenuado, texto desplazable y cierre visible/atrás en Android.
@@ -1753,150 +2651,6 @@
   La carga queda ligada a producto, región, CP, idioma e intento para impedir
   que una respuesta obsoleta pinte otra ficha. `npm run quality` pasa con
   210/210 pruebas, incluida la nueva regresión de resiliencia.
-
-## Fase 5A: mantenimiento preventivo de Postgres (producción, 2026-09-01)
-
-- Desplegada como
-  `20260901115631_catalog_embedding_postgres_maintenance_baseline.sql`. La
-  tabla `catalog_product_embeddings` usa ahora
-  `autovacuum_vacuum_scale_factor = 0.05` y
-  `autovacuum_analyze_scale_factor = 0.02`; antes heredaba los globales
-  0,20/0,10. El cambio no ejecuta `VACUUM`, `REINDEX` ni reescribe la tabla.
-- `catalog_embedding_maintenance_status()` es una RPC `SECURITY INVOKER`
-  exclusiva de `service_role`. Expone reloptions, umbrales estimados, tuplas
-  muertas, último autoanalyze, tamaño/estado/uso del HNSW y mantenimiento en
-  progreso; `requiresAttention` se activa desde el 5 % o si el índice deja de
-  estar válido, listo o vivo.
-- El smoke `verify-catalog-embedding-postgres-maintenance.sql` pasó con
-  `ROLLBACK`, incluidos permisos y soporte de
-  `hnsw.iterative_scan = relaxed_order` en pgvector 0.8.0. La opción solo se
-  probó de forma transaccional: no está habilitada en ninguna búsqueda.
-- Tras aplicar la migración, Postgres ejecutó un autoanalyze corto y dejó
-  `n_mod_since_analyze = 0` sin iniciar vacuum. Snapshot posterior: 201.442
-  tuplas vivas, 1.208 muertas (0,596 %), umbral estimado de vacuum 10.123,
-  HNSW válido/listo/vivo de 597.745.664 bytes, cero locks o mantenimiento.
-- La alerta diaria se define en
-  `.github/workflows/catalog-embedding-maintenance.yml` y
-  `scripts/check-catalog-embedding-maintenance.mjs`; fallará si se alcanza el
-  5 %, derivan los reloptions o el HNSW se degrada. GitHub la ejecuta desde
-  `main`.
-- No reindexar automáticamente. Mantener compute Medium durante dos ciclos
-  completos posteriores a esta base y comparar latencia, I/O, dead tuples y
-  tamaño del índice. Solo usar `REINDEX INDEX CONCURRENTLY` con evidencia de
-  bloat/degradación, dispatcher pausado y ventana de mantenimiento. Probar
-  `relaxed_order` mediante A/B de latencia y recall antes de habilitarlo.
-  Nota posterior CE-100 (2026-09-02): el panel muestra Micro actualmente.
-  Esta instrucción de observación de Medium es histórica, no confirma el
-  compute actual ni autoriza volver a cambiarlo. Revalidar capacidad antes
-  de continuar el experimento; no trasladar conclusiones de Medium a Micro.
-- Drenaje secuencial posterior al baseline: tras el canario 2716, la cadena
-  2718–2746 procesó los 2.846 trabajos restantes en 29 ejecuciones
-  (28×100 + 46), todas HTTP 200 y con 2.846 `completed`, 0 failed/stale/deferred
-  y sin concurrencia. La cola quedó vacía y los runs de HiperDino, Gadis y
-  Ahorramás se asentaron con un único bump por tienda: generaciones 6.907,
-  37.485 y 18.079 respectivamente. Pipeline `paused`, cron 17 inactivo y cero
-  jobs en vuelo. Este drenaje no cuenta como uno de los dos ciclos completos de
-  sync.
-- Postflight de la cadena: HNSW válido/listo/vivo y estable en 597.745.664
-  bytes, 4.154 tuplas muertas (2,020 %), 2.946 cambios desde analyze, sin vacuum,
-  mantenimiento de índice, bloqueos ni fallos abiertos.
-- Los syncs posteriores generaron 2.131 dependencias adicionales de once
-  tiendas. La petición 2778 confirmó que la finalizadora heredaba todavía el
-  timeout corto de 8 s: falló antes de confirmar el primer sublote y los 100
-  mensajes volvieron íntegros a la cola. La migración productiva
-  `20260901203103_extend_embedding_finalize_statement_timeout.sql` fija
-  `statement_timeout = 60s` solo en
-  `catalog_finalize_embedding_batch(jsonb)`.
-- La cadena reanudada 2780–2801 completó 2.131/2.131 en 22 ejecuciones
-  (21×100 + 31), sin failed, stale, deferred ni respuestas HTTP fallidas. Los
-  once runs se asentaron con 2.131/2.131 dependencias completadas y un único
-  bump por tienda. Estado final: cola/vuelo 0, pipeline `paused`, cron 17
-  inactivo, HNSW válido/listo/vivo de 597.745.664 bytes, 8.901 tuplas muertas
-  (4,202 %), autoanalyze reciente y cero vacuum, locks o fallos abiertos.
-
-## Fase 4: settlement e invalidación set-based (producción, 2026-09-01)
-
-- Desplegada con las migraciones remotas/locales
-  `20260901103216_embedding_runs_durable_settlement_and_set_based_invalidation.sql`,
-  `20260901104518_phase4_legacy_materializer_compatibility.sql` y
-  `20260901104730_phase4_manifest_revalidate_on_close.sql`. Los triggers legacy
-  por fila se retiraron; insert/update/delete e invalidación de dependencias usan
-  tablas de transición y se ejecutan una vez por sentencia.
-- Cada sync nuevo registra un manifiesto M2M exacto por
-  `expected_dependency_count`. Los runs pasan `running→draining→settled`; solo
-  `completed`, `already_ready`, `superseded` y `terminal_failed` son terminales.
-  El cierre marca `cache_bumped_at` y eleva la generación una única vez por run
-  con impacto. Los fallos posteriores a escrituras también invalidan una sola
-  vez; las escrituras sin run tienen fallback de un bump por tienda/sentencia.
-- La invalidación como origen elimina en bloque solo los estados de caché de los
-  productos realmente modificados. Como destino, la tienda se invalida al
-  cerrar el run. El orden estable run→versión elimina el antiguo `SKIP LOCKED`.
-  El registro acepta chunks de 500, pero revalida el manifiesto completo solo al
-  cerrarlo, evitando el coste cuadrático observado durante la revisión.
-- Los smokes productivos `verify-embedding-run-durable-settlement.sql` y
-  `verify-embedding-run-legacy-compatibility.sql` pasaron con `ROLLBACK`. El
-  canario HTTP 2705 completó 100/100, 0 fallos/stale/deferred, y la generación
-  de HiperDino pasó exactamente 6.905→6.906; durante los primeros 90 resultados
-  permaneció en 6.905 y solo saltó al asentarse el run.
-- El PR #49 ya está fusionado en `main` (`b8cf096`) y publica el materializador
-  nuevo. La compatibilidad temporal continúa desplegada hasta verificar dos
-  ciclos completos; solo adopta jobs legacy cuando el conteo desde `started_at`
-  coincide exactamente con `expected_embedding_jobs` y falla cerrada ante una
-  diferencia.
-- Backlog legacy ya adoptado: los 38 jobs de Gadis están ligados al run durable
-  `1dda9168-c609-48d9-9221-7caff07368c4`; los 3.201 de HiperDino se registraron
-  en siete bloques exactos (6×500 + 201) en el run
-  `fae4f61b-4187-4488-9d8b-4deb55fdd058`. Ambos quedaron `draining`, con todos
-  los enlaces `pending/queued`, equivalencia cola↔manifiesto y sin bump durante
-  la adopción: HiperDino continuaba en generación 6.906. Los cuatro drenajes
-  canarios 2709, 2710, 2712 y 2716 procesaron 400 dependencias, y la cadena
-  secuencial 2718–2746 drenó después las 2.846 restantes en 29 ejecuciones
-  (28×100 + 46). El resultado acumulado de la cadena fue 2.846 `completed` y
-  0 failed/stale/deferred; HiperDino, Gadis y Ahorramás quedaron `settled` con
-  todas sus dependencias completadas y un solo bump final por tienda. La cola
-  está vacía; pipeline `paused`, cron 17 inactivo, 0 jobs en vuelo, fallos,
-  bloqueos o vacuum. HNSW válido/listo y tuplas muertas 2,020 %.
-- El stale-while-revalidate de la petición del comparador sigue pendiente como
-  siguiente bloque; el camino actual ya elimina el fan-out de generación, pero
-  todavía no programa el refresco de caché completamente en segundo plano.
-
-## Fase 3: una sola mutación HNSW por cambio (producción, 2026-09-01)
-
-- Implementada en
-  `20260901094105_phase_three_single_hnsw_mutation.sql`. Añade
-  `embedded_content_hash` sin backfill masivo. Un vector legacy con esa columna
-  a `NULL` se considera ligado al input vigente hasta su primer cambio
-  semántico; entonces el trigger conserva el vector y materializa el hash
-  anterior, dejando la fila lógicamente pendiente.
-- El worker y el materializador solo consideran listo un vector cuando modelo y
-  hash embebido coinciden con el input actual. La finalizadora batch vuelve a
-  validar publicación, `content_hash`, `embedding_input_hash`, versión y modelo,
-  y sustituye `embedding` + `embedded_content_hash` en el mismo `UPDATE` CAS. Un
-  resultado de OpenAI obsoleto se clasifica como `stale` y no puede pisar una
-  versión más reciente.
-- Las recuperaciones vectoriales v1/v2/v3, la reconstrucción de caché y las RPC
-  internas v3/v5 excluyen tanto fuentes como destinos pendientes. El HNSW no
-  incluye el hash en su predicado deliberadamente: hacerlo quitaría y volvería
-  a insertar la fila en cada cambio.
-- La migración quedó registrada en producción con la misma versión local,
-  `20260901094105`. El smoke transaccional
-  `supabase/ops/verify-embedding-phase-three-single-hnsw-mutation.sql`, que
-  valida retención, exclusión de búsqueda, sustitución conjunta y carrera
-  A→B→C con `ROLLBACK`, pasó sin residuos. `catalog-embed` v13 quedó `ACTIVE` y el bundle
-  remoto coincide con `index.ts`, los dos helpers y `deno.json` locales. El
-  smoke HTTP autenticado 2700 devolvió 400 `invalid_batch_size` sin reclamar
-  cola.
-- El canario único 2701 procesó 100/100 trabajos: 0 fallidos, obsoletos,
-  diferidos o encadenados. Las 100 filas terminaron con vector, modelo y
-  `embedded_content_hash = embedding_input_hash`; la cola bajó 3.401→3.301 y
-  HiperDino subió 11.419→11.519 vectores listos. No hubo bloqueos, consultas
-  largas, fallos ni vacuum activo, y el HNSW siguió válido/listo.
-- Estado final: pipeline `paused`, presupuesto canario 0 y cron 17 inactivo.
-  No usar `active` hasta desplegar la invalidación por run de Fase 4: el canario
-  confirmó que el trigger actual todavía incrementa la generación de HiperDino
-  100 veces (6.805→6.905). La separación física de la tabla de vectores queda
-  como evolución posterior para independencia total frente a actualizaciones
-  MVCC del catálogo.
 
 ## Hardening batch del worker (despliegue anterior, 2026-09-01)
 
@@ -3418,7 +4172,7 @@
   El cliente sigue leyendo `profiles.name` como dato legacy y fallback para
   cuentas antiguas sin username; no se ha eliminado la columna de base de datos.
 
-## Hipercor (pendiente de migrar y primer sync, 2026-08-15)
+## Histórico: preparación inicial de Hipercor (2026-08-15)
 
 - Añadido el espejo de catálogo público de **Hipercor**: migración
   `hipercor_catalog.sql`, `scripts/sync-hipercor.mjs` y workflow diario
@@ -3431,9 +4185,9 @@
   no inicia sesión ni usa dirección/cesta: guarda el surtido del centro público
   observado en `raw.centerId`. No presentar estos precios como personalizados
   por código postal hasta implementar la normalización por centro.
-- Antes del primer sync real: ejecutar `hipercor_catalog.sql` en Supabase. La
-  integración en el cliente y la comparativa se incorporarán después de validar
-  ese primer catálogo completo.
+- Esta era la preparación previa al primer sync. El esquema y varios catálogos
+  completos se desplegaron después; el estado operativo vigente está al inicio
+  de este documento. Cliente y comparativa continúan pendientes.
 
 ## Gadisline (pendiente de migrar y primer sync, 2026-08-14)
 
@@ -3788,6 +4542,22 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
 - Hay SQL previo en `supabase/` (RLS, policies de groups/group_members/shopping_lists/list_items).
 
 ## Estado / pendientes
+- ✅ **El Jamón, catálogo integrado (2026-09-23):** sync Playwright en
+  `scripts/sync-eljamon.mjs`, documentado en `scripts/README-eljamon-sync.md`.
+  Recorre las 11 categorías raíz, conserva el árbol completo, pagina mediante el
+  JavaScript de Comerzzia y deduplica por SKU. Usa recogida en el centro 268 de
+  Lepe como referencia y un único catálogo común. DRY_RUN completo OK: **6.857
+  SKU, 525 categorías, 1.336 ofertas y 40 nuevos**. Prueba adicional con ficha y
+  normalización de €/100gr a €/kg también OK. Tablas creadas en producción con
+  la migración `20260923141000_eljamon_catalog.sql`: RLS verificada, 15 índices,
+  ofertas, novedades y cambios de precio. Primer sync real completado: **6.857
+  productos y 525 categorías**, con asignación terminal válida y hasta tres
+  niveles de subcategoría. La app ya incluye selector/logo, filtro Andalucía,
+  búsqueda y navegación recursiva, productos, ficha, favoritos, cesta, ofertas,
+  novedades, cambios de precio y estado de sincronización. Comparador y alertas
+  quedan ocultos para esta fuente hasta ampliar sus RPC/índices internos. La
+  migración `20260923154841_allow_eljamon_cart_items.sql` está aplicada y sus
+  cuatro restricciones de carrito/histórico se validaron en producción.
 - ✅ **Fase 3 de seguridad y rendimiento de datos (2026-08-14):** auditoría
   remota actualizada (44 avisos de seguridad y 121 de rendimiento) y migración
   desplegada para fijar `search_path`, cerrar RPC privilegiados a `anon`,

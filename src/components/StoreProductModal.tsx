@@ -11,8 +11,10 @@ import {
   fetchBonpreuProduct, fetchCarrefourProduct, fetchBonareaProduct, fetchConsumProduct, fetchDiaProduct, fetchSorliProduct,
   fetchEroskiProduct, fetchCapraboProduct, fetchCondisProduct, fetchAmetllerProduct, fetchAldiProduct, fetchLidlProduct, fetchGadisProduct, fetchFroizProduct, fetchAhorramasProduct, fetchHiperdinoProduct, fetchAlcampoProduct,
   fetchPlusfrescProduct,
+  fetchBmProduct,
+  fetchEljamonProduct,
   type BonpreuProduct, type CarrefourProduct, type BonareaProduct, type ConsumProduct, type DiaProduct, type SorliProduct,
-  type CondisProduct, type AmetllerProduct, type AldiProduct, type LidlProduct, type GadisProduct, type FroizProduct, type AhorramasProduct, type HiperdinoProduct, type AlcampoProduct, type PlusfrescProduct, type TapestryProduct,
+  type CondisProduct, type AmetllerProduct, type AldiProduct, type LidlProduct, type BmProduct, type EljamonProduct, type GadisProduct, type FroizProduct, type AhorramasProduct, type HiperdinoProduct, type AlcampoProduct, type PlusfrescProduct, type TapestryProduct,
 } from '../api/catalog';
 import type { CatalogStore } from '../constants/stores';
 import type { RegionValue } from '../constants/regions';
@@ -46,10 +48,12 @@ interface Props {
 type MirrorProduct = BonpreuProduct | CarrefourProduct | BonareaProduct | ConsumProduct
   | DiaProduct | SorliProduct | CondisProduct | AmetllerProduct | AldiProduct
   | LidlProduct
+  | BmProduct
+  | EljamonProduct
   | GadisProduct | FroizProduct | AhorramasProduct | HiperdinoProduct
   | AlcampoProduct | PlusfrescProduct | TapestryProduct;
 
-const LOCATION_FILTERED_STORES = new Set<CatalogStore>(['carrefour', 'consum', 'dia', 'plusfresc']);
+const LOCATION_FILTERED_STORES = new Set<CatalogStore>(['carrefour', 'consum', 'dia', 'plusfresc', 'bm']);
 
 function fetchMirrorProduct(
   store: Exclude<CatalogStore, 'mercadona'>,
@@ -73,6 +77,8 @@ function fetchMirrorProduct(
     : store === 'ametller' ? fetchAmetllerProduct
     : store === 'aldi' ? fetchAldiProduct
     : store === 'lidl' ? (productId: string) => fetchLidlProduct(productId, lidlStoreId)
+    : store === 'bm' ? (productId: string) => fetchBmProduct(productId, activePostalCode)
+    : store === 'eljamon' ? fetchEljamonProduct
     : store === 'gadis' ? fetchGadisProduct
     : store === 'froiz' ? fetchFroizProduct
     : store === 'ahorramas' ? fetchAhorramasProduct
@@ -230,6 +236,12 @@ export default function StoreProductModal({
   } else if (target.store === 'lidl') {
     const LidlProductModal = require('./LidlProductModal').default;
     content = <LidlProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
+  } else if (target.store === 'bm') {
+    const AldiProductModal = require('./AldiProductModal').default;
+    content = <AldiProductModal product={mirror} store="bm" onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
+  } else if (target.store === 'eljamon') {
+    const AldiProductModal = require('./AldiProductModal').default;
+    content = <AldiProductModal product={mirror} store="eljamon" onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;
   } else if (target.store === 'gadis') {
     const GadisProductModal = require('./GadisProductModal').default;
     content = <GadisProductModal product={mirror} onClose={onClose} topInset={topInset} badgeLabel={badgeLabel} />;

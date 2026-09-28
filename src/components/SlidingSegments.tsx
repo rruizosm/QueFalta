@@ -27,9 +27,12 @@ const HEIGHT = 40;
 const RADIUS = 20;
 const EMPHASIZED_HEIGHT = 44;
 const EMPHASIZED_RADIUS = 22;
+const CONDENSED_HEIGHT = 36;
+const CONDENSED_RADIUS = 18;
 const PAD = 3; // padding interno de la pista (la píldora corre dentro de él)
 const PILL_RADIUS = RADIUS - PAD;
 const EMPHASIZED_PILL_RADIUS = EMPHASIZED_RADIUS - PAD;
+const CONDENSED_PILL_RADIUS = CONDENSED_RADIUS - PAD;
 const COMPACT_SEG_W = 42; // ancho fijo de cada segmento en modo icono (compact)
 const DENSE_COMPACT_SEG_W = 32;
 
@@ -52,8 +55,14 @@ interface Props<K extends string> {
   dense?: boolean;
   /** Refuerza el perímetro para selectores principales sobre Liquid Glass. */
   emphasized?: boolean;
+  /** Reduce la altura para selectores secundarios con etiqueta. */
+  condensed?: boolean;
   /** Elimina la pista y su sombra, conservando la píldora animada. */
   transparentTrack?: boolean;
+  /** Contraste sólido cuando el control no se apoya sobre Liquid Glass. */
+  opaqueSelection?: boolean;
+  /** Permite usar un segmento activo como botón de acción sin perder su estado visual. */
+  allowReselect?: boolean;
   activationDirection?: 'fromStart' | 'fromEnd';
 }
 
@@ -66,7 +75,8 @@ function hexToRgba(hex: string, a: number): string {
 
 export default function SlidingSegments<K extends string>({
   segments, value, onChange, style, compact = false, dense = false, emphasized = false,
-  transparentTrack = false, activationDirection,
+  condensed = false, transparentTrack = false, opaqueSelection = false,
+  allowReselect = false, activationDirection,
 }: Props<K>) {
   const { scheme } = useTheme();
   const reducedMotion = useReducedMotion();
@@ -160,9 +170,13 @@ export default function SlidingSegments<K extends string>({
       style={[
         styles.track,
         compact && styles.trackCompact,
-        emphasized && (compact ? styles.trackEmphasizedCompact : styles.trackEmphasized),
+        condensed && styles.trackCondensed,
+        emphasized && (compact
+          ? styles.trackEmphasizedCompact
+          : condensed ? styles.trackEmphasizedCondensed : styles.trackEmphasized),
         emphasized && emphasizedTrackColors,
         transparentTrack && styles.trackTransparent,
+        opaqueSelection && { backgroundColor: colors.white, borderColor: colors.border },
         !emphasized && style,
       ]}
     >
@@ -175,23 +189,27 @@ export default function SlidingSegments<K extends string>({
           style={[
             styles.pill,
             emphasized && !compact && styles.pillEmphasized,
+            condensed && styles.pillCondensed,
+            opaqueSelection && styles.pillOpaque,
             { width: activeW, transform: [{ translateX }, { scaleX }, { scaleY }] },
           ]}
         >
-          <LinearGradient
-            colors={emphasized
-              ? [hexToRgba(accent, 0.36), hexToRgba(accent, 0.20)]
-              : [hexToRgba(accent, 0.30), hexToRgba(accent, 0.16)]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.pillFill}
-          />
+          {opaqueSelection
+            ? <View style={[styles.pillFill, condensed && styles.pillFillCondensed, { backgroundColor: accent }]} />
+            : <LinearGradient
+                colors={emphasized
+                  ? [hexToRgba(accent, 0.36), hexToRgba(accent, 0.20)]
+                  : [hexToRgba(accent, 0.30), hexToRgba(accent, 0.16)]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.pillFill, condensed && styles.pillFillCondensed]}
+              />}
         </Animated.View>
       )}
 
       {segments.map((s, i) => {
         const focused = i === active;
-        const color = focused ? accent : colors.inkSoft;
+        const color = focused ? (opaqueSelection ? '#fff' : accent) : colors.inkSoft;
         return (
           <Pressable
             key={s.key}
@@ -201,7 +219,7 @@ export default function SlidingSegments<K extends string>({
             accessibilityState={{ selected: focused }}
             accessibilityLabel={s.accessibilityLabel ?? s.label}
             onPress={() => {
-              if (!focused) {
+              if (!focused || allowReselect) {
                 Haptics.selectionAsync();
                 onChange(s.key);
               }
@@ -220,6 +238,7 @@ export default function SlidingSegments<K extends string>({
                 styles.label,
                 dense && styles.labelDense,
                 emphasized && !compact && styles.labelEmphasized,
+                condensed && styles.labelCondensed,
                 { color, fontFamily: focused ? fonts.bold : fonts.semibold },
               ]}>
                 {s.label}
@@ -239,7 +258,8 @@ export default function SlidingSegments<K extends string>({
         styles.emphasizedShell,
         transparentTrack && styles.emphasizedShellTransparent,
         compact && styles.trackCompact,
-        compact ? styles.emphasizedShellCompact : styles.emphasizedShellLarge,
+        compact ? styles.emphasizedShellCompact
+          : condensed ? styles.emphasizedShellCondensed : styles.emphasizedShellLarge,
         compactTrackWidth != null && { width: compactTrackWidth },
         style,
       ]}
@@ -274,11 +294,14 @@ const styles = StyleSheet.create({
   },
   emphasizedShellCompact: { height: HEIGHT, borderRadius: RADIUS },
   emphasizedShellLarge: { height: EMPHASIZED_HEIGHT, borderRadius: EMPHASIZED_RADIUS },
+  emphasizedShellCondensed: { height: CONDENSED_HEIGHT, borderRadius: CONDENSED_RADIUS },
+  trackCondensed: { height: CONDENSED_HEIGHT, borderRadius: CONDENSED_RADIUS },
   trackEmphasized: {
     flex: 1,
     height: EMPHASIZED_HEIGHT,
     borderRadius: EMPHASIZED_RADIUS,
   },
+  trackEmphasizedCondensed: { flex: 1, height: CONDENSED_HEIGHT, borderRadius: CONDENSED_RADIUS },
   trackEmphasizedCompact: { flex: 1, height: HEIGHT, borderRadius: RADIUS },
   trackTransparent: {
     backgroundColor: 'transparent',
@@ -300,7 +323,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   pillEmphasized: { borderRadius: EMPHASIZED_PILL_RADIUS },
+  pillCondensed: { borderRadius: CONDENSED_PILL_RADIUS },
+  pillOpaque: { borderWidth: 0 },
   pillFill: { flex: 1, borderRadius: PILL_RADIUS },
+  pillFillCondensed: { borderRadius: CONDENSED_PILL_RADIUS },
   seg: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5,
   },
@@ -312,5 +338,6 @@ const styles = StyleSheet.create({
   gridIconOptical: { transform: [{ translateX: 1 }] },
   label: { fontSize: 12.5, letterSpacing: 0.1 },
   labelEmphasized: { fontSize: 13 },
+  labelCondensed: { fontSize: 11.5 },
   labelDense: { fontSize: 10 },
 });

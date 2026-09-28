@@ -10,6 +10,10 @@ const editor = readFileSync(
   new URL('../../src/components/PriceAlertEditorModal.tsx', import.meta.url),
   'utf8',
 );
+const productAlertButton = readFileSync(
+  new URL('../../src/components/ProductAlertButton.tsx', import.meta.url),
+  'utf8',
+);
 const notificationsSheet = readFileSync(
   new URL('../../src/components/NotificationsSheet.tsx', import.meta.url),
   'utf8',
@@ -40,6 +44,16 @@ test('los tres tipos de aviso comparten el diseño del interruptor de alerta act
   assert.match(editor, /accessibilityState=\{\{ checked: priceDrop \}\}/);
   assert.match(editor, /accessibilityState=\{\{ checked: newOffer \}\}/);
   assert.match(editor, /accessibilityState=\{\{ checked: newArrival \}\}/);
+});
+
+test('«Avísame» usa una superficie opaca sobre la imagen del producto', () => {
+  assert.equal(
+    productAlertButton.match(/backgroundColor: colors\.white/g)?.length,
+    2,
+  );
+  assert.match(productAlertButton, /borderColor: colors\.accent/);
+  assert.doesNotMatch(productAlertButton, /backgroundColor: colors\.accentLight/);
+  assert.doesNotMatch(productAlertButton, /backgroundColor: 'rgba\(/);
 });
 
 test('el editor mantiene el campo de nombre visible al abrir el teclado', () => {

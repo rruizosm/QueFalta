@@ -21,6 +21,11 @@
 //   MIN_LOCATIONS=7
 //   MIN_PRODUCTS=6500
 //   MIN_COVERAGE_RATIO=0.97
+//   DETAIL_MAX=1000          EAN nuevos/caducados consultados por ejecucion
+//   DETAIL_TTL_DAYS=90       volver a consultar el JSON tras este plazo
+//   DETAIL_CONCURRENCY=3     descargas simultaneas del CDN
+//   DRY_DETAIL_MAX=3        muestra nutricional en DRY_RUN
+//   SKIP_DETAIL=1           omite descargas, conserva el detalle existente
 
 import {
   BM_API_BASE_URL,
@@ -41,6 +46,13 @@ import {
   buildBmTwoLevelNavigation,
   resolveBmProductNavigation,
 } from './lib/bm-sync.mjs';
+import {
+  BM_DETAIL_FIELDS,
+  applyBmNutritionPayload,
+  bmNutritionUrl,
+  needsBmNutritionRefresh,
+  previousBmNutrition,
+} from './lib/bm-nutrition.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
 
@@ -56,6 +68,11 @@ const MAX_PAGES = process.env.MAX_PAGES == null
 const MIN_LOCATIONS = integerEnv('MIN_LOCATIONS', 7, 1, 50);
 const MIN_PRODUCTS = integerEnv('MIN_PRODUCTS', 6500, 1, 100000);
 const MIN_COVERAGE_RATIO = numberEnv('MIN_COVERAGE_RATIO', 0.97, 0.5, 1);
+const DETAIL_MAX = integerEnv('DETAIL_MAX', 1000, 0, 100000);
+const DETAIL_TTL_DAYS = integerEnv('DETAIL_TTL_DAYS', 90, 1, 3650);
+const DETAIL_CONCURRENCY = integerEnv('DETAIL_CONCURRENCY', 3, 1, 8);
+const DRY_DETAIL_MAX = integerEnv('DRY_DETAIL_MAX', 3, 0, 100);
+const SKIP_DETAIL = process.env.SKIP_DETAIL === '1';
 const PAGE_SIZE = 20; // limite real de BM aunque se solicite un bloque mayor
 const UPSERT_BATCH = 250;
 const runStart = new Date().toISOString();
@@ -123,6 +140,7 @@ async function fetchJson(url, headers = {}, label = url, tries = 4) {
       if (response.ok) return response.json();
       const body = (await response.text()).slice(0, 400);
       lastError = new Error(`${label}: HTTP ${response.status} ${body}`);
+      lastError.status = response.status;
       lastError.retryable = response.status === 429 || response.status >= 500;
       if (!lastError.retryable) throw lastError;
       if (attempt < tries - 1) await sleep(retryDelay(response, attempt));
@@ -302,6 +320,107 @@ async function disableStalePostalMappings(postalCodes) {
   }
 }
 
+async function fetchExistingBmNutrition() {
+  const existing = new Map();
+  const pageSize = 1000;
+  for (let offset = 0; ; offset += pageSize) {
+    const url = new URL(`${SUPABASE_URL}/rest/v1/bm_products`);
+    url.searchParams.set('select',
+      'id,detail_ean,detail_synced_at,nutrition,ingredients,allergens,conservation');
+    url.searchParams.set('order', 'id.asc');
+    url.searchParams.set('limit', String(pageSize));
+    url.searchParams.set('offset', String(offset));
+    const rows = await fetchJson(url, {
+      apikey: SERVICE_ROLE,
+      Authorization: `Bearer ${SERVICE_ROLE}`,
+    }, `detalle BM existente offset=${offset}`);
+    if (!Array.isArray(rows)) throw new Error('bm_products: respuesta de detalle invalida');
+    for (const row of rows) existing.set(row.id, row);
+    if (rows.length < pageSize) break;
+  }
+  return existing;
+}
+
+async function enrichBmNutrition(productRows) {
+  const existing = DRY_RUN ? new Map() : await fetchExistingBmNutrition();
+  for (const row of productRows) previousBmNutrition(row, existing.get(row.id));
+  if (SKIP_DETAIL) {
+    console.log('[bm] detalle nutricional omitido por SKIP_DETAIL=1');
+    return;
+  }
+
+  const now = Date.now();
+  const byEan = new Map();
+  for (const row of productRows) {
+    if (!bmNutritionUrl(row.ean)) continue;
+    const group = byEan.get(row.ean) ?? [];
+    group.push(row);
+    byEan.set(row.ean, group);
+  }
+  const pending = [];
+  for (const [ean, rows] of byEan) {
+    const hasDetail = (row) => BM_DETAIL_FIELDS.some((field) => row[field]);
+    const fresh = rows.find((row) =>
+      !needsBmNutritionRefresh(row, now, DETAIL_TTL_DAYS) && hasDetail(row))
+      ?? (rows.every((row) => !hasDetail(row))
+        ? rows.find((row) => !needsBmNutritionRefresh(row, now, DETAIL_TTL_DAYS))
+        : null);
+    if (fresh) {
+      for (const row of rows) {
+        if (row === fresh) continue;
+        for (const field of BM_DETAIL_FIELDS) {
+          row[field] = fresh[field];
+        }
+        row.detail_synced_at = fresh.detail_synced_at;
+      }
+    } else {
+      pending.push({ ean, rows });
+    }
+  }
+  const cap = DRY_RUN ? DRY_DETAIL_MAX : DETAIL_MAX;
+  const queue = pending.slice(0, cap);
+  let cursor = 0;
+  let checked = 0;
+  let populated = 0;
+  let failed = 0;
+  let blocked = false;
+  await Promise.all(Array.from({ length: Math.min(DETAIL_CONCURRENCY, queue.length) }, async () => {
+    for (;;) {
+      if (blocked) break;
+      const item = queue[cursor++];
+      if (!item) break;
+      try {
+        const payload = await fetchJson(bmNutritionUrl(item.ean), {}, `nutricion EAN ${item.ean}`);
+        if (applyBmNutritionPayload(item.rows, payload, runStart)) populated++;
+        checked++;
+        if (checked % 500 === 0) {
+          console.log(`[bm] nutricion: ${checked}/${queue.length} EAN · ${populated} con datos`);
+        }
+      } catch (error) {
+        if (error?.status === 404) {
+          applyBmNutritionPayload(item.rows, null, runStart);
+          checked++;
+        } else {
+          failed++;
+          if (error?.status === 403 || error?.status === 429) blocked = true;
+          console.warn(`[bm] detalle EAN ${item.ean}: ${error.message}`);
+        }
+      }
+    }
+  }));
+  console.log(
+    `[bm] nutricion: ${checked}/${queue.length} EAN consultados, ${populated} con datos, `
+      + `${failed} fallidos, ${pending.length - queue.length} pendientes por limite`
+      + (blocked ? ' · CDN bloqueado, siguiente sync reintentara' : ''),
+  );
+  if (DRY_RUN) {
+    for (const item of queue) {
+      const row = item.rows[0];
+      console.log(`[bm] detalle muestra ${row.id}: ${row.nutrition?.split('\n').slice(0, 3).join(' | ') ?? 'sin tabla'}`);
+    }
+  }
+}
+
 async function main() {
   console.log(
     `[bm] inicio ${runStart}${DRY_RUN ? ' (DRY RUN)' : ''} · CP=${POSTAL_CODES.join(',')} · conc=${CONCURRENCY}`,
@@ -412,6 +531,8 @@ async function main() {
       minCoverageRatio: MIN_COVERAGE_RATIO,
     });
   }
+
+  await enrichBmNutrition(productRows);
 
   if (DRY_RUN) {
     console.log('[bm] muestra de productos:');

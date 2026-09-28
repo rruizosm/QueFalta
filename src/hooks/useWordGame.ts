@@ -2,13 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AppState } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fetchDailyWord, submitWordGuess } from '../api/wordGame';
+import { fetchDailyWord, startDailyWord, submitWordGuess } from '../api/wordGame';
 import { WordGameSession, wordDraftKey } from '../lib/wordGameSession';
 
 export function useWordGame(userId: string | undefined, enabled = true) {
   const controller = useMemo(() => new WordGameSession({
     storageKey: wordDraftKey(userId ?? 'signed-out'),
     today: () => userId ? fetchDailyWord() : Promise.reject(new Error('WORD_AUTH_REQUIRED')),
+    start: startDailyWord,
     submit: submitWordGuess,
     readDraft: () => userId ? AsyncStorage.getItem(wordDraftKey(userId)) : Promise.resolve(null),
     writeDraft: (value) => userId ? AsyncStorage.setItem(wordDraftKey(userId), value) : Promise.resolve(),

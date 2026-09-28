@@ -31,12 +31,15 @@ export interface CommunityRecipe {
   authorId: string;
   title: string;
   imageUrl: string;
+  /** Owned storage path. Kept separate from the public URL for safe edits/deletion. */
+  imagePath?: string;
   /** Personas para las que están calculadas las cantidades; null en recetas antiguas. */
   servings: number | null;
   ingredients: RecipeIngredient[];
   steps: string[];
   /** Una foto opcional por paso; conserva el contrato de texto de versiones anteriores. */
   stepImageUrls?: (string | null)[];
+  stepImagePaths?: (string | null)[];
   createdAt: string;
   likeCount: number;
   saveCount: number;
@@ -63,6 +66,10 @@ export interface CreateRecipeInput {
   }[];
   steps: RecipeStepInput[];
   profile: UserProfile | null;
+}
+
+export interface UpdateRecipeInput extends CreateRecipeInput {
+  recipe: CommunityRecipe;
 }
 
 type RecipeRow = {
@@ -109,6 +116,44 @@ const publicImageUrl = (path: string): string => (
   supabase.storage.from('recipe-images').getPublicUrl(path).data.publicUrl
 );
 
+const isOwnedImagePath = (path: unknown, userId: string): path is string => (
+  typeof path === 'string'
+  && path.startsWith(`${userId}/`)
+  && /^[\w/-]+\.jpg$/.test(path)
+  && !path.includes('..')
+);
+
+function pathFromPublicImageUrl(uri: string | null | undefined, userId: string): string | null {
+  if (!uri) return null;
+  try {
+    const marker = '/recipe-images/';
+    const path = decodeURIComponent(new URL(uri).pathname.split(marker)[1] ?? '');
+    return isOwnedImagePath(path, userId) ? path : null;
+  } catch {
+    return null;
+  }
+}
+
+function recipeImagePaths(recipe: CommunityRecipe, userId: string): string[] {
+  const mainPath = isOwnedImagePath(recipe.imagePath, userId)
+    ? recipe.imagePath : pathFromPublicImageUrl(recipe.imageUrl, userId);
+  const stepPaths = recipe.steps.map((_, index) => {
+    const storedPath = recipe.stepImagePaths?.[index];
+    return isOwnedImagePath(storedPath, userId)
+      ? storedPath : pathFromPublicImageUrl(recipe.stepImageUrls?.[index], userId);
+  });
+  return [...new Set([mainPath, ...stepPaths].filter((path): path is string => !!path))];
+}
+
+function validateRecipeInput(input: CreateRecipeInput): void {
+  if (!Number.isInteger(input.servings) || input.servings < 1 || input.servings > 99) {
+    throw new Error('Recipe servings must be an integer between 1 and 99');
+  }
+  if (input.steps.some((step) => step.imageUri && !step.text.trim())) {
+    throw new Error('A step with a photo requires a description');
+  }
+}
+
 function normalizeRecipeServings(value: unknown): number | null {
   const servings = Number(value);
   return Number.isInteger(servings) && servings >= 1 && servings <= 99 ? servings : null;
@@ -138,6 +183,7 @@ function rowToRecipe(
     authorId: row.author_id,
     title: row.title,
     imageUrl: publicImageUrl(row.image_path),
+    imagePath: row.image_path,
     servings: normalizeRecipeServings(row.servings),
     ingredients: Array.isArray(row.ingredients)
       ? (row.ingredients as Partial<RecipeIngredient>[]).map((ingredient) => ({
@@ -149,9 +195,12 @@ function rowToRecipe(
     steps,
     stepImageUrls: steps.map((_, index) => {
       const path: unknown = Array.isArray(row.step_image_paths) ? row.step_image_paths[index] : null;
-      return typeof path === 'string' && path.startsWith(`${row.author_id}/`)
-        && /^[\w/-]+\.jpg$/.test(path) && !path.includes('..')
+      return isOwnedImagePath(path, row.author_id)
         ? publicImageUrl(path) : null;
+    }),
+    stepImagePaths: steps.map((_, index) => {
+      const path: unknown = Array.isArray(row.step_image_paths) ? row.step_image_paths[index] : null;
+      return isOwnedImagePath(path, row.author_id) ? path : null;
     }),
     createdAt: row.created_at,
     likeCount: Math.max(0, Number(row.like_count) || 0),
@@ -249,12 +298,7 @@ async function uploadRecipeImage(userId: string, imageUri: string): Promise<stri
 }
 
 export async function createCommunityRecipe(input: CreateRecipeInput): Promise<CommunityRecipe> {
-  if (!Number.isInteger(input.servings) || input.servings < 1 || input.servings > 99) {
-    throw new Error('Recipe servings must be an integer between 1 and 99');
-  }
-  if (input.steps.some((step) => step.imageUri && !step.text.trim())) {
-    throw new Error('A step with a photo requires a description');
-  }
+  validateRecipeInput(input);
   const cleanSteps = cleanRecipeSteps(input.steps);
   const storage = supabase.storage.from('recipe-images');
   const uploadedPaths: string[] = [];
@@ -298,4 +342,100 @@ export async function createCommunityRecipe(input: CreateRecipeInput): Promise<C
   }
 
   return rowToRecipe(data as RecipeRow, input.profile);
+}
+
+export async function updateCommunityRecipe(input: UpdateRecipeInput): Promise<CommunityRecipe> {
+  validateRecipeInput(input);
+  if (input.recipe.authorId !== input.userId) throw new Error('Only the author can edit this recipe');
+
+  const cleanSteps = cleanRecipeSteps(input.steps);
+  const storage = supabase.storage.from('recipe-images');
+  const oldPaths = recipeImagePaths(input.recipe, input.userId);
+  const uploadedPaths: string[] = [];
+  const currentMainPath = oldPaths.find((path) => (
+    path === input.recipe.imagePath || publicImageUrl(path) === input.recipe.imageUrl
+  )) ?? null;
+  let imagePath: string;
+  const stepImagePaths: (string | null)[] = [];
+
+  try {
+    if (currentMainPath && input.imageUri === input.recipe.imageUrl) {
+      imagePath = currentMainPath;
+    } else {
+      imagePath = await uploadRecipeImage(input.userId, input.imageUri);
+      uploadedPaths.push(imagePath);
+    }
+
+    for (const step of cleanSteps) {
+      const existingPath = isOwnedImagePath(step.existingImagePath, input.userId)
+        ? step.existingImagePath : null;
+      if (step.imageUri && existingPath && publicImageUrl(existingPath) === step.imageUri) {
+        stepImagePaths.push(existingPath);
+      } else if (step.imageUri) {
+        const path = await uploadRecipeImage(input.userId, step.imageUri);
+        uploadedPaths.push(path);
+        stepImagePaths.push(path);
+      } else {
+        stepImagePaths.push(null);
+      }
+    }
+  } catch (error) {
+    if (uploadedPaths.length > 0) await storage.remove(uploadedPaths).catch(() => {});
+    throw error;
+  }
+
+  const ingredients = input.ingredients.map((ingredient) => ingredientFromProduct(
+    ingredient,
+    stepIndexesForIngredient(cleanSteps, recipeProductKey(ingredient.product)),
+  ));
+  const { data, error } = await supabase
+    .from('recipes')
+    .update({
+      title: input.title.trim(),
+      image_path: imagePath,
+      servings: input.servings,
+      ingredients,
+      steps: cleanSteps.map((step) => step.text),
+      step_image_paths: stepImagePaths,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', input.recipe.id)
+    .eq('author_id', input.userId)
+    .select('id, author_id, title, image_path, servings, ingredients, steps, step_image_paths, created_at, like_count, save_count')
+    .single();
+
+  if (error) {
+    // As with creation, retain uploads when the server result is uncertain.
+    if (error.code && uploadedPaths.length > 0) await storage.remove(uploadedPaths).catch(() => {});
+    throw error;
+  }
+
+  const retainedPaths = new Set([imagePath, ...stepImagePaths.filter((path): path is string => !!path)]);
+  const obsoletePaths = oldPaths.filter((path) => !retainedPaths.has(path));
+  if (obsoletePaths.length > 0) await storage.remove(obsoletePaths).catch(() => {});
+
+  return rowToRecipe(
+    data as RecipeRow,
+    input.profile,
+    input.recipe.isLiked,
+    input.recipe.isSaved,
+  );
+}
+
+export async function deleteCommunityRecipe(recipe: CommunityRecipe, userId: string): Promise<void> {
+  if (recipe.authorId !== userId) throw new Error('Only the author can delete this recipe');
+  const { data, error } = await supabase
+    .from('recipes')
+    .delete()
+    .eq('id', recipe.id)
+    .eq('author_id', userId)
+    .select('id')
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error('Recipe not found or not owned by the current user');
+
+  const paths = recipeImagePaths(recipe, userId);
+  if (paths.length > 0) {
+    await supabase.storage.from('recipe-images').remove(paths).catch(() => {});
+  }
 }

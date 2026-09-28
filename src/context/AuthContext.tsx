@@ -5,6 +5,8 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from '../lib/supabase';
+import { clearCatalogRequests } from '../lib/catalogRequestCache';
+import { invalidateCatalogSearch } from '../lib/catalogSearchScope';
 import { setPendingProfileName } from '../lib/pendingProfileName';
 import { linkAppleCredential } from '../api/account';
 import { configurePurchases, logOutPurchases } from '../lib/purchases';
@@ -47,6 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [authCallbackError, setAuthCallbackError] = useState(false);
   const processedAuthCallbacks = useRef(new Set<string>());
+  const catalogUserId = useRef<string | null>(null);
   const clearAuthCallbackError = useCallback(() => setAuthCallbackError(false), []);
 
   const exchangeAuthCodeFromUrl = useCallback(async (url: string) => {
@@ -112,6 +115,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .finally(() => setLoading(false));
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const userId = session?.user.id ?? null;
+      if (catalogUserId.current !== userId) {
+        catalogUserId.current = userId;
+        clearCatalogRequests();
+        invalidateCatalogSearch();
+      }
       setSession(session);
     });
 

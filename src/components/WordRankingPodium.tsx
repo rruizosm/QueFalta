@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { WordRank } from '../api/wordGame';
@@ -8,6 +8,7 @@ import { fonts } from '../constants/typography';
 import { useTheme, useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import VerifiedBadge from './VerifiedBadge';
+import UserAvatar from './UserAvatar';
 
 const metals = [
   { accent: '#BA8B28', light: '#F9E8B7', dark: '#44371D' },
@@ -15,15 +16,8 @@ const metals = [
   { accent: '#BC8965', light: '#F3DFD0', dark: '#413025' },
 ];
 
-function ProfilePhoto({ uri, size }: { uri?: string | null; size: number }) {
-  const [failed, setFailed] = useState(false);
-  return uri && /^https:\/\//i.test(uri) && !failed
-    ? <Image source={{ uri }} onError={() => setFailed(true)} style={{ width: size, height: size, borderRadius: size / 2 }} />
-    : <Ionicons name="person" size={size * 0.55} color={colors.inkSoft} />;
-}
-
 /** Server order is stable for ties. Show the actual shared rank, never invent a tiebreaker. */
-export default function WordRankingPodium({ leaders }: { leaders: WordRank[] }) {
+export default function WordRankingPodium({ leaders, highlightMe = true }: { leaders: WordRank[]; highlightMe?: boolean }) {
   const styles = useThemedStyles(themedStyles);
   const { t, lang } = useTranslation();
   const { scheme } = useTheme();
@@ -48,12 +42,12 @@ export default function WordRankingPodium({ leaders }: { leaders: WordRank[] }) 
           <Ionicons name={winner ? 'trophy-outline' : 'medal-outline'} size={winner ? 23 : 18} color={dark ? metal.light : metal.accent} />
         </View>
         <View style={styles.nameRow}>
-          <Text numberOfLines={1} ellipsizeMode="tail" maxFontSizeMultiplier={1.3} style={[styles.name, user.isMe && styles.me]}>{name}</Text>
+          <Text numberOfLines={1} ellipsizeMode="tail" maxFontSizeMultiplier={1.3} style={[styles.name, highlightMe && user.isMe && styles.me]}>{name}</Text>
           {user.isPlus && <VerifiedBadge size={13} marginLeft={3} />}
         </View>
         <View style={styles.portrait}>
         <View style={[styles.avatar, { width: size + 8, height: size + 8, borderRadius: (size + 8) / 2, borderColor: `${metal.accent}80` }]}>
-          <ProfilePhoto key={user.avatarUrl ?? 'empty'} uri={user.avatarUrl} size={size} />
+          <UserAvatar key={user.avatarUrl ?? 'empty'} avatarUrl={user.avatarUrl} initials="?" color={colors.surfaceAlt} size={size} />
         </View>
         <View style={[styles.medal, { backgroundColor: dark ? metal.dark : metal.light, borderColor: colors.paper }]}>
           <Text maxFontSizeMultiplier={1.2} style={[styles.position, { color: dark ? metal.light : metal.dark }]}>{user.rank}</Text>

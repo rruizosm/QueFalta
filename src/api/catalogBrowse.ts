@@ -1,5 +1,5 @@
-import { browseAhorramasProducts, browseAlcampoProducts, browseAldiProducts, browseAmetllerProducts, browseBonareaProducts, browseBonpreuProducts, browseCapraboProducts, browseCarrefourProducts, browseCondisProducts, browseConsumProducts, browseDiaProducts, browseEroskiProducts, browseFroizProducts, browseGadisProducts, browseHiperdinoProducts, browseLidlProducts, browsePlusfrescProducts, browseProducts, browseSorliProducts, type BrowseCursor, type BrowsePage } from './catalog';
-import { ahorramasToUI, alcampoToUI, aldiToUI, ametllerToUI, bonareaToUI, bonpreuToUI, capraboToUI, carrefourToUI, condisToUI, consumToUI, diaToUI, eroskiToUI, froizToUI, gadisToUI, hiperdinoToUI, lidlToUI, mercadonaToUI, plusfrescToUI, sorliToUI, type UIProduct } from '../lib/productAdapters';
+import { browseAhorramasProducts, browseAlcampoProducts, browseAldiProducts, browseAmetllerProducts, browseBmProducts, browseBonareaProducts, browseBonpreuProducts, browseCapraboProducts, browseCarrefourProducts, browseCondisProducts, browseConsumProducts, browseDiaProducts, browseEljamonProducts, browseEroskiProducts, browseFroizProducts, browseGadisProducts, browseHiperdinoProducts, browseLidlProducts, browsePlusfrescProducts, browseProducts, browseSorliProducts, type BrowseCursor, type BrowsePage } from './catalog';
+import { ahorramasToUI, alcampoToUI, aldiToUI, ametllerToUI, bmToUI, bonareaToUI, bonpreuToUI, capraboToUI, carrefourToUI, condisToUI, consumToUI, diaToUI, eljamonToUI, eroskiToUI, froizToUI, gadisToUI, hiperdinoToUI, lidlToUI, mercadonaToUI, plusfrescToUI, sorliToUI, type UIProduct } from '../lib/productAdapters';
 import type { CatalogStore } from '../constants/stores';
 import type { RegionValue } from '../constants/regions';
 import { getLanguage } from '../i18n';
@@ -30,6 +30,9 @@ export function peekBrowsePage(
 ): BrowsePage<UIProduct> | undefined {
   return peekCatalogRequest(catalogRequestKey('browse', [getLanguage(), store, cursor, region, postalCode, lidlStoreId, order, limit]));
 }
+// Propagar los errores: reintentar en otro orden duplica la carga durante un
+// timeout y mezcla cursores de precio con nombres. El paginador combinado ya
+// conserva los resultados de los supermercados que sí respondieron.
 async function loadBrowsePageUncached(
   store: CatalogStore,
   cursor: BrowseCursor | null,
@@ -38,27 +41,6 @@ async function loadBrowsePageUncached(
   lidlStoreId: string | null,
   signal?: AbortSignal,
   order: ProductBrowseOrder = 'priceAsc',
-  limit = 50,
-): Promise<BrowsePage<UIProduct>> {
-  try {
-    return await loadBrowsePageWithOrder(store, cursor, region, postalCode, lidlStoreId, signal, order, limit);
-  } catch (error) {
-    // Algunas tablas antiguas de producción aún pueden no tener el índice del
-    // orden activo. No permitimos que una sola consulta deje vacío el
-    // catálogo combinado: recuperamos su primera página alfabética y la mezcla
-    // la ordena en cliente. Las cancelaciones sí deben propagarse.
-    if (signal?.aborted) throw error;
-    return loadBrowsePageWithOrder(store, cursor, region, postalCode, lidlStoreId, signal, false, limit);
-  }
-}
-async function loadBrowsePageWithOrder(
-  store: CatalogStore,
-  cursor: BrowseCursor | null,
-  region: RegionValue | null,
-  postalCode: string | null,
-  lidlStoreId: string | null,
-  signal?: AbortSignal,
-  order: ProductBrowseOrder | boolean = 'priceAsc',
   limit = 50,
 ): Promise<BrowsePage<UIProduct>> {
   switch (store) {
@@ -75,6 +57,8 @@ async function loadBrowsePageWithOrder(
     case 'ametller':  { const { items, nextCursor } = await browseAmetllerProducts(cursor, limit, signal, order as never); return { items: items.map(ametllerToUI), nextCursor }; }
     case 'aldi':      { const { items, nextCursor } = await browseAldiProducts(cursor, limit, signal, order as never); return { items: items.map(aldiToUI), nextCursor }; }
     case 'lidl':      { const { items, nextCursor } = await browseLidlProducts(cursor, limit, signal, order as never, lidlStoreId); return { items: items.map(lidlToUI), nextCursor }; }
+    case 'bm':        { const { items, nextCursor } = await browseBmProducts(cursor, postalCode, limit, signal, order as never); return { items: items.map(bmToUI), nextCursor }; }
+    case 'eljamon':   { const { items, nextCursor } = await browseEljamonProducts(cursor, limit, signal, order as never); return { items: items.map(eljamonToUI), nextCursor }; }
     case 'gadis':     { const { items, nextCursor } = await browseGadisProducts(cursor, limit, signal, order as never); return { items: items.map(gadisToUI), nextCursor }; }
     case 'froiz':     { const { items, nextCursor } = await browseFroizProducts(cursor, limit, signal, order as never); return { items: items.map(froizToUI), nextCursor }; }
     case 'ahorramas': { const { items, nextCursor } = await browseAhorramasProducts(cursor, limit, signal, order as never); return { items: items.map(ahorramasToUI), nextCursor }; }

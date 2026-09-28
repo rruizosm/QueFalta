@@ -1,5 +1,8 @@
+import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
+import { supabase } from '../lib/supabase';
+import { privateAvatarPath } from '../api/profile';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
@@ -12,12 +15,15 @@ import { useThemedStyles } from '../context/ThemeContext';
  */
 export default function UserAvatar({
   avatarUrl,
+  userId,
   initials,
   color,
   size,
   style,
 }: {
   avatarUrl?: string | null;
+  /** Perfil dueño de la foto. Hace que Storage aplique su policy de privacidad. */
+  userId?: string | null;
   initials: string;
   color: string;
   size: number;
@@ -25,15 +31,40 @@ export default function UserAvatar({
 }) {
   const styles = useThemedStyles(themedStyles);
   const base = { width: size, height: size, borderRadius: size / 2 };
-  if (avatarUrl) {
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+  const privatePath = privateAvatarPath(avatarUrl ?? null);
+  const publicUrl = avatarUrl && !avatarUrl.startsWith('private:')
+    ? /^https:\/\//i.test(avatarUrl)
+      ? avatarUrl
+      : userId
+        ? supabase.storage.from('avatars').getPublicUrl(`${userId}/avatar.jpg`).data.publicUrl
+        : null
+    : null;
+
+  useEffect(() => {
+    let active = true;
+    setSignedUrl(null);
+    setFailed(false);
+    if (!privatePath) return () => { active = false; };
+    // Caducidad corta: si se elimina una amistad, no emitimos URLs nuevas y la
+    // que pudiera haberse obtenido antes deja de servir en pocos minutos.
+    supabase.storage.from('avatars-private').createSignedUrl(privatePath, 5 * 60)
+      .then(({ data }) => { if (active) setSignedUrl(data?.signedUrl ?? null); })
+      .catch(() => { if (active) setSignedUrl(null); });
+    return () => { active = false; };
+  }, [avatarUrl, privatePath]);
+
+  if ((signedUrl || publicUrl) && !failed) {
     return (
       <Image
-        source={avatarUrl}
+        source={signedUrl ?? publicUrl}
         style={[base, style as any]}
         contentFit="cover"
         cachePolicy="memory-disk"
         transition={100}
-        recyclingKey={avatarUrl}
+        recyclingKey={signedUrl ?? publicUrl}
+        onError={() => setFailed(true)}
       />
     );
   }

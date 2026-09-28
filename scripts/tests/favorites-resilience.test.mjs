@@ -11,13 +11,20 @@ const catalogScreen = read('src/screens/CatalogScreen.tsx');
 const favoritesScreen = read('src/screens/FavoritesScreen.tsx');
 const productList = read('src/components/StoreProductList.tsx');
 
-test('favoritos conserva un snapshot aislado por usuario y revalida la red', () => {
+test('favoritos conserva un snapshot aislado por usuario y no carga productos en Inicio', () => {
   assert.match(startupCache, /favorites: \(userId: string\) => key\(userId, 'favorites'\)/);
   assert.match(startupCache, /startupKeys\.favorites\(userId\)/);
   assert.match(favoritesContext, /readStartupCache<FavoritesSnapshot>/);
   assert.match(favoritesContext, /writeStartupCache\(startupKeys\.favorites\(userId\)/);
   assert.match(favoritesContext, /attempt < 2/);
-  assert.match(homeScreen, /Promise\.allSettled\(\[load\(\), refreshFavorites\(\)\]\)/);
+  assert.doesNotMatch(homeScreen, /useFavorites|refreshFavorites|favoriteToUI|favTiles/);
+  assert.match(homeScreen, /\{ key: 'favorites', route: 'Favorites', icon: 'star-outline', mark: 'FAV' \}/);
+  assert.match(homeScreen, /quickBlocks: \{[\s\S]+?flexDirection: 'row', flexWrap: 'wrap'/);
+  assert.doesNotMatch(homeScreen, /styles\.quickSub/);
+  assert.match(homeScreen, /mark: 'NOV'[\s\S]+?mark: 'OFE'[\s\S]+?mark: 'PRE'[\s\S]+?mark: 'FAV'/);
+  assert.match(homeScreen, /aria-hidden[\s\S]+?style=\{styles\.quickWatermark\}/);
+  assert.match(homeScreen, /quickInner: \{[\s\S]+?position: 'relative', overflow: 'hidden', isolation: 'isolate'/);
+  assert.match(homeScreen, /quickWatermark: \{[\s\S]+?fontSize: 70[\s\S]+?filter: \[\{ blur: 1\.8 \}\][\s\S]+?rotate: '-8deg'/);
 });
 
 test('Todos precarga lotes cortos por supermercado', () => {

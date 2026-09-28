@@ -1,4 +1,4 @@
-import type { DailyWord, WordRank, WordRanking } from '../api/wordGame';
+import type { DailyWord, WordRank, WordRanking, WordRankingWindow } from '../api/wordGame';
 
 const record = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value);
 const integer = (value: unknown, min: number, max = Number.MAX_SAFE_INTEGER): value is number => typeof value === 'number' && Number.isSafeInteger(value) && value >= min && value <= max;
@@ -12,6 +12,9 @@ export function parseDailyWord(data: unknown): DailyWord {
     typeof data.day !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(data.day) ||
     data.language !== 'es' || !integer(data.length, 4, 6) ||
     (data.status !== 'playing' && data.status !== 'won' && data.status !== 'lost') || !integer(data.score, 0, 1000) ||
+    (data.scoringVersion !== 1 && data.scoringVersion !== 2) ||
+    !(data.startedAt === null || timestamp(data.startedAt)) ||
+    !(data.durationSeconds === null || integer(data.durationSeconds, 0)) ||
     !timestamp(data.endsAt) || !timestamp(data.serverNow) || !Array.isArray(data.guesses) || data.guesses.length > 6) return invalid();
   const length = data.length;
   if (!data.guesses.every((guess: unknown) => record(guess) && word(guess.word, length) &&
@@ -19,8 +22,12 @@ export function parseDailyWord(data: unknown): DailyWord {
     guess.feedback.every((state: unknown) => state === 'absent' || state === 'present' || state === 'correct'))) return invalid();
   if (data.status === 'playing' && (data.solution !== null || data.score !== 0 || data.guesses.length >= 6)) return invalid();
   if (data.status !== 'playing' && (!word(data.solution, length) || !data.guesses.length)) return invalid();
+  if ((data.status === 'playing') !== (data.durationSeconds === null)) return invalid();
+  if (data.guesses.length && !data.startedAt) return invalid();
   if (data.status === 'lost' && (data.guesses.length !== 6 || data.score !== 0)) return invalid();
-  if (data.status === 'won' && data.score !== 1000 - 150 * (data.guesses.length - 1)) return invalid();
+  if (data.status === 'won' && (data.scoringVersion === 1
+    ? data.score !== 1000 - 150 * (data.guesses.length - 1)
+    : !integer(data.score, 1, 280))) return invalid();
   return data as unknown as DailyWord;
 }
 
@@ -31,7 +38,16 @@ function rank(value: unknown): value is WordRank {
     (value.isPlus === undefined || typeof value.isPlus === 'boolean');
 }
 export function parseWordRanking(data: unknown): WordRanking {
-  if (!record(data) || !Array.isArray(data.leaders) || data.leaders.length > 50 ||
+  if (!record(data) || !Array.isArray(data.leaders) || data.leaders.length > 150 ||
     !data.leaders.every(rank) || !(data.me === null || (rank(data.me) && data.me.isMe))) return invalid();
   return data as unknown as WordRanking;
+}
+
+export function parseWordRankingWindow(data: unknown): WordRankingWindow {
+  parseWordRanking(data);
+  if (!record(data) || typeof data.periodStart !== 'string' || typeof data.periodEnd !== 'string' ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(data.periodStart) || !/^\d{4}-\d{2}-\d{2}$/.test(data.periodEnd) ||
+    data.periodStart > data.periodEnd || !integer(data.offset, 0, 1200) ||
+    typeof data.hasPrevious !== 'boolean') return invalid();
+  return data as unknown as WordRankingWindow;
 }

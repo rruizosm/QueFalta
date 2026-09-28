@@ -262,6 +262,7 @@ export type HomeStackParamList = {
   Offers: undefined;
   Profile: undefined;
   EditProfile: undefined;
+  WordStatistics: undefined;
   PrivacySecurity: undefined;
   CatalogStores: undefined;
   RegionSettings: undefined;
@@ -287,10 +288,13 @@ export type CatalogStackParamList = {
   CatalogHome: undefined;
   SubCategory: {
     categoryName: string;
+    /** Id de la categoría actual; permite abrir "Todos los productos" en árboles profundos. */
+    categoryId?: string;
+    parentName?: string;
     emoji?: string;
     color?: string;
     /** Subcategorías N2. Mercadona usa ids numéricos; el resto de espejos, ids string. */
-    subcategories: { id: string | number; name: string }[];
+    subcategories: CatalogCategoryNode[];
     retailer?: CatalogStore;
   };
   Products: {
@@ -371,6 +375,16 @@ export type CatalogStackParamList = {
     categoryName: string;
     parentName?: string;
   };
+  BmProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentName?: string;
+  };
+  EljamonProducts: {
+    categoryId: string;
+    categoryName: string;
+    parentName?: string;
+  };
   GadisProducts: {
     categoryId: string;
     categoryName: string;
@@ -405,6 +419,13 @@ export type CatalogStackParamList = {
     parentName?: string;
   };
 };
+
+/** Nodo recursivo común para retailers con más de dos niveles de categorías. */
+export interface CatalogCategoryNode {
+  id: string | number;
+  name: string;
+  children?: CatalogCategoryNode[];
+}
 
 export type GroupsStackParamList = {
   GroupsHome: undefined;

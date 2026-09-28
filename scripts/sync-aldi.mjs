@@ -42,6 +42,7 @@
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
+import { assertAldiSyncIntegrity } from './lib/aldi-sync-integrity.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -117,7 +118,45 @@ function hitsOf(nextData) {
   const pp = nextData?.props?.pageProps;
   const idx = pp?.algoliaConfig?.indexName;
   const results = idx && pp?.algoliaState?.initialResults?.[idx]?.results?.[0];
-  return results?.hits || [];
+  return Array.isArray(results?.hits) ? results.hits : null;
+}
+
+const categorySlug = (value) => String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const ROOT_LABELS = {
+  'lacteos-y-huevos': 'Lácteos y huevos',
+  'platos-preparados-y-pizza': 'Platos preparados y pizzas',
+  'cafe-cacao-e-infusiones': 'Café, cacao e infusiones',
+  'bebe-e-infantil': 'Bebé e infantil',
+  'panaderia-y-bolleria': 'Panadería y bollería',
+  'charcuteria': 'Charcutería',
+  'limpieza-y-hogar': 'Limpieza y hogar',
+};
+const LEAF_LABELS = {
+  'yogures-y-postres-lacteos': 'Yogures y postres lácteos',
+  'sidra-sangria-y-tinto-de-verano': 'Sidra, sangría y tinto de verano',
+  'salsas-dips-y-untables': 'Salsas, dips y untables',
+  'papel-higienico-y-celulosa': 'Papel higiénico y celulosa',
+  'el-horno': 'El Horno',
+  'la-tabla': 'La Tabla',
+  'lacura-nature': 'Lacura Nature',
+  'moser-roth': 'Moser Roth',
+};
+const labelFromSlug = (slug) => slug.split('-').map((word, index) =>
+  index ? word : word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+
+function categoryLabels(h, n1, n2) {
+  const lvl0 = h.hierarchicalCategories?.lvl0 ?? [];
+  const lvl1 = h.hierarchicalCategories?.lvl1 ?? [];
+  const root = lvl0.find((name) => categorySlug(name) === n1);
+  const leaf = lvl1.find((path) => {
+    const parts = path.split('>').map((part) => part.trim());
+    return categorySlug(parts[0]) === n1 && categorySlug(parts.at(-1)) === n2;
+  });
+  return {
+    root: ROOT_LABELS[n1] ?? root ?? labelFromSlug(n1),
+    leaf: LEAF_LABELS[n2] ?? leaf?.split('>').at(-1)?.trim() ?? labelFromSlug(n2),
+  };
 }
 
 // ── Enumeración de categorías hoja ───────────────────────────────────────────
@@ -125,16 +164,28 @@ function hitsOf(nextData) {
 // __NEXT_DATA__ (menú + contenido). N1 = 2 barras, hoja = 3 barras.
 const N1_RE = /\/productos\/[a-z0-9-]+(?![\/a-z0-9-])/g;
 const LEAF_RE = /\/productos\/[a-z0-9-]+\/[a-z0-9-]+(?![\/a-z0-9-])/g;
+const CMS_FRAGMENTS = new Set(['open', 'text', 'banner', 'live', 'headline']);
+const STALE_LINKS = new Set(['/productos/bebe-e-infantil/cuidados-e-higiene']);
 
 async function enumerateLeaves() {
   const root = await getNextData('/productos.html');
   if (!root) throw new Error(`no se pudo leer /productos.html (${nextDataFailures.at(-1)?.reason ?? 'sin detalle'})`);
   const n1s = [...new Set([...JSON.stringify(root).matchAll(N1_RE)].map((x) => x[0]))]
-    .filter((p) => (p.match(/\//g) || []).length === 2);
+    .filter((p) => (p.match(/\//g) || []).length === 2
+      && !CMS_FRAGMENTS.has(p.split('/').at(-1))
+      && p !== '/productos/carousel'
+      && p !== '/productos/marcas-propias');
   const leaves = new Set();
   for (const n1 of n1s) {
     const d = await getNextData(`${n1}.html`);
-    if (d) for (const l of JSON.stringify(d).matchAll(LEAF_RE)) leaves.add(l[0]);
+    if (!d) nextDataFailures.push({ path: `${n1}.html`, reason: 'categoría inaccesible' });
+    if (d) {
+      const found = [...JSON.stringify(d).matchAll(LEAF_RE)].map((x) => x[0])
+        .filter((l) => l.split('/')[2] === n1.split('/')[2]
+          && !CMS_FRAGMENTS.has(l.split('/').at(-1)) && !STALE_LINKS.has(l));
+      if (!found.length) nextDataFailures.push({ path: `${n1}.html`, reason: 'sin subcategorías' });
+      for (const l of found) leaves.add(l);
+    }
     await sleep(40);
   }
   return { n1s, leaves: [...leaves].slice(0, MAX_LEAVES) };
@@ -204,6 +255,16 @@ async function upsert(table, rows) {
     if (!res.ok) throw new Error(`upsert ${table} ${res.status}: ${await res.text()}`);
   }
 }
+async function countRows(table, query = '') {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=id${query}`, {
+    method: 'HEAD',
+    headers: { apikey: SERVICE_ROLE, Authorization: `Bearer ${SERVICE_ROLE}`, Prefer: 'count=exact' },
+  });
+  if (!res.ok) throw new Error(`recuento previo ${table}: HTTP ${res.status}`);
+  const count = Number(res.headers.get('content-range')?.split('/').at(-1));
+  if (!Number.isFinite(count)) throw new Error(`recuento previo ${table} sin Content-Range válido`);
+  return count;
+}
 const markStale = (table) => markStaleBatched({ url: SUPABASE_URL, key: SERVICE_ROLE, table, runStart });
 
 async function main() {
@@ -228,16 +289,17 @@ async function main() {
       const n1 = n1Slug(leaf);
       const n2 = leaf.split('/')[3];
       const d = await getNextData(`${leaf}.html`);
-      const hits = d ? hitsOf(d) : [];
-      if (!hits.length) { emptyLeaves++; }
-      for (const h of hits) {
+      if (!d) nextDataFailures.push({ path: `${leaf}.html`, reason: 'hoja inaccesible' });
+      const hits = d ? hitsOf(d) : null;
+      if (d && !hits) nextDataFailures.push({ path: `${leaf}.html`, reason: 'sin resultados Algolia' });
+      if (hits && !hits.length) { emptyLeaves++; }
+      for (const h of hits ?? []) {
         if (h?.objectID == null) continue;
         const id = String(h.objectID);
         // Nombres de categoría desde la jerarquía del hit (lvl0 = N1, lvl1 = N1 > N2).
-        const lvl0 = h.hierarchicalCategories?.lvl0?.[0];
-        const lvl1 = h.hierarchicalCategories?.lvl1?.[0];
-        if (lvl0 && !catName.has(n1)) catName.set(n1, lvl0);
-        if (lvl1 && !catName.has(n2)) catName.set(n2, lvl1.split('>').pop().trim());
+        const labels = categoryLabels(h, n1, n2);
+        if (!catName.has(n1)) catName.set(n1, labels.root);
+        if (!catName.has(n2)) catName.set(n2, labels.leaf);
         if (!catParent.has(n2)) catParent.set(n2, n1);
         if (!products.has(id)) {
           const norm = normalize(h);
@@ -289,9 +351,17 @@ async function main() {
     const sample = nextDataFailures.slice(0, 5)
       .map(({ path, reason }) => `${path}: ${reason}`).join('; ');
     console.warn(`[aldi] ${nextDataFailures.length} páginas sin datos tras reintentos (${sample})`);
+    if (DRY_RUN && process.env.DEBUG_FAILURES === '1') {
+      for (const { path, reason } of nextDataFailures) console.warn(`[aldi] fallo ${path}: ${reason}`);
+    }
   }
 
   if (DRY_RUN) {
+    if (MAX_LEAVES === Infinity) assertAldiSyncIntegrity({
+      products: rows.length, categories: catRows.length, roots: n1s.length,
+      leaves: leaves.length, failedPages: nextDataFailures,
+      previousProducts: 0, previousCategories: 0, minProducts: MIN_PRODUCTS,
+    });
     console.log('muestra (6):');
     for (const r of rows.slice(0, 6)) {
       console.log(`  ${r.id}  ${r.display_name}  [${r.brand ?? '—'}]  ${r.price_format}  ${r.price_per_unit != null ? r.price_per_unit + ' €/' + r.price_per_unit_unit : '—'}  cat=${r.category_name ?? '—'}`);
@@ -304,13 +374,23 @@ async function main() {
       sin_categoria: rows.filter((r) => r.category_ids.length === 0).length,
       con_oferta: rows.filter((r) => r.promo_base_price != null).length,
     });
+    for (const id of ['charcuteria', 'limpieza-y-hogar']) {
+      const category = catRows.find((row) => row.id === id);
+      console.log(`[aldi] ${id}: ${category?.product_count ?? 0} productos · ${catRows.filter((row) => row.parent_id === id).length} subcategorías`);
+    }
     return;
   }
 
-  // GUARDARRAÍL: scrape parcial → NO escribir (markStale borraría el catálogo vivo).
-  if (rows.length < MIN_PRODUCTS) {
-    throw new Error(`solo ${rows.length} productos (< ${MIN_PRODUCTS}); posible scrape parcial → abortado sin escribir`);
-  }
+  // Un 200 intermedio o una hoja inaccesible no puede convertirse en un borrado.
+  const [previousProducts, previousCategories] = await Promise.all([
+    countRows('aldi_products', '&published=eq.true'),
+    countRows('aldi_categories'),
+  ]);
+  assertAldiSyncIntegrity({
+    products: rows.length, categories: catRows.length, roots: n1s.length,
+    leaves: leaves.length, failedPages: nextDataFailures,
+    previousProducts, previousCategories, minProducts: MIN_PRODUCTS,
+  });
 
   await upsert('aldi_categories', catRows);
   await upsert('aldi_products', rows);

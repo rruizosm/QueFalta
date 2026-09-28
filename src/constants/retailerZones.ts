@@ -31,3 +31,39 @@ export function plusfrescCenterFromPostalCode(postalCode: string | null | undefi
   if (!postalCode || !/^\d{5}$/.test(postalCode)) return null;
   return PLUSFRESC_CENTER_BY_POSTAL_CODE[postalCode] ?? null;
 }
+
+/** Códigos postales de referencia cuyo catálogo BM multizona se descarga y
+ * valida completo. Mantener sincronizado con BM_SUPPORTED_POSTAL_CODES de
+ * scripts/lib/bm.mjs. Cada uno representa la cobertura de su provincia. */
+export const BM_SUPPORTED_POSTAL_CODES = [
+  '20009', // Gipuzkoa · BM Pagola Online
+  '48009', // Bizkaia · Zubiarte Online
+  '01001', // Araba · BM Lakua
+  '39001', // Cantabria · BM Santander Online
+  '31001', // Navarra · BM Ardoi Online
+  '26001', // La Rioja · BM Avd. Madrid Online
+  '28008', // Madrid · BM Princesa
+] as const;
+
+const BM_REFERENCE_POSTAL_CODE_BY_PROVINCE: Record<string, typeof BM_SUPPORTED_POSTAL_CODES[number]> = {
+  '01': '01001', // Araba
+  '20': '20009', // Gipuzkoa
+  '26': '26001', // La Rioja
+  '28': '28008', // Madrid
+  '31': '31001', // Navarra
+  '39': '39001', // Cantabria
+  '48': '48009', // Bizkaia
+};
+
+/** CP real del usuario -> CP de referencia cuyo catálogo BM está sincronizado. */
+export function bmReferencePostalCode(
+  postalCode: string | null | undefined,
+): typeof BM_SUPPORTED_POSTAL_CODES[number] | null {
+  if (!postalCode || !/^\d{5}$/.test(postalCode)) return null;
+  return BM_REFERENCE_POSTAL_CODE_BY_PROVINCE[postalCode.slice(0, 2)] ?? null;
+}
+
+/** BM se ofrece en cualquier CP de una provincia con catálogo sincronizado. */
+export function bmAvailableForPostalCode(postalCode: string | null | undefined): boolean {
+  return bmReferencePostalCode(postalCode) != null;
+}

@@ -40,7 +40,7 @@ los campos/acciones exponen etiquetas y estados para VoiceOver.
 | 3 | Avatar   | Opcional | `expo-image-picker` + `uploadAvatar`; cabecera con `berenjena-selfie.png` |
 | 4 | Friends  | Opcional | `useUsernameSearch` (typeahead cancelable) + `sendFriendRequest`; cabecera con `berenjena-amigos.png` |
 | 5 | Group    | Opcional | RPC transaccional e idempotente `create_group_with_owner` |
-| — | Done     | — | confirmación visual; su CTA aplica el perfil completo y cambia el gate |
+| — | Done     | — | confirmación visual; su CTA aplica el perfil completo y entra directamente en Inicio |
 
 Los obligatorios bloquean el avance; los opcionales se pueden omitir.
 En la cuadrícula del segundo paso, Lidl aparece inmediatamente al lado de
@@ -75,8 +75,8 @@ correcto, región y al menos un supermercado; usa la hora del servidor y marca
 el paso 5. Solo el rol `authenticated` puede ejecutar las dos RPC.
 
 ## Transición a Inicio
-Al pulsar «Entrar en QuéFalta», Inicio se monta cubierto por una superficie de
-continuidad y solo se revela cuando su primer layout y sus bloques asíncronos
+Al pulsar «Entrar en QuéFalta», Inicio se monta directamente, sin paywall,
+cubierto por una superficie de continuidad y solo se revela cuando su primer layout y sus bloques asíncronos
 principales están resueltos. Hay un límite de 900 ms para que una red lenta no
 bloquee la entrada y el fundido respeta Reducir movimiento.
 

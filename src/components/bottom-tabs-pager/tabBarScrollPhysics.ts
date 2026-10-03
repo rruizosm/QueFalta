@@ -2,8 +2,7 @@
 export const TAB_BAR_SCROLL = {
   fullHeight: 64,
   compactHeight: 62,
-  compactScale: 0.94,
-  compactContentScale: 0.90 / 0.94,
+  compactScale: 0.91,
   compactTranslateY: 4,
   downDeadZone: 18,
   upDeadZone: 10,

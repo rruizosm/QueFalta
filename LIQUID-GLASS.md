@@ -231,6 +231,11 @@ Consum via `ProductInfoSections`).
 
 ## Estado
 
+- **Catálogo en apariencia oscura (2026-10-01, local):** los segmentados
+  Productos/Categorías, orden de precio y lista/cuadrícula dejan que el material
+  nativo resuelva el reflejo y omiten el highlight horizontal manual de 1 pt,
+  que se percibía como una raya blanca. En claro se conserva el brillo sutil;
+  el tramo bloqueado de precio unitario usa la misma regla.
 - **Selector de recetas (2026-09-12, local):** «Usuarios / Supermercado» ocupa
   el espacio derecho de la cabecera mediante `SlidingSegments emphasized`
   sobre su `GlassSurface` existente. Sin cristal anidado; cabecera con ajuste

@@ -1,6 +1,6 @@
 import { parseWordProfileStats, type WordProfileStats } from '../lib/wordProfileStats';
 import { supabase } from '../lib/supabase';
-import { parseDailyWord, parseWordRankingWindow } from '../lib/wordGamePayload';
+import { parseDailyWord, parseWordGuessResult, parseWordRankingWindow } from '../lib/wordGamePayload';
 
 export type LetterState = 'absent' | 'present' | 'correct';
 export type RankingPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'all';
@@ -49,11 +49,11 @@ export async function startDailyWord(gameId: string): Promise<DailyWord> {
 }
 
 export async function submitWordGuess(gameId: string, word: string, expectedAttempts: number): Promise<DailyWord> {
-  const { data, error } = await request((signal) => supabase.rpc('word_game_guess', {
+  const { data, error } = await request((signal) => supabase.rpc('word_game_guess_v2', {
     p_game_id: gameId, p_word: word, p_expected_attempts: expectedAttempts,
   }).abortSignal(signal));
   if (error) throw error;
-  return parseDailyWord(data);
+  return parseWordGuessResult(data);
 }
 
 export async function fetchWordRanking(period: RankingPeriod, offset = 0, groupId?: string, signal?: AbortSignal): Promise<WordRankingWindow> {

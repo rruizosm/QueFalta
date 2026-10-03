@@ -1,7 +1,7 @@
 import Reanimated from 'react-native-reanimated';
 import { useTabBarScrollOffsetStyle } from '../hooks/useTabBarScroll';
 import { PagerNativeFlatList as FlatList } from './bottom-tabs-pager/PagerNativeScroll';
-import { prefetchProductImages } from '../lib/prefetchProductImages';
+import { prepareProductImages } from '../lib/prefetchProductImages';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { PagerGestureContext } from './bottom-tabs-pager/PagerGestureContext';
 import {
@@ -30,6 +30,7 @@ import ActiveCartIcon from './ActiveCartIcon';
 import GlassSurface from './GlassSurface';
 
 const GRID_GAP = 8;
+const INITIAL_IMAGE_PREPARE_TIMEOUT_MS = 1200;
 
 // Misma normalización que la búsqueda del catálogo (NFD + quitar diacríticos +
 // minúsculas) para que el filtro local sea insensible a acentos y mayúsculas.
@@ -171,8 +172,40 @@ export default function StoreProductList({
       : sortByName(filtered, (p) => p.name);
   }, [products, query, searchQuery, keepOrder]);
 
-  const firstImageUris = useMemo(() => shown.slice(0, 12).map((p) => p.imageUrl), [shown]);
-  useEffect(() => prefetchProductImages(firstImageUris), [firstImageUris]);
+  // La precarga anterior arrancaba después del primer render de FlatList: durante
+  // ese frame se veían los placeholders y, acto seguido, las fotos. Esperamos al
+  // primer bloque visible (con un límite corto para no bloquear una red lenta) y
+  // solo entonces montamos las celdas. Tras esa primera apertura, filtros y páginas
+  // posteriores no vuelven a ocultar la lista.
+  const firstImageBatchKey = useMemo(() => JSON.stringify(
+    shown.slice(0, viewMode === 'grid' ? gridColumns * 3 : 8).map((p) => p.imageUrl),
+  ), [gridColumns, shown, viewMode]);
+  const hasProductsToPrepare = shown.length > 0;
+  const [initialImagesReady, setInitialImagesReady] = useState(false);
+  useEffect(() => {
+    if (initialImagesReady || loading || error || !hasProductsToPrepare) return undefined;
+
+    const firstImageUris = JSON.parse(firstImageBatchKey) as (string | null)[];
+    if (!firstImageUris.some(Boolean)) {
+      setInitialImagesReady(true);
+      return undefined;
+    }
+
+    let active = true;
+    const preparation = prepareProductImages(firstImageUris);
+    const revealProducts = () => {
+      if (active) setInitialImagesReady(true);
+    };
+    const timeout = setTimeout(revealProducts, INITIAL_IMAGE_PREPARE_TIMEOUT_MS);
+    void preparation.ready.then(revealProducts);
+
+    return () => {
+      active = false;
+      clearTimeout(timeout);
+      preparation.cancel();
+    };
+  }, [error, firstImageBatchKey, hasProductsToPrepare, initialImagesReady, loading]);
+  const awaitingInitialImages = !loading && !error && hasProductsToPrepare && !initialImagesReady;
 
   // Ventana local (paginación de favoritos): se pinta solo lo revelado y crece
   // de `pageSize` en `pageSize` al hacer scroll. Sin `pageSize`, se pinta todo
@@ -440,7 +473,7 @@ export default function StoreProductList({
         </View>
       )}
 
-      {loading ? (
+      {loading || awaitingInitialImages ? (
         <ActivityIndicator size="large" color={colors.accent} style={{ marginTop: 48 + topInset }} />
       ) : error ? (
         <View style={[styles.center, topInset > 0 && { marginTop: topInset }]}><Text style={styles.emptyText}>{errorLabel}</Text></View>

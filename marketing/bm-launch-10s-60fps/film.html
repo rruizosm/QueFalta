@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BM llega a QuéFalta · 10 s</title>
+<style>
+@font-face{font-family:Anton;src:url(assets/Anton-Regular.ttf);font-weight:400}
+@font-face{font-family:Space;src:url(assets/SpaceGrotesk-Medium.ttf);font-weight:500}
+*{box-sizing:border-box}html,body{margin:0;background:#171816;height:100%;overflow:hidden}body{display:grid;place-items:center}canvas{height:100vh;max-width:100vw;object-fit:contain}button{position:fixed;right:20px;bottom:20px;border:0;border-radius:24px;padding:14px 22px;background:#f9ec23;color:#1d1d1b;font:500 16px Space;cursor:pointer}button[hidden]{display:none}
+</style></head><body><canvas width="1080" height="1920" aria-label="Anuncio de BM en QuéFalta"></canvas><button id="play">Reproducir con sonido</button>
+<script>
+// Every scene is deterministic. All type, icons, cards and transitions are editable layers.
+// This is a graphic interpretation of the app, not a screen capture.
+const W=1080,H=1920,Y='#F9EC23',K='#1D1D1B',P='#F8F7EE',BLUE='#3478C9',DEEP='#102843';
+const canvas=document.querySelector('canvas'),outctx=canvas.getContext('2d');
+const stage=document.createElement('canvas');stage.width=W;stage.height=H;const c=stage.getContext('2d');
+const A={},TAU=Math.PI*2;
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)),lerp=(a,b,t)=>a+(b-a)*t;
+const ease=x=>1-(1-clamp(x))**3,smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
+const pop=x=>{x=clamp(x);return 1-(1-x)**3*Math.cos(x*7)};
+function state(fn){c.save();fn();c.restore()}
+function at(x,y,s,r,fn,a=1){if(s<=0||a<=0)return;state(()=>{c.globalAlpha*=clamp(a);c.translate(x,y);c.rotate(r);c.scale(s,s);fn()})}
+function rect(x,y,w,h,r,fill,stroke,width=2){c.beginPath();c.roundRect(x,y,w,h,r);if(fill){c.fillStyle=fill;c.fill()}if(stroke){c.strokeStyle=stroke;c.lineWidth=width;c.stroke()}}
+function circle(x,y,r,fill,stroke,width=2){if(r<=0)return;c.beginPath();c.arc(x,y,r,0,TAU);if(fill){c.fillStyle=fill;c.fill()}if(stroke){c.strokeStyle=stroke;c.lineWidth=width;c.stroke()}}
+function text(s,x,y,size,color=K,font='Anton',align='left'){c.font=`${font==='Space'?500:400} ${size}px ${font}`;c.textAlign=align;c.textBaseline='middle';c.fillStyle=color;c.fillText(s,x,y)}
+function img(a,x,y,w,h){h??=w*a.height/a.width;c.drawImage(a,x,y,w,h)}
+function contain(a,x,y,w,h){const s=Math.min(w/a.width,h/a.height);img(a,x+(w-a.width*s)/2,y+(h-a.height*s)/2,a.width*s,a.height*s)}
+function shadow(fn,alpha=.13,blur=36,dy=16){state(()=>{c.shadowColor=`rgba(29,29,27,${alpha})`;c.shadowBlur=blur;c.shadowOffsetY=dy;fn()})}
+function line(pts,col=K,width=5){c.beginPath();pts.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.strokeStyle=col;c.lineWidth=width;c.lineCap='round';c.lineJoin='round';c.stroke()}
+function arrow(x,y,s=1,col=K){at(x,y,s,0,()=>{line([[-29,0],[29,0]],col,6);line([[10,-19],[29,0],[10,19]],col,6)})}
+function spark(x,y,r,col=Y,rot=0){at(x,y,r,rot,()=>{c.beginPath();c.moveTo(0,-1);c.quadraticCurveTo(.12,-.12,1,0);c.quadraticCurveTo(.12,.12,0,1);c.quadraticCurveTo(-.12,.12,-1,0);c.quadraticCurveTo(-.12,-.12,0,-1);c.fillStyle=col;c.fill()})}
+function plus(x,y,r,col){line([[x-r,y],[x+r,y]],col,5);line([[x,y-r],[x,y+r]],col,5)}
+function pill(s,x,y,w,col=K,ink=Y){rect(x-w/2,y-30,w,60,30,col);text(s,x,y+1,26,ink,'Space','center')}
+function reveal(s,x,y,size,t,start,col=K,align='left',duration=.30){const p=ease((t-start)/duration);state(()=>{c.beginPath();c.rect(0,y-size*.69,W,size*1.4);c.clip();text(s,x,y+(1-p)*size*1.45,size,col,'Anton',align)})}
+function bg(color,t=0){c.fillStyle=color;c.fillRect(0,0,W,H);state(()=>{c.globalAlpha=color===Y?.07:.035;c.strokeStyle=color===DEEP?'#FFFFFF':K;c.lineWidth=1.8;for(let i=0;i<3;i++){c.beginPath();c.ellipse(850,1080,450+i*118,780+i*120,-.29,0,TAU);c.stroke()}})}
+function qfmark(x,y,w){contain(A.quefalta,x-w/2,y-w*.83/2,w,w*.83)}
+function bmMark(x,y,w){contain(A.bm,x-w/2,y-w/2,w,w)}
+function header(dark=false){text('Supermercados BM',90,215,29,dark?P:K,'Space');rect(875,189,100,50,25,dark?Y:K);text('YA AQUÍ',925,215,20,dark?K:Y,'Space','center')}
+function postal(y=1610,color=K){text('Consulta BM según tu código postal',540,y,32,color,'Space','center')}
+function tinyBrand(x,y,color=K){qfmark(x,y,43);text('QuéFalta',x+34,y+1,28,color,'Space')}
+function hook(t){
+ bg(DEEP,t);header(true);
+ // Full headline is already visible in frame zero; the logo and connector provide the impact.
+ const lift=14*(1-ease(t/.25));text('¡BM ya está',540,440+lift,132,P,'Anton','center');text('en QuéFalta!',540,604+lift,132,Y,'Anton','center');
+ const e=pop((t+.12)/.6);at(540,985,e,-.045*(1-ease(t/.5)),()=>{shadow(()=>rect(-250,-220,500,440,60,Y),.28,70,30);bmMark(0,-30,310);text('Supermercados BM',0,157,31,K,'Space','center')});
+ const trace=ease((t-.22)/.6);state(()=>{c.beginPath();c.moveTo(540,1220);c.bezierCurveTo(540,1300,743,1260,743,1350);c.lineTo(743,1390);c.strokeStyle=Y;c.lineWidth=5;c.setLineDash([360*trace,500]);c.stroke()});
+ at(540,1437,pop((t-.15)/.55),0,()=>{rect(-232,-86,464,172,42,P);qfmark(-119,0,126);text('QuéFalta',52,0,52,K,'Anton','center')});
+ spark(873,855,29+4*Math.sin(t*5),Y,.1);spark(195,1190,19,Y,t*.5);
+}
+const productIds=['21801','21990','76411'];
+const productNames=[['Plátano','de Canarias IGP'],['Aguacate','A granel'],['Leche entera','BM · 1 l']];
+function phone(t,{x=540,y=1020,scale=1,rotation=0,rows=true}={}){
+ at(x,y,scale,rotation,()=>{
+  shadow(()=>rect(-292,-501,584,1002,73,K),.22,58,29);rect(-280,-489,560,978,64,'#E9E9E2');rect(-272,-481,544,962,59,P);
+  rect(-80,-468,160,25,15,K);tinyBrand(-218,-402);text('Catálogo',-223,-332,49,K,'Anton');
+  rect(-232,-278,464,81,24,'#FFFFFF','#DDDED4');bmMark(-187,-238,58);text('BM',-140,-237,29,K,'Space');line([[193,-242],[204,-231],[215,-242]],BLUE,4);
+  const p=ease((t-.15)/.22);state(()=>{c.globalAlpha=p;rect(-232,-278,464,81,24,null,BLUE,3)});
+  text('Productos',-225,-157,26,BLUE,'Space');text('CP 20009',229,-157,22,'#68695F','Space','right');rect(-225,-128,134,4,2,BLUE);
+  if(rows)for(let i=0;i<3;i++){
+   const q=ease((t-.16-i*.09)/.37),dy=(1-q)*115;state(()=>{c.globalAlpha=q;const yy=-92+i*169+dy;rect(-234,yy,468,152,26,'#FFFFFF','#E5E5DD');contain(A[productIds[i]],-221,yy+12,122,122);text(productNames[i][0],-79,yy+49,38,K,'Space');text(productNames[i][1],-79,yy+96,29,'#64685D','Space')});
+  }
+  rect(-75,449,150,6,3,K);
+ });
+}
+function discovery(t){
+ bg(Y,t);header();reveal('Tu catálogo BM,',540,366,102,t,-.1,K,'center');reveal('en la app',540,493,109,t,.0,K,'center');
+ const p=ease((t+.05)/.45);phone(t,{x:540+(1-p)*160,y:1052+(1-p)*180,scale:1,rotation:-.035*(1-p)});
+ // A simple tap selects the real BM catalog label; no invented prices or controls.
+ if(t>.18&&t<.78){const k=clamp((t-.18)/.6);circle(730,827,25+70*k,null,`rgba(52,120,201,${.7*(1-k)})`,5)}
+ spark(907,823,26,K,-t*.3);spark(161,1318,18,K,t*.2);postal(1620);
+}
+function icon(kind,x,y,col){at(x,y,1,0,()=>{
+ if(kind===0){c.beginPath();c.moveTo(-32,-26);c.lineTo(2,-26);c.lineTo(35,7);c.lineTo(7,35);c.lineTo(-32,-4);c.closePath();c.strokeStyle=col;c.lineWidth=5;c.lineJoin='round';c.stroke();circle(-15,-10,4,col)}
+ if(kind===1){spark(0,0,38,col);spark(32,-32,10,col)}
+ if(kind===2){line([[-22,28],[-22,-29]],col,5);line([[-37,-13],[-22,-29],[-7,-13]],col,5);line([[22,-28],[22,29]],col,5);line([[7,13],[22,29],[37,13]],col,5)}
+})}
+const features=['Ofertas','Novedades','Cambios de precio'];
+function featureCard(i,x,y,s=1,a=1){at(x,y,s,0,()=>{shadow(()=>rect(-420,-100,840,200,39,i===1?Y:'#FFFFFF'),.065,20,8);circle(-322,0,58,K);icon(i,-322,0,i===1?Y:P);text(features[i],-231,0,i===2?66:78,K);arrow(346,0,.72,K)},a)}
+function benefits(t){
+ bg(P,t);header();bmMark(540,400,205);text('BM en QuéFalta',540,559,71,K,'Anton','center');
+ for(let i=0;i<3;i++){const delay=[0,.72,1.46][i],p=pop((t-delay)/.45);if(p>0)featureCard(i,540+(1-ease((t-delay)/.4))*(i%2?-800:800),784+i*244,.98+Math.max(0,p-1)*.12)}
+ postal(1610);const q=ease((t-2.2)/.35);state(()=>{c.globalAlpha=q;line([[200,1480],[880,1480]],'#D3D4C6',2);tinyBrand(438,1518)});
+}
+function brands(y=580,s=1){at(540,y,s,0,()=>{shadow(()=>rect(-367,-164,294,328,42,P),.10,24,8);shadow(()=>rect(73,-164,294,328,42,P),.10,24,8);bmMark(-220,-28,222);qfmark(220,-25,222);text('BM',-220,118,39,K,'Anton','center');text('QuéFalta',220,118,37,K,'Anton','center');plus(0,0,20,K)})}
+function union(t){
+ bg(Y,t);header();const p=ease(t/.35);at(0,(1-p)*50,1,0,()=>brands(504,.85));reveal('BM, ahora',540,819,113,t,.0,K,'center');reveal('en QuéFalta',540,955,113,t,.08,K,'center');
+ const shrink=ease((t-.10)/.5);phone(2,{x:540,y:1280,scale:.43,rotation:0});
+ for(let i=0;i<3;i++){const q=ease((t-.09-i*.06)/.48);const endY=1210+i*70;at(lerp(i%2?1070:10,540,q),lerp(1120+i*110,endY,q),lerp(.65,.38,q),0,()=>featureCard(i,0,0,1,1))}
+ postal(1650);
+}
+function endcard(){
+ bg(Y,0);header();brands(639,1);
+ text('Abre QuéFalta',540,1014,125,K,'Anton','center');text('y descubre BM',540,1169,125,K,'Anton','center');
+ rect(211,1332,658,130,65,K);text('quefalta.es',507,1397,48,Y,'Space','center');arrow(784,1397,.85,Y);postal(1600);
+}
+const starts=[0,1.5,3.5,6.8,8.5],scenes=[hook,discovery,benefits,union,endcard];
+function scene(t){let n=Math.max(0,starts.findLastIndex(s=>s<=t));scenes[n](t-starts[n]);
+ // Yellow vertical wipe leads into the final card, which is completely still from 8.5 s.
+ if(n<4){const duration=n===2?.22:.18,next=starts[n+1],q=smooth((t-next+duration)/duration);if(q>0){state(()=>{c.beginPath();if(n===0){c.arc(540,985,2250*q,0,TAU)}else{c.rect(W*(1-q),0,W*q,H)}c.clip();scenes[n+1](0)})}}
+}
+window.drawFrame=(t,samples=1)=>{outctx.clearRect(0,0,W,H);for(let i=0;i<samples;i++){const dt=t>=8.5?0:(i/(Math.max(1,samples-1))-.5)/120;scene(clamp(t+dt,0,9.999));outctx.globalAlpha=1/(i+1);outctx.drawImage(stage,0,0)}outctx.globalAlpha=1;return true};
+window.ready=(async()=>{await Promise.all([document.fonts.load('400 100px Anton'),document.fonts.load('500 30px Space')]);for(const [name,file] of Object.entries({bm:'bm.png',quefalta:'quefalta.png','21801':'21801.jpg','21990':'21990.jpg','76411':'76411.jpg'})){A[name]=new Image();A[name].src='assets/'+file;await A[name].decode()}drawFrame(9);return true})();
+const audio=new Audio('bm-original-score.wav');let playing=false,start=0;
+function loop(now){if(!playing)return;const t=(now-start)/1000;if(t>=10){playing=false;drawFrame(9.999);document.querySelector('button').hidden=false;return}drawFrame(t);requestAnimationFrame(loop)}
+document.querySelector('button').onclick=async()=>{await window.ready;audio.currentTime=0;await audio.play();start=performance.now();playing=true;document.querySelector('button').hidden=true;requestAnimationFrame(loop)};
+if(new URLSearchParams(location.search).has('render'))document.querySelector('button').hidden=true;
+</script></body></html>

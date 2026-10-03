@@ -28,3 +28,9 @@ jobs:
           MIN_LOCATIONS: '7'
           MIN_PRODUCTS: '6500'
           MIN_COVERAGE_RATIO: '0.97'
+      - name: Actualizar capa del comparador
+        run: node scripts/sync-comparator-embedding-catalog.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          STORES: bm

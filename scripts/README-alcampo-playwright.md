@@ -1,5 +1,11 @@
 # Sync local de Alcampo con Playwright
 
+Actualización 28-09-2026: se ha verificado acceso JSON anónimo al árbol y al
+directorio paginado de ofertas, pero el listado general sigue respondiendo 403.
+Cliente y prueba reproducible de solo lectura en
+[README-alcampo-api.md](README-alcampo-api.md). Este runner sigue siendo la vía
+separada de catálogo con navegador.
+
 El endpoint JSON de Alcampo responde correctamente a la primera petición y
 después devuelve una página de verificación. Este runner usa Chromium visible,
 un perfil persistente y el estado SSR de las páginas de categoría.

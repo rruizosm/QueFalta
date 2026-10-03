@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Animated,
   RefreshControl,
+  Platform,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -35,6 +36,11 @@ import AmbientBubbleBackdrop from '../components/AmbientBubbleBackdrop';
 import ActiveCartIcon from '../components/ActiveCartIcon';
 import DailyWordButton from '../components/DailyWordButton';
 import PaywallModal from '../components/PaywallModal';
+import ResponsivePromotionCard from '../components/ResponsivePromotionCard';
+import { useSponsorCampaign } from '../hooks/useSponsorCampaign';
+import { useSponsorMetrics } from '../hooks/useSponsorMetrics';
+import { promotionImageUrl } from '../api/sponsorCampaigns';
+import { campaignDestination } from '../lib/sponsorCampaign';
 import { GroupCartLimitError } from '../lib/groupCartLimit';
 import { useHeaderTopPadding } from '../hooks/useHeaderTopPadding';
 import { useTabBarBottomPadding } from '../hooks/useTabBarBottomPadding';
@@ -59,7 +65,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 export default function HomeScreen() {
   const styles = useThemedStyles(themedStyles);
   const headerTop = useHeaderTopPadding(56);
-  const bottomPad = useTabBarBottomPadding(32);
+  const bottomPad = useTabBarBottomPadding(20);
   const reducedMotion = useReducedMotion();
   const navigation = useNavigation<any>();
   const { t, lang } = useTranslation();
@@ -80,6 +86,7 @@ export default function HomeScreen() {
   const [revealDeadlineReached, setRevealDeadlineReached] = useState(false);
 
   const userId = profile?.id ?? null;
+  const { campaign, refresh: refreshCampaign } = useSponsorCampaign(userId);
 
   const cachedCartItems = userId && activeCart
     ? peekStartupCache<GroupItem[]>(startupKeys.listItems(userId, activeCart.listId))
@@ -100,6 +107,8 @@ export default function HomeScreen() {
   );
   const [repeating, setRepeating] = useState(false);
   const [paywallVisible, setPaywallVisible] = useState(false);
+  const sponsorMetrics = useSponsorMetrics(userId, campaign?.id ?? null,
+    notifOpen || paywallVisible || entryCoverVisible, headerH || headerTop + 52, bottomPad);
   const cartRequestIdRef = useRef(0);
 
   const load = useCallback(() => {
@@ -192,9 +201,9 @@ export default function HomeScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await load();
+    await Promise.all([load(), refreshCampaign()]);
     setRefreshing(false);
-  }, [load]);
+  }, [load, refreshCampaign]);
 
   const doneItems = cartItems.filter((item) => item.inCart).length;
   const totalItems = cartItems.length;
@@ -291,6 +300,7 @@ export default function HomeScreen() {
       />
       {!glassAvailable && header}
       <ScrollView tabBarScroll
+        onScroll={sponsorMetrics.onScroll}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.scroll,
@@ -434,6 +444,19 @@ export default function HomeScreen() {
             </TouchableOpacity>
           ))}
         </View>
+
+        {campaign && <ResponsivePromotionCard
+          key={`${campaign.id}:${campaign.updated_at}`}
+          source={{ uri: promotionImageUrl(campaign.image_path) }}
+          bannerRef={sponsorMetrics.bannerRef}
+          onImageReady={sponsorMetrics.onImageReady}
+          onClick={sponsorMetrics.onClick}
+          label={t('home.adLabel')}
+          accessibilityLabel={`${t('home.adLabel')} · ${campaign.sponsor_name}. ${lang === 'ca' ? campaign.accessibility_label_ca : campaign.accessibility_label_es}`}
+          accessibilityHint={t('home.adOpenHint')}
+          destinationUrl={campaignDestination(campaign, Platform.OS) ?? undefined}
+          onOpenError={() => toast.show(t('home.adOpenError'), 'error')}
+        />}
 
         {/* Última compra: repetirla con un toque; la tarjeta abre el historial */}
         {lastPurchase && (
@@ -641,7 +664,7 @@ const themedStyles = () => StyleSheet.create({
   },
 
   // ── Sections ──────────────────────────────────────────────────
-  sectionWrap: { marginBottom: 20 },
+  sectionWrap: { marginTop: 20, marginBottom: 20 },
   sectionHeader: {
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'center', marginBottom: 10,

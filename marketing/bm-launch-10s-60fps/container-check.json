@@ -1,0 +1,21 @@
+{
+  "fast_start": true,
+  "file_bytes": 6377479,
+  "atoms": [
+    {
+      "type": "ftyp",
+      "offset": 0,
+      "size": 28
+    },
+    {
+      "type": "moov",
+      "offset": 28,
+      "size": 11216
+    },
+    {
+      "type": "mdat",
+      "offset": 11244,
+      "size": 6366235
+    }
+  ]
+}

@@ -6,13 +6,22 @@ import { storeInRegion } from '../constants/regions';
 import { clearCatalogRequests } from '../lib/catalogRequestCache';
 import { loadBrowsePage } from '../api/catalogBrowse';
 import { fetchWeeklyNewProducts, fetchPriceChanges, fetchStoreOffers, OFFER_STORES } from '../api/catalog';
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext, useCallback, useContext, useEffect, useMemo, useRef, useState,
+} from 'react';
 import type { StoreSelection } from '../components/StoreDropdown';
 import { useAuth } from './AuthContext';
+import type { CatalogStore } from '../constants/stores';
+import {
+  readCatalogFavoriteStore,
+  writeCatalogFavoriteStore,
+} from '../lib/catalogFavoriteStore';
 
 interface CatalogStoreContextValue {
   store: StoreSelection;
   setStore: React.Dispatch<React.SetStateAction<StoreSelection>>;
+  favoriteStore: CatalogStore | null;
+  toggleFavoriteStore: (store: CatalogStore) => void;
 }
 
 const CatalogStoreContext = createContext<CatalogStoreContextValue | null>(null);
@@ -25,22 +34,73 @@ const CatalogStoreContext = createContext<CatalogStoreContextValue | null>(null)
 export function CatalogStoreProvider({ children }: { children: React.ReactNode }) {
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
-  const { profile, isPremium } = useProfile();
+  const { profile, isPremium, loading: profileLoading } = useProfile();
   const { lang } = useTranslation();
   const [store, setStore] = useState<StoreSelection>('mercadona');
+  const [favoriteStore, setFavoriteStore] = useState<CatalogStore | null>(null);
+  const [favoriteLoadedForUser, setFavoriteLoadedForUser] = useState<string | null>(null);
+  const favoriteStoreRef = useRef<CatalogStore | null>(null);
+  const favoriteLoadRevision = useRef(0);
+  const favoriteWriteQueue = useRef<Promise<void>>(Promise.resolve());
+  const defaultAppliedUser = useRef<string | null>(null);
 
-  // El estado es de sesion, no una preferencia compartida entre cuentas que
-  // usen el mismo dispositivo.
+  // La selección manual sigue siendo de sesión. El favorito sí se restaura en
+  // cada arranque, siempre bajo una clave propia de la cuenta del dispositivo.
   useEffect(() => {
+    const revision = ++favoriteLoadRevision.current;
     clearCatalogRequests();
     setStore('mercadona');
-  }, [userId]);
+    favoriteStoreRef.current = null;
+    setFavoriteStore(null);
+    setFavoriteLoadedForUser(null);
+    defaultAppliedUser.current = null;
+    if (!userId) return;
 
+    readCatalogFavoriteStore(userId)
+      .catch(() => null)
+      .then((favorite) => {
+        if (favoriteLoadRevision.current !== revision) return;
+        favoriteStoreRef.current = favorite;
+        setFavoriteStore(favorite);
+        setFavoriteLoadedForUser(userId);
+      });
+  }, [userId]);
 
   const region = profile?.region ?? null;
   const postalCode = profile?.postalCode ?? null;
   const lidlStoreId = profile?.lidlStoreId ?? null;
   const enabledStores = profile?.catalogStores;
+
+  // El favorito determina la selección inicial una sola vez por sesión. Una
+  // cadena temporalmente inaccesible (región, preferencia o Plus) se conserva
+  // como favorita, pero no se abre automáticamente durante ese arranque.
+  useEffect(() => {
+    if (!userId || profileLoading || profile?.id !== userId
+      || favoriteLoadedForUser !== userId || defaultAppliedUser.current === userId) return;
+    defaultAppliedUser.current = userId;
+    if (!favoriteStore || catalogStoreRequiresPlus(favoriteStore, isPremium)
+      || !storeInRegion(favoriteStore, region, postalCode)
+      || (enabledStores && !enabledStores.includes(favoriteStore))
+      || (favoriteStore === 'lidl' && !lidlStoreId)) return;
+    setStore(favoriteStore);
+  }, [
+    enabledStores, favoriteLoadedForUser, favoriteStore, isPremium, lidlStoreId,
+    postalCode, profile?.id, profileLoading, region, userId,
+  ]);
+
+  const toggleFavoriteStore = useCallback((nextStore: CatalogStore) => {
+    if (!userId) return;
+    ++favoriteLoadRevision.current;
+    const nextFavorite = favoriteStoreRef.current === nextStore ? null : nextStore;
+    favoriteStoreRef.current = nextFavorite;
+    setFavoriteStore(nextFavorite);
+    setFavoriteLoadedForUser(userId);
+    defaultAppliedUser.current = userId;
+    favoriteWriteQueue.current = favoriteWriteQueue.current
+      .then(() => writeCatalogFavoriteStore(userId, nextFavorite))
+      .catch(() => {});
+  }, [userId]);
+
   useEffect(() => {
     if (!userId || !profile || store === 'all' || catalogStoreRequiresPlus(store, isPremium)
       || !storeInRegion(store, region, postalCode) || (enabledStores && !enabledStores.includes(store))
@@ -64,7 +124,9 @@ export function CatalogStoreProvider({ children }: { children: React.ReactNode }
     return () => { cancelled = true; clearTimeout(timer); stopImages(); };
   }, [userId, profile, store, isPremium, lang, region, postalCode, lidlStoreId, enabledStores]);
 
-  const value = useMemo(() => ({ store, setStore }), [store]);
+  const value = useMemo(() => ({
+    store, setStore, favoriteStore, toggleFavoriteStore,
+  }), [favoriteStore, store, toggleFavoriteStore]);
   return <CatalogStoreContext.Provider value={value}>{children}</CatalogStoreContext.Provider>;
 }
 

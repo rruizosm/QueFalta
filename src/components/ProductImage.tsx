@@ -10,9 +10,12 @@ import type { ReactNode } from 'react';
  * Imagen de producto con caché en memoria+disco (expo-image). Sustituye al
  * <Image> de react-native, que apenas cachea en disco y obliga a re-descargar
  * cada miniatura al reentrar en una subcategoría (la causa del "tarda en cargar
- * las imágenes"). Las miniaturas se muestran sin transición adicional y Lidl utiliza
- * la variante publicada de 384 px en lista, cuadrícula y ficha. `recyclingKey` evita que al reciclar una
- * fila de FlatList se vea un instante la imagen del producto anterior.
+ * las imágenes"). Mientras llega la imagen mantiene una superficie neutra; el
+ * icono/fallback solo aparece si la descarga falla, así no parpadea antes de cada
+ * miniatura. Las miniaturas se muestran sin transición adicional y Lidl utiliza
+ * la variante publicada de 384 px en lista, cuadrícula y ficha. `recyclingKey`
+ * evita que al reciclar una fila de FlatList se vea un instante la imagen del
+ * producto anterior.
  */
 export default function ProductImage({
   uri,
@@ -32,9 +35,9 @@ export default function ProductImage({
   return (
     <View style={[styles.frame, style as StyleProp<ViewStyle>]}>
       <View style={styles.placeholder} pointerEvents="none">
-        {failed && fallback ? fallback : (
+        {failed ? (fallback ?? (
           <Ionicons name="basket-outline" size={20} color="rgba(105,96,88,0.38)" />
-        )}
+        )) : null}
       </View>
       {!!source && !failed && (
         <Image

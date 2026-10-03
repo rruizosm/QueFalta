@@ -44,7 +44,7 @@ export const allStoresRequiresPlus = (isPremium: boolean): boolean =>
   limitsApply(isPremium);
 
 /** Recetas activadas: muestra la sección comunitaria en el árbol de navegación. */
-export const QUE_COCINO_ENABLED = true;
+export const QUE_COCINO_ENABLED = false;
 
 /** Fuente única para autorizar Plus en el cliente. `verified` es solo el reflejo
  * público de este estado para pintar la insignia, nunca un gate de acceso. */

@@ -31,6 +31,16 @@ export function parseDailyWord(data: unknown): DailyWord {
   return data as unknown as DailyWord;
 }
 
+/** Convert expected gameplay rejections back into the session's local signal. */
+export function parseWordGuessResult(data: unknown): DailyWord {
+  if (!record(data) || typeof data.accepted !== 'boolean') return invalid();
+  if (!data.accepted) {
+    if (data.reason === 'WORD_INVALID' || data.reason === 'WORD_REPEATED') throw new Error(data.reason);
+    return invalid();
+  }
+  return parseDailyWord(data.game);
+}
+
 function rank(value: unknown): value is WordRank {
   return record(value) && integer(value.rank, 1) && integer(value.score, 0) && integer(value.wins, 0) &&
     (value.username === null || typeof value.username === 'string') && typeof value.isMe === 'boolean' &&

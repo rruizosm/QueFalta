@@ -1,5 +1,20 @@
 # Palabra de hoy
 
+## Rechazos esperados sin falsos errores Postgres (2026-09-29)
+
+- Una palabra ajena al diccionario y una palabra ya probada son respuestas
+  normales del juego. El RPC `word_game_guess_v2` las devuelve con
+  `accepted: false` y `WORD_INVALID`/`WORD_REPEATED`, sin elevar una excepción
+  hasta PostgREST ni contaminar los errores de Postgres.
+- El cliente convierte esos dos resultados en el mismo estado local y conserva
+  la palabra editable sin consumir intentos. Errores de sesión, permisos,
+  caducidad o concurrencia siguen siendo excepciones reales.
+- La migración local
+  `supabase/migrations/20260929131848_word_game_expected_rejections.sql` está
+  aplicada en Supabase como `20260929132148_word_game_expected_rejections`.
+  La prueba remota READ ONLY devolvió el rechazo sin registrar un nuevo error.
+  El RPC anterior se conserva para compatibilidad; falta publicar el cliente.
+
 ## Controles de Android (local, 2026-09-28)
 
 - Los selectores de pestaña y periodo evitan el gris translúcido en Android:

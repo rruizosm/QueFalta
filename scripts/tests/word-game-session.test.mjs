@@ -11,7 +11,7 @@ async function source(path) {
   return import(`data:text/javascript;base64,${Buffer.from(outputText).toString('base64')}`);
 }
 const { WordGameSession, wordDraftKey } = await source('src/lib/wordGameSession.ts');
-const { parseDailyWord, parseWordRanking, parseWordRankingWindow } = await source('src/lib/wordGamePayload.ts');
+const { parseDailyWord, parseWordGuessResult, parseWordRanking, parseWordRankingWindow } = await source('src/lib/wordGamePayload.ts');
 const emptyGame = (patch = {}) => ({
   id: 'day-one', day: '2026-09-11', language: 'es', length: 5, status: 'playing',
   guesses: [], score: 0, scoringVersion: 1, startedAt: '2026-09-11T12:00:00Z', durationSeconds: null,
@@ -151,6 +151,14 @@ test('inválida y repetida no consumen intentos; permiten corregir', async () =>
   f.type('QUESO'); await f.session.send(); f.type('QUESO'); await f.session.send();
   assert.equal(f.session.state.error, 'repeated'); assert.equal(f.game.guesses.length, 1);
   assert.equal(f.session.state.uncertain, false);
+});
+test('el contrato RPC trata inválida y repetida como rechazos esperados', () => {
+  const game = emptyGame();
+  assert.deepEqual(parseWordGuessResult({ accepted: true, game }), game);
+  assert.throws(() => parseWordGuessResult({ accepted: false, reason: 'WORD_INVALID' }), /WORD_INVALID/);
+  assert.throws(() => parseWordGuessResult({ accepted: false, reason: 'WORD_REPEATED' }), /WORD_REPEATED/);
+  assert.throws(() => parseWordGuessResult({ accepted: false, reason: 'WORD_STALE' }), /WORD_BAD_RESPONSE/);
+  assert.throws(() => parseWordGuessResult(game), /WORD_BAD_RESPONSE/);
 });
 test('victoria y puntuación del servidor; no deja jugar tras terminar', async () => {
   const f = fixture(); await f.session.refresh(); f.type('QUESO'); await f.session.send(); f.now = 42_000;

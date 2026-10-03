@@ -27,6 +27,7 @@ import { useProfile } from '../context/ProfileContext';
 import { limitsApply } from '../constants/limits';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import PaywallModal from '../components/PaywallModal';
+import { useCatalogStore } from '../context/CatalogStoreContext';
 
 type PriceSort = 'asc' | 'desc';
 type ProductSortSegment = 'priceAsc' | 'priceDesc' | 'pricePerUnitAsc' | 'pricePerUnitDesc';
@@ -57,8 +58,10 @@ export default function FavoritesScreen() {
   const bottomPad = useTabBarBottomPadding(20);
   const toast = useToast();
   const { isPremium, loading: profileLoading } = useProfile();
+  const { favoriteStore } = useCatalogStore();
 
   const [store, setStore] = useState<CatalogStore>('mercadona');
+  const favoriteDefaultApplied = useRef(false);
   const [tab, setTab] = useState<'categorias' | 'productos'>('productos');
   const [catSearch, setCatSearch] = useState('');
   const [prodSearch, setProdSearch] = useState('');
@@ -164,12 +167,19 @@ export default function FavoritesScreen() {
     [favStoreKeys],
   );
 
-  // Si la tienda activa deja de tener favoritos, salta a la primera disponible.
+  // Al entrar, prioriza el súper favorito si tiene contenido guardado. Si la
+  // tienda activa deja de tener favoritos, salta a la primera disponible.
   useEffect(() => {
+    if (!favoriteDefaultApplied.current
+      && favoriteStore && favStoreKeys.includes(favoriteStore)) {
+      favoriteDefaultApplied.current = true;
+      setStore(favoriteStore);
+      return;
+    }
     if (favStoreKeys.length > 0 && !favStoreKeys.includes(store)) {
       setStore(favStoreKeys[0]);
     }
-  }, [favStoreKeys, store]);
+  }, [favoriteStore, favStoreKeys, store]);
 
   // Favoritos de la tienda activa, filtrados por el buscador de cada pestaña.
   const shownCategories = useMemo(

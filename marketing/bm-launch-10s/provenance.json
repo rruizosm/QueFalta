@@ -1,0 +1,54 @@
+{
+  "verified_at": "2026-09-29",
+  "project": "QueFalta",
+  "project_id": "gkffvigcnsesbaihycay",
+  "postal_code": "20009",
+  "location_id": "14942D",
+  "location_name": "BM PAGOLA ONLINE",
+  "query_scope": "SELECT only. bm_product_locations JOIN bm_locations; product published AND available; location published AND enabled.",
+  "display": "Photographs and short descriptive product labels only. No prices, promotion badges, novelty badges or price-change figures.",
+  "products": [
+    {
+      "location_id": "14942D",
+      "id": "21801",
+      "display_name": "Plátano de Canarias IGP a granel (150 g aprox)",
+      "brand": null,
+      "thumbnail": "https://cdn-bm.aktiosdigitalservices.com/tol/bm/media/product/img/300x300/A21801_00.jpg?t=20260914070708",
+      "product_url": "https://www.online.bmsupermercados.es/es/p/platano-de-canarias-igp-a-granel-150-g-aprox/21801",
+      "available": true,
+      "published": true,
+      "synced_at": "2026-09-28 12:54:18.134+00",
+      "location_name": "BM PAGOLA ONLINE",
+      "location_enabled": true,
+      "location_published": true
+    },
+    {
+      "location_id": "14942D",
+      "id": "21990",
+      "display_name": "Aguacate a granel unidad (300 g aprox)",
+      "brand": null,
+      "thumbnail": "https://cdn-bm.aktiosdigitalservices.com/tol/bm/media/product/img/300x300/A21990_00.jpg?t=20260928030148",
+      "product_url": "https://www.online.bmsupermercados.es/es/p/aguacate-a-granel-unidad-300-g-aprox/21990",
+      "available": true,
+      "published": true,
+      "synced_at": "2026-09-28 12:54:18.134+00",
+      "location_name": "BM PAGOLA ONLINE",
+      "location_enabled": true,
+      "location_published": true
+    },
+    {
+      "location_id": "14942D",
+      "id": "76411",
+      "display_name": "Leche entera 1 l",
+      "brand": "BM",
+      "thumbnail": "https://cdn-bm.aktiosdigitalservices.com/tol/bm/media/product/img/300x300/A76411_00.jpg?t=20260923030155",
+      "product_url": "https://www.online.bmsupermercados.es/es/p/leche-entera-1-l/76411",
+      "available": true,
+      "published": true,
+      "synced_at": "2026-09-28 12:54:18.134+00",
+      "location_name": "BM PAGOLA ONLINE",
+      "location_enabled": true,
+      "location_published": true
+    }
+  ]
+}

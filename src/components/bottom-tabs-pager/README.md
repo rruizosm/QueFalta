@@ -234,8 +234,10 @@ instalado para Expo 57, usando las APIs de shared values/scroll de Reanimated.
 
 Valores ajustables en `tabBarScrollPhysics.ts`:
 
-- Altura 64 → 62 pt y escala global 1 → 0,94 (altura visual final 58,28 pt).
-- Bloque icono/label al 90 % total; píldora activa escalada con la cápsula.
+- Altura 64 → 62 pt y escala global 1 → 0,91 (altura visual final 56,42 pt).
+- La cápsula y la píldora se escalan, pero la fila de iconos se recoloca mediante
+  ancho, padding y posición de layout. Los glifos conservan su tamaño nativo y no
+  heredan una transformación de escala que pueda rasterizarlos borrosos.
 - Desplazamiento inferior 4 pt; sombra 18 → 14 y elevation 6 → 4.
 - Zona muerta inicial/inversión hacia abajo 18 pt, recorrido 100 pt hasta 1.
 - Subida intencionada 10 pt; spring masa 0,9 / damping 20 / stiffness 220,

@@ -28,6 +28,7 @@ const rankingDemoUsers = await readFile(new URL('../supabase/migrations/20260919
 const removeRankingDemoUsers = await readFile(new URL('../supabase/migrations/20260925092356_remove_word_ranking_demo_users.sql', import.meta.url), 'utf8');
 const addFourRankingDemoUsers = await readFile(new URL('../supabase/migrations/20260926195641_add_four_word_ranking_demo_users.sql', import.meta.url), 'utf8');
 const removeFourRankingDemoUsers = await readFile(new URL('../supabase/migrations/20260927090604_remove_four_word_ranking_demo_users.sql', import.meta.url), 'utf8');
+const expectedRejections = await readFile(new URL('../supabase/migrations/20260929131848_word_game_expected_rejections.sql', import.meta.url), 'utf8');
 const A = '00000000-0000-0000-0000-000000000001';
 const B = '00000000-0000-0000-0000-000000000002';
 const C = '00000000-0000-0000-0000-000000000003';
@@ -39,6 +40,7 @@ const asUser = async (uid, sql, params = []) => {
 };
 const today = (uid, lang = 'es') => asUser(uid, 'select public.word_game_today($1) data', [lang]);
 const guess = (uid, game, word, attempts) => asUser(uid, 'select public.word_game_guess($1,$2,$3) data', [game, word, attempts]);
+const guessV2 = (uid, game, word, attempts) => asUser(uid, 'select public.word_game_guess_v2($1,$2,$3) data', [game, word, attempts]);
 const start = (uid, game) => asUser(uid, 'select public.word_game_start($1) data', [game]);
 try {
   await db.exec(`
@@ -519,6 +521,29 @@ try {
   assert.equal((await asUser(A, "select public.word_game_ranking('es','daily') data"))
     .leaders.some((row) => row.username?.startsWith('demo_')), false);
   console.log('PASS: four virtual demo users removed · current, archived, group and legacy rankings contain only real players');
+
+  await db.exec(expectedRejections);
+  const rejectionPlayer = '00000000-0000-0000-0000-000000000009';
+  await query('insert into auth.users values($1)', [rejectionPlayer]);
+  const rejectionGame = await today(rejectionPlayer);
+  await query("update private.word_games set solution='ARROZ' where id=$1", [rejectionGame.id]);
+  await start(rejectionPlayer, rejectionGame.id);
+  assert.deepEqual(await guessV2(rejectionPlayer, rejectionGame.id, 'AAAAA', 0),
+    { accepted: false, reason: 'WORD_INVALID' });
+  assert.equal((await query('select attempts from private.word_plays where user_id=$1', [rejectionPlayer]))[0].attempts, 0);
+  const acceptedGuess = await guessV2(rejectionPlayer, rejectionGame.id, 'QUESO', 0);
+  assert.equal(acceptedGuess.accepted, true);
+  assert.equal(acceptedGuess.game.guesses.length, 1);
+  assert.deepEqual(await guessV2(rejectionPlayer, rejectionGame.id, 'QUESO', 1),
+    { accepted: false, reason: 'WORD_REPEATED' });
+  assert.equal((await query('select attempts from private.word_plays where user_id=$1', [rejectionPlayer]))[0].attempts, 1);
+  await assert.rejects(guess(rejectionPlayer, rejectionGame.id, 'AAAAA', 1), /WORD_INVALID/);
+  await assert.rejects(guessV2(rejectionPlayer, rejectionGame.id, 'LECHE', 0), /WORD_STALE/);
+  await assert.rejects(guessV2('', rejectionGame.id, 'LECHE', 1), /WORD_AUTH_REQUIRED/);
+  await db.exec('set role anon');
+  await assert.rejects(query("select public.word_game_guess_v2(null,'AAAAA',0)"), /permission denied/);
+  await db.exec('reset role');
+  console.log('PASS: expected invalid/repeated guesses return data · attempts intact · legacy RPC and real errors unchanged · ACL');
 
   await query('insert into auth.users values($1)', [C]); // Fresh account, no completed plays.
   const stats = (uid) => asUser(uid, 'select public.word_game_profile_statistics() data');

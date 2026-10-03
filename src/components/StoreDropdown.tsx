@@ -9,6 +9,7 @@ import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import { useProfile } from '../context/ProfileContext';
+import { useCatalogStore } from '../context/CatalogStoreContext';
 import type { CatalogStore } from '../constants/stores';
 import { regionFromPostalCode } from '../constants/regions';
 import { allStoresRequiresPlus, catalogStoreRequiresPlus } from '../constants/limits';
@@ -17,6 +18,7 @@ import PaywallModal from './PaywallModal';
 import { glassAvailable } from './GlassSurface';
 import AllStoresInfoModal from './AllStoresInfoModal';
 import StoreInfoButton from './StoreInfoButton';
+import StoreFavoriteButton from './StoreFavoriteButton';
 
 interface StoreOption { key: CatalogStore; name: string; icon: number | null }
 export type StoreSelection = CatalogStore | 'all';
@@ -52,6 +54,7 @@ export default function StoreDropdown<T extends StoreSelection>({
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { profile, isPremium, loading: profileLoading } = useProfile();
+  const { favoriteStore, toggleFavoriteStore } = useCatalogStore();
   const reducedMotion = useReducedMotion();
   const [internalOpen, setInternalOpen] = useState(false);
   const [paywallVisible, setPaywallVisible] = useState(false);
@@ -62,6 +65,9 @@ export default function StoreDropdown<T extends StoreSelection>({
   const active = value === 'all' && includeAll
     ? { key: 'all' as const, name: allLabel, icon: null }
     : stores.find((s) => s.key === value) ?? stores[0];
+  const visibleFavoriteStore = favoriteStore && stores.some((item) => item.key === favoriteStore)
+    ? favoriteStore
+    : null;
   const setMenuOpen = (nextOpen: boolean) => {
     if (controlledOpen == null) setInternalOpen(nextOpen);
     onOpenChange?.(nextOpen);
@@ -119,6 +125,7 @@ export default function StoreDropdown<T extends StoreSelection>({
 
     const on = item.key === value;
     const locked = item.key === 'lidl' && lidlLocked;
+    const favorite = item.key === visibleFavoriteStore;
     const showLidlInfo = item.key === 'lidl' && isCanaryUser;
     return (
       <View style={styles.cardBackground}>
@@ -165,6 +172,25 @@ export default function StoreDropdown<T extends StoreSelection>({
           onPress={openLidlCanaryNotice}
           accessibilityLabel={t('storePicker.lidlCanaryInfoLabel')}
         /> : null}
+        {!visibleFavoriteStore || favorite ? (
+          <StoreFavoriteButton
+            style={styles.cardFavoriteButton}
+            active={favorite}
+            onPress={() => {
+              if (locked && !favorite) {
+                setMenuOpen(false);
+                setPaywallVisible(true);
+                return;
+              }
+              toggleFavoriteStore(item.key);
+              if (!favorite) onChange(item.key as T);
+            }}
+            accessibilityLabel={t(
+              favorite ? 'storePicker.removeFavorite' : 'storePicker.markFavorite',
+              { store: item.name },
+            )}
+          />
+        ) : null}
       </View>
     );
   };
@@ -479,6 +505,10 @@ const themedStyles = () => StyleSheet.create({
   cardNameActive: { color: colors.accent },
   lidlCardInfoButton: {
     position: 'absolute', left: 4, bottom: 4,
+    zIndex: 1,
+  },
+  cardFavoriteButton: {
+    position: 'absolute', right: 4, bottom: 4,
     zIndex: 1,
   },
 });

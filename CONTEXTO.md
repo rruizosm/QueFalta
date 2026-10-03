@@ -1,5 +1,257 @@
 # QuéFalta — Contexto del proyecto
 
+## Catálogo: imágenes sin parpadeo al entrar (local, 2026-10-01)
+
+- `StoreProductList` prepara mediante la cola global las miniaturas del primer
+  bloque visible antes de montar sus celdas. La espera queda limitada a 1,2 s
+  para no bloquear el catálogo si una CDN o la red se ralentizan; filtros y
+  paginaciones posteriores no vuelven a ocultar una lista ya presentada.
+- `ProductImage` mantiene una superficie neutra durante la carga y reserva el
+  icono de cesta o el fallback para un error real, eliminando el intercambio
+  visible placeholder→foto que causaba el parpadeo. La cola sigue deduplicada,
+  limitada a dos descargas y cancelable, y ahora expone cuándo termina cada lote.
+- Cambio solo de cliente, sin migración SQL. Pruebas dirigidas, TypeScript,
+  ESLint focalizado, `git diff --check` y build/arranque en iPhone 15 Pro
+  Simulator correctos; pendiente confirmar el gesto en un dispositivo físico.
+
+## Navegación inferior nítida al compactarse (local, 2026-10-01)
+
+- Al hacer scroll, la cápsula y su píldora reducen su escala hasta 0,91,
+  pero los iconos quedan fuera de la transformación de escala: su fila acompaña
+  la geometría compacta mediante ancho, padding y posición. Así Ionicons se
+  rasteriza a tamaño nativo y no pierde nitidez. Se conservan las áreas táctiles,
+  accesibilidad y física del scroll. Ocho pruebas dirigidas, TypeScript, ESLint
+  focalizado y `git diff --check` correctos. Cambio solo de cliente, sin SQL;
+  pendiente revisión visual en dispositivo.
+
+## Cesta: cabeceras de zona sin parpadeo al entrar (local, 2026-10-01)
+
+- Las zonas ya completadas se inicializan plegadas desde el snapshot de caché y
+  las revalidaciones remotas sincronizan ese estado sin reproducir la animación
+  de completado. El barrido de 520 ms se conserva al marcar en pantalla el
+  último producto pendiente.
+- Una cabecera ya completada pinta su aspecto de acento desde el primer frame,
+  antes de que `onLayout` mida su ancho; desaparece el cambio fugaz desde el
+  estilo neutro. Cambio solo de cliente, sin migración SQL.
+- Si cambia el carrito activo con la pestaña ya montada, se sustituye su snapshot
+  antes del siguiente dibujo y se descartan respuestas tardías de la lista
+  anterior; tampoco puede escribirse ese estado antiguo bajo la nueva clave.
+
+## Palabra de hoy: botón sin estrellas (local, 2026-10-01)
+
+- El acceso de Inicio conserva la ficha «P», el degradado y el brillo animado,
+  pero ya no muestra el icono de estrellas después del texto. Cambio visual del
+  cliente, sin migración SQL.
+
+## Catálogo: selectores Liquid Glass sin raya en oscuro (local, 2026-10-01)
+
+- Los selectores Productos/Categorías, orden de precio y lista/cuadrícula omiten
+  en apariencia oscura el brillo horizontal manual de 1 pt que se percibía como
+  una raya dentro del bloque. Se conserva el material, borde, selección y
+  animación, además del brillo sutil en claro. El tramo Plus bloqueado de precio
+  unitario sigue la misma regla. TypeScript, ESLint focalizado y
+  `git diff --check` correctos. Cambio de cliente sin migración SQL; falta
+  revisión en iOS 26.
+
+## Supermercado favorito por cuenta (local, actualizado 2026-10-01)
+
+- Cada supermercado del desplegable incorpora una estrella en la esquina
+  inferior derecha, con la misma superficie visual y objetivo táctil que el
+  botón de información. La estrella rellena identifica el único favorito; al
+  marcar otro se sustituye el anterior y esa cadena queda seleccionada.
+- Mientras el favorito está presente en el selector, las estrellas del resto de
+  supermercados se ocultan. Al desmarcarlo reaparecen todas; si el favorito no
+  pertenece a las opciones visibles, se muestran para poder elegir un reemplazo.
+- La preferencia se guarda en AsyncStorage con clave por usuario y dispositivo
+  y pasa a ser la selección inicial de Catálogo, Novedades, Ofertas, Cambios de
+  precio, el selector de productos de recetas y Favoritos cuando esa cadena
+  tiene contenido favorito. No requiere migración SQL.
+- Un favorito temporalmente fuera de región, desactivado en el perfil o
+  bloqueado por Plus se conserva, pero no se abre por defecto ni elude el
+  paywall. El botón sigue permitiendo quitarlo cuando está bloqueado.
+- Ocho pruebas dirigidas, TypeScript, ESLint focalizado y `git diff --check`
+  correctos. Pendiente revisión visual en dispositivo y publicación del cliente.
+
+## Persistencia de sesión durante refresh (local, 2026-09-30)
+
+- Reproducida una carrera en el adaptador anterior: una lectura entre publicar
+  `.cnt` y escribir los chunks borra el contador al encontrar un fragmento
+  ausente; la sesión sigue devolviendo `null` después de finalizar la escritura.
+  El SDK instalado 2.107.0 permite esas lecturas concurrentes. Es compatible
+  con el incidente de llamadas anónimas tras un refresh correcto, pero no prueba
+  la intercalación exacta ocurrida en el dispositivo de la usuaria.
+- `secureAuthStorage.ts` serializa operaciones por clave y escribe en un slot
+  alternativo; publica un puntero solo al terminar. Migra chunks anteriores y
+  AsyncStorage. Errores de Keychain se propagan sin borrar datos ni devolver una
+  falsa sesión vacía. Logout publica una marca que impide recuperar datos antiguos.
+- `AuthContext` deja de cerrar sesión ante errores temporales de restauración
+  o del callback: reintenta tras 5 s y al volver a primer plano, y protege el
+  estado frente a resultados anteriores a un evento de autenticación.
+- Pruebas de concurrencia, fallos de escritura/lectura, migración, Unicode,
+  logout, recuperación y transporte con el SDK real. Sin migración SQL ni
+  cambios en partidas/permisos. Pendiente distribuir y verificar en móvil.
+  El nuevo formato no debe revertirse al adaptador antiguo tras migrarlo.
+
+## Navegación inferior solo con iconos (local, 2026-09-30)
+
+- La barra flotante inferior ya no muestra los textos de Inicio, Catálogo,
+  Qué cocino, Cesta y Grupos. Los nombres se conservan como etiquetas de
+  accesibilidad y los iconos aumentan de tamaño para ocupar el espacio liberado.
+- Cambio visual del cliente, sin migración SQL.
+
+## El Jamón en el comparador híbrido (producción, 2026-09-30)
+
+- `20260930203842_extend_comparator_to_eljamon.sql` incorpora El Jamón como
+  origen y destino de Radar de ahorro. `eljamon_comparator_products` materializa
+  los 6.749 productos publicados, disponibles y con €/kg-L-ud canónico. El
+  catálogo es común: `catalog_public_product_v1` usa `unit_price` como precio
+  vigente (las ofertas ya llegan reflejadas ahí), sin resolución por CP o centro.
+- La RPC pública conserva el contrato `catalog_cheaper_products_v7`; la capa
+  interna v7 reutiliza v6 para las veinte cadenas anteriores y añade El Jamón
+  como destino. Materializador, `catalog-embed` v16 y el workflow admiten ahora
+  21 catálogos. El cliente local muestra el botón desde El Jamón y hacia El
+  Jamón; requiere publicar una build nueva.
+- Backfill productivo asentado: 6.749/6.749 embeddings vigentes, cola global
+  vacía y cero fallos. Se pausó al alcanzar el disparador de autovacuum, se dejó
+  terminar y se procesó el último lote. Postflight: 100 tuplas muertas (0,043 %),
+  HNSW válido/listo/vivo y pipeline `paused`.
+- Smoke autenticado: El Jamón → Mercadona y Mercadona → El Jamón devolvieron dos
+  resultados reales cada uno; en el segundo sentido se verificó además
+  `is_cheaper=true` para una leche de 0,94 €/L frente a 0,96 €/L. Advisors sin
+  avisos nuevos atribuibles a esta integración. Las alertas de precio de El
+  Jamón continúan fuera de alcance. 111 pruebas dirigidas, TypeScript y
+  `git diff --check` pasan.
+
+## BM en el comparador híbrido (producción, 2026-09-30)
+
+- `20260930200241_extend_comparator_to_bm.sql` incorpora BM como origen y
+  destino de Radar de ahorro. `bm_comparator_products` mantiene una sola
+  identidad semántica por producto; el precio y la disponibilidad se leen de
+  `catalog_location_prices` para la ubicación BM preferida de la provincia del
+  CP del perfil. El precio promocional ya llega como `unit_price` efectivo.
+- La RPC pública sigue siendo `catalog_cheaper_products_v7`; una capa interna
+  v6 añade BM y reutiliza v5 para las 19 cadenas anteriores. El stack actual
+  (`catalog-embed` v16) admite 21 catálogos. El cliente
+  local muestra el botón para BM, pero requiere publicar una build nueva.
+- Backfill terminado: 10.197/10.197 vectores vigentes, cola BM/global vacía y
+  cero fallos BM. Se pausó preventivamente al 4,721 % de tuplas muertas, se dejó
+  completar el autovacuum automático y se reanudó. Postflight: 2,393 %, HNSW
+  válido/listo/vivo y pipeline `paused`.
+- `20260930200823_raise_embedding_manifest_registration_timeout.sql` y
+  `20260930201137_raise_embedding_run_completion_timeout.sql` elevan a 60 s
+  exclusivamente el registro y cierre de manifiestos grandes. La reconciliación
+  es idempotente y no volvió a encolar las identidades ya activas.
+- Smoke autenticado: BM resolvió ubicación/precio; como origen y destino devolvió
+  resultados reales. 53 pruebas dirigidas y TypeScript pasan. El Jamón se
+  incorporó después mediante su propia capa, descrita arriba.
+
+## Embeddings del comparador: cola drenada (producción, 2026-09-30)
+
+- Con autorización del propietario se drenaron los 7.599 trabajos activos que
+  había en `catalog_embedding_jobs`. Se usaron canarios de una sola petición,
+  pausando el control inmediatamente después de cada despacho para impedir el
+  encadenamiento automático. Estado final: cero trabajos activos y cero fallos
+  terminales; el pipeline vuelve a `paused` con presupuesto canario cero.
+- Una interrupción DNS local ocurrió después de confirmar 4.400 trabajos. Se
+  reafirmó `paused`, se comprobó que no había fallos y se reanudó el drenaje
+  secuencial hasta vaciar la cola.
+- Postflight: HNSW válido/listo/vivo y estable en 597.745.664 bytes, 7.346
+  tuplas muertas (3,310 %, por debajo del umbral del 5 %), cero vacuum o
+  mantenimiento de índice en curso y `requiresAttention=false`. No hubo cambios
+  de esquema, código ni catálogos fuente.
+
+## Palabra de hoy: rechazos esperados sin falsos errores Postgres (2026-09-29)
+
+- Producción registraba `WORD_INVALID` y `WORD_REPEATED` como `ERROR` porque el
+  RPC histórico usa `RAISE EXCEPTION` también para resultados normales del juego.
+- La migración local `20260929131848_word_game_expected_rejections.sql`, aplicada
+  en Supabase como `20260929132148_word_game_expected_rejections`, añade
+  `word_game_guess_v2`: devuelve esos dos rechazos como datos y conserva como
+  errores los fallos reales de autenticación, caducidad, concurrencia e integridad.
+  `word_game_guess` permanece intacto para clientes anteriores.
+- El cliente local usa el RPC versionado y mantiene exactamente los mensajes y
+  la corrección de la palabra sin consumir intentos. La prueba remota devolvió
+  el rechazo estructurado sin nuevas entradas de error; pendiente publicar el cliente.
+
+## Vídeo BM: versión independiente a 60 fps (2026-09-29)
+
+- `marketing/bm-launch-10s-60fps/` contiene un MP4 de 10,00 s y 1080 × 1920,
+  portada, composición HTML autónoma y fuentes editables. Anton, logos locales,
+  música original y cierre estable entre 8,5 y 10 s.
+- Productos verificados en solo lectura para BM Pagola Online (`14942D`, CP
+  `20009`): plátano, aguacate y leche BM, publicados y disponibles. No muestra
+  cifras de precio ni descuentos. La pantalla es una composición gráfica.
+- Sin publicación ni cambios de app/backend. Trazabilidad y comprobaciones en
+  el README y JSON de la carpeta. TypeScript correcto. Se conserva como versión
+  independiente de la otra pieza en `marketing/bm-launch-10s/`.
+
+## Vídeo de lanzamiento BM (local, 2026-09-29)
+
+- Entrega en `marketing/bm-launch-10s/`: MP4 vertical de 10 s, portada,
+  composición editable, música original y verificaciones. Anton y paleta del
+  logo BM local. Productos publicados/disponibles verificados por SELECT en
+  BM Princesa (`14946`, CP `28008`); sin precios ni descuentos concretos.
+- Material promocional sin publicar; no cambia la app ni sus datos. Detalle y
+  trazabilidad en el README de la carpeta.
+
+## Alcampo: ofertas regionales y límite de la prueba por CP (2026-09-28)
+
+- Confirmadas ramas oficiales separadas: `OC3009192` (Folleto de Alimentación,
+  excepto Canarias) y `OCFolletocanarias` (Folleto Alimentación Canarias).
+  Directorios paginados completos: 2.048 y 882 productos en oferta; 875 comunes,
+  1.173 solo en la primera rama y 7 solo en la segunda.
+- **Ambas consultas usaron Vaguada**: prueban distinta composición de las ramas,
+  no los precios/condiciones efectivos de dos tiendas. No extrapolar la antigua
+  afirmación de catálogo nacional a todas las ofertas actuales.
+- Cobertura `DELIVERABLE` para 28029, 08001, 41001, 35001 y 07001. El cambio de
+  destino temporal para 08001 recibió 403; el selector web quedó cargando. No se
+  logró una comparación válida de sesiones entre esos códigos postales.
+- Evidencias locales: `scripts/logs/alcampo-regional/`. Análisis y límites en
+  `scripts/README-alcampo-ofertas-regionales.md`. Sin cambios de datos productivos.
+
+
+## Alcampo: acceso JSON parcial verificado (2026-09-28)
+
+- Cliente anónimo `scripts/lib/alcampo-api.mjs` y prueba de solo lectura
+  `scripts/probe-alcampo-api.mjs`: categorías, directorio paginado de ofertas y
+  detalle de una promoción. Cookies solo en memoria, sin claves ni publicación.
+- Prueba real: 28 raíces (4.513 apariciones de nodos), 4.726 productos en oferta
+  en 16 páginas completas y 894 IDs de promoción. Detalle de «Todo a 1 €»:
+  716 productos y vigencia estructurada. Región anónima Vaguada; incluye también
+  no alimentación, no representa todo el catálogo ni acredita paridad regional.
+- `/v6/product-pages` y PUT `/v6/products` siguen devolviendo HTTP 403. No dar por
+  resuelto el acceso al catálogo general. La prueba termina con código 2 para
+  distinguir este acceso parcial; el runner Playwright previo sigue separado.
+- Datos locales en `scripts/logs/alcampo-api/` (gitignored); endpoints, comandos,
+  límites y precios `price`/`promoPrice` en `scripts/README-alcampo-api.md`.
+  Cuatro pruebas dirigidas y TypeScript correctos. Sin migraciones ni escrituras
+  en producción; continúa pendiente el trabajo productivo descrito el 24-09.
+
+
+## Inicio: campañas remotas y Respira (backend productivo, cliente local, 2026-10-01)
+
+- `HomeScreen` consulta `sponsor_campaigns` y la imagen del bucket `promotions`
+  antes de «Última compra». Migración `20261001103011_sponsor_campaigns.sql`
+  aplicada en producción como `20261001103254`; Respira activa con imagen
+  verificada, App Store en iOS y `https://respiraapp.fit` en Android.
+  Web sin enlace oculta la campaña. Gestión en [docs/patrocinios.md](docs/patrocinios.md).
+- Caché por usuario hasta una hora, refresco al entrar/foreground/pull-to-refresh
+  y cada cinco minutos en Inicio. Caducidad local con temporizador, resultado
+  vacío retira campañas y errores conservan solo una caché aún válida. Imágenes
+  versionadas con `expo-image` y caché de disco. RLS solo lectura autenticada de
+  campañas vigentes; escrituras administrativas. Falta distribuir el cliente.
+  Pruebas de selección/seguridad/caducidad y comprobación SQL con rollback correctas.
+  `ResponsivePromotionCard` conserva su proporción 3:1, ocupa el ancho disponible
+  hasta 372 pt y por tanto no supera 124 pt de alto. La imagen se entrega a
+  2400 × 800 px, sin deformación, con esquinas recortadas y etiqueta visible de
+  publicidad; VoiceOver/TalkBack reciben una descripción localizada ES/CA.
+- Toda la tarjeta abre la ficha de Respira en el App Store:
+  `https://apps.apple.com/us/app/respira-pollen-allergy/id6759206565`. Se anuncia
+  como enlace para accesibilidad, ofrece respuesta visual al toque y muestra un
+  error localizado si el sistema no puede abrir el destino. Antes de publicar,
+  añadir el flujo para informar de anuncios inapropiados y revisar las
+  declaraciones de App Store y Google Play.
+
 ## BM: fuente nutricional integrada (2026-09-28)
 
 - La tabla nutricional BM está en un JSON público separado por EAN, no en la
@@ -73,14 +325,32 @@
   la casilla, hasta 28 pt. Se aplica durante la partida y en el resultado.
 - Cambio visual de cliente, sin migración SQL ni cambios en la lógica del juego.
 
-## PostHog: diferido a la siguiente versión (2026-09-27)
+## Métricas del banner en Supabase (2026-10-01)
 
-- Por decisión del usuario, se retiró la integración local de PostHog de esta
-  versión: sin SDK, eventos, consentimiento, variables ni módulos nativos nuevos.
-  La métrica propia de actividad DAU/WAU/MAU en Supabase permanece.
-- En la siguiente versión: pedir consentimiento previo, medir aperturas del
-  paywall y su origen, y actualizar la política pública y el flujo de supresión
-  antes de distribuir una build nueva.
+- Backend de impresiones/clics desplegado: migración local
+  `20261001200803_sponsor_banner_metrics.sql`, remota `20261001201247`.
+  RPC autenticada, eventos privados con RLS, deduplicación de impresión por
+  campaña/visita y eventos por ID, límite 60/min/cuenta y campañas vigentes.
+- Cliente 1.3.3 instrumentado: imagen cargada, ≥50 % visible durante 1 s,
+  foco/foreground, exclusión de overlays y reinicio conservador durante scroll.
+  Clic no bloquea apertura; dos intentos en memoria, sin SDK ni cola persistente.
+- Vista privada `sponsor_banner_daily_stats`: día Europe/Madrid, campaña,
+  plataforma, versión, impresiones/clics/CTR. Consultas y límites en
+  [docs/patrocinios.md](docs/patrocinios.md). Pendiente distribuir cliente y QA visual.
+- SQL probado en PostgreSQL aislado y producción con rollback: sin eventos de
+  prueba persistidos. Revisión de seguridad sin nuevos WARN; INFO RLS sin políticas
+  intencional para eventos privados. Retención/política pública pendientes.
+
+## PostHog: estado de retirada (2026-10-01)
+
+- A petición del usuario, eliminados SDK, eventos, proveedor, consentimiento,
+  traducciones, tests específicos, documento de instalación y token de `.env.local`.
+- Retirados expo-device/expo-localization y la dependencia directa expo-file-system;
+  esta última puede permanecer transitivamente porque Expo la utiliza.
+- Se mantiene 1.3.3, las campañas remotas del banner y DAU/WAU/MAU de Supabase.
+  Posteriormente se implementaron las métricas propias del banner descritas arriba.
+- No se modificó el proyecto remoto de PostHog ni datos remotos. El token no se
+  había configurado en EAS. Builds anteriores deben sustituirse/recompilarse.
 
 ## Palabra de hoy: participantes ficticios retirados (2026-09-27)
 
@@ -551,9 +821,9 @@ Documento canónico de la integración: [HIPERCOR.md](HIPERCOR.md).
 - Logo oficial local `assets/stores/bm.png` vinculado al metadato único de BM:
   se muestra en onboarding, catálogo, ofertas, novedades, cambios de precio y
   Preferencias sin duplicar recursos por pantalla.
-- BM queda fuera de la comparativa de similares v7 hasta que esa RPC admita su
-  modelo multizona. El workflow de sync continúa manual; ampliar a otra provincia
-  exige añadir su CP de referencia al sync y a `retailerZones.ts`.
+- BM entró en la comparativa v7 el 30-09 con resolución multizona por perfil.
+  El workflow de sync continúa manual; ampliar a otra provincia exige añadir su
+  CP de referencia al sync y a `retailerZones.ts`.
 - Producción verificada por REST anónima: las siete relaciones están habilitadas
   y preferentes, cada ubicación expone entre 7.103 y 8.420 productos publicados,
   y `search_bm_products` devuelve resultados zonales. Cambio de cliente pendiente
@@ -783,7 +1053,8 @@ Documento canónico de la integración: [HIPERCOR.md](HIPERCOR.md).
   y estado del almacenamiento subyacente pendientes de confirmar.
 - Diagnóstico en lectura, sin reinicio ni ampliación. Propuesta: mitigar memoria
   con mayor compute, verificar recuperación y escalar a soporte si sigue IOwait.
-  `AuthContext` además cierra sesión ante errores transitorios: corrección pendiente.
+  `AuthContext` además cerraba sesión ante errores transitorios: corregido
+  localmente el 30-09, pendiente distribuir.
   Evidencia, costes y límites en `docs/incidencia-acceso-2026-09-17.md`.
 
 ## Aldi: categorías recuperadas y protección del sync (2026-09-17)
@@ -4554,8 +4825,9 @@ La anon key se copia de Supabase → Project Settings → API. (Es pública/segu
   productos y 525 categorías**, con asignación terminal válida y hasta tres
   niveles de subcategoría. La app ya incluye selector/logo, filtro Andalucía,
   búsqueda y navegación recursiva, productos, ficha, favoritos, cesta, ofertas,
-  novedades, cambios de precio y estado de sincronización. Comparador y alertas
-  quedan ocultos para esta fuente hasta ampliar sus RPC/índices internos. La
+  novedades, cambios de precio y estado de sincronización. El comparador quedó
+  integrado en producción el 30-09; las alertas continúan ocultas para esta
+  fuente hasta ampliar su RPC. La
   migración `20260923154841_allow_eljamon_cart_items.sql` está aplicada y sus
   cuatro restricciones de carrito/histórico se validaron en producción.
 - ✅ **Fase 3 de seguridad y rendimiento de datos (2026-08-14):** auditoría

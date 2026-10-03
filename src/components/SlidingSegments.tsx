@@ -180,7 +180,9 @@ export default function SlidingSegments<K extends string>({
         !emphasized && style,
       ]}
     >
-      {emphasized && !transparentTrack && <View pointerEvents="none" style={styles.trackHighlight} />}
+      {emphasized && !transparentTrack && scheme !== 'dark' && (
+        <View pointerEvents="none" style={styles.trackHighlight} />
+      )}
 
       {/* Píldora deslizante de acento. */}
       {activeW > 0 && active >= 0 && (

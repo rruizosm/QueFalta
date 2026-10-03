@@ -102,6 +102,7 @@ import { useCatalogStore } from '../context/CatalogStoreContext';
 import PaywallModal from '../components/PaywallModal';
 import AllStoresInfoModal from '../components/AllStoresInfoModal';
 import StoreInfoButton from '../components/StoreInfoButton';
+import StoreFavoriteButton from '../components/StoreFavoriteButton';
 import LidlStorePicker from '../components/LidlStorePicker';
 import { updateProfile } from '../api/profile';
 import { allStoresRequiresPlus, catalogStoreRequiresPlus, limitsApply } from '../constants/limits';
@@ -267,6 +268,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
   const [sheetCat, setSheetCat] = useState<CatRow | null>(null);
   const sharedStore = useCatalogStore();
   const [pickerStore, setPickerStore] = useState<StoreKey>('mercadona');
+  const pickerFavoriteApplied = useRef(false);
   const store = isProductPicker ? pickerStore : sharedStore.store;
   const setStore = isProductPicker ? setPickerStore : sharedStore.setStore;
   const [tab, setTab] = useState<'categorias' | 'productos'>('productos');
@@ -415,10 +417,25 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
     () => enabledStores.filter((key) => !catalogStoreRequiresPlus(key, isPremium)),
     [enabledStores, isPremium],
   );
+  useEffect(() => {
+    if (!isProductPicker || profileLoading || pickerFavoriteApplied.current
+      || !sharedStore.favoriteStore) return;
+    pickerFavoriteApplied.current = true;
+    if (accessibleStores.includes(sharedStore.favoriteStore)
+      && (sharedStore.favoriteStore !== 'lidl' || lidlStoreId)) {
+      setPickerStore(sharedStore.favoriteStore);
+    }
+  }, [
+    accessibleStores, isProductPicker, lidlStoreId, profileLoading, sharedStore.favoriteStore,
+  ]);
   const visibleStores = useMemo(
     () => storesWithLidlSecond(CATALOG_STORES.filter((item) => enabledStores.includes(item.key))),
     [enabledStores],
   );
+  const visibleFavoriteStore = sharedStore.favoriteStore
+    && visibleStores.some((item) => item.key === sharedStore.favoriteStore)
+    ? sharedStore.favoriteStore
+    : null;
   const storeGridData = useMemo(
     () => visibleStores.length % 2 === 0 ? visibleStores : [...visibleStores, null],
     [visibleStores],
@@ -1626,7 +1643,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
           : styles.prodUnitSortLockedBackgroundGlassLight),
       ]}
     >
-      {glassAvailable && (
+      {glassAvailable && scheme !== 'dark' && (
         <View pointerEvents="none" style={styles.prodUnitSortLockedHighlight} />
       )}
       <View style={[
@@ -2686,6 +2703,7 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
 
               const on = item.key === store;
               const locked = item.key === 'lidl' && lidlLocked;
+              const favorite = item.key === visibleFavoriteStore;
               const showLidlInfo = item.key === 'lidl' && isCanaryUser;
               return (
                 <View style={styles.storeCardBackground}>
@@ -2737,6 +2755,25 @@ export default function CatalogScreen({ productSelection }: CatalogScreenProps =
                       style={styles.storeLidlInfoButton}
                       onPress={openLidlCanaryNotice}
                       accessibilityLabel={t('storePicker.lidlCanaryInfoLabel')}
+                    />
+                  ) : null}
+                  {!visibleFavoriteStore || favorite ? (
+                    <StoreFavoriteButton
+                      style={styles.storeFavoriteButton}
+                      active={favorite}
+                      onPress={() => {
+                        if (locked && !favorite) {
+                          setStoreMenuOpen(false);
+                          setPaywallVisible(true);
+                          return;
+                        }
+                        sharedStore.toggleFavoriteStore(item.key);
+                        if (!favorite) handleStoreChange(item.key);
+                      }}
+                      accessibilityLabel={t(
+                        favorite ? 'storePicker.removeFavorite' : 'storePicker.markFavorite',
+                        { store: item.name },
+                      )}
                     />
                   ) : null}
                 </View>
@@ -2910,6 +2947,10 @@ const themedStyles = () => StyleSheet.create({
   storeCardNameActive: { color: colors.accent },
   storeLidlInfoButton: {
     position: 'absolute', left: 4, bottom: 4,
+    zIndex: 1,
+  },
+  storeFavoriteButton: {
+    position: 'absolute', right: 4, bottom: 4,
     zIndex: 1,
   },
   // ── Fila de pestañas + selector de súper (un bloque aparte) ───

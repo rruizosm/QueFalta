@@ -20,7 +20,7 @@ const WRITE_BATCH_SIZE = 20;
 const STORES = new Set([
   'alcampo', 'aldi', 'ametller', 'bonarea', 'caprabo', 'carrefour',
   'condis', 'consum', 'dia', 'eroski', 'esclat', 'hiperdino',
-  'mercadona', 'plusfresc', 'sorli', 'gadis', 'froiz', 'ahorramas', 'lidl',
+  'mercadona', 'plusfresc', 'sorli', 'gadis', 'froiz', 'ahorramas', 'lidl', 'bm', 'eljamon',
 ]);
 
 interface EmbeddingJob {

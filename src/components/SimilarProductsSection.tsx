@@ -51,7 +51,7 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
 
   const targetStores = useMemo(
     () => (profile?.catalogStores ?? CATALOG_STORE_KEYS).filter((store) =>
-      store !== 'bm' && store !== 'eljamon' && store !== excludeStore && (store !== 'lidl' || (isPremium && !!profile?.lidlStoreId))),
+      store !== excludeStore && (store !== 'lidl' || (isPremium && !!profile?.lidlStoreId))),
     [excludeStore, profile?.catalogStores, profile?.lidlStoreId, isPremium],
   );
   const targetStoresKey = targetStores.join(',');
@@ -143,7 +143,7 @@ export default function SimilarProductsSection({ productId, excludeStore }: Prop
   const hasCheaperResults = hasResults && similars.some((product) => product.isCheaper);
   const currentIsCheapest = hasResults && !hasCheaperResults;
 
-  if (!PRICE_COMPARISON_ENABLED || !productId || excludeStore === 'bm' || excludeStore === 'eljamon' || profileLoading || targetStores.length === 0
+  if (!PRICE_COMPARISON_ENABLED || !productId || profileLoading || targetStores.length === 0
     || (excludeStore === 'lidl' && (!isPremium || !profile?.lidlStoreId))) return null;
 
   const buttonInk = colors.white;

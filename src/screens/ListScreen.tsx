@@ -1,7 +1,7 @@
 import Reanimated from 'react-native-reanimated';
 import { useTabBarScrollOffsetStyle } from '../hooks/useTabBarScroll';
 import { PagerNativeSectionList as SectionList } from '../components/bottom-tabs-pager/PagerNativeScroll';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { fonts } from '../constants/typography';
 import {
   View,
@@ -88,6 +88,32 @@ const ZONE_COMPLETION_MS = 520;
 
 const formatEuro = (n: number) => `${n.toFixed(2).replace('.', ',')} €`;
 
+function prepareCartStores(items: MergedCartItem[]): PreparedCartStore[] {
+  return groupByStore(items).map((group) => ({
+    store: group.store,
+    count: group.data.length,
+    inCart: group.data.filter((item) => item.inCart || item.deferredToNextPurchase).length,
+    zones: groupByZone(group.data).map((zoneGroup) => ({
+      zone: zoneGroup.zone,
+      count: zoneGroup.data.length,
+      inCart: zoneGroup.data.filter((item) => item.inCart || item.deferredToNextPurchase).length,
+      data: sortZoneItems(zoneGroup.data),
+    })),
+  }));
+}
+
+function completedZoneKeys(stores: PreparedCartStore[]): Set<string> {
+  const completed = new Set<string>();
+  stores.forEach((group) => {
+    group.zones.forEach((zoneGroup) => {
+      if (zoneGroup.count > 0 && zoneGroup.inCart === zoneGroup.count) {
+        completed.add(`${group.store}:${zoneGroup.zone.key}`);
+      }
+    });
+  });
+  return completed;
+}
+
 // Referencia {tienda, id} para abrir la ficha de un artículo de la cesta en
 // CUALQUIER súper. La tienda se deduce del dominio de la imagen / id de Mercadona
 // (storeOfItem); el id es el de Mercadona para Mercadona y el store_product_id
@@ -132,6 +158,7 @@ export default function ListScreen() {
         ?? null
     : null;
   const [items, setItems] = useState<ListItemRow[]>(cachedItems ?? []);
+  const [itemsListId, setItemsListId] = useState(listId);
   // Nombres de Mercadona re-traducidos al idioma activo (id → nombre). El
   // product_name guardado en list_items es un snapshot del idioma con el que se
   // añadió, así que en català se mostraría en castellano sin esto.
@@ -149,17 +176,28 @@ export default function ListScreen() {
   const [assignAllVisible, setAssignAllVisible] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
+  // La caché se conoce antes de montar las pestañas lazy. Sembrar también
+  // sus zonas completadas evita pintarlas abiertas durante un frame y plegarlas
+  // después como si se acabaran de completar al entrar en la cesta.
+  const [initialCompletedZones] = useState(() => completedZoneKeys(
+    prepareCartStores(mergeCartItems(cachedItems ?? [])),
+  ));
   // Cabeceras plegadas por el usuario: por tienda (clave = store) y por
   // tienda×zona (clave = `${store}:${zone.key}`). En memoria — se reinicia al
   // recargar. Plegar una tienda oculta todas sus zonas y productos; plegar una
   // zona oculta solo sus productos.
   const [collapsedStores, setCollapsedStores] = useState<Set<string>>(new Set());
-  const [collapsedZones, setCollapsedZones] = useState<Set<string>>(new Set());
+  const [collapsedZones, setCollapsedZones] = useState<Set<string>>(
+    () => new Set(initialCompletedZones),
+  );
   // Distingue los pliegues automáticos de los elegidos por la persona. Así,
   // si falla el guardado del último check y el estado optimista se revierte,
   // solo reabrimos la zona que habíamos cerrado nosotros.
-  const automaticallyCollapsedZones = useRef<Set<string>>(new Set());
-  const previouslyCompletedZones = useRef<Set<string>>(new Set());
+  const automaticallyCollapsedZones = useRef<Set<string>>(new Set(initialCompletedZones));
+  const previouslyCompletedZones = useRef<Set<string>>(new Set(initialCompletedZones));
+  const renderedListId = useRef(listId);
+  const activeListId = useRef(listId);
+  const activeGroupId = useRef(groupId);
   // El primer toque se aplica sin demora. Si el siguiente llega sobre la misma
   // zona dentro del umbral, extendemos esa misma dirección a toda la tienda.
   const lastZoneTap = useRef<{
@@ -173,6 +211,29 @@ export default function ListScreen() {
   // medida del chrome). En fallback (Android / iOS ≤ 18), cabecera en flujo.
   const [chromeH, setChromeH] = useState(0);
   const glassInset = glassAvailable ? chromeH : 0;
+
+  // La pantalla permanece montada después de visitarla. Al activar la cesta de
+  // otro grupo, no dejes que el pager revele durante un frame las zonas de la
+  // lista anterior: cambia al snapshot correcto antes del siguiente dibujo.
+  useLayoutEffect(() => {
+    activeListId.current = listId;
+    activeGroupId.current = groupId;
+    if (renderedListId.current === listId) return;
+    renderedListId.current = listId;
+    const nextCompletedZones = completedZoneKeys(
+      prepareCartStores(mergeCartItems(cachedItems ?? [])),
+    );
+    automaticallyCollapsedZones.current = new Set(nextCompletedZones);
+    previouslyCompletedZones.current = new Set(nextCompletedZones);
+    setCollapsedStores(new Set());
+    setCollapsedZones(new Set(nextCompletedZones));
+    setItems(cachedItems ?? []);
+    setItemsListId(listId);
+    setMembers(cachedMembers ?? []);
+    setNameOverrides({});
+    setError(false);
+    setLoading(!!listId && cachedItems === null);
+  }, [cachedItems, cachedMembers, groupId, listId]);
 
   const toggleStore = useCallback((store: string) => {
     Haptics.selectionAsync();
@@ -209,18 +270,56 @@ export default function ListScreen() {
 
   const load = useCallback(() => {
     if (!listId) { setItems([]); setLoading(false); return Promise.resolve(); }
+    const requestedListId = listId;
+    const requestedGroupId = groupId;
     setError(false);
     const itemsP = fetchListItems(listId).then((next) => {
+      if (activeListId.current !== requestedListId) return;
+      // Una revalidación puede confirmar zonas ya completadas en el snapshot
+      // remoto. Sincronízalas antes de publicar las filas y sin animación: el
+      // barrido queda reservado a marcar el último producto desde esta pantalla.
+      const nextCompletedZones = completedZoneKeys(
+        prepareCartStores(mergeCartItems(next)),
+      );
+      const newlyCompleted = [...nextCompletedZones]
+        .filter((key) => !previouslyCompletedZones.current.has(key));
+      const noLongerCompleted = [...previouslyCompletedZones.current]
+        .filter((key) => !nextCompletedZones.has(key));
+      previouslyCompletedZones.current = nextCompletedZones;
+      if (newlyCompleted.length > 0 || noLongerCompleted.length > 0) {
+        setCollapsedZones((prev) => {
+          const updated = new Set(prev);
+          let changed = false;
+          newlyCompleted.forEach((key) => {
+            if (!updated.has(key)) {
+              updated.add(key);
+              automaticallyCollapsedZones.current.add(key);
+              changed = true;
+            }
+          });
+          noLongerCompleted.forEach((key) => {
+            if (automaticallyCollapsedZones.current.delete(key) && updated.delete(key)) {
+              changed = true;
+            }
+          });
+          return changed ? updated : prev;
+        });
+      }
       setItems(next);
       if (userId) writeStartupCache(startupKeys.listItems(userId, listId), next);
-    }).catch(() => setError(true));
+    }).catch(() => {
+      if (activeListId.current === requestedListId) setError(true);
+    });
     const membersP = groupId
       ? fetchGroupMembers(groupId).then((next) => {
+          if (activeGroupId.current !== requestedGroupId) return;
           setMembers(next);
           if (userId) writeStartupCache(startupKeys.groupMembers(userId, groupId), next);
         }).catch(() => {})
       : Promise.resolve();
-    return Promise.all([itemsP, membersP]).finally(() => setLoading(false));
+    return Promise.all([itemsP, membersP]).finally(() => {
+      if (activeListId.current === requestedListId) setLoading(false);
+    });
   }, [listId, groupId, userId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
@@ -228,10 +327,10 @@ export default function ListScreen() {
   // Conserva también los cambios optimistas (marcar, asignar, borrar, cantidad)
   // para que una terminación en frío no recupere el snapshot anterior.
   useEffect(() => {
-    if (!loading && listId && userId) {
+    if (!loading && itemsListId === listId && listId && userId) {
       writeStartupCache(startupKeys.listItems(userId, listId), items);
     }
-  }, [items, listId, loading, userId]);
+  }, [items, itemsListId, listId, loading, userId]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -486,33 +585,18 @@ export default function ListScreen() {
   // El agrupado, sus contadores y el orden alfabético dependen de los
   // productos, no de si una cabecera está plegada. Prepararlos una sola vez
   // evita repetir filtros y ordenaciones al tocar una tienda o zona.
-  const preparedStores = useMemo<PreparedCartStore[]>(() => (
-    groupByStore(merged).map((group) => ({
-      store: group.store,
-      count: group.data.length,
-      inCart: group.data.filter((item) => item.inCart || item.deferredToNextPurchase).length,
-      zones: groupByZone(group.data).map((zoneGroup) => ({
-        zone: zoneGroup.zone,
-        count: zoneGroup.data.length,
-        inCart: zoneGroup.data.filter((item) => item.inCart || item.deferredToNextPurchase).length,
-        data: sortZoneItems(zoneGroup.data),
-      })),
-    }))
-  ), [merged]);
+  const preparedStores = useMemo<PreparedCartStore[]>(
+    () => prepareCartStores(merged),
+    [merged],
+  );
 
   // Al marcar el último producto recogido, pliega su categoría. La detección
   // por transición permite volver a abrir una categoría completada sin que un
   // render posterior la cierre otra vez. También revierte el pliegue automático
   // si la escritura remota falla o reaparece un artículo pendiente al recargar.
   useEffect(() => {
-    const completedZones = new Set<string>();
-    preparedStores.forEach((group) => {
-      group.zones.forEach((zoneGroup) => {
-        if (zoneGroup.count > 0 && zoneGroup.inCart === zoneGroup.count) {
-          completedZones.add(`${group.store}:${zoneGroup.zone.key}`);
-        }
-      });
-    });
+    if (itemsListId !== listId) return;
+    const completedZones = completedZoneKeys(preparedStores);
 
     const newlyCompleted = [...completedZones]
       .filter((key) => !previouslyCompletedZones.current.has(key));
@@ -548,7 +632,7 @@ export default function ListScreen() {
 
       return changed ? next : prev;
     });
-  }, [preparedStores, reducedMotion]);
+  }, [itemsListId, listId, preparedStores, reducedMotion]);
 
   const handleZonePress = useCallback((section: CartSection) => {
     const now = Date.now();
@@ -935,6 +1019,10 @@ function CompletedZoneHeader({ completed, collapsed, label, emoji, count, onPres
   const reducedMotion = useReducedMotion();
   const progress = useRef(new Animated.Value(completed ? 1 : 0)).current;
   const [width, setWidth] = useState(0);
+  // `onLayout` llega después del primer dibujo. Si la zona ya estaba completa,
+  // ese primer frame debe tener también su aspecto final; cuando conocemos el
+  // ancho, las capas animadas lo sustituyen en el mismo render.
+  const completedBeforeMeasurement = completed && width === 0;
 
   useEffect(() => {
     if (reducedMotion) {
@@ -953,7 +1041,7 @@ function CompletedZoneHeader({ completed, collapsed, label, emoji, count, onPres
 
   return (
     <TouchableOpacity
-      style={styles.zoneHeader}
+      style={[styles.zoneHeader, completedBeforeMeasurement && styles.zoneHeaderDone]}
       activeOpacity={0.6}
       onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
       onPress={onPress}
@@ -969,9 +1057,13 @@ function CompletedZoneHeader({ completed, collapsed, label, emoji, count, onPres
         }]}
       />
       <Text style={styles.zoneHeaderEmoji}>{emoji}</Text>
-      <Text style={styles.zoneHeaderText}>{label}</Text>
-      <Text style={styles.zoneHeaderCount}>{count}</Text>
-      <Ionicons name={collapsed ? 'chevron-forward' : 'chevron-down'} size={13} color={colors.inkFaint} />
+      <Text style={[styles.zoneHeaderText, completedBeforeMeasurement && styles.zoneHeaderTextDone]}>{label}</Text>
+      <Text style={[styles.zoneHeaderCount, completedBeforeMeasurement && styles.zoneHeaderTextDone]}>{count}</Text>
+      <Ionicons
+        name={collapsed ? 'chevron-forward' : 'chevron-down'}
+        size={13}
+        color={completedBeforeMeasurement ? '#ffffff' : colors.inkFaint}
+      />
       <Animated.View
         pointerEvents="none"
         accessibilityElementsHidden

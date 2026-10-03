@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Materializa los 19 catálogos en catalog_product_embeddings.
+// Materializa los 21 catálogos en catalog_product_embeddings.
 // Solo los cambios del input semántico efectivo disparan un nuevo trabajo pgmq.
 
 import { readFileSync } from 'node:fs';
@@ -51,6 +51,8 @@ const STORES = [
   ['gadis', 'gadis_products', ['id', 'display_name', 'brand', 'packaging', 'category_name', 'price_per_unit_unit']],
   ['froiz', 'froiz_products', ['id', 'display_name', 'brand', 'category_name', 'price_per_unit_unit']],
   ['ahorramas', 'ahorramas_products', ['id', 'display_name', 'brand', 'packaging', 'category_name', 'price_per_unit_unit']],
+  ['bm', 'bm_comparator_products', ['id', 'display_name', 'brand', 'packaging', 'ean', 'category_name', 'price_per_unit_unit']],
+  ['eljamon', 'eljamon_comparator_products', ['id', 'display_name', 'brand', 'packaging', 'ean', 'category_name', 'price_per_unit_unit']],
 ];
 
 function loadEnvLocal() {

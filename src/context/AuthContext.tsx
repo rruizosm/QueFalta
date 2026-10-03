@@ -88,33 +88,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Si el refresh token guardado ya no existe (p. ej. tras un signOut global
-    // desde otro dispositivo), getSession puede fallar con "Refresh Token Not
-    // Found": purga la sesión local en silencio y sigue al login.
-    supabase.auth
-      .getSession()
-      .then(async ({ data: { session }, error }) => {
-        if (error) {
-          await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
-          setSession(null);
-        } else {
-          setSession(session);
-        }
+    let disposed = false;
+    let reading = false;
+    let revision = 0;
+    let retry: ReturnType<typeof setTimeout> | undefined;
 
-        // Evita que getSession(null) compita con el canje del enlace durante un
-        // arranque en frío: primero se resuelve el storage y después el callback.
-        if (Platform.OS !== 'web') {
-          const initialUrl = await Linking.getInitialURL().catch(() => null);
-          if (initialUrl) await exchangeAuthCodeFromUrl(initialUrl);
-        }
-      })
-      .catch(() => {
-        supabase.auth.signOut({ scope: 'local' }).catch(() => {});
-        setSession(null);
-      })
-      .finally(() => setLoading(false));
+    const restore = async () => {
+      if (disposed || reading) return;
+      reading = true;
+      const startedRevision = revision;
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        // A sign-in/sign-out event wins over an older in-flight read.
+        if (!disposed && revision === startedRevision) setSession(data.session);
+      } catch {
+        // Auth itself removes definitively invalid refresh tokens. A network
+        // or Keychain error must never revoke/delete a recoverable session.
+        if (!disposed) retry = setTimeout(() => { void restore(); }, 5000);
+      } finally {
+        reading = false;
+      }
+    };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (disposed) return;
+      revision++;
       const userId = session?.user.id ?? null;
       if (catalogUserId.current !== userId) {
         catalogUserId.current = userId;
@@ -124,7 +123,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
     });
 
-    return () => subscription.unsubscribe();
+    void restore().then(async () => {
+      if (disposed) return;
+      // Cold-start callback follows the first storage read. Its failure is
+      // independent of the existing session and must not sign the user out.
+      if (Platform.OS !== 'web') {
+        const initialUrl = await Linking.getInitialURL().catch(() => null);
+        if (!disposed && initialUrl) {
+          await exchangeAuthCodeFromUrl(initialUrl).catch(() => {
+            if (!disposed) setAuthCallbackError(true);
+          });
+        }
+      }
+      if (!disposed) setLoading(false);
+    });
+
+    const foreground = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        clearTimeout(retry);
+        void restore();
+      }
+    });
+    return () => {
+      disposed = true;
+      clearTimeout(retry);
+      foreground.remove();
+      subscription.unsubscribe();
+    };
   }, [exchangeAuthCodeFromUrl]);
 
   // Los enlaces mágicos abren la app fuera del navegador interno de OAuth.

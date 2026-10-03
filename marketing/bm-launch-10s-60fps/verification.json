@@ -1,0 +1,30 @@
+{
+  "audioChannels" : 2,
+  "audioCodec" : "aac ",
+  "audioDecodedFloatSamples" : 960000,
+  "audioPeakDbFS" : -1.2697980403900146,
+  "audioRmsDbFS" : -17.136373335502743,
+  "checks" : {
+    "600_decoded_frames" : true,
+    "1080x1920" : true,
+    "aac_stereo" : true,
+    "audio_decoded" : true,
+    "constant_60_fps" : true,
+    "exact_10_seconds" : true,
+    "h264" : true,
+    "no_audio_clipping" : true,
+    "stable_cta_90_frames" : true,
+    "video_decoded" : true
+  },
+  "duration" : 10,
+  "endCardFrameCount" : 90,
+  "endCardMaxMeanAbsolutePixelDifference" : 0.099467592592592594,
+  "firstPTS" : 0,
+  "fps" : 60.000003814697266,
+  "frames" : 600,
+  "lastFrameEnd" : 10,
+  "lastPTS" : 9.9833333333333325,
+  "reviewFrames" : 101,
+  "sampleRate" : 48000,
+  "videoCodec" : "avc1"
+}

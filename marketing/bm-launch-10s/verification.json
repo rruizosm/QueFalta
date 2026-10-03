@@ -1,0 +1,21 @@
+{
+  "width" : 1080,
+  "audioRmsDbFS" : -15.236323891873456,
+  "fps" : 30.000001907348633,
+  "audioCodec" : "aac ",
+  "audioReaderCompleted" : true,
+  "lastPresentationTime" : 9.9666666666666668,
+  "duration" : 10,
+  "videoCodecs" : [
+    1635148593
+  ],
+  "audioSampleRate" : 48000,
+  "audioDecodedFloatSamples" : 960000,
+  "videoCodec" : "avc1",
+  "audioChannels" : 2,
+  "audioPeakDbFS" : -0.97745847702026367,
+  "videoReaderCompleted" : true,
+  "height" : 1920,
+  "decodedVideoSamples" : 300,
+  "constantFrameRate" : true
+}

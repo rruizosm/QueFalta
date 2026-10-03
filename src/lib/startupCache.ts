@@ -10,6 +10,7 @@ const memory = new Map<string, unknown>();
 const key = (userId: string, resource: string) => `@startup:v1:${userId}:${resource}`;
 
 export const startupKeys = {
+  sponsorCampaigns: (userId: string) => key(userId, 'sponsorCampaigns'),
   profile: (userId: string) => key(userId, 'profile'),
   favorites: (userId: string) => key(userId, 'favorites'),
   recipes: (userId: string) => key(userId, 'recipes'),

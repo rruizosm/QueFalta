@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Animated, AppState, Easing, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useIsFocused } from '@react-navigation/native';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useThemedStyles } from '../context/ThemeContext';
@@ -40,7 +39,6 @@ export default function DailyWordButton({ onPress }: { onPress: () => void }) {
         </Animated.View>}
         <View style={styles.tile}><Text style={styles.letter}>P</Text></View>
         <Text style={styles.label} numberOfLines={1} adjustsFontSizeToFit>{t('wordGame.title')}</Text>
-        <Ionicons name="sparkles" size={14} color="#fff" />
       </TouchableOpacity>
     </View>
   );

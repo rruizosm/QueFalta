@@ -27,15 +27,33 @@ test('leaving a screen releases only its queued images, retaining shared work', 
   const calls = [];
   let finish;
   const enqueue = createImagePrefetchQueue((uri) => { calls.push(uri); return new Promise((done) => { finish = done; }); }, 1);
-  const cancel = enqueue(['a', 'b', 'shared']);
+  const preparation = enqueue(['a', 'b', 'shared']);
   enqueue(['shared']);
-  cancel();
+  preparation.cancel();
+  await preparation.ready;
   await tick();
   finish(true);
   await tick();
   assert.deepEqual(calls, ['a', 'shared']);
   finish(true);
   await tick();
+});
+
+test('a caller can wait until its accepted image batch has settled', async () => {
+  const resolve = new Map();
+  const enqueue = createImagePrefetchQueue((uri) => new Promise((done) => resolve.set(uri, done)));
+  const preparation = enqueue(['a', 'b']);
+  let ready = false;
+  void preparation.ready.then(() => { ready = true; });
+
+  await tick();
+  assert.equal(ready, false);
+  resolve.get('a')(true);
+  await tick();
+  assert.equal(ready, false);
+  resolve.get('b')(false);
+  await tick();
+  assert.equal(ready, true);
 });
 
 test('failed prefetch can be retried and oversized batches remain bounded', async () => {

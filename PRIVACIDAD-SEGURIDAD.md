@@ -102,6 +102,14 @@ supabase functions deploy delete-account
 
 ## 5. Tokens de sesión cifrados (expo-secure-store)
 
+Corrección local del 2026-09-30: el adaptador usa dos slots cifrados con puntero
+publicado al completar la escritura y cola por clave. Migra el formato `.cnt`
+anterior y AsyncStorage; los errores temporales de lectura ya no borran la sesión.
+La marca persistente de logout impide resucitar credenciales antiguas si falla
+la limpieza. El arranque reintenta sin invocar `signOut` ante errores temporales.
+Pendiente distribuir y comprobar en dispositivo; revertir al adaptador anterior
+después de migrar deja la sesión nueva ilegible para ese cliente antiguo.
+
 `src/lib/authStorage.ts` mueve los tokens de Supabase de AsyncStorage al almacén
 cifrado del sistema (Keychain/Keystore), con troceado (límite ~2 KB), fallback
 web a AsyncStorage y migración read-through (sin re-login). **Es módulo nativo:**

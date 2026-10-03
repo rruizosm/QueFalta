@@ -24,3 +24,15 @@ test('la cabecera completada usa el color de acento dinámico', () => {
   assert.match(screen, /zoneHeaderDone: \{ backgroundColor: colors\.accent \}/);
   assert.match(screen, /zoneHeaderTextDone: \{ color: '#ffffff' \}/);
 });
+
+test('las categorías completadas entran estabilizadas sin parpadeo inicial', () => {
+  assert.match(screen, /initialCompletedZones[\s\S]+mergeCartItems\(cachedItems \?\? \[\]\)/);
+  assert.match(screen, /useState<Set<string>>\([\s\S]+new Set\(initialCompletedZones\)/);
+  assert.match(screen, /previouslyCompletedZones = useRef<Set<string>>\(new Set\(initialCompletedZones\)\)/);
+  assert.match(screen, /nextCompletedZones[\s\S]+previouslyCompletedZones\.current = nextCompletedZones/);
+  assert.match(screen, /completedBeforeMeasurement = completed && width === 0/);
+  assert.match(screen, /useLayoutEffect\(\(\) => \{[\s\S]+renderedListId\.current === listId/);
+  assert.match(screen, /activeListId\.current !== requestedListId/);
+  assert.match(screen, /if \(!loading && itemsListId === listId && listId && userId\)/);
+  assert.match(screen, /if \(itemsListId !== listId\) return/);
+});

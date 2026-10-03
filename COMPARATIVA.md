@@ -17,6 +17,36 @@
 > equivalente de producto íntegro. CE-203 ha congelado 1.336 casos ciegos para
 > revisión del propietario, todavía 0/1.336; gold, evaluación y G2 siguen pendientes.
 
+## El Jamón en el motor actual (2026-09-30)
+
+- El Jamón funciona como origen y destino usando su catálogo común: no necesita
+  resolver centro ni código postal. El snapshot seguro incluye 6.749 productos
+  publicados/disponibles con precio positivo y unidad canónica. `unit_price` es
+  el precio vigente y ya incorpora la oferta mostrada por la fuente.
+- La RPC pública v7 no cambia. Una capa interna v7 reutiliza v6 para las veinte
+  cadenas anteriores y añade El Jamón con la misma generación de caché,
+  compatibilidad semántica y top-2 por tienda.
+- Materializador y worker admiten 21 catálogos. El backfill productivo terminó
+  con 6.749/6.749 vectores, cola vacía y cero fallos; HNSW quedó sano después de
+  un autovacuum supervisado. El workflow actualiza el snapshot tras el sync.
+- El cliente local ya muestra «Buscar productos más económicos» desde El Jamón
+  y lo incluye como destino. Falta publicar una build. Las alertas de precio son
+  una integración distinta y continúan excluidas.
+
+## BM en el motor actual (2026-09-30)
+
+- BM funciona como origen y destino del motor híbrido sin convertir sus siete
+  catálogos territoriales en siete identidades semánticas. El snapshot tiene una
+  fila por producto maestro; cada consulta resuelve el precio efectivo, €/unidad
+  y disponibilidad para la provincia del código postal del perfil.
+- `catalog_cheaper_products_v7` mantiene el contrato público. La capa interna v6
+  reutiliza el motor v5 para las cadenas anteriores y añade el destino BM con la
+  misma caché híbrida, compatibilidad de identidad y top-2 por tienda.
+- Materializador y worker admiten actualmente 21 catálogos. El backfill BM terminó
+  con 10.197/10.197 vectores, cola vacía y cero fallos. El cliente local ya no
+  oculta el botón BM; hace falta publicar una build para verlo en producción.
+- El Jamón se incorporó después mediante su propia capa, descrita arriba.
+
 ## Lidl en el motor actual (2026-09-05)
 
 - Lidl se incorpora como origen y destino al motor híbrido existente. Es
@@ -26,7 +56,7 @@
   Requiere Plus, tienda guardada, producto publicado/disponible y precio válido.
 - Los IDs internos no se consideran EAN. La ausencia de un EAN no impide
   evaluar candidatos semánticos; tampoco demuestra equivalencia por sí misma.
-- El materializador y el worker admiten 19 catálogos. Los syncs de Lidl encolan
+- El materializador y el worker admiten actualmente 21 catálogos. Los syncs de Lidl encolan
   altas/cambios semánticos, sujetos al interruptor global del pipeline.
 - La migración y el worker están desplegados. El cambio del cliente y del
   workflow permanece local hasta su publicación. Operación en

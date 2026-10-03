@@ -49,6 +49,9 @@ test('Catálogo responde al ancho actual y mantiene fallback visual', () => {
   assert.match(productList, /key=\{`grid-\$\{gridColumns\}`\}/);
   assert.match(catalog, /accessibilityLabel: t\('product\.viewList'\)/);
   assert.match(catalog, /accessibilityLabel: t\('product\.viewGrid'\)/);
+  assert.match(productList, /prepareProductImages\(firstImageUris\)/);
+  assert.match(productList, /loading \|\| awaitingInitialImages/);
   assert.match(productImage, /onError=\{\(\) => setFailure\(\{ request: optimizedUri, source \}\)\}/);
+  assert.match(productImage, /\{failed \? \(fallback \?\?/);
   assert.match(productImage, /name="basket-outline"/);
 });

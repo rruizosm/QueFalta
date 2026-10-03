@@ -1,0 +1,22 @@
+{
+  "fastStart": true,
+  "atoms": [
+    {
+      "type": "ftyp",
+      "offset": 0,
+      "size": 28
+    },
+    {
+      "type": "moov",
+      "offset": 28,
+      "size": 7316
+    },
+    {
+      "type": "mdat",
+      "offset": 7344,
+      "size": 3351873
+    }
+  ],
+  "identicalEndCardFrames": 45,
+  "endCardSeconds": 1.5
+}

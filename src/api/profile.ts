@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { CATALOG_STORE_KEYS, type CatalogStore } from '../constants/stores';
 import type { RegionValue } from '../constants/regions';
 
-const PROFILE_COLUMNS = 'id, created_at, name, initials, color, username, avatar_url, discoverable, avatar_friends_only, catalog_stores, region, postal_code, lidl_store_id, premium_until, onboarded_at, onboarding_step, verified';
+const PROFILE_COLUMNS = 'id, created_at, name, initials, color, username, avatar_url, discoverable, avatar_friends_only, catalog_stores, region, postal_code, lidl_store_id, premium_until, word_game_blocked_until, onboarded_at, onboarding_step, verified';
 const PRIVATE_AVATAR_PREFIX = 'private:';
 
 export function privateAvatarPath(avatarUrl: string | null): string | null {
@@ -94,6 +94,9 @@ export interface UserProfile {
   /** Fin de la suscripción QuéFalta Plus (ISO). NULL o pasado = plan free.
    *  Solo la escribe el servidor (trigger en profile_premium.sql). */
   premiumUntil: string | null;
+  /** Fin de la suspensión de Palabra de hoy (ISO). NULL o pasado = acceso.
+   *  Solo puede modificarlo el servidor. */
+  wordGameBlockedUntil: string | null;
   /** Cuándo completó el alta inicial (asistente de bienvenida). NULL = aún no
    *  lo ha hecho → la app muestra el onboarding. Ver profile_onboarding.sql. */
   onboardedAt: string | null;
@@ -154,6 +157,7 @@ export async function fetchProfile(userId: string): Promise<UserProfile> {
     postalCode: data.postal_code ?? null,
     lidlStoreId: data.lidl_store_id ?? null,
     premiumUntil: data.premium_until ?? null,
+    wordGameBlockedUntil: data.word_game_blocked_until ?? null,
     onboardedAt: data.onboarded_at ?? null,
     onboardingStep: data.onboarding_step ?? 0,
     verified: data.verified ?? false,

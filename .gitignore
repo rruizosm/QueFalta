@@ -56,6 +56,9 @@ LaCompra/
 # Supabase CLI cache local
 supabase/.temp/
 
+# Checkout local de otro repositorio; sus cambios se publican en QueFaltaDatos
+/QueFaltaDatos-email-board/
+
 # vectores generados del piloto (reproducibles; ~7 MB y no necesarios en Git)
 supabase/experiments/comparator-embedding-pilot-vectors.jsonl
 supabase/experiments/comparator-embedding-pilot-vectors.jsonl.tmp

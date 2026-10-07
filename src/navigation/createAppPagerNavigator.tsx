@@ -24,6 +24,7 @@ import { useReducedMotion } from '../hooks/useReducedMotion';
 import { colors } from '../constants/colors';
 import { useTheme } from '../context/ThemeContext';
 import { AppPagerTabBar } from './AppPagerTabBar';
+import { getAppTabBarPageIndices } from './appPagerRoutes';
 
 function AppPagerView({ state, navigation, descriptors }: Omit<BottomTabBarProps, 'insets'>) {
   useTheme();
@@ -37,7 +38,8 @@ function AppPagerView({ state, navigation, descriptors }: Omit<BottomTabBarProps
   const controls = useRef<{ goTo: (index: number) => void } | null>(null);
   const activeRoute = state.routes[state.index];
   const barWidth = Math.min(L.maxWidth, Math.max(0, width - 2 * (L.margin + Math.max(insets.left, insets.right))));
-  const compactEnabled = (barWidth - 2 * L.padding) / state.routes.length * SCROLL.compactScale >= SCROLL.minTouchTarget;
+  const tabCount = getAppTabBarPageIndices(state.routes).length;
+  const compactEnabled = (barWidth - 2 * L.padding) / tabCount * SCROLL.compactScale >= SCROLL.minTouchTarget;
   const scrollController = useTabBarScrollController(activeRoute.key, reducedMotion, compactEnabled);
   const { compactProgress, expandTabBar } = scrollController;
   const hidden = activeRoute.name === 'Home' && getFocusedRouteNameFromRoute(activeRoute) === 'DailyWord';
@@ -101,7 +103,7 @@ function AppPagerView({ state, navigation, descriptors }: Omit<BottomTabBarProps
         <Screen focused={state.index === index} route={route} navigation={descriptors[route.key].navigation}
           headerShown={false} header={null}>
           {loaded.has(route.key) || index === state.index || descriptors[route.key].options.lazy === false
-            ? (route.name === 'List' || route.name === 'QueCocino'
+            ? (route.name === 'Pantry' || route.name === 'List' || route.name === 'QueCocino'
               ? <PagerGestureBoundary>{descriptors[route.key].render()}</PagerGestureBoundary>
               : descriptors[route.key].render())
             : <View style={styles.loading}><ActivityIndicator color={colors.accent} /></View>}

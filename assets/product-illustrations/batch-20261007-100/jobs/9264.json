@@ -1,0 +1,29 @@
+{
+  "id": "9264",
+  "index": 50,
+  "name": "Cereales rellenos de leche Hacendado",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nSpecific subject: Cereales rellenos de leche Hacendado, Mercadona product id 9264. Match Image 1 exactly. The catalog name identifies the subject but is not text to invent on its label. Preserve legible Spanish/Portuguese words, printed amounts and multipack counts from Image 1. No detached catalog badges.\nPackaging guidance: WHITE cereal BOX BLUE «Leche Leite», filled square cereals, 500g.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-6c29e1a6-f2e3-4a1a-a110-e215f1c4fcc9.png",
+  "png": "assets/product-illustrations/batch-20261007-100/mercadona-9264-cereales-rellenos-de-leche-hacendado.png",
+  "status": "published",
+  "webp": "assets/product-illustrations/batch-20261007-100/mercadona-9264-cereales-rellenos-de-leche-hacendado.webp",
+  "width": 637,
+  "height": 768,
+  "bytes": 89584,
+  "sha256": "fb6e6fc0b09370344aa66ac8278fe0f267808cc4ca0f46f8d980b88e036ddafc",
+  "alpha": {
+    "transparentPixels": 36571,
+    "opaquePixels": 1432,
+    "visibleBorderPixels": 0
+  },
+  "visualReviewed": true,
+  "publication": {
+    "productId": "9264",
+    "name": "Cereales rellenos de leche Hacendado",
+    "objectPath": "mercadona/9264/fb6e6fc0b0937034.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/9264/fb6e6fc0b0937034.webp",
+    "contentType": "image/webp",
+    "bytes": 89584,
+    "sha256": "fb6e6fc0b09370344aa66ac8278fe0f267808cc4ca0f46f8d980b88e036ddafc"
+  }
+}

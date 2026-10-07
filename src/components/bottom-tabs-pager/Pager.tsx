@@ -23,15 +23,18 @@ export function Pager({ tabs, width, animation, activeIndex, pageContext, handle
   pageContext: PageContext;
   handleGesture?: boolean;
 }) {
-  const { scrollX, blurSigma, pan } = animation;
-  const trackStyle = useAnimatedStyle(() => ({ transform: [{ translateX: -scrollX.value }] }));
+  const { progress, blurSigma, pan } = animation;
+  // Pager first mounts after measuring the viewport. The animation's shared
+  // width can still be zero until its effect runs; use the rendered strip's
+  // width so an initial page beyond index 0 is positioned on its first frame.
+  const trackStyle = useAnimatedStyle(() => ({ transform: [{ translateX: -progress.value * width }] }));
   const contentStyle = useAnimatedStyle(() => gaussianFilterAvailable
     ? { filter: blurSigma.value > 0.01 ? [{ blur: blurSigma.value }] : [] }
     : {});
 
   const content = (
       <View style={styles.viewport} collapsable={false}>
-        {/* Filter only a viewport-sized surface, never the full five-screen strip. */}
+        {/* Filter only a viewport-sized surface, never the full page strip. */}
         <Animated.View style={[styles.viewport, contentStyle]}>
           <Animated.View style={[styles.track, { width: width * tabs.length }, trackStyle]}>
             {tabs.map((tab, index) => (

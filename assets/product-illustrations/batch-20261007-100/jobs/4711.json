@@ -1,0 +1,29 @@
+{
+  "id": "4711",
+  "index": 24,
+  "name": "Aceite de oliva virgen Hacendado",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nSpecific subject: Aceite de oliva virgen Hacendado, Mercadona product id 4711. Match Image 1 exactly. The catalog name identifies the subject but is not text to invent on its label. Preserve legible Spanish/Portuguese words, printed amounts and multipack counts from Image 1. No detached catalog badges.\nPackaging guidance: 3L broad plastic oil bottle GREEN cap and full green carry handle, dark green «Aceite de Oliva Virgen». Preserve handle hole alpha.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-3d3fc04e-87e8-424b-ac81-93677284f389.png",
+  "png": "assets/product-illustrations/batch-20261007-100/mercadona-4711-aceite-de-oliva-virgen-hacendado.png",
+  "status": "published",
+  "webp": "assets/product-illustrations/batch-20261007-100/mercadona-4711-aceite-de-oliva-virgen-hacendado.webp",
+  "width": 305,
+  "height": 768,
+  "bytes": 61446,
+  "sha256": "3c0d66ce92477222764b05794eb0392b9b2114455207bd835233dedc7204496a",
+  "alpha": {
+    "transparentPixels": 51524,
+    "opaquePixels": 943,
+    "visibleBorderPixels": 0
+  },
+  "visualReviewed": true,
+  "publication": {
+    "productId": "4711",
+    "name": "Aceite de oliva virgen Hacendado",
+    "objectPath": "mercadona/4711/3c0d66ce92477222.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/4711/3c0d66ce92477222.webp",
+    "contentType": "image/webp",
+    "bytes": 61446,
+    "sha256": "3c0d66ce92477222764b05794eb0392b9b2114455207bd835233dedc7204496a"
+  }
+}

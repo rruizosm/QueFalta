@@ -1,6 +1,6 @@
 import type { DailyWord } from '../api/wordGame';
 
-export type WordGameError = '' | 'loadError' | 'startError' | 'sendError' | 'invalid' | 'repeated' | 'length' | 'stale' | 'expired' | 'notSent';
+export type WordGameError = '' | 'loadError' | 'startError' | 'sendError' | 'invalid' | 'repeated' | 'length' | 'stale' | 'expired' | 'notSent' | 'blocked';
 export interface WordGameState {
   game: DailyWord | null;
   draft: string;
@@ -141,7 +141,12 @@ export class WordGameSession {
     this.update({ starting: true, error: '' });
     try {
       this.accept(await this.deps.start(game.id));
-    } catch {
+    } catch (cause) {
+      const message = cause && typeof cause === 'object' && 'message' in cause ? String(cause.message) : '';
+      if (message.includes('WORD_BLOCKED')) {
+        this.update({ error: 'blocked' });
+        return;
+      }
       try {
         const current = await this.deps.today();
         this.accept(current);
@@ -208,7 +213,10 @@ export class WordGameSession {
       return result.status;
     } catch (cause) {
       const message = cause && typeof cause === 'object' && 'message' in cause ? String(cause.message) : '';
-      if (message.includes('WORD_INVALID') || message.includes('WORD_REPEATED')) {
+      if (message.includes('WORD_BLOCKED')) {
+        this.update({ uncertain: false, error: 'blocked' });
+        void this.persist();
+      } else if (message.includes('WORD_INVALID') || message.includes('WORD_REPEATED')) {
         this.update({ uncertain: false, error: message.includes('WORD_INVALID') ? 'invalid' : 'repeated' });
         void this.persist();
       } else {

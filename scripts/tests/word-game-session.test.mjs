@@ -67,6 +67,25 @@ test('un inicio incierto se recupera sin reiniciar el cronómetro', async () => 
   assert.equal(f.session.state.error, '');
 });
 
+test('un bloqueo del servidor no se degrada a error de red al iniciar', async () => {
+  const f = fixture(); f.game = emptyGame({ scoringVersion: 2, startedAt: null });
+  f.start = async () => { throw Error('WORD_BLOCKED'); };
+  await f.session.refresh(); await f.session.start();
+  assert.equal(f.session.state.error, 'blocked');
+  assert.equal(f.session.state.game.startedAt, null);
+  assert.equal(f.reads, 1);
+});
+
+test('un bloqueo del servidor conserva el intento local sin marcarlo incierto', async () => {
+  const f = fixture(); await f.session.refresh(); f.type('QUESO');
+  f.submit = async () => { throw Error('WORD_BLOCKED'); };
+  await f.session.send();
+  assert.equal(f.session.state.error, 'blocked');
+  assert.equal(f.session.state.uncertain, false);
+  assert.equal(f.session.state.draft, 'QUESO');
+  assert.equal(f.session.state.game.guesses.length, 0);
+});
+
 test('4–6 letras: entrada limitada, borrado y longitud requerida', async () => {
   for (const length of [4, 5, 6]) {
     const f = fixture(); f.game.length = length; await f.session.refresh();

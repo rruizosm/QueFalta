@@ -80,6 +80,7 @@ export interface Group {
 }
 
 export type RootTabParamList = {
+  Pantry: undefined;
   Home: undefined;
   Catalog: undefined;
   QueCocino: undefined;

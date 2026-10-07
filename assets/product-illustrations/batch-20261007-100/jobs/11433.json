@@ -1,0 +1,29 @@
+{
+  "id": "11433",
+  "index": 17,
+  "name": "Té Chai Hacendado",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nSpecific subject: Té Chai Hacendado, Mercadona product id 11433. Match Image 1 exactly. The catalog name identifies the subject but is not text to invent on its label. Preserve legible Spanish/Portuguese words, printed amounts and multipack counts from Image 1. No detached catalog badges.\nPackaging guidance: Kraft tea box «TÉ CHÁ CHAI», spices.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-8ce6913b-a383-4462-b093-8061c2c0d153.png",
+  "png": "assets/product-illustrations/batch-20261007-100/mercadona-11433-te-chai-hacendado.png",
+  "status": "published",
+  "webp": "assets/product-illustrations/batch-20261007-100/mercadona-11433-te-chai-hacendado.webp",
+  "width": 768,
+  "height": 531,
+  "bytes": 107254,
+  "sha256": "bee584615e0bc9e8ea5b48668445d7fa35c54e66ddd0c05043ce2fd1f392579e",
+  "alpha": {
+    "transparentPixels": 31770,
+    "opaquePixels": 554,
+    "visibleBorderPixels": 0
+  },
+  "visualReviewed": true,
+  "publication": {
+    "productId": "11433",
+    "name": "Té Chai Hacendado",
+    "objectPath": "mercadona/11433/bee584615e0bc9e8.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/11433/bee584615e0bc9e8.webp",
+    "contentType": "image/webp",
+    "bytes": 107254,
+    "sha256": "bee584615e0bc9e8ea5b48668445d7fa35c54e66ddd0c05043ce2fd1f392579e"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "22966",
+  "index": 75,
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-3dff80a8-cd28-40a5-a5dd-423d02eb83ff.png",
+  "png": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261006-100/mercadona-22966-cereales-copos-de-maiz-corn-flakes-hacendado-0-azucares-anadidos.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nSpecific subject: Cereales copos de maíz Corn Flakes Hacendado 0% azúcares añadidos, Mercadona product id 22966.\nPackaging guidance: Preserve the exact product packaging, printed main label, brand, colors and retail pack from Image 1. Match this variant exactly.",
+  "status": "published",
+  "webp": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261006-100/mercadona-22966-cereales-copos-de-maiz-corn-flakes-hacendado-0-azucares-anadidos.webp",
+  "width": 567,
+  "height": 768,
+  "bytes": 98342,
+  "sha256": "de8027c951132841816c564b7443af966c73d56fd277d867730dc2c5ffd44e74",
+  "alpha": {
+    "transparentPixels": 29030,
+    "opaquePixels": 1503,
+    "visibleBorderPixels": 0
+  },
+  "visualReviewed": true,
+  "publication": {
+    "productId": "22966",
+    "name": "Cereales copos de maíz Corn Flakes Hacendado 0% azúcares añadidos",
+    "objectPath": "mercadona/22966/de8027c951132841.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/22966/de8027c951132841.webp",
+    "contentType": "image/webp",
+    "bytes": 98342,
+    "sha256": "de8027c951132841816c564b7443af966c73d56fd277d867730dc2c5ffd44e74"
+  }
+}

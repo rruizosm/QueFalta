@@ -1,7 +1,8 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { useMemo } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated, { interpolate, runOnUI, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
+import Animated, { interpolate, runOnUI, useAnimatedStyle, useDerivedValue, type SharedValue } from 'react-native-reanimated';
 import GlassSurface from '../components/GlassSurface';
 import { TAB_BAR_SCROLL as M } from '../components/bottom-tabs-pager/tabBarScrollPhysics';
 import { TAB_LAYOUT as L } from '../components/bottom-tabs-pager/constants';
@@ -9,6 +10,7 @@ import type { TabAnimation } from '../components/bottom-tabs-pager/types';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useTheme } from '../context/ThemeContext';
+import { getAppTabBarPageIndices, pagerToTabBarProgress } from './appPagerRoutes';
 
 const icons: Record<string, keyof typeof Ionicons.glyphMap> = {
   Home: 'home-outline', Catalog: 'library-outline', QueCocino: 'restaurant-outline',
@@ -24,12 +26,11 @@ type Props = BottomTabBarProps & {
   onPressTab: (index: number) => void;
 };
 
-function Item({ route, index, options, selected, animation, onBarPress, onPress, onLongPress }: {
+function Item({ route, index, options, selected, progress, onBarPress, onPress, onLongPress }: {
   route: BottomTabBarProps['state']['routes'][number]; index: number;
   options: BottomTabBarProps['descriptors'][string]['options']; selected: boolean;
-  animation: TabAnimation; onBarPress: () => void; onPress: () => void; onLongPress: () => void;
+  progress: SharedValue<number>; onBarPress: () => void; onPress: () => void; onLongPress: () => void;
 }) {
-  const { progress } = animation;
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: 0.62 + 0.38 * Math.max(0, 1 - Math.abs(progress.value - index)),
   }));
@@ -50,9 +51,12 @@ function Item({ route, index, options, selected, animation, onBarPress, onPress,
 
 export function AppPagerTabBar({ state, navigation, descriptors, animation, compactProgress, onBarPress, width, bottom, onPressTab }: Props) {
   const { scheme } = useTheme();
-  const slot = (width - L.padding * 2) / state.routes.length;
+  const pageIndices = useMemo(() => getAppTabBarPageIndices(state.routes), [state.routes]);
+  const slot = (width - L.padding * 2) / pageIndices.length;
   const pillWidth = slot - 4;
   const { progress, pillLead, stretch } = animation;
+  const tabProgress = useDerivedValue(() => pagerToTabBarProgress(progress.value, pageIndices));
+  const selectedIndex = pagerToTabBarProgress(state.index, pageIndices);
   const shellStyle = useAnimatedStyle(() => ({
     height: interpolate(compactProgress.value, [0, 1], [M.fullHeight, M.compactHeight]),
     transform: [
@@ -70,12 +74,20 @@ export function AppPagerTabBar({ state, navigation, descriptors, animation, comp
     width: interpolate(compactProgress.value, [0, 1], [width, width * M.compactScale]),
     paddingHorizontal: interpolate(compactProgress.value, [0, 1], [L.padding, L.padding * M.compactScale]),
   }));
-  const pillStyle = useAnimatedStyle(() => ({
-    top: interpolate(compactProgress.value, [0, 1], [L.padding, (M.compactHeight - L.pillHeight) / 2]),
-    transform: [
-    { translateX: (progress.value + pillLead.value) * slot + 2 },
-    { scaleX: 1 + stretch.value }, { scaleY: 1 - stretch.value * 0.16 },
-  ] }));
+  const pillStyle = useAnimatedStyle(() => {
+    // The Pantry/Home swipe changes no bottom destination, so its pill stays
+    // still. All other pages retain the existing lead/stretch animation.
+    const insideHome = progress.value <= pageIndices[0];
+    const pillStretch = insideHome ? 0 : stretch.value;
+    const pillPosition = insideHome ? 0 : pagerToTabBarProgress(progress.value + pillLead.value, pageIndices);
+    return {
+      top: interpolate(compactProgress.value, [0, 1], [L.padding, (M.compactHeight - L.pillHeight) / 2]),
+      transform: [
+        { translateX: pillPosition * slot + 2 },
+        { scaleX: 1 + pillStretch }, { scaleY: 1 - pillStretch * 0.16 },
+      ],
+    };
+  });
   return <View pointerEvents="box-none" style={[styles.root, { width, bottom }]}
     onTouchStart={() => runOnUI(onBarPress)()}>
     <Animated.View pointerEvents="none" style={[styles.barShell, shellStyle]}>
@@ -88,10 +100,13 @@ export function AppPagerTabBar({ state, navigation, descriptors, animation, comp
       </GlassSurface>
     </Animated.View>
     <Animated.View pointerEvents="box-none" style={[styles.items, itemsStyle]}>
-      {state.routes.map((route, index) => <Item key={route.key} route={route} index={index}
-        options={descriptors[route.key].options} selected={state.index === index} animation={animation} onBarPress={onBarPress}
-        onPress={() => onPressTab(index)}
-        onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })} />)}
+      {pageIndices.map((pageIndex, index) => {
+        const route = state.routes[pageIndex];
+        return <Item key={route.key} route={route} index={index}
+          options={descriptors[route.key].options} selected={selectedIndex === index} progress={tabProgress} onBarPress={onBarPress}
+          onPress={() => onPressTab(pageIndex)}
+          onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })} />;
+      })}
     </Animated.View>
   </View>;
 }

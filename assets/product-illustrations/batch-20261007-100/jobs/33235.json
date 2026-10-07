@@ -1,0 +1,29 @@
+{
+  "id": "33235",
+  "index": 88,
+  "name": "Banderillas picantes Hacendado",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nSpecific subject: Banderillas picantes Hacendado, Mercadona product id 33235. Match Image 1 exactly. The catalog name identifies the subject but is not text to invent on its label. Preserve legible Spanish/Portuguese words, printed amounts and multipack counts from Image 1. No detached catalog badges.\nPackaging guidance: SHORT jar RED lid RED «PICANTES / BANDERILLAS ESPETADAS» label, visible skewers.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-eba2a603-1320-4885-8635-c6035a951c75.png",
+  "png": "assets/product-illustrations/batch-20261007-100/mercadona-33235-banderillas-picantes-hacendado.png",
+  "status": "published",
+  "webp": "assets/product-illustrations/batch-20261007-100/mercadona-33235-banderillas-picantes-hacendado.webp",
+  "width": 624,
+  "height": 768,
+  "bytes": 117528,
+  "sha256": "1446e0c94c9dddf66ffa9d9e063b259dd36306c8fafcf24f061a431f66ae8d5c",
+  "alpha": {
+    "transparentPixels": 63210,
+    "opaquePixels": 1120,
+    "visibleBorderPixels": 0
+  },
+  "visualReviewed": true,
+  "publication": {
+    "productId": "33235",
+    "name": "Banderillas picantes Hacendado",
+    "objectPath": "mercadona/33235/1446e0c94c9dddf6.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/33235/1446e0c94c9dddf6.webp",
+    "contentType": "image/webp",
+    "bytes": 117528,
+    "sha256": "1446e0c94c9dddf66ffa9d9e063b259dd36306c8fafcf24f061a431f66ae8d5c"
+  }
+}

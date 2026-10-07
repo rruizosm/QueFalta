@@ -1,0 +1,29 @@
+{
+  "id": "52668",
+  "index": 67,
+  "name": "Anacardo tostado 0% sal añadida Hacendado",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nSpecific subject: Anacardo tostado 0% sal añadida Hacendado, Mercadona product id 52668. Match Image 1 exactly. The catalog name identifies the subject but is not text to invent on its label. Preserve legible Spanish/Portuguese words, printed amounts and multipack counts from Image 1. No detached catalog badges.\nPackaging guidance: Gold/kraft cashew pouch BLUE band «ANACARDO CAJU TOSTADO / 0% SAL», 250g.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-7bd56382-8bb9-45d2-9796-aa314c87cd83.png",
+  "png": "assets/product-illustrations/batch-20261007-100/mercadona-52668-anacardo-tostado-0-sal-anadida-hacendado.png",
+  "status": "published",
+  "webp": "assets/product-illustrations/batch-20261007-100/mercadona-52668-anacardo-tostado-0-sal-anadida-hacendado.webp",
+  "width": 521,
+  "height": 768,
+  "bytes": 67742,
+  "sha256": "70f38a1c5918fe51fafaf92df0c28ee62fb74eaac03c361626c64559e47587e5",
+  "alpha": {
+    "transparentPixels": 66619,
+    "opaquePixels": 1560,
+    "visibleBorderPixels": 0
+  },
+  "visualReviewed": true,
+  "publication": {
+    "productId": "52668",
+    "name": "Anacardo tostado 0% sal añadida Hacendado",
+    "objectPath": "mercadona/52668/70f38a1c5918fe51.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/52668/70f38a1c5918fe51.webp",
+    "contentType": "image/webp",
+    "bytes": 67742,
+    "sha256": "70f38a1c5918fe51fafaf92df0c28ee62fb74eaac03c361626c64559e47587e5"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "16313",
+  "index": 24,
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-00a84bee-dc38-441e-a370-3e0f69cb24e7.png",
+  "png": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261006-100/mercadona-16313-judias-verdes-planas-hacendado.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nSpecific subject: Judías verdes planas Hacendado, Mercadona product id 16313.\nPackaging guidance: Preserve the exact product packaging, printed main label, brand, colors and retail pack from Image 1. Match this variant exactly.",
+  "status": "published",
+  "webp": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261006-100/mercadona-16313-judias-verdes-planas-hacendado.webp",
+  "width": 353,
+  "height": 768,
+  "bytes": 67134,
+  "sha256": "9950c40a97925da4ace9041c16252bacb32c2e939026e1bccc274c6218049c6c",
+  "alpha": {
+    "transparentPixels": 30113,
+    "opaquePixels": 1356,
+    "visibleBorderPixels": 0
+  },
+  "visualReviewed": true,
+  "publication": {
+    "productId": "16313",
+    "name": "Judías verdes planas Hacendado",
+    "objectPath": "mercadona/16313/9950c40a97925da4.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/16313/9950c40a97925da4.webp",
+    "contentType": "image/webp",
+    "bytes": 67134,
+    "sha256": "9950c40a97925da4ace9041c16252bacb32c2e939026e1bccc274c6218049c6c"
+  }
+}

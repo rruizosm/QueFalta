@@ -1,0 +1,28 @@
+{
+  "id": "60722",
+  "index": 84,
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-c77d2d62-c0ad-43a2-a3f2-594aea28c3c1.png",
+  "png": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261006-100/mercadona-60722-chocolate-negro-85-cacao-hacendado.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nSpecific subject: Chocolate negro 85% cacao Hacendado, Mercadona product id 60722.\nPackaging guidance: Dark chocolate bar in black/brown wrapper, «NEGRO 85%».",
+  "status": "published",
+  "webp": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261006-100/mercadona-60722-chocolate-negro-85-cacao-hacendado.webp",
+  "width": 368,
+  "height": 768,
+  "bytes": 51742,
+  "sha256": "7e3089f96a3a730aeabe01e3ef25b8d05d23b5b2814b3ff274990294978d5354",
+  "alpha": {
+    "transparentPixels": 21770,
+    "opaquePixels": 1378,
+    "visibleBorderPixels": 0
+  },
+  "visualReviewed": true,
+  "publication": {
+    "productId": "60722",
+    "name": "Chocolate negro 85% cacao Hacendado",
+    "objectPath": "mercadona/60722/7e3089f96a3a730a.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/60722/7e3089f96a3a730a.webp",
+    "contentType": "image/webp",
+    "bytes": 51742,
+    "sha256": "7e3089f96a3a730aeabe01e3ef25b8d05d23b5b2814b3ff274990294978d5354"
+  }
+}

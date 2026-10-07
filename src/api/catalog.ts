@@ -3599,10 +3599,12 @@ export async function fetchOfferCategories(
 ): Promise<string[]> {
   try {
     if (store === 'carrefour') {
+      const result = await carrefourOfferPageRPC(null, region, 50, undefined, true);
+      if (result) return result.categories.sort((a, b) => a.localeCompare(b, 'es'));
       const categories = new Set<string>();
       let cursor: BrowseCursor | null = null;
       do {
-        const page = await fetchCarrefourOffers(cursor, region, 200);
+        const page = await fetchCarrefourOffersLegacy(cursor, region, 200);
         for (const offer of page.items) {
           if (offer.product.categoryName) categories.add(offer.product.categoryName);
         }
@@ -3726,11 +3728,64 @@ export async function fetchOfferCategories(
   }
 }
 
-/** Ofertas de Carrefour: recorre páginas crudas hasta completar una página de
- * promociones válidas. El cursor siempre apunta a la última fila examinada. */
-const carrefourSortedOffers = new Map<string, { at: number; items: CarrefourOffer[] }>();
+/** El servidor resuelve vigencia y precio regional antes de ordenar/paginar.
+ * Una primera página no descarga el catálogo entero. El fallback permite
+ * abrir la app en entornos que aún no tengan la migración aditiva. */
+async function carrefourOfferPageRPC(
+  cursor: BrowseCursor | null,
+  region: RegionValue | null,
+  limit: number,
+  filters?: OfferFilters,
+  categoriesOnly = false,
+): Promise<{ rows: any[]; nextCursor: BrowseCursor | null; categories: string[] } | null> {
+  const words = filters?.search && filters.search.trim().length >= 2
+    ? stripAccents(filters.search).trim().split(/\s+/).filter(Boolean) : [];
+  const meaningful = words.filter((word) => word.length >= 2);
+  const { data, error } = await supabase.rpc('carrefour_offer_page_v1', {
+    p_community: region && region !== REGION_ALL ? REGION_MERCADONA_NAME[region] ?? null : null,
+    p_today: todayLocalISO(),
+    p_limit: limit,
+    p_cursor: cursor,
+    p_tokens: meaningful.length ? meaningful : words,
+    p_categories: filters?.categories ?? [],
+    p_price_min: filters?.priceMin ?? null,
+    p_price_max: filters?.priceMax ?? null,
+    p_sort: filters?.pricePerUnitSort ? `unit_${filters.pricePerUnitSort}`
+      : filters?.sort ? `price_${filters.sort}` : 'name',
+    p_types: filters?.offerTypes ?? [],
+    p_categories_only: categoriesOnly,
+  });
+  if (error?.code === 'PGRST202' || error?.code === '42883') return null;
+  if (error) throw error;
+  return { rows: data?.rows ?? [], nextCursor: data?.nextCursor ?? null, categories: data?.categories ?? [] };
+}
 
 export async function fetchCarrefourOffers(
+  cursor: BrowseCursor | null,
+  region: RegionValue | null,
+  limit = 50,
+  filters?: OfferFilters,
+): Promise<{ items: CarrefourOffer[]; nextCursor: BrowseCursor | null }> {
+  const result = await carrefourOfferPageRPC(cursor, region, limit, filters);
+  if (!result) return fetchCarrefourOffersLegacy(cursor, region, limit, filters);
+  return {
+    items: result.rows.map((row) => {
+      const product = mapCarrefour(row);
+      return {
+        product: carrefourToUI(product), promoName: product.promoName,
+        promoEnd: product.promoEnd, prevPrice: product.strikethroughPrice,
+        promotionKinds: product.promotions.map((promotion) => promotion.kind),
+        promotionCount: product.promotions.length,
+      };
+    }),
+    nextCursor: result.nextCursor,
+  };
+}
+
+/** Compatibilidad con servidores antiguos: recorre candidatos en cliente. */
+const carrefourSortedOffers = new Map<string, { at: number; items: CarrefourOffer[] }>();
+
+async function fetchCarrefourOffersLegacy(
   cursor: BrowseCursor | null,
   region: RegionValue | null,
   limit = 50,

@@ -1,0 +1,28 @@
+{
+  "id": "10933",
+  "index": 61,
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-cf9d6ceb-78fd-4bc3-87e7-d39bc7c0c86c.png",
+  "png": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261006-100/mercadona-10933-leche-entera-hacendado.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nSpecific subject: Leche entera Hacendado, Mercadona product id 10933.\nPackaging guidance: White milk bottle with blue cap, blue lettering «LECHE ENTERA». EXCLUDE detached pink «1L» badge to the right (catalog overlay, outside package).",
+  "status": "published",
+  "webp": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261006-100/mercadona-10933-leche-entera-hacendado.webp",
+  "width": 280,
+  "height": 768,
+  "bytes": 30594,
+  "sha256": "8b8ae11e6d20df7429247dee810dc09b6d5e9bfbdf56f72d79a4af24894201d5",
+  "alpha": {
+    "transparentPixels": 42356,
+    "opaquePixels": 1376,
+    "visibleBorderPixels": 0
+  },
+  "visualReviewed": true,
+  "publication": {
+    "productId": "10933",
+    "name": "Leche entera Hacendado",
+    "objectPath": "mercadona/10933/8b8ae11e6d20df74.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/10933/8b8ae11e6d20df74.webp",
+    "contentType": "image/webp",
+    "bytes": 30594,
+    "sha256": "8b8ae11e6d20df7429247dee810dc09b6d5e9bfbdf56f72d79a4af24894201d5"
+  }
+}

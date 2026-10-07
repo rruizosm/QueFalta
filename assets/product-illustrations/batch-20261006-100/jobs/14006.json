@@ -1,0 +1,28 @@
+{
+  "id": "14006",
+  "index": 80,
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-01e8c49f-e41c-44c1-8c3f-baec99b8717e.png",
+  "png": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261006-100/mercadona-14006-galletas-maria-integral-hacendado.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nSpecific subject: Galletas María Integral Hacendado, Mercadona product id 14006.\nPackaging guidance: Whole clear retail pack of FOUR columns of wholegrain biscuits, green round label «María 100% Integral».",
+  "status": "published",
+  "webp": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261006-100/mercadona-14006-galletas-maria-integral-hacendado.webp",
+  "width": 768,
+  "height": 673,
+  "bytes": 166020,
+  "sha256": "5df91162412465c6c5a8d684a1fe7495e280c1a4da53cdb8b8bee4dabad5fde6",
+  "alpha": {
+    "transparentPixels": 31870,
+    "opaquePixels": 1253,
+    "visibleBorderPixels": 0
+  },
+  "visualReviewed": true,
+  "publication": {
+    "productId": "14006",
+    "name": "Galletas María Integral Hacendado",
+    "objectPath": "mercadona/14006/5df91162412465c6.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/14006/5df91162412465c6.webp",
+    "contentType": "image/webp",
+    "bytes": 166020,
+    "sha256": "5df91162412465c6c5a8d684a1fe7495e280c1a4da53cdb8b8bee4dabad5fde6"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "80515",
+  "index": 48,
+  "name": "Cereales estrellas de maíz Stars Hacendado con miel",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nSpecific subject: Cereales estrellas de maíz Stars Hacendado con miel, Mercadona product id 80515. Match Image 1 exactly. The catalog name identifies the subject but is not text to invent on its label. Preserve legible Spanish/Portuguese words, printed amounts and multipack counts from Image 1. No detached catalog badges.\nPackaging guidance: YELLOW cereal BOX «STARS», honey-star cereals, 400g.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-70e1b68b-14a1-4649-989c-7419268d43f1.png",
+  "png": "assets/product-illustrations/batch-20261007-100/mercadona-80515-cereales-estrellas-de-maiz-stars-hacendado-con-miel.png",
+  "status": "published",
+  "webp": "assets/product-illustrations/batch-20261007-100/mercadona-80515-cereales-estrellas-de-maiz-stars-hacendado-con-miel.webp",
+  "width": 547,
+  "height": 768,
+  "bytes": 87906,
+  "sha256": "d2831573c40388d8dbba8a7978659a0e5399227f78e6dcc68d3c5e54f7d95787",
+  "alpha": {
+    "transparentPixels": 29120,
+    "opaquePixels": 1269,
+    "visibleBorderPixels": 0
+  },
+  "visualReviewed": true,
+  "publication": {
+    "productId": "80515",
+    "name": "Cereales estrellas de maíz Stars Hacendado con miel",
+    "objectPath": "mercadona/80515/d2831573c40388d8.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/80515/d2831573c40388d8.webp",
+    "contentType": "image/webp",
+    "bytes": 87906,
+    "sha256": "d2831573c40388d8dbba8a7978659a0e5399227f78e6dcc68d3c5e54f7d95787"
+  }
+}

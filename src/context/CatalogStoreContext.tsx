@@ -118,7 +118,8 @@ export function CatalogStoreProvider({ children }: { children: React.ReactNode }
       await Promise.allSettled([
         fetchPriceChanges(store, 'down', region, postalCode, 50, 0, null, lidlStoreId),
         ...(OFFER_STORES.includes(store)
-          ? [fetchStoreOffers(store, null, region, postalCode, 50, undefined, lidlStoreId)] : []),
+          // Comparte el orden inicial de OffersScreen y su petición/caché.
+          ? [fetchStoreOffers(store, null, region, postalCode, 50, { sort: 'asc' }, lidlStoreId)] : []),
       ]);
     }, 800);
     return () => { cancelled = true; clearTimeout(timer); stopImages(); };

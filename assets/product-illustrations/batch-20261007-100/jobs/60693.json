@@ -1,0 +1,29 @@
+{
+  "id": "60693",
+  "index": 84,
+  "name": "Aceitunas verdes Arbequina con hueso Hacendado",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nSpecific subject: Aceitunas verdes Arbequina con hueso Hacendado, Mercadona product id 60693. Match Image 1 exactly. The catalog name identifies the subject but is not text to invent on its label. Preserve legible Spanish/Portuguese words, printed amounts and multipack counts from Image 1. No detached catalog badges.\nPackaging guidance: Tall green olive glass jar BLACK lid, PINK vertical strip and «ARBEQUINA».\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-a9b2c35e-a406-40e0-beaa-fedba4dbd099.png",
+  "png": "assets/product-illustrations/batch-20261007-100/mercadona-60693-aceitunas-verdes-arbequina-con-hueso-hacendado.png",
+  "status": "published",
+  "webp": "assets/product-illustrations/batch-20261007-100/mercadona-60693-aceitunas-verdes-arbequina-con-hueso-hacendado.webp",
+  "width": 348,
+  "height": 768,
+  "bytes": 62310,
+  "sha256": "4717fc5f22c33e9ef829e801488c56c53696a2e83ac4496ef71f6baacec81cac",
+  "alpha": {
+    "transparentPixels": 32450,
+    "opaquePixels": 814,
+    "visibleBorderPixels": 0
+  },
+  "visualReviewed": true,
+  "publication": {
+    "productId": "60693",
+    "name": "Aceitunas verdes Arbequina con hueso Hacendado",
+    "objectPath": "mercadona/60693/4717fc5f22c33e9e.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/60693/4717fc5f22c33e9e.webp",
+    "contentType": "image/webp",
+    "bytes": 62310,
+    "sha256": "4717fc5f22c33e9ef829e801488c56c53696a2e83ac4496ef71f6baacec81cac"
+  }
+}

@@ -24,6 +24,14 @@ upsert del sync falla por columnas inexistentes. Los datos de promo vienen embeb
 en las MISMAS páginas de listado que ya se recorren (badge + precio tachado del SSR),
 así que no añade peticiones.
 
+El listado rápido de la app usa también
+[`20261006200559_carrefour_offer_pages.sql`](../supabase/migrations/20261006200559_carrefour_offer_pages.sql)
+(ya aplicada en producción el 06/10/2026). La RPC de lectura resuelve las
+promociones y el precio regional antes de paginar; las categorías no descargan
+productos completos. No cambia el sync ni requiere volver a cargar el catálogo.
+Prueba PostgreSQL local sin red: `node scripts/test-carrefour-offers-sql-local.mjs
+/ruta/absoluta/a/pglite/dist/index.js`.
+
 Para el **multi-zona por comunidad autónoma** (ver "Multi-zona" abajo), ejecuta también
 [`supabase/migrations/carrefour_regions.sql`](../supabase/migrations/carrefour_regions.sql)
 (columnas `regions text[]` + `regional_prices jsonb`). **IMPRESCINDIBLE antes del próximo

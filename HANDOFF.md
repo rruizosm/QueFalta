@@ -1,5 +1,379 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Verificación conjunta antes de subir a GitHub (2026-10-07)
+
+- Lote local completo en `codex/integrate-local-updates-main-linear`:
+  despensa y recursos de las 231 ilustraciones, ajustes de navegación,
+  ofertas paginadas de Carrefour y suspensión temporal del juego.
+- `npx tsc --noEmit` y ESLint correctos. Suite general: **982/987**,
+  cinco fallos preexistentes en comprobaciones de BM/comparador, activación
+  de recetas, botón informativo y fallback de imagen Lidl. Las aserciones
+  fallan sobre archivos idénticos al HEAD previo, no modificados en este lote
+  (`SimilarProductsSection.tsx`, `limits.ts`, `StoreInfoButton.tsx`,
+  `ProductImage.tsx`). No se alteran esos comportamientos para superar tests.
+- `.env.local`, credenciales y el checkout independiente
+  `QueFaltaDatos-email-board/` quedan fuera del commit de la app.
+  Este último pertenece a `rruizosm/QueFaltaDatos` y está limpio, sin commits
+  pendientes respecto a su rama de seguimiento local.
+
+## Despensa: otras 100 ilustraciones Mercadona WebP (producción, 2026-10-07)
+
+- Publicados **100 productos nuevos**, seleccionados sin ilustración. Total
+  actual: **231 ilustraciones WebP**. Cinco grupos de 20: café/infusiones,
+  cocina/condimentos, desayuno, aperitivos y conservas.
+- ImageGen integrado con fotografías oficiales y referencia de estilo `10699`.
+  Envases completos, packs, textos principales y transparencia real. Corregido
+  «SIN/SEM GLUTEN» del cacao a la taza `11609` y de las cremas de
+  cacahuete `16883` y avellanas/cacao `11630` antes de publicar.
+- WebP con máximo 768 px, calidad 84 y alfa 100: **8.510.550 bytes**
+  en el lote. Objetos nuevos con hash en `product-illustrations`; solo se
+  actualizó `illustration_url`, conservando `thumbnail` y las 131 URL previas.
+- Verificados los 100: revisión visual, alfa/bordes, MIME público `image/webp`,
+  SHA-256 local/remoto y lectura anónima final. TypeScript correcto.
+- PNG/WebP, fuentes, prompts, procedencia, checkpoints/recibos, inventario
+  y cinco vistas previas: `assets/product-illustrations/batch-20261007-100/`.
+
+## Despensa: 100 ilustraciones nuevas Mercadona WebP (producción, 2026-10-06)
+
+- Completado el lote solicitado de 80–100: **100 productos nuevos**, todos
+  publicados. Tras aquel lote, el catálogo alcanzó **131 ilustraciones WebP**.
+- ImageGen integrado, fotografías oficiales y referencia de estilo `10699`;
+  transparencia real, envases completos y packs conservados. Corregido el
+  sello «SIN/SEM GLUTEN» del chocolate Classic `15101` antes de publicar.
+- WebP con lado máximo 768 px, calidad 84 y alfa 100: **7.667.782 bytes**
+  en el lote. Objetos nuevos con hash en `product-illustrations`; solo se
+  actualizó `illustration_url`, conservando `thumbnail` y las 31 URL previas.
+- Los 100 pasan revisión visual, alfa/bordes, MIME público `image/webp`,
+  SHA-256 local/remoto y lectura anónima final. TypeScript correcto.
+- Inventario, PNG/WebP, fuentes, prompts, checkpoints/recibos y cinco vistas
+  previas: `assets/product-illustrations/batch-20261006-100/`.
+
+## Despensa: 20 ilustraciones nuevas Mercadona WebP (producción, 2026-10-06)
+
+- Publicadas 20 ilustraciones nuevas: `4193`, `4040`, `16452`, `86656`,
+  `26019`, `26029`, `5330`, `29100`, `16864`, `17132`, `16043`, `4957`,
+  `15430`, `86755`, `86368`, `14102`, `7031`, `16712`, `5598` y `34171`.
+  Tras aquel lote, el catálogo alcanzó **31 ilustraciones WebP**.
+- ImageGen integrado usó las fotografías oficiales y la ilustración aprobada
+  `10699` como referencia de estilo. Transparencia real, envases completos y
+  packs conservados; etiqueta de miel corregida antes de publicar.
+- WebP: máximo 768 px, calidad 84, alfa 100; 1.563.568 bytes en el nuevo lote.
+  Rutas nuevas con hash en `product-illustrations`, enlazadas únicamente en
+  `illustration_url`; las fotos `thumbnail` y las 11 ilustraciones anteriores
+  permanecen intactas. Sin migración ni cambios de cliente.
+- Verificados los 20: alfa/bordes, revisión visual, descarga pública
+  `image/webp`, SHA-256 local/remoto y consulta anónima de fila publicada,
+  URL y fotografía original. TypeScript correcto.
+- PNG maestros, WebP, fuentes, prompts, procedencia, inventario/verificación y
+  vista previa: `assets/product-illustrations/batch-20261006-20/`.
+
+## Carrefour: ofertas rápidas (backend activo + cliente local, 2026-10-06)
+
+- Causa: `raw.quefalta_offers` no nulo también en productos sin promociones;
+  precio ascendente descargaba todo el catálogo regional antes de pintar 50.
+  `carrefour_offer_page_v1` filtra promociones/precios por región en servidor y
+  pagina con keyset; categorías en la misma RPC, solo nombres.
+- Migración local `20261006200559_carrefour_offer_pages.sql` aplicada como
+  `20261006200941_carrefour_offer_pages`. Aditiva, sin escrituras de catálogo;
+  `SECURITY INVOKER`/RLS y permisos explícitos. Clientes antiguos intactos.
+- `src/api/catalog.ts` usa la RPC, con fallback únicamente si falta; precarga
+  de ofertas alineada con el precio ascendente inicial de `OffersScreen`.
+- REST anónima real en Cataluña: 5,5 → 1,1 s; 27 → 1 petición;
+  11,8 MB → 33 KB. Categorías: una petición, 1.431 bytes/73 categorías.
+  Coinciden resultados anteriores en ambos órdenes de precio/€/unidad,
+  búsqueda, envío y rango de precio; paginación real sin duplicados.
+- 11 tests de cliente y 69 comparaciones SQL, filtros/paginación/RLS,
+  TypeScript y lint focalizado correctos. Advisors sin avisos de las nuevas
+  funciones. Prueba SQL: `node scripts/test-carrefour-offers-sql-local.mjs
+  /ruta/absoluta/a/pglite/dist/index.js`. Falta publicar cliente y QA nativa.
+
+## Carrefour: falta de cambios de precio investigada (2026-10-06)
+
+- Producción conserva el catálogo del 26/09 (22.557 productos publicados).
+  Último sync correcto: 26/09 22:25 Madrid; último cambio: 26/09 21:37 Madrid.
+  Cero productos sincronizados esta semana y cero cambios en la ventana de
+  8 días del cliente. Trigger activo y lógica remota correcta.
+- El lunes 05/10 no hubo escrituras REST de productos/categorías; las lecturas
+  respondieron HTTP 200. El sync depende de la tarea Windows de los lunes.
+- Prueba de descarga desde este Mac: HTTP 403 de Cloudflare. No atribuir ese
+  resultado al PC Windows sin leer su log. Faltan `Get-ScheduledTaskInfo` y el
+  último `scripts/logs/carrefour-sync-*.log` de aquella máquina para determinar
+  si no arrancó, falló descargando o se cortó antes de publicar.
+- Solo diagnóstico y documentación; sin relanzar ni cambiar producción.
+  Typecheck correcto. Detalle y evidencias en CONTEXTO.md.
+
+## Despensa: botón para añadir baldas (local, 2026-10-06)
+
+- `PantryScreen` añade «Añadir balda» al final de la estantería. `usePantryLayout`
+  conserva `{ items, shelfCount }` y persiste ambas cosas en una sola escritura
+  por cuenta; también guarda las baldas vacías. Lectura legacy = tres baldas.
+- `pantryLayout` recibe la cantidad en colocación/colisiones/recuperación.
+  Las coordenadas siguen referidas al alto original; `PantryShelf` amplía solo
+  el contenedor y usa ese alto original para colocar productos y resolver gestos.
+  Se conservan tamaños, baldas anteriores y el buscador superior retirado.
+- TypeScript, lint focalizado y 39 pruebas correctos, incluyendo varias altas,
+  huecos nuevos, geometría estable, arrastre/accesibilidad, recarga y aislamiento
+  del almacenamiento por cuenta. Sin migraciones; pendiente revisión nativa.
+- QA web del editor real con catálogo simulado: botón bajo la última balda,
+  alta de cuarta y quinta, producto en la cuarta, geometría estable, recarga
+  con quinta vacía y cambio de cuenta correctos. Pendiente recorrido nativo.
+
+
+## Despensa: buscador superior retirado (local, 2026-10-06)
+
+- `PantryScreen` ya no muestra la barra superior de búsqueda ni reserva su
+  espacio. El alta queda en los + de cada balda, conservando su selector.
+- Retirados el estilo y la ruta de alta general sin hueco. Las pruebas
+  existentes de alta usan ahora los huecos de las baldas. Sin SQL.
+- Verificación: TypeScript y las 35 pruebas de despensa pasan.
+
+## Despensa: producto seleccionado sin contorno (local, 2026-10-06)
+
+- `PantryShelf` no aplica fondo ni borde al producto seleccionado; solo eleva su
+  `zIndex`. Nombre, controles, gestos, accesibilidad y colisiones permanecen
+  iguales. La caja de interacción sigue existiendo, pero es totalmente invisible.
+
+## Despensa: capacidad de las tres baldas habilitada (local, 2026-10-06)
+
+- Las baldas inferiores eran solo visuales. `shelfIndex` opcional (0–2) en
+  `PantryPlacement` habilita colocación/colisiones por balda; ausente = superior
+  para compatibilidad. Misma clave por usuario y `version: 1`, sin SQL.
+- `availablePantrySlots` devuelve hasta 15 huecos. `onAddAt` transmite posición
+  y balda; el buscador general usa `findPantryPlacementOnAnyShelf` para continuar
+  en otra balda cuando una está llena. El arrastre y accesibilidad cambian de
+  balda sin reducir productos ni solaparlos; se comprueba también la altura libre.
+- Normalización en dos pasadas: reserva posiciones de todas las baldas antes de
+  recuperar sobrantes en las demás. Conserva productos que no caben como pendientes.
+- TypeScript, lint y 35 pruebas pasan. QA web con cinco productos antiguos en
+  la superior: alta automática en segunda, alta explícita en tercera, arrastre
+  entre ellas y restauración tras recarga. Catálogo simulado, sin escribir en
+  producción. Pendiente QA nativa/publicación.
+
+## Despensa: fondo suavizado (local, 2026-10-06)
+
+- Capa `rgba(245, 234, 216, 0.44)` sobre la textura en `PantryWoodBackground`,
+  antes del tinte oscuro: marrón más claro, veta suave y más contraste con las
+  baldas originales. Sin cambiar imágenes, medidas, selección ni persistencia.
+
+## Despensa: auditoría de selección corregida (local, 2026-10-06)
+
+- Causa: ayuda/barra condicionales dentro del ScrollView + marco `flex: 1`
+  escalado según alto + centrado vertical. Reproducido: 89,5→68,8 px de alto de
+  producto al seleccionar en 390×700, además de desplazamiento de baldas.
+- `PantryShelf` usa ancho y `aspectRatio`, `flexShrink: 0`, lienzo anclado arriba.
+  `PantryScreen` monta la barra de edición fuera del scroll, con reserva inferior
+  permanente; avisos debajo de las baldas para no desplazar la escena.
+- Retirados los bloques blancos de selección/ayuda/controles. Barra marrón
+  compacta, contorno de selección sin relleno y + discretos. Ayuda ES/CA corta.
+  La acción accesible `activate` ya no guarda una colocación idéntica.
+- `pantry-selection.test.mjs` y `pantry-surface.test.mjs` cubren selección,
+  terminar, alta/borrado, altura reducida, geometría y ausencia de guardado al
+  activar. 29 pruebas pasan; QA web real con dos productos, arrastre,
+  claro/oscuro y pantalla pequeña. Sin SQL; pendiente QA nativa/publicación.
+
+## Despensa: fondo marrón sin estructura de armario (local, 2026-10-06)
+
+- Sustituido `PantryCabinet.tsx` por `PantryWoodBackground.tsx`: textura realista
+  continua de roble marrón en toda la pantalla, sin marco, laterales, techo ni
+  base. JPEG local 1024×1536 generado con ImageGen; procedencia en
+  `assets/pantry/oak-background.md`. Tinte uniforme en modo oscuro.
+- Fondo montado en `PantryScreen`, decorativo y sin interacción. `PantryShelf`
+  queda transparente y conserva las tres baldas, sombras, geometría y datos.
+  Los controles y mensajes se apoyan en superficies opacas para su lectura.
+- Sin SQL ni paquetes nuevos. Pasan TypeScript, lint focalizado y 26 pruebas.
+  QA web claro/oscuro, 402×874 y 320×568. Pendiente QA nativa/publicar.
+
+## Despensa: textos de ayuda retirados (local, 2026-10-06)
+
+- `PantryScreen` ya no renderiza las ayudas pasivas de deslizar a Inicio ni de
+  tocar un hueco para añadir. Se retiraron sus claves ES/CA y estilos sin uso.
+- El texto contextual de mover un producto sigue apareciendo solo al seleccionarlo.
+
+## Despensa: redimensionado retirado (local, 2026-10-06)
+
+- `PantryShelf` ya no crea `Gesture.Pinch` ni acciones accesibles
+  `increment`/`decrement`; `PantryScreen` ya no muestra −, + ni porcentaje.
+- Las ilustraciones mantienen el `size` que ya estuviera persistido. Continúan
+  disponibles selección, arrastre horizontal, quitar y terminar. Textos ES/CA y
+  el estado de productos pendientes se adaptaron. Sin migración ni SQL.
+
+## Despensa: tres baldas (local, 2026-10-06)
+
+- `PantryShelf` dibuja tres instancias de `PantryWoodShelf` en 0,29, 0,56 y
+  0,83 del alto del lienzo. Las tres conservan el ancho ampliado y el centrado.
+- La geometría interactiva sigue anclada a la balda superior; no hay migración
+  ni cambios en los datos guardados. La prueba de superficie cubre cantidad,
+  separación, ancho y centrado.
+
+## Despensa: balda más ancha (local, 2026-10-06)
+
+- `PantryWoodShelf` amplía visualmente la balda de roble un 12 % y la mantiene
+  centrada. La escala vertical y `PANTRY_SHELF_SURFACE_Y` no cambian.
+- `PantryShelf` deja visible el vuelo lateral; no cambia la geometría ni la
+  persistencia de productos. La prueba de superficie cubre ancho y centrado.
+
+## Despensa: 11 ilustraciones Mercadona WebP publicadas (producción, 2026-10-06)
+
+- WebP publicados para `10699`, `12586`, `5044`, `18071`, `19897`, `13038`,
+  `11715`, `23926`, `4740`, `34128` y `23138`. Los 11 tienen URL en
+  `mercadona_products.illustration_url`, tipo público `image/webp` y SHA-256
+  remoto igual al archivo local.
+- Conversión determinista, sin regeneración: máximo 768 px, calidad 84,
+  alfa 100 y 663.306 bytes totales. PNG maestros y fuentes intactos; el antiguo
+  objeto PNG de `10699` se conserva sin referencia.
+- Detalle de nombres, prompt, rutas y utilidades de recorte en
+  `assets/product-illustrations/README.md`.
+
+## Despensa: marco compacto y huecos prediseñados (local, 2026-10-06)
+
+- `PANTRY_PRODUCT_FRAME_RATIO = 0.55` desacopla la altura/escala de la
+  ilustración cuadrada de su ancho útil. Selección, límites, detección de
+  colisiones y separación usan el marco estrecho; la imagen sigue renderizando
+  el cuadrado transparente completo centrado y anclado a la madera.
+- `availablePantrySlots` expone cinco posiciones fijas. `PantryShelf` dibuja solo
+  los huecos libres con su botón +; cada uno abre `PantryProductPicker` y
+  `PantryScreen` recuerda su coordenada para colocar allí el resultado elegido.
+  Hay etiquetas accesibles ES/CA y el buscador general continúa funcionando.
+- Se conserva almacenamiento `@pantry_layout:v1:${userId}` y la normalización
+  de datos anteriores, sin SQL ni cambios en compras. Pasan 26 pruebas
+  dirigidas, TypeScript, ESLint focalizado, diff-check y export web completa.
+  Pendiente comprobación visual en dispositivo; el arnés web de desarrollo
+  anterior no resolvió módulos internos de Expo con Metro directo.
+
+## Palabra de hoy: bloqueo temporal de cuentas (producción + cliente local, 2026-10-05)
+
+- Nueva columna `profiles.word_game_blocked_until timestamptz`: futura = no
+  puede jugar; `NULL`/pasada = acceso. Es administrativa y está protegida con
+  trigger frente a escrituras de roles cliente, igual que `premium_until`.
+- `20261005123212_block_word_game_users.sql` aplicada remotamente como
+  `20261005125117_block_word_game_users`. `word_game_start`,
+  `word_game_guess` y `word_game_guess_v2` comprueban la sanción antes de
+  mutar; `private.word_plays` aporta defensa en profundidad para llamadas
+  privadas directas. `word_game_today`, rankings y estadísticas siguen legibles.
+- `DailyWordScreen` muestra el bloqueo y su fin en hora de Madrid, sin tablero
+  ni teclado, pero conserva las pestañas de ranking. La expiración se aplica
+  automáticamente; `WORD_BLOCKED` refresca el perfil y conserva el borrador.
+- Operación: para incluir completo el día X, fijar las 00:00 de X+1 en
+  `Europe/Madrid`; `NULL` levanta la sanción. En el despliegue había 0 bloqueos.
+- PGlite integral, 31 pruebas focalizadas, TypeScript, lint y `git diff --check`
+  correctos. Advisors posmigración sin avisos nuevos del cambio; permanecen los
+  avisos históricos del proyecto.
+
+## Despensa: impedir solapamientos (local, 2026-10-05)
+
+- `findPantryPlacement` recoloca en el hueco más cercano que admita el tamaño
+  solicitado, con separación de 0,012 del ancho del lienzo. Alta, arrastre,
+  pellizco, −/+ y accesibilidad comparten la regla. Sin hueco, no se añade el
+  producto ni se acepta una ampliación inválida; aviso ES/CA, vecinos intactos.
+- `PantryShelf` comparte las posiciones animadas entre productos para resolver
+  también colisiones a mitad de gesto y gestos simultáneos. `PantryScreen`
+  revalida antes de guardar; el hook evita escrituras para operaciones rechazadas.
+- La normalización de lectura/guardado conserva instancias antiguas sobrantes:
+  lista visible de pendientes, editable con −/+ o quitar. Se reincorporan a la
+  balda cuando caben. Mismo formato/clave por usuario, sin SQL ni datos borrados.
+- Pasan TypeScript, ESLint focalizado, 40 pruebas, QA web interactiva aislada y
+  export Hermes iOS/Android (aviso `google-services.json` ausente). Captura
+  `scripts/logs/pantry-preview/pantry-no-overlap.png` (gitignored). El recorrido
+  usa scroll vertical real para recuperar pendientes: `scrollIntoView` de Chrome
+  podía desplazar el ancestro horizontal oculto del pager en el arnés web.
+  Pendiente prueba en dispositivo y publicar; historial de compras no modificado.
+
+## Despensa: colocación solo sobre la balda (local, 2026-10-05)
+
+- Pulsar un resultado del buscador añade el producto sobre la madera; el usuario
+  solo puede arrastrarlo a izquierda/derecha entre sus extremos. Se ha retirado
+  la colocación tocando el fondo y las acciones accesibles arriba/abajo.
+- `clampPantryPlacement` fija la base a `PANTRY_SHELF_SURFACE_Y` también durante
+  arrastre, pellizco y botones −/+. Tamaño máximo ajustado al espacio superior.
+  Lectura/escritura normalizan posiciones libres antiguas sin perder instancias;
+  persistencia por usuario intacta. Textos ES/CA actualizados.
+- TypeScript, ESLint y 34 pruebas pasan, incluido render/acciones accesibles y
+  recuperación de diseños antiguos. QA web aislada comprueba la base durante
+  gestos, ausencia de movimiento vertical/al tocar el fondo, tamaño, recarga,
+  cuentas, duplicados, pager y pantalla pequeña. Export Hermes iOS/Android
+  correcto, con aviso local por `google-services.json` ausente. Pendiente QA
+  nativa/publicación. Sin cambios de BD ni historial de compra.
+
+## Despensa: nueva balda individual (local, 2026-10-05)
+
+- `PantryWoodShelf.tsx` replica una balda de la nueva referencia, con madera,
+  dos soportes cortos y sombra. Se renderiza una sola vez en `PantryShelf`.
+  No se añaden productos decorativos ni se restaura el antiguo mueble verde.
+- `oak-shelf-source.png` es el original de ImageGen, opaco. Se muestra solo la
+  madera mediante una máscara SVG calibrada a 2079×756; no usar el PNG sin ella.
+  Procedencia, límites y prompt en `assets/pantry/oak-shelf.md`.
+- Nuevas instancias parten de la misma balda (`PANTRY_SHELF_SURFACE_Y`).
+  El ajuste posterior de arriba ancla también las posiciones antiguas y limita
+  el arrastre a horizontal, conservando pellizco y persistencia.
+- TypeScript, ESLint focalizado, 32 pruebas y QA web aislada pasan. Captura
+  `scripts/logs/pantry-preview/pantry-oak-shelf-empty.png` (gitignored).
+  Export Hermes iOS/Android correcto con aviso local por `google-services.json`
+  ausente. Pendiente prueba nativa; no se publica ni se modifica la BD.
+
+## Despensa sin ilustración de estantería (local, 2026-10-05)
+
+- A petición del usuario se retiró el fondo de mueble de `PantryShelf`, incluida
+  su importación. Queda un lienzo neutro que respeta el tema. El PNG se conserva
+  como referencia recuperable, fuera del árbol de dependencias del cliente.
+- Buscador, productos, tamaños, posiciones y persistencia por usuario intactos;
+  se mantiene la geometría del lienzo para no desplazar lo ya guardado. Textos
+  ES/CA ya no describen un mueble que no se muestra. Sin SQL ni cambios en compras.
+- 31 pruebas dirigidas (incluido render sin mueble y conservación de productos),
+  ESLint focalizado y diff-check pasan. Typecheck global bloqueado por TS2345 en
+  `DailyWordScreen.tsx:82`, de cambios concurrentes fuera de esta tarea.
+
+## Mercadona: URL de ilustración transparente (producción, 2026-10-03)
+
+- `mercadona_products.illustration_url` ya existe en producción como `text NULL`.
+  Guarda la URL del recurso con transparencia real; no reemplaza `thumbnail`.
+  Migración local y remota: `20261003150627_add_mercadona_illustration_url.sql`.
+- El bucket público `product-illustrations` (migración
+  `20261003151548_mercadona_product_illustrations_bucket.sql`) aloja 231 WebP
+  enlazados. `10699`, «Leche entera sin lactosa Hacendado», apunta ahora a
+  `mercadona/10699/7cc6a3843dadeaed.webp`; su PNG anterior se conserva sin
+  referencia. Los PNG maestros en `assets/product-illustrations/` mantienen
+  alfa y los WebP remotos se verificaron por hash. El editor local de despensa
+  consume estas URL; el catálogo normal sigue mostrando `thumbnail`.
+
+## Despensa: buscador ilustrado y editor (local, 2026-10-03)
+
+- La integración original usaba `assets/pantry/empty-shelf.png` como fondo;
+  retirada el 2026-10-05 (ver arriba). La nevera sigue fuera de la integración.
+- `PantryProductPicker` + `api/pantry.ts` buscan solo Mercadona publicado con
+  `illustration_url` presente. El filtro precede a la paginación; búsqueda ES/CA
+  normalizada, debounce y abort/versionado para descartar respuestas antiguas.
+  Hay 11 productos ilustrados (verificados por consulta real).
+- `PantryShelf` superpone instancias independientes: arrastre horizontal sobre
+  la balda (desde 2026-10-05), pellizco, botones de tamaño, quitar y finalizar.
+  Sus gestos bloquean al pager
+  y al scroll mientras se manipula el producto. Coordenadas relativas al
+  recurso y límites en `pantryLayout.ts`; controles de 44 pt y scroll en tamaños
+  reducidos. Se conservan textos ES/CA y acciones accesibles.
+- Persistencia **solo local por cuenta/dispositivo**, clave
+  `@pantry_layout:v1:${userId}`. `pantryStorage.ts` encola escrituras y
+  `usePantryLayout` restaura y ofrece reintentos sin sobrescribir datos ante un
+  error de lectura. El editor se remonta al cambiar de cuenta. Sin backend de
+  inventario, sincronización, cantidades/caducidades ni cambios en la cesta.
+  No necesita SQL adicional; depende de la columna ya aplicada arriba.
+- Se entra deslizando el dedo a la derecha desde Inicio y se vuelve a la
+  izquierda. Inicio ofrece también un acceso accesible y Despensa un botón
+  de regreso. `Pantry` es la página anterior a `Home`, sin añadir iconos abajo;
+  el indicador permanece en Inicio. Inicio sigue abriéndose al arrancar y
+  recibe Atrás de Android. Los detalles conservan sus gestos nativos.
+- `Pager` calcula su offset con el ancho del render: elimina el destello inicial
+  que provocaría arrancar en la segunda página mientras el ancho compartido
+  aún fuese cero. Dos regresiones nuevas cubren arranque y cambio de ancho.
+- TypeScript, ESLint dirigido, 29 pruebas y export Hermes iOS/Android pasan.
+  Export avisa de `google-services.json` ausente; no es una build nativa.
+  `scripts/tests/pantry-layout.test.mjs` cubre límites, datos inválidos,
+  persistencia/concurrencia, aislamiento, recuperación y filtro antes de paginar.
+  `scripts/logs/pantry-preview/check-editor.mjs` (gitignored) prueba el editor y
+  pager reales con API/vecinos simulados: búsqueda, cancelación, arrastre/toque,
+  pellizco, tamaño, restauración, cuentas, duplicados, borrado, retorno a Inicio,
+  claro/oscuro, ES/CA y controles en 320×568; capturas en esa carpeta.
+  Quedan pendientes QA nativa y publicación. No se arrancó un simulador ni se
+  escribió en producción al implementar este editor.
+
 ## Catálogo: miniaturas sin parpadeo al entrar (local, 2026-10-01)
 
 - `StoreProductList` ya no monta el primer viewport antes de que arranque la

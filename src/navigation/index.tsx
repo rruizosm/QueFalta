@@ -7,6 +7,7 @@ import CreateRecipeModal from '../components/CreateRecipeModal';
 import { RecipeCreatorProvider } from '../context/RecipeCreatorContext';
 import { recipeCreatorOptions, type AppStackParamList } from './recipeCreator';
 import { createAppPagerNavigator } from './createAppPagerNavigator';
+import { APP_PAGER_ROUTE_OPTIONS } from './appPagerRoutes';
 import { PagerGestureBoundary } from '../components/bottom-tabs-pager/PagerGestureBoundary';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Linking from 'expo-linking';
@@ -38,6 +39,7 @@ import {
 } from '../lib/notifications';
 
 import HomeScreen       from '../screens/HomeScreen';
+import PantryScreen from '../screens/PantryScreen';
 import DailyWordScreen from '../screens/DailyWordScreen';
 import QueCocinoScreen  from '../screens/QueCocinoScreen';
 import FavoritesScreen  from '../screens/FavoritesScreen';
@@ -466,6 +468,7 @@ function AppTabs() {
   const { unreadCount } = useNotifications();
   return (
       <Tab.Navigator
+        {...APP_PAGER_ROUTE_OPTIONS}
         screenOptions={{
           headerShown: false,
           lazy: true,
@@ -473,6 +476,7 @@ function AppTabs() {
           // Navigation/focus is still owned by React Navigation's TabRouter.
         }}
       >
+        <Tab.Screen name="Pantry" component={PantryScreen} options={{ title: t('pantry.title') }} />
         <Tab.Screen
           name="Home"
           component={HomeNavigator}

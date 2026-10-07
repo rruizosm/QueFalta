@@ -1,0 +1,87 @@
+{
+  "tool": "built-in image_gen",
+  "products": [
+    {
+      "id": "4193",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-5f3c7b7e-56e6-4acb-b177-829c3635c161.png"
+    },
+    {
+      "id": "4040",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-ee5404de-4e13-4526-b403-7d9ba3d85941.png"
+    },
+    {
+      "id": "16452",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-46d44725-0e45-4f39-b67d-ce85073234d6.png"
+    },
+    {
+      "id": "86656",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-d57a0270-1345-4d85-bbd8-de3f33b87033.png"
+    },
+    {
+      "id": "26019",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-6d242f4a-1f0b-41dd-87b9-cb26e9c933d2.png"
+    },
+    {
+      "id": "26029",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-d15c7f1b-db67-4d99-b306-acf916babdf7.png"
+    },
+    {
+      "id": "5330",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-dad6bf15-7db4-4cfb-889b-c939fa82ec0f.png"
+    },
+    {
+      "id": "29100",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-848ecab1-0b1f-457b-8d27-393763429be3.png"
+    },
+    {
+      "id": "16864",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-6b8722ef-df30-4720-bfa4-db73df6da2fe.png"
+    },
+    {
+      "id": "17132",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-49615ef6-1ca9-4b0b-963c-d2fadaf3aa1d.png"
+    },
+    {
+      "id": "16043",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-a82c99ee-0102-41a4-b63a-99d63457f699.png"
+    },
+    {
+      "id": "4957",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-e88a9369-09c9-4eaa-b8c7-6ad927c7fe97.png"
+    },
+    {
+      "id": "15430",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-0590ee30-9485-470c-894e-f4e53103c5f4.png",
+      "discardedVariant": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-bb33a458-076a-499c-acd4-3494df7d601d.png",
+      "correctionPrompt": "Use case: text-localization. Edit only the central main product title on this honey bottle illustration. It currently incorrectly says “Miel el de Flores”. Replace it with exactly “Miel de Flores” in the same elegant dark script, arranged “Miel” then “de” then “Flores”. There must be NO extra “el”, repeated word or extra text in this title. Preserve absolutely everything else: amber squeezable bottle silhouette, cap, yellow hexagonal label, tiny existing origin labels, 500g, Hacendado, colors, dimensions, warm hand-drawn editorial texture, true transparent alpha background and packaging proportions. No shadows, backdrop or extra objects."
+    },
+    {
+      "id": "86755",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-cd0f2680-4f52-4e26-928d-bc841c0fa3a0.png"
+    },
+    {
+      "id": "86368",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-c3cd353c-d00e-4c10-90a0-4cd659a9445e.png"
+    },
+    {
+      "id": "14102",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-75e24521-887e-4927-a2ec-0ff7700c64ac.png"
+    },
+    {
+      "id": "7031",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-deb5193e-c58b-4b68-be65-92c7f860f46b.png"
+    },
+    {
+      "id": "16712",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-2f75d5fe-5fe6-4438-b71a-174192381f7b.png"
+    },
+    {
+      "id": "5598",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-dcd315a8-8035-4025-9fe9-c31695e0c3db.png"
+    },
+    {
+      "id": "34171",
+      "generatedPath": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-0efe21b2-bd7d-4bbf-8767-5fe2ad5141c7.png"
+    }
+  ]
+}

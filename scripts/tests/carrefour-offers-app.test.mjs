@@ -79,9 +79,13 @@ test('the app query projects only the offer subtree and bypasses the base-only f
   assert.match(catalog, /if \(!page\.nextCursor \|\| \(!needsGlobalOrder && items\.length >= limit\)\)/);
 });
 
-function catalogWithRows(rows) {
+function catalogWithRows(rows, rpcResult = { data: null, error: { code: 'PGRST202' } }) {
   const calls = [];
-  const supabase = { from(table) {
+  const rpcCalls = [];
+  const supabase = { async rpc(name, params) {
+    rpcCalls.push({ name, params });
+    return rpcResult;
+  }, from(table) {
     assert.equal(table, 'carrefour_products');
     const state = { limit: 100, cursor: null, filters: [] };
     const query = {
@@ -133,7 +137,7 @@ function catalogWithRows(rows) {
     },
     Date, Set, Map, JSON, Number, String, console,
   });
-  return { catalog: catalogModule.exports, calls };
+  return { catalog: catalogModule.exports, calls, rpcCalls };
 }
 
 test('pagination scans past rejected rows without losing secondary offers', async () => {
@@ -168,4 +172,48 @@ test('regional prices determine offer order and price range after pagination', a
   assert.deepEqual(Array.from(next.items, (item) => item.product.id), ['0001']);
   const filtered = await catalog.fetchCarrefourOffers(null, 'ES-CT', 2, { sort: 'asc', priceMax: 3 });
   assert.deepEqual(Array.from(filtered.items, (item) => item.product.id), ['0002', '0003']);
+});
+
+test('a sorted regional page makes one RPC and downloads only its resolved rows', async () => {
+  const nextCursor = { name: 9, id: 'second' };
+  const { catalog, calls, rpcCalls } = catalogWithRows([], { error: null, data: {
+    rows: [{ id: 'regional', display_name: 'Leche', unit_price: 9, category_name: 'Lácteos',
+      quefalta_offers: v1([promotion('3x2', 'multibuy', null, null), promotion('Envío gratis', 'shipping', null, null)]) }],
+    nextCursor,
+  } });
+  const filters = { sort: 'asc', search: 'LÉCHE y entera', categories: ['Lácteos'],
+    offerTypes: ['shipping'], priceMin: 1, priceMax: 10 };
+  const page = await catalog.fetchCarrefourOffers(null, 'ES-CT', 50, filters);
+  assert.equal(page.items[0].product.unitPrice, 9);
+  assert.equal(page.items[0].promoName, '3x2');
+  assert.equal(page.items[0].promotionCount, 2);
+  assert.deepEqual(page.nextCursor, nextCursor);
+  assert.equal(calls.length, 0);
+  assert.equal(rpcCalls.length, 1);
+  assert.equal(rpcCalls[0].name, 'carrefour_offer_page_v1');
+  assert.equal(rpcCalls[0].params.p_community, 'Cataluña');
+  assert.equal(rpcCalls[0].params.p_sort, 'price_asc');
+  assert.deepEqual(Array.from(rpcCalls[0].params.p_tokens), ['leche', 'entera']);
+  assert.equal(rpcCalls[0].params.p_price_min, 1);
+  assert.equal(rpcCalls[0].params.p_price_max, 10);
+  await catalog.fetchCarrefourOffers(nextCursor, 'ES-CT', 50, { pricePerUnitSort: 'desc' });
+  assert.deepEqual(rpcCalls[1].params.p_cursor, nextCursor);
+  assert.equal(rpcCalls[1].params.p_sort, 'unit_desc');
+});
+
+test('categories use one small RPC instead of downloading all offer products', async () => {
+  const { catalog, calls, rpcCalls } = catalogWithRows([], { error: null,
+    data: { categories: ['Lácteos', 'Aceites'] } });
+  const categories = await catalog.fetchOfferCategories('carrefour', 'ES-CT', null);
+  assert.deepEqual(Array.from(categories), ['Aceites', 'Lácteos']);
+  assert.equal(calls.length, 0);
+  assert.equal(rpcCalls.length, 1);
+  assert.equal(rpcCalls[0].params.p_categories_only, true);
+});
+
+test('real RPC failures propagate without triggering a full catalogue download', async () => {
+  const failure = { code: '57014', message: 'timeout' };
+  const { catalog, calls } = catalogWithRows([], { data: null, error: failure });
+  await assert.rejects(catalog.fetchCarrefourOffers(null, null, 50), (error) => error === failure);
+  assert.equal(calls.length, 0);
 });

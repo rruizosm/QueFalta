@@ -31,6 +31,7 @@ import WordStreakBanner from '../components/WordStreakBanner';
 import PaywallModal from '../components/PaywallModal';
 import { buildWordGameShareMessage } from '../lib/wordGameShare';
 import { WORD_GAME_SHARE_URL } from '../lib/appLinks';
+import { formatWordGameBlockedUntil, hasActiveWordGameBlock } from '../lib/wordGameAccess';
 
 const priority: Record<LetterState, number> = { absent: 0, present: 1, correct: 2 };
 const periods: RankingPeriod[] = ['daily', 'weekly', 'monthly', 'yearly', 'all'];
@@ -58,7 +59,7 @@ export default function DailyWordScreen() {
   const styles = useThemedStyles(themedStyles);
   const { t, lang } = useTranslation();
   const { session } = useAuth();
-  const { isPremium, loading: profileLoading } = useProfile();
+  const { profile, isPremium, loading: profileLoading, refresh: refreshProfile } = useProfile();
   const { activeCart, hydrated: cartHydrated } = useCart();
   const navigation = useNavigation();
   const top = useHeaderTopPadding(56);
@@ -69,6 +70,31 @@ export default function DailyWordScreen() {
   const [noticeAcceptedBy, setNoticeAcceptedBy] = useState<string | null>(null);
   const noticeShownFor = useRef<string | null>(null);
   const canPlay = lang !== 'ca' || (userId != null && noticeAcceptedBy === userId);
+  const [accessNow, setAccessNow] = useState(() => Date.now());
+  const blockedUntil = profile?.wordGameBlockedUntil ?? null;
+  const wordGameBlocked = hasActiveWordGameBlock(blockedUntil, accessNow);
+  const gameInteractionAllowed = canPlay && !profileLoading && !wordGameBlocked;
+  const blockedUntilLabel = useMemo(() => blockedUntil && wordGameBlocked
+    ? formatWordGameBlockedUntil(blockedUntil, lang)
+    : '', [blockedUntil, lang, wordGameBlocked]);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    if (!blockedUntil) {
+      setAccessNow(Date.now());
+      return;
+    }
+    const expiresAt = Date.parse(blockedUntil);
+    const updateClock = () => {
+      const now = Date.now();
+      setAccessNow(now);
+      const delay = expiresAt - now;
+      if (Number.isFinite(delay) && delay > 0) {
+        timer = setTimeout(updateClock, Math.min(delay + 50, 86_400_000));
+      }
+    };
+    updateClock();
+    return () => { if (timer) clearTimeout(timer); };
+  }, [blockedUntil]);
   useFocusEffect(useCallback(() => {
     if (lang !== 'ca' || !userId || noticeAcceptedBy === userId) return;
     let active = true;
@@ -93,7 +119,15 @@ export default function DailyWordScreen() {
   }, [lang, userId, noticeAcceptedBy, t]));
   const { game, draft, cursor, loading, starting, sending, uncertain, error: errorCode, remaining, elapsed, controller } = useWordGame(userId, canPlay);
   const error = errorCode ? t(`wordGame.${errorCode}`, { n: game?.length ?? 5 }) : '';
-  const load = () => { if (canPlay) return controller.refresh(); };
+  const load = async () => {
+    await Promise.all([
+      refreshProfile(),
+      canPlay ? controller.refresh() : Promise.resolve(),
+    ]);
+  };
+  useEffect(() => {
+    if (errorCode === 'blocked') void refreshProfile();
+  }, [errorCode, refreshProfile]);
   const [tab, setTab] = useState<GameTab>('play');
   const [infoPopup, setInfoPopup] = useState<'rules' | 'prizes' | null>(null);
   const [paywallVisible, setPaywallVisible] = useState(false);
@@ -157,7 +191,7 @@ export default function DailyWordScreen() {
 
 
   const send = async () => {
-    if (!canPlay || pendingRef.current || !game || !userId || sending || loading || game.status !== 'playing') return;
+    if (!gameInteractionAllowed || pendingRef.current || !game || !userId || sending || loading || game.status !== 'playing') return;
     // Mark the submitted slot before requesting it, so no frame shows all the
     // result colors (or the final score) before the native flip has started.
     const pending = { id: ++revealSequence.current, userId, gameId: game.id, row: game.guesses.length, word: draft };
@@ -186,7 +220,7 @@ export default function DailyWordScreen() {
     return result;
   }, [game, reveal, revealedColumns]);
 
-  const key = (letter: string) => { if (canPlay && !pendingRef.current) controller.key(letter); };
+  const key = (letter: string) => { if (gameInteractionAllowed && !pendingRef.current) controller.key(letter); };
   const share = async () => {
     if (!game || game.status === 'playing') return;
     const message = buildWordGameShareMessage({
@@ -223,8 +257,8 @@ export default function DailyWordScreen() {
     if (completed && tab === 'play') playScroll.current?.scrollTo({ y: 0, animated: false });
   }, [completed, tab]);
   const cellSize = Math.min(height >= 900 ? 54 : 44, Math.floor((Math.min(width - insets.left - insets.right - 64, 430) - 5 * 7) / (game?.length ?? 5)));
-  const keyboardVisible = ((game?.status === 'playing' && !!game.startedAt) || revealing) && tab === 'play';
-  const inputDisabled = !canPlay || !game?.startedAt || sending || loading || remaining === 0 || pendingReveal !== null;
+  const keyboardVisible = gameInteractionAllowed && ((game?.status === 'playing' && !!game.startedAt) || revealing) && tab === 'play';
+  const inputDisabled = !gameInteractionAllowed || !game?.startedAt || sending || loading || remaining === 0 || pendingReveal !== null;
   const submitDisabled = inputDisabled || !game || draft.length !== game.length || !/^[A-ZÑ]+$/.test(draft);
   const countdown = [Math.floor(remaining / 3600), Math.floor(remaining % 3600 / 60), remaining % 60].map((n) => String(n).padStart(2, '0')).join(':');
   const playTime = [Math.floor(elapsed / 60), elapsed % 60].map((n) => String(n).padStart(2, '0')).join(':');
@@ -280,12 +314,19 @@ export default function DailyWordScreen() {
           paddingBottom: keyboardVisible ? (glassAvailable ? keyboardHeight + 12 : 12) : bottom,
           paddingLeft: Math.max(16, insets.left), paddingRight: Math.max(16, insets.right),
         }]}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={() => { void load(); refreshRanking(); }} tintColor={colors.accent} />}>
+        refreshControl={<RefreshControl refreshing={loading || profileLoading} onRefresh={() => { void load(); refreshRanking(); }} tintColor={colors.accent} />}>
         <View style={[styles.content, completed && [styles.completedContent, { minHeight: Math.max(0, availableHeight - bottom - 8) }]]}>
-          {!game && loading && <ActivityIndicator style={styles.loader} size="large" color={colors.accent} />}
-          {!game && !loading && <View style={styles.card}><Text style={styles.error}>{error}</Text><TouchableOpacity style={styles.primary} onPress={() => void load()} accessibilityRole="button"><Text style={styles.primaryText}>{t('common.retry')}</Text></TouchableOpacity></View>}
-          {game && !!error && errorCode !== 'startError' && (!keyboardVisible || remaining === 0) && <TouchableOpacity style={styles.card} onPress={() => void load()} accessibilityRole="button"><Text style={styles.error} accessibilityLiveRegion="polite">{error}</Text><Text style={styles.accent}>{t('common.retry')}</Text></TouchableOpacity>}
-          {game && tab === 'play' && <>
+          {profileLoading && <ActivityIndicator style={styles.loader} size="large" color={colors.accent} />}
+          {!profileLoading && wordGameBlocked && <View style={[styles.card, styles.blockedCard]} accessible accessibilityRole="alert">
+            <View style={styles.blockedIcon}><Ionicons name="lock-closed" size={26} color={colors.accent} /></View>
+            <Text style={styles.blockedTitle}>{t('wordGame.blockedTitle')}</Text>
+            <Text style={styles.blockedBody}>{t('wordGame.blockedBody', { date: blockedUntilLabel })}</Text>
+            <Text style={styles.muted}>{t('wordGame.blockedHint')}</Text>
+          </View>}
+          {!profileLoading && !wordGameBlocked && !game && loading && <ActivityIndicator style={styles.loader} size="large" color={colors.accent} />}
+          {!profileLoading && !wordGameBlocked && !game && !loading && <View style={styles.card}><Text style={styles.error}>{error}</Text><TouchableOpacity style={styles.primary} onPress={() => void load()} accessibilityRole="button"><Text style={styles.primaryText}>{t('common.retry')}</Text></TouchableOpacity></View>}
+          {!profileLoading && !wordGameBlocked && game && !!error && errorCode !== 'startError' && (!keyboardVisible || remaining === 0) && <TouchableOpacity style={styles.card} onPress={() => void load()} accessibilityRole="button"><Text style={styles.error} accessibilityLiveRegion="polite">{error}</Text><Text style={styles.accent}>{t('common.retry')}</Text></TouchableOpacity>}
+          {!profileLoading && !wordGameBlocked && game && tab === 'play' && <>
             <View style={[styles.card, styles.boardCard]}>
               <Text style={styles.muted}>{t('wordGame.attempts', { n: game.guesses.length })}</Text>
               {game.startedAt && game.status === 'playing' && <Text style={styles.playTime}>{t('wordGame.elapsed')}: {playTime}</Text>}
@@ -312,7 +353,7 @@ export default function DailyWordScreen() {
               {game.status === 'playing' && !game.startedAt && remaining > 0 && <>
                 <Text style={styles.cellHint}>{t('wordGame.startHint')}</Text>
                 {errorCode === 'startError' && <Text style={styles.error} accessibilityLiveRegion="polite">{error}</Text>}
-                <TouchableOpacity onPress={() => void controller.start()} disabled={starting || loading || !canPlay} style={[styles.primary, (starting || loading || !canPlay) && styles.disabled]} accessibilityRole="button" accessibilityState={{ disabled: starting || loading || !canPlay }}>
+                <TouchableOpacity onPress={() => void controller.start()} disabled={starting || loading || !gameInteractionAllowed} style={[styles.primary, (starting || loading || !gameInteractionAllowed) && styles.disabled]} accessibilityRole="button" accessibilityState={{ disabled: starting || loading || !gameInteractionAllowed }}>
                   {starting ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryText}>{t('wordGame.start')}</Text>}
                 </TouchableOpacity>
               </>}
@@ -409,6 +450,10 @@ const themedStyles = () => StyleSheet.create({
   subtitle: { fontFamily: fonts.regular, fontSize: 14, lineHeight: 21, color: colors.inkSoft },
   card: { backgroundColor: colors.white, padding: 16, borderRadius: 24, borderWidth: 1, borderColor: colors.border, gap: 16 },
   boardCard: { padding: 12, gap: 12 },
+  blockedCard: { alignItems: 'center', paddingVertical: 28 },
+  blockedIcon: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accentLight },
+  blockedTitle: { color: colors.ink, fontFamily: fonts.bold, fontSize: 20, textAlign: 'center' },
+  blockedBody: { color: colors.ink, fontFamily: fonts.medium, fontSize: 15, lineHeight: 22, textAlign: 'center' },
   completedContent: { gap: 8, justifyContent: 'space-between' },
   muted: { color: colors.inkSoft, fontFamily: fonts.regular, fontSize: 12 },
   board: { gap: 7, alignItems: 'center' }, tileRow: { flexDirection: 'row', gap: 7 },

@@ -316,6 +316,20 @@ export default function HomeScreen() {
           />
         }
       >
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Pantry')}
+          activeOpacity={0.75}
+          accessibilityRole="button"
+          accessibilityLabel={t('pantry.open')}
+          accessibilityHint={t('pantry.swipeToOpen')}
+          testID="home-open-pantry"
+          style={styles.pantryEntry}
+        >
+          <Ionicons name="file-tray-stacked-outline" size={21} color={colors.accent} />
+          <Text style={styles.pantryEntryTitle}>{t('pantry.title')}</Text>
+          <Text style={styles.pantryEntryHint}>{t('pantry.swipeToOpen')}</Text>
+          <Ionicons name="arrow-forward" size={17} color={colors.inkSoft} />
+        </TouchableOpacity>
         {/* Resumen del carrito activo: conserva la carga instantánea desde caché
             y la revalidación en segundo plano que ya gestiona esta pantalla. */}
         {activeCart ? (
@@ -541,6 +555,14 @@ export default function HomeScreen() {
 const themedStyles = () => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
   scroll: { padding: 16, paddingBottom: 32 },
+  pantryEntry: {
+    minHeight: 44, flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap',
+    gap: 8, paddingHorizontal: 4, paddingVertical: 8, marginBottom: 12,
+  },
+  pantryEntryTitle: { fontSize: 14, fontFamily: fonts.semibold, color: colors.ink },
+  pantryEntryHint: {
+    flexShrink: 1, marginLeft: 'auto', fontSize: 12, fontFamily: fonts.regular, color: colors.inkSoft,
+  },
   entryCover: {
     ...StyleSheet.absoluteFill,
     zIndex: 100,

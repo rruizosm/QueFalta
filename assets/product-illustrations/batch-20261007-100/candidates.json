@@ -1,0 +1,3233 @@
+[
+  {
+    "name": "Café e infusiones",
+    "products": [
+      {
+        "id": "11609",
+        "display_name": "Cacao en polvo a la taza Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/9ea94cd14bee28b1e71d5391c9c69013.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13037",
+        "display_name": "Cacao soluble Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/de55b4100bc073acfcf65889b36d86e9.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "20919",
+        "display_name": "Cacao soluble instantáneo Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/13c1f82c37487052ad910e3ab77d33f9.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "8914",
+        "display_name": "Cacao soluble instantáneo Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e210bf3a8b3917c2949e507f7efa62a2.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "10666",
+        "display_name": "Café con leche cappuccino Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f71077f44842e60a701a74c15a390d44.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "10672",
+        "display_name": "Café con leche descafeinado Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/83a4f4b01c38d63142b2646afe4e1fa7.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "23405",
+        "display_name": "Café con leche en cápsula descafeinado Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/4ee8dcf4c122ee081dfa59dde32060cf.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "86348",
+        "display_name": "Café con leche en cápsula Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/9a09682b89fb745ac5550a7055aab223.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "10644",
+        "display_name": "Café con leche espresso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/fbace2711111518e9ab7a3c54ad58656.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "10642",
+        "display_name": "Café con leche light sin lactosa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5fe468972fe8cc7a33506cba2b436946.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "67659",
+        "display_name": "Café cortado en cápsula Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/1ba3107b201ea762f89590aa3679152b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "52775",
+        "display_name": "Café en cápsula cappuccino Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/d470f57235e74a6c42cd9acf96e0613e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13634",
+        "display_name": "Café en cápsula classic Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/d17e50f729d012761e33c7b08af76dd2.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "9847",
+        "display_name": "Café en cápsula Colombia Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5dae3f31a8db43293ed130e6e897411b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "10355",
+        "display_name": "Café en cápsula descafeinado Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b8db5512c598c53826634ac7f967e574.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "23293",
+        "display_name": "Café en cápsula descafeinado Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f7700bd8a1a4c582ec3e5851441e9993.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "22801",
+        "display_name": "Café en cápsula doble espresso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/22bbd040ba40ae6f790ca8791f1df0e3.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "10352",
+        "display_name": "Café en cápsula espresso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/8f326fcd58a42998f5c4d164c16826cd.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16363",
+        "display_name": "Café en cápsula extra forte Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/17d4cd219a2cceab5a23c8a16365e147.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "10350",
+        "display_name": "Café en cápsula extra fuerte Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/8d05d7fc4ecb2ebe79e54aa409334508.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13635",
+        "display_name": "Café en cápsula forte Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/74b8483ab4c065c8001e564b019419b6.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17674",
+        "display_name": "Café en cápsula Perú Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/0a0ea79857445a9b519a84579e3c1a05.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19940",
+        "display_name": "Café en cápsula ristretto Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/89a2bd9abd1c25f1e322a2cb14846e38.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14383",
+        "display_name": "Café en cápsula sabor Caramel Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e17506bf16198116df06ebb32a0421ad.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "52774",
+        "display_name": "Café en cápsulas doble espresso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/05d9e6772ffe82efdc3497286bc4c2c9.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17670",
+        "display_name": "Café en grano Brasil Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/259e820d97ac5faea863f5473323dabc.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17680",
+        "display_name": "Café en grano Brasil Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/6dcedc4a87a0e2ff772d9e7a70b2a4df.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14359",
+        "display_name": "Café en grano Colombia Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/63a131f52f076ecbb51f003bba0c59c9.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14798",
+        "display_name": "Café en grano Colombia Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/73082c7404e506180b5c73b461e601ee.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17540",
+        "display_name": "Café en grano extra fuerte Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/05000088257af36e06c0d2600f9ab299.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14358",
+        "display_name": "Café en grano extra fuerte Hacendado natural",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/198ea18ba23455a25fc5b0b064c59577.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11076",
+        "display_name": "Café en grano fuerte Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/90073a68f00bb608bede95298ff27cee.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19924",
+        "display_name": "Café en grano fuerte Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/49a653aeb94c0855229ac8e7209b82a7.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11021",
+        "display_name": "Café en grano Hacendado descafeinado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/ffa7f7beffb1ef76d44a0173a94c5477.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17681",
+        "display_name": "Café en grano Hacendado descafeinado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/d2f4140f0a12d35eef105dd91f7131cf.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "52491",
+        "display_name": "Café en grano Hacendado descafeinado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/785d4996b283dd0d044566ca58542285.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13594",
+        "display_name": "Café en grano natural Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/1e3fb2b6e82f4d20cd99377d9fa85eda.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14353",
+        "display_name": "Café en grano natural Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/dec273b4c0c82c51a435b32bf4fa1735.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14799",
+        "display_name": "Café en grano natural Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/6cbe79c494bb98dda9189512a5932c71.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13592",
+        "display_name": "Café molido descafeinado Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e9696c66fb16ae2ed53508b94d7342c3.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11028",
+        "display_name": "Café molido descafeinado natural Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c0e1c37aa2d005de5eb9fa9baa5bddb5.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11171",
+        "display_name": "Café molido fuerte Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/d7993d45fdf4793cc51fbe8461f526ae.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13700",
+        "display_name": "Café molido fuerte Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/cd28fdbaf0215b0189a06883c7e5262f.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15922",
+        "display_name": "Café molido mezcla Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/023ba7a40a26fc345de4fda07bd22a94.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15923",
+        "display_name": "Café molido mezcla Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/a5a162e39f80a67142f8fc6fcbd31878.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "86715",
+        "display_name": "Café molido mezcla Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/44e9c921ec70f2847e7af5de6c6ff2a4.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "86716",
+        "display_name": "Café molido mezcla Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f625d8ef32d1a7b4c5e919eb40a53532.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11172",
+        "display_name": "Café molido natural Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/0ba1b42865bf3024356d993498c041f1.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11178",
+        "display_name": "Café molido natural Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/1bee5993195e32109b08b2742ca1452e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "22543",
+        "display_name": "Café molido natural Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/09e42610ef06fa5de750ce8f2a507284.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11714",
+        "display_name": "Café molido natural Hacendado Espresso",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/63b870064b00ff5968c914df3c567628.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "21631",
+        "display_name": "Café molido natural Hacendado Espresso",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b6d6bac191e0a4fcaf3a4f0206e9857a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11867",
+        "display_name": "Café molido natural Hacendado variedad Caracolillo",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f8fb499b1900ce64f64de2ce4e9c3811.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11777",
+        "display_name": "Café monodosis descafeinado natural Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/61e35861e2a24c8dea4a5885ef7d823a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11770",
+        "display_name": "Café monodosis natural Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5b01548aae218ce91df7725f91897bc0.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "67660",
+        "display_name": "Café soluble cappuccino caramelo Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/db82323b63111aa2b0a60b8d7041a8ec.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "23406",
+        "display_name": "Café soluble cappuccino Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/56a5cbc9d6095c6d7530b9e4d50bd906.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14349",
+        "display_name": "Café soluble classic en sobres Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/89fab90cd637ca80e5e20ae99b8ff436.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "22163",
+        "display_name": "Café soluble Classic Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e344726a7521b54735e68a88f002ead4.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14350",
+        "display_name": "Café soluble descafeinado en sobres Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/8ca748e97fc906ab4e30344039d67cf7.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "22164",
+        "display_name": "Café soluble descafeinado Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/2ed0ec1badebdab8ca1aafeba286b697.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11123",
+        "display_name": "Café soluble Espresso Creme Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/7c3c338cf99e554e00ce30e34567f28f.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11447",
+        "display_name": "Infusión Cola de caballo Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/48276bc3e476aa93e05c6471af0f463d.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11438",
+        "display_name": "Infusión Cúrcuma Hacendado con manzana y canela",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/16b727aaeaaf1e700148fae8e4ff86c3.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15726",
+        "display_name": "Infusión Digest Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/3563cdcc7269de0c86cb6fc2580f7e4a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11427",
+        "display_name": "Infusión Dormir Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/7250f111d492a028debc378bed3d7687.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "60651",
+        "display_name": "Infusión fría Hacendado con sabor a piña y coco",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/3e274f0833c3f8b832b9479783af1e45.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "8805",
+        "display_name": "Infusión frutos rojos Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/67fa51f8a84ae2043bff0b94f1bb4747.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11468",
+        "display_name": "Infusión Hinojo Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e65ea2c7ac20a0960c9d26b0225b581d.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11400",
+        "display_name": "Infusión Jengibre Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/acf276fa72cdf6199c1e79969796541c.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11470",
+        "display_name": "Infusión Laxsen sabor menta Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f98929d515ff98881c54675f7bf6a42e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "52607",
+        "display_name": "Infusión manzana y canela Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/cab8f28fbe0f1f2e4a259a53b726fc46.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11430",
+        "display_name": "Infusión Manzanilla con anís Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/a3b7b6e62a78745e39a0458e915b8d19.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11168",
+        "display_name": "Infusión Manzanilla Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/ba76df9c56636d070f1be9b797bc33cb.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11454",
+        "display_name": "Infusión Manzanilla sabor a miel Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e3f24defc559d29673464712b8f8d252.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "60671",
+        "display_name": "Infusión Menta Poleo Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/db1e5eeb680220f22148c39a8bbae52a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "60672",
+        "display_name": "Infusión quema grasas Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/2fb3bcf62eb57d0265eaecb72bb74f3e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11408",
+        "display_name": "Infusión Relax Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/8c736fa698b37b4937f6ffae448ee653.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11415",
+        "display_name": "Infusión Respir Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/52c4c8a9dcc28443814bf59bb517b989.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13652",
+        "display_name": "Infusión Rooibos cítricos Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/279c2150fbf57ab28f8cc7f595e87338.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11431",
+        "display_name": "Infusión Tila Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/4843ebb4d3eb34d681e7ec7d7f68f35c.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11453",
+        "display_name": "Infusión Tomillo Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/3babb81db4070c157120a40971167279.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11433",
+        "display_name": "Té Chai Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/01553faca744a8bd9317002b6591da2f.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15099",
+        "display_name": "Té Matcha en polvo Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/638428e5cc3dc416d50ca3958eb11feb.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "35727",
+        "display_name": "Té negro con canela Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/0f79bda7b73f67dfa7c085ba0119ae66.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "8804",
+        "display_name": "Té negro Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/0cbcccb5290289a135ca33ace366a065.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11175",
+        "display_name": "Té verde con hierbabuena Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c8129414a45cf317929151c3d6bfa04e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13651",
+        "display_name": "Té verde Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/d4d5d098f5dce80ae9b9fa2e72fade52.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      }
+    ]
+  },
+  {
+    "name": "Cocina y condimentos",
+    "products": [
+      {
+        "id": "4041",
+        "display_name": "Aceite de girasol refinado 0,2º Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e6398afba1d032d2e1c0489fd727d2f6.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "4240",
+        "display_name": "Aceite de oliva 0,4º Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/65c2349950feb1958362e06217003b10.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "4241",
+        "display_name": "Aceite de oliva 0,4º Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/3b8cde7b3cb069ee0316029012cf8562.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "4640",
+        "display_name": "Aceite de oliva 1º Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/fe860edbcbb7504d90ad34af0b93b6d7.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "4641",
+        "display_name": "Aceite de oliva 1º Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/340603f72b335443e93eeb027630e9ad.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14727",
+        "display_name": "Aceite de oliva virgen extra Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/50bf05160abdd828fa4a6f9db898b50a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18586",
+        "display_name": "Aceite de oliva virgen extra Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e2dc8788b1df01a0b784d1bf965778bd.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "4717",
+        "display_name": "Aceite de oliva virgen extra Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/cd149804838dc230dad3c2a314cf2286.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "4718",
+        "display_name": "Aceite de oliva virgen extra Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/efb4b2c1a0e2cb8d9d522a815c295fa0.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "4706",
+        "display_name": "Aceite de oliva virgen extra Hacendado Gran Selección",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c60e6e09dc2037a291515d3b15af376c.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "4711",
+        "display_name": "Aceite de oliva virgen Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5b2daa7ddeb496942b974d178bf3a47d.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "4749",
+        "display_name": "Aceite de oliva virgen Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/a6b5607809fdd257ffd5e778791bdc6a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "7973",
+        "display_name": "Alioli con perejil Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/cc105ddcf96286e8739a8f606a8bbe23.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19837",
+        "display_name": "Azúcar blanco en sobres Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/86a786bc3c1d1538701f5d2397255508.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19839",
+        "display_name": "Azúcar blanco Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/ded757f30ed972421e924a089626b96e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19011",
+        "display_name": "Azúcar moreno de caña Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/175bd9ecf3a5b436d347580e8e31f654.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19832",
+        "display_name": "Azúcar moreno en sobres Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/4a853663e8a2e382621dac9f8eb7d4dd.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15612",
+        "display_name": "Azúcar moreno integral de caña Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/3ac2136bb68e11773995245a8039e19c.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "32525",
+        "display_name": "Azúcar vainillado Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/3d2edbcf8bec1cc5bcf89ec1d92bc5f3.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "29006",
+        "display_name": "Bicarbonato de sódio Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/0cdfaaf94335d5701e8f433bdf49c914.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "29007",
+        "display_name": "Bicarbonato de sódio Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5ae57e0348cf657e21ffa47ad36ea448.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19802",
+        "display_name": "Edulcorante en pastillas sacarina Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/dc0e233a3502c53e0e79b58ec47949d7.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19812",
+        "display_name": "Edulcorante en pastillas stevia Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/daf1d996bb5dc50de4696d52da90400a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "67637",
+        "display_name": "Edulcorante Eritritol y Sucralosa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b0f936ba5a0ea25fd9de787982d8be43.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19817",
+        "display_name": "Edulcorante granulado stevia Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c8c404bea1deab41dcf058e6b8394d43.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "70741",
+        "display_name": "Edulcorante líquido sacarina Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/6bafe98675aec76afe33d1a6da1ab4fe.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19820",
+        "display_name": "Edulcorante líquido stevia Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/a3908a81e00b2393419c76c334e25d63.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19808",
+        "display_name": "Edulcorante sacarina en sobres Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b226d7519ac3c88588aa2b7b8ed772a7.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19825",
+        "display_name": "Edulcorante stevia en sobres Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c4c3200a0fbc1a834b84cbea7bbc2f76.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "86333",
+        "display_name": "Gelatina 0% azúcar sabor cereza, cola y sandía Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c58199eaef14c038202fda1e5f1d3198.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "35683",
+        "display_name": "Gelatina 0% azúcar sabores fresa, mandarina y limón Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5241a91d73e1277f5ee5a309ba5d0036.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "68172",
+        "display_name": "Gelatina sabor fresa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/ed9e075eb696bab404282ed7088d42db.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "21979",
+        "display_name": "Gelatina sabores mango maracuyá, guayaba y piña coco Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b22d1a37fc8c9e1d43b9e5b29d4366c8.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "29130",
+        "display_name": "Harina de arroz Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/914803265b7c94915e6cb6fc92fdb407.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "29174",
+        "display_name": "Harina de espelta Hacendado 100% integral",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/01f80ec215d9662d4e97a7a8cfe1d10d.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "29373",
+        "display_name": "Harina de garbanzo Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/618e741aec78f29e6da87ec913990715.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "29165",
+        "display_name": "Harina de maíz blanco precocida Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/82286fa9fada11e8e7721656ca066ce6.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "29106",
+        "display_name": "Harina de trigo grande Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/0b290f38cd41af97c0c02d623a6ae539.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "9588",
+        "display_name": "Harina fina de maíz Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/069cfa02e3a4332a949c399243ff319e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "29180",
+        "display_name": "Harina semolosa de trigo Hacendado especial para fritos",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c5359da64c7dfe2b653cdb01b6085bee.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "86998",
+        "display_name": "Levadura de panadería Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/1d5f5c153bdb7d00e9647f338f4f3d6b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "23816",
+        "display_name": "Mayonesa en sobres individuales Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/6b9a1437ed7f3785c2319cb081540046.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11550",
+        "display_name": "Mayonesa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5345e532a16f3b8770720312778ffe32.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13406",
+        "display_name": "Mayonesa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/375c1d5f612df94041b236a115c6449b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "82352",
+        "display_name": "Pan rallado casero Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/7d68ff5676a8158bdcb746652bb3a8f7.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "82227",
+        "display_name": "Pan rallado con ajo y perejil Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/618fc5e463121c35126427369486d7bf.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "82656",
+        "display_name": "Pan rallado de arroz Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/1fe73669ffad4e34c4b4c33890289cbd.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "82219",
+        "display_name": "Pan rallado Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/fe031df985de4909241d4503364df110.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19726",
+        "display_name": "Preparado para ahumar Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/6666d298f039f78188651aa1fd47dc03.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "29017",
+        "display_name": "Preparado para repostería con impulsor incorporado Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e5ed219ce1d1565fc61aabe13056e99d.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "80292",
+        "display_name": "Preparado para repostería y panificación Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/96ef96c6bc3264a4a9bad6b4a2e22f80.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19713",
+        "display_name": "Sal 60% menos de sodio Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/eeb93d74d5e3298a8f93b4b78dffdb7b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34130",
+        "display_name": "Sal de ajo Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/bd81680a3655bf89428f333254f34979.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "29016",
+        "display_name": "Sal de frutas sabor limón Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e01b7ced535cf57318ff7c7a1628d3ed.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19731",
+        "display_name": "Sal fina Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5097b3d7450edab7c2d9586299f5f3b9.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16865",
+        "display_name": "Sal gruesa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e6e1e653de0e80f4cb96c6134c167a7f.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19733",
+        "display_name": "Sal gruesa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/8b9798cc6f23201e8191711f58368727.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19734",
+        "display_name": "Sal gruesa para hornear Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c46d67d22d1cf40d537ab349322b8da2.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "8930",
+        "display_name": "Sal rosa del Himalaya Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/6dbe958696d20fec014fbbf536ea4593.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19732",
+        "display_name": "Sal yodada fina Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/409a53c0327dff2c4b91e6b4c58efa42.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17347",
+        "display_name": "Salsa Burger Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/afc432a6cb8dca0e3c72c62212f4c8f5.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "12847",
+        "display_name": "Salsa Chimichurri Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/50d27ac6571a8cfd3edb173b52ad87a7.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11552",
+        "display_name": "Salsa Cocktail Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/61e5171a82fd8a3a4fd026482190bf2e.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "35412",
+        "display_name": "Salsa curry Tikka Masala Hacendado picante",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/10d9d4c3a66655996a17513dca01d11b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "35344",
+        "display_name": "Salsa de Queso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5afafecdd64e91bea0c6e4bfdfec61da.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17382",
+        "display_name": "Salsa de Soja sin gluten Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/72f1e3b9e1300b612fb69f4da0aef0a0.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "52859",
+        "display_name": "Salsa de tomate con Albahaca Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/0e502392ac037a1aefa8b4ed789485fb.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "35343",
+        "display_name": "Salsa de tomate Zero sin azúcares añadidos Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/4ecccbaf38713c3f2966540720c5eec8.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "35183",
+        "display_name": "Salsa fresca Carbonara Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/417147723fc6725115ae3ce66c889d98.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "35186",
+        "display_name": "Salsa fresca Pesto con albahaca Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/8fb9b98cc697b51cc7cd933970c9296a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17409",
+        "display_name": "Salsa fresca Queso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/7b61519c9f97f7b985792fc84bbac56f.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "7972",
+        "display_name": "Salsa fresca Setas Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/eac4ecea33015d0a73fb2a177ca6531b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "20889",
+        "display_name": "Salsa fresca Trufa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/6010a89f8c58764e71cfea49125eecdb.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "22626",
+        "display_name": "Salsa Inglesa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/8cede990ca81cfaac4953ab649eaccdb.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11551",
+        "display_name": "Salsa Light Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b5dc1f61915220fb90a23d411bede969.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15793",
+        "display_name": "Salsa Light Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/54a5e9e2a8bd0173da353d48cfa16211.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16827",
+        "display_name": "Salsa Mexicana Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e2a7598c750f05d6a6635c5f5b2f7e93.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18036",
+        "display_name": "Salsa picadillo pepinillo Sweet Relish Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/6f30e2b5dbbc144110af3300c8ca5764.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17502",
+        "display_name": "Salsa pimienta verde Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/66986e35fb04401c696133d645f401d9.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17396",
+        "display_name": "Salsa Piri Piri Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c17d2319747366d2987a22ad455aa37e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17386",
+        "display_name": "Salsa Ranch Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e3ee331cbde6b2a2b36c766b8b645d09.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17327",
+        "display_name": "Salsa Yogur Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f4f57aefa10e985720547fb5709d2239.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "26496",
+        "display_name": "Vinagre balsámico de Módena Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/ad2f9e12b1b52d36e022e0164652021a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13609",
+        "display_name": "Vinagre de Jerez reserva Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/bfa0c4aabf80adf4cd9a390df6aa7184.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16486",
+        "display_name": "Vinagre de manzana Hacendado sin filtrar",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5b5c4268a227dfb3e21fd42d912df4db.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "4940",
+        "display_name": "Vinagre de vino blanco Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/44c1552cc9f3945d63d01565d313846c.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15843",
+        "display_name": "Vinagre de vino tinto Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f9ec457d26fb48b58aab848875d1657c.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      }
+    ]
+  },
+  {
+    "name": "Desayuno y pan seco",
+    "products": [
+      {
+        "id": "14241",
+        "display_name": "Barquillos con crema de avellanas Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c51ba88a8aa175eeea842266506ef7bc.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14239",
+        "display_name": "Barquillos rellenos con crema de cacao Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f399b0865ad23b6df2245a647be537e0.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14136",
+        "display_name": "Barquillos rellenos de nata Hacendado 0% azúcares añadidos",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/52b9d6d6eb268af80e7597356a50ad4a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14576",
+        "display_name": "Barquillos rellenos sabor nata Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/657237a00e02650cc2f8cbbf9d04ae47.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14240",
+        "display_name": "Barquillos rellenos sabor vainilla Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/266677179cc5443b94ab770830ecca84.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "21820",
+        "display_name": "Bizcochos con baño de cacao Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/dc78708d034718e8ec232a29f4e83131.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "23372",
+        "display_name": "Bizcochos de huevo Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/56d1314642bdc0901cfaa35526b58af8.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "82099",
+        "display_name": "Bizcochos Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/4fba1503f1b274ccc7be9f90f5c05bf4.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15611",
+        "display_name": "Cereales avena Crunchy Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/2efe810b6483e668c6638f403f9e41c8.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "52751",
+        "display_name": "Cereales avena Crunchy Hacendado de cacao",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/2fd7905a5c3825481029c3588a8be900.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "9532",
+        "display_name": "Cereales Cereal Mix Hacendado 0% azúcares añadidos",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/db82637b4d7ecad929dfe2008794371f.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "60236",
+        "display_name": "Cereales con salvado de trigo Fibra Sticks Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b5518ded2106b798ac79f936a4512d73.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "9508",
+        "display_name": "Cereales copos de trigo Chocodays Hacendado con chocolate",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b993cc6e84c05e720f2a69794c345ca2.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "9571",
+        "display_name": "Cereales copos de trigo espelta integral Hacendado 0% azúcares añadidos",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/228d3a9046ad302f21ad6b4263fadb6e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "9488",
+        "display_name": "Cereales copos de trigo integral y arroz Hacendado 0% azúcares añadidos",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b911f6af2c54a9e27b676aef897ba8ff.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "9487",
+        "display_name": "Cereales copos de trigo integral y arroz Hacendado bañados en chocolate con leche",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5ef3d3435e4f02a3589a3745a9891faa.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "52772",
+        "display_name": "Cereales copos tostados de trigo integral y arroz Hacendado con chocolate",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/1bd07524e377881e474d3788346a17d9.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "9474",
+        "display_name": "Cereales crujientes avena tostada Hacendado con semillas y frutos secos",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/ebbec3ccb860fe3b438cf090ffaf2e8e.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "21450",
+        "display_name": "Cereales cubiertos de chocolate blanco rellenos con leche Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/974abed62b2ae8a310ab1c222b37c209.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "80515",
+        "display_name": "Cereales estrellas de maíz Stars Hacendado con miel",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/3cc53c61c022b13a42b12f9dfa87f355.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "9547",
+        "display_name": "Cereales rellenos de crema de cacao y avellana Hacendado sin gluten",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/59e8c16311be455d779e8aa3fb9ad9bd.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "9264",
+        "display_name": "Cereales rellenos de leche Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f28fce2e1849905d03b85683e4407734.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11187",
+        "display_name": "Cereales solubles con achicoria Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/196406a5c892ae3b99ffbc8c56b3e202.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "20292",
+        "display_name": "Copos de avena integral con chocolate Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f825e30578f56407eb2551dec8936370.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14210",
+        "display_name": "Galletas avena Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/88184d8f578b677f9edfbb48fc3c901d.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14213",
+        "display_name": "Galletas avena Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5cb1294df7912f8bbaffedeb8a3117c8.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17639",
+        "display_name": "Galletas avena y semillas Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/71828b868d151641d2504c3c4055ed20.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14641",
+        "display_name": "Galletas Choco leche con chocolatina Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/8391b82efd2c1caf4348ee2a05c8fd01.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14639",
+        "display_name": "Galletas Choco negro con chocolatina Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/d25d7f175088776a80ff69d2c4569b32.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14159",
+        "display_name": "Galletas Chocominis sabor chocolate Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c4b883003d2ed5b43723c5761426e0d2.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "21986",
+        "display_name": "Galletas Classic Choc Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/89c37f3708daadedcb8d5d5f41f2dde0.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17922",
+        "display_name": "Galletas con avena sabor Choco Orange con relleno de crema de chocolate Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e05e749aa872d0245d650f39666e30d8.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15289",
+        "display_name": "Galletas con avena y semillas Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/d71530c668d647f561d644fcd4329d8e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14151",
+        "display_name": "Galletas con chocolate blanco Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/a6b5344fd22d79ca6ec8ad94d12feadb.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14038",
+        "display_name": "Galletas con chocolate y crema de leche Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/507271ff3760f7aafa67951e0fc6b219.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14637",
+        "display_name": "Galletas cookies sin gluten y sin lactosa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5aa1b9df52517498adddb0ed8d4bebb0.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "82794",
+        "display_name": "Galletas Cream Crackers Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5f25d0cac3eb22281a044c0434232ead.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "23064",
+        "display_name": "Galletas Crunchy Choc Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/dcc2123704170392e06ab1913a66f432.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14153",
+        "display_name": "Galletas de cacao Caocream bañadas de chocolate blanco Hacendado rellenas de crema",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/6a6439a7225197317ed31e180fee6bd2.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15597",
+        "display_name": "Galletas de cacao Caocream Hacendado rellenas de crema",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e5fba1c4e9d6ade8b5cae4227093475e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14242",
+        "display_name": "Galletas de espelta Hacendado 0% azúcares añadidos",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f4728c6877bec8f45d07ee1ddbab02fa.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14581",
+        "display_name": "Galletas de mantequilla Hacendado Belgas",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/54465354f40024cfb25d5af62dbe7132.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14200",
+        "display_name": "Galletas Digestive 0% azúcares añadidos Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/29c34f080618e9f33361771d5683e210.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "52594",
+        "display_name": "Galletas Digestive avena chocolate con leche Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/3e17ecf7274093b44ef500a4482fdc3b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14054",
+        "display_name": "Galletas Digestive choco y avena Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/9f4146ed31e55c532f4ec111585cb0bd.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14131",
+        "display_name": "Galletas Digestive chocolate con leche Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/9cc53b960bd7e0aa69c37adb61c68f69.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14215",
+        "display_name": "Galletas Digestive manzana & avena Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/500583d75d43433a64dbec896cc8d655.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "52592",
+        "display_name": "Galletas Divertidas chocolate con leche Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/51d47accde858f947c0e6c9cb093a70a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "22688",
+        "display_name": "Galletas Divertidas con cereales Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/433061e3686a0a7a718cfcf4b2f6e5d8.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14132",
+        "display_name": "Galletas María dorada Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/a1fbb541426747b002d4c18da50a4385.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13502",
+        "display_name": "Galletas María dorada Hacendado 0% azúcares añadidos",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5927f1495c4552e57fd8a30827497e34.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14235",
+        "display_name": "Galletas María sin gluten y sin lactosa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/ef9269e1c7f037d478f1329b5b762c14.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14157",
+        "display_name": "Galletas rebuenas Hacendado rellenas de chocolate",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/77aa3673bc39603fc56d5bfc3abf197a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17929",
+        "display_name": "Galletas rebuenas Hacendado rellenas de chocolate blanco",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e9d1d6050e0547d549fa52bc6e60391e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14197",
+        "display_name": "Galletas Relieve Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/3ef36f19c98f2928440a85e6c7359950.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15844",
+        "display_name": "Galletas rellenas de chocolate Hacendado 0% azúcares añadidos",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/6ae9d11b416fdd767b6ffba9e9fcc9cc.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13811",
+        "display_name": "Galletas Roditas bañadas con chocolate blanco Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/bf66850ad09b5446b92c013c7426270d.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "21584",
+        "display_name": "Galletas saladas con semillas y orégano Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/eac514bda87748b8df0105d8cca09ff1.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "86913",
+        "display_name": "Galletas tostadas Animadas Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/214e3ad5e609ed46993451f20e561f8b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14325",
+        "display_name": "Galletas tostadas Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/8fcb3ebdcf12885842e55d64a5ae741a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14423",
+        "display_name": "Galletas tradicionales Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/7c70d7b0b6c3cf2795d0be29a6112004.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "9355",
+        "display_name": "Muesli Crunchy Hacendado con chocolate",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/3d93c78bdee2295299fbdca9332e7439.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "9356",
+        "display_name": "Muesli Crunchy Hacendado con fruta",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/beb80ebf53bbc0cbafbd2343731775e2.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "9357",
+        "display_name": "Muesli Crunchy Hacendado con frutos secos",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5b1898618dab16dce87e9a35cdaa44d8.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "24563",
+        "display_name": "Muesli Crunchy Hacendado con legumbres",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c7100254bee972b4ba4a5733326cac5b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "35892",
+        "display_name": "Muesli Crunchy Hacendado sin azúcares añadidos",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/bcc77b4ef78fee77250af49238c1d0e3.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "9492",
+        "display_name": "Muesli Hacendado 50% frutas y frutos secos",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/2175be354c8038e9e43ebd3ada9bb6a0.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "9491",
+        "display_name": "Muesli Hacendado con frutas",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/70a636d2cd573150d0eb69c60b12d6cc.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "9536",
+        "display_name": "Muesli Hacendado con quinoa, chía y chocolate negro",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/1e4439a34bd442baf972925ac34110b6.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "82842",
+        "display_name": "Pan tostado 100% espelta integral Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/72a54e7ef736024a01f13af1eb3e3f5b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "83789",
+        "display_name": "Pan tostado 100% integral bajo en sal y en azúcares Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/04649845ba2e5c3286480fb1c73d84f7.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "82290",
+        "display_name": "Pan tostado cereales y semillas Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/804d415f8f4701b031f6662c2ba6ae52.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "82287",
+        "display_name": "Pan tostado classic Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/1d7a425e6f2f3c735d48c7c2393f0fbf.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "82199",
+        "display_name": "Pan tostado con ajo y perejil Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/4897d5374277c5144e00b31f9d6d0f73.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "82190",
+        "display_name": "Pan tostado con tomate Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/6e9f47916f81a70709740fc6f61d703d.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "82665",
+        "display_name": "Pan tostado pasas Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/373a41e1bce564b863389145b18aa576.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "86215",
+        "display_name": "Picos 100% integral de trigo Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/598ca988465c5dcaeaa4ee7b866b2570.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "67953",
+        "display_name": "Picos camperos Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5d0ced457e2d15b4c9a1b5fa6b71fa19.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "82279",
+        "display_name": "Picos Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/11a2123906a90bc11ab9ac4ae40a125a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "82270",
+        "display_name": "Picos reventaos Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/500cbab5e18b8e7e71546aba58b3510d.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13631",
+        "display_name": "Picos saladitos Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/8c7a4edac6f9b2c4542585553eb7e15a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13450",
+        "display_name": "Picos sin gluten Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/9d816a56d6740fc8bfe7a3050dad10b9.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "82007",
+        "display_name": "Rosquilletas tradicionales Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/04d088e5f7adf549e600794fcb169e22.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13034",
+        "display_name": "Tostadas con semillas de chía Marinheiras Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/74870347bb7e9e3ca93dc8ee5ac7c1ed.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "82839",
+        "display_name": "Tostadas de arroz y maíz Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/81d40b8341c1854b845a7d93972b3e4d.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      }
+    ]
+  },
+  {
+    "name": "Aperitivos y frutos secos",
+    "products": [
+      {
+        "id": "34009",
+        "display_name": "Almendra frita y salada Hacendado pelada",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/90bb181b5294b5a7b99001da3764e7d3.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "20920",
+        "display_name": "Almendra laminada Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/de166a7b0b84a4958c2a911b86dd1897.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34923",
+        "display_name": "Almendra laminada Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/06d42f5a2c9c118a3ce3e6daa90a3cdf.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "80492",
+        "display_name": "Almendra marcona Hacendado frita con sal",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5d551ec58b08bfd9d1712843f6e603f4.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "20924",
+        "display_name": "Almendra molida Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f59bc7d7614776426a072aad19f7abad.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34921",
+        "display_name": "Almendra molida Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/a22c2023cef6d1080a3a8bea46ba39d8.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34014",
+        "display_name": "Almendra tostada Hacendado 0% sal añadida con piel",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b19ad0f34a30f8ee44e1ed4eafc7da3c.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17668",
+        "display_name": "Almendra tostada Hacendado 0% sal añadida pelada",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/7dfed96a41cd56a3bb55376d8180bfdb.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11960",
+        "display_name": "Almendra tostada y salada Hacendado con piel",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/43d5b21b2cbc97b548532678e85163c1.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34027",
+        "display_name": "Anacardo frito salado Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/11cbd433d79f5395396103c9c3f9210b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "23365",
+        "display_name": "Anacardo natural Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/2ae6ffebda4166b4a4a860bf81c47378.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "52668",
+        "display_name": "Anacardo tostado 0% sal añadida Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/61ada9f5cbd177557f3a80b7f2593163.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "20931",
+        "display_name": "Aperitivo de patata sabor barbacoa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/3906ed1599b01d650234fa10416f2692.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34143",
+        "display_name": "Cacahuete frito con miel Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/20cdbdad2299b5137ae62ab0be42c1d5.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34868",
+        "display_name": "Cacahuete frito y salado Hacendado con piel",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/9ba31472c3bc97cad3c8f6bce8181942.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34016",
+        "display_name": "Cacahuete tostado con sal Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b335759dffb927abd3ea0b2c13deafa9.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34031",
+        "display_name": "Cacahuete tostado Hacendado 0% sal añadida",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/09cec547e9ac6bbfa54ada3a03176248.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13451",
+        "display_name": "Cacahuete tostado Hacendado 0% sal añadida pelado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f5e73affd444299e58abcbc5e146cb93.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "12020",
+        "display_name": "Cacahuetes Chocoiris Hacendado bañados de chocolate con leche coloreados",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/24a261a6858c8c31cd16492de1f946a1.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "12347",
+        "display_name": "Cacahuetes Hacendado chocolate con leche",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/12b62cf298d117a326266b20c2755d88.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "12348",
+        "display_name": "Cacahuetes Hacendado chocolate negro",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c5136b580d2728bcf17f6297d163ad6e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15301",
+        "display_name": "Dátiles desecados sin hueso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/67bc06044c7a4b02ce0d84795144e0f1.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "22606",
+        "display_name": "Dátiles en rama Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/faf25fce5e38d24ce81df1e4b5f7a64c.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "22974",
+        "display_name": "Dátiles Medjoul con hueso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/07c62f528382ff2147ddbab0d97cbdac.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34821",
+        "display_name": "Maíz frito crujiente y tierno Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/4486157c463721fce12a5de9a003f995.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13597",
+        "display_name": "Maíz frito gigante Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/3a1e0d99dc80af2596d253ca8edacc17.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "73331",
+        "display_name": "Mix de encurtidos Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/652fcbb03c96574ce7fd64b4ca529a27.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "33026",
+        "display_name": "Mix de pepinillos y cebollitas Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/514932d49e6bf9d404520b71bb8b5267.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18160",
+        "display_name": "Mix frutas Pink Dragon Hacendado congelado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/d775e75295d6a5ccc35e42811f672663.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "86403",
+        "display_name": "Mix frutas tropical Hacendado ultracongeladas",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/aef553f69297509609d69e0c2541cf5b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "61089",
+        "display_name": "Mix frutos rojos Hacendado ultracongeladas",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/9226d0c69488fd575c374293d5538ad6.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "21491",
+        "display_name": "Mix mini barritas de chocolate Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/3f8aed2cae3e5222ff2d75a77477b543.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17754",
+        "display_name": "Nachos Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/22272d7646f19d73bb88bd5506ad379f.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "33640",
+        "display_name": "Nachos Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5ea6209ff18125614b1c278484587d91.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16387",
+        "display_name": "Nachos Padrísimos Hacendado sabor guacamole",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b8ef2dc650a5f2dd7f83fd1ba50493ec.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "33641",
+        "display_name": "Nachos tex-mex sabor queso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b8c009cd61e6c9824fa9743f5515c872.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34236",
+        "display_name": "Nuez de Brasil natural Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f73efc85361a05e42008a997e5d62881.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34838",
+        "display_name": "Nuez macadamia Hacendado tostada con sal",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/1b0e16425fccfe385de968d82604cee0.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34606",
+        "display_name": "Nuez natural Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/d1899ae163ff39ebd4f7f1896a0478a7.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34997",
+        "display_name": "Nuez Pecana natural Hacendado pelada",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f9ce1795932570f847c46a1facd41b15.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "52667",
+        "display_name": "Nuez troceada pelada Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/223353d93f6722ac2d0e2cc02cf63627.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34811",
+        "display_name": "Palomitas caramelo Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/54f08a75c350854e471b9f2b73b92a5d.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34822",
+        "display_name": "Palomitas de maíz con sal Hacendado para microondas",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/8c805bca1beb58b91fccd2eba51e18e5.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34817",
+        "display_name": "Palomitas de maíz dulces Hacendado para microondas",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/126319b59770b85db688f4cd7df6e654.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34212",
+        "display_name": "Palomitas de maíz sabor mantequilla Hacendado para microondas",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f8ea8d436cfb80f7e563563cbe8b9316.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17755",
+        "display_name": "Patatas fritas 0% sal añadida en aceite de oliva virgen Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/738455a7b2485bdd805a49e2294dc5f4.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "8364",
+        "display_name": "Patatas fritas ajo y perejil Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/cbb736ad05beaf2a1892c9b0b2e17414.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "22245",
+        "display_name": "Patatas fritas clásicas Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/daa5379864f490d809e6272ea964a119.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "60652",
+        "display_name": "Patatas fritas con carne kebab y salsa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/90046f95d6ac8c59b8cbf2871212d14c.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "86146",
+        "display_name": "Patatas fritas extra crujientes Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/0a90d8314e7aafa09f58bc1d175f21f5.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "7879",
+        "display_name": "Patatas fritas horno y air fryer Hacendado ultracongeladas",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e5cc47ec53ae7ed1f090d8069bf9ab6e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15589",
+        "display_name": "Patatas fritas onduladas Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/555bc4afaa40600dc25395cdfdfbe840.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "19975",
+        "display_name": "Patatas fritas onduladas sabor campestre Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c94a04a4d11f24962c0f509022f3d7a8.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "86145",
+        "display_name": "Patatas fritas onduladas sabor jamón serrano Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e22f05059ea4f31ab20e1b230918879c.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13069",
+        "display_name": "Patatas fritas onduladas sabor queso de cabra y cebolla caramelizada Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/bc0673dd5a4279fdffbabc6b1822d1ec.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "24040",
+        "display_name": "Patatas fritas paja Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/4263a367aa2d0fa5bb3143d451575cb7.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "33624",
+        "display_name": "Patatas fritas paja Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/041e7b535d424e28406da126b2ef7656.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "8243",
+        "display_name": "Patatas fritas sabor chili y lima Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e75fc7bdebc4998f3b27ce9417ab10ad.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "8246",
+        "display_name": "Patatas fritas sabor limón y pimienta Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/78ed4b144e6c7e01e1ff94f47d486bdc.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "8244",
+        "display_name": "Patatas fritas sabor sal y vinagre Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/2cd62e7c7215ce07c960b4fc0dffe6bb.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34095",
+        "display_name": "Pipas calabaza tostadas Hacendado aguasal",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/640adb6de33762c72aa87643770bb4d0.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34188",
+        "display_name": "Pipas de calabaza natural Hacendado peladas",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/29e68facc14597737f938b7ae808d844.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34145",
+        "display_name": "Pipas de girasol fritas Hacendado peladas",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c99716a7920576fe0b8eb353eb885b22.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34043",
+        "display_name": "Pipas girasol barbacoa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c43215e3740b7df52600a080a78ac01f.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34193",
+        "display_name": "Pipas girasol naturales Hacendado peladas",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c9406264651eae37259a957f44d2bdbf.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "23059",
+        "display_name": "Pipas girasol tostadas Hacendado 0% sal añadida",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/d461e17f42de4571398e7c126d26ddd6.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34078",
+        "display_name": "Pipas girasol tostadas Hacendado gigante aguasal",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/65128d654c1a2f4d7dfc8859e95d4962.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34079",
+        "display_name": "Pipas girasol tostadas Hacendado gigante con sal",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/a83a6380c7eecb122dd7a712fe4675a1.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34262",
+        "display_name": "Pistacho natural Hacendado pelado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5740098664ca15815a61602e60578561.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "86190",
+        "display_name": "Pistacho tostado Hacendado 0% sal añadida",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/17700c85e2423c877653e72cab234426.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "20891",
+        "display_name": "Pistachos bañados de chocolate con leche Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c5a626bbc99c90ebbc0a2996b94da099.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      }
+    ]
+  },
+  {
+    "name": "Conservas y cremas",
+    "products": [
+      {
+        "id": "33127",
+        "display_name": "Aceitunas negras Cuquillo con hueso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/10e03bb5b88a09e7cfb60d70015fcbd1.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "8309",
+        "display_name": "Aceitunas negras en rodajas Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/4cc12679f0a56049713fc09731163d79.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "12916",
+        "display_name": "Aceitunas negras Kalamata Hacendado con hueso",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b8a5e7ff15f0e7659e69da3ceafd61a8.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "21791",
+        "display_name": "Aceitunas negras naturales de Aragón con hueso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/effcfa642e3438ccf707bf69dd83c32d.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "52733",
+        "display_name": "Aceitunas negras sin hueso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/1bfe0d0a138138e33e66a6e70f8b483a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "52734",
+        "display_name": "Aceitunas negras sin hueso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/11d2dfa20dda9724c8c02aec99b8865c.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "60693",
+        "display_name": "Aceitunas verdes Arbequina con hueso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/8d6e316896e8ffd77e2d30151605f625.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17723",
+        "display_name": "Aceitunas verdes con hueso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/715217f75d5bcd45bf4c7c48c0674fb4.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "21835",
+        "display_name": "Aceitunas verdes con hueso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/ee519fcef87bfce4f76e774d8c7c90b3.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "33120",
+        "display_name": "Aceitunas verdes con hueso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/0863e9008db82471b207db659c4c69a6.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "33205",
+        "display_name": "Aceitunas verdes con hueso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/91513eae689c354578ec50919309b97e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "21935",
+        "display_name": "Aceitunas verdes con hueso Hacendado picantes",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/ac53e19aff36a9ecc902c8e08e4cf9f4.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13422",
+        "display_name": "Aceitunas verdes estilo casero Hacendado partidas aliñadas",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/0b6b3e69cf64b9e6102907f8479405bc.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "23961",
+        "display_name": "Aceitunas verdes Gazpacha Hacendado partidas",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/721f7f60fdd3a61cf65158fad5b431f1.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "33171",
+        "display_name": "Aceitunas verdes Gordal Hacendado con hueso",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/9dd6629e2868d2e33cf6ec78e415eace.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "52622",
+        "display_name": "Aceitunas verdes Picadedos sin hueso Hacendado aliñadas",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e9d310928ad02dee44fce5133dd68cf9.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16254",
+        "display_name": "Aceitunas verdes rellenas con pepinillo Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/72b02c9476b6f62811c9255e1b15f413.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "12764",
+        "display_name": "Aceitunas verdes rellenas de anchoa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5c5c1e3a579e445bb5d1d5df540b7799.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16451",
+        "display_name": "Aceitunas verdes rellenas de anchoa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/18bf8ca10601e0e52190dc72eecb7e01.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "22910",
+        "display_name": "Aceitunas verdes rellenas de anchoa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/a8be4414722e79192b356a7f3ababbc0.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "22911",
+        "display_name": "Aceitunas verdes rellenas de anchoa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/cc1ca60ef2986c990f6f235afd216148.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "23217",
+        "display_name": "Aceitunas verdes rellenas de anchoa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/6e52471bf17d428d03899310597fa47a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11947",
+        "display_name": "Aceitunas verdes rellenas de guindilla picante Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/ccbfbd1d945f44f04bc262beb79c709a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "33178",
+        "display_name": "Aceitunas verdes rellenas de jalapeño Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f4ec0b556e835d1137c7e3fa224d7453.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16453",
+        "display_name": "Aceitunas verdes rellenas de jalapeño Hacendado picantes",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/2247309325b241b0853b7b4394015ccb.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16454",
+        "display_name": "Aceitunas verdes rellenas de jalapeño Hacendado picantes",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/afa21872e9297ef39006782de4219522.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "60597",
+        "display_name": "Aceitunas verdes rellenas de jalapeño Hacendado picantes",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/05dbc6acbca3c07dcee8486a2fa0de63.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11946",
+        "display_name": "Aceitunas verdes rellenas de pepinillo Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/57d19890e92a963400c1972a9adc7f54.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13914",
+        "display_name": "Aceitunas verdes rellenas de pimiento asado Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/836fc86674c08e1f034fdc19a1228d00.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "67612",
+        "display_name": "Aceitunas verdes rellenas de pimiento asado Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/87a052a2c30442c8e8607c56a5617257.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "52783",
+        "display_name": "Aceitunas verdes sabor anchoa Hacendado con hueso",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/2177642b601d8bb6a0d43fcc185771be.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "33121",
+        "display_name": "Aceitunas verdes sin hueso aliñadas Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/d8ee7929effbce5a6d638b2356f7bfee.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "21896",
+        "display_name": "Aceitunas verdes sin hueso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/24cf06f8861a858076289a4bcb3c73f6.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "33053",
+        "display_name": "Aceitunas verdes sin hueso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/d112a5d1ab7a1fb8fa665063447d8167.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "33114",
+        "display_name": "Aceitunas verdes sin hueso Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/9c05f2c89e2f3fafdf21f2206ca2a007.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14465",
+        "display_name": "Aceitunas verdes sin hueso Hacendado y sin líquido",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5cd8baa0ed16a74db6fd0d859c40a44f.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "33190",
+        "display_name": "Alcaparras Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/a01fa3585c32b713ea490fe9c4463f61.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18015",
+        "display_name": "Atún claro en aceite de girasol Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/6a440ab2ea1929d0e88ae1e369e3e8fb.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18055",
+        "display_name": "Atún claro en aceite de girasol Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/d8fdd0b8183829db2aa6f531bc008202.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18002",
+        "display_name": "Atún claro en aceite de oliva Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/003c8146e861ce8abd19032687b62da0.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18054",
+        "display_name": "Atún claro en aceite de oliva Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/666079e35f5efa5f551aba0c2136ea8e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18012",
+        "display_name": "Atún en aceite de girasol Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/16306d082a6cb3fba99cf038138fcb2f.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18086",
+        "display_name": "Atún en aceite de girasol Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/2c06dcbb4643e6b4447d5d064c4eb6a5.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18030",
+        "display_name": "Atún en aceite de oliva Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/890912ced7f8be4da5455ca493729892.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18037",
+        "display_name": "Atún en salsa de tomate Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c9071d53ff875259f5093059e17a732b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "35959",
+        "display_name": "Atún listado en aceite de girasol Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/791200a15705619dcc1ec50b37bc7686.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "22154",
+        "display_name": "Banderillas dulces Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f77a472263879008c109fa6478d952b2.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "60320",
+        "display_name": "Banderillas Gildas Hacendado pinchos de aceituna, anchoa y guindilla",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/ddc8f1f4de0177665168723570138918.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "33235",
+        "display_name": "Banderillas picantes Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/a385f4ff3910529c1ec28546d7b56143.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18553",
+        "display_name": "Berberechos al natural S Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5965f86ba556b007f94a7091bc958335.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18108",
+        "display_name": "Bonito del norte en escabeche Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/10b3b536abf3bacd07e04a6b3ddd9724.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11630",
+        "display_name": "Crema de avellanas y cacao Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/525cfde47a18dc5dea4799338a9ba8d0.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16883",
+        "display_name": "Crema de cacahuete 100% Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/ecac26182b20af3cb009a9b33cac5693.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14930",
+        "display_name": "Crema de calabacín Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/21e1acdab6e7f290087759fa1f7eef1d.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "35870",
+        "display_name": "Crema de calabacín Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/97b7de306a37508ef279a8369118736e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13499",
+        "display_name": "Crema de calabaza Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/bac2668c48c9709038fd8723a17488c9.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "23225",
+        "display_name": "Crema de calabaza y zanahoria Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c4f8572501d428cdb9583b35db56e690.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "86587",
+        "display_name": "Crema de espárragos Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/2518e0e73630e79f2af039da7d3dc822.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11628",
+        "display_name": "Crema de lentejas Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c75cd6195526f2bfecb9f1783f39297a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "8448",
+        "display_name": "Crema de pollo Hacendado con verduras",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e7dd64a7791cb538c4d48e8a333cdbc8.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "51181",
+        "display_name": "Crema de queso camembert Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/7c54037f0113375790b2d78b3746c75b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "22780",
+        "display_name": "Crema de queso viejo tostado mezcla Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/1aa1c7b76f5a83e54d74d4a97030c15c.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "10376",
+        "display_name": "Crema de soja Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/457ad22a1ea8d4dbc300afa80e2f4a3b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "60308",
+        "display_name": "Crema de verduras Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/2ae243e8f790af2975eacc75f302b24d.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "8722",
+        "display_name": "Crema de verduras Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/84004f26c61b916e664619ebaa88a44f.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "4908",
+        "display_name": "Crema de vinagre balsámico de Módena Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/883340a038ef8c74f085947925aabae5.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16519",
+        "display_name": "Espárragos blancos medianos Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/85c714b08167eb401ae7f1da9565da16.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18562",
+        "display_name": "Espárragos blancos medianos Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b1e7f0e96c3b45d7a286e462ebd3d2d6.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16507",
+        "display_name": "Espárragos blancos muy gruesos Hacendado cortos",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/85110df4f500111850688f7f12c04a8d.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16561",
+        "display_name": "Espárragos blancos muy gruesos Hacendado enteros",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5f261c673f9c28f51f16c97b0316070a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16415",
+        "display_name": "Guisantes extra Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/94c16b610ccee72d27455e6b5efa93dd.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13043",
+        "display_name": "Hummus de garbanzos con picos Hacendado receta clásica para dipear",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/aa8fb98751c0dec9f6cb025fd16e975a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "80862",
+        "display_name": "Hummus de garbanzos Hacendado con pimiento del piquillo asado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/3770ffe361f92836ab96d4fa43b0b196.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "80858",
+        "display_name": "Hummus de garbanzos Hacendado receta clásica",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b7e088db663b6315a397f75514dc4d61.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17957",
+        "display_name": "Hummus de garbanzos Tropical Hacendado con mango y curry",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/baa0b7ecfb146c20c3d330341d33650a.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "61283",
+        "display_name": "Judía verde plana Hacendado ultracongelada",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b4c7ca3ec466371e2d5f09589e9c663e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "61282",
+        "display_name": "Judía verde redonda Hacendado ultracongelada",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/6f64b307b3a4062e866cd985ce389994.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16315",
+        "display_name": "Judías verdes redondas Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5da9e6258cbd2e45b4b84ad093cfc80b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18615",
+        "display_name": "Mejillones de Chile en escabeche Hacendado pequeños",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f753e3fdce7e419e734b476a8c2f34ee.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18619",
+        "display_name": "Mejillones en escabeche Hacendado pequeños",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/27b73289f0e656a60d6ac9f6bc01346d.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18622",
+        "display_name": "Mejillones en salsa de vieira Hacendado pequeños",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/091a1ad796b0be07ad15548343d12ea0.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18621",
+        "display_name": "Mejillones picantes en escabeche Hacendado pequeños",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/18f3303b51987aacf30b20c7df57f2f1.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15206",
+        "display_name": "Melocotón en almíbar Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/9d7e5f364360bf0b850a4f9d273c0d15.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "60918",
+        "display_name": "Melocotón en almíbar Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/5dd673ae914d64f6f0e0d860b63f94af.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "22476",
+        "display_name": "Mermelada de ciruela y kiwi Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/709726b054a6427b34435b6e1c9a132b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "86033",
+        "display_name": "Mermelada de frambuesa Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/6ce143e06ac60efcbb769eac77ff1583.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13441",
+        "display_name": "Mermelada de fresa monodosis Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/87802292c6f5229c60e21180b35d2e78.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "21844",
+        "display_name": "Mermelada de guayaba Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/c871bed2493dc5863d1a3b2e42e1a427.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "67753",
+        "display_name": "Mermelada de higo Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/3d88c84c80cc2290e897491f8c18a17d.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "13444",
+        "display_name": "Mermelada de melocotón monodosis Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f162d40d58d2f7289498e36e18010eaf.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15076",
+        "display_name": "Mermelada de naranja amarga Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/3dba91f227b1c8eafe558f325036e7ce.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15077",
+        "display_name": "Mermelada de tomate Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/f61d58c4d7425cc934dc90a7c7bfb392.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "14474",
+        "display_name": "Pepinillos agridulces Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e1db86b80a746f1f0d91b3e09cb54c49.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "5480",
+        "display_name": "Pepinillos agridulces Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b7077958ad551c3f823ac44034cd1f67.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "33100",
+        "display_name": "Pepinillos agridulces laminados Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/be577b5950790ece635477cdf0dcb78b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "11565",
+        "display_name": "Pepinillos en vinagre Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/d0f57c8e5ff716eea1edd230a0d214f7.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "33182",
+        "display_name": "Pepinillos en vinagre Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/ba1bb4ba40049018b4c3b40ea0992859.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "29540",
+        "display_name": "Pepinillos pequeños Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/3155f55c8c55f8a4b4778ce16a31a5f2.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "35221",
+        "display_name": "Pimiento rojo y verde Hacendado ultracongelado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/edc3300ee19dd682083042d5b90d4ca1.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16103",
+        "display_name": "Pimientos asados en tiras Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/8ced0c6ed820f4df77b1366caa05b147.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "34790",
+        "display_name": "Pimientos choriceros dulces del cristal Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/786f1be27f7982aa7bb5713e16114122.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16008",
+        "display_name": "Pimientos del piquillo en tiras con ajo Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/2b521339aeb792ed310f3687b02dcd71.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16005",
+        "display_name": "Pimientos del piquillo enteros Hacendado extra",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/a8886f583907a0e19e741e0025623834.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15969",
+        "display_name": "Pimientos del piquillo extra Hacendado estilo tradicional",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/7ce6abed1cc4b30858bb8ac9c09ae03b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "61372",
+        "display_name": "Pimientos del piquillo relleno de carne Hacendado ultracongelados",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/bd512810761ac7ba040f01149a96286e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "61371",
+        "display_name": "Pimientos del piquillo rellenos de bacalao Hacendado ultracongelados",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/da60a75841e5ba265e40fadbf71e6546.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16117",
+        "display_name": "Pimientos en tiras condimentados Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/1e3d86aa503cabe4741af6a824fef676.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16124",
+        "display_name": "Pimientos rojos asados Hacendado en tiras extra",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/e1809a4d7fa066bbdf7ce41932f80b47.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "86427",
+        "display_name": "Pimientos secos Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b5fb820b5c4dbb705b6811da74a7fd88.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15203",
+        "display_name": "Piña en su jugo Hacendado rodajas",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/4d8bf0206b1f578973cd80fdf7d85179.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "15220",
+        "display_name": "Piña en su jugo Hacendado rodajas",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/97966e339c1eb6e0151d67c9b4741fd4.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18211",
+        "display_name": "Sardinillas en escabeche Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/a1e41e90d8bd21c183b579fa8b142160.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18209",
+        "display_name": "Sardinillas en tomate Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/aff82c8f60e81628279ad09c64dba7cc.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18212",
+        "display_name": "Sardinillas picantes en aceite de girasol Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/0e433275266c537dffe8c7be183ccae9.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "18214",
+        "display_name": "Sardinillas reducidas en sal en aceite de oliva Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/50ed9a5e452499dc949cd76af9138024.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17153",
+        "display_name": "Tomate frito estilo casero Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/b316f525c80033093912e2829796b5cc.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17108",
+        "display_name": "Tomate frito Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/18fcaf49c55e224bb2bd9774dec259fa.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17151",
+        "display_name": "Tomate frito Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/bef3c040943e4b6dd59b15f565ec4f08.jpeg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17128",
+        "display_name": "Tomate frito Hacendado con aceite de oliva",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/bac47a7f2186be4ef7b42b3fbc3775d6.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17131",
+        "display_name": "Tomate frito receta artesana Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/450e65a016ec657d968e9926d761ec85.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17163",
+        "display_name": "Tomate frito receta artesana Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/959baf90e8b8eee09398534f7c549992.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17330",
+        "display_name": "Tomate frito sin azúcares añadidos Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/67b219b3fd062167db5b46611259160e.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "17647",
+        "display_name": "Tomate para untar Hacendado con aceite de oliva",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/2c1a04607508e5a28a7ec775b9558aec.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16046",
+        "display_name": "Tomate seco Hacendado en aceite de oliva",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/583806865dd5df9204520ea70f4f4287.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16012",
+        "display_name": "Tomate tamizado sin piel Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/9f10fd49b839d3ba386a892572ffdf79.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "16044",
+        "display_name": "Tomate triturado Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/db53895dcbf286affe16def253a0ab89.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      },
+      {
+        "id": "23531",
+        "display_name": "Zamburiñas en salsa de vieira Hacendado",
+        "thumbnail": "https://prod-mercadona.imgix.net/images/939f11d8b80bec4fc623f7137a4b0f3b.jpg?fit=crop&h=300&w=300",
+        "illustration_url": null,
+        "published": true
+      }
+    ]
+  }
+]

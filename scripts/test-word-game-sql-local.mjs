@@ -29,6 +29,7 @@ const removeRankingDemoUsers = await readFile(new URL('../supabase/migrations/20
 const addFourRankingDemoUsers = await readFile(new URL('../supabase/migrations/20260926195641_add_four_word_ranking_demo_users.sql', import.meta.url), 'utf8');
 const removeFourRankingDemoUsers = await readFile(new URL('../supabase/migrations/20260927090604_remove_four_word_ranking_demo_users.sql', import.meta.url), 'utf8');
 const expectedRejections = await readFile(new URL('../supabase/migrations/20260929131848_word_game_expected_rejections.sql', import.meta.url), 'utf8');
+const gameBlock = await readFile(new URL('../supabase/migrations/20261005123212_block_word_game_users.sql', import.meta.url), 'utf8');
 const A = '00000000-0000-0000-0000-000000000001';
 const B = '00000000-0000-0000-0000-000000000002';
 const C = '00000000-0000-0000-0000-000000000003';
@@ -396,9 +397,11 @@ try {
   assert.equal(closedDay.periodEnd, yesterday);
   assert.equal(closedDay.me.score, 85);
   assert.equal(closedDay.leaders.length, 1);
-  assert.equal((await window(A, 'weekly', 0)).me.score, 85);
-  assert.equal((await window(A, 'monthly', 0)).me.score, 85);
-  assert.equal((await window(A, 'yearly', 0)).me.score, 85);
+  for (const period of ['weekly', 'monthly', 'yearly']) {
+    const current = await window(A, period, 0);
+    const includesYesterday = yesterday >= current.periodStart && yesterday <= current.periodEnd;
+    assert.equal(current.me?.score ?? null, includesYesterday ? 85 : null);
+  }
   const closedYear = await window(A, 'yearly', 1);
   assert.equal(closedYear.me.score, 100);
   assert.equal(closedYear.periodStart.slice(0,4), String(Number(currentDay.periodStart.slice(0,4))-1));
@@ -544,6 +547,38 @@ try {
   await assert.rejects(query("select public.word_game_guess_v2(null,'AAAAA',0)"), /permission denied/);
   await db.exec('reset role');
   console.log('PASS: expected invalid/repeated guesses return data · attempts intact · legacy RPC and real errors unchanged · ACL');
+
+  await db.exec(gameBlock);
+  // The isolated fixture has no profiles grants; production already grants
+  // own-row updates and relies on the trigger to protect server-owned fields.
+  await db.exec(`grant select(id), update(word_game_blocked_until)
+    on public.profiles to authenticated`);
+  const blockedPlayer = '00000000-0000-0000-0000-000000000010';
+  await query('insert into auth.users values($1)', [blockedPlayer]);
+  await query("insert into public.profiles(id,username,discoverable) values($1,'blocked_player',true)", [blockedPlayer]);
+  const blockedGame = await today(blockedPlayer);
+  await query("update private.word_games set solution='ARROZ' where id=$1", [blockedGame.id]);
+  await query("update public.profiles set word_game_blocked_until=now()+interval '1 day' where id=$1", [blockedPlayer]);
+  await assert.rejects(asUser(blockedPlayer,
+    'update public.profiles set word_game_blocked_until=null where id=$1', [blockedPlayer]),
+  /word_game_blocked_until solo puede modificarse desde el servidor/);
+  await assert.rejects(start(blockedPlayer, blockedGame.id), /WORD_BLOCKED/);
+  await assert.rejects(asUser(blockedPlayer, 'select private.word_start($1) data', [blockedGame.id]), /WORD_BLOCKED/);
+  assert.equal((await query('select count(*)::int n from private.word_plays where user_id=$1', [blockedPlayer]))[0].n, 0);
+  assert.equal((await asUser(blockedPlayer, "select public.word_game_ranking('es','daily') data")).me, null);
+
+  await query("update public.profiles set word_game_blocked_until=now()-interval '1 second' where id=$1", [blockedPlayer]);
+  await start(blockedPlayer, blockedGame.id);
+  await query("update public.profiles set word_game_blocked_until=now()+interval '1 day' where id=$1", [blockedPlayer]);
+  await assert.rejects(guessV2(blockedPlayer, blockedGame.id, 'QUESO', 0), /WORD_BLOCKED/);
+  await assert.rejects(asUser(blockedPlayer, 'select private.word_submit($1,$2,$3) data',
+    [blockedGame.id, 'QUESO', 0]), /WORD_BLOCKED/);
+  assert.equal((await query('select attempts from private.word_plays where user_id=$1', [blockedPlayer]))[0].attempts, 0);
+  assert.equal((await query(`select count(*)::int n from private.word_guesses g
+    join private.word_plays p on p.id=g.play_id where p.user_id=$1`, [blockedPlayer]))[0].n, 0);
+  await query("update public.profiles set word_game_blocked_until=now()-interval '1 second' where id=$1", [blockedPlayer]);
+  assert.equal((await guessV2(blockedPlayer, blockedGame.id, 'QUESO', 0)).accepted, true);
+  console.log('PASS: word-game block is server-owned · start/guess denied · direct private writes denied · rankings remain readable · expiry restores play');
 
   await query('insert into auth.users values($1)', [C]); // Fresh account, no completed plays.
   const stats = (uid) => asUser(uid, 'select public.word_game_profile_statistics() data');

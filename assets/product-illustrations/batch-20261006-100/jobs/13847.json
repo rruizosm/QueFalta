@@ -1,0 +1,28 @@
+{
+  "id": "13847",
+  "index": 70,
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-d37db6a2-0d2b-4281-a371-4d60bdf002a5.png",
+  "png": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261006-100/mercadona-13847-bebida-de-coco-y-arroz-sin-azucares-anadidos-hacendado.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nSpecific subject: Bebida de coco y arroz sin azúcares añadidos Hacendado, Mercadona product id 13847.\nPackaging guidance: Entire six-unit white printed cardboard retail case with dark brown/red «COCO & ARROZ», top handle cutouts. Preserve CASE. EXCLUDE detached pink «6x1L» badge outside package.",
+  "status": "published",
+  "webp": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261006-100/mercadona-13847-bebida-de-coco-y-arroz-sin-azucares-anadidos-hacendado.webp",
+  "width": 768,
+  "height": 753,
+  "bytes": 68814,
+  "sha256": "42257dd12c5a4e9b28aa052ba3d0c09cfdb7ba3b4b949161dea90defbc8aa12f",
+  "alpha": {
+    "transparentPixels": 46008,
+    "opaquePixels": 1154,
+    "visibleBorderPixels": 0
+  },
+  "visualReviewed": true,
+  "publication": {
+    "productId": "13847",
+    "name": "Bebida de coco y arroz sin azúcares añadidos Hacendado",
+    "objectPath": "mercadona/13847/42257dd12c5a4e9b.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/13847/42257dd12c5a4e9b.webp",
+    "contentType": "image/webp",
+    "bytes": 68814,
+    "sha256": "42257dd12c5a4e9b28aa052ba3d0c09cfdb7ba3b4b949161dea90defbc8aa12f"
+  }
+}

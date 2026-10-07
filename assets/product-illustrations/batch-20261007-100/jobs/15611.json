@@ -1,0 +1,29 @@
+{
+  "id": "15611",
+  "index": 41,
+  "name": "Cereales avena Crunchy Hacendado",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nSpecific subject: Cereales avena Crunchy Hacendado, Mercadona product id 15611. Match Image 1 exactly. The catalog name identifies the subject but is not text to invent on its label. Preserve legible Spanish/Portuguese words, printed amounts and multipack counts from Image 1. No detached catalog badges.\nPackaging guidance: BLUE cereal BOX «AVENA AVEIA Crunchy / 85% avena aveia integral», 400g.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-7e7a36aa-af95-4d0c-834e-b771c1ba6baa.png",
+  "png": "assets/product-illustrations/batch-20261007-100/mercadona-15611-cereales-avena-crunchy-hacendado.png",
+  "status": "published",
+  "webp": "assets/product-illustrations/batch-20261007-100/mercadona-15611-cereales-avena-crunchy-hacendado.webp",
+  "width": 547,
+  "height": 768,
+  "bytes": 110744,
+  "sha256": "b3b5b630313c69d8a15747514fc92dd2a4b32dc5e841ae6f09150b0df81f8827",
+  "alpha": {
+    "transparentPixels": 27957,
+    "opaquePixels": 1572,
+    "visibleBorderPixels": 0
+  },
+  "visualReviewed": true,
+  "publication": {
+    "productId": "15611",
+    "name": "Cereales avena Crunchy Hacendado",
+    "objectPath": "mercadona/15611/b3b5b630313c69d8.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/15611/b3b5b630313c69d8.webp",
+    "contentType": "image/webp",
+    "bytes": 110744,
+    "sha256": "b3b5b630313c69d8a15747514fc92dd2a4b32dc5e841ae6f09150b0df81f8827"
+  }
+}

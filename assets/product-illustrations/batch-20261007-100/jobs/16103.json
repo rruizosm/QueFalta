@@ -1,0 +1,29 @@
+{
+  "id": "16103",
+  "index": 98,
+  "name": "Pimientos asados en tiras Hacendado",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nSpecific subject: Pimientos asados en tiras Hacendado, Mercadona product id 16103. Match Image 1 exactly. The catalog name identifies the subject but is not text to invent on its label. Preserve legible Spanish/Portuguese words, printed amounts and multipack counts from Image 1. No detached catalog badges.\nPackaging guidance: LOW transparent rectangular peppers tray with black top label «Pimientos Asados TIRAS / 290g». Keep shallow tray orientation, lid, label and red peppers; do not make standing jar.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-a184c299-fa64-43d9-978b-4d3cb600de20.png",
+  "png": "assets/product-illustrations/batch-20261007-100/mercadona-16103-pimientos-asados-en-tiras-hacendado.png",
+  "status": "published",
+  "webp": "assets/product-illustrations/batch-20261007-100/mercadona-16103-pimientos-asados-en-tiras-hacendado.webp",
+  "width": 768,
+  "height": 570,
+  "bytes": 90954,
+  "sha256": "22dec3bc915d7051e61f8947738325b1444c6967a705c53be54e5de4a7537a5d",
+  "alpha": {
+    "transparentPixels": 73205,
+    "opaquePixels": 1502,
+    "visibleBorderPixels": 0
+  },
+  "visualReviewed": true,
+  "publication": {
+    "productId": "16103",
+    "name": "Pimientos asados en tiras Hacendado",
+    "objectPath": "mercadona/16103/22dec3bc915d7051.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/16103/22dec3bc915d7051.webp",
+    "contentType": "image/webp",
+    "bytes": 90954,
+    "sha256": "22dec3bc915d7051e61f8947738325b1444c6967a705c53be54e5de4a7537a5d"
+  }
+}

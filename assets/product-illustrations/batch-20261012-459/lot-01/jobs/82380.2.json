@@ -1,0 +1,41 @@
+{
+  "id": "82380.2",
+  "index": 69,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308c-ebe7-7011-b529-512d15320584/exec-6f6d5747-a7ea-404c-af1a-46bbc103eacd.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-01/mercadona-82380.2-pan-campeon-del-mundo-rebanado.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta catalog product illustration. Image1 is the exact official product photo, authoritative for subject and all product details. Image2 is ONLY the approved hand-drawn illustration style; do not copy its milk carton. Render Image1 as warm clean editorial hand-drawn gouache, subtle paper texture, thin defined outlines and recognizable original colors. Preserve exact product/variant, whole silhouette, proportions, packaging, labels and readable text. Use actual alpha transparency. Entire product centered with minimal transparent margin; preserve natural source orientation, all separate food pieces and components, source count/layout and retail multipacks. Do not change sliced food to whole food or vice versa. Keep heads, tails, caps and packaging where source has them. No props, invented packaging, plate, extra labels, cast shadows, floor, background, checkerboard, photorealism or3D. Reproduce only legible printed words/units/claims; never infer printed text from catalog name. Preserve SIN/SEM GLUTEN and all negations, quantities, units and qualifiers exactly if present. Tiny unreadable microprint may be simplified into neutral lines without invented values. Output one complete transparent PNG.\nProduct ID 82380.2. Observed source: Whole sliced seed-coated loaf and heel pieces. Photo remains authoritative.\n Square canvas. Outside the exact product silhouette alpha must be exactly zero; no exterior glow, beige halo, blurred aura, paper rectangle, vignette or colored backdrop. Texture stays strictly inside the product.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-01/actual-prompts/82380.2.txt",
+  "sourceOriginalSha256": "642434b0b6e5b69ac41d2d6369deb6c3203f7b89e356d51765a9a0f81aab8cc7",
+  "sourceOriginalBytes": 119374,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:55:12.242Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-01/webp/mercadona-82380.2.webp",
+  "width": 768,
+  "height": 566,
+  "bytes": 124398,
+  "sha256": "60999d0d740224041f94b7b029a90c7d87413d91b1895cd44edef541721d7c1e",
+  "alpha": {
+    "transparentPixels": 208427,
+    "opaquePixels": 536,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:55:49.738Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:14:35.892Z",
+  "publication": {
+    "productId": "82380.2",
+    "name": "Pan campeón del mundo rebanado",
+    "objectPath": "mercadona/82380.2/60999d0d74022404.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/82380.2/60999d0d74022404.webp",
+    "contentType": "image/webp",
+    "bytes": 124398,
+    "published": true,
+    "sha256": "60999d0d740224041f94b7b029a90c7d87413d91b1895cd44edef541721d7c1e"
+  },
+  "publishedAt": "2026-10-12T15:14:50.033Z",
+  "localWebpDeletedAt": "2026-10-12T15:14:50.188Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:14:50.188Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:14:50.188Z"
+}

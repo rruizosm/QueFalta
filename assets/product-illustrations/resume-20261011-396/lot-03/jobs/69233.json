@@ -1,0 +1,41 @@
+{
+  "id": "69233",
+  "index": 83,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-c50198fb-36fd-4a24-8303-9a8f200a9d6b.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-03/mercadona-69233-repollo-lorena.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Repollo Lorena, Mercadona product ID 69233. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\n\nSource inspected: One whole pointed conical green Lorena cabbage, overlapping smooth veiny leaves, broad base and pointed top; no labels or invented packaging.\nOnly the product packaging, not the white source background; actual transparent background. Printed pack bands belong to packaging; omit only external catalog callouts.\n",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-03/actual-prompts/69233.txt",
+  "sourceOriginalSha256": "af968afb34c4c2d755e7cc325f45182a6b5c6628b03e0694c296b32aa5685ac7",
+  "sourceOriginalBytes": 33300,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:49:09.512Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-03/webp/mercadona-69233.webp",
+  "width": 568,
+  "height": 768,
+  "bytes": 52354,
+  "sha256": "28c6bba0bdc8f7ae0d11ca19987c6c6c0cfeeb02351f3c6b610e78a1f9ab74c7",
+  "alpha": {
+    "transparentPixels": 172460,
+    "opaquePixels": 1087,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:55:26.636Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:56:01.382Z",
+  "publication": {
+    "productId": "69233",
+    "name": "Repollo Lorena",
+    "objectPath": "mercadona/69233/28c6bba0bdc8f7ae.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/69233/28c6bba0bdc8f7ae.webp",
+    "contentType": "image/webp",
+    "bytes": 52354,
+    "published": true,
+    "sha256": "28c6bba0bdc8f7ae0d11ca19987c6c6c0cfeeb02351f3c6b610e78a1f9ab74c7"
+  },
+  "publishedAt": "2026-10-11T17:56:08.146Z",
+  "localWebpDeletedAt": "2026-10-11T17:56:08.309Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:56:08.309Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:56:08.309Z"
+}

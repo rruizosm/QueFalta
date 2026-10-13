@@ -1,0 +1,41 @@
+{
+  "id": "18474",
+  "index": 32,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-b3d58755-8edb-494d-911e-a61aff576cdf.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-18474-tinto-de-verano-sin-azucar-y-sin-alcohol-limon-don-simon.png",
+  "prompt": "One square transparent PNG. Actual alpha transparency exactly 0 outside the product silhouette; no outside shadow, glow, halo or solid backdrop. Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. Specific inspected product: Shrink wrapped SIX tall cans Don Simón alcohol-free and sugar-free lemon tinto. White/silver background, magenta top and borders, yellow bottom, 0,0 SIN AZÚCAR SIN ALCOHOL, round yellow 3€ PACK 6 LATAS badge. Exactly six cans. Product catalog identity: Tinto de verano sin azúcar y sin alcohol limón Don Simón.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/18474.txt",
+  "sourceOriginalSha256": "185a75937639ed17b85a03f50d18e82f33e1cf6e1fe202d82cba581cef448234",
+  "sourceOriginalBytes": 111388,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:49:45.373Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-18474.webp",
+  "width": 768,
+  "height": 752,
+  "bytes": 134084,
+  "sha256": "0a7217a1659d36daebee1fdea8ef42f4a3b2dcc4b5eebaa6f67417c9df4b0b8f",
+  "alpha": {
+    "transparentPixels": 107027,
+    "opaquePixels": 938,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:53:22.297Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:54:25.901Z",
+  "publication": {
+    "productId": "18474",
+    "name": "Tinto de verano sin azúcar y sin alcohol limón Don Simón",
+    "objectPath": "mercadona/18474/0a7217a1659d36da.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/18474/0a7217a1659d36da.webp",
+    "contentType": "image/webp",
+    "bytes": 134084,
+    "published": true,
+    "sha256": "0a7217a1659d36daebee1fdea8ef42f4a3b2dcc4b5eebaa6f67417c9df4b0b8f"
+  },
+  "publishedAt": "2026-10-12T13:54:48.879Z",
+  "localWebpDeletedAt": "2026-10-12T13:54:49.016Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:54:49.016Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:54:49.016Z"
+}

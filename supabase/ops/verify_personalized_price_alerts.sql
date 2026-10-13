@@ -100,18 +100,19 @@ begin
     user_id, kind, emoji, label, query, exact_store, exact_product_id, stores,
     notify_price_drop, notify_new_offer, min_drop_pct
   ) values (
-    test_user, 'new_arrival', '🆕', 'Verificación novedades', 'se limpia',
+    test_user, 'new_arrival', '🆕', 'Verificación novedades', 'producto verificación',
     'mercadona', 'se-limpia', array['mercadona'], true, true, 25
   ) returning id into novelty_rule;
 
-  if exists (
+  if not exists (
     select 1 from public.price_alert_rules
     where id = novelty_rule
-      and (query is not null or query_norm is not null or exact_store is not null
-        or exact_product_id is not null or notify_price_drop or notify_new_offer
-        or min_drop_pct <> 0)
+      and query = 'producto verificación'
+      and query_norm = 'producto verificacion'
+      and exact_store is null and exact_product_id is null
+      and not notify_price_drop and not notify_new_offer and min_drop_pct = 0
   ) then
-    raise exception 'La regla de novedades no se normalizó como modo exclusivo';
+    raise exception 'La regla de novedades no conservó sus palabras normalizadas';
   end if;
 
   select to_jsonb(p) into novelty_source

@@ -1,0 +1,41 @@
+{
+  "id": "86117",
+  "index": 88,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-449a7468-4ead-44d3-8b05-a5f6ca21d3ab.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-86117-tonica-original-schweppes.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: SIX small clear glass Schweppes tonic bottles with yellow caps and yellow labels inside yellow cardboard carrier, 6x20cl. Preserve exactly six glass bottles and carrier. Product catalog identity: Tónica original Schweppes.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/86117.txt",
+  "sourceOriginalSha256": "8187d22b485d5a90f84476575c18a8001f392b33ff24386c5cee17621a7ee07b",
+  "sourceOriginalBytes": 88675,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:07:04.703Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-86117.webp",
+  "width": 641,
+  "height": 768,
+  "bytes": 111760,
+  "sha256": "76e22c370448c703603897c8197125c5c9c59f86688322da10a59446af57b4af",
+  "alpha": {
+    "transparentPixels": 117429,
+    "opaquePixels": 1459,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:09:14.976Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:13:15.792Z",
+  "publication": {
+    "productId": "86117",
+    "name": "Tónica original Schweppes",
+    "objectPath": "mercadona/86117/76e22c370448c703.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/86117/76e22c370448c703.webp",
+    "contentType": "image/webp",
+    "bytes": 111760,
+    "published": true,
+    "sha256": "76e22c370448c703603897c8197125c5c9c59f86688322da10a59446af57b4af"
+  },
+  "publishedAt": "2026-10-12T15:13:27.111Z",
+  "localWebpDeletedAt": "2026-10-12T15:13:27.244Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:13:27.244Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:13:27.244Z"
+}

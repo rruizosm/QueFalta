@@ -1,0 +1,58 @@
+{
+  "id": "60089",
+  "index": 104,
+  "version": 2,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-a8da1a81-9aaf-4f22-9805-28eaeef2323a.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-60089-tortilla-de-patata-con-cebolla-listo-para-comer-v2.png",
+  "prompt": "Use case: precise-object-edit. Correct this product illustration using reference image 1 as the authoritative official photo, reference image 2 as the existing illustration to edit and reference image 3 as style only. Preserve the existing round shallow beige serving bowl and thick golden potato-and-onion tortilla, its proportions, angle and hand-painted shading. Remove the entire invented central round paper label, all text and all drawings of onion, potato and parsley printed on this label. The actual official tortilla has NO label, NO sticker, NO text anywhere, NO additional vegetables placed on top. Replace the removed label area with a continuous natural golden cooked tortilla surface with small potato and onion pieces and irregular soft brown marks matching the rest of the surface and the official photo. Keep the tortilla plain and completely visible. Preserve the original beige bowl unchanged. Transparent square RGBA image: all pixels outside the bowl are genuinely alpha 0, no floor, shadow, glow or background.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/60089-v2.txt",
+  "sourceOriginalSha256": "47519e447dd9cf86c008609bf86a0f38fde1d876a26159f32ea3ef99cf43a924",
+  "sourceOriginalBytes": 64097,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:25:15.539Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-60089.webp",
+  "previousGenerations": [
+    {
+      "id": "60089",
+      "index": 104,
+      "version": 1,
+      "generationTool": "built-in image_gen",
+      "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-87d0c51d-d10d-4e2f-9eff-f06c5e0b461d.png",
+      "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-60089-tortilla-de-patata-con-cebolla-listo-para-comer.png",
+      "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Round beige shallow circular serving bowl holding one thick golden Spanish potato and onion tortilla, softly browned irregular top. Preserve onion tortilla and round beige bowl. Product catalog identity: Tortilla de patata con cebolla Listo para Comer.",
+      "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/60089.txt",
+      "sourceOriginalSha256": "47519e447dd9cf86c008609bf86a0f38fde1d876a26159f32ea3ef99cf43a924",
+      "sourceOriginalBytes": 64097,
+      "status": "generated",
+      "generatedAt": "2026-10-12T15:22:37.027Z",
+      "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-60089.webp"
+    }
+  ],
+  "width": 768,
+  "height": 662,
+  "bytes": 109656,
+  "sha256": "b1782ae007366aa3f36b01117db514b8b4a0cacb79101ffe7760333da5840762",
+  "alpha": {
+    "transparentPixels": 157688,
+    "opaquePixels": 1070,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:25:32.436Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:26:01.904Z",
+  "publication": {
+    "productId": "60089",
+    "name": "Tortilla de patata con cebolla Listo para Comer",
+    "objectPath": "mercadona/60089/b1782ae007366aa3.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/60089/b1782ae007366aa3.webp",
+    "contentType": "image/webp",
+    "bytes": 109656,
+    "published": true,
+    "sha256": "b1782ae007366aa3f36b01117db514b8b4a0cacb79101ffe7760333da5840762"
+  },
+  "publishedAt": "2026-10-12T15:26:10.077Z",
+  "localWebpDeletedAt": "2026-10-12T15:26:10.193Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:26:10.193Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:26:10.193Z"
+}

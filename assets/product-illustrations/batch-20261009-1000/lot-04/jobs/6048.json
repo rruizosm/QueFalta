@@ -1,0 +1,39 @@
+{
+  "id": "6048",
+  "index": 76,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-cab56afa-e67e-4a52-96d3-7845cf3b043d.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-6048-chorizo-oreado.png",
+  "prompt": "Illustrate the exact Mercadona product from Image 1 in the established QuéFalta hand-drawn editorial style: soft thin outlines, true colors, subtle watercolor/gouache texture. Image 2 is solely the style reference at /private/tmp/mercadona-style-10699-reference.png; do not copy its product. Preserve visible package, brand, text and contents. Chorizo Oreado, one shallow clear rectangular tray holding two long curved reddish-orange semi-dry chorizo sausages placed side by side, with a diagonal cream-white label featuring a black pig emblem and red accents. Match exact tray angle, sausage count and package label from Image 1. Keep full tray with transparent margin; do not use sliced rounds. Entire product isolated on transparent background with clean margins, no scene or props.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/6048-prompt.txt",
+  "sourceOriginalSha256": "d5f4430c58ea01303c54611a9691189c8349d2e932379e54ec47cb27a5b17ad4",
+  "sourceOriginalBytes": 59547,
+  "status": "published",
+  "generatedAt": "2026-10-09T08:03:30.949Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-6048.webp",
+  "width": 768,
+  "height": 578,
+  "bytes": 97850,
+  "sha256": "38e213577df6d4720e669819ac7f428adad316a7d2c5cdf16c7c7e9ff3e1103a",
+  "alpha": {
+    "transparentPixels": 186379,
+    "opaquePixels": 993,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T08:03:43.646Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T08:04:16.705Z",
+  "publication": {
+    "productId": "6048",
+    "name": "Chorizo oreado",
+    "objectPath": "mercadona/6048/38e213577df6d472.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/6048/38e213577df6d472.webp",
+    "contentType": "image/webp",
+    "bytes": 97850,
+    "sha256": "38e213577df6d4720e669819ac7f428adad316a7d2c5cdf16c7c7e9ff3e1103a"
+  },
+  "publishedAt": "2026-10-09T08:04:19.211Z",
+  "localWebpDeletedAt": "2026-10-09T08:04:19.211Z",
+  "localSourceJpgDeletedAt": "2026-10-09T08:04:19.211Z"
+}

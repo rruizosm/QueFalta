@@ -1,0 +1,41 @@
+{
+  "id": "87706",
+  "index": 94,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12be3-1801-7fe3-88ee-862e3d13eea9/exec-009e353b-8ee5-42f5-a515-e66e5dce9493.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-04/mercadona-87706-sepia-sucia-sin-piel-y-sin-tripa.png",
+  "prompt": "Use case: style-transfer. Asset: one catalog product illustration for QuéFalta. Image1 is the sole authoritative product/photo reference; image2 supplies ONLY the illustrated medium and edge/shading treatment, never its milk carton/text. Turn the exact product in image1 into a polished hand-drawn retail illustration matching image2: crisp delicate outlines, clean simplified shading, subtle illustrated texture and faithful retail colors. Truly transparent background, no ground plane, no cast shadow, centered entire product with safe empty margin. Preserve the complete original package geometry, perspective, relative proportions, all components and accessories, real visible quantities and main legible label text. No extra props, invented brands, claims, prices, quantities or food outside packaging. Tiny illegible legal text may be reduced unobtrusively but all meaningful negations such as SIN/SEM must remain complete. Product-specific observed requirements: Single whole pale gray ivory cuttlefish no tray with textured mantle right and tentacles left; preserve anatomical contour. Official product: Sepia sucia sin piel y sin tripa. Reproduce source numeric values only when legible; do not guess.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-04/actual-prompts/87706.txt",
+  "sourceOriginalSha256": "4c46f937c728691cc1ffc8fa95616b0b2a1d6d2243c16a329ac42379b24eb79f",
+  "sourceOriginalBytes": 25280,
+  "status": "published",
+  "generatedAt": "2026-10-11T18:18:46.355Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-04/webp/mercadona-87706.webp",
+  "width": 768,
+  "height": 444,
+  "bytes": 53370,
+  "sha256": "d2263b249a23020979a68743ca0ad7fde70bb8e437672c636a567fefce1cadb1",
+  "alpha": {
+    "transparentPixels": 202701,
+    "opaquePixels": 1519,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T18:23:31.333Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T18:24:30.999Z",
+  "publication": {
+    "productId": "87706",
+    "name": "Sepia sucia sin piel y sin tripa",
+    "objectPath": "mercadona/87706/d2263b249a230209.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/87706/d2263b249a230209.webp",
+    "contentType": "image/webp",
+    "bytes": 53370,
+    "published": true,
+    "sha256": "d2263b249a23020979a68743ca0ad7fde70bb8e437672c636a567fefce1cadb1"
+  },
+  "publishedAt": "2026-10-11T18:24:48.080Z",
+  "localWebpDeletedAt": "2026-10-11T18:24:48.283Z",
+  "localSourceJpgDeletedAt": "2026-10-11T18:24:48.283Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T18:24:48.283Z"
+}

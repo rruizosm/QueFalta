@@ -1,0 +1,32 @@
+{
+  "productId": "8804651149163_ES",
+  "name": "Leche semi desnatada",
+  "brandFromPhoto": "LEYMA NATURA",
+  "packaging": "1 l",
+  "thumbnail": "https://static-product-catalog.lidlplus.com/images/productdata/ES/original/highres/2426377_5717447_v0_highres.png?im=Resize=(384)",
+  "file": "/private/tmp/lidl-illustration-20261013/8804651149163_ES.webp",
+  "bytes": 44698,
+  "sha256": "3dc19433a467466d8560163e1c5b9a8721180a35c421242c5c94f565b59a9566",
+  "width": 512,
+  "height": 768,
+  "hasAlpha": true,
+  "alphaMin": 0,
+  "alphaMax": 255,
+  "nativeGeneration": "ImageGen integrado",
+  "nativeFinal": "native-final.png",
+  "visualQa": "aprobada sobre blanco y oscuro",
+  "objectPath": "lidl/8804651149163_ES/3dc19433a467466d.webp",
+  "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/lidl/8804651149163_ES/3dc19433a467466d.webp",
+  "contentType": "image/webp",
+  "sourceThumbnailUnchanged": true,
+  "published": true,
+  "publishedInActiveStore": true,
+  "verifiedAt": "2026-10-13T14:14:49.892Z",
+  "productAfter": {
+    "id": "8804651149163_ES",
+    "display_name": "Leche semi desnatada",
+    "thumbnail": "https://static-product-catalog.lidlplus.com/images/productdata/ES/original/highres/2426377_5717447_v0_highres.png?im=Resize=(384)",
+    "published": true,
+    "illustration_url": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/lidl/8804651149163_ES/3dc19433a467466d.webp"
+  }
+}

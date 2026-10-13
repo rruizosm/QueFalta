@@ -1,0 +1,50 @@
+{
+  "id": "9057",
+  "index": 60,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12619-4821-71f0-b2f1-b6220eabecde/exec-4e0d9f71-3dc9-4967-a0a5-2433cdd55510.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-01/mercadona-9057-preparado-lacteo-con-cereales-crecimiento-peques-3-puleva.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "c82b4bdab249ae031f8c3c230db4027f19cfa7b53970ceee98c4d778ba04448b",
+  "sourceOriginalBytes": 111879,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:41:13.091Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-01/webp/mercadona-9057.webp",
+  "recovery": {
+    "recoveredAt": "2026-10-11T16:56:07.779449+00:00",
+    "nativeMatchedToHistoricalWebp": true,
+    "historicalWebpSha256": "1ddd4709cb6bab1e5e404ff1bf4efac1362c7af3bce3dd1b87e80c30055508c1",
+    "historicalWebpTempPath": "/private/tmp/mercadona-batch-20261010-1000/lot-06/webp/mercadona-9057.webp",
+    "nativeSha256": "19d56648888507b0073c231e988a6e051781d564fd4532427774678abb6d030b",
+    "originalPromptUnavailable": true,
+    "note": "Original batch directory was deleted. Native recovered by exact SHA after same export; original prompt is unavailable and has not been invented. Fresh visual review required before upload."
+  },
+  "width": 768,
+  "height": 653,
+  "bytes": 91362,
+  "sha256": "1ddd4709cb6bab1e5e404ff1bf4efac1362c7af3bce3dd1b87e80c30055508c1",
+  "alpha": {
+    "transparentPixels": 84632,
+    "opaquePixels": 1463,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T16:56:12.113Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T16:59:56.317Z",
+  "publication": {
+    "productId": "9057",
+    "name": "Preparado lácteo con cereales crecimiento Peques 3 Puleva",
+    "objectPath": "mercadona/9057/1ddd4709cb6bab1e.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/9057/1ddd4709cb6bab1e.webp",
+    "contentType": "image/webp",
+    "bytes": 91362,
+    "published": true,
+    "sha256": "1ddd4709cb6bab1e5e404ff1bf4efac1362c7af3bce3dd1b87e80c30055508c1"
+  },
+  "publishedAt": "2026-10-11T17:02:44.011Z",
+  "localWebpDeletedAt": "2026-10-11T17:02:44.332Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:02:44.332Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:02:44.332Z"
+}

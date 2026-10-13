@@ -1,0 +1,41 @@
+{
+  "id": "35934",
+  "index": 94,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-b2f30730-7ded-433c-a1c2-ec532d89404e.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-35934-tonico-facial-vitamina-c-y-niacinamida-facial-clean-iluminador-y-antioxidante.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Tall slender transparent orange Facial Clean Deliplus toner bottle, white cylindrical cap, amber/orange lettering TÓNICO VITAMINA C & NIACINAMIDA, ILUMINADOR & ANTIOXIDANTE. Preserve orange liquid. Product catalog identity: Tónico facial vitamina C y niacinamida Facial Clean iluminador y antioxidante.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/35934.txt",
+  "sourceOriginalSha256": "a4584635546773654414ec93c330126eda9220a7b67bc9feeef9a54c4cb5c1d6",
+  "sourceOriginalBytes": 24212,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:11:10.622Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-35934.webp",
+  "width": 227,
+  "height": 768,
+  "bytes": 24036,
+  "sha256": "4e6915822eb2897b1010b54ffafceb41abd33366b0a715b04b91ad157cd58d28",
+  "alpha": {
+    "transparentPixels": 38737,
+    "opaquePixels": 943,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:19:46.311Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:22:43.715Z",
+  "publication": {
+    "productId": "35934",
+    "name": "Tónico facial vitamina C y niacinamida Facial Clean iluminador y antioxidante",
+    "objectPath": "mercadona/35934/4e6915822eb2897b.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/35934/4e6915822eb2897b.webp",
+    "contentType": "image/webp",
+    "bytes": 24036,
+    "published": true,
+    "sha256": "4e6915822eb2897b1010b54ffafceb41abd33366b0a715b04b91ad157cd58d28"
+  },
+  "publishedAt": "2026-10-12T15:22:59.380Z",
+  "localWebpDeletedAt": "2026-10-12T15:22:59.580Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:22:59.580Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:22:59.580Z"
+}

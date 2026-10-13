@@ -1,0 +1,41 @@
+{
+  "id": "24078",
+  "index": 9,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-a2674434-cad8-49d9-8b0d-48b9418bf611.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-24078-vino-rosado-tempranillo-garnacha-mar-de-uvas-do-navarra.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Vino rosado tempranillo garnacha Mar De Uvas DO Navarra, ID 24078.\nObserved source: One deep rosé glass bottle, silver capsule with UVAS, cream label with TEMPRANILLO GARNACHA and 2025 as on source.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/24078.txt",
+  "sourceOriginalSha256": "106b33e5f1c298a656811d990086255ec8e3fc39aa1a7412b6ce3a8255da55ba",
+  "sourceOriginalBytes": 28375,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:34:51.469Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-24078.webp",
+  "width": 226,
+  "height": 768,
+  "bytes": 29828,
+  "sha256": "24fd07da8aecb41bb49dcfecf6a9aa43ad25b7250839a50a576a881044c0a132",
+  "alpha": {
+    "transparentPixels": 62335,
+    "opaquePixels": 938,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:37:52.577Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:43:23.266Z",
+  "publication": {
+    "productId": "24078",
+    "name": "Vino rosado tempranillo garnacha Mar De Uvas DO Navarra",
+    "objectPath": "mercadona/24078/24fd07da8aecb41b.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/24078/24fd07da8aecb41b.webp",
+    "contentType": "image/webp",
+    "bytes": 29828,
+    "published": true,
+    "sha256": "24fd07da8aecb41bb49dcfecf6a9aa43ad25b7250839a50a576a881044c0a132"
+  },
+  "publishedAt": "2026-10-12T13:43:38.020Z",
+  "localWebpDeletedAt": "2026-10-12T13:43:38.211Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:43:38.211Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:43:38.211Z"
+}

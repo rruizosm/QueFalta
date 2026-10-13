@@ -1,0 +1,50 @@
+{
+  "id": "5903",
+  "index": 35,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12619-4821-71f0-b2f1-b6220eabecde/exec-bdb5bfbc-9b6b-440c-83fe-5df85045ac73.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-01/mercadona-5903-preparado-de-verdura-para-escudella.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "839bd6bc518797e83d57c6a96d587524ac174194af1d5efa074b49ab095cbc59",
+  "sourceOriginalBytes": 56331,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:37:47.328Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-01/webp/mercadona-5903.webp",
+  "recovery": {
+    "recoveredAt": "2026-10-11T16:56:07.779449+00:00",
+    "nativeMatchedToHistoricalWebp": true,
+    "historicalWebpSha256": "2e05567d357cc9eb23a82342e956cae9363490c17f97bbedcead75ff0fbb918a",
+    "historicalWebpTempPath": "/private/tmp/mercadona-batch-20261010-1000/lot-06/webp/mercadona-5903.webp",
+    "nativeSha256": "d856ee478a9ed543341b7fcae15ade978d3d27afec677dc8bf23b02eeabd58bd",
+    "originalPromptUnavailable": true,
+    "note": "Original batch directory was deleted. Native recovered by exact SHA after same export; original prompt is unavailable and has not been invented. Fresh visual review required before upload."
+  },
+  "width": 768,
+  "height": 584,
+  "bytes": 79330,
+  "sha256": "2e05567d357cc9eb23a82342e956cae9363490c17f97bbedcead75ff0fbb918a",
+  "alpha": {
+    "transparentPixels": 186874,
+    "opaquePixels": 1072,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T16:56:10.193Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T16:59:55.627Z",
+  "publication": {
+    "productId": "5903",
+    "name": "Preparado de verdura para escudella",
+    "objectPath": "mercadona/5903/2e05567d357cc9eb.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/5903/2e05567d357cc9eb.webp",
+    "contentType": "image/webp",
+    "bytes": 79330,
+    "published": true,
+    "sha256": "2e05567d357cc9eb23a82342e956cae9363490c17f97bbedcead75ff0fbb918a"
+  },
+  "publishedAt": "2026-10-11T17:02:25.857Z",
+  "localWebpDeletedAt": "2026-10-11T17:02:26.209Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:02:26.209Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:02:26.209Z"
+}

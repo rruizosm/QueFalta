@@ -1,0 +1,41 @@
+{
+  "id": "3313",
+  "index": 26,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12be3-1801-7fe3-88ee-862e3d13eea9/exec-d74c4142-9b79-4745-82fa-cfb3e428313c.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-03/mercadona-3313-uva-blanca-sin-semillas.png",
+  "prompt": "Use case: style-transfer. Create one polished hand-drawn retail product illustration for the QueFalta catalog. Image 1 is the sole authoritative product photograph. Image 2 supplies ONLY the illustrated medium, delicate outlines, simplified clean shading and subtle texture, never its milk carton, colors or text. Faithfully illustrate exactly the complete product in image 1, its perspective, geometry, components, colors and main readable label lettering. Truly transparent background, no ground plane, no cast shadow. Center the entire object with generous safe transparent margin. Preserve all visible caps, separate accessories, real multipack counts and full package edges. Preserve meaningful negations SIN or SEM and visible quantities completely. No invented claims, brands, prices, quantities or extra food/props. Tiny unreadable legal text may be quietly simplified. Never infer packaging text or quantities from catalog title. Product-specific visual requirements: Clear tub packed with light green grapes plus small loose bunch in front at lower right; preserve both tub and loose grapes. Catalog title for identification only: Uva blanca sin semillas. Reproduce numeric values only when legible in image 1; the actual photograph overrides catalog wording.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-03/actual-prompts/3313.txt",
+  "sourceOriginalSha256": "a21d29cb2bfc9ece6fe55e12e426ee7a9f03e23df2a5c8702703163dfedb24ea",
+  "sourceOriginalBytes": 47963,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:47:46.485Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-03/webp/mercadona-3313.webp",
+  "width": 768,
+  "height": 646,
+  "bytes": 82650,
+  "sha256": "adf7f3a120d208707a9c60c238b02737d4340f4235efdccf691c30003d5ce45d",
+  "alpha": {
+    "transparentPixels": 191306,
+    "opaquePixels": 1171,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:51:03.961Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:51:45.103Z",
+  "publication": {
+    "productId": "3313",
+    "name": "Uva blanca sin semillas",
+    "objectPath": "mercadona/3313/adf7f3a120d20870.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/3313/adf7f3a120d20870.webp",
+    "contentType": "image/webp",
+    "bytes": 82650,
+    "published": true,
+    "sha256": "adf7f3a120d208707a9c60c238b02737d4340f4235efdccf691c30003d5ce45d"
+  },
+  "publishedAt": "2026-10-12T13:51:52.283Z",
+  "localWebpDeletedAt": "2026-10-12T13:51:52.496Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:51:52.496Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:51:52.496Z"
+}

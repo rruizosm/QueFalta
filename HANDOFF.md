@@ -1,5 +1,502 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Entrega conjunta a GitHub (2026-10-13)
+
+- Esta entrega agrupa todo el trabajo local hasta el 13-10: despensa/nevera,
+  navegación, alertas por palabras, correcciones de sincronización Lidl,
+  ilustraciones/evidencias y los borrados locales de recursos históricos.
+- Las menciones «local» o «sin commit/push» de las entradas anteriores son
+  checkpoints históricos: sus cambios quedan incluidos en esta entrega.
+  El ajuste verificado de ES0410 y la detección de fuentes vacías forman parte
+  del código del fleet; Langreo ya se recuperó en producción.
+- Siguen pendientes las operaciones remotas del diagnóstico Lidl: aplicar
+  `20261013144834_lidl_comparator_product_store_index.sql` y recuperar solo
+  las 38 tiendas canarias documentadas. Publicar Git no ejecuta estos pasos
+  ni distribuye una nueva versión de la app en App Store.
+- Las migraciones de palabras en alertas y de `lidl_product_master.illustration_url`
+  ya estaban aplicadas con los IDs remotos indicados en sus entradas.
+- La suite completa detectó cinco comprobaciones obsoletas respecto a `main`:
+  BM en comparador, Recetas desactivadas, controles de información compartidos,
+  fallback de imagen y hashes de evidencia del comparador. Se actualizan los
+  tests y los sucesores explícitos; no se cambian los recibos históricos ni
+  el comportamiento de producción para satisfacer esas comprobaciones.
+- Validación de la entrega: `npm run quality` correcto (TypeScript, ESLint
+  sin avisos y 1021/1021 pruebas), 31 regresiones dirigidas y diff sin errores
+  de espacios. No se incluyen credenciales ni configuración local ignorada.
+
+## Lidl: revisión de nueve workers fallidos (local, 2026-10-13)
+
+- Run `38303318853`: 661 éxitos y 58 `dead` (38 Canarias vacías + 20 catálogos
+  bajo mínimo). También fallan `report` por esos `dead` y `comparator` por 57014.
+- `sync-lidl.mjs` y `lib/lidl-store-coverage.mjs` corrigen la detección de fuente
+  vacía tras el nuevo árbol de Lidl. Comprueban ramas completas; un catálogo
+  parcial no activa respaldo. ES0951 confirmado con DRY_RUN real.
+- Índice del comparador preparado en
+  `20261013144834_lidl_comparator_product_store_index.sql`, **NO aplicado**.
+  SQL real y plan del índice probados en PGlite; 62/62 regresiones y tsc correctos.
+- Sin commit/push ni escrituras remotas. Publicar el fix y reabrir exclusivamente
+  los 38 IDs indicados en `docs/lidl-sync-investigation-20261013.md`; después,
+  `recover` filtrado. Las 20 tiendas bajo mínimo requieren validar su surtido;
+  se mantienen sus datos anteriores y todos los controles actuales.
+- Cambio concurrente conservado: otro trabajo añade ES0410 (Langreo) al mapa
+  de catálogos pequeños verificados. No forma parte de esta recuperación.
+
+## Lidl Langreo: listas recuperadas en producción (2026-10-13)
+
+- App Store 1.3.3, CP 33930 → ES0410, C/ del Norte 52–54. Catálogo obsoleto
+  desde el 21-09 porque el mínimo genérico de 2.200 rechazaba el surtido real.
+- Tres lecturas completas: 2.028 productos, 70/70 hojas con datos y 100 %
+  precio/imagen. Dos snapshots idénticos en IDs/precios/recuentos. ES0410
+  añadido al mapa verificado con mínimo 1.987; resto de controles intactos.
+  Evidencia: `docs/lidl-langreo-recovery-20261013.json`.
+- Reabierto y procesado **solo ES0410**: `succeeded` a las 14:53:33 UTC,
+  67 novedades, 197 bajadas y 249 subidas, sin usar otra tienda como fuente.
+  API y funciones reales del cliente correctas; 53/53 regresiones y tsc pasan.
+  No requiere actualizar la app. Cambios comparados con la observación del
+  21-09; su fecha exacta durante ese intervalo no es conocida.
+- Recuperación remota hecha; **ajuste del script aún local, sin commit/push**.
+  Publicarlo antes del próximo fleet para evitar el mismo bloqueo. No se han
+  recuperado los otros IDs ni aplicado el índice del trabajo simultáneo.
+  Ajuste temporal de Plus de la QA inicial completamente retirado.
+
+## Nevera: solo baldas (local, 2026-10-13)
+
+- Retirados de `PantryFridge` el marco, las paredes, los degradados, la luz,
+  la rejilla y los cajones. Quedan baldas azules con fondo liso claro/oscuro
+  y márgenes como el armario. Añadir/mover y persistencia independiente intactos.
+- QA visual en iPhone 15 Pro/iOS 26.5, TypeScript, ESLint focalizado,
+  61/61 pruebas y `git diff --check` correctos. Sin migraciones.
+
+## Nevera: productos y posiciones independientes (local, 2026-10-13)
+
+- Alta desde huecos, arrastre horizontal/entre baldas, acciones accesibles y
+  baldas adicionales mediante el mismo `PantryShelf` del armario, con azul.
+- Dos instancias estables de `usePantryLayout` por pantalla/cuenta. Clave
+  existente de despensa intacta; nevera en `@fridge_layout:v1:${userId}`.
+  Productos, copias, posiciones, baldas y colas de escritura independientes.
+  Sin SQL ni cambios remotos; persistencia local como la despensa.
+- Nevera queda montada tras la primera visita; conserva scroll e imágenes.
+  Callbacks ligados a su sección, foco/buscador cerrados al cambiar y errores
+  aislados. Panel/ficha/consumo/carrito reutilizados; textos ES/CA actualizados.
+- 61/61 pruebas, TypeScript y ESLint focalizado correctos. QA nativa en iPhone
+  15 Pro/iOS 26.5: añadir leche, arrastrar entre baldas y horizontalmente,
+  reiniciar y recuperar posición, retirar solo la unidad de prueba desde la UI.
+  22 productos/seis baldas de despensa idénticos byte a byte; nevera vacía al
+  terminar QA. Evidencias locales en `/tmp/quefalta-fridge-qa/`.
+
+## Lidl: primera ilustración WebP publicada (2026-10-13)
+
+- Completado 1/1: Leche semi desnatada Leyma Natura 1 l, `8804651149163_ES`, publicado y con fotografía oficial real. ImageGen integrado, estilo Mercadona 10699 y alfa nativo.
+- WebP 512×768, 44.698 bytes, subido a `product-illustrations/lidl/8804651149163_ES/3dc19433a467466d.webp` y vinculado en `lidl_product_master.illustration_url`. Foto original intacta; sin duplicación por tienda.
+- Migración local `20261013141332_add_lidl_illustration_url.sql`, aplicada en producción como `20261013141404`. Añade solo el campo al maestro; RLS/permisos intactos. El cliente/vista Lidl aún no consume esta ilustración; no se ha ampliado el encargo a integración visual.
+- Lectura pública y BD verificadas por SHA/MIME/bytes/dimensiones/alfa/publicación. JPG/WebP temporales eliminados después de verificar. PNG nativos, prompts y recibos en `assets/product-illustrations/lidl-20261013-1/`. Typecheck correcto; sin commit/push.
+
+## Despensa: menos hueco interior sobre la primera balda (local, 2026-10-13)
+
+- `PantryShelf` desplaza el lienzo hacia arriba solo el hueco sobrante y reduce
+  el marco igual. Respeta 8 pt sobre el producto más alto o el hueco de añadir;
+  no recorta productos antiguos grandes ni cambia almacenamiento/arrastre.
+  Margen exterior, Lista y Nevera intactos.
+- TypeScript, ESLint y 52/52 pruebas correctos. QA iPhone 15 Pro/iOS 26.5:
+  ~32 pt menos de hueco, productos completos. Primera balda negra inicialmente;
+  textura recuperada al reiniciar y correcta al reaplicar el recorte. Causa sin
+  confirmar, sin corrección definitiva del negro.
+
+## Nevera: interior frío y baldas azules (local, 2026-10-13)
+
+- Nuevo `PantryFridge`: interior blanco/azul con luz y rejilla superiores,
+  tres baldas frontales azules y dos cajones translúcidos. Claro/oscuro,
+  scroll con margen para la barra y coordinación de gestos con el pager.
+- Corrección de diseño: se elimina la perspectiva 3D y los reflejos del cristal.
+  Se reutiliza `PantryWoodShelf` con acabado `ice`, manteniendo exactamente la
+  silueta, proporciones y soportes del armario; la madera permanece intacta.
+  Resultado frontal revisado en el simulador y comprobaciones repetidas correctas.
+- La cabecera de `PantryScreen` se vuelve azul en Nevera; el selector usa
+  selección opaca en oscuro. Despensa conserva sus vistas y almacenamiento.
+- El diseño inicial se ha ampliado con inventario independiente (ver arriba).
+  No hay SQL ni dependencias añadidas.
+- QA visual en iPhone 15 Pro/iOS 26.5, TypeScript, ESLint focalizado,
+  51/51 pruebas de despensa y `git diff --check` correctos.
+
+## Despensa: cabecera más compacta (local, 2026-10-13)
+
+- `PantryScreen`: margen superior adicional de 12 a 4 pt e inferior de 14 a
+  6 pt. La cabecera ocupa 16 pt menos; conserva área segura y selectores.
+- Armario/Lista está en la misma fila de cabecera, a la derecha de
+  Despensa/Nevera y solo visible en Despensa; ya no ocupa una fila del contenido.
+- TypeScript, ESLint y 51/51 pruebas de despensa correctos; pendiente QA visual.
+
+## Despensa: carga, cambio de vista y arrastre optimizados (local, 2026-10-12)
+
+- Armario permanece montado al cambiar a Lista/Nevera: conserva las imágenes,
+  las baldas SVG, los gestos y el scroll. Las vistas usan capas medidas con
+  opacidad, bloqueo de toques y exclusión de accesibilidad cuando están ocultas.
+  Lista se monta al primer uso y usa `FlatList` (10 filas iniciales, lotes de 8,
+  ventana de 5 pantallas), conservando su scroll al volver.
+- `PantryShelf`, productos y baldas memoizados. La normalización conserva las
+  referencias de los productos cuya posición no cambia. El lookup de ubicación
+  de las filas usa un conjunto de IDs, evitando búsquedas por cada fila.
+- Colisiones y huecos se calculan por balda; se mantienen el orden, recuperación
+  de layouts antiguos y copias independientes. El snapshot Reanimated solo lleva
+  geometría indexada por instancia: lookup directo, un mapper por producto y
+  arrastre mediante `transform`, sin modificar left/top en cada fotograma.
+- Pruebas dirigidas de despensa: 51/51. Comparación adicional de 300 layouts
+  generados con semilla contra la versión previa: colocaciones, recuperación y
+  huecos idénticos. Benchmark CPU offline reproducible en
+  `scripts/benchmark-pantry.mjs` (acepta ruta de `pantryLayout.ts` anterior):
+  con 500 productos/100 baldas, colocación + huecos pasan de ~9,2 ms a ~0,24 ms
+  por iteración en esta máquina. No es una medición de FPS ni latencia de red.
+- QA nativa con arranque limpio en iPhone 15 Pro/iOS 26.5: ilustraciones completas,
+  cambios de vista, Lista desplazable, retorno de Nevera con el mismo scroll,
+  apertura/cierre del foco y retorno a la balda. Los 22 productos/seis baldas
+  reales permanecen idénticos byte a byte. TypeScript y ESLint focalizado correctos.
+  Sin SQL ni cambios en el formato de almacenamiento. La primera descarga de
+  ilustraciones aún depende de la red; las siguientes reutilizan memoria/disco.
+
+## Despensa: selectores de sección y vista (local, 2026-10-12)
+
+- La cabecera contiene «Despensa / Nevera» y ya no muestra el título fijo.
+  «Armario / Lista» ocupa la esquina superior derecha del contenido, donde
+  antes estaba la etiqueta «Armario».
+- Nevera es una pantalla separada con aviso de próxima disponibilidad. Todavía
+  no existe inventario de nevera ni modelo de persistencia para él; los productos
+  del armario permanecen aislados y se conservan al cambiar de sección.
+- Textos ES/CA, regresión de aislamiento y retorno; TypeScript, ESLint y
+  48 pruebas de despensa correctos. Sin SQL.
+
+## Alertas de novedades filtrables por palabras (local, 2026-10-12)
+
+- `PriceAlertEditorModal` ya no borra ni oculta `Palabras` al activar Novedad.
+  El filtro es opcional y, si se usa, requiere dos caracteres; al guardar se
+  conserva en `price_alert_rules.query`. `PriceAlertsScreen` lo muestra en la
+  tarjeta y hay textos equivalentes ES/CA.
+- Nueva migración local, aplicada en producción como `20261012192222`:
+  `supabase/migrations/20261012191308_filter_new_arrival_alerts_by_keywords.sql`.
+  Relaja el check de `new_arrival`, deja de limpiar `query/query_norm` y filtra
+  los eventos por todos los tokens normalizados del nombre del producto. Las
+  reglas antiguas con `query=null` continúan recibiendo todas las novedades.
+- Verificación remota transaccional correcta: conserva y normaliza las palabras,
+  rechaza filtros de un carácter, respeta el modo sin filtro y ambas RPC de
+  reserva usan el nuevo cruce. Sin hallazgos nuevos de advisors atribuibles.
+  Pasan 12/12 pruebas dirigidas, TypeScript, ESLint focalizado y
+  `git diff --check`.
+
+## Grupos: cesta expandida sin recortes (local, 2026-10-12)
+
+- `GroupDetailScreen` añade 12 pt de separación superior al bloque de progreso
+  de la cesta expandida. La barra deja de quedar pegada/oculta bajo la cabecera.
+- La lista ocupa el alto restante y cierra sus extremos con borde y radios propios
+  en la primera sección y la última fila. Sin SQL ni datos nuevos.
+- QA en iPhone 15 Pro/iOS 26.5 correcto: progreso, borde superior, borde inferior
+  y total visibles. Pasan 6/6 pruebas, TypeScript, ESLint y `git diff --check`.
+
+## Novedades: fondo activo del filtro centrado (local, 2026-10-12)
+
+- `SlidingSegments` corrige la píldora seleccionada compacta/densa de 32×34 a
+  32×32 pt, con inset uniforme de 4 pt respecto al contorno del botón. El icono
+  original permanece intacto y no cambia el área táctil.
+- Cambio visual de cliente, sin SQL ni cambios de almacenamiento.
+- Pasan la regresión dirigida, TypeScript, ESLint focalizado y
+  `git diff --check`.
+- Validado visualmente con un filtro real activo en iPhone 15 Pro/iOS 26.5.
+
+## Despensa: cabecera y vistas Armario/Lista (local, 2026-10-12)
+
+- Cabecera fija en marrón suave (claro/oscuro), título de 20 pt y selector
+  Armario/Lista a su derecha en la misma fila, con solo iconos y etiquetas
+  accesibles; el nombre activo está arriba a la derecha dentro del contenido.
+  `SlidingSegments` reutilizado del catálogo.
+- Armario mantiene las baldas; Lista muestra cada instancia guardada con imagen,
+  ubicación y acceso al panel de acciones. Cambiar de vista no guarda ni recoloca
+  productos. La selección de vista es local al montaje de la cuenta.
+- Textos ES/CA y regresión de cambio de vista/consumo de una sola copia añadidos.
+  TypeScript, ESLint focalizado y 47 pruebas de despensa correctos. Sin SQL.
+
+## Cesta: cabecera compacta en una sola fila (local, 2026-10-12)
+
+- `ListScreen` ya no renderiza el contador de artículos gestionados bajo el
+  título. Se retiraron las claves `list.subtitle` de castellano y catalán.
+- Asignar toda la lista y vaciar están a la derecha del título en la misma fila,
+  con las mismas condiciones, acciones, hit slop y etiquetas accesibles.
+- Cambio de cliente sin migración ni alteraciones de datos.
+- Pasan 9/9 pruebas dirigidas, TypeScript, ESLint focalizado y
+  `git diff --check`.
+
+## Despensa en la navegación principal (local, 2026-10-12)
+
+- `Pantry` es ahora una pestaña visible entre Catálogo y Carrito, con icono
+  propio y movimiento independiente de la cápsula inferior. Ya no comparte la
+  selección de Inicio ni vive como página oculta a su izquierda.
+- Inicio permanece como ruta inicial y raíz de Atrás de Android. Eliminados el
+  bloque Despensa de Inicio y el botón «Inicio» de la pantalla Despensa.
+- Tipos, documentación y pruebas del pager actualizados; textos obsoletos ES/CA
+  retirados. Sin SQL, backend ni cambios de almacenamiento.
+- Pasan 48/48 pruebas dirigidas, TypeScript, ESLint focalizado y
+  `git diff --check`.
+
+## Despensa: supermercado y acceso a la ficha del producto (local, 2026-10-12)
+
+- `PantryProductFocus` muestra «Mercadona» y su logo encima del nombre.
+- El botón `[i]` situado a la derecha del nombre abre la ficha completa con
+  `StoreProductModal`; cerrarla devuelve al mismo panel sin escribir la despensa.
+- Añadidas traducciones ES/CA y pruebas dirigidas. Sin SQL ni backend.
+- Pasan 45/45 pruebas de despensa, TypeScript, ESLint focalizado y
+  `git diff --check`.
+
+## Despensa: producto arriba y panel inferior con acciones (local, 2026-10-12)
+
+- `PantryProductFocus` amplía y centra la ilustración en la parte superior;
+  panel inferior con entrada vertical, ancho adaptable y contenido desplazable.
+  Conserva la transición desde/hacia la balda y Reducir movimiento.
+- Bloques informativos: Cantidad (1 unidad por instancia), Ubicación (balda
+  real o pendiente de colocar) y Notas (Sin notas). Son de lectura, sin añadir
+  campos nuevos al almacenamiento. Nombre del producto y botones ES/CA.
+- «Se ha terminado» desvanece el producto y retira solo la instancia seleccionada,
+  conservando las otras copias. «Añadir al carrito» envía una unidad al carrito
+  activo con identificadores, foto, precio y `categoryName`, sin consumir despensa.
+  Reutiliza `fetchProductMirror` para el almacén regional y `fetchProduct` para
+  el detalle; no hay SQL ni cambios en el backend.
+- Estado de carga, bloqueo de doble toque, confirmación dentro del botón y
+  errores visibles (sin carrito activo, fallo de catálogo o de alta).
+- QA visual en iPhone 15 Pro/iOS 26.5 con los 22 productos reales intactos,
+  byte a byte. Acciones probadas con dobles de servicios, sin altas de prueba
+  en el carrito real. Consulta remota de categoría/almacén validada en lectura.
+- 43/43 pruebas de despensa, TypeScript y ESLint focalizado correctos.
+
+## Despensa: productos guardados invisibles en iOS (corregido local, 2026-10-12)
+
+- Reproducido en iPhone 15 Pro/iOS 26.5: baldas ocupadas sin ilustraciones.
+  AsyncStorage conservaba 22 productos y seis baldas. La opacidad del producto
+  dependía de su presencia en el snapshot compartido de Reanimated, que puede
+  llegar después del montaje y dejar el estilo inicial transparente.
+- `PantryShelf` deja de ocultar productos por ese snapshot: usa la colocación
+  guardada como fallback y React controla su presencia. Solo la ilustración
+  seleccionada se oculta temporalmente durante el zoom.
+- Recargada la app del simulador y verificados 22 productos accesibles/visibles,
+  apertura del zoom, panel derecho y retorno a la balda. Datos guardados idénticos
+  byte a byte antes/después; sin restauraciones ni escrituras de reparación.
+- Nueva regresión con snapshot UI vacío y productos ya cargados en React.
+  Pasan 40/40 pruebas de despensa, `npx tsc --noEmit` y ESLint focalizado.
+
+## Despensa: zoom de selección y panel derecho vacío (local, 2026-10-12)
+
+- El toque en una ilustración abre `PantryProductFocus`: ampliación desde la
+  posición real del producto (460 ms, desaceleración suave), fondo atenuado y
+  panel vacío entrando por la derecha. Sustituye la barra de confirmar/borrar.
+- Cierre con X, toque fuera, Atrás de Android o escape de accesibilidad; vuelta
+  animada a la balda (340 ms), midiendo de nuevo el origen. Se espera a cargar
+  la imagen antes de ocultar la original para evitar duplicados o parpadeos.
+- Reducir movimiento usa solo un fundido. El arrastre y las acciones accesibles
+  de mover mantienen su función sin abrir el zoom; tocar no escribe en almacenamiento.
+  El alta coloca el producto y no abre automáticamente el panel.
+- Geometría/persistencia de las baldas intactas; panel adaptativo al ancho y al
+  tema. Textos ES/CA actualizados para no ofrecer el borrado retirado. Sin SQL.
+- Verificados TypeScript, ESLint focalizado y 39/39 pruebas de despensa. QA web
+  con componentes reales y productos de prueba en 390×844 y 320×568: apertura
+  desde distintas baldas/extremos, panel vacío, cierre y reapertura, sin errores
+  de consola. Pendiente validación visual de la transición en dispositivo nativo.
+
+## Mercadona: resultado de los 459 pendientes, 12-10-2026 — 441 ilustrados, 18 bloqueados
+
+- De los 459 publicados sin ilustración del snapshot inicial se han generado, subido y verificado **441 WebP**. Quedan **18 rechazos de ImageGen**: 14 históricos excluidos y 4 nuevos (27201,46920,8260,52821), sin reintentos de moderación. Los 445 elegibles quedan resueltos como 441 publicados y 4 bloqueados.
+- Auditoría conjunta: 2026-10-12 15:45:12 UTC, 29.292.088 bytes. Los 441 superan MIME, SHA-256, bytes, dimensiones<=768px, alfa nativo/WebP, prompt exacto y vínculo BD. Sus 441 JPG fuente y 441 WebP temporales fueron eliminados después de verificar cada subida. Cero JPG/JPEG/WebP en assets/product-illustrations. PNG nativos, versiones, prompts y recibos conservados.
+- Las 5835 URLs de ilustración anteriores siguen intactas. Durante el cierre cambió el catálogo fuera de estas subidas:55 miniaturas (52 anteriores y 3 de la tanda) y 3 estados published a false (3768,4326,37001). Los 441 estaban publicados al subir;438 seguían publicados en la auditoría final. El uploader solo escribe illustration_url; los cambios de catálogo quedan registrados, sin restaurarlos.
+- Cola remota al 2026-10-12 15:46:54 UTC: **56 publicados sin ilustración**, compuestos por los 18 bloqueados de este encargo y **38 publicados adicionales fuera del snapshot solicitado** que aparecieron durante la actualización del catálogo. Estos 38 no se contabilizan como parte de los 459.
+- Cuatro lotes exclusivos con un máximo de cuatro actores activos. Todos los productores y el guardián de cuota han terminado. Typecheck npx tsc --noEmit:salida 0. Informe y evidencias en assets/product-illustrations/batch-20261012-459/README.md y verification.json. Los apartados siguientes son históricos.
+
+## Mercadona: tanda de 1000 completada el 11-10-2026
+
+- Completados los **396 pendientes** de la tanda del 10-10: **1000/1000 productos publicados ilustrados** (604 anteriores + 396 de esta reanudación), cero pendientes del encargo.
+- Auditoría remota conjunta: **2026-10-11 18:29:35 UTC**. Los 1000 WebP superan MIME, SHA-256, bytes, dimensiones y alfa; 71.498.318 bytes en total (26.435.300 bytes nuevos). Las 5439 ilustraciones y miniaturas anteriores permanecen intactas.
+- Catálogo remoto al cierre: **5835 productos con ilustración** y **459 productos publicados sin ilustración**, fuera de esta tanda. No se han procesado como una ampliación del encargo.
+- Los 396 JPG fuente y 396 WebP temporales de la reanudación se borraron después de verificar Storage y BD. **Cero JPG/JPEG/WebP en `assets/product-illustrations/`**. Se conservan PNG nativos, prompts, manifiestos y recibos nuevos.
+- La carpeta histórica de la tanda anterior había sido eliminada externamente; no se recrea. Nueva evidencia en `assets/product-illustrations/resume-20261011-396/`: `verification.json`, `previous-604-verification.json`, `catalog-counts-after.json` y verificaciones por lote.
+- Se recuperaron 55 PNG nativos (45 por hash exacto y 10 por checkpoints de la conversación), sin inventar los prompts perdidos. Cuatro recuperados se regeneraron antes de publicar: hay 345 prompts finales exactos guardados y 51 ilustraciones finales con procedencia de recuperación y prompt histórico no disponible.
+- ImageGen integrado por producto; fotos oficiales y estilo 10699, revisión visual previa y remota, publicación condicionada a `published=true` y URL vacía. Nueve IDs moderados en la tanda anterior se excluyeron sin reintentos. No hubo cuota ni moderación en esta reanudación. Máximo cuatro actores activos por límite de plataforma.
+- Todos los productores y publicaciones terminados. `npx tsc --noEmit` correcto (salida 0). Sin commit/push/merge nuevos; se preservan los cambios y borrados locales anteriores. Las secciones siguientes son checkpoints históricos, no el estado vigente.
+
+## Mercadona: tanda del 10-10, 1000 ilustraciones adicionales en curso
+
+- Tanda actual: `assets/product-illustrations/batch-20261010-1000/`.
+  Objetivo efectivo: 1000 productos publicados, con foto oficial y sin ilustración al inicio.
+  Nueve bloqueos de moderación se excluyeron sin reintentos; nueve sustitutos ya publicados.
+- Último checkpoint remoto: 554 publicados/verificados a 2026-10-10T14:34:58.524Z (41447220 bytes).
+  El progreso posterior está en `audit.mjs --status`; el checkpoint no es el cierre final.
+  Lotes 01/02/04 completos, 03 cerrado con91 y suplemento9; 05/06/07 activos,
+  08/09 pendientes de turno; el coordinador asiste10 (20 publicados/verificados,21–40 en curso). Máximo cuatro actores activos por límite de plataforma.
+- Los124 pendientes de la segunda tanda del09-10 ya están resueltos. Evidencia aditiva:
+  `parent-reconciliation-ledger.json` con124 resueltos,0 pendientes. Los registros
+  históricos no se reescriben; sus estados de cuota corresponden a aquel momento.
+- Fuente oficial y referencia10699, ImageGen integrado por producto. Prompts específicos,
+  revisión visual final, WebP alfa de hasta768px. Subida condicionada a published=true
+  y URL vacía; readback SHA/MIME/bytes/URL y borrado inmediato de JPG/WebP temporales.
+  La carpeta del repositorio conserva PNG nativos, prompts y recibos; cero JPG/WebP.
+- Snapshot protege4835 ilustraciones anteriores y todas las miniaturas. Typecheck correcto
+  en los lotes cerrados. Sin cuota agotada en esta tanda hasta este checkpoint.
+- Encargo todavía incompleto: cierre exige1000 remotos verificados y nueva comprobación
+  conjunta. Error429 real detiene nuevas generaciones; moderados no se reformulan.
+  Cambios locales anteriores preservados. No hay solicitud nueva de commit/push.
+
+## Mercadona: segunda tanda del 09-10, 876/1000 completados; bloqueo de cuota
+
+Comprobación posterior (09-10-2026, 14:21 UTC): nueva petición de 1000 adicionales.
+Supabase confirmó 1459 productos publicados sin ilustración. Una prueba real con 5503
+volvió a recibir HTTP 429 `usage_limit_reached`, mismo reset 10-10 a 08:44:32 Madrid.
+Cero nuevas generaciones/publicaciones; no se inició otra tanda ni se lanzaron agentes.
+Error exacto en `batch-20261009-1000-02/quota-recheck-20261009-1421.json`.
+Sin reanudación automática. Los 876 anteriores y 124 pendientes conservan su estado.
+
+- Tanda: `assets/product-illustrations/batch-20261009-1000-02/`.
+  Diez responsables de 100 (máximo cuatro actores por límite de plataforma).
+- Cierre parcial auditado 2026-10-09 12:43:48 UTC: 876 publicados/verificados,
+  62.768.862 bytes,124 pendientes. Lotes 01/02=99,03–07=100,08=78,09=47,10=51
+  y suplemento 2. Los 3959 anteriores y 1002 thumbnails seleccionados intactos.
+- Todos los 876 JPG fuente/WebP publicados borrados tras recibo/readback/URL
+  válidos. Cero JPG/JPEG/WebP en la carpeta del repositorio. PNG nativos,
+  prompts específicos, jobs y recibos conservados; fuentes pendientes en tmp.
+- ImageGen integrado, estilo 10699; no sustituir ilustraciones por fotografías.
+  Moderados 44973/14087 sin reintentar/reformular; sustitutos 19976/33344 publicados.
+  Solicitudes históricas rechazadas siguen excluidas.
+- Cuota real HTTP 429 `usage_limit_reached`, reset 10-10-2026 a 08:44:32 Madrid
+  (06:44:32 UTC,1791614672). Todos los productores detenidos,0 llamadas en vuelo.
+  `PAUSE` activos y `quota-block.json` con error exacto. Sin reanudación programada.
+- Para retomar:124 IDs de `pending-products.json`, lot 08=22,09=53,10=49.
+  Publicados y URL nula verificados a 12:44:12 UTC en `pending-verification.json`.
+  Después del reset comprobar cuota/estado remoto y procesar únicamente estos
+  pendientes. Conservar existentes y no reintentar moderados. Cierre completo
+  requiere 1000 remotos verificados y tsc; auditoría actual `complete=false`.
+- Typecheck correcto. Sin commit/push; cambios locales anteriores preservados.
+  La primera tanda del 09-10 cerró 1000 (997+3 sustitutos), baseline actual 3959.
+
+## Mercadona: tercera tanda de 1000 ilustraciones incompleta y con limpieza local (2026-10-08)
+
+- 728 nuevos productos publicados y verificados a las 11:22:06 UTC; quedan 272 de
+  los 1000 seleccionados. ImageGen devolvió 429 usage_limit_reached y señaló reset el8deoctubre a las15:58:05
+  Europe/Madrid. Esa hora ya pasó; no se volvió a comprobar la cuota ni a reanudar
+  la generación tras la posterior petición del usuario de borrar JPG/WebP locales.
+- Lotes 01–06 completos; 07 tiene 96, 08 tiene 32; 09/10 tienen 100 prompts preparados cada uno.
+  Diez responsables asignados, máximo 4 activos por límite de ejecución.
+- Verificación remota MIME/SHA/bytes/alfa y archivos locales/nativos de 728,
+  máximo 768 px; total 53.954.268 bytes. Los thumbnails de Supabase de los 1000 seleccionados y las 2231 ilustraciones
+  anteriores permanecen intactos. La limpieza posterior borró los JPG originales y WebP locales. Total remoto WebP: 2959. Typecheck pasó.
+- Encargo todavía incompleto. pending-products.json registra 272 IDs, quota-block.json
+  el bloqueo real y reset; manifest.json conserva la selección de 1000 y una
+  availableVerification con complete=false. No se ha programado reanudación.
+- ImageGen integrado y prompts reales; no sustituir ilustraciones por fotos WebP.
+  Versiones nativas y finales conservados, sin restaurar los lotes limpiados antes.
+- El cleaner puede eliminar frascos/tapas separados: exportar desde PNG nativo
+  preservando componentes reales. Sharp hace resize antes del extend; materializar
+  padding en buffer y redimensionar finalmente a 768 px. Lote 07 reparó 31 publicados
+  de esta tanda con guard/CAS; 2231 previas preservadas.
+- Estado: assets/product-illustrations/batch-20261008-1000/. Antes de retomar comprobar
+  cierre de productores, recuperar nativos sin job y generar únicamente pendientes.
+  Verificación completa de 1000 + tsc requerida antes de afirmar 3231 ilustraciones.
+
+## Limpieza local posterior de JPG y WebP (2026-10-08)
+
+- Tras la verificación remota se eliminaron los 1200 archivos `.jpg` y 779
+  archivos `.webp` presentes entonces en `assets/product-illustrations/`.
+- La búsqueda recursiva y sin distinguir mayúsculas confirmó cero archivos de
+  esas extensiones y ninguna falla al borrarlos. Los `.png`, `.jpeg`, prompts,
+  manifiestos y trazabilidad permanecen. No se modificó Supabase.
+- La verificación global de las 728 ilustraciones documenta el estado anterior
+  a esta eliminación local; sus recibos y SHA se mantienen como historial.
+  Recuento e instante exactos: `batch-20261008-1000/cleanup-local-assets.json`.
+
+## Limpieza de archivos JPG y WebP locales (2026-10-08)
+
+- Por solicitud del usuario se eliminaron recursivamente **2168 archivos `.jpg`
+  y 257 archivos `.webp`** de `assets/product-illustrations/` (2425 en total).
+  La comprobación posterior encontró cero archivos de ambas extensiones.
+- Esta limpieza incluye las fotografías fuente JPG y las galerías JPG, además
+  de los WebP finales y sus versiones. Los registros de presencia de archivos
+  de los lotes describen el estado anterior a esta limpieza.
+- Los PNG, JPEG con extensión `.jpeg`, prompts, manifiestos y demás metadatos
+  se conservaron. La operación fue exclusivamente local; no modificó Storage
+  ni las URL publicadas en Supabase.
+
+## Limpieza local de ilustraciones Mercadona (2026-10-08)
+
+- Por solicitud del usuario se borraron de `assets/product-illustrations/` las
+  ilustraciones PNG/WebP, las galerías `preview-*` y las recuperaciones nativas.
+  Se conservaron fotos fuente, metadatos y manifiestos; Supabase no se modificó.
+
+## Hiperber auditado sin integrar (2026-10-07)
+
+- Viabilidad técnica confirmada mediante API Aktios y tres centros por CP.
+  Informe `docs/AUDITORIA-HIPERBER.md`, evidencia
+  `docs/hiperber-audit-20261007.json`.
+- Pendiente acuerdo de acceso/reutilización: robots excluye `/api/` y los
+  términos reservan derechos sobre contenido e imágenes. Antes de integrar,
+  medir catálogo completo, depurar nombres y unidades y validar cobertura.
+- No se añadió Hiperber a la app, no se ejecutó SQL ni se escribió en Supabase.
+  Las consultas fueron públicas, acotadas y sin autenticación. Typecheck pasa.
+
+## Embeddings: drenaje autorizado completado (producción, 2026-10-07)
+
+- Procesados los 1.857 jobs en cola de 14 supermercados mediante 19 canarios
+  secuenciales: requests `6514`, `6516`–`6533`, todos HTTP 200. Resultado:
+  1.854 completados, 3 obsoletos, cero failed/deferred/dispatched.
+- Cada despacho terminó con el control `paused` dentro de su misma transacción.
+  Estado final verificado a las 13:37 Madrid: cola global vacía, cero en vuelo,
+  cero fallos, presupuesto canario cero y cron 17 inactivo. Los 24 runs de octubre
+  con manifiesto se asentaron; cuatro runs legacy de septiembre sin dependencias
+  permanecen intactos y no corresponden a esta cola.
+- HNSW válido/listo/vivo y 597.745.664 bytes; tuplas muertas 5.473 (2,294 %),
+  sin mantenimiento activo ni alerta. No hubo cambios de esquema ni worker.
+- Pendiente separado: revisar Carrefour (1.458 embeddings previstos >1.000) y
+  Aldi (531, 21,51 % >10 %). Sus runs siguen `blocked` antes de encolar; no se
+  aplicó override ni se relanzó el materializador. El dispatcher automático
+  permanece apagado: futuros syncs podrán volver a acumular trabajos.
+
+## Mercadona: segundo lote de 1000 ilustraciones completado (2026-10-08)
+
+- **1000 productos adicionales publicados y verificados**. Total real del
+  catálogo: **2231 WebP publicados**, comprobado el 2026-10-08T08:07:01.408Z.
+  Se conservaron las URL y thumbnails de las 1231 ilustraciones anteriores.
+- Diez responsables con 100 productos cada uno, por tandas por el límite
+  de cuatro agentes activos incluido el coordinador. ImageGen integrado,
+  foto oficial y estilo `10699`; WebP transparente de hasta 768 px, calidad 84 y alfa 100.
+  Los 1000 objetos suman **86.941.702 bytes**.
+- Verificación anónima de URL, MIME, SHA, bytes, dimensiones y alfa de
+  los 1000 objetos en Storage; fotografías originales intactas. Typecheck
+  `npx tsc --noEmit` correcto. Inventario y trazabilidad en
+  `assets/product-illustrations/batch-20261007-1000-02/`.
+- Se corrigieron 23 productos; 1025 versiones nativas válidas documentadas.
+  La sopa `19882` pasó de un badge inventado `SIN/SEM GLUTEN` a `100% VEGETAL`:
+  revisión de v2 y sustitución dirigida con condición sobre la URL previa,
+  conservando objeto/recibo inicial y sin afectar a las 1231 anteriores.
+- La limpieza local solicitada durante esta tanda dejó 754 PNG/WebP finales
+  ausentes; los 1000 publicados siguen verificados en Storage. Se conservan
+  las 1000 fotos, prompts y jobs; 246 PNG y 246 WebP finales locales de trabajo.
+  Recuperaciones/incidencias documentadas, sin restaurar masivamente los
+  lotes cerrados ni repetir publicaciones. Tres rechazos históricos
+  (14159, 86913, 12421) fueron excluidos antes de seleccionar 1000 productos.
+
+## Mercadona: 1000 ilustraciones adicionales completadas (2026-10-07)
+
+- **1000 productos nuevos publicados y verificados** en Supabase. Total real
+  del catálogo: **1231 productos publicados con ilustración WebP**, comprobado
+  el 2026-10-07T15:29:10.524Z. Las 231 ilustraciones anteriores y todas las fotos
+  originales se conservaron. Subidas sin reemplazar ilustraciones existentes.
+- Diez responsables de 100 productos, ejecutados por tandas por el límite
+  de cuatro agentes activos incluyendo al coordinador. Lotes 01–10 cerrados.
+  Selección única y verificación global en
+  `assets/product-illustrations/batch-20261007-1000/manifest.json`;
+  README, responsables y progreso en la misma carpeta.
+- ImageGen integrado con foto oficial y referencia de estilo `10699`.
+  WebP transparente de hasta 768 px, calidad 84 y alfa 100. Los 1000 archivos
+  finales suman 85.529.934 bytes. Cada lote conserva fuentes, prompts,
+  PNG nativos, versiones, jobs con hashes/recibos y cinco galerías finales.
+- Revisión visual antes de publicar; lectura anónima de los 1000 productos,
+  MIME `image/webp`, SHA-256 local/recibo y alfa verificados.
+  `npx tsc --noEmit` pasó sin errores. Sin pendientes de este lote.
+- Tres sustituciones de selección por rechazos de salida de ImageGen:
+  14159 → 34102 (dos intentos), 86913 → 34172 (tres; el último ya estaba activo
+  al solicitar detener reintentos), 12421 → 34170 (dos). Sustitutos publicados
+  originalmente sin ilustración, fuera de las otras selecciones. Los productos
+  excluidos no se publicaron; trazabilidad en `selection-replacements.json`.
+
 ## Verificación conjunta antes de subir a GitHub (2026-10-07)
 
 - Lote local completo en `codex/integrate-local-updates-main-linear`:
@@ -4750,3 +5247,8 @@ mapa de APIs de Lidl), está en esos ficheros de memoria.
 
 Repos ecosistema: app `rruizosm/QueFalta` · web `rruizosm/QueFalta-Web` (carpeta hermana `quefalta-web/`) ·
 dashboard privado `rruizosm/QueFalta-Datos` (`QueFaltaDatos/`, Astro SSR + service_role).
+# Actualización — limpieza local de ilustraciones Mercadona (2026-10-08)
+
+- Se eliminaron de `assets/product-illustrations/` las imágenes ilustradas
+  (PNG/WebP), previews y recuperaciones nativas. Se mantienen fotos de producto
+  fuente, metadatos y manifiestos. El lote publicado en Supabase permanece intacto.

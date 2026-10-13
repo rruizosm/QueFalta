@@ -1,0 +1,47 @@
+{
+  "id": "13032",
+  "index": 10,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-c1c77faa-d950-48a4-b02b-63497a25681d.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-13032-solomillo-de-pavo-halal.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "c8f0244b5019995e5e658f99d888b51cedc72e386df8686eafc1f954cc8a00a6",
+  "sourceOriginalBytes": 43699,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:44:50.209741+00:00",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-13032.webp",
+  "recovery": {
+    "nativeMatchedToConversationCheckpoint": true,
+    "nativeSha256": "29abd60cd74f36579e925f8466f08951c2545fba327e5a7834c40ff0fe75663e",
+    "originalPromptUnavailable": true,
+    "note": "Root native output and ID matched to prior visible tool checkpoints. Original prompt file deleted; no replacement prompt claimed. Fresh visual review required."
+  },
+  "width": 518,
+  "height": 768,
+  "bytes": 63280,
+  "sha256": "39c8246f0484a90fff9cd4abcdf5db8e0dcce1ab2aeccea38a059153e957d979",
+  "alpha": {
+    "transparentPixels": 62315,
+    "opaquePixels": 1443,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T16:57:42.748Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:09:59.444Z",
+  "publication": {
+    "productId": "13032",
+    "name": "Solomillo de pavo Halal",
+    "objectPath": "mercadona/13032/39c8246f0484a90f.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/13032/39c8246f0484a90f.webp",
+    "contentType": "image/webp",
+    "bytes": 63280,
+    "published": true,
+    "sha256": "39c8246f0484a90fff9cd4abcdf5db8e0dcce1ab2aeccea38a059153e957d979"
+  },
+  "publishedAt": "2026-10-11T17:11:25.450Z",
+  "localWebpDeletedAt": "2026-10-11T17:11:25.633Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:11:25.633Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:11:25.633Z"
+}

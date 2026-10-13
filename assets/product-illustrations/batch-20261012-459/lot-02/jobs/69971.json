@@ -1,0 +1,68 @@
+{
+  "id": "69971",
+  "index": 79,
+  "version": 2,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-5f27066b-db01-43ba-bbe6-04c413ab15d2.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-69971-tomates-v2.png",
+  "prompt": "Use case: precise-object-edit. Create a corrected transparent product illustration. Reference image 1 is the authoritative official photo of a red mesh net bag of tomatoes. Reference image 2 is the existing illustration to edit. Reference image 3 is style only. Preserve the existing tomato bag illustration, tomatoes, red mesh threads, tied neck, proportions and painted style. Change ONLY the background transparency: remove all opaque white filled spaces between the red mesh threads in the entire empty upper neck above the tomatoes, turning EVERY diamond opening in this empty neck to real alpha 0. The empty upper neck contains only thin red mesh threads with fully transparent holes, no fabric, white plastic, sheet, milk, inner bag, glow or filler. Preserve the red threads themselves and the lower red tomatoes unchanged. All exterior pixels and all mesh openings where there is no tomato behind them must be genuinely alpha 0. Square RGBA output, no ground shadow.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/69971-v2.txt",
+  "sourceOriginalSha256": "bfb2b94c9b48abbb078cbecf77658e6aa4a893c69cfb71ac5c6d103c716cbce0",
+  "sourceOriginalBytes": 65393,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:23:50.483Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-69971.webp",
+  "previousGenerations": [
+    {
+      "id": "69971",
+      "index": 79,
+      "version": 1,
+      "generationTool": "built-in image_gen",
+      "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-60e1d88e-45a2-4c44-a18e-0fca83359833.png",
+      "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-69971-tomates.png",
+      "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Red mesh net bag filled with numerous small red round tomatoes, elongated tied mesh neck above, real mesh openings and visible tomatoes. Preserve red net bag. Product catalog identity: Tomates.",
+      "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/69971.txt",
+      "sourceOriginalSha256": "bfb2b94c9b48abbb078cbecf77658e6aa4a893c69cfb71ac5c6d103c716cbce0",
+      "sourceOriginalBytes": 65393,
+      "status": "prepared",
+      "generatedAt": "2026-10-12T15:00:12.486Z",
+      "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-69971.webp",
+      "width": 515,
+      "height": 768,
+      "bytes": 97540,
+      "sha256": "e8bac1e6608a653541612bcf3c9eb6e0c95d9fbf632bbb5e4bfcfd8b33583c74",
+      "alpha": {
+        "transparentPixels": 191115,
+        "opaquePixels": 518,
+        "visibleBorderPixels": 0
+      },
+      "preparedAt": "2026-10-12T15:03:04.679Z"
+    }
+  ],
+  "width": 514,
+  "height": 768,
+  "bytes": 121964,
+  "sha256": "efa832c9bf7b54122663f2b264df33353dc6ac2ce5a9e0ab4c6f7f740692b1e2",
+  "alpha": {
+    "transparentPixels": 198232,
+    "opaquePixels": 901,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:24:20.839Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:24:40.036Z",
+  "publication": {
+    "productId": "69971",
+    "name": "Tomates",
+    "objectPath": "mercadona/69971/efa832c9bf7b5412.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/69971/efa832c9bf7b5412.webp",
+    "contentType": "image/webp",
+    "bytes": 121964,
+    "published": true,
+    "sha256": "efa832c9bf7b54122663f2b264df33353dc6ac2ce5a9e0ab4c6f7f740692b1e2"
+  },
+  "publishedAt": "2026-10-12T15:24:43.958Z",
+  "localWebpDeletedAt": "2026-10-12T15:24:44.226Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:24:44.226Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:24:44.226Z"
+}

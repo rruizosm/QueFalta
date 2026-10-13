@@ -1,0 +1,41 @@
+{
+  "id": "49589",
+  "index": 47,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12be3-1801-7fe3-88ee-862e3d13eea9/exec-144e7ac6-4c4b-4d3c-aa4f-c7ba353d04cd.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-04/mercadona-49589-servilleta-papel-suave-bosque-verde.png",
+  "prompt": "Use case: style-transfer. Asset: one catalog product illustration for QuéFalta. Image1 is the sole authoritative product/photo reference; image2 supplies ONLY the illustrated medium and edge/shading treatment, never its milk carton/text. Turn the exact product in image1 into a polished hand-drawn retail illustration matching image2: crisp delicate outlines, clean simplified shading, subtle illustrated texture and faithful retail colors. Truly transparent background, no ground plane, no cast shadow, centered entire product with safe empty margin. Preserve the complete original package geometry, perspective, relative proportions, all components and accessories, real visible quantities and main legible label text. No extra props, invented brands, claims, prices, quantities or food outside packaging. Tiny illegible legal text may be reduced unobtrusively but all meaningful negations such as SIN/SEM must remain complete. Product-specific observed requirements: Tall square white napkin pack pale PINK swirled top Suave 2 and 100 unidades, magenta folded-napkin illustration. Official product: Servilleta papel suave Bosque Verde. Reproduce source numeric values only when legible; do not guess.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-04/actual-prompts/49589.txt",
+  "sourceOriginalSha256": "9640d030a1d69e3d86e01f686abad4b6439760f30b6a9a2a88a9ab8ed5645f2b",
+  "sourceOriginalBytes": 52578,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:38:41.377Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-04/webp/mercadona-49589.webp",
+  "width": 753,
+  "height": 768,
+  "bytes": 71952,
+  "sha256": "3886644375707d3b09e67daa4f1d9b0a94c8c3c1f69024692042c8a07962a5d8",
+  "alpha": {
+    "transparentPixels": 92624,
+    "opaquePixels": 1236,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:42:39.594Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:44:02.967Z",
+  "publication": {
+    "productId": "49589",
+    "name": "Servilleta papel suave Bosque Verde",
+    "objectPath": "mercadona/49589/3886644375707d3b.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/49589/3886644375707d3b.webp",
+    "contentType": "image/webp",
+    "bytes": 71952,
+    "published": true,
+    "sha256": "3886644375707d3b09e67daa4f1d9b0a94c8c3c1f69024692042c8a07962a5d8"
+  },
+  "publishedAt": "2026-10-11T17:44:16.796Z",
+  "localWebpDeletedAt": "2026-10-11T17:44:16.937Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:44:16.937Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:44:16.937Z"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "35839",
+  "index": 38,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12be3-1801-7fe3-88ee-862e3d13eea9/exec-bfbb739c-daa9-4546-806f-41cb2866f906.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-04/mercadona-35839-salsa-original-ligeresa.png",
+  "prompt": "Use case: style-transfer. Asset: one catalog product illustration for QuéFalta. Image1 is the sole authoritative product/photo reference; image2 supplies ONLY the illustrated medium and edge/shading treatment, never its milk carton/text. Turn the exact product in image1 into a polished hand-drawn retail illustration matching image2: crisp delicate outlines, clean simplified shading, subtle illustrated texture and faithful retail colors. Truly transparent background, no ground plane, no cast shadow, centered entire product with safe empty margin. Preserve the complete original package geometry, perspective, relative proportions, all components and accessories, real visible quantities and main legible label text. No extra props, invented brands, claims, prices, quantities or food outside packaging. Tiny illegible legal text may be reduced unobtrusively but all meaningful negations such as SIN/SEM must remain complete. Product-specific observed requirements: Large cream Ligeresa Original sauce glass jar LIGHT BLUE lid, red FORMATO AHORRO band and green TODO EL SABOR -75% DE GRASA claim. Official product: Salsa Original Ligeresa. Reproduce source numeric values only when legible; do not guess.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-04/actual-prompts/35839.txt",
+  "sourceOriginalSha256": "81effa71c5b34dc35c894ca1445df749887883c3cda2fecb9efbf74395ecea38",
+  "sourceOriginalBytes": 57790,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:17:35.583Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-04/webp/mercadona-35839.webp",
+  "width": 413,
+  "height": 768,
+  "bytes": 65972,
+  "sha256": "9bc3880863204ad2943c23ed37e9542bbb9c9a88d388e11cdc2a2f73809a594b",
+  "alpha": {
+    "transparentPixels": 63849,
+    "opaquePixels": 1427,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:39:19.544Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:42:16.106Z",
+  "publication": {
+    "productId": "35839",
+    "name": "Salsa Original Ligeresa",
+    "objectPath": "mercadona/35839/9bc3880863204ad2.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/35839/9bc3880863204ad2.webp",
+    "contentType": "image/webp",
+    "bytes": 65972,
+    "published": true,
+    "sha256": "9bc3880863204ad2943c23ed37e9542bbb9c9a88d388e11cdc2a2f73809a594b"
+  },
+  "publishedAt": "2026-10-11T17:42:30.225Z",
+  "localWebpDeletedAt": "2026-10-11T17:42:30.402Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:42:30.402Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:42:30.402Z"
+}

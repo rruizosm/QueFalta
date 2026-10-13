@@ -1,0 +1,41 @@
+{
+  "id": "27660",
+  "index": 51,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-f6ccf19b-af85-4c79-af36-9b20ca0030a2.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-03/mercadona-27660-refresco-cola-pepsi.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Refresco cola Pepsi, Mercadona product ID 27660. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\n\nSource inspected: Blue shrink-wrapped PEPSI twelve-can pack, yellow PACK AHORRO band, 12 LATAS and 12x330ml, classic logo; no zero sugar claim.\nOnly the product packaging, not the white source background; actual transparent background. Printed pack bands belong to packaging; omit only external catalog callouts.\n",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-03/actual-prompts/27660.txt",
+  "sourceOriginalSha256": "ee2accbe5cc55d0c0248b7ff830b731a54540f374928432b653d8ad3d4f7d44b",
+  "sourceOriginalBytes": 73382,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:17:22.054Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-03/webp/mercadona-27660.webp",
+  "width": 768,
+  "height": 604,
+  "bytes": 89180,
+  "sha256": "11e620e7abdf358765a631725a973f3fcb2922b14134509cb793575a6e9e67ae",
+  "alpha": {
+    "transparentPixels": 108984,
+    "opaquePixels": 1295,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:37:01.464Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:37:13.885Z",
+  "publication": {
+    "productId": "27660",
+    "name": "Refresco cola Pepsi",
+    "objectPath": "mercadona/27660/11e620e7abdf3587.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/27660/11e620e7abdf3587.webp",
+    "contentType": "image/webp",
+    "bytes": 89180,
+    "published": true,
+    "sha256": "11e620e7abdf358765a631725a973f3fcb2922b14134509cb793575a6e9e67ae"
+  },
+  "publishedAt": "2026-10-11T17:37:31.364Z",
+  "localWebpDeletedAt": "2026-10-11T17:37:31.537Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:37:31.537Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:37:31.537Z"
+}

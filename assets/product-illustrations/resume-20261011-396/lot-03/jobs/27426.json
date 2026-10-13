@@ -1,0 +1,41 @@
+{
+  "id": "27426",
+  "index": 34,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-73120831-1363-460e-ac49-fdc382a3dcea.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-03/mercadona-27426-refresco-coca-cola-zero-azucar.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Refresco Coca-Cola zero azúcar, Mercadona product ID 27426. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\n\nSource inspected: Red Coca-Cola zero azúcar shrink-wrapped twelve-can pack; yellow 11+1 stripe, 12x330ml, white logo; do not invent caffeine-free qualifier.\nOnly the product packaging, not the white source background; actual transparent background. Printed pack bands belong to packaging; omit only external catalog callouts.\n",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-03/actual-prompts/27426.txt",
+  "sourceOriginalSha256": "3dbafbd49cd90f4bee1f422fe29145408a9bf6ef94bf9bafd72bbb660d96a333",
+  "sourceOriginalBytes": 48314,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:11:06.324Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-03/webp/mercadona-27426.webp",
+  "width": 768,
+  "height": 458,
+  "bytes": 69312,
+  "sha256": "4c85bda9ab00ca8192d59e9bec0542f309d2238c77a59cae6a3a4cb4ba507830",
+  "alpha": {
+    "transparentPixels": 73104,
+    "opaquePixels": 1084,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:11:59.548Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:16:18.138Z",
+  "publication": {
+    "productId": "27426",
+    "name": "Refresco Coca-Cola zero azúcar",
+    "objectPath": "mercadona/27426/4c85bda9ab00ca81.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/27426/4c85bda9ab00ca81.webp",
+    "contentType": "image/webp",
+    "bytes": 69312,
+    "published": true,
+    "sha256": "4c85bda9ab00ca8192d59e9bec0542f309d2238c77a59cae6a3a4cb4ba507830"
+  },
+  "publishedAt": "2026-10-11T17:16:24.839Z",
+  "localWebpDeletedAt": "2026-10-11T17:16:25.205Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:16:25.205Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:16:25.205Z"
+}

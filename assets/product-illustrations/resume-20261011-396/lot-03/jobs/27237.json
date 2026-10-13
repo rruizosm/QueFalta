@@ -1,0 +1,41 @@
+{
+  "id": "27237",
+  "index": 29,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-46b73bb8-d8e9-4fbc-8650-a97eb0ecc8ef.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-03/mercadona-27237-refresco-de-manzana-natural-appletiser-con-burbuja-fina.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Refresco de manzana natural Appletiser con burbuja fina, Mercadona product ID 27237. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\n\nSource inspected: Six dark green Appletiser cans in black-green shrink wrap, apple image and white Appletiser script; printed 6 LATAS DE 330ml; omit external pink 6x33CL box.\nOnly the product packaging, not the white source background; actual transparent background. Printed pack bands belong to packaging; omit only external catalog callouts.\n",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-03/actual-prompts/27237.txt",
+  "sourceOriginalSha256": "5fdec60c3e8c2dc12bef251763f1ac22562d7b1c5724153913b0704d78eb7a36",
+  "sourceOriginalBytes": 83897,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:07:23.336Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-03/webp/mercadona-27237.webp",
+  "width": 768,
+  "height": 583,
+  "bytes": 78536,
+  "sha256": "4601c7634fee0eaa8d81fb5cee98faabdeda999a1eb4456288c1002020b6d761",
+  "alpha": {
+    "transparentPixels": 91342,
+    "opaquePixels": 977,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:09:49.775Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:10:01.133Z",
+  "publication": {
+    "productId": "27237",
+    "name": "Refresco de manzana natural Appletiser con burbuja fina",
+    "objectPath": "mercadona/27237/4601c7634fee0eaa.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/27237/4601c7634fee0eaa.webp",
+    "contentType": "image/webp",
+    "bytes": 78536,
+    "published": true,
+    "sha256": "4601c7634fee0eaa8d81fb5cee98faabdeda999a1eb4456288c1002020b6d761"
+  },
+  "publishedAt": "2026-10-11T17:10:18.367Z",
+  "localWebpDeletedAt": "2026-10-11T17:10:18.532Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:10:18.533Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:10:18.533Z"
+}

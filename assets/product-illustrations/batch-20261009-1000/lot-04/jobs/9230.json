@@ -1,0 +1,39 @@
+{
+  "id": "9230",
+  "index": 66,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-7163a5f6-54ed-47f1-8c32-54a654b34427.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-9230-chorizo-de-cebo-iberico-cortado-a-maquina.png",
+  "prompt": "Use case: style-transfer. Make a QuéFalta pantry product illustration in the established warm, clean editorial hand-drawn style: soft thin outlines, original colors and subtle paper/gouache texture. Image 1 is the exact official product photo; preserve identity, package silhouette, branding, visible text and claims. Image 2 is ONLY the approved hand-drawn style reference at /private/tmp/mercadona-style-10699-reference.png; do not copy its product or package. La Charcutería de Mercadona Chorizo de Cebo Ibérico, one upright rectangular clear tray of overlapping thin red-brown marbled chorizo slices, with a white upper section and a pale lilac/red branded oval plus purple band reading CEBO IBÉRICO. Match the exact tray shape and slice arrangement from Image 1, preserve its label details and clear film, and keep the full tray on transparent background. Isolated on transparent background with enough margin for the complete package.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/9230-prompt.txt",
+  "sourceOriginalSha256": "d07dcdfd13fce7b3edb68f08530714a55c2d3fe505c7d53d899c0f835b18692d",
+  "sourceOriginalBytes": 63917,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:52:15.609Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-9230.webp",
+  "width": 530,
+  "height": 768,
+  "bytes": 110200,
+  "sha256": "c87ea9f0c6295ad265d74d5e6db9f94dae80b56b56e611a8dacb1e7f785c262a",
+  "alpha": {
+    "transparentPixels": 50385,
+    "opaquePixels": 418,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:52:28.342Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T07:52:47.516Z",
+  "publication": {
+    "productId": "9230",
+    "name": "Chorizo de cebo ibérico cortado a máquina",
+    "objectPath": "mercadona/9230/c87ea9f0c6295ad2.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/9230/c87ea9f0c6295ad2.webp",
+    "contentType": "image/webp",
+    "bytes": 110200,
+    "sha256": "c87ea9f0c6295ad265d74d5e6db9f94dae80b56b56e611a8dacb1e7f785c262a"
+  },
+  "publishedAt": "2026-10-09T07:52:52.378Z",
+  "localWebpDeletedAt": "2026-10-09T07:52:52.379Z",
+  "localSourceJpgDeletedAt": "2026-10-09T07:52:52.379Z"
+}

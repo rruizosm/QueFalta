@@ -1,0 +1,41 @@
+{
+  "id": "82773",
+  "index": 88,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12be3-1801-7fe3-88ee-862e3d13eea9/exec-564505e0-8b41-4f65-85e9-7f8f57b421d1.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-04/mercadona-82773-rosquilletas-de-horno-anitin.png",
+  "prompt": "Use case: style-transfer. Asset: one catalog product illustration for QuéFalta. Image1 is the sole authoritative product/photo reference; image2 supplies ONLY the illustrated medium and edge/shading treatment, never its milk carton/text. Turn the exact product in image1 into a polished hand-drawn retail illustration matching image2: crisp delicate outlines, clean simplified shading, subtle illustrated texture and faithful retail colors. Truly transparent background, no ground plane, no cast shadow, centered entire product with safe empty margin. Preserve the complete original package geometry, perspective, relative proportions, all components and accessories, real visible quantities and main legible label text. No extra props, invented brands, claims, prices, quantities or food outside packaging. Tiny illegible legal text may be reduced unobtrusively but all meaningful negations such as SIN/SEM must remain complete. Product-specific observed requirements: TWO slim side-by-side white/BURGUNDY Anitin breadstick packs Rosquilletas Horno; preserve both packets and all visible breadsticks. Official product: Rosquilletas de horno Anitin. Reproduce source numeric values only when legible; do not guess.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-04/actual-prompts/82773.txt",
+  "sourceOriginalSha256": "c86b47fba15f2ffdf2a89c09a12068b73474d9366134ff2bc0c6bf1615b11999",
+  "sourceOriginalBytes": 51579,
+  "status": "published",
+  "generatedAt": "2026-10-11T18:18:07.588Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-04/webp/mercadona-82773.webp",
+  "width": 414,
+  "height": 768,
+  "bytes": 68648,
+  "sha256": "396c599ee754767626a7d982d30ba6094f7fec23adb1223a1d8339316acc80cf",
+  "alpha": {
+    "transparentPixels": 81245,
+    "opaquePixels": 1240,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T18:23:28.683Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T18:24:30.997Z",
+  "publication": {
+    "productId": "82773",
+    "name": "Rosquilletas de horno Anitin",
+    "objectPath": "mercadona/82773/396c599ee7547676.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/82773/396c599ee7547676.webp",
+    "contentType": "image/webp",
+    "bytes": 68648,
+    "published": true,
+    "sha256": "396c599ee754767626a7d982d30ba6094f7fec23adb1223a1d8339316acc80cf"
+  },
+  "publishedAt": "2026-10-11T18:24:39.139Z",
+  "localWebpDeletedAt": "2026-10-11T18:24:39.345Z",
+  "localSourceJpgDeletedAt": "2026-10-11T18:24:39.345Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T18:24:39.345Z"
+}

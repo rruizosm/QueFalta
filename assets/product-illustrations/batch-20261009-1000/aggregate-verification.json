@@ -1,0 +1,38 @@
+{
+  "verifiedAt": "2026-10-09T09:46:06.305Z",
+  "originalManifestProductIds": 1000,
+  "blockedOriginalProducts": 3,
+  "verifiedOriginalPublications": 997,
+  "supplementalVerifiedPublications": 3,
+  "totalVerifiedUniquePublications": 1000,
+  "uniqueIdsAcrossOriginalAndSupplementalManifests": 1003,
+  "blockedIds": [
+    "46920",
+    "8260",
+    "52821"
+  ],
+  "supplementalIds": [
+    "19740",
+    "68233",
+    "69656"
+  ],
+  "previousIllustrationsUnchanged": 2959,
+  "localJpgJpegWebpFilesUnderProductIllustrations": 0,
+  "typecheck": {
+    "command": "npx tsc --noEmit",
+    "exitCode": 0
+  },
+  "sourceVerifications": [
+    "lot-01/verification.json",
+    "lot-02/verification.json",
+    "lot-03/verification.json",
+    "lot-04/verification.json",
+    "lot-05/verification.json",
+    "lot-06/verification.json",
+    "lot-07/verification.json",
+    "lot-08/verification.json",
+    "lot-09/verification.json",
+    "lot-10/verification.json",
+    "lot-11-supplement-3/verification.json"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "id": "69979",
+  "index": 75,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-e9a2f151-c3e3-4111-98fd-df58f11238db.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-69979-tomate-ensalada.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: One large bright red salad tomato with branching green top calyx and tall crooked thin stem, subtle lobed contours. No package or shadow. Product catalog identity: Tomate ensalada.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/69979.txt",
+  "sourceOriginalSha256": "153dc1fa15f2854ae120d5f379c8d16668df8686e534a87a5aceacb41c0eff8d",
+  "sourceOriginalBytes": 44487,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:57:37.589Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-69979.webp",
+  "width": 745,
+  "height": 768,
+  "bytes": 102344,
+  "sha256": "d8b52a69b6daa79339bb7a93a4509aee9594365f37b896c225fac7daa26ef490",
+  "alpha": {
+    "transparentPixels": 255454,
+    "opaquePixels": 1401,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:02:57.340Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:04:08.327Z",
+  "publication": {
+    "productId": "69979",
+    "name": "Tomate ensalada",
+    "objectPath": "mercadona/69979/d8b52a69b6daa793.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/69979/d8b52a69b6daa793.webp",
+    "contentType": "image/webp",
+    "bytes": 102344,
+    "published": true,
+    "sha256": "d8b52a69b6daa79339bb7a93a4509aee9594365f37b896c225fac7daa26ef490"
+  },
+  "publishedAt": "2026-10-12T15:04:24.708Z",
+  "localWebpDeletedAt": "2026-10-12T15:04:24.994Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:04:24.994Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:04:24.994Z"
+}

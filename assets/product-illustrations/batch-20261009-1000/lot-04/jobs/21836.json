@@ -1,0 +1,39 @@
+{
+  "id": "21836",
+  "index": 99,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-bc304d22-6581-4ecb-a981-7433b60e858b.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-21836-chuletas-de-cordero-pierna.png",
+  "prompt": "Create a faithful QuéFalta hand-drawn illustration of Image 1 in the warm editorial style, fine soft outlines, accurate meat and package colors and light gouache texture. Image 2 at /private/tmp/mercadona-style-10699-reference.png is style-only; do not copy its product. Preserve the exact cut, contents, wording and tray. One shallow clear meat tray containing several raw lamb leg chops, rounded pink-red steaks with white fat and pale bone cross-sections, overlapped in rows. Diagonal tan/brown label with black sheep emblem and CHULETA PIERNA wording. Match exact product and tray from Image 1, preserve full edges. Full product on a transparent background, centered with margins, no other objects.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/21836-prompt.txt",
+  "sourceOriginalSha256": "68f176bb712ca949cd38724a9e236b3674c37ae0b3bd995f48636a2c8c56e6d6",
+  "sourceOriginalBytes": 51387,
+  "status": "published",
+  "generatedAt": "2026-10-09T08:33:33.068Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-21836.webp",
+  "width": 768,
+  "height": 489,
+  "bytes": 88846,
+  "sha256": "c08010f52966fe429e466be9eeb1e7fd26d57a964dd2b28200ff8503a1e2ead0",
+  "alpha": {
+    "transparentPixels": 145883,
+    "opaquePixels": 1060,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T08:34:02.528Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T08:34:55.667Z",
+  "publication": {
+    "productId": "21836",
+    "name": "Chuletas de cordero pierna",
+    "objectPath": "mercadona/21836/c08010f52966fe42.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/21836/c08010f52966fe42.webp",
+    "contentType": "image/webp",
+    "bytes": 88846,
+    "sha256": "c08010f52966fe429e466be9eeb1e7fd26d57a964dd2b28200ff8503a1e2ead0"
+  },
+  "publishedAt": "2026-10-09T08:34:57.047Z",
+  "localWebpDeletedAt": "2026-10-09T08:34:57.048Z",
+  "localSourceJpgDeletedAt": "2026-10-09T08:34:57.048Z"
+}

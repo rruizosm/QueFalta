@@ -1,0 +1,50 @@
+{
+  "id": "9795",
+  "index": 55,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12091-dc56-7d03-acf6-998d69096048/exec-dd694173-6ef1-4887-8b91-7216cb5ea0ff.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-02/mercadona-9795-rasqueta-vitroceramicas-bosque-verde.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "16cf251d7211dd1e6a747f4144bb3fbdd742b04402d89a199f0eb6b4ab5f5d31",
+  "sourceOriginalBytes": 72961,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:35:37.420Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-02/webp/mercadona-9795.webp",
+  "recovery": {
+    "recoveredAt": "2026-10-11T16:56:07.779449+00:00",
+    "nativeMatchedToHistoricalWebp": true,
+    "historicalWebpSha256": "97c39ac040d3264d2544c1cb9c52cf57766fc03d98e97fd70b3ce19909ff35d3",
+    "historicalWebpTempPath": "/private/tmp/mercadona-batch-20261010-1000/lot-07/webp/mercadona-9795.webp",
+    "nativeSha256": "fb79b800a55bba3b7a70ca005c7d8dbaf9ffe8452b56c493d02926beba9e7433",
+    "originalPromptUnavailable": true,
+    "note": "Original batch directory was deleted. Native recovered by exact SHA after same export; original prompt is unavailable and has not been invented. Fresh visual review required before upload."
+  },
+  "width": 440,
+  "height": 768,
+  "bytes": 55448,
+  "sha256": "97c39ac040d3264d2544c1cb9c52cf57766fc03d98e97fd70b3ce19909ff35d3",
+  "alpha": {
+    "transparentPixels": 47424,
+    "opaquePixels": 1421,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:50:16.901Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:53:03.926Z",
+  "publication": {
+    "productId": "9795",
+    "name": "Rasqueta Vitrocerámicas Bosque Verde",
+    "objectPath": "mercadona/9795/97c39ac040d3264d.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/9795/97c39ac040d3264d.webp",
+    "contentType": "image/webp",
+    "bytes": 55448,
+    "published": true,
+    "sha256": "97c39ac040d3264d2544c1cb9c52cf57766fc03d98e97fd70b3ce19909ff35d3"
+  },
+  "publishedAt": "2026-10-11T17:53:05.560Z",
+  "localWebpDeletedAt": "2026-10-11T17:53:05.926Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:53:05.926Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:53:05.926Z"
+}

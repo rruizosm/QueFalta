@@ -1,0 +1,41 @@
+{
+  "id": "4239",
+  "index": 50,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-6fcb1960-6e72-48b9-900e-1fed9093d4bd.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-4239-solomillos-de-pollo.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Solomillos de pollo (Mercadona 4239).\nObserved source details: Clear wide rectangular retail tray filled with pale yellow/pink chicken tenderloins laid parallel. Bright yellow vertical band on left with black chicken emblem POLLO and white SOLOMILLO panel. Preserve larger tray proportions and pieces.",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-05/actual-prompts/4239-root-resume.txt",
+  "sourceOriginalSha256": "f77ac13a3f920bb98ab591c8c6a3f089b4528b73744907a7f3e9b8ea21ffddaa",
+  "sourceOriginalBytes": 37029,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:44:30.832Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-4239.webp",
+  "width": 768,
+  "height": 478,
+  "bytes": 74564,
+  "sha256": "20683eaa8cb36efaed04f8567216485a8c9eb7781cec5cd67c25d4a64a732cc1",
+  "alpha": {
+    "transparentPixels": 60461,
+    "opaquePixels": 1074,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:46:44.269Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:55:21.246Z",
+  "publication": {
+    "productId": "4239",
+    "name": "Solomillos de pollo",
+    "objectPath": "mercadona/4239/20683eaa8cb36efa.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/4239/20683eaa8cb36efa.webp",
+    "contentType": "image/webp",
+    "bytes": 74564,
+    "published": true,
+    "sha256": "20683eaa8cb36efaed04f8567216485a8c9eb7781cec5cd67c25d4a64a732cc1"
+  },
+  "publishedAt": "2026-10-11T17:55:31.236Z",
+  "localWebpDeletedAt": "2026-10-11T17:55:31.400Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:55:31.400Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:55:31.400Z"
+}

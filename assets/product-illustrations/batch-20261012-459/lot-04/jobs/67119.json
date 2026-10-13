@@ -1,0 +1,41 @@
+{
+  "id": "67119",
+  "index": 3,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-aa73d4f6-c7e6-4d67-813d-49428150e927.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-67119-vino-rosado-clarete-arteso-do-rioja.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Vino rosado Clarete Arteso DO Rioja, ID 67119.\nObserved source: One clear pale rosé bottle, gold foil cap, cream label with tree artwork ARTESO, black CLARETE stripe and RIOJA lower text.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/67119.txt",
+  "sourceOriginalSha256": "91a463af57b310c514c1d068783056f871c0b8caa91565a0857cd67599b91d59",
+  "sourceOriginalBytes": 27444,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:32:37.118Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-67119.webp",
+  "width": 219,
+  "height": 768,
+  "bytes": 28630,
+  "sha256": "2fb8d2a6497c06617aa28668cb80faf9bc8209b33f10faac17126ec2fda37002",
+  "alpha": {
+    "transparentPixels": 61121,
+    "opaquePixels": 1223,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:37:51.998Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:43:23.265Z",
+  "publication": {
+    "productId": "67119",
+    "name": "Vino rosado Clarete Arteso DO Rioja",
+    "objectPath": "mercadona/67119/2fb8d2a6497c0661.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/67119/2fb8d2a6497c0661.webp",
+    "contentType": "image/webp",
+    "bytes": 28630,
+    "published": true,
+    "sha256": "2fb8d2a6497c06617aa28668cb80faf9bc8209b33f10faac17126ec2fda37002"
+  },
+  "publishedAt": "2026-10-12T13:43:28.486Z",
+  "localWebpDeletedAt": "2026-10-12T13:43:28.776Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:43:28.776Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:43:28.776Z"
+}

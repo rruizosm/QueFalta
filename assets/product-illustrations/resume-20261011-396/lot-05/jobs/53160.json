@@ -1,0 +1,50 @@
+{
+  "id": "53160",
+  "index": 60,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-3fd281e3-95e7-4631-b429-f7b8ff9a359f.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-53160-sobrasada-de-mallorca-can-pere-joan.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "4cf95110a2b5d5192d8c34e7f5a195a78daffee93a1d4d57d9feb4aa1194dc3a",
+  "sourceOriginalBytes": 37156,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:41:15.698Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-53160.webp",
+  "recovery": {
+    "recoveredAt": "2026-10-11T16:56:07.779449+00:00",
+    "nativeMatchedToHistoricalWebp": true,
+    "historicalWebpSha256": "957e139f701cf7101fb16d92a93096e7374e623eaaae658a2c5a0ea5290a199c",
+    "historicalWebpTempPath": "/private/tmp/mercadona-batch-20261010-1000/lot-10/webp/mercadona-53160.webp",
+    "nativeSha256": "6ec03f15b60c64f01c1bc4e565bf6026209e3524daf09553759fc16833a62c95",
+    "originalPromptUnavailable": true,
+    "note": "Original batch directory was deleted. Native recovered by exact SHA after same export; original prompt is unavailable and has not been invented. Fresh visual review required before upload."
+  },
+  "width": 296,
+  "height": 768,
+  "bytes": 47012,
+  "sha256": "957e139f701cf7101fb16d92a93096e7374e623eaaae658a2c5a0ea5290a199c",
+  "alpha": {
+    "transparentPixels": 55688,
+    "opaquePixels": 1095,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T16:57:44.447Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:09:59.453Z",
+  "publication": {
+    "productId": "53160",
+    "name": "Sobrasada de Mallorca Can Pere Joan",
+    "objectPath": "mercadona/53160/957e139f701cf710.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/53160/957e139f701cf710.webp",
+    "contentType": "image/webp",
+    "bytes": 47012,
+    "published": true,
+    "sha256": "957e139f701cf7101fb16d92a93096e7374e623eaaae658a2c5a0ea5290a199c"
+  },
+  "publishedAt": "2026-10-11T17:11:37.643Z",
+  "localWebpDeletedAt": "2026-10-11T17:11:37.835Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:11:37.835Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:11:37.835Z"
+}

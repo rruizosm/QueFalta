@@ -1,0 +1,39 @@
+{
+  "id": "59019",
+  "index": 51,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/59019.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-59019-chorizo-ahumado-juntamar.png",
+  "prompt": "Warm clean editorial hand-drawn product illustration, soft thin outlines, defined colors and subtle paper/gouache texture. Recreate the exact chorizo product in source photo one: Juntamar smoked chorizo. Preserve the exact product count/form and branded pack, color scheme, Juntamar words and smoked variant. Preserve its real casing, exact link count, package type and visible labels; invent nothing. Entire retail item centered with actual transparent alpha, no props, background, glow or shadow. Image two is style guidance only.\n",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/59019.txt",
+  "sourceOriginalSha256": "ca161877d8dff43106a475add0b44f8d2170389e4ba0d0bd240790da9f8b05ef",
+  "sourceOriginalBytes": 36354,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:37:19.797Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-59019.webp",
+  "width": 171,
+  "height": 768,
+  "bytes": 44702,
+  "sha256": "645ffbaeb394c536ee3a9d44f97bdfb4f88019eda065c54cc8fdc65d157d8bb5",
+  "alpha": {
+    "transparentPixels": 61099,
+    "opaquePixels": 801,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:38:12.726Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T07:42:13.918Z",
+  "publication": {
+    "productId": "59019",
+    "name": "Chorizo ahumado Juntamar",
+    "objectPath": "mercadona/59019/645ffbaeb394c536.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/59019/645ffbaeb394c536.webp",
+    "contentType": "image/webp",
+    "bytes": 44702,
+    "sha256": "645ffbaeb394c536ee3a9d44f97bdfb4f88019eda065c54cc8fdc65d157d8bb5"
+  },
+  "publishedAt": "2026-10-09T07:42:15.358Z",
+  "localWebpDeletedAt": "2026-10-09T07:42:15.359Z",
+  "localSourceJpgDeletedAt": "2026-10-09T07:42:15.359Z"
+}

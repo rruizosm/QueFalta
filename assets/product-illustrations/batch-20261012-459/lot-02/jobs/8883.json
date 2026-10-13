@@ -1,0 +1,41 @@
+{
+  "id": "8883",
+  "index": 42,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-d1b4089b-6d6f-4b99-a0bb-b9f5831f54fa.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-8883-tiras-faciales-limpia-poros-deliplus.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Tall narrow pink and white Deliplus facial pore strips carton. Illustrated woman face with black headband and white strip across nose, TIRAS LIMPIA POROS and 6x circle at lower right. Product catalog identity: Tiras faciales limpia poros Deliplus.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/8883.txt",
+  "sourceOriginalSha256": "531fc1333d72437780e6d1542930fb42e972c6990d25a49b2eb3eeeb4b81549f",
+  "sourceOriginalBytes": 39330,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:57:59.227Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-8883.webp",
+  "width": 430,
+  "height": 768,
+  "bytes": 47434,
+  "sha256": "0bf99b761098333816ade578442eba3f65d6823219913af2b7797a066f27449f",
+  "alpha": {
+    "transparentPixels": 52089,
+    "opaquePixels": 1466,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:39:35.667Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:46:05.976Z",
+  "publication": {
+    "productId": "8883",
+    "name": "Tiras faciales limpia poros Deliplus",
+    "objectPath": "mercadona/8883/0bf99b7610983338.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/8883/0bf99b7610983338.webp",
+    "contentType": "image/webp",
+    "bytes": 47434,
+    "published": true,
+    "sha256": "0bf99b761098333816ade578442eba3f65d6823219913af2b7797a066f27449f"
+  },
+  "publishedAt": "2026-10-12T14:46:08.334Z",
+  "localWebpDeletedAt": "2026-10-12T14:46:08.522Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:46:08.522Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:46:08.522Z"
+}

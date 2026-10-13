@@ -1,0 +1,50 @@
+{
+  "id": "69487",
+  "index": 38,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12091-dc56-7d03-acf6-998d69096048/exec-a6cb06b6-1da1-428c-8f5d-0d505602a041.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-02/mercadona-69487-rama-de-tomates.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "a1c5b56f80230f1c7768800e22c1fd24d49b4a7db9c551eef6de0be2e4c858b0",
+  "sourceOriginalBytes": 49742,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:34:58.355Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-02/webp/mercadona-69487.webp",
+  "recovery": {
+    "recoveredAt": "2026-10-11T16:56:07.779449+00:00",
+    "nativeMatchedToHistoricalWebp": true,
+    "historicalWebpSha256": "bd9412ae17da7d90d62d17e8bd57d82f7ad21afd59733ba422240f1e503dc401",
+    "historicalWebpTempPath": "/private/tmp/mercadona-batch-20261010-1000/lot-07/webp/mercadona-69487.webp",
+    "nativeSha256": "376582f18b86d54d1dcc4056376aa339d10abee215567b2746a7dfaa7d2bec40",
+    "originalPromptUnavailable": true,
+    "note": "Original batch directory was deleted. Native recovered by exact SHA after same export; original prompt is unavailable and has not been invented. Fresh visual review required before upload."
+  },
+  "width": 768,
+  "height": 478,
+  "bytes": 76030,
+  "sha256": "bd9412ae17da7d90d62d17e8bd57d82f7ad21afd59733ba422240f1e503dc401",
+  "alpha": {
+    "transparentPixels": 162196,
+    "opaquePixels": 1044,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:50:16.070Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:52:55.264Z",
+  "publication": {
+    "productId": "69487",
+    "name": "Rama de Tomates",
+    "objectPath": "mercadona/69487/bd9412ae17da7d90.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/69487/bd9412ae17da7d90.webp",
+    "contentType": "image/webp",
+    "bytes": 76030,
+    "published": true,
+    "sha256": "bd9412ae17da7d90d62d17e8bd57d82f7ad21afd59733ba422240f1e503dc401"
+  },
+  "publishedAt": "2026-10-11T17:52:56.513Z",
+  "localWebpDeletedAt": "2026-10-11T17:52:56.811Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:52:56.811Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:52:56.811Z"
+}

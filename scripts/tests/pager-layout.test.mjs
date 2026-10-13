@@ -18,10 +18,10 @@ function load(file, modules = {}) {
 
 const physics = load('physics.ts');
 const constants = load('constants.ts');
-const tabs = ['Pantry', 'Home', 'Catalog', 'QueCocino', 'List', 'Groups']
+const tabs = ['Home', 'Catalog', 'Pantry', 'List', 'Groups']
   .map((key) => ({ key, label: key, icon: 'circle', renderPage: () => key }));
 
-function fixture(initialIndex = 1) {
+function fixture(initialIndex = 0) {
   let cursor = 0;
   const values = [];
   const effects = [];
@@ -82,8 +82,8 @@ test('first measured render shows Home even before the animation width effect ru
   // not synchronized the UI shared width yet. This was invisible at index 0.
   assert.equal(animation.scrollX.value, 0);
   const track = f.track(402, animation);
-  assert.equal(track.width, 6 * 402);
-  assert.equal(track.x + 402, 0, 'Home must start at the viewport left edge, not Pantry');
+  assert.equal(track.width, 5 * 402);
+  assert.equal(Math.abs(track.x), 0, 'Home must start at the viewport left edge');
   f.flushEffects();
   assert.equal(f.track(402, animation).x, track.x, 'the width effect must not cause a visual jump');
 });
@@ -96,6 +96,6 @@ test('the track style worklet uses resized width while the animation layout lags
   const resized = f.animation(844);
   assert.equal(resized.scrollX.value, 0.6 * 402);
   const track = f.track(844, resized);
-  assert.equal(track.width, 6 * 844);
+  assert.equal(track.width, 5 * 844);
   assert.equal(track.x, -0.6 * 844);
 });

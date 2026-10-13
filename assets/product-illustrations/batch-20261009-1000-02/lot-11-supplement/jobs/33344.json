@@ -1,0 +1,39 @@
+{
+  "id": "33344",
+  "index": 2,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-aa59df56-5afe-44d8-88a5-d0c627869dd6.png",
+  "png": "assets/product-illustrations/batch-20261009-1000-02/lot-11-supplement/mercadona-33344-patatas-fritas-100-aceite-de-oliva-santo-reino.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Patatas fritas 100% aceite de oliva Santo Reino, Mercadona product ID 33344. Image1 is the exact product, Image2 only the approved illustration style. Preserve all source packaging, brands, quantities and negations. No invented claims. Transparent background, no exterior shadow.\nObserved exact source: ONE tall sealed flexible red-and-white Santo Reino potato-crisps bag, frontal view, full crimped ends. Red upper left, white curved right panel, yellow PATATAS and white FRITAS. Small top claims read SIN GLUTEN and SIN LACTOSA, preserve both SIN words exactly; A LA SARTÉN. Printed small smiling potato mascot holding pan. Large white Santo Reino script inside red gold-bordered central badge, desde1965. Transparent-looking middle window filled golden thin flat crisps. Lower red left social markings, white lower right contains printed glass olive oil jug and olives, text100% Aceite de oliva. Jug and olives are printed on packaging, never separate objects. Do not invent weight or HACENDADO brand. Warm thin outlined gouache style from image2; transparent outside full bag, no shadow.",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000-02/lot-11-supplement/actual-prompts/33344.txt",
+  "sourceOriginalSha256": "63015470ec71223b56145687a65f117e077e91d730f5cfe553d2871f7b4e17a1",
+  "sourceOriginalBytes": 56821,
+  "status": "published",
+  "generatedAt": "2026-10-09T11:08:34.987Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000-02/lot-11-supplement/webp/mercadona-33344.webp",
+  "width": 525,
+  "height": 768,
+  "bytes": 82370,
+  "sha256": "d748c65f379cdf813bf8945854c6d0c806d3cf147a4ade836f991eef44a813ed",
+  "alpha": {
+    "transparentPixels": 91213,
+    "opaquePixels": 1583,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T11:09:01.663Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T11:10:21.453Z",
+  "publication": {
+    "productId": "33344",
+    "name": "Patatas fritas 100% aceite de oliva Santo Reino",
+    "objectPath": "mercadona/33344/d748c65f379cdf81.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/33344/d748c65f379cdf81.webp",
+    "contentType": "image/webp",
+    "bytes": 82370,
+    "sha256": "d748c65f379cdf813bf8945854c6d0c806d3cf147a4ade836f991eef44a813ed"
+  },
+  "publishedAt": "2026-10-09T11:10:26.025Z",
+  "localWebpDeletedAt": "2026-10-09T11:10:26.026Z",
+  "localSourceJpgDeletedAt": "2026-10-09T11:10:26.026Z"
+}

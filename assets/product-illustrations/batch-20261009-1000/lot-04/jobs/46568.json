@@ -1,0 +1,39 @@
+{
+  "id": "46568",
+  "index": 22,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/46568.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-46568-champu-repair-nutrition-deliplus-cabello-seco-y-danado.png",
+  "prompt": "Warm clean editorial hand-drawn illustration with soft thin outlines, defined source colors and subtle paper/gouache texture. Frontally illustrate exactly the shampoo product in source photo one: Deliplus Repair & Nutrition shampoo for dry and damaged hair. Preserve exact bottle/cap, label design, Repair & Nutrition and visible hair-care artwork. Keep all package proportions and visible label words/claims faithful; add none. Full product upright, centered, actual transparent alpha, no scene, props, glow, shadows, photorealism or 3D. Image two is style-only.\n",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/46568.txt",
+  "sourceOriginalSha256": "408c6a143e7a147dfda6ea83639b4513fce0445a3159e7f35fa3aaa8f4eef4c1",
+  "sourceOriginalBytes": 27450,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:06:19.498Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-46568.webp",
+  "width": 273,
+  "height": 768,
+  "bytes": 39066,
+  "sha256": "c083248d441c03560d70248fe66abfed50e8861ca109582bd52e6a135be613a8",
+  "alpha": {
+    "transparentPixels": 48092,
+    "opaquePixels": 1307,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:06:29.363Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T07:06:57.606Z",
+  "publication": {
+    "productId": "46568",
+    "name": "Champú Repair & Nutrition Deliplus cabello seco y dañado",
+    "objectPath": "mercadona/46568/c083248d441c0356.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/46568/c083248d441c0356.webp",
+    "contentType": "image/webp",
+    "bytes": 39066,
+    "sha256": "c083248d441c03560d70248fe66abfed50e8861ca109582bd52e6a135be613a8"
+  },
+  "publishedAt": "2026-10-09T07:07:02.244Z",
+  "localWebpDeletedAt": "2026-10-09T07:07:02.244Z",
+  "localSourceJpgDeletedAt": "2026-10-09T07:07:02.244Z"
+}

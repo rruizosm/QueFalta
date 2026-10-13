@@ -1,0 +1,50 @@
+{
+  "reviewedFinalRanges": [
+    "1-5",
+    "6-9 (8 held until corrected)",
+    "11-20",
+    "8-10 corrected v2",
+    "21-32",
+    "33-40",
+    "41-52",
+    "53-60",
+    "61-72",
+    "73-80 (28268 v2 corrected)",
+    "81-93",
+    "94-100"
+  ],
+  "corrections": [
+    {
+      "id": "17542",
+      "index": 8,
+      "issue": "Native v1 showed6% juice; official source5%.",
+      "status": "corrected-v2-reviewed-before-publication"
+    },
+    {
+      "id": "17706",
+      "index": 10,
+      "issue": "Native v1 showed9% juice; official source5%.",
+      "status": "corrected-v2-reviewed-before-publication"
+    },
+    {
+      "id": "28268",
+      "index": 74,
+      "issue": "Native v1 nutrition badge read 70 kcal; official source 7 kJ/2 kcal.",
+      "status": "corrected-v2-reviewed-before-publication"
+    }
+  ],
+  "sourceReferenceReviewed": true,
+  "remoteGalleriesReviewed": [
+    "1-20",
+    "21-40",
+    "41-60",
+    "61-80",
+    "81-100"
+  ],
+  "typecheck": {
+    "command": "npx tsc --noEmit",
+    "exitCode": 0
+  },
+  "finalReviewedAt": "2026-10-11T18:17:31.282Z",
+  "result": "FINAL"
+}

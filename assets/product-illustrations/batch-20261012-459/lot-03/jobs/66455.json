@@ -1,0 +1,41 @@
+{
+  "id": "66455",
+  "index": 88,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-6b78-7552-94a3-b923c51cf7da/exec-bf837136-6438-47ec-a50a-aa6a421703ab.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-03/mercadona-66455-vino-blanco-seco-guatimac-do-abona.png",
+  "prompt": "Use case: style-transfer. Create one polished hand-drawn retail product illustration for the QueFalta catalog. Image 1 is the sole authoritative product photograph. Image 2 supplies ONLY the illustrated medium, delicate outlines, simplified clean shading and subtle texture, never its milk carton, colors or text. Faithfully illustrate exactly the complete product in image 1, its perspective, geometry, components, colors and main readable label lettering. Truly transparent background, no ground plane, no cast shadow. Center the entire object with generous safe transparent margin. Preserve all visible caps, separate accessories, real multipack counts and full package edges. Preserve meaningful negations SIN or SEM and visible quantities completely. No invented claims, brands, prices, quantities or extra food/props. Tiny unreadable legal text may be quietly simplified. Never infer packaging text or quantities from catalog title. Product-specific visual requirements: Amber wine bottle with YELLOW cap; black label vertical white GUATIMAC with YELLOW emblem right, preserve distinction from blue variant. Catalog title for identification only: Vino blanco seco Guatimac DO Abona. Reproduce numeric values only when legible in image 1; the actual photograph overrides catalog wording.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-03/actual-prompts/66455.txt",
+  "sourceOriginalSha256": "82805566df89d5522e36ed1aa3a0eff487c9f5f57ddbd3f1a4a9b432d65d8200",
+  "sourceOriginalBytes": 26115,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:01:18.508Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-03/webp/mercadona-66455.webp",
+  "width": 205,
+  "height": 768,
+  "bytes": 20978,
+  "sha256": "73ce833620c7a4bcc99a2efa43332d54b50ecd1d50b1e3b895a2db897b964a12",
+  "alpha": {
+    "transparentPixels": 52737,
+    "opaquePixels": 1129,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:05:39.728Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:13:42.301Z",
+  "publication": {
+    "productId": "66455",
+    "name": "Vino blanco seco Guatimac DO Abona",
+    "objectPath": "mercadona/66455/73ce833620c7a4bc.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/66455/73ce833620c7a4bc.webp",
+    "contentType": "image/webp",
+    "bytes": 20978,
+    "published": true,
+    "sha256": "73ce833620c7a4bcc99a2efa43332d54b50ecd1d50b1e3b895a2db897b964a12"
+  },
+  "publishedAt": "2026-10-12T15:13:50.910Z",
+  "localWebpDeletedAt": "2026-10-12T15:13:51.116Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:13:51.116Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:13:51.116Z"
+}

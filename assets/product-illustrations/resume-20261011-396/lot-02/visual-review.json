@@ -1,0 +1,31 @@
+{
+  "reviewedAt": "2026-10-11T18:28:43.933Z",
+  "sourceImagesViewed": 56,
+  "sourceDimensionsMinimum": 300,
+  "allFinalWebpReviewedBeforePublication": true,
+  "reviewOwners": {
+    "recovered15": "recover_native",
+    "newIndices1to26": "recover_native",
+    "newIndices27to48": "root",
+    "newIndices49to56": "resume_workflow"
+  },
+  "remoteGalleriesViewedAfterPublication": [
+    "preview-1-20.jpg",
+    "preview-21-40.jpg",
+    "preview-41-56.jpg"
+  ],
+  "remoteFinalsAccepted": 56,
+  "recoveredOriginalPromptsUnavailable": 15,
+  "nativeGeneratedNew": 41,
+  "allJpgAndWebpDeletedOnlyAfterVerifiedUpload": true,
+  "sourceNoteClarifications": [
+    {
+      "id": "8916",
+      "detail": "Original note mentioned pink rings; root reviewed blue/yellow collars in authoritative photograph before generation and updated actual prompt. Accepted remote image has blue/yellow collars."
+    }
+  ],
+  "typecheck": {
+    "command": "npx tsc --noEmit",
+    "exitCode": 0
+  }
+}

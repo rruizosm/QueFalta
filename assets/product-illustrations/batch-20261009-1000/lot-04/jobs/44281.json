@@ -1,0 +1,39 @@
+{
+  "id": "44281",
+  "index": 16,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/44281.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-44281-champu-liss-frizz-control-deliplus-cabello-rebelde.png",
+  "prompt": "Warm clean editorial hand-drawn product illustration with soft thin outlines, defined colors, subtle paper/gouache texture and a frontal view. Illustrate the exact item in reference photo one: Deliplus Liss Frizz Control shampoo for unruly hair. Preserve exact bottle silhouette, cap, label colors, Liss Frizz Control wording and artwork. Preserve exact package type/proportions, all legible words, and distinguish it from nearby variants. Complete item centered, actual transparent alpha background; no scene, props, glow, shadows, photorealism or 3D. Image two is style guidance only.\n",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/44281.txt",
+  "sourceOriginalSha256": "36c814e06245918fafa92b1df7c8171ee5a8061760405802036a20db29d4e5fe",
+  "sourceOriginalBytes": 28753,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:02:51.992Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-44281.webp",
+  "width": 264,
+  "height": 768,
+  "bytes": 36546,
+  "sha256": "d7a51db8b1d6f840f348731fee32c7d8f1948c1e96c4ce346699b52672f9cf7b",
+  "alpha": {
+    "transparentPixels": 44285,
+    "opaquePixels": 1273,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:03:08.098Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T07:03:26.567Z",
+  "publication": {
+    "productId": "44281",
+    "name": "Champú Liss Frizz Control Deliplus cabello rebelde",
+    "objectPath": "mercadona/44281/d7a51db8b1d6f840.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/44281/d7a51db8b1d6f840.webp",
+    "contentType": "image/webp",
+    "bytes": 36546,
+    "sha256": "d7a51db8b1d6f840f348731fee32c7d8f1948c1e96c4ce346699b52672f9cf7b"
+  },
+  "publishedAt": "2026-10-09T07:03:28.665Z",
+  "localWebpDeletedAt": "2026-10-09T07:03:28.665Z",
+  "localSourceJpgDeletedAt": "2026-10-09T07:03:28.665Z"
+}

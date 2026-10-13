@@ -1,0 +1,27 @@
+{
+  "reviewedAt": "2026-10-12T15:22:49.015984+00:00",
+  "products": 111,
+  "remoteGalleriesViewed": [
+    "preview-1-20.jpg",
+    "preview-21-40.jpg",
+    "preview-41-60.jpg",
+    "preview-61-80.jpg",
+    "preview-81-100.jpg",
+    "preview-101-111.jpg"
+  ],
+  "remoteDownloadChecks": [
+    "image/webp MIME",
+    "SHA-256 matches job",
+    "bytes match job"
+  ],
+  "result": "All 111 final remote illustrations visually reviewed: identity, packaging, completeness, transparency and source variants accepted.",
+  "sourceVariantNotes": {
+    "52926": "Current official source photo and illustration show 2025.",
+    "37202": "Current official source photo and illustration show 2024.",
+    "67664": "Quintapenas packaging follows official photo despite Panda Verdia catalogue title.",
+    "14366": "Wine box red dispenser tap retained.",
+    "66224": "Three small cartons retained."
+  },
+  "nativeAlphaReport": "native-alpha-qa.json",
+  "strictVerification": "verification.json"
+}

@@ -1,0 +1,39 @@
+{
+  "id": "54105",
+  "index": 68,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-2a9001b8-1732-4872-831f-6020b2de9528.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-54105-chorizo-de-tarancon-bricio.png",
+  "prompt": "Create one QuéFalta grocery product illustration in the approved warm editorial hand-drawn style, soft thin outlines, defined colors and subtle paper/gouache texture. Image 1 is the exact official product to reproduce; preserve its visible branding, text, claims, package layout and contents. Image 2 is style reference only at /private/tmp/mercadona-style-10699-reference.png; never copy its product. Chorizo de Tarancón Bricio, two long whole cured sausages attached vertically in a clear hanging sleeve, both dusted with a pale white curing bloom, brown-red sausage casing. Match the source's paired long shape, tied top, small central colorful Bricio label and complete transparent hanging bag. Keep both sausages separate and fully visible on transparent background. Keep the complete package centered on transparent background without cropping or props.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/54105-prompt.txt",
+  "sourceOriginalSha256": "6af09a885e83288d525aaf9acd9dca0cacbf94df7930237fc465785ccac965c2",
+  "sourceOriginalBytes": 32818,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:55:57.466Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-54105.webp",
+  "width": 215,
+  "height": 768,
+  "bytes": 49380,
+  "sha256": "bb51afdf380e23e49a31c6d400d768d52c5752932bda401d2c1dd3f10051e35c",
+  "alpha": {
+    "transparentPixels": 58402,
+    "opaquePixels": 1070,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:56:10.301Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T07:56:33.303Z",
+  "publication": {
+    "productId": "54105",
+    "name": "Chorizo de Tarancón Bricio",
+    "objectPath": "mercadona/54105/bb51afdf380e23e4.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/54105/bb51afdf380e23e4.webp",
+    "contentType": "image/webp",
+    "bytes": 49380,
+    "sha256": "bb51afdf380e23e49a31c6d400d768d52c5752932bda401d2c1dd3f10051e35c"
+  },
+  "publishedAt": "2026-10-09T07:56:35.731Z",
+  "localWebpDeletedAt": "2026-10-09T07:56:35.732Z",
+  "localSourceJpgDeletedAt": "2026-10-09T07:56:35.732Z"
+}

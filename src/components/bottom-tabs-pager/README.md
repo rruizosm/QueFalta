@@ -6,12 +6,10 @@ arrastra desde la página completa. No usa TabView. QuéFalta integra el mismo
 motor en sus cinco pestañas reales mediante `src/navigation/createAppPagerNavigator.tsx`.
 La demo social conserva un punto de entrada independiente de desarrollo.
 
-La app también incluye `Pantry` inmediatamente antes de `Home`: deslizar el
-dedo hacia la derecha desde Inicio abre la despensa; a la izquierda vuelve.
+La app incluye `Pantry` como destino visible entre `Catalog` y `List`.
 `Home` es explícitamente la ruta inicial y el destino de Atrás de Android.
-`appPagerRoutes.ts` separa las seis páginas de los cinco iconos inferiores:
-Despensa mantiene Inicio seleccionado. Los tabs visibles siguen apuntando a
-sus páginas originales y el pager conserva foco, precarga y stacks.
+Cada página tiene su propio icono inferior y el pager conserva foco, precarga
+y stacks al moverse entre ellas.
 La posición del strip usa su ancho de render para mostrar la página inicial
 correcta incluso antes de sincronizar el ancho compartido de la animación.
 

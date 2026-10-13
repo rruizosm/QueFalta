@@ -12,7 +12,7 @@
 //      MIN_MATCHED_OFFERS=1
 //      MIN_COVERAGE_RATIO=0.85 (respecto al catálogo publicado anterior)
 //      DRY_RUN=1, MAX_LEAVES=N (solo permitido con DRY_RUN)
-import { lidlMinimumProducts } from './lib/lidl-store-coverage.mjs';
+import { lidlMinimumProducts, probeLidlCatalog } from './lib/lidl-store-coverage.mjs';
 import { lidlRequest, sortedLidlRows } from './lib/lidl-http.mjs';
 import { readFile } from 'node:fs/promises';
 import { markStale } from './lib/stale.mjs';
@@ -394,14 +394,11 @@ async function main() {
   const leaves = allLeaves.slice(0, MAX_LEAVES);
   console.log(`[lidl] ${roots.length} raíces · ${allLeaves.length} hojas${leaves.length !== allLeaves.length ? ` · prueba limitada a ${leaves.length}` : ''}`);
 
-  // A store may have a category tree while its entire product feed is empty.
-  // Check three independent food branches before downloading/retrying 40 leaves.
-  const probeLeaves = leaves.filter((leaf) => ['90', '10', '30'].includes(leaf.id));
-  const probeResults = new Map();
-  for (const leaf of probeLeaves) probeResults.set(leaf.id, await fetchLeaf(leaf));
-  if (probeLeaves.length === 3 && [...probeResults.values()].every((rows) => rows.length === 0)) {
-    throw new Error(`LIDL_CATALOG_EMPTY ${STORE_ID}: pan, fruta y carne vacíos tras reintentos; no se publica`);
-  }
+  // Only a complete tree can establish that the source is unavailable.
+  const completeTree = leaves.length === allLeaves.length && allLeaves.length >= MIN_LEAVES;
+  const probeResults = completeTree
+    ? await probeLidlCatalog({ storeId: STORE_ID, roots, leaves, fetchLeaf })
+    : new Map();
 
   const products = new Map();
   const leafCounts = new Map();
@@ -427,6 +424,11 @@ async function main() {
   }));
 
   const rows = [...products.values()];
+  // Keep the fallback working even if Lidl renames the food families again.
+  // A partial catalog (even one product) must still pass all coverage checks.
+  if (completeTree && rows.length === 0) {
+    throw new Error(`LIDL_CATALOG_EMPTY ${STORE_ID}: todas las ramas vacías tras reintentos; no se publica`);
+  }
   const campaignStats = await mergeWeeklyCampaigns(rows, sourceStore.offer_region);
   const offerStats = await mergeCurrentOffers(rows);
   const promoted = rows.filter((row) => row.promo_name != null).length;

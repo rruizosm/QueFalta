@@ -1,0 +1,50 @@
+{
+  "id": "17748",
+  "index": 27,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-6d4a0c88-24e8-48bb-a03a-a8518f2075d5.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-17748-sobrasada-cerdo-negro-de-mallorca-can-pere-joan.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "6f9cbebf3f4acd5fd38f40d24d2e5fdf278dc3e6bad6a9bf8d5c0044dfbfabc1",
+  "sourceOriginalBytes": 41574,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:39:28.679Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-17748.webp",
+  "recovery": {
+    "recoveredAt": "2026-10-11T16:56:07.779449+00:00",
+    "nativeMatchedToHistoricalWebp": true,
+    "historicalWebpSha256": "e4db7a99dcba05307b5cb70794387a3dc13748f85ad8c6bb875b46e6de062474",
+    "historicalWebpTempPath": "/private/tmp/mercadona-batch-20261010-1000/lot-10/webp/mercadona-17748.webp",
+    "nativeSha256": "7df5c96a20e009e98f6ab2d6bdc2384e1d2a6741b7848591bef0a35084bda737",
+    "originalPromptUnavailable": true,
+    "note": "Original batch directory was deleted. Native recovered by exact SHA after same export; original prompt is unavailable and has not been invented. Fresh visual review required before upload."
+  },
+  "width": 376,
+  "height": 768,
+  "bytes": 61890,
+  "sha256": "e4db7a99dcba05307b5cb70794387a3dc13748f85ad8c6bb875b46e6de062474",
+  "alpha": {
+    "transparentPixels": 169460,
+    "opaquePixels": 1167,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T16:57:43.101Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:09:59.446Z",
+  "publication": {
+    "productId": "17748",
+    "name": "Sobrasada cerdo negro de Mallorca Can Pere Joan",
+    "objectPath": "mercadona/17748/e4db7a99dcba0530.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/17748/e4db7a99dcba0530.webp",
+    "contentType": "image/webp",
+    "bytes": 61890,
+    "published": true,
+    "sha256": "e4db7a99dcba05307b5cb70794387a3dc13748f85ad8c6bb875b46e6de062474"
+  },
+  "publishedAt": "2026-10-11T17:11:28.097Z",
+  "localWebpDeletedAt": "2026-10-11T17:11:28.268Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:11:28.268Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:11:28.268Z"
+}

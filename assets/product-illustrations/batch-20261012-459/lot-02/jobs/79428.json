@@ -1,0 +1,41 @@
+{
+  "id": "79428",
+  "index": 46,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-10ec1d23-592d-4bd5-a7cd-d5ff6f995f48.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-79428-toallitas-bebe-frescas-perfumadas-deliplus.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Single small flat travel baby wipes packet, white top and pale sky-blue lower panel, baby face in round center badge and magenta Frescas & perfumadas heading; preserve thin flat travel shape. Product catalog identity: Toallitas bebé frescas & perfumadas Deliplus.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/79428.txt",
+  "sourceOriginalSha256": "0f767f7ebc12d88a623b6a2a2224b43685ac674ba5dc7773b0d2d401c11cc483",
+  "sourceOriginalBytes": 29468,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:43:32.072Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-79428.webp",
+  "width": 768,
+  "height": 522,
+  "bytes": 56884,
+  "sha256": "d226a82a7e7e2815b6661aa8e41eeca1c39498ea59d7ca8b13910c0cbf634993",
+  "alpha": {
+    "transparentPixels": 208922,
+    "opaquePixels": 799,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:46:43.742Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:47:22.999Z",
+  "publication": {
+    "productId": "79428",
+    "name": "Toallitas bebé frescas & perfumadas Deliplus",
+    "objectPath": "mercadona/79428/d226a82a7e7e2815.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/79428/d226a82a7e7e2815.webp",
+    "contentType": "image/webp",
+    "bytes": 56884,
+    "published": true,
+    "sha256": "d226a82a7e7e2815b6661aa8e41eeca1c39498ea59d7ca8b13910c0cbf634993"
+  },
+  "publishedAt": "2026-10-12T14:47:24.355Z",
+  "localWebpDeletedAt": "2026-10-12T14:47:24.728Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:47:24.728Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:47:24.728Z"
+}

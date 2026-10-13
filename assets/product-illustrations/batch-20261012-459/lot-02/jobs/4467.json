@@ -1,0 +1,41 @@
+{
+  "id": "4467",
+  "index": 35,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-05cd88f3-0515-406e-b995-54b7b08c1bdf.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-4467-tira-de-costilla-de-cerdo.png",
+  "prompt": "One square transparent PNG. Actual alpha transparency exactly 0 outside the product silhouette; no outside shadow, glow, halo or solid backdrop. Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. Specific inspected product: Long narrow transparent vacuum pack holding a full elongated strip of pink raw pork ribs with white fat bands, upright presentation and pink center pig label. Preserve long rib-strip shape. Product catalog identity: Tira de costilla de cerdo.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/4467.txt",
+  "sourceOriginalSha256": "297bded146aab028d1bf4c879b9084b3c011c3fa9397e696ac896035b2cfbac4",
+  "sourceOriginalBytes": 35961,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:51:38.588Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-4467.webp",
+  "width": 254,
+  "height": 768,
+  "bytes": 52910,
+  "sha256": "5181aa4ef31ff45536adda763897a93030fd287cbd0768a5e2c0c88c5ee9a2ea",
+  "alpha": {
+    "transparentPixels": 49075,
+    "opaquePixels": 1335,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:53:22.665Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:54:25.902Z",
+  "publication": {
+    "productId": "4467",
+    "name": "Tira de costilla de cerdo",
+    "objectPath": "mercadona/4467/5181aa4ef31ff455.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/4467/5181aa4ef31ff455.webp",
+    "contentType": "image/webp",
+    "bytes": 52910,
+    "published": true,
+    "sha256": "5181aa4ef31ff45536adda763897a93030fd287cbd0768a5e2c0c88c5ee9a2ea"
+  },
+  "publishedAt": "2026-10-12T13:54:55.636Z",
+  "localWebpDeletedAt": "2026-10-12T13:54:55.770Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:54:55.770Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:54:55.770Z"
+}

@@ -1,0 +1,39 @@
+{
+  "id": "52203",
+  "index": 49,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/52203.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-52203-chopped-pork-royal-dane.png",
+  "prompt": "Warm clean editorial hand-drawn illustration with thin soft outlines, defined source colors and paper/gouache texture. Illustrate exactly the item in source photo one: Royal Dane Chopped Pork canned luncheon meat. Preserve the exact can shape, label colors, Royal Dane and Chopped Pork wording. Preserve shape, package, visible words and quantity exactly; no added claims or food pieces. Full item centered on actual transparent alpha; no scene, tabletop, shadow, props or glow. Image two guides style only.\n",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/52203.txt",
+  "sourceOriginalSha256": "f7f82506ba31e98847c5b1a231007ad3d2f7d6e16be228107154ec6019d31019",
+  "sourceOriginalBytes": 66752,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:32:08.906Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-52203.webp",
+  "width": 464,
+  "height": 768,
+  "bytes": 94948,
+  "sha256": "a010c74dcf03813f19daa603dfbddb59145b255cb54a6213dbbea3ed3597d969",
+  "alpha": {
+    "transparentPixels": 65576,
+    "opaquePixels": 1424,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:32:54.395Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T07:33:32.147Z",
+  "publication": {
+    "productId": "52203",
+    "name": "Chopped pork Royal Dane",
+    "objectPath": "mercadona/52203/a010c74dcf03813f.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/52203/a010c74dcf03813f.webp",
+    "contentType": "image/webp",
+    "bytes": 94948,
+    "sha256": "a010c74dcf03813f19daa603dfbddb59145b255cb54a6213dbbea3ed3597d969"
+  },
+  "publishedAt": "2026-10-09T07:33:35.389Z",
+  "localWebpDeletedAt": "2026-10-09T07:33:35.389Z",
+  "localSourceJpgDeletedAt": "2026-10-09T07:33:35.389Z"
+}

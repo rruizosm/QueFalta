@@ -1,0 +1,41 @@
+{
+  "id": "12880",
+  "index": 103,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-6b78-7552-94a3-b923c51cf7da/exec-0e1e8689-ecd4-4aa8-a1d8-7956b51c1c58.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-03/mercadona-12880-vino-cream-olivar-do-jerez.png",
+  "prompt": "Use case: style-transfer. Create one polished hand-drawn retail product illustration for the QueFalta catalog. Image 1 is the sole authoritative product photograph. Image 2 supplies ONLY the illustrated medium, delicate outlines, simplified clean shading and subtle texture, never its milk carton, colors or text. Faithfully illustrate exactly the complete product in image 1, its perspective, geometry, components, colors and main readable label lettering. Truly transparent background, no ground plane, no cast shadow. Center the entire object with generous safe transparent margin. Preserve all visible caps, separate accessories, real multipack counts and full package edges. Preserve meaningful negations SIN or SEM and visible quantities completely. No invented claims, brands, prices, quantities or extra food/props. Tiny unreadable legal text may be quietly simplified. Never infer packaging text or quantities from catalog title. Product-specific visual requirements: Black wine bottle, brown-gold neck sleeve, small brown ornate CREAM Olivar label and separate JEREZ badge below. Catalog title for identification only: Vino cream Olivar DO Jerez. Reproduce numeric values only when legible in image 1; the actual photograph overrides catalog wording.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-03/actual-prompts/12880.txt",
+  "sourceOriginalSha256": "e6a521b354c1e1ae9c62e8116f2c1ed1da9b28057c82c35d88aa99b7cb95fcbb",
+  "sourceOriginalBytes": 26626,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:07:43.430Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-03/webp/mercadona-12880.webp",
+  "width": 213,
+  "height": 768,
+  "bytes": 24294,
+  "sha256": "a4123fcaa7d3fb8e16a05114338b50c30b47762abdac17b41ab3283871dc9bf1",
+  "alpha": {
+    "transparentPixels": 63452,
+    "opaquePixels": 882,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:18:27.818Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:20:47.780Z",
+  "publication": {
+    "productId": "12880",
+    "name": "Vino cream Olivar DO Jerez",
+    "objectPath": "mercadona/12880/a4123fcaa7d3fb8e.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/12880/a4123fcaa7d3fb8e.webp",
+    "contentType": "image/webp",
+    "bytes": 24294,
+    "published": true,
+    "sha256": "a4123fcaa7d3fb8e16a05114338b50c30b47762abdac17b41ab3283871dc9bf1"
+  },
+  "publishedAt": "2026-10-12T15:21:03.245Z",
+  "localWebpDeletedAt": "2026-10-12T15:21:03.386Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:21:03.386Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:21:03.386Z"
+}

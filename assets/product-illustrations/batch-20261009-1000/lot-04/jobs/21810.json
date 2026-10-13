@@ -1,0 +1,39 @@
+{
+  "id": "21810",
+  "index": 94,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-b1a7b9be-8e75-4ca1-900a-0fd06ace91d7.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-21810-chuletas-de-cordero-paletilla.png",
+  "prompt": "Make a warm editorial hand-drawn QuéFalta illustration of the exact product in Image 1, with fine soft outlines, accurate source colors and subtle gouache texture. Image 2 at /private/tmp/mercadona-style-10699-reference.png is a style reference only; do not copy its product. Preserve the exact meat cut, label, logo, packaging and any halal mark visible. Lamb shoulder chops, one shallow clear rectangular tray with several raw pink lamb shoulder chops laid in rows, pale bone and fat visible. A diagonal ochre/brown label with black sheep logo and CHULETA PALETILLA wording. Keep source exact chop cut and package, whole tray on transparent background. Include the complete package and isolated transparent background with margin.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/21810-prompt.txt",
+  "sourceOriginalSha256": "54a3ed93f19c092c56a29e70a5afbea3b1c7e6ed8ce5eca26a9dd6cb29fb8384",
+  "sourceOriginalBytes": 54346,
+  "status": "published",
+  "generatedAt": "2026-10-09T08:23:44.748Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-21810.webp",
+  "width": 768,
+  "height": 494,
+  "bytes": 87864,
+  "sha256": "75f106f13c214ca2b129d30db11fe2349e2d058b3848d67a475fab2443e39379",
+  "alpha": {
+    "transparentPixels": 145626,
+    "opaquePixels": 1113,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T08:24:07.419Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T08:24:54.216Z",
+  "publication": {
+    "productId": "21810",
+    "name": "Chuletas de cordero paletilla",
+    "objectPath": "mercadona/21810/75f106f13c214ca2.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/21810/75f106f13c214ca2.webp",
+    "contentType": "image/webp",
+    "bytes": 87864,
+    "sha256": "75f106f13c214ca2b129d30db11fe2349e2d058b3848d67a475fab2443e39379"
+  },
+  "publishedAt": "2026-10-09T08:24:59.151Z",
+  "localWebpDeletedAt": "2026-10-09T08:24:59.151Z",
+  "localSourceJpgDeletedAt": "2026-10-09T08:24:59.151Z"
+}

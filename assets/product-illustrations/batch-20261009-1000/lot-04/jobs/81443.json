@@ -1,0 +1,39 @@
+{
+  "id": "81443",
+  "index": 30,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/81443.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-81443-chirla.png",
+  "prompt": "Warm clean editorial hand-drawn product illustration with thin soft outlines, defined source colors and subtle paper/gouache texture. Illustrate exactly the item in photo one: A retail pack of fresh chirla clams. Preserve the exact visible shellfish count, their shell shapes/colors, and the original tray/wrapping/package, with no extra seafood. Preserve package/food count and all visible marks; add no claim, item, scene, glow or shadow. Complete centered product, actual transparent alpha. No photorealism, 3D, props or background. Image two guides style only.\n",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/81443.txt",
+  "sourceOriginalSha256": "4940d39b37a86d1b866332418346fe1b3831cd3a36d7ef8e086d6c53dfdb436b",
+  "sourceOriginalBytes": 104279,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:13:28.596Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-81443.webp",
+  "width": 682,
+  "height": 768,
+  "bytes": 165566,
+  "sha256": "c17277c16f4e5937e5eb41088959d68f4f4c4da558f4f26fc5418faadab11d35",
+  "alpha": {
+    "transparentPixels": 225912,
+    "opaquePixels": 563,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:13:41.270Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T07:14:02.854Z",
+  "publication": {
+    "productId": "81443",
+    "name": "Chirla",
+    "objectPath": "mercadona/81443/c17277c16f4e5937.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/81443/c17277c16f4e5937.webp",
+    "contentType": "image/webp",
+    "bytes": 165566,
+    "sha256": "c17277c16f4e5937e5eb41088959d68f4f4c4da558f4f26fc5418faadab11d35"
+  },
+  "publishedAt": "2026-10-09T07:14:07.761Z",
+  "localWebpDeletedAt": "2026-10-09T07:14:07.762Z",
+  "localSourceJpgDeletedAt": "2026-10-09T07:14:07.762Z"
+}

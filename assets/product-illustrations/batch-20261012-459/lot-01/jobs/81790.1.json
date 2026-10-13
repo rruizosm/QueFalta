@@ -1,0 +1,41 @@
+{
+  "id": "81790.1",
+  "index": 62,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308c-ebe7-7011-b529-512d15320584/exec-a6ba4bff-e268-471c-9cc4-8ec8d5e22ed1.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-01/mercadona-81790.1-merluza-a-rodajas.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta catalog product illustration. Image1 is the exact official product photo, authoritative for subject and all product details. Image2 is ONLY the approved hand-drawn illustration style; do not copy its milk carton. Render Image1 as warm clean editorial hand-drawn gouache, subtle paper texture, thin defined outlines and recognizable original colors. Preserve exact product/variant, whole silhouette, proportions, packaging, labels and readable text. Use actual alpha transparency. Entire product centered with minimal transparent margin; preserve natural source orientation, all separate food pieces and components, source count/layout and retail multipacks. Do not change sliced food to whole food or vice versa. Keep heads, tails, caps and packaging where source has them. No props, invented packaging, plate, extra labels, cast shadows, floor, background, checkerboard, photorealism or3D. Reproduce only legible printed words/units/claims; never infer printed text from catalog name. Preserve SIN/SEM GLUTEN and all negations, quantities, units and qualifiers exactly if present. Tiny unreadable microprint may be simplified into neutral lines without invented values. Output one complete transparent PNG.\nProduct ID 81790.1. Observed source: Whole hake in consecutive steaks tail left head right. Photo remains authoritative.\n Square canvas. Outside the exact product silhouette alpha must be exactly zero; no exterior glow, beige halo, blurred aura, paper rectangle, vignette or colored backdrop. Texture stays strictly inside the product.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-01/actual-prompts/81790.1.txt",
+  "sourceOriginalSha256": "ae63e9694a080cdfa38b17a1edebefe0ef5a27a9df26c18b9b406422aafd2d14",
+  "sourceOriginalBytes": 25829,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:51:31.659Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-01/webp/mercadona-81790.1.webp",
+  "width": 768,
+  "height": 379,
+  "bytes": 40876,
+  "sha256": "a9c6cdac5b0ee96988d3f9edb00e90eb6f1337c4480278104b32b0c3f2272582",
+  "alpha": {
+    "transparentPixels": 228258,
+    "opaquePixels": 495,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:55:48.462Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:14:35.888Z",
+  "publication": {
+    "productId": "81790.1",
+    "name": "Merluza a rodajas",
+    "objectPath": "mercadona/81790.1/a9c6cdac5b0ee969.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/81790.1/a9c6cdac5b0ee969.webp",
+    "contentType": "image/webp",
+    "bytes": 40876,
+    "published": true,
+    "sha256": "a9c6cdac5b0ee96988d3f9edb00e90eb6f1337c4480278104b32b0c3f2272582"
+  },
+  "publishedAt": "2026-10-12T15:14:39.881Z",
+  "localWebpDeletedAt": "2026-10-12T15:14:40.223Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:14:40.223Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:14:40.223Z"
+}

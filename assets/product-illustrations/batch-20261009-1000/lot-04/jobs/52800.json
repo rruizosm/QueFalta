@@ -1,0 +1,39 @@
+{
+  "id": "52800",
+  "index": 5,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/52800.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-52800-champu-color-vive-elvive-cabello-tenido-o-con-mechas.png",
+  "prompt": "Warm clean editorial hand-drawn Mercadona product illustration, soft thin outlines, defined original colors, subtle paper/gouache texture, frontal view. Illustrate the exact Elvive Color Vive shampoo for dyed or highlighted hair in photo one. Elvive Color Vive shampoo bottle; preserve exact source silhouette, cap, Elvive brand, Color Vive wording, colors and visible label artwork. Preserve all readable words/claims, add no details. Show entire bottle upright, centered, transparent alpha, no glow, shadow, props, setting, photorealism or 3D. Image two is style guidance only.\n",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/52800.txt",
+  "sourceOriginalSha256": "e68e923a8c66833a945c99ea88f5301897c8da95251494f656cdb0d340b0641e",
+  "sourceOriginalBytes": 37518,
+  "status": "published",
+  "generatedAt": "2026-10-09T06:52:06.248Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-52800.webp",
+  "width": 324,
+  "height": 768,
+  "bytes": 45058,
+  "sha256": "d839ca982b206ec5eef243a621357d9c1f0963ad529534b6e8c89938e66d7e3c",
+  "alpha": {
+    "transparentPixels": 62492,
+    "opaquePixels": 1272,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T06:52:14.005Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T06:52:31.118Z",
+  "publication": {
+    "productId": "52800",
+    "name": "Champú Color Vive Elvive cabello teñido o con mechas",
+    "objectPath": "mercadona/52800/d839ca982b206ec5.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/52800/d839ca982b206ec5.webp",
+    "contentType": "image/webp",
+    "bytes": 45058,
+    "sha256": "d839ca982b206ec5eef243a621357d9c1f0963ad529534b6e8c89938e66d7e3c"
+  },
+  "publishedAt": "2026-10-09T06:52:54.319Z",
+  "localWebpDeletedAt": "2026-10-09T06:52:54.319Z",
+  "localSourceJpgDeletedAt": "2026-10-09T06:52:54.319Z"
+}

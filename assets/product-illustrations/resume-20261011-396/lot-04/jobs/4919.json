@@ -1,0 +1,41 @@
+{
+  "id": "4919",
+  "index": 45,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12be3-1801-7fe3-88ee-862e3d13eea9/exec-6e0f4964-09e8-46c1-b9a5-174f5fc943fd.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-04/mercadona-4919-secreto-de-cerdo-iberico.png",
+  "prompt": "Use case: style-transfer. Asset: one catalog product illustration for QuéFalta. Image1 is the sole authoritative product/photo reference; image2 supplies ONLY the illustrated medium and edge/shading treatment, never its milk carton/text. Turn the exact product in image1 into a polished hand-drawn retail illustration matching image2: crisp delicate outlines, clean simplified shading, subtle illustrated texture and faithful retail colors. Truly transparent background, no ground plane, no cast shadow, centered entire product with safe empty margin. Preserve the complete original package geometry, perspective, relative proportions, all components and accessories, real visible quantities and main legible label text. No extra props, invented brands, claims, prices, quantities or food outside packaging. Tiny illegible legal text may be reduced unobtrusively but all meaningful negations such as SIN/SEM must remain complete. Product-specific observed requirements: Clear oblique tray of broad thin marbled raw pork cuts with GREEN pig sleeve SECRETO IBÉRICO; retain tray and actual meat arrangement. Official product: Secreto de cerdo ibérico. Reproduce source numeric values only when legible; do not guess.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-04/actual-prompts/4919.txt",
+  "sourceOriginalSha256": "585bfc75857a8256af7107f323a5af0ebefb1e2a975608becd3078c8c8dbad84",
+  "sourceOriginalBytes": 59070,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:39:52.703Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-04/webp/mercadona-4919.webp",
+  "width": 768,
+  "height": 463,
+  "bytes": 74556,
+  "sha256": "e6acb0cf0eda0390929c592f51994f93885676a15d4b9a674a9067d85cf2ab0f",
+  "alpha": {
+    "transparentPixels": 140290,
+    "opaquePixels": 1189,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:42:39.117Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:44:02.966Z",
+  "publication": {
+    "productId": "4919",
+    "name": "Secreto de cerdo ibérico",
+    "objectPath": "mercadona/4919/e6acb0cf0eda0390.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/4919/e6acb0cf0eda0390.webp",
+    "contentType": "image/webp",
+    "bytes": 74556,
+    "published": true,
+    "sha256": "e6acb0cf0eda0390929c592f51994f93885676a15d4b9a674a9067d85cf2ab0f"
+  },
+  "publishedAt": "2026-10-11T17:44:14.329Z",
+  "localWebpDeletedAt": "2026-10-11T17:44:14.470Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:44:14.470Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:44:14.470Z"
+}

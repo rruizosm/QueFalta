@@ -1,0 +1,41 @@
+{
+  "id": "52996",
+  "index": 56,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-61575649-91fb-43c6-ac0f-0a0a7fec5222.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-52996-spray-repelente-fuerte-deliplus-antimosquitos.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Spray repelente fuerte Deliplus antimosquitos (Mercadona 52996).\nObserved source details: Orange cylindrical mosquito repellent bottle with attached white pump inside clear tall cap. Label REPELENTE FUERTE ANTIMOQUITOS, crossed mosquito symbol, small source label text deliplus. Preserve visible wording but do not invent chemical concentration or percentages.",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-05/actual-prompts/52996-root-resume.txt",
+  "sourceOriginalSha256": "3ef2914f576f41305891b0a18888aa900de099a0edcbc4b09a05c6a1106d309a",
+  "sourceOriginalBytes": 26457,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:43:54.841Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-52996.webp",
+  "width": 238,
+  "height": 768,
+  "bytes": 41002,
+  "sha256": "cf86613adc8e80da8baab1e55fb0da750e56eacdfae5a94e2b6cec4ad387779c",
+  "alpha": {
+    "transparentPixels": 58370,
+    "opaquePixels": 885,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:46:44.995Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:55:21.247Z",
+  "publication": {
+    "productId": "52996",
+    "name": "Spray repelente fuerte Deliplus antimosquitos",
+    "objectPath": "mercadona/52996/cf86613adc8e80da.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/52996/cf86613adc8e80da.webp",
+    "contentType": "image/webp",
+    "bytes": 41002,
+    "published": true,
+    "sha256": "cf86613adc8e80da8baab1e55fb0da750e56eacdfae5a94e2b6cec4ad387779c"
+  },
+  "publishedAt": "2026-10-11T17:55:36.427Z",
+  "localWebpDeletedAt": "2026-10-11T17:55:36.598Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:55:36.598Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:55:36.598Z"
+}

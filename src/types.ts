@@ -246,9 +246,9 @@ export interface FavoriteProduct {
 // ─── Navigation param types ───────────────────────────────────────────────────
 
 export type RootTabParamList = {
-  Pantry: undefined;
   Home: NavigatorScreenParams<HomeStackParamList> | undefined;
   Catalog: NavigatorScreenParams<CatalogStackParamList> | undefined;
+  Pantry: undefined;
   QueCocino: undefined;
   List: undefined;
   Groups: NavigatorScreenParams<GroupsStackParamList> | undefined;

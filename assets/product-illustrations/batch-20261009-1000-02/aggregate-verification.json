@@ -1,0 +1,20 @@
+{
+  "verifiedAt": "2026-10-09T12:43:48.598Z",
+  "complete": false,
+  "target": 1000,
+  "selectedOriginal": 1000,
+  "blocked": 2,
+  "supplementSelected": 2,
+  "effectiveSelected": 1000,
+  "generated": 876,
+  "prepared": 876,
+  "reviewed": 876,
+  "published": 876,
+  "pending": 124,
+  "remoteMimeShaBytesDimensionsAlphaVerified": 876,
+  "localJpgAndWebpDeletedAfterUpload": 876,
+  "previousIllustrationsUnchanged": 3959,
+  "selectedThumbnailsUnchanged": 1002,
+  "forbiddenAssetsFound": 0,
+  "totalBytes": 62768862
+}

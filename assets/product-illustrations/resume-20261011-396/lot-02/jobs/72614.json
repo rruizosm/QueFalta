@@ -1,0 +1,41 @@
+{
+  "id": "72614",
+  "index": 47,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-f3e1c725-996e-40de-8f79-1f9a4fe12f6d.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-02/mercadona-72614-recambio-ambientador-electrico-jardin-6-fragancias-bosque-verde.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Recambio ambientador eléctrico Jardín 6 fragancias Bosque Verde, Mercadona product ID 72614. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\n\nObserved source details (photo remains authoritative): Red JARDÍN Bosque Verde fragrance refill carton,6FRAGANCIAS/FRAGRANCIAS with roses and three bottles printed front. Full carton only.\n",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-02/actual-prompts/72614.txt",
+  "sourceOriginalSha256": "0208a872be8094727cac23ae69fa4e734dec8b2c68680ad35f5a2b6ac4a008b1",
+  "sourceOriginalBytes": 104072,
+  "status": "published",
+  "generatedAt": "2026-10-11T18:20:21.416Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-02/webp/mercadona-72614.webp",
+  "width": 768,
+  "height": 697,
+  "bytes": 112340,
+  "sha256": "8bdcbeb4f68d502be55bbdf7e93233a1896d9c6db076226c029c69c1c31ac16f",
+  "alpha": {
+    "transparentPixels": 64955,
+    "opaquePixels": 737,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T18:20:32.923Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T18:22:04.163Z",
+  "publication": {
+    "productId": "72614",
+    "name": "Recambio ambientador eléctrico Jardín 6 fragancias Bosque Verde",
+    "objectPath": "mercadona/72614/8bdcbeb4f68d502b.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/72614/8bdcbeb4f68d502b.webp",
+    "contentType": "image/webp",
+    "bytes": 112340,
+    "published": true,
+    "sha256": "8bdcbeb4f68d502be55bbdf7e93233a1896d9c6db076226c029c69c1c31ac16f"
+  },
+  "publishedAt": "2026-10-11T18:22:29.794Z",
+  "localWebpDeletedAt": "2026-10-11T18:22:29.987Z",
+  "localSourceJpgDeletedAt": "2026-10-11T18:22:29.987Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T18:22:29.987Z"
+}

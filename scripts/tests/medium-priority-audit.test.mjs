@@ -21,6 +21,16 @@ test('Cesta no anima una altura por fila y expone controles accesibles', () => {
   assert.match(listScreen, /accessibilityLabel=\{t\('list\.clearConfirm'\)\}/);
 });
 
+test('Cesta mantiene una cabecera compacta con las acciones junto al título', () => {
+  const header = listScreen.match(/const header = \([\s\S]*?const screenState =/)?.[0] ?? '';
+  const titleRow = header.match(/<View style=\{styles\.titleWrap\}>[\s\S]*?<\/View>\n\s*<\/View>/)?.[0] ?? '';
+
+  assert.doesNotMatch(header, /list\.subtitle|styles\.subtitleRow/);
+  assert.match(titleRow, /styles\.headerActions/);
+  assert.match(titleRow, /person-add-outline/);
+  assert.match(titleRow, /trash-outline/);
+});
+
 test('Detalle de grupo virtualiza una sola copia de la cesta', () => {
   assert.match(groupDetail, /const merged = useMemo\(\(\) => mergeCartItems\(items\)/);
   assert.match(groupDetail, /<SectionList/);
@@ -28,6 +38,16 @@ test('Detalle de grupo virtualiza una sola copia de la cesta', () => {
   assert.doesNotMatch(groupDetail, /<ScrollView/);
   assert.match(groupDetail, /accessibilityLabel=\{t\('group\.expandCartA11y'\)\}/);
   assert.match(groupDetail, /accessibilityLabel=\{t\('group\.collapseCartA11y'\)\}/);
+});
+
+test('La cesta expandida conserva completos el progreso y los extremos del contenido', () => {
+  assert.match(groupDetail, /modalProgress: \{[^}]*paddingTop: 12/);
+  assert.match(groupDetail, /first && styles\.cartRowsSurfaceFirst/);
+  assert.match(groupDetail, /section\.key === cartSections\[0\]\?\.key/);
+  assert.match(groupDetail, /isLastCartItem && styles\.cartRowsSurfaceLast/);
+  assert.match(groupDetail, /style=\{styles\.modalList\}/);
+  assert.match(groupDetail, /cartRowsSurfaceFirst: \{[\s\S]*borderTopWidth: 1/);
+  assert.match(groupDetail, /modalList: \{ flex: 1 \}/);
 });
 
 test('Altas y acciones sensibles de miembros están serializadas y confirmadas', () => {

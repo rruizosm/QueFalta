@@ -1,0 +1,41 @@
+{
+  "id": "28635",
+  "index": 87,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-a650f285-8ffb-4ee5-aecb-daba32aa505d.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-28635-whisky-escoces-gold-label-john-haig.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Whisky escocés Gold Label John Haig, ID 28635.\nObserved source: Amber whisky bottle ivory cap, white HAIG GOLD LABEL label gold framing.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/28635.txt",
+  "sourceOriginalSha256": "49cfe50ddc5a19a3e71e1e5d052abcad227b89f1bba1d9ef7ba095044071ba30",
+  "sourceOriginalBytes": 35667,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:00:27.931Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-28635.webp",
+  "width": 238,
+  "height": 768,
+  "bytes": 35624,
+  "sha256": "efe0986817aa740b6cfcc571a217f808bb8b9f5f5f87313bed8ef6c1a93c8b60",
+  "alpha": {
+    "transparentPixels": 70707,
+    "opaquePixels": 1109,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:05:20.757Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:05:35.436Z",
+  "publication": {
+    "productId": "28635",
+    "name": "Whisky escocés Gold Label John Haig",
+    "objectPath": "mercadona/28635/efe0986817aa740b.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/28635/efe0986817aa740b.webp",
+    "contentType": "image/webp",
+    "bytes": 35624,
+    "published": true,
+    "sha256": "efe0986817aa740b6cfcc571a217f808bb8b9f5f5f87313bed8ef6c1a93c8b60"
+  },
+  "publishedAt": "2026-10-12T15:05:42.903Z",
+  "localWebpDeletedAt": "2026-10-12T15:05:43.040Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:05:43.040Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:05:43.040Z"
+}

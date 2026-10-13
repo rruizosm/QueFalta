@@ -13,13 +13,13 @@ const limitsUrl = new URL('../../src/constants/limits.ts', import.meta.url);
 const navigationUrl = new URL('../../src/navigation/index.tsx', import.meta.url);
 const transitionUrl = new URL('../../src/hooks/useRecipeCreatorTransition.ts', import.meta.url);
 
-test('recipes are enabled and mounted as a tab', async () => {
+test('recipes remain disabled and their tab stays behind the feature flag', async () => {
   const [limits, navigation] = await Promise.all([
     readFile(limitsUrl, 'utf8'),
     readFile(navigationUrl, 'utf8'),
   ]);
 
-  assert.match(limits, /export const QUE_COCINO_ENABLED = true/);
+  assert.match(limits, /export const QUE_COCINO_ENABLED = false/);
   assert.match(navigation, /\{QUE_COCINO_ENABLED && \([\s\S]*name="QueCocino"[\s\S]*component=\{QueCocinoScreen\}/);
 });
 

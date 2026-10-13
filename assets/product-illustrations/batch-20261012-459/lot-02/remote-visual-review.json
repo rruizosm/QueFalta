@@ -1,0 +1,40 @@
+{
+  "reviewedAt": "2026-10-12T15:28:09.030189+00:00",
+  "ranges": [
+    [
+      1,
+      20
+    ],
+    [
+      21,
+      40
+    ],
+    [
+      41,
+      60
+    ],
+    [
+      61,
+      80
+    ],
+    [
+      81,
+      100
+    ],
+    [
+      101,
+      111
+    ]
+  ],
+  "productsReviewed": 111,
+  "method": "workflow gallery downloads published remote WebP, validates MIME SHA256 bytes before rendering; view_image inspected all contact sheets",
+  "observations": [
+    "Product identities, packets and multipacks retained",
+    "Transparency visible against tan contact sheet background",
+    "Negations and pack quantities reviewed in supplied photos and final WebP",
+    "69971 corrected upper mesh neck holes transparent in final remote WebP",
+    "60089 invented label removed before publication",
+    "27666 and 27487 faithfully contain 8 cans from official photo despite original prompt specifying 6",
+    "82906 follows official Tortitas Nevadas packaging despite catalog name canela"
+  ]
+}

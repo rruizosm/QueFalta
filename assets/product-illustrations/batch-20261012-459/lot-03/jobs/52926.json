@@ -1,0 +1,41 @@
+{
+  "id": "52926",
+  "index": 95,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-6b78-7552-94a3-b923c51cf7da/exec-a1b3d996-d932-4c9a-bdc6-ee3958b4053a.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-03/mercadona-52926-vino-blanco-treixadura-da-feira-do-ribeiro.png",
+  "prompt": "Use case: style-transfer. Create one polished hand-drawn retail product illustration for the QueFalta catalog. Image 1 is the sole authoritative product photograph. Image 2 supplies ONLY the illustrated medium, delicate outlines, simplified clean shading and subtle texture, never its milk carton, colors or text. Faithfully illustrate exactly the complete product in image 1, its perspective, geometry, components, colors and main readable label lettering. Truly transparent background, no ground plane, no cast shadow. Center the entire object with generous safe transparent margin. Preserve all visible caps, separate accessories, real multipack counts and full package edges. Preserve meaningful negations SIN or SEM and visible quantities completely. No invented claims, brands, prices, quantities or extra food/props. Tiny unreadable legal text may be quietly simplified. Never infer packaging text or quantities from catalog title. Product-specific visual requirements: Olive wine bottle with matte gold cap, silver-white Da Feira TREIXADURA 2023 RIBEIRO label and small gold emblem. Catalog title for identification only: Vino blanco Treixadura Da Feira DO Ribeiro. Reproduce numeric values only when legible in image 1; the actual photograph overrides catalog wording.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-03/actual-prompts/52926.txt",
+  "sourceOriginalSha256": "966568eafb8da47e243ffec9d7ffbfea829da426c32556f58c4c64b365812a14",
+  "sourceOriginalBytes": 26031,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:05:07.860Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-03/webp/mercadona-52926.webp",
+  "width": 229,
+  "height": 768,
+  "bytes": 30546,
+  "sha256": "6348f6377a74fdf024117c9469f1461c1e6641b179a8c33399d395f6262825ed",
+  "alpha": {
+    "transparentPixels": 64178,
+    "opaquePixels": 1242,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:18:26.547Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:20:47.778Z",
+  "publication": {
+    "productId": "52926",
+    "name": "Vino blanco Treixadura Da Feira DO Ribeiro",
+    "objectPath": "mercadona/52926/6348f6377a74fdf0.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/52926/6348f6377a74fdf0.webp",
+    "contentType": "image/webp",
+    "bytes": 30546,
+    "published": true,
+    "sha256": "6348f6377a74fdf024117c9469f1461c1e6641b179a8c33399d395f6262825ed"
+  },
+  "publishedAt": "2026-10-12T15:20:52.968Z",
+  "localWebpDeletedAt": "2026-10-12T15:20:53.323Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:20:53.323Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:20:53.323Z"
+}

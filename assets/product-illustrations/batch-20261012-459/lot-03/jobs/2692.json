@@ -1,0 +1,41 @@
+{
+  "id": "2692",
+  "index": 12,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12be3-1801-7fe3-88ee-862e3d13eea9/exec-b90de4e5-acfe-4f41-8890-0d9c8e14bfa0.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-03/mercadona-2692-trozo-de-vacuno-para-cocido.png",
+  "prompt": "Use case: style-transfer. Create one polished hand-drawn retail product illustration for the QueFalta catalog. Image 1 is the sole authoritative product photograph. Image 2 supplies ONLY the illustrated medium, delicate outlines, simplified clean shading and subtle texture, never its milk carton, colors or text. Faithfully illustrate exactly the complete product in image 1, its perspective, geometry, components, colors and main readable label lettering. Truly transparent background, no ground plane, no cast shadow. Center the entire object with generous safe transparent margin. Preserve all visible caps, separate accessories, real multipack counts and full package edges. Preserve meaningful negations SIN or SEM and visible quantities completely. No invented claims, brands, prices, quantities or extra food/props. Tiny unreadable legal text may be quietly simplified. Never infer packaging text or quantities from catalog title. Product-specific visual requirements: Clear deep raw beef tray, white TROZO PARA COCIDO label and black cow; this source has no colored HALAL seal. Catalog title for identification only: Trozo de vacuno para cocido. Reproduce numeric values only when legible in image 1; the actual photograph overrides catalog wording.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-03/actual-prompts/2692.txt",
+  "sourceOriginalSha256": "350483bf73ca7ed6f3930f9cd06c870a6aaa9e476a67c432fb64269efc9e7272",
+  "sourceOriginalBytes": 72408,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:40:43.138Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-03/webp/mercadona-2692.webp",
+  "width": 768,
+  "height": 749,
+  "bytes": 107534,
+  "sha256": "693b49c246888b4b2008c2ee1c996ae257159fb48d973ecfa295d5f6ddd0da4c",
+  "alpha": {
+    "transparentPixels": 229138,
+    "opaquePixels": 1245,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:42:37.924Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:43:41.296Z",
+  "publication": {
+    "productId": "2692",
+    "name": "Trozo de vacuno para cocido",
+    "objectPath": "mercadona/2692/693b49c246888b4b.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/2692/693b49c246888b4b.webp",
+    "contentType": "image/webp",
+    "bytes": 107534,
+    "published": true,
+    "sha256": "693b49c246888b4b2008c2ee1c996ae257159fb48d973ecfa295d5f6ddd0da4c"
+  },
+  "publishedAt": "2026-10-12T13:43:51.730Z",
+  "localWebpDeletedAt": "2026-10-12T13:43:51.917Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:43:51.917Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:43:51.917Z"
+}

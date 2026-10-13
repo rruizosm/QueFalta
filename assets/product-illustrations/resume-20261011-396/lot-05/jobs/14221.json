@@ -1,0 +1,41 @@
+{
+  "id": "14221",
+  "index": 20,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-27dcf91e-b4fc-45f0-9b5c-48f9cb081e2c.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-14221-surtido-bombones-senzza-de-chocolate-negro-70.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Surtido bombones Senzza de chocolate negro 70%, Mercadona product ID 14221. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\nObserved source details: Standing black/gold Senzza 70% Negro chocolate bag, crimped gold top, dark chocolate pralines and nuts art,16unidades label. Preserve70% and16; no loose candy outside bag.\n Preserve the source SIN/SEM GLUTEN badge verbatim, including SIN/SEM; do not change into a gluten claim.",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-05/actual-prompts/14221.txt",
+  "sourceOriginalSha256": "56de9d9af5ec52e8ac2d16e8caf74acdb88f75c7fda5a392b6ebe52a59e57117",
+  "sourceOriginalBytes": 50887,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:09:59.441Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-14221.webp",
+  "width": 446,
+  "height": 768,
+  "bytes": 68564,
+  "sha256": "d006cc7869c3d8edfaf101abde2376a7a26ab4a380c51b6646826da452d4934d",
+  "alpha": {
+    "transparentPixels": 61616,
+    "opaquePixels": 1152,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:13:05.708Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:36:56.087Z",
+  "publication": {
+    "productId": "14221",
+    "name": "Surtido bombones Senzza de chocolate negro 70%",
+    "objectPath": "mercadona/14221/d006cc7869c3d8ed.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/14221/d006cc7869c3d8ed.webp",
+    "contentType": "image/webp",
+    "bytes": 68564,
+    "published": true,
+    "sha256": "d006cc7869c3d8edfaf101abde2376a7a26ab4a380c51b6646826da452d4934d"
+  },
+  "publishedAt": "2026-10-11T17:37:22.479Z",
+  "localWebpDeletedAt": "2026-10-11T17:37:22.725Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:37:22.725Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:37:22.725Z"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "82920",
+  "index": 99,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-6f789dda-7c4a-44bc-b57f-205dd405e3d4.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-82920-tortas-de-aceite-ines-rosales-sin-azucar.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Square white Inés Rosales packet with large golden round thin torta image, pale turquoise horizontal decorative band reads SIN AZÚCARES AÑADIDOS, 5 TORTAS upper left. Preserve sugar-free variant and 5. Product catalog identity: Tortas de aceite Inés Rosales sin azúcar.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/82920.txt",
+  "sourceOriginalSha256": "bd9543e28aebb6da983772a614fca5dc3664505e7fc1002364d89448645df808",
+  "sourceOriginalBytes": 85906,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:12:19.388Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-82920.webp",
+  "width": 745,
+  "height": 768,
+  "bytes": 127642,
+  "sha256": "b6472d3baf6498cde03003c6fb8e4bfcfc20088827ce650c92ee2afc0289726e",
+  "alpha": {
+    "transparentPixels": 96108,
+    "opaquePixels": 982,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:19:47.243Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:22:43.718Z",
+  "publication": {
+    "productId": "82920",
+    "name": "Tortas de aceite Inés Rosales sin azúcar",
+    "objectPath": "mercadona/82920/b6472d3baf6498cd.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/82920/b6472d3baf6498cd.webp",
+    "contentType": "image/webp",
+    "bytes": 127642,
+    "published": true,
+    "sha256": "b6472d3baf6498cde03003c6fb8e4bfcfc20088827ce650c92ee2afc0289726e"
+  },
+  "publishedAt": "2026-10-12T15:23:06.359Z",
+  "localWebpDeletedAt": "2026-10-12T15:23:06.474Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:23:06.474Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:23:06.474Z"
+}

@@ -1,0 +1,50 @@
+{
+  "id": "12747",
+  "index": 8,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-fc492d74-2fa6-40fc-8eb0-4cf63d4b86d5.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-12747-sobrasada-con-miel-l-illa-especialidades.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "7b322330caf8100c6a843b962dfca1cf55d621531e07820f32c9606a1f4c89c6",
+  "sourceOriginalBytes": 57707,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:38:14.804Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-12747.webp",
+  "recovery": {
+    "recoveredAt": "2026-10-11T16:56:07.779449+00:00",
+    "nativeMatchedToHistoricalWebp": true,
+    "historicalWebpSha256": "7c42889895ecf87b9e2c2a3f50aa1b23aa7ac2447eba4ed0406bccdb223cf728",
+    "historicalWebpTempPath": "/private/tmp/mercadona-batch-20261010-1000/lot-10/webp/mercadona-12747.webp",
+    "nativeSha256": "1e623dc93b79d858954b97ff30c383d3ebf5a673632a8b13477d5bac6be567a3",
+    "originalPromptUnavailable": true,
+    "note": "Original batch directory was deleted. Native recovered by exact SHA after same export; original prompt is unavailable and has not been invented. Fresh visual review required before upload."
+  },
+  "width": 768,
+  "height": 531,
+  "bytes": 78014,
+  "sha256": "7c42889895ecf87b9e2c2a3f50aa1b23aa7ac2447eba4ed0406bccdb223cf728",
+  "alpha": {
+    "transparentPixels": 80368,
+    "opaquePixels": 1160,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T16:57:42.524Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:09:59.443Z",
+  "publication": {
+    "productId": "12747",
+    "name": "Sobrasada con miel L'Illa especialidades",
+    "objectPath": "mercadona/12747/7c42889895ecf87b.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/12747/7c42889895ecf87b.webp",
+    "contentType": "image/webp",
+    "bytes": 78014,
+    "published": true,
+    "sha256": "7c42889895ecf87b9e2c2a3f50aa1b23aa7ac2447eba4ed0406bccdb223cf728"
+  },
+  "publishedAt": "2026-10-11T17:11:23.764Z",
+  "localWebpDeletedAt": "2026-10-11T17:11:24.059Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:11:24.059Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:11:24.059Z"
+}

@@ -1,0 +1,39 @@
+{
+  "id": "4900",
+  "index": 87,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-ad304b89-3c7d-4121-97a6-4de90aa8f5b4.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-4900-chuletas-aguja-de-cerdo.png",
+  "prompt": "Illustrate the exact product in Image 1 in a restrained editorial hand-drawn grocery style: soft thin outlines, faithful source colors, gentle paper/gouache texture. Preserve product identity, packaging, label, claims and contents. Image 2 at /private/tmp/mercadona-style-10699-reference.png is only a style reference and must not be copied. One low clear rectangular tray with overlapping raw pink pork neck chops, visible white marbling, covered with clear film and a pale pink wrap label diagonally across center bearing black pig emblem and text CHULETAS DE AGUJA. Match Image 1 exactly, including tray dimensions and chops, chilled raw appearance, transparent background. Full item centered on transparent background with clean margins, no props or background scene.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/4900-prompt.txt",
+  "sourceOriginalSha256": "7b9e311760778ecc06b41ee486c81f056f5dbc6a22c4e6ef0cd0c83414115712",
+  "sourceOriginalBytes": 56375,
+  "status": "published",
+  "generatedAt": "2026-10-09T08:18:12.554Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-4900.webp",
+  "width": 768,
+  "height": 540,
+  "bytes": 96850,
+  "sha256": "694e164f88f6eb1dac15bd672c70f8ee9df6dcad8fd877db0e44db69fb477e52",
+  "alpha": {
+    "transparentPixels": 145625,
+    "opaquePixels": 997,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T08:19:06.496Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T08:19:47.865Z",
+  "publication": {
+    "productId": "4900",
+    "name": "Chuletas aguja de cerdo",
+    "objectPath": "mercadona/4900/694e164f88f6eb1d.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/4900/694e164f88f6eb1d.webp",
+    "contentType": "image/webp",
+    "bytes": 96850,
+    "sha256": "694e164f88f6eb1dac15bd672c70f8ee9df6dcad8fd877db0e44db69fb477e52"
+  },
+  "publishedAt": "2026-10-09T08:19:49.463Z",
+  "localWebpDeletedAt": "2026-10-09T08:19:49.465Z",
+  "localSourceJpgDeletedAt": "2026-10-09T08:19:49.465Z"
+}

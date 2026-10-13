@@ -1,0 +1,41 @@
+{
+  "id": "1896",
+  "index": 68,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-57ee3b7a-8dfe-455a-bff1-eb7d88b5b84d.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-1896-tocino-de-cerdo-con-corteza-anejo.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Low clear plastic tray with two pale beige rectangles of aged pork fat/rind, beige sleeve label black pig logo and TOCINO CON CORTEZA AÑEJO. Product catalog identity: Tocino de cerdo con corteza añejo.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/1896.txt",
+  "sourceOriginalSha256": "710f270d254787b763c0204d0bdac6c508bcf7c087159506787a6daeb437c549",
+  "sourceOriginalBytes": 44967,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:53:48.670Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-1896.webp",
+  "width": 768,
+  "height": 596,
+  "bytes": 96076,
+  "sha256": "e34705b80154c9b282f9c2c758cd529637a203bc8a4d7f15b89651123b13041c",
+  "alpha": {
+    "transparentPixels": 184579,
+    "opaquePixels": 1034,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:56:09.897Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:57:40.120Z",
+  "publication": {
+    "productId": "1896",
+    "name": "Tocino de cerdo con corteza añejo",
+    "objectPath": "mercadona/1896/e34705b80154c9b2.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/1896/e34705b80154c9b2.webp",
+    "contentType": "image/webp",
+    "bytes": 96076,
+    "published": true,
+    "sha256": "e34705b80154c9b282f9c2c758cd529637a203bc8a4d7f15b89651123b13041c"
+  },
+  "publishedAt": "2026-10-12T14:57:56.831Z",
+  "localWebpDeletedAt": "2026-10-12T14:57:56.968Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:57:56.968Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:57:56.968Z"
+}

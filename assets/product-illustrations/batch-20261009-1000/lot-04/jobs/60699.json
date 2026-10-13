@@ -1,0 +1,39 @@
+{
+  "id": "60699",
+  "index": 72,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-0d6e1c7f-836e-43b7-8f8e-f3a307c4ac5e.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-60699-chorizo-iberico-extra-la-hacienda-del-iberico-lonchas.png",
+  "prompt": "Create one QuéFalta grocery product illustration matching the established warm hand-drawn style: clean editorial rendering, soft thin outlines, true product colors, subtle paper/gouache texture. Image 1 is the exact official product photo; faithfully keep its identity, contents, branding, visible text and packaging. Image 2 is only the approved style guide at /private/tmp/mercadona-style-10699-reference.png; do not copy the milk carton. La Hacienda del Ibérico Chorizo Ibérico Extra lonchas, one tall flat rectangular cardboard and clear-window package divided into four windows: two whole short dark red cured sausages in the top row and two stacks of overlapping thin red chorizo slices in the bottom row. Preserve the gold frame, red central band with CHORIZO CHOURIÇO IBÉRICO, brand badge and exact four-window layout. Full package with transparent margin. Isolated on transparent background, whole product and package fully visible.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/60699-prompt.txt",
+  "sourceOriginalSha256": "9655e2c94814c2f246592c9ec148656892518667482a573c4e42d6a534449bc3",
+  "sourceOriginalBytes": 82756,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:59:43.137Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-60699.webp",
+  "width": 590,
+  "height": 768,
+  "bytes": 126816,
+  "sha256": "2bfdfb6d8ba204e8abfec37744a1fb17f3d89fad7a2629bc8ce9e43cef32862d",
+  "alpha": {
+    "transparentPixels": 55227,
+    "opaquePixels": 788,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:59:57.536Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T08:00:22.361Z",
+  "publication": {
+    "productId": "60699",
+    "name": "Chorizo ibérico extra La Hacienda del ibérico lonchas",
+    "objectPath": "mercadona/60699/2bfdfb6d8ba204e8.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/60699/2bfdfb6d8ba204e8.webp",
+    "contentType": "image/webp",
+    "bytes": 126816,
+    "sha256": "2bfdfb6d8ba204e8abfec37744a1fb17f3d89fad7a2629bc8ce9e43cef32862d"
+  },
+  "publishedAt": "2026-10-09T08:00:24.965Z",
+  "localWebpDeletedAt": "2026-10-09T08:00:24.965Z",
+  "localSourceJpgDeletedAt": "2026-10-09T08:00:24.965Z"
+}

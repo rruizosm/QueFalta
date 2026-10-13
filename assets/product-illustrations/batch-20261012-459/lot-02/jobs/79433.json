@@ -1,0 +1,41 @@
+{
+  "id": "79433",
+  "index": 48,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-f5c005ec-0bba-40fb-8a1d-c5fc10ca2096.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-79433-toallitas-bebe-pieles-con-tendencia-atopica-deliplus.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Single white and pale blue soft baby-wipe packet, baby face round badge, pale blue text pieles con tendencia atópica. Preserve white/pale blue sensitive skin variant. Product catalog identity: Toallitas bebé pieles con tendencia atópica Deliplus.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/79433.txt",
+  "sourceOriginalSha256": "b4caf9a571f65b77d756331a6e8174af42bf1d0f53049ce89305061f902d5991",
+  "sourceOriginalBytes": 26813,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:43:32.072Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-79433.webp",
+  "width": 768,
+  "height": 480,
+  "bytes": 52686,
+  "sha256": "5b66afcb2f18c1f2b3bbcfea4006bb63bd66893af3a9a4057b7d58b63033a7fe",
+  "alpha": {
+    "transparentPixels": 166437,
+    "opaquePixels": 902,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:46:44.143Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:47:23.005Z",
+  "publication": {
+    "productId": "79433",
+    "name": "Toallitas bebé pieles con tendencia atópica Deliplus",
+    "objectPath": "mercadona/79433/5b66afcb2f18c1f2.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/79433/5b66afcb2f18c1f2.webp",
+    "contentType": "image/webp",
+    "bytes": 52686,
+    "published": true,
+    "sha256": "5b66afcb2f18c1f2b3bbcfea4006bb63bd66893af3a9a4057b7d58b63033a7fe"
+  },
+  "publishedAt": "2026-10-12T14:47:27.486Z",
+  "localWebpDeletedAt": "2026-10-12T14:47:27.728Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:47:27.728Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:47:27.728Z"
+}

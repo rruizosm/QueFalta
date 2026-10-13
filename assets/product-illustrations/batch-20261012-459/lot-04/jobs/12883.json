@@ -1,0 +1,41 @@
+{
+  "id": "12883",
+  "index": 2,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-5fa1f782-68be-475f-bcdf-c3c2f614509a.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-12883-vino-pedro-ximenez-olivar-do-jerez.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Vino Pedro Ximénez Olivar DO Jerez, ID 12883.\nObserved source: One dark glass bottle, black cap and black labels with gold PEDRO XIMENEZ, Olivar and JEREZ lettering. Preserve gold ornaments and exact black/gold variant.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/12883.txt",
+  "sourceOriginalSha256": "61cc08ade5fc8f56bf037509f476f981f2df9ca0781664b35bd7f1b2f02829a1",
+  "sourceOriginalBytes": 29303,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:32:37.119Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-12883.webp",
+  "width": 220,
+  "height": 768,
+  "bytes": 31456,
+  "sha256": "d50e6d913ea417058b8becfb7f071353b247859e2e29d81ca3419f4ad70bbb7a",
+  "alpha": {
+    "transparentPixels": 65195,
+    "opaquePixels": 969,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:37:51.862Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:43:23.264Z",
+  "publication": {
+    "productId": "12883",
+    "name": "Vino Pedro Ximénez Olivar DO Jerez",
+    "objectPath": "mercadona/12883/d50e6d913ea41705.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/12883/d50e6d913ea41705.webp",
+    "contentType": "image/webp",
+    "bytes": 31456,
+    "published": true,
+    "sha256": "d50e6d913ea417058b8becfb7f071353b247859e2e29d81ca3419f4ad70bbb7a"
+  },
+  "publishedAt": "2026-10-12T13:43:27.114Z",
+  "localWebpDeletedAt": "2026-10-12T13:43:27.408Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:43:27.408Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:43:27.408Z"
+}

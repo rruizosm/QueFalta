@@ -1,0 +1,50 @@
+{
+  "id": "2869",
+  "index": 9,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12619-4821-71f0-b2f1-b6220eabecde/exec-0ad845e5-091b-41b5-8d76-3ba664a8d137.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-01/mercadona-2869-preparado-de-carne-picada-vacuno-y-cerdo.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "f5e8deb3e2295ad0a98ace0ba9f17f9150272fc0c42f0d208df91e6cf2712a1b",
+  "sourceOriginalBytes": 49287,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:35:08.140Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-01/webp/mercadona-2869.webp",
+  "recovery": {
+    "recoveredAt": "2026-10-11T16:56:07.779449+00:00",
+    "nativeMatchedToHistoricalWebp": true,
+    "historicalWebpSha256": "637cf35845fbb7e692916d624b4421ad3cb933c21ad3033ce34d5282edbfc659",
+    "historicalWebpTempPath": "/private/tmp/mercadona-batch-20261010-1000/lot-06/webp/mercadona-2869.webp",
+    "nativeSha256": "fc649c610c4b0e2d6226d15d374978d96256abacedb47c40f97c42bd7e8592d9",
+    "originalPromptUnavailable": true,
+    "note": "Original batch directory was deleted. Native recovered by exact SHA after same export; original prompt is unavailable and has not been invented. Fresh visual review required before upload."
+  },
+  "width": 768,
+  "height": 440,
+  "bytes": 73172,
+  "sha256": "637cf35845fbb7e692916d624b4421ad3cb933c21ad3033ce34d5282edbfc659",
+  "alpha": {
+    "transparentPixels": 118678,
+    "opaquePixels": 1257,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T16:56:09.013Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T16:59:55.263Z",
+  "publication": {
+    "productId": "2869",
+    "name": "Preparado de carne picada vacuno y cerdo",
+    "objectPath": "mercadona/2869/637cf35845fbb7e6.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/2869/637cf35845fbb7e6.webp",
+    "contentType": "image/webp",
+    "bytes": 73172,
+    "published": true,
+    "sha256": "637cf35845fbb7e692916d624b4421ad3cb933c21ad3033ce34d5282edbfc659"
+  },
+  "publishedAt": "2026-10-11T17:02:15.177Z",
+  "localWebpDeletedAt": "2026-10-11T17:02:15.485Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:02:15.485Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:02:15.485Z"
+}

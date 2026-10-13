@@ -106,7 +106,7 @@ export default function PriceAlertEditorModal({
     if (!visible) return;
     setLabel(initialRule?.label ?? '');
     const isNewArrival = initialRule?.kind === 'new_arrival';
-    setQuery(isNewArrival ? '' : initialRule?.query ?? '');
+    setQuery(initialRule?.query ?? '');
     setStores(initialRule
       ? initialRule.stores.filter((store) => allowedStoreKeys.has(store))
       : defaultStores);
@@ -180,7 +180,6 @@ export default function PriceAlertEditorModal({
     setPreviewLoading(false);
     setPreviewError(false);
     if (enabled) {
-      setQuery('');
       setPriceDrop(false);
       setNewOffer(false);
       setMinDrop(0);
@@ -200,10 +199,14 @@ export default function PriceAlertEditorModal({
     const userId = session?.user.id;
     if (!userId) return;
     const saveKind = newArrival ? 'new_arrival' : kind;
+    const normalizedQuery = query.trim();
     const finalLabel = label.trim()
-      || (newArrival ? t('priceAlerts.newArrivalDefaultName') : query.trim() || preview[0]?.displayName)
+      || (newArrival ? normalizedQuery || t('priceAlerts.newArrivalDefaultName') : normalizedQuery || preview[0]?.displayName)
       || '';
-    const validTarget = newArrival ? effectiveStores.length > 0 : canPreview;
+    const validNewArrivalQuery = normalizedQuery.length === 0 || normalizedQuery.length >= 2;
+    const validTarget = newArrival
+      ? effectiveStores.length > 0 && validNewArrivalQuery
+      : canPreview;
     const validTrigger = newArrival || priceDrop || newOffer;
     if (!finalLabel || !validTarget || !validTrigger) {
       toast.show(t('priceAlerts.validation'), 'error');
@@ -217,7 +220,7 @@ export default function PriceAlertEditorModal({
         kind: saveKind,
         emoji,
         label: finalLabel,
-        query: newArrival ? null : query,
+        query,
         exactStore,
         exactProductId,
         stores: effectiveStores,
@@ -269,7 +272,7 @@ export default function PriceAlertEditorModal({
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
           >
-            {kind === 'keyword' && !newArrival ? (
+            {kind === 'keyword' ? (
               <>
                 <Text style={styles.label}>{t('priceAlerts.words')}</Text>
                 <TextInput
@@ -281,7 +284,9 @@ export default function PriceAlertEditorModal({
                   autoCapitalize="none"
                   returnKeyType="search"
                 />
-
+                {newArrival ? (
+                  <Text style={styles.fieldHint}>{t('priceAlerts.newArrivalWordsHint')}</Text>
+                ) : null}
               </>
             ) : null}
 
@@ -460,6 +465,7 @@ const themedStyles = () => StyleSheet.create({
   content: { padding: 16, paddingBottom: 28 },
   label: { fontSize: 12, fontFamily: fonts.bold, color: colors.inkSoft, textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 14, marginBottom: 7 },
   input: { minHeight: 48, borderRadius: 13, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white, color: colors.ink, paddingHorizontal: 13, fontFamily: fonts.medium, fontSize: 14 },
+  fieldHint: { fontSize: 11.5, lineHeight: 16, fontFamily: fonts.medium, color: colors.inkSoft, marginTop: 6 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
   chip: { borderRadius: 10, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white, paddingHorizontal: 10, paddingVertical: 7, flexDirection: 'row', alignItems: 'center', gap: 6 },
   chipActive: { borderColor: colors.accent, backgroundColor: colors.accentLight },

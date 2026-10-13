@@ -1,0 +1,41 @@
+{
+  "id": "22500",
+  "index": 62,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-b1647030-0791-414e-916c-075606423c6f.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-22500-vino-tinto-roble-atardecer-do-ribera-del-duero.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Vino tinto roble Atardecer DO Ribera del Duero, ID 22500.\nObserved source: Dark bottle red black capsule, white ATARDECER ROBLE label and round black gold A medallion at shoulder.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/22500.txt",
+  "sourceOriginalSha256": "3898959ea69dbf62135406af9d4e37f7ca9eada169c617b2f7f6391ce4296484",
+  "sourceOriginalBytes": 26872,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:46:54.813Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-22500.webp",
+  "width": 230,
+  "height": 768,
+  "bytes": 28236,
+  "sha256": "0d5dff70e2aa8b90a75543dbf526638234f755d47c4dbb4c63aa00ff3828b8ce",
+  "alpha": {
+    "transparentPixels": 61906,
+    "opaquePixels": 976,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:47:55.126Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:55:05.255Z",
+  "publication": {
+    "productId": "22500",
+    "name": "Vino tinto roble Atardecer DO Ribera del Duero",
+    "objectPath": "mercadona/22500/0d5dff70e2aa8b90.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/22500/0d5dff70e2aa8b90.webp",
+    "contentType": "image/webp",
+    "bytes": 28236,
+    "published": true,
+    "sha256": "0d5dff70e2aa8b90a75543dbf526638234f755d47c4dbb4c63aa00ff3828b8ce"
+  },
+  "publishedAt": "2026-10-12T14:55:26.736Z",
+  "localWebpDeletedAt": "2026-10-12T14:55:26.905Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:55:26.905Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:55:26.905Z"
+}

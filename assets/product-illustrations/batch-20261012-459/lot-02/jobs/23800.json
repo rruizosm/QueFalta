@@ -1,0 +1,41 @@
+{
+  "id": "23800",
+  "index": 1,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-968c075d-ab79-43cd-a0fc-0c17c83125a2.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-23800-tampones-super-tampax-compak-con-aplicador.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. Specific inspected product: Wide blue and bright lime-green Tampax Compak BIG PACK box, 32 SUPER, 2 in 1, compact blue applicator depicted at right. Preserve 32 and SUPER and the wide rectangular silhouette. Product catalog identity: Tampones super Tampax Compak con aplicador.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/23800.txt",
+  "sourceOriginalSha256": "6168e369a484651b0933cc574136ef74be7db23f73ef1df6371d5ea18c0a5f03",
+  "sourceOriginalBytes": 70299,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:35:16.002Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-23800.webp",
+  "width": 768,
+  "height": 499,
+  "bytes": 72666,
+  "sha256": "94517471cccdca5641f47fdbe2ef44eed88d5f03fc02367a0d7eec752375d36e",
+  "alpha": {
+    "transparentPixels": 62715,
+    "opaquePixels": 1462,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:40:26.200Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:43:49.323Z",
+  "publication": {
+    "productId": "23800",
+    "name": "Tampones super Tampax Compak con aplicador",
+    "objectPath": "mercadona/23800/94517471cccdca56.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/23800/94517471cccdca56.webp",
+    "contentType": "image/webp",
+    "bytes": 72666,
+    "published": true,
+    "sha256": "94517471cccdca5641f47fdbe2ef44eed88d5f03fc02367a0d7eec752375d36e"
+  },
+  "publishedAt": "2026-10-12T13:43:53.622Z",
+  "localWebpDeletedAt": "2026-10-12T13:43:54.020Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:43:54.020Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:43:54.020Z"
+}

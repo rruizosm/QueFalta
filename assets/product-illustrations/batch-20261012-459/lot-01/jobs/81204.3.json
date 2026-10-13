@@ -1,0 +1,41 @@
+{
+  "id": "81204.3",
+  "index": 14,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bde-adb9-77e3-a69c-bbde9ef0841e/exec-21fa30c4-0473-40ec-bf61-36386cb0e08c.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-01/mercadona-81204.3-bacalao-media-pieza-a-rodajas.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta catalog product illustration. Image1 is the exact official product photo, authoritative for subject and all product details. Image2 is ONLY the approved hand-drawn illustration style; do not copy its milk carton. Render Image1 as warm clean editorial hand-drawn gouache, subtle paper texture, thin defined outlines and recognizable original colors. Preserve exact product/variant, whole silhouette, proportions, packaging, labels and readable text. Use actual alpha transparency. Entire product centered with minimal transparent margin; preserve natural source orientation, all separate food pieces and components, source count/layout and retail multipacks. Do not change sliced food to whole food or vice versa. Keep heads, tails, caps and packaging where source has them. No props, invented packaging, plate, extra labels, cast shadows, floor, background, checkerboard, photorealism or3D. Reproduce only legible printed words/units/claims; never infer printed text from catalog name. Preserve SIN/SEM GLUTEN and all negations, quantities, units and qualifiers exactly if present. Tiny unreadable microprint may be simplified into neutral lines without invented values. Output one complete transparent PNG.\nProduct ID 81204.3. Observed source: Half cod steaks, head behind right and no tail; all pieces. Photo remains authoritative.\n Square canvas. Outside the exact product silhouette alpha must be exactly zero; no exterior glow, beige halo, blurred aura, paper rectangle, vignette or colored backdrop. Texture stays strictly inside the product.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261012-459/lot-01/actual-prompts/81204.3.txt",
+  "sourceOriginalSha256": "23f3e50f73abc31399b41fb6929cc88831ad793dc0b1a58ffe2e0129e484ea6c",
+  "sourceOriginalBytes": 34121,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:47:47.634Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-01/webp/mercadona-81204.3.webp",
+  "width": 768,
+  "height": 452,
+  "bytes": 69486,
+  "sha256": "d2c180c17b9b46ade9d7835a402ea0a1421284bf4e39b10ffaefc4233e15fe3b",
+  "alpha": {
+    "transparentPixels": 206847,
+    "opaquePixels": 574,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:51:38.626Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:54:58.914Z",
+  "publication": {
+    "productId": "81204.3",
+    "name": "Bacalao media pieza a rodajas",
+    "objectPath": "mercadona/81204.3/d2c180c17b9b46ad.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/81204.3/d2c180c17b9b46ad.webp",
+    "contentType": "image/webp",
+    "bytes": 69486,
+    "published": true,
+    "sha256": "d2c180c17b9b46ade9d7835a402ea0a1421284bf4e39b10ffaefc4233e15fe3b"
+  },
+  "publishedAt": "2026-10-12T13:55:03.486Z",
+  "localWebpDeletedAt": "2026-10-12T13:55:03.848Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:55:03.848Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:55:03.848Z"
+}

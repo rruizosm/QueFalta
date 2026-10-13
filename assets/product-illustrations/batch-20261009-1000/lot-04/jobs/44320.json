@@ -1,0 +1,39 @@
+{
+  "id": "44320",
+  "index": 14,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/44320.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-44320-champu-infantil-kids-3-en-1-deliplus.png",
+  "prompt": "Warm clean editorial hand-drawn product illustration, soft thin outlines, defined original colors, subtle paper/gouache texture, frontal view. Illustrate the exact Deliplus Kids 3-in-1 shampoo. Preserve exact bottle silhouette/cap, child-friendly label and visible 3-in-1 wording/artwork. from reference photo one. Preserve complete bottle proportions and every legible label word and claim; do not invent. Center upright with actual alpha transparency, no background, shadow, glow, props, photorealism or 3D. Image two guides style only.\n",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/44320.txt",
+  "sourceOriginalSha256": "5af50eefeaf92224c6caa5c03195cd92f1a8ec1552ce134bac247599df0c232b",
+  "sourceOriginalBytes": 38993,
+  "status": "published",
+  "generatedAt": "2026-10-09T06:59:17.771Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-44320.webp",
+  "width": 508,
+  "height": 768,
+  "bytes": 58178,
+  "sha256": "0b82020df932391e998d7ab6e505b1f30bdde6e6d4f372476ba9c58a1e842ae6",
+  "alpha": {
+    "transparentPixels": 124809,
+    "opaquePixels": 1238,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T06:59:25.638Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T06:59:49.970Z",
+  "publication": {
+    "productId": "44320",
+    "name": "Champú infantil Kids 3 en 1 Deliplus",
+    "objectPath": "mercadona/44320/0b82020df932391e.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/44320/0b82020df932391e.webp",
+    "contentType": "image/webp",
+    "bytes": 58178,
+    "sha256": "0b82020df932391e998d7ab6e505b1f30bdde6e6d4f372476ba9c58a1e842ae6"
+  },
+  "publishedAt": "2026-10-09T06:59:55.204Z",
+  "localWebpDeletedAt": "2026-10-09T06:59:55.206Z",
+  "localSourceJpgDeletedAt": "2026-10-09T06:59:55.206Z"
+}

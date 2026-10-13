@@ -1,0 +1,50 @@
+{
+  "id": "12894",
+  "index": 2,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12091-dc56-7d03-acf6-998d69096048/exec-84fc2caa-b600-473d-906f-7af3e197cdbf.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-02/mercadona-12894-recambio-ambientador-electrico-coconut-cream-bosque-verde.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "11a703fc523b6332e8751f42ddc873f8915bd56d2a7fcf40df1e93e2171ac292",
+  "sourceOriginalBytes": 76231,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:39:58.927Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-02/webp/mercadona-12894.webp",
+  "recovery": {
+    "recoveredAt": "2026-10-11T16:56:07.779449+00:00",
+    "nativeMatchedToHistoricalWebp": true,
+    "historicalWebpSha256": "d05707651b73ae012d47de732845920716ce25540506a2935c35b7517f44bc20",
+    "historicalWebpTempPath": "/private/tmp/mercadona-batch-20261010-1000/lot-07/webp/mercadona-12894.webp",
+    "nativeSha256": "5a42cf7cf099f75357780592f68c1e8686603355dfea74653093a31d17d4cf91",
+    "originalPromptUnavailable": true,
+    "note": "Original batch directory was deleted. Native recovered by exact SHA after same export; original prompt is unavailable and has not been invented. Fresh visual review required before upload."
+  },
+  "width": 589,
+  "height": 768,
+  "bytes": 85548,
+  "sha256": "d05707651b73ae012d47de732845920716ce25540506a2935c35b7517f44bc20",
+  "alpha": {
+    "transparentPixels": 66754,
+    "opaquePixels": 515,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:50:14.414Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:52:38.904Z",
+  "publication": {
+    "productId": "12894",
+    "name": "Recambio ambientador eléctrico Coconut Cream Bosque Verde",
+    "objectPath": "mercadona/12894/d05707651b73ae01.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/12894/d05707651b73ae01.webp",
+    "contentType": "image/webp",
+    "bytes": 85548,
+    "published": true,
+    "sha256": "d05707651b73ae012d47de732845920716ce25540506a2935c35b7517f44bc20"
+  },
+  "publishedAt": "2026-10-11T17:52:40.398Z",
+  "localWebpDeletedAt": "2026-10-11T17:52:40.793Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:52:40.793Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:52:40.793Z"
+}

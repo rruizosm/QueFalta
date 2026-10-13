@@ -1,0 +1,41 @@
+{
+  "id": "66711",
+  "index": 57,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-6b78-7552-94a3-b923c51cf7da/exec-a88a00ab-e397-4ed6-afef-c61475f2f5b4.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-03/mercadona-66711-vino-blanco-airen-verdejo-elegido.png",
+  "prompt": "Use case: style-transfer. Create one polished hand-drawn retail product illustration for the QueFalta catalog. Image 1 is the sole authoritative product photograph. Image 2 supplies ONLY the illustrated medium, delicate outlines, simplified clean shading and subtle texture, never its milk carton, colors or text. Faithfully illustrate exactly the complete product in image 1, its perspective, geometry, components, colors and main readable label lettering. Truly transparent background, no ground plane, no cast shadow. Center the entire object with generous safe transparent margin. Preserve all visible caps, separate accessories, real multipack counts and full package edges. Preserve meaningful negations SIN or SEM and visible quantities completely. No invented claims, brands, prices, quantities or extra food/props. Tiny unreadable legal text may be quietly simplified. Never infer packaging text or quantities from catalog title. Product-specific visual requirements: Green wine bottle with black-gold cap, mustard yellow rectangular ELEGIDO AIREN-VERDEJO label and green lower section. Catalog title for identification only: Vino blanco airén verdejo Elegido. Reproduce numeric values only when legible in image 1; the actual photograph overrides catalog wording.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-03/actual-prompts/66711.txt",
+  "sourceOriginalSha256": "2d713d3b3ff7a4c65cc0fcf645042691b89e4e7888aa2e21fc5b1c6d7c778043",
+  "sourceOriginalBytes": 39740,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:45:57.748Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-03/webp/mercadona-66711.webp",
+  "width": 228,
+  "height": 768,
+  "bytes": 36582,
+  "sha256": "0718a9babbccdbd0d5f242df5af43c74bb4407f378c1506ac30a362f66953eb3",
+  "alpha": {
+    "transparentPixels": 60204,
+    "opaquePixels": 1099,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:46:47.274Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:46:56.122Z",
+  "publication": {
+    "productId": "66711",
+    "name": "Vino blanco airén verdejo Elegido",
+    "objectPath": "mercadona/66711/0718a9babbccdbd0.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/66711/0718a9babbccdbd0.webp",
+    "contentType": "image/webp",
+    "bytes": 36582,
+    "published": true,
+    "sha256": "0718a9babbccdbd0d5f242df5af43c74bb4407f378c1506ac30a362f66953eb3"
+  },
+  "publishedAt": "2026-10-12T14:47:01.511Z",
+  "localWebpDeletedAt": "2026-10-12T14:47:01.629Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:47:01.629Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:47:01.629Z"
+}

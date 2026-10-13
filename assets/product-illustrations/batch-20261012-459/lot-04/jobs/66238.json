@@ -1,0 +1,41 @@
+{
+  "id": "66238",
+  "index": 33,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-09294ce8-12f4-44e6-b6f2-f68b1429d4c4.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-66238-vino-tinto-crianza-s-embat-do-pla-i-llevant-mallorca.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Vino tinto crianza S'Embat DO Pla i Llevant Mallorca, ID 66238.\nObserved source: One dark wine bottle with BURGUNDY capsule and burgundy label: S'EMBAT, Criança and PLA I LLEVANT MALLORCA.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/66238.txt",
+  "sourceOriginalSha256": "080c182a0faaec952a4e0b328c062e51b571e82c28b5be0f3d506d8760cf9f88",
+  "sourceOriginalBytes": 22555,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:51:10.316Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-66238.webp",
+  "width": 227,
+  "height": 768,
+  "bytes": 26290,
+  "sha256": "c5f9aa4a5a3d42d4af289cad0425a15c4d8d5d8b9560b2500c97e8f938f99f52",
+  "alpha": {
+    "transparentPixels": 62067,
+    "opaquePixels": 1125,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:41:01.056Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:41:42.310Z",
+  "publication": {
+    "productId": "66238",
+    "name": "Vino tinto crianza S'Embat DO Pla i Llevant Mallorca",
+    "objectPath": "mercadona/66238/c5f9aa4a5a3d42d4.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/66238/c5f9aa4a5a3d42d4.webp",
+    "contentType": "image/webp",
+    "bytes": 26290,
+    "published": true,
+    "sha256": "c5f9aa4a5a3d42d4af289cad0425a15c4d8d5d8b9560b2500c97e8f938f99f52"
+  },
+  "publishedAt": "2026-10-12T14:41:58.583Z",
+  "localWebpDeletedAt": "2026-10-12T14:41:58.703Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:41:58.703Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:41:58.703Z"
+}

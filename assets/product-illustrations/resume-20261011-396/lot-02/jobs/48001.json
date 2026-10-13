@@ -1,0 +1,41 @@
+{
+  "id": "48001",
+  "index": 26,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bde-adb9-77e3-a69c-bbde9ef0841e/exec-bdefbf41-2177-42ee-98ed-4e6d86d8b3bb.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-02/mercadona-48001-recipiente-de-plastico-redondo-0-5l-bosque-verde.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Recipiente de plástico redondo 0,5L Bosque Verde, Mercadona product ID 48001. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\n\nObserved source details (photo remains authoritative): Complete nested set of clear round squat food containers with gray stacked lids and a circular colored sticker atop. Preserve actual stack, squat silhouette, white translucent plastic and full lid edges.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-02/actual-prompts/48001.txt",
+  "sourceOriginalSha256": "5f74e67f52a46d62ff951991222f6a8f7a0f7213dae848bf9e5d4a0e4ff3ea33",
+  "sourceOriginalBytes": 28967,
+  "status": "published",
+  "generatedAt": "2026-10-11T18:24:30.409Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-02/webp/mercadona-48001.webp",
+  "width": 655,
+  "height": 768,
+  "bytes": 57428,
+  "sha256": "ff446cfbf924dbda12c00a87a804c65eba526c5bb4a00b3c56ad49be196362d1",
+  "alpha": {
+    "transparentPixels": 135013,
+    "opaquePixels": 858,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T18:25:09.401Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T18:25:58.788Z",
+  "publication": {
+    "productId": "48001",
+    "name": "Recipiente de plástico redondo 0,5L Bosque Verde",
+    "objectPath": "mercadona/48001/ff446cfbf924dbda.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/48001/ff446cfbf924dbda.webp",
+    "contentType": "image/webp",
+    "bytes": 57428,
+    "published": true,
+    "sha256": "ff446cfbf924dbda12c00a87a804c65eba526c5bb4a00b3c56ad49be196362d1"
+  },
+  "publishedAt": "2026-10-11T18:26:00.135Z",
+  "localWebpDeletedAt": "2026-10-11T18:26:00.415Z",
+  "localSourceJpgDeletedAt": "2026-10-11T18:26:00.415Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T18:26:00.415Z"
+}

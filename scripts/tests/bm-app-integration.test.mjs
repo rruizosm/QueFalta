@@ -88,11 +88,11 @@ test('el catálogo BM resuelve la ubicación provincial y cubre todas sus superf
   assert.match(adapters, /function bmToUI/);
 });
 
-test('BM tiene navegación y UI propias sin entrar en la comparativa v7 todavía', () => {
+test('BM tiene navegación y UI propias y participa en la comparativa v7', () => {
   assert.match(catalogScreen, /store === 'bm' && tab === 'categorias'/);
   assert.match(catalogScreen, /store === 'bm' && tab === 'productos'/);
   assert.match(navigation, /name="BmProducts"/);
   assert.match(routes, /BmProducts: \{/);
-  assert.match(comparator, /excludeStore === 'bm'/);
-  assert.match(comparator, /store !== 'bm'/);
+  assert.doesNotMatch(comparator, /excludeStore === 'bm'/);
+  assert.doesNotMatch(comparator, /store !== 'bm'/);
 });

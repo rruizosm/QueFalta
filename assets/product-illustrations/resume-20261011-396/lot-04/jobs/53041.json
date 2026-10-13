@@ -1,0 +1,41 @@
+{
+  "id": "53041",
+  "index": 61,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12be3-1801-7fe3-88ee-862e3d13eea9/exec-06278805-947d-4cc5-99d8-bb2e04ff1523.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-04/mercadona-53041-salchichas-cocidas-frankfurt-la-selva.png",
+  "prompt": "Use case: style-transfer. Asset: one catalog product illustration for QuéFalta. Image1 is the sole authoritative product/photo reference; image2 supplies ONLY the illustrated medium and edge/shading treatment, never its milk carton/text. Turn the exact product in image1 into a polished hand-drawn retail illustration matching image2: crisp delicate outlines, clean simplified shading, subtle illustrated texture and faithful retail colors. Truly transparent background, no ground plane, no cast shadow, centered entire product with safe empty margin. Preserve the complete original package geometry, perspective, relative proportions, all components and accessories, real visible quantities and main legible label text. No extra props, invented brands, claims, prices, quantities or food outside packaging. Tiny illegible legal text may be reduced unobtrusively but all meaningful negations such as SIN/SEM must remain complete. Product-specific observed requirements: Tall clear glass La Selva sausage jar red metal lid red FRANKFURT label, upright sausages in brine; retain original count. Official product: Salchichas cocidas Frankfurt La Selva. Reproduce source numeric values only when legible; do not guess.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-04/actual-prompts/53041.txt",
+  "sourceOriginalSha256": "4b03579e2c0bcf0555e97f7da660012ab3a0a86547a587c8a652eef5e0dedf02",
+  "sourceOriginalBytes": 47969,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:48:18.039Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-04/webp/mercadona-53041.webp",
+  "width": 321,
+  "height": 768,
+  "bytes": 52228,
+  "sha256": "7be90f24aa63fa8b66c14409c12e1c896d6ae9a60f9175f5a97c3eabfadb7234",
+  "alpha": {
+    "transparentPixels": 48218,
+    "opaquePixels": 399,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:52:18.757Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T18:15:05.032Z",
+  "publication": {
+    "productId": "53041",
+    "name": "Salchichas cocidas Frankfurt La Selva",
+    "objectPath": "mercadona/53041/7be90f24aa63fa8b.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/53041/7be90f24aa63fa8b.webp",
+    "contentType": "image/webp",
+    "bytes": 52228,
+    "published": true,
+    "sha256": "7be90f24aa63fa8b66c14409c12e1c896d6ae9a60f9175f5a97c3eabfadb7234"
+  },
+  "publishedAt": "2026-10-11T18:15:10.443Z",
+  "localWebpDeletedAt": "2026-10-11T18:15:10.676Z",
+  "localSourceJpgDeletedAt": "2026-10-11T18:15:10.676Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T18:15:10.676Z"
+}

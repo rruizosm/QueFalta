@@ -1,0 +1,39 @@
+{
+  "id": "21394",
+  "index": 69,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-cfb15f93-5694-4c81-8bf8-46d8658423de.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-21394-chorizo-dulce-extra-de-leon-pajariel-lonchas.png",
+  "prompt": "Create one QuéFalta grocery product illustration in the approved warm editorial hand-drawn style, soft thin outlines, defined colors and subtle paper/gouache texture. Image 1 is the exact official product to reproduce; preserve its visible branding, text, claims, package layout and contents. Image 2 is style reference only at /private/tmp/mercadona-style-10699-reference.png; never copy its product. Pajariel Chorizo Dulce Extra de León lonchas, one upright rectangular black-and-red sealed pack containing two narrow side-by-side vertical columns of overlapping thin orange-red chorizo slices. Preserve the black upper label with gold Pajariel name, central CHORIZO DULCE lettering, transparent windows, exact twin-column package silhouette and visible 150 g if present. Transparent margin. Keep the complete package centered on transparent background without cropping or props.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/21394-prompt.txt",
+  "sourceOriginalSha256": "2087581c0a1cbb33217a06f0f30b488f02f3a40fc03973262586791f531166dd",
+  "sourceOriginalBytes": 88525,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:55:57.464Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-21394.webp",
+  "width": 509,
+  "height": 768,
+  "bytes": 118730,
+  "sha256": "3853b549f66a401bfd27f358527222352125064dabbe44083ef0f64cc708a629",
+  "alpha": {
+    "transparentPixels": 48056,
+    "opaquePixels": 146,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:56:10.504Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T07:56:33.303Z",
+  "publication": {
+    "productId": "21394",
+    "name": "Chorizo dulce extra de León Pajariel lonchas",
+    "objectPath": "mercadona/21394/3853b549f66a401b.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/21394/3853b549f66a401b.webp",
+    "contentType": "image/webp",
+    "bytes": 118730,
+    "sha256": "3853b549f66a401bfd27f358527222352125064dabbe44083ef0f64cc708a629"
+  },
+  "publishedAt": "2026-10-09T07:56:36.926Z",
+  "localWebpDeletedAt": "2026-10-09T07:56:36.927Z",
+  "localSourceJpgDeletedAt": "2026-10-09T07:56:36.927Z"
+}

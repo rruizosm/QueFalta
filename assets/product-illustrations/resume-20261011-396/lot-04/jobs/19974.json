@@ -1,0 +1,41 @@
+{
+  "id": "19974",
+  "index": 14,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12be3-1801-7fe3-88ee-862e3d13eea9/exec-f45386e5-b958-4fd5-a78a-73a1ba7b9913.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-04/mercadona-19974-seitan-soria-natural-lonchas.png",
+  "prompt": "Use case: style-transfer. Asset: one catalog product illustration for QuéFalta. Image1 is the sole authoritative product/photo reference; image2 supplies ONLY the illustrated medium and edge/shading treatment, never its milk carton/text. Turn the exact product in image1 into a polished hand-drawn retail illustration matching image2: crisp delicate outlines, clean simplified shading, subtle illustrated texture and faithful retail colors. Truly transparent background, no ground plane, no cast shadow, centered entire product with safe empty margin. Preserve the complete original package geometry, perspective, relative proportions, all components and accessories, real visible quantities and main legible label text. No extra props, invented brands, claims, prices, quantities or food outside packaging. Tiny illegible legal text may be reduced unobtrusively but all meaningful negations such as SIN/SEM must remain complete. Product-specific observed requirements: Horizontal vacuum pouch of tan seitan slices, green Soria Natural label Seitán EN LONCHAS 300g; keep barcode at upper right. Official product: Seitán Soria Natural lonchas. Reproduce source numeric values only when legible; do not guess.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-04/actual-prompts/19974.txt",
+  "sourceOriginalSha256": "083db65663d399d970f9e56557261eafd7f86f303c9498e81129848dacb475a1",
+  "sourceOriginalBytes": 50518,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:06:54.988Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-04/webp/mercadona-19974.webp",
+  "width": 768,
+  "height": 378,
+  "bytes": 73332,
+  "sha256": "c0aa4cae7eb871a7be546069bfa1eedef4c338dd7e4aebb316fbcf61125cf825",
+  "alpha": {
+    "transparentPixels": 53459,
+    "opaquePixels": 1468,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:09:36.731Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:14:40.679Z",
+  "publication": {
+    "productId": "19974",
+    "name": "Seitán Soria Natural lonchas",
+    "objectPath": "mercadona/19974/c0aa4cae7eb871a7.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/19974/c0aa4cae7eb871a7.webp",
+    "contentType": "image/webp",
+    "bytes": 73332,
+    "published": true,
+    "sha256": "c0aa4cae7eb871a7be546069bfa1eedef4c338dd7e4aebb316fbcf61125cf825"
+  },
+  "publishedAt": "2026-10-11T17:14:52.003Z",
+  "localWebpDeletedAt": "2026-10-11T17:14:52.204Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:14:52.204Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:14:52.204Z"
+}

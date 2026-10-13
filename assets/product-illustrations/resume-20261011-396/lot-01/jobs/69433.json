@@ -1,0 +1,50 @@
+{
+  "id": "69433",
+  "index": 45,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12619-4821-71f0-b2f1-b6220eabecde/exec-cc061114-daea-4721-bfb4-3c08bc9d8279.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-01/mercadona-69433-preparado-de-verduras-para-sofreir-cortado-y-lavado.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "45b4524c478974742162695ea7b85ec87f4cab4b667d95e399a315a2de0e86e7",
+  "sourceOriginalBytes": 85473,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:41:13.633Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-01/webp/mercadona-69433.webp",
+  "recovery": {
+    "recoveredAt": "2026-10-11T16:56:07.779449+00:00",
+    "nativeMatchedToHistoricalWebp": true,
+    "historicalWebpSha256": "9ff8d0802c15665d2169e3c2c61c6c37e038d762ae09c8f473ff4a07daf55b91",
+    "historicalWebpTempPath": "/private/tmp/mercadona-batch-20261010-1000/lot-06/webp/mercadona-69433.webp",
+    "nativeSha256": "2b4dbaf31c9039eff6a14babc298412f9a8fbdb3a487e4f5fa961ddee1d49726",
+    "originalPromptUnavailable": true,
+    "note": "Original batch directory was deleted. Native recovered by exact SHA after same export; original prompt is unavailable and has not been invented. Fresh visual review required before upload."
+  },
+  "width": 670,
+  "height": 768,
+  "bytes": 124836,
+  "sha256": "9ff8d0802c15665d2169e3c2c61c6c37e038d762ae09c8f473ff4a07daf55b91",
+  "alpha": {
+    "transparentPixels": 97048,
+    "opaquePixels": 1332,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T16:56:10.760Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T16:59:55.812Z",
+  "publication": {
+    "productId": "69433",
+    "name": "Preparado de verduras para sofreír cortado y lavado",
+    "objectPath": "mercadona/69433/9ff8d0802c15665d.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/69433/9ff8d0802c15665d.webp",
+    "contentType": "image/webp",
+    "bytes": 124836,
+    "published": true,
+    "sha256": "9ff8d0802c15665d2169e3c2c61c6c37e038d762ae09c8f473ff4a07daf55b91"
+  },
+  "publishedAt": "2026-10-11T17:02:30.822Z",
+  "localWebpDeletedAt": "2026-10-11T17:02:31.092Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:02:31.092Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:02:31.092Z"
+}

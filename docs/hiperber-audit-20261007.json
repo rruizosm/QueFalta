@@ -1,0 +1,1735 @@
+{
+  "checkedAt": "2026-10-07T11:34:11.418Z",
+  "scope": "Read-only public API, no cookies/authentication/Supabase",
+  "requests": [
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/shipping/area?shippingMethod=D,X,T,L&showDisableStore=false&zipCode=03293",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/shipping/area?shippingMethod=D,X,T,L&showDisableStore=false&zipCode=03201",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/shipping/area?shippingMethod=D,X,T,L&showDisableStore=false&zipCode=03001",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/shipping/area?shippingMethod=D,X,T,L&showDisableStore=false&zipCode=03181",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/shipping/area?shippingMethod=D,X,T,L&showDisableStore=false&zipCode=03600",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/shipping/area?shippingMethod=D,X,T,L&showDisableStore=false&zipCode=03801",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/shipping/area?shippingMethod=D,X,T,L&showDisableStore=false&zipCode=46001",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/shipping/area?shippingMethod=D,X,T,L&showDisableStore=false&zipCode=02660",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/shipping/area?shippingMethod=D,X,T,L&showDisableStore=false&zipCode=28001",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/shopping/category/menu",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/catalog/product?blockSize=20&offset=0&orderById=3",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/catalog/product?blockSize=20&offset=20&orderById=3",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/catalog/product?blockSize=20&offset=0&orderById=1",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/catalog/product?blockSize=20&offset=0&categories=99999",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/shopping/category/menu",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/catalog/product?blockSize=20&offset=0&orderById=3",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/catalog/product?blockSize=20&offset=20&orderById=3",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/catalog/product?blockSize=20&offset=0&orderById=1",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/catalog/product?blockSize=20&offset=0&categories=99999",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/catalog/product/code/69047",
+      "status": 200
+    },
+    {
+      "url": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/nutritional-info/8429359001735.json",
+      "status": 404
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/shipping/area?shippingMethod=D,X,T,L&showDisableStore=false&zipCode=03501",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/catalog/product?blockSize=20&offset=0&orderById=1",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/catalog/product?blockSize=1&offset=0&categories=99999",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/shipping/area?shippingMethod=D,X,T,L&showDisableStore=false&zipCode=03590",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/shipping/area?shippingMethod=D,X,T,L&showDisableStore=false&zipCode=46870",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/catalog/product/code/69047",
+      "status": 200
+    },
+    {
+      "url": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/nutritional-info/8429359001735.json",
+      "status": 404
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/catalog/product/code/26161",
+      "status": 200
+    },
+    {
+      "url": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/nutritional-info/8480024744494.json",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/catalog/product/code/80210",
+      "status": 200
+    },
+    {
+      "url": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/nutritional-info/8480024740816.json",
+      "status": 404
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/catalog/product/code/89422",
+      "status": 200
+    },
+    {
+      "url": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/nutritional-info/8413600000035.json",
+      "status": 404
+    },
+    {
+      "url": "https://tienda.hiperber.com/api/rest/V1.0/catalog/product?blockSize=100&offset=0&orderById=1",
+      "status": 200
+    },
+    {
+      "url": "https://tienda.hiperber.com/robots.txt",
+      "status": 200
+    }
+  ],
+  "postalCodes": [
+    {
+      "cp": "03293",
+      "areas": [
+        {
+          "shippingZoneId": "16D",
+          "deliveryTypeId": "D",
+          "enabled": true,
+          "zoneId": 16,
+          "storeCode": "16",
+          "name": "Elche Crevillente Central",
+          "city": "Elche/Elx",
+          "region": "Alicante/Alacant"
+        }
+      ]
+    },
+    {
+      "cp": "03201",
+      "areas": [
+        {
+          "shippingZoneId": "16D",
+          "deliveryTypeId": "D",
+          "enabled": true,
+          "zoneId": 16,
+          "storeCode": "16",
+          "name": "Elche Crevillente Central",
+          "city": "Elche/Elx",
+          "region": "Alicante/Alacant"
+        }
+      ]
+    },
+    {
+      "cp": "03001",
+      "areas": []
+    },
+    {
+      "cp": "03181",
+      "areas": []
+    },
+    {
+      "cp": "03600",
+      "areas": [
+        {
+          "shippingZoneId": "81-D",
+          "deliveryTypeId": "D",
+          "enabled": true,
+          "zoneId": 81,
+          "storeCode": "81",
+          "name": "Novelda 3",
+          "city": "Novelda",
+          "region": "Alicante/Alacant"
+        }
+      ]
+    },
+    {
+      "cp": "03801",
+      "areas": [
+        {
+          "shippingZoneId": "81-D",
+          "deliveryTypeId": "D",
+          "enabled": true,
+          "zoneId": 81,
+          "storeCode": "81",
+          "name": "Novelda 3",
+          "city": "Novelda",
+          "region": "Alicante/Alacant"
+        }
+      ]
+    },
+    {
+      "cp": "46001",
+      "areas": []
+    },
+    {
+      "cp": "02660",
+      "areas": [
+        {
+          "shippingZoneId": "81-D",
+          "deliveryTypeId": "D",
+          "enabled": true,
+          "zoneId": 81,
+          "storeCode": "81",
+          "name": "Novelda 3",
+          "city": "Novelda",
+          "region": "Alicante/Alacant"
+        }
+      ]
+    },
+    {
+      "cp": "28001",
+      "areas": []
+    },
+    {
+      "cp": "03501",
+      "areas": [
+        {
+          "shippingZoneId": "62D",
+          "deliveryTypeId": "D",
+          "enabled": true,
+          "zoneId": 62,
+          "name": "Alfaz del Pi",
+          "city": "ALFÀS DEL PI (L')",
+          "region": "Alicante/Alacant"
+        }
+      ]
+    },
+    {
+      "cp": "03590",
+      "areas": [
+        {
+          "shippingZoneId": "62D",
+          "deliveryTypeId": "D",
+          "enabled": true,
+          "zoneId": 62,
+          "name": "Alfaz del Pi",
+          "city": "ALFÀS DEL PI (L')",
+          "region": "Alicante/Alacant"
+        }
+      ]
+    },
+    {
+      "cp": "46870",
+      "areas": [
+        {
+          "shippingZoneId": "81-D",
+          "deliveryTypeId": "D",
+          "enabled": true,
+          "zoneId": 81,
+          "name": "Novelda 3",
+          "city": "Novelda",
+          "region": "Alicante/Alacant"
+        }
+      ]
+    }
+  ],
+  "locations": [
+    {
+      "shippingZoneId": "16D",
+      "deliveryTypeId": "D",
+      "enabled": true,
+      "zoneId": 16,
+      "storeCode": "16",
+      "name": "Elche Crevillente Central",
+      "city": "Elche/Elx",
+      "region": "Alicante/Alacant",
+      "categories": {
+        "nodes": 208,
+        "maxDepth": 5,
+        "roots": [
+          {
+            "id": 99999,
+            "name": "Ofertas"
+          },
+          {
+            "id": 1,
+            "name": "Bebidas"
+          },
+          {
+            "id": 2,
+            "name": "Despensa"
+          },
+          {
+            "id": 3,
+            "name": "Bodega"
+          },
+          {
+            "id": 4,
+            "name": "Panadería"
+          },
+          {
+            "id": 5,
+            "name": "Productos frescos"
+          },
+          {
+            "id": 6,
+            "name": "Congelados"
+          },
+          {
+            "id": 7,
+            "name": "Cuidado del hogar"
+          },
+          {
+            "id": 8,
+            "name": "Cuidado personal"
+          },
+          {
+            "id": 9,
+            "name": "Infantil"
+          },
+          {
+            "id": 10,
+            "name": "Mascotas"
+          },
+          {
+            "id": 11,
+            "name": "Bazar"
+          }
+        ]
+      },
+      "catalog": {
+        "totalCount": 6972,
+        "hasMore": true,
+        "pageSizes": [
+          20,
+          20,
+          20
+        ],
+        "uniqueTwoPages": 40,
+        "blankNames": 40,
+        "sampleCount": 60,
+        "samples": [
+          {
+            "code": "89422",
+            "ean": "8413600000035",
+            "name": "",
+            "brand": "NENUCO",
+            "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/89422.JPG?t=20261001010135",
+            "priceData": {
+              "prices": [
+                {
+                  "id": "PRICE",
+                  "value": {
+                    "centAmount": 15,
+                    "centUnitAmount": 15
+                  }
+                }
+              ],
+              "taxPercentage": 21,
+              "priceUnitType": " ",
+              "unitPriceUnitType": "",
+              "minimumUnit": 1,
+              "maximumUnit": 100,
+              "intervalUnit": 1
+            },
+            "categories": [
+              {
+                "id": 11,
+                "name": "Bazar",
+                "type": 0
+              }
+            ],
+            "offers": []
+          },
+          {
+            "code": "89430",
+            "ean": "7898964049127",
+            "name": "",
+            "brand": "",
+            "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/89430.jpg?t=20261006161139",
+            "priceData": {
+              "prices": [
+                {
+                  "id": "PRICE",
+                  "value": {
+                    "centAmount": 2.9,
+                    "centUnitAmount": 14.5
+                  }
+                }
+              ],
+              "taxPercentage": 10,
+              "priceUnitType": " ",
+              "unitPriceUnitType": "LT",
+              "minimumUnit": 1,
+              "maximumUnit": 100,
+              "intervalUnit": 1
+            },
+            "categories": [
+              {
+                "id": 60402,
+                "name": "Helados",
+                "type": 0
+              }
+            ],
+            "offers": []
+          },
+          {
+            "code": "81292",
+            "ean": "8424465942507",
+            "name": "Mini Delicias Surtidas 16G",
+            "brand": "",
+            "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/81292.JPG?t=20261006161309",
+            "priceData": {
+              "prices": [
+                {
+                  "id": "PRICE",
+                  "value": {
+                    "centAmount": 0.11,
+                    "centUnitAmount": 12.22
+                  }
+                }
+              ],
+              "taxPercentage": 10,
+              "priceUnitType": "KG",
+              "unitPriceUnitType": "KG",
+              "minimumUnit": 1,
+              "maximumUnit": 100,
+              "intervalUnit": 1
+            },
+            "categories": [
+              {
+                "id": 403,
+                "name": "Bollería fresca",
+                "type": 0
+              }
+            ],
+            "offers": []
+          },
+          {
+            "code": "85661",
+            "ean": "8410793002464",
+            "name": "Cerveza Rubia Lata 330ML",
+            "brand": "CALATRAVA",
+            "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/85661.JPG?t=20261006161123",
+            "priceData": {
+              "prices": [
+                {
+                  "id": "PRICE",
+                  "value": {
+                    "centAmount": 0.28,
+                    "centUnitAmount": 0.85
+                  }
+                }
+              ],
+              "taxPercentage": 21,
+              "priceUnitType": " ",
+              "unitPriceUnitType": "LT",
+              "minimumUnit": 1,
+              "maximumUnit": 100,
+              "intervalUnit": 1
+            },
+            "categories": [
+              {
+                "id": 10201,
+                "name": "Rubia clásica",
+                "type": 0
+              },
+              {
+                "id": 10202,
+                "name": "Especialidades",
+                "type": 0
+              }
+            ],
+            "offers": []
+          },
+          {
+            "code": "69047",
+            "ean": "8429359001735",
+            "name": "Agua Mineral Natural Botella 1L",
+            "brand": "FONT NATURA",
+            "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/69047.JPG?t=20261006161533",
+            "priceData": {
+              "prices": [
+                {
+                  "id": "PRICE",
+                  "value": {
+                    "centAmount": 0.35,
+                    "centUnitAmount": 0.35
+                  }
+                }
+              ],
+              "taxPercentage": 10,
+              "priceUnitType": " ",
+              "unitPriceUnitType": "LT",
+              "minimumUnit": 1,
+              "maximumUnit": 100,
+              "intervalUnit": 1
+            },
+            "categories": [
+              {
+                "id": 10101,
+                "name": "Aguas sin gas",
+                "type": 0
+              },
+              {
+                "id": 999991,
+                "name": "Bebidas",
+                "type": 1
+              }
+            ],
+            "offers": [
+              {
+                "id": 180259,
+                "from": "2026-08-28T00:00:00.000Z",
+                "to": "2026-10-09T23:59:59.000Z",
+                "minDescription": "OFERTA",
+                "shortDescription": "Descuento de 14%  en la 3 Unidad ",
+                "longDescription": "OFERTA",
+                "image": "https://cdn-hiperber.aktiosdigitalservices.com/assets/promotion/es/oferta.png",
+                "promotionId": 82156,
+                "promotionType": 0,
+                "inmediate": true,
+                "discount": 14,
+                "applicationTargetType": 1,
+                "applicationActionType": 3,
+                "visiblePromotionWidget": false,
+                "visibleValidate": true,
+                "visibleProductWidget": true,
+                "pictoType": "default"
+              }
+            ]
+          }
+        ]
+      },
+      "offers": {
+        "totalCount": 1284,
+        "sample": [
+          {
+            "code": "292",
+            "ean": "18413100062707",
+            "name": "Queso Fresco Original 3 x 72G",
+            "brand": "BURGO DE ARIAS",
+            "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/00292.JPG?t=20261006160957",
+            "priceData": {
+              "prices": [
+                {
+                  "id": "PRICE",
+                  "value": {
+                    "centAmount": 3.39,
+                    "centUnitAmount": 15.69
+                  }
+                },
+                {
+                  "id": "OFFER_PRICE",
+                  "value": {
+                    "centAmount": 2.49,
+                    "centUnitAmount": 11.52
+                  }
+                }
+              ],
+              "taxPercentage": 4,
+              "priceUnitType": " ",
+              "unitPriceUnitType": "KG",
+              "minimumUnit": 1,
+              "maximumUnit": 100,
+              "intervalUnit": 1
+            },
+            "categories": [
+              {
+                "id": 50302,
+                "name": "Envasado",
+                "type": 0
+              },
+              {
+                "id": 999995,
+                "name": "Productos frescos",
+                "type": 1
+              }
+            ],
+            "offers": [
+              {
+                "id": 180511,
+                "from": "2026-09-22T00:00:00.000Z",
+                "to": "2026-11-22T23:59:59.000Z",
+                "minDescription": "OFERTA",
+                "shortDescription": "Oferta Descuento",
+                "longDescription": "OFERTA",
+                "image": "https://cdn-hiperber.aktiosdigitalservices.com/assets/promotion/es/oferta.png",
+                "promotionId": 82414,
+                "promotionType": 1,
+                "inmediate": true,
+                "applicationTargetType": 1,
+                "applicationActionType": 2,
+                "visiblePromotionWidget": false,
+                "visibleValidate": true,
+                "visibleProductWidget": true,
+                "amount": 2.49,
+                "pictoType": "default"
+              }
+            ]
+          },
+          {
+            "code": "626",
+            "ean": "8410128784348",
+            "name": "Leche Semidesnatada Brik 1L",
+            "brand": "FLORA",
+            "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/00626.JPG?t=20261006161021",
+            "priceData": {
+              "prices": [
+                {
+                  "id": "PRICE",
+                  "value": {
+                    "centAmount": 1.92,
+                    "centUnitAmount": 1.92
+                  }
+                },
+                {
+                  "id": "OFFER_PRICE",
+                  "value": {
+                    "centAmount": 1.35,
+                    "centUnitAmount": 1.35
+                  }
+                }
+              ],
+              "taxPercentage": 10,
+              "priceUnitType": " ",
+              "unitPriceUnitType": "LT",
+              "minimumUnit": 1,
+              "maximumUnit": 100,
+              "intervalUnit": 1
+            },
+            "categories": [
+              {
+                "id": 10501,
+                "name": "Leches",
+                "type": 0
+              },
+              {
+                "id": 999991,
+                "name": "Bebidas",
+                "type": 1
+              }
+            ],
+            "offers": [
+              {
+                "id": 181013,
+                "from": "2026-10-01T00:00:00.000Z",
+                "to": "2026-10-31T23:59:59.000Z",
+                "minDescription": "OFERTA",
+                "shortDescription": "Oferta Descuento",
+                "longDescription": "OFERTA",
+                "image": "https://cdn-hiperber.aktiosdigitalservices.com/assets/promotion/es/oferta.png",
+                "promotionId": 82932,
+                "promotionType": 1,
+                "inmediate": true,
+                "applicationTargetType": 1,
+                "applicationActionType": 2,
+                "visiblePromotionWidget": false,
+                "visibleValidate": true,
+                "visibleProductWidget": true,
+                "amount": 1.35,
+                "pictoType": "default"
+              }
+            ]
+          },
+          {
+            "code": "980",
+            "ean": "07702018616947",
+            "name": "Espuma Afeitado Pieles Sensibles 250ML",
+            "brand": "GILLETTE",
+            "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/00980.jpg?t=20261006161334",
+            "priceData": {
+              "prices": [
+                {
+                  "id": "PRICE",
+                  "value": {
+                    "centAmount": 2.8,
+                    "centUnitAmount": 11.2
+                  }
+                },
+                {
+                  "id": "OFFER_PRICE",
+                  "value": {
+                    "centAmount": 2,
+                    "centUnitAmount": 8
+                  }
+                }
+              ],
+              "taxPercentage": 21,
+              "priceUnitType": " ",
+              "unitPriceUnitType": "LT",
+              "minimumUnit": 1,
+              "maximumUnit": 100,
+              "intervalUnit": 1
+            },
+            "categories": [
+              {
+                "id": 80302,
+                "name": "Espumas, cremas y geles",
+                "type": 0
+              },
+              {
+                "id": 999998,
+                "name": "Cuidado personal",
+                "type": 1
+              }
+            ],
+            "offers": [
+              {
+                "id": 180109,
+                "from": "2026-08-26T00:00:00.000Z",
+                "to": "2026-10-07T23:59:59.000Z",
+                "minDescription": "OFERTA",
+                "shortDescription": "Oferta Descuento",
+                "longDescription": "OFERTA",
+                "image": "https://cdn-hiperber.aktiosdigitalservices.com/assets/promotion/es/oferta.png",
+                "promotionId": 82005,
+                "promotionType": 1,
+                "inmediate": true,
+                "applicationTargetType": 1,
+                "applicationActionType": 2,
+                "visiblePromotionWidget": false,
+                "visibleValidate": true,
+                "visibleProductWidget": true,
+                "amount": 2,
+                "pictoType": "default"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "shippingZoneId": "81-D",
+      "deliveryTypeId": "D",
+      "enabled": true,
+      "zoneId": 81,
+      "storeCode": "81",
+      "name": "Novelda 3",
+      "city": "Novelda",
+      "region": "Alicante/Alacant",
+      "categories": {
+        "nodes": 208,
+        "maxDepth": 5,
+        "roots": [
+          {
+            "id": 99999,
+            "name": "Ofertas"
+          },
+          {
+            "id": 1,
+            "name": "Bebidas"
+          },
+          {
+            "id": 2,
+            "name": "Despensa"
+          },
+          {
+            "id": 3,
+            "name": "Bodega"
+          },
+          {
+            "id": 4,
+            "name": "Panadería"
+          },
+          {
+            "id": 5,
+            "name": "Productos frescos"
+          },
+          {
+            "id": 6,
+            "name": "Congelados"
+          },
+          {
+            "id": 7,
+            "name": "Cuidado del hogar"
+          },
+          {
+            "id": 8,
+            "name": "Cuidado personal"
+          },
+          {
+            "id": 9,
+            "name": "Infantil"
+          },
+          {
+            "id": 10,
+            "name": "Mascotas"
+          },
+          {
+            "id": 11,
+            "name": "Bazar"
+          }
+        ]
+      },
+      "catalog": {
+        "totalCount": 7043,
+        "hasMore": true,
+        "pageSizes": [
+          20,
+          20,
+          20
+        ],
+        "uniqueTwoPages": 40,
+        "blankNames": 40,
+        "sampleCount": 60,
+        "samples": [
+          {
+            "code": "89430",
+            "ean": "7898964049127",
+            "name": "",
+            "brand": "",
+            "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/89430.jpg?t=20261006161139",
+            "priceData": {
+              "prices": [
+                {
+                  "id": "PRICE",
+                  "value": {
+                    "centAmount": 2.9,
+                    "centUnitAmount": 13.18
+                  }
+                }
+              ],
+              "taxPercentage": 10,
+              "priceUnitType": " ",
+              "unitPriceUnitType": "LT",
+              "minimumUnit": 1,
+              "maximumUnit": 100,
+              "intervalUnit": 1
+            },
+            "categories": [
+              {
+                "id": 60402,
+                "name": "Helados",
+                "type": 0
+              }
+            ],
+            "offers": []
+          },
+          {
+            "code": "81292",
+            "ean": "8424465942507",
+            "name": "Mini Delicias Surtidas 16G",
+            "brand": "",
+            "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/81292.JPG?t=20261006161309",
+            "priceData": {
+              "prices": [
+                {
+                  "id": "PRICE",
+                  "value": {
+                    "centAmount": 0.11,
+                    "centUnitAmount": 12.22
+                  }
+                }
+              ],
+              "taxPercentage": 10,
+              "priceUnitType": "KG",
+              "unitPriceUnitType": "KG",
+              "minimumUnit": 1,
+              "maximumUnit": 100,
+              "intervalUnit": 1
+            },
+            "categories": [
+              {
+                "id": 403,
+                "name": "Bollería fresca",
+                "type": 0
+              }
+            ],
+            "offers": []
+          },
+          {
+            "code": "85661",
+            "ean": "8410793002464",
+            "name": "Cerveza Rubia Lata 330ML",
+            "brand": "CALATRAVA",
+            "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/85661.JPG?t=20261006161123",
+            "priceData": {
+              "prices": [
+                {
+                  "id": "PRICE",
+                  "value": {
+                    "centAmount": 0.28,
+                    "centUnitAmount": 8.48
+                  }
+                }
+              ],
+              "taxPercentage": 21,
+              "priceUnitType": " ",
+              "unitPriceUnitType": "LT",
+              "minimumUnit": 1,
+              "maximumUnit": 100,
+              "intervalUnit": 1
+            },
+            "categories": [
+              {
+                "id": 10201,
+                "name": "Rubia clásica",
+                "type": 0
+              },
+              {
+                "id": 10202,
+                "name": "Especialidades",
+                "type": 0
+              }
+            ],
+            "offers": []
+          },
+          {
+            "code": "69047",
+            "ean": "8429359001735",
+            "name": "Agua Mineral Natural Botella 1L",
+            "brand": "FONT NATURA",
+            "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/69047.JPG?t=20261006161533",
+            "priceData": {
+              "prices": [
+                {
+                  "id": "PRICE",
+                  "value": {
+                    "centAmount": 0.35,
+                    "centUnitAmount": 0.35
+                  }
+                }
+              ],
+              "taxPercentage": 10,
+              "priceUnitType": " ",
+              "unitPriceUnitType": "LT",
+              "minimumUnit": 1,
+              "maximumUnit": 100,
+              "intervalUnit": 1
+            },
+            "categories": [
+              {
+                "id": 10101,
+                "name": "Aguas sin gas",
+                "type": 0
+              },
+              {
+                "id": 999991,
+                "name": "Bebidas",
+                "type": 1
+              }
+            ],
+            "offers": [
+              {
+                "id": 179011,
+                "from": "2026-08-28T00:00:00.000Z",
+                "to": "2026-10-09T23:59:59.000Z",
+                "minDescription": "OFERTA",
+                "shortDescription": "Descuento de 14%  en la 3 Unidad ",
+                "longDescription": "OFERTA",
+                "image": "https://cdn-hiperber.aktiosdigitalservices.com/assets/promotion/es/oferta.png",
+                "promotionId": 82156,
+                "promotionType": 0,
+                "inmediate": true,
+                "discount": 14,
+                "applicationTargetType": 1,
+                "applicationActionType": 3,
+                "visiblePromotionWidget": false,
+                "visibleValidate": true,
+                "visibleProductWidget": true,
+                "pictoType": "default"
+              }
+            ]
+          }
+        ]
+      },
+      "offers": {
+        "totalCount": 1300,
+        "sample": [
+          {
+            "code": "292",
+            "ean": "18413100062707",
+            "name": "Queso Fresco Original 3 x 72G",
+            "brand": "BURGO DE ARIAS",
+            "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/00292.JPG?t=20261006160957",
+            "priceData": {
+              "prices": [
+                {
+                  "id": "PRICE",
+                  "value": {
+                    "centAmount": 3.39,
+                    "centUnitAmount": 15.69
+                  }
+                },
+                {
+                  "id": "OFFER_PRICE",
+                  "value": {
+                    "centAmount": 2.49,
+                    "centUnitAmount": 11.52
+                  }
+                }
+              ],
+              "taxPercentage": 4,
+              "priceUnitType": " ",
+              "unitPriceUnitType": "KG",
+              "minimumUnit": 1,
+              "maximumUnit": 100,
+              "intervalUnit": 1
+            },
+            "categories": [
+              {
+                "id": 50302,
+                "name": "Envasado",
+                "type": 0
+              },
+              {
+                "id": 999995,
+                "name": "Productos frescos",
+                "type": 1
+              }
+            ],
+            "offers": [
+              {
+                "id": 179269,
+                "from": "2026-09-22T00:00:00.000Z",
+                "to": "2026-11-22T23:59:59.000Z",
+                "minDescription": "OFERTA",
+                "shortDescription": "Oferta Descuento",
+                "longDescription": "OFERTA",
+                "image": "https://cdn-hiperber.aktiosdigitalservices.com/assets/promotion/es/oferta.png",
+                "promotionId": 82414,
+                "promotionType": 1,
+                "inmediate": true,
+                "applicationTargetType": 1,
+                "applicationActionType": 2,
+                "visiblePromotionWidget": false,
+                "visibleValidate": true,
+                "visibleProductWidget": true,
+                "amount": 2.49,
+                "pictoType": "default"
+              }
+            ]
+          },
+          {
+            "code": "626",
+            "ean": "8410128784348",
+            "name": "Leche Semidesnatada Brik 1L",
+            "brand": "FLORA",
+            "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/00626.JPG?t=20261006161021",
+            "priceData": {
+              "prices": [
+                {
+                  "id": "PRICE",
+                  "value": {
+                    "centAmount": 1.92,
+                    "centUnitAmount": 1.92
+                  }
+                },
+                {
+                  "id": "OFFER_PRICE",
+                  "value": {
+                    "centAmount": 1.35,
+                    "centUnitAmount": 1.35
+                  }
+                }
+              ],
+              "taxPercentage": 10,
+              "priceUnitType": " ",
+              "unitPriceUnitType": "LT",
+              "minimumUnit": 1,
+              "maximumUnit": 100,
+              "intervalUnit": 1
+            },
+            "categories": [
+              {
+                "id": 10501,
+                "name": "Leches",
+                "type": 0
+              },
+              {
+                "id": 999991,
+                "name": "Bebidas",
+                "type": 1
+              }
+            ],
+            "offers": [
+              {
+                "id": 179787,
+                "from": "2026-10-01T00:00:00.000Z",
+                "to": "2026-10-31T23:59:59.000Z",
+                "minDescription": "OFERTA",
+                "shortDescription": "Oferta Descuento",
+                "longDescription": "OFERTA",
+                "image": "https://cdn-hiperber.aktiosdigitalservices.com/assets/promotion/es/oferta.png",
+                "promotionId": 82932,
+                "promotionType": 1,
+                "inmediate": true,
+                "applicationTargetType": 1,
+                "applicationActionType": 2,
+                "visiblePromotionWidget": false,
+                "visibleValidate": true,
+                "visibleProductWidget": true,
+                "amount": 1.35,
+                "pictoType": "default"
+              }
+            ]
+          },
+          {
+            "code": "980",
+            "ean": "07702018616947",
+            "name": "Espuma Afeitado Pieles Sensibles 250ML",
+            "brand": "GILLETTE",
+            "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/00980.jpg?t=20261006161334",
+            "priceData": {
+              "prices": [
+                {
+                  "id": "PRICE",
+                  "value": {
+                    "centAmount": 2.8,
+                    "centUnitAmount": 11.2
+                  }
+                },
+                {
+                  "id": "OFFER_PRICE",
+                  "value": {
+                    "centAmount": 2,
+                    "centUnitAmount": 8
+                  }
+                }
+              ],
+              "taxPercentage": 21,
+              "priceUnitType": " ",
+              "unitPriceUnitType": "LT",
+              "minimumUnit": 1,
+              "maximumUnit": 100,
+              "intervalUnit": 1
+            },
+            "categories": [
+              {
+                "id": 80302,
+                "name": "Espumas, cremas y geles",
+                "type": 0
+              },
+              {
+                "id": 999998,
+                "name": "Cuidado personal",
+                "type": 1
+              }
+            ],
+            "offers": [
+              {
+                "id": 178860,
+                "from": "2026-08-26T00:00:00.000Z",
+                "to": "2026-10-07T23:59:59.000Z",
+                "minDescription": "OFERTA",
+                "shortDescription": "Oferta Descuento",
+                "longDescription": "OFERTA",
+                "image": "https://cdn-hiperber.aktiosdigitalservices.com/assets/promotion/es/oferta.png",
+                "promotionId": 82005,
+                "promotionType": 1,
+                "inmediate": true,
+                "applicationTargetType": 1,
+                "applicationActionType": 2,
+                "visiblePromotionWidget": false,
+                "visibleValidate": true,
+                "visibleProductWidget": true,
+                "amount": 2,
+                "pictoType": "default"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "shippingZoneId": "62D",
+      "deliveryTypeId": "D",
+      "enabled": true,
+      "zoneId": 62,
+      "name": "Alfaz del Pi",
+      "city": "ALFÀS DEL PI (L')",
+      "region": "Alicante/Alacant",
+      "catalog": {
+        "totalCount": 7090,
+        "samples": [
+          {
+            "code": "81292",
+            "ean": "8424465942507",
+            "name": "Mini Delicias Surtidas 16G",
+            "brand": {
+              "id": "",
+              "name": ""
+            },
+            "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/81292.JPG?t=20261006161309",
+            "priceData": {
+              "prices": [
+                {
+                  "id": "PRICE",
+                  "value": {
+                    "centAmount": 0.11,
+                    "centUnitAmount": 12.22
+                  }
+                }
+              ],
+              "taxPercentage": 10,
+              "priceUnitType": "KG",
+              "unitPriceUnitType": "KG",
+              "minimumUnit": 1,
+              "maximumUnit": 100,
+              "intervalUnit": 1
+            },
+            "categories": [
+              {
+                "id": 403,
+                "name": "Bollería fresca",
+                "type": 0
+              }
+            ],
+            "offers": []
+          },
+          {
+            "code": "85661",
+            "ean": "8410793002464",
+            "name": "Cerveza Rubia Lata 330ML",
+            "brand": {
+              "id": "CALATRAVA",
+              "name": "CALATRAVA"
+            },
+            "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/85661.JPG?t=20261006161123",
+            "priceData": {
+              "prices": [
+                {
+                  "id": "PRICE",
+                  "value": {
+                    "centAmount": 0.28,
+                    "centUnitAmount": 0.85
+                  }
+                }
+              ],
+              "taxPercentage": 21,
+              "priceUnitType": " ",
+              "unitPriceUnitType": "LT",
+              "minimumUnit": 1,
+              "maximumUnit": 100,
+              "intervalUnit": 1
+            },
+            "categories": [
+              {
+                "id": 10201,
+                "name": "Rubia clásica",
+                "type": 0
+              },
+              {
+                "id": 10202,
+                "name": "Especialidades",
+                "type": 0
+              }
+            ],
+            "offers": []
+          },
+          {
+            "code": "69047",
+            "ean": "8429359001735",
+            "name": "Agua Mineral Natural Botella 1L",
+            "brand": {
+              "id": "FONT NATURA",
+              "name": "FONT NATURA"
+            },
+            "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/69047.JPG?t=20261006161533",
+            "priceData": {
+              "prices": [
+                {
+                  "id": "PRICE",
+                  "value": {
+                    "centAmount": 0.35,
+                    "centUnitAmount": 0.35
+                  }
+                }
+              ],
+              "taxPercentage": 10,
+              "priceUnitType": " ",
+              "unitPriceUnitType": "LT",
+              "minimumUnit": 1,
+              "maximumUnit": 100,
+              "intervalUnit": 1
+            },
+            "categories": [
+              {
+                "id": 10101,
+                "name": "Aguas sin gas",
+                "type": 0
+              },
+              {
+                "id": 999991,
+                "name": "Bebidas",
+                "type": 1
+              }
+            ],
+            "offers": [
+              {
+                "id": 181481,
+                "from": "2026-08-28T00:00:00.000Z",
+                "to": "2026-10-09T23:59:59.000Z",
+                "minDescription": "OFERTA",
+                "shortDescription": "Descuento de 14%  en la 3 Unidad ",
+                "longDescription": "OFERTA",
+                "image": "https://cdn-hiperber.aktiosdigitalservices.com/assets/promotion/es/oferta.png",
+                "promotionId": 82156,
+                "promotionType": 0,
+                "inmediate": true,
+                "discount": 14,
+                "applicationTargetType": 1,
+                "applicationActionType": 3,
+                "visiblePromotionWidget": false,
+                "visibleValidate": true,
+                "visibleProductWidget": true,
+                "pictoType": "default"
+              }
+            ]
+          }
+        ]
+      },
+      "offers": {
+        "totalCount": 1301
+      }
+    }
+  ],
+  "details": [
+    {
+      "product": {
+        "code": "69047",
+        "ean": "8429359001735",
+        "name": "Agua Mineral Natural Botella 1L",
+        "brand": {
+          "id": "FONT NATURA",
+          "name": "FONT NATURA"
+        },
+        "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/69047.JPG?t=20261006161533",
+        "priceData": {
+          "prices": [
+            {
+              "id": "PRICE",
+              "value": {
+                "centAmount": 0.35,
+                "centUnitAmount": 0.35
+              }
+            }
+          ],
+          "taxPercentage": 10,
+          "priceUnitType": " ",
+          "unitPriceUnitType": "LT",
+          "minimumUnit": 1,
+          "maximumUnit": 100,
+          "intervalUnit": 1
+        },
+        "categories": [
+          {
+            "id": 10101,
+            "name": "Aguas sin gas",
+            "type": 0
+          },
+          {
+            "id": 999991,
+            "name": "Bebidas",
+            "type": 1
+          }
+        ],
+        "offers": [
+          {
+            "id": 180259,
+            "from": "2026-08-28T00:00:00.000Z",
+            "to": "2026-10-09T23:59:59.000Z",
+            "minDescription": "OFERTA",
+            "shortDescription": "Descuento de 14%  en la 3 Unidad ",
+            "longDescription": "OFERTA",
+            "image": "https://cdn-hiperber.aktiosdigitalservices.com/assets/promotion/es/oferta.png",
+            "promotionId": 82156,
+            "promotionType": 0,
+            "inmediate": true,
+            "discount": 14,
+            "applicationTargetType": 1,
+            "applicationActionType": 3,
+            "visiblePromotionWidget": false,
+            "visibleValidate": true,
+            "visibleProductWidget": true,
+            "pictoType": "default"
+          }
+        ]
+      },
+      "nutrition": null,
+      "nutritionStatus": 404
+    },
+    {
+      "product": {
+        "code": "26161",
+        "ean": "8480024744494",
+        "name": "Tomate Triturado 400G",
+        "brand": {
+          "id": "ALTEZA",
+          "name": "ALTEZA"
+        },
+        "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/26161.JPG?t=20261006161531",
+        "priceData": {
+          "prices": [
+            {
+              "id": "PRICE",
+              "value": {
+                "centAmount": 0.55,
+                "centUnitAmount": 1.38
+              }
+            }
+          ],
+          "taxPercentage": 10,
+          "priceUnitType": " ",
+          "unitPriceUnitType": "KG",
+          "minimumUnit": 1,
+          "maximumUnit": 100,
+          "intervalUnit": 1
+        },
+        "categories": [
+          {
+            "id": 20403,
+            "name": "Otras conservas",
+            "type": 0
+          },
+          {
+            "id": 999992,
+            "name": "Despensa",
+            "type": 1
+          }
+        ],
+        "offers": [
+          {
+            "id": 180220,
+            "from": "2026-08-28T00:00:00.000Z",
+            "to": "2026-10-09T23:59:59.000Z",
+            "minDescription": "OFERTA",
+            "shortDescription": "Descuento de 18%  en la 2 Unidad ",
+            "longDescription": "OFERTA",
+            "image": "https://cdn-hiperber.aktiosdigitalservices.com/assets/promotion/es/oferta.png",
+            "promotionId": 82117,
+            "promotionType": 0,
+            "inmediate": true,
+            "discount": 18,
+            "applicationTargetType": 1,
+            "applicationActionType": 3,
+            "visiblePromotionWidget": false,
+            "visibleValidate": true,
+            "visibleProductWidget": true,
+            "pictoType": "default"
+          }
+        ]
+      },
+      "nutrition": {
+        "acceptableDailyIntake": {
+          "energy": [
+            {
+              "item": 1,
+              "totalAmountPer100Grams": 88,
+              "totalAmountPerUnit": 8.8,
+              "type": "Kj"
+            },
+            {
+              "item": 0,
+              "totalAmountPer100Grams": 21,
+              "totalAmountPerUnit": 2.1,
+              "type": "Kcal"
+            }
+          ],
+          "macronutrients": [
+            {
+              "name": "Proteinas",
+              "percentage100Grams": "19",
+              "totalAmountPer100Grams": 4,
+              "type": "Proteins"
+            },
+            {
+              "name": "Grasas",
+              "percentage100Grams": "21",
+              "totalAmountPer100Grams": 4.5,
+              "type": "Fats"
+            },
+            {
+              "name": "Carbohidratos",
+              "percentage100Grams": "60",
+              "totalAmountPer100Grams": 12.8,
+              "type": "Carbohydrates"
+            }
+          ]
+        },
+        "nutrilabel": {
+          "productInformation": {
+            "alcoholPercentage": "",
+            "netAmount": {
+              "netAmount": "400",
+              "netAmountUnits": "GR"
+            },
+            "allergensInformation": [
+              {
+                "allergens": [],
+                "productName": "Detalle Composición Principal"
+              }
+            ],
+            "brand": "ALTEZA",
+            "Disclaimer": "Esta información nutricional, de ingredientes, alérgenos y mensajes nutricionales se proporciona únicamente con fines informativos, y no constituye un consejo médico o dieta de cualquier tipo. Por favor consulte siempre a su profesional de la salud para cuestiones relativas a su dieta. <br/>Los ingredientes de los productos pueden variar ligeramente dependiendo de la fecha de producción, el país de origen, la planta de fabricación y la empresa fabricante asignada.",
+            "ingredientsInformation": [],
+            "legalName": "Tomate triturado 1/2 kg 400 gr pn",
+            "manufacturer": {
+              "address": "Ctra NV Km 294 10100 Miajadas Cáceres España",
+              "name": "Tomcoex S.A."
+            },
+            "name": "Tomate triturado 1/2 kg 400 gr pn",
+            "nutritionalValues": [
+              {
+                "productName": "Detalle Composición Principal",
+                "values": [
+                  {
+                    "measurementUnit": "kcal",
+                    "name": "Valor energético",
+                    "referencePercentage": 0,
+                    "value": 21,
+                    "valueStr": "21",
+                    "children": []
+                  },
+                  {
+                    "measurementUnit": "kj",
+                    "name": "Valor energético",
+                    "referencePercentage": 0,
+                    "value": 88,
+                    "valueStr": "88",
+                    "children": []
+                  },
+                  {
+                    "measurementUnit": "g",
+                    "name": "Grasas",
+                    "referencePercentage": 0,
+                    "value": 0.5,
+                    "valueStr": "0.5",
+                    "children": []
+                  },
+                  {
+                    "measurementUnit": "g",
+                    "name": "Ácidos grasos saturados",
+                    "referencePercentage": 0,
+                    "value": 0.1,
+                    "valueStr": "0.1",
+                    "children": []
+                  },
+                  {
+                    "measurementUnit": "g",
+                    "name": "Hidratos de carbono",
+                    "referencePercentage": 0,
+                    "value": 3.2,
+                    "valueStr": "3.2",
+                    "children": []
+                  },
+                  {
+                    "measurementUnit": "g",
+                    "name": "Azúcares",
+                    "referencePercentage": 0,
+                    "value": 3.1,
+                    "valueStr": "3.1",
+                    "children": []
+                  },
+                  {
+                    "measurementUnit": "g",
+                    "name": "Fibra alimentaria",
+                    "referencePercentage": 0,
+                    "value": 1.5,
+                    "valueStr": "1.5",
+                    "children": []
+                  },
+                  {
+                    "measurementUnit": "g",
+                    "name": "Proteínas",
+                    "referencePercentage": 0,
+                    "value": 1,
+                    "valueStr": "1.0",
+                    "children": []
+                  },
+                  {
+                    "measurementUnit": "g",
+                    "name": "Sal",
+                    "referencePercentage": 0,
+                    "value": 0.45,
+                    "valueStr": "0.45",
+                    "children": []
+                  }
+                ]
+              }
+            ],
+            "originCountry": "",
+            "nutriScore": ""
+          }
+        }
+      },
+      "nutritionStatus": 200
+    },
+    {
+      "product": {
+        "code": "80210",
+        "ean": "8480024740816",
+        "name": "Sopa de Pollo con Fideos 72G",
+        "brand": {
+          "id": "ALTEZA",
+          "name": "ALTEZA"
+        },
+        "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/80210.JPG?t=20261006161535",
+        "priceData": {
+          "prices": [
+            {
+              "id": "PRICE",
+              "value": {
+                "centAmount": 0.55,
+                "centUnitAmount": 7.64
+              }
+            }
+          ],
+          "taxPercentage": 10,
+          "priceUnitType": " ",
+          "unitPriceUnitType": "KG",
+          "minimumUnit": 1,
+          "maximumUnit": 100,
+          "intervalUnit": 1
+        },
+        "categories": [
+          {
+            "id": 20303,
+            "name": "Sopas",
+            "type": 0
+          },
+          {
+            "id": 999992,
+            "name": "Despensa",
+            "type": 1
+          }
+        ],
+        "offers": [
+          {
+            "id": 180303,
+            "from": "2026-08-28T00:00:00.000Z",
+            "to": "2026-10-09T23:59:59.000Z",
+            "minDescription": "OFERTA",
+            "shortDescription": "Descuento de 18%  en la 2 Unidad ",
+            "longDescription": "OFERTA",
+            "image": "https://cdn-hiperber.aktiosdigitalservices.com/assets/promotion/es/oferta.png",
+            "promotionId": 82201,
+            "promotionType": 0,
+            "inmediate": true,
+            "discount": 18,
+            "applicationTargetType": 1,
+            "applicationActionType": 3,
+            "visiblePromotionWidget": false,
+            "visibleValidate": true,
+            "visibleProductWidget": true,
+            "pictoType": "default"
+          }
+        ]
+      },
+      "nutrition": null,
+      "nutritionStatus": 404
+    },
+    {
+      "product": {
+        "code": "89422",
+        "ean": "8413600000035",
+        "name": "",
+        "brand": {
+          "id": "NENUCO",
+          "name": "NENUCO"
+        },
+        "imageURL": "https://cdn-hiperber.aktiosdigitalservices.com/tol/hiperber/media/product/img/135x135/89422.JPG?t=20261001010135",
+        "priceData": {
+          "prices": [
+            {
+              "id": "PRICE",
+              "value": {
+                "centAmount": 15,
+                "centUnitAmount": 15
+              }
+            }
+          ],
+          "taxPercentage": 21,
+          "priceUnitType": " ",
+          "unitPriceUnitType": "",
+          "minimumUnit": 1,
+          "maximumUnit": 100,
+          "intervalUnit": 1
+        },
+        "categories": [
+          {
+            "id": 11,
+            "name": "Bazar",
+            "type": 0
+          }
+        ],
+        "offers": []
+      },
+      "nutrition": null,
+      "nutritionStatus": 404
+    }
+  ],
+  "blockSizeProbe": {
+    "requested": 100,
+    "returned": 20,
+    "totalCount": 6972,
+    "hasMore": true
+  },
+  "largePageQuality": {
+    "blankNames": 0,
+    "missingImages": 0,
+    "missingPrices": 0,
+    "eanCount": 20
+  },
+  "robots": {
+    "url": "https://tienda.hiperber.com/robots.txt",
+    "content": "## GENERAL SETTINGS\nUser-agent: *\nAllow:/\n\n## CRAWL BUDGET OPTIMIZATION\nUser-agent: *\n# Disallow: /*? \n  \nDisallow: */s/\nDisallow: */modal\n\nDisallow: /api/\nDisallow: /labels/\n\n## PRIVATE URLS\nUser-agent: *\nDisallow: */user-management\nDisallow: */authentication\nDisallow: */purchase\nDisallow: */error\nDisallow: */m/\nDisallow: */sm/\n\n## SPECIFIC BOTS SETTINGS\nUser-agent: noxtrumbot\nCrawl-delay: 50\n\nUser-agent: msnbot\nCrawl-delay: 30\n\nUser-agent: Slurp\nCrawl-delay: 10\n\n## SITEMAPS\n# La url debe ser absoluta https://...\nSitemap: https://tienda.hiperber.com/sitemap.xml\n"
+  },
+  "notes": [
+    "Totals are retailer API totalCount, not clean imported products.",
+    "Bounded samples only; no full catalog download.",
+    "No login, customer credentials, cookies, or Supabase access.",
+    "Nutrition HTTP 404 is expected missing source data, not a successful nutrition response.",
+    "Preliminary uppercase locale probe did not resolve blank names."
+  ]
+}

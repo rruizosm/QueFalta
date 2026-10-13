@@ -1,0 +1,39 @@
+{
+  "id": "13065",
+  "index": 13,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/13065.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-13065-champu-infantil-deliplus.png",
+  "prompt": "Warm clean editorial hand-drawn product illustration, soft thin outlines, defined original colors, subtle paper/gouache texture, frontal view. Illustrate the exact Deliplus children's shampoo. Preserve exact child-friendly bottle shape, cap, label color and visible text/artwork. from reference photo one. Preserve complete bottle proportions and every legible label word and claim; do not invent. Center upright with actual alpha transparency, no background, shadow, glow, props, photorealism or 3D. Image two guides style only.\n",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/13065.txt",
+  "sourceOriginalSha256": "d789e0c320911a242d2b4496e140a61a31c4fbf0ff7a3e86ffa6b7130d42b1a9",
+  "sourceOriginalBytes": 31352,
+  "status": "published",
+  "generatedAt": "2026-10-09T06:59:17.642Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-13065.webp",
+  "width": 364,
+  "height": 768,
+  "bytes": 46986,
+  "sha256": "18e5a49ca972423786f17728c6b851f911a5c59fbd82c0c2f82bd4892767ee49",
+  "alpha": {
+    "transparentPixels": 102350,
+    "opaquePixels": 780,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T06:59:25.561Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T06:59:49.970Z",
+  "publication": {
+    "productId": "13065",
+    "name": "Champú infantil Deliplus",
+    "objectPath": "mercadona/13065/18e5a49ca9724237.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/13065/18e5a49ca9724237.webp",
+    "contentType": "image/webp",
+    "bytes": 46986,
+    "sha256": "18e5a49ca972423786f17728c6b851f911a5c59fbd82c0c2f82bd4892767ee49"
+  },
+  "publishedAt": "2026-10-09T06:59:54.083Z",
+  "localWebpDeletedAt": "2026-10-09T06:59:54.083Z",
+  "localSourceJpgDeletedAt": "2026-10-09T06:59:54.083Z"
+}

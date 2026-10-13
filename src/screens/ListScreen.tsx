@@ -738,37 +738,29 @@ export default function ListScreen() {
         <Text style={styles.title} numberOfLines={1}>
           {activeCart?.groupName ?? t('list.title')}
         </Text>
+        {activeCart && !loading && !error && items.length > 0 && (
+          <View style={styles.headerActions}>
+            <Pressable
+              onPress={() => setAssignAllVisible(true)}
+              style={({ pressed }) => [styles.headerBtn, styles.headerBtnPrimary, pressed && styles.headerBtnPressed]}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel={t('list.assignAllTitle')}
+            >
+              <Ionicons name="person-add-outline" size={17} color={colors.white} />
+            </Pressable>
+            <Pressable
+              onPress={() => setConfirmClear(true)}
+              style={({ pressed }) => [styles.headerBtn, pressed && styles.headerBtnPressed]}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel={t('list.clearConfirm')}
+            >
+              <Ionicons name="trash-outline" size={17} color={colors.inkSoft} />
+            </Pressable>
+          </View>
+        )}
       </View>
-
-      {activeCart && !loading && !error && (
-        <View style={styles.subtitleRow}>
-          <Text style={styles.subtitle}>
-            {t('list.subtitle', { done: doneItems, total: merged.length })}
-          </Text>
-          {items.length > 0 && (
-            <View style={styles.headerActions}>
-              <Pressable
-                onPress={() => setAssignAllVisible(true)}
-                style={({ pressed }) => [styles.headerBtn, styles.headerBtnPrimary, pressed && styles.headerBtnPressed]}
-                hitSlop={10}
-                accessibilityRole="button"
-                accessibilityLabel={t('list.assignAllTitle')}
-              >
-                <Ionicons name="person-add-outline" size={17} color={colors.white} />
-              </Pressable>
-              <Pressable
-                onPress={() => setConfirmClear(true)}
-                style={({ pressed }) => [styles.headerBtn, pressed && styles.headerBtnPressed]}
-                hitSlop={10}
-                accessibilityRole="button"
-                accessibilityLabel={t('list.clearConfirm')}
-              >
-                <Ionicons name="trash-outline" size={17} color={colors.inkSoft} />
-              </Pressable>
-            </View>
-          )}
-        </View>
-      )}
     </View>
   );
 
@@ -1318,12 +1310,6 @@ const themedStyles = () => StyleSheet.create({
     backgroundColor: colors.accentLight,
   },
   title: { flex: 1, fontSize: 20, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
-  // Contador + acciones (esferas) en la misma fila, bajo el título.
-  subtitleRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    gap: 8, marginTop: 8,
-  },
-  subtitle: { flex: 1, fontSize: 12.5, fontFamily: fonts.medium, color: colors.inkSoft },
   headerActions: { flexDirection: 'row', gap: 6 },
   // Esfera (círculo, como el cerrar de NotificationsSheet) con efecto de
   // pulsado (se encoge y atenúa mientras está presionado). Igual en glass y

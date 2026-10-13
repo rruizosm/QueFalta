@@ -1,0 +1,39 @@
+{
+  "id": "21422",
+  "index": 58,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-428a31e1-ad80-4d08-a885-52f352cefd78.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-21422-chorizo-cular-iberico-extra-sanchez-montero.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved hand-drawn style reference at /private/tmp/mercadona-style-10699-reference.png; do not copy its product or packaging. Create a warm, clean editorial hand-drawn illustration with soft thin outlines, defined original colors and subtle paper/gouache texture. Preserve the exact product identity, package silhouette, visible logo, text, claims, flavor and quantity from Image 1. Exact product: Sánchez Montero Chorizo Cular Ibérico Extra, one long whole cured sausage in a narrow clear sleeve, vertically oriented, with tan tied closure at top and the visible narrow white-and-red Sánchez Montero label down the upper front; small nutrition text on white label. Match the source appearance and complete elongated package. Use transparent margin. Do not show slices, multiple sausages, invented claims or props. Isolate on transparent background.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/21422-prompt.txt",
+  "sourceOriginalSha256": "5b36e3c7b852d619df69ae1e2aca84dc345f8a9bc3f2fad896e27d1c96508cef",
+  "sourceOriginalBytes": 34192,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:45:19.596Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-21422.webp",
+  "width": 192,
+  "height": 768,
+  "bytes": 44336,
+  "sha256": "5fe8dcdddbfbd04b693614890408df9c2e647999680c2fc0bfecbf3aadd96bc6",
+  "alpha": {
+    "transparentPixels": 35945,
+    "opaquePixels": 1244,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:45:26.880Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T07:45:43.593Z",
+  "publication": {
+    "productId": "21422",
+    "name": "Chorizo cular ibérico extra Sánchez Montero",
+    "objectPath": "mercadona/21422/5fe8dcdddbfbd04b.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/21422/5fe8dcdddbfbd04b.webp",
+    "contentType": "image/webp",
+    "bytes": 44336,
+    "sha256": "5fe8dcdddbfbd04b693614890408df9c2e647999680c2fc0bfecbf3aadd96bc6"
+  },
+  "publishedAt": "2026-10-09T07:45:48.412Z",
+  "localWebpDeletedAt": "2026-10-09T07:45:48.413Z",
+  "localSourceJpgDeletedAt": "2026-10-09T07:45:48.413Z"
+}

@@ -1,0 +1,50 @@
+{
+  "id": "53047",
+  "index": 57,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-c081df19-142b-4524-a04a-71a2177afeec.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-53047-sobrasada-canaria-montesano.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "2045ea6d173770ce02052adad6c3ed157e9efaeef2273a54be13e8763a6cce0b",
+  "sourceOriginalBytes": 46101,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:37:35.326Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-53047.webp",
+  "recovery": {
+    "recoveredAt": "2026-10-11T16:56:07.779449+00:00",
+    "nativeMatchedToHistoricalWebp": true,
+    "historicalWebpSha256": "cf27d78ab3cd1c46dc8a9d5342663d48b05a1d51cf0ce319c868b1a1c70a16f4",
+    "historicalWebpTempPath": "/private/tmp/mercadona-batch-20261010-1000/lot-10/webp/mercadona-53047.webp",
+    "nativeSha256": "ff645b47eef082303e86bab6ed472311791e9ad996ae15d2fabde9f513e26ddd",
+    "originalPromptUnavailable": true,
+    "note": "Original batch directory was deleted. Native recovered by exact SHA after same export; original prompt is unavailable and has not been invented. Fresh visual review required before upload."
+  },
+  "width": 768,
+  "height": 538,
+  "bytes": 93174,
+  "sha256": "cf27d78ab3cd1c46dc8a9d5342663d48b05a1d51cf0ce319c868b1a1c70a16f4",
+  "alpha": {
+    "transparentPixels": 154325,
+    "opaquePixels": 1069,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T16:57:43.915Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:09:59.451Z",
+  "publication": {
+    "productId": "53047",
+    "name": "Sobrasada Canaria Montesano",
+    "objectPath": "mercadona/53047/cf27d78ab3cd1c46.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/53047/cf27d78ab3cd1c46.webp",
+    "contentType": "image/webp",
+    "bytes": 93174,
+    "published": true,
+    "sha256": "cf27d78ab3cd1c46dc8a9d5342663d48b05a1d51cf0ce319c868b1a1c70a16f4"
+  },
+  "publishedAt": "2026-10-11T17:11:33.531Z",
+  "localWebpDeletedAt": "2026-10-11T17:11:33.697Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:11:33.697Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:11:33.697Z"
+}

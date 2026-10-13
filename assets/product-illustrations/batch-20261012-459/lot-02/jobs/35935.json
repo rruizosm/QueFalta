@@ -1,0 +1,41 @@
+{
+  "id": "35935",
+  "index": 92,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-c335e8ff-0b07-4b0e-9b5d-8b198282f51a.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-35935-tonico-facial-arbol-de-te-y-prebioticos-facial-clean-renovador-y-purificante.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Tall slender transparent green Facial Clean Deliplus facial toner bottle, white cylindrical cap, white minimalist lettering TÓNICO ÁRBOL DE TÉ & PREBIÓTICOS, RENOVADOR & PURIFICANTE. Green liquid. Product catalog identity: Tónico facial árbol de té y prebióticos Facial Clean renovador y purificante.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/35935.txt",
+  "sourceOriginalSha256": "3ed1af52cb632bdfb3b2557df5539b052a97ce26751fa446c03718147a29b090",
+  "sourceOriginalBytes": 30359,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:09:22.358Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-35935.webp",
+  "width": 231,
+  "height": 768,
+  "bytes": 25024,
+  "sha256": "cbf0ec6be3ef22a94861569f89807ea50872328358a96ee42914e34c86a2bf3f",
+  "alpha": {
+    "transparentPixels": 39799,
+    "opaquePixels": 530,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:19:46.085Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:22:43.715Z",
+  "publication": {
+    "productId": "35935",
+    "name": "Tónico facial árbol de té y prebióticos Facial Clean renovador y purificante",
+    "objectPath": "mercadona/35935/cbf0ec6be3ef22a9.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/35935/cbf0ec6be3ef22a9.webp",
+    "contentType": "image/webp",
+    "bytes": 25024,
+    "published": true,
+    "sha256": "cbf0ec6be3ef22a94861569f89807ea50872328358a96ee42914e34c86a2bf3f"
+  },
+  "publishedAt": "2026-10-12T15:22:56.998Z",
+  "localWebpDeletedAt": "2026-10-12T15:22:57.161Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:22:57.161Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:22:57.161Z"
+}

@@ -1,0 +1,39 @@
+{
+  "id": "12562",
+  "index": 39,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/12562.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-12562-chocolate-con-leche-extrafino-nestle.png",
+  "prompt": "Warm clean editorial hand-drawn product illustration with soft thin outlines, defined original colors and subtle paper/gouache texture. Illustrate exactly the chocolate product in reference photo one: Nestlé extrafine milk chocolate. Preserve exact wrapped bar/package, red Nestlé mark, product name, color blocks and visible weight. Match complete wrapper shape and visible text/weight, no extra bars or claims. Center package, actual transparent alpha, no tabletop, props, glow or shadow. Image two is style guidance only.\n",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/12562.txt",
+  "sourceOriginalSha256": "ae966a5802a5abe1aa9e0edd20c5c87ba5dfa9ed053fe7e96a691bf9cd9cb0a3",
+  "sourceOriginalBytes": 62596,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:23:54.995Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-12562.webp",
+  "width": 768,
+  "height": 355,
+  "bytes": 71430,
+  "sha256": "e806e20542dfd7db9ba2dcac7904961cb3773c78b0f501d774bf673de2e028d3",
+  "alpha": {
+    "transparentPixels": 35713,
+    "opaquePixels": 1527,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:24:25.720Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T07:24:54.010Z",
+  "publication": {
+    "productId": "12562",
+    "name": "Chocolate con leche extrafino Nestlé",
+    "objectPath": "mercadona/12562/e806e20542dfd7db.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/12562/e806e20542dfd7db.webp",
+    "contentType": "image/webp",
+    "bytes": 71430,
+    "sha256": "e806e20542dfd7db9ba2dcac7904961cb3773c78b0f501d774bf673de2e028d3"
+  },
+  "publishedAt": "2026-10-09T07:24:55.191Z",
+  "localWebpDeletedAt": "2026-10-09T07:24:55.194Z",
+  "localSourceJpgDeletedAt": "2026-10-09T07:24:55.194Z"
+}

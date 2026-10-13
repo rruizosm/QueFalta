@@ -1,0 +1,41 @@
+{
+  "id": "22931",
+  "index": 54,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-d79fb822-b21c-4033-8205-aa1f20e41dd4.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-22931-toallitas-infantiles-cara-y-manos-deliplus.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Single orange-red childrens face and hands wipes packet, yellow colorful handprint motifs around edges and white oval flip-top showing adult and child photo, Cara y manos. Product catalog identity: Toallitas infantiles cara y manos Deliplus.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/22931.txt",
+  "sourceOriginalSha256": "8b9ca401624aac5df7b76a75ff3aa788c92def872b409c6d111fcf5ec2ec734e",
+  "sourceOriginalBytes": 44780,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:45:47.384Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-22931.webp",
+  "width": 768,
+  "height": 544,
+  "bytes": 70214,
+  "sha256": "8f35080df413329d7e38468d9b78056ff06881f15c3641bcca9e1e99f64009b3",
+  "alpha": {
+    "transparentPixels": 212663,
+    "opaquePixels": 808,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:46:45.118Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:47:23.007Z",
+  "publication": {
+    "productId": "22931",
+    "name": "Toallitas infantiles cara y manos Deliplus",
+    "objectPath": "mercadona/22931/8f35080df413329d.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/22931/8f35080df413329d.webp",
+    "contentType": "image/webp",
+    "bytes": 70214,
+    "published": true,
+    "sha256": "8f35080df413329d7e38468d9b78056ff06881f15c3641bcca9e1e99f64009b3"
+  },
+  "publishedAt": "2026-10-12T14:47:36.111Z",
+  "localWebpDeletedAt": "2026-10-12T14:47:36.254Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:47:36.254Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:47:36.254Z"
+}

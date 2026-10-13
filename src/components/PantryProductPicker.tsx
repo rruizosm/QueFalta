@@ -8,11 +8,12 @@ import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { useTranslation } from '../context/LanguageContext';
 import { useThemedStyles } from '../context/ThemeContext';
-import type { PantryProduct } from '../lib/pantryLayout';
+import type { PantryProduct, PantrySection } from '../lib/pantryLayout';
 
-export default function PantryProductPicker({ onSelect, onClose }: {
+export default function PantryProductPicker({ onSelect, onClose, section = 'pantry' }: {
   onSelect: (product: PantryProduct) => void;
   onClose: () => void;
+  section?: PantrySection;
 }) {
   const styles = useThemedStyles(themedStyles);
   const { t, lang } = useTranslation();
@@ -81,7 +82,7 @@ export default function PantryProductPicker({ onSelect, onClose }: {
         <View style={styles.header}>
           <View style={styles.heading}>
             <Text style={styles.title} accessibilityRole="header">{t('pantry.productsTitle')}</Text>
-            <Text style={styles.subtitle}>Mercadona</Text>
+            <Text style={styles.subtitle}>Mercadona · {t(section === 'fridge' ? 'pantry.fridge' : 'pantry.title')}</Text>
           </View>
           <Pressable style={styles.iconButton} accessibilityRole="button" accessibilityLabel={t('common.close')}
             testID="pantry-search-close" onPress={onClose}>
@@ -104,7 +105,7 @@ export default function PantryProductPicker({ onSelect, onClose }: {
           : <FlatList data={products} keyExtractor={(product) => product.id} keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag" contentContainerStyle={styles.list} testID="pantry-search-results"
             renderItem={({ item }) => <Pressable onPress={() => onSelect(item)} testID={`pantry-result-${item.id}`}
-              accessibilityRole="button" accessibilityLabel={t('pantry.addNamedProduct', { name: item.name })}
+              accessibilityRole="button" accessibilityLabel={t(section === 'fridge' ? 'pantry.addNamedFridgeProduct' : 'pantry.addNamedProduct', { name: item.name })}
               style={({ pressed }) => [styles.product, pressed && styles.pressed]}>
               <View style={styles.preview}><Image source={item.illustrationUrl} style={StyleSheet.absoluteFill}
                 contentFit="contain" cachePolicy="memory-disk" draggable={false} accessible={false} /></View>

@@ -1,0 +1,41 @@
+{
+  "id": "27762",
+  "index": 56,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-f9673fb4-0e98-45c0-8399-123a32540e80.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-03/mercadona-27762-refresco-limon-schweppes-original.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Refresco limón Schweppes original, Mercadona product ID 27762. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\n\nSource inspected: Single tall lime-green Schweppes LIMÓN can, silver rims and black diagonal logo; lemon illustrations and 100% EXTRACTOS DE ORIGEN NATURAL.\nOnly the product packaging, not the white source background; actual transparent background. Printed pack bands belong to packaging; omit only external catalog callouts.\n",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-03/actual-prompts/27762.txt",
+  "sourceOriginalSha256": "f2a25bdb63a9aefe03f7566a04fa756d28c2bdb5a6b9b207b9f04258693fbf72",
+  "sourceOriginalBytes": 49134,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:38:25.783Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-03/webp/mercadona-27762.webp",
+  "width": 323,
+  "height": 768,
+  "bytes": 57232,
+  "sha256": "9f06624cf905e74d38fdf1b696b0ca2802d2f7b2f022bbb88951e4ef9b722048",
+  "alpha": {
+    "transparentPixels": 48183,
+    "opaquePixels": 1639,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:41:29.907Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:41:52.137Z",
+  "publication": {
+    "productId": "27762",
+    "name": "Refresco limón Schweppes original",
+    "objectPath": "mercadona/27762/9f06624cf905e74d.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/27762/9f06624cf905e74d.webp",
+    "contentType": "image/webp",
+    "bytes": 57232,
+    "published": true,
+    "sha256": "9f06624cf905e74d38fdf1b696b0ca2802d2f7b2f022bbb88951e4ef9b722048"
+  },
+  "publishedAt": "2026-10-11T17:42:00.857Z",
+  "localWebpDeletedAt": "2026-10-11T17:42:01.026Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:42:01.026Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:42:01.026Z"
+}

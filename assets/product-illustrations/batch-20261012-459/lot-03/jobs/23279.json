@@ -1,0 +1,41 @@
+{
+  "id": "23279",
+  "index": 98,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-6b78-7552-94a3-b923c51cf7da/exec-70015353-3838-4094-9e85-d99b38d97006.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-03/mercadona-23279-vino-blanco-verdejo-condado-de-teon-do-rueda.png",
+  "prompt": "Use case: style-transfer. Create one polished hand-drawn retail product illustration for the QueFalta catalog. Image 1 is the sole authoritative product photograph. Image 2 supplies ONLY the illustrated medium, delicate outlines, simplified clean shading and subtle texture, never its milk carton, colors or text. Faithfully illustrate exactly the complete product in image 1, its perspective, geometry, components, colors and main readable label lettering. Truly transparent background, no ground plane, no cast shadow. Center the entire object with generous safe transparent margin. Preserve all visible caps, separate accessories, real multipack counts and full package edges. Preserve meaningful negations SIN or SEM and visible quantities completely. No invented claims, brands, prices, quantities or extra food/props. Tiny unreadable legal text may be quietly simplified. Never infer packaging text or quantities from catalog title. Product-specific visual requirements: Clear pale-yellow wine bottle with gold-black cap, tall grey-and-black label CONDADO DE TEON VERDEJO RUEDA and monochrome stone relief motif. Catalog title for identification only: Vino blanco verdejo Condado de Teón DO Rueda. Reproduce numeric values only when legible in image 1; the actual photograph overrides catalog wording.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-03/actual-prompts/23279.txt",
+  "sourceOriginalSha256": "ff4791ff2efd8998530a8e9fd235b01ee6d746aa6b7d369a6afcc959083f6d83",
+  "sourceOriginalBytes": 31615,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:05:05.543Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-03/webp/mercadona-23279.webp",
+  "width": 201,
+  "height": 768,
+  "bytes": 31796,
+  "sha256": "3063c920da878e27f860079f0c7faa54f92dba9595f925926f8f0068a7580e67",
+  "alpha": {
+    "transparentPixels": 52359,
+    "opaquePixels": 1400,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:18:27.065Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:20:47.779Z",
+  "publication": {
+    "productId": "23279",
+    "name": "Vino blanco verdejo Condado de Teón DO Rueda",
+    "objectPath": "mercadona/23279/3063c920da878e27.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/23279/3063c920da878e27.webp",
+    "contentType": "image/webp",
+    "bytes": 31796,
+    "published": true,
+    "sha256": "3063c920da878e27f860079f0c7faa54f92dba9595f925926f8f0068a7580e67"
+  },
+  "publishedAt": "2026-10-12T15:20:57.067Z",
+  "localWebpDeletedAt": "2026-10-12T15:20:57.184Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:20:57.184Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:20:57.184Z"
+}

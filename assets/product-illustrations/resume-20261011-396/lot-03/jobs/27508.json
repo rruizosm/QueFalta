@@ -1,0 +1,41 @@
+{
+  "id": "27508",
+  "index": 42,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-08dbe615-a75d-4f17-9c04-64933a83b127.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-03/mercadona-27508-refresco-fanta-naranja.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Refresco Fanta naranja, Mercadona product ID 27508. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\n\nSource inspected: Single orange FANTA drink PET bottle with blue cap and orange logo label; tall slim contour, regular variant.\nOnly the product packaging, not the white source background; actual transparent background. Printed pack bands belong to packaging; omit only external catalog callouts.\n",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-03/actual-prompts/27508.txt",
+  "sourceOriginalSha256": "4069203e76cbd4a85e107a2c6032f552a8631a79d8388a8eefc405bfc9cb57e4",
+  "sourceOriginalBytes": 29866,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:13:57.629Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-03/webp/mercadona-27508.webp",
+  "width": 250,
+  "height": 768,
+  "bytes": 36008,
+  "sha256": "2a478c4469604de90e5298e0e9db8951d5efef6dd46f540ecc9d6db095822fd9",
+  "alpha": {
+    "transparentPixels": 63508,
+    "opaquePixels": 1206,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:37:00.048Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:37:13.883Z",
+  "publication": {
+    "productId": "27508",
+    "name": "Refresco Fanta naranja",
+    "objectPath": "mercadona/27508/2a478c4469604de9.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/27508/2a478c4469604de9.webp",
+    "contentType": "image/webp",
+    "bytes": 36008,
+    "published": true,
+    "sha256": "2a478c4469604de90e5298e0e9db8951d5efef6dd46f540ecc9d6db095822fd9"
+  },
+  "publishedAt": "2026-10-11T17:37:19.137Z",
+  "localWebpDeletedAt": "2026-10-11T17:37:19.494Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:37:19.494Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:37:19.494Z"
+}

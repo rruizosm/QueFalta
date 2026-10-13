@@ -1,0 +1,39 @@
+{
+  "id": "5034",
+  "index": 90,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-b5f142bf-a1d4-417e-b067-f9d78a1fb683.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-5034-chuletas-de-cabrito-congeladas.png",
+  "prompt": "Illustrate the exact product in Image 1 in a restrained editorial hand-drawn grocery style: soft thin outlines, faithful source colors, gentle paper/gouache texture. Preserve product identity, packaging, label, claims and contents. Image 2 at /private/tmp/mercadona-style-10699-reference.png is only a style reference and must not be copied. Frozen goat chops, one upright clear vacuum pack of multiple raw bone-in goat chops arranged in two parallel vertical rows. Pale label at top with black goat emblem and a small burnt-orange product panel; retain visible rib bones, dark rose meat and exact bag shape from Image 1. Entire sealed package isolated with transparent margin. Full item centered on transparent background with clean margins, no props or background scene.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/5034-prompt.txt",
+  "sourceOriginalSha256": "1a90bcc4ea93bd7988e455be7cdd4e3e14ba27c70812aca08577f612914eef61",
+  "sourceOriginalBytes": 102585,
+  "status": "published",
+  "generatedAt": "2026-10-09T08:17:31.291Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-5034.webp",
+  "width": 742,
+  "height": 768,
+  "bytes": 187682,
+  "sha256": "1e07404cb1fddc374514c10ab0ad5c71f5470025042c830302df2bd52dc88791",
+  "alpha": {
+    "transparentPixels": 104619,
+    "opaquePixels": 1264,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T08:19:07.091Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T08:19:47.867Z",
+  "publication": {
+    "productId": "5034",
+    "name": "Chuletas de cabrito congeladas",
+    "objectPath": "mercadona/5034/1e07404cb1fddc37.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/5034/1e07404cb1fddc37.webp",
+    "contentType": "image/webp",
+    "bytes": 187682,
+    "sha256": "1e07404cb1fddc374514c10ab0ad5c71f5470025042c830302df2bd52dc88791"
+  },
+  "publishedAt": "2026-10-09T08:19:53.389Z",
+  "localWebpDeletedAt": "2026-10-09T08:19:53.390Z",
+  "localSourceJpgDeletedAt": "2026-10-09T08:19:53.390Z"
+}

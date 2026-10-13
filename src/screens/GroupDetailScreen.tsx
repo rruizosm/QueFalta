@@ -210,31 +210,28 @@ export default function GroupDetailScreen() {
     const lineTotal = item.unitPrice != null ? item.unitPrice * item.quantity : null;
     const detailTarget = productRefOf(item);
     return (
-      <View
+      <TouchableOpacity
         key={item.ids[0]}
         style={[styles.listItem, last && styles.listItemLast, item.inCart && styles.listItemDone]}
+        activeOpacity={0.7}
+        disabled={!detailTarget}
+        onPress={() => detailTarget && setDetailTarget(detailTarget)}
+        accessibilityRole={detailTarget ? 'button' : undefined}
+        accessibilityLabel={detailTarget ? item.productName : undefined}
       >
         {(item.imageUrl || item.categoryEmoji) ? (
-          <TouchableOpacity
-            activeOpacity={0.7}
-            disabled={!detailTarget}
-            onPress={() => detailTarget && setDetailTarget(detailTarget)}
-            accessibilityRole={detailTarget ? 'button' : undefined}
-            accessibilityLabel={detailTarget ? item.productName : undefined}
-          >
-            {item.imageUrl ? (
-              <ProductImage
-                uri={item.imageUrl}
-                style={big ? styles.listItemThumbBig : styles.listItemThumb}
-              />
-            ) : (
-              <View style={big ? styles.listItemThumbBig : styles.listItemThumb}>
-                <Text style={[styles.listItemEmoji, big && styles.listItemEmojiBig]}>
-                  {item.categoryEmoji}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
+          item.imageUrl ? (
+            <ProductImage
+              uri={item.imageUrl}
+              style={big ? styles.listItemThumbBig : styles.listItemThumb}
+            />
+          ) : (
+            <View style={big ? styles.listItemThumbBig : styles.listItemThumb}>
+              <Text style={[styles.listItemEmoji, big && styles.listItemEmojiBig]}>
+                {item.categoryEmoji}
+              </Text>
+            </View>
+          )
         ) : null}
         <View style={styles.listItemContent}>
           <Text style={[
@@ -269,14 +266,14 @@ export default function GroupDetailScreen() {
             {formatEuro(lineTotal)}
           </Text>
         )}
-      </View>
+      </TouchableOpacity>
     );
   };
 
-  const renderCartSectionHeader = (section: GroupCartSection) => {
+  const renderCartSectionHeader = (section: GroupCartSection, first = false) => {
     const meta = STORE_META[section.store];
     return (
-      <View style={styles.cartRowsSurface}>
+      <View style={[styles.cartRowsSurface, first && styles.cartRowsSurfaceFirst]}>
         {section.firstOfStore && (
           <View style={styles.storeHeader}>
             {meta.icon ? (
@@ -540,11 +537,26 @@ export default function GroupDetailScreen() {
           <SectionList
             sections={cartSections}
             keyExtractor={(item) => item.ids[0]}
-            renderItem={({ item }) => (
-              <View style={styles.cartRowsSurface}>{renderCartItem(item, true)}</View>
+            renderItem={({ item, index, section }) => {
+              const lastSection = cartSections[cartSections.length - 1];
+              const isLastCartItem = section.key === lastSection?.key
+                && index === section.data.length - 1;
+
+              return (
+                <View style={[
+                  styles.cartRowsSurface,
+                  isLastCartItem && styles.cartRowsSurfaceLast,
+                ]}>
+                  {renderCartItem(item, true, isLastCartItem)}
+                </View>
+              );
+            }}
+            renderSectionHeader={({ section }) => renderCartSectionHeader(
+              section,
+              section.key === cartSections[0]?.key,
             )}
-            renderSectionHeader={({ section }) => renderCartSectionHeader(section)}
             stickySectionHeadersEnabled={false}
+            style={styles.modalList}
             contentContainerStyle={[styles.modalScroll, { paddingBottom: 90 + tabBarOffset }]}
             showsVerticalScrollIndicator={false}
             initialNumToRender={12}
@@ -636,6 +648,12 @@ const themedStyles = () => StyleSheet.create({
     borderLeftWidth: 1,
     borderRightWidth: 1,
     borderColor: colors.border,
+  },
+  cartRowsSurfaceFirst: {
+    borderTopWidth: 1,
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    overflow: 'hidden',
   },
   cartRowsSurfaceLast: {
     borderBottomWidth: 1,
@@ -778,8 +796,9 @@ const themedStyles = () => StyleSheet.create({
     // paddingTop inline (useHeaderTopPadding)
   },
   modalTitle: { flex: 1, fontSize: 21, fontFamily: fonts.bold, color: colors.ink, letterSpacing: -0.3 },
-  modalProgress: { paddingHorizontal: 16, paddingBottom: 8, gap: 6 },
-  modalScroll: { paddingHorizontal: 16, paddingBottom: 90 },
+  modalProgress: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8, gap: 6 },
+  modalList: { flex: 1 },
+  modalScroll: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 90 },
 
   chrome: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 20 },
   chromeGlass: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },

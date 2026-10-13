@@ -1,0 +1,39 @@
+{
+  "id": "9804",
+  "index": 89,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-633e0fda-4272-465c-a1af-25e0ecb7be8c.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-9804-chuletas-cordero-de-lechal-halal-congeladas.png",
+  "prompt": "Illustrate the exact product in Image 1 in a restrained editorial hand-drawn grocery style: soft thin outlines, faithful source colors, gentle paper/gouache texture. Preserve product identity, packaging, label, claims and contents. Image 2 at /private/tmp/mercadona-style-10699-reference.png is only a style reference and must not be copied. Frozen halal lamb suckling chops, one clear flat rectangular freezer bag with several small bone-in pink/red lamb chops packed in a row. White label with black sheep emblem, CHULETAS LECHAL wording, black/gray nutrition block and a small orange panel. Preserve exact label and meat arrangement from Image 1; do not omit the halal product identity. Full item centered on transparent background with clean margins, no props or background scene.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/9804-prompt.txt",
+  "sourceOriginalSha256": "c854326d2bd744e8ad74c0516ada70923b3e8ac93696e953fa99c6338116acaf",
+  "sourceOriginalBytes": 72023,
+  "status": "published",
+  "generatedAt": "2026-10-09T08:18:12.558Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-9804.webp",
+  "width": 768,
+  "height": 654,
+  "bytes": 165854,
+  "sha256": "5cb4e7903c1008a0c218714ce4fd270ea153f493c9fee5703e5db921e6d3fe52",
+  "alpha": {
+    "transparentPixels": 96435,
+    "opaquePixels": 868,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T08:19:06.894Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T08:19:47.866Z",
+  "publication": {
+    "productId": "9804",
+    "name": "Chuletas cordero de lechal Halal congeladas",
+    "objectPath": "mercadona/9804/5cb4e7903c1008a0.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/9804/5cb4e7903c1008a0.webp",
+    "contentType": "image/webp",
+    "bytes": 165854,
+    "sha256": "5cb4e7903c1008a0c218714ce4fd270ea153f493c9fee5703e5db921e6d3fe52"
+  },
+  "publishedAt": "2026-10-09T08:19:52.109Z",
+  "localWebpDeletedAt": "2026-10-09T08:19:52.110Z",
+  "localSourceJpgDeletedAt": "2026-10-09T08:19:52.110Z"
+}

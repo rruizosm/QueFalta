@@ -179,7 +179,7 @@ export default function PriceAlertsScreen() {
                     </View>
                     <View style={styles.ruleCopy}>
                       <Text style={styles.ruleTitle} numberOfLines={2}>{rule.label}</Text>
-                      {rule.kind === 'keyword' && rule.query ? <Text style={styles.queryText}>“{rule.query}”</Text> : null}
+                      {(rule.kind === 'keyword' || rule.kind === 'new_arrival') && rule.query ? <Text style={styles.queryText}>“{rule.query}”</Text> : null}
                     </View>
                     {busyId === rule.id ? <ActivityIndicator size="small" color={colors.accent} /> : (
                       <Switch

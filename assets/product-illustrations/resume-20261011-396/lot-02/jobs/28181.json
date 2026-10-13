@@ -1,0 +1,41 @@
+{
+  "id": "28181",
+  "index": 20,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bde-adb9-77e3-a69c-bbde9ef0841e/exec-ef32af7f-0e31-478f-b1fa-1a00fa728a94.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-02/mercadona-28181-refresco-coca-cola.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Refresco Coca-Cola, Mercadona product ID 28181. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\n\nObserved source details (photo remains authoritative): One brown Coca-Cola plastic bottle with red cap and red SABOR ORIGINAL label. Preserve exact source size/proportions; no floating external capacity badge.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-02/actual-prompts/28181.txt",
+  "sourceOriginalSha256": "1f044a6d5352aab8b4b7379a74f6444389a4d29bf5087295b580e562916aef9a",
+  "sourceOriginalBytes": 28103,
+  "status": "published",
+  "generatedAt": "2026-10-11T18:21:15.562Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-02/webp/mercadona-28181.webp",
+  "width": 261,
+  "height": 768,
+  "bytes": 45624,
+  "sha256": "5866473612bdfc7927e3614f9114e145537d140d00891cb0c0c44685f1f91242",
+  "alpha": {
+    "transparentPixels": 65558,
+    "opaquePixels": 933,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T18:21:21.964Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T18:24:32.325Z",
+  "publication": {
+    "productId": "28181",
+    "name": "Refresco Coca-Cola",
+    "objectPath": "mercadona/28181/5866473612bdfc79.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/28181/5866473612bdfc79.webp",
+    "contentType": "image/webp",
+    "bytes": 45624,
+    "published": true,
+    "sha256": "5866473612bdfc7927e3614f9114e145537d140d00891cb0c0c44685f1f91242"
+  },
+  "publishedAt": "2026-10-11T18:24:44.308Z",
+  "localWebpDeletedAt": "2026-10-11T18:24:44.449Z",
+  "localSourceJpgDeletedAt": "2026-10-11T18:24:44.449Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T18:24:44.449Z"
+}

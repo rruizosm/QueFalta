@@ -1,0 +1,41 @@
+{
+  "id": "17564",
+  "index": 7,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-927df8dc-71eb-4791-826f-eda218b566dc.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-17564-taquitos-de-pollo.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. Specific inspected product: Clear low rectangular raw chicken tray, many small pale pink chicken cubes, yellow vertical middle sleeve with black chicken silhouette and TAQUITOS DE POLLO. Pink raw cubes, not fried chicken. Product catalog identity: Taquitos de pollo.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/17564.txt",
+  "sourceOriginalSha256": "deea9b7c0a720764315e33e7563a4efde9ef4bba58ac7c78ab5601772352a729",
+  "sourceOriginalBytes": 51322,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:36:25.297Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-17564.webp",
+  "width": 768,
+  "height": 516,
+  "bytes": 75790,
+  "sha256": "4303cba3eef2d264bf8116721aa6819a011c359095209f1247b30f9c28832772",
+  "alpha": {
+    "transparentPixels": 162718,
+    "opaquePixels": 1107,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:40:27.420Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:43:49.325Z",
+  "publication": {
+    "productId": "17564",
+    "name": "Taquitos de pollo",
+    "objectPath": "mercadona/17564/4303cba3eef2d264.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/17564/4303cba3eef2d264.webp",
+    "contentType": "image/webp",
+    "bytes": 75790,
+    "published": true,
+    "sha256": "4303cba3eef2d264bf8116721aa6819a011c359095209f1247b30f9c28832772"
+  },
+  "publishedAt": "2026-10-12T13:44:03.569Z",
+  "localWebpDeletedAt": "2026-10-12T13:44:03.783Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:44:03.783Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:44:03.783Z"
+}

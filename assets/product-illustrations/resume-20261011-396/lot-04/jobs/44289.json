@@ -1,0 +1,41 @@
+{
+  "id": "44289",
+  "index": 43,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12be3-1801-7fe3-88ee-862e3d13eea9/exec-c95c64f4-b6ec-4e84-935f-1c94c03ee752.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-04/mercadona-44289-serum-be-radiant-10-en-1-deliplus-cabello-apagado.png",
+  "prompt": "Use case: style-transfer. Asset: one catalog product illustration for QuéFalta. Image1 is the sole authoritative product/photo reference; image2 supplies ONLY the illustrated medium and edge/shading treatment, never its milk carton/text. Turn the exact product in image1 into a polished hand-drawn retail illustration matching image2: crisp delicate outlines, clean simplified shading, subtle illustrated texture and faithful retail colors. Truly transparent background, no ground plane, no cast shadow, centered entire product with safe empty margin. Preserve the complete original package geometry, perspective, relative proportions, all components and accessories, real visible quantities and main legible label text. No extra props, invented brands, claims, prices, quantities or food outside packaging. Tiny illegible legal text may be reduced unobtrusively but all meaningful negations such as SIN/SEM must remain complete. Product-specific observed requirements: Small bright PINK Deliplus BE RADIANT serum bottle BLACK pump; printed bubbles and orange dark label 10 EN 1; retain full pump. Official product: Sérum Be Radiant 10 en 1 Deliplus cabello apagado. Reproduce source numeric values only when legible; do not guess.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-04/actual-prompts/44289.txt",
+  "sourceOriginalSha256": "726e8c09d0339be4fd6d702ada799462b78fff4f57ed1b0f4d2e18b284cb79c4",
+  "sourceOriginalBytes": 25940,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:37:34.133Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-04/webp/mercadona-44289.webp",
+  "width": 256,
+  "height": 768,
+  "bytes": 32898,
+  "sha256": "144a5cc6859ae94356fb6578a36e73dbd3e3ab6b3bcd5b4707c656346df11f06",
+  "alpha": {
+    "transparentPixels": 56594,
+    "opaquePixels": 838,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:42:38.738Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:44:02.965Z",
+  "publication": {
+    "productId": "44289",
+    "name": "Sérum Be Radiant 10 en 1 Deliplus cabello apagado",
+    "objectPath": "mercadona/44289/144a5cc6859ae943.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/44289/144a5cc6859ae943.webp",
+    "contentType": "image/webp",
+    "bytes": 32898,
+    "published": true,
+    "sha256": "144a5cc6859ae94356fb6578a36e73dbd3e3ab6b3bcd5b4707c656346df11f06"
+  },
+  "publishedAt": "2026-10-11T17:44:11.561Z",
+  "localWebpDeletedAt": "2026-10-11T17:44:11.707Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:44:11.707Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:44:11.707Z"
+}

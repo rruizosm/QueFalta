@@ -1,0 +1,41 @@
+{
+  "id": "12776",
+  "index": 9,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-3b911ac2-b8e8-4385-be01-178b3cb181f8.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-12776-spaghetti-la-islena-03.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Spaghetti La Isleña 03, Mercadona product ID 12776. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\nObserved source details: Long horizontal red La Isleña pasta wrapper, spaghetti visible only as in source, large white La Isleña, Spaghetti Nº3,500g. Preserve horizontal form.\n",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-05/actual-prompts/12776.txt",
+  "sourceOriginalSha256": "6eb7682dc55c8dc12734d8bb14fd815ba8df31f4e2ef113a38e21953bc95ab8f",
+  "sourceOriginalBytes": 39294,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:06:57.078Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-12776.webp",
+  "width": 768,
+  "height": 257,
+  "bytes": 39578,
+  "sha256": "97e5ee7038492f1e91a5fd21b57065de9f1af0658b6c32a653a4b93c66850956",
+  "alpha": {
+    "transparentPixels": 53971,
+    "opaquePixels": 919,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:13:04.198Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:36:56.085Z",
+  "publication": {
+    "productId": "12776",
+    "name": "Spaghetti La Isleña 03",
+    "objectPath": "mercadona/12776/97e5ee7038492f1e.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/12776/97e5ee7038492f1e.webp",
+    "contentType": "image/webp",
+    "bytes": 39578,
+    "published": true,
+    "sha256": "97e5ee7038492f1e91a5fd21b57065de9f1af0658b6c32a653a4b93c66850956"
+  },
+  "publishedAt": "2026-10-11T17:37:10.329Z",
+  "localWebpDeletedAt": "2026-10-11T17:37:10.581Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:37:10.581Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:37:10.581Z"
+}

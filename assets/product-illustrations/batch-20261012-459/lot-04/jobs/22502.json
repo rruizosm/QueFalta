@@ -1,0 +1,41 @@
+{
+  "id": "22502",
+  "index": 40,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-0d901672-c4ae-4469-8abc-5cda31c58e58.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-22502-vino-tinto-garnacha-borsao-mallacan-do-campo-de-borja.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Vino tinto garnacha Borsao Mallacán DO Campo de Borja, ID 22502.\nObserved source: One dark wine bottle with RED capsule, white Mallacán script label with by BORSAO and GARNACHA source wording. Preserve exact label.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/22502.txt",
+  "sourceOriginalSha256": "867e522b55ed3b10bdb98abf4cb33147e6e2dcc2029a8387afd4014a78d93e11",
+  "sourceOriginalBytes": 27415,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:51:42.732Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-22502.webp",
+  "width": 255,
+  "height": 768,
+  "bytes": 30692,
+  "sha256": "9b0934e02c46c84e8d6ea3fb631f65c4f7af45b3eb4ec7e838173accb6c9a845",
+  "alpha": {
+    "transparentPixels": 73421,
+    "opaquePixels": 1162,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:41:01.953Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:41:42.311Z",
+  "publication": {
+    "productId": "22502",
+    "name": "Vino tinto garnacha Borsao Mallacán DO Campo de Borja",
+    "objectPath": "mercadona/22502/9b0934e02c46c84e.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/22502/9b0934e02c46c84e.webp",
+    "contentType": "image/webp",
+    "bytes": 30692,
+    "published": true,
+    "sha256": "9b0934e02c46c84e8d6ea3fb631f65c4f7af45b3eb4ec7e838173accb6c9a845"
+  },
+  "publishedAt": "2026-10-12T14:42:07.556Z",
+  "localWebpDeletedAt": "2026-10-12T14:42:07.675Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:42:07.675Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:42:07.675Z"
+}

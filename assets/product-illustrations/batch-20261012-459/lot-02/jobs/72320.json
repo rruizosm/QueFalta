@@ -1,0 +1,41 @@
+{
+  "id": "72320",
+  "index": 108,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-158bc9c4-0edb-49fc-9fc8-32e629f0b436.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-72320-trampa-matacucarachas-bosque-verde.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Wide red grey and black Bosque Verde cockroach trap carton, black domed triangular insect trap pictured center, TRAMPA MATACUCARACHAS heading and6x upper left, cockroach silhouette crossed out in red circle upper right. Product catalog identity: Trampa matacucarachas Bosque Verde.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/72320.txt",
+  "sourceOriginalSha256": "dd901ad70bd6142c8f70021548328d166d8cfb2d0f5a6a3d754fb20b598d2c36",
+  "sourceOriginalBytes": 75375,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:22:33.341Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-72320.webp",
+  "width": 768,
+  "height": 625,
+  "bytes": 83084,
+  "sha256": "2d2defd2581fb2b75326ede4a43433da088844372ac5bca43fdcf0562e381605",
+  "alpha": {
+    "transparentPixels": 68248,
+    "opaquePixels": 1406,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:25:33.357Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:26:01.905Z",
+  "publication": {
+    "productId": "72320",
+    "name": "Trampa matacucarachas Bosque Verde",
+    "objectPath": "mercadona/72320/2d2defd2581fb2b7.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/72320/2d2defd2581fb2b7.webp",
+    "contentType": "image/webp",
+    "bytes": 83084,
+    "published": true,
+    "sha256": "2d2defd2581fb2b75326ede4a43433da088844372ac5bca43fdcf0562e381605"
+  },
+  "publishedAt": "2026-10-12T15:26:15.187Z",
+  "localWebpDeletedAt": "2026-10-12T15:26:15.335Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:26:15.335Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:26:15.335Z"
+}

@@ -1,0 +1,45 @@
+{
+  "status": "partial_quota_stopped",
+  "complete": false,
+  "target": 1000,
+  "publishedAndVerified": 876,
+  "pending": 124,
+  "generatedUnpublished": 0,
+  "remoteVerification": {
+    "verifiedAt": "2026-10-09T12:43:48.598Z",
+    "complete": false,
+    "target": 1000,
+    "selectedOriginal": 1000,
+    "blocked": 2,
+    "supplementSelected": 2,
+    "effectiveSelected": 1000,
+    "generated": 876,
+    "prepared": 876,
+    "reviewed": 876,
+    "published": 876,
+    "pending": 124,
+    "remoteMimeShaBytesDimensionsAlphaVerified": 876,
+    "localJpgAndWebpDeletedAfterUpload": 876,
+    "previousIllustrationsUnchanged": 3959,
+    "selectedThumbnailsUnchanged": 1002,
+    "forbiddenAssetsFound": 0,
+    "totalBytes": 62768862
+  },
+  "pendingVerification": {
+    "verifiedAt": "2026-10-09T12:44:12.141Z",
+    "pending": 124,
+    "publishedTrueAndIllustrationNull": 124
+  },
+  "quotaResetUtc": "2026-10-10T06:44:32.000Z",
+  "quotaResetEuropeMadrid": "2026-10-10 08:44:32 Europe/Madrid",
+  "nativeCallsInFlight": 0,
+  "automaticResumeScheduled": false,
+  "tenResponsibleActors": true,
+  "maxConcurrentActors": 4,
+  "typecheck": {
+    "command": "npx tsc --noEmit",
+    "exitCode": 0
+  },
+  "previousLocalChangesPreserved": true,
+  "committedOrPushed": false
+}

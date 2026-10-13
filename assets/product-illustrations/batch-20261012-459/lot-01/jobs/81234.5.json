@@ -1,0 +1,41 @@
+{
+  "id": "81234.5",
+  "index": 42,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308c-ebe7-7011-b529-512d15320584/exec-2b8fd598-967c-48c6-a2db-decfa44cc267.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-01/mercadona-81234.5-dorada-a-filetes-sin-cabeza-y-sin-espina.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta catalog product illustration. Image1 is the exact official product photo, authoritative for subject and all product details. Image2 is ONLY the approved hand-drawn illustration style; do not copy its milk carton. Render Image1 as warm clean editorial hand-drawn gouache, subtle paper texture, thin defined outlines and recognizable original colors. Preserve exact product/variant, whole silhouette, proportions, packaging, labels and readable text. Use actual alpha transparency. Entire product centered with minimal transparent margin; preserve natural source orientation, all separate food pieces and components, source count/layout and retail multipacks. Do not change sliced food to whole food or vice versa. Keep heads, tails, caps and packaging where source has them. No props, invented packaging, plate, extra labels, cast shadows, floor, background, checkerboard, photorealism or3D. Reproduce only legible printed words/units/claims; never infer printed text from catalog name. Preserve SIN/SEM GLUTEN and all negations, quantities, units and qualifiers exactly if present. Tiny unreadable microprint may be simplified into neutral lines without invented values. Output one complete transparent PNG.\nProduct ID 81234.5. Observed source: Two dorada fillets one silver skin-side one pale flesh-side. Photo remains authoritative.\n Square canvas. Outside the exact product silhouette alpha must be exactly zero; no exterior glow, beige halo, blurred aura, paper rectangle, vignette or colored backdrop. Texture stays strictly inside the product.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-01/actual-prompts/81234.5.txt",
+  "sourceOriginalSha256": "db4c40979e65bac3b34848e97b4462b477d7b86922f71f33470979137b9b60ff",
+  "sourceOriginalBytes": 37412,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:42:30.996Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-01/webp/mercadona-81234.5.webp",
+  "width": 768,
+  "height": 476,
+  "bytes": 91102,
+  "sha256": "74e8f7e5c01333bea74908db55ff54748fb15022392e1860d0efc2f7a8d203e7",
+  "alpha": {
+    "transparentPixels": 157887,
+    "opaquePixels": 637,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:46:53.898Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:53:37.695Z",
+  "publication": {
+    "productId": "81234.5",
+    "name": "Dorada a filetes sin cabeza y sin espina",
+    "objectPath": "mercadona/81234.5/74e8f7e5c01333be.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/81234.5/74e8f7e5c01333be.webp",
+    "contentType": "image/webp",
+    "bytes": 91102,
+    "published": true,
+    "sha256": "74e8f7e5c01333bea74908db55ff54748fb15022392e1860d0efc2f7a8d203e7"
+  },
+  "publishedAt": "2026-10-12T14:53:42.266Z",
+  "localWebpDeletedAt": "2026-10-12T14:53:42.590Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:53:42.590Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:53:42.590Z"
+}

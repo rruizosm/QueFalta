@@ -1,0 +1,39 @@
+{
+  "id": "6047",
+  "index": 78,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-c4cc0cf9-70d4-47e2-b633-cf3a7128bdd4.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-6047-chorizo-picante-aperitivo.png",
+  "prompt": "Illustrate the exact Mercadona product from Image 1 in the established QuéFalta hand-drawn editorial style: soft thin outlines, true colors, subtle watercolor/gouache texture. Image 2 is solely the style reference at /private/tmp/mercadona-style-10699-reference.png; do not copy its product. Preserve visible package, brand, text and contents. Chorizo Picante Aperitivo, one small clear rectangular tray containing several thick round reddish chorizo slices/short pieces, beneath a distinctive bright red vertical paper band reading PICANTE and CHORIZO APERITIVO with black pig emblem and white label. Preserve exact tray, count, spicy red package band, cut pieces and label orientation from Image 1. Entire product isolated on transparent background with clean margins, no scene or props.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/6047-prompt.txt",
+  "sourceOriginalSha256": "cecfa2b0997284eefe70c722c716472adb1d577a6e2d25f0fc859619bd5ac605",
+  "sourceOriginalBytes": 59406,
+  "status": "published",
+  "generatedAt": "2026-10-09T08:03:30.948Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-6047.webp",
+  "width": 768,
+  "height": 570,
+  "bytes": 91172,
+  "sha256": "59594c170d5a6325ea49f92fab76fdd8847fd73fdef641cafe74491e3a4e1e6a",
+  "alpha": {
+    "transparentPixels": 184161,
+    "opaquePixels": 845,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T08:03:43.933Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T08:04:16.706Z",
+  "publication": {
+    "productId": "6047",
+    "name": "Chorizo picante aperitivo",
+    "objectPath": "mercadona/6047/59594c170d5a6325.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/6047/59594c170d5a6325.webp",
+    "contentType": "image/webp",
+    "bytes": 91172,
+    "sha256": "59594c170d5a6325ea49f92fab76fdd8847fd73fdef641cafe74491e3a4e1e6a"
+  },
+  "publishedAt": "2026-10-09T08:04:21.323Z",
+  "localWebpDeletedAt": "2026-10-09T08:04:21.323Z",
+  "localSourceJpgDeletedAt": "2026-10-09T08:04:21.323Z"
+}

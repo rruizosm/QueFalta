@@ -24,7 +24,7 @@ export const THEME_OPTIONS = [
   { key: 'system', name: 'Automático', icon: 'phone-portrait-outline' },
 ] as const;
 
-export const DEFAULT_THEME_MODE: ThemeMode = 'light';
+export const DEFAULT_THEME_MODE: ThemeMode = 'system';
 
 /** Tokens semánticos que dependen del modo claro/oscuro. */
 interface Palette {

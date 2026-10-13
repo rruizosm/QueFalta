@@ -1,0 +1,41 @@
+{
+  "id": "47350",
+  "index": 15,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bde-adb9-77e3-a69c-bbde9ef0841e/exec-8b7fdaa9-793c-4127-b650-a8fc90f1370c.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-01/mercadona-47350-protegeslip-cotton-maxi-deliplus.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Protegeslip cotton maxi Deliplus, Mercadona product ID 47350. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\n\nObserved source details (authoritative): Slim upright white/beige Deliplus carton with orange/yellow stripe and flower artwork, Cotton MAXI,28 Unidades. Preserve maxi variant.\nPreserve only source claims and quantities. Tiny unreadable text may become neutral lines. All real transparent film edges, separate packaging components and thin details belong to the object. One catalog illustration, actual alpha background.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-01/actual-prompts/47350.txt",
+  "sourceOriginalSha256": "6f8640416e203608c0764f7e612ff9b3a2050fcaa4e6c507ee828cb53b531914",
+  "sourceOriginalBytes": 37458,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:05:11.600Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-01/webp/mercadona-47350.webp",
+  "width": 433,
+  "height": 768,
+  "bytes": 46446,
+  "sha256": "9a900a3cc3c950a8f6905bf19e2793117496eb75b475ecb721f4c38c3a1c2993",
+  "alpha": {
+    "transparentPixels": 49119,
+    "opaquePixels": 1390,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:07:47.533Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:08:06.834Z",
+  "publication": {
+    "productId": "47350",
+    "name": "Protegeslip cotton maxi Deliplus",
+    "objectPath": "mercadona/47350/9a900a3cc3c950a8.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/47350/9a900a3cc3c950a8.webp",
+    "contentType": "image/webp",
+    "bytes": 46446,
+    "published": true,
+    "sha256": "9a900a3cc3c950a8f6905bf19e2793117496eb75b475ecb721f4c38c3a1c2993"
+  },
+  "publishedAt": "2026-10-11T17:08:07.945Z",
+  "localWebpDeletedAt": "2026-10-11T17:08:08.194Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:08:08.194Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:08:08.194Z"
+}

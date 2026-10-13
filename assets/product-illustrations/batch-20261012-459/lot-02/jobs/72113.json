@@ -1,0 +1,41 @@
+{
+  "id": "72113",
+  "index": 109,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-99b937dd-1d25-4b1f-9efc-59c9faf2bad4.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-72113-trampa-polillas-de-los-alimentos-bosque-verde.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Tall narrow orange-red Bosque Verde food moth trap carton, black moth in crossed-out circle at top, 2x, pantry food jars photo and yellow moth-trap card in lower area. Preserve tall slim box. Product catalog identity: Trampa polillas de los alimentos Bosque Verde.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/72113.txt",
+  "sourceOriginalSha256": "a26d3a2793e83097d9e1c6d0843a0cc7ae68194b937a02a39297f2d93974f3e3",
+  "sourceOriginalBytes": 48099,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:22:33.339Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-72113.webp",
+  "width": 376,
+  "height": 768,
+  "bytes": 51386,
+  "sha256": "5abf2dbc8b707cb71e4c7efaf01e153bee3a1e112bb65c75b1cbf4fc78331000",
+  "alpha": {
+    "transparentPixels": 47520,
+    "opaquePixels": 1193,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:25:33.507Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:26:01.905Z",
+  "publication": {
+    "productId": "72113",
+    "name": "Trampa polillas de los alimentos Bosque Verde",
+    "objectPath": "mercadona/72113/5abf2dbc8b707cb7.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/72113/5abf2dbc8b707cb7.webp",
+    "contentType": "image/webp",
+    "bytes": 51386,
+    "published": true,
+    "sha256": "5abf2dbc8b707cb71e4c7efaf01e153bee3a1e112bb65c75b1cbf4fc78331000"
+  },
+  "publishedAt": "2026-10-12T15:26:16.498Z",
+  "localWebpDeletedAt": "2026-10-12T15:26:16.678Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:26:16.678Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:26:16.678Z"
+}

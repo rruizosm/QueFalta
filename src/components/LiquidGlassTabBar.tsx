@@ -52,6 +52,7 @@ const PILL_SIDE_INSET = 2;
 const ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   Home:    'home-outline',
   Catalog: 'library-outline',
+  Pantry:  'file-tray-stacked-outline',
   QueCocino: 'restaurant-outline',
   List:    'basket-outline',
   Groups:  'people-outline',

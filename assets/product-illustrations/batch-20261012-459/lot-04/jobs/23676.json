@@ -1,0 +1,41 @@
+{
+  "id": "23676",
+  "index": 68,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-925df87a-d8cc-4235-8714-ab69fd52bde8.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-23676-vino-tinto-syrah-mar-de-uvas.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Vino tinto Syrah Mar de Uvas, ID 23676.\nObserved source: Dark bottle purple capsule gold UVAS, long black white SYRAH label with purple side strips.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/23676.txt",
+  "sourceOriginalSha256": "1f3e000cdf55cf5ba4754a7c96ddd9a33c2aedb5be329f4d790f8051799ccf29",
+  "sourceOriginalBytes": 28843,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:48:35.825Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-23676.webp",
+  "width": 222,
+  "height": 768,
+  "bytes": 31154,
+  "sha256": "96b7e5be2293da3731cafbf358d7ea7a48aaa65b402334effa4054270672aa03",
+  "alpha": {
+    "transparentPixels": 61321,
+    "opaquePixels": 987,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:55:10.557Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:56:43.893Z",
+  "publication": {
+    "productId": "23676",
+    "name": "Vino tinto Syrah Mar de Uvas",
+    "objectPath": "mercadona/23676/96b7e5be2293da37.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/23676/96b7e5be2293da37.webp",
+    "contentType": "image/webp",
+    "bytes": 31154,
+    "published": true,
+    "sha256": "96b7e5be2293da3731cafbf358d7ea7a48aaa65b402334effa4054270672aa03"
+  },
+  "publishedAt": "2026-10-12T14:58:10.643Z",
+  "localWebpDeletedAt": "2026-10-12T14:58:10.787Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:58:10.787Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:58:10.787Z"
+}

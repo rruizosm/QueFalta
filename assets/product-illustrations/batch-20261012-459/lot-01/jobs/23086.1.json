@@ -1,0 +1,41 @@
+{
+  "id": "23086.1",
+  "index": 29,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bde-adb9-77e3-a69c-bbde9ef0841e/exec-104b35f2-f39a-482a-b85b-caea92a8b8ae.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-01/mercadona-23086.1-barra-pan-de-pueblo.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta catalog product illustration. Image1 is the exact official product photo, authoritative for subject and all product details. Image2 is ONLY the approved hand-drawn illustration style; do not copy its milk carton. Render Image1 as warm clean editorial hand-drawn gouache, subtle paper texture, thin defined outlines and recognizable original colors. Preserve exact product/variant, whole silhouette, proportions, packaging, labels and readable text. Use actual alpha transparency. Entire product centered with minimal transparent margin; preserve natural source orientation, all separate food pieces and components, source count/layout and retail multipacks. Do not change sliced food to whole food or vice versa. Keep heads, tails, caps and packaging where source has them. No props, invented packaging, plate, extra labels, cast shadows, floor, background, checkerboard, photorealism or3D. Reproduce only legible printed words/units/claims; never infer printed text from catalog name. Preserve SIN/SEM GLUTEN and all negations, quantities, units and qualifiers exactly if present. Tiny unreadable microprint may be simplified into neutral lines without invented values. Output one complete transparent PNG.\nProduct ID 23086.1. Observed source: Bare broad brown flour-dusted rustic loaf, diagonal scoring. Photo remains authoritative.\n Square canvas. Outside the exact product silhouette alpha must be exactly zero; no exterior glow, beige halo, blurred aura, paper rectangle, vignette or colored backdrop. Texture stays strictly inside the product.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261012-459/lot-01/actual-prompts/23086.1.txt",
+  "sourceOriginalSha256": "8ec2fa1c4502fc2ed0337f2eddad0b0e08d41be5d6fdc592b7bf7b2874fb1a67",
+  "sourceOriginalBytes": 90956,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:53:45.417Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-01/webp/mercadona-23086.1.webp",
+  "width": 768,
+  "height": 618,
+  "bytes": 136580,
+  "sha256": "91a352bf326936afdba1ce26f27ad5e8e9e8921ee08b1666293cc5015a3a0e97",
+  "alpha": {
+    "transparentPixels": 254951,
+    "opaquePixels": 441,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:39:53.307Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:40:16.402Z",
+  "publication": {
+    "productId": "23086.1",
+    "name": "Barra pan de pueblo",
+    "objectPath": "mercadona/23086.1/91a352bf326936af.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/23086.1/91a352bf326936af.webp",
+    "contentType": "image/webp",
+    "bytes": 136580,
+    "published": true,
+    "sha256": "91a352bf326936afdba1ce26f27ad5e8e9e8921ee08b1666293cc5015a3a0e97"
+  },
+  "publishedAt": "2026-10-12T14:40:31.089Z",
+  "localWebpDeletedAt": "2026-10-12T14:40:31.212Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:40:31.212Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:40:31.212Z"
+}

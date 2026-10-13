@@ -1,0 +1,41 @@
+{
+  "id": "28031",
+  "index": 92,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-6b78-7552-94a3-b923c51cf7da/exec-7db50d0a-a3ac-4a2e-b99c-d5ab36970d03.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-03/mercadona-28031-vino-blanco-semidulce-tierra-blanca.png",
+  "prompt": "Use case: style-transfer. Create one polished hand-drawn retail product illustration for the QueFalta catalog. Image 1 is the sole authoritative product photograph. Image 2 supplies ONLY the illustrated medium, delicate outlines, simplified clean shading and subtle texture, never its milk carton, colors or text. Faithfully illustrate exactly the complete product in image 1, its perspective, geometry, components, colors and main readable label lettering. Truly transparent background, no ground plane, no cast shadow. Center the entire object with generous safe transparent margin. Preserve all visible caps, separate accessories, real multipack counts and full package edges. Preserve meaningful negations SIN or SEM and visible quantities completely. No invented claims, brands, prices, quantities or extra food/props. Tiny unreadable legal text may be quietly simplified. Never infer packaging text or quantities from catalog title. Product-specific visual requirements: Deep cobalt-blue tapering bottle, dark blue cap and white rectangular TIERRA BLANCA label with small pastoral image. Catalog title for identification only: Vino blanco semidulce Tierra Blanca. Reproduce numeric values only when legible in image 1; the actual photograph overrides catalog wording.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-03/actual-prompts/28031.txt",
+  "sourceOriginalSha256": "10e0bb58c79ff08a0c34eb25df79704eae3716e03c95ad2b042755c2bb1e5446",
+  "sourceOriginalBytes": 36123,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:04:38.379Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-03/webp/mercadona-28031.webp",
+  "width": 246,
+  "height": 768,
+  "bytes": 36812,
+  "sha256": "90c99f892e3365a849083670da9d5dcc9f900197af4663402537a1e85b0e9eed",
+  "alpha": {
+    "transparentPixels": 73710,
+    "opaquePixels": 1281,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:05:40.660Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:13:42.302Z",
+  "publication": {
+    "productId": "28031",
+    "name": "Vino blanco semidulce Tierra Blanca",
+    "objectPath": "mercadona/28031/90c99f892e3365a8.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/28031/90c99f892e3365a8.webp",
+    "contentType": "image/webp",
+    "bytes": 36812,
+    "published": true,
+    "sha256": "90c99f892e3365a849083670da9d5dcc9f900197af4663402537a1e85b0e9eed"
+  },
+  "publishedAt": "2026-10-12T15:13:55.915Z",
+  "localWebpDeletedAt": "2026-10-12T15:13:56.039Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:13:56.039Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:13:56.039Z"
+}

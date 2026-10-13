@@ -1,0 +1,50 @@
+{
+  "id": "53122",
+  "index": 59,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-0f6209d7-b717-4700-83fc-300fc7dd1908.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-53122-sobrasada-iberica-l-illa-especialidades.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "85ccf882f18c5e2749b3ff1508e27d7dd1a2d26aeef61ff0a89e47fc50a6f5d2",
+  "sourceOriginalBytes": 55133,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:40:08.784Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-53122.webp",
+  "recovery": {
+    "recoveredAt": "2026-10-11T16:56:07.779449+00:00",
+    "nativeMatchedToHistoricalWebp": true,
+    "historicalWebpSha256": "83fb0801d14b987ca2b750101e7c3ef2569926f5b2a2bf533c572532021ea88d",
+    "historicalWebpTempPath": "/private/tmp/mercadona-batch-20261010-1000/lot-10/webp/mercadona-53122.webp",
+    "nativeSha256": "28dfe244339146c4643a71e6af16705ff43bf223ccc18aba61fa59b4f5a0f633",
+    "originalPromptUnavailable": true,
+    "note": "Original batch directory was deleted. Native recovered by exact SHA after same export; original prompt is unavailable and has not been invented. Fresh visual review required before upload."
+  },
+  "width": 768,
+  "height": 544,
+  "bytes": 93190,
+  "sha256": "83fb0801d14b987ca2b750101e7c3ef2569926f5b2a2bf533c572532021ea88d",
+  "alpha": {
+    "transparentPixels": 90774,
+    "opaquePixels": 1001,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T16:57:44.330Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:09:59.453Z",
+  "publication": {
+    "productId": "53122",
+    "name": "Sobrasada ibérica L'Illa especialidades",
+    "objectPath": "mercadona/53122/83fb0801d14b987c.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/53122/83fb0801d14b987c.webp",
+    "contentType": "image/webp",
+    "bytes": 93190,
+    "published": true,
+    "sha256": "83fb0801d14b987ca2b750101e7c3ef2569926f5b2a2bf533c572532021ea88d"
+  },
+  "publishedAt": "2026-10-11T17:11:36.341Z",
+  "localWebpDeletedAt": "2026-10-11T17:11:36.472Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:11:36.472Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:11:36.472Z"
+}

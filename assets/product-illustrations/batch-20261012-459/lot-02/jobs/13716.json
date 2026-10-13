@@ -1,0 +1,41 @@
+{
+  "id": "13716",
+  "index": 15,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-67687239-7c1c-4101-b96f-94a2c9399b68.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-13716-tenedores-de-plastico-bosque-verde-reutilizables.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. Specific inspected product: Tall clear plastic bag containing a neatly stacked bundle of white plastic forks. Pale green paper label at center reads REUTILIZABLES / REUTILIZÁVEIS 15, Bosque Verde. Keep fork tines at top. Product catalog identity: Tenedores de plástico Bosque Verde reutilizables.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/13716.txt",
+  "sourceOriginalSha256": "0d1bafcc3e38ed15bb4ad57795d72d64288bd4d477190709ce7f63202775eb70",
+  "sourceOriginalBytes": 49886,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:39:24.733Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-13716.webp",
+  "width": 444,
+  "height": 768,
+  "bytes": 73048,
+  "sha256": "14a5bf18efa9102a3b08b9ffa2ec362925639799f53f15bba7516dda95de7fa6",
+  "alpha": {
+    "transparentPixels": 62061,
+    "opaquePixels": 1256,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:40:29.188Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:43:49.327Z",
+  "publication": {
+    "productId": "13716",
+    "name": "Tenedores de plástico Bosque Verde reutilizables",
+    "objectPath": "mercadona/13716/14a5bf18efa9102a.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/13716/14a5bf18efa9102a.webp",
+    "contentType": "image/webp",
+    "bytes": 73048,
+    "published": true,
+    "sha256": "14a5bf18efa9102a3b08b9ffa2ec362925639799f53f15bba7516dda95de7fa6"
+  },
+  "publishedAt": "2026-10-12T13:44:16.088Z",
+  "localWebpDeletedAt": "2026-10-12T13:44:16.387Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:44:16.387Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:44:16.387Z"
+}

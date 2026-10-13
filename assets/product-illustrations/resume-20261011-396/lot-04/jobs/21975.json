@@ -1,0 +1,41 @@
+{
+  "id": "21975",
+  "index": 21,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12be3-1801-7fe3-88ee-862e3d13eea9/exec-63c50161-3463-4c0b-9158-9a80aff13e3d.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-04/mercadona-21975-sangria-rose-cason-historico.png",
+  "prompt": "Use case: style-transfer. Asset: one catalog product illustration for QuéFalta. Image1 is the sole authoritative product/photo reference; image2 supplies ONLY the illustrated medium and edge/shading treatment, never its milk carton/text. Turn the exact product in image1 into a polished hand-drawn retail illustration matching image2: crisp delicate outlines, clean simplified shading, subtle illustrated texture and faithful retail colors. Truly transparent background, no ground plane, no cast shadow, centered entire product with safe empty margin. Preserve the complete original package geometry, perspective, relative proportions, all components and accessories, real visible quantities and main legible label text. No extra props, invented brands, claims, prices, quantities or food outside packaging. Tiny illegible legal text may be reduced unobtrusively but all meaningful negations such as SIN/SEM must remain complete. Product-specific observed requirements: Clear contoured plastic bottle of pink Sangría Rosé Casón Histórico with white screw cap; pink fruit label. Official product: Sangría Rosé Casón Histórico. Reproduce source numeric values only when legible; do not guess.\n Source confirmed visible label: 1,5L and 7% VOL. Preserve these exactly.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-04/actual-prompts/21975.txt",
+  "sourceOriginalSha256": "792e70a40a9473a25d46ac721032034df7063b8a4a38bd196fdd1b8815df92a9",
+  "sourceOriginalBytes": 36270,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:12:10.807Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-04/webp/mercadona-21975.webp",
+  "width": 291,
+  "height": 768,
+  "bytes": 45364,
+  "sha256": "f5a81bdab178f4fe00da6a625ad2ea1ca39ea673dd61ca056ad80c5a99f45f6c",
+  "alpha": {
+    "transparentPixels": 69257,
+    "opaquePixels": 657,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:18:15.113Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:38:41.376Z",
+  "publication": {
+    "productId": "21975",
+    "name": "Sangría Rosé Casón Histórico",
+    "objectPath": "mercadona/21975/f5a81bdab178f4fe.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/21975/f5a81bdab178f4fe.webp",
+    "contentType": "image/webp",
+    "bytes": 45364,
+    "published": true,
+    "sha256": "f5a81bdab178f4fe00da6a625ad2ea1ca39ea673dd61ca056ad80c5a99f45f6c"
+  },
+  "publishedAt": "2026-10-11T17:39:18.783Z",
+  "localWebpDeletedAt": "2026-10-11T17:39:19.372Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:39:19.372Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:39:19.372Z"
+}

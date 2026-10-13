@@ -1,0 +1,41 @@
+{
+  "id": "12746",
+  "index": 102,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308c-ebe7-7011-b529-512d15320584/exec-3149ec5f-fed1-4f46-b046-167d97275127.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-01/mercadona-12746-tacos-de-vacuno-marinado-para-guisar.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta catalog product illustration. Image1 is the exact official product photo, authoritative for subject and all product details. Image2 is ONLY the approved hand-drawn illustration style; do not copy its milk carton. Render Image1 as warm clean editorial hand-drawn gouache, subtle paper texture, thin defined outlines and recognizable original colors. Preserve exact product/variant, whole silhouette, proportions, packaging, labels and readable text. Use actual alpha transparency. Entire product centered with minimal transparent margin; preserve natural source orientation, all separate food pieces and components, source count/layout and retail multipacks. Do not change sliced food to whole food or vice versa. Keep heads, tails, caps and packaging where source has them. No props, invented packaging, plate, extra labels, cast shadows, floor, background, checkerboard, photorealism or3D. Reproduce only legible printed words/units/claims; never infer printed text from catalog name. Preserve SIN/SEM GLUTEN and all negations, quantities, units and qualifiers exactly if present. Tiny unreadable microprint may be simplified into neutral lines without invented values. Output one complete transparent PNG.\nProduct ID 12746. Observed source: Clear red marinated beef cube tray black white TACOS MARINADOS wrap. Photo remains authoritative.\n Square canvas. Outside the exact product silhouette alpha must be exactly zero; no exterior glow, beige halo, blurred aura, paper rectangle, vignette or colored backdrop. Texture stays strictly inside the product.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-01/actual-prompts/12746.txt",
+  "sourceOriginalSha256": "6f90bf16b8926931c29133954771bdecafb78f6e53143122a75a11128643abc4",
+  "sourceOriginalBytes": 60417,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:14:53.675Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-01/webp/mercadona-12746.webp",
+  "width": 768,
+  "height": 517,
+  "bytes": 95712,
+  "sha256": "12963013b36548c87dc6efb9f41f34efc71361773819c5c21ac09b2aad0a6104",
+  "alpha": {
+    "transparentPixels": 155562,
+    "opaquePixels": 804,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:18:01.750Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:18:53.150Z",
+  "publication": {
+    "productId": "12746",
+    "name": "Tacos de vacuno marinado para guisar",
+    "objectPath": "mercadona/12746/12963013b36548c8.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/12746/12963013b36548c8.webp",
+    "contentType": "image/webp",
+    "bytes": 95712,
+    "published": true,
+    "sha256": "12963013b36548c87dc6efb9f41f34efc71361773819c5c21ac09b2aad0a6104"
+  },
+  "publishedAt": "2026-10-12T15:18:57.413Z",
+  "localWebpDeletedAt": "2026-10-12T15:18:58.062Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:18:58.062Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:18:58.062Z"
+}

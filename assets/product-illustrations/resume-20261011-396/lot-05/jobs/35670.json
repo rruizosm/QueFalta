@@ -1,0 +1,41 @@
+{
+  "id": "35670",
+  "index": 48,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-43050fda-d70c-4e1b-a56c-ded69748d81b.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-35670-spaghetti-sin-gluten-felicia.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Spaghetti sin gluten Felicia (Mercadona 35670).\nObserved source details: Long upright transparent spaghetti bag with deep purple sealed top/bottom, yellow thin spaghetti visible through center. SPAGHETTI at top, Felicia bottom and 500g. Orange/white SIN GLUTEN badge must preserve SIN. No plate, upright bag only.",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-05/actual-prompts/35670-root-resume.txt",
+  "sourceOriginalSha256": "47c95d4fa4ed63998efbf644484468cf2fc3498806a719e1c9c4d45d5b4c9b97",
+  "sourceOriginalBytes": 36427,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:42:08.009Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-35670.webp",
+  "width": 263,
+  "height": 768,
+  "bytes": 32798,
+  "sha256": "87214420ff0521bbb2f0f1e5e2be01cad4b82e0a99bc4a7853ed190fd11e2e89",
+  "alpha": {
+    "transparentPixels": 50929,
+    "opaquePixels": 1533,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:46:43.943Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:55:21.245Z",
+  "publication": {
+    "productId": "35670",
+    "name": "Spaghetti sin gluten Felicia",
+    "objectPath": "mercadona/35670/87214420ff0521bb.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/35670/87214420ff0521bb.webp",
+    "contentType": "image/webp",
+    "bytes": 32798,
+    "published": true,
+    "sha256": "87214420ff0521bbb2f0f1e5e2be01cad4b82e0a99bc4a7853ed190fd11e2e89"
+  },
+  "publishedAt": "2026-10-11T17:55:28.296Z",
+  "localWebpDeletedAt": "2026-10-11T17:55:28.451Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:55:28.451Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:55:28.451Z"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "43482",
+  "index": 59,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-99d54d6b-85d3-4404-93b1-f013fb6e00d4.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-43482-toallitas-limpiadoras-de-banos-bosque-verde.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Large flat blue Bosque Verde bathroom cleaning wipes packet, white oval label Baños/Casas de banho, large white 50 at left, bathroom tiles/tap photo at right, orange-red top strip. Product catalog identity: Toallitas limpiadoras de baños Bosque Verde.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/43482.txt",
+  "sourceOriginalSha256": "4ac2cdb4e92c2ab76ca36d035707dacd2bdd032567a01577c59b019cd0fd64d0",
+  "sourceOriginalBytes": 48717,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:47:18.752Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-43482.webp",
+  "width": 768,
+  "height": 493,
+  "bytes": 73460,
+  "sha256": "335131d14a4392911d59b923ff9455576587c615dca66b8ad21138dff30bbf9d",
+  "alpha": {
+    "transparentPixels": 172221,
+    "opaquePixels": 826,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:49:59.532Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:50:10.024Z",
+  "publication": {
+    "productId": "43482",
+    "name": "Toallitas limpiadoras de baños Bosque Verde",
+    "objectPath": "mercadona/43482/335131d14a439291.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/43482/335131d14a439291.webp",
+    "contentType": "image/webp",
+    "bytes": 73460,
+    "published": true,
+    "sha256": "335131d14a4392911d59b923ff9455576587c615dca66b8ad21138dff30bbf9d"
+  },
+  "publishedAt": "2026-10-12T14:50:15.191Z",
+  "localWebpDeletedAt": "2026-10-12T14:50:15.311Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:50:15.311Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:50:15.311Z"
+}

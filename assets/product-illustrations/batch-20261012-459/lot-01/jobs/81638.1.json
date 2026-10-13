@@ -1,0 +1,58 @@
+{
+  "id": "81638.1",
+  "index": 9,
+  "version": 2,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bde-adb9-77e3-a69c-bbde9ef0841e/exec-48f5fcd8-5bb2-43b2-a58f-b013440a1f0e.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-01/mercadona-81638.1-acedia-sin-cabeza-y-sin-piel-oscura-v2.png",
+  "prompt": "Edit this existing product illustration. Remove ALL colored exterior halo, glow, backdrop and haze, producing genuine alpha exactly zero outside the precise product contours. Preserve the entire illustrated product unchanged: all separate pieces, exact count/layout, original colors, cuts, head/tail and fine gouache texture inside the product. Do not replace the product, add objects or shadows, crop any component, or alter its food geometry. Square transparent PNG. Product 81638.1.",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261012-459/lot-01/actual-prompts/81638.1-v2.txt",
+  "sourceOriginalSha256": "793014740b70a0feda412272926b703e3e03cb2cceba1ef95f35cde7cc7028bc",
+  "sourceOriginalBytes": 38711,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:45:53.288Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-01/webp/mercadona-81638.1.webp",
+  "previousGenerations": [
+    {
+      "id": "81638.1",
+      "index": 9,
+      "version": 1,
+      "generationTool": "built-in image_gen",
+      "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bde-adb9-77e3-a69c-bbde9ef0841e/exec-d16bf4e0-b4ba-432e-af5c-ec3fcec56b57.png",
+      "png": "assets/product-illustrations/batch-20261012-459/lot-01/mercadona-81638.1-acedia-sin-cabeza-y-sin-piel-oscura.png",
+      "prompt": "Use case: style-transfer. Asset type: QuéFalta catalog product illustration. Image1 is the exact official product photo, authoritative for subject and all product details. Image2 is ONLY the approved hand-drawn illustration style; do not copy its milk carton. Render Image1 as warm clean editorial hand-drawn gouache, subtle paper texture, thin defined outlines and recognizable original colors. Preserve exact product/variant, whole silhouette, proportions, packaging, labels and readable text. Use actual alpha transparency. Entire product centered with minimal transparent margin; preserve natural source orientation, all separate food pieces and components, source count/layout and retail multipacks. Do not change sliced food to whole food or vice versa. Keep heads, tails, caps and packaging where source has them. No props, invented packaging, plate, extra labels, cast shadows, floor, background, checkerboard, photorealism or3D. Reproduce only legible printed words/units/claims; never infer printed text from catalog name. Preserve SIN/SEM GLUTEN and all negations, quantities, units and qualifiers exactly if present. Tiny unreadable microprint may be simplified into neutral lines without invented values. Output one complete transparent PNG.\nProduct ID 81638.1. Observed source: Three pale skinned headless flatfish with tails side by side. Photo remains authoritative.\n",
+      "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261012-459/lot-01/actual-prompts/81638.1.txt",
+      "sourceOriginalSha256": "793014740b70a0feda412272926b703e3e03cb2cceba1ef95f35cde7cc7028bc",
+      "sourceOriginalBytes": 38711,
+      "status": "generated",
+      "generatedAt": "2026-10-12T13:37:56.457Z",
+      "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-01/webp/mercadona-81638.1.webp"
+    }
+  ],
+  "width": 768,
+  "height": 595,
+  "bytes": 70318,
+  "sha256": "13d16f1f131cb4adfbceb8c13900cb7570ce5775d1fe9893d196ed40de2e445f",
+  "alpha": {
+    "transparentPixels": 222217,
+    "opaquePixels": 1080,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:47:20.986Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:48:55.465Z",
+  "publication": {
+    "productId": "81638.1",
+    "name": "Acedía sin cabeza y sin piel oscura",
+    "objectPath": "mercadona/81638.1/13d16f1f131cb4ad.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/81638.1/13d16f1f131cb4ad.webp",
+    "contentType": "image/webp",
+    "bytes": 70318,
+    "published": true,
+    "sha256": "13d16f1f131cb4adfbceb8c13900cb7570ce5775d1fe9893d196ed40de2e445f"
+  },
+  "publishedAt": "2026-10-12T13:49:06.834Z",
+  "localWebpDeletedAt": "2026-10-12T13:49:07.003Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:49:07.003Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:49:07.003Z"
+}

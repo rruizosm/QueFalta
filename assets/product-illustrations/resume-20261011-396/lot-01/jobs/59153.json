@@ -1,0 +1,41 @@
+{
+  "id": "59153",
+  "index": 36,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bde-adb9-77e3-a69c-bbde9ef0841e/exec-bb3df8c7-1813-476e-b163-57c7ce11be4e.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-01/mercadona-59153-puntas-de-jamon-curado-incarlopsa.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Puntas de jamón curado Incarlopsa, Mercadona product ID 59153. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\n\nObserved source details (authoritative): Clear flat vacuum pouch with rectangular irregular red cured-ham end pieces and pale fat, large white central label Incarlopsa PUNTAS DE JAMÓN CURADO; preserve full pouch.\nPreserve only source claims and quantities. Tiny unreadable text may become neutral lines. All real transparent film edges, separate packaging components and thin details belong to the object. One catalog illustration, actual alpha background.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-01/actual-prompts/59153.txt",
+  "sourceOriginalSha256": "4336b82a45214021ff56de45175843067815634e76e9d9a00430e52756ff0c85",
+  "sourceOriginalBytes": 66426,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:17:41.182Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-01/webp/mercadona-59153.webp",
+  "width": 722,
+  "height": 768,
+  "bytes": 121122,
+  "sha256": "010cf13e87b02eb4133683c29bcb215345eca7366db858909de445a82f254df0",
+  "alpha": {
+    "transparentPixels": 102090,
+    "opaquePixels": 1517,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:36:31.971Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:38:18.387Z",
+  "publication": {
+    "productId": "59153",
+    "name": "Puntas de jamón curado Incarlopsa",
+    "objectPath": "mercadona/59153/010cf13e87b02eb4.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/59153/010cf13e87b02eb4.webp",
+    "contentType": "image/webp",
+    "bytes": 121122,
+    "published": true,
+    "sha256": "010cf13e87b02eb4133683c29bcb215345eca7366db858909de445a82f254df0"
+  },
+  "publishedAt": "2026-10-11T17:38:19.800Z",
+  "localWebpDeletedAt": "2026-10-11T17:38:20.129Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:38:20.129Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:38:20.129Z"
+}

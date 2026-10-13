@@ -1,0 +1,41 @@
+{
+  "id": "20281",
+  "index": 107,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308c-ebe7-7011-b529-512d15320584/exec-42916012-fac9-444b-b957-5832a476e231.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-01/mercadona-20281-tampones-regular-tampax-pearl-con-aplicador.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta catalog product illustration. Image1 is the exact official product photo, authoritative for subject and all product details. Image2 is ONLY the approved hand-drawn illustration style; do not copy its milk carton. Render Image1 as warm clean editorial hand-drawn gouache, subtle paper texture, thin defined outlines and recognizable original colors. Preserve exact product/variant, whole silhouette, proportions, packaging, labels and readable text. Use actual alpha transparency. Entire product centered with minimal transparent margin; preserve natural source orientation, all separate food pieces and components, source count/layout and retail multipacks. Do not change sliced food to whole food or vice versa. Keep heads, tails, caps and packaging where source has them. No props, invented packaging, plate, extra labels, cast shadows, floor, background, checkerboard, photorealism or3D. Reproduce only legible printed words/units/claims; never infer printed text from catalog name. Preserve SIN/SEM GLUTEN and all negations, quantities, units and qualifiers exactly if present. Tiny unreadable microprint may be simplified into neutral lines without invented values. Output one complete transparent PNG.\nProduct ID 20281. Observed source: Tall turquoise yellow TAMPAX PEARL24 R REGULAR3en1 ONE PUSH. Photo remains authoritative.\n Square canvas. Outside the exact product silhouette alpha must be exactly zero; no exterior glow, beige halo, blurred aura, paper rectangle, vignette or colored backdrop. Texture stays strictly inside the product.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-01/actual-prompts/20281.txt",
+  "sourceOriginalSha256": "d2489ffadb19fdd0a1b466de3585b37c94953be92597f65b3ee1db925d158a04",
+  "sourceOriginalBytes": 89758,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:15:35.156Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-01/webp/mercadona-20281.webp",
+  "width": 599,
+  "height": 768,
+  "bytes": 112748,
+  "sha256": "cc3c5154c6d4a749c75f26ca9cd11932501d8735f5c6d25401384863ba32d620",
+  "alpha": {
+    "transparentPixels": 69193,
+    "opaquePixels": 1102,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:18:03.524Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:18:53.154Z",
+  "publication": {
+    "productId": "20281",
+    "name": "Tampones regular Tampax Pearl con aplicador",
+    "objectPath": "mercadona/20281/cc3c5154c6d4a749.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/20281/cc3c5154c6d4a749.webp",
+    "contentType": "image/webp",
+    "bytes": 112748,
+    "published": true,
+    "sha256": "cc3c5154c6d4a749c75f26ca9cd11932501d8735f5c6d25401384863ba32d620"
+  },
+  "publishedAt": "2026-10-12T15:19:06.607Z",
+  "localWebpDeletedAt": "2026-10-12T15:19:06.895Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:19:06.895Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:19:06.895Z"
+}

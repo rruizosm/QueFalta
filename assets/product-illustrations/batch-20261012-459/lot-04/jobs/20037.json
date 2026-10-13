@@ -1,0 +1,41 @@
+{
+  "id": "20037",
+  "index": 101,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-4d6f94aa-4689-45e9-bf9f-2900838d7f3d.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-20037-yogur-sabor-macedonia-danone.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Yogur sabor macedonia Danone, ID 20037.\nObserved source: Four white blue DANONE cups linked by foil lids, peach pineapple fruit salad imagery sabor macedonia, large1€ on front.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/20037.txt",
+  "sourceOriginalSha256": "ff2482bc23be6bfc340c546c4f5138a9455ec2604a7d60bbb8bdc4e063df1a06",
+  "sourceOriginalBytes": 63723,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:09:05.370Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-20037.webp",
+  "width": 768,
+  "height": 654,
+  "bytes": 103410,
+  "sha256": "93219756b1fce66975be682a1e84639a951f30712cd0f395b1f0517ca623e428",
+  "alpha": {
+    "transparentPixels": 114416,
+    "opaquePixels": 1179,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:14:32.314Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:15:12.075Z",
+  "publication": {
+    "productId": "20037",
+    "name": "Yogur sabor macedonia Danone",
+    "objectPath": "mercadona/20037/93219756b1fce669.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/20037/93219756b1fce669.webp",
+    "contentType": "image/webp",
+    "bytes": 103410,
+    "published": true,
+    "sha256": "93219756b1fce66975be682a1e84639a951f30712cd0f395b1f0517ca623e428"
+  },
+  "publishedAt": "2026-10-12T15:15:15.440Z",
+  "localWebpDeletedAt": "2026-10-12T15:15:15.727Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:15:15.727Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:15:15.727Z"
+}

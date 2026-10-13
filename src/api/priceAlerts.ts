@@ -143,7 +143,9 @@ export async function savePriceAlert(input: SavePriceAlertInput): Promise<PriceA
     kind: input.kind,
     emoji: input.emoji ?? priceAlertEmoji(input.label, input.query),
     label: input.label.trim(),
-    query: input.kind === 'keyword' ? input.query?.trim() || null : null,
+    query: input.kind === 'keyword' || input.kind === 'new_arrival'
+      ? input.query?.trim() || null
+      : null,
     exact_store: input.kind === 'exact' ? input.exactStore : null,
     exact_product_id: input.kind === 'exact' ? input.exactProductId : null,
     stores: input.stores,

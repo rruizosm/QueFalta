@@ -1,0 +1,10 @@
+{
+  "detectedAt": "2026-10-09T12:35:55.519Z",
+  "sourceFile": "assets/product-illustrations/batch-20261009-1000-02/lot-10/PAUSE",
+  "exactError": "image generation failed: http 429 Too Many Requests: Some(\"{\\\"error\\\":{\\\"type\\\":\\\"usage_limit_reached\\\",\\\"message\\\":\\\"The usage limit has been reached\\\",\\\"plan_type\\\":\\\"prolite\\\",\\\"resets_at\\\":1791614672,\\\"eligible_promo\\\":null,\\\"limit_window_minutes\\\":1440,\\\"resets_in_seconds\\\":65317}}\")\n",
+  "allLotsPaused": true,
+  "resetsAt": 1791614672,
+  "resetsAtUtc": "2026-10-10T06:44:32.000Z",
+  "resetsAtEuropeMadrid": "2026-10-10 08:44:32 Europe/Madrid",
+  "automaticResumeScheduled": false
+}

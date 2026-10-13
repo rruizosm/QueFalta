@@ -1,0 +1,41 @@
+{
+  "id": "28610",
+  "index": 93,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-f33de411-cd07-4287-b289-17610c2471b4.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-28610-whisky-escoces-red-label-johnnie-walker.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Whisky escocés Red Label Johnnie Walker, ID 28610.\nObserved source: Rectangular amber Johnnie Walker bottle gold red cap, diagonal red RED LABEL band, taller slender source bottle variant.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/28610.txt",
+  "sourceOriginalSha256": "e59025f6540e5ba2a0376a34f2bdadc2ee364f8463de51e88afaf71476431585",
+  "sourceOriginalBytes": 37336,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:07:58.023Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-28610.webp",
+  "width": 227,
+  "height": 768,
+  "bytes": 41184,
+  "sha256": "5d1aace8c69c3e718f22e7acf3714af6c405af1ded111a4626cf1f808e647c4d",
+  "alpha": {
+    "transparentPixels": 55488,
+    "opaquePixels": 1102,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:10:53.232Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:14:27.393Z",
+  "publication": {
+    "productId": "28610",
+    "name": "Whisky escocés Red Label Johnnie Walker",
+    "objectPath": "mercadona/28610/5d1aace8c69c3e71.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/28610/5d1aace8c69c3e71.webp",
+    "contentType": "image/webp",
+    "bytes": 41184,
+    "published": true,
+    "sha256": "5d1aace8c69c3e718f22e7acf3714af6c405af1ded111a4626cf1f808e647c4d"
+  },
+  "publishedAt": "2026-10-12T15:14:35.457Z",
+  "localWebpDeletedAt": "2026-10-12T15:14:35.573Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:14:35.573Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:14:35.573Z"
+}

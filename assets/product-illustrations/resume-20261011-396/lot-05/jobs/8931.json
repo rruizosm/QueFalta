@@ -1,0 +1,47 @@
+{
+  "id": "8931",
+  "index": 78,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-a7c4522d-447d-40dd-931e-b331310cc16b.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-8931-solomillo-de-vacuno.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "058cadb1834cfe4f4d4483e1c641a4b9c6ff81098959b035eceff46f5d845827",
+  "sourceOriginalBytes": 74851,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:46:16.284998+00:00",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-8931.webp",
+  "recovery": {
+    "nativeMatchedToConversationCheckpoint": true,
+    "nativeSha256": "c2e4c40102a3dde7e78de37120d76385a80587deadccf076e1993df3507ffddf",
+    "originalPromptUnavailable": true,
+    "note": "Root native output and ID matched to prior visible tool checkpoints. Original prompt file deleted; no replacement prompt claimed. Fresh visual review required."
+  },
+  "width": 768,
+  "height": 616,
+  "bytes": 93752,
+  "sha256": "5884c78978b7ae44ae55719380e05086a7ea34b7465718ffc5cfad127d2ccad3",
+  "alpha": {
+    "transparentPixels": 62139,
+    "opaquePixels": 1207,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T16:57:45.072Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:09:59.455Z",
+  "publication": {
+    "productId": "8931",
+    "name": "Solomillo de vacuno",
+    "objectPath": "mercadona/8931/5884c78978b7ae44.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/8931/5884c78978b7ae44.webp",
+    "contentType": "image/webp",
+    "bytes": 93752,
+    "published": true,
+    "sha256": "5884c78978b7ae44ae55719380e05086a7ea34b7465718ffc5cfad127d2ccad3"
+  },
+  "publishedAt": "2026-10-11T17:11:41.595Z",
+  "localWebpDeletedAt": "2026-10-11T17:11:41.732Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:11:41.732Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:11:41.732Z"
+}

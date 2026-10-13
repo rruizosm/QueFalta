@@ -1,0 +1,41 @@
+{
+  "id": "60561",
+  "index": 66,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-176cbea3-ffbb-4153-8b60-91ed9c1d594a.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-60561-toallitas-refrescantes-deliplus-monodosis.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Upright rectangular pale-blue Deliplus refreshing wipes carton, water glass image front, dark blue oval Refrescantes and circular 10x sachet icon upper right. Carton, not travel packet. Product catalog identity: Toallitas refrescantes Deliplus monodosis.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/60561.txt",
+  "sourceOriginalSha256": "236ec59064f72b898250fe5f4b4066e3cdb6c6d89e906780a5a303e6fe76ce99",
+  "sourceOriginalBytes": 68235,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:53:48.670Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-60561.webp",
+  "width": 617,
+  "height": 768,
+  "bytes": 78562,
+  "sha256": "36b3505b0bcf7126e963fbdac7f5bd5e7cca70769680a1419d0b16b854f76949",
+  "alpha": {
+    "transparentPixels": 70776,
+    "opaquePixels": 768,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:56:09.484Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:57:40.118Z",
+  "publication": {
+    "productId": "60561",
+    "name": "Toallitas refrescantes Deliplus monodosis",
+    "objectPath": "mercadona/60561/36b3505b0bcf7126.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/60561/36b3505b0bcf7126.webp",
+    "contentType": "image/webp",
+    "bytes": 78562,
+    "published": true,
+    "sha256": "36b3505b0bcf7126e963fbdac7f5bd5e7cca70769680a1419d0b16b854f76949"
+  },
+  "publishedAt": "2026-10-12T14:57:52.603Z",
+  "localWebpDeletedAt": "2026-10-12T14:57:52.728Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:57:52.728Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:57:52.728Z"
+}

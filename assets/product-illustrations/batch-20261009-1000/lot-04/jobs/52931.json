@@ -1,0 +1,39 @@
+{
+  "id": "52931",
+  "index": 11,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/52931.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-52931-champu-hydra-hyaluronic-deliplus-cabello-de-normal-a-seco.png",
+  "prompt": "Warm clean editorial hand-drawn product illustration, soft thin outlines, defined original colors, subtle paper/gouache texture, frontal view. Illustrate the exact Deliplus Hydra Hyaluronic shampoo for normal-to-dry hair. Preserve exact bottle color, cap, label design, Hyaluronic text and visible artwork. from reference photo one. Preserve complete bottle proportions and every legible label word and claim; do not invent. Center upright with actual alpha transparency, no background, shadow, glow, props, photorealism or 3D. Image two guides style only.\n",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/52931.txt",
+  "sourceOriginalSha256": "3130ab33d6a2fb03c1ea0294335a1fdf3c201ef45862a85148c1f88336736e6a",
+  "sourceOriginalBytes": 34630,
+  "status": "published",
+  "generatedAt": "2026-10-09T06:59:17.380Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-52931.webp",
+  "width": 361,
+  "height": 768,
+  "bytes": 49830,
+  "sha256": "1f52828f884f5a62ef1f84b0a7f54ae8855d624a3bd0bdde294df07d4d993ff2",
+  "alpha": {
+    "transparentPixels": 78237,
+    "opaquePixels": 1158,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T06:59:25.381Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T06:59:49.968Z",
+  "publication": {
+    "productId": "52931",
+    "name": "Champú Hydra hyaluronic Deliplus cabello de normal a seco",
+    "objectPath": "mercadona/52931/1f52828f884f5a62.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/52931/1f52828f884f5a62.webp",
+    "contentType": "image/webp",
+    "bytes": 49830,
+    "sha256": "1f52828f884f5a62ef1f84b0a7f54ae8855d624a3bd0bdde294df07d4d993ff2"
+  },
+  "publishedAt": "2026-10-09T06:59:51.379Z",
+  "localWebpDeletedAt": "2026-10-09T06:59:51.380Z",
+  "localSourceJpgDeletedAt": "2026-10-09T06:59:51.380Z"
+}

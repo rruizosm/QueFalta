@@ -1,0 +1,39 @@
+{
+  "id": "21463",
+  "index": 4,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/21463.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-21463-champu-color-protect-deliplus-cabello-tenido.png",
+  "prompt": "Warm clean editorial hand-drawn Mercadona product illustration, soft thin outlines, defined original colors, subtle paper/gouache texture, frontal view. Illustrate the exact Deliplus Color Protect shampoo for dyed hair in photo one. Tall curved Deliplus shampoo bottle for colored hair; preserve exact source bottle shape, cap/color, label blocks, Color Protect wording and any visible color-care artwork. Preserve all readable words/claims, add no details. Show entire bottle upright, centered, transparent alpha, no glow, shadow, props, setting, photorealism or 3D. Image two is style guidance only.\n",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/21463.txt",
+  "sourceOriginalSha256": "40a98b6bc45a50167e102da7bd8bded5444a1654146f44f34e4a5295310abb19",
+  "sourceOriginalBytes": 36866,
+  "status": "published",
+  "generatedAt": "2026-10-09T06:52:06.143Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-21463.webp",
+  "width": 337,
+  "height": 768,
+  "bytes": 39302,
+  "sha256": "26ac80014211cda9f6109afd094d0c3ff108b5443e5e6abcf6d28b4e3191703c",
+  "alpha": {
+    "transparentPixels": 69835,
+    "opaquePixels": 1141,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T06:52:13.912Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T06:52:31.118Z",
+  "publication": {
+    "productId": "21463",
+    "name": "Champú Color Protect Deliplus cabello teñido",
+    "objectPath": "mercadona/21463/26ac80014211cda9.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/21463/26ac80014211cda9.webp",
+    "contentType": "image/webp",
+    "bytes": 39302,
+    "sha256": "26ac80014211cda9f6109afd094d0c3ff108b5443e5e6abcf6d28b4e3191703c"
+  },
+  "publishedAt": "2026-10-09T06:52:52.782Z",
+  "localWebpDeletedAt": "2026-10-09T06:52:52.782Z",
+  "localSourceJpgDeletedAt": "2026-10-09T06:52:52.782Z"
+}

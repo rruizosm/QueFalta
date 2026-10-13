@@ -1,0 +1,39 @@
+{
+  "id": "8925",
+  "index": 18,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/8925.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-8925-champu-perros-y-gatos-con-aloe-vera-nuske-efecto-repelente.png",
+  "prompt": "Warm clean editorial hand-drawn product illustration with soft thin outlines, defined colors, subtle paper/gouache texture and a frontal view. Illustrate the exact item in reference photo one: Nuske aloe vera repellent-effect shampoo for dogs and cats. Preserve pet-care package shape, color, cap, label, aloe artwork and readable wording; do not depict a human cosmetic bottle. Preserve exact package type/proportions, all legible words, and distinguish it from nearby variants. Complete item centered, actual transparent alpha background; no scene, props, glow, shadows, photorealism or 3D. Image two is style guidance only.\n",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/8925.txt",
+  "sourceOriginalSha256": "ba993ac2daf3f85aea700069a49c8ef8de66c8503bd6b52cec15dd8e7763a273",
+  "sourceOriginalBytes": 30129,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:02:52.252Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-8925.webp",
+  "width": 275,
+  "height": 768,
+  "bytes": 51058,
+  "sha256": "6957143b3a6b1f4b2899de356806c06cfa70611aa9ff59a7e37178bc5c51b672",
+  "alpha": {
+    "transparentPixels": 52661,
+    "opaquePixels": 1046,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:03:08.296Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T07:03:26.568Z",
+  "publication": {
+    "productId": "8925",
+    "name": "Champú perros y gatos con aloe vera Nuske efecto repelente",
+    "objectPath": "mercadona/8925/6957143b3a6b1f4b.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/8925/6957143b3a6b1f4b.webp",
+    "contentType": "image/webp",
+    "bytes": 51058,
+    "sha256": "6957143b3a6b1f4b2899de356806c06cfa70611aa9ff59a7e37178bc5c51b672"
+  },
+  "publishedAt": "2026-10-09T07:03:30.834Z",
+  "localWebpDeletedAt": "2026-10-09T07:03:30.834Z",
+  "localSourceJpgDeletedAt": "2026-10-09T07:03:30.834Z"
+}

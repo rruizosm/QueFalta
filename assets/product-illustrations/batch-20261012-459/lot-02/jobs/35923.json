@@ -1,0 +1,41 @@
+{
+  "id": "35923",
+  "index": 19,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-589010fc-6634-4a1e-9668-331e4d40a0ea.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-35923-tinte-cabello-hombre-0-amoniaco-3-moreno-4-castano-colorcor.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. Specific inspected product: Upright black and turquoise Deliplus READY MEN 5 Colorcor hair-and-beard coloring box with portrait of dark-haired bearded adult man, shade markings 3 MORENO and 4 CASTAÑO at upper left, 0% AMONÍACO and PRO B5. Preserve these two shade numbers. Product catalog identity: Tinte cabello hombre 0% amoníaco 3 moreno 4 castaño Colorcor.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/35923.txt",
+  "sourceOriginalSha256": "b2c3e5ee8f68f76bc7f70b0cbeed59b512cc308430d58b27c8c4abd643c37074",
+  "sourceOriginalBytes": 69589,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:41:46.308Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-35923.webp",
+  "width": 404,
+  "height": 768,
+  "bytes": 79772,
+  "sha256": "66de309fdbbcede867a808c3ea49d62644306cac1c9cc7c9f2cfc7a132df40d3",
+  "alpha": {
+    "transparentPixels": 45699,
+    "opaquePixels": 692,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:43:48.844Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:43:49.328Z",
+  "publication": {
+    "productId": "35923",
+    "name": "Tinte cabello hombre 0% amoníaco 3 moreno 4 castaño Colorcor",
+    "objectPath": "mercadona/35923/66de309fdbbcede8.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/35923/66de309fdbbcede8.webp",
+    "contentType": "image/webp",
+    "bytes": 79772,
+    "published": true,
+    "sha256": "66de309fdbbcede867a808c3ea49d62644306cac1c9cc7c9f2cfc7a132df40d3"
+  },
+  "publishedAt": "2026-10-12T13:44:21.426Z",
+  "localWebpDeletedAt": "2026-10-12T13:44:21.581Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:44:21.581Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:44:21.581Z"
+}

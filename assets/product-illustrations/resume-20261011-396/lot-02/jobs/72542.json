@@ -1,0 +1,50 @@
+{
+  "id": "72542",
+  "index": 44,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12091-dc56-7d03-acf6-998d69096048/exec-2a93a549-e553-4a80-9b5e-623bb0ce622b.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-02/mercadona-72542-recambio-ambientador-electrico-brisa-azul-bosque-verde.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "9473639d772191aa2b0f6a3376a2174cec88d09290b94ed3605711a96c235c40",
+  "sourceOriginalBytes": 91246,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:38:44.709Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-02/webp/mercadona-72542.webp",
+  "recovery": {
+    "recoveredAt": "2026-10-11T16:56:07.779449+00:00",
+    "nativeMatchedToHistoricalWebp": true,
+    "historicalWebpSha256": "2b9a628d59b2248e354f4e7f8b7b6c2b40f77957ef491b8d918b34a332d7cd8d",
+    "historicalWebpTempPath": "/private/tmp/mercadona-batch-20261010-1000/lot-07/webp/mercadona-72542.webp",
+    "nativeSha256": "efe76bb69431f606f3d00a453af1fbb178604e507d4fc02f4c7a15fceeccab71",
+    "originalPromptUnavailable": true,
+    "note": "Original batch directory was deleted. Native recovered by exact SHA after same export; original prompt is unavailable and has not been invented. Fresh visual review required before upload."
+  },
+  "width": 608,
+  "height": 768,
+  "bytes": 104962,
+  "sha256": "2b9a628d59b2248e354f4e7f8b7b6c2b40f77957ef491b8d918b34a332d7cd8d",
+  "alpha": {
+    "transparentPixels": 64987,
+    "opaquePixels": 1663,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:50:16.738Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:53:01.589Z",
+  "publication": {
+    "productId": "72542",
+    "name": "Recambio ambientador eléctrico Brisa Azul Bosque Verde",
+    "objectPath": "mercadona/72542/2b9a628d59b2248e.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/72542/2b9a628d59b2248e.webp",
+    "contentType": "image/webp",
+    "bytes": 104962,
+    "published": true,
+    "sha256": "2b9a628d59b2248e354f4e7f8b7b6c2b40f77957ef491b8d918b34a332d7cd8d"
+  },
+  "publishedAt": "2026-10-11T17:53:03.439Z",
+  "localWebpDeletedAt": "2026-10-11T17:53:03.863Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:53:03.863Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:53:03.863Z"
+}

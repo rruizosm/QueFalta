@@ -1,0 +1,39 @@
+{
+  "id": "17683",
+  "index": 35,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/17683.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-17683-chistorra-picante-larrasoana.png",
+  "prompt": "Warm clean editorial hand-drawn illustration with soft outlines, defined colors and subtle paper/gouache texture. Illustrate exactly the product in reference photo one: Spicy Larrasoaña chistorra sausage pack. Preserve exact sausage count/links, spicy distinction and exact brand wrapper/label. Preserve package/food form, quantity and readable details; add nothing. Complete item centered on actual transparent alpha, no backdrop, shelf, props, glow or shadow. No photorealism or 3D. Image two is style guidance only.\n",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/17683.txt",
+  "sourceOriginalSha256": "23749951523fcebec53e19cddcd1cd6093822ea6dfd30389189c0fafc6b649cc",
+  "sourceOriginalBytes": 33940,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:20:37.726Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-17683.webp",
+  "width": 768,
+  "height": 155,
+  "bytes": 36056,
+  "sha256": "e65fc3392c5a32e89919c07199e9a0142c48a625477ba292481fcb353b0278bb",
+  "alpha": {
+    "transparentPixels": 34078,
+    "opaquePixels": 1298,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:20:52.432Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T07:21:22.741Z",
+  "publication": {
+    "productId": "17683",
+    "name": "Chistorra picante Larrasoaña",
+    "objectPath": "mercadona/17683/e65fc3392c5a32e8.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/17683/e65fc3392c5a32e8.webp",
+    "contentType": "image/webp",
+    "bytes": 36056,
+    "sha256": "e65fc3392c5a32e89919c07199e9a0142c48a625477ba292481fcb353b0278bb"
+  },
+  "publishedAt": "2026-10-09T07:21:23.818Z",
+  "localWebpDeletedAt": "2026-10-09T07:21:23.820Z",
+  "localSourceJpgDeletedAt": "2026-10-09T07:21:23.820Z"
+}

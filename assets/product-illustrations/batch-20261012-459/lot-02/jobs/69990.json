@@ -1,0 +1,41 @@
+{
+  "id": "69990",
+  "index": 80,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-9eebf842-b2e4-441b-9d94-05eb08838ef0.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-69990-tomates-cherry.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Clear tall rectangular plastic punnet filled with many small shiny oval red cherry tomatoes. Preserve transparent upright sidewalls and grouped cherry tomatoes. Product catalog identity: Tomates cherry.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/69990.txt",
+  "sourceOriginalSha256": "c0157bc85ae9b9439d0b0a6edb41c545b8193aca686a421b63582f7dbd5e3538",
+  "sourceOriginalBytes": 66246,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:58:49.491Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-69990.webp",
+  "width": 768,
+  "height": 644,
+  "bytes": 91730,
+  "sha256": "9096b36fb66dbeb76a67f49d5923fb0aed113173a82fce08143922908c52e9f3",
+  "alpha": {
+    "transparentPixels": 173700,
+    "opaquePixels": 809,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:03:07.543Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:04:08.378Z",
+  "publication": {
+    "productId": "69990",
+    "name": "Tomates cherry",
+    "objectPath": "mercadona/69990/9096b36fb66dbeb7.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/69990/9096b36fb66dbeb7.webp",
+    "contentType": "image/webp",
+    "bytes": 91730,
+    "published": true,
+    "sha256": "9096b36fb66dbeb76a67f49d5923fb0aed113173a82fce08143922908c52e9f3"
+  },
+  "publishedAt": "2026-10-12T15:04:32.242Z",
+  "localWebpDeletedAt": "2026-10-12T15:04:32.444Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:04:32.444Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:04:32.444Z"
+}

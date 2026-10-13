@@ -72,5 +72,5 @@ test('la ficha Lidl explica y lamenta que el proveedor no publique una imagen', 
   assert.match(sharedModal, /emptyMessage=\{store === 'lidl' \? t\('product\.lidlImageUnavailable'\) : undefined\}/);
   assert.match(detailImage, /const hasUsableImage = Boolean\(uri && productImageSource\(uri\)\)/);
   assert.match(detailImage, /<ProductImage uri=\{uri\}[\s\S]*?fallback=\{fallback\}/);
-  assert.match(productImage, /failed && fallback \? fallback/);
+  assert.match(productImage, /failed \? \(fallback \?\? \(/);
 });

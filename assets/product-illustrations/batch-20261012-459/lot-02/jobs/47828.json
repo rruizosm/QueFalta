@@ -1,0 +1,41 @@
+{
+  "id": "47828",
+  "index": 50,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-9319a476-107e-46b1-a720-1218490a788e.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-47828-toallitas-dermo-higiene-corporal-deliplus-tamano-gigantes.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Long white and blue soft Deliplus dermo body-wipes packet with bright blue top panel, gigantes dermo and large 60, white central oval; preserve elongated format and 60 count. Product catalog identity: Toallitas Dermo higiene corporal Deliplus tamaño gigantes.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/47828.txt",
+  "sourceOriginalSha256": "bf6c0d82cda0eab2cd1697c2a0543e3302655d3e57566a0f47d4c4860fa8bbd4",
+  "sourceOriginalBytes": 34303,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:45:59.439Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-47828.webp",
+  "width": 768,
+  "height": 421,
+  "bytes": 49554,
+  "sha256": "0f9c36f942815fa8601a0d1025904beed3000deb8877aa112fe83bd7fc8a7d99",
+  "alpha": {
+    "transparentPixels": 154058,
+    "opaquePixels": 855,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:46:44.450Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:47:23.005Z",
+  "publication": {
+    "productId": "47828",
+    "name": "Toallitas Dermo higiene corporal Deliplus tamaño gigantes",
+    "objectPath": "mercadona/47828/0f9c36f942815fa8.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/47828/0f9c36f942815fa8.webp",
+    "contentType": "image/webp",
+    "bytes": 49554,
+    "published": true,
+    "sha256": "0f9c36f942815fa8601a0d1025904beed3000deb8877aa112fe83bd7fc8a7d99"
+  },
+  "publishedAt": "2026-10-12T14:47:30.795Z",
+  "localWebpDeletedAt": "2026-10-12T14:47:30.952Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:47:30.952Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:47:30.952Z"
+}

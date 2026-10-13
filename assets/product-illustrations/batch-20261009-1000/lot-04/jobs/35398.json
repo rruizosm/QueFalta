@@ -1,0 +1,39 @@
+{
+  "id": "35398",
+  "index": 2,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/35398.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-35398-champu-anticaspa-menthol-ultrex-todo-tipo-de-cabello.png",
+  "prompt": "Warm hand-drawn illustration of the exact Ultrex anti-dandruff Menthol shampoo bottle: tall dark blue bottle and cap, white label with green/gold blocks, visible Ultrex, ANTICASPA, 100%, MENTHOL, MENTA FRESCA, mint/water artwork. Preserve all readable words and claims from reference. Complete item, transparent background, no surrounding glow or scene. Style reference only.\n",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/35398.txt",
+  "sourceOriginalSha256": "6755d2e0ed1b650a99de7f12e658d7f11c919aa7acf4a9fded6093d2ba23ca2c",
+  "sourceOriginalBytes": 39874,
+  "status": "published",
+  "generatedAt": "2026-10-09T06:47:52.386Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-35398.webp",
+  "width": 277,
+  "height": 768,
+  "bytes": 54222,
+  "sha256": "a4ec25581f542794743b4a0175c89196c4be4c809309f3d1756337425d9c1b68",
+  "alpha": {
+    "transparentPixels": 41242,
+    "opaquePixels": 1229,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T06:47:52.541Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T06:52:31.118Z",
+  "publication": {
+    "productId": "35398",
+    "name": "Champú anticaspa Menthol Ultrex todo tipo de cabello",
+    "objectPath": "mercadona/35398/a4ec25581f542794.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/35398/a4ec25581f542794.webp",
+    "contentType": "image/webp",
+    "bytes": 54222,
+    "sha256": "a4ec25581f542794743b4a0175c89196c4be4c809309f3d1756337425d9c1b68"
+  },
+  "publishedAt": "2026-10-09T06:52:50.688Z",
+  "localWebpDeletedAt": "2026-10-09T06:52:50.693Z",
+  "localSourceJpgDeletedAt": "2026-10-09T06:52:50.693Z"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "12869",
+  "index": 51,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-50364ea9-b116-4963-b69f-7f7d2da89e97.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-12869-vino-tinto-monastrell-llanto-de-uva-do-jumilla.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Vino tinto Monastrell Llanto de uva DO Jumilla, ID 12869.\nObserved source: Dark bottle silver capsule with black tear, white split label black tear LLANTO DE UVA MONASTRELL12MESES.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/12869.txt",
+  "sourceOriginalSha256": "e3b1738b80e073e2662783de2720fd40b55011c49ebc18ee6c4243ed87d53379",
+  "sourceOriginalBytes": 23609,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:44:09.641Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-12869.webp",
+  "width": 235,
+  "height": 768,
+  "bytes": 25346,
+  "sha256": "0afba6a2f71c48789e8e17a7a79a007c5198096896653829bdc6461113cca73f",
+  "alpha": {
+    "transparentPixels": 68392,
+    "opaquePixels": 997,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:46:53.934Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:55:05.251Z",
+  "publication": {
+    "productId": "12869",
+    "name": "Vino tinto Monastrell Llanto de uva DO Jumilla",
+    "objectPath": "mercadona/12869/0afba6a2f71c4878.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/12869/0afba6a2f71c4878.webp",
+    "contentType": "image/webp",
+    "bytes": 25346,
+    "published": true,
+    "sha256": "0afba6a2f71c48789e8e17a7a79a007c5198096896653829bdc6461113cca73f"
+  },
+  "publishedAt": "2026-10-12T14:55:09.848Z",
+  "localWebpDeletedAt": "2026-10-12T14:55:10.342Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:55:10.342Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:55:10.342Z"
+}

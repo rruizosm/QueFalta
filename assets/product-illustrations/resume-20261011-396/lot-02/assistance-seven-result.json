@@ -1,0 +1,31 @@
+{
+  "status": "FINAL",
+  "owner": "resume_workflow assistance",
+  "ids": [
+    "72647",
+    "79199",
+    "8901",
+    "8916",
+    "8980",
+    "90326",
+    "9886"
+  ],
+  "generated": 7,
+  "published": 7,
+  "nativeGenerations": 7,
+  "totalBytes": 501968,
+  "sourceAndStyleViewed": true,
+  "finalWebpQaViewed": true,
+  "remoteGalleryShaCheckedAndViewed": true,
+  "remoteGallery": "/private/tmp/mercadona-resume-20261011-396/lot-02/preview-49-56.jpg",
+  "localWebpDeleted": 7,
+  "sourceJpgDeleted": 7,
+  "fullLotVerifyDelegatedTo": "recover_native",
+  "sourcePromptCorrections": [
+    "8916: upper collar red/orange, lower yellow; blue refers to bristles.",
+    "9886: PACK AHORRO DIVISIBLE, regular Coca-Cola, two red caps."
+  ],
+  "quotaErrors": 0,
+  "moderationErrors": 0,
+  "at": "2026-10-11T18:28:38.902Z"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "83265.2",
+  "index": 8,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bde-adb9-77e3-a69c-bbde9ef0841e/exec-125d61ce-1caa-4fb8-9ba8-77fefa3ea2ff.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-01/mercadona-83265.2-3-barras-de-pan-rebanado.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta catalog product illustration. Image1 is the exact official product photo, authoritative for subject and all product details. Image2 is ONLY the approved hand-drawn illustration style; do not copy its milk carton. Render Image1 as warm clean editorial hand-drawn gouache, subtle paper texture, thin defined outlines and recognizable original colors. Preserve exact product/variant, whole silhouette, proportions, packaging, labels and readable text. Use actual alpha transparency. Entire product centered with minimal transparent margin; preserve natural source orientation, all separate food pieces and components, source count/layout and retail multipacks. Do not change sliced food to whole food or vice versa. Keep heads, tails, caps and packaging where source has them. No props, invented packaging, plate, extra labels, cast shadows, floor, background, checkerboard, photorealism or3D. Reproduce only legible printed words/units/claims; never infer printed text from catalog name. Preserve SIN/SEM GLUTEN and all negations, quantities, units and qualifiers exactly if present. Tiny unreadable microprint may be simplified into neutral lines without invented values. Output one complete transparent PNG.\nProduct ID 83265.2. Observed source: Three rows of sliced golden baguettes and heel pieces; no bag. Photo remains authoritative.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261012-459/lot-01/actual-prompts/83265.2.txt",
+  "sourceOriginalSha256": "cdcb7cbaa9697dd53b443bf2c239b7c117f27d5aa6ed0070a2b4a7aa29df2a67",
+  "sourceOriginalBytes": 59366,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:38:46.933Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-01/webp/mercadona-83265.2.webp",
+  "width": 768,
+  "height": 449,
+  "bytes": 99694,
+  "sha256": "9a43eba970ca5de9bf41cce835c9575cd8b5c948ca99596ba7e21dae3a9ccc70",
+  "alpha": {
+    "transparentPixels": 209679,
+    "opaquePixels": 490,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:47:48.720Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:48:55.465Z",
+  "publication": {
+    "productId": "83265.2",
+    "name": "3 Barras de pan rebanado",
+    "objectPath": "mercadona/83265.2/9a43eba970ca5de9.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/83265.2/9a43eba970ca5de9.webp",
+    "contentType": "image/webp",
+    "bytes": 99694,
+    "published": true,
+    "sha256": "9a43eba970ca5de9bf41cce835c9575cd8b5c948ca99596ba7e21dae3a9ccc70"
+  },
+  "publishedAt": "2026-10-12T13:49:05.266Z",
+  "localWebpDeletedAt": "2026-10-12T13:49:05.433Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:49:05.433Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:49:05.433Z"
+}

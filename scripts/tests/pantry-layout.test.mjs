@@ -341,3 +341,99 @@ test('only published illustrated products are paginated, even after many unillus
   assert.equal(ca.products[0].name, 'Llet sencera');
   assert.equal((await api.searchPantryProducts('tomate', 'es')).products.length, 0);
 });
+
+test('large separated pantries preserve item identity and placements through normalization', () => {
+  const shelfCount = 100;
+  const items = Array.from({ length: shelfCount * 5 }, (_, i) => item({ instanceId: `large-${i}`,
+    ...layout.defaultPantryPlacement(i, shelfCount) }));
+  const before = structuredClone(items);
+  const arranged = layout.arrangePantryItems(items, shelfCount);
+  assert.deepEqual(arranged.unplaced, []);
+  assert.equal(layout.availablePantrySlots(items, shelfCount).length, 0);
+  assert.equal(arranged.placed.length, items.length);
+  arranged.placed.forEach((entry, i) => assert.equal(entry, items[i], 'unchanged rows must stay memoizable'));
+  assert.deepEqual(items, before);
+  const changed = items.map((entry, i) => i === 250 ? { ...entry, x: 0.5 } : entry);
+  const normalized = layout.normalizePantryItems(changed, shelfCount);
+  assert.equal(normalized.length, items.length);
+  normalized.forEach((entry, i) => {
+    if (layout.pantryShelfIndex(entry, shelfCount) !== 50) assert.equal(entry, items[i]);
+  });
+});
+
+test('fridge storage is separate per section and account, retaining the original cupboard key', async () => {
+  const pantryLayout = { items: [item()], shelfCount: 6 };
+  const pantryRaw = layout.encodePantryLayout(pantryLayout);
+  const saved = new Map([['@pantry_layout:v1:alice', pantryRaw]]);
+  const storage = load('lib/pantryStorage', {
+    './pantryLayout': layout,
+    '@react-native-async-storage/async-storage': {
+      getItem: async (key) => saved.get(key) ?? null,
+      setItem: async (key, value) => { saved.set(key, value); },
+    },
+  });
+  assert.equal(storage.pantryStorageKey('alice'), '@pantry_layout:v1:alice');
+  assert.equal(storage.pantryStorageKey('alice', 'pantry'), '@pantry_layout:v1:alice');
+  assert.equal(storage.pantryStorageKey('alice', 'fridge'), '@fridge_layout:v1:alice');
+  assert.deepEqual(await storage.readPantryLayout('alice', 'fridge'), { items: [], shelfCount: 3 });
+  const cold = { items: [item({ ...layout.pantrySlotPlacement(3, 2) })], shelfCount: 4 };
+  await storage.writePantryLayout('alice', cold, 'fridge');
+  assert.deepEqual(await storage.readPantryLayout('alice', 'fridge'), cold);
+  assert.deepEqual(await storage.readPantryLayout('alice'), pantryLayout);
+  assert.equal(saved.get('@pantry_layout:v1:alice'), pantryRaw, 'fridge edits must not even rewrite the cupboard');
+  assert.deepEqual(await storage.readPantryLayout('bob', 'fridge'), { items: [], shelfCount: 3 });
+  await storage.writePantryLayout('bob', { items: [], shelfCount: 8 }, 'fridge');
+  assert.deepEqual(await storage.readPantryLayout('alice', 'fridge'), cold);
+  assert.deepEqual(await storage.readPantryLayout('bob'), { items: [], shelfCount: 3 });
+});
+
+test('fridge writes stay ordered across remount reads without blocking cupboard writes', async () => {
+  const saved = new Map();
+  const gates = [];
+  const storage = load('lib/pantryStorage', {
+    './pantryLayout': layout,
+    '@react-native-async-storage/async-storage': {
+      getItem: async (key) => saved.get(key) ?? null,
+      setItem: (key, value) => key.includes('fridge')
+        ? new Promise((resolve) => gates.push(() => { saved.set(key, value); resolve(); }))
+        : Promise.resolve(saved.set(key, value)),
+    },
+  });
+  const first = storage.writePantryLayout('alice', { items: [item()], shelfCount: 3 }, 'fridge');
+  const moved = { items: [item({ ...layout.pantrySlotPlacement(4, 3, 4) })], shelfCount: 4 };
+  const second = storage.writePantryLayout('alice', moved, 'fridge');
+  let readDone = false;
+  const remounted = storage.readPantryLayout('alice', 'fridge').then((value) => { readDone = true; return value; });
+  const pantry = { items: [item()], shelfCount: 5 };
+  await storage.writePantryLayout('alice', pantry);
+  assert.deepEqual(await storage.readPantryLayout('alice'), pantry);
+  assert.equal(readDone, false);
+  assert.equal(gates.length, 1);
+  gates[0]();
+  await first;
+  await new Promise(setImmediate);
+  gates[1]();
+  await second;
+  assert.deepEqual(await remounted, moved);
+});
+
+test('a corrupt fridge does not prevent reading the cupboard and failed saves can be retried', async () => {
+  const pantry = { items: [item()], shelfCount: 3 };
+  const saved = new Map([['@pantry_layout:v1:alice', layout.encodePantryLayout(pantry)], ['@fridge_layout:v1:alice', 'broken']]);
+  let fail = true;
+  const storage = load('lib/pantryStorage', {
+    './pantryLayout': layout,
+    '@react-native-async-storage/async-storage': {
+      getItem: async (key) => saved.get(key) ?? null,
+      setItem: async (key, value) => { if (fail) throw new Error('disk full'); saved.set(key, value); },
+    },
+  });
+  await assert.rejects(storage.readPantryLayout('alice', 'fridge'));
+  assert.deepEqual(await storage.readPantryLayout('alice'), pantry);
+  const fridge = { items: [item({ ...layout.pantrySlotPlacement(2, 1) })], shelfCount: 3 };
+  await assert.rejects(storage.writePantryLayout('alice', fridge, 'fridge'));
+  fail = false;
+  await storage.writePantryLayout('alice', fridge, 'fridge');
+  assert.deepEqual(await storage.readPantryLayout('alice', 'fridge'), fridge);
+  assert.deepEqual(await storage.readPantryLayout('alice'), pantry);
+});

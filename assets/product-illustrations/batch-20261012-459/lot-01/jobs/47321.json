@@ -1,0 +1,41 @@
+{
+  "id": "47321",
+  "index": 108,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308c-ebe7-7011-b529-512d15320584/exec-cb18bc57-87fc-455f-9d1f-e246c30fde8c.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-01/mercadona-47321-tampones-super-deliplus-con-aplicador-suave.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta catalog product illustration. Image1 is the exact official product photo, authoritative for subject and all product details. Image2 is ONLY the approved hand-drawn illustration style; do not copy its milk carton. Render Image1 as warm clean editorial hand-drawn gouache, subtle paper texture, thin defined outlines and recognizable original colors. Preserve exact product/variant, whole silhouette, proportions, packaging, labels and readable text. Use actual alpha transparency. Entire product centered with minimal transparent margin; preserve natural source orientation, all separate food pieces and components, source count/layout and retail multipacks. Do not change sliced food to whole food or vice versa. Keep heads, tails, caps and packaging where source has them. No props, invented packaging, plate, extra labels, cast shadows, floor, background, checkerboard, photorealism or3D. Reproduce only legible printed words/units/claims; never infer printed text from catalog name. Preserve SIN/SEM GLUTEN and all negations, quantities, units and qualifiers exactly if present. Tiny unreadable microprint may be simplified into neutral lines without invented values. Output one complete transparent PNG.\nProduct ID 47321. Observed source: White lime green floral Deliplus tampons carton SUPER20Unidades. Photo remains authoritative.\n Square canvas. Outside the exact product silhouette alpha must be exactly zero; no exterior glow, beige halo, blurred aura, paper rectangle, vignette or colored backdrop. Texture stays strictly inside the product.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-01/actual-prompts/47321.txt",
+  "sourceOriginalSha256": "5fef9a24a641f6b67a2b28cfb89610a39dc7343cbb8cf04775ba7189a15e4086",
+  "sourceOriginalBytes": 38337,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:16:47.096Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-01/webp/mercadona-47321.webp",
+  "width": 661,
+  "height": 768,
+  "bytes": 104016,
+  "sha256": "dc1a66de77400cebd246458c1313ea7e57f355947f877bb183ec49ee4159a3c2",
+  "alpha": {
+    "transparentPixels": 75122,
+    "opaquePixels": 1445,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:18:03.947Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:18:53.154Z",
+  "publication": {
+    "productId": "47321",
+    "name": "Tampones super Deliplus con aplicador suave",
+    "objectPath": "mercadona/47321/dc1a66de77400ceb.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/47321/dc1a66de77400ceb.webp",
+    "contentType": "image/webp",
+    "bytes": 104016,
+    "published": true,
+    "sha256": "dc1a66de77400cebd246458c1313ea7e57f355947f877bb183ec49ee4159a3c2"
+  },
+  "publishedAt": "2026-10-12T15:19:08.074Z",
+  "localWebpDeletedAt": "2026-10-12T15:19:08.200Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:19:08.200Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:19:08.200Z"
+}

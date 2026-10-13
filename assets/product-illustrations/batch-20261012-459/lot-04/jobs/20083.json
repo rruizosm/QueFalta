@@ -1,0 +1,41 @@
+{
+  "id": "20083",
+  "index": 102,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-146e6638-00db-4af1-8351-057f05d46206.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-20083-yogur-sabor-vainilla-larsa.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Yogur sabor vainilla Larsa, ID 20083.\nObserved source: Four small beige LARSA PASTOREO yogurt cups in tan cardboard sleeve VAINILLA with vanilla flower, keep four cup count.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/20083.txt",
+  "sourceOriginalSha256": "45016b0954d16426747acfb328ba95b9f0625ac7ad3023934edd0ba0ec1a28ca",
+  "sourceOriginalBytes": 42983,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:10:56.469Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-20083.webp",
+  "width": 768,
+  "height": 368,
+  "bytes": 59568,
+  "sha256": "cafdf5b5e39933a37a5da6488ee822e8edbe991acd30b1213de9e6b56e11b163",
+  "alpha": {
+    "transparentPixels": 58633,
+    "opaquePixels": 1211,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:14:32.477Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:15:12.082Z",
+  "publication": {
+    "productId": "20083",
+    "name": "Yogur sabor vainilla Larsa",
+    "objectPath": "mercadona/20083/cafdf5b5e39933a3.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/20083/cafdf5b5e39933a3.webp",
+    "contentType": "image/webp",
+    "bytes": 59568,
+    "published": true,
+    "sha256": "cafdf5b5e39933a37a5da6488ee822e8edbe991acd30b1213de9e6b56e11b163"
+  },
+  "publishedAt": "2026-10-12T15:15:16.918Z",
+  "localWebpDeletedAt": "2026-10-12T15:15:17.153Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:15:17.153Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:15:17.153Z"
+}

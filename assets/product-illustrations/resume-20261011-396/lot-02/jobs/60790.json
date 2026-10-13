@@ -1,0 +1,50 @@
+{
+  "id": "60790",
+  "index": 36,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12091-dc56-7d03-acf6-998d69096048/exec-f9d0b9f7-3d39-4c9b-ba82-3e06596472ea.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-02/mercadona-60790-recambio-ambientador-automatico-flower-bosque-verde.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "7a14299d9679818d1d9e13d851f041831c65c18163b24675391e69d664835ae1",
+  "sourceOriginalBytes": 44518,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:36:41.183Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-02/webp/mercadona-60790.webp",
+  "recovery": {
+    "recoveredAt": "2026-10-11T16:56:07.779449+00:00",
+    "nativeMatchedToHistoricalWebp": true,
+    "historicalWebpSha256": "c04e52bda4d8de3b5d89fb4e07cfaae069bfd381cad9153065abe3de3798883e",
+    "historicalWebpTempPath": "/private/tmp/mercadona-batch-20261010-1000/lot-07/webp/mercadona-60790.webp",
+    "nativeSha256": "d751181b8d505c87cc8dbdfb1bc8ae3b0ab20e91c5d062345e654e5f1fee3e29",
+    "originalPromptUnavailable": true,
+    "note": "Original batch directory was deleted. Native recovered by exact SHA after same export; original prompt is unavailable and has not been invented. Fresh visual review required before upload."
+  },
+  "width": 363,
+  "height": 768,
+  "bytes": 64074,
+  "sha256": "c04e52bda4d8de3b5d89fb4e07cfaae069bfd381cad9153065abe3de3798883e",
+  "alpha": {
+    "transparentPixels": 47920,
+    "opaquePixels": 1202,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:50:15.660Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:52:51.096Z",
+  "publication": {
+    "productId": "60790",
+    "name": "Recambio ambientador automático Flower Bosque Verde",
+    "objectPath": "mercadona/60790/c04e52bda4d8de3b.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/60790/c04e52bda4d8de3b.webp",
+    "contentType": "image/webp",
+    "bytes": 64074,
+    "published": true,
+    "sha256": "c04e52bda4d8de3b5d89fb4e07cfaae069bfd381cad9153065abe3de3798883e"
+  },
+  "publishedAt": "2026-10-11T17:52:52.666Z",
+  "localWebpDeletedAt": "2026-10-11T17:52:53.424Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:52:53.424Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:52:53.424Z"
+}

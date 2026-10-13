@@ -1,0 +1,41 @@
+{
+  "id": "66295",
+  "index": 34,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-cb901077-7345-404e-8ea1-490fabb175b6.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-66295-vino-tinto-crianza-torre-oria-do-utiel-requena.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Vino tinto crianza Torre Oria DO Utiel-Requena, ID 66295.\nObserved source: One dark wine bottle with SILVER capsule, white curved-edge label with burgundy crest and TORRE ORIA, CRIANZA and UTIEL REQUENA.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/66295.txt",
+  "sourceOriginalSha256": "04c86af6b40c06fd84e6d338cc829a3f17ad0848fff6e39cd1ffcfcc4a9ce8cc",
+  "sourceOriginalBytes": 25017,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:49:36.441Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-66295.webp",
+  "width": 223,
+  "height": 768,
+  "bytes": 25472,
+  "sha256": "366557e8ee1fa2a4ddba98ffce16502bbb6bf4f68e290f9a916090db76f93c65",
+  "alpha": {
+    "transparentPixels": 59811,
+    "opaquePixels": 1073,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:41:01.193Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:41:42.310Z",
+  "publication": {
+    "productId": "66295",
+    "name": "Vino tinto crianza Torre Oria DO Utiel-Requena",
+    "objectPath": "mercadona/66295/366557e8ee1fa2a4.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/66295/366557e8ee1fa2a4.webp",
+    "contentType": "image/webp",
+    "bytes": 25472,
+    "published": true,
+    "sha256": "366557e8ee1fa2a4ddba98ffce16502bbb6bf4f68e290f9a916090db76f93c65"
+  },
+  "publishedAt": "2026-10-12T14:41:59.871Z",
+  "localWebpDeletedAt": "2026-10-12T14:42:00.073Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:42:00.073Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:42:00.073Z"
+}

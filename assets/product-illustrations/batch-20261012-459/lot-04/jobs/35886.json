@@ -1,0 +1,41 @@
+{
+  "id": "35886",
+  "index": 46,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-a94c7b02-eeaa-4439-aca9-9b4ad34dcf84.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-35886-vino-tinto-mar-de-uvas-do-monterrei-mencia.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Vino tinto Mar de Uvas DO Monterrei Mencia, ID 35886.\nObserved source: Dark bottle red capsule with black top, white MENCIA MONTERREI label and red vine drawing.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/35886.txt",
+  "sourceOriginalSha256": "0f7f91a53bac65112e2830d1430518ce5dbb9168378dcb28fef7637021e9d1ff",
+  "sourceOriginalBytes": 27511,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:58:26.001Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-35886.webp",
+  "width": 252,
+  "height": 768,
+  "bytes": 28052,
+  "sha256": "d5c5d417ed96cf0e1671a1d4a33675ea941ebea7601d940bb0e9b3cb419c9922",
+  "alpha": {
+    "transparentPixels": 76898,
+    "opaquePixels": 804,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:41:02.471Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:45:50.074Z",
+  "publication": {
+    "productId": "35886",
+    "name": "Vino tinto Mar de Uvas DO Monterrei Mencia",
+    "objectPath": "mercadona/35886/d5c5d417ed96cf0e.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/35886/d5c5d417ed96cf0e.webp",
+    "contentType": "image/webp",
+    "bytes": 28052,
+    "published": true,
+    "sha256": "d5c5d417ed96cf0e1671a1d4a33675ea941ebea7601d940bb0e9b3cb419c9922"
+  },
+  "publishedAt": "2026-10-12T14:45:58.223Z",
+  "localWebpDeletedAt": "2026-10-12T14:45:58.376Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:45:58.376Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:45:58.376Z"
+}

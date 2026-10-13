@@ -1,0 +1,41 @@
+{
+  "id": "84654",
+  "index": 90,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12be3-1801-7fe3-88ee-862e3d13eea9/exec-2e8dd68d-8a34-444c-afb3-638621a42f31.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-04/mercadona-84654-rosquillas-al-cacao.png",
+  "prompt": "Use case: style-transfer. Asset: one catalog product illustration for QuéFalta. Image1 is the sole authoritative product/photo reference; image2 supplies ONLY the illustrated medium and edge/shading treatment, never its milk carton/text. Turn the exact product in image1 into a polished hand-drawn retail illustration matching image2: crisp delicate outlines, clean simplified shading, subtle illustrated texture and faithful retail colors. Truly transparent background, no ground plane, no cast shadow, centered entire product with safe empty margin. Preserve the complete original package geometry, perspective, relative proportions, all components and accessories, real visible quantities and main legible label text. No extra props, invented brands, claims, prices, quantities or food outside packaging. Tiny illegible legal text may be reduced unobtrusively but all meaningful negations such as SIN/SEM must remain complete. Product-specific observed requirements: Long turquoise cardboard tray clear wrapper with row chocolate covered ring pastries; Rosquillas al cacao, preserve actual row count and tray. Official product: Rosquillas al cacao. Reproduce source numeric values only when legible; do not guess.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-04/actual-prompts/84654.txt",
+  "sourceOriginalSha256": "bc47a045aec676b9e710e3097824d08abf3a216616b2ec46f016d0c582786587",
+  "sourceOriginalBytes": 30391,
+  "status": "published",
+  "generatedAt": "2026-10-11T18:16:47.818Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-04/webp/mercadona-84654.webp",
+  "width": 768,
+  "height": 466,
+  "bytes": 47868,
+  "sha256": "524e2f5192d2ef1eb348813f09aaef238abcd0d53eb4b3f11e45b5431815070a",
+  "alpha": {
+    "transparentPixels": 183629,
+    "opaquePixels": 969,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T18:23:30.071Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T18:24:30.998Z",
+  "publication": {
+    "productId": "84654",
+    "name": "Rosquillas al cacao",
+    "objectPath": "mercadona/84654/524e2f5192d2ef1e.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/84654/524e2f5192d2ef1e.webp",
+    "contentType": "image/webp",
+    "bytes": 47868,
+    "published": true,
+    "sha256": "524e2f5192d2ef1eb348813f09aaef238abcd0d53eb4b3f11e45b5431815070a"
+  },
+  "publishedAt": "2026-10-11T18:24:41.807Z",
+  "localWebpDeletedAt": "2026-10-11T18:24:41.964Z",
+  "localSourceJpgDeletedAt": "2026-10-11T18:24:41.964Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T18:24:41.964Z"
+}

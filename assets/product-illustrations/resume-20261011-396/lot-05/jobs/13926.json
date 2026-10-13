@@ -1,0 +1,47 @@
+{
+  "id": "13926",
+  "index": 12,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-df8a040b-126e-4175-8c96-b88e57c43e5b.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-13926-soja-texturizada-luengo.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "db0ea827218b11b4120dd0a1f80278189b6b594716cc203c5c486e9a9f57bc8d",
+  "sourceOriginalBytes": 65769,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:42:50.211192+00:00",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-13926.webp",
+  "recovery": {
+    "nativeMatchedToConversationCheckpoint": true,
+    "nativeSha256": "956075acf6c7c3918918b1216e8a2ce243d855fd41267c31937c358a919a83cb",
+    "originalPromptUnavailable": true,
+    "note": "Root native output and ID matched to prior visible tool checkpoints. Original prompt file deleted; no replacement prompt claimed. Fresh visual review required."
+  },
+  "width": 540,
+  "height": 768,
+  "bytes": 80684,
+  "sha256": "048ef42269d555df0e5d73fae757a3abba86900bd8595b6108d8be31d585b12c",
+  "alpha": {
+    "transparentPixels": 83540,
+    "opaquePixels": 1717,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T16:57:42.965Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:09:59.445Z",
+  "publication": {
+    "productId": "13926",
+    "name": "Soja texturizada Luengo",
+    "objectPath": "mercadona/13926/048ef42269d555df.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/13926/048ef42269d555df.webp",
+    "contentType": "image/webp",
+    "bytes": 80684,
+    "published": true,
+    "sha256": "048ef42269d555df0e5d73fae757a3abba86900bd8595b6108d8be31d585b12c"
+  },
+  "publishedAt": "2026-10-11T17:11:26.904Z",
+  "localWebpDeletedAt": "2026-10-11T17:11:27.035Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:11:27.035Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:11:27.035Z"
+}

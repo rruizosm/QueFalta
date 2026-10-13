@@ -1,0 +1,41 @@
+{
+  "id": "35904",
+  "index": 49,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-110a6500-89ec-4779-8616-ef6bc60ce0de.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-35904-spaghetti-armando.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Spaghetti Armando (Mercadona 35904).\nObserved source details: Long upright transparent spaghetti bag with red-and-white top and bottom seals, Italian green-white-red vertical strip above SPAGHETTI. Golden long noodles center, ARMANDO red round logo and 500g at bottom. One complete bag.",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-05/actual-prompts/35904-root-resume.txt",
+  "sourceOriginalSha256": "6c5fd567ae5ec943400985d4131603b3a195e9e43089311859072654842aabc5",
+  "sourceOriginalBytes": 39540,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:42:07.989Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-35904.webp",
+  "width": 276,
+  "height": 768,
+  "bytes": 37892,
+  "sha256": "e87b7b3d099f0dc148e6035bf68fad4bc6d1857322d9d0569a80bbca6ba66d8d",
+  "alpha": {
+    "transparentPixels": 58667,
+    "opaquePixels": 1350,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:46:44.060Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:55:21.245Z",
+  "publication": {
+    "productId": "35904",
+    "name": "Spaghetti Armando",
+    "objectPath": "mercadona/35904/e87b7b3d099f0dc1.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/35904/e87b7b3d099f0dc1.webp",
+    "contentType": "image/webp",
+    "bytes": 37892,
+    "published": true,
+    "sha256": "e87b7b3d099f0dc148e6035bf68fad4bc6d1857322d9d0569a80bbca6ba66d8d"
+  },
+  "publishedAt": "2026-10-11T17:55:29.551Z",
+  "localWebpDeletedAt": "2026-10-11T17:55:29.698Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:55:29.698Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:55:29.698Z"
+}

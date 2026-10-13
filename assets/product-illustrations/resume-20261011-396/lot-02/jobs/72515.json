@@ -1,0 +1,41 @@
+{
+  "id": "72515",
+  "index": 43,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-26d134cd-1f68-4e6d-9bd4-b5ace9b7ae3f.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-02/mercadona-72515-recambio-antihumedad-con-aromas-citricos-bosque-verde.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Recambio antihumedad con aromas cítricos Bosque Verde, Mercadona product ID 72515. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\n\nObserved source details (photo remains authoritative): White/light-blue Bosque Verde ANTI HUMEDAD refill carton, AROMAS CÍTRICOS, printed blue/white dehumidifier and white refill tablet artwork. Whole box only; no loose appliance.\n",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-02/actual-prompts/72515.txt",
+  "sourceOriginalSha256": "f708989613b7bc8de2587c85c659b359019d16441d19d19c809801a826c22820",
+  "sourceOriginalBytes": 65027,
+  "status": "published",
+  "generatedAt": "2026-10-11T18:19:33.379Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-02/webp/mercadona-72515.webp",
+  "width": 686,
+  "height": 768,
+  "bytes": 84268,
+  "sha256": "fb41b1027a0ca57a5c739f31d6b51d0ee575736cc6169370a587ae5ac7f71e89",
+  "alpha": {
+    "transparentPixels": 71673,
+    "opaquePixels": 1108,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T18:20:31.897Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T18:22:04.161Z",
+  "publication": {
+    "productId": "72515",
+    "name": "Recambio antihumedad con aromas cítricos Bosque Verde",
+    "objectPath": "mercadona/72515/fb41b1027a0ca57a.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/72515/fb41b1027a0ca57a.webp",
+    "contentType": "image/webp",
+    "bytes": 84268,
+    "published": true,
+    "sha256": "fb41b1027a0ca57a5c739f31d6b51d0ee575736cc6169370a587ae5ac7f71e89"
+  },
+  "publishedAt": "2026-10-11T18:22:24.306Z",
+  "localWebpDeletedAt": "2026-10-11T18:22:24.427Z",
+  "localSourceJpgDeletedAt": "2026-10-11T18:22:24.427Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T18:22:24.427Z"
+}

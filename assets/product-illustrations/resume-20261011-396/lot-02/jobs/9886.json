@@ -1,0 +1,41 @@
+{
+  "id": "9886",
+  "index": 56,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-e51698b9-b589-4f56-8f4f-85b57276ec55.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-02/mercadona-9886-refresco-coca-cola.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Refresco Coca-Cola, Mercadona product ID 9886. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\n\nObserved source details (photo remains authoritative): Two large Coca-Cola plastic bottles joined by white/red carry handle and red/yellow PACK AHORRO INDIVISIBLE band. Preserve exactly two bottles, red caps and whole source proportions.\n\nMy direct full-source visual review: the yellow band says PACK AHORRO DIVISIBLE exactly (NOT INDIVISIBLE). Preserve that word DIVISIBLE, two large bottles with RED screw caps, connecting WHITE carry strap, regular Coca-Cola SABOR ORIGINAL (no ZERO claims).\n",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-02/actual-prompts/9886-assistance-source-reviewed.txt",
+  "sourceOriginalSha256": "ddcc9cdf52e72ccb99e3caf8b1422e16868112d181a43b0e82fa8687a7513808",
+  "sourceOriginalBytes": 44140,
+  "status": "published",
+  "generatedAt": "2026-10-11T18:24:23.458Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-02/webp/mercadona-9886.webp",
+  "width": 445,
+  "height": 768,
+  "bytes": 75090,
+  "sha256": "da275692beef8e3f03b8f9ab99635a588a3d05c7952354f1c409496913a58f04",
+  "alpha": {
+    "transparentPixels": 97291,
+    "opaquePixels": 1631,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T18:25:53.096Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T18:26:35.445Z",
+  "publication": {
+    "productId": "9886",
+    "name": "Refresco Coca-Cola",
+    "objectPath": "mercadona/9886/da275692beef8e3f.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/9886/da275692beef8e3f.webp",
+    "contentType": "image/webp",
+    "bytes": 75090,
+    "published": true,
+    "sha256": "da275692beef8e3f03b8f9ab99635a588a3d05c7952354f1c409496913a58f04"
+  },
+  "publishedAt": "2026-10-11T18:26:44.155Z",
+  "localWebpDeletedAt": "2026-10-11T18:26:44.327Z",
+  "localSourceJpgDeletedAt": "2026-10-11T18:26:44.327Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T18:26:44.327Z"
+}

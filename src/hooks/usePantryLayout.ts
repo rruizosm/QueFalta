@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { normalizePantryItems, PANTRY_DEFAULT_SHELF_COUNT, type PantryItem, type PantryLayout } from '../lib/pantryLayout';
+import { normalizePantryItems, PANTRY_DEFAULT_SHELF_COUNT, type PantryItem, type PantryLayout, type PantrySection } from '../lib/pantryLayout';
 import { readPantryLayout, writePantryLayout } from '../lib/pantryStorage';
 
-/** The owning screen is keyed by account, including its in-memory edits. */
-export function usePantryLayout(userId: string | null) {
+/** The owning screen is keyed by account and keeps one stable hook instance per section. */
+export function usePantryLayout(userId: string | null, section: PantrySection = 'pantry') {
   const [layout, setLayout] = useState<PantryLayout>({ items: [], shelfCount: PANTRY_DEFAULT_SHELF_COUNT });
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -17,24 +17,24 @@ export function usePantryLayout(userId: string | null) {
     mounted.current = true;
     setLoadError(false);
     let cancelled = false;
-    if (userId) readPantryLayout(userId).then((saved) => {
+    if (userId) readPantryLayout(userId, section).then((saved) => {
       if (cancelled) return;
       current.current = saved;
       setLayout(saved);
       setReady(true);
     }).catch(() => { if (!cancelled) setLoadError(true); });
     return () => { cancelled = true; mounted.current = false; };
-  }, [userId, attempt]);
+  }, [userId, section, attempt]);
 
   const persist = useCallback((next: PantryLayout) => {
     if (!userId) return;
     const version = ++revision.current;
-    void writePantryLayout(userId, next).then(() => {
+    void writePantryLayout(userId, next, section).then(() => {
       if (mounted.current && revision.current === version) setSaveError(false);
     }).catch(() => {
       if (mounted.current && revision.current === version) setSaveError(true);
     });
-  }, [userId]);
+  }, [userId, section]);
 
   const update = useCallback((change: (previous: PantryItem[]) => PantryItem[]) => {
     if (!mounted.current || !ready || !userId) return;

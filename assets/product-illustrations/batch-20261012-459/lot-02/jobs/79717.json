@@ -1,0 +1,41 @@
+{
+  "id": "79717",
+  "index": 37,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-bfdd1f79-9aef-4630-a19c-4e8a19886d41.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-79717-tiras-adhesivas-protectoras-classic-color-beige-deliplus-surtidas-elasticas-y-transpirables.png",
+  "prompt": "One square transparent PNG. Actual alpha transparency exactly 0 outside the product silhouette; no outside shadow, glow, halo or solid backdrop. Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. Specific inspected product: Tall narrow white and red Deliplus CLASSIC adhesive plasters carton, beige plaster illustrations, red side blocks and red top, 30 uds. Preserve CLASSIC and 30. Product catalog identity: Tiras adhesivas protectoras Classic color beige Deliplus surtidas, elásticas y transpirables.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/79717.txt",
+  "sourceOriginalSha256": "2d612430375d05f6e0d541175767655e0268e791cf9615f9858b85a4bc1e0323",
+  "sourceOriginalBytes": 55400,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:50:49.494Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-79717.webp",
+  "width": 442,
+  "height": 768,
+  "bytes": 71568,
+  "sha256": "47af500b4fd0d7454459a448e643f7d71769e2cea6728ff96c233c5fd7e7ae3e",
+  "alpha": {
+    "transparentPixels": 57757,
+    "opaquePixels": 978,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:53:23.016Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:54:25.903Z",
+  "publication": {
+    "productId": "79717",
+    "name": "Tiras adhesivas protectoras Classic color beige Deliplus surtidas, elásticas y transpirables",
+    "objectPath": "mercadona/79717/47af500b4fd0d745.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/79717/47af500b4fd0d745.webp",
+    "contentType": "image/webp",
+    "bytes": 71568,
+    "published": true,
+    "sha256": "47af500b4fd0d7454459a448e643f7d71769e2cea6728ff96c233c5fd7e7ae3e"
+  },
+  "publishedAt": "2026-10-12T13:54:59.614Z",
+  "localWebpDeletedAt": "2026-10-12T13:55:00.040Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:55:00.040Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:55:00.040Z"
+}

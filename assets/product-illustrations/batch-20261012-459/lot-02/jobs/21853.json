@@ -1,0 +1,41 @@
+{
+  "id": "21853",
+  "index": 40,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-c4eaf368-567e-4598-bc16-58b8218ae49d.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-21853-tiras-adhesivas-protectoras-infantiles-deliplus-surtidas-elasticas-y-transpirables.png",
+  "prompt": "One square transparent PNG. Actual alpha transparency exactly 0 outside the product silhouette; no outside shadow, glow, halo or solid backdrop. Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. Specific inspected product: Tall narrow white and green Deliplus INFANTILES / INFANTIS plasters carton, green top/bottom, animal-print colored plasters (tiger and cow patterns), 12 uds. Product catalog identity: Tiras adhesivas protectoras infantiles Deliplus surtidas, elásticas y transpirables.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/21853.txt",
+  "sourceOriginalSha256": "82c4aaf2bf2719b2240b508b764562481d4570b407c6c1fc91cef9ec2ec67f0c",
+  "sourceOriginalBytes": 57502,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:52:09.667Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-21853.webp",
+  "width": 436,
+  "height": 768,
+  "bytes": 66788,
+  "sha256": "2d4befa0245bc3d01cf01a63432e68616da461bbd8a638346ef6e62bdeb0cc2a",
+  "alpha": {
+    "transparentPixels": 52744,
+    "opaquePixels": 1566,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:53:23.585Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:54:25.903Z",
+  "publication": {
+    "productId": "21853",
+    "name": "Tiras adhesivas protectoras infantiles Deliplus surtidas, elásticas y transpirables",
+    "objectPath": "mercadona/21853/2d4befa0245bc3d0.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/21853/2d4befa0245bc3d0.webp",
+    "contentType": "image/webp",
+    "bytes": 66788,
+    "published": true,
+    "sha256": "2d4befa0245bc3d01cf01a63432e68616da461bbd8a638346ef6e62bdeb0cc2a"
+  },
+  "publishedAt": "2026-10-12T13:55:05.919Z",
+  "localWebpDeletedAt": "2026-10-12T13:55:06.235Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:55:06.235Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:55:06.235Z"
+}

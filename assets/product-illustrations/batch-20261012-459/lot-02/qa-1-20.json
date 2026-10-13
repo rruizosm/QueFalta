@@ -1,0 +1,186 @@
+{
+  "reviewedAt": "2026-10-12T13:48:25.350Z",
+  "products": [
+    {
+      "id": "23800",
+      "nativeTransparentPixels": 707030,
+      "nativeMaxAlpha": 254,
+      "nativeWidth": 1536,
+      "nativeHeight": 1024,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "52883",
+      "nativeTransparentPixels": 757769,
+      "nativeMaxAlpha": 255,
+      "nativeWidth": 1254,
+      "nativeHeight": 1254,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "20288",
+      "nativeTransparentPixels": 678956,
+      "nativeMaxAlpha": 255,
+      "nativeWidth": 1254,
+      "nativeHeight": 1254,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "14943",
+      "nativeTransparentPixels": 798411,
+      "nativeMaxAlpha": 255,
+      "nativeWidth": 1254,
+      "nativeHeight": 1254,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "55135",
+      "nativeTransparentPixels": 920312,
+      "nativeMaxAlpha": 255,
+      "nativeWidth": 1254,
+      "nativeHeight": 1254,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "59071",
+      "nativeTransparentPixels": 755219,
+      "nativeMaxAlpha": 255,
+      "nativeWidth": 1254,
+      "nativeHeight": 1254,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "17564",
+      "nativeTransparentPixels": 804880,
+      "nativeMaxAlpha": 254,
+      "nativeWidth": 1536,
+      "nativeHeight": 1024,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "18320",
+      "nativeTransparentPixels": 780795,
+      "nativeMaxAlpha": 254,
+      "nativeWidth": 1536,
+      "nativeHeight": 1024,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "18658",
+      "nativeTransparentPixels": 802202,
+      "nativeMaxAlpha": 254,
+      "nativeWidth": 1536,
+      "nativeHeight": 1024,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "18684",
+      "nativeTransparentPixels": 663524,
+      "nativeMaxAlpha": 254,
+      "nativeWidth": 1536,
+      "nativeHeight": 1024,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "85415",
+      "nativeTransparentPixels": 536251,
+      "nativeMaxAlpha": 255,
+      "nativeWidth": 1254,
+      "nativeHeight": 1254,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "18399",
+      "nativeTransparentPixels": 767147,
+      "nativeMaxAlpha": 254,
+      "nativeWidth": 1536,
+      "nativeHeight": 1024,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "52967",
+      "nativeTransparentPixels": 794578,
+      "nativeMaxAlpha": 254,
+      "nativeWidth": 1536,
+      "nativeHeight": 1024,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "11419",
+      "nativeTransparentPixels": 656781,
+      "nativeMaxAlpha": 255,
+      "nativeWidth": 1254,
+      "nativeHeight": 1254,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "13716",
+      "nativeTransparentPixels": 654942,
+      "nativeMaxAlpha": 254,
+      "nativeWidth": 1024,
+      "nativeHeight": 1536,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "12856",
+      "nativeTransparentPixels": 1101034,
+      "nativeMaxAlpha": 254,
+      "nativeWidth": 1024,
+      "nativeHeight": 1536,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "35402",
+      "nativeTransparentPixels": 717447,
+      "nativeMaxAlpha": 254,
+      "nativeWidth": 1024,
+      "nativeHeight": 1536,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "24256",
+      "nativeTransparentPixels": 740167,
+      "nativeMaxAlpha": 255,
+      "nativeWidth": 1774,
+      "nativeHeight": 887,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "35923",
+      "nativeTransparentPixels": 647725,
+      "nativeMaxAlpha": 254,
+      "nativeWidth": 1024,
+      "nativeHeight": 1536,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    },
+    {
+      "id": "73319",
+      "nativeTransparentPixels": 747368,
+      "nativeMaxAlpha": 254,
+      "nativeWidth": 1024,
+      "nativeHeight": 1536,
+      "sourceViewed": true,
+      "finalWebpViewed": true
+    }
+  ],
+  "note": "Native inline RGB preview can show exterior RGB glow; actual alpha and final WebP individually/gallery checked clean after standard alpha<=8 zeroing."
+}

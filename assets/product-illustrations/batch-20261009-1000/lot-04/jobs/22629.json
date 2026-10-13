@@ -1,0 +1,39 @@
+{
+  "id": "22629",
+  "index": 6,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/22629.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-22629-champu-curl-perfect-deliplus-cabello-rizado.png",
+  "prompt": "Warm clean editorial hand-drawn Mercadona product illustration, soft thin outlines, defined original colors, subtle paper/gouache texture, frontal view. Illustrate the exact Deliplus Curl Perfect shampoo for curly hair in photo one. Deliplus Curl Perfect shampoo bottle for curly hair; preserve the exact source silhouette, cap, label, Curl Perfect text, colors and visible curl artwork. Preserve all readable words/claims, add no details. Show entire bottle upright, centered, transparent alpha, no glow, shadow, props, setting, photorealism or 3D. Image two is style guidance only.\n",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/22629.txt",
+  "sourceOriginalSha256": "ae5acb79e7c5483490e7ce59f9c471af20db0e4304ee552dc56ab2764e3c0d5f",
+  "sourceOriginalBytes": 27012,
+  "status": "published",
+  "generatedAt": "2026-10-09T06:52:06.372Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-22629.webp",
+  "width": 368,
+  "height": 768,
+  "bytes": 36626,
+  "sha256": "2937448f71ab99155de47566d996f1055441461dd53ba1c8fe644b6e2ad61428",
+  "alpha": {
+    "transparentPixels": 80417,
+    "opaquePixels": 983,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T06:52:14.095Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T06:52:31.119Z",
+  "publication": {
+    "productId": "22629",
+    "name": "Champú Curl Perfect Deliplus cabello rizado",
+    "objectPath": "mercadona/22629/2937448f71ab9915.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/22629/2937448f71ab9915.webp",
+    "contentType": "image/webp",
+    "bytes": 36626,
+    "sha256": "2937448f71ab99155de47566d996f1055441461dd53ba1c8fe644b6e2ad61428"
+  },
+  "publishedAt": "2026-10-09T06:52:55.394Z",
+  "localWebpDeletedAt": "2026-10-09T06:52:55.395Z",
+  "localSourceJpgDeletedAt": "2026-10-09T06:52:55.395Z"
+}

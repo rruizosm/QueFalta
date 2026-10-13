@@ -1,0 +1,41 @@
+{
+  "id": "28515",
+  "index": 30,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12be3-1801-7fe3-88ee-862e3d13eea9/exec-4fae5b3a-41c9-4298-ac13-154ec5f71701.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-04/mercadona-28515-sidra-asturiana-el-mayu.png",
+  "prompt": "Use case: style-transfer. Asset: one catalog product illustration for QuéFalta. Image1 is the sole authoritative product/photo reference; image2 supplies ONLY the illustrated medium and edge/shading treatment, never its milk carton/text. Turn the exact product in image1 into a polished hand-drawn retail illustration matching image2: crisp delicate outlines, clean simplified shading, subtle illustrated texture and faithful retail colors. Truly transparent background, no ground plane, no cast shadow, centered entire product with safe empty margin. Preserve the complete original package geometry, perspective, relative proportions, all components and accessories, real visible quantities and main legible label text. No extra props, invented brands, claims, prices, quantities or food outside packaging. Tiny illegible legal text may be reduced unobtrusively but all meaningful negations such as SIN/SEM must remain complete. Product-specific observed requirements: Tall green El Mayu SIDRA bottle with SILVER foil covered neck, white green oval label; keep entire bottle and foil. Official product: Sidra asturiana El Mayu. Reproduce source numeric values only when legible; do not guess.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-04/actual-prompts/28515.txt",
+  "sourceOriginalSha256": "6767b344492b1d42c8554c0c583df6947a4c3718952c61a1f3578fd624a618f9",
+  "sourceOriginalBytes": 31066,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:15:21.713Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-04/webp/mercadona-28515.webp",
+  "width": 236,
+  "height": 768,
+  "bytes": 33364,
+  "sha256": "29b43c9af436de1720c77cd55f34f580756b235ba01d66ec75fd01e0ca2f2179",
+  "alpha": {
+    "transparentPixels": 72300,
+    "opaquePixels": 968,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:18:16.458Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:38:41.380Z",
+  "publication": {
+    "productId": "28515",
+    "name": "Sidra asturiana El Mayu",
+    "objectPath": "mercadona/28515/29b43c9af436de17.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/28515/29b43c9af436de17.webp",
+    "contentType": "image/webp",
+    "bytes": 33364,
+    "published": true,
+    "sha256": "29b43c9af436de1720c77cd55f34f580756b235ba01d66ec75fd01e0ca2f2179"
+  },
+  "publishedAt": "2026-10-11T17:39:32.154Z",
+  "localWebpDeletedAt": "2026-10-11T17:39:32.285Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:39:32.285Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:39:32.285Z"
+}

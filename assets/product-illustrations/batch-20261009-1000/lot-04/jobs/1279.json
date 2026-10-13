@@ -1,0 +1,39 @@
+{
+  "id": "1279",
+  "index": 71,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-dc9c1022-15f4-4aca-b057-8997ee900b60.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-1279-chorizo-fresco-iberico.png",
+  "prompt": "Create one QuéFalta grocery product illustration matching the established warm hand-drawn style: clean editorial rendering, soft thin outlines, true product colors, subtle paper/gouache texture. Image 1 is the exact official product photo; faithfully keep its identity, contents, branding, visible text and packaging. Image 2 is only the approved style guide at /private/tmp/mercadona-style-10699-reference.png; do not copy the milk carton. Chorizo Fresco Ibérico, one low transparent rectangular supermarket tray containing a single coiled ring of fresh pink-red raw chorizo sausage. A cream/white vertical label with a black pig emblem and red-accented text lies diagonally across the center. Match the exact coil, tray, label placement and refrigerated raw appearance from Image 1; do not depict cured sliced sausage or invent weight. Isolated on transparent background, whole product and package fully visible.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/1279-prompt.txt",
+  "sourceOriginalSha256": "4e51dd17d9fd4444d459c52a4b840fef21058403051fccc143cd5df79e6f58bd",
+  "sourceOriginalBytes": 60562,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:59:43.139Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-1279.webp",
+  "width": 768,
+  "height": 640,
+  "bytes": 106852,
+  "sha256": "832237ba4888e93caf8358d3909f434d94b7ce2f7766d544f59a8b5951bff370",
+  "alpha": {
+    "transparentPixels": 174198,
+    "opaquePixels": 806,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:59:57.353Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T08:00:22.359Z",
+  "publication": {
+    "productId": "1279",
+    "name": "Chorizo fresco Ibérico",
+    "objectPath": "mercadona/1279/832237ba4888e93c.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/1279/832237ba4888e93c.webp",
+    "contentType": "image/webp",
+    "bytes": 106852,
+    "sha256": "832237ba4888e93caf8358d3909f434d94b7ce2f7766d544f59a8b5951bff370"
+  },
+  "publishedAt": "2026-10-09T08:00:23.620Z",
+  "localWebpDeletedAt": "2026-10-09T08:00:23.622Z",
+  "localSourceJpgDeletedAt": "2026-10-09T08:00:23.622Z"
+}

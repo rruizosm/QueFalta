@@ -1,0 +1,41 @@
+{
+  "id": "37806",
+  "index": 5,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-0fa59b90-71fe-4b33-a7b9-083a55756218.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-37806-vino-rosado-dominio-de-borgia.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Vino rosado Dominio de Borgia, ID 37806.\nObserved source: One large ribbed plastic jug of orange rosé wine, orange carry handle around orange screw cap, orange Domínio de Borgia label. Include complete handle and jug.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/37806.txt",
+  "sourceOriginalSha256": "9376c2814cf338bb3bb3ce58dd038e7757d655f01694fa757f2e3ff8a92f54b0",
+  "sourceOriginalBytes": 54137,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:32:37.124Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-37806.webp",
+  "width": 338,
+  "height": 768,
+  "bytes": 60368,
+  "sha256": "ac8a75d5c9576a64f0afc5e69b7b9bc80499a42f46f0e41040164c9185dcb482",
+  "alpha": {
+    "transparentPixels": 73066,
+    "opaquePixels": 1165,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:37:52.258Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:43:23.265Z",
+  "publication": {
+    "productId": "37806",
+    "name": "Vino rosado Dominio de Borgia",
+    "objectPath": "mercadona/37806/ac8a75d5c9576a64.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/37806/ac8a75d5c9576a64.webp",
+    "contentType": "image/webp",
+    "bytes": 60368,
+    "published": true,
+    "sha256": "ac8a75d5c9576a64f0afc5e69b7b9bc80499a42f46f0e41040164c9185dcb482"
+  },
+  "publishedAt": "2026-10-12T13:43:32.326Z",
+  "localWebpDeletedAt": "2026-10-12T13:43:32.509Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:43:32.509Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:43:32.509Z"
+}

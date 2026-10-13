@@ -1,0 +1,39 @@
+{
+  "id": "7942",
+  "index": 15,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/7942.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-7942-champu-liso-keratina-tresemme-cabello-encrespado-o-danado.png",
+  "prompt": "Warm clean editorial hand-drawn product illustration with soft thin outlines, defined colors, subtle paper/gouache texture and a frontal view. Illustrate the exact item in reference photo one: TRESemmé Keratin Smooth shampoo for frizzy or damaged hair. Preserve exact bottle shape/cap, black and gold packaging, TRESemmé and keratin wording/artwork. Preserve exact package type/proportions, all legible words, and distinguish it from nearby variants. Complete item centered, actual transparent alpha background; no scene, props, glow, shadows, photorealism or 3D. Image two is style guidance only.\n",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/7942.txt",
+  "sourceOriginalSha256": "0357918d03f8f8a6b147fc88e2cc4c81addabbf719d92119065c2b037d183c0d",
+  "sourceOriginalBytes": 38020,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:02:51.860Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-7942.webp",
+  "width": 310,
+  "height": 768,
+  "bytes": 47896,
+  "sha256": "ff4a75e1192a5892602eaed052051797f1d76dd51f9ed65c2b30da1b0b2bb0d0",
+  "alpha": {
+    "transparentPixels": 65200,
+    "opaquePixels": 1122,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:03:08.010Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T07:03:26.566Z",
+  "publication": {
+    "productId": "7942",
+    "name": "Champú Liso Keratina TRESemmé cabello encrespado o dañado",
+    "objectPath": "mercadona/7942/ff4a75e1192a5892.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/7942/ff4a75e1192a5892.webp",
+    "contentType": "image/webp",
+    "bytes": 47896,
+    "sha256": "ff4a75e1192a5892602eaed052051797f1d76dd51f9ed65c2b30da1b0b2bb0d0"
+  },
+  "publishedAt": "2026-10-09T07:03:27.611Z",
+  "localWebpDeletedAt": "2026-10-09T07:03:27.612Z",
+  "localSourceJpgDeletedAt": "2026-10-09T07:03:27.612Z"
+}

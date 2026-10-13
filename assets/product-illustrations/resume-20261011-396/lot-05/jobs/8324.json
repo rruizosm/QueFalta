@@ -1,0 +1,41 @@
+{
+  "id": "8324",
+  "index": 71,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-e99ab1ab-75d7-46de-b97d-1deb8d8abb5f.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-8324-solomillos-de-pollo-halal-marinados-empanados-sin-gluten.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Solomillos de pollo Halal marinados empanados sin gluten (Mercadona 8324).\nObserved source details: Clear shallow rectangular tray of breaded chicken tenderloins, golden crumb coating. Orange vertical band with chicken emblem and full SIN GLUTEN red/blue badge; genuine HALAL round seal upper right. Preserve both claims including SIN and exact pieces.",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-05/actual-prompts/8324-root-resume.txt",
+  "sourceOriginalSha256": "4c101c5aca3879b0801d16f8a270d39535fcee575c7d2de4ce038e4fb29a3114",
+  "sourceOriginalBytes": 59179,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:51:16.902Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-8324.webp",
+  "width": 768,
+  "height": 500,
+  "bytes": 109946,
+  "sha256": "b34c5644a715572c6d5ac8f6cf27dcb7553f40ba0f36bef1e207521514b26f71",
+  "alpha": {
+    "transparentPixels": 72017,
+    "opaquePixels": 1122,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:54:54.983Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:55:21.250Z",
+  "publication": {
+    "productId": "8324",
+    "name": "Solomillos de pollo Halal marinados empanados sin gluten",
+    "objectPath": "mercadona/8324/b34c5644a715572c.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/8324/b34c5644a715572c.webp",
+    "contentType": "image/webp",
+    "bytes": 109946,
+    "published": true,
+    "sha256": "b34c5644a715572c6d5ac8f6cf27dcb7553f40ba0f36bef1e207521514b26f71"
+  },
+  "publishedAt": "2026-10-11T17:55:51.025Z",
+  "localWebpDeletedAt": "2026-10-11T17:55:51.282Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:55:51.282Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:55:51.282Z"
+}

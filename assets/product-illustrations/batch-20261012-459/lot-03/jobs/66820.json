@@ -1,0 +1,41 @@
+{
+  "id": "66820",
+  "index": 54,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-6b78-7552-94a3-b923c51cf7da/exec-08be8bde-ee8c-4188-bfbc-424fba041bbe.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-03/mercadona-66820-vino-blanco-afrutado-marques-de-vizhoja.png",
+  "prompt": "Use case: style-transfer. Create one polished hand-drawn retail product illustration for the QueFalta catalog. Image 1 is the sole authoritative product photograph. Image 2 supplies ONLY the illustrated medium, delicate outlines, simplified clean shading and subtle texture, never its milk carton, colors or text. Faithfully illustrate exactly the complete product in image 1, its perspective, geometry, components, colors and main readable label lettering. Truly transparent background, no ground plane, no cast shadow. Center the entire object with generous safe transparent margin. Preserve all visible caps, separate accessories, real multipack counts and full package edges. Preserve meaningful negations SIN or SEM and visible quantities completely. No invented claims, brands, prices, quantities or extra food/props. Tiny unreadable legal text may be quietly simplified. Never infer packaging text or quantities from catalog title. Product-specific visual requirements: Olive wine bottle with long patterned gold neck sleeve and orange-pink vine-leaf art, round dark seal; Marques de Vizhoja. Catalog title for identification only: Vino blanco afrutado Marqués de Vizhoja. Reproduce numeric values only when legible in image 1; the actual photograph overrides catalog wording.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-03/actual-prompts/66820.txt",
+  "sourceOriginalSha256": "a2dbbd77e6cba21e71697631cd173ea3dfa2669711b480698330d2dbeb3a6dce",
+  "sourceOriginalBytes": 36542,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:45:03.275Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-03/webp/mercadona-66820.webp",
+  "width": 244,
+  "height": 768,
+  "bytes": 43184,
+  "sha256": "b6d5514b4414cb7fea2186dd023d182cbbd2e8cb75d31623fabbba28d0bab66e",
+  "alpha": {
+    "transparentPixels": 75536,
+    "opaquePixels": 1050,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:45:22.193Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:45:30.637Z",
+  "publication": {
+    "productId": "66820",
+    "name": "Vino blanco afrutado Marqués de Vizhoja",
+    "objectPath": "mercadona/66820/b6d5514b4414cb7f.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/66820/b6d5514b4414cb7f.webp",
+    "contentType": "image/webp",
+    "bytes": 43184,
+    "published": true,
+    "sha256": "b6d5514b4414cb7fea2186dd023d182cbbd2e8cb75d31623fabbba28d0bab66e"
+  },
+  "publishedAt": "2026-10-12T14:45:40.694Z",
+  "localWebpDeletedAt": "2026-10-12T14:45:40.831Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:45:40.831Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:45:40.831Z"
+}

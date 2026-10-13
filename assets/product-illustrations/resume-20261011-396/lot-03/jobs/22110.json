@@ -1,0 +1,41 @@
+{
+  "id": "22110",
+  "index": 15,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-03d28a21-26a7-478c-bb5e-73010908e17c.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-03/mercadona-22110-refresco-kas-naranja.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Refresco Kas naranja, Mercadona product ID 22110. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\n\nSource inspected: Orange KAS NARANJA shrink-wrapped nine-can retail pack, dark blue vertical PACK AHORRO band, 9 x 330 ml and MUY NUESTRO DESDE 1956.\nOnly the product packaging, not the white source background; actual transparent background. Printed pack bands belong to packaging; omit only external catalog callouts.\n",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-03/actual-prompts/22110.txt",
+  "sourceOriginalSha256": "0c3b5b3b95189a265d6d63aa6c9321e530d52dbb4b1e5b8a2c23c4629db331b6",
+  "sourceOriginalBytes": 87617,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:00:42.323Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-03/webp/mercadona-22110.webp",
+  "width": 768,
+  "height": 750,
+  "bytes": 113978,
+  "sha256": "f88251f044d7dec6bec4c09f1341c97ff62ad497ba48d35c643c21671c3cc491",
+  "alpha": {
+    "transparentPixels": 113057,
+    "opaquePixels": 938,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:01:47.535Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:03:25.328Z",
+  "publication": {
+    "productId": "22110",
+    "name": "Refresco Kas naranja",
+    "objectPath": "mercadona/22110/f88251f044d7dec6.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/22110/f88251f044d7dec6.webp",
+    "contentType": "image/webp",
+    "bytes": 113978,
+    "published": true,
+    "sha256": "f88251f044d7dec6bec4c09f1341c97ff62ad497ba48d35c643c21671c3cc491"
+  },
+  "publishedAt": "2026-10-11T17:03:38.530Z",
+  "localWebpDeletedAt": "2026-10-11T17:03:38.701Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:03:38.701Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:03:38.701Z"
+}

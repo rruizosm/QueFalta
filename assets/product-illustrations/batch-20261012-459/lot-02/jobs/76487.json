@@ -1,0 +1,41 @@
+{
+  "id": "76487",
+  "index": 52,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-6a1e81dd-a5ef-401e-96c6-b8e370a76267.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-76487-toallitas-desmaquillantes-cara-y-ojos-deliplus-piel-seca-y-sensible.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Single soft rectangular white and blue Deliplus makeup remover wipes packet, white oval plastic flip-top reading Aloe Vera, blue sides and water droplet imagery; piel seca y sensible. Product catalog identity: Toallitas desmaquillantes cara y ojos Deliplus piel seca y sensible.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/76487.txt",
+  "sourceOriginalSha256": "7c51f18b6fa35f5480ddebd493817c551ae99500eed64651eaf2febefad9f069",
+  "sourceOriginalBytes": 34979,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:45:18.896Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-76487.webp",
+  "width": 768,
+  "height": 559,
+  "bytes": 58252,
+  "sha256": "76b6e73bfe2312a32e9bebd3386a992eeeaf3d36e457b90bb0a4bf0ef0266318",
+  "alpha": {
+    "transparentPixels": 197432,
+    "opaquePixels": 1036,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:46:44.706Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:47:23.006Z",
+  "publication": {
+    "productId": "76487",
+    "name": "Toallitas desmaquillantes cara y ojos Deliplus piel seca y sensible",
+    "objectPath": "mercadona/76487/76b6e73bfe2312a3.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/76487/76b6e73bfe2312a3.webp",
+    "contentType": "image/webp",
+    "bytes": 58252,
+    "published": true,
+    "sha256": "76b6e73bfe2312a32e9bebd3386a992eeeaf3d36e457b90bb0a4bf0ef0266318"
+  },
+  "publishedAt": "2026-10-12T14:47:33.520Z",
+  "localWebpDeletedAt": "2026-10-12T14:47:33.664Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:47:33.664Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:47:33.664Z"
+}

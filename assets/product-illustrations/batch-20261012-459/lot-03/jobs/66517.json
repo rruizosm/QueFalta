@@ -1,0 +1,41 @@
+{
+  "id": "66517",
+  "index": 62,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-6b78-7552-94a3-b923c51cf7da/exec-bbb052cd-ca11-4425-bfba-ca4467d3d491.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-03/mercadona-66517-vino-blanco-blanc-de-blancs-perelada-do-catalunya.png",
+  "prompt": "Use case: style-transfer. Create one polished hand-drawn retail product illustration for the QueFalta catalog. Image 1 is the sole authoritative product photograph. Image 2 supplies ONLY the illustrated medium, delicate outlines, simplified clean shading and subtle texture, never its milk carton, colors or text. Faithfully illustrate exactly the complete product in image 1, its perspective, geometry, components, colors and main readable label lettering. Truly transparent background, no ground plane, no cast shadow. Center the entire object with generous safe transparent margin. Preserve all visible caps, separate accessories, real multipack counts and full package edges. Preserve meaningful negations SIN or SEM and visible quantities completely. No invented claims, brands, prices, quantities or extra food/props. Tiny unreadable legal text may be quietly simplified. Never infer packaging text or quantities from catalog title. Product-specific visual requirements: Olive wine bottle with black cap; long black label with white upper architectural drawing, PERELADA and delicate green leaf stem. Catalog title for identification only: Vino blanco Blanc de Blancs Perelada DO Catalunya. Reproduce numeric values only when legible in image 1; the actual photograph overrides catalog wording.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-03/actual-prompts/66517.txt",
+  "sourceOriginalSha256": "361999457d8106e0a92ae3b0fe0a3370629946ccd1c5f86a47fc36fb4a4710cf",
+  "sourceOriginalBytes": 26900,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:48:08.837Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-03/webp/mercadona-66517.webp",
+  "width": 200,
+  "height": 768,
+  "bytes": 21120,
+  "sha256": "0eec10a81027b9e8d4e6b63b790cb4a289c6de089cb1cd827e22495377ab91ec",
+  "alpha": {
+    "transparentPixels": 50639,
+    "opaquePixels": 1385,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:48:21.603Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:48:30.691Z",
+  "publication": {
+    "productId": "66517",
+    "name": "Vino blanco Blanc de Blancs Perelada DO Catalunya",
+    "objectPath": "mercadona/66517/0eec10a81027b9e8.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/66517/0eec10a81027b9e8.webp",
+    "contentType": "image/webp",
+    "bytes": 21120,
+    "published": true,
+    "sha256": "0eec10a81027b9e8d4e6b63b790cb4a289c6de089cb1cd827e22495377ab91ec"
+  },
+  "publishedAt": "2026-10-12T14:48:36.234Z",
+  "localWebpDeletedAt": "2026-10-12T14:48:36.466Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:48:36.466Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:48:36.466Z"
+}

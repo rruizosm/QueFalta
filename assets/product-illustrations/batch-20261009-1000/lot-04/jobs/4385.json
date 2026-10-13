@@ -1,0 +1,56 @@
+{
+  "id": "4385",
+  "index": 54,
+  "version": 2,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/4385-padding.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-4385-chorizo-blanco-parrillero-v2.png",
+  "prompt": "Preserve the reviewed illustration and complete product silhouette exactly. Add transparent canvas margin around it so WebP conversion retains a clean transparent border; no product pixels are to be cropped or altered.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/4385-padding-prompt.txt",
+  "sourceOriginalSha256": "9928ef714f6706ef234844fee8ea6be20ab4f967fc8e8009bd975792e5ba186b",
+  "sourceOriginalBytes": 46851,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:42:01.683Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-4385.webp",
+  "previousGenerations": [
+    {
+      "id": "4385",
+      "index": 54,
+      "version": 1,
+      "generationTool": "built-in image_gen",
+      "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/4385.png",
+      "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-4385-chorizo-blanco-parrillero.png",
+      "prompt": "Warm clean editorial hand-drawn product illustration, soft thin outlines, defined colors and subtle paper/gouache texture. Recreate the exact chorizo product in source photo one: White parrillero grilling chorizo. Preserve its distinct pale/white meat casing/color, exact count and packaging. Preserve its real casing, exact link count, package type and visible labels; invent nothing. Entire retail item centered with actual transparent alpha, no props, background, glow or shadow. Image two is style guidance only.\n",
+      "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/4385.txt",
+      "sourceOriginalSha256": "9928ef714f6706ef234844fee8ea6be20ab4f967fc8e8009bd975792e5ba186b",
+      "sourceOriginalBytes": 46851,
+      "status": "generated",
+      "generatedAt": "2026-10-09T07:37:20.173Z",
+      "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-4385.webp"
+    }
+  ],
+  "width": 768,
+  "height": 481,
+  "bytes": 85556,
+  "sha256": "725831e5e807b8cedc3a69e526c5256e774cb3727a080db1a2d3c65f3032ec1c",
+  "alpha": {
+    "transparentPixels": 144470,
+    "opaquePixels": 1003,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:42:01.878Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T07:42:13.920Z",
+  "publication": {
+    "productId": "4385",
+    "name": "Chorizo blanco parrillero",
+    "objectPath": "mercadona/4385/725831e5e807b8ce.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/4385/725831e5e807b8ce.webp",
+    "contentType": "image/webp",
+    "bytes": 85556,
+    "sha256": "725831e5e807b8cedc3a69e526c5256e774cb3727a080db1a2d3c65f3032ec1c"
+  },
+  "publishedAt": "2026-10-09T07:42:19.218Z",
+  "localWebpDeletedAt": "2026-10-09T07:42:19.219Z",
+  "localSourceJpgDeletedAt": "2026-10-09T07:42:19.219Z"
+}

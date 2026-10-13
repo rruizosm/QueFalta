@@ -14,7 +14,7 @@ import { getAppTabBarPageIndices, pagerToTabBarProgress } from './appPagerRoutes
 
 const icons: Record<string, keyof typeof Ionicons.glyphMap> = {
   Home: 'home-outline', Catalog: 'library-outline', QueCocino: 'restaurant-outline',
-  List: 'basket-outline', Groups: 'people-outline',
+  Pantry: 'file-tray-stacked-outline', List: 'basket-outline', Groups: 'people-outline',
 };
 
 type Props = BottomTabBarProps & {
@@ -75,16 +75,12 @@ export function AppPagerTabBar({ state, navigation, descriptors, animation, comp
     paddingHorizontal: interpolate(compactProgress.value, [0, 1], [L.padding, L.padding * M.compactScale]),
   }));
   const pillStyle = useAnimatedStyle(() => {
-    // The Pantry/Home swipe changes no bottom destination, so its pill stays
-    // still. All other pages retain the existing lead/stretch animation.
-    const insideHome = progress.value <= pageIndices[0];
-    const pillStretch = insideHome ? 0 : stretch.value;
-    const pillPosition = insideHome ? 0 : pagerToTabBarProgress(progress.value + pillLead.value, pageIndices);
+    const pillPosition = pagerToTabBarProgress(progress.value + pillLead.value, pageIndices);
     return {
       top: interpolate(compactProgress.value, [0, 1], [L.padding, (M.compactHeight - L.pillHeight) / 2]),
       transform: [
         { translateX: pillPosition * slot + 2 },
-        { scaleX: 1 + pillStretch }, { scaleY: 1 - pillStretch * 0.16 },
+        { scaleX: 1 + stretch.value }, { scaleY: 1 - stretch.value * 0.16 },
       ],
     };
   });

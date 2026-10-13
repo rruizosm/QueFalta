@@ -1,0 +1,41 @@
+{
+  "id": "3768",
+  "index": 98,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308c-ebe7-7011-b529-512d15320584/exec-8a6bea76-304f-4c8b-a927-6c6120fd23a9.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-01/mercadona-3768-tacos-de-ternera-para-guisar.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta catalog product illustration. Image1 is the exact official product photo, authoritative for subject and all product details. Image2 is ONLY the approved hand-drawn illustration style; do not copy its milk carton. Render Image1 as warm clean editorial hand-drawn gouache, subtle paper texture, thin defined outlines and recognizable original colors. Preserve exact product/variant, whole silhouette, proportions, packaging, labels and readable text. Use actual alpha transparency. Entire product centered with minimal transparent margin; preserve natural source orientation, all separate food pieces and components, source count/layout and retail multipacks. Do not change sliced food to whole food or vice versa. Keep heads, tails, caps and packaging where source has them. No props, invented packaging, plate, extra labels, cast shadows, floor, background, checkerboard, photorealism or3D. Reproduce only legible printed words/units/claims; never infer printed text from catalog name. Preserve SIN/SEM GLUTEN and all negations, quantities, units and qualifiers exactly if present. Tiny unreadable microprint may be simplified into neutral lines without invented values. Output one complete transparent PNG.\nProduct ID 3768. Observed source: Clear red beef cube tray black white CARNE DE GUISAR wrap green round sticker. Photo remains authoritative.\n Square canvas. Outside the exact product silhouette alpha must be exactly zero; no exterior glow, beige halo, blurred aura, paper rectangle, vignette or colored backdrop. Texture stays strictly inside the product.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-01/actual-prompts/3768.txt",
+  "sourceOriginalSha256": "4379fb57c4945bf1ac6d676bbffed24e313078ab6e456869c3cf429e6229299b",
+  "sourceOriginalBytes": 58782,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:08:03.397Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-01/webp/mercadona-3768.webp",
+  "width": 768,
+  "height": 548,
+  "bytes": 86626,
+  "sha256": "3e90a2f0614f4824bb7ce251030bb33465e3dc26c3850c6ac35d9b762cf699a2",
+  "alpha": {
+    "transparentPixels": 176940,
+    "opaquePixels": 999,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:14:39.868Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:17:17.939Z",
+  "publication": {
+    "productId": "3768",
+    "name": "Tacos de ternera para guisar",
+    "objectPath": "mercadona/3768/3e90a2f0614f4824.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/3768/3e90a2f0614f4824.webp",
+    "contentType": "image/webp",
+    "bytes": 86626,
+    "published": true,
+    "sha256": "3e90a2f0614f4824bb7ce251030bb33465e3dc26c3850c6ac35d9b762cf699a2"
+  },
+  "publishedAt": "2026-10-12T15:17:54.692Z",
+  "localWebpDeletedAt": "2026-10-12T15:17:54.997Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:17:54.997Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:17:54.997Z"
+}

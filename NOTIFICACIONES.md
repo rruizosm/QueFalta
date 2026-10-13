@@ -1,6 +1,6 @@
 # Notificaciones — Estado y hoja de ruta
 
-> Última actualización: 2026-08-28
+> Última actualización: 2026-10-12
 > SDK actual: **Expo SDK 57** · Push real requiere **dev/prod build** (no Expo Go)
 
 Documento de seguimiento para las notificaciones de la app. Resume qué está
@@ -34,7 +34,12 @@ Hay **dos tipos** de notificaciones, no confundir:
 ### Alertas personalizadas de precio/oferta
 
 - `price_alert_rules` guarda reglas exactas o por palabras y aplica RLS por
-  propietario. El servidor permite una regla a free y reglas ilimitadas a Plus.
+  propietario. Las reglas `new_arrival` admiten también palabras opcionales:
+  sin filtro cubren todas las altas y con filtro exigen todos los términos
+  normalizados en el nombre del producto. El servidor permite una regla a free
+  y reglas ilimitadas a Plus. La ampliación
+  `20261012191308_filter_new_arrival_alerts_by_keywords.sql` está aplicada en
+  producción como `20261012192222`.
 - Los triggers de los espejos escriben eventos duraderos; la outbox
   `price_alert_deliveries` deduplica cada pareja regla+evento.
 - El procesador agrupa por regla y actualización antes de insertar en

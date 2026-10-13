@@ -1,0 +1,41 @@
+{
+  "id": "16434",
+  "index": 50,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-77b7a431-ece5-4e9c-81c8-c0e8a834f0bf.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-16434-vino-tinto-mimbral-tierra-de-cadiz.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Vino tinto Mimbral Tierra de cádiz, ID 16434.\nObserved source: Dark bottle purple capsule, angular white MIMBRAL label and burgundy VINO DE LA TIERRA DE CADIZ band.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/16434.txt",
+  "sourceOriginalSha256": "2e31e6588ebb8c62c232b3be1db812b995ccd94b09f9a82742330909197dd39a",
+  "sourceOriginalBytes": 26908,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:58:26.001Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-16434.webp",
+  "width": 239,
+  "height": 768,
+  "bytes": 23914,
+  "sha256": "1992e883ed10f7bfcd51e4f28a13f8739405f41330af411f56509d811b50cf59",
+  "alpha": {
+    "transparentPixels": 61015,
+    "opaquePixels": 904,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:41:02.826Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:45:50.076Z",
+  "publication": {
+    "productId": "16434",
+    "name": "Vino tinto Mimbral Tierra de cádiz",
+    "objectPath": "mercadona/16434/1992e883ed10f7bf.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/16434/1992e883ed10f7bf.webp",
+    "contentType": "image/webp",
+    "bytes": 23914,
+    "published": true,
+    "sha256": "1992e883ed10f7bfcd51e4f28a13f8739405f41330af411f56509d811b50cf59"
+  },
+  "publishedAt": "2026-10-12T14:46:03.767Z",
+  "localWebpDeletedAt": "2026-10-12T14:46:03.907Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:46:03.907Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:46:03.907Z"
+}

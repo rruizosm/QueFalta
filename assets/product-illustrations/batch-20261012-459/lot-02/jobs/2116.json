@@ -1,0 +1,41 @@
+{
+  "id": "2116",
+  "index": 69,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-4cf5cc5d-fab9-42e5-9ca5-e3c54557d9a5.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-2116-tocino-de-cerdo-iberico.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Tall flat transparent vacuum pack holding pale white and pink Iberian pork fat slab, wide beige center label with black pig and TOCINO IBÉRICO FRESCO. Product catalog identity: Tocino de cerdo ibérico.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/2116.txt",
+  "sourceOriginalSha256": "e41540e6d6f1d503066232dd662985c83d9e52a70192ba0dc5093f20acc6d2ba",
+  "sourceOriginalBytes": 55304,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:55:58.753Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-2116.webp",
+  "width": 716,
+  "height": 768,
+  "bytes": 100574,
+  "sha256": "6f053e993ed590f7cc31b512b89dbe698f476310a3200e0fab6d5c5cef763b5d",
+  "alpha": {
+    "transparentPixels": 124941,
+    "opaquePixels": 1193,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:56:10.142Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:57:40.122Z",
+  "publication": {
+    "productId": "2116",
+    "name": "Tocino de cerdo ibérico",
+    "objectPath": "mercadona/2116/6f053e993ed590f7.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/2116/6f053e993ed590f7.webp",
+    "contentType": "image/webp",
+    "bytes": 100574,
+    "published": true,
+    "sha256": "6f053e993ed590f7cc31b512b89dbe698f476310a3200e0fab6d5c5cef763b5d"
+  },
+  "publishedAt": "2026-10-12T14:57:58.443Z",
+  "localWebpDeletedAt": "2026-10-12T14:57:58.569Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:57:58.569Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:57:58.569Z"
+}

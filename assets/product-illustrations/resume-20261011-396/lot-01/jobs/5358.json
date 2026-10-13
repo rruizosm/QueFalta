@@ -1,0 +1,68 @@
+{
+  "id": "5358",
+  "index": 33,
+  "version": 2,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bde-adb9-77e3-a69c-bbde9ef0841e/exec-d8d24b1c-da1e-40c5-a882-ccf3bcbae523.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-01/mercadona-5358-puchero-vacuno-y-pollo-v2.png",
+  "prompt": "Use case: text-localization. Image1 is the existing hand-drawn catalog illustration to edit. Image2 is the official high-resolution product photograph, authoritative for the printed badge. Make exactly one correction: replace the garbled white lettering on the small red upper part of the gluten-free badge with the exact three uppercase letters \"SIN\". Keep \"GLUTEN\" on the blue middle strip. The complete badge must unambiguously read \"SIN GLUTEN\" as in Image2. Change only that small badge lettering; preserve the full tray, meat/bones/chicken, tan label, all other text, shape, colors, composition, subtle editorial gouache texture and actual alpha transparency. No new claims, no extra components, no background. Output complete corrected transparent PNG.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-01/actual-prompts/5358-v2.txt",
+  "sourceOriginalSha256": "578d552e0dea487e37afc76e1231f8a02f98df3bd422858bbc0d51db80120c0f",
+  "sourceOriginalBytes": 47766,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:41:40.635Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-01/webp/mercadona-5358.webp",
+  "previousGenerations": [
+    {
+      "id": "5358",
+      "index": 33,
+      "version": 1,
+      "generationTool": "built-in image_gen",
+      "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bde-adb9-77e3-a69c-bbde9ef0841e/exec-bc08d7f2-b606-43ef-88fd-530ce92302af.png",
+      "png": "assets/product-illustrations/resume-20261011-396/lot-01/mercadona-5358-puchero-vacuno-y-pollo.png",
+      "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Puchero vacuno y pollo, Mercadona product ID 5358. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\n\nObserved source details (authoritative): Clear rectangular two-section tray with poultry/bone pieces left and red beef/fat section right, beige white band with black animal emblem, PUCHERO; preserve both compartments and actual meat.\nPreserve only source claims and quantities. Tiny unreadable text may become neutral lines. All real transparent film edges, separate packaging components and thin details belong to the object. One catalog illustration, actual alpha background.\n",
+      "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-01/actual-prompts/5358.txt",
+      "sourceOriginalSha256": "578d552e0dea487e37afc76e1231f8a02f98df3bd422858bbc0d51db80120c0f",
+      "sourceOriginalBytes": 47766,
+      "status": "prepared",
+      "generatedAt": "2026-10-11T17:17:41.181Z",
+      "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-01/webp/mercadona-5358.webp",
+      "width": 768,
+      "height": 459,
+      "bytes": 89624,
+      "sha256": "24469bf8a521d5af87c66b891bac447fd3060c578401e661155c389ab826ad94",
+      "alpha": {
+        "transparentPixels": 79265,
+        "opaquePixels": 943,
+        "visibleBorderPixels": 0
+      },
+      "preparedAt": "2026-10-11T17:36:31.563Z"
+    }
+  ],
+  "width": 768,
+  "height": 459,
+  "bytes": 84070,
+  "sha256": "a7b3126317cd018fc8003377b556e0bac8a12210ddaa526095d36437423283b5",
+  "alpha": {
+    "transparentPixels": 78420,
+    "opaquePixels": 1290,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:47:48.261Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:48:09.126Z",
+  "publication": {
+    "productId": "5358",
+    "name": "Puchero vacuno y pollo",
+    "objectPath": "mercadona/5358/a7b3126317cd018f.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/5358/a7b3126317cd018f.webp",
+    "contentType": "image/webp",
+    "bytes": 84070,
+    "published": true,
+    "sha256": "a7b3126317cd018fc8003377b556e0bac8a12210ddaa526095d36437423283b5"
+  },
+  "publishedAt": "2026-10-11T17:48:10.453Z",
+  "localWebpDeletedAt": "2026-10-11T17:48:10.810Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:48:10.810Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:48:10.810Z"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "69967",
+  "index": 72,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-2d18a55c-77d5-428e-a0a2-90ea2c036a82.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-69967-tomate-de-ramillete-de-mallorca.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Clear rectangular plastic punnet containing several reddish round Mallorca ramillete tomatoes with small green stems. Preserve punnet and grouped small tomatoes. Product catalog identity: Tomate de ramillete de Mallorca.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/69967.txt",
+  "sourceOriginalSha256": "dfebbd189efa1ea0c6cc69a983ed10f82d1f498f428e0a1055219db111d6f949",
+  "sourceOriginalBytes": 51905,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:55:58.762Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-69967.webp",
+  "width": 768,
+  "height": 522,
+  "bytes": 79416,
+  "sha256": "735bc33e7bd54131072e59159bee61b29592cc522866edcb169f96d0f6a9dffb",
+  "alpha": {
+    "transparentPixels": 160225,
+    "opaquePixels": 928,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:02:50.837Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:04:08.316Z",
+  "publication": {
+    "productId": "69967",
+    "name": "Tomate de ramillete de Mallorca",
+    "objectPath": "mercadona/69967/735bc33e7bd54131.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/69967/735bc33e7bd54131.webp",
+    "contentType": "image/webp",
+    "bytes": 79416,
+    "published": true,
+    "sha256": "735bc33e7bd54131072e59159bee61b29592cc522866edcb169f96d0f6a9dffb"
+  },
+  "publishedAt": "2026-10-12T15:04:16.636Z",
+  "localWebpDeletedAt": "2026-10-12T15:04:17.213Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:04:17.213Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:04:17.213Z"
+}

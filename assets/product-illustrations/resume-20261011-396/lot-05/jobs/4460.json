@@ -1,0 +1,47 @@
+{
+  "id": "4460",
+  "index": 51,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-4c78a2fb-1885-4b5a-95f7-1007cbdfdf55.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-4460-solomillo-de-cerdo.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "aebb8b8a6bd58a34628cef564114eab9004f0872ff7e0d4498c73c673dbb1b43",
+  "sourceOriginalBytes": 25690,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:44:01.521538+00:00",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-4460.webp",
+  "recovery": {
+    "nativeMatchedToConversationCheckpoint": true,
+    "nativeSha256": "0af7f260c23feec3ee683de3f23b0caf5c93b9f09988f705bf313f67aa18fb92",
+    "originalPromptUnavailable": true,
+    "note": "Root native output and ID matched to prior visible tool checkpoints. Original prompt file deleted; no replacement prompt claimed. Fresh visual review required."
+  },
+  "width": 768,
+  "height": 275,
+  "bytes": 45800,
+  "sha256": "25363ef2f28126bef7a1138fc89901eb938f46697fff1fddc312b5465f88af4d",
+  "alpha": {
+    "transparentPixels": 68449,
+    "opaquePixels": 1231,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T16:57:43.617Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:09:59.450Z",
+  "publication": {
+    "productId": "4460",
+    "name": "Solomillo de cerdo",
+    "objectPath": "mercadona/4460/25363ef2f28126be.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/4460/25363ef2f28126be.webp",
+    "contentType": "image/webp",
+    "bytes": 45800,
+    "published": true,
+    "sha256": "25363ef2f28126bef7a1138fc89901eb938f46697fff1fddc312b5465f88af4d"
+  },
+  "publishedAt": "2026-10-11T17:11:30.580Z",
+  "localWebpDeletedAt": "2026-10-11T17:11:30.712Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:11:30.712Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:11:30.712Z"
+}

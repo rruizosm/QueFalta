@@ -1,0 +1,39 @@
+{
+  "id": "16717",
+  "index": 84,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-e5365ce8-6bef-41cd-ac11-1a63140c0346.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-16717-chucrut-al-estilo-bavaro-hengstenberg.png",
+  "prompt": "Create a hand-drawn QuéFalta grocery illustration of Image 1, using warm clean editorial linework, soft thin outlines, accurate colors and subtle paper/gouache texture. Faithfully preserve the exact product, package silhouette and visible text/claims. Image 2 at /private/tmp/mercadona-style-10699-reference.png supplies style only and must not be copied. Hengstenberg Bavarian-style sauerkraut with wine, one squat clear glass jar filled with pale shredded sauerkraut and topped by a blue-and-white Bavarian diamond-check metal lid. Wide wrap label with matching blue diamond pattern, Hengstenberg logo, large CHUCRUT title and 680 g / 650 g visible. Keep the entire jar and exact label colors. Keep the full product isolated on a transparent background with sufficient margin.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/16717-prompt.txt",
+  "sourceOriginalSha256": "9c9f6ea53639aca71a634e906fba831508cb0176af355ebb42be9a9119d6c023",
+  "sourceOriginalBytes": 90044,
+  "status": "published",
+  "generatedAt": "2026-10-09T08:12:10.553Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-16717.webp",
+  "width": 552,
+  "height": 768,
+  "bytes": 123536,
+  "sha256": "ab4414a3dc9486c5637115548185fe639a6ea972b982d226aaf4b0942835e82c",
+  "alpha": {
+    "transparentPixels": 73108,
+    "opaquePixels": 1078,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T08:13:02.062Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T08:13:38.670Z",
+  "publication": {
+    "productId": "16717",
+    "name": "Chucrut al estilo bávaro Hengstenberg",
+    "objectPath": "mercadona/16717/ab4414a3dc9486c5.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/16717/ab4414a3dc9486c5.webp",
+    "contentType": "image/webp",
+    "bytes": 123536,
+    "sha256": "ab4414a3dc9486c5637115548185fe639a6ea972b982d226aaf4b0942835e82c"
+  },
+  "publishedAt": "2026-10-09T08:13:41.400Z",
+  "localWebpDeletedAt": "2026-10-09T08:13:41.401Z",
+  "localSourceJpgDeletedAt": "2026-10-09T08:13:41.401Z"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "11632.1",
+  "index": 72,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308c-ebe7-7011-b529-512d15320584/exec-f809d946-6a54-4652-9191-ab32c387b194.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-01/mercadona-11632.1-pan-integral-de-trigo-100.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta catalog product illustration. Image1 is the exact official product photo, authoritative for subject and all product details. Image2 is ONLY the approved hand-drawn illustration style; do not copy its milk carton. Render Image1 as warm clean editorial hand-drawn gouache, subtle paper texture, thin defined outlines and recognizable original colors. Preserve exact product/variant, whole silhouette, proportions, packaging, labels and readable text. Use actual alpha transparency. Entire product centered with minimal transparent margin; preserve natural source orientation, all separate food pieces and components, source count/layout and retail multipacks. Do not change sliced food to whole food or vice versa. Keep heads, tails, caps and packaging where source has them. No props, invented packaging, plate, extra labels, cast shadows, floor, background, checkerboard, photorealism or3D. Reproduce only legible printed words/units/claims; never infer printed text from catalog name. Preserve SIN/SEM GLUTEN and all negations, quantities, units and qualifiers exactly if present. Tiny unreadable microprint may be simplified into neutral lines without invented values. Output one complete transparent PNG.\nProduct ID 11632.1. Observed source: Oval brown wholegrain loaf deep longitudinal score. Photo remains authoritative.\n Square canvas. Outside the exact product silhouette alpha must be exactly zero; no exterior glow, beige halo, blurred aura, paper rectangle, vignette or colored backdrop. Texture stays strictly inside the product.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-01/actual-prompts/11632.1.txt",
+  "sourceOriginalSha256": "61449cac3dbb1b1972e8e575c09a07b246be158d70c9d8fcf34850372baacc9e",
+  "sourceOriginalBytes": 81134,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:54:48.998Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-01/webp/mercadona-11632.1.webp",
+  "width": 768,
+  "height": 585,
+  "bytes": 158874,
+  "sha256": "572e80afb61208b471772e54d3f04ae93f938b3ba1908bd221ad22ecdde1b896",
+  "alpha": {
+    "transparentPixels": 182294,
+    "opaquePixels": 642,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:55:50.391Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:14:35.893Z",
+  "publication": {
+    "productId": "11632.1",
+    "name": "Pan integral de trigo 100%",
+    "objectPath": "mercadona/11632.1/572e80afb61208b4.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/11632.1/572e80afb61208b4.webp",
+    "contentType": "image/webp",
+    "bytes": 158874,
+    "published": true,
+    "sha256": "572e80afb61208b471772e54d3f04ae93f938b3ba1908bd221ad22ecdde1b896"
+  },
+  "publishedAt": "2026-10-12T15:14:55.154Z",
+  "localWebpDeletedAt": "2026-10-12T15:14:55.290Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:14:55.290Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:14:55.290Z"
+}

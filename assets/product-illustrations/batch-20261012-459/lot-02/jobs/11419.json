@@ -1,0 +1,41 @@
+{
+  "id": "11419",
+  "index": 14,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-88fbe65f-d45f-4315-87df-007dd1b01e17.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-11419-te-verde-sultan.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. Specific inspected product: Tall rectangular Sultan green tea tin/box, dark green top with yellow band 10%+, large red Arabic lettering outlined yellow, pale turquoise ornamental lower half. Preserve original Arabic lettering visually from reference. Product catalog identity: Té verde Sultan.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/11419.txt",
+  "sourceOriginalSha256": "26746f2609c36d24660be0e001b29a906afbb51fd1cbbeb91c05f8530721cc95",
+  "sourceOriginalBytes": 93624,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:39:53.118Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-11419.webp",
+  "width": 694,
+  "height": 768,
+  "bytes": 115796,
+  "sha256": "4f334db501fd50c6ed11379ee2f6fb62e12fc68e135ea2bc2d022a7afa83741f",
+  "alpha": {
+    "transparentPixels": 83862,
+    "opaquePixels": 438,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:40:28.986Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:43:49.327Z",
+  "publication": {
+    "productId": "11419",
+    "name": "Té verde Sultan",
+    "objectPath": "mercadona/11419/4f334db501fd50c6.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/11419/4f334db501fd50c6.webp",
+    "contentType": "image/webp",
+    "bytes": 115796,
+    "published": true,
+    "sha256": "4f334db501fd50c6ed11379ee2f6fb62e12fc68e135ea2bc2d022a7afa83741f"
+  },
+  "publishedAt": "2026-10-12T13:44:14.392Z",
+  "localWebpDeletedAt": "2026-10-12T13:44:14.521Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:44:14.521Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:44:14.521Z"
+}

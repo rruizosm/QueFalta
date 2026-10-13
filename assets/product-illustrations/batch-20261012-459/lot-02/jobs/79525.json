@@ -1,0 +1,41 @@
+{
+  "id": "79525",
+  "index": 53,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-b8b9ae2d-ac06-4a99-9bc4-377750be8053.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-79525-toallitas-desmaquillantes-micelar-oil-deliplus-para-todo-tipo-de-pieles.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Single white and golden yellow Deliplus makeup remover wipes packet, white oval flip-top reading Micelar & Oil, golden oil drop graphic at upper right; preserve yellow variant. Product catalog identity: Toallitas desmaquillantes Micelar & Oil Deliplus para todo tipo de pieles.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/79525.txt",
+  "sourceOriginalSha256": "9b50b3883355797abb43e2e35feea3cd8c8551eed275bedeac0b19cad4446e0a",
+  "sourceOriginalBytes": 23238,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:45:59.450Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-79525.webp",
+  "width": 768,
+  "height": 573,
+  "bytes": 52468,
+  "sha256": "e44e8e79969b54360edbc226e4713b0e7ba20580ae8db8554a1db3c057ff885f",
+  "alpha": {
+    "transparentPixels": 213745,
+    "opaquePixels": 875,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:46:44.877Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:47:23.006Z",
+  "publication": {
+    "productId": "79525",
+    "name": "Toallitas desmaquillantes Micelar & Oil Deliplus para todo tipo de pieles",
+    "objectPath": "mercadona/79525/e44e8e79969b5436.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/79525/e44e8e79969b5436.webp",
+    "contentType": "image/webp",
+    "bytes": 52468,
+    "published": true,
+    "sha256": "e44e8e79969b54360edbc226e4713b0e7ba20580ae8db8554a1db3c057ff885f"
+  },
+  "publishedAt": "2026-10-12T14:47:34.799Z",
+  "localWebpDeletedAt": "2026-10-12T14:47:34.984Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:47:34.984Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:47:34.984Z"
+}

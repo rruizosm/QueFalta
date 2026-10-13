@@ -1,0 +1,41 @@
+{
+  "id": "35805",
+  "index": 67,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-ac3881f4-4875-4521-9dfd-778876eda9de.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-35805-tocino-de-cerdo.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Tall flat transparent vacuum pack of pale white-pink slab of pork fat, pink strip along right, beige center label with black pig and TOCINO. Preserve fat slab and transparent packaging. Product catalog identity: Tocino de cerdo.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/35805.txt",
+  "sourceOriginalSha256": "85101fdfef62ff77dc286289d914b2dd8e84916daf4b7fdeb44337013a0ee211",
+  "sourceOriginalBytes": 44521,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:53:09.583Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-35805.webp",
+  "width": 525,
+  "height": 768,
+  "bytes": 68732,
+  "sha256": "57863001eb10a800a292ddd32104fa22ba48c8c871b4a5e64d2f92705773afc3",
+  "alpha": {
+    "transparentPixels": 67611,
+    "opaquePixels": 1671,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:56:09.686Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:57:40.119Z",
+  "publication": {
+    "productId": "35805",
+    "name": "Tocino de cerdo",
+    "objectPath": "mercadona/35805/57863001eb10a800.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/35805/57863001eb10a800.webp",
+    "contentType": "image/webp",
+    "bytes": 68732,
+    "published": true,
+    "sha256": "57863001eb10a800a292ddd32104fa22ba48c8c871b4a5e64d2f92705773afc3"
+  },
+  "publishedAt": "2026-10-12T14:57:54.777Z",
+  "localWebpDeletedAt": "2026-10-12T14:57:54.932Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:57:54.932Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:57:54.932Z"
+}

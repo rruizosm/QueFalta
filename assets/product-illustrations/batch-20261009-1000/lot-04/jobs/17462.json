@@ -1,0 +1,39 @@
+{
+  "id": "17462",
+  "index": 73,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-454e4d84-33a7-4fdd-ac3d-dc7dec227b73.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-17462-chorizo-iberico-la-hacienda-del-iberico.png",
+  "prompt": "Create one QuéFalta grocery product illustration matching the established warm hand-drawn style: clean editorial rendering, soft thin outlines, true product colors, subtle paper/gouache texture. Image 1 is the exact official product photo; faithfully keep its identity, contents, branding, visible text and packaging. Image 2 is only the approved style guide at /private/tmp/mercadona-style-10699-reference.png; do not copy the milk carton. La Hacienda del Ibérico Chorizo Ibérico, one long narrow hanging clear sleeve with two connected whole cured dark red-brown chorizos arranged vertically. Match source's cream upper field, red upper band reading CHORIZO IBÉRICO, gold band and deep red lower brand label, full clear package and ties. Preserve the vertical proportions and exact label blocks; no slices or props. Isolated on transparent background, whole product and package fully visible.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/17462-prompt.txt",
+  "sourceOriginalSha256": "8b9589fcae3dd7ff6dd867fd5d2aa5075592e7db8bd0c883c0d728f43a76d703",
+  "sourceOriginalBytes": 48802,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:59:43.142Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-17462.webp",
+  "width": 289,
+  "height": 768,
+  "bytes": 64676,
+  "sha256": "fc664626ffbbf8be4b13c905ac7f2fc4b86330297ca51253360c793d74cbd805",
+  "alpha": {
+    "transparentPixels": 58162,
+    "opaquePixels": 938,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:59:57.638Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T08:00:22.361Z",
+  "publication": {
+    "productId": "17462",
+    "name": "Chorizo ibérico La Hacienda del ibérico",
+    "objectPath": "mercadona/17462/fc664626ffbbf8be.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/17462/fc664626ffbbf8be.webp",
+    "contentType": "image/webp",
+    "bytes": 64676,
+    "sha256": "fc664626ffbbf8be4b13c905ac7f2fc4b86330297ca51253360c793d74cbd805"
+  },
+  "publishedAt": "2026-10-09T08:00:26.142Z",
+  "localWebpDeletedAt": "2026-10-09T08:00:26.143Z",
+  "localSourceJpgDeletedAt": "2026-10-09T08:00:26.143Z"
+}

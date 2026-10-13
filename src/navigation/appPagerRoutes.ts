@@ -1,15 +1,14 @@
-// Despensa is the page immediately to the left of Inicio, not another bottom
-// navigation destination. Keep Inicio as both the launch and Android Back root.
+// Inicio remains both the launch destination and the Android Back root.
 export const APP_PAGER_ROUTE_OPTIONS = {
   initialRouteName: 'Home',
   backBehavior: 'initialRoute',
 } as const;
 
 export function getAppTabBarPageIndices(routes: readonly { name: string }[]) {
-  return routes.flatMap((route, index) => route.name === 'Pantry' ? [] : [index]);
+  return routes.map((_, index) => index);
 }
 
-/** Map page motion to the visible icons; Despensa keeps Inicio selected. */
+/** Map page motion to the visible bottom destinations. */
 export function pagerToTabBarProgress(progress: number, pageIndices: readonly number[]) {
   'worklet';
   if (pageIndices.length < 2 || progress <= pageIndices[0]) return 0;

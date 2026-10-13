@@ -476,7 +476,6 @@ function AppTabs() {
           // Navigation/focus is still owned by React Navigation's TabRouter.
         }}
       >
-        <Tab.Screen name="Pantry" component={PantryScreen} options={{ title: t('pantry.title') }} />
         <Tab.Screen
           name="Home"
           component={HomeNavigator}
@@ -488,6 +487,7 @@ function AppTabs() {
           }}
         />
         <Tab.Screen name="Catalog"   component={CatalogNavigator} options={{ title: t('tabs.catalog') }} />
+        <Tab.Screen name="Pantry" component={PantryScreen} options={{ title: t('pantry.title') }} />
         {QUE_COCINO_ENABLED && (
           <Tab.Screen
             name="QueCocino"

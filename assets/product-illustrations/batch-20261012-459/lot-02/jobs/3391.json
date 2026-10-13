@@ -1,0 +1,41 @@
+{
+  "id": "3391",
+  "index": 70,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-034c25e2-9e2e-47cf-bf8c-dee72afc8438.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-3391-tocino-de-cerdo-iberico-con-secreto-salado.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Low transparent plastic tray holding layered white pork fat and pink meat with brown rind along lower edge, beige center sleeve with black pig logo and TOCINO IBÉRICO CON SECRETO. Product catalog identity: Tocino de cerdo ibérico con secreto salado.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/3391.txt",
+  "sourceOriginalSha256": "75190ef51c13d42958eac6c497d7a7a647e0bd1f7aca40c02969541eb9fc1aa5",
+  "sourceOriginalBytes": 43805,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:55:22.669Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-3391.webp",
+  "width": 768,
+  "height": 597,
+  "bytes": 89554,
+  "sha256": "7edf46692ea81b7f3d9c58da2ac202174a00d1c5edb3a8211c43b280be2063cd",
+  "alpha": {
+    "transparentPixels": 156834,
+    "opaquePixels": 1021,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:56:10.338Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:57:40.123Z",
+  "publication": {
+    "productId": "3391",
+    "name": "Tocino de cerdo ibérico con secreto salado",
+    "objectPath": "mercadona/3391/7edf46692ea81b7f.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/3391/7edf46692ea81b7f.webp",
+    "contentType": "image/webp",
+    "bytes": 89554,
+    "published": true,
+    "sha256": "7edf46692ea81b7f3d9c58da2ac202174a00d1c5edb3a8211c43b280be2063cd"
+  },
+  "publishedAt": "2026-10-12T14:57:59.835Z",
+  "localWebpDeletedAt": "2026-10-12T14:57:59.981Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:57:59.981Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:57:59.981Z"
+}

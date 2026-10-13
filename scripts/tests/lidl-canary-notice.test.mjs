@@ -7,6 +7,7 @@ const dropdown = read('src/components/StoreDropdown.tsx');
 const catalog = read('src/screens/CatalogScreen.tsx');
 const allStoresModal = read('src/components/AllStoresInfoModal.tsx');
 const infoButton = read('src/components/StoreInfoButton.tsx');
+const cardActionButton = read('src/components/StoreCardActionButton.tsx');
 const lidlStorePicker = read('src/components/LidlStorePicker.tsx');
 const translations = read('src/i18n/translations.ts');
 
@@ -53,9 +54,10 @@ test('the combined-store information button appears only while the Plus option i
     assert.match(source, /left: 8, bottom: 4/);
     assert.ok(source.includes('<StoreInfoButton'), 'both cards use the same information control');
   }
-  assert.match(infoButton, /width: 44, height: 44/);
-  assert.match(infoButton, /width: 34, height: 34/);
-  assert.match(infoButton, /fallbackColor=\{colors\.accentLight\}/);
+  assert.match(infoButton, /<StoreCardActionButton[\s\S]*icon="information-circle-outline"/);
+  assert.match(cardActionButton, /width: 44, height: 44/);
+  assert.match(cardActionButton, /width: 34, height: 34/);
+  assert.match(cardActionButton, /fallbackColor=\{colors\.accentLight\}/);
 });
 
 test('the combined-store popup includes a real list example for the three requested stores', () => {

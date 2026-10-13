@@ -1,0 +1,41 @@
+{
+  "id": "82830.2",
+  "index": 18,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bde-adb9-77e3-a69c-bbde9ef0841e/exec-8a338236-5513-41ea-927b-b219e509fc32.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-01/mercadona-82830.2-barra-de-pan-campesina-masa-madre-rebanada.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta catalog product illustration. Image1 is the exact official product photo, authoritative for subject and all product details. Image2 is ONLY the approved hand-drawn illustration style; do not copy its milk carton. Render Image1 as warm clean editorial hand-drawn gouache, subtle paper texture, thin defined outlines and recognizable original colors. Preserve exact product/variant, whole silhouette, proportions, packaging, labels and readable text. Use actual alpha transparency. Entire product centered with minimal transparent margin; preserve natural source orientation, all separate food pieces and components, source count/layout and retail multipacks. Do not change sliced food to whole food or vice versa. Keep heads, tails, caps and packaging where source has them. No props, invented packaging, plate, extra labels, cast shadows, floor, background, checkerboard, photorealism or3D. Reproduce only legible printed words/units/claims; never infer printed text from catalog name. Preserve SIN/SEM GLUTEN and all negations, quantities, units and qualifiers exactly if present. Tiny unreadable microprint may be simplified into neutral lines without invented values. Output one complete transparent PNG.\nProduct ID 82830.2. Observed source: Single whole row sliced rustic baguette and heel pieces, no bag. Photo remains authoritative.\n Square canvas. Outside the exact product silhouette alpha must be exactly zero; no exterior glow, beige halo, blurred aura, paper rectangle, vignette or colored backdrop. Texture stays strictly inside the product.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261012-459/lot-01/actual-prompts/82830.2.txt",
+  "sourceOriginalSha256": "e4542d37be8d856a9654af567f4aad8f7f629eb5a0bc47811b1c121798419164",
+  "sourceOriginalBytes": 42390,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:47:55.727Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-01/webp/mercadona-82830.2.webp",
+  "width": 768,
+  "height": 557,
+  "bytes": 71448,
+  "sha256": "bcfcc7d475076474a1d8bcffad996141a54bcf5dcc6d874cf01a7d819b71b699",
+  "alpha": {
+    "transparentPixels": 312743,
+    "opaquePixels": 525,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:51:39.457Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:54:58.930Z",
+  "publication": {
+    "productId": "82830.2",
+    "name": "Barra de pan campesina masa madre rebanada",
+    "objectPath": "mercadona/82830.2/bcfcc7d475076474.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/82830.2/bcfcc7d475076474.webp",
+    "contentType": "image/webp",
+    "bytes": 71448,
+    "published": true,
+    "sha256": "bcfcc7d475076474a1d8bcffad996141a54bcf5dcc6d874cf01a7d819b71b699"
+  },
+  "publishedAt": "2026-10-12T13:55:11.976Z",
+  "localWebpDeletedAt": "2026-10-12T13:55:12.414Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:55:12.414Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:55:12.414Z"
+}

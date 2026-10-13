@@ -11,6 +11,7 @@ if (!modulePath || !isAbsolute(modulePath)) throw new Error('Indica el módulo P
 const { PGlite } = await import(pathToFileURL(modulePath).href);
 const db = new PGlite();
 const migration = await readFile(new URL('../supabase/migrations/20260905175806_lidl_comparator_multistore.sql', import.meta.url), 'utf8');
+const comparatorIndex = await readFile(new URL('../supabase/migrations/20261013144834_lidl_comparator_product_store_index.sql', import.meta.url), 'utf8');
 const stores = ['mercadona','bonpreu','carrefour','bonarea','consum','dia','sorli','eroski',
   'caprabo','condis','ametller','aldi','hiperdino','alcampo','plusfresc','gadis','froiz','ahorramas'];
 try {
@@ -60,6 +61,17 @@ try {
       ('lidl','milk','mercadona','milk','embedding_hybrid_v3_0_60','comparable',null,0.9,0.9,0.9,'{"quantity_ratio":1}');
   `);
   const query = async (sql) => (await db.query(sql)).rows;
+  const beforeIndex = await query('select * from public.lidl_comparator_products order by id');
+  await db.exec(comparatorIndex);
+  assert.deepEqual(await query('select * from public.lidl_comparator_products order by id'), beforeIndex);
+  // Force index consideration on the tiny fixture to verify its predicate and
+  // column order support the actual lateral lookup without an explicit sort.
+  await db.exec('set enable_seqscan=off');
+  const plan = await query(`explain (format json) select category_name,price_per_unit_unit
+    from public.lidl_store_products where product_id='milk' and published order by store_id limit 1`);
+  assert.match(JSON.stringify(plan), /lidl_store_products_comparator_idx/);
+  assert.doesNotMatch(JSON.stringify(plan), /"Node Type":"Sort"/);
+  await db.exec('reset enable_seqscan');
   const compare = (source, target) => query(`select * from comparator_internal.catalog_cheaper_products_v5('${source}','milk',array['${target}'])`);
   const price = async () => (await query("select * from public.catalog_public_product_v1('lidl','milk')"))[0];
   assert.equal((await query('select * from public.lidl_comparator_products')).length,1);

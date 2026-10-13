@@ -1,0 +1,41 @@
+{
+  "id": "86707",
+  "index": 91,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12be3-1801-7fe3-88ee-862e3d13eea9/exec-d0d1c039-00bf-4a18-8bc2-e9dec16c9b22.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-04/mercadona-86707-ron-viejo-la-recompensa.png",
+  "prompt": "Use case: style-transfer. Asset: one catalog product illustration for QuéFalta. Image1 is the sole authoritative product/photo reference; image2 supplies ONLY the illustrated medium and edge/shading treatment, never its milk carton/text. Turn the exact product in image1 into a polished hand-drawn retail illustration matching image2: crisp delicate outlines, clean simplified shading, subtle illustrated texture and faithful retail colors. Truly transparent background, no ground plane, no cast shadow, centered entire product with safe empty margin. Preserve the complete original package geometry, perspective, relative proportions, all components and accessories, real visible quantities and main legible label text. No extra props, invented brands, claims, prices, quantities or food outside packaging. Tiny illegible legal text may be reduced unobtrusively but all meaningful negations such as SIN/SEM must remain complete. Product-specific observed requirements: Dark amber La Recompensa RON VIEJO 8 bottle BLACK cap red/cream label VENEZOLANO; retain numeral8 and source volume/alcohol. Official product: Ron viejo La Recompensa. Reproduce source numeric values only when legible; do not guess.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-04/actual-prompts/86707.txt",
+  "sourceOriginalSha256": "525423a82734fd413973bc49f6d4fff6f710d6a26ee03812ec187a27a95bfed1",
+  "sourceOriginalBytes": 43866,
+  "status": "published",
+  "generatedAt": "2026-10-11T18:17:18.897Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-04/webp/mercadona-86707.webp",
+  "width": 265,
+  "height": 768,
+  "bytes": 42726,
+  "sha256": "7e9e411fe387db6dbdd8b18270477c89918db80d002c599a6c833d5f0ff099a9",
+  "alpha": {
+    "transparentPixels": 68224,
+    "opaquePixels": 1290,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T18:23:30.281Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T18:24:30.998Z",
+  "publication": {
+    "productId": "86707",
+    "name": "Ron viejo La Recompensa",
+    "objectPath": "mercadona/86707/7e9e411fe387db6d.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/86707/7e9e411fe387db6d.webp",
+    "contentType": "image/webp",
+    "bytes": 42726,
+    "published": true,
+    "sha256": "7e9e411fe387db6dbdd8b18270477c89918db80d002c599a6c833d5f0ff099a9"
+  },
+  "publishedAt": "2026-10-11T18:24:43.164Z",
+  "localWebpDeletedAt": "2026-10-11T18:24:43.290Z",
+  "localSourceJpgDeletedAt": "2026-10-11T18:24:43.290Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T18:24:43.290Z"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "2804",
+  "index": 45,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-10c170e5-0473-4e54-b60e-5b98fc0e6cb8.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-2804-solomillo-de-vacuno-anojo-para-plancha.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Solomillo de vacuno añojo para plancha (Mercadona 2804).\nObserved source details: Clear rectangular shallow tray with ONE red beef tenderloin steak at right and a black/white vertical band on left. Black cattle emblem VACUNO, PLANCHA, SOLOMILLO and small details. Exactly one cut, preserve white fat edge.",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-05/actual-prompts/2804-root-resume.txt",
+  "sourceOriginalSha256": "854d872d012a1310427c486456727d5428af9738de0336df1bf6022cb1ed8adf",
+  "sourceOriginalBytes": 49230,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:38:03.388Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-2804.webp",
+  "width": 768,
+  "height": 464,
+  "bytes": 71922,
+  "sha256": "5bdf00c2fdb2872cfd238d92ef10d69a11520fc0c48b4485d7218440b7812f19",
+  "alpha": {
+    "transparentPixels": 69215,
+    "opaquePixels": 888,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:39:03.155Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:44:30.847Z",
+  "publication": {
+    "productId": "2804",
+    "name": "Solomillo de vacuno añojo para plancha",
+    "objectPath": "mercadona/2804/5bdf00c2fdb2872c.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/2804/5bdf00c2fdb2872c.webp",
+    "contentType": "image/webp",
+    "bytes": 71922,
+    "published": true,
+    "sha256": "5bdf00c2fdb2872cfd238d92ef10d69a11520fc0c48b4485d7218440b7812f19"
+  },
+  "publishedAt": "2026-10-11T17:44:56.472Z",
+  "localWebpDeletedAt": "2026-10-11T17:44:56.592Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:44:56.592Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:44:56.592Z"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "83202.1",
+  "index": 16,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bde-adb9-77e3-a69c-bbde9ef0841e/exec-d5b4105a-b9db-4c5b-b30b-bb364772a29a.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-01/mercadona-83202.1-barra-de-pan.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta catalog product illustration. Image1 is the exact official product photo, authoritative for subject and all product details. Image2 is ONLY the approved hand-drawn illustration style; do not copy its milk carton. Render Image1 as warm clean editorial hand-drawn gouache, subtle paper texture, thin defined outlines and recognizable original colors. Preserve exact product/variant, whole silhouette, proportions, packaging, labels and readable text. Use actual alpha transparency. Entire product centered with minimal transparent margin; preserve natural source orientation, all separate food pieces and components, source count/layout and retail multipacks. Do not change sliced food to whole food or vice versa. Keep heads, tails, caps and packaging where source has them. No props, invented packaging, plate, extra labels, cast shadows, floor, background, checkerboard, photorealism or3D. Reproduce only legible printed words/units/claims; never infer printed text from catalog name. Preserve SIN/SEM GLUTEN and all negations, quantities, units and qualifiers exactly if present. Tiny unreadable microprint may be simplified into neutral lines without invented values. Output one complete transparent PNG.\nProduct ID 83202.1. Observed source: Single baguette in clear upright narrow bag, barra pan label. Photo remains authoritative.\n Square canvas. Outside the exact product silhouette alpha must be exactly zero; no exterior glow, beige halo, blurred aura, paper rectangle, vignette or colored backdrop. Texture stays strictly inside the product.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/batch-20261012-459/lot-01/actual-prompts/83202.1.txt",
+  "sourceOriginalSha256": "3a46fd92050aa214e4bfb38b925ff30035be3d09d4c0850b37037d8fe254dcfb",
+  "sourceOriginalBytes": 32575,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:46:44.081Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-01/webp/mercadona-83202.1.webp",
+  "width": 211,
+  "height": 768,
+  "bytes": 45744,
+  "sha256": "0ff7bc972933d8e81a2114cb76200edaac772705eee07bc9f0cfea8761098074",
+  "alpha": {
+    "transparentPixels": 55206,
+    "opaquePixels": 1174,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:51:39.147Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:54:58.927Z",
+  "publication": {
+    "productId": "83202.1",
+    "name": "Barra de pan",
+    "objectPath": "mercadona/83202.1/0ff7bc972933d8e8.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/83202.1/0ff7bc972933d8e8.webp",
+    "contentType": "image/webp",
+    "bytes": 45744,
+    "published": true,
+    "sha256": "0ff7bc972933d8e81a2114cb76200edaac772705eee07bc9f0cfea8761098074"
+  },
+  "publishedAt": "2026-10-12T13:55:06.996Z",
+  "localWebpDeletedAt": "2026-10-12T13:55:07.202Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:55:07.202Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:55:07.202Z"
+}

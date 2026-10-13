@@ -1,0 +1,50 @@
+{
+  "id": "72410",
+  "index": 41,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12091-dc56-7d03-acf6-998d69096048/exec-57b494ad-f8ec-4a86-ac6d-7c610c7a1351.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-02/mercadona-72410-recambio-ambientador-automatico-infantil-bosque-verde.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "f70303b0d440628ccba6d73b03bd6da7ccd3d46827a822b27f94420b922180ec",
+  "sourceOriginalBytes": 39446,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:37:55.539Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-02/webp/mercadona-72410.webp",
+  "recovery": {
+    "recoveredAt": "2026-10-11T16:56:07.779449+00:00",
+    "nativeMatchedToHistoricalWebp": true,
+    "historicalWebpSha256": "d7d8c6d02c53531f951db3eb147aedc1fde2693671f8a4b1202c920592e07259",
+    "historicalWebpTempPath": "/private/tmp/mercadona-batch-20261010-1000/lot-07/webp/mercadona-72410.webp",
+    "nativeSha256": "8a9a7c957d328a450c5a871979449ffb14eec2d545d0ff96d176aecf990ad0f8",
+    "originalPromptUnavailable": true,
+    "note": "Original batch directory was deleted. Native recovered by exact SHA after same export; original prompt is unavailable and has not been invented. Fresh visual review required before upload."
+  },
+  "width": 360,
+  "height": 768,
+  "bytes": 50812,
+  "sha256": "d7d8c6d02c53531f951db3eb147aedc1fde2693671f8a4b1202c920592e07259",
+  "alpha": {
+    "transparentPixels": 47908,
+    "opaquePixels": 1515,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:50:16.397Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:52:58.446Z",
+  "publication": {
+    "productId": "72410",
+    "name": "Recambio ambientador automático Infantil Bosque Verde",
+    "objectPath": "mercadona/72410/d7d8c6d02c53531f.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/72410/d7d8c6d02c53531f.webp",
+    "contentType": "image/webp",
+    "bytes": 50812,
+    "published": true,
+    "sha256": "d7d8c6d02c53531f951db3eb147aedc1fde2693671f8a4b1202c920592e07259"
+  },
+  "publishedAt": "2026-10-11T17:52:59.657Z",
+  "localWebpDeletedAt": "2026-10-11T17:52:59.961Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:52:59.961Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:52:59.961Z"
+}

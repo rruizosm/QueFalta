@@ -1,0 +1,41 @@
+{
+  "id": "18399",
+  "index": 12,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-c6ff12c9-45eb-43f7-9e64-fa8e654ae9e1.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-18399-tarta-infantil-paw-patrol-congelada.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. Specific inspected product: The product itself is a rectangular Paw Patrol frozen celebration cake with turquoise piped frosting around sides, colorful printed character image on top and one slice taken out at right showing yellow sponge and cream. Preserve cake shape and its top image. Product catalog identity: Tarta infantil Paw Patrol congelada.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/18399.txt",
+  "sourceOriginalSha256": "8d035b71d8539569688117d15d4ca6146e5747b2de63881ff7db425f2381c235",
+  "sourceOriginalBytes": 82151,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:38:23.057Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-18399.webp",
+  "width": 768,
+  "height": 516,
+  "bytes": 143612,
+  "sha256": "e51dfcc8a622b5c766a326f9ddb7d5c802ba7d7e501d62c05a1dc31ff4a48f5a",
+  "alpha": {
+    "transparentPixels": 169694,
+    "opaquePixels": 161,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:40:28.574Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:43:49.326Z",
+  "publication": {
+    "productId": "18399",
+    "name": "Tarta infantil Paw Patrol congelada",
+    "objectPath": "mercadona/18399/e51dfcc8a622b5c7.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/18399/e51dfcc8a622b5c7.webp",
+    "contentType": "image/webp",
+    "bytes": 143612,
+    "published": true,
+    "sha256": "e51dfcc8a622b5c766a326f9ddb7d5c802ba7d7e501d62c05a1dc31ff4a48f5a"
+  },
+  "publishedAt": "2026-10-12T13:44:10.599Z",
+  "localWebpDeletedAt": "2026-10-12T13:44:10.778Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:44:10.778Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:44:10.778Z"
+}

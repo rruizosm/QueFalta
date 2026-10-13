@@ -1,0 +1,41 @@
+{
+  "id": "14484",
+  "index": 21,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-d0613987-6776-4c78-b880-f26d312853ee.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-14484-surtido-bombones-senzza-de-chocolate.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Surtido bombones Senzza de chocolate, Mercadona product ID 14484. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\nObserved source details: Standing blue/gold Senzza Surtido chocolate bag with gathered blue twist top, chocolate pralines artwork,28unidades. Preserve full gathered top and28.\n",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-05/actual-prompts/14484.txt",
+  "sourceOriginalSha256": "dfb9c6b22e3414943a7a17d3e664527309baf1128efa1a880e2de0a8773be8e0",
+  "sourceOriginalBytes": 60826,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:11:17.827Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-14484.webp",
+  "width": 389,
+  "height": 768,
+  "bytes": 79256,
+  "sha256": "4bbc82b9c873c1d4abb740cd77c89f145a8bfb19ce3573d337683cc12a7e0d03",
+  "alpha": {
+    "transparentPixels": 82297,
+    "opaquePixels": 1261,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:13:05.857Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:36:56.088Z",
+  "publication": {
+    "productId": "14484",
+    "name": "Surtido bombones Senzza de chocolate",
+    "objectPath": "mercadona/14484/4bbc82b9c873c1d4.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/14484/4bbc82b9c873c1d4.webp",
+    "contentType": "image/webp",
+    "bytes": 79256,
+    "published": true,
+    "sha256": "4bbc82b9c873c1d4abb740cd77c89f145a8bfb19ce3573d337683cc12a7e0d03"
+  },
+  "publishedAt": "2026-10-11T17:37:24.325Z",
+  "localWebpDeletedAt": "2026-10-11T17:37:24.530Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:37:24.530Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:37:24.530Z"
+}

@@ -18,6 +18,8 @@ export const PANTRY_PRODUCT_GAP = 0.012;
 export const PANTRY_PRODUCT_FRAME_RATIO = 0.55;
 export const PANTRY_SLOT_COUNT = 5;
 
+export type PantrySection = 'pantry' | 'fridge';
+
 export interface PantryProduct {
   id: string;
   name: string;
@@ -122,20 +124,34 @@ export function isPantryPlacementFree(placement: PantryPlacement, occupied: read
   'worklet';
   const desired = clampPantryPlacement(placement, shelfCount);
   const desiredHalfWidth = pantryProductWidth(desired.size) / 2;
-  return fitsPantryShelf(desired, shelfCount) && occupied.map((entry) => clampPantryPlacement(entry, shelfCount)).every((entry) => {
-    if (pantryShelfIndex(entry, shelfCount) !== pantryShelfIndex(desired, shelfCount)) return true;
-    const minimumDistance = desiredHalfWidth + pantryProductWidth(entry.size) / 2 + PANTRY_PRODUCT_GAP;
-    return Math.abs(desired.x - entry.x) >= minimumDistance - 1e-9;
+  return fitsPantryShelf(desired, shelfCount) && occupied.every((entry) => {
+    if (pantryShelfIndex(entry, shelfCount) !== desired.shelfIndex) return true;
+    const normalized = clampPantryPlacement(entry, shelfCount);
+    const minimumDistance = desiredHalfWidth + pantryProductWidth(normalized.size) / 2 + PANTRY_PRODUCT_GAP;
+    return Math.abs(desired.x - normalized.x) >= minimumDistance - 1e-9;
   });
 }
 
 /** Fixed add targets that are not covered by the current product frames. */
 export function availablePantrySlots(occupied: readonly PantryPlacement[], shelfCount = PANTRY_DEFAULT_SHELF_COUNT): { index: number; placement: PantryPlacement }[] {
+  const shelves = groupPantryShelves(occupied, shelfCount);
   return Array.from({ length: shelfCount }, (_, shelfIndex) =>
     Array.from({ length: PANTRY_SLOT_COUNT }, (_, slot) => ({
       index: shelfIndex * PANTRY_SLOT_COUNT + slot, placement: pantrySlotPlacement(slot, shelfIndex, shelfCount),
     }))).flat()
-    .filter(({ placement }) => isPantryPlacementFree(placement, occupied, shelfCount));
+    .filter(({ placement }) => isPantryPlacementFree(placement, shelves.get(placement.shelfIndex!) ?? [], shelfCount));
+}
+
+/** Only products on the same shelf can collide. Do not scan the whole pantry per slot/item. */
+function groupPantryShelves<T extends PantryPlacement>(items: readonly T[], shelfCount: number): Map<number, T[]> {
+  const shelves = new Map<number, T[]>();
+  for (const item of items) {
+    const index = pantryShelfIndex(item, shelfCount);
+    const shelf = shelves.get(index);
+    if (shelf) shelf.push(item);
+    else shelves.set(index, [item]);
+  }
+  return shelves;
 }
 
 /** Nearest free interval at the requested size; never moves or shrinks a neighbour. */
@@ -143,8 +159,8 @@ export function findPantryPlacement(placement: PantryPlacement, occupied: readon
   'worklet';
   const desired = clampPantryPlacement(placement, shelfCount);
   if (!fitsPantryShelf(desired, shelfCount)) return null;
-  const sorted = occupied.map((entry) => clampPantryPlacement(entry, shelfCount))
-    .filter((entry) => pantryShelfIndex(entry, shelfCount) === pantryShelfIndex(desired, shelfCount)).sort((a, b) => a.x - b.x);
+  const sorted = occupied.filter((entry) => pantryShelfIndex(entry, shelfCount) === desired.shelfIndex)
+    .map((entry) => clampPantryPlacement(entry, shelfCount)).sort((a, b) => a.x - b.x);
   let left = PANTRY_SHELF_INSET;
   let bestX: number | null = null;
   let bestDistance = Infinity;
@@ -181,16 +197,33 @@ export function arrangePantryItems(items: readonly PantryItem[], shelfCount = PA
   const placed: PantryItem[] = [];
   const pending: PantryItem[] = [];
   const unplaced: PantryItem[] = [];
+  const shelves = new Map<number, PantryItem[]>();
+  const withPlacement = (item: PantryItem, placement: PantryPlacement): PantryItem =>
+    item.x === placement.x && item.y === placement.y && item.size === placement.size
+      && item.shelfIndex === placement.shelfIndex ? item : { ...item, ...placement };
+  const reserve = (item: PantryItem, placement: PantryPlacement) => {
+    const next = withPlacement(item, placement);
+    placed.push(next);
+    const index = pantryShelfIndex(next, shelfCount);
+    const shelf = shelves.get(index);
+    if (shelf) shelf.push(next);
+    else shelves.set(index, [next]);
+  };
   for (const item of items) {
-    const placement = findPantryPlacement(item, placed, shelfCount);
-    if (placement) placed.push({ ...item, ...placement });
-    else pending.push({ ...item, ...clampPantryPlacement(item, shelfCount) });
+    const placement = findPantryPlacement(item, shelves.get(pantryShelfIndex(item, shelfCount)) ?? [], shelfCount);
+    if (placement) reserve(item, placement);
+    else pending.push(withPlacement(item, clampPantryPlacement(item, shelfCount)));
   }
   // Reserve existing positions on every shelf before recovering overflow.
   for (const item of pending) {
-    const placement = findPantryPlacementOnAnyShelf(item, placed, shelfCount);
-    if (placement) placed.push({ ...item, ...placement });
-    else unplaced.push(item);
+    const preferred = pantryShelfIndex(item, shelfCount);
+    let recovered = false;
+    for (let offset = 0; offset < shelfCount; offset++) {
+      const shelfIndex = (preferred + offset) % shelfCount;
+      const placement = findPantryPlacement({ ...item, shelfIndex }, shelves.get(shelfIndex) ?? [], shelfCount);
+      if (placement) { reserve(item, placement); recovered = true; break; }
+    }
+    if (!recovered) unplaced.push(item);
   }
   return { placed, unplaced };
 }

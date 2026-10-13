@@ -1,0 +1,50 @@
+{
+  "id": "69189",
+  "index": 63,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-b493bdac-c47a-498d-b36f-5cfc09418bdf.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-69189-sofrito.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "46c9736415248b39f3302b8597abe7b283e1c460464d7319355101b2ec39ed04",
+  "sourceOriginalBytes": 34333,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:42:10.637Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-69189.webp",
+  "recovery": {
+    "recoveredAt": "2026-10-11T16:56:07.779449+00:00",
+    "nativeMatchedToHistoricalWebp": true,
+    "historicalWebpSha256": "c257e9a841fc689294656c448ab885114a8995f45c3b0d5c52fa868d11c5ceaf",
+    "historicalWebpTempPath": "/private/tmp/mercadona-batch-20261010-1000/lot-10/webp/mercadona-69189.webp",
+    "nativeSha256": "416c67249354a3d6f8b138226e75afeae88de98a56260860d951151992f900b2",
+    "originalPromptUnavailable": true,
+    "note": "Original batch directory was deleted. Native recovered by exact SHA after same export; original prompt is unavailable and has not been invented. Fresh visual review required before upload."
+  },
+  "width": 331,
+  "height": 768,
+  "bytes": 61404,
+  "sha256": "c257e9a841fc689294656c448ab885114a8995f45c3b0d5c52fa868d11c5ceaf",
+  "alpha": {
+    "transparentPixels": 165141,
+    "opaquePixels": 1196,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T16:57:44.641Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:09:59.454Z",
+  "publication": {
+    "productId": "69189",
+    "name": "Sofrito",
+    "objectPath": "mercadona/69189/c257e9a841fc6892.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/69189/c257e9a841fc6892.webp",
+    "contentType": "image/webp",
+    "bytes": 61404,
+    "published": true,
+    "sha256": "c257e9a841fc689294656c448ab885114a8995f45c3b0d5c52fa868d11c5ceaf"
+  },
+  "publishedAt": "2026-10-11T17:11:40.009Z",
+  "localWebpDeletedAt": "2026-10-11T17:11:40.142Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:11:40.142Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:11:40.142Z"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "21860",
+  "index": 3,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12be3-1801-7fe3-88ee-862e3d13eea9/exec-66ea88d6-014f-42a2-8404-c2d27c3e7046.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-03/mercadona-21860-tratamiento-para-unas-base-blanqueante-calcio-deliplus-58.png",
+  "prompt": "Use case: style-transfer. Create one polished hand-drawn retail product illustration for the QueFalta catalog. Image 1 is the sole authoritative product photograph. Image 2 supplies ONLY the illustrated medium, delicate outlines, simplified clean shading and subtle texture, never its milk carton, colors or text. Faithfully illustrate exactly the complete product in image 1, its perspective, geometry, components, colors and main readable label lettering. Truly transparent background, no ground plane, no cast shadow. Center the entire object with generous safe transparent margin. Preserve all visible caps, separate accessories, real multipack counts and full package edges. Preserve meaningful negations SIN or SEM and visible quantities completely. No invented claims, brands, prices, quantities or extra food/props. Tiny unreadable legal text may be quietly simplified. Never infer packaging text or quantities from catalog title. Product-specific visual requirements: Clear rectangular bottle, milky white fluid, tall white cap; BASE BLANQUEANTE BRANQUEADORA CALCIO and deliplus. Catalog title for identification only: Tratamiento para uñas base blanqueante cálcio Deliplus 58. Reproduce numeric values only when legible in image 1; the actual photograph overrides catalog wording.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-03/actual-prompts/21860.txt",
+  "sourceOriginalSha256": "ee5c2e088f39a203eb04bca8a85b5320f5528359f968a5afd8c4ce7a0bb2044f",
+  "sourceOriginalBytes": 25442,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:37:17.934Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-03/webp/mercadona-21860.webp",
+  "width": 326,
+  "height": 768,
+  "bytes": 29358,
+  "sha256": "86062849263a5c5f9c9288145e85ead6953b1641c1650e3387bf69d9055fbc09",
+  "alpha": {
+    "transparentPixels": 40198,
+    "opaquePixels": 1643,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:38:18.284Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:39:00.191Z",
+  "publication": {
+    "productId": "21860",
+    "name": "Tratamiento para uñas base blanqueante cálcio Deliplus 58",
+    "objectPath": "mercadona/21860/86062849263a5c5f.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/21860/86062849263a5c5f.webp",
+    "contentType": "image/webp",
+    "bytes": 29358,
+    "published": true,
+    "sha256": "86062849263a5c5f9c9288145e85ead6953b1641c1650e3387bf69d9055fbc09"
+  },
+  "publishedAt": "2026-10-12T13:39:07.563Z",
+  "localWebpDeletedAt": "2026-10-12T13:39:07.726Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:39:07.726Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:39:07.726Z"
+}

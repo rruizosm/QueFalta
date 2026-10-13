@@ -1,0 +1,41 @@
+{
+  "id": "71527",
+  "index": 62,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-ef640ad2-937d-41b3-ba51-6266588f9b51.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-71527-toallitas-limpiadoras-de-suelo-bosque-verde.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Flat green Bosque Verde floor cleaning wipes packet, white oval flip-top Suelos/Chãos, large white 20, orange wood floor photo to right, red upper strip. Product catalog identity: Toallitas limpiadoras de suelo Bosque Verde.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/71527.txt",
+  "sourceOriginalSha256": "07686b88dcf75b750a24caef28e85c71f8da2bd8c764eb3bc843b85bdb58ec99",
+  "sourceOriginalBytes": 47757,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:51:17.843Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-71527.webp",
+  "width": 768,
+  "height": 486,
+  "bytes": 72192,
+  "sha256": "a71795c0e4f4df72a260eca4de751ed71879b9f6077936d0b494822d093046db",
+  "alpha": {
+    "transparentPixels": 176017,
+    "opaquePixels": 836,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:52:25.470Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:57:40.093Z",
+  "publication": {
+    "productId": "71527",
+    "name": "Toallitas limpiadoras de suelo Bosque Verde",
+    "objectPath": "mercadona/71527/a71795c0e4f4df72.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/71527/a71795c0e4f4df72.webp",
+    "contentType": "image/webp",
+    "bytes": 72192,
+    "published": true,
+    "sha256": "a71795c0e4f4df72a260eca4de751ed71879b9f6077936d0b494822d093046db"
+  },
+  "publishedAt": "2026-10-12T14:57:44.839Z",
+  "localWebpDeletedAt": "2026-10-12T14:57:45.258Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:57:45.258Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:57:45.258Z"
+}

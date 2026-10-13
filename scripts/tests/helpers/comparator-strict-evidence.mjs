@@ -12,8 +12,9 @@ const AUTHORIZED_SUCCESSORS = {
     via: '03dde3d04ea1388cc960df256bf35b5edb5a4ffac5391c5d44919f7e5b385098',
     beforeBm: '130f0490a3d0384d5267a2f011f664c9009731f643db90c58f22cfc1428e6096',
     beforeEljamon: '5cf5a21d391021ae85253b174f7a8d1fa439d612f4bc084b58f94552493e48f6',
-    to: '6bd92a866449ea87b4cb52d90e078cffa688c200bf1496dea49f2b1bbc2ce46b',
-    reason: 'Lidl catalog integration in 97fe3b8, explicit exclusion of unsupported BM multizone comparison on 2026-09-20, then exclusion of El Jamón during the owner-requested full-branch merge on 2026-09-28',
+    beforeComparatorExpansion: '6bd92a866449ea87b4cb52d90e078cffa688c200bf1496dea49f2b1bbc2ce46b',
+    to: '130f0490a3d0384d5267a2f011f664c9009731f643db90c58f22cfc1428e6096',
+    reason: 'Lidl integration, temporary BM/El Jamón exclusions, then their comparator support merged in f0f8950; current bytes verified against main 8149d84 during the owner-requested 2026-10-13 publication',
   },
   'src/components/StoreProductModal.tsx': {
     from: 'f467d6a7604f797e7b944a543310f1c30bfe3bafc40e3f8fa5cf7d4e696a45c4',
@@ -34,8 +35,9 @@ const AUTHORIZED_SUCCESSORS = {
     beforeSearchRoutingAndBm: '0e053059b73bef41e531b1ab669f84546ab01bf69f3a151e513745caa89adca7',
     beforeBmProvinceCoverage: '7a39686f481c69bdf76c7264fb397b5eacbdfe55838ac1b01179381c83f63a72',
     beforeEljamon: '5235e20af5c2ddc940ec75036f600a478eb5a57175ac84f031b2621260982769',
-    to: '73a34f066bec549986e54623f6f36007edc306cf13c371037834a76d73cc1d2d',
-    reason: 'Lidl catalog and offers integration, isolated search routing, BM multizone and province-wide postal support, then El Jamón and BM offer fields in the owner-requested full-branch merge on 2026-09-28',
+    beforeOctoberIntegration: '73a34f066bec549986e54623f6f36007edc306cf13c371037834a76d73cc1d2d',
+    to: '45938c5ce3fcee4927b3176d364f7d81da80380a2d749245ae6994d3b87a2d06',
+    reason: 'Lidl offers and isolated search, BM/El Jamón integration, then the Carrefour paginated offer RPC through main 8149d84; current bytes verified against that commit during the owner-requested 2026-10-13 publication',
   },
 };
 

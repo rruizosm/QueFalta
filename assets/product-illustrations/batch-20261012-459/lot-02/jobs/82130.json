@@ -1,0 +1,41 @@
+{
+  "id": "82130",
+  "index": 97,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-fa389048-092e-4e84-ae85-028a3a01837b.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-82130-tortas-cencenas-para-gazpacho-manchego-ruiz.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Tall red and white flexible bag with Ruiz large white script in red oval, bold Gazpacho Manchego text, yellow-red central accents and visible flatbread pieces pictured below. Preserve tall bag. Product catalog identity: Tortas cenceñas para gazpacho manchego Ruiz.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/82130.txt",
+  "sourceOriginalSha256": "2d96bce1f7c26f918146bef84839c7e09f9dd9395d32287081aeecbeacaf0f13",
+  "sourceOriginalBytes": 65792,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:11:51.156Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-82130.webp",
+  "width": 384,
+  "height": 768,
+  "bytes": 83542,
+  "sha256": "314dd57a4bc162800c0643029673b756bb8ddca5c543f3f74f5668a5321866a9",
+  "alpha": {
+    "transparentPixels": 63659,
+    "opaquePixels": 1013,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:19:46.725Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:22:43.716Z",
+  "publication": {
+    "productId": "82130",
+    "name": "Tortas cenceñas para gazpacho manchego Ruiz",
+    "objectPath": "mercadona/82130/314dd57a4bc16280.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/82130/314dd57a4bc16280.webp",
+    "contentType": "image/webp",
+    "bytes": 83542,
+    "published": true,
+    "sha256": "314dd57a4bc162800c0643029673b756bb8ddca5c543f3f74f5668a5321866a9"
+  },
+  "publishedAt": "2026-10-12T15:23:03.545Z",
+  "localWebpDeletedAt": "2026-10-12T15:23:03.787Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:23:03.787Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:23:03.787Z"
+}

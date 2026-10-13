@@ -1,0 +1,39 @@
+{
+  "id": "12638",
+  "index": 60,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-138fa157-4db0-4236-a2df-e62048b4c4a9.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-12638-chorizo-de-bellota-iberico-cortado-a-maquina.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration matching the established Mercadona collection. Image 1 is the exact product photo. Image 2 is ONLY the approved hand-drawn style reference at /private/tmp/mercadona-style-10699-reference.png; do not copy its product or packaging. Create a warm, clean editorial hand-drawn illustration with soft thin outlines, defined original colors, subtle paper/gouache texture. Preserve the exact product identity, packaging, visible logo, text, claims, flavor, slice arrangement and quantity from Image 1. Exact product: La Charcutería de Mercadona Bellota Ibérico sliced chorizo, one upright transparent rectangular tray of overlapping thin oval red-brown marbled chorizo slices, covered by clear sealed film, with the wide bright red upper band reading La Charcutería de Mercadona and BELLOTA IBÉRICO. Match this exact reference image, tray and slice arrangement; keep all package edges and the small black mark at lower right if visible. Do not add a weight or extra props. Isolated on a transparent background.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/12638-prompt.txt",
+  "sourceOriginalSha256": "649106a5a061535280d202386a39787437ce71fce6027d53bab5f5342ec21928",
+  "sourceOriginalBytes": 68622,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:48:32.020Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-12638.webp",
+  "width": 551,
+  "height": 768,
+  "bytes": 125866,
+  "sha256": "3c575511eb612ea49211ffa958c815a1f065a7f3152bcdc827197e8675370a2f",
+  "alpha": {
+    "transparentPixels": 54906,
+    "opaquePixels": 957,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:48:42.721Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T07:49:04.335Z",
+  "publication": {
+    "productId": "12638",
+    "name": "Chorizo de bellota ibérico cortado a máquina",
+    "objectPath": "mercadona/12638/3c575511eb612ea4.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/12638/3c575511eb612ea4.webp",
+    "contentType": "image/webp",
+    "bytes": 125866,
+    "sha256": "3c575511eb612ea49211ffa958c815a1f065a7f3152bcdc827197e8675370a2f"
+  },
+  "publishedAt": "2026-10-09T07:49:07.003Z",
+  "localWebpDeletedAt": "2026-10-09T07:49:07.004Z",
+  "localSourceJpgDeletedAt": "2026-10-09T07:49:07.004Z"
+}

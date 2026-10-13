@@ -1,0 +1,32 @@
+import {readFileSync,writeFileSync,mkdirSync,existsSync,readdirSync} from 'node:fs';
+import path from 'node:path';
+import {createClient} from '@supabase/supabase-js';
+const root='assets/product-illustrations/batch-20261009-1000-02';
+if(existsSync(root+'/manifest.json'))throw Error('Batch already initialized');
+const db=createClient(process.env.EXPO_PUBLIC_SUPABASE_URL,process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,{auth:{persistSession:false}});
+const data=[];for(let from=0;;from+=1000){const r=await db.from('mercadona_products').select('id,display_name,thumbnail,illustration_url,published').order('id').range(from,from+999);if(r.error)throw r.error;data.push(...r.data);if(r.data.length<1000)break;}
+const rejected=new Set(['14159','86913','12421','27201','46920','8260','52821']);
+const recoverable=new Set();
+function scan(dir){for(const e of readdirSync(dir,{withFileTypes:true})){const f=path.join(dir,e.name);if(e.isDirectory())scan(f);else if(e.name.endsWith('.json')&&path.basename(dir)==='jobs'){try{const j=JSON.parse(readFileSync(f));if(!j.publication&&j.png&&existsSync(j.png))recoverable.add(String(j.id));}catch{}}}}
+scan('assets/product-illustrations');
+const eligible=data.filter(p=>p.published===true&&!p.illustration_url&&/^\d+$/.test(String(p.id))&&p.thumbnail?.startsWith('https://prod-mercadona.imgix.net/')&&!rejected.has(String(p.id))&&!recoverable.has(String(p.id))).sort((a,b)=>a.display_name.localeCompare(b.display_name,'es')||String(a.id).localeCompare(String(b.id)));
+if(eligible.length<1000)throw Error('Fewer than 1000 eligible products: '+eligible.length);
+const previous=data.filter(p=>p.illustration_url).map(p=>({id:String(p.id),illustration_url:p.illustration_url,thumbnail:p.thumbnail}));
+const old=JSON.parse(readFileSync('assets/product-illustrations/batch-20261009-1000/manifest.json'));
+const promptBase=old.products[0].prompt.split('\nSpecific subject:')[0];
+const createdAt=new Date().toISOString();
+const products=eligible.slice(0,1000).map((p,i)=>{const lot=Math.floor(i/100)+1,lotName='lot-'+String(lot).padStart(2,'0'),lotDir=root+'/'+lotName,tmp='/private/tmp/mercadona-batch-20261009-1000-02/'+lotName;const source=new URL(p.thumbnail);source.searchParams.set('h','1000');source.searchParams.set('w','1000');return {...p,id:String(p.id),index:i%100+1,globalIndex:i+1,lot,lotDir,slug:p.display_name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,140),originalPath:tmp+'/originals/mercadona-'+p.id+'-original.jpg',sourceDownloadUrl:source.href,webpTempPath:tmp+'/webp/mercadona-'+p.id+'.webp',sourceGalleryDir:tmp,prompt:promptBase+'\nSpecific subject: '+p.display_name+', Mercadona product ID '+p.id+'. Image 1 is the exact product; Image 2 is only the approved style reference. Preserve the source viewing angle for trays, flat packaging and food. Keep the full silhouette, all real separate caps/components, handles and transparent wrapping. Read source text carefully: never invent claims, counts, brands or quantities. Preserve all real negations and dietary claims verbatim. Tiny unreadable print may be neutral lines; do not guess. Transparent background and no exterior shadow.'};});
+const manifest={createdAt,target:1000,previousPublished:previous.length,source:'published=true; empty illustration_url; official source; numeric product ID',excludedContentRejectedIds:[...rejected],excludedRecoverableNativeIds:[...recoverable],eligibleAtSelection:eligible.length,cleanupPolicy:'Only source JPG and publication WebP in /private/tmp; delete immediately after verified upload receipt/readback. Retain PNGs, prompts, jobs, receipts and QA.',products};
+mkdirSync(root,{recursive:true});writeFileSync(root+'/manifest.json',JSON.stringify(manifest,null,2)+'\n');writeFileSync(root+'/existing-illustrations-before.json',JSON.stringify(previous,null,2)+'\n');
+for(let n=1;n<=10;n++){const dir=root+'/lot-'+String(n).padStart(2,'0');mkdirSync(dir+'/jobs',{recursive:true});mkdirSync(dir+'/actual-prompts',{recursive:true});writeFileSync(dir+'/manifest.json',JSON.stringify({createdAt,target:100,lot:n,previousPublished:previous.length,products:products.filter(p=>p.lot===n)},null,2)+'\n');}
+let workflow=readFileSync('assets/product-illustrations/batch-20261009-1000/workflow.mjs','utf8').replaceAll('batch-20261009-1000/','batch-20261009-1000-02/');
+workflow=workflow.replace('productsVerified:100,remoteMimeShaBytesAndAlphaVerified:100,localWebpDeletedAfterUpload:100,sourceJpgDeletedAfterUpload:100','productsVerified:lot.products.length,remoteMimeShaBytesAndAlphaVerified:lot.products.length,localWebpDeletedAfterUpload:lot.products.length,sourceJpgDeletedAfterUpload:lot.products.length').replace('const c={target:100,','const c={target:lot.products.length,');
+workflow=workflow.replace("r?.thumbnail!==p.thumbnail||r?.illustration_url", "r?.published!==true||r?.thumbnail!==p.thumbnail||r?.illustration_url");
+const a=workflow.indexOf('const x=Math.max(0,left-32)'),b=workflow.indexOf('mkdirSync(pFor(p.webpTempPath)',a);
+if(a<0||b<0)throw Error('Prepare section not found');
+workflow=workflow.slice(0,a)+"const croppedPng=await sharp(data,{raw:info}).extract({left,top,width:right-left+1,height:bottom-top+1}).extend({top:32,bottom:32,left:32,right:32,background:{r:0,g:0,b:0,alpha:0}}).png().toBuffer();const cropped=await sharp(croppedPng).resize(768,768,{fit:'inside',withoutEnlargement:true}).webp({quality:84,alphaQuality:100}).toBuffer();"+workflow.slice(b);
+writeFileSync(root+'/workflow.mjs',workflow);
+let guide=readFileSync('assets/product-illustrations/batch-20261009-1000/worker-instructions.md','utf8').replaceAll('batch-20261009-1000','batch-20261009-1000-02').replaceAll('2959',String(previous.length));
+guide+='\n## Output moderation and quota\nOn moderation_blocked, preserve the exact error, do not retry or rewrite that request, isolate that ID and continue independent products. On actual 429 usage_limit_reached, stop new native calls and report/reset timestamp; do not retry until reset. Never substitute photos or processed photos for generated illustrations. Report partial counts honestly.\n';
+writeFileSync(root+'/worker-instructions.md',guide);
+console.log(JSON.stringify({selected:products.length,previousIllustrations:previous.length,eligible:eligible.length,excludedRecoverable:recoverable.size,lots:Array.from({length:10},(_,i)=>{const p=products.filter(p=>p.lot===i+1);return {lot:i+1,first:p[0].display_name,last:p.at(-1).display_name};})}));

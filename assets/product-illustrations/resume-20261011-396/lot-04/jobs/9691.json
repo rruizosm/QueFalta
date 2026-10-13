@@ -1,0 +1,41 @@
+{
+  "id": "9691",
+  "index": 100,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12be3-1801-7fe3-88ee-862e3d13eea9/exec-f5abf9ce-cee6-4f33-9545-3383bdd40f6a.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-04/mercadona-9691-salchichon-de-bellota-iberico-cortado-a-maquina.png",
+  "prompt": "Use case: style-transfer. Asset: one catalog product illustration for QuéFalta. Image1 is the sole authoritative product/photo reference; image2 supplies ONLY the illustrated medium and edge/shading treatment, never its milk carton/text. Turn the exact product in image1 into a polished hand-drawn retail illustration matching image2: crisp delicate outlines, clean simplified shading, subtle illustrated texture and faithful retail colors. Truly transparent background, no ground plane, no cast shadow, centered entire product with safe empty margin. Preserve the complete original package geometry, perspective, relative proportions, all components and accessories, real visible quantities and main legible label text. No extra props, invented brands, claims, prices, quantities or food outside packaging. Tiny illegible legal text may be reduced unobtrusively but all meaningful negations such as SIN/SEM must remain complete. Product-specific observed requirements: Vertical transparent sliced-salchichon pouch with white header RED La Charcutería MERCADONA BELLOTA IBÉRICO band; marbled red slices. Official product: Salchichón de bellota ibérico cortado a máquina. Reproduce source numeric values only when legible; do not guess.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-04/actual-prompts/9691.txt",
+  "sourceOriginalSha256": "55b82efa7e1d94f3446c9b865e60e651041d3d286d195885a1c217048ea304cc",
+  "sourceOriginalBytes": 75773,
+  "status": "published",
+  "generatedAt": "2026-10-11T18:23:03.723Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-04/webp/mercadona-9691.webp",
+  "width": 503,
+  "height": 768,
+  "bytes": 116664,
+  "sha256": "fdaa065dde17ba4d74ff9e904a77d6bf2dec7eeb332405271b458a537ffa6dd7",
+  "alpha": {
+    "transparentPixels": 43860,
+    "opaquePixels": 1212,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T18:23:34.168Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T18:24:31.001Z",
+  "publication": {
+    "productId": "9691",
+    "name": "Salchichón de bellota ibérico cortado a máquina",
+    "objectPath": "mercadona/9691/fdaa065dde17ba4d.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/9691/fdaa065dde17ba4d.webp",
+    "contentType": "image/webp",
+    "bytes": 116664,
+    "published": true,
+    "sha256": "fdaa065dde17ba4d74ff9e904a77d6bf2dec7eeb332405271b458a537ffa6dd7"
+  },
+  "publishedAt": "2026-10-11T18:24:57.846Z",
+  "localWebpDeletedAt": "2026-10-11T18:24:57.980Z",
+  "localSourceJpgDeletedAt": "2026-10-11T18:24:57.980Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T18:24:57.980Z"
+}

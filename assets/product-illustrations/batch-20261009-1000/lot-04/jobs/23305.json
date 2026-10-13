@@ -1,0 +1,39 @@
+{
+  "id": "23305",
+  "index": 91,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-5d1b0692-5693-4f8e-9861-63c936fbf9d6.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-23305-chuletas-de-cerdo-sajonia.png",
+  "prompt": "Make a warm editorial hand-drawn QuéFalta illustration of the exact product in Image 1, with fine soft outlines, accurate source colors and subtle gouache texture. Image 2 at /private/tmp/mercadona-style-10699-reference.png is a style reference only; do not copy its product. Preserve the exact meat cut, label, logo, packaging and any halal mark visible. One shallow clear meat tray holding two large raw pale pink pork sirloin chops with small bone, side by side and partially overlapping. A light gray/pink rectangular label across them has a black pig silhouette, CHULETAS DE SAJONIA and small barcode. Match exact meat shape, tray, label, and raw chilled appearance in Image 1. Include the complete package and isolated transparent background with margin.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/23305-prompt.txt",
+  "sourceOriginalSha256": "a9c1147f41691c321b4b4960bfbd48aa99f211eb32c50d26f124160b427237f6",
+  "sourceOriginalBytes": 43597,
+  "status": "published",
+  "generatedAt": "2026-10-09T08:23:44.704Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-23305.webp",
+  "width": 768,
+  "height": 475,
+  "bytes": 84802,
+  "sha256": "ccfb3992dc5b092cce6691a5962c2aa98a5346e4e4b6c6736bc6096255b44501",
+  "alpha": {
+    "transparentPixels": 143172,
+    "opaquePixels": 910,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T08:24:07.007Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T08:24:54.215Z",
+  "publication": {
+    "productId": "23305",
+    "name": "Chuletas de cerdo sajonia",
+    "objectPath": "mercadona/23305/ccfb3992dc5b092c.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/23305/ccfb3992dc5b092c.webp",
+    "contentType": "image/webp",
+    "bytes": 84802,
+    "sha256": "ccfb3992dc5b092cce6691a5962c2aa98a5346e4e4b6c6736bc6096255b44501"
+  },
+  "publishedAt": "2026-10-09T08:24:55.321Z",
+  "localWebpDeletedAt": "2026-10-09T08:24:55.323Z",
+  "localSourceJpgDeletedAt": "2026-10-09T08:24:55.323Z"
+}

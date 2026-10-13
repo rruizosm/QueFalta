@@ -1,0 +1,41 @@
+{
+  "id": "14984",
+  "index": 58,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-6b78-7552-94a3-b923c51cf7da/exec-cbeca935-71b8-4e53-a68a-d2da7ba097c3.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-03/mercadona-14984-vino-blanco-albarino-mar-de-uvas-do-rias-baixas.png",
+  "prompt": "Use case: style-transfer. Create one polished hand-drawn retail product illustration for the QueFalta catalog. Image 1 is the sole authoritative product photograph. Image 2 supplies ONLY the illustrated medium, delicate outlines, simplified clean shading and subtle texture, never its milk carton, colors or text. Faithfully illustrate exactly the complete product in image 1, its perspective, geometry, components, colors and main readable label lettering. Truly transparent background, no ground plane, no cast shadow. Center the entire object with generous safe transparent margin. Preserve all visible caps, separate accessories, real multipack counts and full package edges. Preserve meaningful negations SIN or SEM and visible quantities completely. No invented claims, brands, prices, quantities or extra food/props. Tiny unreadable legal text may be quietly simplified. Never infer packaging text or quantities from catalog title. Product-specific visual requirements: Amber slender wine bottle, cream-gold cap, cream label with gold bird, MAR DE UVAS ALBARINO. Catalog title for identification only: Vino blanco Albariño Mar de Uvas DO Rias Baixas. Reproduce numeric values only when legible in image 1; the actual photograph overrides catalog wording.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-03/actual-prompts/14984.txt",
+  "sourceOriginalSha256": "4d0d75e7590a8becbe21ce8278dec20abf603e2783e4ec35b9b8dd466c78ca94",
+  "sourceOriginalBytes": 25178,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:46:30.742Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-03/webp/mercadona-14984.webp",
+  "width": 225,
+  "height": 768,
+  "bytes": 28816,
+  "sha256": "0376ba2f72f5874a4f28c6062138cc5b7e46cd17f562362a82c157925a4d165c",
+  "alpha": {
+    "transparentPixels": 71814,
+    "opaquePixels": 743,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:46:47.413Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:46:56.122Z",
+  "publication": {
+    "productId": "14984",
+    "name": "Vino blanco Albariño Mar de Uvas DO Rias Baixas",
+    "objectPath": "mercadona/14984/0376ba2f72f5874a.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/14984/0376ba2f72f5874a.webp",
+    "contentType": "image/webp",
+    "bytes": 28816,
+    "published": true,
+    "sha256": "0376ba2f72f5874a4f28c6062138cc5b7e46cd17f562362a82c157925a4d165c"
+  },
+  "publishedAt": "2026-10-12T14:47:02.733Z",
+  "localWebpDeletedAt": "2026-10-12T14:47:02.877Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:47:02.877Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:47:02.877Z"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "2807",
+  "index": 101,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308c-ebe7-7011-b529-512d15320584/exec-eb5434bb-b56b-4e7f-a34b-4e5e54318308.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-01/mercadona-2807-tacos-de-vacuno-anojo-para-guisar.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta catalog product illustration. Image1 is the exact official product photo, authoritative for subject and all product details. Image2 is ONLY the approved hand-drawn illustration style; do not copy its milk carton. Render Image1 as warm clean editorial hand-drawn gouache, subtle paper texture, thin defined outlines and recognizable original colors. Preserve exact product/variant, whole silhouette, proportions, packaging, labels and readable text. Use actual alpha transparency. Entire product centered with minimal transparent margin; preserve natural source orientation, all separate food pieces and components, source count/layout and retail multipacks. Do not change sliced food to whole food or vice versa. Keep heads, tails, caps and packaging where source has them. No props, invented packaging, plate, extra labels, cast shadows, floor, background, checkerboard, photorealism or3D. Reproduce only legible printed words/units/claims; never infer printed text from catalog name. Preserve SIN/SEM GLUTEN and all negations, quantities, units and qualifiers exactly if present. Tiny unreadable microprint may be simplified into neutral lines without invented values. Output one complete transparent PNG.\nProduct ID 2807. Observed source: Clear red beef cube tray black white GUISAR TACOS wrap. Photo remains authoritative.\n Square canvas. Outside the exact product silhouette alpha must be exactly zero; no exterior glow, beige halo, blurred aura, paper rectangle, vignette or colored backdrop. Texture stays strictly inside the product.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-01/actual-prompts/2807.txt",
+  "sourceOriginalSha256": "d23e5d0c9d26f84f1ff16f0ff5abd22c29e4abe5c16437a230e528bb0880a85a",
+  "sourceOriginalBytes": 57631,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:11:45.908Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-01/webp/mercadona-2807.webp",
+  "width": 768,
+  "height": 585,
+  "bytes": 87276,
+  "sha256": "e78946173dd03932e64384d10a90aa592ec48993574b114f06d654faf856ddcb",
+  "alpha": {
+    "transparentPixels": 199539,
+    "opaquePixels": 934,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:14:40.600Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:17:17.940Z",
+  "publication": {
+    "productId": "2807",
+    "name": "Tacos de vacuno añojo para guisar",
+    "objectPath": "mercadona/2807/e78946173dd03932.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/2807/e78946173dd03932.webp",
+    "contentType": "image/webp",
+    "bytes": 87276,
+    "published": true,
+    "sha256": "e78946173dd03932e64384d10a90aa592ec48993574b114f06d654faf856ddcb"
+  },
+  "publishedAt": "2026-10-12T15:17:59.997Z",
+  "localWebpDeletedAt": "2026-10-12T15:18:00.213Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:18:00.213Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:18:00.213Z"
+}

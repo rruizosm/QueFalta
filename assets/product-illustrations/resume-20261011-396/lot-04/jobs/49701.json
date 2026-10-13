@@ -1,0 +1,41 @@
+{
+  "id": "49701",
+  "index": 48,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12be3-1801-7fe3-88ee-862e3d13eea9/exec-63384c90-bcf6-4d0d-acc0-f9de755b86fb.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-04/mercadona-49701-servilleta-papel-cocktail-bosque-verde.png",
+  "prompt": "Use case: style-transfer. Asset: one catalog product illustration for QuéFalta. Image1 is the sole authoritative product/photo reference; image2 supplies ONLY the illustrated medium and edge/shading treatment, never its milk carton/text. Turn the exact product in image1 into a polished hand-drawn retail illustration matching image2: crisp delicate outlines, clean simplified shading, subtle illustrated texture and faithful retail colors. Truly transparent background, no ground plane, no cast shadow, centered entire product with safe empty margin. Preserve the complete original package geometry, perspective, relative proportions, all components and accessories, real visible quantities and main legible label text. No extra props, invented brands, claims, prices, quantities or food outside packaging. Tiny illegible legal text may be reduced unobtrusively but all meaningful negations such as SIN/SEM must remain complete. Product-specific observed requirements: Wide short white cocktail napkin pack coral wavy header 2 and 200 unidades; preserve entire two-stack wrapped pack. Official product: Servilleta papel Cocktail Bosque Verde. Reproduce source numeric values only when legible; do not guess.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-04/actual-prompts/49701.txt",
+  "sourceOriginalSha256": "771c7e5ba9b5816eb5807e31619681e5de28bd952f443c4d225dde7acd18a778",
+  "sourceOriginalBytes": 29994,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:39:12.948Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-04/webp/mercadona-49701.webp",
+  "width": 768,
+  "height": 428,
+  "bytes": 41626,
+  "sha256": "0831a4e8e10e4748a85190562542692633339a834cf77aa5422c431cdfd391f8",
+  "alpha": {
+    "transparentPixels": 56335,
+    "opaquePixels": 1543,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:42:39.776Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:44:02.968Z",
+  "publication": {
+    "productId": "49701",
+    "name": "Servilleta papel Cocktail Bosque Verde",
+    "objectPath": "mercadona/49701/0831a4e8e10e4748.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/49701/0831a4e8e10e4748.webp",
+    "contentType": "image/webp",
+    "bytes": 41626,
+    "published": true,
+    "sha256": "0831a4e8e10e4748a85190562542692633339a834cf77aa5422c431cdfd391f8"
+  },
+  "publishedAt": "2026-10-11T17:44:17.831Z",
+  "localWebpDeletedAt": "2026-10-11T17:44:17.962Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:44:17.962Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:44:17.962Z"
+}

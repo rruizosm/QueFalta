@@ -1,0 +1,14 @@
+{
+  "verifiedAt": "2026-10-11T18:28:48.941Z",
+  "target": 100,
+  "complete": true,
+  "productsVerified": 100,
+  "pending": [],
+  "pendingCount": 0,
+  "remoteMimeShaBytesAndAlphaVerified": 100,
+  "localWebpDeletedAfterUpload": 100,
+  "sourceJpgDeletedAfterUpload": 100,
+  "selectedThumbnailsUnchanged": 100,
+  "previousIllustrationsUnchanged": 5439,
+  "totalBytes": 6686626
+}

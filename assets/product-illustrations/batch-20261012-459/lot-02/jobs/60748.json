@@ -1,0 +1,41 @@
+{
+  "id": "60748",
+  "index": 34,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-86668129-8bf6-4fa5-a19f-cdeea06e2a1f.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-60748-tinto-de-verano-zero-limon-cason-historico.png",
+  "prompt": "One square transparent PNG. Actual alpha transparency exactly 0 outside the product silhouette; no outside shadow, glow, halo or solid backdrop. Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. Specific inspected product: Single clear PET dark-red drink bottle, yellow cap, vivid magenta and yellow label with lemons, huge blue ZERO, SIN AZÚCAR SIN ALCOHOL and Lemon script. Preserve all negations. Product catalog identity: Tinto de verano zero limón Casón Histórico.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/60748.txt",
+  "sourceOriginalSha256": "135b2c7a189c2470a4aa3dc7b2e60e6c4cd42ca7af28888f3ab914bf9aa8e7c6",
+  "sourceOriginalBytes": 35083,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:51:27.246Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-60748.webp",
+  "width": 252,
+  "height": 768,
+  "bytes": 41408,
+  "sha256": "362c0717b4fa3aec69cefaedb6b46d536d8a67239a0fc45cd5ba3b0d25d08b4b",
+  "alpha": {
+    "transparentPixels": 63222,
+    "opaquePixels": 837,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:53:22.516Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:54:25.902Z",
+  "publication": {
+    "productId": "60748",
+    "name": "Tinto de verano zero limón Casón Histórico",
+    "objectPath": "mercadona/60748/362c0717b4fa3aec.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/60748/362c0717b4fa3aec.webp",
+    "contentType": "image/webp",
+    "bytes": 41408,
+    "published": true,
+    "sha256": "362c0717b4fa3aec69cefaedb6b46d536d8a67239a0fc45cd5ba3b0d25d08b4b"
+  },
+  "publishedAt": "2026-10-12T13:54:53.635Z",
+  "localWebpDeletedAt": "2026-10-12T13:54:53.874Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:54:53.874Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:54:53.874Z"
+}

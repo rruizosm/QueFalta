@@ -52,10 +52,18 @@ test('403 is not hammered and only retailer access errors trip the circuit', asy
 
 test('only verified small stores get a narrow floor; ordinary stores retain 2200', async () => {
   const { lidlMinimumProducts, LIDL_VERIFIED_SMALL_CATALOGS } = await import('./lidl-store-coverage.mjs');
+  const expectedMinimums = {
+    ES0367: 2102, ES0410: 1987, ES0431: 2107, ES0529: 2151,
+    ES0530: 2122, ES0548: 2155, ES0848: 2103,
+  };
+  assert.deepEqual(Object.keys(LIDL_VERIFIED_SMALL_CATALOGS).sort(), Object.keys(expectedMinimums).sort());
   for (const [store, observed] of Object.entries(LIDL_VERIFIED_SMALL_CATALOGS)) {
     assert.equal(lidlMinimumProducts(store), Math.floor(observed * .98));
-    assert.ok(lidlMinimumProducts(store) > 2100);
+    assert.equal(lidlMinimumProducts(store), expectedMinimums[store]);
   }
+  assert.ok(2028 >= lidlMinimumProducts('ES0410'));
+  assert.ok(1986 < lidlMinimumProducts('ES0410'));
+  assert.equal(lidlMinimumProducts('ES0411'), 2200);
   assert.equal(lidlMinimumProducts('ES3572'), 2200);
   assert.equal(lidlMinimumProducts('ES0951'), 2200);
   assert.equal(lidlMinimumProducts('ES0548'), 2155);

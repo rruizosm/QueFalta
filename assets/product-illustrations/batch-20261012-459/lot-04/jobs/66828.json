@@ -1,0 +1,41 @@
+{
+  "id": "66828",
+  "index": 45,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-a68e997e-0fd2-4612-aaef-5d73ac1242a5.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-66828-vino-tinto-joven-gran-vina-do-val.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Vino tinto joven Gran Viña do Val, ID 66828.\nObserved source: Dark bottle burgundy capsule, antique gold label Gran Viña do Val, ornate red crest.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/66828.txt",
+  "sourceOriginalSha256": "68ef496b8138dad28b41a435f2e9e64fdbf0035c5a3ead55990a9133b2c51c43",
+  "sourceOriginalBytes": 34392,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:56:50.967Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-66828.webp",
+  "width": 233,
+  "height": 768,
+  "bytes": 37974,
+  "sha256": "6b3ac8a131df8e18323c458a08ccc88c8cd5503668da84343434f893d2f3242f",
+  "alpha": {
+    "transparentPixels": 68011,
+    "opaquePixels": 1157,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:41:02.391Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:45:50.074Z",
+  "publication": {
+    "productId": "66828",
+    "name": "Vino tinto joven Gran Viña do Val",
+    "objectPath": "mercadona/66828/6b3ac8a131df8e18.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/66828/6b3ac8a131df8e18.webp",
+    "contentType": "image/webp",
+    "bytes": 37974,
+    "published": true,
+    "sha256": "6b3ac8a131df8e18323c458a08ccc88c8cd5503668da84343434f893d2f3242f"
+  },
+  "publishedAt": "2026-10-12T14:45:56.845Z",
+  "localWebpDeletedAt": "2026-10-12T14:45:57.106Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:45:57.106Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:45:57.106Z"
+}

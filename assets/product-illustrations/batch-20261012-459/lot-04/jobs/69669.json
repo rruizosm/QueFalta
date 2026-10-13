@@ -1,0 +1,41 @@
+{
+  "id": "69669",
+  "index": 109,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-bc7b87ae-c6ea-4b94-969f-8c20f7d59171.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-69669-zanahorias.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Zanahorias, ID 69669.\nObserved source: Clear bag with whole orange carrots, green yellow ZANAHORIAS CENOURAS type and green yellow500g round badge.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/69669.txt",
+  "sourceOriginalSha256": "69ab6243518bdbce6c86925c22cd59ec8ef7267ca7b175dbd8ad4cc32bbb763e",
+  "sourceOriginalBytes": 68480,
+  "status": "published",
+  "generatedAt": "2026-10-12T15:11:40.084Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-69669.webp",
+  "width": 602,
+  "height": 768,
+  "bytes": 100506,
+  "sha256": "13e1b29227fba0aba180d539a0222516160016826d19f1b77062f95b1a15fd30",
+  "alpha": {
+    "transparentPixels": 77576,
+    "opaquePixels": 1364,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T15:14:34.443Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T15:15:12.084Z",
+  "publication": {
+    "productId": "69669",
+    "name": "Zanahorias",
+    "objectPath": "mercadona/69669/13e1b29227fba0ab.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/69669/13e1b29227fba0ab.webp",
+    "contentType": "image/webp",
+    "bytes": 100506,
+    "published": true,
+    "sha256": "13e1b29227fba0aba180d539a0222516160016826d19f1b77062f95b1a15fd30"
+  },
+  "publishedAt": "2026-10-12T15:15:29.691Z",
+  "localWebpDeletedAt": "2026-10-12T15:15:29.825Z",
+  "localSourceJpgDeletedAt": "2026-10-12T15:15:29.825Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T15:15:29.825Z"
+}

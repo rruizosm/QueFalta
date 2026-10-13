@@ -1,0 +1,68 @@
+{
+  "id": "17542",
+  "index": 8,
+  "version": 2,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-226f8cc7-2ed9-45cd-8aa9-07e058293e51.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-03/mercadona-17542-refresco-fanta-naranja-v2.png",
+  "prompt": "Use case: precise-object-edit. Image 1 is the generated illustration to edit. Image 2 is the official photograph for label accuracy. Change ONLY the small juice percentage badge on the Fanta orange label to the exact source text \"5% de zumo\". The previous illustration incorrectly shows 6%. Render numeral FIVE clearly; exact \"5% de zumo\". Preserve the existing bottle(s), cap(s), retail joining strip and handle if present, main FANTA logo, orange graphics, all other packaging text, colors, illustration style, composition and actual transparent background. Do not change the product or add any other claim.\n",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-03/actual-prompts/17542-v2.txt",
+  "sourceOriginalSha256": "8d854dfabc1531594720a7d3b7936d548e0623ef8c96c87a92dcffa4103774d1",
+  "sourceOriginalBytes": 47456,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:03:10.217Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-03/webp/mercadona-17542.webp",
+  "previousGenerations": [
+    {
+      "id": "17542",
+      "index": 8,
+      "version": 1,
+      "generationTool": "built-in image_gen",
+      "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-bf94be38-44f3-42ea-89a9-603b26b8eb29.png",
+      "png": "assets/product-illustrations/resume-20261011-396/lot-03/mercadona-17542-refresco-fanta-naranja.png",
+      "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Refresco Fanta naranja, Mercadona product ID 17542. Preserve the exact official photo product and real label negations, units and proportions. Tiny unreadable print may be neutral lines; never invent values.\n\nSource inspected: Two orange FANTA bottles with blue caps joined by orange-and-blue retail carry handle; PACK AHORRO DIVISIBLE, orange graphics; keep both bottles and handle.\nOnly the product packaging, not the white source background; actual transparent background. Printed pack bands belong to packaging; omit only external catalog callouts.\n",
+      "promptFile": "assets/product-illustrations/resume-20261011-396/lot-03/actual-prompts/17542.txt",
+      "sourceOriginalSha256": "8d854dfabc1531594720a7d3b7936d548e0623ef8c96c87a92dcffa4103774d1",
+      "sourceOriginalBytes": 47456,
+      "status": "prepared",
+      "generatedAt": "2026-10-11T16:59:08.216Z",
+      "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-03/webp/mercadona-17542.webp",
+      "width": 452,
+      "height": 768,
+      "bytes": 65252,
+      "sha256": "3b7e3dbd94bd0e9ab12a057bfb4de9e0a796ac5ae1cf1a304758b081b136b041",
+      "alpha": {
+        "transparentPixels": 98735,
+        "opaquePixels": 2005,
+        "visibleBorderPixels": 0
+      },
+      "preparedAt": "2026-10-11T17:00:42.842Z"
+    }
+  ],
+  "width": 457,
+  "height": 768,
+  "bytes": 63402,
+  "sha256": "ba1f0f9ffca530a8c20e8baab68451b4d9b3d0d2a6736ccd4342bb1545c914ab",
+  "alpha": {
+    "transparentPixels": 98997,
+    "opaquePixels": 1899,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:03:42.612Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:08:53.712Z",
+  "publication": {
+    "productId": "17542",
+    "name": "Refresco Fanta naranja",
+    "objectPath": "mercadona/17542/ba1f0f9ffca530a8.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/17542/ba1f0f9ffca530a8.webp",
+    "contentType": "image/webp",
+    "bytes": 63402,
+    "published": true,
+    "sha256": "ba1f0f9ffca530a8c20e8baab68451b4d9b3d0d2a6736ccd4342bb1545c914ab"
+  },
+  "publishedAt": "2026-10-11T17:08:55.440Z",
+  "localWebpDeletedAt": "2026-10-11T17:08:55.960Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:08:55.960Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:08:55.960Z"
+}

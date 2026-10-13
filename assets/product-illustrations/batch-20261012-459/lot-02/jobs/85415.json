@@ -1,0 +1,41 @@
+{
+  "id": "85415",
+  "index": 11,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-54c0955a-33f0-4581-adc9-0a658a45aae5.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-85415-tarta-de-almendra-andrade.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. Specific inspected product: Cream square upright Andrade almond cake box. Large round white powdered cake on scalloped plate, Santiago cross-shaped brown stencil at center, slice cut out at left, TARTA DE ALMENDRA below and almonds. Product catalog identity: Tarta de almendra Andrade.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/85415.txt",
+  "sourceOriginalSha256": "f485cb1483098404b890e02e2a53cf8fb8f1cfad6f39db605946aa75b80eb949",
+  "sourceOriginalBytes": 105656,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:37:54.474Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-85415.webp",
+  "width": 755,
+  "height": 768,
+  "bytes": 134850,
+  "sha256": "5844f470ff30932012a49b6bbf286954cbc3ef376e58c4c6b4b654c80dd9136b",
+  "alpha": {
+    "transparentPixels": 78975,
+    "opaquePixels": 1403,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:40:28.314Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:43:49.326Z",
+  "publication": {
+    "productId": "85415",
+    "name": "Tarta de almendra Andrade",
+    "objectPath": "mercadona/85415/5844f470ff309320.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/85415/5844f470ff309320.webp",
+    "contentType": "image/webp",
+    "bytes": 134850,
+    "published": true,
+    "sha256": "5844f470ff30932012a49b6bbf286954cbc3ef376e58c4c6b4b654c80dd9136b"
+  },
+  "publishedAt": "2026-10-12T13:44:09.226Z",
+  "localWebpDeletedAt": "2026-10-12T13:44:09.361Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:44:09.361Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:44:09.361Z"
+}

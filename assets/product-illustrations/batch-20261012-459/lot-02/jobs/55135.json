@@ -1,0 +1,41 @@
+{
+  "id": "55135",
+  "index": 5,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12bdd-f8e1-79a3-a1f0-6c88e7e3a70d/exec-193a144b-0943-4c49-b26a-3c25a0362d13.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-55135-taquitos-de-chorizo-extra-revilla.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. Specific inspected product: Low clear rectangular tray of orange-red chorizo cubes, broad red printed lid with large white diagonal Revilla logo and CHORIZO EXTRA. Product catalog identity: Taquitos de chorizo extra Revilla.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/55135.txt",
+  "sourceOriginalSha256": "964e6c501650be3355659a30102dde22ee3dc4ee88c55303a3fc99fd57051b8c",
+  "sourceOriginalBytes": 64225,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:37:24.134Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-55135.webp",
+  "width": 768,
+  "height": 581,
+  "bytes": 89926,
+  "sha256": "956503ccdced5e36a41a1bec9c9b0b9767ab8198e68a891660b1c81f7094a304",
+  "alpha": {
+    "transparentPixels": 209728,
+    "opaquePixels": 930,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:40:26.998Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:43:49.324Z",
+  "publication": {
+    "productId": "55135",
+    "name": "Taquitos de chorizo extra Revilla",
+    "objectPath": "mercadona/55135/956503ccdced5e36.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/55135/956503ccdced5e36.webp",
+    "contentType": "image/webp",
+    "bytes": 89926,
+    "published": true,
+    "sha256": "956503ccdced5e36a41a1bec9c9b0b9767ab8198e68a891660b1c81f7094a304"
+  },
+  "publishedAt": "2026-10-12T13:44:00.633Z",
+  "localWebpDeletedAt": "2026-10-12T13:44:00.808Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:44:00.808Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:44:00.808Z"
+}

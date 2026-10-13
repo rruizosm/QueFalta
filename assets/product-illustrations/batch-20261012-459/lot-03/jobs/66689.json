@@ -1,0 +1,41 @@
+{
+  "id": "66689",
+  "index": 52,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-6b78-7552-94a3-b923c51cf7da/exec-4a39dc72-244c-4dfb-b256-8fa4917e6326.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-03/mercadona-66689-vino-blanco-afrutado-apaga-y-vamonos-do-abona.png",
+  "prompt": "Use case: style-transfer. Create one polished hand-drawn retail product illustration for the QueFalta catalog. Image 1 is the sole authoritative product photograph. Image 2 supplies ONLY the illustrated medium, delicate outlines, simplified clean shading and subtle texture, never its milk carton, colors or text. Faithfully illustrate exactly the complete product in image 1, its perspective, geometry, components, colors and main readable label lettering. Truly transparent background, no ground plane, no cast shadow. Center the entire object with generous safe transparent margin. Preserve all visible caps, separate accessories, real multipack counts and full package edges. Preserve meaningful negations SIN or SEM and visible quantities completely. No invented claims, brands, prices, quantities or extra food/props. Tiny unreadable legal text may be quietly simplified. Never infer packaging text or quantities from catalog title. Product-specific visual requirements: Olive wine bottle with black cap and no paper rectangle: white handwritten Apaga y Vamonos lettering and line-art bottle at left. Catalog title for identification only: Vino blanco afrutado Apaga y Vámonos DO Abona. Reproduce numeric values only when legible in image 1; the actual photograph overrides catalog wording.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-03/actual-prompts/66689.txt",
+  "sourceOriginalSha256": "81b1abefd8f947e02e794aa9eb4f2746b43985e953031f0b4244c24adbccf354",
+  "sourceOriginalBytes": 29363,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:44:30.492Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-03/webp/mercadona-66689.webp",
+  "width": 231,
+  "height": 768,
+  "bytes": 27554,
+  "sha256": "0baa6308b1fcc489d35f83a8a50decb145f19a8210212e5fe987a40ffed08b2f",
+  "alpha": {
+    "transparentPixels": 66437,
+    "opaquePixels": 1162,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:45:21.988Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:45:30.637Z",
+  "publication": {
+    "productId": "66689",
+    "name": "Vino blanco afrutado Apaga y Vámonos DO Abona",
+    "objectPath": "mercadona/66689/0baa6308b1fcc489.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/66689/0baa6308b1fcc489.webp",
+    "contentType": "image/webp",
+    "bytes": 27554,
+    "published": true,
+    "sha256": "0baa6308b1fcc489d35f83a8a50decb145f19a8210212e5fe987a40ffed08b2f"
+  },
+  "publishedAt": "2026-10-12T14:45:38.143Z",
+  "localWebpDeletedAt": "2026-10-12T14:45:38.278Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:45:38.278Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:45:38.278Z"
+}

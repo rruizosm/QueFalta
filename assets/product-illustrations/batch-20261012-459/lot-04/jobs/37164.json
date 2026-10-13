@@ -1,0 +1,41 @@
+{
+  "id": "37164",
+  "index": 29,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-9f7e0541-6996-4ea6-9124-640eabd238bf.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-37164-vino-tinto-crianza-fidencio-do-la-mancha.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Vino tinto crianza Fidencio DO La Mancha, ID 37164.\nObserved source: One dark wine bottle with SILVER capsule, white FIDENCIO label, vineyard drawing and BLACK CRIANZA band. Not cosecha version.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/37164.txt",
+  "sourceOriginalSha256": "db2c74839c685882a7bce403d8084402c3117c8088962311f7003b705d1d9fc2",
+  "sourceOriginalBytes": 25945,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:48:32.138Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-37164.webp",
+  "width": 233,
+  "height": 768,
+  "bytes": 24170,
+  "sha256": "043a3a5b2a22e15e0e508736a9707c9c7f826b0a07f123433df8a0f5b377b6e5",
+  "alpha": {
+    "transparentPixels": 62671,
+    "opaquePixels": 879,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:41:00.595Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:41:42.309Z",
+  "publication": {
+    "productId": "37164",
+    "name": "Vino tinto crianza Fidencio DO La Mancha",
+    "objectPath": "mercadona/37164/043a3a5b2a22e15e.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/37164/043a3a5b2a22e15e.webp",
+    "contentType": "image/webp",
+    "bytes": 24170,
+    "published": true,
+    "sha256": "043a3a5b2a22e15e0e508736a9707c9c7f826b0a07f123433df8a0f5b377b6e5"
+  },
+  "publishedAt": "2026-10-12T14:41:53.448Z",
+  "localWebpDeletedAt": "2026-10-12T14:41:53.572Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:41:53.572Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:41:53.572Z"
+}

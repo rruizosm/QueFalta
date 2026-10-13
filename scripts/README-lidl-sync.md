@@ -1,5 +1,41 @@
 # Sync Lidl
 
+## Incidencia revisada el 2026-10-13
+
+El barrido `38303318853` dejó 661/719 tiendas completadas y 58 en `dead`.
+38 fuentes vacías de Canarias no activaban el respaldo porque Lidl cambió los
+IDs y convirtió las ramas de control en categorías con hijos. La corrección
+local comprueba todas las hojas de las tres familias y contempla también un
+barrido completo vacío si cambian los nombres. Conserva los bloqueos de
+catálogos parciales y de HTTP 403/429. Las otras 20 tiendas siguen bajo mínimo;
+esta revisión no cambia sus mínimos. El trabajo simultáneo sobre ES0410
+(Langreo) valida por separado su excepción de catálogo pequeño.
+
+El comparador requiere el índice preparado en
+`20261013144834_lidl_comparator_product_store_index.sql` para evitar el timeout
+de la vista. El código se incluye en la entrega GitHub del 13-10; la
+**migración sigue sin aplicar** y la cola canaria no se ha reabierto. Ver [diagnóstico y recuperación selectiva](../docs/lidl-sync-investigation-20261013.md).
+
+## Funcionamiento
+
+### Recuperación posterior de Langreo (13-10-2026)
+
+`ES0410`, C/ del Norte 52–54, CP 33930, conservaba los datos del 21-09 porque
+el mínimo genérico de 2.200 productos bloqueaba su surtido menor. Tres lecturas
+completas coinciden en 2.028 productos; 70/70 hojas tienen datos y todos los
+productos tienen precio e imagen. Las dos observaciones detalladas coinciden
+también en IDs, precios y recuentos por hoja. Se añade exclusivamente esta
+tienda al mapa verificado, con mínimo de 1.987 (98 %); el control del 85 % sobre
+el catálogo anterior y los demás guardarraíles se mantienen.
+
+Reabierto y recuperado únicamente ES0410 mediante el fleet local: `succeeded`
+a las 14:53:33 UTC, 67 novedades, 197 bajadas y 249 subidas. No se usó fallback.
+El cliente 1.3.3 ya recibe esos datos. La excepción se incluye en la entrega
+GitHub del 13-10 para que la use el próximo barrido semanal. Evidencia verificable:
+[`lidl-langreo-recovery-20261013.json`](../docs/lidl-langreo-recovery-20261013.json).
+
+### Sincronizador
+
 `sync-lidl.mjs` replica el catálogo público de Lidl Plus para una tienda
 española concreta. Recorre el árbol completo de categorías y
 guarda nombre, marca, precio, precio canónico por kg/L/ud, imagen,

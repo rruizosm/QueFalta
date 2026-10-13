@@ -190,6 +190,7 @@ export default function SlidingSegments<K extends string>({
           pointerEvents="none"
           style={[
             styles.pill,
+            compact && dense && styles.pillDenseCompact,
             emphasized && !compact && styles.pillEmphasized,
             condensed && styles.pillCondensed,
             opaqueSelection && styles.pillOpaque,
@@ -323,6 +324,13 @@ const styles = StyleSheet.create({
     borderRadius: PILL_RADIUS,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.7)',
     overflow: 'hidden',
+  },
+  // El segmento dense mide 32 pt y empieza tras borde + padding (4 pt).
+  // Usar el mismo inset vertical crea un círculo 32×32 concéntrico.
+  pillDenseCompact: {
+    top: PAD + 1,
+    bottom: PAD + 1,
+    borderRadius: DENSE_COMPACT_SEG_W / 2,
   },
   pillEmphasized: { borderRadius: EMPHASIZED_PILL_RADIUS },
   pillCondensed: { borderRadius: CONDENSED_PILL_RADIUS },

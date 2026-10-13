@@ -1,0 +1,39 @@
+{
+  "id": "2084",
+  "index": 82,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-b8aceedc-4bd1-4da2-9416-0ffc30ddabfa.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-2084-chorizo-semicurado-extra-torre-de-nunez.png",
+  "prompt": "Illustrate exact product in Image 1 in the established QuéFalta warm editorial hand-drawn style, soft thin outlines, accurate source colors and gentle gouache/paper texture. Preserve actual package silhouette, brand, claims and visible wording. Image 2 at /private/tmp/mercadona-style-10699-reference.png is a style-only reference; never copy its contents. Torre de Núñez Chorizo Extra Semicurado, one flat upright black-and-clear package with three long reddish chorizo links visible in three transparent vertical sections. Match black top/bottom bands, white Torre de Núñez logo, CHORIZO EXTRA Semicurado lettering, green SIN CONSERVANTES badge, circular gluten/lactose claim badges, cooking and pack-divisible labels, and 280 g. Full package, transparent background. Keep the whole product isolated on transparency with clear margins and no props.\n",
+  "promptFile": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/2084-prompt.txt",
+  "sourceOriginalSha256": "5eac455a79f769738e229eebe5a04c0dc430fc55a6eb6ef8d061319d14cf669b",
+  "sourceOriginalBytes": 75147,
+  "status": "published",
+  "generatedAt": "2026-10-09T08:07:17.768Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-2084.webp",
+  "width": 614,
+  "height": 768,
+  "bytes": 125490,
+  "sha256": "aad3b37082bfb31d20e761b417c3f067d4f4c45c70f452ab6eb572a604591fff",
+  "alpha": {
+    "transparentPixels": 90022,
+    "opaquePixels": 1407,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T08:08:16.614Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T08:08:45.574Z",
+  "publication": {
+    "productId": "2084",
+    "name": "Chorizo semicurado extra Torre de Nuñez",
+    "objectPath": "mercadona/2084/aad3b37082bfb31d.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/2084/aad3b37082bfb31d.webp",
+    "contentType": "image/webp",
+    "bytes": 125490,
+    "sha256": "aad3b37082bfb31d20e761b417c3f067d4f4c45c70f452ab6eb572a604591fff"
+  },
+  "publishedAt": "2026-10-09T08:08:51.399Z",
+  "localWebpDeletedAt": "2026-10-09T08:08:51.400Z",
+  "localSourceJpgDeletedAt": "2026-10-09T08:08:51.400Z"
+}

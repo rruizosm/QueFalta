@@ -1,0 +1,50 @@
+{
+  "id": "2266",
+  "index": 10,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12091-dc56-7d03-acf6-998d69096048/exec-e7c07037-16ff-46d2-98d2-6a8c77405a82.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-02/mercadona-2266-rabo-de-vacuno-anojo-congelado.png",
+  "prompt": null,
+  "promptFile": null,
+  "sourceOriginalSha256": "df7de6d52b428f336fbada1b31dda3c1afa80c9b5f6a3c2e3ffb7cce21df9ccc",
+  "sourceOriginalBytes": 99109,
+  "status": "published",
+  "generatedAt": "2026-10-10T14:34:24.606Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-02/webp/mercadona-2266.webp",
+  "recovery": {
+    "recoveredAt": "2026-10-11T16:56:07.779449+00:00",
+    "nativeMatchedToHistoricalWebp": true,
+    "historicalWebpSha256": "abfc60963a4256aebad4d5b127887a06db6f378fd3bd453db76521e93e05db14",
+    "historicalWebpTempPath": "/private/tmp/mercadona-batch-20261010-1000/lot-07/webp/mercadona-2266.webp",
+    "nativeSha256": "810e111b6d38c7f0de0a0a1038ed63fa30a47bbac588787fd3cbe376b0e67c81",
+    "originalPromptUnavailable": true,
+    "note": "Original batch directory was deleted. Native recovered by exact SHA after same export; original prompt is unavailable and has not been invented. Fresh visual review required before upload."
+  },
+  "width": 768,
+  "height": 663,
+  "bytes": 173572,
+  "sha256": "abfc60963a4256aebad4d5b127887a06db6f378fd3bd453db76521e93e05db14",
+  "alpha": {
+    "transparentPixels": 97919,
+    "opaquePixels": 1028,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:50:14.855Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:52:42.531Z",
+  "publication": {
+    "productId": "2266",
+    "name": "Rabo de vacuno añojo congelado",
+    "objectPath": "mercadona/2266/abfc60963a4256ae.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/2266/abfc60963a4256ae.webp",
+    "contentType": "image/webp",
+    "bytes": 173572,
+    "published": true,
+    "sha256": "abfc60963a4256aebad4d5b127887a06db6f378fd3bd453db76521e93e05db14"
+  },
+  "publishedAt": "2026-10-11T17:52:43.720Z",
+  "localWebpDeletedAt": "2026-10-11T17:52:44.031Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:52:44.031Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:52:44.031Z"
+}

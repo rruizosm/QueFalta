@@ -1,0 +1,39 @@
+{
+  "id": "44286",
+  "index": 28,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/44286.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-44286-champu-zero-deliplus-todo-tipo-de-cabello.png",
+  "prompt": "Warm clean editorial hand-drawn product illustration with thin soft outlines, defined source colors and subtle paper/gouache texture. Illustrate exactly the item in photo one: Deliplus Zero shampoo for all hair types. Preserve exact bottle silhouette, cap, colors, Zero label and all source-visible words. Preserve package/food count and all visible marks; add no claim, item, scene, glow or shadow. Complete centered product, actual transparent alpha. No photorealism, 3D, props or background. Image two guides style only.\n",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/44286.txt",
+  "sourceOriginalSha256": "6dcf8f883376ba84da1649e72bc10549e7cac5cfffb1908f52a3ea41425ae864",
+  "sourceOriginalBytes": 20934,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:13:28.340Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-44286.webp",
+  "width": 273,
+  "height": 768,
+  "bytes": 38124,
+  "sha256": "295bae2dfa26fb1fc6edd84063e18f633a51a02093f6bfa61603755c431615d3",
+  "alpha": {
+    "transparentPixels": 44542,
+    "opaquePixels": 964,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:13:40.884Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T07:14:02.854Z",
+  "publication": {
+    "productId": "44286",
+    "name": "Champú Zero Deliplus todo tipo de cabello",
+    "objectPath": "mercadona/44286/295bae2dfa26fb1f.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/44286/295bae2dfa26fb1f.webp",
+    "contentType": "image/webp",
+    "bytes": 38124,
+    "sha256": "295bae2dfa26fb1fc6edd84063e18f633a51a02093f6bfa61603755c431615d3"
+  },
+  "publishedAt": "2026-10-09T07:14:05.202Z",
+  "localWebpDeletedAt": "2026-10-09T07:14:05.203Z",
+  "localSourceJpgDeletedAt": "2026-10-09T07:14:05.203Z"
+}

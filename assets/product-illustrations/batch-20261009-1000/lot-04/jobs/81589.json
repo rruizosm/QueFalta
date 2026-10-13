@@ -1,0 +1,39 @@
+{
+  "id": "81589",
+  "index": 37,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/private/tmp/mercadona-batch-20261009-1000/lot-04/native/81589.png",
+  "png": "assets/product-illustrations/batch-20261009-1000/lot-04/mercadona-81589-choco-mediano-descongelado.png",
+  "prompt": "Warm clean editorial hand-drawn illustration with soft outlines, defined colors and subtle paper/gouache texture. Illustrate exactly the product in reference photo one: A medium thawed choco/cuttlefish seafood item. Match exact anatomy and presentation, including visible fins/tentacles; do not turn it into octopus or squid steaks. Preserve package/food form, quantity and readable details; add nothing. Complete item centered on actual transparent alpha, no backdrop, shelf, props, glow or shadow. No photorealism or 3D. Image two is style guidance only.\n",
+  "promptFile": "assets/product-illustrations/batch-20261009-1000/lot-04/actual-prompts/81589.txt",
+  "sourceOriginalSha256": "914b32e4371620a136ad0f080c28e58628d79e75173f90204269b89c9b962796",
+  "sourceOriginalBytes": 20479,
+  "status": "published",
+  "generatedAt": "2026-10-09T07:20:38.028Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261009-1000/lot-04/webp/mercadona-81589.webp",
+  "width": 768,
+  "height": 470,
+  "bytes": 65146,
+  "sha256": "28c9bd6e2cf6d7efeb51023da14e1f60285371ca2d933f7d57324334bfd4abc7",
+  "alpha": {
+    "transparentPixels": 225044,
+    "opaquePixels": 987,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-09T07:20:52.662Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-09T07:21:22.742Z",
+  "publication": {
+    "productId": "81589",
+    "name": "Choco mediano descongelado",
+    "objectPath": "mercadona/81589/28c9bd6e2cf6d7ef.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/81589/28c9bd6e2cf6d7ef.webp",
+    "contentType": "image/webp",
+    "bytes": 65146,
+    "sha256": "28c9bd6e2cf6d7efeb51023da14e1f60285371ca2d933f7d57324334bfd4abc7"
+  },
+  "publishedAt": "2026-10-09T07:21:25.805Z",
+  "localWebpDeletedAt": "2026-10-09T07:21:25.806Z",
+  "localSourceJpgDeletedAt": "2026-10-09T07:21:25.806Z"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "67024",
+  "index": 19,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-34bee4c3-7aaa-48d2-ba49-f849240bef99.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-67024-vino-tinto-borsao-do-campo-de-borja.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Vino tinto Borsao DO Campo de Borja, ID 67024.\nObserved source: One dark glass wine bottle, ochre/gold neck capsule with black cap stripe and gold BORSAO label. Match the exact Campo de Borja variant.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/67024.txt",
+  "sourceOriginalSha256": "7b28c539a78ee5e6254b7ee0e8003913fce4a7fa76fcbd6a93113bc30a384107",
+  "sourceOriginalBytes": 26252,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:37:51.634Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-67024.webp",
+  "width": 233,
+  "height": 768,
+  "bytes": 31390,
+  "sha256": "dbba58beb1323c8e6e710f6764bf7799721cf81fb2709a54d2b88c737f1f2f63",
+  "alpha": {
+    "transparentPixels": 61545,
+    "opaquePixels": 993,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:37:53.332Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:43:23.268Z",
+  "publication": {
+    "productId": "67024",
+    "name": "Vino tinto Borsao DO Campo de Borja",
+    "objectPath": "mercadona/67024/dbba58beb1323c8e.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/67024/dbba58beb1323c8e.webp",
+    "contentType": "image/webp",
+    "bytes": 31390,
+    "published": true,
+    "sha256": "dbba58beb1323c8e6e710f6764bf7799721cf81fb2709a54d2b88c737f1f2f63"
+  },
+  "publishedAt": "2026-10-12T13:43:54.024Z",
+  "localWebpDeletedAt": "2026-10-12T13:43:54.174Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:43:54.174Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:43:54.174Z"
+}

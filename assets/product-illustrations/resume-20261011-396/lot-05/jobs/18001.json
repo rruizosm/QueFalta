@@ -1,0 +1,41 @@
+{
+  "id": "18001",
+  "index": 29,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-f298b22d-eb2b-4ebb-a3c9-cc88cac5262b.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-05/mercadona-18001-sombra-de-ojos-mate-long-lasting-multi-stick-deliplus-12-marron.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta pantry product illustration, matching the established Mercadona collection. Image 1 is the exact product photo to illustrate. Image 2 is ONLY the approved illustration style reference; do not copy its milk product or packaging. Create a warm clean editorial hand-drawn illustration of the product in Image 1: soft thin outlines, defined original colors, subtle paper/gouache texture, frontal eye-level view. Preserve the exact packaging type, proportions, recognizable brand, colors, layout and main readable label words from the source photo; don't invent ingredients, quantities, claims or change product. Show the entire product centered upright with horizontal base, equal minimal transparent margins. If source is a retail multipack, retain the complete multipack and its count exactly. NO photorealism, 3D rendering, isometric perspective, hands, shelves, props, exterior shadows, floor, glow, white/cream background or drawn checkerboard. Background must be actual alpha transparency. Output one square PNG illustration only.\nText accuracy: reproduce only words and quantities legible in the source; never add a claim or use the catalog name as an invented printed label. Product type/variant must match exactly. For retail multipacks preserve their exact count, proportions and wrapping. Labels may be simplified only in tiny unreadable microprint, while main product and brand words remain faithful. Ensure even the transparent plastic, white/metallic packaging and thin edges remain part of the product; transparency applies outside the silhouette.\nClaim fidelity: when a source badge reads SIN/SEM GLUTEN, render all three words exactly, never GLUTEN alone and never wheat symbols that imply the opposite. Preserve SIN/SEM, 0%, salt/sugar qualifiers wherever present. Avoid adding or removing dietary claims.\nSpecific subject: Sombra de ojos mate Long Lasting Multi-Stick Deliplus 12 marrón (Mercadona 18001).\nObserved source details: Two separate components: deep olive/chocolate brown matte eyeshadow stick, exposed rounded dark tip, and separate same-brown cap left. White vertical SOMBRA MATE LONG LASTING MULTI-STICK deliplus lettering. 12 shade. No additional box.",
+  "promptFile": "assets/product-illustrations/resume-20261011-396/lot-05/actual-prompts/18001-root-resume.txt",
+  "sourceOriginalSha256": "759f2bd7aa5a2aa35bae6f569aa8aeabb569e1d9f4935b3a73913d31a4d9e8bf",
+  "sourceOriginalBytes": 22621,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:18:18.168Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-05/webp/mercadona-18001.webp",
+  "width": 233,
+  "height": 768,
+  "bytes": 20924,
+  "sha256": "cd9c01e8014af208d27269cab9f98fcf9b587ce4e0a94e84114eb78112eb0576",
+  "alpha": {
+    "transparentPixels": 92597,
+    "opaquePixels": 1792,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:37:21.278Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:44:30.839Z",
+  "publication": {
+    "productId": "18001",
+    "name": "Sombra de ojos mate Long Lasting Multi-Stick Deliplus 12 marrón",
+    "objectPath": "mercadona/18001/cd9c01e8014af208.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/18001/cd9c01e8014af208.webp",
+    "contentType": "image/webp",
+    "bytes": 20924,
+    "published": true,
+    "sha256": "cd9c01e8014af208d27269cab9f98fcf9b587ce4e0a94e84114eb78112eb0576"
+  },
+  "publishedAt": "2026-10-11T17:44:38.443Z",
+  "localWebpDeletedAt": "2026-10-11T17:44:38.608Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:44:38.608Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:44:38.608Z"
+}

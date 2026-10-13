@@ -1,0 +1,41 @@
+{
+  "id": "11653",
+  "index": 57,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a1308d-282a-7780-9fc2-cf44d60c71d3/exec-4114387a-1065-4331-ac95-364369f41d13.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-02/mercadona-11653-toallitas-intimas-monodosis-deliplus.png",
+  "prompt": "Create one polished hand-painted digital product illustration for a grocery catalog, isolated on a truly transparent RGBA background. Reference image 1 is the authoritative product photo: reproduce that exact product, packaging, contents, angle, proportions, brand, colors, main legible text and all visible count/variant/negation markings. Reference image 2 is STYLE ONLY: match its refined illustrative painted shading, subtle paper-like texture and clean fine outlines; do not copy its milk carton, text, colors or contents. Center the complete single product with generous transparent margins, no scene, floor, cast shadow, watermark or extra objects. Retain transparent plastic as translucent with its contents visible. All pixels outside the product silhouette must be alpha 0, including spaces between separate components. Absolutely no halo, glow, gradient, fuzzy shadow or rectangular background. Use square canvas. Specific inspected product: Upright white and pale pink Deliplus intimate wipes carton, burgundy large íntimas, monodosis/unidose, circular 10x sachet icon top right and hygiene symbol lower right. Box, not packet. Product catalog identity: Toallitas íntimas monodosis Deliplus.",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-02/actual-prompts/11653.txt",
+  "sourceOriginalSha256": "b2b1cd5aaf903f7c9cf9e8dc70c6292e234aa23772f27f8f197cb5b93f356a35",
+  "sourceOriginalBytes": 66319,
+  "status": "published",
+  "generatedAt": "2026-10-12T14:47:05.973Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-02/webp/mercadona-11653.webp",
+  "width": 648,
+  "height": 768,
+  "bytes": 74630,
+  "sha256": "11406289e924487c47f1663a6e4134222d931ede8368761d9f814c53648abda5",
+  "alpha": {
+    "transparentPixels": 76573,
+    "opaquePixels": 1140,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:49:59.352Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:50:10.023Z",
+  "publication": {
+    "productId": "11653",
+    "name": "Toallitas íntimas monodosis Deliplus",
+    "objectPath": "mercadona/11653/11406289e924487c.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/11653/11406289e924487c.webp",
+    "contentType": "image/webp",
+    "bytes": 74630,
+    "published": true,
+    "sha256": "11406289e924487c47f1663a6e4134222d931ede8368761d9f814c53648abda5"
+  },
+  "publishedAt": "2026-10-12T14:50:12.870Z",
+  "localWebpDeletedAt": "2026-10-12T14:50:13.056Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:50:13.056Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:50:13.056Z"
+}

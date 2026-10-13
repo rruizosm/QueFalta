@@ -1,0 +1,41 @@
+{
+  "id": "50199",
+  "index": 51,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a12be3-1801-7fe3-88ee-862e3d13eea9/exec-05224774-f43f-4f0d-b828-bbabffe0835c.png",
+  "png": "assets/product-illustrations/resume-20261011-396/lot-04/mercadona-50199-serum-reductor-instantaneo-de-bolsas-y-ojeras-deliplus-sisbela-reafirm.png",
+  "prompt": "Use case: style-transfer. Asset: one catalog product illustration for QuéFalta. Image1 is the sole authoritative product/photo reference; image2 supplies ONLY the illustrated medium and edge/shading treatment, never its milk carton/text. Turn the exact product in image1 into a polished hand-drawn retail illustration matching image2: crisp delicate outlines, clean simplified shading, subtle illustrated texture and faithful retail colors. Truly transparent background, no ground plane, no cast shadow, centered entire product with safe empty margin. Preserve the complete original package geometry, perspective, relative proportions, all components and accessories, real visible quantities and main legible label text. No extra props, invented brands, claims, prices, quantities or food outside packaging. Tiny illegible legal text may be reduced unobtrusively but all meaningful negations such as SIN/SEM must remain complete. Product-specific observed requirements: Wide white-blue SISBELA REAFIRM box printed narrow ampoule on right REDUCTOR TENSOR INSTANTÁNEO BOLSAS & OJERAS OLHEIRAS 5x; do not invent physical ampoule outside box. Official product: Sérum reductor instantáneo de bolsas y ojeras Deliplus Sisbela Reafirm. Reproduce source numeric values only when legible; do not guess.\n",
+  "promptFile": "/Users/rruizosmaalohacloud/Desktop/ProyectoGeneralQueFalta/QueFalta/assets/product-illustrations/resume-20261011-396/lot-04/actual-prompts/50199.txt",
+  "sourceOriginalSha256": "d395c9f63e7e79b039c23ebfb09cf9ba2b9a52d494dda72bb28dbcdedcf7d255",
+  "sourceOriginalBytes": 43310,
+  "status": "published",
+  "generatedAt": "2026-10-11T17:44:02.967Z",
+  "webpTempPath": "/private/tmp/mercadona-resume-20261011-396/lot-04/webp/mercadona-50199.webp",
+  "width": 768,
+  "height": 562,
+  "bytes": 53670,
+  "sha256": "a21e11adecddf2a37d57dced0299ca44b54b6f23a25e80dee332670560445042",
+  "alpha": {
+    "transparentPixels": 71309,
+    "opaquePixels": 906,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-11T17:48:11.614Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-11T17:50:09.723Z",
+  "publication": {
+    "productId": "50199",
+    "name": "Sérum reductor instantáneo de bolsas y ojeras Deliplus Sisbela Reafirm",
+    "objectPath": "mercadona/50199/a21e11adecddf2a3.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/50199/a21e11adecddf2a3.webp",
+    "contentType": "image/webp",
+    "bytes": 53670,
+    "published": true,
+    "sha256": "a21e11adecddf2a37d57dced0299ca44b54b6f23a25e80dee332670560445042"
+  },
+  "publishedAt": "2026-10-11T17:50:36.386Z",
+  "localWebpDeletedAt": "2026-10-11T17:50:36.571Z",
+  "localSourceJpgDeletedAt": "2026-10-11T17:50:36.572Z",
+  "cleanupRemoteVerifiedAt": "2026-10-11T17:50:36.572Z"
+}

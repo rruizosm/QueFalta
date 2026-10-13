@@ -1,0 +1,41 @@
+{
+  "id": "23106",
+  "index": 42,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-2fdd0fdb-76f4-4cb6-a061-6a65c956752c.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-23106-vino-tinto-garnacha-tintorera-adelle-do-almansa.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Vino tinto garnacha tintorera Adelle DO Almansa, ID 23106.\nObserved source: Dark bottle silver white capsule, minimal pale striped label Adelle, Almansa.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/23106.txt",
+  "sourceOriginalSha256": "d1f7dc79da2ad02f1698fa3abffdcd4b7ab7a29a0bd9938b77fa83181317c22f",
+  "sourceOriginalBytes": 23128,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:55:49.060Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-23106.webp",
+  "width": 252,
+  "height": 768,
+  "bytes": 27238,
+  "sha256": "45c264ed4574fa20b209d1b5200b7c42adadd3dd8d89a86865c6c37f55e8e85b",
+  "alpha": {
+    "transparentPixels": 74789,
+    "opaquePixels": 1109,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:41:02.133Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:45:50.073Z",
+  "publication": {
+    "productId": "23106",
+    "name": "Vino tinto garnacha tintorera Adelle DO Almansa",
+    "objectPath": "mercadona/23106/45c264ed4574fa20.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/23106/45c264ed4574fa20.webp",
+    "contentType": "image/webp",
+    "bytes": 27238,
+    "published": true,
+    "sha256": "45c264ed4574fa20b209d1b5200b7c42adadd3dd8d89a86865c6c37f55e8e85b"
+  },
+  "publishedAt": "2026-10-12T14:45:53.077Z",
+  "localWebpDeletedAt": "2026-10-12T14:45:53.323Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:45:53.323Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:45:53.323Z"
+}

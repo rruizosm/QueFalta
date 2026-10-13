@@ -1,0 +1,41 @@
+{
+  "id": "35710",
+  "index": 26,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-6643fc76-8c61-4804-92bc-9d0bdea8ef0e.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-35710-vino-tinto-crianza-comportillo-do-rioja.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Vino tinto crianza Comportillo DO Rioja, ID 35710.\nObserved source: One dark wine bottle, BLACK capsule, white RIOJA label with CRIANZA and COMPORTILLO. Do not use blue cosecha variant.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/35710.txt",
+  "sourceOriginalSha256": "cfff69412f0b066c59fe2d4498f919cb7ba17a7b80c86181803bfe01b5f7ee85",
+  "sourceOriginalBytes": 25873,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:48:29.781Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-35710.webp",
+  "width": 229,
+  "height": 768,
+  "bytes": 26364,
+  "sha256": "0d0b07b79edaf5abacc5ad80f3c4e478d61f271764c1782eb351c98e7cb670bf",
+  "alpha": {
+    "transparentPixels": 59719,
+    "opaquePixels": 1181,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T14:41:00.324Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T14:41:42.308Z",
+  "publication": {
+    "productId": "35710",
+    "name": "Vino tinto crianza Comportillo DO Rioja",
+    "objectPath": "mercadona/35710/0d0b07b79edaf5ab.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/35710/0d0b07b79edaf5ab.webp",
+    "contentType": "image/webp",
+    "bytes": 26364,
+    "published": true,
+    "sha256": "0d0b07b79edaf5abacc5ad80f3c4e478d61f271764c1782eb351c98e7cb670bf"
+  },
+  "publishedAt": "2026-10-12T14:41:49.841Z",
+  "localWebpDeletedAt": "2026-10-12T14:41:50.057Z",
+  "localSourceJpgDeletedAt": "2026-10-12T14:41:50.057Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T14:41:50.057Z"
+}

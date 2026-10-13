@@ -1,0 +1,41 @@
+{
+  "id": "19989",
+  "index": 14,
+  "version": 1,
+  "generationTool": "built-in image_gen",
+  "sourceGenerated": "/Users/rruizosmaalohacloud/.codex/generated_images/01a112cf-b286-72e2-b35a-155249f55f1f/exec-ba6ba902-094d-4339-9192-323e65370db7.png",
+  "png": "assets/product-illustrations/batch-20261012-459/lot-04/mercadona-19989-vino-tinto-7-meses-barril-n-7.png",
+  "prompt": "Use case: style-transfer. Asset type: QuéFalta product illustration.\nImage 1 is the exact Mercadona product photo. Image 2 is ONLY the approved illustration style; do not copy its milk carton. Create a warm clean hand-drawn editorial illustration matching that style, with thin outlines, original colors, subtle gouache and paper texture. Preserve the entire real product, packaging proportions, label design, brand, main readable words, quantity and variant. Front-facing upright centered, level base, minimal equal transparent margin. Actual alpha transparency outside the silhouette; keep pale/transparent product components. No props, shelf, floor, outside shadow, glow, solid backdrop, drawn checkerboard, photorealism or 3D. Only reproduce legible source text; tiny unreadable print may be neutral lines. Do not invent claims, vintages, ingredients or quantities. Preserve SIN/SEM and all negations when present. One square transparent PNG.\nSpecific subject: Vino tinto 7 meses Barril Nº7, ID 19989.\nObserved source: One dark wine bottle with burgundy capsule and broad cream label: barrel drawing, Barril nº7, preserve this source 7 MESES variant, not12or18.\n",
+  "promptFile": "assets/product-illustrations/batch-20261012-459/lot-04/actual-prompts/19989.txt",
+  "sourceOriginalSha256": "cd7bf112434246998d009da7c62695fd9608f27c1f1e750f98e7e9cafd9b4506",
+  "sourceOriginalBytes": 33267,
+  "status": "published",
+  "generatedAt": "2026-10-12T13:36:37.464Z",
+  "webpTempPath": "/private/tmp/mercadona-batch-20261012-459/lot-04/webp/mercadona-19989.webp",
+  "width": 256,
+  "height": 768,
+  "bytes": 36480,
+  "sha256": "a703dab2e3f948d0b62a8a9250b4f9959d6853e23f0faef1ba61bc3788d9ef88",
+  "alpha": {
+    "transparentPixels": 73038,
+    "opaquePixels": 1096,
+    "visibleBorderPixels": 0
+  },
+  "preparedAt": "2026-10-12T13:37:53.059Z",
+  "visualReviewed": true,
+  "reviewedAt": "2026-10-12T13:43:23.267Z",
+  "publication": {
+    "productId": "19989",
+    "name": "Vino tinto 7 meses Barril Nº7",
+    "objectPath": "mercadona/19989/a703dab2e3f948d0.webp",
+    "imageUrl": "https://auth.quefalta.es/storage/v1/object/public/product-illustrations/mercadona/19989/a703dab2e3f948d0.webp",
+    "contentType": "image/webp",
+    "bytes": 36480,
+    "published": true,
+    "sha256": "a703dab2e3f948d0b62a8a9250b4f9959d6853e23f0faef1ba61bc3788d9ef88"
+  },
+  "publishedAt": "2026-10-12T13:43:46.492Z",
+  "localWebpDeletedAt": "2026-10-12T13:43:46.643Z",
+  "localSourceJpgDeletedAt": "2026-10-12T13:43:46.643Z",
+  "cleanupRemoteVerifiedAt": "2026-10-12T13:43:46.643Z"
+}

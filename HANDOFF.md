@@ -1,5 +1,19 @@
 # HANDOFF.md — Estado en vuelo (traspaso a Codex)
 
+## Aldi: enlaces estacionales retirados (2026-10-20)
+
+- El run del 19-10 (`39291482938`) abortó antes de escribir por cuatro enlaces
+  antiguos de Verano: tres redirigen a categorías N1 y cremas solares devuelve
+  404 por una redirección mal formada. Último sync correcto: 12-10.
+- El rastreador omite exclusivamente esos cuatro alias verificados cuando sus
+  destinos canónicos están incluidos en el barrido. Si falta un destino o falla
+  cualquier otra página, sigue abortando. Conserva el mínimo de 800 productos
+  y el límite de caída del 20 % en productos y categorías, antes de escribir.
+- Validación: ocho pruebas de integridad y `npx tsc --noEmit` correctos. Barrido
+  completo DRY_RUN: 25 N1, 132 hojas, 2.591 productos, 145 categorías, sin fallos;
+  Charcutería 145/4 y Limpieza y hogar 154/8 (productos/subcategorías).
+
+
 ## Entrega conjunta a GitHub (2026-10-13)
 
 - Esta entrega agrupa todo el trabajo local hasta el 13-10: despensa/nevera,

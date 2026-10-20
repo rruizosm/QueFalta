@@ -42,7 +42,7 @@
 import { canonicalPricePerUnit } from './lib/price.mjs';
 import { markStale as markStaleBatched } from './lib/stale.mjs';
 import { recordCatalogSync } from './lib/sync-status.mjs';
-import { assertAldiSyncIntegrity } from './lib/aldi-sync-integrity.mjs';
+import { assertAldiSyncIntegrity, resolveAldiSeasonalAliases } from './lib/aldi-sync-integrity.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
@@ -188,7 +188,13 @@ async function enumerateLeaves() {
     }
     await sleep(40);
   }
-  return { n1s, leaves: [...leaves].slice(0, MAX_LEAVES) };
+  const resolved = resolveAldiSeasonalAliases({ roots: n1s, leaves: [...leaves] });
+  for (const { path, target } of resolved.aliases) {
+    console.log(`[aldi] alias estacional ${path} → ${target} (destino incluido en el barrido)`);
+  }
+  // Las páginas de destino se descargan por la vía normal: cualquier fallo
+  // suyo o de sus subcategorías sigue abortando antes del primer UPSERT.
+  return { n1s, leaves: resolved.leaves.slice(0, MAX_LEAVES) };
 }
 
 // ── Normalización de un hit de Algolia ───────────────────────────────────────
